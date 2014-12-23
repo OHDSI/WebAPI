@@ -16,6 +16,22 @@ Once the source code is built and the resulting libraries are deployed to your w
 
 **database.dialect** this parameter specifies the dialect of your database environment and is used by the SQLRender library to translate the embedded templated queries to one of the supported dialects (SQL Server, Oracle, PostgreSQL, Amazon RedShift)
 
+##### Testing
+Once your configuration is completed you can test the functionality of the WebAPI with the following types of requests:
+
+* retrieve concept information for concept id 0
+```
+http://<YOUR SERVER>/WebAPI/vocabulary/concept/0
+```
+* find related concepts for concept id 0
+```
+http://<YOUR SERVER>/WebAPI/vocabulary/concept/0/related
+```
+* search the vocabulary for all concepts with the string cardiomyopathy in the concept name
+```
+http://<YOUR SERVER>/WebAPI/vocabulary/search/cardiomyopathy
+```
+
 #### Services
 The collection of RESTful services available in the WebAPI project.
 

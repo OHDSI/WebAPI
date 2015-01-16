@@ -7,6 +7,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -16,8 +17,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import org.apache.commons.dbutils.DbUtils;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.helper.ResourceHelper;
@@ -27,16 +28,28 @@ import org.ohdsi.webapi.vocabulary.ConceptSearch;
 import org.ohdsi.webapi.vocabulary.Domain;
 import org.ohdsi.webapi.vocabulary.RelatedConcept;
 import org.ohdsi.webapi.vocabulary.Vocabulary;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 /**
  *
  * @author fdefalco
  */
 @Path("/vocabulary/")
+@Component
 public class VocabularyService {
 
-    @Context
-    ServletContext context;
+    @Value("${datasource.cdm.schema}")
+    private String cdmSchema;
+    
+    @Value("${datasource.dialect}")
+    private String dialect;
+    
+    @Value("${spring.datasource.driverClassName}")
+    private String databaseDriver;
+    
+    @Value("${spring.datasource.url}")
+    private String databaseUrl;
 
     @Path("search")
     @POST
@@ -83,10 +96,6 @@ public class VocabularyService {
         ResultSet resultSet = null;
 
         try {
-            String dialect = context.getInitParameter("database.dialect");
-            String databaseDriver = context.getInitParameter("database.driver");
-            String databaseUrl = context.getInitParameter("database.url");
-            String cdmSchema = context.getInitParameter("database.cdm.schema");
             
             String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/search.sql");
             sql_statement = SqlRender.renderSql(sql_statement, new String[]{"query", "CDM_schema", "filters"}, new String[]{search.query, cdmSchema, filters});
@@ -140,12 +149,7 @@ public class VocabularyService {
         ResultSet resultSet = null;
 
         try {
-            String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/search.sql");
-            
-            String dialect = context.getInitParameter("database.dialect");
-            String databaseDriver = context.getInitParameter("database.driver");
-            String databaseUrl = context.getInitParameter("database.url");
-            String cdmSchema = context.getInitParameter("database.cdm.schema");            
+            String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/search.sql");           
 
             sql_statement = SqlRender.renderSql(sql_statement, new String[]{"query","CDM_schema", "filters"}, new String[]{query, cdmSchema, ""});            
             sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", dialect);
@@ -196,11 +200,6 @@ public class VocabularyService {
         try {
 
             String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/getConcept.sql");
-            String dialect = context.getInitParameter("database.dialect");
-            String databaseDriver = context.getInitParameter("database.driver");
-            String databaseUrl = context.getInitParameter("database.url");
-            String cdmSchema = context.getInitParameter("database.cdm.schema");            
-            
             sql_statement = SqlRender.renderSql(sql_statement, new String[]{"id", "CDM_schema"}, new String[]{String.valueOf(id), cdmSchema});
             sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", dialect);
 
@@ -248,11 +247,6 @@ public class VocabularyService {
 
         try {
             String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/getRelatedConcepts.sql");
-            String dialect = context.getInitParameter("database.dialect");
-            String databaseDriver = context.getInitParameter("database.driver");
-            String databaseUrl = context.getInitParameter("database.url");
-            String cdmSchema = context.getInitParameter("database.cdm.schema");            
-            
             sql_statement = SqlRender.renderSql(sql_statement, new String[]{"id", "CDM_schema"}, new String[]{String.valueOf(id), cdmSchema});           
             sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", dialect);
 
@@ -311,11 +305,6 @@ public class VocabularyService {
 
         try {
             String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/getDescendantConcepts.sql");
-            String dialect = context.getInitParameter("database.dialect");
-            String databaseDriver = context.getInitParameter("database.driver");
-            String databaseUrl = context.getInitParameter("database.url");
-            String cdmSchema = context.getInitParameter("database.cdm.schema");            
-            
             sql_statement = SqlRender.renderSql(sql_statement, new String[]{"id", "CDM_schema"}, new String[]{String.valueOf(id), cdmSchema});           
             sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", dialect);
 
@@ -374,11 +363,6 @@ public class VocabularyService {
 
         try {
             String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/getDomains.sql");
-            String dialect = context.getInitParameter("database.dialect");
-            String databaseDriver = context.getInitParameter("database.driver");
-            String databaseUrl = context.getInitParameter("database.url");
-            String cdmSchema = context.getInitParameter("database.cdm.schema");            
-
             sql_statement = SqlRender.renderSql(sql_statement, new String[] {"CDM_schema"}, new String[] {cdmSchema});
             sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", dialect);
 
@@ -416,11 +400,6 @@ public class VocabularyService {
 
         try {
             String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/getVocabularies.sql");
-            String dialect = context.getInitParameter("database.dialect");
-            String databaseDriver = context.getInitParameter("database.driver");
-            String databaseUrl = context.getInitParameter("database.url");
-            String cdmSchema = context.getInitParameter("database.cdm.schema");            
-
             sql_statement = SqlRender.renderSql(sql_statement, new String[] {"CDM_schema"}, new String[] {cdmSchema});
             sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", dialect);
 

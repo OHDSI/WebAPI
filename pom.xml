@@ -6,11 +6,67 @@
     <groupId>org.ohdsi</groupId>
     <artifactId>WebAPI</artifactId>
     <packaging>war</packaging>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <name>WebAPI</name>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<jersey.version>2.14</jersey.version>
+		<!-- Spring Boot manages spring.version as well -->
+		<spring.boot.version>1.2.1.RELEASE</spring.boot.version>
+		
+		<!-- default sql server -->
+		<!-- Spring boot will create a Datasource for autowiring based on these props. -->
+		<spring.datasource.username></spring.datasource.username>
+		<spring.datasource.password></spring.datasource.password>
+		<spring.datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</spring.datasource.driverClassName>
+		<spring.datasource.url>jdbc:sqlserver://serverName;user=userName;password=password;</spring.datasource.url>
+
+		<datasource.dialect>sql server</datasource.dialect>
+		<datasource.cdm.schema>[CDM_DATABASE].dbo</datasource.cdm.schema>
+		<datasource.ohdsi.schema>[CDM_DATABASE_RESULTS].dbo</datasource.ohdsi.schema>
+		
+		<spring.profiles.active>default</spring.profiles.active>
+	</properties>
 
     <build>
         <finalName>WebAPI</finalName>
+        <resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>**/*.properties</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>false</filtering>
+				<includes>
+					<include>**/*.*</include>
+				</includes>
+				<excludes>
+					<exclude>**/*.properties</exclude>
+				</excludes>
+			</resource>
+			<resource>
+				<directory>src/test/resources</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>**/*.properties</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>src/test/resources</directory>
+				<filtering>false</filtering>
+				<includes>
+					<include>**/*.*</include>
+				</includes>
+				<excludes>
+					<exclude>**/*.properties</exclude>
+				</excludes>
+			</resource>
+		</resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -22,6 +78,10 @@
                     <target>1.7</target>
                 </configuration>
             </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+			</plugin>
         </plugins>
     </build>
 
@@ -52,10 +112,63 @@
 
     <dependencies>
         <dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-parent</artifactId>
+			<version>${spring.boot.version}</version>
+			<type>pom</type>
+			<scope>import</scope>
+		</dependency>
+		<!-- 
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+			<version>${spring.boot.version}</version>
+		</dependency>
+		-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+			<version>${spring.boot.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-log4j</artifactId>
+			<version>${spring.boot.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+			<version>${spring.boot.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-tomcat</artifactId>
+			<version>${spring.boot.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jdbc</artifactId>
+			<version>${spring.boot.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jersey</artifactId>
+			<version>${spring.boot.version}</version>
+		</dependency>
+        <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
             <version>3.1.0</version>
+            <scope>provided</scope>
         </dependency>        
+        <!-- 
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
             <artifactId>jersey-container-servlet</artifactId>
@@ -64,6 +177,7 @@
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-json-jackson</artifactId>
         </dependency>
+        -->
         <dependency>
             <groupId>org.ohdsi.sql</groupId>
             <artifactId>SqlRender</artifactId>
@@ -79,9 +193,34 @@
             <artifactId>commons-io</artifactId>
             <version>2.4</version>
         </dependency>
+        <dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<version>${spring.boot.version}</version>
+			<scope>test</scope>
+		</dependency>
     </dependencies>
-    <properties>
-        <jersey.version>2.14</jersey.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
+    <profiles>
+    	<profile>
+    		<id>webapi-oracle</id>
+    		<properties>
+				<spring.datasource.username></spring.datasource.username>
+				<spring.datasource.password></spring.datasource.password>
+				<spring.datasource.driverClassName>oracle.jdbc.OracleDriver</spring.datasource.driverClassName>
+				<!-- Override in settings.xml with actual user/pass -->
+				<spring.datasource.url>jdbc:oracle:thin:USER/PASS@172.31.80.28:1521:i2b2idp</spring.datasource.url>
+				<datasource.dialect>oracle</datasource.dialect>
+				<datasource.cdm.schema>omopv5_de</datasource.cdm.schema>
+				<datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>
+    		</properties>
+			<dependencies>
+				<dependency>
+					<groupId>ojdbc</groupId>
+					<artifactId>ojdbc</artifactId>
+					<version>6.0.0</version>
+					<!-- If you have it local and not in a repository <systemPath></systemPath>-->
+				</dependency>
+			</dependencies>
+    	</profile>
+    </profiles>
 </project>

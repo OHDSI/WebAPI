@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.test;
 
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.runner.RunWith;
@@ -21,7 +20,6 @@ import org.springframework.test.context.web.WebAppConfiguration;
 @ActiveProfiles("test")
 public class WebApiIT {
     
-    private static final Log log = LogFactory.getLog(WebApiIT.class);
-    
+    protected final Log log = LogFactory.getLog(getClass());
     
 }

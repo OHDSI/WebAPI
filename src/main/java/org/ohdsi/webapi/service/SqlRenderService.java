@@ -40,10 +40,10 @@ public class SqlRenderService {
 
             String renderedSQL = SqlRender.renderSql(sourceStatement.sql, parameterKeys, parameterValues );
             
-            if ((sourceStatement.targetdialect == null) || ("sql server".equals(sourceStatement.targetdialect))) {
+            if ((sourceStatement.targetDialect == null) || ("sql server".equals(sourceStatement.targetDialect))) {
                 translated.targetSQL = renderedSQL;
             } else {
-                translated.targetSQL = SqlTranslate.translateSql(renderedSQL, "sql server", sourceStatement.targetdialect);
+                translated.targetSQL = SqlTranslate.translateSql(renderedSQL, "sql server", sourceStatement.targetDialect);
             }
 
         } catch (Exception exception) {

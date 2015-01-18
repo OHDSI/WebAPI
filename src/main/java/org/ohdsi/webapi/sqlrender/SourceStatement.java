@@ -14,7 +14,7 @@ public class SourceStatement {
     }
         
     @JsonProperty("targetdialect")
-    public String targetdialect;
+    public String targetDialect;
     
     @JsonProperty("SQL")
     public String sql;

@@ -7,8 +7,7 @@
     </context-param>
     <context-param>
         <param-name>database.url</param-name>
-        <!-- example for Microsoft SQL Server -->
-        <param-value>jdbc:sqlserver://serverName;user=userName;password=password;</param-value> 
+        <param-value>jdbc:sqlserver://serverName;user=userName;password=password;</param-value>
     </context-param>
     <context-param>
         <param-name>database.dialect</param-name>
@@ -16,11 +15,11 @@
     </context-param>    
     <context-param>
         <param-name>database.cdm.schema</param-name>
-        <param-value>[CDM_DATABASE].dbo</param-value>
+        <param-value>SCHEMA</param-value>
     </context-param>    
     <context-param>
-        <param-name>database.results.schema</param-name>
-        <param-value>[CDM_DATABASE_RESULTS].dbo</param-value>
+        <param-name>database.ohdsi.schema</param-name>
+        <param-value>SCHEMA</param-value>
     </context-param>    
     <servlet>
         <servlet-name>Jersey Web Application</servlet-name>

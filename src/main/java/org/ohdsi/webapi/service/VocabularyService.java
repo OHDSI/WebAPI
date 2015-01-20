@@ -27,6 +27,7 @@ import org.ohdsi.webapi.vocabulary.ConceptSearch;
 import org.ohdsi.webapi.vocabulary.Domain;
 import org.ohdsi.webapi.vocabulary.RelatedConcept;
 import org.ohdsi.webapi.vocabulary.Vocabulary;
+import org.ohdsi.webapi.vocabulary.VocabularyInfo;
 
 /**
  *
@@ -42,7 +43,7 @@ public class VocabularyService {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Collection<Concept> ExecuteSearch(ConceptSearch search) {
+    public Collection<Concept> executeSearch(ConceptSearch search) {
         // escape single quote for queries
         search.query = search.query.replace("'", "''");
 
@@ -129,7 +130,7 @@ public class VocabularyService {
     @Path("search/{query}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Collection<Concept> ExecuteSearch(@PathParam("query") String query) {
+    public Collection<Concept> executeSearch(@PathParam("query") String query) {
 
         // escape single quote for queries
         query = query.replace("'", "''");
@@ -447,6 +448,48 @@ public class VocabularyService {
             DbUtils.closeQuietly(connection);
         }
         return vocabularies;
+    }
+    
+    @GET
+    @Path("info")
+    @Produces(MediaType.APPLICATION_JSON)
+    public VocabularyInfo getInfo() {
+        VocabularyInfo info = new VocabularyInfo();
+        Connection connection = null;
+        Statement statement = null;
+        ResultSet resultSet = null;
+
+        try {
+            String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/getInfo.sql");
+            String dialect = context.getInitParameter("database.dialect");
+            info.dialect = dialect;
+            String databaseDriver = context.getInitParameter("database.driver");
+            String databaseUrl = context.getInitParameter("database.url");
+            String cdmSchema = context.getInitParameter("database.cdm.schema");            
+            
+            sql_statement = SqlRender.renderSql(sql_statement, new String[]{"CDM_schema"}, new String[]{cdmSchema});
+            sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", dialect);
+
+            Class.forName(databaseDriver);
+            connection = DriverManager.getConnection(databaseUrl);
+            statement = connection.createStatement();
+            resultSet = statement.executeQuery(sql_statement);
+
+            while (resultSet.next()) {
+                info.version = resultSet.getString("VOCABULARY_VERSION");
+            }
+            
+
+            resultSet.close();
+        } catch (Exception exception) {
+            throw new RuntimeException(exception);
+        } finally {
+            DbUtils.closeQuietly(resultSet);
+            DbUtils.closeQuietly(statement);
+            DbUtils.closeQuietly(connection);
+        }
+
+        return info;
     }
     
     private String JoinArray(String[] array) {

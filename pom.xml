@@ -26,6 +26,7 @@
 		<datasource.dialect>sql server</datasource.dialect>
 		<datasource.cdm.schema>[CDM_DATABASE].dbo</datasource.cdm.schema>
 		<datasource.ohdsi.schema>[CDM_DATABASE_RESULTS].dbo</datasource.ohdsi.schema>
+		<datasource.dialect.source>sql server</datasource.dialect.source>
 		
 		<spring.profiles.active>default</spring.profiles.active>
 	</properties>

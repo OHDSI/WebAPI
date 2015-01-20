@@ -75,8 +75,14 @@ public class CohortService {
         this.jdbcTemplate = jdbcTemplate;
     }
     
+    /**
+     * Returns all cohort definitions in the CDM schema, to be replaced 
+     * once there is a cohort_definition service
+     * 
+     * @return
+     */
     @GET
-    @Path("list")
+    @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     public List<CohortDefinition> getCohortDefinitionList() {
         

@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
@@ -82,7 +83,7 @@ public class CohortService {
      * @return
      */
     @GET
-    @Path("/")
+    @Path("/cohort")
     @Produces(MediaType.APPLICATION_JSON)
     public List<CohortDefinition> getCohortDefinitionList() {
         
@@ -91,5 +92,22 @@ public class CohortService {
         sql = SqlTranslate.translateSql(sql, this.sourceDialect, this.dialect);
         
         return this.jdbcTemplate.query(sql, this.cohortDefinitionMapper);
+    }
+    
+    /**
+     * @param id
+     * @return
+     */
+    @GET
+    @Path("/cohort/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public CohortDefinition getCohortDefinition(@PathParam("id") final int id) {
+        
+        String sql_statement = ResourceHelper.GetResourceAsString("/resources/cohort/sql/getCohortDefinitionsById.sql");
+        sql_statement = SqlRender.renderSql(sql_statement, new String[] { "id", "CDM_schema" },
+            new String[] { String.valueOf(id), this.cdmSchema });
+        sql_statement = SqlTranslate.translateSql(sql_statement, this.sourceDialect, this.dialect);
+        
+        return this.jdbcTemplate.queryForObject(sql_statement, this.cohortDefinitionMapper);
     }
 }

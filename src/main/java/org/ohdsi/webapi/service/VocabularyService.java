@@ -23,6 +23,8 @@ import org.ohdsi.webapi.vocabulary.ConceptSearch;
 import org.ohdsi.webapi.vocabulary.Domain;
 import org.ohdsi.webapi.vocabulary.RelatedConcept;
 import org.ohdsi.webapi.vocabulary.Vocabulary;
+import org.ohdsi.webapi.vocabulary.VocabularyInfo;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
@@ -75,7 +77,7 @@ public class VocabularyService {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Collection<Concept> ExecuteSearch(final ConceptSearch search) {
+    public Collection<Concept> executeSearch(ConceptSearch search) {
         // escape single quote for queries
         search.query = search.query.replace("'", "''");
         
@@ -123,8 +125,7 @@ public class VocabularyService {
     @Path("search/{query}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Collection<Concept> ExecuteSearch(@PathParam("query") String query) {
-        
+    public Collection<Concept> executeSearch(@PathParam("query") String query) {
         // escape single quote for queries
         query = query.replace("'", "''");
         
@@ -272,6 +273,29 @@ public class VocabularyService {
             relationship.relationshipDistance = resultSet.getInt("RELATIONSHIP_DISTANCE");
             concepts.get(concept_id).relationships.add(relationship);
         }
+    }
+    
+    //TODO
+    @GET
+    @Path("info")
+    @Produces(MediaType.APPLICATION_JSON)
+    public VocabularyInfo getInfo() {
+        final VocabularyInfo info = new VocabularyInfo();
+        
+        String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/getInfo.sql");
+        info.dialect = dialect;
+        
+        sql_statement = SqlRender.renderSql(sql_statement, new String[] { "CDM_schema" }, new String[] { cdmSchema });
+        sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", dialect);
+        
+        return this.jdbcTemplate.queryForObject(sql_statement, new RowMapper<VocabularyInfo>() {
+            
+            @Override
+            public VocabularyInfo mapRow(final ResultSet resultSet, final int arg1) throws SQLException {
+                info.version = resultSet.getString("VOCABULARY_VERSION");
+                return info;
+            }
+        });
     }
     
     private String JoinArray(final String[] array) {

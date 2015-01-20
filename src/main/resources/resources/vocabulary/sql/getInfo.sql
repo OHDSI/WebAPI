@@ -1,0 +1,3 @@
+select VOCABULARY_VERSION 
+from @CDM_schema.VOCABULARY
+where VOCABULARY_ID = 'None'

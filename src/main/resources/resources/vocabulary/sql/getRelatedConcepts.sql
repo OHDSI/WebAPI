@@ -25,5 +25,5 @@ select distinct * from (
     join @CDM_schema.concept_relationship cr1 on ca1.descendant_concept_id = cr1.concept_id_1 and cr1.relationship_id = 'Mapped from'
     join @CDM_schema.relationship r on r.relationship_id = cr1.relationship_id
     join @CDM_schema.concept c3 on cr1.concept_id_2 = c3.concept_id
-) as ALL_RELATED 
+) ALL_RELATED 
 order by RELATIONSHIP_DISTANCE ASC

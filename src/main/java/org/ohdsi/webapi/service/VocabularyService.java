@@ -24,12 +24,9 @@ import org.ohdsi.webapi.vocabulary.Domain;
 import org.ohdsi.webapi.vocabulary.RelatedConcept;
 import org.ohdsi.webapi.vocabulary.Vocabulary;
 import org.ohdsi.webapi.vocabulary.VocabularyInfo;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
@@ -169,10 +166,10 @@ public class VocabularyService {
             new String[] { String.valueOf(id), this.cdmSchema });
         sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", this.dialect);
         
-        this.jdbcTemplate.query(sql_statement, new ResultSetExtractor<Void>() {
+        this.jdbcTemplate.query(sql_statement, new RowMapper<Void>() {
             
             @Override
-            public Void extractData(final ResultSet resultSet) throws SQLException, DataAccessException {
+            public Void mapRow(ResultSet resultSet, int arg1) throws SQLException {
                 addRelationships(concepts, resultSet);
                 return null;
             }
@@ -192,10 +189,10 @@ public class VocabularyService {
             new String[] { String.valueOf(id), this.cdmSchema });
         sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", this.dialect);
         
-        this.jdbcTemplate.query(sql_statement, new ResultSetExtractor<Void>() {
+        this.jdbcTemplate.query(sql_statement, new RowMapper<Void>() {
             
             @Override
-            public Void extractData(final ResultSet resultSet) throws SQLException, DataAccessException {
+            public Void mapRow(ResultSet resultSet, int arg1) throws SQLException {
                 addRelationships(concepts, resultSet);
                 return null;
             }

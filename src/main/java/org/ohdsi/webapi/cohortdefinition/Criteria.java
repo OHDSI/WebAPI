@@ -18,6 +18,5 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 @JsonSubTypes(
   @JsonSubTypes.Type(value = ConditionOccurrence.class, name = "ConditionOccurrence")
 )
-public class Criteria {
-  
+public abstract class Criteria implements ICohortExpressionElement {
 }

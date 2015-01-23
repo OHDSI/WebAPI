@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 
 @JsonIgnoreProperties(ignoreUnknown=true)
-public class CohortDefinition {
+public class CohortExpression {
   
   @JsonProperty("Title")  
   public String title;
@@ -27,4 +27,8 @@ public class CohortDefinition {
   
   @JsonProperty("Codesets")
   public Codeset[] codesets;
+  
+  @JsonProperty("ObservationWindow")
+  public ObservationFilter observationWindow;
+  
 }

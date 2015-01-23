@@ -49,4 +49,9 @@ public class ConditionOccurrence extends Criteria {
   @JsonProperty("VisitType")
   public Concept[] visitType;
 
+  @Override
+  public String accept(ICohortExpressionElementVisitor visitor)
+  {
+    return visitor.visit(this);
+  }
 }

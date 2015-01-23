@@ -11,20 +11,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author cknoll1
  */
-public class Window {
-
-  public class Endpoint {
-    @JsonProperty("Days")
-    public Integer days;
-
-    @JsonProperty("Coeff")
-    public int coeff;
-  }
-  
-  @JsonProperty("Start")
-  public Endpoint start;  
-
-  @JsonProperty("End")
-  public Endpoint end;  
-  
+public class ObservationFilter {
+  @JsonProperty("PriorDays")
+  public int priorDays;
+  @JsonProperty("PostDays")      
+  public int postDays;
 }

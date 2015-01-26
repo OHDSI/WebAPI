@@ -17,6 +17,7 @@ import org.ohdsi.sql.SqlTranslate;
 
 import org.ohdsi.webapi.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.cohortdefinition.CohortExpressionQueryBuilder;
+import org.ohdsi.webapi.sqlrender.TranslatedStatement;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -43,13 +44,15 @@ public class CohortDefinitionService {
   @POST
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public String generateSql(CohortExpression expression) {
+  public TranslatedStatement generateSql(CohortExpression expression) {
     
     String query = queryBuilder.buildExpressionQuery(expression);
     
     query = SqlRender.renderSql(query, new String[] { "CDM_schema"}, new String[] { this.cdmSchema});
-    String sql_statement = SqlTranslate.translateSql(query, "sql server", this.dialect);
+    String translatedSql = SqlTranslate.translateSql(query, "sql server", this.dialect);
     
-    return sql_statement;
+    TranslatedStatement ts = new TranslatedStatement();
+    ts.targetSQL = translatedSql;
+    return ts;
   }
 }

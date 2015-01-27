@@ -8,7 +8,7 @@ public class CohortAttribute {
 	public static final String COHORT_START_DATE = "COHORT_START_DATE";
 	public static final String COHORT_END_DATE = "COHORT_END_DATE";
 	public static final String SUBJECT_ID = "SUBJECT_ID";
-	public static final String ATTRIBUTE_DEFINITION_JD = "ATTRIBUTE_DEFINITION_ID";
+	public static final String ATTRIBUTE_DEFINITION_ID = "ATTRIBUTE_DEFINITION_ID";
 	public static final String VALUE_AS_NUMBER = "VALUE_AS_NUMBER";
 	public static final String VALUE_AS_CONCEPT_ID = "VALUE_AS_CONCEPT_ID";
 
@@ -16,7 +16,7 @@ public class CohortAttribute {
 	
 	private Date cohortStartDate;
 	
-	private Date cohrotEndDate;
+	private Date cohortEndDate;
 	
 	private int subjectId;
 	
@@ -42,12 +42,12 @@ public class CohortAttribute {
 		this.cohortStartDate = cohortStartDate;
 	}
 
-	public Date getCohrotEndDate() {
-		return cohrotEndDate;
+	public Date getCohortEndDate() {
+		return cohortEndDate;
 	}
 
-	public void setCohrotEndDate(Date cohrotEndDate) {
-		this.cohrotEndDate = cohrotEndDate;
+	public void setCohortEndDate(Date cohrotEndDate) {
+		this.cohortEndDate = cohrotEndDate;
 	}
 
 	public int getSubjectId() {

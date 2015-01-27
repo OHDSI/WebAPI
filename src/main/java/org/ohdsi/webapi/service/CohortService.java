@@ -56,58 +56,12 @@ public class CohortService {
             return cohort;
         }
     };
-    
-    private final RowMapper<CohortDefinition> cohortDefinitionMapper = new RowMapper<CohortDefinition>() {
-        
-        @Override
-        public CohortDefinition mapRow(final ResultSet rs, final int arg1) throws SQLException {
-            final CohortDefinition definition = new CohortDefinition();
-            definition.setCohortDefinitionDescription(rs.getString(CohortDefinition.COHORT_DEFINITION_DESCRIPTION));
-            definition.setCohortDefinitionId(rs.getInt(CohortDefinition.COHORT_DEFINITION_ID));
-            definition.setCohortDefinitionName(rs.getString(CohortDefinition.COHORT_DEFINITION_NAME));
-            definition.setCohortDefinitionSyntax(rs.getString(CohortDefinition.COHORT_DEFINITION_SYNTAX));
-            definition.setCohortInitiationDate(rs.getDate(CohortDefinition.COHORT_INITIATION_DATE));
-            return definition;
-        }
-    };
+
     
     @Autowired
     public CohortService(final JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
     
-    /**
-     * Returns all cohort definitions in the CDM schema, to be replaced 
-     * once there is a cohort_definition service
-     * 
-     * @return
-     */
-    @GET
-    @Path("/cohort")
-    @Produces(MediaType.APPLICATION_JSON)
-    public List<CohortDefinition> getCohortDefinitionList() {
-        
-        String sql = ResourceHelper.GetResourceAsString("/resources/cohort/sql/getCohortDefinitions.sql");
-        sql = SqlRender.renderSql(sql, new String[] { "CDM_schema" }, new String[] { this.cdmSchema });
-        sql = SqlTranslate.translateSql(sql, this.sourceDialect, this.dialect);
-        
-        return this.jdbcTemplate.query(sql, this.cohortDefinitionMapper);
-    }
-    
-    /**
-     * @param id
-     * @return
-     */
-    @GET
-    @Path("/cohort/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public CohortDefinition getCohortDefinition(@PathParam("id") final int id) {
-        
-        String sql_statement = ResourceHelper.GetResourceAsString("/resources/cohort/sql/getCohortDefinitionsById.sql");
-        sql_statement = SqlRender.renderSql(sql_statement, new String[] { "id", "CDM_schema" },
-            new String[] { String.valueOf(id), this.cdmSchema });
-        sql_statement = SqlTranslate.translateSql(sql_statement, this.sourceDialect, this.dialect);
-        
-        return this.jdbcTemplate.queryForObject(sql_statement, this.cohortDefinitionMapper);
-    }
+
 }

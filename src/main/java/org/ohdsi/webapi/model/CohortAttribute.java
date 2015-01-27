@@ -2,6 +2,8 @@ package org.ohdsi.webapi.model;
 
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class CohortAttribute {
 	
 	public static final String COHORT_DEFINITION_ID = "COHORT_DEFINITION_ID";
@@ -12,18 +14,25 @@ public class CohortAttribute {
 	public static final String VALUE_AS_NUMBER = "VALUE_AS_NUMBER";
 	public static final String VALUE_AS_CONCEPT_ID = "VALUE_AS_CONCEPT_ID";
 
+	@JsonProperty(COHORT_DEFINITION_ID)
 	private int cohortDefinitionId;
 	
+	@JsonProperty(COHORT_START_DATE)
 	private Date cohortStartDate;
 	
+	@JsonProperty(COHORT_END_DATE)
 	private Date cohortEndDate;
 	
+	@JsonProperty(SUBJECT_ID)
 	private int subjectId;
 	
+	@JsonProperty(ATTRIBUTE_DEFINITION_ID)
 	private int attributeDefinitionId;
 	
+	@JsonProperty(VALUE_AS_NUMBER)
 	private double valueAsNumber;
 	
+	@JsonProperty(VALUE_AS_CONCEPT_ID)
 	private int valueAsConceptId;
 
 	public int getCohortDefinitionId() {

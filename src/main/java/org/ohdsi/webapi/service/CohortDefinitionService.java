@@ -26,8 +26,6 @@ import org.ohdsi.webapi.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.model.CohortDefinition;
 import org.ohdsi.webapi.sqlrender.TranslatedStatement;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
@@ -43,18 +41,6 @@ public class CohortDefinitionService extends AbstractDaoService {
   
   @Context
   ServletContext context;
-  
-  private final JdbcTemplate jdbcTemplate;
-  
-  /**
-   * Constructor needed for Spring
-   * 
-   * @param jdbcTemplate
-   */
-  @Autowired
-  public CohortDefinitionService(final JdbcTemplate jdbcTemplate) {
-      this.jdbcTemplate = jdbcTemplate;
-  }
   
   private final RowMapper<CohortDefinition> cohortDefinitionMapper = new RowMapper<CohortDefinition>() {
       
@@ -101,7 +87,7 @@ public class CohortDefinitionService extends AbstractDaoService {
       sql = SqlRender.renderSql(sql, new String[] { "CDM_schema" }, new String[] { getCdmSchema() });
       sql = SqlTranslate.translateSql(sql, getSourceDialect(), getDialect());
       
-      return this.jdbcTemplate.query(sql, this.cohortDefinitionMapper);
+      return getJdbcTemplate().query(sql, this.cohortDefinitionMapper);
   }
   
   /**
@@ -118,7 +104,7 @@ public class CohortDefinitionService extends AbstractDaoService {
           new String[] { String.valueOf(id), getCdmSchema() });
       sql_statement = SqlTranslate.translateSql(sql_statement, getSourceDialect(), getDialect());
       
-      return this.jdbcTemplate.queryForObject(sql_statement, this.cohortDefinitionMapper);
+      return getJdbcTemplate().queryForObject(sql_statement, this.cohortDefinitionMapper);
   }
   
   

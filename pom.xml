@@ -1,22 +1,23 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-    <modelVersion>4.0.0</modelVersion>
+	<modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.ohdsi</groupId>
-    <artifactId>WebAPI</artifactId>
-    <packaging>war</packaging>
-    <version>1.0.0-SNAPSHOT</version>
-    <name>WebAPI</name>
+	<groupId>org.ohdsi</groupId>
+	<artifactId>WebAPI</artifactId>
+	<packaging>war</packaging>
+	<version>1.0.0-SNAPSHOT</version>
+	<name>WebAPI</name>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<jersey.version>2.14</jersey.version>
 		<!-- Spring Boot manages spring.version as well -->
 		<spring.boot.version>1.2.1.RELEASE</spring.boot.version>
 		<start-class>org.ohdsi.webapi.WebApi</start-class>
-		
+
 		<!-- default sql server -->
-		<!-- Spring boot will create a Datasource for autowiring based on these props. -->
+		<!-- Spring boot will create a Datasource for autowiring based on these 
+			props. -->
 		<spring.datasource.username></spring.datasource.username>
 		<spring.datasource.password></spring.datasource.password>
 		<spring.datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</spring.datasource.driverClassName>
@@ -26,12 +27,12 @@
 		<datasource.cdm.schema>[CDM_DATABASE].dbo</datasource.cdm.schema>
 		<datasource.ohdsi.schema>[CDM_DATABASE_RESULTS].dbo</datasource.ohdsi.schema>
 		<datasource.dialect.source>sql server</datasource.dialect.source>
-		
+
 		<spring.profiles.active>default</spring.profiles.active>
 	</properties>
-    <build>
-        <finalName>WebAPI</finalName>
-        <resources>
+	<build>
+		<finalName>WebAPI</finalName>
+		<resources>
 			<resource>
 				<directory>src/main/resources</directory>
 				<filtering>true</filtering>
@@ -67,20 +68,21 @@
 				</excludes>
 			</resource>
 		</resources>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.5.1</version>
-                <inherited>true</inherited>
-                <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
-                </configuration>
-            </plugin>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.5.1</version>
+				<inherited>true</inherited>
+				<configuration>
+					<source>1.7</source>
+					<target>1.7</target>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
+				<version>2.2</version>
 				<configuration>
 					<failOnMissingWebXml>false</failOnMissingWebXml>
 				</configuration>
@@ -88,38 +90,52 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>2.18.1</version>
+				<configuration>
+					<includes>
+						<include>**/*IT.java</include>
+					</includes>
+				</configuration>
+				<executions>
+					<execution>
+						<id>failsafe-integration-tests</id>
+						<phase>integration-test</phase>
+						<goals>
+							<goal>integration-test</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
-        </plugins>
-    </build>
+		</plugins>
+	</build>
 
-    <repositories>
-        <repository>
-            <id>central</id>
-            <name>Central Repository</name>
-            <url>http://repo.maven.apache.org/maven2/ </url>
-        </repository>
-        <repository>
-            <id>ohdsi</id>
-            <name>repo.ohdsi.org</name>
-            <url>http://repo.ohdsi.org:8085/nexus/content/repositories/releases</url>
-        </repository>
-    </repositories>
-
-    <dependencies>
-        <dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-parent</artifactId>
-			<version>${spring.boot.version}</version>
-			<type>pom</type>
-			<scope>import</scope>
-		</dependency>
-		<!-- 
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-actuator</artifactId>
-			<version>${spring.boot.version}</version>
-		</dependency>
-		-->
+	<repositories>
+		<repository>
+			<id>central</id>
+			<name>Central Repository</name>
+			<url>http://repo.maven.apache.org/maven2/ </url>
+		</repository>
+		<repository>
+			<id>ohdsi</id>
+			<name>repo.ohdsi.org</name>
+			<url>http://repo.ohdsi.org:8085/nexus/content/repositories/releases</url>
+		</repository>
+	</repositories>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<!-- Import dependency management from Spring Boot -->
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>${spring.boot.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+	<dependencies>
+		<!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-actuator</artifactId> 
+			<version>${spring.boot.version}</version> </dependency> -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter</artifactId>
@@ -157,50 +173,43 @@
 			<artifactId>spring-boot-starter-jersey</artifactId>
 			<version>${spring.boot.version}</version>
 		</dependency>
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>3.1.0</version>
-            <scope>provided</scope>
-        </dependency>        
-        <!-- 
-        <dependency>
-            <groupId>org.glassfish.jersey.containers</groupId>
-            <artifactId>jersey-container-servlet</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-json-jackson</artifactId>
-        </dependency>
-        -->
-        <dependency>
-            <groupId>org.ohdsi.sql</groupId>
-            <artifactId>SqlRender</artifactId>
-            <version>1.0</version>
-        </dependency>        
-        <dependency>
-            <groupId>commons-dbutils</groupId>
-            <artifactId>commons-dbutils</artifactId>
-            <version>1.6</version>
-        </dependency>   
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.4</version>
-        </dependency>
-        <dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>3.1.0</version>
+			<scope>provided</scope>
+		</dependency>
+		<!-- <dependency> <groupId>org.glassfish.jersey.containers</groupId> <artifactId>jersey-container-servlet</artifactId> 
+			</dependency> <dependency> <groupId>org.glassfish.jersey.media</groupId> 
+			<artifactId>jersey-media-json-jackson</artifactId> </dependency> -->
+		<dependency>
+			<groupId>org.ohdsi.sql</groupId>
+			<artifactId>SqlRender</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-dbutils</groupId>
+			<artifactId>commons-dbutils</artifactId>
+			<version>1.6</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.4</version>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<version>${spring.boot.version}</version>
 			<scope>test</scope>
 		</dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.3.2</version>
-        </dependency>
-    </dependencies>
-    <profiles>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.3.2</version>
+		</dependency>
+	</dependencies>
+	<profiles>
 		<profile>
 			<id>exec</id>
 			<activation>
@@ -238,9 +247,9 @@
 				</dependency>
 			</dependencies>
 		</profile>
-    	<profile>
-    		<id>webapi-oracle</id>
-    		<properties>
+		<profile>
+			<id>webapi-oracle</id>
+			<properties>
 				<spring.datasource.username></spring.datasource.username>
 				<spring.datasource.password></spring.datasource.password>
 				<spring.datasource.driverClassName>oracle.jdbc.OracleDriver</spring.datasource.driverClassName>
@@ -249,15 +258,15 @@
 				<datasource.dialect>oracle</datasource.dialect>
 				<datasource.cdm.schema>omopv5_de</datasource.cdm.schema>
 				<datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>
-    		</properties>
+			</properties>
 			<dependencies>
 				<dependency>
 					<groupId>ojdbc</groupId>
 					<artifactId>ojdbc</artifactId>
 					<version>6.0.0</version>
-					<!-- If you have it local and not in a repository <systemPath></systemPath>-->
+					<!-- If you have it local and not in a repository <systemPath></systemPath> -->
 				</dependency>
 			</dependencies>
-    	</profile>
-    </profiles>
+		</profile>
+	</profiles>
 </project>

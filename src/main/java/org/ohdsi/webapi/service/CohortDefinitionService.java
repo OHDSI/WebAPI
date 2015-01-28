@@ -27,7 +27,6 @@ import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.model.CohortDefinition;
 import org.ohdsi.webapi.sqlrender.TranslatedStatement;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -38,24 +37,12 @@ import org.springframework.stereotype.Component;
  */
 @Path("/cohortdefinition/")
 @Component
-public class CohortDefinitionService {
+public class CohortDefinitionService extends AbstractDaoService {
 
   private static final CohortExpressionQueryBuilder queryBuilder = new CohortExpressionQueryBuilder();
   
   @Context
   ServletContext context;
-
-  @Value("${datasource.cdm.schema}")
-  private String cdmSchema;
-  
-  @Value("${datasource.ohdsi.schema}")
-  private String ohdsiSchema;
-  
-  @Value("${datasource.dialect}")
-  private String dialect;
-  
-  @Value("${datasource.dialect.source}")
-  private String sourceDialect;
   
   private final JdbcTemplate jdbcTemplate;
   
@@ -91,8 +78,8 @@ public class CohortDefinitionService {
     
     String query = queryBuilder.buildExpressionQuery(expression);
     
-    query = SqlRender.renderSql(query, new String[] { "CDM_schema"}, new String[] { this.cdmSchema});
-    String translatedSql = SqlTranslate.translateSql(query, "sql server", this.dialect);
+    query = SqlRender.renderSql(query, new String[] { "CDM_schema"}, new String[] { getCdmSchema()});
+    String translatedSql = SqlTranslate.translateSql(query, "sql server", getDialect());
     
     TranslatedStatement ts = new TranslatedStatement();
     ts.targetSQL = translatedSql;
@@ -111,8 +98,8 @@ public class CohortDefinitionService {
   public List<CohortDefinition> getCohortDefinitionList() {
       
       String sql = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/getCohortDefinitions.sql");
-      sql = SqlRender.renderSql(sql, new String[] { "CDM_schema" }, new String[] { this.cdmSchema });
-      sql = SqlTranslate.translateSql(sql, this.sourceDialect, this.dialect);
+      sql = SqlRender.renderSql(sql, new String[] { "CDM_schema" }, new String[] { getCdmSchema() });
+      sql = SqlTranslate.translateSql(sql, getSourceDialect(), getDialect());
       
       return this.jdbcTemplate.query(sql, this.cohortDefinitionMapper);
   }
@@ -128,8 +115,8 @@ public class CohortDefinitionService {
       
       String sql_statement = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/getCohortDefinitionsById.sql");
       sql_statement = SqlRender.renderSql(sql_statement, new String[] { "id", "CDM_schema" },
-          new String[] { String.valueOf(id), this.cdmSchema });
-      sql_statement = SqlTranslate.translateSql(sql_statement, this.sourceDialect, this.dialect);
+          new String[] { String.valueOf(id), getCdmSchema() });
+      sql_statement = SqlTranslate.translateSql(sql_statement, getSourceDialect(), getDialect());
       
       return this.jdbcTemplate.queryForObject(sql_statement, this.cohortDefinitionMapper);
   }

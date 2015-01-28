@@ -24,9 +24,6 @@ import org.ohdsi.webapi.vocabulary.Domain;
 import org.ohdsi.webapi.vocabulary.RelatedConcept;
 import org.ohdsi.webapi.vocabulary.Vocabulary;
 import org.ohdsi.webapi.vocabulary.VocabularyInfo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
@@ -35,18 +32,7 @@ import org.springframework.stereotype.Component;
  */
 @Path("/vocabulary/")
 @Component
-public class VocabularyService {
-    
-    @Value("${datasource.cdm.schema}")
-    private String cdmSchema;
-    
-    @Value("${datasource.ohdsi.schema}")
-    private String ohdsiSchema;
-    
-    @Value("${datasource.dialect}")
-    private String dialect;
-    
-    private final JdbcTemplate jdbcTemplate;
+public class VocabularyService extends AbstractDaoService {
     
     private final RowMapper<Concept> rowMapper = new RowMapper<Concept>() {
         
@@ -64,11 +50,6 @@ public class VocabularyService {
             return concept;
         }
     };
-    
-    @Autowired
-    public VocabularyService(final JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
     
     @Path("search")
     @POST
@@ -109,10 +90,10 @@ public class VocabularyService {
         
         String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/search.sql");
         sql_statement = SqlRender.renderSql(sql_statement, new String[] { "query", "CDM_schema", "filters" }, new String[] {
-                search.query, this.cdmSchema, filters });
-        sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", this.dialect);
+                search.query, getCdmSchema(), filters });
+        sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect());
         
-        return this.jdbcTemplate.query(sql_statement, this.rowMapper);
+        return getJdbcTemplate().query(sql_statement, this.rowMapper);
     }
     
     /**
@@ -128,10 +109,10 @@ public class VocabularyService {
         
         String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/search.sql");
         sql_statement = SqlRender.renderSql(sql_statement, new String[] { "query", "CDM_schema", "filters" }, new String[] {
-                query, this.cdmSchema, "" });
-        sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", this.dialect);
+                query, getCdmSchema(), "" });
+        sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect());
         
-        return this.jdbcTemplate.query(sql_statement, this.rowMapper);
+        return getJdbcTemplate().query(sql_statement, this.rowMapper);
     }
     
     /**
@@ -145,10 +126,10 @@ public class VocabularyService {
         
         String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/getConcept.sql");
         sql_statement = SqlRender.renderSql(sql_statement, new String[] { "id", "CDM_schema" },
-            new String[] { String.valueOf(id), this.cdmSchema });
-        sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", this.dialect);
+            new String[] { String.valueOf(id), getCdmSchema() });
+        sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect());
         
-        return this.jdbcTemplate.queryForObject(sql_statement, this.rowMapper);
+        return getJdbcTemplate().queryForObject(sql_statement, this.rowMapper);
     }
     
     /**
@@ -163,10 +144,10 @@ public class VocabularyService {
         
         String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/getRelatedConcepts.sql");
         sql_statement = SqlRender.renderSql(sql_statement, new String[] { "id", "CDM_schema" },
-            new String[] { String.valueOf(id), this.cdmSchema });
-        sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", this.dialect);
+            new String[] { String.valueOf(id), getCdmSchema() });
+        sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect());
         
-        this.jdbcTemplate.query(sql_statement, new RowMapper<Void>() {
+        getJdbcTemplate().query(sql_statement, new RowMapper<Void>() {
             
             @Override
             public Void mapRow(ResultSet resultSet, int arg1) throws SQLException {
@@ -186,10 +167,10 @@ public class VocabularyService {
         
         String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/getDescendantConcepts.sql");
         sql_statement = SqlRender.renderSql(sql_statement, new String[] { "id", "CDM_schema" },
-            new String[] { String.valueOf(id), this.cdmSchema });
-        sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", this.dialect);
+            new String[] { String.valueOf(id), getCdmSchema() });
+        sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect());
         
-        this.jdbcTemplate.query(sql_statement, new RowMapper<Void>() {
+        getJdbcTemplate().query(sql_statement, new RowMapper<Void>() {
             
             @Override
             public Void mapRow(ResultSet resultSet, int arg1) throws SQLException {
@@ -206,10 +187,10 @@ public class VocabularyService {
     @Produces(MediaType.APPLICATION_JSON)
     public Collection<Domain> getDomains() {
         String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/getDomains.sql");
-        sql_statement = SqlRender.renderSql(sql_statement, new String[] { "CDM_schema" }, new String[] { this.cdmSchema });
-        sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", this.dialect);
+        sql_statement = SqlRender.renderSql(sql_statement, new String[] { "CDM_schema" }, new String[] { getCdmSchema() });
+        sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect());
         
-        return this.jdbcTemplate.query(sql_statement, new RowMapper<Domain>() {
+        return getJdbcTemplate().query(sql_statement, new RowMapper<Domain>() {
             
             @Override
             public Domain mapRow(final ResultSet resultSet, final int arg1) throws SQLException {
@@ -227,10 +208,10 @@ public class VocabularyService {
     @Produces(MediaType.APPLICATION_JSON)
     public Collection<Vocabulary> getVocabularies() {
         String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/getVocabularies.sql");
-        sql_statement = SqlRender.renderSql(sql_statement, new String[] { "CDM_schema" }, new String[] { this.cdmSchema });
-        sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", this.dialect);
+        sql_statement = SqlRender.renderSql(sql_statement, new String[] { "CDM_schema" }, new String[] { getCdmSchema() });
+        sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect());
         
-        return this.jdbcTemplate.query(sql_statement, new RowMapper<Vocabulary>() {
+        return getJdbcTemplate().query(sql_statement, new RowMapper<Vocabulary>() {
             
             @Override
             public Vocabulary mapRow(final ResultSet resultSet, final int arg1) throws SQLException {
@@ -280,12 +261,12 @@ public class VocabularyService {
         final VocabularyInfo info = new VocabularyInfo();
         
         String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/getInfo.sql");
-        info.dialect = dialect;
+        info.dialect = getDialect();
         
-        sql_statement = SqlRender.renderSql(sql_statement, new String[] { "CDM_schema" }, new String[] { cdmSchema });
-        sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", dialect);
+        sql_statement = SqlRender.renderSql(sql_statement, new String[] { "CDM_schema" }, new String[] { getCdmSchema() });
+        sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect());
         
-        return this.jdbcTemplate.queryForObject(sql_statement, new RowMapper<VocabularyInfo>() {
+        return getJdbcTemplate().queryForObject(sql_statement, new RowMapper<VocabularyInfo>() {
             
             @Override
             public VocabularyInfo mapRow(final ResultSet resultSet, final int arg1) throws SQLException {

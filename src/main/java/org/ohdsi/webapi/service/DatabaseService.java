@@ -13,6 +13,6 @@ import javax.ws.rs.Path;
  */
 
 @Path("/database/")
-public class DatabaseService {
+public class DatabaseService extends AbstractDaoService {
     
 }

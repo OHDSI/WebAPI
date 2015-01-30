@@ -28,6 +28,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
   private final static String GROUP_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/groupQuery.sql");
   
   private final static String CONDITION_OCCURRENCE_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/conditionOccurrence.sql");
+  private final static String DRUG_EXPOSURE_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/drugExposure.sql");
 
   private ArrayList<Integer> getConceptIdsFromConcepts(Concept[] concepts) {
     ArrayList<Integer> conceptIdList = new ArrayList<>();
@@ -194,7 +195,6 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     }
     query = StringUtils.replace(query, "@codesetClause",codesetClause);
     
-    // TODO: build WHERE clause
     ArrayList<String> whereClauses = new ArrayList<>();
     
     // first
@@ -244,6 +244,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
       whereClauses.add(String.format("C.condition_type_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
     }
     
+    // Stop Reason
     if (criteria.stopReason != null)
     {
       String negation = criteria.stopReason.op.startsWith("!") ? "not" : "";
@@ -257,7 +258,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // conditionSourceConcept
     if (criteria.conditionSourceConcept != null)
     {
-      whereClauses.add(String.format("C.condition_source_concept_id in (SELECT CONCEPT_ID from #Codesets where CODESET_ID = %d)", criteria.conditionSourceConcept.intValue()));
+      whereClauses.add(String.format("C.condition_source_concept_id in (SELECT CONCEPT_ID from #Codesets where CODESET_ID = %d)", criteria.conditionSourceConcept));
     }
     
     // age
@@ -303,6 +304,208 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     query = StringUtils.replace(query, "@whereClause",whereClause);
     return query;
   }
+  
+  @Override
+  public String visit(DrugExposure criteria)
+  {
+    String query = DRUG_EXPOSURE_TEMPLATE;
+
+    String codesetClause = "";
+    if (criteria.codesetId != null)
+    {
+      codesetClause = String.format("where de.DRUG_CONCEPT_ID in (SELECT CONCEPT_ID from  #Codesets where CODESET_ID = %d)", criteria.codesetId);
+    }
+    query = StringUtils.replace(query, "@codesetClause",codesetClause);
+    
+    ArrayList<String> whereClauses = new ArrayList<>();
+    // first
+    if (criteria.first != null && criteria.first == true)
+      whereClauses.add("C.ordinal = 1");
+    
+    // occurrenceStartDate
+    if (criteria.occurrenceStartDate != null)
+    {
+      DateRange range = criteria.occurrenceStartDate;
+      if (range.op.endsWith("bt")) // range with a 'between' op
+      {
+        whereClauses.add(
+          String.format("C.DRUG_EXPOSURE_START_DATE %sbetween '%s' and '%s'", 
+            range.op.startsWith("!") ? "not " : "",
+            range.value,
+            range.extent));
+      }
+      else // single value range (less than/eq/greater than, etc)
+      {
+        whereClauses.add(String.format("C.DRUG_EXPOSURE_START_DATE %s '%s'", getOperator(range), range.value));
+      }
+    }
+
+    // occurrenceEndDate
+    if (criteria.occurrenceEndDate != null)
+    {
+      DateRange range = criteria.occurrenceEndDate;
+      if (range.op.endsWith("bt")) // range with a 'between' op
+      {
+        whereClauses.add(
+          String.format("C.DRUG_EXPOSURE_END_DATE %sbetween '%s' and '%s'", 
+            range.op.startsWith("!") ? "not " : "",
+            range.value,
+            range.extent));
+      }
+      else // single value range (less than/eq/greater than, etc)
+      {
+        whereClauses.add(String.format("C.DRUG_EXPOSURE_END_DATE %s '%s'", getOperator(range), range.value));
+      }
+    }
+
+    // conditionType
+    if (criteria.drugType != null && criteria.drugType.length > 0)
+    {
+      ArrayList<Integer> conceptIds = getConceptIdsFromConcepts(criteria.drugType);
+      whereClauses.add(String.format("C.drug_type_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
+    }
+    
+    // Stop Reason
+    if (criteria.stopReason != null)
+    {
+      String negation = criteria.stopReason.op.startsWith("!") ? "not" : "";
+      String prefix = criteria.stopReason.op.endsWith("startsWith") || criteria.stopReason.op.endsWith("contains") ? "%" : "";
+      String value = criteria.stopReason.text;
+      String postfix = criteria.stopReason.op.endsWith("endsWith") || criteria.stopReason.op.endsWith("contains") ? "%" : "";
+      
+      whereClauses.add(String.format("C.stop_reason %s like '%s%s%s'", negation, prefix, value, postfix));
+    }
+
+    // quantity
+    if (criteria.quantity != null)
+    {
+      NumericRange range = criteria.quantity;        
+      if (range.op.endsWith("bt"))
+      {
+        whereClauses.add(
+          String.format("C.QUANTITY %sbetween %d and %d", 
+            range.op.startsWith("!") ? "not " : "",
+            range.value.intValue(),
+            range.extent.intValue())
+        );
+      }
+      else
+      {
+        whereClauses.add(String.format("C.QUANTITY %s %d", getOperator(range), range.value.intValue()));        
+      }
+    }
+
+    // days supply
+    if (criteria.daysSupply != null)
+    {
+      NumericRange range = criteria.daysSupply;        
+      if (range.op.endsWith("bt"))
+      {
+        whereClauses.add(
+          String.format("C.DAYS_SUPPLY %sbetween %d and %d", 
+            range.op.startsWith("!") ? "not " : "",
+            range.value.intValue(),
+            range.extent.intValue())
+        );
+      }
+      else
+      {
+        whereClauses.add(String.format("C.DAYS_SUPPLY %s %d", getOperator(range), range.value.intValue()));        
+      }
+    }
+
+    // routeConcept
+    if (criteria.routeConcept != null && criteria.routeConcept.length > 0)
+    {
+      whereClauses.add(String.format("C.route_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.routeConcept),",")));
+    }
+    
+    // effectiveDrugDose
+    if (criteria.effectiveDrugDose != null)
+    {
+      NumericRange range = criteria.effectiveDrugDose;        
+      if (range.op.endsWith("bt"))
+      {
+        whereClauses.add(
+          String.format("C.EFFECTIVE_DRUG_DOSE %sbetween %d and %d", 
+            range.op.startsWith("!") ? "not " : "",
+            range.value.intValue(),
+            range.extent.intValue())
+        );
+      }
+      else
+      {
+        whereClauses.add(String.format("C.EFFECTIVE_DRUG_DOSE %s %d", getOperator(range), range.value.intValue()));        
+      }
+    }
+
+    // doseUnit
+    if (criteria.doseUnit != null && criteria.doseUnit.length > 0)
+    {
+      whereClauses.add(String.format("C.dose_unit_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.doseUnit),",")));
+    }
+
+    // LotNumber
+    if (criteria.lotNumber != null)
+    {
+      String negation = criteria.lotNumber.op.startsWith("!") ? "not" : "";
+      String prefix = criteria.lotNumber.op.endsWith("startsWith") || criteria.lotNumber.op.endsWith("contains") ? "%" : "";
+      String value = criteria.lotNumber.text;
+      String postfix = criteria.lotNumber.op.endsWith("endsWith") || criteria.lotNumber.op.endsWith("contains") ? "%" : "";
+      
+      whereClauses.add(String.format("C.LOT_NUMBER %s like '%s%s%s'", negation, prefix, value, postfix));
+    }
+    
+    // drugSourceConcept
+    if (criteria.drugSourceConcept != null)
+    {
+      whereClauses.add(String.format("C.drug_source_concept_id in (SELECT CONCEPT_ID from #Codesets where CODESET_ID = %d)", criteria.drugSourceConcept));
+    }    
+    
+    // age
+    if (criteria.age != null)
+    {
+      NumericRange range = criteria.age;        
+      if (criteria.age.op.endsWith("bt"))
+      {
+        whereClauses.add(
+          String.format("DATEPART(year, C.DRUG_EXPOSURE_START_DATE) - P.YEAR_OF_BIRTH %sbetween %d and %d", 
+            range.op.startsWith("!") ? "not " : "",
+            range.value.intValue(),
+            range.extent.intValue())
+        );
+      }
+      else
+      {
+        whereClauses.add(String.format("DATEPART(year, C.DRUG_EXPOSURE_START_DATE) - P.YEAR_OF_BIRTH %s %d", getOperator(range), range.value.intValue()));        
+      }
+    }
+    
+    // gender
+    if (criteria.gender != null && criteria.gender.length > 0)
+    {
+      whereClauses.add(String.format("P.gender_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.gender),",")));
+    }
+    
+    // providerSpecialty
+    if (criteria.providerSpecialty != null && criteria.providerSpecialty.length > 0)
+    {
+      whereClauses.add(String.format("PR.specialty_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.providerSpecialty),",")));
+    }
+    
+    // visitType
+    if (criteria.visitType != null && criteria.visitType.length > 0)
+    {
+      whereClauses.add(String.format("V.visit_type_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.visitType),",")));
+    }
+    
+    String whereClause = "";
+    if (whereClauses.size() > 0)
+      whereClause = "WHERE " + StringUtils.join(whereClauses, "\nAND ");
+    query = StringUtils.replace(query, "@whereClause",whereClause);
+    
+    return query;
+  }  
   
   @Override
   public String visit(AdditionalCriteria additionalCriteria)

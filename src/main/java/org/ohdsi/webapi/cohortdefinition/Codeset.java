@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author cknoll1
  */
-class Codeset {
+public class Codeset {
   
   @JsonProperty("Id")
   public int id;

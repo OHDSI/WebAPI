@@ -20,7 +20,7 @@ public class CohortExpression {
   public String title;
   
   @JsonProperty("PrimaryCriteria")
-  public Criteria[] primaryCriteria;
+  public PrimaryCriteria primaryCriteria;
 
   @JsonProperty("AdditionalCriteria")
   public CriteriaGroup additionalCriteria;
@@ -28,7 +28,7 @@ public class CohortExpression {
   @JsonProperty("Codesets")
   public Codeset[] codesets;
   
-  @JsonProperty("ObservationWindow")
-  public ObservationFilter observationWindow;
+  @JsonProperty("ExpressionLimit")
+  public ResultLimit limit;
   
 }

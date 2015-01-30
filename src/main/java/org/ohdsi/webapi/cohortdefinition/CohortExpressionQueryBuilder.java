@@ -120,24 +120,33 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     return codesetQuery;
   }
  
-  private String getPrimaryEventsQuery(Criteria[] primaryCriteria, ObservationFilter observationWindow) {
+  public String getPrimaryEventsQuery(PrimaryCriteria primaryCriteria) {
     String query = PRIMARY_EVENTS_TEMPLATE;
     
     ArrayList<String> criteriaQueries = new ArrayList<>();
     
-    for (Criteria c : primaryCriteria)
+    for (Criteria c : primaryCriteria.criteriaList)
     {
       criteriaQueries.add(c.accept(this));
     }
     
     query = StringUtils.replace(query,"@criteriaQueries", StringUtils.join(criteriaQueries, "\nUNION\n"));
-    query = StringUtils.replace(query,"@observationFilter",
-      String.format(
+    
+    ArrayList<String> primaryEventsFilters = new ArrayList<>();
+    primaryEventsFilters.add(String.format(
         "DATEADD(day,%d,OP.OBSERVATION_PERIOD_START_DATE) <= P.START_DATE AND DATEADD(day,%d,P.START_DATE) <= OP.OBSERVATION_PERIOD_END_DATE",
-        observationWindow.priorDays,
-        observationWindow.postDays
+        primaryCriteria.observationWindow.priorDays,
+        primaryCriteria.observationWindow.postDays
       )
     );
+    
+    query = StringUtils.replace(query, "@EventSort", (primaryCriteria.limit.type != null && primaryCriteria.limit.type.equalsIgnoreCase("LAST")) ? "DESC" : "ASC");
+    
+    if (!primaryCriteria.limit.type.equalsIgnoreCase("ALL"))
+    {
+      primaryEventsFilters.add("P.ordinal = 1");
+    }
+    query = StringUtils.replace(query,"@primaryEventsFilter", StringUtils.join(primaryEventsFilters," AND "));
     
     return query;
   }
@@ -146,7 +155,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     String resultSql = COHORT_QUERY_TEMPLATE;
 
     String codesetQuery = getCodesetQuery(expression.codesets);
-    String primaryEventsQuery = getPrimaryEventsQuery(expression.primaryCriteria, expression.observationWindow);
+    String primaryEventsQuery = getPrimaryEventsQuery(expression.primaryCriteria);
     
     resultSql = StringUtils.replace(resultSql, "@codesetQuery", codesetQuery);
     resultSql = StringUtils.replace(resultSql, "@primaryEventsQuery", primaryEventsQuery);
@@ -157,6 +166,15 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
        additionalCriteriaQuery = "\nINTERSECT\n" + expression.additionalCriteria.accept(this);
     }
     resultSql = StringUtils.replace(resultSql, "@additionalCriteriaQuery", additionalCriteriaQuery);
+
+    resultSql = StringUtils.replace(resultSql, "@EventSort", (expression.limit.type != null && expression.limit.type.equalsIgnoreCase("LAST")) ? "DESC" : "ASC");
+    
+    if (expression.limit.type != null && !expression.limit.type.equalsIgnoreCase("ALL"))
+    {
+      resultSql = StringUtils.replace(resultSql, "@ResultLimitFilter","WHERE Results.ordinal = 1");
+    }
+    else
+      resultSql = StringUtils.replace(resultSql, "@ResultLimitFilter","");
     
     //TODO: what should cohortID be?
     resultSql = StringUtils.replace(resultSql, "@cohortId", "-1");
@@ -172,9 +190,9 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     String codesetClause = "";
     if (criteria.codesetId != null)
     {
-      codesetClause = String.format("join #Codesets cs on co.CONDITION_CONCEPT_ID = cs.CONCEPT_ID and cs.CODESET_ID = %d", criteria.codesetId);
+      codesetClause = String.format("where co.CONDITION_CONCEPT_ID in (SELECT CONCEPT_ID from  #Codesets where CODESET_ID = %d)", criteria.codesetId);
     }
-    query = StringUtils.replace(query, "@codesetJoin",codesetClause);
+    query = StringUtils.replace(query, "@codesetClause",codesetClause);
     
     // TODO: build WHERE clause
     ArrayList<String> whereClauses = new ArrayList<>();

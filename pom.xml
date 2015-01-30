@@ -13,6 +13,7 @@
 		<jersey.version>2.14</jersey.version>
 		<!-- Spring Boot manages spring.version as well -->
 		<spring.boot.version>1.2.1.RELEASE</spring.boot.version>
+		<spring.batch.version>3.0.2.RELEASE</spring.batch.version>
 		<start-class>org.ohdsi.webapi.WebApi</start-class>
 
 		<!-- default sql server -->
@@ -162,6 +163,11 @@
 			<artifactId>spring-boot-starter-tomcat</artifactId>
 			<version>${spring.boot.version}</version>
 			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.batch</groupId>
+			<artifactId>spring-batch-core</artifactId>
+			<version>${spring.batch.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

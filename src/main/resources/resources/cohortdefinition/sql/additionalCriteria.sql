@@ -1,10 +1,10 @@
-SELECT p.PERSON_ID, P.START_DATE, P.END_DATE
+SELECT p.person_id, P.start_date, P.end_date
 FROM #PrimaryCriteriaEvents P
 LEFT JOIN
 (
   @criteriaQuery
-) A on A.PERSON_ID = P.PERSON_ID
+) A on A.person_id = P.person_id
 @windowCriteria
-GROUP BY P.PERSON_ID, P.START_DATE, P.END_DATE
+GROUP BY P.person_id, P.start_date, P.end_date
 @occurrenceCriteria
 

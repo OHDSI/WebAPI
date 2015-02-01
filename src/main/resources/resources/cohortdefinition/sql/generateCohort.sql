@@ -2,13 +2,13 @@
 
 @primaryEventsQuery
 
-select @cohortId as cohort_definition_id, PERSON_ID as SUBJECT_ID, START_DATE as COHORT_START_DATE, END_DATE as COHORT_END_DATE
+select @cohortId as cohort_definition_id, person_id as subject_id, start_date as cohort_start_date, end_date as cohort_end_date
 FROM 
 (
-  select Raw.*, row_number() over (partition by Raw.PERSON_ID order by Raw.START_DATE @EventSort) as ordinal
+  select Raw.*, row_number() over (partition by Raw.person_id order by Raw.start_date @EventSort) as ordinal
   FROM
   (
-    select PERSON_ID, START_DATE, END_DATE
+    select person_id, start_date, end_date
     FROM #PrimaryCriteriaEvents
     @additionalCriteriaQuery
   ) Raw

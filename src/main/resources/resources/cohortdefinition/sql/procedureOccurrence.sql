@@ -1,8 +1,8 @@
-select C.person_id, C.drug_exposure_start_date as start_date, C.drug_exposure_end_date as end_date
+select C.person_id, C.procedure_date as start_date, DATEADD(d,1,C.procedure_date) as END_DATE
 from 
 (
-  select de.*, ROW_NUMBER() over (PARTITION BY de.person_id ORDER BY de.drug_exposure_start_date) as ordinal
-  FROM @CDM_schema.DRUG_EXPOSURE de
+  select po.*, ROW_NUMBER() over (PARTITION BY po.person_id ORDER BY po.procedure_date) as ordinal
+  FROM @CDM_schema.PROCEDURE_OCCURRENCE po
 @codesetClause
 ) C
 JOIN @CDM_schema.PERSON P on C.person_id = P.person_id

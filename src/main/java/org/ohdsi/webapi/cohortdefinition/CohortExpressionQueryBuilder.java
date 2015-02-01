@@ -27,12 +27,19 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
   private final static String ADDITIONAL_CRITERIA_TEMMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/additionalCriteria.sql");
   private final static String GROUP_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/groupQuery.sql");
   
+  private final static String CONDITION_ERA_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/conditionEra.sql");
   private final static String CONDITION_OCCURRENCE_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/conditionOccurrence.sql");
+  private final static String DEATH_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/death.sql");
+  private final static String DEVICE_EXPOSURE_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/deviceExposure.sql");
+  private final static String DOSE_ERA_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/doseEra.sql");
+  private final static String DRUG_ERA_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/drugEra.sql");
   private final static String DRUG_EXPOSURE_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/drugExposure.sql");
-  private final static String PROCEDURE_OCCURRENCE_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/procedureOccurrence.sql");
   private final static String MEASUREMENT_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/measurement.sql");;
-  private final static String OBSERVATION_PERIOD_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/observationPeriod.sql");;
   private final static String OBSERVATION_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/observation.sql");;
+  private final static String OBSERVATION_PERIOD_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/observationPeriod.sql");;
+  private final static String PROCEDURE_OCCURRENCE_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/procedureOccurrence.sql");
+  private final static String SPECIMEN_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/specimen.sql");
+  private final static String VISIT_OCCURRENCE_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/visitOccurrence.sql");
 
   private ArrayList<Integer> getConceptIdsFromConcepts(Concept[] concepts) {
     ArrayList<Integer> conceptIdList = new ArrayList<>();
@@ -82,7 +89,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
   
   private String buildDateRangeClause(String sqlExpression, DateRange range)
   {
-    String clause = null;
+    String clause;
     if (range.op.endsWith("bt")) // range with a 'between' op
     {
       clause = String.format("%s %sbetween '%s' and '%s'",
@@ -101,7 +108,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
   // Assumes integer numeric range
   private String buildNumericRangeClause(String sqlExpression, NumericRange range)
   {
-    String clause = null;
+    String clause;
     if (range.op.endsWith("bt"))
     {
       clause = String.format("%s %sbetween %d and %d",
@@ -120,7 +127,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
   // assumes decimal range
   private String buildNumericRangeClause(String sqlExpression, NumericRange range, String format)
   {
-    String clause = null;
+    String clause;
     if (range.op.endsWith("bt"))
     {
       clause = String.format("%s %sbetween %" + format + " and %" + format,
@@ -140,9 +147,9 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
   private String buildTextFilterClause(String sqlExpression, TextFilter filter)
   {
       String negation = filter.op.startsWith("!") ? "not" : "";
-      String prefix = filter.op.endsWith("startsWith") || filter.op.endsWith("contains") ? "%" : "";
+      String prefix = filter.op.endsWith("endsWith") || filter.op.endsWith("contains") ? "%" : "";
       String value = filter.text;
-      String postfix = filter.op.endsWith("endsWith") || filter.op.endsWith("contains") ? "%" : "";
+      String postfix = filter.op.endsWith("startsWith") || filter.op.endsWith("contains") ? "%" : "";
       
       return String.format("%s %s like '%s%s%s'", sqlExpression, negation, prefix, value, postfix);
   }
@@ -256,6 +263,110 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
 
 // <editor-fold defaultstate="collapsed" desc="ICohortExpressionVisitor implementation">
   @Override
+  public String visit(AdditionalCriteria additionalCriteria)
+  {
+    String query = ADDITIONAL_CRITERIA_TEMMPLATE;
+    
+    String criteriaQuery = additionalCriteria.criteria.accept(this);
+    query = StringUtils.replace(query,"@criteriaQuery",criteriaQuery);
+    
+    // build index date window expression
+    Window startWindow = additionalCriteria.startWindow;
+    String startExpression;
+    String endExpression;
+    
+    if (startWindow.start.days != null)
+      startExpression = String.format("DATEADD(day,%d,P.START_DATE)", startWindow.start.coeff * startWindow.start.days);
+    else
+      startExpression = startWindow.start.coeff == -1 ? "P.OP_START_DATE" : "P.OP_END_DATE";
+    
+    if (startWindow.end.days != null)
+      endExpression = String.format("DATEADD(day,%d,P.START_DATE)", startWindow.end.coeff * startWindow.end.days);
+    else
+      endExpression = startWindow.end.coeff == -1 ? "P.OP_START_DATE" : "P.OP_END_DATE";
+    
+    String windowCriteria = String.format("WHERE A.START_DATE BETWEEN %s and %s", startExpression, endExpression);
+    query = StringUtils.replace(query,"@windowCriteria",windowCriteria);
+
+    String occurrenceCriteria = String.format(
+      "HAVING COUNT(A.PERSON_ID) %s %d", 
+      getOccurrenceOperator(additionalCriteria.occurrence.type), 
+      additionalCriteria.occurrence.count
+    );
+    
+    query = StringUtils.replace(query, "@occurrenceCriteria", occurrenceCriteria);
+
+    return query;
+  }
+  
+  @Override
+  public String visit(ConditionEra criteria)
+  {
+    String query = CONDITION_ERA_TEMPLATE;
+    
+    String codesetClause = "";
+    if (criteria.codesetId != null)
+    {
+      codesetClause = String.format("where ce.condition_concept_id in (SELECT concept_id from  #Codesets where codeset_id = %d)", criteria.codesetId);
+    }
+    query = StringUtils.replace(query, "@codesetClause",codesetClause);
+    
+    ArrayList<String> whereClauses = new ArrayList<>();
+    
+    // first
+    if (criteria.first != null && criteria.first == true)
+      whereClauses.add("C.ordinal = 1");
+
+    // eraStartDate
+    if (criteria.eraStartDate != null)
+    {
+      whereClauses.add(buildDateRangeClause("C.condition_era_start_date",criteria.eraStartDate));
+    }
+
+    // eraEndDate
+    if (criteria.eraEndDate != null)
+    {
+      whereClauses.add(buildDateRangeClause("C.condition_era_end_date",criteria.eraEndDate));
+    }
+    
+    // occurrenceCount
+    if (criteria.occurrenceCount != null)
+    {
+      whereClauses.add(buildNumericRangeClause("C.condition_occurrence_count", criteria.occurrenceCount));
+    }      
+
+    // eraLength
+    if (criteria.eraLength != null)
+    {
+      whereClauses.add(buildNumericRangeClause("DATEDIFF(d,C.condition_era_start_date, C.condition_era_end_date)", criteria.eraLength));
+    }      
+
+    // ageAtStart
+    if (criteria.ageAtStart != null)
+    {
+      whereClauses.add(buildNumericRangeClause("DATEPART(year, C.condition_era_start_date) - P.year_of_birth", criteria.ageAtStart));
+    }
+
+    // ageAtEnd
+    if (criteria.ageAtEnd != null)
+    {
+      whereClauses.add(buildNumericRangeClause("DATEPART(year, C.condition_era_end_date) - P.year_of_birth", criteria.ageAtEnd));
+    }
+
+    // gender
+    if (criteria.gender != null && criteria.gender.length > 0)
+    {
+      whereClauses.add(String.format("P.gender_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.gender),",")));
+    }
+    
+    String whereClause = "";
+    if (whereClauses.size() > 0)
+      whereClause = "WHERE " + StringUtils.join(whereClauses, "\nAND ");
+    query = StringUtils.replace(query, "@whereClause",whereClause);
+    return query;
+  }
+
+  @Override
   public String visit(ConditionOccurrence criteria)
   {
     String query = CONDITION_OCCURRENCE_TEMPLATE;
@@ -276,13 +387,13 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // occurrenceStartDate
     if (criteria.occurrenceStartDate != null)
     {
-      whereClauses.add(buildDateRangeClause("condition_start_date",criteria.occurrenceStartDate));
+      whereClauses.add(buildDateRangeClause("C.condition_start_date",criteria.occurrenceStartDate));
     }
 
     // occurrenceEndDate
     if (criteria.occurrenceEndDate != null)
     {
-      whereClauses.add(buildDateRangeClause("condition_end_date",criteria.occurrenceEndDate));
+      whereClauses.add(buildDateRangeClause("C.condition_end_date",criteria.occurrenceEndDate));
     }
     
     // conditionType
@@ -328,6 +439,312 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
       whereClauses.add(String.format("V.visit_type_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.visitType),",")));
     }
 
+    String whereClause = "";
+    if (whereClauses.size() > 0)
+      whereClause = "WHERE " + StringUtils.join(whereClauses, "\nAND ");
+    query = StringUtils.replace(query, "@whereClause",whereClause);
+    return query;
+  }
+  
+  @Override
+  public String visit(CriteriaGroup group) {
+    String query = GROUP_QUERY_TEMPLATE;
+    ArrayList<String> additionalCriteriaQueries = new ArrayList<>();
+    
+    for(AdditionalCriteria ac : group.criteriaList)
+    {
+      additionalCriteriaQueries.add(ac.accept(this));
+    }
+    
+    for(CriteriaGroup g : group.groups)
+    {
+      additionalCriteriaQueries.add(g.accept(this));      
+    }
+    
+    query = StringUtils.replace(query, "@criteriaQueries", StringUtils.join(additionalCriteriaQueries, group.type.equalsIgnoreCase("ANY") ? "\nUNION\n" : "\nINTERSECT\n"));
+    
+    return query;    
+  }
+  
+  @Override
+  public String visit(Death criteria)
+  {
+    String query = DEATH_TEMPLATE;
+
+    String codesetClause = "";
+    if (criteria.codesetId != null)
+    {
+      codesetClause = String.format("where d.cause_concept_id in (SELECT concept_id from  #Codesets where codeset_id = %d)", criteria.codesetId);
+    }
+    query = StringUtils.replace(query, "@codesetClause",codesetClause);
+    
+    ArrayList<String> whereClauses = new ArrayList<>();
+   
+    // occurrenceStartDate
+    if (criteria.occurrenceStartDate != null)
+    {
+      whereClauses.add(buildDateRangeClause("C.death_date",criteria.occurrenceStartDate));
+    }
+
+    // deathType
+    if (criteria.deathType != null && criteria.deathType.length > 0)
+    {
+      ArrayList<Integer> conceptIds = getConceptIdsFromConcepts(criteria.deathType);
+      whereClauses.add(String.format("C.death_type_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
+    }
+
+    // deathSourceConcept
+    if (criteria.deathSourceConcept != null)
+    {
+      whereClauses.add(String.format("C.cause_source_concept_id in (SELECT concept_id from #Codesets where codeset_id = %d)", criteria.deathSourceConcept));
+    }    
+    
+    // age
+    if (criteria.age != null)
+    {
+      whereClauses.add(buildNumericRangeClause("DATEPART(year, C.death_date) - P.year_of_birth", criteria.age));
+    }
+    
+    // gender
+    if (criteria.gender != null && criteria.gender.length > 0)
+    {
+      whereClauses.add(String.format("P.gender_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.gender),",")));
+    }
+    
+    String whereClause = "";
+    if (whereClauses.size() > 0)
+      whereClause = "WHERE " + StringUtils.join(whereClauses, "\nAND ");
+    query = StringUtils.replace(query, "@whereClause",whereClause);
+    return query;
+  }
+    
+  @Override
+  public String visit(DeviceExposure criteria)
+  {
+    String query = DEVICE_EXPOSURE_TEMPLATE;
+
+    String codesetClause = "";
+    if (criteria.codesetId != null)
+    {
+      codesetClause = String.format("where de.device_concept_id in (SELECT concept_id from  #Codesets where codeset_id = %d)", criteria.codesetId);
+    }
+    query = StringUtils.replace(query, "@codesetClause",codesetClause);
+    
+    ArrayList<String> whereClauses = new ArrayList<>();
+    // first
+    if (criteria.first != null && criteria.first == true)
+      whereClauses.add("C.ordinal = 1");
+    
+    // occurrenceStartDate
+    if (criteria.occurrenceStartDate != null)
+    {
+      whereClauses.add(buildDateRangeClause("C.device_exposure_start_date",criteria.occurrenceStartDate));
+    }
+
+    // occurrenceEndDate
+    if (criteria.occurrenceEndDate != null)
+    {
+      whereClauses.add(buildDateRangeClause("C.device_exposure_end_date",criteria.occurrenceEndDate));
+    }
+
+    // deviceType
+    if (criteria.deviceType != null && criteria.deviceType.length > 0)
+    {
+      ArrayList<Integer> conceptIds = getConceptIdsFromConcepts(criteria.deviceType);
+      whereClauses.add(String.format("C.device_type_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
+    }
+    
+    // uniqueDeviceId
+    if (criteria.uniqueDeviceId != null)
+    {
+      whereClauses.add(buildTextFilterClause("C.unique_device_id",criteria.uniqueDeviceId));
+    }
+
+    // quantity
+    if (criteria.quantity != null)
+    {
+      whereClauses.add(buildNumericRangeClause("C.quantity",criteria.quantity));
+    }
+
+    // deviceSourceConcept
+    if (criteria.deviceSourceConcept != null)
+    {
+      whereClauses.add(String.format("C.device_source_concept_id in (SELECT concept_id from #Codesets where codeset_id = %d)", criteria.deviceSourceConcept));
+    }    
+    
+    // age
+    if (criteria.age != null)
+    {
+      whereClauses.add(buildNumericRangeClause("DATEPART(year, C.device_exposure_start_date) - P.year_of_birth", criteria.age));
+    }
+    
+    // gender
+    if (criteria.gender != null && criteria.gender.length > 0)
+    {
+      whereClauses.add(String.format("P.gender_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.gender),",")));
+    }
+    
+    // providerSpecialty
+    if (criteria.providerSpecialty != null && criteria.providerSpecialty.length > 0)
+    {
+      whereClauses.add(String.format("PR.specialty_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.providerSpecialty),",")));
+    }
+    
+    // visitType
+    if (criteria.visitType != null && criteria.visitType.length > 0)
+    {
+      whereClauses.add(String.format("V.visit_type_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.visitType),",")));
+    }
+    
+    String whereClause = "";
+    if (whereClauses.size() > 0)
+      whereClause = "WHERE " + StringUtils.join(whereClauses, "\nAND ");
+    query = StringUtils.replace(query, "@whereClause",whereClause);
+    
+    return query;
+  }
+
+  
+  @Override
+  public String visit(DoseEra criteria)
+  {
+    String query = DOSE_ERA_TEMPLATE;
+    
+    String codesetClause = "";
+    if (criteria.codesetId != null)
+    {
+      codesetClause = String.format("where de.drug_concept_id in (SELECT concept_id from  #Codesets where codeset_id = %d)", criteria.codesetId);
+    }
+    query = StringUtils.replace(query, "@codesetClause",codesetClause);
+    
+    ArrayList<String> whereClauses = new ArrayList<>();
+
+    // first
+    if (criteria.first != null && criteria.first == true)
+      whereClauses.add("C.ordinal = 1");
+
+    // eraStartDate
+    if (criteria.eraStartDate != null)
+    {
+      whereClauses.add(buildDateRangeClause("C.dose_era_start_date",criteria.eraStartDate));
+    }
+
+    // eraEndDate
+    if (criteria.eraEndDate != null)
+    {
+      whereClauses.add(buildDateRangeClause("C.dose_era_end_date",criteria.eraEndDate));
+    }
+
+    // unit
+    if (criteria.unit != null && criteria.unit.length > 0)
+    {
+      whereClauses.add(String.format("c.unit_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.unit),",")));
+    }
+    
+    // doseValue
+    if (criteria.doseValue != null)
+    {
+      whereClauses.add(buildNumericRangeClause("c.dose_value", criteria.doseValue, ".4f"));
+    }      
+
+    // eraLength
+    if (criteria.eraLength != null)
+    {
+      whereClauses.add(buildNumericRangeClause("DATEDIFF(d,C.dose_era_start_date, C.dose_era_end_date)", criteria.eraLength));
+    }      
+
+    // ageAtStart
+    if (criteria.ageAtStart != null)
+    {
+      whereClauses.add(buildNumericRangeClause("DATEPART(year, C.dose_era_start_date) - P.year_of_birth", criteria.ageAtStart));
+    }
+
+    // ageAtEnd
+    if (criteria.ageAtEnd != null)
+    {
+      whereClauses.add(buildNumericRangeClause("DATEPART(year, C.dose_era_end_date) - P.year_of_birth", criteria.ageAtEnd));
+    }
+
+    // gender
+    if (criteria.gender != null && criteria.gender.length > 0)
+    {
+      whereClauses.add(String.format("P.gender_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.gender),",")));
+    }
+    
+    
+    String whereClause = "";
+    if (whereClauses.size() > 0)
+      whereClause = "WHERE " + StringUtils.join(whereClauses, "\nAND ");
+    query = StringUtils.replace(query, "@whereClause",whereClause);
+    return query;
+  }
+    
+  @Override
+  public String visit(DrugEra criteria)
+  {
+    String query = DRUG_ERA_TEMPLATE;
+    
+    String codesetClause = "";
+    if (criteria.codesetId != null)
+    {
+      codesetClause = String.format("where de.drug_concept_id in (SELECT concept_id from  #Codesets where codeset_id = %d)", criteria.codesetId);
+    }
+    query = StringUtils.replace(query, "@codesetClause",codesetClause);
+    
+    ArrayList<String> whereClauses = new ArrayList<>();
+    
+    // first
+    if (criteria.first != null && criteria.first == true)
+      whereClauses.add("C.ordinal = 1");
+
+    // eraStartDate
+    if (criteria.eraStartDate != null)
+    {
+      whereClauses.add(buildDateRangeClause("C.drug_era_start_date",criteria.eraStartDate));
+    }
+
+    // eraEndDate
+    if (criteria.eraEndDate != null)
+    {
+      whereClauses.add(buildDateRangeClause("C.drug_era_end_date",criteria.eraEndDate));
+    }
+    
+    // occurrenceCount
+    if (criteria.occurrenceCount != null)
+    {
+      whereClauses.add(buildNumericRangeClause("C.drug_exposure_count", criteria.occurrenceCount));
+    }      
+
+    // eraLength
+    if (criteria.eraLength != null)
+    {
+      whereClauses.add(buildNumericRangeClause("DATEDIFF(d,C.drug_era_start_date, C.drug_era_end_date)", criteria.eraLength));
+    }      
+
+    // gapDays
+    if (criteria.gapDays != null)
+    {
+      whereClauses.add(buildNumericRangeClause("C.gap_days", criteria.eraLength));
+    }      
+    
+    // ageAtStart
+    if (criteria.ageAtStart != null)
+    {
+      whereClauses.add(buildNumericRangeClause("DATEPART(year, C.drug_era_start_date) - P.year_of_birth", criteria.ageAtStart));
+    }
+
+    // ageAtEnd
+    if (criteria.ageAtEnd != null)
+    {
+      whereClauses.add(buildNumericRangeClause("DATEPART(year, C.drug_era_end_date) - P.year_of_birth", criteria.ageAtEnd));
+    }
+
+    // gender
+    if (criteria.gender != null && criteria.gender.length > 0)
+    {
+      whereClauses.add(String.format("P.gender_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.gender),",")));
+    }
+    
     String whereClause = "";
     if (whereClauses.size() > 0)
       whereClause = "WHERE " + StringUtils.join(whereClauses, "\nAND ");
@@ -458,89 +875,6 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
   }  
   
   @Override
-  public String visit(ProcedureOccurrence criteria)
-  {
-    String query = PROCEDURE_OCCURRENCE_TEMPLATE;
-    
-    String codesetClause = "";
-    if (criteria.codesetId != null)
-    {
-      codesetClause = String.format("where po.procedure_concept_id in (SELECT concept_id from  #Codesets where codeset_id = %d)", criteria.codesetId);
-    }
-    query = StringUtils.replace(query, "@codesetClause",codesetClause);
-    
-    ArrayList<String> whereClauses = new ArrayList<>();
-    
-    // first
-    if (criteria.first != null && criteria.first == true)
-      whereClauses.add("C.ordinal = 1");
-
-    // occurrenceStartDate
-    if (criteria.occurrenceStartDate != null)
-    {
-      whereClauses.add(buildDateRangeClause("C.procedure_date",criteria.occurrenceStartDate));
-    }    
-    
-    // procedureType
-    if (criteria.procedureType != null && criteria.procedureType.length > 0)
-    {
-      ArrayList<Integer> conceptIds = getConceptIdsFromConcepts(criteria.procedureType);
-      whereClauses.add(String.format("C.procedure_type_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
-    }
-    
-    // modifier
-    if (criteria.modifier != null && criteria.modifier.length > 0)
-    {
-      ArrayList<Integer> conceptIds = getConceptIdsFromConcepts(criteria.modifier);
-      whereClauses.add(String.format("C.modifier_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
-    }
-
-    // quantity
-    if (criteria.quantity != null)
-    {
-      whereClauses.add(buildNumericRangeClause("C.quantity",criteria.quantity));
-    }
-    
-    // procedureSourceConcept
-    if (criteria.procedureSourceConcept != null)
-    {
-      whereClauses.add(String.format("C.procedure_source_concept_id in (SELECT concept_id from #Codesets where codeset_id = %d)", criteria.procedureSourceConcept));
-    }
-    
-    // age
-    if (criteria.age != null)
-    {
-      whereClauses.add(buildNumericRangeClause("DATEPART(year, C.procedure_date) - P.year_of_birth", criteria.age));
-    }
-    
-    // gender
-    if (criteria.gender != null && criteria.gender.length > 0)
-    {
-      whereClauses.add(String.format("P.gender_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.gender),",")));
-    }
-    
-    // providerSpecialty
-    if (criteria.providerSpecialty != null && criteria.providerSpecialty.length > 0)
-    {
-      whereClauses.add(String.format("PR.specialty_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.providerSpecialty),",")));
-    }
-    
-    // visitType
-    if (criteria.visitType != null && criteria.visitType.length > 0)
-    {
-      whereClauses.add(String.format("V.visit_type_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.visitType),",")));
-    }
-
-    
-    String whereClause = "";
-    if (whereClauses.size() > 0)
-      whereClause = "WHERE " + StringUtils.join(whereClauses, "\nAND ");
-    query = StringUtils.replace(query, "@whereClause",whereClause);
-    
-    return query;
-  }
-  
-  @Override
   public String visit(Measurement criteria)
   {
     String query = MEASUREMENT_TEMPLATE;
@@ -660,61 +994,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     return query;
   }
   
-  public String visit(ObservationPeriod criteria)
-  {
-    String query = OBSERVATION_PERIOD_TEMPLATE;
-
-    ArrayList<String> whereClauses = new ArrayList<>();
-
-    if (criteria.first != null && criteria.first == true)
-      whereClauses.add("C.ordinal = 1");
-    
-    // periodStartDate
-    if (criteria.periodStartDate != null)
-    {
-      whereClauses.add(buildDateRangeClause("C.observation_period_start_date",criteria.periodStartDate));
-    }        
-
-    // periodEndDate
-    if (criteria.periodEndDate != null)
-    {
-      whereClauses.add(buildDateRangeClause("C.observation_period_end_date",criteria.periodEndDate));
-    }        
-    
-    // periodType
-    if (criteria.periodType != null && criteria.periodType.length > 0)
-    {
-      ArrayList<Integer> conceptIds = getConceptIdsFromConcepts(criteria.periodType);
-      whereClauses.add(String.format("C.period_type_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
-    }
-    
-    // periodLength
-    if (criteria.periodLength != null)
-    {
-      whereClauses.add(buildNumericRangeClause("DATEDIFF(d,C.observation_period_start_date, C.observation_period_end_date)", criteria.periodLength));
-    }      
-
-    // ageAtStart
-    if (criteria.ageAtStart != null)
-    {
-      whereClauses.add(buildNumericRangeClause("DATEPART(year, C.observation_period_start_date) - P.year_of_birth", criteria.ageAtStart));
-    }
-
-    // ageAtEnd
-    if (criteria.ageAtEnd != null)
-    {
-      whereClauses.add(buildNumericRangeClause("DATEPART(year, C.observation_period_end_date) - P.year_of_birth", criteria.ageAtEnd));
-    }
-    
-    String whereClause = "";
-    if (whereClauses.size() > 0)
-      whereClause = "WHERE " + StringUtils.join(whereClauses, "\nAND ");
-    query = StringUtils.replace(query, "@whereClause",whereClause);
-    
-    return query;
-  }
-  
-@Override
+  @Override
   public String visit(Observation criteria)
   {
     String query = OBSERVATION_TEMPLATE;
@@ -815,62 +1095,309 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     
     return query;
   }  
-  
+
   @Override
-  public String visit(AdditionalCriteria additionalCriteria)
+  public String visit(ObservationPeriod criteria)
   {
-    String query = ADDITIONAL_CRITERIA_TEMMPLATE;
-    
-    String criteriaQuery = additionalCriteria.criteria.accept(this);
-    query = StringUtils.replace(query,"@criteriaQuery",criteriaQuery);
-    
-    // build index date window expression
-    Window startWindow = additionalCriteria.startWindow;
-    String startExpression;
-    String endExpression;
-    
-    if (startWindow.start.days != null)
-      startExpression = String.format("DATEADD(day,%d,P.START_DATE)", startWindow.start.coeff * startWindow.start.days);
-    else
-      startExpression = startWindow.start.coeff == -1 ? "P.OP_START_DATE" : "P.OP_END_DATE";
-    
-    if (startWindow.end.days != null)
-      endExpression = String.format("DATEADD(day,%d,P.START_DATE)", startWindow.end.coeff * startWindow.end.days);
-    else
-      endExpression = startWindow.end.coeff == -1 ? "P.OP_START_DATE" : "P.OP_END_DATE";
-    
-    String windowCriteria = String.format("WHERE A.START_DATE BETWEEN %s and %s", startExpression, endExpression);
-    query = StringUtils.replace(query,"@windowCriteria",windowCriteria);
+    String query = OBSERVATION_PERIOD_TEMPLATE;
 
-    String occurrenceCriteria = String.format(
-      "HAVING COUNT(A.PERSON_ID) %s %d", 
-      getOccurrenceOperator(additionalCriteria.occurrence.type), 
-      additionalCriteria.occurrence.count
-    );
-    
-    query = StringUtils.replace(query, "@occurrenceCriteria", occurrenceCriteria);
+    ArrayList<String> whereClauses = new ArrayList<>();
 
+    if (criteria.first != null && criteria.first == true)
+      whereClauses.add("C.ordinal = 1");
+    
+    // periodStartDate
+    if (criteria.periodStartDate != null)
+    {
+      whereClauses.add(buildDateRangeClause("C.observation_period_start_date",criteria.periodStartDate));
+    }        
+
+    // periodEndDate
+    if (criteria.periodEndDate != null)
+    {
+      whereClauses.add(buildDateRangeClause("C.observation_period_end_date",criteria.periodEndDate));
+    }        
+    
+    // periodType
+    if (criteria.periodType != null && criteria.periodType.length > 0)
+    {
+      ArrayList<Integer> conceptIds = getConceptIdsFromConcepts(criteria.periodType);
+      whereClauses.add(String.format("C.period_type_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
+    }
+    
+    // periodLength
+    if (criteria.periodLength != null)
+    {
+      whereClauses.add(buildNumericRangeClause("DATEDIFF(d,C.observation_period_start_date, C.observation_period_end_date)", criteria.periodLength));
+    }      
+
+    // ageAtStart
+    if (criteria.ageAtStart != null)
+    {
+      whereClauses.add(buildNumericRangeClause("DATEPART(year, C.observation_period_start_date) - P.year_of_birth", criteria.ageAtStart));
+    }
+
+    // ageAtEnd
+    if (criteria.ageAtEnd != null)
+    {
+      whereClauses.add(buildNumericRangeClause("DATEPART(year, C.observation_period_end_date) - P.year_of_birth", criteria.ageAtEnd));
+    }
+    
+    String whereClause = "";
+    if (whereClauses.size() > 0)
+      whereClause = "WHERE " + StringUtils.join(whereClauses, "\nAND ");
+    query = StringUtils.replace(query, "@whereClause",whereClause);
+    
+    return query;
+  }
+
+  @Override
+  public String visit(ProcedureOccurrence criteria)
+  {
+    String query = PROCEDURE_OCCURRENCE_TEMPLATE;
+    
+    String codesetClause = "";
+    if (criteria.codesetId != null)
+    {
+      codesetClause = String.format("where po.procedure_concept_id in (SELECT concept_id from  #Codesets where codeset_id = %d)", criteria.codesetId);
+    }
+    query = StringUtils.replace(query, "@codesetClause",codesetClause);
+    
+    ArrayList<String> whereClauses = new ArrayList<>();
+    
+    // first
+    if (criteria.first != null && criteria.first == true)
+      whereClauses.add("C.ordinal = 1");
+
+    // occurrenceStartDate
+    if (criteria.occurrenceStartDate != null)
+    {
+      whereClauses.add(buildDateRangeClause("C.procedure_date",criteria.occurrenceStartDate));
+    }    
+    
+    // procedureType
+    if (criteria.procedureType != null && criteria.procedureType.length > 0)
+    {
+      ArrayList<Integer> conceptIds = getConceptIdsFromConcepts(criteria.procedureType);
+      whereClauses.add(String.format("C.procedure_type_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
+    }
+    
+    // modifier
+    if (criteria.modifier != null && criteria.modifier.length > 0)
+    {
+      ArrayList<Integer> conceptIds = getConceptIdsFromConcepts(criteria.modifier);
+      whereClauses.add(String.format("C.modifier_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
+    }
+
+    // quantity
+    if (criteria.quantity != null)
+    {
+      whereClauses.add(buildNumericRangeClause("C.quantity",criteria.quantity));
+    }
+    
+    // procedureSourceConcept
+    if (criteria.procedureSourceConcept != null)
+    {
+      whereClauses.add(String.format("C.procedure_source_concept_id in (SELECT concept_id from #Codesets where codeset_id = %d)", criteria.procedureSourceConcept));
+    }
+    
+    // age
+    if (criteria.age != null)
+    {
+      whereClauses.add(buildNumericRangeClause("DATEPART(year, C.procedure_date) - P.year_of_birth", criteria.age));
+    }
+    
+    // gender
+    if (criteria.gender != null && criteria.gender.length > 0)
+    {
+      whereClauses.add(String.format("P.gender_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.gender),",")));
+    }
+    
+    // providerSpecialty
+    if (criteria.providerSpecialty != null && criteria.providerSpecialty.length > 0)
+    {
+      whereClauses.add(String.format("PR.specialty_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.providerSpecialty),",")));
+    }
+    
+    // visitType
+    if (criteria.visitType != null && criteria.visitType.length > 0)
+    {
+      whereClauses.add(String.format("V.visit_type_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.visitType),",")));
+    }
+
+    
+    String whereClause = "";
+    if (whereClauses.size() > 0)
+      whereClause = "WHERE " + StringUtils.join(whereClauses, "\nAND ");
+    query = StringUtils.replace(query, "@whereClause",whereClause);
+    
     return query;
   }
   
   @Override
-  public String visit(CriteriaGroup group) {
-    String query = GROUP_QUERY_TEMPLATE;
-    ArrayList<String> additionalCriteriaQueries = new ArrayList<>();
+  public String visit(Specimen criteria) 
+  {
+    String query = SPECIMEN_TEMPLATE;
     
-    for(AdditionalCriteria ac : group.criteriaList)
+    String codesetClause = "";
+    if (criteria.codesetId != null)
     {
-      additionalCriteriaQueries.add(ac.accept(this));
+      codesetClause = String.format("where s.specimen_concept_id in (SELECT concept_id from  #Codesets where codeset_id = %d)", criteria.codesetId);
+    }
+    query = StringUtils.replace(query, "@codesetClause",codesetClause);
+    
+    ArrayList<String> whereClauses = new ArrayList<>();
+    
+    // first
+    if (criteria.first != null && criteria.first == true)
+      whereClauses.add("C.ordinal = 1");
+
+    // occurrenceStartDate
+    if (criteria.occurrenceStartDate != null)
+    {
+      whereClauses.add(buildDateRangeClause("C.specimen_date",criteria.occurrenceStartDate));
+    }    
+    
+    // specimenType
+    if (criteria.specimenType != null && criteria.specimenType.length > 0)
+    {
+      ArrayList<Integer> conceptIds = getConceptIdsFromConcepts(criteria.specimenType);
+      whereClauses.add(String.format("C.specimen_type_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
+    }
+
+    // quantity
+    if (criteria.quantity != null)
+    {
+      whereClauses.add(buildNumericRangeClause("C.quantity", criteria.quantity, ".4f"));
+    }
+
+    // unit
+    if (criteria.unit != null && criteria.unit.length > 0)
+    {
+      ArrayList<Integer> conceptIds = getConceptIdsFromConcepts(criteria.unit);
+      whereClauses.add(String.format("C.unit_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
+    }
+
+    // anatomicSite
+    if (criteria.anatomicSite != null && criteria.anatomicSite.length > 0)
+    {
+      ArrayList<Integer> conceptIds = getConceptIdsFromConcepts(criteria.anatomicSite);
+      whereClauses.add(String.format("C.anatomic_site_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
+    }
+
+    // diseaseStatus
+    if (criteria.diseaseStatus != null && criteria.diseaseStatus.length > 0)
+    {
+      ArrayList<Integer> conceptIds = getConceptIdsFromConcepts(criteria.diseaseStatus);
+      whereClauses.add(String.format("C.disease_status_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
+    }
+
+    // sourceId
+    if (criteria.sourceId != null)
+    {
+      whereClauses.add(buildTextFilterClause("C.specimen_source_id",criteria.sourceId));
+    }
+
+    // age
+    if (criteria.age != null)
+    {
+      whereClauses.add(buildNumericRangeClause("DATEPART(year, C.specimen_date) - P.year_of_birth", criteria.age));
     }
     
-    for(CriteriaGroup g : group.groups)
+    // gender
+    if (criteria.gender != null && criteria.gender.length > 0)
     {
-      additionalCriteriaQueries.add(g.accept(this));      
+      whereClauses.add(String.format("P.gender_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.gender),",")));
+    }
+
+    String whereClause = "";
+    if (whereClauses.size() > 0)
+      whereClause = "WHERE " + StringUtils.join(whereClauses, "\nAND ");
+    query = StringUtils.replace(query, "@whereClause",whereClause);
+    
+    return query;
+  }
+
+  @Override
+  public String visit(VisitOccurrence criteria) 
+  {
+    String query = VISIT_OCCURRENCE_TEMPLATE;
+    
+    String codesetClause = "";
+    if (criteria.codesetId != null)
+    {
+      codesetClause = String.format("where vo.visit_concept_id in (SELECT concept_id from  #Codesets where codeset_id = %d)", criteria.codesetId);
+    }
+    query = StringUtils.replace(query, "@codesetClause",codesetClause);
+    
+    ArrayList<String> whereClauses = new ArrayList<>();
+
+    // first
+    if (criteria.first != null && criteria.first == true)
+      whereClauses.add("C.ordinal = 1");
+
+    // occurrenceStartDate
+    if (criteria.occurrenceStartDate != null)
+    {
+      whereClauses.add(buildDateRangeClause("C.visit_start_date",criteria.occurrenceStartDate));
+    }
+
+    // occurrenceEndDate
+    if (criteria.occurrenceEndDate != null)
+    {
+      whereClauses.add(buildDateRangeClause("C.visit_end_date",criteria.occurrenceEndDate));
     }
     
-    query = StringUtils.replace(query, "@criteriaQueries", StringUtils.join(additionalCriteriaQueries, group.type.equalsIgnoreCase("ANY") ? "\nUNION\n" : "\nINTERSECT\n"));
+    // visitType
+    if (criteria.visitType != null && criteria.visitType.length > 0)
+    {
+      ArrayList<Integer> conceptIds = getConceptIdsFromConcepts(criteria.visitType);
+      whereClauses.add(String.format("C.visit_type_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
+    }
     
-    return query;    
+    // visitSourceConcept
+    if (criteria.visitSourceConcept != null)
+    {
+      whereClauses.add(String.format("C.visit_source_concept_id in (SELECT concept_id from #Codesets where codeset_id = %d)", criteria.visitSourceConcept));
+    }
+    
+    // visitLength
+    if (criteria.visitLength != null)
+    {
+      whereClauses.add(buildNumericRangeClause("DATEDIFF(d,C.visit_start_date, C.visit_end_date)", criteria.visitLength));
+    }
+
+    // age
+    if (criteria.age != null)
+    {
+      whereClauses.add(buildNumericRangeClause("DATEPART(year, C.visit_start_date) - P.year_of_birth", criteria.age));
+    }
+    
+    // gender
+    if (criteria.gender != null && criteria.gender.length > 0)
+    {
+      whereClauses.add(String.format("P.gender_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.gender),",")));
+    }
+    
+    // providerSpecialty
+    if (criteria.providerSpecialty != null && criteria.providerSpecialty.length > 0)
+    {
+      whereClauses.add(String.format("PR.specialty_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.providerSpecialty),",")));
+    }
+
+    // placeOfService
+    if (criteria.placeOfService != null && criteria.placeOfService.length > 0)
+    {
+      whereClauses.add(String.format("CS.place_of_service_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.placeOfService),",")));
+    }
+    
+    String whereClause = "";
+    if (whereClauses.size() > 0)
+      whereClause = "WHERE " + StringUtils.join(whereClauses, "\nAND ");
+    query = StringUtils.replace(query, "@whereClause",whereClause);
+    
+    
+    return query;
   }
   
 // </editor-fold>

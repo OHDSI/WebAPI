@@ -5,5 +5,5 @@ from
   FROM @CDM_schema.CONDITION_ERA ce
 @codesetClause
 ) C
-JOIN @CDM_schema.PERSON P on C.person_id = P.person_id
+@joinClause
 @whereClause

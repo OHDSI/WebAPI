@@ -5,5 +5,5 @@ from
   FROM @CDM_schema.DOSE_ERA de
 @codesetClause
 ) C
-JOIN @CDM_schema.PERSON P on C.person_id = P.person_id
+@joinClause
 @whereClause

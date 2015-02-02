@@ -5,8 +5,6 @@ from
   FROM @CDM_schema.VISIT_OCCURRENCE vo
 @codesetClause
 ) C
-JOIN @CDM_schema.PERSON P on C.person_id = P.person_id
-JOIN @CDM_schema.CARE_SITE CS on C.care_site_id = CS.care_site_id
-LEFT JOIN @CDM_schema.PROVIDER PR on C.provider_id = PR.provider_id
+@joinClause
 @whereClause
 

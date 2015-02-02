@@ -5,6 +5,6 @@ from
   FROM @CDM_schema.DEATH d
 @codesetClause
 ) C
-JOIN @CDM_schema.PERSON P on C.person_id = P.person_id
+@joinClause
 @whereClause
 

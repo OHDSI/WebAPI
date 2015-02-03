@@ -13,7 +13,7 @@
 		<jersey.version>2.14</jersey.version>
 		<!-- Spring Boot manages spring.version as well -->
 		<spring.boot.version>1.2.1.RELEASE</spring.boot.version>
-		<spring.batch.version>3.0.2.RELEASE</spring.batch.version>
+		<spring.batch.version>3.0.3.RELEASE</spring.batch.version>
 		<start-class>org.ohdsi.webapi.WebApi</start-class>
 
 		<!-- default sql server -->
@@ -23,6 +23,8 @@
 		<spring.datasource.password></spring.datasource.password>
 		<spring.datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</spring.datasource.driverClassName>
 		<spring.datasource.url>jdbc:sqlserver://serverName;user=userName;password=password;</spring.datasource.url>
+		
+		<spring.batch.repository.tableprefix>BATCH_</spring.batch.repository.tableprefix>
 
 		<datasource.dialect>sql server</datasource.dialect>
 		<datasource.cdm.schema>[CDM_DATABASE].dbo</datasource.cdm.schema>

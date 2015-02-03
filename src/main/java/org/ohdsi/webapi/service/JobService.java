@@ -14,40 +14,40 @@ package org.ohdsi.webapi.service;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.ohdsi.webapi.job.JobResource;
 import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.JobParameters;
-import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.batch.core.JobInstance;
+import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
  */
-@Path("/job")
-public class JobService {
-    
-    private static final Log log = LogFactory.getLog(JobService.class);
+@Path("/job/")
+public class JobService extends AbstractDaoService {
     
     @Autowired
-    JobLauncher jobLauncher;
+    private String batchTablePrefix;
     
     @Autowired
-    private org.springframework.batch.core.Job batchJob;
+    private JobExplorer jobExplorer;
     
     @GET
+    @Path("{jobId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public JobResource submitJob() throws Exception {
-        // escape single quote for queries
-        //schedule/launch with Spring Batch?
-        //-Will have to add our Job to the context (spring will then serialize/deserialize)
-        JobExecution exec = this.jobLauncher.run(batchJob, new JobParameters());
-        log.info("Status: " + exec.getStatus());
-        JobResource job = new JobResource(exec.getJobId());
-        return job;
+    public String status(@PathParam("jobId") final String jobId) {
+        final JobInstance job = this.jobExplorer.getJobInstance(Long.valueOf(jobId));
+        return job.getJobName();
+    }
+    
+    @GET
+    @Path("{jobId}/execution/{executionId}/status")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String status(@PathParam("jobId") final String jobId, @PathParam("executionId") final String executionId) {
+        final JobExecution exec = this.jobExplorer.getJobExecution(Long.valueOf(executionId));
+        return exec.getStatus().toString();
     }
 }

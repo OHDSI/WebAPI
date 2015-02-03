@@ -40,6 +40,9 @@ public class JobService extends AbstractDaoService {
     @Produces(MediaType.APPLICATION_JSON)
     public String status(@PathParam("jobId") final String jobId) {
         final JobInstance job = this.jobExplorer.getJobInstance(Long.valueOf(jobId));
+        if(job == null){
+            return null;//TODO NOT_FOUND
+        }
         return job.getJobName();
     }
     
@@ -48,6 +51,9 @@ public class JobService extends AbstractDaoService {
     @Produces(MediaType.APPLICATION_JSON)
     public String status(@PathParam("jobId") final String jobId, @PathParam("executionId") final String executionId) {
         final JobExecution exec = this.jobExplorer.getJobExecution(Long.valueOf(executionId));
+        if(exec == null){
+            return null;
+        }
         return exec.getStatus().toString();
     }
 }

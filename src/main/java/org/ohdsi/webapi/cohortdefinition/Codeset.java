@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author cknoll1
  */
-class Codeset {
+public class Codeset {
   
   @JsonProperty("Id")
   public int id;
@@ -23,11 +23,11 @@ class Codeset {
   public Concept[] targetConcepts;
   
   @JsonProperty("UseDescendents")
-  public Boolean useDescendents;
+  public boolean useDescendents;
   
   @JsonProperty("Excluded")
   public Concept[] excluded;
   
   @JsonProperty("ExcludeDescendents")
-  public Boolean excludeDescendents;  
+  public boolean excludeDescendents;  
 }

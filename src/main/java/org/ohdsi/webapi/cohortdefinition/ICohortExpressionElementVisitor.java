@@ -10,7 +10,19 @@ package org.ohdsi.webapi.cohortdefinition;
  * @author cknoll1
  */
 interface ICohortExpressionElementVisitor {
-  String visit(ConditionOccurrence conditionOccurrenceCriteria);
   String visit(AdditionalCriteria additionalCriteria);
+  String visit(ConditionEra conditionEraCriteria);
+  String visit(ConditionOccurrence conditionOccurrenceCriteria);
   String visit(CriteriaGroup criteriaGroup);
+  String visit(Death deathCriteria);
+  String visit(DeviceExposure deviceExposureCriteria);
+  String visit(DoseEra doseEraCriteria);
+  String visit(DrugEra drugEraCriteria);
+  String visit(DrugExposure drugExposureCriteria);
+  String visit(Measurement measurementCriteria);
+  String visit(Observation observationCriteria);
+  String visit(ObservationPeriod observationPeriodCriteria);
+  String visit(ProcedureOccurrence procedureOccurrenceCriteria);
+  String visit(Specimen specimenCriteria);
+  String visit(VisitOccurrence specimenCriteria);
 }

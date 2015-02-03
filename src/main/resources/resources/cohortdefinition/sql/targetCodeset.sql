@@ -1,5 +1,5 @@
-select @codesetId as CODESET_ID, I.CONCEPT_ID FROM
+select @codesetId as codeset_id, I.concept_id FROM
 ( 
-  select DISTINCT CONCEPT_ID from @CDM_schema.CONCEPT where CONCEPT_ID in (@conceptIds) and INVALID_REASON is null
+  select DISTINCT concept_id from @CDM_schema.CONCEPT where concept_id in (@conceptIds) and invalid_reason is null
   @descendantQuery
 ) I 

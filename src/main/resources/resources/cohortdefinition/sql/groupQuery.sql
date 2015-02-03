@@ -1,6 +1,5 @@
-select PERSON_ID, START_DATE, END_DATE
+select person_id, start_date, end_date
 FROM
 (
   @criteriaQueries
 ) G
-

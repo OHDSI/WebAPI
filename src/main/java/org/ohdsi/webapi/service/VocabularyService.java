@@ -12,9 +12,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
@@ -136,7 +134,7 @@ public class VocabularyService extends AbstractDaoService {
             concept = getJdbcTemplate().queryForObject(sql_statement, this.rowMapper);
         } catch (EmptyResultDataAccessException e) {
             log.debug(String.format("Request for conceptId=%s resulted in 0 results", id));
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
+            //returning null / i.e. no content
         }
         return concept;
     }

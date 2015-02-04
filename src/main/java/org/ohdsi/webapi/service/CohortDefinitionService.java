@@ -26,6 +26,7 @@ import org.ohdsi.webapi.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.model.CohortDefinition;
 import org.ohdsi.webapi.sqlrender.TranslatedStatement;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
@@ -104,7 +105,14 @@ public class CohortDefinitionService extends AbstractDaoService {
           new String[] { String.valueOf(id), getCdmSchema() });
       sql_statement = SqlTranslate.translateSql(sql_statement, getSourceDialect(), getDialect());
       
-      return getJdbcTemplate().queryForObject(sql_statement, this.cohortDefinitionMapper);
+      CohortDefinition def = null;
+      try {
+          def = getJdbcTemplate().queryForObject(sql_statement, this.cohortDefinitionMapper);
+      } catch (EmptyResultDataAccessException e) {
+          log.debug(String.format("Request for cohortDefinition=%s resulted in 0 results", id));
+          //returning null / i.e. no content
+      }
+      return def;
   }
   
   

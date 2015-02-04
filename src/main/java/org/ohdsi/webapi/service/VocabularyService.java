@@ -24,6 +24,7 @@ import org.ohdsi.webapi.vocabulary.Domain;
 import org.ohdsi.webapi.vocabulary.RelatedConcept;
 import org.ohdsi.webapi.vocabulary.Vocabulary;
 import org.ohdsi.webapi.vocabulary.VocabularyInfo;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
@@ -128,8 +129,14 @@ public class VocabularyService extends AbstractDaoService {
         sql_statement = SqlRender.renderSql(sql_statement, new String[] { "id", "CDM_schema" },
             new String[] { String.valueOf(id), getCdmSchema() });
         sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect());
-        
-        return getJdbcTemplate().queryForObject(sql_statement, this.rowMapper);
+        Concept concept = null;
+        try {
+            concept = getJdbcTemplate().queryForObject(sql_statement, this.rowMapper);
+        } catch (EmptyResultDataAccessException e) {
+            log.debug(String.format("Request for conceptId=%s resulted in 0 results", id));
+            //returning null / i.e. no content
+        }
+        return concept;
     }
     
     /**

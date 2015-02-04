@@ -12,7 +12,9 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
@@ -24,6 +26,7 @@ import org.ohdsi.webapi.vocabulary.Domain;
 import org.ohdsi.webapi.vocabulary.RelatedConcept;
 import org.ohdsi.webapi.vocabulary.Vocabulary;
 import org.ohdsi.webapi.vocabulary.VocabularyInfo;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
@@ -128,8 +131,14 @@ public class VocabularyService extends AbstractDaoService {
         sql_statement = SqlRender.renderSql(sql_statement, new String[] { "id", "CDM_schema" },
             new String[] { String.valueOf(id), getCdmSchema() });
         sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect());
-        
-        return getJdbcTemplate().queryForObject(sql_statement, this.rowMapper);
+        Concept concept = null;
+        try {
+            concept = getJdbcTemplate().queryForObject(sql_statement, this.rowMapper);
+        } catch (EmptyResultDataAccessException e) {
+            log.debug(String.format("Request for conceptId=%s resulted in 0 results", id), e);
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
+        }
+        return concept;
     }
     
     /**

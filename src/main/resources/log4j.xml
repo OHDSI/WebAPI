@@ -9,7 +9,7 @@
 	</appender>
 
 	<logger name="org.ohdsi">
-		<level value="debug" />
+		<level value="info" />
 	</logger>
 
 	<root>

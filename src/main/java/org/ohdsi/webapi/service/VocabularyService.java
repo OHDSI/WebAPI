@@ -135,7 +135,7 @@ public class VocabularyService extends AbstractDaoService {
         try {
             concept = getJdbcTemplate().queryForObject(sql_statement, this.rowMapper);
         } catch (EmptyResultDataAccessException e) {
-            log.debug(String.format("Request for conceptId=%s resulted in 0 results", id), e);
+            log.debug(String.format("Request for conceptId=%s resulted in 0 results", id));
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
         return concept;

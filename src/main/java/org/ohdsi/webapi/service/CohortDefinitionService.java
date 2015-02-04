@@ -16,8 +16,10 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
@@ -26,6 +28,7 @@ import org.ohdsi.webapi.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.model.CohortDefinition;
 import org.ohdsi.webapi.sqlrender.TranslatedStatement;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
@@ -104,7 +107,14 @@ public class CohortDefinitionService extends AbstractDaoService {
           new String[] { String.valueOf(id), getCdmSchema() });
       sql_statement = SqlTranslate.translateSql(sql_statement, getSourceDialect(), getDialect());
       
-      return getJdbcTemplate().queryForObject(sql_statement, this.cohortDefinitionMapper);
+      CohortDefinition def = null;
+      try {
+          def = getJdbcTemplate().queryForObject(sql_statement, this.cohortDefinitionMapper);
+      } catch (EmptyResultDataAccessException e) {
+          log.debug(String.format("Request for cohortDefinition=%s resulted in 0 results", id));
+          throw new WebApplicationException(Response.Status.NOT_FOUND);
+      }
+      return def;
   }
   
   

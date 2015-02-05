@@ -12,7 +12,9 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
@@ -91,7 +93,7 @@ public class VocabularyService extends AbstractDaoService {
         
         String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/search.sql");
         sql_statement = SqlRender.renderSql(sql_statement, new String[] { "query", "CDM_schema", "filters" }, new String[] {
-                search.query, getCdmSchema(), filters });
+                search.query.toLowerCase(), getCdmSchema(), filters });
         sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect());
         
         return getJdbcTemplate().query(sql_statement, this.rowMapper);
@@ -134,7 +136,7 @@ public class VocabularyService extends AbstractDaoService {
             concept = getJdbcTemplate().queryForObject(sql_statement, this.rowMapper);
         } catch (EmptyResultDataAccessException e) {
             log.debug(String.format("Request for conceptId=%s resulted in 0 results", id));
-            //returning null / i.e. no content
+            throw new WebApplicationException(Response.Status.RESET_CONTENT); // http 205
         }
         return concept;
     }

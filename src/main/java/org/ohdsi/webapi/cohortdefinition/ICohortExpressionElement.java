@@ -3,16 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.ohdsi.webapi.service;
-
-import javax.ws.rs.Path;
+package org.ohdsi.webapi.cohortdefinition;
 
 /**
  *
- * @author fdefalco
+ * @author cknoll1
  */
-
-@Path("/database/")
-public class DatabaseService extends AbstractDaoService {
-    
+public interface ICohortExpressionElement {
+  String accept(ICohortExpressionElementVisitor visitor);
 }

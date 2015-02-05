@@ -3,16 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.ohdsi.webapi.service;
+package org.ohdsi.webapi.cohortdefinition;
 
-import javax.ws.rs.Path;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  *
- * @author fdefalco
+ * @author cknoll1
  */
-
-@Path("/database/")
-public class DatabaseService extends AbstractDaoService {
-    
+public class ResultLimit {
+    @JsonProperty("Type")  
+    public String type;
 }

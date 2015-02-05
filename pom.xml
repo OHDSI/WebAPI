@@ -253,5 +253,25 @@
 				</dependency>
 			</dependencies>
 		</profile>
+                <profile>
+			<id>webapi-postgresql</id>
+			<properties>
+				<spring.datasource.username></spring.datasource.username>
+				<spring.datasource.password></spring.datasource.password>
+                                <spring.datasource.driverClassName>org.postgresql.Driver</spring.datasource.driverClassName>
+				<!-- Override in settings.xml with actual user/pass -->
+                                <spring.datasource.url>jdbc:postgresql://54.209.111.128:5432/vocabularyv5?user=USER&amp;password=PASS</spring.datasource.url>
+                                <datasource.dialect>postgresql</datasource.dialect>
+                                <datasource.cdm.schema>unrestricted</datasource.cdm.schema>
+				<datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>
+			</properties>
+                        <dependencies>
+                                <dependency>
+                                    <groupId>postgresql</groupId>
+                                    <artifactId>postgresql</artifactId>
+                                    <version>9.1-901-1.jdbc4</version>
+                                </dependency>
+                        </dependencies>
+		</profile>
 	</profiles>
 </project>

@@ -41,6 +41,29 @@ A RESTful service for querying the CDM Vocabulary.  Leveraged by [HERMES](https:
 ##### SqlRenderService
 A RESTful service that wraps the SQLRender project.
 
+##### JobService
+A RESTful service that returns JobInstanceResource or JobExecutionResource objects.  Typically a service will launch/queue a job and will be given JobExecutionResource.  This object will encapsulate the Job's id and Job's executionId, start/end times, and status.
+
+The JobService can be used to check on the status of a Job's execution as well as query information of a Job.
+
+/job/{jobId} - returns JobInstanceResource from which you can obtain Job id and Job name.
+
+/job/{jobId}/execution/{executionId} - return JobExecutionResource from which you can obtain JobInstanceResource information as well as the start/end times, status, etc.
+
+/job/execution/{executionId} - is an alternative to the previous endpoint.
+
+See Jobs below for more detail.
+
+#### Jobs
+Services within WebAPI may submit asynchronous jobs.  WebAPI uses Spring Batch for this "job server".  Spring Batch requires a few DB objects and will attempt to create these (tables, sequences) upon startup.  Spring Batch will review the DataSource to determine the vendor-specific script to execute.
+You may review DDL for your specific RDBMS vendor here: https://github.com/spring-projects/spring-batch/blob/3.0.3.RELEASE/spring-batch-core/src/main/resources/org/springframework/batch/core/ 
+
+Services should use the org.ohdsi.webapi.JobTemplate to launch Jobs.  
+
+See org.ohdsi.webapi.exampleapplication.ExampleApplicationConfig & ExampleApplicationWithJobService for how to submit jobs.
+
+See JobServiceIT (integration test) for more detail (java client).
+
 
 
 

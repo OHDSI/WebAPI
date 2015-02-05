@@ -1,15 +1,3 @@
-/**
- * The contents of this file are subject to the Regenstrief Public License
- * Version 1.0 (the "License"); you may not use this file except in compliance with the License.
- * Please contact Regenstrief Institute if you would like to obtain a copy of the license.
- *
- * Software distributed under the License is distributed on an "AS IS"
- * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
- * License for the specific language governing rights and limitations
- * under the License.
- *
- * Copyright (C) Regenstrief Institute.  All Rights Reserved.
- */
 package org.ohdsi.webapi;
 
 import javax.annotation.PostConstruct;
@@ -17,6 +5,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ohdsi.webapi.job.JobTemplate;
 import org.springframework.batch.core.configuration.BatchConfigurationException;
 import org.springframework.batch.core.configuration.annotation.BatchConfigurer;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
@@ -39,16 +28,20 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
+ * Had to copy DefaultBatchConfigurer and include within because jobLauncher config is private.
  * https://github.com/spring-projects/spring-boot/issues/1655
  */
 @Configuration
 @EnableBatchProcessing
-public class BatchConfig {
+public class JobConfig {
     
     private static final Log log = LogFactory.getLog(CustomBatchConfigurer.class);
     
     @Value("${spring.batch.repository.tableprefix}")
     private String tablePrefix;
+    
+    @Value("${spring.batch.repository.isolationLevelForCreate}")
+    private String isolationLevelForCreate;
     
     @Autowired
     private DataSource dataSource;
@@ -69,6 +62,11 @@ public class BatchConfig {
     @Bean
     public BatchConfigurer batchConfigurer() {
         return new CustomBatchConfigurer(this.dataSource);
+    }
+    
+    @Bean
+    public JobTemplate jobTemplate(JobLauncher jobLauncher) {
+        return new JobTemplate(jobLauncher);
     }
     
     class CustomBatchConfigurer implements BatchConfigurer {
@@ -162,7 +160,9 @@ public class BatchConfig {
             final JobRepositoryFactoryBean factory = new JobRepositoryFactoryBean();
             factory.setDataSource(this.dataSource);
             //prevent ISOLATION_DEFAULT setting for oracle (i.e. SERIALIZABLE)
-            factory.setTablePrefix(BatchConfig.this.tablePrefix);
+            //ISOLATION_REPEATABLE_READ throws READ_COMMITTED and SERIALIZABLE are the only valid transaction levels
+            factory.setIsolationLevelForCreate(JobConfig.this.isolationLevelForCreate);
+            factory.setTablePrefix(JobConfig.this.tablePrefix);
             factory.setTransactionManager(getTransactionManager());
             factory.afterPropertiesSet();
             return factory.getObject();

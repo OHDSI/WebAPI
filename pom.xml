@@ -25,6 +25,7 @@
 		<spring.datasource.url>jdbc:sqlserver://serverName;user=userName;password=password;</spring.datasource.url>
 		
 		<spring.batch.repository.tableprefix>BATCH_</spring.batch.repository.tableprefix>
+		<spring.batch.repository.isolationLevelForCreate>ISOLATION_READ_COMMITTED</spring.batch.repository.isolationLevelForCreate>
 
 		<datasource.dialect>sql server</datasource.dialect>
 		<datasource.cdm.schema>[CDM_DATABASE].dbo</datasource.cdm.schema>
@@ -237,6 +238,11 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 			<version>3.3.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.scala-lang</groupId>
+			<artifactId>scala-library</artifactId>
+			<version>2.10.4</version>
 		</dependency>
 	</dependencies>
 	<profiles>

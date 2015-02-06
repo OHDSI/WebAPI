@@ -34,7 +34,7 @@ public class CohortResultsService extends AbstractDaoService {
 	 * @return
 	 */
 	  @GET
-	  @Path("/{id}/{analysis_id}")
+	  @Path("/{id}/analysis/{analysis_id}")
 	  @Produces(MediaType.APPLICATION_JSON)
 	  public List<Map<String, String>> getCohortResults(@PathParam("id") final int id, @PathParam("analysis_id") final int analysisId,
 			  @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam, 

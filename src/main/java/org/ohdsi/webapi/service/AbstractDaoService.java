@@ -43,6 +43,12 @@ public abstract class AbstractDaoService {
     @Value("${datasource.heracles.results_dist.table}")
     private String heraclesResultsDistTable;
     
+    @Value("${source.name}")
+    private String sourceName;
+    
+    @Value("${cdm.version}")
+    private String cdmVersion;
+    
     @Autowired
     private JdbcTemplate jdbcTemplate;
     
@@ -191,5 +197,33 @@ public abstract class AbstractDaoService {
 	 */
 	public void setHeraclesResultsDistTable(String heraclesResultsDistTable) {
 		this.heraclesResultsDistTable = heraclesResultsDistTable;
+	}
+
+	/**
+	 * @return the sourceName
+	 */
+	public String getSourceName() {
+		return sourceName;
+	}
+
+	/**
+	 * @param sourceName the sourceName to set
+	 */
+	public void setSourceName(String sourceName) {
+		this.sourceName = sourceName;
+	}
+
+	/**
+	 * @return the cdmVersion
+	 */
+	public String getCdmVersion() {
+		return cdmVersion;
+	}
+
+	/**
+	 * @param cdmVersion the cdmVersion to set
+	 */
+	public void setCdmVersion(String cdmVersion) {
+		this.cdmVersion = cdmVersion;
 	}
 }

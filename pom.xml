@@ -35,6 +35,10 @@
 		<datasource.achilles.results_dist.table>achilles_results_dist</datasource.achilles.results_dist.table>
 		<datasource.heracles.results.table>heracles_results</datasource.heracles.results.table>
 		<datasource.heracles.results_dist.table>heracles_results_dist</datasource.heracles.results_dist.table>
+		
+		<!-- CDM properties -->
+		<source.name>CDM_NAME</source.name>
+		<cdm.version>5</cdm.version>
 
 		<spring.profiles.active>default</spring.profiles.active>
 	</properties>

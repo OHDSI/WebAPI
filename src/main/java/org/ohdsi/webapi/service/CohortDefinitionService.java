@@ -21,11 +21,13 @@ import javax.ws.rs.core.MediaType;
 
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionSummary;
 import org.ohdsi.webapi.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.model.CohortDefinition;
 import org.ohdsi.webapi.sqlrender.TranslatedStatement;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -37,6 +39,9 @@ import org.springframework.stereotype.Component;
 @Path("/cohortdefinition/")
 @Component
 public class CohortDefinitionService extends AbstractDaoService {
+	
+	@Autowired 
+	private CohortAnalysisService cohortAnalysisService;
 
   private static final CohortExpressionQueryBuilder queryBuilder = new CohortExpressionQueryBuilder();
   
@@ -112,6 +117,16 @@ public class CohortDefinitionService extends AbstractDaoService {
           //returning null / i.e. no content
       }
       return def;
+  }
+  
+  @GET
+  @Path("/{id}/summary")
+  @Produces(MediaType.APPLICATION_JSON)
+  public CohortDefinitionSummary getCohortDefinitionSummary(@PathParam("id") final int id) {
+	  CohortDefinitionSummary summary = new CohortDefinitionSummary();
+	  summary.setCohortDefinition(this.getCohortDefinition(id));
+	  summary.setCohortAnalyses(this.cohortAnalysisService.getCohortAnalysesForCohortDefinition(id));
+	  return summary;
   }
   
   

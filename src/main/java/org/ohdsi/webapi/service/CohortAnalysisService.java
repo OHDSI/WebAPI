@@ -4,19 +4,25 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import jersey.repackaged.com.google.common.base.Joiner;
+
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortresults.CohortAnalysis;
+import org.ohdsi.webapi.cohortresults.CohortAnalysisTask;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.model.results.Analysis;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 @Path("/cohortanalysis/")
 @Component
@@ -88,5 +94,35 @@ public class CohortAnalysisService extends AbstractDaoService {
         sql = SqlTranslate.translateSql(sql, getSourceDialect(), getDialect());
         
         return getJdbcTemplate().query(sql, this.cohortAnalysisMapper);
+    }
+    
+   
+    @POST
+    @Path("/preview")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public String getRunCohortAnalysisSql(CohortAnalysisTask task) {
+        String sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/runHeraclesAnalyses.sql");
+
+        String cohortDefinitionIds = (task.getCohortDefinitionId() == null ? "" : Joiner.on(",").join(task.getCohortDefinitionId()));
+        String analysisIds = (task.getAnalysisId() == null ? "" : Joiner.on(",").join(task.getAnalysisId()));
+        String conditionIds = (task.getConditionConceptIds() == null ? "" : Joiner.on(",").join(task.getConditionConceptIds()));
+        String drugIds = (task.getDrugConceptIds() == null ? "" : Joiner.on(",").join(task.getDrugConceptIds()));
+        String procedureIds = (task.getProcedureConceptIds() == null ? "" : Joiner.on(",").join(task.getProcedureConceptIds()));
+        String observationIds = (task.getObservationConceptIds()  == null ? "" : Joiner.on(",").join(task.getObservationConceptIds()));
+        String measurementIds = (task.getMeasurementConceptIds() == null ? "" : Joiner.on(",").join(task.getMeasurementConceptIds()));
+        
+        String[] params = new String[] { "CDM_schema", "results_schema", "cohort_schema", "cohort_table", "source_name",
+        		"smallcellcount", "runHERACLESHeel", "CDM_version", 
+        		"cohort_definition_id", "list_of_analysis_ids", "condition_concept_ids", 
+        		"drug_concept_ids", "procedure_concept_ids", "observation_concept_ids", "measurement_concept_ids" };
+        String[] values = new String[] { this.getCdmSchema(), this.getOhdsiSchema(), this.getCohortSchema(), this.getCohortTable(), this.getSourceName(),
+        		String.valueOf(task.getSmallCellCount()), String.valueOf(task.runHeraclesHeel()).toUpperCase(), this.getCdmVersion(),
+        		cohortDefinitionIds, analysisIds, conditionIds,
+        		drugIds, procedureIds, observationIds, measurementIds };
+        sql = SqlRender.renderSql(sql, params, values);
+        sql = SqlTranslate.translateSql(sql, getSourceDialect(), getDialect());
+        
+    	return sql;
     }
 }

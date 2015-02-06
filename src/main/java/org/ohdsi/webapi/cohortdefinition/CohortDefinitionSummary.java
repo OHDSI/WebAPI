@@ -14,6 +14,12 @@ public class CohortDefinitionSummary {
 	
 	@JsonProperty("COHORT_ANALYSES")
 	private List<CohortAnalysis> cohortAnalyses;
+	
+	@JsonProperty("GENDER_SUMMARY_DATA")
+	private List<?> genderSummaryData;
+	
+	@JsonProperty("AGE_SUMMARY_DATA")
+	private List<?> ageSummaryData;
 
 	/**
 	 * @return the cohortDefintion
@@ -41,5 +47,33 @@ public class CohortDefinitionSummary {
 	 */
 	public void setCohortAnalyses(List<CohortAnalysis> cohortAnalyses) {
 		this.cohortAnalyses = cohortAnalyses;
+	}
+
+	/**
+	 * @return the genderData
+	 */
+	public List<?> getGenderSummaryData() {
+		return genderSummaryData;
+	}
+
+	/**
+	 * @param genderData the genderData to set
+	 */
+	public void setGenderData(List<?> genderSummaryData) {
+		this.genderSummaryData = genderSummaryData;
+	}
+
+	/**
+	 * @return the ageSummaryData
+	 */
+	public List<?> getAgeSummaryData() {
+		return ageSummaryData;
+	}
+
+	/**
+	 * @param ageSummaryData the ageSummaryData to set
+	 */
+	public void setAgeSummaryData(List<?> ageSummaryData) {
+		this.ageSummaryData = ageSummaryData;
 	}
 }

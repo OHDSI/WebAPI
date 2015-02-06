@@ -42,6 +42,9 @@ public class CohortDefinitionService extends AbstractDaoService {
 	
 	@Autowired 
 	private CohortAnalysisService cohortAnalysisService;
+	
+	@Autowired
+	private CohortResultsService cohortResultsService;
 
   private static final CohortExpressionQueryBuilder queryBuilder = new CohortExpressionQueryBuilder();
   
@@ -126,6 +129,8 @@ public class CohortDefinitionService extends AbstractDaoService {
 	  CohortDefinitionSummary summary = new CohortDefinitionSummary();
 	  summary.setCohortDefinition(this.getCohortDefinition(id));
 	  summary.setCohortAnalyses(this.cohortAnalysisService.getCohortAnalysesForCohortDefinition(id));
+	  summary.setAgeSummaryData(this.cohortResultsService.getCohortResults(id, 1800, null, null));
+	  summary.setGenderData(this.cohortResultsService.getCohortResults(id, 2, null, null));
 	  return summary;
   }
   

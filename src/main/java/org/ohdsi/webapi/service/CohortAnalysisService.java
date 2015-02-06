@@ -83,8 +83,8 @@ public class CohortAnalysisService extends AbstractDaoService {
     public List<CohortAnalysis> getCohortAnalysesForCohortDefinition(@PathParam("id") final int id) {
         
         String sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/getCohortAnalysesForCohort.sql");
-        sql = SqlRender.renderSql(sql, new String[] { "resultsSchema", "heraclesResultsTable", "cohortDefinitionId" }, 
-        		new String[] { this.getOhdsiSchema(), this.getHeraclesResultsTable(), String.valueOf(id) });
+        sql = SqlRender.renderSql(sql, new String[] { "resultsSchema", "heraclesResultsTable", "heraclesResultsDistTable", "cohortDefinitionId" }, 
+        		new String[] { this.getOhdsiSchema(), this.getHeraclesResultsTable(), this.getHeraclesResultsDistTable(), String.valueOf(id) });
         sql = SqlTranslate.translateSql(sql, getSourceDialect(), getDialect());
         
         return getJdbcTemplate().query(sql, this.cohortAnalysisMapper);

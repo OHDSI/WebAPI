@@ -1,9 +1,5 @@
 package org.ohdsi.webapi.service;
 
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,7 +13,6 @@ import javax.ws.rs.core.MediaType;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.helper.ResourceHelper;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
 @Path("/cohortresults/")
@@ -34,9 +29,9 @@ public class CohortResultsService extends AbstractDaoService {
 	 * @return
 	 */
 	  @GET
-	  @Path("/{id}/analysis/{analysis_id}")
+	  @Path("/{id}/{analysis_name}")
 	  @Produces(MediaType.APPLICATION_JSON)
-	  public List<Map<String, String>> getCohortResults(@PathParam("id") final int id, @PathParam("analysis_id") final int analysisId,
+	  public List<Map<String, String>> getCohortResults(@PathParam("id") final int id, @PathParam("analysis_name") final String analysisName,
 			  @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam, 
 			  @QueryParam("min_interval_person_count") final String minIntervalPersonCountParam) {
 		  List<Map<String, String>> results= null;
@@ -44,7 +39,7 @@ public class CohortResultsService extends AbstractDaoService {
 	      String sql = null;
 	      
 	      try {
-	    	  sql = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/" + String.valueOf(analysisId) + ".sql");
+	    	  sql = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/" + analysisName + ".sql");
 
 	    	  sql = SqlRender.renderSql(sql, new String[] { "cdmSchema", 
 	    			  	"resultsSchema", "heraclesResultsTable", "heraclesResultsDistTable",
@@ -59,32 +54,11 @@ public class CohortResultsService extends AbstractDaoService {
 	    		    			  minIntervalPersonCountParam});
 	    	      sql = SqlTranslate.translateSql(sql, getSourceDialect(), getDialect());
 	      } catch (Exception e) {
-	    	  log.error(String.format("Unable to translate sql for analysis %d", analysisId), e);
+	    	  log.error(String.format("Unable to translate sql for analysis %s", analysisName), e);
 	      }
 	     
 	      if (sql != null) {
-			  try {
-				  results = getJdbcTemplate().query(sql, new RowMapper<Map<String, String>>(){
-
-						@Override
-						public Map<String, String> mapRow(ResultSet rs, int rowNum)
-								throws SQLException {
-							Map<String, String> result = new LinkedHashMap<String, String>();
-							ResultSetMetaData metaData = rs.getMetaData();
-							int colCount = metaData.getColumnCount();
-							for (int i = 1; i <= colCount; i++) {
-								String columnLabel = metaData.getColumnLabel(i);
-								String columnValue = String.valueOf(rs.getObject(i));
-								result.put(columnLabel, columnValue);
-							}
-							return result;
-						}
-			            
-			        });
-				  
-			  } catch (Exception e) {
-		          log.error(String.format("Error for analysis %d with cohortDefinition=%s ", analysisId, id), e);
-		      }
+	    	  results = genericResultSetLoader(sql);
 	      }
 		  
 		  return results;

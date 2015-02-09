@@ -1,4 +1,3 @@
---gender
 select c1.concept_id,
 	c1.concept_name,
 	hr1.count_value as num_persons

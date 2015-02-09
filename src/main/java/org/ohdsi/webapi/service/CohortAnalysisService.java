@@ -99,7 +99,7 @@ public class CohortAnalysisService extends AbstractDaoService {
    
     @POST
     @Path("/preview")
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
     @Consumes(MediaType.APPLICATION_JSON)
     public String getRunCohortAnalysisSql(CohortAnalysisTask task) {
         String sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/runHeraclesAnalyses.sql");

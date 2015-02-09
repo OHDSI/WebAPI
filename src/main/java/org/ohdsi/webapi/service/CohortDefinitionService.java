@@ -21,7 +21,6 @@ import javax.ws.rs.core.MediaType;
 
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinitionSummary;
 import org.ohdsi.webapi.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.webapi.helper.ResourceHelper;
@@ -121,19 +120,6 @@ public class CohortDefinitionService extends AbstractDaoService {
       }
       return def;
   }
-  
-  @GET
-  @Path("/{id}/summary")
-  @Produces(MediaType.APPLICATION_JSON)
-  public CohortDefinitionSummary getCohortDefinitionSummary(@PathParam("id") final int id) {
-	  CohortDefinitionSummary summary = new CohortDefinitionSummary();
-	  summary.setCohortDefinition(this.getCohortDefinition(id));
-	  summary.setCohortAnalyses(this.cohortAnalysisService.getCohortAnalysesForCohortDefinition(id));
-	  summary.setAgeSummaryData(this.cohortResultsService.getCohortResults(id, 1800, null, null));
-	  summary.setGenderData(this.cohortResultsService.getCohortResults(id, 2, null, null));
-	  return summary;
-  }
-  
   
 
 }

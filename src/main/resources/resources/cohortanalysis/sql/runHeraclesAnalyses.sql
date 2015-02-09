@@ -29,7 +29,7 @@ observation:  no more range_high / range_low...now from measurement
 {DEFAULT @source_name = 'TRUVEN MDCD'}   --source_name = @source_name
 {DEFAULT @smallcellcount = 5}    --smallcellcount = @smallcellcount
 {DEFAULT @createTable = FALSE}    --createTable = @createTable
-{DEFAULT @runHERACLESHeel = TRUE}   --runHERACLESHeel = @runHERACLESHeel
+{DEFAULT @runHERACLESHeel = FALSE}   --runHERACLESHeel = @runHERACLESHeel
 {DEFAULT @CDM_version = '4'}  --we support 4 or 5,   CDM_version = @CDM_version
 
 {DEFAULT @cohort_definition_id = '2000003550,2000004386'}   --cohort_definition_id = @cohort_definition_id

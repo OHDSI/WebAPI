@@ -3,6 +3,7 @@ package org.ohdsi.webapi.service;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -18,14 +19,27 @@ import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortresults.CohortAnalysis;
 import org.ohdsi.webapi.cohortresults.CohortAnalysisTask;
+import org.ohdsi.webapi.cohortresults.CohortSummary;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.model.results.Analysis;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
+/**
+ * 
+ * Services related to running Heracles analyses
+ *
+ */
 @Path("/cohortanalysis/")
 @Component
 public class CohortAnalysisService extends AbstractDaoService {
+	
+	@Autowired
+	private CohortResultsService resultsService;
+	
+	@Autowired
+	private CohortDefinitionService definitionService;
 	
 	private final RowMapper<Analysis> analysisMapper = new RowMapper<Analysis>() {
 
@@ -58,6 +72,7 @@ public class CohortAnalysisService extends AbstractDaoService {
     	analysis.setStratum3Name(rs.getString(Analysis.STRATUM_3_NAME));
     	analysis.setStratum4Name(rs.getString(Analysis.STRATUM_4_NAME));
     	analysis.setStratum5Name(rs.getString(Analysis.STRATUM_5_NAME));
+    	analysis.setAnalysisType(rs.getString(Analysis.ANALYSIS_TYPE));
     }
     
     /**
@@ -95,7 +110,45 @@ public class CohortAnalysisService extends AbstractDaoService {
         return getJdbcTemplate().query(sql, this.cohortAnalysisMapper);
     }
     
+    /**
+     * Returns the summary for the cohort
+     * 
+     * @return
+     */
+    @GET
+    @Path("/{id}/summary")
+    @Produces(MediaType.APPLICATION_JSON)
+    public CohortSummary getCohortSummary(@PathParam("id") final int id) {
+        
+    	CohortSummary summary = new CohortSummary();
+    	summary.setDefinition(this.definitionService.getCohortDefinition(id));
+    	summary.setAnalyses(this.getCohortAnalysesForCohortDefinition(id));
+    	
+    	// total patients
+    	List<Map<String, String>> cohortSize = this.resultsService.getCohortResults(id, "cohortSize", null, null);
+    	if (cohortSize != null && cohortSize.size() > 0) {
+    		summary.setTotalPatients(cohortSize.get(0).get("NUM_PERSONS"));
+    	}
+    	
+    	// TODO mean age
+    	
+    	// TODO mean obs period
+    	
+    	// gender distribution
+    	summary.setGenderDistribution(this.resultsService.getCohortResults(id, "gender", null, null));
+    	
+    	// TODO age distribution
+    	
+    	return summary;
+    }
+    
    
+    /**
+     * Generates a preview of the cohort analysis SQL to be ran
+     * 
+     * @param task
+     * @return
+     */
     @POST
     @Path("/preview")
     @Produces(MediaType.TEXT_PLAIN)

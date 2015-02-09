@@ -26,7 +26,6 @@ import org.ohdsi.webapi.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.model.CohortDefinition;
 import org.ohdsi.webapi.sqlrender.TranslatedStatement;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -38,12 +37,6 @@ import org.springframework.stereotype.Component;
 @Path("/cohortdefinition/")
 @Component
 public class CohortDefinitionService extends AbstractDaoService {
-	
-	@Autowired 
-	private CohortAnalysisService cohortAnalysisService;
-	
-	@Autowired
-	private CohortResultsService cohortResultsService;
 
   private static final CohortExpressionQueryBuilder queryBuilder = new CohortExpressionQueryBuilder();
   
@@ -81,7 +74,8 @@ public class CohortDefinitionService extends AbstractDaoService {
   }
   
   /**
-   * Returns all cohort definitions in the CDM schema
+   * Returns all cohort definitions in the CDM schema, to be replaced 
+   * once there is a cohort_definition service
    * 
    * @return
    */
@@ -120,6 +114,7 @@ public class CohortDefinitionService extends AbstractDaoService {
       }
       return def;
   }
+  
   
 
 }

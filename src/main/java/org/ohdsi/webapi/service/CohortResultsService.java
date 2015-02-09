@@ -15,6 +15,11 @@ import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.springframework.stereotype.Component;
 
+/**
+ * 
+ * Services related to viewing Heracles analyses
+ *
+ */
 @Path("/cohortresults/")
 @Component
 public class CohortResultsService extends AbstractDaoService {
@@ -34,7 +39,7 @@ public class CohortResultsService extends AbstractDaoService {
 	  public List<Map<String, String>> getCohortResults(@PathParam("id") final int id, @PathParam("analysis_name") final String analysisName,
 			  @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam, 
 			  @QueryParam("min_interval_person_count") final String minIntervalPersonCountParam) {
-		  List<Map<String, String>> results= null;
+		  List<Map<String, String>> results = null;
 		  
 	      String sql = null;
 	      

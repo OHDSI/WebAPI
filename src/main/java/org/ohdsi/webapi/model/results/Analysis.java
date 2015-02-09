@@ -16,6 +16,7 @@ public class Analysis {
 	public static final String STRATUM_3_NAME = "STRATUM_3_NAME";
 	public static final String STRATUM_4_NAME = "STRATUM_4_NAME";
 	public static final String STRATUM_5_NAME = "STRATUM_5_NAME";
+	public static final String ANALYSIS_TYPE = "ANALYSIS_TYPE";
 	
 	@JsonProperty(ANALYSIS_ID)
 	private int analysisId;
@@ -37,6 +38,9 @@ public class Analysis {
 	
 	@JsonProperty(STRATUM_5_NAME)
 	private String stratum5Name;
+	
+	@JsonProperty(ANALYSIS_TYPE)
+	private String analysisType;
 
 	public int getAnalysisId() {
 		return analysisId;
@@ -92,6 +96,20 @@ public class Analysis {
 
 	public void setStratum5Name(String stratum5Name) {
 		this.stratum5Name = stratum5Name;
+	}
+
+	/**
+	 * @return the analysisType
+	 */
+	public String getAnalysisType() {
+		return analysisType;
+	}
+
+	/**
+	 * @param analysisType the analysisType to set
+	 */
+	public void setAnalysisType(String analysisType) {
+		this.analysisType = analysisType;
 	}
 	
 	

@@ -235,7 +235,7 @@ public abstract class AbstractDaoService {
 		this.cdmVersion = cdmVersion;
 	}
 
-	public List<Map<String, String>> genericResultSetLoader(String sql) {
+	protected List<Map<String, String>> genericResultSetLoader(String sql) {
 		List<Map<String, String>> results = null;
 		try {
 			results = getJdbcTemplate().query(sql, new RowMapper<Map<String, String>>(){

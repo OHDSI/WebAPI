@@ -22,7 +22,6 @@ import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.model.results.Analysis;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 
 @Path("/cohortanalysis/")
 @Component

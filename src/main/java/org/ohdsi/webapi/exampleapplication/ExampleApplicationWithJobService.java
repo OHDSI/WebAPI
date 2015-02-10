@@ -28,6 +28,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 @Path("/example")
 public class ExampleApplicationWithJobService extends AbstractDaoService {
     
+    public static final String EXAMPLE_JOB_NAME = "OhdsiExampleJob";
+    
+    public static final String EXAMPLE_STEP_NAME = "OhdsiExampleStep";
+    
     @Autowired
     JobTemplate jobTemplate;
     
@@ -65,7 +69,7 @@ public class ExampleApplicationWithJobService extends AbstractDaoService {
         c2.conceptName = "c2";
         concepts.add(c1);
         concepts.add(c2);
-        return this.jobTemplate.launchTasklet("OhdsiExampleJob", "OhdsiExampleStep",
-            new ExampleApplicationTasklet(concepts), jobParameters);
+        return this.jobTemplate.launchTasklet(EXAMPLE_JOB_NAME, EXAMPLE_STEP_NAME, new ExampleApplicationTasklet(concepts),
+            jobParameters);
     }
 }

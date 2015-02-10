@@ -1,26 +1,25 @@
-/*****************
-HERACLES
 
-Patrick Ryan
+--HERACLES
 
-last updated: 21 Jan 2015
+--Patrick Ryan
+
+--last updated: 21 Jan 2015
 
 
-chagnes for v4 to v5 that impact HERACLES
+--chagnes for v4 to v5 that impact HERACLES
 
-death :  cause_of_death_concept_id -> cause_concept_id
-visit:  place_of_service_concept_id -> visit_concept_id
-f/r:  associated_provider_id -> provider_id
-	prescribing_provider_id -> provider_id
+--death :  cause_of_death_concept_id -> cause_concept_id
+--visit:  place_of_service_concept_id -> visit_concept_id
+--f/r:  associated_provider_id -> provider_id
+--	prescribing_provider_id -> provider_id
 
-remove:  disease_class_concept_id analyses
+--remove:  disease_class_concept_id analyses
 	
-observation:  no more range_high / range_low...now from measurement
-	-options:  remove observation graphs in v5?   add new measurement?
+--observation:  no more range_high / range_low...now from measurement
+--	-options:  remove observation graphs in v5?   add new measurement?
 	
 
 
-******************/
 
 {DEFAULT @CDM_schema = 'CDM_schema'}    --CDM_schema = @CDM_schema
 {DEFAULT @results_schema = 'scratch'}   --results_schema = @results_schema
@@ -715,11 +714,10 @@ delete from @results_schema.dbo.HERACLES_results where cohort_definition_id IN (
 delete from @results_schema.dbo.HERACLES_results_dist where cohort_definition_id IN (@cohort_definition_id) and analysis_id IN (@list_of_analysis_ids);
 }
 
-/****
-7. generate results for analysis_results
+
+--7. generate results for analysis_results
 
 
-****/
 
 IF OBJECT_ID('HERACLES_cohort', 'U') IS NOT NULL --This should only do something in Oracle
   drop table HERACLES_cohort;
@@ -752,11 +750,10 @@ group by c1.cohort_definition_id;
 --}
 
 
-/********************************************
 
-HERACLES Analyses on PERSON table
 
-*********************************************/
+--HERACLES Analyses on PERSON table
+
 
 --{1 IN (@list_of_analysis_ids)}?{
 -- 1	Number of persons
@@ -877,11 +874,11 @@ group by c1.cohort_definition_id
 
 
 
-/********************************************
+----/********************************************
 
-HERACLES Analyses on OBSERVATION_PERIOD table
+--HERACLES Analyses on OBSERVATION_PERIOD table
 
-*********************************************/
+--*********************************************/
 
 --{101 IN (@list_of_analysis_ids)}?{
 -- 101	Number of persons by age, with age at first observation period
@@ -1407,11 +1404,11 @@ DROP TABLE #temp_dates;
 --}
 
 
-/********************************************
+--/********************************************
 
-HERACLES Analyses on VISIT_OCCURRENCE table
+--HERACLES Analyses on VISIT_OCCURRENCE table
 
-*********************************************/
+--*********************************************/
 
 
 --{200 IN (@list_of_analysis_ids)}?{
@@ -1777,11 +1774,11 @@ group by c1.cohort_definition_id, YEAR(visit_start_date)*100 + month(visit_start
 
 
 
-/********************************************
+--/********************************************
 
-HERACLES Analyses on CONDITION_OCCURRENCE table
+--HERACLES Analyses on CONDITION_OCCURRENCE table
 
-*********************************************/
+--*********************************************/
 
 
 --{400 IN (@list_of_analysis_ids)}?{
@@ -2088,11 +2085,11 @@ group by c1.cohort_definition_id,
 
 
 
-/********************************************
+--/********************************************
 
-HERACLES Analyses on DEATH table
+--HERACLES Analyses on DEATH table
 
-*********************************************/
+--*********************************************/
 
 
 
@@ -2456,11 +2453,11 @@ group by cohort_definition_id
 
 
 
-/********************************************
+--/********************************************
 
-HERACLES Analyses on PROCEDURE_OCCURRENCE table
+--HERACLES Analyses on PROCEDURE_OCCURRENCE table
 
-*********************************************/
+--*********************************************/
 
 
 
@@ -2756,11 +2753,11 @@ group by c1.cohort_definition_id,
 --}
 
 
-/********************************************
+--/********************************************
 
-HERACLES Analyses on DRUG_EXPOSURE table
+--HERACLES Analyses on DRUG_EXPOSURE table
 
-*********************************************/
+--*********************************************/
 
 
 
@@ -3174,11 +3171,11 @@ group by c1.cohort_definition_id,
 ;
 --}
 
-/********************************************
+--/********************************************
 
-HERACLES Analyses on OBSERVATION table
+--HERACLES Analyses on OBSERVATION table
 
-*********************************************/
+--*********************************************/
 
 
 
@@ -3664,11 +3661,11 @@ group by c1.cohort_definition_id,
 
 
 
-/********************************************
+--/********************************************
 
-HERACLES Analyses on DRUG_ERA table
+--HERACLES Analyses on DRUG_ERA table
 
-*********************************************/
+--*********************************************/
 
 
 --{900 IN (@list_of_analysis_ids)}?{
@@ -3959,11 +3956,11 @@ group by c1.cohort_definition_id,
 
 
 
-/********************************************
+--/********************************************
 
-HERACLES Analyses on CONDITION_ERA table
+--HERACLES Analyses on CONDITION_ERA table
 
-*********************************************/
+--*********************************************/
 
 
 --{1000 IN (@list_of_analysis_ids)}?{
@@ -4251,11 +4248,11 @@ group by c1.cohort_definition_id,
 
 
 
-/********************************************
+--/********************************************
 
-HERACLES Analyses on LOCATION table
+--HERACLES Analyses on LOCATION table
 
-*********************************************/
+--*********************************************/
 
 --{1100 IN (@list_of_analysis_ids)}?{
 -- 1100	Number of persons by location 3-digit zip
@@ -4295,11 +4292,11 @@ group by c1.cohort_definition_id,
 
 
 
-/********************************************
+--/********************************************
 
-HERACLES Analyses on CARE_SITE table
-
-*********************************************/
+--HERACLES Analyses on CARE_SITE table
+--
+--*********************************************/
 
 
 --{1200 IN (@list_of_analysis_ids)}?{
@@ -4344,11 +4341,11 @@ group by c1.cohort_definition_id,
 
 
 
-/********************************************
+--/********************************************
 
-HERACLES Analyses on COHORT table
+--HERACLES Analyses on COHORT table
 
-*********************************************/
+--*********************************************/
 
 --{1700 IN (@list_of_analysis_ids)}?{
 -- 1700	Number of records by cohort_definition_id
@@ -4386,11 +4383,11 @@ group by c2.cohort_definition_id
 
 
 
-/********************************************
+--/********************************************
 
-HERACLES Analyses on analysis relative to selected COHORT
+--HERACLES Analyses on analysis relative to selected COHORT
 
-*********************************************/
+--*********************************************/
 
 --{1800 IN (@list_of_analysis_ids)}?{
 -- 1800	Number of persons by age, with age at cohort start

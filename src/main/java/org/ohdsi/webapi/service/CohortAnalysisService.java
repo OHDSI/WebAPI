@@ -208,11 +208,14 @@ public class CohortAnalysisService extends AbstractDaoService {
         if (task == null) {
             return null;
         }
-        
+        JobParametersBuilder builder = new JobParametersBuilder();
+        String paramPrefixCD = "cohortDefinitionId:";
+        for(String cd : task.getCohortDefinitionId()){
+            builder.addString(paramPrefixCD + cd, cd);
+        }
+        //TODO consider analysisId
         final String taskString = task.toString();
-        final JobParameters jobParameters = new JobParametersBuilder().addLong("time", System.currentTimeMillis())
-                .toJobParameters();
-        
+        final JobParameters jobParameters = builder.toJobParameters();
         String[] sql = this.getRunCohortAnalysisSql(task);
         log.info(String.format("Beginning run for cohort analysis task: \n %s", taskString));
         CohortAnalysisTasklet tasklet = new CohortAnalysisTasklet(sql, this.getJdbcTemplate());

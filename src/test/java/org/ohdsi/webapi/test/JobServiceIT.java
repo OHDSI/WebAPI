@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Test;
+import org.ohdsi.webapi.exampleapplication.ExampleApplicationWithJobService;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobInstanceResource;
 import org.springframework.beans.factory.annotation.Value;
@@ -95,7 +96,7 @@ public class JobServiceIT extends WebApiIT {
     
     private void assertJobInstance(final JobInstanceResource instance) {
         Assert.state(instance.getInstanceId() != null);
-        Assert.state("TestJob".equals(instance.getName()));
+        Assert.state(ExampleApplicationWithJobService.EXAMPLE_JOB_NAME.equals(instance.getName()));
     }
     
     private void assertOk(final ResponseEntity<?> entity) {

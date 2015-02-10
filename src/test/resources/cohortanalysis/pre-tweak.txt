@@ -1,0 +1,4404 @@
+DECLARE BEGIN 
+--HERACLES
+
+--Patrick Ryan
+
+--last updated: 21 Jan 2015
+
+
+--chagnes for v4 to v5 that impact HERACLES
+
+--death :  cause_of_death_concept_id -> cause_concept_id
+--visit:  place_of_service_concept_id -> visit_concept_id
+--f/r:  associated_provider_id -> provider_id
+--	prescribing_provider_id -> provider_id
+
+--remove:  disease_class_concept_id analyses
+	
+--observation:  no more range_high / range_low...now from measurement
+--	-options:  remove observation graphs in v5?   add new measurement?
+	
+
+
+
+    --CDM_schema = omopv5_de
+   --results_schema = ohdsi
+  --cohort_schema = ohdsi
+  --cohort_table = cohort
+   --source_name = CDM_NAME
+    --smallcellcount = 0
+    --createTable = FALSE
+   --runHERACLESHeel = FALSE
+  --we support 4 or 5,   CDM_version = 5
+
+   --cohort_definition_id = 
+
+--'2000002372'  1 large cohort
+--'2000003550,2000004386'     2 10k sized cohorts
+
+
+
+--list_of_analysis_ids = 
+
+
+   --list of condition concepts to be used throughout
+--condition_concept_ids = 
+   --list of drug concepts to be used throughout
+--drug_concept_ids = 
+   --list of procedure concepts to be used throughout
+--procedure_concept_ids = 
+   --list of observation concepts to be used throughout
+--observation_concept_ids = 
+   --list of measurement concepts to be used throughout
+--measurement_concept_ids = 
+
+
+--all: '0,1,2,3,4,5,6,7,8,9,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,200,201,202,203,204,205,206,207,208,209,210,211,220,400,401,402,403,404,405,406,407,408,409,410,411,412,413,414,415,416,417,418,419,420,500,501,502,503,504,505,506,509,510,511,512,513,514,515,600,601,602,603,604,605,606,607,608,609,610,611,612,613,614,615,616,617,618,619,620,700,701,702,703,704,705,706,707,708,709,710,711,712,713,714,715,716,717,717,718,719,720,800,801,802,803,804,805,806,807,808,809,810,811,812,813,814,815,816,817,818,819,820,900,901,902,903,904,905,906,907,908,909,910,911,912,913,914,915,916,917,918,919,920,1000,1001,1002,1003,1004,1005,1006,1007,1008,1009,1010,1011,1012,1013,1014,1015,1016,1017,1018,1019,1020,1100,1101,1102,1103,1200,1201,1202,1203,1700,1701,1800,1801,1802,1803,1804,1805,1806,1807,1808,1809,1810,1811,1812,1813,1814,1815,1816,1817,1818,1819,1820,1821,1830,1831,1840,1841,1850,1851,1860,1861,1870,1871'
+--person: '0,1,2,3,4,5,6,7,8,9'
+--observation: '101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117'
+--visits: '200,201,202,203,204,205,206,207,208,209,210,211,220'
+--condition: '400,401,402,403,404,405,406,407,408,409,410,411,412,413,414,415,416,417,418,419,420'
+--death: '500,501,502,503,504,505,506,509,510,511,512,513,514,515'
+--procedure: '600,601,602,603,604,605,606,607,608,609,610,611,612,613,614,615,616,617,618,619,620'
+--drug: '700,701,702,703,704,705,706,707,708,709,710,711,712,713,714,715,716,717,717,718,719,720'
+--observation: '800,801,802,803,804,805,806,807,808,809,810,811,812,813,814,815,816,817,818,819,820'
+--drug era: '900,901,902,903,904,905,906,907,908,909,910,911,912,913,914,915,916,917,918,919,920'
+--condition era: '1000,1001,1002,1003,1004,1005,1006,1007,1008,1009,1010,1011,1012,1013,1014,1015,1016,1017,1018,1019,1020'
+--location: '1100,1101,1102,1103'
+--care site: '1200,1201,1202,1203'
+--cohort: '1700,1701'
+--cohort-specific analyses: '1800,1801,1802,1803,1804,1805,1806,1807,1808,1809,1810,1811,1812,1813,1814,1815,1816,1817,1818,1819,1820,1821,1830,1831,1840,1841,1850,1851,1860,1861,1870,1871'
+
+
+
+ALTER SESSION SET current_schema =  ohdsi;
+
+
+--else if not createTable
+delete from ohdsi.HERACLES_results where cohort_definition_id IN () and analysis_id IN ();
+delete from ohdsi.HERACLES_results_dist where cohort_definition_id IN () and analysis_id IN ();
+
+
+
+--7. generate results for analysis_results
+
+
+
+BEGIN
+  EXECUTE IMMEDIATE 'TRUNCATE TABLE  HERACLES_cohort';
+  EXECUTE IMMEDIATE 'DROP TABLE  HERACLES_cohort';
+EXCEPTION
+  WHEN OTHERS THEN
+    IF SQLCODE != -942 THEN
+      RAISE;
+    END IF;
+END;
+
+BEGIN
+  EXECUTE IMMEDIATE 'TRUNCATE TABLE  HERACLES_cohort';
+  EXECUTE IMMEDIATE 'DROP TABLE  HERACLES_cohort';
+EXCEPTION
+  WHEN OTHERS THEN
+    IF SQLCODE != -942 THEN
+      RAISE;
+    END IF;
+END;
+  
+CREATE GLOBAL TEMPORARY TABLE HERACLES_cohort
+  ON COMMIT PRESERVE ROWS
+AS
+SELECT
+   subject_id, cohort_definition_id, cohort_start_date, cohort_end_date 
+	
+FROM
+  ohdsi.cohort 
+  WHERE  cohort_definition_id in ()
+;  
+
+--
+-- 0	Number of persons
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 0 as analysis_id,  'CDM_NAME' as stratum_1, COUNT(distinct person_id) as count_value
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+group by c1.cohort_definition_id;
+
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 0 as analysis_id, 'CDM_NAME' as stratum_1, COUNT(distinct person_id) as count_value
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+group by c1.cohort_definition_id;
+
+--
+
+
+
+
+--HERACLES Analyses on PERSON table
+
+
+--
+-- 1	Number of persons
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+select c1.cohort_definition_id, 1 as analysis_id,  COUNT(distinct person_id) as count_value
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+group by c1.cohort_definition_id;
+--
+
+
+--
+-- 2	Number of persons by gender
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 2 as analysis_id,  gender_concept_id as stratum_1, COUNT(distinct person_id) as count_value
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+group by c1.cohort_definition_id, GENDER_CONCEPT_ID
+;
+--
+
+
+
+--
+-- 3	Number of persons by year of birth
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 3 as analysis_id,  year_of_birth as stratum_1, COUNT(distinct person_id) as count_value
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+group by c1.cohort_definition_id, YEAR_OF_BIRTH
+;
+--
+
+
+--
+-- 4	Number of persons by race
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 4 as analysis_id,  RACE_CONCEPT_ID as stratum_1, COUNT(distinct person_id) as count_value
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+group by c1.cohort_definition_id, RACE_CONCEPT_ID
+;
+--
+
+
+
+--
+-- 5	Number of persons by ethnicity
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 5 as analysis_id,  ETHNICITY_CONCEPT_ID as stratum_1, COUNT(distinct person_id) as count_value
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+group by c1.cohort_definition_id, ETHNICITY_CONCEPT_ID
+;
+--
+
+
+
+
+
+--
+-- 7	Number of persons with invalid provider_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c1.cohort_definition_id, 7 as analysis_id,  COUNT(p1.person_id) as count_value
+ FROM  omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+	left join omopv5_de.provider pr1
+	on p1.provider_id = pr1.provider_id
+  WHERE  p1.provider_id is not null
+	and pr1.provider_id is null
+group by c1.cohort_definition_id
+;
+--
+
+
+
+--
+-- 8	Number of persons with invalid location_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c1.cohort_definition_id, 8 as analysis_id,  COUNT(p1.person_id) as count_value
+ FROM  omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+	left join omopv5_de.location l1
+	on p1.location_id = l1.location_id
+  WHERE  p1.location_id is not null
+	and l1.location_id is null
+group by c1.cohort_definition_id
+;
+
+--
+
+
+--
+-- 9	Number of persons with invalid care_site_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c1.cohort_definition_id, 9 as analysis_id,  COUNT(p1.person_id) as count_value
+ FROM  omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+	left join omopv5_de.care_site cs1
+	on p1.care_site_id = cs1.care_site_id
+  WHERE  p1.care_site_id is not null
+	and cs1.care_site_id is null
+group by c1.cohort_definition_id
+;
+--
+
+
+
+
+
+
+
+----/********************************************
+
+--HERACLES Analyses on OBSERVATION_PERIOD table
+
+--*********************************************/
+
+--
+-- 101	Number of persons by age, with age at first observation period
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 101 as analysis_id,   EXTRACT(YEAR FROM op1.index_date) - p1.YEAR_OF_BIRTH as stratum_1, COUNT(p1.person_id) as count_value
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+	inner join (select person_id, MIN(observation_period_start_date) as index_date from omopv5_de.OBSERVATION_PERIOD group by PERSON_ID) op1
+	on p1.PERSON_ID = op1.PERSON_ID
+group by c1.cohort_definition_id, EXTRACT(YEAR FROM op1.index_date) - p1.YEAR_OF_BIRTH
+;
+--
+
+
+
+--
+-- 102	Number of persons by gender by age, with age at first observation period
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
+select c1.cohort_definition_id, 102 as analysis_id,  p1.gender_concept_id as stratum_1, EXTRACT(YEAR FROM op1.index_date) - p1.YEAR_OF_BIRTH as stratum_2, COUNT(p1.person_id) as count_value
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+	inner join (select person_id, MIN(observation_period_start_date) as index_date from omopv5_de.OBSERVATION_PERIOD group by PERSON_ID) op1
+	on p1.PERSON_ID = op1.PERSON_ID
+group by c1.cohort_definition_id, p1.gender_concept_id, EXTRACT(YEAR FROM op1.index_date) - p1.YEAR_OF_BIRTH
+;
+--
+
+
+--
+-- 103	Distribution of age at first observation period
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id, 
+	103 as analysis_id,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select c1.cohort_definition_id,
+	EXTRACT(YEAR FROM op1.index_date) - p1.YEAR_OF_BIRTH as count_value,
+	1.0*(row_number() over (partition by c1.cohort_definition_id order by EXTRACT(YEAR FROM op1.index_date) - p1.YEAR_OF_BIRTH))/(COUNT(EXTRACT(YEAR FROM op1.index_date) - p1.YEAR_OF_BIRTH) over (partition by c1.cohort_definition_id)+1) as p1
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+	inner join (select person_id, MIN(observation_period_start_date) as index_date from omopv5_de.OBSERVATION_PERIOD group by PERSON_ID) op1
+	on p1.PERSON_ID = op1.PERSON_ID
+) t1
+group by cohort_definition_id
+;
+
+--
+
+
+
+
+--
+-- 104	Distribution of age at first observation period by gender
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id, 
+	104 as analysis_id,
+	gender_concept_id,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select c1.cohort_definition_id,
+	p1.gender_concept_id,
+	EXTRACT(YEAR FROM op1.index_date) - p1.YEAR_OF_BIRTH as count_value,
+	1.0*(row_number() over (partition by p1.gender_concept_id, c1.cohort_definition_id order by EXTRACT(YEAR FROM op1.index_date) - p1.YEAR_OF_BIRTH))/(COUNT(EXTRACT(YEAR FROM op1.index_date) - p1.YEAR_OF_BIRTH) over (partition by p1.gender_concept_id, c1.cohort_definition_id)+1) as p1
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+	inner join (select person_id, MIN(observation_period_start_date) as index_date from omopv5_de.OBSERVATION_PERIOD group by PERSON_ID) op1
+	on p1.PERSON_ID = op1.PERSON_ID
+) t1
+group by cohort_definition_id, gender_concept_id
+;
+--
+
+
+
+
+--
+-- 105	Length of observation (days) of first observation period
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	105 as analysis_id,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select c1.cohort_definition_id,
+	( op1.observation_period_end_date - op1.observation_period_start_date) as count_value,
+	1.0*(row_number() over (partition by c1.cohort_definition_id order by ( op1.observation_period_end_date - op1.observation_period_start_date)))/(COUNT(( op1.observation_period_end_date - op1.observation_period_start_date)) over (partition by c1.cohort_definition_id)+1) as p1
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+	inner join 
+	(select person_id, 
+		OBSERVATION_PERIOD_START_DATE, 
+		OBSERVATION_PERIOD_END_DATE, 
+		ROW_NUMBER() over (PARTITION by person_id order by observation_period_start_date asc) as rn1
+		 from omopv5_de.OBSERVATION_PERIOD
+	) op1
+	on p1.PERSON_ID = op1.PERSON_ID
+	where op1.rn1 = 1
+) t1
+group by cohort_definition_id
+;
+--
+
+
+--
+-- 106	Length of observation (days) of first observation period by gender
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	106 as analysis_id,
+	gender_concept_id as stratum_1,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select c1.cohort_definition_id,
+	p1.gender_concept_id,
+	( op1.observation_period_end_date - op1.observation_period_start_date) as count_value,
+	1.0*(row_number() over (partition by p1.gender_concept_id, c1.cohort_definition_id order by ( op1.observation_period_end_date - op1.observation_period_start_date)))/(COUNT(( op1.observation_period_end_date - op1.observation_period_start_date)) over (partition by p1.gender_concept_id, c1.cohort_definition_id)+1) as p1
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+	inner join 
+	(select person_id, 
+		OBSERVATION_PERIOD_START_DATE, 
+		OBSERVATION_PERIOD_END_DATE, 
+		ROW_NUMBER() over (PARTITION by person_id order by observation_period_start_date asc) as rn1
+		 from omopv5_de.OBSERVATION_PERIOD
+	) op1
+	on p1.PERSON_ID = op1.PERSON_ID
+	where op1.rn1 = 1
+) t1
+group by cohort_definition_id, gender_concept_id
+;
+--
+
+
+
+--
+-- 107	Length of observation (days) of first observation period by age decile
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	107 as analysis_id,
+	age_decile as stratum_1,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select c1.cohort_definition_id,
+	floor((EXTRACT(YEAR FROM op1.OBSERVATION_PERIOD_START_DATE) - p1.YEAR_OF_BIRTH)/10) as age_decile,
+	( op1.observation_period_end_date - op1.observation_period_start_date) as count_value,
+	1.0*(row_number() over (partition by floor((EXTRACT(YEAR FROM op1.OBSERVATION_PERIOD_START_DATE) - p1.YEAR_OF_BIRTH)/10), c1.cohort_definition_id order by ( op1.observation_period_end_date - op1.observation_period_start_date)))/(COUNT(( op1.observation_period_end_date - op1.observation_period_start_date)) over (partition by floor((EXTRACT(YEAR FROM op1.OBSERVATION_PERIOD_START_DATE) - p1.YEAR_OF_BIRTH)/10), c1.cohort_definition_id)+1) as p1
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+	inner join 
+	(select person_id, 
+		OBSERVATION_PERIOD_START_DATE, 
+		OBSERVATION_PERIOD_END_DATE, 
+		ROW_NUMBER() over (PARTITION by person_id order by observation_period_start_date asc) as rn1
+		 from omopv5_de.OBSERVATION_PERIOD
+	) op1
+	on p1.PERSON_ID = op1.PERSON_ID
+	where op1.rn1 = 1
+) t1
+group by cohort_definition_id, age_decile
+;
+--
+
+
+
+
+
+
+--
+-- 108	Number of persons by length of observation period, in 30d increments
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+SELECT   c1.cohort_definition_id, 
+	108 as analysis_id,  
+	floor(( op1.observation_period_end_date -  op1.observation_period_start_date)/30) as stratum_1, 
+	COUNT(distinct p1.person_id) as count_value
+ FROM  omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+	inner join 
+	(select person_id, 
+		OBSERVATION_PERIOD_START_DATE, 
+		OBSERVATION_PERIOD_END_DATE, 
+		ROW_NUMBER() over (PARTITION by person_id order by observation_period_start_date asc) as rn1
+		 from omopv5_de.OBSERVATION_PERIOD
+	) op1
+	on p1.PERSON_ID = op1.PERSON_ID
+	  WHERE  op1.rn1 = 1
+group by c1.cohort_definition_id, floor(( op1.observation_period_end_date -  op1.observation_period_start_date)/30)
+;
+--
+
+
+
+
+--
+-- 109	Number of persons with continuous observation in each year
+-- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
+
+BEGIN
+  EXECUTE IMMEDIATE 'TRUNCATE TABLE  temp_dates';
+  EXECUTE IMMEDIATE 'DROP TABLE  temp_dates';
+EXCEPTION
+  WHEN OTHERS THEN
+    IF SQLCODE != -942 THEN
+      RAISE;
+    END IF;
+END;
+
+CREATE GLOBAL TEMPORARY TABLE temp_dates
+ ON COMMIT PRESERVE ROWS
+AS
+SELECT
+ DISTINCT 
+  EXTRACT(YEAR FROM observation_period_start_date) AS obs_year,
+  TO_DATE(TO_CHAR(EXTRACT(YEAR FROM observation_period_start_date) ) || '01' || '01' , 'yyyymmdd') AS obs_year_start,	
+  TO_DATE(TO_CHAR(EXTRACT(YEAR FROM observation_period_start_date) ) || '12' || '31' , 'yyyymmdd') AS obs_year_end
+
+FROM
+ omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id as cohort_definition_id from omopv5_de.COHORT where cohort_definition_id in ()) c1
+	on p1.person_id = c1.subject_id
+inner join
+  omopv5_de.observation_period op1
+  on p1.person_id = op1.person_id
+;
+
+INSERT INTO HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+SELECT   c1.cohort_definition_id, 
+  109 AS analysis_id,  
+	obs_year AS stratum_1, 
+	COUNT(DISTINCT p1.person_id) AS count_value
+ FROM  omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id as cohort_definition_id from omopv5_de.COHORT where cohort_definition_id in ()) c1
+	on p1.person_id = c1.subject_id
+inner join
+  omopv5_de.observation_period op1
+  on p1.person_id = op1.person_id,
+	temp_dates
+  WHERE   
+		observation_period_start_date <= obs_year_start
+	AND 
+		observation_period_end_date >= obs_year_end
+GROUP BY 
+	c1.cohort_definition_id, obs_year
+;
+
+TRUNCATE TABLE temp_dates;
+DROP TABLE temp_dates;
+
+--
+
+
+--
+-- 110	Number of persons with continuous observation in each month
+-- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
+
+BEGIN
+  EXECUTE IMMEDIATE 'TRUNCATE TABLE  temp_dates';
+  EXECUTE IMMEDIATE 'DROP TABLE  temp_dates';
+EXCEPTION
+  WHEN OTHERS THEN
+    IF SQLCODE != -942 THEN
+      RAISE;
+    END IF;
+END;
+
+CREATE GLOBAL TEMPORARY TABLE temp_dates
+ ON COMMIT PRESERVE ROWS
+AS
+SELECT
+ DISTINCT 
+  EXTRACT(YEAR FROM observation_period_start_date)*100 + EXTRACT(MONTH FROM observation_period_start_date) AS obs_month,
+  TO_DATE(TO_CHAR(EXTRACT(YEAR FROM observation_period_start_date) ) ||  SUBSTR('0' || TO_CHAR(EXTRACT(MONTH FROM OBSERVATION_PERIOD_START_DATE) ),- 2) || '01' , 'yyyymmdd') AS obs_month_start,  
+  (ADD_MONTHS(TO_DATE(TO_CHAR(EXTRACT(YEAR FROM observation_period_start_date) ) ||  SUBSTR('0' || TO_CHAR(EXTRACT(MONTH FROM OBSERVATION_PERIOD_START_DATE) ),- 2) || '01' , 'yyyymmdd'), 1) + -1) AS obs_month_end
+
+FROM
+ omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on p1.person_id = c1.subject_id
+inner join
+  omopv5_de.observation_period op1
+  on p1.person_id = op1.person_id
+;
+
+
+INSERT INTO HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+SELECT   c1.cohort_definition_id, 
+  110 AS analysis_id, 
+	obs_month AS stratum_1, 
+	COUNT(DISTINCT p1.person_id) AS count_value
+ FROM  omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on p1.person_id = c1.subject_id
+inner join
+  omopv5_de.observation_period op1
+  on p1.person_id = op1.person_id,
+	temp_Dates
+  WHERE  
+		observation_period_start_date <= obs_month_start
+	AND 
+		observation_period_end_date >= obs_month_end
+GROUP BY 
+	c1.cohort_definition_id, obs_month
+;
+
+TRUNCATE TABLE temp_dates;
+DROP TABLE temp_dates;
+
+--
+
+
+
+--
+-- 111	Number of persons by observation period start month
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 
+	111 as analysis_id, 
+	EXTRACT(YEAR FROM observation_period_start_date)*100 + EXTRACT(MONTH FROM OBSERVATION_PERIOD_START_DATE) as stratum_1, 
+	COUNT(distinct op1.PERSON_ID) as count_value
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on p1.person_id = c1.subject_id
+inner join
+  omopv5_de.observation_period op1
+  on p1.person_id = op1.person_id
+group by c1.cohort_definition_id, EXTRACT(YEAR FROM observation_period_start_date)*100 + EXTRACT(MONTH FROM OBSERVATION_PERIOD_START_DATE)
+;
+--
+
+
+
+--
+-- 112	Number of persons by observation period end month
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 
+	112 as analysis_id,  
+	EXTRACT(YEAR FROM observation_period_end_date)*100 + EXTRACT(MONTH FROM observation_period_end_date) as stratum_1, 
+	COUNT(distinct op1.PERSON_ID) as count_value
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on p1.person_id = c1.subject_id
+inner join
+  omopv5_de.observation_period op1
+  on p1.person_id = op1.person_id
+group by c1.cohort_definition_id, EXTRACT(YEAR FROM observation_period_end_date)*100 + EXTRACT(MONTH FROM observation_period_end_date)
+;
+--
+
+
+--
+-- 113	Number of persons by number of observation periods
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select cohort_definition_id, 
+	113 as analysis_id,  
+	op1.num_periods as stratum_1, COUNT(distinct op1.PERSON_ID) as count_value
+from
+	(select cohort_definition_id, person_id, COUNT(OBSERVATION_period_start_date) as num_periods 
+		from omopv5_de.OBSERVATION_PERIOD op0
+		inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+			on op0.person_id = c1.subject_id
+		group by cohort_definition_id, PERSON_ID) op1
+group by cohort_definition_id, op1.num_periods
+;
+--
+
+--
+-- 114	Number of persons with observation period before year-of-birth
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   cohort_definition_id,
+	114 as analysis_id,  
+	COUNT(distinct p1.PERSON_ID) as count_value
+ FROM 
+	omopv5_de.PERSON p1
+	inner join (select cohort_definition_id, person_id, MIN(EXTRACT(YEAR FROM OBSERVATION_period_start_date)) as first_obs_year 
+		from omopv5_de.OBSERVATION_PERIOD op0
+		inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+			on op0.person_id = c1.subject_id
+		group by cohort_definition_id, PERSON_ID) op1
+	on p1.person_id = op1.person_id
+  WHERE  p1.year_of_birth > op1.first_obs_year
+group by cohort_definition_id
+;
+--
+
+--
+-- 115	Number of persons with observation period end < start
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c1.cohort_definition_id,
+	115 as analysis_id,  
+	COUNT(op1.PERSON_ID) as count_value
+ FROM  omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on p1.person_id = c1.subject_id
+inner join
+  omopv5_de.observation_period op1
+  on p1.person_id = op1.person_id
+  WHERE  op1.observation_period_end_date < op1.observation_period_start_date
+group by c1.cohort_definition_id
+;
+--
+
+
+
+--
+-- 116	Number of persons with at least one day of observation in each year by gender and age decile
+-- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
+
+BEGIN
+  EXECUTE IMMEDIATE 'TRUNCATE TABLE  temp_dates';
+  EXECUTE IMMEDIATE 'DROP TABLE  temp_dates';
+EXCEPTION
+  WHEN OTHERS THEN
+    IF SQLCODE != -942 THEN
+      RAISE;
+    END IF;
+END;
+
+CREATE GLOBAL TEMPORARY TABLE temp_dates
+ ON COMMIT PRESERVE ROWS
+AS
+SELECT
+ distinct 
+  EXTRACT(YEAR FROM observation_period_start_date) as obs_year 
+
+FROM
+ omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on p1.person_id = c1.subject_id
+inner join
+  omopv5_de.observation_period op1
+  on p1.person_id = op1.person_id
+;
+
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3, count_value)
+SELECT   c1.cohort_definition_id,
+	116 as analysis_id,  
+	t1.obs_year as stratum_1, 
+	p1.gender_concept_id as stratum_2,
+	floor((t1.obs_year - p1.year_of_birth)/10) as stratum_3,
+	COUNT(distinct p1.PERSON_ID) as count_value
+ FROM  omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on p1.person_id = c1.subject_id
+inner join
+  omopv5_de.observation_period op1
+  on p1.person_id = op1.person_id
+	,
+	temp_dates t1 
+  WHERE  EXTRACT(YEAR FROM op1.OBSERVATION_PERIOD_START_DATE) <= t1.obs_year
+	and EXTRACT(YEAR FROM op1.OBSERVATION_PERIOD_END_DATE) >= t1.obs_year
+group by c1.cohort_definition_id,
+	t1.obs_year,
+	p1.gender_concept_id,
+	floor((t1.obs_year - p1.year_of_birth)/10)
+;
+
+TRUNCATE TABLE temp_dates;
+DROP TABLE temp_dates;
+
+--
+
+
+--
+-- 117	Number of persons with at least one day of observation in each year by gender and age decile
+-- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
+
+BEGIN
+  EXECUTE IMMEDIATE 'TRUNCATE TABLE  temp_dates';
+  EXECUTE IMMEDIATE 'DROP TABLE  temp_dates';
+EXCEPTION
+  WHEN OTHERS THEN
+    IF SQLCODE != -942 THEN
+      RAISE;
+    END IF;
+END;
+
+CREATE GLOBAL TEMPORARY TABLE temp_dates
+ ON COMMIT PRESERVE ROWS
+AS
+SELECT
+ distinct 
+  EXTRACT(YEAR FROM observation_period_start_date)*100 + EXTRACT(MONTH FROM observation_period_start_date)  as obs_month
+
+FROM
+ omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on p1.person_id = c1.subject_id
+inner join
+  omopv5_de.observation_period op1
+  on p1.person_id = op1.person_id
+;
+
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+SELECT   c1.cohort_definition_id, 
+	117 as analysis_id,  
+	t1.obs_month as stratum_1,
+	COUNT(distinct op1.PERSON_ID) as count_value
+ FROM  omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on p1.person_id = c1.subject_id
+inner join
+  omopv5_de.observation_period op1
+  on p1.person_id = op1.person_id,
+	temp_dates t1 
+  WHERE  EXTRACT(YEAR FROM observation_period_start_date)*100 + EXTRACT(MONTH FROM observation_period_start_date) <= t1.obs_month
+	and EXTRACT(YEAR FROM observation_period_end_date)*100 + EXTRACT(MONTH FROM observation_period_end_date) >= t1.obs_month
+group by c1.cohort_definition_id, t1.obs_month
+;
+
+TRUNCATE TABLE temp_dates;
+DROP TABLE temp_dates;
+
+--
+
+
+--/********************************************
+
+--HERACLES Analyses on VISIT_OCCURRENCE table
+
+--*********************************************/
+
+
+--
+-- 200	Number of persons with at least one visit occurrence, by visit_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 200 as analysis_id,
+	--
+	--
+	vo1.visit_CONCEPT_ID as stratum_1,
+	--
+	COUNT(distinct vo1.PERSON_ID) as count_value
+from
+	omopv5_de.visit_occurrence vo1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on vo1.person_id = c1.subject_id
+group by c1.cohort_definition_id,
+	--
+	--
+	vo1.visit_CONCEPT_ID
+	--
+;
+--
+
+
+--
+-- 201	Number of visit occurrence records, by visit_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 201 as analysis_id, 
+	--
+	--
+	vo1.visit_CONCEPT_ID as stratum_1,
+	--
+	COUNT(vo1.PERSON_ID) as count_value
+from
+	omopv5_de.visit_occurrence vo1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on vo1.person_id = c1.subject_id
+group by c1.cohort_definition_id,
+	--
+	--
+	vo1.visit_CONCEPT_ID
+	--
+;
+--
+
+
+
+--
+-- 202	Number of persons by visit occurrence start month, by visit_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
+select c1.cohort_definition_id,
+	202 as analysis_id,   
+	--
+	--
+	vo1.visit_CONCEPT_ID as stratum_1,
+	--
+	EXTRACT(YEAR FROM visit_start_date)*100 + EXTRACT(MONTH FROM visit_start_date) as stratum_2, 
+	COUNT(distinct PERSON_ID) as count_value
+from
+	omopv5_de.visit_occurrence vo1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on vo1.person_id = c1.subject_id
+group by c1.cohort_definition_id,
+	--
+	--
+	vo1.visit_CONCEPT_ID,
+	--
+	EXTRACT(YEAR FROM visit_start_date)*100 + EXTRACT(MONTH FROM visit_start_date)
+;
+--
+
+
+
+--
+-- 203	Number of distinct visit occurrence concepts per person
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	203 as analysis_id,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select cohort_definition_id,
+	num_visits as count_value,
+	1.0*(row_number() over (partition by cohort_definition_id order by num_visits))/(COUNT(num_visits) over (partition by cohort_definition_id)+1) as p1
+from
+	(
+	select c1.cohort_definition_id, vo1.person_id, 
+		--
+		--
+		COUNT(distinct vo1.visit_concept_id) as num_visits
+		--
+	from
+	omopv5_de.visit_occurrence vo1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on vo1.person_id = c1.subject_id
+	group by c1.cohort_definition_id, vo1.person_id
+	) t0
+) t1
+group by cohort_definition_id
+;
+--
+
+
+
+--
+-- 204	Number of persons with at least one visit occurrence, by visit_concept_id by calendar year by gender by age decile
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, count_value)
+select c1.cohort_definition_id,
+	204 as analysis_id,   
+	--
+	--
+	vo1.visit_CONCEPT_ID as stratum_1,
+	--
+	EXTRACT(YEAR FROM visit_start_date) as stratum_2,
+	p1.gender_concept_id as stratum_3,
+	floor((EXTRACT(YEAR FROM visit_start_date) - p1.year_of_birth)/10) as stratum_4, 
+	COUNT(distinct p1.PERSON_ID) as count_value
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on p1.person_id = c1.subject_id
+inner join
+omopv5_de.visit_occurrence vo1
+on p1.person_id = vo1.person_id
+group by c1.cohort_definition_id,
+	--
+	--
+	vo1.visit_CONCEPT_ID,
+	--
+	EXTRACT(YEAR FROM visit_start_date),
+	p1.gender_concept_id,
+	floor((EXTRACT(YEAR FROM visit_start_date) - p1.year_of_birth)/10)
+;
+--
+
+
+
+
+
+--
+-- 206	Distribution of age by visit_concept_id
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	206 as analysis_id,
+	  visit_CONCEPT_ID  as stratum_1,
+	gender_concept_id as stratum_2,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select c1.cohort_definition_id,
+	--
+	--
+	vo1.visit_CONCEPT_ID,
+	--
+	p1.gender_concept_id,
+	vo1.visit_start_year - p1.year_of_birth as count_value,
+	1.0*(row_number() over (partition by c1.cohort_definition_id,   vo1.visit_CONCEPT_ID , p1.gender_concept_id order by vo1.visit_start_year - p1.year_of_birth))/(COUNT(vo1.visit_start_year - p1.year_of_birth) over (partition by c1.cohort_definition_id,   vo1.visit_CONCEPT_ID , p1.gender_concept_id)+1) as p1
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on p1.person_id = c1.subject_id
+inner join
+(select vo1.person_id, 
+	--
+	--
+	vo1.visit_CONCEPT_ID,
+	-- 
+	min(EXTRACT(YEAR FROM vo1.visit_start_date)) as visit_start_year
+from omopv5_de.visit_occurrence vo1
+group by person_id, 
+	--
+	--
+	vo1.visit_CONCEPT_ID
+	--place_of_service_concept_id
+) vo1
+on p1.person_id = vo1.person_id
+) t1
+group by cohort_definition_id, 
+	  visit_CONCEPT_ID , 
+	gender_concept_id
+;
+--
+
+
+--
+--207	Number of visit records with invalid person_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c1.cohort_definition_id,
+	207 as analysis_id,  
+	COUNT(vo1.PERSON_ID) as count_value
+ FROM 
+	omopv5_de.visit_occurrence vo1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on vo1.person_id = c1.subject_id
+	left join omopv5_de.PERSON p1
+	on p1.person_id = vo1.person_id
+  WHERE  p1.person_id is null
+group by c1.cohort_definition_id
+;
+--
+
+
+--
+--208	Number of visit records outside valid observation period
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   cohort_definition_id,
+	208 as analysis_id,  
+	COUNT(vo1.PERSON_ID) as count_value
+ FROM 
+	omopv5_de.visit_occurrence vo1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on vo1.person_id = c1.subject_id
+	left join omopv5_de.OBSERVATION_PERIOD op1
+	on op1.person_id = vo1.person_id
+	and vo1.visit_start_date >= op1.observation_period_start_date
+	and vo1.visit_start_date <= op1.observation_period_end_date
+  WHERE  op1.person_id is null
+group by c1.cohort_definition_id
+;
+--
+
+--
+--209	Number of visit records with end date < start date
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c1.cohort_definition_id,
+	209 as analysis_id,  
+	COUNT(vo1.PERSON_ID) as count_value
+ FROM 
+	omopv5_de.visit_occurrence vo1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on vo1.person_id = c1.subject_id
+  WHERE  visit_end_date < visit_start_date
+group by c1.cohort_definition_id
+;
+--
+
+--
+--210	Number of visit records with invalid care_site_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c1.cohort_definition_id,
+	210 as analysis_id,  
+	COUNT(vo1.PERSON_ID) as count_value
+ FROM 
+	omopv5_de.visit_occurrence vo1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on vo1.person_id = c1.subject_id
+	left join omopv5_de.care_site cs1
+	on vo1.care_site_id = cs1.care_site_id
+  WHERE  vo1.care_site_id is not null
+	and cs1.care_site_id is null
+group by c1.cohort_definition_id
+;
+--
+
+
+--
+-- 211	Distribution of length of stay by visit_concept_id
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	211 as analysis_id,
+	--
+	--
+	visit_CONCEPT_ID
+	--
+	as stratum_1,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select c1.cohort_definition_id,
+	--
+	--
+	vo1.visit_CONCEPT_ID,
+	--
+	(visit_end_date - visit_start_date) as count_value,
+	1.0*(row_number() over (partition by c1.cohort_definition_id,   vo1.visit_CONCEPT_ID  order by (visit_end_date - visit_start_date)))/(COUNT((visit_end_date - visit_start_date)) over (partition by c1.cohort_definition_id,   vo1.visit_CONCEPT_ID )+1) as p1
+from omopv5_de.visit_occurrence vo1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on vo1.person_id = c1.subject_id
+) t1
+group by cohort_definition_id, 
+	--
+	--
+	visit_CONCEPT_ID
+	--
+;
+--
+
+
+
+
+
+--
+-- 220	Number of visit occurrence records by condition occurrence start month
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 
+	220 as analysis_id,   
+	EXTRACT(YEAR FROM visit_start_date)*100 + EXTRACT(MONTH FROM visit_start_date) as stratum_1, 
+	COUNT(PERSON_ID) as count_value
+from
+omopv5_de.visit_occurrence vo1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on vo1.person_id = c1.subject_id
+group by c1.cohort_definition_id, EXTRACT(YEAR FROM visit_start_date)*100 + EXTRACT(MONTH FROM visit_start_date)
+;
+--
+
+
+
+
+
+--/********************************************
+
+--HERACLES Analyses on CONDITION_OCCURRENCE table
+
+--*********************************************/
+
+
+--
+-- 400	Number of persons with at least one condition occurrence, by condition_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 
+	400 as analysis_id, 
+	co1.condition_CONCEPT_ID as stratum_1,
+	COUNT(distinct co1.PERSON_ID) as count_value
+from
+	omopv5_de.condition_occurrence co1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on co1.person_id = c1.subject_id
+--
+group by c1.cohort_definition_id,
+	co1.condition_CONCEPT_ID
+;
+--
+
+
+--
+-- 401	Number of condition occurrence records, by condition_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 
+	401 as analysis_id, 
+	co1.condition_CONCEPT_ID as stratum_1,
+	COUNT(co1.PERSON_ID) as count_value
+from
+	omopv5_de.condition_occurrence co1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on co1.person_id = c1.subject_id
+--
+group by c1.cohort_definition_id,
+	co1.condition_CONCEPT_ID
+;
+--
+
+
+
+--
+-- 402	Number of persons by condition occurrence start month, by condition_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
+select c1.cohort_definition_id,
+	402 as analysis_id,   
+	co1.condition_concept_id as stratum_1,
+	EXTRACT(YEAR FROM condition_start_date)*100 + EXTRACT(MONTH FROM condition_start_date) as stratum_2, 
+	COUNT(distinct PERSON_ID) as count_value
+from
+omopv5_de.condition_occurrence co1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on co1.person_id = c1.subject_id
+--
+group by c1.cohort_definition_id,
+	co1.condition_concept_id, 
+	EXTRACT(YEAR FROM condition_start_date)*100 + EXTRACT(MONTH FROM condition_start_date)
+;
+--
+
+
+
+--
+-- 403	Number of distinct condition occurrence concepts per person
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	403 as analysis_id,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select cohort_definition_id, 
+	num_conditions as count_value,
+	1.0*(row_number() over (partition by cohort_definition_id order by num_conditions))/(COUNT(num_conditions) over (partition by cohort_definition_id)+1) as p1
+from
+	(
+	select c1.cohort_definition_id, co1.person_id, COUNT(distinct co1.condition_concept_id) as num_conditions
+	from
+	omopv5_de.condition_occurrence co1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on co1.person_id = c1.subject_id
+	group by c1.cohort_definition_id, co1.person_id
+	) t0
+) t1
+group by cohort_definition_id
+;
+--
+
+
+
+--
+-- 404	Number of persons with at least one condition occurrence, by condition_concept_id by calendar year by gender by age decile
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, count_value)
+select c1.cohort_definition_id,
+	404 as analysis_id,   
+	co1.condition_concept_id as stratum_1,
+	EXTRACT(YEAR FROM condition_start_date) as stratum_2,
+	p1.gender_concept_id as stratum_3,
+	floor((EXTRACT(YEAR FROM condition_start_date) - p1.year_of_birth)/10) as stratum_4, 
+	COUNT(distinct p1.PERSON_ID) as count_value
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on p1.person_id = c1.subject_id
+inner join
+omopv5_de.condition_occurrence co1
+on p1.person_id = co1.person_id
+--
+group by c1.cohort_definition_id,
+	co1.condition_concept_id, 
+	EXTRACT(YEAR FROM condition_start_date),
+	p1.gender_concept_id,
+	floor((EXTRACT(YEAR FROM condition_start_date) - p1.year_of_birth)/10)
+;
+--
+
+--
+-- 405	Number of condition occurrence records, by condition_concept_id by condition_type_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
+select c1.cohort_definition_id,
+	405 as analysis_id, 
+	co1.condition_CONCEPT_ID as stratum_1,
+	co1.condition_type_concept_id as stratum_2,
+	COUNT(co1.PERSON_ID) as count_value
+from
+	omopv5_de.condition_occurrence co1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on co1.person_id = c1.subject_id
+--
+group by c1.cohort_definition_id,
+	co1.condition_CONCEPT_ID,	
+	co1.condition_type_concept_id
+;
+--
+
+
+
+--
+-- 406	Distribution of age by condition_concept_id
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	406 as analysis_id,
+	condition_concept_id as stratum_1,
+	gender_concept_id as stratum_2,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select c1.cohort_definition_id,
+	co1.condition_concept_id,
+	p1.gender_concept_id,
+	co1.condition_start_year - p1.year_of_birth as count_value,
+	1.0*(row_number() over (partition by c1.cohort_definition_id, co1.condition_concept_id, p1.gender_concept_id order by co1.condition_start_year - p1.year_of_birth))/(COUNT(co1.condition_start_year - p1.year_of_birth) over (partition by c1.cohort_definition_id, co1.condition_concept_id, p1.gender_concept_id)+1) as p1
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on p1.person_id = c1.subject_id
+inner join
+(select person_id, condition_concept_id, min(EXTRACT(YEAR FROM condition_start_date)) as condition_start_year
+from omopv5_de.condition_occurrence
+--
+group by person_id, condition_concept_id
+) co1
+on p1.person_id = co1.person_id
+) t1
+group by cohort_definition_id, condition_concept_id, gender_concept_id
+;
+--
+
+
+
+
+
+
+--
+-- 409	Number of condition occurrence records with invalid person_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c1.cohort_definition_id, 
+	409 as analysis_id,  
+	COUNT(co1.PERSON_ID) as count_value
+ FROM 
+	omopv5_de.condition_occurrence co1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on co1.person_id = c1.subject_id
+	left join omopv5_de.PERSON p1
+	on p1.person_id = co1.person_id
+  WHERE  p1.person_id is null
+group by c1.cohort_definition_id
+;
+--
+
+
+--
+-- 410	Number of condition occurrence records outside valid observation period
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c1.cohort_definition_id,
+	410 as analysis_id,  
+	COUNT(co1.PERSON_ID) as count_value
+ FROM 
+	omopv5_de.condition_occurrence co1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on co1.person_id = c1.subject_id
+	left join omopv5_de.OBSERVATION_PERIOD op1
+	on op1.person_id = co1.person_id
+	and co1.condition_start_date >= op1.observation_period_start_date
+	and co1.condition_start_date <= op1.observation_period_end_date
+  WHERE  op1.person_id is null
+group by c1.cohort_definition_id
+;
+--
+
+
+--
+-- 411	Number of condition occurrence records with end date < start date
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c1.cohort_definition_id,
+	411 as analysis_id,  
+	COUNT(co1.PERSON_ID) as count_value
+ FROM 
+	omopv5_de.condition_occurrence co1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on co1.person_id = c1.subject_id
+  WHERE  co1.condition_end_date < co1.condition_start_date
+group by c1.cohort_definition_id
+;
+--
+
+
+--
+-- 412	Number of condition occurrence records with invalid provider_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c1.cohort_definition_id,
+	412 as analysis_id,  
+	COUNT(co1.PERSON_ID) as count_value
+ FROM 
+	omopv5_de.condition_occurrence co1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on co1.person_id = c1.subject_id
+	left join omopv5_de.provider p1
+	on p1.provider_id =     co1.provider_id  
+  WHERE    co1.provider_id   is not null
+	and p1.provider_id is null
+group by c1.cohort_definition_id
+;
+--
+
+--
+-- 413	Number of condition occurrence records with invalid visit_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c1.cohort_definition_id,
+	413 as analysis_id,  
+	COUNT(co1.PERSON_ID) as count_value
+ FROM 
+	omopv5_de.condition_occurrence co1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on co1.person_id = c1.subject_id
+	left join omopv5_de.visit_occurrence vo1
+	on co1.visit_occurrence_id = vo1.visit_occurrence_id
+  WHERE  co1.visit_occurrence_id is not null
+	and vo1.visit_occurrence_id is null
+group by c1.cohort_definition_id
+;
+--
+
+--
+-- 420	Number of condition occurrence records by condition occurrence start month
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 
+	420 as analysis_id,   
+	EXTRACT(YEAR FROM condition_start_date)*100 + EXTRACT(MONTH FROM condition_start_date) as stratum_1, 
+	COUNT(PERSON_ID) as count_value
+from
+omopv5_de.condition_occurrence co1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on co1.person_id = c1.subject_id
+group by c1.cohort_definition_id, 
+	EXTRACT(YEAR FROM condition_start_date)*100 + EXTRACT(MONTH FROM condition_start_date)
+;
+--
+
+
+
+--/********************************************
+
+--HERACLES Analyses on DEATH table
+
+--*********************************************/
+
+
+
+--
+-- 500	Number of persons with death, by cause_of_death_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 
+	500 as analysis_id, 
+	  d1.cause_CONCEPT_ID  	 as stratum_1,
+	COUNT(distinct d1.PERSON_ID) as count_value
+from
+	omopv5_de.death d1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on d1.person_id = c1.subject_id
+group by c1.cohort_definition_id,
+	  d1.cause_CONCEPT_ID  
+;
+--
+
+
+--
+-- 501	Number of records of death, by cause_of_death_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 
+	501 as analysis_id, 
+	  d1.cause_CONCEPT_ID   as stratum_1,
+	COUNT(d1.PERSON_ID) as count_value
+from
+	omopv5_de.death d1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on d1.person_id = c1.subject_id
+group by c1.cohort_definition_id, 
+	  d1.cause_CONCEPT_ID  
+;
+--
+
+
+
+--
+-- 502	Number of persons by condition occurrence start month
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 
+	502 as analysis_id,   
+	EXTRACT(YEAR FROM death_date)*100 + EXTRACT(MONTH FROM death_date) as stratum_1, 
+	COUNT(distinct PERSON_ID) as count_value
+from
+	omopv5_de.death d1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on d1.person_id = c1.subject_id
+group by c1.cohort_definition_id,
+	EXTRACT(YEAR FROM death_date)*100 + EXTRACT(MONTH FROM death_date)
+;
+--
+
+
+
+--
+-- 504	Number of persons with a death, by calendar year by gender by age decile
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3, count_value)
+select c1.cohort_definition_id,
+	504 as analysis_id,   
+	EXTRACT(YEAR FROM death_date) as stratum_1,
+	p1.gender_concept_id as stratum_2,
+	floor((EXTRACT(YEAR FROM death_date) - p1.year_of_birth)/10) as stratum_3, 
+	COUNT(distinct p1.PERSON_ID) as count_value
+from omopv5_de.PERSON p1
+inner join
+omopv5_de.death d1
+on p1.person_id = d1.person_id
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on d1.person_id = c1.subject_id
+group by c1.cohort_definition_id,
+	EXTRACT(YEAR FROM death_date),
+	p1.gender_concept_id,
+	floor((EXTRACT(YEAR FROM death_date) - p1.year_of_birth)/10)
+;
+--
+
+--
+-- 505	Number of death records, by death_type_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 
+	505 as analysis_id, 
+	death_type_concept_id as stratum_1,
+	COUNT(PERSON_ID) as count_value
+from
+	omopv5_de.death d1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on d1.person_id = c1.subject_id
+group by c1.cohort_definition_id,
+	death_type_concept_id
+;
+--
+
+
+
+--
+-- 506	Distribution of age by condition_concept_id
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	506 as analysis_id,
+	gender_concept_id as stratum_1,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select c1.cohort_definition_id,
+	p1.gender_concept_id,
+	d1.death_year - p1.year_of_birth as count_value,
+	1.0*(row_number() over (partition by c1.cohort_definition_id, p1.gender_concept_id order by d1.death_year - p1.year_of_birth))/(COUNT(d1.death_year - p1.year_of_birth) over (partition by c1.cohort_definition_id, p1.gender_concept_id)+1) as p1
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on p1.person_id = c1.subject_id
+inner join
+(select person_id, min(EXTRACT(YEAR FROM death_date)) as death_year
+from omopv5_de.death
+group by person_id
+) d1
+on p1.person_id = d1.person_id
+) t1
+group by cohort_definition_id, gender_concept_id
+;
+--
+
+
+
+--
+-- 509	Number of death records with invalid person_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c1.cohort_definition_id, 509 as analysis_id, 
+	COUNT(d1.PERSON_ID) as count_value
+ FROM 
+	omopv5_de.death d1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on d1.person_id = c1.subject_id
+		left join omopv5_de.PERSON p1
+		on d1.person_id = p1.person_id
+  WHERE  p1.person_id is null
+group by c1.cohort_definition_id
+;
+--
+
+
+
+--
+-- 510	Number of death records outside valid observation period
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c1.cohort_definition_id,
+	510 as analysis_id, 
+	COUNT(d1.PERSON_ID) as count_value
+ FROM 
+	omopv5_de.death d1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on d1.person_id = c1.subject_id
+		left join omopv5_de.OBSERVATION_PERIOD op1
+		on d1.person_id = op1.person_id
+		and d1.death_date >= op1.observation_period_start_date
+		and d1.death_date <= op1.observation_period_end_date
+  WHERE  op1.person_id is null
+group by c1.cohort_definition_id
+;
+--
+
+
+--
+-- 511	Distribution of time from death to last condition
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	511 as analysis_id,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select c1.cohort_definition_id,
+	( t0.max_date - d1.death_date) as count_value,
+	1.0*(row_number() over (partition by c1.cohort_definition_id order by ( t0.max_date - d1.death_date)))/(COUNT(( t0.max_date - d1.death_date)) over (partition by c1.cohort_definition_id)+1) as p1
+from omopv5_de.death d1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on d1.person_id = c1.subject_id
+	inner join
+	(
+		select person_id, max(condition_start_date) as max_date
+		from omopv5_de.condition_occurrence co1
+		inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+			on co1.person_id = c1.subject_id
+		group by person_id
+	) t0
+	on d1.person_id = t0.person_id
+) t1
+group by cohort_definition_id
+;
+--
+
+
+--
+-- 512	Distribution of time from death to last drug
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	512 as analysis_id,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select c1.cohort_definition_id,
+	( t0.max_date - d1.death_date) as count_value,
+	1.0*(row_number() over (order by c1.cohort_definition_id, ( t0.max_date - d1.death_date)))/(COUNT(( t0.max_date - d1.death_date)) over (partition by c1.cohort_definition_id)+1) as p1
+from omopv5_de.death d1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on d1.person_id = c1.subject_id
+	inner join
+	(
+		select person_id, max(drug_exposure_start_date) as max_date
+		from omopv5_de.drug_exposure de1
+		inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+			on de1.person_id = c1.subject_id
+		group by person_id
+	) t0
+	on d1.person_id = t0.person_id
+) t1
+group by cohort_definition_id
+;
+--
+
+
+--
+-- 513	Distribution of time from death to last visit
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	513 as analysis_id,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select c1.cohort_definition_id,
+	( t0.max_date - d1.death_date) as count_value,
+	1.0*(row_number() over (partition by cohort_definition_id order by ( t0.max_date - d1.death_date)))/(COUNT(( t0.max_date - d1.death_date)) over (partition by cohort_definition_id)+1) as p1
+from omopv5_de.death d1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on d1.person_id = c1.subject_id
+	inner join
+	(
+		select person_id, max(visit_start_date) as max_date
+		from omopv5_de.visit_occurrence vo1
+		inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+			on vo1.person_id = c1.subject_id
+		group by person_id
+	) t0
+	on d1.person_id = t0.person_id
+) t1
+group by cohort_definition_id
+;
+--
+
+
+--
+-- 514	Distribution of time from death to last procedure
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	514 as analysis_id,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select c1.cohort_definition_id,
+	( t0.max_date - d1.death_date) as count_value,
+	1.0*(row_number() over (partition by c1.cohort_definition_id order by ( t0.max_date - d1.death_date)))/(COUNT(( t0.max_date - d1.death_date)) over (partition by cohort_definition_id)+1) as p1
+from omopv5_de.death d1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on d1.person_id = c1.subject_id
+	inner join
+	(
+		select person_id, max(procedure_date) as max_date
+		from omopv5_de.procedure_occurrence po1
+		inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+			on po1.person_id = c1.subject_id
+		group by person_id
+	) t0
+	on d1.person_id = t0.person_id
+) t1
+group by cohort_definition_id
+;
+--
+
+
+--
+-- 515	Distribution of time from death to last observation
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	515 as analysis_id,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select c1.cohort_definition_id,
+	( t0.max_date - d1.death_date) as count_value,
+	1.0*(row_number() over (partition by cohort_definition_id order by ( t0.max_date - d1.death_date)))/(COUNT(( t0.max_date - d1.death_date)) over (partition by cohort_definition_id)+1) as p1
+from omopv5_de.death d1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on d1.person_id = c1.subject_id
+	inner join
+	(
+		select person_id, max(observation_date) as max_date
+		from omopv5_de.observation o1
+			inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+			on o1.person_id = c1.subject_id
+		group by person_id
+	) t0
+	on d1.person_id = t0.person_id
+) t1
+group by cohort_definition_id
+;
+--
+
+
+
+--/********************************************
+
+--HERACLES Analyses on PROCEDURE_OCCURRENCE table
+
+--*********************************************/
+
+
+
+--
+-- 600	Number of persons with at least one procedure occurrence, by procedure_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 
+	600 as analysis_id, 
+	po1.procedure_CONCEPT_ID as stratum_1,
+	COUNT(distinct po1.PERSON_ID) as count_value
+from
+	omopv5_de.procedure_occurrence po1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on po1.person_id = c1.subject_id
+--
+group by c1.cohort_definition_id,
+	po1.procedure_CONCEPT_ID
+;
+--
+
+
+--
+-- 601	Number of procedure occurrence records, by procedure_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 
+	601 as analysis_id, 
+	po1.procedure_CONCEPT_ID as stratum_1,
+	COUNT(po1.PERSON_ID) as count_value
+from
+	omopv5_de.procedure_occurrence po1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on po1.person_id = c1.subject_id
+--
+group by c1.cohort_definition_id,
+	po1.procedure_CONCEPT_ID
+;
+--
+
+
+
+--
+-- 602	Number of persons by procedure occurrence start month, by procedure_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
+select c1.cohort_definition_id,
+	602 as analysis_id,   
+	po1.procedure_concept_id as stratum_1,
+	EXTRACT(YEAR FROM procedure_date)*100 + EXTRACT(MONTH FROM procedure_date) as stratum_2, 
+	COUNT(distinct PERSON_ID) as count_value
+from
+	omopv5_de.procedure_occurrence po1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on po1.person_id = c1.subject_id
+--
+group by c1.cohort_definition_id,
+	po1.procedure_concept_id, 
+	EXTRACT(YEAR FROM procedure_date)*100 + EXTRACT(MONTH FROM procedure_date)
+;
+--
+
+
+
+--
+-- 603	Number of distinct procedure occurrence concepts per person
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	603 as analysis_id,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select cohort_definition_id,
+	num_procedures as count_value,
+	1.0*(row_number() over (partition by cohort_definition_id order by num_procedures))/(COUNT(num_procedures) over (partition by cohort_definition_id)+1) as p1
+from
+	(
+	select c1.cohort_definition_id, po1.person_id, COUNT(distinct po1.procedure_concept_id) as num_procedures
+	from
+	omopv5_de.procedure_occurrence po1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on po1.person_id = c1.subject_id
+	group by c1.cohort_definition_id, po1.person_id
+	) t0
+) t1
+group by cohort_definition_id
+;
+--
+
+
+
+--
+-- 604	Number of persons with at least one procedure occurrence, by procedure_concept_id by calendar year by gender by age decile
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, count_value)
+select c1.cohort_definition_id,
+	604 as analysis_id,   
+	po1.procedure_concept_id as stratum_1,
+	EXTRACT(YEAR FROM procedure_date) as stratum_2,
+	p1.gender_concept_id as stratum_3,
+	floor((EXTRACT(YEAR FROM procedure_date) - p1.year_of_birth)/10) as stratum_4, 
+	COUNT(distinct p1.PERSON_ID) as count_value
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on p1.person_id = c1.subject_id
+inner join
+omopv5_de.procedure_occurrence po1
+on p1.person_id = po1.person_id
+--
+group by c1.cohort_definition_id,
+	po1.procedure_concept_id, 
+	EXTRACT(YEAR FROM procedure_date),
+	p1.gender_concept_id,
+	floor((EXTRACT(YEAR FROM procedure_date) - p1.year_of_birth)/10)
+;
+--
+
+--
+-- 605	Number of procedure occurrence records, by procedure_concept_id by procedure_type_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
+select c1.cohort_definition_id,
+	605 as analysis_id, 
+	po1.procedure_CONCEPT_ID as stratum_1,
+	po1.procedure_type_concept_id as stratum_2,
+	COUNT(po1.PERSON_ID) as count_value
+from
+	omopv5_de.procedure_occurrence po1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on po1.person_id = c1.subject_id
+--
+group by c1.cohort_definition_id,
+	po1.procedure_CONCEPT_ID,	
+	po1.procedure_type_concept_id
+;
+--
+
+
+
+--
+-- 606	Distribution of age by procedure_concept_id
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	606 as analysis_id,
+	procedure_concept_id as stratum_1,
+	gender_concept_id as stratum_2,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select c1.cohort_definition_id,
+	po1.procedure_concept_id,
+	p1.gender_concept_id,
+	po1.procedure_start_year - p1.year_of_birth as count_value,
+	1.0*(row_number() over (partition by c1.cohort_definition_id, po1.procedure_concept_id, p1.gender_concept_id order by po1.procedure_start_year - p1.year_of_birth))/(COUNT(po1.procedure_start_year - p1.year_of_birth) over (partition by c1.cohort_definition_id, po1.procedure_concept_id, p1.gender_concept_id)+1) as p1
+from omopv5_de.PERSON p1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on p1.person_id = c1.subject_id
+inner join
+(select person_id, procedure_concept_id, min(EXTRACT(YEAR FROM procedure_date)) as procedure_start_year
+from omopv5_de.procedure_occurrence po1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on po1.person_id = c1.subject_id
+--
+group by person_id, procedure_concept_id
+) po1
+on p1.person_id = po1.person_id
+) t1
+group by cohort_definition_id, procedure_concept_id, gender_concept_id
+;
+--
+
+
+
+
+
+
+
+--
+-- 609	Number of procedure occurrence records with invalid person_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c1.cohort_definition_id,
+	609 as analysis_id,  
+	COUNT(po1.PERSON_ID) as count_value
+ FROM 
+	omopv5_de.procedure_occurrence po1
+		inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on po1.person_id = c1.subject_id
+	left join omopv5_de.PERSON p1
+	on p1.person_id = po1.person_id
+  WHERE  p1.person_id is null
+group by c1.cohort_definition_id
+;
+--
+
+
+--
+-- 610	Number of procedure occurrence records outside valid observation period
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c1.cohort_definition_id,
+	610 as analysis_id,  
+	COUNT(po1.PERSON_ID) as count_value
+ FROM 
+	omopv5_de.procedure_occurrence po1
+		inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on po1.person_id = c1.subject_id
+	left join omopv5_de.OBSERVATION_PERIOD op1
+	on op1.person_id = po1.person_id
+	and po1.procedure_date >= op1.observation_period_start_date
+	and po1.procedure_date <= op1.observation_period_end_date
+  WHERE  op1.person_id is null
+group by c1.cohort_definition_id
+;
+--
+
+
+
+--
+-- 612	Number of procedure occurrence records with invalid provider_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c1.cohort_definition_id,
+	612 as analysis_id,  
+	COUNT(po1.PERSON_ID) as count_value
+ FROM 
+	omopv5_de.procedure_occurrence po1
+		inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on po1.person_id = c1.subject_id
+	left join omopv5_de.provider p1
+	on p1.provider_id =   po1.provider_id  
+  WHERE    po1.provider_id   is not null
+	and p1.provider_id is null
+group by c1.cohort_definition_id
+;
+--
+
+--
+-- 613	Number of procedure occurrence records with invalid visit_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c1.cohort_definition_id,
+	613 as analysis_id,  
+	COUNT(po1.PERSON_ID) as count_value
+ FROM 
+	omopv5_de.procedure_occurrence po1
+		inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on po1.person_id = c1.subject_id
+	left join omopv5_de.visit_occurrence vo1
+	on po1.visit_occurrence_id = vo1.visit_occurrence_id
+  WHERE  po1.visit_occurrence_id is not null
+	and vo1.visit_occurrence_id is null
+group by c1.cohort_definition_id
+;
+--
+
+
+--
+-- 620	Number of procedure occurrence records by condition occurrence start month
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 
+	620 as analysis_id,   
+	EXTRACT(YEAR FROM procedure_date)*100 + EXTRACT(MONTH FROM procedure_date) as stratum_1, 
+	COUNT(PERSON_ID) as count_value
+from
+omopv5_de.procedure_occurrence po1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on po1.person_id = c1.subject_id
+group by c1.cohort_definition_id,
+	EXTRACT(YEAR FROM procedure_date)*100 + EXTRACT(MONTH FROM procedure_date)
+;
+--
+
+
+--/********************************************
+
+--HERACLES Analyses on DRUG_EXPOSURE table
+
+--*********************************************/
+
+
+
+
+--
+-- 700	Number of persons with at least one drug occurrence, by drug_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 
+	700 as analysis_id, 
+	de1.drug_CONCEPT_ID as stratum_1,
+	COUNT(distinct de1.PERSON_ID) as count_value
+from
+	omopv5_de.drug_exposure de1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on de1.person_id = c1.subject_id
+--
+group by c1.cohort_definition_id,
+	de1.drug_CONCEPT_ID
+;
+--
+
+
+--
+-- 701	Number of drug occurrence records, by drug_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 
+	701 as analysis_id, 
+	de1.drug_CONCEPT_ID as stratum_1,
+	COUNT(de1.PERSON_ID) as count_value
+from
+	omopv5_de.drug_exposure de1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on de1.person_id = c1.subject_id
+--
+group by c1.cohort_definition_id,
+	de1.drug_CONCEPT_ID
+;
+--
+
+
+
+--
+-- 702	Number of persons by drug occurrence start month, by drug_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
+select c1.cohort_definition_id,
+	702 as analysis_id,   
+	de1.drug_concept_id as stratum_1,
+	EXTRACT(YEAR FROM drug_exposure_start_date)*100 + EXTRACT(MONTH FROM drug_exposure_start_date) as stratum_2, 
+	COUNT(distinct PERSON_ID) as count_value
+from
+omopv5_de.drug_exposure de1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on de1.person_id = c1.subject_id
+--
+group by c1.cohort_definition_id,
+	de1.drug_concept_id, 
+	EXTRACT(YEAR FROM drug_exposure_start_date)*100 + EXTRACT(MONTH FROM drug_exposure_start_date)
+;
+--
+
+
+
+--
+-- 703	Number of distinct drug exposure concepts per person
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	703 as analysis_id,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select cohort_definition_id, num_drugs as count_value,
+	1.0*(row_number() over (partition by cohort_definition_id order by num_drugs))/(COUNT(num_drugs) over (partition by cohort_definition_id)+1) as p1
+from
+	(
+	select c1.cohort_definition_id, de1.person_id, COUNT(distinct de1.drug_concept_id) as num_drugs
+	from
+	omopv5_de.drug_exposure de1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on de1.person_id = c1.subject_id
+	group by c1.cohort_definition_id, de1.person_id
+	) t0
+) t1
+group by cohort_definition_id
+;
+--
+
+
+
+--
+-- 704	Number of persons with at least one drug occurrence, by drug_concept_id by calendar year by gender by age decile
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, count_value)
+select c1.cohort_definition_id,
+	704 as analysis_id,   
+	de1.drug_concept_id as stratum_1,
+	EXTRACT(YEAR FROM drug_exposure_start_date) as stratum_2,
+	p1.gender_concept_id as stratum_3,
+	floor((EXTRACT(YEAR FROM drug_exposure_start_date) - p1.year_of_birth)/10) as stratum_4, 
+	COUNT(distinct p1.PERSON_ID) as count_value
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on p1.person_id = c1.subject_id
+inner join
+omopv5_de.drug_exposure de1
+on p1.person_id = de1.person_id
+--
+group by c1.cohort_definition_id,
+	de1.drug_concept_id, 
+	EXTRACT(YEAR FROM drug_exposure_start_date),
+	p1.gender_concept_id,
+	floor((EXTRACT(YEAR FROM drug_exposure_start_date) - p1.year_of_birth)/10)
+;
+--
+
+--
+-- 705	Number of drug occurrence records, by drug_concept_id by drug_type_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
+select c1.cohort_definition_id,
+	705 as analysis_id, 
+	de1.drug_CONCEPT_ID as stratum_1,
+	de1.drug_type_concept_id as stratum_2,
+	COUNT(de1.PERSON_ID) as count_value
+from
+	omopv5_de.drug_exposure de1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on de1.person_id = c1.subject_id
+--
+group by c1.cohort_definition_id,
+	de1.drug_CONCEPT_ID,	
+	de1.drug_type_concept_id
+;
+--
+
+
+
+--
+-- 706	Distribution of age by drug_concept_id
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	706 as analysis_id,
+	drug_concept_id as stratum_1,
+	gender_concept_id as stratum_2,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select c1.cohort_definition_id,
+	de1.drug_concept_id,
+	p1.gender_concept_id,
+	de1.drug_start_year - p1.year_of_birth as count_value,
+	1.0*(row_number() over (partition by c1.cohort_definition_id, de1.drug_concept_id, p1.gender_concept_id order by de1.drug_start_year - p1.year_of_birth))/(COUNT(de1.drug_start_year - p1.year_of_birth) over (partition by c1.cohort_definition_id, de1.drug_concept_id, p1.gender_concept_id)+1) as p1
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on p1.person_id = c1.subject_id
+inner join
+(select person_id, drug_concept_id, min(EXTRACT(YEAR FROM drug_exposure_start_date)) as drug_start_year
+from omopv5_de.drug_exposure de0
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on de0.person_id = c1.subject_id
+--
+group by person_id, drug_concept_id
+) de1
+on p1.person_id = de1.person_id
+) t1
+group by cohort_definition_id, drug_concept_id, gender_concept_id
+;
+--
+
+
+
+
+--
+-- 709	Number of drug exposure records with invalid person_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c1.cohort_definition_id,
+	709 as analysis_id,  
+	COUNT(de1.PERSON_ID) as count_value
+ FROM 
+	omopv5_de.drug_exposure de1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on de1.person_id = c1.subject_id
+	left join omopv5_de.PERSON p1
+	on p1.person_id = de1.person_id
+  WHERE  p1.person_id is null
+group by c1.cohort_definition_id
+;
+--
+
+
+--
+-- 710	Number of drug exposure records outside valid observation period
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c1.cohort_definition_id,
+	710 as analysis_id,  
+	COUNT(de1.PERSON_ID) as count_value
+ FROM 
+	omopv5_de.drug_exposure de1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on de1.person_id = c1.subject_id
+	left join omopv5_de.OBSERVATION_PERIOD op1
+	on op1.person_id = de1.person_id
+	and de1.drug_exposure_start_date >= op1.observation_period_start_date
+	and de1.drug_exposure_start_date <= op1.observation_period_end_date
+  WHERE  op1.person_id is null
+group by c1.cohort_definition_id
+;
+--
+
+
+--
+-- 711	Number of drug exposure records with end date < start date
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c1.cohort_definition_id,
+	711 as analysis_id,  
+	COUNT(de1.PERSON_ID) as count_value
+ FROM 
+	omopv5_de.drug_exposure de1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on de1.person_id = c1.subject_id
+  WHERE  de1.drug_exposure_end_date < de1.drug_exposure_start_date
+group by c1.cohort_definition_id
+;
+--
+
+
+--
+-- 712	Number of drug exposure records with invalid provider_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c1.cohort_definition_id,
+	712 as analysis_id,  
+	COUNT(de1.PERSON_ID) as count_value
+ FROM 
+	omopv5_de.drug_exposure de1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on de1.person_id = c1.subject_id
+	left join omopv5_de.provider p1
+	on p1.provider_id =   de1.provider_id  
+  WHERE    de1.provider_id   is not null
+	and p1.provider_id is null
+group by c1.cohort_definition_id
+;
+--
+
+--
+-- 713	Number of drug exposure records with invalid visit_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c1.cohort_definition_id,
+	713 as analysis_id,  
+	COUNT(de1.PERSON_ID) as count_value
+ FROM 
+	omopv5_de.drug_exposure de1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on de1.person_id = c1.subject_id
+	left join omopv5_de.visit_occurrence vo1
+	on de1.visit_occurrence_id = vo1.visit_occurrence_id
+  WHERE  de1.visit_occurrence_id is not null
+	and vo1.visit_occurrence_id is null
+group by cohort_definition_id
+;
+--
+
+
+
+--
+-- 715	Distribution of days_supply by drug_concept_id
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	715 as analysis_id,
+	drug_concept_id as stratum_1,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select c1.cohort_definition_id, drug_concept_id,
+	days_supply as count_value,
+	1.0*(row_number() over (partition by c1.cohort_definition_id, drug_concept_id order by days_supply))/(COUNT(days_supply) over (partition by c1.cohort_definition_id, drug_concept_id)+1) as p1
+from omopv5_de.drug_exposure de1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on de1.person_id = c1.subject_id
+--
+) t1
+group by cohort_definition_id, drug_concept_id
+;
+--
+
+
+
+--
+-- 716	Distribution of refills by drug_concept_id
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id, 
+	716 as analysis_id,
+	drug_concept_id as stratum_1,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select c1.cohort_definition_id,
+	drug_concept_id,
+	refills as count_value,
+	1.0*(row_number() over (partition by c1.cohort_definition_id, drug_concept_id order by refills))/(COUNT(refills) over (partition by c1.cohort_definition_id, drug_concept_id)+1) as p1
+from omopv5_de.drug_exposure de1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on de1.person_id = c1.subject_id
+--
+) t1
+group by cohort_definition_id, 
+	drug_concept_id
+;
+--
+
+
+
+
+
+--
+-- 717	Distribution of quantity by drug_concept_id
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	717 as analysis_id,
+	drug_concept_id as stratum_1,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select c1.cohort_definition_id, 
+	drug_concept_id,
+	quantity as count_value,
+	1.0*(row_number() over (partition by c1.cohort_definition_id, drug_concept_id order by quantity))/(COUNT(quantity) over (partition by cohort_definition_id, drug_concept_id)+1) as p1
+from omopv5_de.drug_exposure de1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on de1.person_id = c1.subject_id
+--
+) t1
+group by cohort_definition_id, drug_concept_id
+;
+--
+
+
+--
+-- 720	Number of drug exposure records by drug start month
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 
+	720 as analysis_id,   
+	EXTRACT(YEAR FROM drug_exposure_start_date)*100 + EXTRACT(MONTH FROM drug_exposure_start_date) as stratum_1, 
+	COUNT(PERSON_ID) as count_value
+from
+omopv5_de.drug_exposure de1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on de1.person_id = c1.subject_id
+group by c1.cohort_definition_id,
+	EXTRACT(YEAR FROM drug_exposure_start_date)*100 + EXTRACT(MONTH FROM drug_exposure_start_date)
+;
+--
+
+--/********************************************
+
+--HERACLES Analyses on OBSERVATION table
+
+--*********************************************/
+
+
+
+--
+-- 800	Number of persons with at least one observation occurrence, by observation_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 
+	800 as analysis_id, 
+	o1.observation_CONCEPT_ID as stratum_1,
+	COUNT(distinct o1.PERSON_ID) as count_value
+from
+	omopv5_de.observation o1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on o1.person_id = c1.subject_id
+--
+group by c1.cohort_definition_id,
+	o1.observation_CONCEPT_ID
+;
+--
+
+
+--
+-- 801	Number of observation occurrence records, by observation_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 
+	801 as analysis_id, 
+	o1.observation_CONCEPT_ID as stratum_1,
+	COUNT(o1.PERSON_ID) as count_value
+from
+	omopv5_de.observation o1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on o1.person_id = c1.subject_id
+--
+group by c1.cohort_definition_id,
+	o1.observation_CONCEPT_ID
+;
+--
+
+
+
+--
+-- 802	Number of persons by observation occurrence start month, by observation_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
+select c1.cohort_definition_id,
+	802 as analysis_id,   
+	o1.observation_concept_id as stratum_1,
+	EXTRACT(YEAR FROM observation_date)*100 + EXTRACT(MONTH FROM observation_date) as stratum_2, 
+	COUNT(distinct PERSON_ID) as count_value
+from
+	omopv5_de.observation o1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on o1.person_id = c1.subject_id
+--
+group by c1.cohort_definition_id,
+	o1.observation_concept_id, 
+	EXTRACT(YEAR FROM observation_date)*100 + EXTRACT(MONTH FROM observation_date)
+;
+--
+
+
+
+--
+-- 803	Number of distinct observation occurrence concepts per person
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	803 as analysis_id,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select cohort_definition_id,
+	num_observations as count_value,
+	1.0*(row_number() over (partition by cohort_definition_id order by num_observations))/(COUNT(num_observations) over (partition by cohort_definition_id)+1) as p1
+from
+	(
+	select c1.cohort_definition_id, o1.person_id, COUNT(distinct o1.observation_concept_id) as num_observations
+	from
+	omopv5_de.observation o1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on o1.person_id = c1.subject_id
+	group by c1.cohort_definition_id, o1.person_id
+	) t0
+) t1
+group by cohort_definition_id
+;
+--
+
+
+
+--
+-- 804	Number of persons with at least one observation occurrence, by observation_concept_id by calendar year by gender by age decile
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, count_value)
+select c1.cohort_definition_id,
+	804 as analysis_id,   
+	o1.observation_concept_id as stratum_1,
+	EXTRACT(YEAR FROM observation_date) as stratum_2,
+	p1.gender_concept_id as stratum_3,
+	floor((EXTRACT(YEAR FROM observation_date) - p1.year_of_birth)/10) as stratum_4, 
+	COUNT(distinct p1.PERSON_ID) as count_value
+from omopv5_de.PERSON p1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on p1.person_id = c1.subject_id
+inner join
+omopv5_de.observation o1
+on p1.person_id = o1.person_id
+--
+group by c1.cohort_definition_id,
+	o1.observation_concept_id, 
+	EXTRACT(YEAR FROM observation_date),
+	p1.gender_concept_id,
+	floor((EXTRACT(YEAR FROM observation_date) - p1.year_of_birth)/10)
+;
+--
+
+--
+-- 805	Number of observation occurrence records, by observation_concept_id by observation_type_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
+select c1.cohort_definition_id,
+	805 as analysis_id, 
+	o1.observation_CONCEPT_ID as stratum_1,
+	o1.observation_type_concept_id as stratum_2,
+	COUNT(o1.PERSON_ID) as count_value
+from
+	omopv5_de.observation o1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on o1.person_id = c1.subject_id
+--
+group by c1.cohort_definition_id,
+	o1.observation_CONCEPT_ID,	
+	o1.observation_type_concept_id
+;
+--
+
+
+
+--
+-- 806	Distribution of age by observation_concept_id
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	806 as analysis_id,
+	observation_concept_id as stratum_1,
+	gender_concept_id as stratum_2,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select c1.cohort_definition_id,
+	o1.observation_concept_id,
+	p1.gender_concept_id,
+	o1.observation_start_year - p1.year_of_birth as count_value,
+	1.0*(row_number() over (partition by c1.cohort_definition_id, o1.observation_concept_id, p1.gender_concept_id order by o1.observation_start_year - p1.year_of_birth))/(COUNT(o1.observation_start_year - p1.year_of_birth) over (partition by c1.cohort_definition_id, o1.observation_concept_id, p1.gender_concept_id)+1) as p1
+from omopv5_de.PERSON p1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on p1.person_id = c1.subject_id
+inner join
+(select person_id, observation_concept_id, min(EXTRACT(YEAR FROM observation_date)) as observation_start_year
+from omopv5_de.observation o1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on o1.person_id = c1.subject_id
+--
+group by person_id, observation_concept_id
+) o1
+on p1.person_id = o1.person_id
+) t1
+group by cohort_definition_id, observation_concept_id, gender_concept_id
+;
+--
+
+--
+-- 807	Number of observation occurrence records, by observation_concept_id and unit_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
+select c1.cohort_definition_id,
+	807 as analysis_id, 
+	o1.observation_CONCEPT_ID as stratum_1,
+	o1.unit_concept_id as stratum_2,
+	COUNT(o1.PERSON_ID) as count_value
+from
+	omopv5_de.observation o1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on o1.person_id = c1.subject_id
+--
+group by c1.cohort_definition_id,
+	o1.observation_CONCEPT_ID,
+	o1.unit_concept_id
+;
+--
+
+
+
+
+
+--
+-- 809	Number of observation records with invalid person_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c1.cohort_definition_id,
+	809 as analysis_id,  
+	COUNT(o1.PERSON_ID) as count_value
+ FROM 
+	omopv5_de.observation o1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on o1.person_id = c1.subject_id
+	left join omopv5_de.PERSON p1
+	on p1.person_id = o1.person_id
+  WHERE  p1.person_id is null
+group by c1.cohort_definition_id
+;
+--
+
+
+--
+-- 810	Number of observation records outside valid observation period
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c1.cohort_definition_id,
+	810 as analysis_id,  
+	COUNT(o1.PERSON_ID) as count_value
+ FROM 
+	omopv5_de.observation o1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on o1.person_id = c1.subject_id
+	left join omopv5_de.OBSERVATION_PERIOD op1
+	on op1.person_id = o1.person_id
+	and o1.observation_date >= op1.observation_period_start_date
+	and o1.observation_date <= op1.observation_period_end_date
+  WHERE  op1.person_id is null
+group by c1.cohort_definition_id
+;
+--
+
+
+
+--
+-- 812	Number of observation records with invalid provider_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c1.cohort_definition_id,
+	812 as analysis_id,  
+	COUNT(o1.PERSON_ID) as count_value
+ FROM 
+	omopv5_de.observation o1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on o1.person_id = c1.subject_id
+	left join omopv5_de.provider p1
+	on p1.provider_id =   o1.provider_id  
+  WHERE    o1.provider_id   is not null
+	and p1.provider_id is null
+group by c1.cohort_definition_id
+;
+--
+
+--
+-- 813	Number of observation records with invalid visit_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c1.cohort_definition_id,
+	813 as analysis_id,  
+	COUNT(o1.PERSON_ID) as count_value
+ FROM 
+	omopv5_de.observation o1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on o1.person_id = c1.subject_id
+	left join omopv5_de.visit_occurrence vo1
+	on o1.visit_occurrence_id = vo1.visit_occurrence_id
+  WHERE  o1.visit_occurrence_id is not null
+	and vo1.visit_occurrence_id is null
+group by c1.cohort_definition_id
+;
+--
+
+
+--
+-- 814	Number of observation records with no value (numeric, string, or concept)
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c1.cohort_definition_id,
+	814 as analysis_id,  
+	COUNT(o1.PERSON_ID) as count_value
+ FROM 
+	omopv5_de.observation o1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on o1.person_id = c1.subject_id
+  WHERE  o1.value_as_number is null
+	and o1.value_as_string is null
+	and o1.value_as_concept_id is null
+group by c1.cohort_definition_id
+;
+--
+
+
+--
+-- 815	Distribution of numeric values, by observation_concept_id and unit_concept_id
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	815 as analysis_id,
+	observation_concept_id as stratum_1,
+	unit_concept_id as stratum_2,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select cohort_definition_id,
+	observation_concept_id, unit_concept_id,
+	value_as_number as count_value,
+	1.0*(row_number() over (partition by cohort_definition_id, observation_concept_id, unit_concept_id order by value_as_number))/(COUNT(value_as_number) over (partition by cohort_definition_id, observation_concept_id, unit_concept_id)+1) as p1
+from omopv5_de.observation o1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on o1.person_id = c1.subject_id
+where o1.unit_concept_id is not null
+	and o1.value_as_number is not null
+	--
+) t1
+group by cohort_definition_id, observation_concept_id, unit_concept_id
+;
+--
+
+
+-- --end of if in CDMv5
+
+
+--
+-- 820	Number of observation records by condition occurrence start month
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 
+	820 as analysis_id,   
+	EXTRACT(YEAR FROM observation_date)*100 + EXTRACT(MONTH FROM observation_date) as stratum_1, 
+	COUNT(PERSON_ID) as count_value
+from
+	omopv5_de.observation o1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on o1.person_id = c1.subject_id
+group by c1.cohort_definition_id,
+	EXTRACT(YEAR FROM observation_date)*100 + EXTRACT(MONTH FROM observation_date)
+;
+--
+
+
+
+
+--/********************************************
+
+--HERACLES Analyses on DRUG_ERA table
+
+--*********************************************/
+
+
+--
+-- 900	Number of persons with at least one drug occurrence, by drug_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 
+	900 as analysis_id, 
+	de1.drug_CONCEPT_ID as stratum_1,
+	COUNT(distinct de1.PERSON_ID) as count_value
+from
+	omopv5_de.drug_era de1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on de1.person_id = c1.subject_id
+--
+group by c1.cohort_definition_id, 
+	de1.drug_CONCEPT_ID
+;
+--
+
+
+--
+-- 901	Number of drug occurrence records, by drug_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 
+	901 as analysis_id, 
+	de1.drug_CONCEPT_ID as stratum_1,
+	COUNT(de1.PERSON_ID) as count_value
+from
+	omopv5_de.drug_era de1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on de1.person_id = c1.subject_id
+--
+group by c1.cohort_definition_id,
+	de1.drug_CONCEPT_ID
+;
+--
+
+
+
+--
+-- 902	Number of persons by drug occurrence start month, by drug_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
+select cohort_definition_id,
+	902 as analysis_id,   
+	de1.drug_concept_id as stratum_1,
+	EXTRACT(YEAR FROM drug_era_start_date)*100 + EXTRACT(MONTH FROM drug_era_start_date) as stratum_2, 
+	COUNT(distinct PERSON_ID) as count_value
+from
+	omopv5_de.drug_era de1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on de1.person_id = c1.subject_id
+--
+group by c1.cohort_definition_id,
+	de1.drug_concept_id, 
+	EXTRACT(YEAR FROM drug_era_start_date)*100 + EXTRACT(MONTH FROM drug_era_start_date)
+;
+--
+
+
+
+--
+-- 903	Number of distinct drug era concepts per person
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	903 as analysis_id,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select cohort_definition_id,
+	num_drugs as count_value,
+	1.0*(row_number() over (partition by cohort_definition_id order by num_drugs))/(COUNT(num_drugs) over (partition by cohort_definition_id)+1) as p1
+from
+	(
+	select c1.cohort_definition_id, de1.person_id, COUNT(distinct de1.drug_concept_id) as num_drugs
+	from
+	omopv5_de.drug_era de1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on de1.person_id = c1.subject_id
+	group by c1.cohort_definition_id, de1.person_id
+	) t0
+) t1
+group by cohort_definition_id
+;
+--
+
+
+
+--
+-- 904	Number of persons with at least one drug occurrence, by drug_concept_id by calendar year by gender by age decile
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, count_value)
+select c1.cohort_definition_id,
+	904 as analysis_id,   
+	de1.drug_concept_id as stratum_1,
+	EXTRACT(YEAR FROM drug_era_start_date) as stratum_2,
+	p1.gender_concept_id as stratum_3,
+	floor((EXTRACT(YEAR FROM drug_era_start_date) - p1.year_of_birth)/10) as stratum_4, 
+	COUNT(distinct p1.PERSON_ID) as count_value
+from omopv5_de.PERSON p1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on p1.person_id = c1.subject_id
+inner join
+omopv5_de.drug_era de1
+on p1.person_id = de1.person_id
+--
+group by c1.cohort_definition_id,
+	de1.drug_concept_id, 
+	EXTRACT(YEAR FROM drug_era_start_date),
+	p1.gender_concept_id,
+	floor((EXTRACT(YEAR FROM drug_era_start_date) - p1.year_of_birth)/10)
+;
+--
+
+
+
+
+--
+-- 906	Distribution of age by drug_concept_id
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	906 as analysis_id,
+	drug_concept_id as stratum_1,
+	gender_concept_id as stratum_2,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select c1.cohort_definition_id,
+	de1.drug_concept_id,
+	p1.gender_concept_id,
+	de1.drug_start_year - p1.year_of_birth as count_value,
+	1.0*(row_number() over (partition by c1.cohort_definition_id, de1.drug_concept_id, p1.gender_concept_id order by de1.drug_start_year - p1.year_of_birth))/(COUNT(de1.drug_start_year - p1.year_of_birth) over (partition by c1.cohort_definition_id, de1.drug_concept_id, p1.gender_concept_id)+1) as p1
+from omopv5_de.PERSON p1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on p1.person_id = c1.subject_id
+inner join
+(select person_id, drug_concept_id, min(EXTRACT(YEAR FROM drug_era_start_date)) as drug_start_year
+from omopv5_de.drug_era de0
+		inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on de0.person_id = c1.subject_id
+--
+group by person_id, drug_concept_id
+) de1
+on p1.person_id = de1.person_id
+) t1
+group by cohort_definition_id, drug_concept_id, gender_concept_id
+;
+--
+
+
+
+
+
+--
+-- 907	Distribution of drug era length, by drug_concept_id
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	907 as analysis_id,
+	drug_concept_id as stratum_1,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select cohort_definition_id,
+	drug_concept_id,
+	( drug_era_end_date - drug_era_start_date) as count_value,
+	1.0*(row_number() over (partition by cohort_definition_id, drug_concept_id order by ( drug_era_end_date - drug_era_start_date)))/(COUNT(( drug_era_end_date - drug_era_start_date)) over (partition by cohort_definition_id, drug_concept_id)+1) as p1
+from  omopv5_de.drug_era de1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on de1.person_id = c1.subject_id
+--
+) t1
+group by cohort_definition_id, 
+	drug_concept_id
+;
+--
+
+
+
+--
+-- 908	Number of drug eras with invalid person
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c1.cohort_definition_id,
+	908 as analysis_id,  
+	COUNT(de1.PERSON_ID) as count_value
+ FROM 
+	omopv5_de.drug_era de1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on de1.person_id = c1.subject_id
+	left join omopv5_de.PERSON p1
+	on p1.person_id = de1.person_id
+  WHERE  p1.person_id is null
+group by c1.cohort_definition_id
+;
+--
+
+
+--
+-- 909	Number of drug eras outside valid observation period
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c1.cohort_definition_id,
+	909 as analysis_id,  
+	COUNT(de1.PERSON_ID) as count_value
+ FROM 
+	omopv5_de.drug_era de1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on de1.person_id = c1.subject_id
+	left join omopv5_de.OBSERVATION_PERIOD op1
+	on op1.person_id = de1.person_id
+	and de1.drug_era_start_date >= op1.observation_period_start_date
+	and de1.drug_era_start_date <= op1.observation_period_end_date
+  WHERE  op1.person_id is null
+group by c1.cohort_definition_id
+;
+--
+
+
+--
+-- 910	Number of drug eras with end date < start date
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c1.cohort_definition_id,
+	910 as analysis_id,  
+	COUNT(de1.PERSON_ID) as count_value
+ FROM 
+	omopv5_de.drug_era de1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on de1.person_id = c1.subject_id
+  WHERE  de1.drug_era_end_date < de1.drug_era_start_date
+group by c1.cohort_definition_id
+;
+--
+
+
+
+--
+-- 920	Number of drug era records by drug era start month
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 
+	920 as analysis_id,   
+	EXTRACT(YEAR FROM drug_era_start_date)*100 + EXTRACT(MONTH FROM drug_era_start_date) as stratum_1, 
+	COUNT(PERSON_ID) as count_value
+from
+omopv5_de.drug_era de1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on de1.person_id = c1.subject_id
+group by c1.cohort_definition_id,
+	EXTRACT(YEAR FROM drug_era_start_date)*100 + EXTRACT(MONTH FROM drug_era_start_date)
+;
+--
+
+
+
+
+
+--/********************************************
+
+--HERACLES Analyses on CONDITION_ERA table
+
+--*********************************************/
+
+
+--
+-- 1000	Number of persons with at least one condition occurrence, by condition_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 
+	1000 as analysis_id, 
+	ce1.condition_CONCEPT_ID as stratum_1,
+	COUNT(distinct ce1.PERSON_ID) as count_value
+from
+	omopv5_de.condition_era ce1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on ce1.person_id = c1.subject_id
+--
+group by c1.cohort_definition_id,
+	ce1.condition_CONCEPT_ID
+;
+--
+
+
+--
+-- 1001	Number of condition occurrence records, by condition_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 
+	1001 as analysis_id, 
+	ce1.condition_CONCEPT_ID as stratum_1,
+	COUNT(ce1.PERSON_ID) as count_value
+from
+	omopv5_de.condition_era ce1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on ce1.person_id = c1.subject_id
+--
+group by c1.cohort_definition_id,
+	ce1.condition_CONCEPT_ID
+;
+--
+
+
+
+--
+-- 1002	Number of persons by condition occurrence start month, by condition_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
+select c1.cohort_definition_id,
+	1002 as analysis_id,   
+	ce1.condition_concept_id as stratum_1,
+	EXTRACT(YEAR FROM condition_era_start_date)*100 + EXTRACT(MONTH FROM condition_era_start_date) as stratum_2, 
+	COUNT(distinct PERSON_ID) as count_value
+from
+	omopv5_de.condition_era ce1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on ce1.person_id = c1.subject_id
+--
+group by c1.cohort_definition_id,
+	ce1.condition_concept_id, 
+	EXTRACT(YEAR FROM condition_era_start_date)*100 + EXTRACT(MONTH FROM condition_era_start_date)
+;
+--
+
+
+
+--
+-- 1003	Number of distinct condition era concepts per person
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	1003 as analysis_id,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select cohort_definition_id, num_conditions as count_value,
+	1.0*(row_number() over (partition by cohort_definition_id order by num_conditions))/(COUNT(num_conditions) over (partition by cohort_definition_id)+1) as p1
+from
+	(
+	select c1.cohort_definition_id, ce1.person_id, COUNT(distinct ce1.condition_concept_id) as num_conditions
+	from
+	omopv5_de.condition_era ce1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on ce1.person_id = c1.subject_id
+	group by c1.cohort_definition_id, ce1.person_id
+	) t0
+) t1
+group by cohort_definition_id
+;
+--
+
+
+
+--
+-- 1004	Number of persons with at least one condition occurrence, by condition_concept_id by calendar year by gender by age decile
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, count_value)
+select c1.cohort_definition_id,
+	1004 as analysis_id,   
+	ce1.condition_concept_id as stratum_1,
+	EXTRACT(YEAR FROM condition_era_start_date) as stratum_2,
+	p1.gender_concept_id as stratum_3,
+	floor((EXTRACT(YEAR FROM condition_era_start_date) - p1.year_of_birth)/10) as stratum_4, 
+	COUNT(distinct p1.PERSON_ID) as count_value
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on p1.person_id = c1.subject_id
+inner join
+omopv5_de.condition_era ce1
+on p1.person_id = ce1.person_id
+--
+group by c1.cohort_definition_id,
+	ce1.condition_concept_id, 
+	EXTRACT(YEAR FROM condition_era_start_date),
+	p1.gender_concept_id,
+	floor((EXTRACT(YEAR FROM condition_era_start_date) - p1.year_of_birth)/10)
+;
+--
+
+
+
+
+--
+-- 1006	Distribution of age by condition_concept_id
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	1006 as analysis_id,
+	condition_concept_id as stratum_1,
+	gender_concept_id as stratum_2,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select c1.cohort_definition_id,
+	ce1.condition_concept_id,
+	p1.gender_concept_id,
+	ce1.condition_start_year - p1.year_of_birth as count_value,
+	1.0*(row_number() over (partition by c1.cohort_definition_id, ce1.condition_concept_id, p1.gender_concept_id order by ce1.condition_start_year - p1.year_of_birth))/(COUNT(ce1.condition_start_year - p1.year_of_birth) over (partition by c1.cohort_definition_id, ce1.condition_concept_id, p1.gender_concept_id)+1) as p1
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on p1.person_id = c1.subject_id
+inner join
+(select person_id, condition_concept_id, min(EXTRACT(YEAR FROM condition_era_start_date)) as condition_start_year
+from omopv5_de.condition_era ce0
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on ce0.person_id = c1.subject_id
+		--
+group by person_id, condition_concept_id
+) ce1
+on p1.person_id = ce1.person_id
+) t1
+group by cohort_definition_id, condition_concept_id, gender_concept_id
+;
+--
+
+
+
+
+
+--
+-- 1007	Distribution of condition era length, by condition_concept_id
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	1007 as analysis_id,
+	condition_concept_id as stratum_1,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select c1.cohort_definition_id,
+	condition_concept_id,
+	( condition_era_end_date - condition_era_start_date) as count_value,
+	1.0*(row_number() over (partition by c1.cohort_definition_id, condition_concept_id order by ( condition_era_end_date - condition_era_start_date)))/(COUNT(( condition_era_end_date - condition_era_start_date)) over (partition by c1.cohort_definition_id, condition_concept_id)+1) as p1
+from  omopv5_de.condition_era ce1
+inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+	on ce1.person_id = c1.subject_id
+--
+) t1
+group by cohort_definition_id,
+	condition_concept_id
+;
+--
+
+
+
+--
+-- 1008	Number of condition eras with invalid person
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c1.cohort_definition_id,
+	1008 as analysis_id,  
+	COUNT(ce1.PERSON_ID) as count_value
+ FROM 
+	omopv5_de.condition_era ce1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on ce1.person_id = c1.subject_id
+	left join omopv5_de.PERSON p1
+	on p1.person_id = ce1.person_id
+  WHERE  p1.person_id is null
+group by c1.cohort_definition_id
+;
+--
+
+
+--
+-- 1009	Number of condition eras outside valid observation period
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c1.cohort_definition_id,
+	1009 as analysis_id,  
+	COUNT(ce1.PERSON_ID) as count_value
+ FROM 
+	omopv5_de.condition_era ce1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on ce1.person_id = c1.subject_id
+	left join omopv5_de.OBSERVATION_PERIOD op1
+	on op1.person_id = ce1.person_id
+	and ce1.condition_era_start_date >= op1.observation_period_start_date
+	and ce1.condition_era_start_date <= op1.observation_period_end_date
+  WHERE  op1.person_id is null
+group by c1.cohort_definition_id
+;
+--
+
+
+--
+-- 1010	Number of condition eras with end date < start date
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c1.cohort_definition_id,
+	1010 as analysis_id,  
+	COUNT(ce1.PERSON_ID) as count_value
+ FROM 
+	omopv5_de.condition_era ce1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on ce1.person_id = c1.subject_id
+  WHERE  ce1.condition_era_end_date < ce1.condition_era_start_date
+group by c1.cohort_definition_id
+;
+--
+
+
+--
+-- 1020	Number of drug era records by drug era start month
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 
+	1020 as analysis_id,   
+	EXTRACT(YEAR FROM condition_era_start_date)*100 + EXTRACT(MONTH FROM condition_era_start_date) as stratum_1, 
+	COUNT(PERSON_ID) as count_value
+from
+omopv5_de.condition_era ce1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on ce1.person_id = c1.subject_id
+group by c1.cohort_definition_id,
+	EXTRACT(YEAR FROM condition_era_start_date)*100 + EXTRACT(MONTH FROM condition_era_start_date)
+;
+--
+
+
+
+
+--/********************************************
+
+--HERACLES Analyses on LOCATION table
+
+--*********************************************/
+
+--
+-- 1100	Number of persons by location 3-digit zip
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+SELECT   c1.cohort_definition_id, 
+	1100 as analysis_id,  
+	SUBSTR(l1.zip,0,3) as stratum_1, COUNT(distinct person_id) as count_value
+ FROM  omopv5_de.PERSON p1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on p1.person_id = c1.subject_id
+	inner join omopv5_de.LOCATION l1
+	on p1.location_id = l1.location_id
+  WHERE  p1.location_id is not null
+	and l1.zip is not null
+group by c1.cohort_definition_id,
+	SUBSTR(l1.zip,0,3);
+--
+
+
+--
+-- 1101	Number of persons by location state
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+SELECT   c1.cohort_definition_id, 
+	1101 as analysis_id,  
+	l1.state as stratum_1, COUNT(distinct person_id) as count_value
+ FROM  omopv5_de.PERSON p1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on p1.person_id = c1.subject_id
+	inner join omopv5_de.LOCATION l1
+	on p1.location_id = l1.location_id
+  WHERE  p1.location_id is not null
+	and l1.state is not null
+group by c1.cohort_definition_id,
+	l1.state;
+--
+
+
+
+
+--/********************************************
+
+--HERACLES Analyses on CARE_SITE table
+--
+--*********************************************/
+
+
+--
+-- 1200	Number of persons by place of service
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+SELECT   c1.cohort_definition_id, 
+	1200 as analysis_id,  
+	cs1.place_of_service_concept_id as stratum_1, 
+	COUNT(person_id) as count_value
+ FROM  omopv5_de.PERSON p1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on p1.person_id = c1.subject_id
+	inner join omopv5_de.care_site cs1
+	on p1.care_site_id = cs1.care_site_id
+  WHERE  p1.care_site_id is not null
+	and cs1.place_of_service_concept_id is not null
+group by c1.cohort_definition_id,
+	cs1.place_of_service_concept_id;
+--
+
+
+--
+-- 1201	Number of visits by place of service
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+SELECT   c1.cohort_definition_id, 
+	1201 as analysis_id,  
+	cs1.place_of_service_concept_id as stratum_1, 
+	COUNT(visit_occurrence_id) as count_value
+ FROM  omopv5_de.visit_occurrence vo1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c1
+		on vo1.person_id = c1.subject_id
+	inner join omopv5_de.care_site cs1
+	on vo1.care_site_id = cs1.care_site_id
+  WHERE  vo1.care_site_id is not null
+	and cs1.place_of_service_concept_id is not null
+group by c1.cohort_definition_id,
+	cs1.place_of_service_concept_id;
+--
+
+
+
+
+
+
+--/********************************************
+
+--HERACLES Analyses on COHORT table
+
+--*********************************************/
+
+--
+-- 1700	Number of records by cohort_definition_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c2.cohort_definition_id, 
+	1700 as analysis_id, 
+	c1.cohort_definition_id as stratum_1, 
+	COUNT(c1.subject_ID) as count_value
+from
+	omopv5_de.cohort c1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c2
+on c1.subject_id = c2.subject_id
+group by c2.cohort_definition_id,
+	c1.cohort_definition_id
+;
+--
+
+
+--
+-- 1701	Number of records with cohort end date < cohort start date
+insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
+SELECT   c2.cohort_definition_id,
+	1701 as analysis_id, 
+	COUNT(c1.subject_ID) as count_value
+ FROM 	
+	omopv5_de.cohort c1
+	inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c2
+on c1.subject_id = c2.subject_id
+  WHERE  c1.cohort_end_date < c1.cohort_start_date
+group by c2.cohort_definition_id
+;
+--
+
+
+
+
+
+--/********************************************
+
+--HERACLES Analyses on analysis relative to selected COHORT
+
+--*********************************************/
+
+--
+-- 1800	Number of persons by age, with age at cohort start
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 
+	1800 as analysis_id, 
+	EXTRACT(YEAR FROM c1.cohort_start_date) - p1.YEAR_OF_BIRTH as stratum_1, 
+	COUNT(p1.person_id) as count_value
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id, cohort_start_date from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+group by c1.cohort_definition_id, EXTRACT(YEAR FROM c1.cohort_start_date) - p1.YEAR_OF_BIRTH
+;
+--	
+	
+	
+
+--
+-- 1801	Distribution of age at cohort start
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id, 
+	1801 as analysis_id,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select c1.cohort_definition_id,
+	EXTRACT(YEAR FROM c1.cohort_start_date) - p1.YEAR_OF_BIRTH as count_value,
+	1.0*(row_number() over (partition by c1.cohort_definition_id order by EXTRACT(YEAR FROM c1.cohort_start_date) - p1.YEAR_OF_BIRTH))/(COUNT(EXTRACT(YEAR FROM c1.cohort_start_date) - p1.YEAR_OF_BIRTH) over (partition by c1.cohort_definition_id)+1) as p1
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id, cohort_start_date from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+) t1
+group by cohort_definition_id
+;
+
+--
+	
+
+--
+-- 1802	Distribution of age at cohort start by gender
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id, 
+	1802 as analysis_id,
+	gender_concept_id as stratum_1,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select c1.cohort_definition_id,
+	p1.gender_concept_id,
+	EXTRACT(YEAR FROM c1.cohort_start_date) - p1.YEAR_OF_BIRTH as count_value,
+	1.0*(row_number() over (partition by p1.gender_concept_id, c1.cohort_definition_id order by EXTRACT(YEAR FROM c1.cohort_start_date) - p1.YEAR_OF_BIRTH))/(COUNT(EXTRACT(YEAR FROM c1.cohort_start_date) - p1.YEAR_OF_BIRTH) over (partition by p1.gender_concept_id, c1.cohort_definition_id)+1) as p1
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id, cohort_start_date from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+) t1
+group by cohort_definition_id, gender_concept_id
+;
+--	
+	
+	
+--
+-- 1803	Distribution of age at cohort start by cohort start year
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id, 
+	1803 as analysis_id,
+	cohort_year as stratum_1,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select c1.cohort_definition_id,
+	EXTRACT(YEAR FROM c1.cohort_start_date) as cohort_year,
+	EXTRACT(YEAR FROM c1.cohort_start_date) - p1.YEAR_OF_BIRTH as count_value,
+	1.0*(row_number() over (partition by EXTRACT(YEAR FROM c1.cohort_start_date), c1.cohort_definition_id order by EXTRACT(YEAR FROM c1.cohort_start_date) - p1.YEAR_OF_BIRTH))/(COUNT(EXTRACT(YEAR FROM c1.cohort_start_date) - p1.YEAR_OF_BIRTH) over (partition by EXTRACT(YEAR FROM c1.cohort_start_date), c1.cohort_definition_id)+1) as p1
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id, cohort_start_date from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+) t1
+group by cohort_definition_id, cohort_year
+;
+--	
+
+
+--
+-- 1804	Number of persons by duration from cohort start to cohort end, in 30d increments
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id, 
+	1804 as analysis_id,  
+	floor(( c1.cohort_end_date -  c1.cohort_start_date)/30) as stratum_1, 
+	COUNT(distinct p1.person_id) as count_value
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+group by c1.cohort_definition_id, floor(( c1.cohort_end_date -  c1.cohort_start_date)/30)
+;
+--	
+	
+	
+--
+-- 1805	Number of persons by duration from observation start to cohort start, in 30d increments
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+SELECT   c1.cohort_definition_id, 
+	1805 as analysis_id,  
+	floor(( c1.cohort_start_date -  op1.observation_period_start_date)/30) as stratum_1, 
+	COUNT(distinct p1.person_id) as count_value
+ FROM  omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+inner join omopv5_de.observation_period op1
+on p1.person_id = op1.person_id
+  WHERE  c1.cohort_start_date >= op1.observation_period_start_date
+and c1.cohort_start_date <= op1.observation_period_end_date
+group by c1.cohort_definition_id, floor(( c1.cohort_start_date -  op1.observation_period_start_date)/30)
+;
+--	
+	
+--	
+-- 1806	Number of persons by duration from cohort start to observation end, in 30d increments
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+SELECT   c1.cohort_definition_id, 
+	1806 as analysis_id,  
+	floor(( op1.observation_period_end_date -  c1.cohort_start_date)/30) as stratum_1, 
+	COUNT(distinct p1.person_id) as count_value
+ FROM  omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+inner join omopv5_de.observation_period op1
+on p1.person_id = op1.person_id
+  WHERE  c1.cohort_start_date >= op1.observation_period_start_date
+and c1.cohort_start_date <= op1.observation_period_end_date
+group by c1.cohort_definition_id, floor(( op1.observation_period_end_date -  c1.cohort_start_date)/30)
+;
+--	
+
+--
+-- 1807	Number of persons by duration from cohort end to observation end, in 30d increments
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+SELECT   c1.cohort_definition_id, 
+	1807 as analysis_id,  
+	floor(( op1.observation_period_end_date -  c1.cohort_end_date)/30) as stratum_1, 
+	COUNT(distinct p1.person_id) as count_value
+ FROM  omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+inner join omopv5_de.observation_period op1
+on p1.person_id = op1.person_id
+  WHERE  c1.cohort_start_date >= op1.observation_period_start_date
+and c1.cohort_start_date <= op1.observation_period_end_date
+group by c1.cohort_definition_id, floor(( op1.observation_period_end_date -  c1.cohort_end_date)/30)
+;
+--	
+		
+	
+--
+-- 1808	Distribution of duration (days) from cohort start to cohort end
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	1808 as analysis_id,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select c1.cohort_definition_id,
+	( c1.cohort_end_date - c1.cohort_start_date) as count_value,
+	1.0*(row_number() over (partition by c1.cohort_definition_id order by ( c1.cohort_end_date - c1.cohort_start_date)))/(COUNT(( c1.cohort_end_date - c1.cohort_start_date)) over (partition by c1.cohort_definition_id)+1) as p1
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+) t1
+group by cohort_definition_id
+;
+--
+
+	
+--
+-- 1809	Distribution of duration (days) from cohort start to cohort end, by gender
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	1809 as analysis_id,
+	gender_concept_id as stratum_1,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select c1.cohort_definition_id,
+	p1.gender_concept_id,
+	( c1.cohort_end_date - c1.cohort_start_date) as count_value,
+	1.0*(row_number() over (partition by c1.cohort_definition_id, p1.gender_concept_id order by ( c1.cohort_end_date - c1.cohort_start_date)))/(COUNT(( c1.cohort_end_date - c1.cohort_start_date)) over (partition by c1.cohort_definition_id, p1.gender_concept_id)+1) as p1
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+) t1
+group by cohort_definition_id,
+	gender_concept_id
+;
+--
+	
+	
+--
+-- 1810	Distribution of duration (days) from cohort start to cohort end, by age decile
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	1810 as analysis_id,
+	age_decile as stratum_1,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select c1.cohort_definition_id,
+	floor((EXTRACT(YEAR FROM c1.cohort_start_date) - p1.YEAR_OF_BIRTH)/10) as age_decile,
+	( c1.cohort_end_date - c1.cohort_start_date) as count_value,
+	1.0*(row_number() over (partition by c1.cohort_definition_id, floor((EXTRACT(YEAR FROM c1.cohort_start_date) - p1.YEAR_OF_BIRTH)/10) order by ( c1.cohort_end_date - c1.cohort_start_date)))/(COUNT(( c1.cohort_end_date - c1.cohort_start_date)) over (partition by c1.cohort_definition_id, floor((EXTRACT(YEAR FROM c1.cohort_start_date) - p1.YEAR_OF_BIRTH)/10))+1) as p1
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+) t1
+group by cohort_definition_id,
+	age_decile
+;
+--
+	
+--
+-- 1811	Distribution of duration (days) from observation start to cohort start
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	1811 as analysis_id,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select c1.cohort_definition_id,
+	( c1.cohort_start_date - op1.observation_period_start_date) as count_value,
+	1.0*(row_number() over (partition by c1.cohort_definition_id order by ( c1.cohort_start_date - op1.observation_period_start_date)))/(COUNT(( c1.cohort_start_date - op1.observation_period_start_date)) over (partition by c1.cohort_definition_id)+1) as p1
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+inner join omopv5_de.observation_period op1
+on p1.person_id = op1.person_id
+where c1.cohort_start_date >= op1.observation_period_start_date
+and c1.cohort_start_date <= op1.observation_period_end_date
+) t1
+group by cohort_definition_id
+;
+--
+	
+	
+--
+-- 1812	Distribution of duration (days) from cohort start to observation end
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	1812 as analysis_id,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select c1.cohort_definition_id,
+	( op1.observation_period_end_date - c1.cohort_start_date) as count_value,
+	1.0*(row_number() over (partition by c1.cohort_definition_id order by ( op1.observation_period_end_date - c1.cohort_start_date)))/(COUNT(( op1.observation_period_end_date - c1.cohort_start_date)) over (partition by c1.cohort_definition_id)+1) as p1
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+inner join omopv5_de.observation_period op1
+on p1.person_id = op1.person_id
+where c1.cohort_start_date >= op1.observation_period_start_date
+and c1.cohort_start_date <= op1.observation_period_end_date
+) t1
+group by cohort_definition_id
+;
+--
+	
+
+--
+-- 1813	Distribution of duration (days) from cohort end to observation end
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	1812 as analysis_id,
+	COUNT(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	STDDEV(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select c1.cohort_definition_id,
+	( op1.observation_period_end_date - c1.cohort_end_date) as count_value,
+	1.0*(row_number() over (partition by c1.cohort_definition_id order by ( op1.observation_period_end_date - c1.cohort_end_date)))/(COUNT(( op1.observation_period_end_date - c1.cohort_end_date)) over (partition by c1.cohort_definition_id)+1) as p1
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+inner join omopv5_de.observation_period op1
+on p1.person_id = op1.person_id
+where c1.cohort_start_date >= op1.observation_period_start_date
+and c1.cohort_start_date <= op1.observation_period_end_date
+) t1
+group by cohort_definition_id
+;
+--
+
+	
+--
+-- 1814	Number of persons by cohort start year by gender by age decile
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3, count_value)
+select c1.cohort_definition_id,
+	1814 as analysis_id,   
+	EXTRACT(YEAR FROM c1.cohort_start_date) as stratum_1,
+	p1.gender_concept_id as stratum_2,
+	floor((EXTRACT(YEAR FROM c1.cohort_start_date) - p1.year_of_birth)/10) as stratum_3, 
+	COUNT(distinct p1.PERSON_ID) as count_value
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id, cohort_start_date from HERACLES_cohort) c1
+	on p1.person_id = c1.subject_id
+group by c1.cohort_definition_id, 
+	EXTRACT(YEAR FROM c1.cohort_start_date),
+	p1.gender_concept_id,
+	floor((EXTRACT(YEAR FROM c1.cohort_start_date) - p1.year_of_birth)/10)
+;
+--
+
+	
+--
+-- 1815	Number of persons by cohort start month
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select c1.cohort_definition_id,
+	1815 as analysis_id,   
+	EXTRACT(YEAR FROM c1.cohort_start_date)*100 + EXTRACT(MONTH FROM c1.cohort_start_date) as stratum_1, 
+	COUNT(distinct p1.person_id) as count_value
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id, cohort_start_date from HERACLES_cohort) c1
+	on p1.person_id = c1.subject_id
+group by c1.cohort_definition_id,
+	EXTRACT(YEAR FROM c1.cohort_start_date)*100 + EXTRACT(MONTH FROM c1.cohort_start_date)
+;
+--
+
+	
+--
+-- 1816	Number of persons by number of cohort periods
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+select cohort_definition_id, 
+	1816 as analysis_id,  
+	num_periods as stratum_1, 
+	COUNT(distinct person_id) as count_value
+from
+	(select c1.cohort_definition_id, p1.person_id, COUNT(c1.cohort_start_date) as num_periods 
+		from omopv5_de.PERSON p1
+		inner join (select subject_id, cohort_definition_id, cohort_start_date from HERACLES_cohort) c1
+			on p1.person_id = c1.subject_id
+		group by c1.cohort_definition_id, p1.person_id) nc1
+group by cohort_definition_id, num_periods
+;
+--
+	
+	
+--
+-- 1820	Number of persons by duration from cohort start to first occurrence of condition occurrence, by condition_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
+select c1.cohort_definition_id, 
+	1820 as analysis_id,
+	co1.condition_concept_id as stratum_1,
+	case when c1.cohort_start_date = co1.first_date then 0
+		when c1.cohort_start_date < co1.first_date then floor(( co1.first_date -  c1.cohort_start_date)/30)+1
+		when c1.cohort_start_date > co1.first_date then floor(( co1.first_date -  c1.cohort_start_date)/30)-1
+	end as stratum_2, 
+	COUNT(distinct p1.person_id) as count_value
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+inner join
+	(
+		select co0.person_id, co0.condition_concept_id, min(co0.condition_start_date) as first_date
+		from omopv5_de.condition_occurrence co0
+			inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c0
+			on co0.person_id = c0.subject_id
+		--
+		group by co0.person_id, co0.condition_concept_id
+	) co1
+on p1.person_id = co1.person_id
+group by c1.cohort_definition_id,
+	co1.condition_concept_id,
+	case when c1.cohort_start_date = co1.first_date then 0
+		when c1.cohort_start_date < co1.first_date then floor(( co1.first_date -  c1.cohort_start_date)/30)+1
+		when c1.cohort_start_date > co1.first_date then floor(( co1.first_date -  c1.cohort_start_date)/30)-1
+	end
+;
+--	
+	
+	
+--
+-- 1821	Number of events by duration from cohort start to all occurrences of condition occurrence, by condition_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
+select c1.cohort_definition_id, 
+	1821 as analysis_id,
+	co1.condition_concept_id as stratum_1,
+	case when c1.cohort_start_date = co1.condition_start_date then 0
+		when c1.cohort_start_date < co1.condition_start_date then floor(( co1.condition_start_date -  c1.cohort_start_date)/30)+1
+		when c1.cohort_start_date > co1.condition_start_date then floor(( co1.condition_start_date -  c1.cohort_start_date)/30)-1
+	end as stratum_2, 
+	COUNT(distinct p1.person_id) as count_value
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+inner join
+	omopv5_de.condition_occurrence co1
+on p1.person_id = co1.person_id
+--
+group by c1.cohort_definition_id,
+	co1.condition_concept_id,
+	case when c1.cohort_start_date = co1.condition_start_date then 0
+		when c1.cohort_start_date < co1.condition_start_date then floor(( co1.condition_start_date -  c1.cohort_start_date)/30)+1
+		when c1.cohort_start_date > co1.condition_start_date then floor(( co1.condition_start_date -  c1.cohort_start_date)/30)-1
+	end
+;
+--	
+	
+	
+	
+--
+-- 1830	Number of persons by duration from cohort start to first occurrence of procedure occurrence, by procedure_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
+select c1.cohort_definition_id, 
+	1830 as analysis_id,
+	po1.procedure_concept_id as stratum_1,
+	case when c1.cohort_start_date = po1.first_date then 0
+		when c1.cohort_start_date < po1.first_date then floor(( po1.first_date -  c1.cohort_start_date)/30)+1
+		when c1.cohort_start_date > po1.first_date then floor(( po1.first_date -  c1.cohort_start_date)/30)-1
+	end as stratum_2, 
+	COUNT(distinct p1.person_id) as count_value
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+inner join
+	(
+		select po0.person_id, po0.procedure_concept_id, min(po0.procedure_date) as first_date
+		from omopv5_de.procedure_occurrence po0
+			inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c0
+			on po0.person_id = c0.subject_id
+		--
+		group by po0.person_id, po0.procedure_concept_id
+	) po1
+on p1.person_id = po1.person_id
+group by c1.cohort_definition_id,
+	po1.procedure_concept_id,
+	case when c1.cohort_start_date = po1.first_date then 0
+		when c1.cohort_start_date < po1.first_date then floor(( po1.first_date -  c1.cohort_start_date)/30)+1
+		when c1.cohort_start_date > po1.first_date then floor(( po1.first_date -  c1.cohort_start_date)/30)-1
+	end
+;
+--	
+	
+	
+--
+-- 1831	Number of events by duration from cohort start to all occurrences of procedure occurrence, by procedure_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
+select c1.cohort_definition_id, 
+	1831 as analysis_id,
+	po1.procedure_concept_id as stratum_1,
+	case when c1.cohort_start_date = po1.procedure_date then 0
+		when c1.cohort_start_date < po1.procedure_date then floor(( po1.procedure_date -  c1.cohort_start_date)/30)+1
+		when c1.cohort_start_date > po1.procedure_date then floor(( po1.procedure_date -  c1.cohort_start_date)/30)-1
+	end as stratum_2, 
+	COUNT(distinct p1.person_id) as count_value
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+inner join
+	omopv5_de.procedure_occurrence po1
+on p1.person_id = po1.person_id
+		--
+group by c1.cohort_definition_id,
+	po1.procedure_concept_id,
+	case when c1.cohort_start_date = po1.procedure_date then 0
+		when c1.cohort_start_date < po1.procedure_date then floor(( po1.procedure_date -  c1.cohort_start_date)/30)+1
+		when c1.cohort_start_date > po1.procedure_date then floor(( po1.procedure_date -  c1.cohort_start_date)/30)-1
+	end
+;
+--		
+	
+	
+
+--
+-- 1840	Number of persons by duration from cohort start to first occurrence of drug_exposure, by drug_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
+select c1.cohort_definition_id, 
+	1840 as analysis_id,
+	de1.drug_concept_id as stratum_1,
+	case when c1.cohort_start_date = de1.first_date then 0
+		when c1.cohort_start_date < de1.first_date then floor(( de1.first_date -  c1.cohort_start_date)/30)+1
+		when c1.cohort_start_date > de1.first_date then floor(( de1.first_date -  c1.cohort_start_date)/30)-1
+	end as stratum_2, 
+	COUNT(distinct p1.person_id) as count_value
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+inner join
+	(
+		select de0.person_id, de0.drug_concept_id, min(de0.drug_exposure_start_date) as first_date
+		from omopv5_de.drug_exposure de0
+			inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c0
+			on de0.person_id = c0.subject_id
+			--
+		group by de0.person_id, de0.drug_concept_id
+	) de1
+on p1.person_id = de1.person_id
+group by c1.cohort_definition_id,
+	de1.drug_concept_id,
+	case when c1.cohort_start_date = de1.first_date then 0
+		when c1.cohort_start_date < de1.first_date then floor(( de1.first_date -  c1.cohort_start_date)/30)+1
+		when c1.cohort_start_date > de1.first_date then floor(( de1.first_date -  c1.cohort_start_date)/30)-1
+	end
+;
+--	
+	
+	
+--
+-- 1841	Number of events by duration from cohort start to all occurrences of drug_exposure, by drug_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
+select c1.cohort_definition_id, 
+	1841 as analysis_id,
+	de1.drug_concept_id as stratum_1,
+	case when c1.cohort_start_date = de1.drug_exposure_start_date then 0
+		when c1.cohort_start_date < de1.drug_exposure_start_date then floor(( de1.drug_exposure_start_date -  c1.cohort_start_date)/30)+1
+		when c1.cohort_start_date > de1.drug_exposure_start_date then floor(( de1.drug_exposure_start_date -  c1.cohort_start_date)/30)-1
+	end as stratum_2, 
+	COUNT(distinct p1.person_id) as count_value
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+inner join
+	omopv5_de.drug_exposure de1
+on p1.person_id = de1.person_id
+--
+group by c1.cohort_definition_id,
+	de1.drug_concept_id,
+	case when c1.cohort_start_date = de1.drug_exposure_start_date then 0
+		when c1.cohort_start_date < de1.drug_exposure_start_date then floor(( de1.drug_exposure_start_date -  c1.cohort_start_date)/30)+1
+		when c1.cohort_start_date > de1.drug_exposure_start_date then floor(( de1.drug_exposure_start_date -  c1.cohort_start_date)/30)-1
+	end
+;
+--		
+	
+
+--
+-- 1850	Number of persons by duration from cohort start to first occurrence of observation, by observation_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
+select c1.cohort_definition_id, 
+	1850 as analysis_id,
+	o1.observation_concept_id as stratum_1,
+	case when c1.cohort_start_date = o1.first_date then 0
+		when c1.cohort_start_date < o1.first_date then floor(( o1.first_date -  c1.cohort_start_date)/30)+1
+		when c1.cohort_start_date > o1.first_date then floor(( o1.first_date -  c1.cohort_start_date)/30)-1
+	end as stratum_2, 
+	COUNT(distinct p1.person_id) as count_value
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+inner join
+	(
+		select o0.person_id, o0.observation_concept_id, min(o0.observation_date) as first_date
+		from omopv5_de.observation o0
+			inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c0
+			on o0.person_id = c0.subject_id
+		--
+		group by o0.person_id, o0.observation_concept_id
+	) o1
+on p1.person_id = o1.person_id
+group by c1.cohort_definition_id,
+	o1.observation_concept_id,
+	case when c1.cohort_start_date = o1.first_date then 0
+		when c1.cohort_start_date < o1.first_date then floor(( o1.first_date -  c1.cohort_start_date)/30)+1
+		when c1.cohort_start_date > o1.first_date then floor(( o1.first_date -  c1.cohort_start_date)/30)-1
+	end
+;
+--	
+	
+	
+--
+-- 1851	Number of events by duration from cohort start to all occurrences of observation, by observation_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
+select c1.cohort_definition_id, 
+	1851 as analysis_id,
+	o1.observation_concept_id as stratum_1,
+	case when c1.cohort_start_date = o1.observation_date then 0
+		when c1.cohort_start_date < o1.observation_date then floor(( o1.observation_date -  c1.cohort_start_date)/30)+1
+		when c1.cohort_start_date > o1.observation_date then floor(( o1.observation_date -  c1.cohort_start_date)/30)-1
+	end as stratum_2, 
+	COUNT(distinct p1.person_id) as count_value
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+inner join
+	omopv5_de.observation o1
+on p1.person_id = o1.person_id
+		--
+group by c1.cohort_definition_id,
+	o1.observation_concept_id,
+	case when c1.cohort_start_date = o1.observation_date then 0
+		when c1.cohort_start_date < o1.observation_date then floor(( o1.observation_date -  c1.cohort_start_date)/30)+1
+		when c1.cohort_start_date > o1.observation_date then floor(( o1.observation_date -  c1.cohort_start_date)/30)-1
+	end
+;
+--
+
+	
+
+--
+-- 1860	Number of persons by duration from cohort start to first occurrence of condition era, by condition_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
+select c1.cohort_definition_id, 
+	1860 as analysis_id,
+	ce1.condition_concept_id as stratum_1,
+	case when c1.cohort_start_date = ce1.first_date then 0
+		when c1.cohort_start_date < ce1.first_date then floor(( ce1.first_date -  c1.cohort_start_date)/30)+1
+		when c1.cohort_start_date > ce1.first_date then floor(( ce1.first_date -  c1.cohort_start_date)/30)-1
+	end as stratum_2, 
+	COUNT(distinct p1.person_id) as count_value
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+inner join
+	(
+		select ce0.person_id, ce0.condition_concept_id, min(ce0.condition_era_start_date) as first_date
+		from omopv5_de.condition_era ce0
+			inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c0
+			on ce0.person_id = c0.subject_id
+			--
+		group by ce0.person_id, ce0.condition_concept_id
+	) ce1
+on p1.person_id = ce1.person_id
+group by c1.cohort_definition_id,
+	ce1.condition_concept_id,
+	case when c1.cohort_start_date = ce1.first_date then 0
+		when c1.cohort_start_date < ce1.first_date then floor(( ce1.first_date -  c1.cohort_start_date)/30)+1
+		when c1.cohort_start_date > ce1.first_date then floor(( ce1.first_date -  c1.cohort_start_date)/30)-1
+	end
+;
+--	
+	
+	
+--
+-- 1861	Number of events by duration from cohort start to all occurrences of condition era, by condition_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
+select c1.cohort_definition_id, 
+	1861 as analysis_id,
+	ce1.condition_concept_id as stratum_1,
+	case when c1.cohort_start_date = ce1.condition_era_start_date then 0
+		when c1.cohort_start_date < ce1.condition_era_start_date then floor(( ce1.condition_era_start_date -  c1.cohort_start_date)/30)+1
+		when c1.cohort_start_date > ce1.condition_era_start_date then floor(( ce1.condition_era_start_date -  c1.cohort_start_date)/30)-1
+	end as stratum_2, 
+	COUNT(distinct p1.person_id) as count_value
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+inner join
+	omopv5_de.condition_era ce1
+on p1.person_id = ce1.person_id
+--
+group by c1.cohort_definition_id,
+	ce1.condition_concept_id,
+	case when c1.cohort_start_date = ce1.condition_era_start_date then 0
+		when c1.cohort_start_date < ce1.condition_era_start_date then floor(( ce1.condition_era_start_date -  c1.cohort_start_date)/30)+1
+		when c1.cohort_start_date > ce1.condition_era_start_date then floor(( ce1.condition_era_start_date -  c1.cohort_start_date)/30)-1
+	end
+;
+--	
+
+	
+	
+--
+-- 1870	Number of persons by duration from cohort start to first occurrence of drug era, by drug_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
+select c1.cohort_definition_id, 
+	1870 as analysis_id,
+	de1.drug_concept_id as stratum_1,
+	case when c1.cohort_start_date = de1.first_date then 0
+		when c1.cohort_start_date < de1.first_date then floor(( de1.first_date -  c1.cohort_start_date)/30)+1
+		when c1.cohort_start_date > de1.first_date then floor(( de1.first_date -  c1.cohort_start_date)/30)-1
+	end as stratum_2, 
+	COUNT(distinct p1.person_id) as count_value
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+inner join
+	(
+		select de0.person_id, de0.drug_concept_id, min(de0.drug_era_start_date) as first_date
+		from omopv5_de.drug_era de0
+			inner join (select subject_id, cohort_definition_id from HERACLES_cohort) c0
+			on de0.person_id = c0.subject_id
+		--
+		group by de0.person_id, de0.drug_concept_id
+	) de1
+on p1.person_id = de1.person_id
+group by c1.cohort_definition_id,
+	de1.drug_concept_id,
+	case when c1.cohort_start_date = de1.first_date then 0
+		when c1.cohort_start_date < de1.first_date then floor(( de1.first_date -  c1.cohort_start_date)/30)+1
+		when c1.cohort_start_date > de1.first_date then floor(( de1.first_date -  c1.cohort_start_date)/30)-1
+	end
+;
+--	
+	
+	
+--
+-- 1871	Number of events by duration from cohort start to all occurrences of drug era, by drug_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
+select c1.cohort_definition_id, 
+	1871 as analysis_id,
+	de1.drug_concept_id as stratum_1,
+	case when c1.cohort_start_date = de1.drug_era_start_date then 0
+		when c1.cohort_start_date < de1.drug_era_start_date then floor(( de1.drug_era_start_date -  c1.cohort_start_date)/30)+1
+		when c1.cohort_start_date > de1.drug_era_start_date then floor(( de1.drug_era_start_date -  c1.cohort_start_date)/30)-1
+	end as stratum_2, 
+	COUNT(distinct p1.person_id) as count_value
+from omopv5_de.PERSON p1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from HERACLES_cohort) c1
+on p1.person_id = c1.subject_id
+inner join
+	omopv5_de.drug_era de1
+on p1.person_id = de1.person_id
+--
+group by c1.cohort_definition_id,
+	de1.drug_concept_id,
+	case when c1.cohort_start_date = de1.drug_era_start_date then 0
+		when c1.cohort_start_date < de1.drug_era_start_date then floor(( de1.drug_era_start_date -  c1.cohort_start_date)/30)+1
+		when c1.cohort_start_date > de1.drug_era_start_date then floor(( de1.drug_era_start_date -  c1.cohort_start_date)/30)-1
+	end
+;
+--	
+
+TRUNCATE TABLE HERACLES_cohort;
+DROP TABLE HERACLES_cohort;
+
+
+delete from HERACLES_results where count_value <= 0;
+delete from HERACLES_results_dist where count_value <= 0;
+
+--
+
+ END;

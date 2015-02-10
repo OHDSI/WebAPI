@@ -132,6 +132,24 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>com.qmino</groupId>
+				<artifactId>miredot-plugin</artifactId>
+				<version>1.5.1</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>restdoc</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<licence>
+						UHJvamVjdHxvcmcub2hkc2kuV2ViQVBJfDIwMTctMDItMTB8ZmFsc2UjTUN3Q0ZHYnRwN0FJZnNWTkk3QXg1bEtYOXkvSm84WGFBaFF2QXJ6V3NtMFFocEM5emdNbk1ZcmhsWHNVbnc9PQ==
+					</licence>
+					<!-- insert other configuration here (optional) -->
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
@@ -147,6 +165,15 @@
 			<url>http://repo.ohdsi.org:8085/nexus/content/repositories/releases</url>
 		</repository>
 	</repositories>
+	
+	<pluginRepositories>
+      <pluginRepository>
+         <id>miredot</id>
+         <name>MireDot Releases</name>
+         <url>http://nexus.qmino.com/content/repositories/miredot</url>
+      </pluginRepository>
+   </pluginRepositories>
+   
 	<dependencyManagement>
 		<dependencies>
 			<dependency>

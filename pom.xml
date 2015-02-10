@@ -31,6 +31,18 @@
 		<datasource.cdm.schema>[CDM_DATABASE].dbo</datasource.cdm.schema>
 		<datasource.ohdsi.schema>[CDM_DATABASE_RESULTS].dbo</datasource.ohdsi.schema>
 		<datasource.dialect.source>sql server</datasource.dialect.source>
+		
+		<datasource.cohort.schema>[CDM_DATABASE].dbo</datasource.cohort.schema>
+		<datasource.cohort.table>cohort</datasource.cohort.table>
+		
+		<datasource.achilles.results.table>achilles_results</datasource.achilles.results.table>
+		<datasource.achilles.results_dist.table>achilles_results_dist</datasource.achilles.results_dist.table>
+		<datasource.heracles.results.table>heracles_results</datasource.heracles.results.table>
+		<datasource.heracles.results_dist.table>heracles_results_dist</datasource.heracles.results_dist.table>
+		
+		<!-- CDM properties -->
+		<source.name>CDM_NAME</source.name>
+		<cdm.version>5</cdm.version>
 
 		<spring.profiles.active>default</spring.profiles.active>
 	</properties>
@@ -252,6 +264,7 @@
 				<datasource.dialect>oracle</datasource.dialect>
 				<datasource.cdm.schema>omopv5_de</datasource.cdm.schema>
 				<datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>
+				<datasource.cohort.schema>ohdsi</datasource.cohort.schema>
 			</properties>
 			<dependencies>
 				<dependency>
@@ -272,7 +285,9 @@
                                 <spring.datasource.url>jdbc:postgresql://54.209.111.128:5432/vocabularyv5?user=USER&amp;password=PASS</spring.datasource.url>
                                 <datasource.dialect>postgresql</datasource.dialect>
                                 <datasource.cdm.schema>unrestricted</datasource.cdm.schema>
+                                
 				<datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>
+				<datasource.cohort.schema>ohdi</datasource.cohort.schema>
 			</properties>
                         <dependencies>
                                 <dependency>

@@ -29,6 +29,7 @@ public class CohortAnalysisTasklet implements Tasklet {
             log.debug("Update count: " + ret);
         } catch (final Exception e) {
             log.error(e.getMessage(), e);
+            throw e;//FAIL job status
         }
         return RepeatStatus.FINISHED;
     }

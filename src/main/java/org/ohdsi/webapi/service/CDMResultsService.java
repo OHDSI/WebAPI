@@ -30,7 +30,7 @@ public class CDMResultsService extends AbstractDaoService {
 
     try {
       DatabaseMetaData metaData = getJdbcTemplate().getDataSource().getConnection().getMetaData();
-      ResultSet rs = metaData.getTables(null, null, "%", null);
+      ResultSet rs = metaData.getTables(getOhdsiSchema(), null, "%", null);
       while (rs.next()) {
         availableTables.add(rs.getString(3).toLowerCase());
       }

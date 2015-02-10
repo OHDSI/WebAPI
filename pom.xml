@@ -23,6 +23,7 @@
 		<spring.datasource.password></spring.datasource.password>
 		<spring.datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</spring.datasource.driverClassName>
 		<spring.datasource.url>jdbc:sqlserver://serverName;user=userName;password=password;</spring.datasource.url>
+		<spring.datasource.validationQuery>SELECT 1</spring.datasource.validationQuery>
 		
 		<spring.batch.repository.tableprefix>BATCH_</spring.batch.repository.tableprefix>
 		<spring.batch.repository.isolationLevelForCreate>ISOLATION_READ_COMMITTED</spring.batch.repository.isolationLevelForCreate>
@@ -288,6 +289,7 @@
 				<spring.datasource.driverClassName>oracle.jdbc.OracleDriver</spring.datasource.driverClassName>
 				<!-- Override in settings.xml with actual user/pass -->
 				<spring.datasource.url>jdbc:oracle:thin:USER/PASS@172.31.80.28:1521:i2b2idp</spring.datasource.url>
+				<spring.datasource.validationQuery>SELECT 1 FROM DUAL</spring.datasource.validationQuery>
 				<datasource.dialect>oracle</datasource.dialect>
 				<datasource.cdm.schema>omopv5_de</datasource.cdm.schema>
 				<datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>

@@ -9,20 +9,15 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ohdsi.webapi.service.CohortAnalysisService;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.CallableStatementCreator;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.SqlParameter;
 
 public class CohortAnalysisTasklet implements Tasklet {
-	
-	@Autowired
-	private CohortAnalysisService analysisService;
     
     private static final Log log = LogFactory.getLog(CohortAnalysisTasklet.class);
     

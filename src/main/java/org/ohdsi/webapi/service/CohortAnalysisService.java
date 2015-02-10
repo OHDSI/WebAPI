@@ -194,13 +194,18 @@ public class CohortAnalysisService extends AbstractDaoService {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public JobExecutionResource queueCohortAnalysisJob(CohortAnalysisTask task) throws Exception {
-        final JobParameters jobParameters = new JobParametersBuilder()
-                .addLong("time", System.currentTimeMillis()).toJobParameters();
     	if (task == null) {
     		return null;
     	}
+    	
+    	final String taskString = task.toString();
+        final JobParameters jobParameters = new JobParametersBuilder()
+                .addLong("time", System.currentTimeMillis())
+                .toJobParameters();
+
     	String sql = this.getRunCohortAnalysisSql(task);
-    	CohortAnalysisTasklet tasklet = new CohortAnalysisTasklet(task, this.getJdbcTemplate());
+    	log.info(String.format("Beginning run for cohort analysis task: \n %s", taskString));
+    	CohortAnalysisTasklet tasklet = new CohortAnalysisTasklet(sql, this.getJdbcTemplate());
     	
         return this.jobTemplate.launchTasklet("cohortAnalysisJob", "cohortAnalysisStep", tasklet, jobParameters);
     }

@@ -12,6 +12,8 @@
  */
 package org.ohdsi.webapi.test;
 
+import java.util.Arrays;
+
 import org.junit.Test;
 import org.ohdsi.webapi.cohortresults.CohortAnalysisTask;
 import org.ohdsi.webapi.job.JobExecutionResource;
@@ -32,6 +34,7 @@ public class CohortAnalysisServiceIT extends WebApiIT {
     public void createAnalysis() throws Exception {
         CohortAnalysisTask task = new CohortAnalysisTask();
         //set attributes
+        task.setAnalysisId(Arrays.asList("0"));
         final ResponseEntity<JobExecutionResource> postEntity = getRestTemplate().postForEntity(this.endpointCohortAnalysis,
             task, JobExecutionResource.class);//TODO 409 or other errors prevent deserialization...
         assertOk(postEntity);

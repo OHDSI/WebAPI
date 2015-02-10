@@ -316,7 +316,7 @@
                                 <datasource.cdm.schema>unrestricted</datasource.cdm.schema>
                                 
 				<datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>
-				<datasource.cohort.schema>ohdi</datasource.cohort.schema>
+				<datasource.cohort.schema>ohdsi</datasource.cohort.schema>
 			</properties>
                         <dependencies>
                                 <dependency>

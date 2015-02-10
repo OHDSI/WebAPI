@@ -25,13 +25,10 @@ public class JobTemplate {
         this.jobLauncher = jobLauncher;
     }
     
-    public JobExecutionResource launch(final Job job) throws WebApplicationException {
-        //By Default, I don't think we want to queue/run another job if the job is already running.  So, use empty JobParameters().
-        //        JobParameters jobParameters = new JobParametersBuilder().addLong("time", System.currentTimeMillis())
-        //                .toJobParameters();
+    public JobExecutionResource launch(final Job job, final JobParameters jobParameters) throws WebApplicationException {
         JobExecution exec = null;
         try {
-            exec = this.jobLauncher.run(job, new JobParameters());
+            exec = this.jobLauncher.run(job, jobParameters);
             if (log.isDebugEnabled()) {
                 log.debug("JobExecution queued: " + exec);
             }

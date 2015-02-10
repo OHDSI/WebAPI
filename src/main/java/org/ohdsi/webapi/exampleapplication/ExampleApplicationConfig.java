@@ -49,8 +49,11 @@ public class ExampleApplicationConfig {
             @Override
             public RepeatStatus execute(final StepContribution contribution, final ChunkContext chunkContext)
                                                                                                              throws Exception {
+                
+                // set variable in JobExecutionContext
+                //chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext().put("foo", "bar");
                 log.info("Tasklet execution >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-//                Thread.sleep(14000L);
+                //                Thread.sleep(14000L);
                 return RepeatStatus.FINISHED;
             }
         };

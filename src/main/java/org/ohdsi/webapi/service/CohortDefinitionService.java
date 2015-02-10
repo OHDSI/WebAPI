@@ -74,9 +74,9 @@ public class CohortDefinitionService extends AbstractDaoService {
   }
   
   /**
-   * Returns all cohort definitions in the CDM schema
+   * Returns all cohort definitions in the cohort schema
    * 
-   * @return
+   * @return List of cohort_definition
    */
   @GET
   @Path("/")
@@ -91,8 +91,10 @@ public class CohortDefinitionService extends AbstractDaoService {
   }
   
   /**
-   * @param id
-   * @return
+   * Returns the cohort definition for the given cohort_definition_id in the cohort schema
+   * 
+   * @param id The cohort_definition id
+   * @return The cohort_defition
    */
   @GET
   @Path("/{id}")

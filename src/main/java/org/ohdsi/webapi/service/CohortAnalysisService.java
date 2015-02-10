@@ -2,7 +2,6 @@ package org.ohdsi.webapi.service;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -90,7 +89,7 @@ public class CohortAnalysisService extends AbstractDaoService {
     /**
      * Returns all cohort analyses in the results/OHDSI schema
      * 
-     * @return
+     * @return List of all cohort analyses
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -104,9 +103,9 @@ public class CohortAnalysisService extends AbstractDaoService {
     }
     
     /**
-     * Returns all cohort analyses in the results/OHDSI schema
+     * Returns all cohort analyses in the results/OHDSI schema for the given cohort_definition_id
      * 
-     * @return
+     * @return List of all cohort analyses and their statuses for the given cohort_defintion_id
      */
     @GET
     @Path("/{id}")
@@ -127,7 +126,10 @@ public class CohortAnalysisService extends AbstractDaoService {
     /**
      * Returns the summary for the cohort
      * 
-     * @return
+     * @param id - the cohort_defintion id
+     * @return Summary which includes the base cohort_definition, the cohort analyses list and their statuses for this cohort, and a base
+     * set of common cohort results that may or may not yet have been ran
+     * 
      */
     @GET
     @Path("/{id}/summary")
@@ -157,16 +159,16 @@ public class CohortAnalysisService extends AbstractDaoService {
     }
     
     /**
-     * Generates a preview of the cohort analysis SQL to be ran
+     * Generates a preview of the cohort analysis SQL to be ran for the Cohort Analysis Job
      * 
-     * @param task
-     * @return
+     * @param task - the CohortAnalysisTask, be sure to have a least one analysis_id and one cohort_definition id
+     * @return - SQL for the given CohortAnalysisTask translated and rendered to the current dialect
      */
     @POST
     @Path("/preview")
     @Produces(MediaType.TEXT_PLAIN)
     @Consumes(MediaType.APPLICATION_JSON)
-    public String[] getRunCohortAnalysisSql(CohortAnalysisTask task) {
+    public String getRunCohortAnalysisSql(CohortAnalysisTask task) {
         String sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/runHeraclesAnalyses.sql");
         
         String cohortDefinitionIds = (task.getCohortDefinitionId() == null ? "" : Joiner.on(",").join(
@@ -192,15 +194,41 @@ public class CohortAnalysisService extends AbstractDaoService {
                 analysisIds, conditionIds, drugIds, procedureIds, observationIds, measurementIds };
         sql = SqlRender.renderSql(sql, params, values);
         sql = SqlTranslate.translateSql(sql, getSourceDialect(), getDialect());
-        String[] stmts = SqlSplit.splitSql(sql);
-        if (log.isDebugEnabled()) {
-            for (int x = 0; x < stmts.length; x++) {
-                log.debug(String.format("Split SQL %s : %s", x, stmts[x]));
-            }
-        }
-        return stmts;
+        
+        return sql;
     }
     
+    /**
+     * Generates a preview of the cohort analysis SQL to be ran for the Cohort Analysis Job to an 
+     * array of strings, so that it can be used in batch mode.
+     * 
+     * @param task
+     * @return
+     */
+    public String[] getRunCohortAnalysisSqlBatch(CohortAnalysisTask task) {
+    	if (task != null) {
+    		String sql = this.getRunCohortAnalysisSql(task);
+    		String[] stmts = null;
+    		if (log.isDebugEnabled()) {
+    			
+    			stmts = SqlSplit.splitSql(sql);
+                for (int x = 0; x < stmts.length; x++) {
+                    log.debug(String.format("Split SQL %s : %s", x, stmts[x]));
+                }
+            }
+    		return stmts;
+    	}
+    	return null;
+    }
+    
+    /**
+     * Queues up a cohort analysis task, that generates and translates SQL for the given
+     * cohort definitions, analysis ids and concept ids
+     * 
+     * @param task - the Cohort Analysis task to be ran
+     * @return information about the Cohort Analysis Job
+     * @throws Exception
+     */
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
@@ -216,7 +244,7 @@ public class CohortAnalysisService extends AbstractDaoService {
         //TODO consider analysisId
         final String taskString = task.toString();
         final JobParameters jobParameters = builder.toJobParameters();
-        String[] sql = this.getRunCohortAnalysisSql(task);
+        String[] sql = this.getRunCohortAnalysisSqlBatch(task);
         log.info(String.format("Beginning run for cohort analysis task: \n %s", taskString));
         CohortAnalysisTasklet tasklet = new CohortAnalysisTasklet(sql, this.getJdbcTemplate());
         

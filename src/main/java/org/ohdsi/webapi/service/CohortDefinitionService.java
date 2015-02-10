@@ -74,8 +74,7 @@ public class CohortDefinitionService extends AbstractDaoService {
   }
   
   /**
-   * Returns all cohort definitions in the CDM schema, to be replaced 
-   * once there is a cohort_definition service
+   * Returns all cohort definitions in the CDM schema
    * 
    * @return
    */

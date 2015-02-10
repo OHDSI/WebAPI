@@ -29,9 +29,9 @@ public class CohortResultsService extends AbstractDaoService {
 
 	/**
 	 * Queries for cohort analysis results for the given cohort definition id
-	 * @param id
-	 * @param analysis_id
-	 * @return
+	 * @param id cohort_defintion id
+	 * @param analysis_name Name of the analysis, currently the same name as under the /resources/cohortresults/sql/ directory
+	 * @return a List of key, value pairs
 	 */
 	  @GET
 	  @Path("/{id}/{analysis_name}")

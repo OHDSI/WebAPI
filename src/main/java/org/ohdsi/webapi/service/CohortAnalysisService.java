@@ -200,7 +200,7 @@ public class CohortAnalysisService extends AbstractDaoService {
     		return null;
     	}
     	String sql = this.getRunCohortAnalysisSql(task);
-    	CohortAnalysisTasklet tasklet = new CohortAnalysisTasklet(task, sql, this.getJdbcTemplate());
+    	CohortAnalysisTasklet tasklet = new CohortAnalysisTasklet(task, this.getJdbcTemplate());
     	
         return this.jobTemplate.launchTasklet("cohortAnalysisJob", "cohortAnalysisStep", tasklet, jobParameters);
     }

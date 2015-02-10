@@ -3,6 +3,7 @@ package org.ohdsi.webapi.cohortresults;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class CohortAnalysisTask {
 
@@ -157,6 +158,17 @@ public class CohortAnalysisTask {
 	 */
 	public void setMeasurementConceptIds(List<String> measurementConceptIds) {
 		this.measurementConceptIds = measurementConceptIds;
+	}
+	
+	@Override
+	public String toString() {
+		try {
+			ObjectMapper mapper = new ObjectMapper();
+			return mapper.writeValueAsString(this);
+		} catch (Exception e) {}
+		
+		return super.toString();
+		
 	}
 }
  

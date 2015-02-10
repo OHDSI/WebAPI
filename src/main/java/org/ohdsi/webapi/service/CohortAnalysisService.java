@@ -19,9 +19,18 @@ import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortresults.CohortAnalysis;
 import org.ohdsi.webapi.cohortresults.CohortAnalysisTask;
+import org.ohdsi.webapi.cohortresults.CohortAnalysisTasklet;
 import org.ohdsi.webapi.cohortresults.CohortSummary;
 import org.ohdsi.webapi.helper.ResourceHelper;
+import org.ohdsi.webapi.job.JobExecutionResource;
+import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.model.results.Analysis;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobParameters;
+import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.job.SimpleJob;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -35,11 +44,18 @@ import org.springframework.stereotype.Component;
 @Component
 public class CohortAnalysisService extends AbstractDaoService {
 	
+    @Autowired
+    JobTemplate jobTemplate;
+
 	@Autowired
 	private CohortResultsService resultsService;
 	
 	@Autowired
 	private CohortDefinitionService definitionService;
+	
+    @Autowired
+    private StepBuilderFactory stepBuilders;
+	    
 	
 	private final RowMapper<Analysis> analysisMapper = new RowMapper<Analysis>() {
 
@@ -177,4 +193,22 @@ public class CohortAnalysisService extends AbstractDaoService {
         
     	return sql;
     }
+    
+    @POST
+    @Path("/")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public JobExecutionResource queueCohortAnalysisJob(CohortAnalysisTask task) throws Exception {
+        final JobParameters jobParameters = new JobParametersBuilder()
+                .addLong("time", System.currentTimeMillis()).toJobParameters();
+    	if (task == null) {
+    		return null;
+    	}
+    	String sql = this.getRunCohortAnalysisSql(task);
+    	CohortAnalysisTasklet tasklet = new CohortAnalysisTasklet(task, sql, this.getJdbcTemplate());
+    	
+        return this.jobTemplate.launchTasklet("cohortAnalysisJob", "cohortAnalysisStep", tasklet, jobParameters);
+    }
 }
+
+

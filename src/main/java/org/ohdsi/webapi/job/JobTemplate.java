@@ -9,8 +9,13 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
+import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
+import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
+import org.springframework.batch.core.step.tasklet.Tasklet;
 
 /**
  *
@@ -21,8 +26,15 @@ public class JobTemplate {
     
     private final JobLauncher jobLauncher;
     
-    public JobTemplate(final JobLauncher jobLauncher) {
+    private final JobBuilderFactory jobBuilders;
+    
+    private final StepBuilderFactory stepBuilders;
+    
+    public JobTemplate(final JobLauncher jobLauncher, final JobBuilderFactory jobBuilders,
+        final StepBuilderFactory stepBuilders) {
         this.jobLauncher = jobLauncher;
+        this.jobBuilders = jobBuilders;
+        this.stepBuilders = stepBuilders;
     }
     
     public JobExecutionResource launch(final Job job, final JobParameters jobParameters) throws WebApplicationException {
@@ -40,4 +52,20 @@ public class JobTemplate {
         return JobUtils.toJobExecutionResource(exec);
     }
     
+    public JobExecutionResource launchTasklet(final String jobName, final String stepName, final Tasklet tasklet,
+                                              final JobParameters jobParameters) throws WebApplicationException {
+        JobExecution exec = null;
+        try {
+            final Step step = this.stepBuilders.get(stepName).tasklet(tasklet).allowStartIfComplete(true).build();
+            final Job job = this.jobBuilders.get(jobName).start(step).build();
+            exec = this.jobLauncher.run(job, jobParameters);
+        } catch (final JobExecutionAlreadyRunningException e) {
+            throw new WebApplicationException(Response.status(Status.CONFLICT).entity(e.getMessage()).build());
+        } catch (final JobInstanceAlreadyCompleteException e) {
+            throw new WebApplicationException(Response.status(Status.CONFLICT).entity(e.getMessage()).build());
+        } catch (final Exception e) {
+            throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build());
+        }
+        return JobUtils.toJobExecutionResource(exec);
+    }
 }

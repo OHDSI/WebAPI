@@ -9,6 +9,8 @@ import org.ohdsi.webapi.job.JobTemplate;
 import org.springframework.batch.core.configuration.BatchConfigurationException;
 import org.springframework.batch.core.configuration.annotation.BatchConfigurer;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
+import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
+import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.explore.support.JobExplorerFactoryBean;
 import org.springframework.batch.core.explore.support.MapJobExplorerFactoryBean;
@@ -65,8 +67,9 @@ public class JobConfig {
     }
     
     @Bean
-    public JobTemplate jobTemplate(JobLauncher jobLauncher) {
-        return new JobTemplate(jobLauncher);
+    public JobTemplate jobTemplate(final JobLauncher jobLauncher, final JobBuilderFactory jobBuilders,
+                                   final StepBuilderFactory stepBuilders) {
+        return new JobTemplate(jobLauncher, jobBuilders, stepBuilders);
     }
     
     class CustomBatchConfigurer implements BatchConfigurer {

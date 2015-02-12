@@ -71,6 +71,7 @@ public class CohortAnalysisService extends AbstractDaoService {
             mapAnalysis(cohortAnalysis, rs, rowNum);
             cohortAnalysis.setAnalysisComplete(rs.getInt(CohortAnalysis.ANALYSIS_COMPLETE) == 1);
             cohortAnalysis.setCohortDefinitionId(rs.getInt(CohortAnalysis.COHORT_DEFINITION_ID));
+            cohortAnalysis.setLastUpdateTime(rs.getTimestamp(CohortAnalysis.LAST_UPDATE_TIME));
             return cohortAnalysis;
         }
     };

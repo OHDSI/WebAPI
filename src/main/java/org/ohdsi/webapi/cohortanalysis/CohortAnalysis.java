@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.cohortresults;
+package org.ohdsi.webapi.cohortanalysis;
 
 import org.ohdsi.webapi.model.results.Analysis;
 

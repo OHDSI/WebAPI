@@ -1,4 +1,4 @@
 /**
- * Model specific classes used by the cohort results tool or (Heracles)
+ * Model specific classes used by for viewing Heracles results (cohort results)
  */
 package org.ohdsi.webapi.cohortresults;

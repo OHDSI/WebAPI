@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.cohortresults;
+package org.ohdsi.webapi.cohortanalysis;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

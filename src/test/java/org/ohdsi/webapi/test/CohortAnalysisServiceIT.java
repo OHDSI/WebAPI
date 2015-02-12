@@ -15,7 +15,7 @@ package org.ohdsi.webapi.test;
 import java.util.Arrays;
 
 import org.junit.Ignore;
-import org.ohdsi.webapi.cohortresults.CohortAnalysisTask;
+import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTask;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;

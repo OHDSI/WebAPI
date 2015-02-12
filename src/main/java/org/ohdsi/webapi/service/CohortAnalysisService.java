@@ -146,14 +146,18 @@ public class CohortAnalysisService extends AbstractDaoService {
             summary.setTotalPatients(cohortSize.get(0).get("NUM_PERSONS"));
         }
         
-        // TODO mean age
+        List<Map<String, String>> ageAtIndexDistribution = this.resultsService.getCohortResults(id, "ageAtIndexDistribution", null, null);
+        if (ageAtIndexDistribution != null && ageAtIndexDistribution.size() > 0) {
+        	summary.setMeanAge(ageAtIndexDistribution.get(0).get("AVG_VALUE"));
+        }
         
         // TODO mean obs period
         
         // gender distribution
         summary.setGenderDistribution(this.resultsService.getCohortResults(id, "gender", null, null));
         
-        // TODO age distribution
+        // age distribution
+        summary.setAgeDistribution(this.resultsService.getCohortResults(id, "ageAtIndex", null, null));
         
         return summary;
     }

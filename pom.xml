@@ -14,24 +14,31 @@
 		<!-- Spring Boot manages spring.version as well -->
 		<spring.boot.version>1.2.1.RELEASE</spring.boot.version>
 		<spring.batch.version>3.0.3.RELEASE</spring.batch.version>
+		<flyway.version>3.1</flyway.version>
 		<start-class>org.ohdsi.webapi.WebApi</start-class>
 
-		<!-- default sql server -->
-		<!-- Spring boot will create a Datasource for autowiring based on these 
-			props. -->
-		<spring.datasource.username></spring.datasource.username>
-		<spring.datasource.password></spring.datasource.password>
-		<spring.datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</spring.datasource.driverClassName>
-		<spring.datasource.url>jdbc:sqlserver://serverName;user=userName;password=password;</spring.datasource.url>
-		
-		<spring.batch.repository.tableprefix>BATCH_</spring.batch.repository.tableprefix>
-		<spring.batch.repository.isolationLevelForCreate>ISOLATION_READ_COMMITTED</spring.batch.repository.isolationLevelForCreate>
+		<!-- Primary DataSource -->
+		<!-- default sql server - TODO How about making postgres the default (e.g. in line with open source tech)? -alexfranken -->
+		<datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</datasource.driverClassName>
+		<datasource.url>jdbc:sqlserver://serverName</datasource.url>
+		<datasource.username>user</datasource.username>
+		<datasource.password>password</datasource.password>
 
 		<datasource.dialect>sql server</datasource.dialect>
 		<datasource.cdm.schema>[CDM_DATABASE].dbo</datasource.cdm.schema>
 		<datasource.ohdsi.schema>[CDM_DATABASE_RESULTS].dbo</datasource.ohdsi.schema>
 		<datasource.dialect.source>sql server</datasource.dialect.source>
+		<!-- DB Change Management / Migration -->
+		<flyway.datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</flyway.datasource.driverClassName>
+		<flyway.datasource.url>jdbc:sqlserver://serverName;user=userNameWithWritePrivs;password=password;</flyway.datasource.url>
+		<flyway.datasource.username>user</flyway.datasource.username>
+		<flyway.datasource.password>password</flyway.datasource.password>
+		<flyway.locations>classpath:db/migration/sqlserver</flyway.locations>
+		<flyway.schemas>ohdsi</flyway.schemas>
 
+		<spring.batch.repository.tableprefix>BATCH_</spring.batch.repository.tableprefix>
+		<spring.batch.repository.isolationLevelForCreate>ISOLATION_READ_COMMITTED</spring.batch.repository.isolationLevelForCreate>
+		
 		<spring.profiles.active>default</spring.profiles.active>
 	</properties>
 	<build>
@@ -266,19 +273,30 @@
 			<artifactId>commons-lang3</artifactId>
 			<version>3.3.2</version>
 		</dependency>
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-core</artifactId>
+			<version>${flyway.version}</version>
+		</dependency>
 	</dependencies>
 	<profiles>
 		<profile>
 			<id>webapi-oracle</id>
 			<properties>
-				<spring.datasource.username></spring.datasource.username>
-				<spring.datasource.password></spring.datasource.password>
-				<spring.datasource.driverClassName>oracle.jdbc.OracleDriver</spring.datasource.driverClassName>
+				<datasource.driverClassName>oracle.jdbc.OracleDriver</datasource.driverClassName>
 				<!-- Override in settings.xml with actual user/pass -->
-				<spring.datasource.url>jdbc:oracle:thin:USER/PASS@172.31.80.28:1521:i2b2idp</spring.datasource.url>
+				<datasource.url>jdbc:oracle:thin:@127.0.0.1:1521:cdm</datasource.url>
+				<datasource.username>user</datasource.username>
+				<datasource.password>password</datasource.password>
 				<datasource.dialect>oracle</datasource.dialect>
 				<datasource.cdm.schema>omopv5_de</datasource.cdm.schema>
 				<datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>
+				<flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
+				<flyway.datasource.url>jdbc:oracle:thin@127.0.0.1:1521:ohdsi</flyway.datasource.url>
+				<flyway.datasource.username>user</flyway.datasource.username>
+				<flyway.datasource.password>pass</flyway.datasource.password>
+				<flyway.locations>classpath:db/migration/oracle</flyway.locations>
+				<flyway.schemas>AFRANKEN</flyway.schemas>
 			</properties>
 			<dependencies>
 				<dependency>
@@ -292,11 +310,9 @@
                 <profile>
 			<id>webapi-postgresql</id>
 			<properties>
-				<spring.datasource.username></spring.datasource.username>
-				<spring.datasource.password></spring.datasource.password>
-                                <spring.datasource.driverClassName>org.postgresql.Driver</spring.datasource.driverClassName>
+                                <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
 				<!-- Override in settings.xml with actual user/pass -->
-                                <spring.datasource.url>jdbc:postgresql://54.209.111.128:5432/vocabularyv5?user=USER&amp;password=PASS</spring.datasource.url>
+                                <datasource.url>jdbc:postgresql://54.209.111.128:5432/vocabularyv5?user=USER&amp;password=PASS</datasource.url>
                                 <datasource.dialect>postgresql</datasource.dialect>
                                 <datasource.cdm.schema>unrestricted</datasource.cdm.schema>
 				<datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>

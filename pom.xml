@@ -23,6 +23,7 @@
 		<spring.datasource.password></spring.datasource.password>
 		<spring.datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</spring.datasource.driverClassName>
 		<spring.datasource.url>jdbc:sqlserver://serverName;user=userName;password=password;</spring.datasource.url>
+		<spring.datasource.validationQuery>SELECT 1</spring.datasource.validationQuery>
 		
 		<spring.batch.repository.tableprefix>BATCH_</spring.batch.repository.tableprefix>
 		<spring.batch.repository.isolationLevelForCreate>ISOLATION_READ_COMMITTED</spring.batch.repository.isolationLevelForCreate>
@@ -31,6 +32,18 @@
 		<datasource.cdm.schema>[CDM_DATABASE].dbo</datasource.cdm.schema>
 		<datasource.ohdsi.schema>[CDM_DATABASE_RESULTS].dbo</datasource.ohdsi.schema>
 		<datasource.dialect.source>sql server</datasource.dialect.source>
+		
+		<datasource.cohort.schema>[CDM_DATABASE].dbo</datasource.cohort.schema>
+		<datasource.cohort.table>cohort</datasource.cohort.table>
+		
+		<datasource.achilles.results.table>achilles_results</datasource.achilles.results.table>
+		<datasource.achilles.results_dist.table>achilles_results_dist</datasource.achilles.results_dist.table>
+		<datasource.heracles.results.table>heracles_results</datasource.heracles.results.table>
+		<datasource.heracles.results_dist.table>heracles_results_dist</datasource.heracles.results_dist.table>
+		
+		<!-- CDM properties -->
+		<source.name>CDM_NAME</source.name>
+		<cdm.version>5</cdm.version>
 
 		<spring.profiles.active>default</spring.profiles.active>
 	</properties>
@@ -276,9 +289,11 @@
 				<spring.datasource.driverClassName>oracle.jdbc.OracleDriver</spring.datasource.driverClassName>
 				<!-- Override in settings.xml with actual user/pass -->
 				<spring.datasource.url>jdbc:oracle:thin:USER/PASS@172.31.80.28:1521:i2b2idp</spring.datasource.url>
+				<spring.datasource.validationQuery>SELECT 1 FROM DUAL</spring.datasource.validationQuery>
 				<datasource.dialect>oracle</datasource.dialect>
 				<datasource.cdm.schema>omopv5_de</datasource.cdm.schema>
 				<datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>
+				<datasource.cohort.schema>ohdsi</datasource.cohort.schema>
 			</properties>
 			<dependencies>
 				<dependency>
@@ -299,7 +314,9 @@
                                 <spring.datasource.url>jdbc:postgresql://54.209.111.128:5432/vocabularyv5?user=USER&amp;password=PASS</spring.datasource.url>
                                 <datasource.dialect>postgresql</datasource.dialect>
                                 <datasource.cdm.schema>unrestricted</datasource.cdm.schema>
+                                
 				<datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>
+				<datasource.cohort.schema>ohdsi</datasource.cohort.schema>
 			</properties>
                         <dependencies>
                                 <dependency>

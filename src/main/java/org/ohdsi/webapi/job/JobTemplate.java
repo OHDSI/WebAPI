@@ -8,7 +8,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
+import org.springframework.batch.core.JobParameter;
 import org.springframework.batch.core.JobParameters;
+import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
@@ -53,9 +55,13 @@ public class JobTemplate {
     }
     
     public JobExecutionResource launchTasklet(final String jobName, final String stepName, final Tasklet tasklet,
-                                              final JobParameters jobParameters) throws WebApplicationException {
+                                              JobParameters jobParameters) throws WebApplicationException {
         JobExecution exec = null;
         try {
+            //TODO Consider JobParametersIncrementer
+            jobParameters = new JobParametersBuilder(jobParameters).addLong("time", System.currentTimeMillis())
+                    .toJobParameters();
+            //TODO Consider our own check (since adding unique JobParameter) to see if related-job is running and throw "already running"
             final Step step = this.stepBuilders.get(stepName).tasklet(tasklet).allowStartIfComplete(true).build();
             final Job job = this.jobBuilders.get(jobName).start(step).build();
             exec = this.jobLauncher.run(job, jobParameters);

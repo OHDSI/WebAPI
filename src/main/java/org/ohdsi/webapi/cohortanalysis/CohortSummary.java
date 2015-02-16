@@ -4,43 +4,34 @@ import java.util.List;
 
 import org.ohdsi.webapi.model.CohortDefinition;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 public class CohortSummary {
 
-	@JsonProperty("COHORT_DEFINITION")
-	private CohortDefinition definition;
+	private CohortDefinition cohortDefinition;
 	
-	@JsonProperty("TOTAL_PATIENTS")
 	private String totalPatients;
 	
-	@JsonProperty("MEAN_AGE")
 	private String meanAge;
 	
-	@JsonProperty("MEAN_OBS_PERIOD")
 	private String meanObsPeriod;
 	
-	@JsonProperty("GENDER_DISTRIBUTION")
 	private List<?> genderDistribution;
 	
-	@JsonProperty("AGE_DISTRIBUTION")
 	private List<?> ageDistribution;
 	
-	@JsonProperty("ANALYSES")
 	private List<CohortAnalysis> analyses;
 
 	/**
 	 * @return the definition
 	 */
-	public CohortDefinition getDefinition() {
-		return definition;
+	public CohortDefinition getCohortDefinition() {
+		return cohortDefinition;
 	}
 
 	/**
 	 * @param definition the definition to set
 	 */
-	public void setDefinition(CohortDefinition definition) {
-		this.definition = definition;
+	public void setCohortDefinition(CohortDefinition definition) {
+		this.cohortDefinition = definition;
 	}
 
 	/**

@@ -14,16 +14,12 @@ public class CohortAnalysis extends Analysis {
 	public static final String LAST_UPDATE_TIME = "LAST_UPDATE_TIME";
 	public static final String LAST_UPDATE_TIME_FORMATTED = "LAST_UPDATE_TIME_FORMATTED";
 	
-	@JsonProperty(COHORT_DEFINITION_ID)
 	private int cohortDefinitionId;
 	
-	@JsonProperty(ANALYSIS_COMPLETE)
 	private boolean analysisComplete;
 	
-	@JsonProperty(LAST_UPDATE_TIME)
 	private Timestamp lastUpdateTime;
 	
-	@JsonProperty(LAST_UPDATE_TIME_FORMATTED)
 	private String lastUpdateTimeFormatted;
 	
 	private SimpleDateFormat formatter = new SimpleDateFormat("MMM dd, yyyy hh:mm aaa");

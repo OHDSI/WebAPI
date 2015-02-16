@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.model.results;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * 
@@ -18,28 +17,20 @@ public class AnalysisResults {
 	public static final String STRATUM_5 = "STRATUM_5";
 	public static final String COUNT_VALUE = "COUNT_VALUE";
 	
-	@JsonProperty(COHORT_DEFINITION_ID)
 	private int cohortDefinitionId;
 	
-	@JsonProperty(ANALYSIS_ID)
 	private int analysisId;
 	
-	@JsonProperty(STRATUM_1)
 	private String stratum1;
 	
-	@JsonProperty(STRATUM_2)
 	private String stratum2;
 	
-	@JsonProperty(STRATUM_3)
 	private String stratum3;
 	
-	@JsonProperty(STRATUM_4)
 	private String stratum4;
 	
-	@JsonProperty(STRATUM_5)
 	private String stratum5;
 	
-	@JsonProperty(COUNT_VALUE)
 	private int countValue;
 
 	public int getCohortDefinitionId() {

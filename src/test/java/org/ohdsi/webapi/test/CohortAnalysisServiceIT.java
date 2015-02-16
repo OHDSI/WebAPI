@@ -34,8 +34,8 @@ public class CohortAnalysisServiceIT extends WebApiIT {
     public void createAnalysis() throws Exception {
         CohortAnalysisTask task = new CohortAnalysisTask();
         //set attributes
-        task.setAnalysisId(Arrays.asList("0"));
-        task.setCohortDefinitionId(Arrays.asList("1"));
+        task.setAnalysisIds(Arrays.asList("0"));
+        task.setCohortDefinitionIds(Arrays.asList("1"));
         final ResponseEntity<JobExecutionResource> postEntity = getRestTemplate().postForEntity(this.endpointCohortAnalysis,
             task, JobExecutionResource.class);//TODO 409 or other errors prevent deserialization...
         assertOk(postEntity);

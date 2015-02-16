@@ -137,7 +137,7 @@ public class CohortAnalysisService extends AbstractDaoService {
     public CohortSummary getCohortSummary(@PathParam("id") final int id) {
         
         CohortSummary summary = new CohortSummary();
-        summary.setDefinition(this.definitionService.getCohortDefinition(id));
+        summary.setCohortDefinition(this.definitionService.getCohortDefinition(id));
         summary.setAnalyses(this.getCohortAnalysesForCohortDefinition(id));
         
         // total patients
@@ -175,9 +175,9 @@ public class CohortAnalysisService extends AbstractDaoService {
     public String getRunCohortAnalysisSql(CohortAnalysisTask task) {
         String sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/runHeraclesAnalyses.sql");
         
-        String cohortDefinitionIds = (task.getCohortDefinitionId() == null ? "" : Joiner.on(",").join(
-            task.getCohortDefinitionId()));
-        String analysisIds = (task.getAnalysisId() == null ? "" : Joiner.on(",").join(task.getAnalysisId()));
+        String cohortDefinitionIds = (task.getCohortDefinitionIds() == null ? "" : Joiner.on(",").join(
+            task.getCohortDefinitionIds()));
+        String analysisIds = (task.getAnalysisIds() == null ? "" : Joiner.on(",").join(task.getAnalysisIds()));
         String conditionIds = (task.getConditionConceptIds() == null ? "" : Joiner.on(",").join(
             task.getConditionConceptIds()));
         String drugIds = (task.getDrugConceptIds() == null ? "" : Joiner.on(",").join(task.getDrugConceptIds()));
@@ -242,7 +242,7 @@ public class CohortAnalysisService extends AbstractDaoService {
         }
         JobParametersBuilder builder = new JobParametersBuilder();
         String paramPrefixCD = "cohortDefinitionId:";
-        for(String cd : task.getCohortDefinitionId()){
+        for(String cd : task.getCohortDefinitionIds()){
             builder.addString(paramPrefixCD + cd, cd);
         }
         //TODO consider analysisId

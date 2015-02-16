@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.model.results;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * 
@@ -18,28 +17,20 @@ public class Analysis {
 	public static final String STRATUM_5_NAME = "STRATUM_5_NAME";
 	public static final String ANALYSIS_TYPE = "ANALYSIS_TYPE";
 	
-	@JsonProperty(ANALYSIS_ID)
 	private int analysisId;
 	
-	@JsonProperty(ANALYSIS_NAME)
 	private String analysisName;
 	
-	@JsonProperty(STRATUM_1_NAME)
 	private String stratum1Name;
 	
-	@JsonProperty(STRATUM_2_NAME)
 	private String stratum2Name;
 	
-	@JsonProperty(STRATUM_3_NAME)
 	private String stratum3Name;
 	
-	@JsonProperty(STRATUM_4_NAME)
 	private String stratum4Name;
 	
-	@JsonProperty(STRATUM_5_NAME)
 	private String stratum5Name;
 	
-	@JsonProperty(ANALYSIS_TYPE)
 	private String analysisType;
 
 	public int getAnalysisId() {

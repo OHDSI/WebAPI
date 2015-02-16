@@ -2,37 +2,27 @@ package org.ohdsi.webapi.cohortanalysis;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class CohortAnalysisTask {
 
-	@JsonProperty("SMALL_CELL_COUNT")
 	private int smallCellCount;
 	
-	@JsonProperty("RUN_HERACLES_HEEL")
 	private boolean runHeraclesHeel;
 	
-	@JsonProperty("COHORT_DEFINITION_IDS")
-	List<String> cohortDefinitionId;
+	private List<String> cohortDefinitionIds;
 	
-	@JsonProperty("ANALYSIS_IDS")
-	List<String> analysisId;
+	private List<String> analysisIds;
 	
-	@JsonProperty("CONDITION_CONCEPT_IDS")
-	List<String> conditionConceptIds;
+	private List<String> conditionConceptIds;
 	
-	@JsonProperty("DRUG_CONCEPT_IDS")
-	List<String> drugConceptIds;
+	private List<String> drugConceptIds;
 	
-	@JsonProperty("PROCEDURE_CONCEPT_IDS")
-	List<String> procedureConceptIds;
+	private List<String> procedureConceptIds;
 	
-	@JsonProperty("OBSERVATION_CONCEPT_IDS")
-	List<String> observationConceptIds;
+	private List<String> observationConceptIds;
 	
-	@JsonProperty("MEASUREMENT_CONCEPT_IDS")
-	List<String> measurementConceptIds;
+	private List<String> measurementConceptIds;
 
 	/**
 	 * @return the smallCellCount
@@ -65,29 +55,29 @@ public class CohortAnalysisTask {
 	/**
 	 * @return the cohortDefinitionId
 	 */
-	public List<String> getCohortDefinitionId() {
-		return cohortDefinitionId;
+	public List<String> getCohortDefinitionIds() {
+		return cohortDefinitionIds;
 	}
 
 	/**
 	 * @param cohortDefinitionId the cohortDefinitionId to set
 	 */
-	public void setCohortDefinitionId(List<String> cohortDefinitionId) {
-		this.cohortDefinitionId = cohortDefinitionId;
+	public void setCohortDefinitionIds(List<String> cohortDefinitionIds) {
+		this.cohortDefinitionIds = cohortDefinitionIds;
 	}
 
 	/**
 	 * @return the analysisId
 	 */
-	public List<String> getAnalysisId() {
-		return analysisId;
+	public List<String> getAnalysisIds() {
+		return analysisIds;
 	}
 
 	/**
 	 * @param analysisId the analysisId to set
 	 */
-	public void setAnalysisId(List<String> analysisId) {
-		this.analysisId = analysisId;
+	public void setAnalysisIds(List<String> analysisIds) {
+		this.analysisIds = analysisIds;
 	}
 
 	/**

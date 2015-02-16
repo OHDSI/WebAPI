@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.model.results;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * 
@@ -19,31 +18,22 @@ public class AnalysisResultsDist extends AnalysisResults {
 	public static final String P75_VALUE = "P75_VALUE";
 	public static final String P90_VALUE = "P90_VALUE";
 	
-	@JsonProperty(MIN_VALUE)
 	private double minValue;
 	
-	@JsonProperty(MAX_VALUE)
 	private double maxValue;
 	
-	@JsonProperty(AVG_VALUE)
 	private double avgValue;
 	
-	@JsonProperty(STDEV_VALUE)
 	private double stdevValue;
 	
-	@JsonProperty(MEDIAN_VALUE)
 	private double medianValue;
 	
-	@JsonProperty(P10_VALUE)
 	private double p10Value;
 	
-	@JsonProperty(P25_VALUE)
 	private double p25Value;
 	
-	@JsonProperty(P75_VALUE)
 	private double p75Value;
 	
-	@JsonProperty(P90_VALUE)
 	private double p90Value;
 
 	public double getMinValue() {

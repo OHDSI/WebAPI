@@ -1,10 +1,18 @@
 package org.ohdsi.webapi.service;
 
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 
 /**
  *
@@ -24,6 +32,12 @@ public abstract class AbstractDaoService {
     
     @Value("${datasource.dialect.source}")
     private String sourceDialect;
+    
+    @Value("${source.name}")
+    private String sourceName;
+    
+    @Value("${cdm.version}")
+    private String cdmVersion;
     
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -90,4 +104,61 @@ public abstract class AbstractDaoService {
     public void setSourceDialect(String sourceDialect) {
         this.sourceDialect = sourceDialect;
     }
+
+
+	/**
+	 * @return the sourceName
+	 */
+	public String getSourceName() {
+		return sourceName;
+	}
+
+	/**
+	 * @param sourceName the sourceName to set
+	 */
+	public void setSourceName(String sourceName) {
+		this.sourceName = sourceName;
+	}
+
+	/**
+	 * @return the cdmVersion
+	 */
+	public String getCdmVersion() {
+		return cdmVersion;
+	}
+
+	/**
+	 * @param cdmVersion the cdmVersion to set
+	 */
+	public void setCdmVersion(String cdmVersion) {
+		this.cdmVersion = cdmVersion;
+	}
+
+	protected List<Map<String, String>> genericResultSetLoader(String sql) {
+		List<Map<String, String>> results = null;
+		try {
+			results = getJdbcTemplate().query(sql, new RowMapper<Map<String, String>>(){
+
+				@Override
+				public Map<String, String> mapRow(ResultSet rs, int rowNum)
+						throws SQLException {
+					Map<String, String> result = new HashMap<String, String>();
+					ResultSetMetaData metaData = rs.getMetaData();
+					int colCount = metaData.getColumnCount();
+					for (int i = 1; i <= colCount; i++) {
+						String columnLabel = metaData.getColumnLabel(i);
+						String columnValue = String.valueOf(rs.getObject(i));
+						result.put(columnLabel, columnValue);
+					}
+					return result;
+				}
+
+			});
+
+		} catch (Exception e) {
+			log.error("error loading in result set", e);
+		}
+		return results;
+	}
 }
+ 

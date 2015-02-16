@@ -23,18 +23,23 @@
 		<datasource.url>jdbc:sqlserver://serverName</datasource.url>
 		<datasource.username>user</datasource.username>
 		<datasource.password>password</datasource.password>
-
+		<datasource.validationQuery>SELECT 1</datasource.validationQuery>
 		<datasource.dialect>sql server</datasource.dialect>
 		<datasource.cdm.schema>[CDM_DATABASE].dbo</datasource.cdm.schema>
 		<datasource.ohdsi.schema>[CDM_DATABASE_RESULTS].dbo</datasource.ohdsi.schema>
 		<datasource.dialect.source>sql server</datasource.dialect.source>
+
 		<!-- DB Change Management / Migration -->
 		<flyway.datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</flyway.datasource.driverClassName>
-		<flyway.datasource.url>jdbc:sqlserver://serverName;user=userNameWithWritePrivs;password=password;</flyway.datasource.url>
-		<flyway.datasource.username>user</flyway.datasource.username>
+		<flyway.datasource.url>jdbc:sqlserver://serverName</flyway.datasource.url>
+		<flyway.datasource.username>userWithWritePrivs</flyway.datasource.username>
 		<flyway.datasource.password>password</flyway.datasource.password>
 		<flyway.locations>classpath:db/migration/sqlserver</flyway.locations>
 		<flyway.schemas>ohdsi</flyway.schemas>
+		
+		<!-- CDM properties -->
+		<source.name>CDM_NAME</source.name>
+		<cdm.version>5</cdm.version>
 
 		<spring.batch.repository.tableprefix>BATCH_</spring.batch.repository.tableprefix>
 		<spring.batch.repository.isolationLevelForCreate>ISOLATION_READ_COMMITTED</spring.batch.repository.isolationLevelForCreate>
@@ -291,6 +296,8 @@
 				<datasource.dialect>oracle</datasource.dialect>
 				<datasource.cdm.schema>omopv5_de</datasource.cdm.schema>
 				<datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>
+				<datasource.cohort.schema>ohdsi</datasource.cohort.schema>
+				<datasource.validationQuery>SELECT 1 FROM DUAL</datasource.validationQuery>
 				<flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
 				<flyway.datasource.url>jdbc:oracle:thin@127.0.0.1:1521:ohdsi</flyway.datasource.url>
 				<flyway.datasource.username>user</flyway.datasource.username>
@@ -315,7 +322,9 @@
                                 <datasource.url>jdbc:postgresql://54.209.111.128:5432/vocabularyv5?user=USER&amp;password=PASS</datasource.url>
                                 <datasource.dialect>postgresql</datasource.dialect>
                                 <datasource.cdm.schema>unrestricted</datasource.cdm.schema>
+                                
 				<datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>
+				<datasource.cohort.schema>ohdsi</datasource.cohort.schema>
 			</properties>
                         <dependencies>
                                 <dependency>

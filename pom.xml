@@ -35,7 +35,8 @@
 		<flyway.datasource.username>userWithWritePrivs</flyway.datasource.username>
 		<flyway.datasource.password>password</flyway.datasource.password>
 		<flyway.locations>classpath:db/migration/sqlserver</flyway.locations>
-		<flyway.schemas>ohdsi</flyway.schemas>
+		<!-- Note: Schema name is case-sensitive. -->
+		<flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
 		
 		<!-- CDM properties -->
 		<source.name>CDM_NAME</source.name>
@@ -295,15 +296,14 @@
 				<datasource.password>password</datasource.password>
 				<datasource.dialect>oracle</datasource.dialect>
 				<datasource.cdm.schema>omopv5_de</datasource.cdm.schema>
-				<datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>
-				<datasource.cohort.schema>ohdsi</datasource.cohort.schema>
+				<datasource.ohdsi.schema>OHDSI</datasource.ohdsi.schema>
+				<datasource.cohort.schema>OHDSI</datasource.cohort.schema>
 				<datasource.validationQuery>SELECT 1 FROM DUAL</datasource.validationQuery>
 				<flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
 				<flyway.datasource.url>jdbc:oracle:thin@127.0.0.1:1521:ohdsi</flyway.datasource.url>
 				<flyway.datasource.username>user</flyway.datasource.username>
 				<flyway.datasource.password>pass</flyway.datasource.password>
 				<flyway.locations>classpath:db/migration/oracle</flyway.locations>
-				<flyway.schemas>AFRANKEN</flyway.schemas>
 			</properties>
 			<dependencies>
 				<dependency>

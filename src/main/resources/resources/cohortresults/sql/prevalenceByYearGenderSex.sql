@@ -9,7 +9,7 @@ from (select cohort_definition_id,
 	cast(stratum_2 as integer) as gender_concept_id,
 	cast(stratum_3 as integer) as age_decile,
 	count_value 
-	from @resultsSchema.dbo.@heraclesResultsTable
+	from @resultsSchema.dbo.heracles_results
 	where analysis_id in (1814)
 	and cohort_definition_id in (@cohortDefinitionId)
 	and stratum_2 in (8507,8532)
@@ -21,7 +21,7 @@ from (select cohort_definition_id,
 	cast(stratum_2 as integer) as gender_concept_id,
 	cast(stratum_3 as integer) as age_decile,
 	count_value 
-	from @resultsSchema.dbo.@achillesResultsTable 
+	from @resultsSchema.dbo.achilles_results 
 	where analysis_id = 116
 ) t1
 on hr1.index_year = t1.index_year

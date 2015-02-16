@@ -24,8 +24,8 @@ observation:  no more range_high / range_low...now from measurement
 
 {DEFAULT @CDM_schema = 'CDM_schema'}    --CDM_schema = @CDM_schema
 {DEFAULT @results_schema = 'scratch'}   --results_schema = @results_schema
-{DEFAULT @cohort_schema = 'CDM_schema'}  --cohort_schema = @cohort_schema
-{DEFAULT @cohort_table = 'COHORT'}  --cohort_table = @cohort_table
+{DEFAULT @results_schema = 'CDM_schema'}  --results_schema = @results_schema
+{DEFAULT cohort = 'COHORT'}  --cohort_table = cohort
 {DEFAULT @source_name = 'TRUVEN MDCD'}   --source_name = @source_name
 {DEFAULT @smallcellcount = 5}    --smallcellcount = @smallcellcount
 {DEFAULT @createTable = TRUE}    --createTable = @createTable

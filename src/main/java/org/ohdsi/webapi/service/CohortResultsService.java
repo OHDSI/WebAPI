@@ -47,12 +47,10 @@ public class CohortResultsService extends AbstractDaoService {
 	    	  sql = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/" + analysisName + ".sql");
 
 	    	  sql = SqlRender.renderSql(sql, new String[] { "cdmSchema", 
-	    			  	"resultsSchema", "heraclesResultsTable", "heraclesResultsDistTable",
-	    			  	"achillesResultsTable", "achillesResultsDistTable", "cohortDefinitionId",
+	    			  	"resultsSchema", "cohortDefinitionId",
 	    			  	"minCovariatePersonCount", "minIntervalPersonCount"},
 	    	          new String[] { this.getCdmSchema(),
-	    			  	this.getOhdsiSchema(), this.getHeraclesResultsTable(), this.getHeraclesResultsDistTable(),
-	    			  	this.getAchillesResultsTable(), this.getAchillesResultsDistTable(), String.valueOf(id),
+	    			  	this.getOhdsiSchema(), String.valueOf(id),
 	    			  	minCovariatePersonCountParam == null ? MIN_COVARIATE_PERSON_COUNT :
 	    		    		  minCovariatePersonCountParam, 
 	    		    		  minIntervalPersonCountParam == null ? MIN_INTERVAL_PERSON_COUNT :

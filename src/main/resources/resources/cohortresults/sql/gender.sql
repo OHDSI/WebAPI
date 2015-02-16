@@ -5,7 +5,7 @@ from
 (
 select cast(stratum_1 as integer) as concept_id,
 	count_value
-from @resultsSchema.dbo.@heraclesResultsTable
+from @resultsSchema.dbo.heracles_results
 where analysis_id in (2)
 and cohort_definition_id in (@cohortDefinitionId)
 ) hr1

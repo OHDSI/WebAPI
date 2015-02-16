@@ -4,12 +4,12 @@ select hr1.stratum_1 as calendar_month,
 	hr1.count_value as num_persons,
 	round(1000*(1.0*hr1.count_value / t1.count_value),5) as y_prevelance_1000pp
 from (select stratum_1, count_value 
-	from @resultsSchema.dbo.@heraclesResultsTable
+	from @resultsSchema.dbo.heracles_results
 	where analysis_id in (1815)
 	and cohort_definition_id in (@cohortDefinitionId)
 ) hr1
 	inner join 
 (
-	select stratum_1, count_value from @resultsSchema.dbo.@achillesResultsTable where analysis_id = 117
+	select stratum_1, count_value from @resultsSchema.dbo.achilles_results where analysis_id = 117
 ) t1
 on hr1.stratum_1 = t1.stratum_1

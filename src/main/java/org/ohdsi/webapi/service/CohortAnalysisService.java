@@ -116,9 +116,8 @@ public class CohortAnalysisService extends AbstractDaoService {
         String sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/getCohortAnalysesForCohort.sql");
         sql = SqlRender.renderSql(
             sql,
-            new String[] { "resultsSchema", "heraclesResultsTable", "heraclesResultsDistTable", "cohortDefinitionId" },
-            new String[] { this.getOhdsiSchema(), this.getHeraclesResultsTable(), this.getHeraclesResultsDistTable(),
-                    String.valueOf(id) });
+            new String[] { "resultsSchema", "cohortDefinitionId" },
+            new String[] { this.getOhdsiSchema(), String.valueOf(id) });
         sql = SqlTranslate.translateSql(sql, getSourceDialect(), getDialect());
         
         return getJdbcTemplate().query(sql, this.cohortAnalysisMapper);
@@ -189,12 +188,12 @@ public class CohortAnalysisService extends AbstractDaoService {
         String measurementIds = (task.getMeasurementConceptIds() == null ? "" : Joiner.on(",").join(
             task.getMeasurementConceptIds()));
         
-        String[] params = new String[] { "CDM_schema", "results_schema", "cohort_schema", "cohort_table", "source_name",
+        String[] params = new String[] { "CDM_schema", "results_schema", "source_name",
                 "smallcellcount", "runHERACLESHeel", "CDM_version", "cohort_definition_id", "list_of_analysis_ids",
                 "condition_concept_ids", "drug_concept_ids", "procedure_concept_ids", "observation_concept_ids",
                 "measurement_concept_ids" };
-        String[] values = new String[] { this.getCdmSchema(), this.getOhdsiSchema(), this.getCohortSchema(),
-                this.getCohortTable(), this.getSourceName(), String.valueOf(task.getSmallCellCount()),
+        String[] values = new String[] { this.getCdmSchema(), this.getOhdsiSchema(), this.getSourceName(), 
+        		String.valueOf(task.getSmallCellCount()),
                 String.valueOf(task.runHeraclesHeel()).toUpperCase(), this.getCdmVersion(), cohortDefinitionIds,
                 analysisIds, conditionIds, drugIds, procedureIds, observationIds, measurementIds };
         sql = SqlRender.renderSql(sql, params, values);

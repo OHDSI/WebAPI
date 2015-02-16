@@ -84,7 +84,7 @@ public class CohortDefinitionService extends AbstractDaoService {
   public List<CohortDefinition> getCohortDefinitionList() {
       
       String sql = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/getCohortDefinitions.sql");
-      sql = SqlRender.renderSql(sql, new String[] { "cohort_schema" }, new String[] { this.getCohortSchema() });
+      sql = SqlRender.renderSql(sql, new String[] { "results_schema" }, new String[] { this.getOhdsiSchema()});
       sql = SqlTranslate.translateSql(sql, getSourceDialect(), getDialect());
       
       return getJdbcTemplate().query(sql, this.cohortDefinitionMapper);
@@ -102,8 +102,8 @@ public class CohortDefinitionService extends AbstractDaoService {
   public CohortDefinition getCohortDefinition(@PathParam("id") final int id) {
       
       String sql_statement = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/getCohortDefinitionsById.sql");
-      sql_statement = SqlRender.renderSql(sql_statement, new String[] { "id", "cohort_schema" },
-          new String[] { String.valueOf(id), this.getCohortSchema() });
+      sql_statement = SqlRender.renderSql(sql_statement, new String[] { "id", "results_schema" },
+          new String[] { String.valueOf(id), this.getOhdsiSchema() });
       sql_statement = SqlTranslate.translateSql(sql_statement, getSourceDialect(), getDialect());
       
       CohortDefinition def = null;

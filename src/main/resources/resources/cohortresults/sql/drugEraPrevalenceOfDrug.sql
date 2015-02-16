@@ -29,7 +29,7 @@ from
 	sum(count_value) as num_persons,
 	sum(case when stratum_2 < 0 then count_value else 0 end) as num_persons_before,
 	sum(case when stratum_2 > 0 then count_value else 0 end) as num_persons_after
-from @resultsSchema.dbo.@heraclesResultsTable
+from @resultsSchema.dbo.heracles_results
 where analysis_id in (1870) --first occurrence of drug
 and cohort_definition_id in (@cohortDefinitionId)
 group by cast(stratum_1 as int)
@@ -111,6 +111,6 @@ inner join
 	on hr1.concept_id = concept_hierarchy.concept_id
 ,
 (select count_value
-from @resultsSchema.dbo.@heraclesResultsTable
+from @resultsSchema.dbo.heracles_results
 where analysis_id = 1
 ) denom

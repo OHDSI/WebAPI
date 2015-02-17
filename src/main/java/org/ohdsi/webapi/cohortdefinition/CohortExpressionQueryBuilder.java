@@ -5,6 +5,7 @@
  */
 package org.ohdsi.webapi.cohortdefinition;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.helper.ResourceHelper;
@@ -41,6 +42,21 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
   private final static String SPECIMEN_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/specimen.sql");
   private final static String VISIT_OCCURRENCE_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/visitOccurrence.sql");
 
+  public static class BuildExpressionQueryOptions {
+    @JsonProperty("cohortId")  
+    public Integer cohortId;
+
+    @JsonProperty("cdmSchema")  
+    public String cdmSchema;
+
+    @JsonProperty("targetSchema")  
+    public String targetSchema;
+
+    @JsonProperty("targetTable")  
+    public String targetTable;
+    
+
+  }  
   private ArrayList<Integer> getConceptIdsFromConcepts(Concept[] concepts) {
     ArrayList<Integer> conceptIdList = new ArrayList<>();
     for (Concept concept : concepts) {
@@ -154,7 +170,6 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
       return String.format("%s %s like '%s%s%s'", sqlExpression, negation, prefix, value, postfix);
   }
   
-  
   private String getCodesetQuery(Codeset[] codesets) {
     String codesetQuery = "";
     
@@ -231,13 +246,13 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     return query;
   }
   
-  public String buildExpressionQuery(CohortExpression expression) {
+  public String buildExpressionQuery(CohortExpression expression, BuildExpressionQueryOptions options) {
     String resultSql = COHORT_QUERY_TEMPLATE;
 
     String codesetQuery = getCodesetQuery(expression.codesets);
-    String primaryEventsQuery = getPrimaryEventsQuery(expression.primaryCriteria);
-    
     resultSql = StringUtils.replace(resultSql, "@codesetQuery", codesetQuery);
+
+    String primaryEventsQuery = getPrimaryEventsQuery(expression.primaryCriteria);
     resultSql = StringUtils.replace(resultSql, "@primaryEventsQuery", primaryEventsQuery);
     
     String additionalCriteriaQuery = "";
@@ -255,9 +270,12 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     }
     else
       resultSql = StringUtils.replace(resultSql, "@ResultLimitFilter","");
-    
-    //TODO: what should cohortID be?
-    resultSql = StringUtils.replace(resultSql, "@cohortId", "-1");
+
+    // replease query parameters with tokens
+    resultSql = StringUtils.replace(resultSql, "@CDM_schema", options.cdmSchema);
+    resultSql = StringUtils.replace(resultSql, "@targetSchema", options.targetSchema);
+    resultSql = StringUtils.replace(resultSql, "@targetTable", options.targetTable);
+    resultSql = StringUtils.replace(resultSql, "@cohortDefinitionId", options.cohortId.toString());
     return resultSql;
   }
 

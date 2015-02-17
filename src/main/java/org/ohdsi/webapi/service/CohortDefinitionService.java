@@ -5,6 +5,7 @@
  */
 package org.ohdsi.webapi.service;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -25,6 +26,7 @@ import org.ohdsi.webapi.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.model.CohortDefinition;
+import org.ohdsi.webapi.sqlrender.SourceStatement;
 import org.ohdsi.webapi.sqlrender.TranslatedStatement;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
@@ -38,41 +40,69 @@ import org.springframework.stereotype.Component;
 @Component
 public class CohortDefinitionService extends AbstractDaoService {
 
+  public static class GenerateSqlRequest {
+
+    public GenerateSqlRequest() {
+    }
+
+    @JsonProperty("expression")
+    public CohortExpression expression;
+
+    @JsonProperty("options")
+    public CohortExpressionQueryBuilder.BuildExpressionQueryOptions options;
+
+  }
+
+  public class GenerateSqlResult {
+
+    @JsonProperty("templateSql")
+    public String templateSql;
+  }
+
   private static final CohortExpressionQueryBuilder queryBuilder = new CohortExpressionQueryBuilder();
-  
+
   @Context
   ServletContext context;
-  
+
   private final RowMapper<CohortDefinition> cohortDefinitionMapper = new RowMapper<CohortDefinition>() {
-      
-      @Override
-      public CohortDefinition mapRow(final ResultSet rs, final int arg1) throws SQLException {
-          final CohortDefinition definition = new CohortDefinition();
-          definition.setCohortDefinitionDescription(rs.getString(CohortDefinition.COHORT_DEFINITION_DESCRIPTION));
-          definition.setCohortDefinitionId(rs.getInt(CohortDefinition.COHORT_DEFINITION_ID));
-          definition.setCohortDefinitionName(rs.getString(CohortDefinition.COHORT_DEFINITION_NAME));
-          definition.setCohortDefinitionSyntax(rs.getString(CohortDefinition.COHORT_DEFINITION_SYNTAX));
-          definition.setCohortInitiationDate(rs.getDate(CohortDefinition.COHORT_INITIATION_DATE));
-          return definition;
-      }
+
+    @Override
+    public CohortDefinition mapRow(final ResultSet rs, final int arg1) throws SQLException {
+      final CohortDefinition definition = new CohortDefinition();
+      definition.setCohortDefinitionDescription(rs.getString(CohortDefinition.COHORT_DEFINITION_DESCRIPTION));
+      definition.setCohortDefinitionId(rs.getInt(CohortDefinition.COHORT_DEFINITION_ID));
+      definition.setCohortDefinitionName(rs.getString(CohortDefinition.COHORT_DEFINITION_NAME));
+      definition.setCohortDefinitionSyntax(rs.getString(CohortDefinition.COHORT_DEFINITION_SYNTAX));
+      definition.setCohortInitiationDate(rs.getDate(CohortDefinition.COHORT_INITIATION_DATE));
+      return definition;
+    }
   };
-    
+
   @Path("generate")
   @POST
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public TranslatedStatement generateSql(CohortExpression expression) {
-    
-    String query = queryBuilder.buildExpressionQuery(expression);
-    
-    query = SqlRender.renderSql(query, new String[] { "CDM_schema"}, new String[] { getCdmSchema()});
-    String translatedSql = SqlTranslate.translateSql(query, "sql server", getDialect());
-    
-    TranslatedStatement ts = new TranslatedStatement();
-    ts.targetSQL = translatedSql;
-    return ts;
+  public GenerateSqlResult generateSql(GenerateSqlRequest request) {
+    CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = request.options;
+    if (options == null) {
+      options = new CohortExpressionQueryBuilder.BuildExpressionQueryOptions();
+      options.cdmSchema = this.getCdmSchema();
+      options.targetSchema = this.getOhdsiSchema();
+      options.targetTable = "cohort";
+      options.cohortId = -1;
+      
+    }
+    options.cohortId = options.cohortId == null ? -1 : options.cohortId;
+    options.cdmSchema = options.cdmSchema == null ? this.getCdmSchema() : options.cdmSchema;
+    options.targetTable = options.targetTable == null ? "cohort" : options.targetTable;
+    options.cohortId = options.cohortId == null ? -1 : options.cohortId;
+
+    GenerateSqlResult result = new GenerateSqlResult();
+    result.templateSql = queryBuilder.buildExpressionQuery(request.expression, options);
+
+    return result;
   }
-  
+
   /**
    * Returns all cohort definitions in the cohort schema
    * 
@@ -82,14 +112,14 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
   public List<CohortDefinition> getCohortDefinitionList() {
-      
-      String sql = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/getCohortDefinitions.sql");
+
+    String sql = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/getCohortDefinitions.sql");
       sql = SqlRender.renderSql(sql, new String[] { "results_schema" }, new String[] { this.getOhdsiSchema()});
-      sql = SqlTranslate.translateSql(sql, getSourceDialect(), getDialect());
-      
-      return getJdbcTemplate().query(sql, this.cohortDefinitionMapper);
+    sql = SqlTranslate.translateSql(sql, getSourceDialect(), getDialect());
+
+    return getJdbcTemplate().query(sql, this.cohortDefinitionMapper);
   }
-  
+
   /**
    * Returns the cohort definition for the given cohort_definition_id in the cohort schema
    * 
@@ -100,22 +130,20 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Path("/{id}")
   @Produces(MediaType.APPLICATION_JSON)
   public CohortDefinition getCohortDefinition(@PathParam("id") final int id) {
-      
-      String sql_statement = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/getCohortDefinitionsById.sql");
+
+    String sql_statement = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/getCohortDefinitionsById.sql");
       sql_statement = SqlRender.renderSql(sql_statement, new String[] { "id", "results_schema" },
           new String[] { String.valueOf(id), this.getOhdsiSchema() });
-      sql_statement = SqlTranslate.translateSql(sql_statement, getSourceDialect(), getDialect());
-      
-      CohortDefinition def = null;
-      try {
-          def = getJdbcTemplate().queryForObject(sql_statement, this.cohortDefinitionMapper);
-      } catch (EmptyResultDataAccessException e) {
-          log.debug(String.format("Request for cohortDefinition=%s resulted in 0 results", id));
-          //returning null / i.e. no content
-      }
-      return def;
+    sql_statement = SqlTranslate.translateSql(sql_statement, getSourceDialect(), getDialect());
+
+    CohortDefinition def = null;
+    try {
+      def = getJdbcTemplate().queryForObject(sql_statement, this.cohortDefinitionMapper);
+    } catch (EmptyResultDataAccessException e) {
+      log.debug(String.format("Request for cohortDefinition=%s resulted in 0 results", id));
+      //returning null / i.e. no content
+    }
+    return def;
   }
-  
-  
 
 }

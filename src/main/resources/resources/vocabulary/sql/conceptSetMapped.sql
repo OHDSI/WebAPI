@@ -1,4 +1,4 @@
-select distinct cr.concept_id_2
+select distinct cr.concept_id_2 as concept_id
 FROM
 (
   @conceptsetQuery

@@ -21,20 +21,20 @@ public class ConceptSetExpressionQueryBuilder {
   private final static String CONCEPT_SET_MAPPED_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/conceptSetMapped.sql");
 
 
-  private ArrayList<Long> getConceptIds(ArrayList<ConceptSetExpression.Concept> concepts)
+  private ArrayList<Long> getConceptIds(ArrayList<Concept> concepts)
   {
     ArrayList<Long> conceptIdList = new ArrayList<>();
-    for (ConceptSetExpression.Concept concept : concepts) {
+    for (Concept concept : concepts) {
       conceptIdList.add(concept.conceptId);
     }
     return conceptIdList;     
   }
   
   private String buildConceptSetQuery(
-          ArrayList<ConceptSetExpression.Concept> concepts,
-          ArrayList<ConceptSetExpression.Concept> descendantConcepts,
-          ArrayList<ConceptSetExpression.Concept> excludeConcepts,
-          ArrayList<ConceptSetExpression.Concept> excludeDescendantConcepts)
+          ArrayList<Concept> concepts,
+          ArrayList<Concept> descendantConcepts,
+          ArrayList<Concept> excludeConcepts,
+          ArrayList<Concept> excludeDescendantConcepts)
   {
     String conceptSetQuery = StringUtils.replace(CONCEPT_SET_QUERY_TEMPLATE, "@conceptIds",StringUtils.join(getConceptIds(concepts), ","));
     if (descendantConcepts.size() > 0) {
@@ -61,15 +61,15 @@ public class ConceptSetExpressionQueryBuilder {
   public String buildExpressionQuery(ConceptSetExpression expression)
   {
     // handle included concepts.
-    ArrayList<ConceptSetExpression.Concept> includeConcepts = new ArrayList<>();
-    ArrayList<ConceptSetExpression.Concept> includeDescendantConcepts = new ArrayList<>();
-    ArrayList<ConceptSetExpression.Concept> excludeConcepts = new ArrayList<>();
-    ArrayList<ConceptSetExpression.Concept> excludeDescendantConcepts = new ArrayList<>();
+    ArrayList<Concept> includeConcepts = new ArrayList<>();
+    ArrayList<Concept> includeDescendantConcepts = new ArrayList<>();
+    ArrayList<Concept> excludeConcepts = new ArrayList<>();
+    ArrayList<Concept> excludeDescendantConcepts = new ArrayList<>();
     
-    ArrayList<ConceptSetExpression.Concept> includeMappedConcepts = new ArrayList<>();
-    ArrayList<ConceptSetExpression.Concept> includeMappedDescendantConcepts = new ArrayList<>();
-    ArrayList<ConceptSetExpression.Concept> excludeMappedConcepts = new ArrayList<>();
-    ArrayList<ConceptSetExpression.Concept> excludeMappedDescendantConcepts = new ArrayList<>();
+    ArrayList<Concept> includeMappedConcepts = new ArrayList<>();
+    ArrayList<Concept> includeMappedDescendantConcepts = new ArrayList<>();
+    ArrayList<Concept> excludeMappedConcepts = new ArrayList<>();
+    ArrayList<Concept> excludeMappedDescendantConcepts = new ArrayList<>();
     
     // populate each sub-set of cocnepts from the flags set in each concept set item
     for (ConceptSetExpression.ConceptSetItem item : expression.items)

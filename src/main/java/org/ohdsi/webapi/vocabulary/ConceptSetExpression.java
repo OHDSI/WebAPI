@@ -17,14 +17,6 @@ public class ConceptSetExpression {
     public boolean includeDescendants;
     public boolean includeMapped;
   }
-  
-  public static class Concept {
-    public long conceptId;
-    public String conceptName;
-    public String conceptCode;
-    public String domainId;
-    public String vocabularyId;
-  }
 
   public ConceptSetItem[] items;
   

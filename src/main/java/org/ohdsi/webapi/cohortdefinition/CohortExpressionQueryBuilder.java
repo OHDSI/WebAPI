@@ -9,6 +9,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.helper.ResourceHelper;
+import org.ohdsi.webapi.vocabulary.Concept;
+import org.ohdsi.webapi.vocabulary.ConceptSetExpressionQueryBuilder;
 
 /**
  *
@@ -16,12 +18,10 @@ import org.ohdsi.webapi.helper.ResourceHelper;
  */
 public class CohortExpressionQueryBuilder implements ICohortExpressionElementVisitor {
 
-  private final static String COHORT_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/generateCohort.sql");
-
+  private final static ConceptSetExpressionQueryBuilder conceptSetQueryBuilder = new ConceptSetExpressionQueryBuilder();
   private final static String CODESET_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/codesetQuery.sql");
-  private final static String TARGET_CODESET_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/targetCodeset.sql");
-  private final static String EXCLUDE_CODESET_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/excludeCodeset.sql");
-  private final static String DESCENDANT_CONCEPTS_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/descendantConcepts.sql");
+  
+  private final static String COHORT_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/generateCohort.sql");
 
   private final static String PRIMARY_EVENTS_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/primaryEventsQuery.sql");
 
@@ -57,10 +57,11 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     
 
   }  
-  private ArrayList<Integer> getConceptIdsFromConcepts(Concept[] concepts) {
-    ArrayList<Integer> conceptIdList = new ArrayList<>();
+  
+  private ArrayList<Long> getConceptIdsFromConcepts(Concept[] concepts) {
+    ArrayList<Long> conceptIdList = new ArrayList<>();
     for (Concept concept : concepts) {
-      conceptIdList.add(concept.id);
+      conceptIdList.add(concept.conceptId);
     }
     return conceptIdList;
   }
@@ -170,45 +171,18 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
       return String.format("%s %s like '%s%s%s'", sqlExpression, negation, prefix, value, postfix);
   }
   
-  private String getCodesetQuery(Codeset[] codesets) {
+  private String getCodesetQuery(ConceptSet[] conceptSets) {
     String codesetQuery = "";
     
-    if (codesets.length > 0) {
+    if (conceptSets.length > 0) {
       codesetQuery = CODESET_QUERY_TEMPLATE;
       ArrayList<String> codesetQueries = new ArrayList<>();
-      for (Codeset cs : codesets) {
-        if (cs.targetConcepts.length == 0) {
-          continue; // skip codesets that do not have targets
-        }
+      for (ConceptSet cs : conceptSets) {
         // construct main target codeset query
-        String targetCodesetQuery = StringUtils.replace(TARGET_CODESET_TEMPLATE, "@codesetId", Integer.toString(cs.id));
-        ArrayList<Integer> conceptIdList = getConceptIdsFromConcepts(cs.targetConcepts);
-        String conceptIds = StringUtils.join(conceptIdList, ",");
-        targetCodesetQuery = StringUtils.replace(targetCodesetQuery, "@conceptIds", conceptIds);
-
-        // add descendent concepts (if specificed).  we always replace @descendantQuery with some value, "" if not used.
-        String descendantQuery = "";
-        if (cs.useDescendents == true) {
-          descendantQuery = StringUtils.replace(DESCENDANT_CONCEPTS_TEMPLATE, "@conceptIds", conceptIds);
-        }
-        targetCodesetQuery = StringUtils.replace(targetCodesetQuery, "@descendantQuery", descendantQuery);
-
-        if (cs.excluded.length > 0) {
-          String excludeCodesetQuery = EXCLUDE_CODESET_TEMPLATE;
-          ArrayList<Integer> excludeIdList = getConceptIdsFromConcepts(cs.excluded);
-          String excludeIds = StringUtils.join(excludeIdList, ",");
-          excludeCodesetQuery = StringUtils.replace(excludeCodesetQuery, "@conceptIds", excludeIds);
-          String excludeDescendantQuery = "";
-          if (cs.excludeDescendents == true)
-          {
-            excludeDescendantQuery = StringUtils.replace(DESCENDANT_CONCEPTS_TEMPLATE, "@conceptIds", excludeIds);
-          }
-          excludeCodesetQuery = StringUtils.replace(excludeCodesetQuery, "@descendantQuery", excludeDescendantQuery);
-          
-          // concatinate target query with exclude query making the target query left join to excluded, looking for join being NULL.
-          targetCodesetQuery = targetCodesetQuery + excludeCodesetQuery;
-        }
-        codesetQueries.add(targetCodesetQuery);
+        String conceptExpressionQuery = conceptSetQueryBuilder.buildExpressionQuery(cs.expression);
+        // attach the conceptSetId to the result query from the expession query builder
+        String conceptSetQuery = String.format("SELECT %d as codeset_id, c.concept_id FROM (%s) C", cs.id, conceptExpressionQuery);
+        codesetQueries.add(conceptSetQuery);
       }
       codesetQuery = StringUtils.replace(codesetQuery, "@codesetQueries", StringUtils.join(codesetQueries, "\nUNION\n"));
     }
@@ -249,7 +223,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
   public String buildExpressionQuery(CohortExpression expression, BuildExpressionQueryOptions options) {
     String resultSql = COHORT_QUERY_TEMPLATE;
 
-    String codesetQuery = getCodesetQuery(expression.codesets);
+    String codesetQuery = getCodesetQuery(expression.conceptSets);
     resultSql = StringUtils.replace(resultSql, "@codesetQuery", codesetQuery);
 
     String primaryEventsQuery = getPrimaryEventsQuery(expression.primaryCriteria);
@@ -435,7 +409,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // conditionType
     if (criteria.conditionType != null && criteria.conditionType.length > 0)
     {
-      ArrayList<Integer> conceptIds = getConceptIdsFromConcepts(criteria.conditionType);
+      ArrayList<Long> conceptIds = getConceptIdsFromConcepts(criteria.conditionType);
       whereClauses.add(String.format("C.condition_type_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
     }
     
@@ -532,7 +506,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // deathType
     if (criteria.deathType != null && criteria.deathType.length > 0)
     {
-      ArrayList<Integer> conceptIds = getConceptIdsFromConcepts(criteria.deathType);
+      ArrayList<Long> conceptIds = getConceptIdsFromConcepts(criteria.deathType);
       whereClauses.add(String.format("C.death_type_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
     }
 
@@ -604,7 +578,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // deviceType
     if (criteria.deviceType != null && criteria.deviceType.length > 0)
     {
-      ArrayList<Integer> conceptIds = getConceptIdsFromConcepts(criteria.deviceType);
+      ArrayList<Long> conceptIds = getConceptIdsFromConcepts(criteria.deviceType);
       whereClauses.add(String.format("C.device_type_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
     }
     
@@ -863,7 +837,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // drugType
     if (criteria.drugType != null && criteria.drugType.length > 0)
     {
-      ArrayList<Integer> conceptIds = getConceptIdsFromConcepts(criteria.drugType);
+      ArrayList<Long> conceptIds = getConceptIdsFromConcepts(criteria.drugType);
       whereClauses.add(String.format("C.drug_type_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
     }
     
@@ -991,14 +965,14 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // measurementType
     if (criteria.measurementType != null && criteria.measurementType.length > 0)
     {
-      ArrayList<Integer> conceptIds = getConceptIdsFromConcepts(criteria.measurementType);
+      ArrayList<Long> conceptIds = getConceptIdsFromConcepts(criteria.measurementType);
       whereClauses.add(String.format("C.measurement_type_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
     }
     
     // operator
     if (criteria.operator != null && criteria.operator.length > 0)
     {
-      ArrayList<Integer> conceptIds = getConceptIdsFromConcepts(criteria.operator);
+      ArrayList<Long> conceptIds = getConceptIdsFromConcepts(criteria.operator);
       whereClauses.add(String.format("C.operator_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
     }
     
@@ -1011,14 +985,14 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // valueAsConcept
     if (criteria.valueAsConcept != null && criteria.valueAsConcept.length > 0)
     {
-      ArrayList<Integer> conceptIds = getConceptIdsFromConcepts(criteria.valueAsConcept);
+      ArrayList<Long> conceptIds = getConceptIdsFromConcepts(criteria.valueAsConcept);
       whereClauses.add(String.format("C.value_as_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
     }    
     
     // unit
     if (criteria.unit != null && criteria.unit.length > 0)
     {
-      ArrayList<Integer> conceptIds = getConceptIdsFromConcepts(criteria.valueAsConcept);
+      ArrayList<Long> conceptIds = getConceptIdsFromConcepts(criteria.valueAsConcept);
       whereClauses.add(String.format("C.unit_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
     }
     
@@ -1122,7 +1096,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // measurementType
     if (criteria.observationType != null && criteria.observationType.length > 0)
     {
-      ArrayList<Integer> conceptIds = getConceptIdsFromConcepts(criteria.observationType);
+      ArrayList<Long> conceptIds = getConceptIdsFromConcepts(criteria.observationType);
       whereClauses.add(String.format("C.observation_type_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
     }
        
@@ -1141,21 +1115,21 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // valueAsConcept
     if (criteria.valueAsConcept != null && criteria.valueAsConcept.length > 0)
     {
-      ArrayList<Integer> conceptIds = getConceptIdsFromConcepts(criteria.valueAsConcept);
+      ArrayList<Long> conceptIds = getConceptIdsFromConcepts(criteria.valueAsConcept);
       whereClauses.add(String.format("C.value_as_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
     }    
     
     // qualifier
     if (criteria.qualifier != null && criteria.qualifier.length > 0)
     {
-      ArrayList<Integer> conceptIds = getConceptIdsFromConcepts(criteria.qualifier);
+      ArrayList<Long> conceptIds = getConceptIdsFromConcepts(criteria.qualifier);
       whereClauses.add(String.format("C.qualifier_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
     }
     
     // unit
     if (criteria.unit != null && criteria.unit.length > 0)
     {
-      ArrayList<Integer> conceptIds = getConceptIdsFromConcepts(criteria.valueAsConcept);
+      ArrayList<Long> conceptIds = getConceptIdsFromConcepts(criteria.valueAsConcept);
       whereClauses.add(String.format("C.unit_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
     }
        
@@ -1229,7 +1203,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // periodType
     if (criteria.periodType != null && criteria.periodType.length > 0)
     {
-      ArrayList<Integer> conceptIds = getConceptIdsFromConcepts(criteria.periodType);
+      ArrayList<Long> conceptIds = getConceptIdsFromConcepts(criteria.periodType);
       whereClauses.add(String.format("C.period_type_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
     }
     
@@ -1297,14 +1271,14 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // procedureType
     if (criteria.procedureType != null && criteria.procedureType.length > 0)
     {
-      ArrayList<Integer> conceptIds = getConceptIdsFromConcepts(criteria.procedureType);
+      ArrayList<Long> conceptIds = getConceptIdsFromConcepts(criteria.procedureType);
       whereClauses.add(String.format("C.procedure_type_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
     }
     
     // modifier
     if (criteria.modifier != null && criteria.modifier.length > 0)
     {
-      ArrayList<Integer> conceptIds = getConceptIdsFromConcepts(criteria.modifier);
+      ArrayList<Long> conceptIds = getConceptIdsFromConcepts(criteria.modifier);
       whereClauses.add(String.format("C.modifier_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
     }
 
@@ -1387,7 +1361,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // specimenType
     if (criteria.specimenType != null && criteria.specimenType.length > 0)
     {
-      ArrayList<Integer> conceptIds = getConceptIdsFromConcepts(criteria.specimenType);
+      ArrayList<Long> conceptIds = getConceptIdsFromConcepts(criteria.specimenType);
       whereClauses.add(String.format("C.specimen_type_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
     }
 
@@ -1400,21 +1374,21 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // unit
     if (criteria.unit != null && criteria.unit.length > 0)
     {
-      ArrayList<Integer> conceptIds = getConceptIdsFromConcepts(criteria.unit);
+      ArrayList<Long> conceptIds = getConceptIdsFromConcepts(criteria.unit);
       whereClauses.add(String.format("C.unit_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
     }
 
     // anatomicSite
     if (criteria.anatomicSite != null && criteria.anatomicSite.length > 0)
     {
-      ArrayList<Integer> conceptIds = getConceptIdsFromConcepts(criteria.anatomicSite);
+      ArrayList<Long> conceptIds = getConceptIdsFromConcepts(criteria.anatomicSite);
       whereClauses.add(String.format("C.anatomic_site_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
     }
 
     // diseaseStatus
     if (criteria.diseaseStatus != null && criteria.diseaseStatus.length > 0)
     {
-      ArrayList<Integer> conceptIds = getConceptIdsFromConcepts(criteria.diseaseStatus);
+      ArrayList<Long> conceptIds = getConceptIdsFromConcepts(criteria.diseaseStatus);
       whereClauses.add(String.format("C.disease_status_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
     }
 
@@ -1489,7 +1463,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // visitType
     if (criteria.visitType != null && criteria.visitType.length > 0)
     {
-      ArrayList<Integer> conceptIds = getConceptIdsFromConcepts(criteria.visitType);
+      ArrayList<Long> conceptIds = getConceptIdsFromConcepts(criteria.visitType);
       whereClauses.add(String.format("C.visit_type_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
     }
     

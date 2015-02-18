@@ -25,8 +25,8 @@ public class CohortExpression {
   @JsonProperty("AdditionalCriteria")
   public CriteriaGroup additionalCriteria;
   
-  @JsonProperty("Codesets")
-  public Codeset[] codesets;
+  @JsonProperty("ConceptSets")
+  public ConceptSet[] conceptSets;
   
   @JsonProperty("ExpressionLimit")
   public ResultLimit limit;

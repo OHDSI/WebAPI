@@ -6,6 +6,7 @@
 package org.ohdsi.webapi.cohortdefinition;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.ohdsi.webapi.vocabulary.Concept;
 
 /**
  *

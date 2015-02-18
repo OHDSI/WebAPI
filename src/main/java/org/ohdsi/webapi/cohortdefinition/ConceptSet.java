@@ -6,28 +6,15 @@
 package org.ohdsi.webapi.cohortdefinition;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.ohdsi.webapi.vocabulary.ConceptSetExpression;
 
 /**
  *
  * @author cknoll1
  */
-public class Codeset {
+public class ConceptSet {
   
-  @JsonProperty("Id")
   public int id;
-
-  @JsonProperty("Name")
   public String name;
-  
-  @JsonProperty("TargetConcepts")
-  public Concept[] targetConcepts;
-  
-  @JsonProperty("UseDescendents")
-  public boolean useDescendents;
-  
-  @JsonProperty("Excluded")
-  public Concept[] excluded;
-  
-  @JsonProperty("ExcludeDescendents")
-  public boolean excludeDescendents;  
+  public ConceptSetExpression expression;
 }

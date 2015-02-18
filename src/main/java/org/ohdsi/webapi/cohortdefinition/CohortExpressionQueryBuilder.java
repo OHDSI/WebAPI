@@ -172,10 +172,10 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
   }
   
   private String getCodesetQuery(ConceptSet[] conceptSets) {
-    String codesetQuery = "";
+    String codesetQuery = CODESET_QUERY_TEMPLATE;
+    
     
     if (conceptSets.length > 0) {
-      codesetQuery = CODESET_QUERY_TEMPLATE;
       ArrayList<String> codesetQueries = new ArrayList<>();
       for (ConceptSet cs : conceptSets) {
         // construct main target codeset query
@@ -185,6 +185,9 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
         codesetQueries.add(conceptSetQuery);
       }
       codesetQuery = StringUtils.replace(codesetQuery, "@codesetQueries", StringUtils.join(codesetQueries, "\nUNION\n"));
+    }
+    else {
+      codesetQuery = StringUtils.replace(codesetQuery, "@codesetQueries", "SELECT concept_id FROM @CDM_schema.CONCEPT where 0 = 1"); // by default, return an empty resultset
     }
     return codesetQuery;
   }

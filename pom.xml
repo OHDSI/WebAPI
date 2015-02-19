@@ -295,7 +295,6 @@
 			<id>webapi-oracle</id>
 			<properties>
 				<datasource.driverClassName>oracle.jdbc.OracleDriver</datasource.driverClassName>
-				<!-- Override in settings.xml with actual user/pass -->
 				<datasource.url>jdbc:oracle:thin:@127.0.0.1:1521:cdm</datasource.url>
 				<datasource.username>user</datasource.username>
 				<datasource.password>password</datasource.password>
@@ -319,25 +318,30 @@
 				</dependency>
 			</dependencies>
 		</profile>
-                <profile>
+		<profile>
 			<id>webapi-postgresql</id>
 			<properties>
-                                <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
-				<!-- Override in settings.xml with actual user/pass -->
-                                <datasource.url>jdbc:postgresql://54.209.111.128:5432/vocabularyv5?user=USER&amp;password=PASS</datasource.url>
-                                <datasource.dialect>postgresql</datasource.dialect>
-                                <datasource.cdm.schema>unrestricted</datasource.cdm.schema>
-                                
+				<datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
+				<datasource.url>jdbc:postgresql://54.209.111.128:5432/vocabularyv5</datasource.url>
+				<datasource.username>USER</datasource.username>
+				<datasource.password>PASS</datasource.password>
+				<datasource.dialect>postgresql</datasource.dialect>
+				<datasource.cdm.schema>unrestricted</datasource.cdm.schema>
 				<datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>
 				<datasource.cohort.schema>ohdsi</datasource.cohort.schema>
+				<flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
+				<flyway.datasource.url>${datasource.url}</flyway.datasource.url>
+				<flyway.datasource.username>userWithWritesToOhdsiSchema</flyway.datasource.username>
+				<flyway.datasource.password>PASS</flyway.datasource.password>
+				<flyway.locations>classpath:db/migration/postgresql</flyway.locations>
 			</properties>
-                        <dependencies>
-                                <dependency>
-                                    <groupId>postgresql</groupId>
-                                    <artifactId>postgresql</artifactId>
-                                    <version>9.1-901-1.jdbc4</version>
-                                </dependency>
-                        </dependencies>
+			<dependencies>
+				<dependency>
+					<groupId>postgresql</groupId>
+					<artifactId>postgresql</artifactId>
+					<version>9.1-901-1.jdbc4</version>
+				</dependency>
+			</dependencies>
 		</profile>
 	</profiles>
 </project>

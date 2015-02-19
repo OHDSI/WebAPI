@@ -25,7 +25,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -84,10 +83,15 @@ public class JobConfig {
         
         private JobExplorer jobExplorer;
         
-        @Autowired(required = false)
+        @Autowired
         public void setDataSource(final DataSource dataSource) {
             this.dataSource = dataSource;
-            this.transactionManager = new DataSourceTransactionManager(dataSource);
+//            this.transactionManager = new DataSourceTransactionManager(dataSource);
+        }
+        
+        @Autowired
+        public void setTransactionManager(final PlatformTransactionManager transactionManager){
+            this.transactionManager = transactionManager;
         }
         
         protected CustomBatchConfigurer() {

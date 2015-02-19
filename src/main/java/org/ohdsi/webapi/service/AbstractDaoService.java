@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  *
@@ -41,6 +42,9 @@ public abstract class AbstractDaoService {
     
     @Autowired
     private JdbcTemplate jdbcTemplate;
+    
+    @Autowired
+    private TransactionTemplate transactionTemplate;
     
     /**
      * @return the cdmSchema
@@ -160,5 +164,13 @@ public abstract class AbstractDaoService {
 		}
 		return results;
 	}
+
+    
+    /**
+     * @return the transactionTemplate
+     */
+    public TransactionTemplate getTransactionTemplate() {
+        return transactionTemplate;
+    }
 }
  

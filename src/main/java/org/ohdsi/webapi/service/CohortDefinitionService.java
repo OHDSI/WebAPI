@@ -84,19 +84,13 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Consumes(MediaType.APPLICATION_JSON)
   public GenerateSqlResult generateSql(GenerateSqlRequest request) {
     CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = request.options;
-    if (options == null) {
-      options = new CohortExpressionQueryBuilder.BuildExpressionQueryOptions();
-      options.cdmSchema = this.getCdmSchema();
-      options.targetSchema = this.getOhdsiSchema();
-      options.targetTable = "cohort";
-      options.cohortId = -1;
-      
+    if (options != null) {
+      options.cohortId = options.cohortId == null ? -1 : options.cohortId;
+      options.cdmSchema = (options.cdmSchema == null || options.cdmSchema.trim().length() == 0) ? this.getCdmSchema() : options.cdmSchema.trim();
+      options.targetTable = (options.targetTable == null || options.targetTable.trim().length() == 0) ? "cohort" : options.targetTable.trim();
+      options.targetSchema = (options.targetSchema == null || options.targetSchema.trim().length() == 0) ? this.getOhdsiSchema() : options.targetSchema.trim();
     }
-    options.cohortId = options.cohortId == null ? -1 : options.cohortId;
-    options.cdmSchema = options.cdmSchema == null ? this.getCdmSchema() : options.cdmSchema;
-    options.targetTable = options.targetTable == null ? "cohort" : options.targetTable;
-    options.cohortId = options.cohortId == null ? -1 : options.cohortId;
-
+    
     GenerateSqlResult result = new GenerateSqlResult();
     result.templateSql = queryBuilder.buildExpressionQuery(request.expression, options);
 

@@ -23,7 +23,7 @@
 		<datasource.url>jdbc:sqlserver://serverName</datasource.url>
 		<datasource.username>user</datasource.username>
 		<datasource.password>password</datasource.password>
-		<datasource.validationQuery>SELECT 1</datasource.validationQuery>
+		<!--<datasource.validationQuery>SELECT 1</datasource.validationQuery>-->
 		<datasource.dialect>sql server</datasource.dialect>
 		<datasource.cdm.schema>[CDM_DATABASE].dbo</datasource.cdm.schema>
 		<datasource.ohdsi.schema>[CDM_DATABASE_RESULTS].dbo</datasource.ohdsi.schema>
@@ -303,7 +303,7 @@
 				<datasource.cdm.schema>omopv5_de</datasource.cdm.schema>
 				<datasource.ohdsi.schema>OHDSI</datasource.ohdsi.schema>
 				<datasource.cohort.schema>OHDSI</datasource.cohort.schema>
-				<datasource.validationQuery>SELECT 1 FROM DUAL</datasource.validationQuery>
+				<!--<datasource.validationQuery>SELECT 1 FROM DUAL</datasource.validationQuery>-->
 				<flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
 				<flyway.datasource.url>jdbc:oracle:thin@127.0.0.1:1521:ohdsi</flyway.datasource.url>
 				<flyway.datasource.username>user</flyway.datasource.username>

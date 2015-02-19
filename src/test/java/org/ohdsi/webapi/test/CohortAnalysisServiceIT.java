@@ -14,7 +14,7 @@ package org.ohdsi.webapi.test;
 
 import java.util.Arrays;
 
-import org.junit.Ignore;
+import org.junit.Test;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTask;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,7 +30,7 @@ public class CohortAnalysisServiceIT extends WebApiIT {
     @Value("${cohortanalysis.endpoint.job}")
     private String endpointCohortAnalysis;
     
-    @Ignore //may not want to always run analyses. TODO inject criteria from properties
+    @Test //may not want to always run analyses. TODO inject criteria from properties
     public void createAnalysis() throws Exception {
         CohortAnalysisTask task = new CohortAnalysisTask();
         //set attributes

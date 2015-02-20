@@ -36,7 +36,7 @@ public class DataAccessConfig {
         String url = this.env.getRequiredProperty("datasource.url");
         String user = this.env.getRequiredProperty("datasource.username");
         String pass = this.env.getRequiredProperty("datasource.password");
-        String autoCommit = "false";
+        boolean autoCommit = false;
         
         //pooling - currently issues with (at least) oracle with use of temp tables and "on commit preserve rows" instead of "on commit delete rows";
         //http://forums.ohdsi.org/t/transaction-vs-session-scope-for-global-temp-tables-statements/333/2
@@ -45,9 +45,15 @@ public class DataAccessConfig {
         pc.setUrl(url);
         pc.setUsername(user);
         pc.setPassword(pass);
-        pc.setDefaultAutoCommit(Boolean.valueOf(autoCommit));*/
+        pc.setDefaultAutoCommit(autoCommit);*/
         
         //non-pooling
+        //explicitly load driver (for cases when driver jar is not yet loaded - dependency outside of archive)
+        try {
+            Class<?> driverClass = Class.forName(driver);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
         DataSource ds = new DriverManagerDataSource(url, user, pass);
         //note autocommit defaults vary across vendors. use provided @Autowired TransactionTemplate
         
@@ -61,7 +67,8 @@ public class DataAccessConfig {
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         vendorAdapter.setGenerateDdl(false);
         vendorAdapter.setShowSql(Boolean.getBoolean(this.env.getRequiredProperty("spring.jpa.show-sql")));
-        vendorAdapter.setDatabasePlatform(this.env.getRequiredProperty("spring.jpa.database-platform"));
+        //hibernate.dialect is resolved based on driver
+        //vendorAdapter.setDatabasePlatform(hibernateDialect);
         
         LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
         factory.setJpaVendorAdapter(vendorAdapter);

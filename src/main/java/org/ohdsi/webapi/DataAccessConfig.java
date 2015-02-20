@@ -61,6 +61,7 @@ public class DataAccessConfig {
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         vendorAdapter.setGenerateDdl(false);
         vendorAdapter.setShowSql(Boolean.getBoolean(this.env.getRequiredProperty("spring.jpa.show-sql")));
+        vendorAdapter.setDatabasePlatform(this.env.getRequiredProperty("spring.jpa.database-platform"));
         
         LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
         factory.setJpaVendorAdapter(vendorAdapter);

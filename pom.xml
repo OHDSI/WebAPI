@@ -28,7 +28,8 @@
 		<datasource.cdm.schema>[CDM_DATABASE].dbo</datasource.cdm.schema>
 		<datasource.ohdsi.schema>[CDM_DATABASE_RESULTS].dbo</datasource.ohdsi.schema>
 		<datasource.dialect.source>sql server</datasource.dialect.source>
-
+		<!-- See Dialects in org.hibernate.engine.jdbc.dialect.internal.StandardDialectResolver -->
+		<spring.jpa.database-platform>org.hibernate.dialect.SQLServerDialect</spring.jpa.database-platform>
 		<!-- DB Change Management / Migration -->
 		<flyway.datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</flyway.datasource.driverClassName>
 		<flyway.datasource.url>jdbc:sqlserver://serverName</flyway.datasource.url>
@@ -302,6 +303,7 @@
 				<datasource.cdm.schema>omopv5_de</datasource.cdm.schema>
 				<datasource.ohdsi.schema>OHDSI</datasource.ohdsi.schema>
 				<datasource.cohort.schema>OHDSI</datasource.cohort.schema>
+				<spring.jpa.database-platform>org.hibernate.dialect.Oracle10gDialect</spring.jpa.database-platform>
 				<!--<datasource.validationQuery>SELECT 1 FROM DUAL</datasource.validationQuery>-->
 				<flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
 				<flyway.datasource.url>jdbc:oracle:thin@127.0.0.1:1521:ohdsi</flyway.datasource.url>
@@ -329,6 +331,7 @@
 				<datasource.cdm.schema>unrestricted</datasource.cdm.schema>
 				<datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>
 				<datasource.cohort.schema>ohdsi</datasource.cohort.schema>
+				<spring.jpa.database-platform>org.hibernate.dialect.PostgreSQL9Dialect</spring.jpa.database-platform>
 				<flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
 				<flyway.datasource.url>${datasource.url}</flyway.datasource.url>
 				<flyway.datasource.username>userWithWritesToOhdsiSchema</flyway.datasource.username>

@@ -48,13 +48,8 @@ public class DataAccessConfig {
         pc.setDefaultAutoCommit(autoCommit);*/
         
         //non-pooling
-        //explicitly load driver (for cases when driver jar is not yet loaded - dependency outside of archive)
-        try {
-            Class<?> driverClass = Class.forName(driver);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-        DataSource ds = new DriverManagerDataSource(url, user, pass);
+        DriverManagerDataSource ds = new DriverManagerDataSource(url, user, pass);
+        ds.setDriverClassName(driver);
         //note autocommit defaults vary across vendors. use provided @Autowired TransactionTemplate
         
         return ds;

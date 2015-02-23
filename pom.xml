@@ -20,13 +20,15 @@
 		<!-- Primary DataSource -->
 		<!-- default sql server - TODO How about making postgres the default (e.g. in line with open source tech)? -alexfranken -->
 		<datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</datasource.driverClassName>
-		<datasource.url>jdbc:sqlserver://serverName</datasource.url>
+		<datasource.url>jdbc:sqlserver://serverName;databaseName=databaseName</datasource.url>
 		<datasource.username>user</datasource.username>
 		<datasource.password>password</datasource.password>
 		<!--<datasource.validationQuery>SELECT 1</datasource.validationQuery>-->
 		<datasource.dialect>sql server</datasource.dialect>
-		<datasource.cdm.schema>[CDM_DATABASE].dbo</datasource.cdm.schema>
-		<datasource.ohdsi.schema>[CDM_DATABASE_RESULTS].dbo</datasource.ohdsi.schema>
+                <!-- specify cdm.database if CDM instance is in a different database name then the one specified in primary jdbc url connection -->
+		<datasource.cdm.database />
+		<datasource.cdm.schema>dbo</datasource.cdm.schema>
+		<datasource.ohdsi.schema>dbo</datasource.ohdsi.schema>
 		<datasource.dialect.source>sql server</datasource.dialect.source>
 		<!-- DB Change Management / Migration -->
 		<flyway.datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</flyway.datasource.driverClassName>
@@ -342,5 +344,23 @@
 				</dependency>
 			</dependencies>
 		</profile>
+          <profile>
+            <id>webapi-mssql</id>
+            <properties>
+              <datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</datasource.driverClassName>
+              <datasource.url>jdbc:sqlserver://server</datasource.url>
+              <datasource.username>USER</datasource.username>
+              <datasource.password>PASS</datasource.password>
+              <datasource.dialect>sql server</datasource.dialect>
+              <datasource.cdm.schema>CDM_schema</datasource.cdm.schema>
+              <datasource.ohdsi.schema>OHDSI_schema</datasource.ohdsi.schema>
+              <datasource.cohort.schema>COHORT_schema</datasource.cohort.schema>
+              <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
+              <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
+              <flyway.datasource.username>FLYWAY_USER</flyway.datasource.username>
+              <flyway.datasource.password>FLYWAY_PASS</flyway.datasource.password>
+              <flyway.locations>classpath:db/migration/sqlserver</flyway.locations>
+            </properties>
+          </profile>                  
 	</profiles>
 </project>

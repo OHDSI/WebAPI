@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.util.StringUtils;
 
 /**
  *
@@ -20,6 +22,9 @@ import org.springframework.jdbc.core.RowMapper;
 public abstract class AbstractDaoService {
     
     protected final Log log = LogFactory.getLog(getClass());
+    
+    @Value("${datasource.cdm.database}")
+    private String cdmDatabase;
     
     @Value("${datasource.cdm.schema}")
     private String cdmSchema;
@@ -42,11 +47,16 @@ public abstract class AbstractDaoService {
     @Autowired
     private JdbcTemplate jdbcTemplate;
     
+    @Autowired
+    private TransactionTemplate transactionTemplate;
+    
     /**
+     * if cdmDatabase is provided, return cdmDatabase.cdmSchema, else return cdmSchema.
      * @return the cdmSchema
      */
     public String getCdmSchema() {
-        return cdmSchema;
+      String schema = (cdmDatabase != null && cdmDatabase.length() > 0) ? cdmDatabase + "." : "";
+      return schema + cdmSchema;
     }
     
     /**
@@ -160,5 +170,13 @@ public abstract class AbstractDaoService {
 		}
 		return results;
 	}
+
+    
+    /**
+     * @return the transactionTemplate
+     */
+    public TransactionTemplate getTransactionTemplate() {
+        return transactionTemplate;
+    }
 }
  

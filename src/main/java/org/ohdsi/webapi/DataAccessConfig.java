@@ -61,7 +61,7 @@ public class DataAccessConfig {
         
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         vendorAdapter.setGenerateDdl(false);
-        vendorAdapter.setShowSql(Boolean.getBoolean(this.env.getRequiredProperty("spring.jpa.show-sql")));
+        vendorAdapter.setShowSql(Boolean.valueOf(this.env.getRequiredProperty("spring.jpa.show-sql")));
         //hibernate.dialect is resolved based on driver
         //vendorAdapter.setDatabasePlatform(hibernateDialect);
         

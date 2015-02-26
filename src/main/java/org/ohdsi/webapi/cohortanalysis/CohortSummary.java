@@ -2,7 +2,7 @@ package org.ohdsi.webapi.cohortanalysis;
 
 import java.util.List;
 
-import org.ohdsi.webapi.model.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 
 public class CohortSummary {
 

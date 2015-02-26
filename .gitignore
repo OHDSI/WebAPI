@@ -4,3 +4,4 @@
 .project
 /nb-configuration.xml
 /nbactions.xml
+/nbactions-webapi-mssql.xml

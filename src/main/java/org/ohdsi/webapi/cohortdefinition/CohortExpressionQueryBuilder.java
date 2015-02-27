@@ -187,7 +187,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
       codesetQuery = StringUtils.replace(codesetQuery, "@codesetQueries", StringUtils.join(codesetQueries, "\nUNION\n"));
     }
     else {
-      codesetQuery = StringUtils.replace(codesetQuery, "@codesetQueries", "SELECT concept_id FROM @CDM_schema.CONCEPT where 0 = 1"); // by default, return an empty resultset
+      codesetQuery = StringUtils.replace(codesetQuery, "@codesetQueries", "SELECT -1 as codeset_id, concept_id FROM @CDM_schema.CONCEPT where 0 = 1"); // by default, return an empty resultset
     }
     return codesetQuery;
   }
@@ -287,7 +287,8 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     query = StringUtils.replace(query,"@windowCriteria",windowCriteria);
 
     String occurrenceCriteria = String.format(
-      "HAVING COUNT(A.PERSON_ID) %s %d", 
+      "HAVING COUNT(%sA.TARGET_CONCEPT_ID) %s %d",
+      additionalCriteria.occurrence.isDistinct ? "DISTINCT " : "",
       getOccurrenceOperator(additionalCriteria.occurrence.type), 
       additionalCriteria.occurrence.count
     );

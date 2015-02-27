@@ -30,13 +30,15 @@ public class CohortResultsService extends AbstractDaoService {
 	/**
 	 * Queries for cohort analysis results for the given cohort definition id
 	 * @param id cohort_defintion id
-	 * @param analysis_name Name of the analysis, currently the same name as under the /resources/cohortresults/sql/ directory
-	 * @return a List of key, value pairs
+	 * @param analysisGroup Name of the analysisGrouping under the /resources/cohortresults/sql/ directory
+	 * @param analysisName Name of the analysis, currently the same name as the sql file under analysisGroup
+	 * @return List of key, value pairs
 	 */
 	  @GET
-	  @Path("/{id}/{analysis_name}")
+	  @Path("/{id}/{analysis_group}/{analysis_name}")
 	  @Produces(MediaType.APPLICATION_JSON)
-	  public List<Map<String, String>> getCohortResults(@PathParam("id") final int id, @PathParam("analysis_name") final String analysisName,
+	  public List<Map<String, String>> getCohortResults(@PathParam("id") final int id, @PathParam("analysis_group") final String analysisGroup,
+			  @PathParam("analysis_name") final String analysisName,
 			  @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam, 
 			  @QueryParam("min_interval_person_count") final String minIntervalPersonCountParam) {
 		  List<Map<String, String>> results = null;
@@ -44,7 +46,7 @@ public class CohortResultsService extends AbstractDaoService {
 	      String sql = null;
 	      
 	      try {
-	    	  sql = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/" + analysisName + ".sql");
+	    	  sql = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/" + analysisGroup + "/" + analysisName + ".sql");
 
 	    	  sql = SqlRender.renderSql(sql, new String[] { "cdmSchema", 
 	    			  	"resultsSchema", "cohortDefinitionId",

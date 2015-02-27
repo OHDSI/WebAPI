@@ -2,8 +2,9 @@ select c1.concept_id as OBSERVATION_CONCEPT_ID,
   c1.concept_name as OBSERVATION_CONCEPT_NAME, 
 	c2.concept_id as CONCEPT_ID,
 	c2.concept_name as CONCEPT_NAME, 
-	ar1.count_value as COUNT_VALUE
-from ACHILLES_results ar1
-	inner join @cdmSchema.dbo.concept c1 on ar1.stratum_1 = CAST(c1.concept_id as VARCHAR)
-	inner join @cdmSchema.dbo.concept c2 on ar1.stratum_2 = CAST(c2.concept_id as VARCHAR)
-where ar1.analysis_id = 805
+	hr1.count_value as COUNT_VALUE
+from @resultsSchema.dbo.heracles_results hr1
+	inner join @cdmSchema.dbo.concept c1 on hr1.stratum_1 = CAST(c1.concept_id as VARCHAR)
+	inner join @cdmSchema.dbo.concept c2 on hr1.stratum_2 = CAST(c2.concept_id as VARCHAR)
+where hr1.analysis_id = 805
+and cohort_definition_id in (@cohortDefinitionId)

@@ -1,76 +1,81 @@
 select 'Condition occurrence' as Category,
-	ard1.min_value as min_value,
-	ard1.p10_value as p10_value,
-	ard1.p25_value as p25_value,
-	ard1.median_value as median_value,
-	ard1.p75_value as p75_value,
-	ard1.p90_value as p90_value,
-	ard1.max_value as max_value
-from ACHILLES_results_dist ard1
-where ard1.analysis_id = 403
+	hrd1.min_value as min_value,
+	hrd1.p10_value as p10_value,
+	hrd1.p25_value as p25_value,
+	hrd1.median_value as median_value,
+	hrd1.p75_value as p75_value,
+	hrd1.p90_value as p90_value,
+	hrd1.max_value as max_value
+from @resultsSchema.dbo.heracles_results_dist hrd1
+where hrd1.analysis_id = 403
+and cohort_definition_id in (@cohortDefinitionId)
 
 union
 
 select 'Procedure occurrence' as Category,
-	ard1.min_value as min_value,
-	ard1.p10_value as p10_value,
-	ard1.p25_value as p25_value,
-	ard1.median_value as median_value,
-	ard1.p75_value as p75_value,
-	ard1.p90_value as p90_value,
-	ard1.max_value as max_value
-from ACHILLES_results_dist ard1
-where ard1.analysis_id = 603
+	hrd1.min_value as min_value,
+	hrd1.p10_value as p10_value,
+	hrd1.p25_value as p25_value,
+	hrd1.median_value as median_value,
+	hrd1.p75_value as p75_value,
+	hrd1.p90_value as p90_value,
+	hrd1.max_value as max_value
+from @resultsSchema.dbo.heracles_results_dist hrd1
+where hrd1.analysis_id = 603
+and cohort_definition_id in (@cohortDefinitionId)
 
 union
 
 select 'Drug exposure' as Category,
-	ard1.min_value as min_value,
-	ard1.p10_value as p10_value,
-	ard1.p25_value as p25_value,
-	ard1.median_value as median_value,
-	ard1.p75_value as p75_value,
-	ard1.p90_value as p90_value,
-	ard1.max_value as max_value
-from ACHILLES_results_dist ard1
-where ard1.analysis_id = 703
+	hrd1.min_value as min_value,
+	hrd1.p10_value as p10_value,
+	hrd1.p25_value as p25_value,
+	hrd1.median_value as median_value,
+	hrd1.p75_value as p75_value,
+	hrd1.p90_value as p90_value,
+	hrd1.max_value as max_value
+from @resultsSchema.dbo.heracles_results_dist hrd1
+where hrd1.analysis_id = 703
+and cohort_definition_id in (@cohortDefinitionId)
 
 union
 
 select 'Observation' as Category,
-	ard1.min_value as min_value,
-	ard1.p10_value as p10_value,
-	ard1.p25_value as p25_value,
-	ard1.median_value as median_value,
-	ard1.p75_value as p75_value,
-	ard1.p90_value as p90_value,
-	ard1.max_value as max_value
-from ACHILLES_results_dist ard1
-where ard1.analysis_id = 803
+	hrd1.min_value as min_value,
+	hrd1.p10_value as p10_value,
+	hrd1.p25_value as p25_value,
+	hrd1.median_value as median_value,
+	hrd1.p75_value as p75_value,
+	hrd1.p90_value as p90_value,
+	hrd1.max_value as max_value
+from @resultsSchema.dbo.heracles_results_dist hrd1
+where hrd1.analysis_id = 803
+and cohort_definition_id in (@cohortDefinitionId)
 
 union
 
 select 'Drug era' as Category,
-	ard1.min_value as min_value,
-	ard1.p10_value as p10_value,
-	ard1.p25_value as p25_value,
-	ard1.median_value as median_value,
-	ard1.p75_value as p75_value,
-	ard1.p90_value as p90_value,
-	ard1.max_value as max_value
-from ACHILLES_results_dist ard1
-where ard1.analysis_id = 903
-
+	hrd1.min_value as min_value,
+	hrd1.p10_value as p10_value,
+	hrd1.p25_value as p25_value,
+	hrd1.median_value as median_value,
+	hrd1.p75_value as p75_value,
+	hrd1.p90_value as p90_value,
+	hrd1.max_value as max_value
+from @resultsSchema.dbo.heracles_results_dist hrd1
+where hrd1.analysis_id = 903
+and cohort_definition_id in (@cohortDefinitionId)
 union
 
 select 'Condition era' as Category,
-	ard1.min_value as min_value,
-	ard1.p10_value as p10_value,
-	ard1.p25_value as p25_value,
-	ard1.median_value as median_value,
-	ard1.p75_value as p75_value,
-	ard1.p90_value as p90_value,
-	ard1.max_value as max_value
-from ACHILLES_results_dist ard1
-where ard1.analysis_id = 1003
+	hrd1.min_value as min_value,
+	hrd1.p10_value as p10_value,
+	hrd1.p25_value as p25_value,
+	hrd1.median_value as median_value,
+	hrd1.p75_value as p75_value,
+	hrd1.p90_value as p90_value,
+	hrd1.max_value as max_value
+from @resultsSchema.dbo.heracles_results_dist hrd1
+where hrd1.analysis_id = 1003
+and cohort_definition_id in (@cohortDefinitionId)
 

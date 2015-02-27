@@ -1,5 +1,6 @@
-select min(cast(ar1.stratum_1 as int)) as min_value,
-  max(cast(ar1.stratum_1 as int)) as max_value,
+select min(cast(hr1.stratum_1 as int)) as min_value,
+  max(cast(hr1.stratum_1 as int)) as max_value,
   1 as interval_size
-from ACHILLES_results ar1
-where ar1.analysis_id = 109
+from @resultsSchema.dbo.heracles_results hr1
+where hr1.analysis_id = 109
+and cohort_definition_id in (@cohortDefinitionId)

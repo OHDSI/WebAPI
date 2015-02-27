@@ -1,11 +1,12 @@
- select cast(cast(ard1.stratum_1 as int)*10 as varchar) + '-' + cast((cast(ard1.stratum_1 as int)+1)*10-1 as varchar)  as category,
-  ard1.min_value as min_value,
-  ard1.p10_value as p10_value,
-  ard1.p25_value as p25_value,
-  ard1.median_value as median_value,
-  ard1.p75_value as p75_value,
-  ard1.p90_value as p90_value,
-  ard1.max_value as max_value
-from ACHILLES_results_dist ard1
-where ard1.analysis_id = 107
-order by cast(ard1.stratum_1 as int) asc
+ select cast(cast(hrd1.stratum_1 as int)*10 as varchar) + '-' + cast((cast(hrd1.stratum_1 as int)+1)*10-1 as varchar)  as category,
+  hrd1.min_value as min_value,
+  hrd1.p10_value as p10_value,
+  hrd1.p25_value as p25_value,
+  hrd1.median_value as median_value,
+  hrd1.p75_value as p75_value,
+  hrd1.p90_value as p90_value,
+  hrd1.max_value as max_value
+from @resultsSchema.dbo.heracles_results_dist hrd1
+where hrd1.analysis_id = 107
+and cohort_definition_id in (@cohortDefinitionId)
+order by cast(hrd1.stratum_1 as int) asc

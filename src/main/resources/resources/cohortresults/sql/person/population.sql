@@ -1,19 +1,20 @@
-(select aa1.analysis_name as attribute_name, 
-  ar1.stratum_1 as attribute_value
-from ACHILLES_analysis aa1
+(select ha1.analysis_name as attribute_name, 
+  hr1.stratum_1 as attribute_value
+from @resultsSchema.dbo.heracles_analysis ha1
 inner join
-ACHILLES_results ar1
-on aa1.analysis_id = ar1.analysis_id
-where aa1.analysis_id = 0
-
+@resultsSchema.dbo.heracles_results hr1
+on ha1.analysis_id = hr1.analysis_id
+where ha1.analysis_id = 0
+and cohort_definition_id in (@cohortDefinitionId)
 union
 
-select aa1.analysis_name as attribute_name, 
-cast(ar1.count_value as varchar) as attribute_value
-from ACHILLES_analysis aa1
+select ha1.analysis_name as attribute_name, 
+cast(hr1.count_value as varchar) as attribute_value
+from @resultsSchema.dbo.heracles_analysis ha1
 inner join
-ACHILLES_results ar1
-on aa1.analysis_id = ar1.analysis_id
-where aa1.analysis_id = 1
+@resultsSchema.dbo.heracles_results hr1
+on ha1.analysis_id = hr1.analysis_id
+where ha1.analysis_id = 1
+and cohort_definition_id in (@cohortDefinitionId)
 )
 order by attribute_name desc

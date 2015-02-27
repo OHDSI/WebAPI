@@ -3,22 +3,22 @@ select table_name as SERIES_NAME,
 	count_value as Y_RECORD_COUNT
 from
 (
-	select 'Visit occurrence' as table_name, stratum_1, count_value from ACHILLES_results where analysis_id = 220
+	select 'Visit occurrence' as table_name, stratum_1, count_value from @resultsSchema.dbo.heracles_results where analysis_id = 220 and cohort_definition_id in (@cohortDefinitionId)
 	union all
-	select 'Condition occurrence' as table_name, stratum_1, count_value from ACHILLES_results where analysis_id = 420
+	select 'Condition occurrence' as table_name, stratum_1, count_value from @resultsSchema.dbo.heracles_results where analysis_id = 420 and cohort_definition_id in (@cohortDefinitionId)
 	union all
-	select 'Death' as table_name, stratum_1, count_value from ACHILLES_results where analysis_id = 502
+	select 'Death' as table_name, stratum_1, count_value from @resultsSchema.dbo.heracles_results where analysis_id = 502 and cohort_definition_id in (@cohortDefinitionId)
 	union all
-	select 'Procedure occurrence' as table_name, stratum_1, count_value from ACHILLES_results where analysis_id = 620
+	select 'Procedure occurrence' as table_name, stratum_1, count_value from @resultsSchema.dbo.heracles_results where analysis_id = 620 and cohort_definition_id in (@cohortDefinitionId)
 	union all
-	select 'Drug exposure' as table_name, stratum_1, count_value from ACHILLES_results where analysis_id = 720
+	select 'Drug exposure' as table_name, stratum_1, count_value from @resultsSchema.dbo.heracles_results where analysis_id = 720 and cohort_definition_id in (@cohortDefinitionId)
 	union all
-	select 'Observation' as table_name, stratum_1, count_value from ACHILLES_results where analysis_id = 820
+	select 'Observation' as table_name, stratum_1, count_value from @resultsSchema.dbo.heracles_results where analysis_id = 820 and cohort_definition_id in (@cohortDefinitionId)
 	union all
-	select 'Drug era' as table_name, stratum_1, count_value from ACHILLES_results where analysis_id = 920
+	select 'Drug era' as table_name, stratum_1, count_value from @resultsSchema.dbo.heracles_results where analysis_id = 920 and cohort_definition_id in (@cohortDefinitionId)
 	union all
-	select 'Condition era' as table_name, stratum_1, count_value from ACHILLES_results where analysis_id = 1020
+	select 'Condition era' as table_name, stratum_1, count_value from @resultsSchema.dbo.heracles_results where analysis_id = 1020 and cohort_definition_id in (@cohortDefinitionId)
 	union all
-	select 'Observation period' as table_name, stratum_1, count_value from ACHILLES_results where analysis_id = 111
+	select 'Observation period' as table_name, stratum_1, count_value from @resultsSchema.dbo.heracles_results where analysis_id = 111 and cohort_definition_id in (@cohortDefinitionId)
 ) t1
 ORDER BY SERIES_NAME, CAST(stratum_1 as INT)

@@ -1,12 +1,12 @@
 select 	concept_hierarchy.concept_id,
 	isNull(concept_hierarchy.soc_concept_name,'NA') + '||' + isNull(concept_hierarchy.hlgt_concept_name,'NA') + '||' + isNull(concept_hierarchy.hlt_concept_name, 'NA') + '||' + isNull(concept_hierarchy.pt_concept_name,'NA') + '||' + isNull(concept_hierarchy.snomed_concept_name,'NA') concept_path, 
-	ar1.count_value as num_persons, 
-	ROUND(1.0*ar1.count_value / denom.count_value,5) as percent_persons,
-	ROUND(ar2.avg_value,5) as length_of_era
-from (select * from ACHILLES_results where analysis_id = 1000) ar1
+	hr1.count_value as num_persons, 
+	ROUND(1.0*hr1.count_value / denom.count_value,5) as percent_persons,
+	ROUND(hr2.avg_value,5) as length_of_era
+from (select * from @resultsSchema.dbo.heracles_results where analysis_id = 1000 and cohort_definition_id in (@cohortDefinitionId)) hr1
 	inner join
-	(select stratum_1, avg_value from ACHILLES_results_dist where analysis_id = 1007) ar2
-	on ar1.stratum_1 = ar2.stratum_1
+	(select stratum_1, avg_value from @resultsSchema.dbo.heracles_results_dist where analysis_id = 1007 and cohort_definition_id in (@cohortDefinitionId)) hr2
+	on hr1.stratum_1 = hr2.stratum_1
 	inner join
   (
 		select snomed.concept_id, 
@@ -95,7 +95,7 @@ from (select * from ACHILLES_results where analysis_id = 1000) ar1
 
 
 	) concept_hierarchy
-	on CAST(ar1.stratum_1 AS INT) = concept_hierarchy.concept_id
+	on CAST(hr1.stratum_1 AS INT) = concept_hierarchy.concept_id
 	,
-	(select count_value from ACHILLES_results where analysis_id = 1) denom
-order by ar1.count_value desc
+	(select count_value from @resultsSchema.dbo.heracles_results where analysis_id = 1 and cohort_definition_id in (@cohortDefinitionId)) denom
+order by hr1.count_value desc

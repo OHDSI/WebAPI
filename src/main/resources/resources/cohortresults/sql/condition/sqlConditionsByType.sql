@@ -2,11 +2,11 @@ select c1.concept_id as condition_concept_id,
        c1.concept_name as condition_concept_name,
        c2.concept_group_id as concept_id,
        c2.concept_group_name as concept_name, 
-       sum(ar1.count_value) as count_value
-from ACHILLES_results ar1
+       sum(hr1.count_value) as count_value
+from @resultsSchema.dbo.heracles_results hr1
        inner join
        @cdmSchema.dbo.concept c1
-       on CAST(ar1.stratum_1 AS INT) = c1.concept_id
+       on CAST(hr1.stratum_1 AS INT) = c1.concept_id
        inner join
        (
        select concept_id,
@@ -30,8 +30,9 @@ from ACHILLES_results ar1
        where lower(domain_id) = 'condition type' 
        
        ) c2
-       on CAST(ar1.stratum_2 AS INT) = c2.concept_id
-where ar1.analysis_id = 405
+       on CAST(hr1.stratum_2 AS INT) = c2.concept_id
+where hr1.analysis_id = 405
+and hr1.cohort_definition_id in (@cohortDefinitionId)
 group by c1.concept_id, 
        c1.concept_name,
        c2.concept_group_id,

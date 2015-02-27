@@ -1,10 +1,11 @@
-select cast(ar1.stratum_1 as int) as interval_index, 
-	ar1.count_value as count_value, 
-	round(1.0*ar1.count_value / denom.count_value,5) as percent_value
-from ACHILLES_analysis aa1
-inner join ACHILLES_results ar1 on aa1.analysis_id = ar1.analysis_id,
+select cast(hr1.stratum_1 as int) as interval_index, 
+	hr1.count_value as count_value, 
+	round(1.0*hr1.count_value / denom.count_value,5) as percent_value
+from @resultsSchema.dbo.heracles_analysis ha1
+inner join @resultsSchema.dbo.heracles_results hr1 on ha1.analysis_id = hr1.analysis_id,
 (
-	select count_value from ACHILLES_results where analysis_id = 1
+	select count_value from @resultsSchema.dbo.heracles_results where analysis_id = 1 and cohort_definition_id in (@cohortDefinitionId)
 ) denom
-where aa1.analysis_id = 108
-order by cast(ar1.stratum_1 as int) asc
+where ha1.analysis_id = 108
+and hr1.cohort_definition_id in (@cohortDefinitionId)
+order by cast(hr1.stratum_1 as int) asc

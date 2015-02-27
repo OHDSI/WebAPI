@@ -141,12 +141,12 @@ public class CohortAnalysisService extends AbstractDaoService {
         summary.setAnalyses(this.getCohortAnalysesForCohortDefinition(id));
         
         // total patients
-        List<Map<String, String>> cohortSize = this.resultsService.getCohortResults(id, "cohortSize", null, null);
+        List<Map<String, String>> cohortSize = this.resultsService.getCohortResults(id, "cohortSpecific", "cohortSize", null, null);
         if (cohortSize != null && cohortSize.size() > 0) {
             summary.setTotalPatients(cohortSize.get(0).get("NUM_PERSONS"));
         }
         
-        List<Map<String, String>> ageAtIndexDistribution = this.resultsService.getCohortResults(id, "cohortSpecific/ageAtIndexDistribution", null, null);
+        List<Map<String, String>> ageAtIndexDistribution = this.resultsService.getCohortResults(id, "cohortSpecific", "ageAtIndexDistribution", null, null);
         if (ageAtIndexDistribution != null && ageAtIndexDistribution.size() > 0) {
         	summary.setMeanAge(ageAtIndexDistribution.get(0).get("AVG_VALUE"));
         }
@@ -154,10 +154,10 @@ public class CohortAnalysisService extends AbstractDaoService {
         // TODO mean obs period
         
         // gender distribution
-        summary.setGenderDistribution(this.resultsService.getCohortResults(id, "cohortSpecific/gender", null, null));
+        summary.setGenderDistribution(this.resultsService.getCohortResults(id,"cohortSpecific", "gender", null, null));
         
         // age distribution
-        summary.setAgeDistribution(this.resultsService.getCohortResults(id, "cohortSpecific/ageAtIndex", null, null));
+        summary.setAgeDistribution(this.resultsService.getCohortResults(id, "cohortSpecific", "ageAtIndex", null, null));
         
         return summary;
     }

@@ -3,13 +3,13 @@ select 	concept_hierarchy.concept_id,
 	+ '||' + isNull(concept_hierarchy.level3_concept_name,'NA') 
 	+ '||' + isNull(concept_hierarchy.level2_concept_name,'NA') 
 	+ '||' + isNull(concept_hierarchy.proc_concept_name,'NA') concept_path,
-	ar1.count_value as num_persons, 
-	1.0*ar1.count_value / denom.count_value as percent_persons,
-	1.0*ar2.count_value / ar1.count_value as records_per_person
-from (select * from ACHILLES_results where analysis_id = 600) ar1
+	hr1.count_value as num_persons, 
+	1.0*hr1.count_value / denom.count_value as percent_persons,
+	1.0*hr2.count_value / hr1.count_value as records_per_person
+from (select * from @resultsSchema.dbo.heracles_results where analysis_id = 600 and cohort_definition_id in (@cohortDefinitionId)) hr1
 	inner join
-	(select * from ACHILLES_results where analysis_id = 601) ar2
-	on ar1.stratum_1 = ar2.stratum_1
+	(select * from @resultsSchema.dbo.heracles_results where analysis_id = 601 and cohort_definition_id in (@cohortDefinitionId)) hr2
+	on hr1.stratum_1 = hr2.stratum_1
 	inner join
 	(
 		select procs.concept_id,
@@ -115,8 +115,8 @@ from (select * from ACHILLES_results where analysis_id = 600) ar1
 		procs.proc_concept_name
 
 	) concept_hierarchy
-	on CAST(ar1.stratum_1 AS INT) = concept_hierarchy.concept_id
+	on CAST(hr1.stratum_1 AS INT) = concept_hierarchy.concept_id
 	,
-	(select count_value from ACHILLES_results where analysis_id = 1) denom
+	(select count_value from @resultsSchema.dbo.heracles_results where analysis_id = 1 and cohort_definition_id in (@cohortDefinitionId)) denom
 
-order by ar1.count_value desc
+order by hr1.count_value desc

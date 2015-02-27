@@ -5173,15 +5173,15 @@ INSERT INTO HERACLES_HEEL_results (
 	analysis_id,
 	HERACLES_HEEL_warning
 	)
-SELECT DISTINCT ar1.cohort_definition_id, ar1.analysis_id,
-	'WARNING: ' + cast(ar1.analysis_id as VARCHAR) + '-' + aa1.analysis_name + '; theres a 100% change in monthly count of events' AS HERACLES_HEEL_warning
+SELECT DISTINCT her1.cohort_definition_id, her1.analysis_id,
+	'WARNING: ' + cast(her1.analysis_id as VARCHAR) + '-' + aa1.analysis_name + '; theres a 100% change in monthly count of events' AS HERACLES_HEEL_warning
 FROM HERACLES_analysis aa1
-INNER JOIN HERACLES_results ar1
-	ON aa1.analysis_id = ar1.analysis_id
+INNER JOIN HERACLES_results her1
+	ON aa1.analysis_id = her1.analysis_id
 INNER JOIN HERACLES_results ar2
-	ON ar1.analysis_id = ar2.analysis_id
-	and ar1.cohort_definition_id = ar2.cohort_definition_id
-		AND ar1.analysis_id IN (
+	ON her1.analysis_id = ar2.analysis_id
+	and her1.cohort_definition_id = ar2.cohort_definition_id
+		AND her1.analysis_id IN (
 			420,
 			620,
 			720,
@@ -5190,11 +5190,11 @@ INNER JOIN HERACLES_results ar2
 			1020
 			)
 WHERE (
-		CAST(ar1.stratum_1 AS INT) + 1 = CAST(ar2.stratum_1 AS INT)
-		OR CAST(ar1.stratum_1 AS INT) + 89 = CAST(ar2.stratum_1 AS INT)
+		CAST(her1.stratum_1 AS INT) + 1 = CAST(ar2.stratum_1 AS INT)
+		OR CAST(her1.stratum_1 AS INT) + 89 = CAST(ar2.stratum_1 AS INT)
 		)
-	AND 1.0 * abs(ar2.count_value - ar1.count_value) / ar1.count_value > 1
-	AND ar1.count_value > 10;
+	AND 1.0 * abs(ar2.count_value - her1.count_value) / her1.count_value > 1
+	AND her1.count_value > 10;
 
 --WARNING:  monthly change > 100% at concept level
 INSERT INTO HERACLES_HEEL_results (
@@ -5202,17 +5202,17 @@ INSERT INTO HERACLES_HEEL_results (
 	analysis_id,
 	HERACLES_HEEL_warning
 	)
-SELECT ar1.cohort_definition_id,
-	ar1.analysis_id,
-	'WARNING: ' + cast(ar1.analysis_id as VARCHAR) + '-' + aa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT ar1.stratum_1) AS VARCHAR) + ' concepts have a 100% change in monthly count of events' AS HERACLES_HEEL_warning
+SELECT her1.cohort_definition_id,
+	her1.analysis_id,
+	'WARNING: ' + cast(her1.analysis_id as VARCHAR) + '-' + aa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT her1.stratum_1) AS VARCHAR) + ' concepts have a 100% change in monthly count of events' AS HERACLES_HEEL_warning
 FROM HERACLES_analysis aa1
-INNER JOIN HERACLES_results ar1
-	ON aa1.analysis_id = ar1.analysis_id
+INNER JOIN HERACLES_results her1
+	ON aa1.analysis_id = her1.analysis_id
 INNER JOIN HERACLES_results ar2
-	ON ar1.analysis_id = ar2.analysis_id
-	and ar1.cohort_definition_id = ar2.cohort_definition_id
-		AND ar1.stratum_1 = ar2.stratum_1
-		AND ar1.analysis_id IN (
+	ON her1.analysis_id = ar2.analysis_id
+	and her1.cohort_definition_id = ar2.cohort_definition_id
+		AND her1.stratum_1 = ar2.stratum_1
+		AND her1.analysis_id IN (
 			402,
 			602,
 			702,
@@ -5221,13 +5221,13 @@ INNER JOIN HERACLES_results ar2
 			1002
 			)
 WHERE (
-		CAST(ar1.stratum_2 AS INT) + 1 = CAST(ar2.stratum_2 AS INT)
-		OR CAST(ar1.stratum_2 AS INT) + 89 = CAST(ar2.stratum_2 AS INT)
+		CAST(her1.stratum_2 AS INT) + 1 = CAST(ar2.stratum_2 AS INT)
+		OR CAST(her1.stratum_2 AS INT) + 89 = CAST(ar2.stratum_2 AS INT)
 		)
-	AND 1.0 * abs(ar2.count_value - ar1.count_value) / ar1.count_value > 1
-	AND ar1.count_value > 10
-GROUP BY ar1.cohort_definition_id,
-	ar1.analysis_id,
+	AND 1.0 * abs(ar2.count_value - her1.count_value) / her1.count_value > 1
+	AND her1.count_value > 10
+GROUP BY her1.cohort_definition_id,
+	her1.analysis_id,
 	aa1.analysis_name;
 
 --WARNING: days_supply > 180 

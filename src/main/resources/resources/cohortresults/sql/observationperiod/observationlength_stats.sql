@@ -1,9 +1,10 @@
-select  min(cast(ar1.stratum_1 as int)) * 30 as min_value, 
-	max(cast(ar1.stratum_1 as int)) * 30 as max_value, 
+select  min(cast(hr1.stratum_1 as int)) * 30 as min_value, 
+	max(cast(hr1.stratum_1 as int)) * 30 as max_value, 
 	30 as interval_size
-from ACHILLES_analysis aa1
-inner join ACHILLES_results ar1 on aa1.analysis_id = ar1.analysis_id,
+from @resultsSchema.dbo.heracles_analysis ha1
+inner join @resultsSchema.dbo.heracles_results hr1 on ha1.analysis_id = hr1.analysis_id,
 (
-	select count_value from ACHILLES_results where analysis_id = 1
+	select count_value from @resultsSchema.dbo.heracles_results where analysis_id = 1 and cohort_definition_id in (@cohortDefinitionId)
 ) denom
-where aa1.analysis_id = 108
+where ha1.analysis_id = 108
+and hr1.cohort_definition_id in (@cohortDefinitionId)

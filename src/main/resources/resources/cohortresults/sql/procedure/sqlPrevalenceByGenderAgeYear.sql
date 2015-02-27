@@ -13,15 +13,17 @@ FROM (
 		denom.count_value AS denom_count_value
 	FROM (
 		SELECT *
-		FROM ACHILLES_results
+		FROM @resultsSchema.dbo.heracles_results
 		WHERE analysis_id = 604
 			AND stratum_3 IN ('8507', '8532')
+			and cohort_definition_id in (@cohortDefinitionId)
 		) num
 	INNER JOIN (
 		SELECT *
-		FROM ACHILLES_results
+		FROM @resultsSchema.dbo.heracles_results
 		WHERE analysis_id = 116
 			AND stratum_2 IN ('8507', '8532')
+			and cohort_definition_id in (@cohortDefinitionId)
 		) denom
 		ON num.stratum_2 = denom.stratum_1
 			AND num.stratum_3 = denom.stratum_2

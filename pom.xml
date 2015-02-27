@@ -152,6 +152,7 @@
 				<version>1.5.1</version>
 				<executions>
 					<execution>
+						<phase>package</phase>
 						<goals>
 							<goal>restdoc</goal>
 						</goals>
@@ -368,7 +369,7 @@
                 <version>4.0</version>
                 <type>jar</type>
               </dependency>
-            </dependencies>	 
+            </dependencies>	            
           </profile>                  
 	</profiles>
 </project>

@@ -17,4 +17,7 @@ public class Occurrence {
 
   @JsonProperty("Count")
   public int count;
+  
+  @JsonProperty("IsDistinct")
+  public boolean isDistinct;  
 }

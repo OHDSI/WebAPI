@@ -32,4 +32,8 @@ public interface CohortDefinitionRepository extends CrudRepository<CohortDefinit
   // but means findAll() will eager load definitions (what the @EntityGraph was supposed to solve)
   @EntityGraph(value = "CohortDefinition.withDetail", type = EntityGraph.EntityGraphType.LOAD)
   CohortDefinition findById(Integer id);
+  
+  @EntityGraph(value = "CohortDefinition.withDetail", type = EntityGraph.EntityGraphType.LOAD)
+  @Override
+  CohortDefinition save(CohortDefinition s);
 }

@@ -21,13 +21,13 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import org.apache.commons.lang3.StringUtils;
 
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.cohortdefinition.CohortExpressionQueryBuilder;
+import org.ohdsi.webapi.cohortdefinition.ExpressionType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -55,12 +55,24 @@ public class CohortDefinitionService extends AbstractDaoService {
 
   }
 
-  public class GenerateSqlResult {
+  public static class GenerateSqlResult {
 
     @JsonProperty("templateSql")
     public String templateSql;
   }
+  
+  public static class CohortDefinitionListItem {
+    public Integer id;
+    public String name;
+    public String description;
+    public ExpressionType expressionType;
+    public String createdBy;
+    public Date createdDate;
+    public String modifiedBy;
+    public Date modifiedDate;
+  }
 
+  
   private static final CohortExpressionQueryBuilder queryBuilder = new CohortExpressionQueryBuilder();
 
   @Context
@@ -93,11 +105,23 @@ public class CohortDefinitionService extends AbstractDaoService {
   @GET
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
-  public List<CohortDefinition> getCohortDefinitionList() {
-    ArrayList<CohortDefinition> defs = new ArrayList<>();
-    for (CohortDefinition d : this.cohortDefinitionRepository.findAll())
-      defs.add(d);
-    return defs;
+  public List<CohortDefinitionListItem> getCohortDefinitionList() {
+    ArrayList<CohortDefinitionListItem> result = new ArrayList<>();
+    Iterable<CohortDefinition> defs = this.cohortDefinitionRepository.findAll();
+    for (CohortDefinition d : defs)
+    {
+      CohortDefinitionListItem item = new CohortDefinitionListItem();
+      item.id = d.getId();
+      item.name = d.getName();
+      item.description = d.getDescription();
+      item.expressionType = d.getExpressionType();
+      item.createdBy = d.getCreatedBy();
+      item.createdDate = d.getCreatedDate();
+      item.modifiedBy = d.getModifiedBy();
+      item.modifiedDate = d.getModifiedDate();
+      result.add(item);
+    }
+    return result;
   }
   
   /**
@@ -120,13 +144,11 @@ public class CohortDefinitionService extends AbstractDaoService {
 
     CohortDefinition createdDefinition = this.cohortDefinitionRepository.save(def);
     
-    if (details != null) // need to sync object on both ends
-    {
-      details.setCohortDefinition(createdDefinition);
-      createdDefinition.setDetails(details);
-      createdDefinition = this.cohortDefinitionRepository.save(createdDefinition);
-    }
-    
+    // associate details to newly created definition
+    details.setCohortDefinition(createdDefinition);
+    createdDefinition.setDetails(details);
+    createdDefinition = this.cohortDefinitionRepository.save(createdDefinition);
+
     return createdDefinition;
   }
   
@@ -141,7 +163,8 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Path("/{id}")
   @Produces(MediaType.APPLICATION_JSON)
   public CohortDefinition getCohortDefinition(@PathParam("id") final int id) {
-    return this.cohortDefinitionRepository.findOne(id);
+    CohortDefinition d = this.cohortDefinitionRepository.findById(id);
+    return d;
   }
   
   /**
@@ -156,29 +179,16 @@ public class CohortDefinitionService extends AbstractDaoService {
   public CohortDefinition getCohortDefinition(@PathParam("id") final int id, CohortDefinition def) {
     Date currentTime = Calendar.getInstance().getTime();
 
-    CohortDefinition currentDefinition = this.cohortDefinitionRepository.findOne(id);
+    CohortDefinition currentDefinition = this.cohortDefinitionRepository.findById(id);
     currentDefinition.setName(def.getName())
             .setDescription(def.getDescription())
             .setExpressionType(def.getExpressionType())
             .setModifiedBy("system")
             .setModifiedDate(currentTime);    
-    if (currentDefinition.getDetails() != null)
-    {
-      if (def.getDetails() != null)
-        currentDefinition.getDetails().setExpression(def.getDetails().getExpression());
-      else
-        currentDefinition.setDetails(null);
-    }
-    else
-    {
-      if (def.getDetails() != null)
-      {
-        currentDefinition.setDetails(def.getDetails());
-        currentDefinition.getDetails().setCohortDefinition(currentDefinition);
-      }
-    }
+
+    currentDefinition.getDetails().setExpression(def.getDetails().getExpression());
     
-    currentDefinition = this.cohortDefinitionRepository.save(currentDefinition);
-    return currentDefinition;
+    this.cohortDefinitionRepository.save(currentDefinition);
+    return this.cohortDefinitionRepository.findById(id);
   }  
 }

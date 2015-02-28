@@ -29,7 +29,6 @@ import javax.persistence.NamedAttributeNode;
 import javax.persistence.NamedEntityGraph;
 import javax.persistence.NamedSubgraph;
 import javax.persistence.OneToOne;
-import javax.persistence.PrimaryKeyJoinColumn;
 
 /**
  * JPA Entity for Cohort Definitions
@@ -46,7 +45,7 @@ public class CohortDefinition implements Serializable{
   private static final long serialVersionUID = 1L;
     
   @Id
-  @GeneratedValue  
+  @GeneratedValue
   private Integer id;
   
   private String name;
@@ -57,7 +56,7 @@ public class CohortDefinition implements Serializable{
   @Column(name="expression_type")  
   private ExpressionType expressionType;
   
-  @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+  @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional=false, orphanRemoval = true)
   @JoinColumn(name="id")
   CohortDefinitionDetails details;
     

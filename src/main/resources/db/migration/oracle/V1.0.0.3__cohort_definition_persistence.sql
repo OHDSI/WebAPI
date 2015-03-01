@@ -14,9 +14,9 @@ CREATE TABLE cohort_definition(
 
 CREATE TABLE cohort_definition_details(
 	id Number(10),
-	expression [varchar](max) NOT NULL,
-	CONSTRAINT PK_cohort_definition_details PRIMARY KEY (id),
-	CONSTRAINT FK_cohort_definition_details_cohort_definition 
-		FOREIGN KEY (id)
-		REFERENCES cohort_definition(id)
+	expression CLOB NOT NULL,
+	CONSTRAINT PK_cohort_def_details PRIMARY KEY (id),
+	CONSTRAINT FK_cdd_cd 
+          FOREIGN KEY (id)
+          REFERENCES cohort_definition(id)
 );

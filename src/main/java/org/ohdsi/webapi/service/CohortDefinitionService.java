@@ -71,7 +71,27 @@ public class CohortDefinitionService extends AbstractDaoService {
     public String modifiedBy;
     public Date modifiedDate;
   }
+  
+  public static class CohortDefinitionDTO extends CohortDefinitionListItem {
+    public String expression;
+  }
 
+  private CohortDefinitionDTO cohortDefinitionToDTO(CohortDefinition def)
+  {
+    CohortDefinitionDTO result = new CohortDefinitionDTO();
+    
+    result.id = def.getId();
+    result.createdBy = def.getCreatedBy();
+    result.createdDate = def.getCreatedDate();
+    result.description = def.getDescription();
+    result.expressionType = def.getExpressionType();
+    result.expression = def.getDetails().getExpression();
+    result.modifiedBy = def.getModifiedBy();
+    result.modifiedDate = def.getModifiedDate();
+    result.name = def.getName();
+    
+    return result;
+  }  
   
   private static final CohortExpressionQueryBuilder queryBuilder = new CohortExpressionQueryBuilder();
 
@@ -133,23 +153,30 @@ public class CohortDefinitionService extends AbstractDaoService {
   @PUT
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
-  public CohortDefinition createCohortDefinition(CohortDefinition def) {
+  public CohortDefinitionDTO createCohortDefinition(CohortDefinitionDTO def) {
     Date currentTime = Calendar.getInstance().getTime();
 
-    CohortDefinitionDetails details = def.getDetails();
-    def.setDetails(null); // we don't know the foreign key yet, and we can't save it with a NULL value
+    //create definition in 2 saves, first to get the generated ID for the new def
+    // then to associate the details with the definition
+    CohortDefinition newDef = new CohortDefinition();
+    newDef.setName(def.name)
+            .setDescription(def.description)
+            .setCreatedBy("system")
+            .setCreatedDate(currentTime)
+            .setExpressionType(def.expressionType);
     
-    def.setCreatedBy("system")
-      .setCreatedDate(currentTime);
+    newDef = this.cohortDefinitionRepository.save(newDef);
+ 
+    // associate details
+    CohortDefinitionDetails details = new CohortDefinitionDetails();
+    details.setCohortDefinition(newDef)
+            .setExpression(def.expression);
 
-    CohortDefinition createdDefinition = this.cohortDefinitionRepository.save(def);
+    newDef.setDetails(details);
+
+    CohortDefinition createdDefinition = this.cohortDefinitionRepository.save(newDef);
     
-    // associate details to newly created definition
-    details.setCohortDefinition(createdDefinition);
-    createdDefinition.setDetails(details);
-    createdDefinition = this.cohortDefinitionRepository.save(createdDefinition);
-
-    return createdDefinition;
+    return cohortDefinitionToDTO(createdDefinition);
   }
   
 
@@ -162,9 +189,9 @@ public class CohortDefinitionService extends AbstractDaoService {
   @GET
   @Path("/{id}")
   @Produces(MediaType.APPLICATION_JSON)
-  public CohortDefinition getCohortDefinition(@PathParam("id") final int id) {
+  public CohortDefinitionDTO getCohortDefinition(@PathParam("id") final int id) {
     CohortDefinition d = this.cohortDefinitionRepository.findById(id);
-    return d;
+    return cohortDefinitionToDTO(d);
   }
   
   /**
@@ -176,19 +203,19 @@ public class CohortDefinitionService extends AbstractDaoService {
   @PUT
   @Path("/{id}")
   @Produces(MediaType.APPLICATION_JSON)
-  public CohortDefinition getCohortDefinition(@PathParam("id") final int id, CohortDefinition def) {
+  public CohortDefinitionDTO saveCohortDefinition(@PathParam("id") final int id, CohortDefinitionDTO def) {
     Date currentTime = Calendar.getInstance().getTime();
 
     CohortDefinition currentDefinition = this.cohortDefinitionRepository.findById(id);
-    currentDefinition.setName(def.getName())
-            .setDescription(def.getDescription())
-            .setExpressionType(def.getExpressionType())
-            .setModifiedBy("system")
-            .setModifiedDate(currentTime);    
-
-    currentDefinition.getDetails().setExpression(def.getDetails().getExpression());
     
+    currentDefinition.setName(def.name)
+            .setDescription(def.description)
+            .setExpressionType(def.expressionType)
+            .setModifiedBy("system")
+            .setModifiedDate(currentTime)
+            .getDetails().setExpression(def.expression);
+ 
     this.cohortDefinitionRepository.save(currentDefinition);
-    return this.cohortDefinitionRepository.findById(id);
+    return getCohortDefinition(id);
   }  
 }

@@ -33,7 +33,4 @@ public interface CohortDefinitionRepository extends CrudRepository<CohortDefinit
   @EntityGraph(value = "CohortDefinition.withDetail", type = EntityGraph.EntityGraphType.LOAD)
   CohortDefinition findById(Integer id);
   
-  @EntityGraph(value = "CohortDefinition.withDetail", type = EntityGraph.EntityGraphType.LOAD)
-  @Override
-  CohortDefinition save(CohortDefinition s);
 }

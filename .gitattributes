@@ -1,0 +1,15 @@
+* text=auto
+*.sql text eol=lf
+*.xml text
+*.groovy text
+*.java text
+*.html text
+*.css text
+*.js text
+*.vm text
+*.properties text
+
+*.png binary
+*.jpeg binary
+*.jpg binary
+*.gif binary

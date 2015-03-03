@@ -227,3 +227,4 @@ create table heracles_results_dist
 ALTER TABLE heracles_results_dist ADD CONSTRAINT DF_HERACLES_results_dist DEFAULT GETDATE() FOR last_update_time;
 
 
+

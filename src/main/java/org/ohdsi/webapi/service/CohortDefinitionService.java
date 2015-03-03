@@ -5,31 +5,31 @@
  */
 package org.ohdsi.webapi.service;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
-import org.ohdsi.sql.SqlRender;
-import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.cohortdefinition.CohortExpressionQueryBuilder;
-import org.ohdsi.webapi.helper.ResourceHelper;
-import org.ohdsi.webapi.model.CohortDefinition;
-import org.ohdsi.webapi.sqlrender.SourceStatement;
-import org.ohdsi.webapi.sqlrender.TranslatedStatement;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.RowMapper;
+import org.ohdsi.webapi.cohortdefinition.ExpressionType;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -39,6 +39,9 @@ import org.springframework.stereotype.Component;
 @Path("/cohortdefinition/")
 @Component
 public class CohortDefinitionService extends AbstractDaoService {
+
+  @Autowired
+  private CohortDefinitionRepository cohortDefinitionRepository;  
 
   public static class GenerateSqlRequest {
 
@@ -53,30 +56,50 @@ public class CohortDefinitionService extends AbstractDaoService {
 
   }
 
-  public class GenerateSqlResult {
+  public static class GenerateSqlResult {
 
     @JsonProperty("templateSql")
     public String templateSql;
   }
+  
+  public static class CohortDefinitionListItem {
+    public Integer id;
+    public String name;
+    public String description;
+    public ExpressionType expressionType;
+    public String createdBy;
+    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd, HH:mm")    
+    public Date createdDate;
+    public String modifiedBy;
+    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd, HH:mm")    
+    public Date modifiedDate;
+  }
+  
+  public static class CohortDefinitionDTO extends CohortDefinitionListItem {
+    public String expression;
+  }
 
+  private CohortDefinitionDTO cohortDefinitionToDTO(CohortDefinition def)
+  {
+    CohortDefinitionDTO result = new CohortDefinitionDTO();
+    
+    result.id = def.getId();
+    result.createdBy = def.getCreatedBy();
+    result.createdDate = def.getCreatedDate();
+    result.description = def.getDescription();
+    result.expressionType = def.getExpressionType();
+    result.expression = def.getDetails().getExpression();
+    result.modifiedBy = def.getModifiedBy();
+    result.modifiedDate = def.getModifiedDate();
+    result.name = def.getName();
+    
+    return result;
+  }  
+  
   private static final CohortExpressionQueryBuilder queryBuilder = new CohortExpressionQueryBuilder();
 
   @Context
   ServletContext context;
-
-  private final RowMapper<CohortDefinition> cohortDefinitionMapper = new RowMapper<CohortDefinition>() {
-
-    @Override
-    public CohortDefinition mapRow(final ResultSet rs, final int arg1) throws SQLException {
-      final CohortDefinition definition = new CohortDefinition();
-      definition.setCohortDefinitionDescription(rs.getString(CohortDefinition.COHORT_DEFINITION_DESCRIPTION));
-      definition.setCohortDefinitionId(rs.getInt(CohortDefinition.COHORT_DEFINITION_ID));
-      definition.setCohortDefinitionName(rs.getString(CohortDefinition.COHORT_DEFINITION_NAME));
-      definition.setCohortDefinitionSyntax(rs.getString(CohortDefinition.COHORT_DEFINITION_SYNTAX));
-      definition.setCohortInitiationDate(rs.getDate(CohortDefinition.COHORT_INITIATION_DATE));
-      return definition;
-    }
-  };
 
   @Path("generate")
   @POST
@@ -105,39 +128,97 @@ public class CohortDefinitionService extends AbstractDaoService {
   @GET
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
-  public List<CohortDefinition> getCohortDefinitionList() {
-
-    String sql = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/getCohortDefinitions.sql");
-      sql = SqlRender.renderSql(sql, new String[] { "results_schema" }, new String[] { this.getOhdsiSchema()});
-    sql = SqlTranslate.translateSql(sql, getSourceDialect(), getDialect());
-
-    return getJdbcTemplate().query(sql, this.cohortDefinitionMapper);
+  public List<CohortDefinitionListItem> getCohortDefinitionList() {
+    ArrayList<CohortDefinitionListItem> result = new ArrayList<>();
+    Iterable<CohortDefinition> defs = this.cohortDefinitionRepository.findAll();
+    for (CohortDefinition d : defs)
+    {
+      CohortDefinitionListItem item = new CohortDefinitionListItem();
+      item.id = d.getId();
+      item.name = d.getName();
+      item.description = d.getDescription();
+      item.expressionType = d.getExpressionType();
+      item.createdBy = d.getCreatedBy();
+      item.createdDate = d.getCreatedDate();
+      item.modifiedBy = d.getModifiedBy();
+      item.modifiedDate = d.getModifiedDate();
+      result.add(item);
+    }
+    return result;
   }
+  
+  /**
+   * Creates the cohort definition
+   * 
+   * @param def The cohort definition to create.
+   * @return The new CohortDefinition
+   */
+  @PUT
+  @Path("/")
+  @Produces(MediaType.APPLICATION_JSON)
+  public CohortDefinitionDTO createCohortDefinition(CohortDefinitionDTO def) {
+    Date currentTime = Calendar.getInstance().getTime();
+
+    //create definition in 2 saves, first to get the generated ID for the new def
+    // then to associate the details with the definition
+    CohortDefinition newDef = new CohortDefinition();
+    newDef.setName(def.name)
+            .setDescription(def.description)
+            .setCreatedBy("system")
+            .setCreatedDate(currentTime)
+            .setExpressionType(def.expressionType);
+    
+    newDef = this.cohortDefinitionRepository.save(newDef);
+ 
+    // associate details
+    CohortDefinitionDetails details = new CohortDefinitionDetails();
+    details.setCohortDefinition(newDef)
+            .setExpression(def.expression);
+
+    newDef.setDetails(details);
+
+    CohortDefinition createdDefinition = this.cohortDefinitionRepository.save(newDef);
+    
+    return cohortDefinitionToDTO(createdDefinition);
+  }
+  
 
   /**
-   * Returns the cohort definition for the given cohort_definition_id in the cohort schema
+   * Returns the cohort definition for the given id
    * 
-   * @param id The cohort_definition id
-   * @return The cohort_defition
+   * @param id The cohort definition id
+   * @return The CohortDefinition
    */
   @GET
   @Path("/{id}")
   @Produces(MediaType.APPLICATION_JSON)
-  public CohortDefinition getCohortDefinition(@PathParam("id") final int id) {
-
-    String sql_statement = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/getCohortDefinitionsById.sql");
-      sql_statement = SqlRender.renderSql(sql_statement, new String[] { "id", "results_schema" },
-          new String[] { String.valueOf(id), this.getOhdsiSchema() });
-    sql_statement = SqlTranslate.translateSql(sql_statement, getSourceDialect(), getDialect());
-
-    CohortDefinition def = null;
-    try {
-      def = getJdbcTemplate().queryForObject(sql_statement, this.cohortDefinitionMapper);
-    } catch (EmptyResultDataAccessException e) {
-      log.debug(String.format("Request for cohortDefinition=%s resulted in 0 results", id));
-      //returning null / i.e. no content
-    }
-    return def;
+  public CohortDefinitionDTO getCohortDefinition(@PathParam("id") final int id) {
+    CohortDefinition d = this.cohortDefinitionRepository.findById(id);
+    return cohortDefinitionToDTO(d);
   }
+  
+  /**
+   * Saves the cohort definition for the given id
+   * 
+   * @param id The cohort definition id
+   * @return The CohortDefinition
+   */
+  @PUT
+  @Path("/{id}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public CohortDefinitionDTO saveCohortDefinition(@PathParam("id") final int id, CohortDefinitionDTO def) {
+    Date currentTime = Calendar.getInstance().getTime();
 
+    CohortDefinition currentDefinition = this.cohortDefinitionRepository.findById(id);
+    
+    currentDefinition.setName(def.name)
+            .setDescription(def.description)
+            .setExpressionType(def.expressionType)
+            .setModifiedBy("system")
+            .setModifiedDate(currentTime)
+            .getDetails().setExpression(def.expression);
+ 
+    this.cohortDefinitionRepository.save(currentDefinition);
+    return getCohortDefinition(id);
+  }  
 }

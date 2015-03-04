@@ -55,7 +55,8 @@ public class JobConfig {
     @Bean
     public TaskExecutor taskExecutor() {
         final ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
-        taskExecutor.setMaxPoolSize(10);//TODO
+        taskExecutor.setCorePoolSize(10);
+        taskExecutor.setMaxPoolSize(20);//TODO
         taskExecutor.afterPropertiesSet();
         return taskExecutor;
     }

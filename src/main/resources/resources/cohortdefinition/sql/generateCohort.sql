@@ -17,5 +17,8 @@ FROM
 @ResultLimitFilter
 ;
 
+TRUNCATE TABLE #Codesets;
 DROP TABLE #Codesets;
+
+TRUNCATE TABLE #PrimaryCriteriaEvents;
 DROP TABLE #PrimaryCriteriaEvents;

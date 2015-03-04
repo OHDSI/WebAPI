@@ -197,10 +197,9 @@ create table heracles_results
 	stratum_4 varchar(255),
 	stratum_5 varchar(255),
 	count_value bigint,
-	last_update_time timestamp
+	last_update_time timestamp DEFAULT (now())
 );
 
-ALTER TABLE heracles_results ADD CONSTRAINT DF_HERACLES_results DEFAULT GETDATE() FOR last_update_time;
 
 create table heracles_results_dist
 (
@@ -221,9 +220,9 @@ create table heracles_results_dist
 	p25_value float,
 	p75_value float,
 	p90_value float,
-	last_update_time timestamp
+	last_update_time timestamp DEFAULT (now())
 );
 
-ALTER TABLE heracles_results_dist ADD CONSTRAINT DF_HERACLES_results_dist DEFAULT GETDATE() FOR last_update_time;
+
 
 

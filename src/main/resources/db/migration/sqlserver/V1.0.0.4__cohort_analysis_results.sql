@@ -1,12 +1,23 @@
-
-create table COHORT 
+IF (NOT EXISTS (SELECT * 
+                 FROM INFORMATION_SCHEMA.TABLES 
+                 WHERE TABLE_SCHEMA = 'dbo' 
+                 AND  TABLE_NAME = 'cohort'))
+BEGIN
+create table dbo.cohort 
 (
 	COHORT_DEFINITION_ID int NOT NULL,
 	SUBJECT_ID bigint NOT NULL,
 	cohort_start_date date NOT NULL,
 	cohort_end_date date NOT NULL
-);
+) ON [PRIMARY]
+END
+;
 
+IF (NOT EXISTS (SELECT * 
+                 FROM INFORMATION_SCHEMA.TABLES 
+                 WHERE TABLE_SCHEMA = 'dbo' 
+                 AND  TABLE_NAME = 'heracles_analysis'))
+BEGIN
 create table heracles_analysis
 (
 	analysis_id int,
@@ -17,7 +28,11 @@ create table heracles_analysis
 	stratum_4_name varchar(255),
 	stratum_5_name varchar(255),
 	analysis_type varchar(255)
-);
+) on [PRIMARY]
+END
+;
+
+TRUNCATE TABLE heracles_analysis;
 
 insert into heracles_analysis (ANALYSIS_ID,ANALYSIS_NAME,STRATUM_1_NAME,STRATUM_2_NAME,STRATUM_3_NAME,STRATUM_4_NAME,STRATUM_5_NAME,ANALYSIS_TYPE) values (0,'Source name',null,null,null,null,null,'PERSON');
 insert into heracles_analysis (ANALYSIS_ID,ANALYSIS_NAME,STRATUM_1_NAME,STRATUM_2_NAME,STRATUM_3_NAME,STRATUM_4_NAME,STRATUM_5_NAME,ANALYSIS_TYPE) values (1,'Number of persons',null,null,null,null,null,'PERSON');
@@ -187,6 +202,11 @@ insert into heracles_analysis (ANALYSIS_ID,ANALYSIS_NAME,STRATUM_1_NAME,STRATUM_
 insert into heracles_analysis (ANALYSIS_ID,ANALYSIS_NAME,STRATUM_1_NAME,STRATUM_2_NAME,STRATUM_3_NAME,STRATUM_4_NAME,STRATUM_5_NAME,ANALYSIS_TYPE) values (1870,'Number of persons by duration from cohort start to first occurrence of drug era, by drug_concept_id','drug_concept_id','time-to-event 30d increments',null,null,null,'COHORT_SPECIFIC_ANALYSES');
 insert into heracles_analysis (ANALYSIS_ID,ANALYSIS_NAME,STRATUM_1_NAME,STRATUM_2_NAME,STRATUM_3_NAME,STRATUM_4_NAME,STRATUM_5_NAME,ANALYSIS_TYPE) values (1871,'Number of events by duration from cohort start to all occurrences of drug era, by drug_concept_id','drug_concept_id','time-to-event 30d increments',null,null,null,'COHORT_SPECIFIC_ANALYSES');
 
+IF (NOT EXISTS (SELECT * 
+                 FROM INFORMATION_SCHEMA.TABLES 
+                 WHERE TABLE_SCHEMA = 'dbo' 
+                 AND  TABLE_NAME = 'heracles_results'))
+BEGIN
 create table heracles_results
 (
 	cohort_definition_id int,
@@ -197,11 +217,16 @@ create table heracles_results
 	stratum_4 varchar(255),
 	stratum_5 varchar(255),
 	count_value bigint,
-	last_update_time timestamp
-);
+	last_update_time datetime 
+          CONSTRAINT DF_HERACLES_results_last_update DEFAULT GETDATE()
+) on [PRIMARY]
+END;
 
-ALTER TABLE heracles_results ADD CONSTRAINT DF_HERACLES_results DEFAULT GETDATE() FOR last_update_time;
-
+IF (NOT EXISTS (SELECT * 
+                 FROM INFORMATION_SCHEMA.TABLES 
+                 WHERE TABLE_SCHEMA = 'dbo' 
+                 AND  TABLE_NAME = 'heracles_results_dist'))
+BEGIN
 create table heracles_results_dist
 (
 	cohort_definition_id int,
@@ -221,10 +246,7 @@ create table heracles_results_dist
 	p25_value float,
 	p75_value float,
 	p90_value float,
-	last_update_time timestamp
-);
-
-ALTER TABLE heracles_results_dist ADD CONSTRAINT DF_HERACLES_results_dist DEFAULT GETDATE() FOR last_update_time;
-
-
-
+	last_update_time datetime
+          CONSTRAINT DF_heracles_results_dist_last_update DEFAULT GETDATE()
+) on [PRIMARY]
+END;

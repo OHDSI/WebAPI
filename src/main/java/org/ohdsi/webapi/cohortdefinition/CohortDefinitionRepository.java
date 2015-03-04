@@ -15,6 +15,7 @@
 package org.ohdsi.webapi.cohortdefinition;
 
 import java.io.Serializable;
+import javax.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -31,6 +32,7 @@ public interface CohortDefinitionRepository extends CrudRepository<CohortDefinit
   // Bug in hibernate, findById should use @EntityGraph, but details are not being feched. Workaround: mark details Fetch.EAGER,
   // but means findAll() will eager load definitions (what the @EntityGraph was supposed to solve)
   @EntityGraph(value = "CohortDefinition.withDetail", type = EntityGraph.EntityGraphType.LOAD)
+  @Transactional
   CohortDefinition findById(Integer id);
   
 }

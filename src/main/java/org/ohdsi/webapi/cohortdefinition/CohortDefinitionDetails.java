@@ -15,17 +15,12 @@
 package org.ohdsi.webapi.cohortdefinition;
 
 import java.io.Serializable;
-import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.MapsId;
 import javax.persistence.OneToOne;
-import javax.persistence.PrimaryKeyJoinColumn;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 
 /**
@@ -33,7 +28,7 @@ import org.hibernate.annotations.Type;
  * Stores the LOB/CLOB portion of the cohort definition expression.
  */
 @Entity(name = "cohort_definition_details")
-public class CohortDefinitionDetails  implements Serializable{
+public class CohortDefinitionDetails implements Serializable {
 
   private static final long serialVersionUID = 1L;
   

@@ -29,6 +29,12 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.webapi.cohortdefinition.ExpressionType;
+import org.ohdsi.webapi.cohortdefinition.GenerateCohortTasklet;
+import org.ohdsi.webapi.job.JobExecutionResource;
+import org.ohdsi.webapi.job.JobTemplate;
+import org.springframework.batch.core.JobParameters;
+import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -42,6 +48,13 @@ public class CohortDefinitionService extends AbstractDaoService {
 
   @Autowired
   private CohortDefinitionRepository cohortDefinitionRepository;  
+
+  @Autowired
+  private JobTemplate jobTemplate;
+
+  @Autowired
+  private StepBuilderFactory stepBuilders;
+  
 
   public static class GenerateSqlRequest {
 
@@ -101,7 +114,7 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Context
   ServletContext context;
 
-  @Path("generate")
+  @Path("sql")
   @POST
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
@@ -220,5 +233,33 @@ public class CohortDefinitionService extends AbstractDaoService {
  
     this.cohortDefinitionRepository.save(currentDefinition);
     return getCohortDefinition(id);
-  }  
+  }
+  
+    /**
+     * Queues up a generate cohort task for the specified cohort definition id.
+     * 
+     * @param task - the Cohort Analysis task to be ran
+     * @return information about the Cohort Analysis Job
+     * @throws Exception
+     */
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("/{id}/generate")    
+    public JobExecutionResource generateCohort(@PathParam("id") final int id) {
+
+      CohortDefinition currentDefinition = this.cohortDefinitionRepository.findById(id);
+      
+      JobParametersBuilder builder = new JobParametersBuilder();
+      builder.addString("cohort_definition_id", ("" + id));
+
+      final JobParameters jobParameters = builder.toJobParameters();
+
+      log.info(String.format("Beginning generate cohort for cohort definition id: \n %s", "" + id));
+      
+      GenerateCohortTasklet tasklet = new GenerateCohortTasklet(null, getJdbcTemplate(), getTransactionTemplate());
+
+      return this.jobTemplate.launchTasklet("generateCohortJob", "generateCohortStep", tasklet, jobParameters);
+    }
+  
 }

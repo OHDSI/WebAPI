@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Observational Health Data Sciences and Informatics <OHDSI.org>.
+ * Copyright 2015 Observational Health Data Sciences and Informatics [OHDSI.org].
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package org.ohdsi.webapi.cohortdefinition;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.ohdsi.webapi.cohortdefinition.CohortExpressionQueryBuilder.BuildExpressionQueryOptions;
 
 /**
  *
@@ -24,6 +25,51 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class GenerateCohortTask {
 
   //TODO: Define task-specific paramters
+  private CohortDefinition cohortDefinition;
+  private BuildExpressionQueryOptions options;
+  private String sourceDialect;
+  private String targetDialect;
+    
+  public CohortDefinition getCohortDefinition()
+  {
+    return this.cohortDefinition;
+  }
+  
+  public GenerateCohortTask setCohortDefinition(CohortDefinition cohortDefinition)
+  {
+    this.cohortDefinition = cohortDefinition;
+    return this;
+  }
+  
+  public BuildExpressionQueryOptions getOptions()
+  {
+    return this.options;
+  }
+  
+  public GenerateCohortTask setOptions(BuildExpressionQueryOptions options)
+  {
+    this.options = options;
+    return this;
+  }
+  
+  public String getSourceDialect() {
+    return sourceDialect;
+  }
+
+  public GenerateCohortTask setSourceDialect(String sourceDialect) {
+    this.sourceDialect = sourceDialect;
+    return this;
+    
+  }
+
+  public String getTargetDialect() {
+    return targetDialect;
+  }
+
+  public GenerateCohortTask setTargetDialect(String targetDialect) {
+    this.targetDialect = targetDialect;
+    return this;
+  }
   
   @Override
   public String toString() {
@@ -32,7 +78,7 @@ public class GenerateCohortTask {
       ObjectMapper mapper = new ObjectMapper();
       return mapper.writeValueAsString(this);
     } catch (Exception e) {
-      
+      // ignored, let parent resolve...
     }
 
     return super.toString();

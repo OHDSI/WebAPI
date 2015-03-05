@@ -15,14 +15,17 @@
  */
 package org.ohdsi.webapi.cohortdefinition;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTasklet;
+import org.ohdsi.sql.SqlSplit;
+import org.ohdsi.sql.SqlTranslate;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -34,21 +37,41 @@ import org.springframework.transaction.support.TransactionTemplate;
  */
 public class GenerateCohortTasklet implements Tasklet {
 
-  private static final Log log = LogFactory.getLog(CohortAnalysisTasklet.class);
+  private static final Log log = LogFactory.getLog(GenerateCohortTasklet.class);
+
+    private final static CohortExpressionQueryBuilder expressionQueryBuilder = new CohortExpressionQueryBuilder();
     
-    private final String[] sql;
-    
+    private final GenerateCohortTask task;
     private final JdbcTemplate jdbcTemplate;
-    
     private final TransactionTemplate transactionTemplate;
     
-    public GenerateCohortTasklet(final String[] taskSql, final JdbcTemplate jdbcTemplate,
+    
+    public GenerateCohortTasklet(GenerateCohortTask task, final JdbcTemplate jdbcTemplate,
         final TransactionTemplate transactionTemplate) {
-        this.sql = taskSql;
+        this.task = task;
         this.jdbcTemplate = jdbcTemplate;
         this.transactionTemplate = transactionTemplate;
     }
     
+    private int[] doTask()
+    {
+      int[] result = null;
+      try {
+        ObjectMapper mapper = new ObjectMapper();
+
+        CohortExpression expression = mapper.readValue(this.task.getCohortDefinition().getDetails().getExpression(), CohortExpression.class);
+        String expressionSql = expressionQueryBuilder.buildExpressionQuery(expression, this.task.getOptions());
+        String translatedSql = SqlTranslate.translateSql(expressionSql, this.task.getSourceDialect(), this.task.getTargetDialect());
+        String[] sqlStatements = SqlSplit.splitSql(translatedSql);
+        result = GenerateCohortTasklet.this.jdbcTemplate.batchUpdate(sqlStatements);
+
+      } catch (Exception e)
+      {
+        throw new RuntimeException(e);
+      }
+      
+      return result;
+    }
     @Override
     public RepeatStatus execute(final StepContribution contribution, final ChunkContext chunkContext) throws Exception {
         
@@ -57,7 +80,7 @@ public class GenerateCohortTasklet implements Tasklet {
                 
                 @Override
                 public int[] doInTransaction(final TransactionStatus status) {
-                    return GenerateCohortTasklet.this.jdbcTemplate.batchUpdate(GenerateCohortTasklet.this.sql);
+                  return doTask();
                 }
             });
             log.debug("Update count: " + ret.length);

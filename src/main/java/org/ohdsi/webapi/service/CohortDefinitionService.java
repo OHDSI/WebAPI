@@ -29,6 +29,7 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.webapi.cohortdefinition.ExpressionType;
+import org.ohdsi.webapi.cohortdefinition.GenerateCohortTask;
 import org.ohdsi.webapi.cohortdefinition.GenerateCohortTasklet;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
@@ -36,6 +37,7 @@ import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -54,6 +56,9 @@ public class CohortDefinitionService extends AbstractDaoService {
 
   @Autowired
   private StepBuilderFactory stepBuilders;
+  
+  @Value("${cohort.targetTable}")
+  private String cohortTable;  
   
 
   public static class GenerateSqlRequest {
@@ -238,11 +243,11 @@ public class CohortDefinitionService extends AbstractDaoService {
     /**
      * Queues up a generate cohort task for the specified cohort definition id.
      * 
-     * @param task - the Cohort Analysis task to be ran
+     * @param id - the Cohort Definition ID to generate
      * @return information about the Cohort Analysis Job
      * @throws Exception
      */
-    @POST
+    @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/{id}/generate")    
@@ -252,12 +257,23 @@ public class CohortDefinitionService extends AbstractDaoService {
       
       JobParametersBuilder builder = new JobParametersBuilder();
       builder.addString("cohort_definition_id", ("" + id));
-
       final JobParameters jobParameters = builder.toJobParameters();
 
       log.info(String.format("Beginning generate cohort for cohort definition id: \n %s", "" + id));
       
-      GenerateCohortTasklet tasklet = new GenerateCohortTasklet(null, getJdbcTemplate(), getTransactionTemplate());
+      CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = new CohortExpressionQueryBuilder.BuildExpressionQueryOptions();
+      options.cohortId = id;
+      options.cdmSchema = this.getCdmSchema();
+      options.targetSchema = this.getOhdsiSchema();
+      options.targetTable = this.cohortTable;
+
+      GenerateCohortTask task = new GenerateCohortTask()
+              .setCohortDefinition(currentDefinition)
+              .setOptions(options)
+              .setSourceDialect(this.getSourceDialect())
+              .setTargetDialect(this.getDialect());
+      
+      GenerateCohortTasklet tasklet = new GenerateCohortTasklet(task, getJdbcTemplate(), getTransactionTemplate());
 
       return this.jobTemplate.launchTasklet("generateCohortJob", "generateCohortStep", tasklet, jobParameters);
     }

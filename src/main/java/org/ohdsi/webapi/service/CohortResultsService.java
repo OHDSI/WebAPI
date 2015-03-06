@@ -12,7 +12,8 @@ import javax.ws.rs.core.MediaType;
 
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
-import org.ohdsi.webapi.cohortresults.ConditionDrilldown;
+import org.ohdsi.webapi.cohortresults.CohortConditionDrilldown;
+import org.ohdsi.webapi.cohortresults.CohortDashboard;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.springframework.stereotype.Component;
 
@@ -71,6 +72,29 @@ public class CohortResultsService extends AbstractDaoService {
 	  }
 	  
 		/**
+		 * Queries for cohort analysis dashboard for the given cohort definition id
+		 * 
+		 * @param id cohort_defintion id
+		 * @return ConditionDrilldown
+		 */
+		  @GET
+		  @Path("/{id}/dashboard")
+		  @Produces(MediaType.APPLICATION_JSON)
+		  public CohortDashboard getConditionResults(@PathParam("id") final int id, 
+				  @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam, 
+				  @QueryParam("min_interval_person_count") final String minIntervalPersonCountParam) {
+			  CohortDashboard dashboard = new CohortDashboard();
+			  
+			  dashboard.setAgeAtFirstObservation(this.getCohortResultsRaw(id, "observationperiod", "ageatfirst", minCovariatePersonCountParam, minIntervalPersonCountParam));
+			  dashboard.setCumulativeObservation(this.getCohortResultsRaw(id, "observationperiod", "cumulativeduration", minCovariatePersonCountParam, minIntervalPersonCountParam));
+			  dashboard.setGender(this.getCohortResultsRaw(id, "person", "gender", minCovariatePersonCountParam, minIntervalPersonCountParam));
+			  dashboard.setObservedByMonth(this.getCohortResultsRaw(id, "observationperiod", "observedbymonth", minCovariatePersonCountParam, minIntervalPersonCountParam));
+			  
+			  return dashboard;
+			  
+		  }
+	  
+		/**
 		 * Queries for cohort analysis condition drilldown results for the given cohort definition id and condition id
 		 * 
 		 * @param id cohort_defintion id
@@ -80,10 +104,10 @@ public class CohortResultsService extends AbstractDaoService {
 		  @GET
 		  @Path("/{id}/condition/{conditionId}")
 		  @Produces(MediaType.APPLICATION_JSON)
-		  public ConditionDrilldown getConditionResults(@PathParam("id") final int id, @PathParam("conditionId") final int conditionId,
+		  public CohortConditionDrilldown getConditionResults(@PathParam("id") final int id, @PathParam("conditionId") final int conditionId,
 				  @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam, 
 				  @QueryParam("min_interval_person_count") final String minIntervalPersonCountParam) {
-			  ConditionDrilldown conditionDrilldown = new ConditionDrilldown();
+			  CohortConditionDrilldown conditionDrilldown = new CohortConditionDrilldown();
 			  
 			  conditionDrilldown.setAgeAtFirstDiagnosis(
 					  this.getConditionDrillDownResults("sqlAgeAtFirstDiagnosis", id, conditionId, 

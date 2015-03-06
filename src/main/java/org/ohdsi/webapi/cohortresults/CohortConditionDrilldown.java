@@ -3,7 +3,7 @@ package org.ohdsi.webapi.cohortresults;
 import java.util.List;
 import java.util.Map;
 
-public class ConditionDrilldown {
+public class CohortConditionDrilldown {
 	private List<Map<String, String>> ageAtFirstDiagnosis;
 	
 	private List<Map<String, String>> conditionsByType;

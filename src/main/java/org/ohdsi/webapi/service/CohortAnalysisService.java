@@ -154,10 +154,10 @@ public class CohortAnalysisService extends AbstractDaoService {
         // TODO mean obs period
         
         // gender distribution
-        summary.setGenderDistribution(this.resultsService.getCohortResultsRaw(id,"cohortSpecific", "gender", null, null));
+        summary.setGenderDistribution(this.resultsService.getCohortResultsRaw(id,"person", "gender", null, null));
         
         // age distribution
-        summary.setAgeDistribution(this.resultsService.getCohortResultsRaw(id, "cohortSpecific", "ageAtIndex", null, null));
+        summary.setAgeDistribution(this.resultsService.getCohortResultsRaw(id, "observationperiod", "ageatfirst", null, null));
         
         return summary;
     }

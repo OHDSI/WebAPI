@@ -11,3 +11,4 @@ from @resultsSchema.dbo.heracles_results hr1
 	on hr1.stratum_2  = CAST(c2.concept_id AS VARCHAR)
 where hr1.analysis_id = 705
 and cohort_definition_id in (@cohortDefinitionId)
+and c1.concept_id = @conceptId

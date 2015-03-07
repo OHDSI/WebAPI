@@ -1,5 +1,5 @@
-select c1.concept_id as drug_concept_id,
-	'Refills' as category,
+select c1.concept_id as concept_id,
+	'Length of era' as category,
 	hrd1.min_value as min_value,
 	hrd1.p10_value as p10_value,
 	hrd1.p25_value as p25_value,
@@ -8,9 +8,9 @@ select c1.concept_id as drug_concept_id,
 	hrd1.p90_value as p90_value,
 	hrd1.max_value as max_value
 from @resultsSchema.dbo.heracles_results_dist hrd1
-	inner join
-	@cdmSchema.dbo.concept c1
-	on CAST(hrd1.stratum_1 AS INT) = c1.concept_id
-where hrd1.analysis_id = 716
+	inner join @cdmSchema.dbo.concept c1 on CAST(hrd1.stratum_1 as INT) = c1.concept_id
+where hrd1.analysis_id = 1007 and hrd1.count_value > 0
 and cohort_definition_id in (@cohortDefinitionId)
-and hrd1.count_value > 0
+and c1.concept_id = @conceptId
+
+

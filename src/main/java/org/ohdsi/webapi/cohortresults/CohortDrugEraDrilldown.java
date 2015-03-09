@@ -1,60 +1,59 @@
 package org.ohdsi.webapi.cohortresults;
 
 import java.util.List;
-import java.util.Map;
 
 public class CohortDrugEraDrilldown {
-	private List<Map<String, String>> ageAtFirstExposure;
-	private List<Map<String, String>> lengthOfEra;
-	private List<Map<String, String>> prevalenceByGenderAgeYear;
-	private List<Map<String, String>> prevalenceByMonth;
+	private List<ConceptQuartileRecord> ageAtFirstExposure;
+	private List<ConceptQuartileRecord> lengthOfEra;
+	private List<ConceptDecileRecord> prevalenceByGenderAgeYear;
+	private List<PrevalenceRecord> prevalenceByMonth;
 	/**
 	 * @return the ageAtFirstExposure
 	 */
-	public List<Map<String, String>> getAgeAtFirstExposure() {
+	public List<ConceptQuartileRecord> getAgeAtFirstExposure() {
 		return ageAtFirstExposure;
 	}
 	/**
 	 * @param ageAtFirstExposure the ageAtFirstExposure to set
 	 */
-	public void setAgeAtFirstExposure(List<Map<String, String>> ageAtFirstExposure) {
+	public void setAgeAtFirstExposure(List<ConceptQuartileRecord> ageAtFirstExposure) {
 		this.ageAtFirstExposure = ageAtFirstExposure;
 	}
 	/**
 	 * @return the lengthOfEra
 	 */
-	public List<Map<String, String>> getLengthOfEra() {
+	public List<ConceptQuartileRecord> getLengthOfEra() {
 		return lengthOfEra;
 	}
 	/**
 	 * @param lengthOfEra the lengthOfEra to set
 	 */
-	public void setLengthOfEra(List<Map<String, String>> lengthOfEra) {
+	public void setLengthOfEra(List<ConceptQuartileRecord> lengthOfEra) {
 		this.lengthOfEra = lengthOfEra;
 	}
 	/**
 	 * @return the prevalenceByGenderAgeYear
 	 */
-	public List<Map<String, String>> getPrevalenceByGenderAgeYear() {
+	public List<ConceptDecileRecord> getPrevalenceByGenderAgeYear() {
 		return prevalenceByGenderAgeYear;
 	}
 	/**
 	 * @param prevalenceByGenderAgeYear the prevalenceByGenderAgeYear to set
 	 */
 	public void setPrevalenceByGenderAgeYear(
-			List<Map<String, String>> prevalenceByGenderAgeYear) {
+			List<ConceptDecileRecord> prevalenceByGenderAgeYear) {
 		this.prevalenceByGenderAgeYear = prevalenceByGenderAgeYear;
 	}
 	/**
 	 * @return the prevalenceByMonth
 	 */
-	public List<Map<String, String>> getPrevalenceByMonth() {
+	public List<PrevalenceRecord> getPrevalenceByMonth() {
 		return prevalenceByMonth;
 	}
 	/**
 	 * @param prevalenceByMonth the prevalenceByMonth to set
 	 */
-	public void setPrevalenceByMonth(List<Map<String, String>> prevalenceByMonth) {
+	public void setPrevalenceByMonth(List<PrevalenceRecord> prevalenceByMonth) {
 		this.prevalenceByMonth = prevalenceByMonth;
 	}
 	

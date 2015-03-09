@@ -1,63 +1,63 @@
 package org.ohdsi.webapi.cohortresults;
 
 import java.util.List;
-import java.util.Map;
 
 public class CohortDashboard {
 
-	private List<Map<String, String>> gender;
-	private List<Map<String, String>> ageAtFirstObservation;
-	private List<Map<String, String>> cumulativeObservation;
-	private List<Map<String, String>> observedByMonth;
-	
+	private List<ConceptCountRecord> gender;
+	private List<ConceptDistributionRecord> ageAtFirstObservation;
+	private List<CumulativeObservationRecord> cumulativeObservation;
+	private List<MonthObservationRecord> observedByMonth;
 	/**
 	 * @return the gender
 	 */
-	public List<Map<String, String>> getGender() {
+	public List<ConceptCountRecord> getGender() {
 		return gender;
 	}
 	/**
 	 * @param gender the gender to set
 	 */
-	public void setGender(List<Map<String, String>> gender) {
+	public void setGender(List<ConceptCountRecord> gender) {
 		this.gender = gender;
 	}
 	/**
 	 * @return the ageAtFirstObservation
 	 */
-	public List<Map<String, String>> getAgeAtFirstObservation() {
+	public List<ConceptDistributionRecord> getAgeAtFirstObservation() {
 		return ageAtFirstObservation;
 	}
 	/**
 	 * @param ageAtFirstObservation the ageAtFirstObservation to set
 	 */
 	public void setAgeAtFirstObservation(
-			List<Map<String, String>> ageAtFirstObservation) {
+			List<ConceptDistributionRecord> ageAtFirstObservation) {
 		this.ageAtFirstObservation = ageAtFirstObservation;
 	}
 	/**
 	 * @return the cumulativeObservation
 	 */
-	public List<Map<String, String>> getCumulativeObservation() {
+	public List<CumulativeObservationRecord> getCumulativeObservation() {
 		return cumulativeObservation;
 	}
 	/**
 	 * @param cumulativeObservation the cumulativeObservation to set
 	 */
 	public void setCumulativeObservation(
-			List<Map<String, String>> cumulativeObservation) {
+			List<CumulativeObservationRecord> cumulativeObservation) {
 		this.cumulativeObservation = cumulativeObservation;
 	}
 	/**
 	 * @return the observedByMonth
 	 */
-	public List<Map<String, String>> getObservedByMonth() {
+	public List<MonthObservationRecord> getObservedByMonth() {
 		return observedByMonth;
 	}
 	/**
 	 * @param observedByMonth the observedByMonth to set
 	 */
-	public void setObservedByMonth(List<Map<String, String>> observedByMonth) {
+	public void setObservedByMonth(List<MonthObservationRecord> observedByMonth) {
 		this.observedByMonth = observedByMonth;
 	}
+	
+	
 }

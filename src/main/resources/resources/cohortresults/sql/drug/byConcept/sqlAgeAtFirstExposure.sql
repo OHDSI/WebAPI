@@ -1,4 +1,4 @@
-select c1.concept_id as drug_concept_id,
+select c1.concept_id as concept_id,
 	c2.concept_name as category,
 	hrd1.min_value as min_value,
 	hrd1.p10_value as p10_value,

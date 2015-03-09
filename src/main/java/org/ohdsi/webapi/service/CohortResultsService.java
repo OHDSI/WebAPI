@@ -17,6 +17,21 @@ import org.ohdsi.webapi.cohortresults.CohortConditionEraDrilldown;
 import org.ohdsi.webapi.cohortresults.CohortDashboard;
 import org.ohdsi.webapi.cohortresults.CohortDrugDrilldown;
 import org.ohdsi.webapi.cohortresults.CohortDrugEraDrilldown;
+import org.ohdsi.webapi.cohortresults.ConceptCountRecord;
+import org.ohdsi.webapi.cohortresults.ConceptDecileRecord;
+import org.ohdsi.webapi.cohortresults.ConceptQuartileRecord;
+import org.ohdsi.webapi.cohortresults.HierarchicalConceptRecord;
+import org.ohdsi.webapi.cohortresults.PrevalenceRecord;
+import org.ohdsi.webapi.cohortresults.mapper.ConceptConditionCountMapper;
+import org.ohdsi.webapi.cohortresults.mapper.ConceptCountMapper;
+import org.ohdsi.webapi.cohortresults.mapper.ConceptDecileMapper;
+import org.ohdsi.webapi.cohortresults.mapper.ConceptDistributionMapper;
+import org.ohdsi.webapi.cohortresults.mapper.ConceptQuartileMapper;
+import org.ohdsi.webapi.cohortresults.mapper.CumulativeObservationMapper;
+import org.ohdsi.webapi.cohortresults.mapper.HierarchicalConceptEraMapper;
+import org.ohdsi.webapi.cohortresults.mapper.HierarchicalConceptMapper;
+import org.ohdsi.webapi.cohortresults.mapper.MonthObservationMapper;
+import org.ohdsi.webapi.cohortresults.mapper.PrevalanceMapper;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.springframework.stereotype.Component;
 
@@ -31,6 +46,15 @@ public class CohortResultsService extends AbstractDaoService {
 
 	private static final String MIN_COVARIATE_PERSON_COUNT = "500";
 	private static final String MIN_INTERVAL_PERSON_COUNT = "1000";
+	
+	private static final String BASE_SQL_PATH = "/resources/cohortresults/sql";
+	
+	private static final String[] STANDARD_COLUMNS = new String[] { "cdmSchema", 
+		"resultsSchema", "cohortDefinitionId",
+		"minCovariatePersonCount", "minIntervalPersonCount"};
+	private static final String[] DRILLDOWN_COLUMNS = new String[] { "cdmSchema", 
+		"resultsSchema", "cohortDefinitionId",
+		"minCovariatePersonCount", "minIntervalPersonCount", "conceptId"};
 
 	/**
 	 * Queries for cohort analysis results for the given cohort definition id
@@ -51,7 +75,7 @@ public class CohortResultsService extends AbstractDaoService {
 		String sql = null;
 
 		try {
-			sql = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/" + analysisGroup + "/" + analysisName + ".sql");
+			sql = ResourceHelper.GetResourceAsString(BASE_SQL_PATH + "/" + analysisGroup + "/" + analysisName + ".sql");
 
 			sql = SqlRender.renderSql(sql, new String[] { "cdmSchema", 
 					"resultsSchema", "cohortDefinitionId",
@@ -87,14 +111,53 @@ public class CohortResultsService extends AbstractDaoService {
 			@QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam, 
 			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam) {
 		CohortDashboard dashboard = new CohortDashboard();
-
-		dashboard.setAgeAtFirstObservation(this.getCohortResultsRaw(id, "observationperiod", "ageatfirst", minCovariatePersonCountParam, minIntervalPersonCountParam));
-		dashboard.setCumulativeObservation(this.getCohortResultsRaw(id, "observationperiod", "cumulativeduration", minCovariatePersonCountParam, minIntervalPersonCountParam));
-		dashboard.setGender(this.getCohortResultsRaw(id, "person", "gender", minCovariatePersonCountParam, minIntervalPersonCountParam));
-		dashboard.setObservedByMonth(this.getCohortResultsRaw(id, "observationperiod", "observedbymonth", minCovariatePersonCountParam, minIntervalPersonCountParam));
+		
+		String ageAtFirstObsSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/ageatfirst.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (ageAtFirstObsSql != null) {
+			dashboard.setAgeAtFirstObservation(this.getJdbcTemplate().query(ageAtFirstObsSql, new ConceptDistributionMapper()));
+		}
+		
+		String cumulObsSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/cumulativeduration.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (cumulObsSql != null) {
+			dashboard.setCumulativeObservation(this.getJdbcTemplate().query(cumulObsSql, new CumulativeObservationMapper()));
+		}
+		
+		String genderSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/gender.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (genderSql != null) {
+			dashboard.setGender(this.getJdbcTemplate().query(genderSql, new ConceptCountMapper()));
+		}
+		
+		String obsByMonthSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/observedbymonth.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (obsByMonthSql != null) {
+			dashboard.setObservedByMonth(this.getJdbcTemplate().query(obsByMonthSql, new MonthObservationMapper()));
+		}
 
 		return dashboard;
 
+	}
+	
+	/**
+	 * Queries for cohort analysis condition treemap results for the given cohort definition id
+	 * 
+	 * @param id cohort_defintion id
+	 * @return ConditionDrilldown
+	 */
+	@GET
+	@Path("/{id}/condition/")
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<HierarchicalConceptRecord> getConditionTreemap(@PathParam("id") final int id, 
+			@QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam, 
+			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam) {
+		
+		
+		List<HierarchicalConceptRecord> res = null;
+		String sql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/condition/sqlConditionTreemap.sql", 
+				id, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (sql != null) {
+			res = getJdbcTemplate().query(sql, new HierarchicalConceptMapper());
+		}
+		
+		return res;
 	}
 
 	/**
@@ -110,21 +173,66 @@ public class CohortResultsService extends AbstractDaoService {
 	public CohortConditionDrilldown getConditionResults(@PathParam("id") final int id, @PathParam("conditionId") final int conditionId,
 			@QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam, 
 			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam) {
-		CohortConditionDrilldown conditionDrilldown = new CohortConditionDrilldown();
+		CohortConditionDrilldown drilldown = new CohortConditionDrilldown();
 
-		conditionDrilldown.setAgeAtFirstDiagnosis(
-				this.getDrillDownResults("sqlAgeAtFirstDiagnosis", "condition", id, conditionId, 
-						minCovariatePersonCountParam, minIntervalPersonCountParam));
-		conditionDrilldown.setConditionsByType(this.getDrillDownResults("sqlConditionsByType","condition", id, conditionId, 
-				minCovariatePersonCountParam, minIntervalPersonCountParam));
-		conditionDrilldown.setPrevalenceByGenderAgeYear(this.getDrillDownResults("sqlPrevalenceByGenderAgeYear", "condition", id, conditionId, 
-				minCovariatePersonCountParam, minIntervalPersonCountParam));
-		conditionDrilldown.setPrevalenceByMonth(this.getDrillDownResults("sqlPrevalenceByMonth", "condition", id, conditionId, 
-				minCovariatePersonCountParam, minIntervalPersonCountParam));
+		List<ConceptQuartileRecord> ageAtFirstDiagnosis = null;
+		String ageAtFirstSql = this.renderDrillDownCohortSql("sqlAgeAtFirstDiagnosis", "condition", id, 
+				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (ageAtFirstSql != null) {
+			ageAtFirstDiagnosis = getJdbcTemplate().query(ageAtFirstSql, new ConceptQuartileMapper());
+		}
+		drilldown.setAgeAtFirstDiagnosis(ageAtFirstDiagnosis);
 
+		List<ConceptCountRecord> conditionsByType = null;
+		String conditionsSql = this.renderDrillDownCohortSql("sqlConditionsByType", "condition", id, 
+				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (conditionsSql != null) {
+			conditionsByType = getJdbcTemplate().query(conditionsSql, new ConceptConditionCountMapper());
+		}
+		drilldown.setConditionsByType(conditionsByType);
+		
+		List<ConceptDecileRecord> prevalenceByGenderAgeYear = null;
+		String prevalenceGenderAgeSql = this.renderDrillDownCohortSql("sqlPrevalenceByGenderAgeYear", "condition", id, 
+				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (prevalenceGenderAgeSql != null) {
+			prevalenceByGenderAgeYear = getJdbcTemplate().query(prevalenceGenderAgeSql, new ConceptDecileMapper());
+		}
+		drilldown.setPrevalenceByGenderAgeYear(prevalenceByGenderAgeYear);
+		
+		List<PrevalenceRecord> prevalenceByMonth = null;
+		String prevalanceMonthSql = this.renderDrillDownCohortSql("sqlPrevalenceByMonth", "condition", id, 
+				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (prevalanceMonthSql != null) {
+			prevalenceByMonth = getJdbcTemplate().query(prevalanceMonthSql, new PrevalanceMapper());
+		}
+		drilldown.setPrevalenceByMonth(prevalenceByMonth);
 
-		return conditionDrilldown;
+		return drilldown;
 
+	}
+	
+	/**
+	 * Queries for cohort analysis condition era treemap results for the given cohort definition id
+	 * 
+	 * @param id cohort_defintion id
+	 * @return ConditionDrilldown
+	 */
+	@GET
+	@Path("/{id}/conditionera/")
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<HierarchicalConceptRecord> getConditionEraTreemap(@PathParam("id") final int id, 
+			@QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam, 
+			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam) {
+		
+		
+		List<HierarchicalConceptRecord> res = null;
+		String sql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/conditionera/sqlConditionEraTreemap.sql", 
+				id, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (sql != null) {
+			res = getJdbcTemplate().query(sql, new HierarchicalConceptEraMapper());
+		}
+		
+		return res;
 	}
 
 	/**
@@ -141,18 +249,69 @@ public class CohortResultsService extends AbstractDaoService {
 			@QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam, 
 			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam) {
 		CohortConditionEraDrilldown drilldown = new CohortConditionEraDrilldown();
-		drilldown.setAgeAtFirstDiagnosis(this.getDrillDownResults("sqlAgeAtFirstDiagnosis", "conditionera", id, conditionId, 
-				minCovariatePersonCountParam, minIntervalPersonCountParam));
-		drilldown.setLengthOfEra(this.getDrillDownResults("sqlLengthOfEra", "conditionera", id, conditionId, 
-				minCovariatePersonCountParam, minIntervalPersonCountParam));
-		drilldown.setPrevalenceByGenderAgeYear(this.getDrillDownResults("sqlPrevalenceByGenderAgeYear", "conditionera", id, conditionId, 
-				minCovariatePersonCountParam, minIntervalPersonCountParam));
-		drilldown.setPrevalenceByMonth(this.getDrillDownResults("sqlPrevalenceByMonth", "conditionera", id, conditionId, 
-				minCovariatePersonCountParam, minIntervalPersonCountParam));
-
+		
+		// age at first diagnosis
+		List<ConceptQuartileRecord> ageAtFirst = null;
+		String ageAtFirstSql = this.renderDrillDownCohortSql("sqlAgeAtFirstDiagnosis", "conditionera", id, 
+				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (ageAtFirstSql != null) {
+			ageAtFirst = getJdbcTemplate().query(ageAtFirstSql, new ConceptQuartileMapper());
+		}
+		drilldown.setAgeAtFirstDiagnosis(ageAtFirst);		
+				
+		// length of era
+		List<ConceptQuartileRecord> lengthOfEra = null;
+		String lengthOfEraSql = this.renderDrillDownCohortSql("sqlLengthOfEra", "conditionera", id, 
+				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (lengthOfEraSql != null) {
+			lengthOfEra = getJdbcTemplate().query(lengthOfEraSql, new ConceptQuartileMapper());
+		}
+		drilldown.setLengthOfEra(lengthOfEra);
+		
+		// prevalence by gender age year
+		List<ConceptDecileRecord> prevalenceByGenderAgeYear = null;
+		String prevalenceByGenderAgeYearSql = this.renderDrillDownCohortSql("sqlPrevalenceByGenderAgeYear", "conditionera", id, 
+				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (prevalenceByGenderAgeYearSql != null) {
+			prevalenceByGenderAgeYear = getJdbcTemplate().query(prevalenceByGenderAgeYearSql, new ConceptDecileMapper());
+		}
+		drilldown.setPrevalenceByGenderAgeYear(prevalenceByGenderAgeYear);
+		
+		// prevalence by month
+		List<PrevalenceRecord> prevalenceByMonth = null;
+		String prevalenceByMonthSql = this.renderDrillDownCohortSql("sqlPrevalenceByMonth", "conditionera", id, 
+				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (prevalenceByMonthSql != null) {
+			prevalenceByMonth = getJdbcTemplate().query(prevalenceByMonthSql, new PrevalanceMapper());
+		}
+		drilldown.setPrevalenceByMonth(prevalenceByMonth);
 
 		return drilldown;
 
+	}
+	
+	/**
+	 * Queries for drug analysis condition treemap results for the given cohort definition id
+	 * 
+	 * @param id cohort_defintion id
+	 * @return ConditionDrilldown
+	 */
+	@GET
+	@Path("/{id}/drug/")
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<HierarchicalConceptRecord> getDrugTreemap(@PathParam("id") final int id, 
+			@QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam, 
+			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam) {
+		
+		
+		List<HierarchicalConceptRecord> res = null;
+		String sql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/drug/sqlDrugTreemap.sql", 
+				id, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (sql != null) {
+			res = getJdbcTemplate().query(sql, new HierarchicalConceptMapper());
+		}
+		
+		return res;
 	}
 
 	/**
@@ -170,24 +329,75 @@ public class CohortResultsService extends AbstractDaoService {
 			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam) {
 		CohortDrugDrilldown drilldown = new CohortDrugDrilldown();
 
-		drilldown.setAgeAtFirstExposure(this.getDrillDownResults("sqlAgeAtFirstExposure", "drug", id, conditionId, 
-				minCovariatePersonCountParam, minIntervalPersonCountParam));
-		drilldown.setDaysSupplyDistribution(this.getDrillDownResults("sqlDaysSupplyDistribution", "drug", id, conditionId, 
-				minCovariatePersonCountParam, minIntervalPersonCountParam));
-		drilldown.setDrugsByType(this.getDrillDownResults("sqlDrugsByType", "drug", id, conditionId, 
-				minCovariatePersonCountParam, minIntervalPersonCountParam));
-		drilldown.setPrevalenceByGenderAgeYear(this.getDrillDownResults("sqlPrevalenceByGenderAgeYear", "drug", id, conditionId, 
-				minCovariatePersonCountParam, minIntervalPersonCountParam));
-		drilldown.setPrevalenceByMonth(this.getDrillDownResults("sqlPrevalenceByMonth", "drug", id, conditionId, 
-				minCovariatePersonCountParam, minIntervalPersonCountParam));
-		drilldown.setQuantityDistribution(this.getDrillDownResults("sqlQuantityDistribution", "drug", id, conditionId, 
-				minCovariatePersonCountParam, minIntervalPersonCountParam));
-		drilldown.setRefillsDistribution(this.getDrillDownResults("sqlRefillsDistribution", "drug", id, conditionId, 
-				minCovariatePersonCountParam, minIntervalPersonCountParam));
-
+		String ageAtFirstExposureSql = this.renderDrillDownCohortSql("sqlAgeAtFirstExposure", "drug", id, 
+				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (ageAtFirstExposureSql != null) {
+			drilldown.setAgeAtFirstExposure(this.getJdbcTemplate().query(ageAtFirstExposureSql, new ConceptQuartileMapper()));
+		}
+		
+		String daysSupplySql = this.renderDrillDownCohortSql("sqlDaysSupplyDistribution", "drug", id, 
+				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (daysSupplySql != null) {
+			drilldown.setDaysSupplyDistribution(this.getJdbcTemplate().query(daysSupplySql, new ConceptQuartileMapper()));
+		}
+		
+		String drugsByTypeSql = this.renderDrillDownCohortSql("sqlDrugsByType", "drug", id, 
+				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (drugsByTypeSql != null) {
+			drilldown.setDrugsByType(this.getJdbcTemplate().query(drugsByTypeSql, new ConceptCountMapper()));
+		}
+		
+		String prevalenceByGenderAgeYearSql = this.renderDrillDownCohortSql("sqlPrevalenceByGenderAgeYear", "drug", id, 
+				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (prevalenceByGenderAgeYearSql != null) {
+			drilldown.setPrevalenceByGenderAgeYear(this.getJdbcTemplate().query(prevalenceByGenderAgeYearSql, 
+					new ConceptDecileMapper()));
+		}
+		
+		String prevalenceByMonthSql = this.renderDrillDownCohortSql("sqlPrevalenceByMonth", "drug", id, 
+				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (prevalenceByMonthSql != null) {
+			drilldown.setPrevalenceByMonth(this.getJdbcTemplate().query(prevalenceByMonthSql, new PrevalanceMapper()));
+		}
+		
+		String quantityDistributionSql = this.renderDrillDownCohortSql("sqlQuantityDistribution", "drug", id, 
+				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (quantityDistributionSql != null) {
+			drilldown.setQuantityDistribution(this.getJdbcTemplate().query(quantityDistributionSql, new ConceptQuartileMapper()));
+		}
+		
+		String refillsDistributionSql = this.renderDrillDownCohortSql("sqlRefillsDistribution", "drug", id, 
+				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (refillsDistributionSql != null) {
+			drilldown.setRefillsDistribution(this.getJdbcTemplate().query(refillsDistributionSql, new ConceptQuartileMapper()));
+		}
 
 		return drilldown;
 
+	}
+	
+	/**
+	 * Queries for cohort analysis drug era treemap results for the given cohort definition id
+	 * 
+	 * @param id cohort_defintion id
+	 * @return ConditionDrilldown
+	 */
+	@GET
+	@Path("/{id}/drugera/")
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<HierarchicalConceptRecord> getDrugEraTreemap(@PathParam("id") final int id, 
+			@QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam, 
+			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam) {
+		
+		
+		List<HierarchicalConceptRecord> res = null;
+		String sql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/drugera/sqlDrugEraTreemap.sql", 
+				id, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (sql != null) {
+			res = getJdbcTemplate().query(sql, new HierarchicalConceptEraMapper());
+		}
+		
+		return res;
 	}
 
 	/**
@@ -205,18 +415,47 @@ public class CohortResultsService extends AbstractDaoService {
 			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam) {
 		CohortDrugEraDrilldown drilldown = new CohortDrugEraDrilldown();
 
-		drilldown.setAgeAtFirstExposure(this.getDrillDownResults("sqlAgeAtFirstExposure", "drugera", id, conditionId, 
-				minCovariatePersonCountParam, minIntervalPersonCountParam));
-		drilldown.setLengthOfEra(this.getDrillDownResults("sqlLengthOfEra", "drugera", id, conditionId, 
-				minCovariatePersonCountParam, minIntervalPersonCountParam));
-		drilldown.setPrevalenceByGenderAgeYear(this.getDrillDownResults("sqlPrevalenceByGenderAgeYear", "drugera", id, conditionId, 
-				minCovariatePersonCountParam, minIntervalPersonCountParam));
-		drilldown.setPrevalenceByMonth(this.getDrillDownResults("sqlPrevalenceByMonth", "drugera", id, conditionId, 
-				minCovariatePersonCountParam, minIntervalPersonCountParam));
+		// age at first exposure
+		List<ConceptQuartileRecord> ageAtFirstExposure = null;
+		String ageAtFirstExposureSql = this.renderDrillDownCohortSql("sqlAgeAtFirstExposure", "drugera", id, 
+				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (ageAtFirstExposureSql != null) {
+			ageAtFirstExposure = getJdbcTemplate().query(ageAtFirstExposureSql, new ConceptQuartileMapper());
+		}
+		drilldown.setAgeAtFirstExposure(ageAtFirstExposure);		
+				
+		// length of era
+		List<ConceptQuartileRecord> lengthOfEra = null;
+		String lengthOfEraSql = this.renderDrillDownCohortSql("sqlLengthOfEra", "drugera", id, 
+				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (lengthOfEraSql != null) {
+			lengthOfEra = getJdbcTemplate().query(lengthOfEraSql, new ConceptQuartileMapper());
+		}
+		drilldown.setLengthOfEra(lengthOfEra);
+		
+		// prevalence by gender age year
+		List<ConceptDecileRecord> prevalenceByGenderAgeYear = null;
+		String prevalenceByGenderAgeYearSql = this.renderDrillDownCohortSql("sqlPrevalenceByGenderAgeYear", "drugera", id, 
+				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (prevalenceByGenderAgeYearSql != null) {
+			prevalenceByGenderAgeYear = getJdbcTemplate().query(prevalenceByGenderAgeYearSql, new ConceptDecileMapper());
+		}
+		drilldown.setPrevalenceByGenderAgeYear(prevalenceByGenderAgeYear);
+		
+		// prevalence by month
+		List<PrevalenceRecord> prevalenceByMonth = null;
+		String prevalenceByMonthSql = this.renderDrillDownCohortSql("sqlPrevalenceByMonth", "drugera", id, 
+				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (prevalenceByMonthSql != null) {
+			prevalenceByMonth = getJdbcTemplate().query(prevalenceByMonthSql, new PrevalanceMapper());
+		}
+		drilldown.setPrevalenceByMonth(prevalenceByMonth);
 
 		return drilldown;
 
 	}
+	
+	// HELPER methods
 
 	/**
 	 * Retrieves concept specific drilldown results
@@ -233,25 +472,7 @@ public class CohortResultsService extends AbstractDaoService {
 			final String minCovariatePersonCountParam, final String minIntervalPersonCountParam) {
 		List<Map<String, String>> results = null;
 
-		String sql = null;
-
-		try {
-			sql = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/" + analysisType + "/byConcept/" + analysisName + ".sql");
-
-			sql = SqlRender.renderSql(sql, new String[] { "cdmSchema", 
-					"resultsSchema", "cohortDefinitionId",
-					"minCovariatePersonCount", "minIntervalPersonCount", "conceptId"},
-					new String[] { this.getCdmSchema(),
-					this.getOhdsiSchema(), String.valueOf(id),
-					minCovariatePersonCountParam == null ? MIN_COVARIATE_PERSON_COUNT :
-						minCovariatePersonCountParam, 
-						minIntervalPersonCountParam == null ? MIN_INTERVAL_PERSON_COUNT :
-							minIntervalPersonCountParam,
-							String.valueOf(conceptId)});
-			sql = SqlTranslate.translateSql(sql, getSourceDialect(), getDialect());
-		} catch (Exception e) {
-			log.error(String.format("Unable to translate sql for analysis %s", analysisName), e);
-		}
+		String sql = renderDrillDownCohortSql(analysisName, analysisType, id, conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam);
 
 		if (sql != null) {
 			results = genericResultSetLoader(sql);
@@ -259,4 +480,69 @@ public class CohortResultsService extends AbstractDaoService {
 
 		return results;
 	}
+	
+	/**
+	 * Renders and Translates drilldown SQL by concept
+	 * 
+	 * @param analysisName
+	 * @param analysisType
+	 * @param id
+	 * @param conceptId
+	 * @param minCovariatePersonCountParam
+	 * @param minIntervalPersonCountParam
+	 * @return
+	 */
+	private String renderDrillDownCohortSql(String analysisName, String analysisType, int id, int conceptId,
+			final String minCovariatePersonCountParam, final String minIntervalPersonCountParam) {
+		return renderTranslateCohortSql(BASE_SQL_PATH + "/" + analysisType + "/byConcept/" + analysisName + ".sql",
+				id, conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+	}
+	
+	/**
+	 * Passes in common params for cohort results, and performs SQL translate/render
+	 */
+	private String renderTranslateCohortSql(String sqlPath, Integer id, 
+			final String minCovariatePersonCountParam, final String minIntervalPersonCountParam) {
+		return renderTranslateCohortSql(sqlPath, id, null, minCovariatePersonCountParam, minIntervalPersonCountParam);
+	}
+	
+	/**
+	 * Passes in common params for cohort results, and performs SQL translate/render
+	 */
+	private String renderTranslateCohortSql(String sqlPath, Integer id, Integer conceptId,
+			final String minCovariatePersonCountParam, final String minIntervalPersonCountParam) {
+		String sql = null;
+
+		try {
+			String[] cols;
+			String[] colValues;
+			if (conceptId != null) {
+				cols = DRILLDOWN_COLUMNS;
+				colValues = new String[] { this.getCdmSchema(),
+						this.getOhdsiSchema(), String.valueOf(id),
+						minCovariatePersonCountParam == null ? MIN_COVARIATE_PERSON_COUNT :
+							minCovariatePersonCountParam, 
+							minIntervalPersonCountParam == null ? MIN_INTERVAL_PERSON_COUNT :
+								minIntervalPersonCountParam,
+								String.valueOf(conceptId)};
+			} else {
+				cols = STANDARD_COLUMNS;
+				colValues = new String[] { this.getCdmSchema(),
+						this.getOhdsiSchema(), String.valueOf(id),
+						minCovariatePersonCountParam == null ? MIN_COVARIATE_PERSON_COUNT :
+							minCovariatePersonCountParam, 
+							minIntervalPersonCountParam == null ? MIN_INTERVAL_PERSON_COUNT :
+								minIntervalPersonCountParam};
+			}
+			
+			sql = ResourceHelper.GetResourceAsString(sqlPath);
+			sql = SqlRender.renderSql(sql, cols, colValues);
+			sql = SqlTranslate.translateSql(sql, getSourceDialect(), getDialect());
+		} catch (Exception e) {
+			log.error(String.format("Unable to translate sql for  %s", sql), e);
+		}
+		
+		return sql;
+	}
 }
+;   

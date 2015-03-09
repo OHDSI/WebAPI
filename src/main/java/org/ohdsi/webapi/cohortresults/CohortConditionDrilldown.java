@@ -1,49 +1,48 @@
 package org.ohdsi.webapi.cohortresults;
 
 import java.util.List;
-import java.util.Map;
 
 public class CohortConditionDrilldown {
-	private List<Map<String, String>> ageAtFirstDiagnosis;
+	private List<ConceptQuartileRecord> ageAtFirstDiagnosis;
 	
-	private List<Map<String, String>> conditionsByType;
+	private List<ConceptCountRecord> conditionsByType;
 	
-	private List<Map<String, String>> prevalenceByGenderAgeYear;
+	private List<ConceptDecileRecord> prevalenceByGenderAgeYear;
 	
-	private List<Map<String, String>> prevalenceByMonth;
+	private List<PrevalenceRecord> prevalenceByMonth;
 
 	/**
 	 * @return the ageAtFirstDiagnosis
 	 */
-	public List<Map<String, String>> getAgeAtFirstDiagnosis() {
+	public List<ConceptQuartileRecord> getAgeAtFirstDiagnosis() {
 		return ageAtFirstDiagnosis;
 	}
 
 	/**
 	 * @param ageAtFirstDiagnosis the ageAtFirstDiagnosis to set
 	 */
-	public void setAgeAtFirstDiagnosis(List<Map<String, String>> ageAtFirstDiagnosis) {
+	public void setAgeAtFirstDiagnosis(List<ConceptQuartileRecord> ageAtFirstDiagnosis) {
 		this.ageAtFirstDiagnosis = ageAtFirstDiagnosis;
 	}
 
 	/**
 	 * @return the conditionsByType
 	 */
-	public List<Map<String, String>> getConditionsByType() {
+	public List<ConceptCountRecord> getConditionsByType() {
 		return conditionsByType;
 	}
 
 	/**
 	 * @param conditionsByType the conditionsByType to set
 	 */
-	public void setConditionsByType(List<Map<String, String>> conditionsByType) {
+	public void setConditionsByType(List<ConceptCountRecord> conditionsByType) {
 		this.conditionsByType = conditionsByType;
 	}
 
 	/**
 	 * @return the prevalenceByGenderAgeYear
 	 */
-	public List<Map<String, String>> getPrevalenceByGenderAgeYear() {
+	public List<ConceptDecileRecord> getPrevalenceByGenderAgeYear() {
 		return prevalenceByGenderAgeYear;
 	}
 
@@ -51,21 +50,21 @@ public class CohortConditionDrilldown {
 	 * @param prevalenceByGenderAgeYear the prevalenceByGenderAgeYear to set
 	 */
 	public void setPrevalenceByGenderAgeYear(
-			List<Map<String, String>> prevalenceByGenderAgeYear) {
+			List<ConceptDecileRecord> prevalenceByGenderAgeYear) {
 		this.prevalenceByGenderAgeYear = prevalenceByGenderAgeYear;
 	}
 
 	/**
 	 * @return the prevalenceByMonth
 	 */
-	public List<Map<String, String>> getPrevalenceByMonth() {
+	public List<PrevalenceRecord> getPrevalenceByMonth() {
 		return prevalenceByMonth;
 	}
 
 	/**
 	 * @param prevalenceByMonth the prevalenceByMonth to set
 	 */
-	public void setPrevalenceByMonth(List<Map<String, String>> prevalenceByMonth) {
+	public void setPrevalenceByMonth(List<PrevalenceRecord> prevalenceByMonth) {
 		this.prevalenceByMonth = prevalenceByMonth;
 	}
 }

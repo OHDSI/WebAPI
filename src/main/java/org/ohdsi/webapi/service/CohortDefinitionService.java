@@ -28,6 +28,7 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.cohortdefinition.CohortExpressionQueryBuilder;
+import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfo;
 import org.ohdsi.webapi.cohortdefinition.ExpressionType;
 import org.ohdsi.webapi.cohortdefinition.GenerateCohortTask;
 import org.ohdsi.webapi.cohortdefinition.GenerateCohortTasklet;
@@ -211,7 +212,7 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Path("/{id}")
   @Produces(MediaType.APPLICATION_JSON)
   public CohortDefinitionDTO getCohortDefinition(@PathParam("id") final int id) {
-    CohortDefinition d = this.cohortDefinitionRepository.findById(id);
+    CohortDefinition d = this.cohortDefinitionRepository.findOneWithDetail(id);
     return cohortDefinitionToDTO(d);
   }
   
@@ -227,7 +228,7 @@ public class CohortDefinitionService extends AbstractDaoService {
   public CohortDefinitionDTO saveCohortDefinition(@PathParam("id") final int id, CohortDefinitionDTO def) {
     Date currentTime = Calendar.getInstance().getTime();
 
-    CohortDefinition currentDefinition = this.cohortDefinitionRepository.findById(id);
+    CohortDefinition currentDefinition = this.cohortDefinitionRepository.findOneWithDetail(id);
     
     currentDefinition.setName(def.name)
             .setDescription(def.description)
@@ -249,11 +250,10 @@ public class CohortDefinitionService extends AbstractDaoService {
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
     @Path("/{id}/generate")    
     public JobExecutionResource generateCohort(@PathParam("id") final int id) {
 
-      CohortDefinition currentDefinition = this.cohortDefinitionRepository.findById(id);
+      CohortDefinition currentDefinition = this.cohortDefinitionRepository.findOneWithDetail(id);
       
       JobParametersBuilder builder = new JobParametersBuilder();
       builder.addString("cohort_definition_id", ("" + id));
@@ -273,9 +273,24 @@ public class CohortDefinitionService extends AbstractDaoService {
               .setSourceDialect(this.getSourceDialect())
               .setTargetDialect(this.getDialect());
       
-      GenerateCohortTasklet tasklet = new GenerateCohortTasklet(task, getJdbcTemplate(), getTransactionTemplate());
+      GenerateCohortTasklet tasklet = new GenerateCohortTasklet(task, getJdbcTemplate(), getTransactionTemplate(), cohortDefinitionRepository);
 
       return this.jobTemplate.launchTasklet("generateCohortJob", "generateCohortStep", tasklet, jobParameters);
     }
+    
+    /**
+     * Queues up a generate cohort task for the specified cohort definition id.
+     * 
+     * @param id - the Cohort Definition ID to generate
+     * @return information about the Cohort Analysis Job
+     * @throws Exception
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/info")    
+    public CohortGenerationInfo getInfo(@PathParam("id") final int id) {
+      CohortDefinition def = this.cohortDefinitionRepository.findOne(id);
+      return def.getGenerationInfo();
+    }    
   
 }

@@ -21,13 +21,15 @@ import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.MapsId;
 import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import org.hibernate.annotations.Type;
 
 /**
  *
  * Stores the LOB/CLOB portion of the cohort definition expression.
  */
-@Entity(name = "cohort_definition_details")
+@Entity(name = "CohortDefinitionDetails")
+@Table(name="cohort_definition_details")
 public class CohortDefinitionDetails implements Serializable {
 
   private static final long serialVersionUID = 1L;

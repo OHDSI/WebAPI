@@ -47,7 +47,7 @@ public class CohortResultsService extends AbstractDaoService {
 	private static final String MIN_COVARIATE_PERSON_COUNT = "500";
 	private static final String MIN_INTERVAL_PERSON_COUNT = "1000";
 	
-	private static final String BASE_SQL_PATH = "/resources/cohortresults/sql";
+	public static final String BASE_SQL_PATH = "/resources/cohortresults/sql";
 	
 	private static final String[] STANDARD_COLUMNS = new String[] { "cdmSchema", 
 		"resultsSchema", "cohortDefinitionId",
@@ -107,7 +107,7 @@ public class CohortResultsService extends AbstractDaoService {
 	@GET
 	@Path("/{id}/dashboard")
 	@Produces(MediaType.APPLICATION_JSON)
-	public CohortDashboard getConditionResults(@PathParam("id") final int id, 
+	public CohortDashboard getDashboard(@PathParam("id") final int id, 
 			@QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam, 
 			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam) {
 		CohortDashboard dashboard = new CohortDashboard();
@@ -455,32 +455,7 @@ public class CohortResultsService extends AbstractDaoService {
 
 	}
 	
-	// HELPER methods
-
-	/**
-	 * Retrieves concept specific drilldown results
-	 * 
-	 * @param analysisName
-	 * @param analysisType
-	 * @param id
-	 * @param conceptId
-	 * @param minCovariatePersonCountParam
-	 * @param minIntervalPersonCountParam
-	 * @return
-	 */
-	private List<Map<String, String>> getDrillDownResults(String analysisName, String analysisType, int id, int conceptId,
-			final String minCovariatePersonCountParam, final String minIntervalPersonCountParam) {
-		List<Map<String, String>> results = null;
-
-		String sql = renderDrillDownCohortSql(analysisName, analysisType, id, conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam);
-
-		if (sql != null) {
-			results = genericResultSetLoader(sql);
-		}
-
-		return results;
-	}
-	
+	// HELPER methods	
 	/**
 	 * Renders and Translates drilldown SQL by concept
 	 * 

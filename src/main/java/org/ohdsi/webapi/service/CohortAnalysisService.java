@@ -22,6 +22,7 @@ import org.ohdsi.webapi.cohortanalysis.CohortAnalysis;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTask;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTasklet;
 import org.ohdsi.webapi.cohortanalysis.CohortSummary;
+import org.ohdsi.webapi.cohortresults.CohortDashboard;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
@@ -152,12 +153,12 @@ public class CohortAnalysisService extends AbstractDaoService {
         }
         
         // TODO mean obs period
-        
-        // gender distribution
-        summary.setGenderDistribution(this.resultsService.getCohortResultsRaw(id,"person", "gender", null, null));
-        
-        // age distribution
-        summary.setAgeDistribution(this.resultsService.getCohortResultsRaw(id, "observationperiod", "ageatfirst", null, null));
+
+        CohortDashboard dashboard = this.resultsService.getDashboard(id, null, null);
+        if (dashboard != null) {
+        	summary.setGenderDistribution(dashboard.getGender());
+        	summary.setAgeDistribution(dashboard.getAgeAtFirstObservation());
+        }
         
         return summary;
     }

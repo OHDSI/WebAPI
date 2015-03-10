@@ -32,6 +32,7 @@ import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfo;
 import org.ohdsi.webapi.cohortdefinition.ExpressionType;
 import org.ohdsi.webapi.cohortdefinition.GenerateCohortTask;
 import org.ohdsi.webapi.cohortdefinition.GenerateCohortTasklet;
+import org.ohdsi.webapi.cohortdefinition.GenerationStatus;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.springframework.batch.core.JobParameters;
@@ -254,7 +255,17 @@ public class CohortDefinitionService extends AbstractDaoService {
     public JobExecutionResource generateCohort(@PathParam("id") final int id) {
 
       CohortDefinition currentDefinition = this.cohortDefinitionRepository.findOneWithDetail(id);
-      
+      CohortGenerationInfo info = currentDefinition.getGenerationInfo();
+      if (info == null)
+      {
+        info = new CohortGenerationInfo().setCohortDefinition(currentDefinition);
+        currentDefinition.setGenerationInfo(info);
+      }
+      info.setStatus(GenerationStatus.PENDING)
+        .setStartTime(Calendar.getInstance().getTime());
+
+      this.cohortDefinitionRepository.save(currentDefinition);
+    
       JobParametersBuilder builder = new JobParametersBuilder();
       builder.addString("cohort_definition_id", ("" + id));
       final JobParameters jobParameters = builder.toJobParameters();

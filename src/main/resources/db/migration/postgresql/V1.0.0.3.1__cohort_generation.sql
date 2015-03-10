@@ -1,8 +1,8 @@
-ALTER TABLE dbo.cohort_definition_details
+ALTER TABLE cohort_definition_details
   DROP CONSTRAINT FK_cohort_definition_details_cohort_definition
 ;
 
-ALTER TABLE dbo.cohort_definition_details 
+ALTER TABLE cohort_definition_details 
   ADD CONSTRAINT FK_cohort_definition_details_cohort_definition 
     FOREIGN KEY (id) 
     REFERENCES dbo.cohort_definition (id)

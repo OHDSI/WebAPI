@@ -27,6 +27,11 @@ import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.transaction.TransactionException;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallback;
 
 /**
  *
@@ -94,7 +99,31 @@ public class ExampleApplicationWithJobService extends AbstractDaoService {
     @Path("widget")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+    //Wrapping in transaction (e.g. TransactionTemplate) not necessary as SimpleJpaRepository.save is annotated with @Transactional.
     public Widget createWidget(Widget w) {
         return this.widgetRepository.save(w);
+    }
+    
+    @POST
+    @Path("widget2")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    //@Transactional do not work with JAX-RS default config. Review caveots with @Transactional usage (proxy requirements). 
+    //Note that SimpleJpaRepository.save is annotated with @Transactional and will use default (e.g. Propagations.REQUIRES). Illustration of deviating from default propagation.
+    public Widget createWidgetWith(final Widget w) {
+        try {
+            final Widget ret = getTransactionTemplateRequiresNew().execute(new TransactionCallback<Widget>() {
+                
+                @Override
+                public Widget doInTransaction(final TransactionStatus status) {
+                    return widgetRepository.save(w);
+                }
+            });
+            return ret;
+        } catch (final TransactionException e) {
+            log.error(e.getMessage(), e);
+            throw e;
+        }
+        
     }
 }

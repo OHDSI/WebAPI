@@ -11,7 +11,12 @@
 	<logger name="org.ohdsi">
 		<level value="debug" />
 	</logger>
-
+	<logger name="org.springframework.orm">
+		<level value="debug" />
+	</logger>
+	<logger name="org.springframework.jdbc">
+		<level value="debug" />
+	</logger>
 	<root>
 		<level value="info" />
 		<appender-ref ref="stdout" />

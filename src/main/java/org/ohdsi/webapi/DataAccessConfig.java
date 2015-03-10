@@ -14,6 +14,7 @@ import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -88,6 +89,14 @@ public class DataAccessConfig {
     public TransactionTemplate transactionTemplate(PlatformTransactionManager transactionManager) {
         TransactionTemplate transactionTemplate = new TransactionTemplate();
         transactionTemplate.setTransactionManager(transactionManager);
+        return transactionTemplate;
+    }
+    
+    @Bean
+    public TransactionTemplate transactionTemplateRequiresNew(PlatformTransactionManager transactionManager) {
+        TransactionTemplate transactionTemplate = new TransactionTemplate();
+        transactionTemplate.setTransactionManager(transactionManager);
+        transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         return transactionTemplate;
     }
 }

@@ -50,6 +50,9 @@ public abstract class AbstractDaoService {
     @Autowired
     private TransactionTemplate transactionTemplate;
     
+    @Autowired
+    private TransactionTemplate transactionTemplateRequiresNew;
+    
     /**
      * if cdmDatabase is provided, return cdmDatabase.cdmSchema, else return cdmSchema.
      * @return the cdmSchema
@@ -177,6 +180,22 @@ public abstract class AbstractDaoService {
      */
     public TransactionTemplate getTransactionTemplate() {
         return transactionTemplate;
+    }
+
+    
+    /**
+     * @return the transactionTemplateRequiresNew
+     */
+    public TransactionTemplate getTransactionTemplateRequiresNew() {
+        return transactionTemplateRequiresNew;
+    }
+
+    
+    /**
+     * @param transactionTemplateRequiresNew the transactionTemplateRequiresNew to set
+     */
+    public void setTransactionTemplateRequiresNew(TransactionTemplate transactionTemplateRequiresNew) {
+        this.transactionTemplateRequiresNew = transactionTemplateRequiresNew;
     }
 }
  

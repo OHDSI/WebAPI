@@ -29,12 +29,14 @@ import javax.persistence.NamedAttributeNode;
 import javax.persistence.NamedEntityGraph;
 import javax.persistence.NamedSubgraph;
 import javax.persistence.OneToOne;
+import javax.persistence.Table;
 
 /**
  * JPA Entity for Cohort Definitions
  * @author cknoll1
  */
-@Entity(name = "cohort_definition")
+@Entity(name = "CohortDefinition")
+@Table(name="cohort_definition")
 @NamedEntityGraph(
     name = "CohortDefinition.withDetail",
     attributeNodes = { @NamedAttributeNode(value = "details", subgraph = "detailsGraph") },
@@ -59,7 +61,11 @@ public class CohortDefinition implements Serializable{
   @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional=false, orphanRemoval = true)
   @JoinColumn(name="id")
   CohortDefinitionDetails details;
-    
+
+  @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional=true, orphanRemoval = true)
+  @JoinColumn(name="id")
+  CohortGenerationInfo generationInfo;
+  
   @Column(name="created_by")
   private String createdBy;
   
@@ -107,15 +113,6 @@ public class CohortDefinition implements Serializable{
     return this;
   }
   
-  public CohortDefinitionDetails getDetails() {
-    return this.details;
-  }
-
-  public CohortDefinition setDetails(CohortDefinitionDetails details) {
-    this.details = details;
-    return this;
-  }
-
   public String getCreatedBy() {
     return createdBy;
   }
@@ -149,6 +146,24 @@ public class CohortDefinition implements Serializable{
 
   public CohortDefinition setModifiedDate(Date modifiedDate) {
     this.modifiedDate = modifiedDate;
+    return this;
+  }
+  
+  public CohortDefinitionDetails getDetails() {
+    return this.details;
+  }
+
+  public CohortDefinition setDetails(CohortDefinitionDetails details) {
+    this.details = details;
+    return this;
+  }
+
+  public CohortGenerationInfo getGenerationInfo() {
+    return this.generationInfo;
+  }
+  
+  public CohortDefinition setGenerationInfo(CohortGenerationInfo info) {
+    this.generationInfo = info;
     return this;
   }
 }

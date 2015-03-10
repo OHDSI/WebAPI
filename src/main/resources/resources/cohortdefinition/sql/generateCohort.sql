@@ -1,8 +1,8 @@
 @codesetQuery
 @primaryEventsQuery
 
-DELETE FROM @targetSchema.@targetTable where cohort_definition_id = @cohortDefinitionId;
-INSERT INTO @targetSchema.@targetTable (cohort_definition_id, subject_id, cohort_start_date, cohort_end_date)
+DELETE FROM @targetTable where cohort_definition_id = @cohortDefinitionId;
+INSERT INTO @targetTable (cohort_definition_id, subject_id, cohort_start_date, cohort_end_date)
 select @cohortDefinitionId as cohort_definition_id, person_id as subject_id, start_date as cohort_start_date, end_date as cohort_end_date
 FROM 
 (

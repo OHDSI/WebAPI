@@ -154,7 +154,7 @@ public class CohortAnalysisService extends AbstractDaoService {
         
         // TODO mean obs period
 
-        CohortDashboard dashboard = this.resultsService.getDashboard(id, null, null);
+        CohortDashboard dashboard = this.resultsService.getDashboard(id, null, null, true);
         if (dashboard != null) {
         	summary.setGenderDistribution(dashboard.getGender());
         	summary.setAgeDistribution(dashboard.getAgeAtFirstObservation());

@@ -17,11 +17,13 @@ import org.ohdsi.webapi.cohortresults.CohortConditionEraDrilldown;
 import org.ohdsi.webapi.cohortresults.CohortDashboard;
 import org.ohdsi.webapi.cohortresults.CohortDrugDrilldown;
 import org.ohdsi.webapi.cohortresults.CohortDrugEraDrilldown;
+import org.ohdsi.webapi.cohortresults.CohortPersonSummary;
 import org.ohdsi.webapi.cohortresults.ConceptCountRecord;
 import org.ohdsi.webapi.cohortresults.ConceptDecileRecord;
 import org.ohdsi.webapi.cohortresults.ConceptQuartileRecord;
 import org.ohdsi.webapi.cohortresults.HierarchicalConceptRecord;
 import org.ohdsi.webapi.cohortresults.PrevalenceRecord;
+import org.ohdsi.webapi.cohortresults.mapper.CohortStatsMapper;
 import org.ohdsi.webapi.cohortresults.mapper.ConceptConditionCountMapper;
 import org.ohdsi.webapi.cohortresults.mapper.ConceptCountMapper;
 import org.ohdsi.webapi.cohortresults.mapper.ConceptDecileMapper;
@@ -102,6 +104,9 @@ public class CohortResultsService extends AbstractDaoService {
 	 * Queries for cohort analysis dashboard for the given cohort definition id
 	 * 
 	 * @param id cohort_defintion id
+	 * @param minCovariatePersonCountParam
+	 * @param minIntervalPersonCountParam
+	 * @param demographicsOnly only render gender and age
 	 * @return ConditionDrilldown
 	 */
 	@GET
@@ -109,27 +114,34 @@ public class CohortResultsService extends AbstractDaoService {
 	@Produces(MediaType.APPLICATION_JSON)
 	public CohortDashboard getDashboard(@PathParam("id") final int id, 
 			@QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam, 
-			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam) {
+			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
+			@QueryParam("demographics_only") final boolean demographicsOnly) {
 		CohortDashboard dashboard = new CohortDashboard();
 		
-		String ageAtFirstObsSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/ageatfirst.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		String ageAtFirstObsSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/ageatfirst.sql", id, 
+				minCovariatePersonCountParam, minIntervalPersonCountParam);
 		if (ageAtFirstObsSql != null) {
 			dashboard.setAgeAtFirstObservation(this.getJdbcTemplate().query(ageAtFirstObsSql, new ConceptDistributionMapper()));
 		}
-		
-		String cumulObsSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/cumulativeduration.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam);
-		if (cumulObsSql != null) {
-			dashboard.setCumulativeObservation(this.getJdbcTemplate().query(cumulObsSql, new CumulativeObservationMapper()));
-		}
-		
-		String genderSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/gender.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam);
+
+		String genderSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/gender.sql", id, minCovariatePersonCountParam, 
+				minIntervalPersonCountParam);
 		if (genderSql != null) {
 			dashboard.setGender(this.getJdbcTemplate().query(genderSql, new ConceptCountMapper()));
 		}
 		
-		String obsByMonthSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/observedbymonth.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam);
-		if (obsByMonthSql != null) {
-			dashboard.setObservedByMonth(this.getJdbcTemplate().query(obsByMonthSql, new MonthObservationMapper()));
+		if (!demographicsOnly) {
+			String cumulObsSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/cumulativeduration.sql", id, 
+					minCovariatePersonCountParam, minIntervalPersonCountParam);
+			if (cumulObsSql != null) {
+				dashboard.setCumulativeObservation(this.getJdbcTemplate().query(cumulObsSql, new CumulativeObservationMapper()));
+			}
+	
+			String obsByMonthSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/observedbymonth.sql", id, 
+					minCovariatePersonCountParam, minIntervalPersonCountParam);
+			if (obsByMonthSql != null) {
+				dashboard.setObservedByMonth(this.getJdbcTemplate().query(obsByMonthSql, new MonthObservationMapper()));
+			}
 		}
 
 		return dashboard;
@@ -453,6 +465,48 @@ public class CohortResultsService extends AbstractDaoService {
 
 		return drilldown;
 
+	}
+	
+	/**
+	 * Queries for cohort analysis person results for the given cohort definition id
+	 * 
+	 * @param id cohort_defintion id
+	 * @return CohortPersonSummary
+	 */
+	@GET
+	@Path("/{id}/person")
+	@Produces(MediaType.APPLICATION_JSON)
+	public CohortPersonSummary getDrugEraResults(@PathParam("id") final int id, 
+			@QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam, 
+			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam) {
+		CohortPersonSummary person = new CohortPersonSummary();
+		
+		String yobSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/yearofbirth_data.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (yobSql != null) {
+			person.setYearOfBirth(this.getJdbcTemplate().query(yobSql, new ConceptDistributionMapper()));
+		}
+		
+		String yobStatSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/yearofbirth_stats.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (yobStatSql != null) {
+			person.setYearOfBirthStats(this.getJdbcTemplate().query(yobStatSql, new CohortStatsMapper()));
+		}
+		
+		String genderSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/gender.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (genderSql != null) {
+			person.setGender(this.getJdbcTemplate().query(genderSql, new ConceptCountMapper()));
+		}
+		
+		String raceSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/race.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (raceSql != null) {
+			person.setRace(this.getJdbcTemplate().query(raceSql, new ConceptCountMapper()));
+		}
+		
+		String ethnicitySql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/ethnicity.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (ethnicitySql != null) {
+			person.setEthnicity(this.getJdbcTemplate().query(ethnicitySql, new ConceptCountMapper()));
+		}
+		
+		return person;
 	}
 	
 	// HELPER methods	

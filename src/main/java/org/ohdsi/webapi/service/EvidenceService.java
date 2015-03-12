@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -28,7 +29,7 @@ import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.evidence.DrugEvidence;
 import org.ohdsi.webapi.evidence.HoiEvidence;
 import org.ohdsi.webapi.evidence.DrugHoiEvidence;
-//import org.ohdsi.webapi.evidence.EvidenceInfo;
+import org.ohdsi.webapi.evidence.EvidenceInfo;
 
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
@@ -212,28 +213,37 @@ public class EvidenceService extends AbstractDaoService {
     }
 
 
-    //TODO
-    // @GET
-    // @Path("info")
-    // @Produces(MediaType.APPLICATION_JSON)
-    // public EvidenceInfo getInfo() {
-    //     final EvidenceInfo info = new EvidenceInfo();
-        
-    //     String sql_statement = ResourceHelper.GetResourceAsString("/resources/evidence/sql/getInfo.sql");
-    //     info.dialect = getDialect();
-        
-    //     sql_statement = SqlRender.renderSql(sql_statement, new String[] { "CDM_schema" }, new String[] { getCdmSchema() });
-    //     sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect());
-        
-    //     return getJdbcTemplate().queryForObject(sql_statement, new RowMapper<EvidenceInfo>() {
-            
-    //         @Override
-    //         public EvidenceInfo mapRow(final ResultSet resultSet, final int arg1) throws SQLException {
-    //             info.version = resultSet.getString("EVIDENCE_VERSION");
-    //             return info;
-    //         }
-    //     });
-    // }
+    @GET
+    @Path("info")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Collection<EvidenceInfo> getInfo() {      
+
+        String sql_statement = ResourceHelper.GetResourceAsString("/resources/evidence/sql/getInfo.sql");        
+        sql_statement = SqlRender.renderSql(sql_statement, new String[] { "CDM_schema" }, new String[] { getCdmSchema() });
+        sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect());  // TODO: why is 'sql server' string passed here?
+
+	final List<EvidenceInfo> infoOnSources = new ArrayList<EvidenceInfo>();
+	
+	//try {
+	List<Map<String, Object>> rows =  getJdbcTemplate().queryForList(sql_statement);
+        //} catch (EmptyResultDataAccessException e) {
+        //    log.debug(String.format("Request for conceptId=%s resulted in 0 results", id));
+        //    throw new WebApplicationException(Response.Status.RESET_CONTENT); // http 205
+        //}
+
+	for (Map rs : rows) {
+	    EvidenceInfo info = new EvidenceInfo();
+	    info.title = (String)rs.get("TITLE");
+	    info.description = (String)rs.get("DESCRIPTION");
+	    info.contributer = (String)rs.get("CONTRIBUTER");
+	    info.creator = (String)rs.get("CREATOR");
+	    info.creationDate = (Date)rs.get("CREATION_DATE");
+	    info.rights = (String)rs.get("RIGHTS");
+	    info.source = (String)rs.get("SOURCE");
+	    infoOnSources.add(info);
+	}
+	return infoOnSources;
+    }
     
 
 }

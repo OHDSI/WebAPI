@@ -26,7 +26,7 @@ import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.helper.ResourceHelper;
 
 import org.ohdsi.webapi.evidence.DrugEvidence;
-//import org.ohdsi.webapi.evidence.HoiEvidence;
+import org.ohdsi.webapi.evidence.HoiEvidence;
 //import org.ohdsi.webapi.evidence.DrugHoiEvidence;
 //import org.ohdsi.webapi.evidence.EvidenceInfo;
 
@@ -95,6 +95,63 @@ public class EvidenceService extends AbstractDaoService {
 	}
 	// TODO: return a total number of evidence items somehow
 	return drugEvidences;
+    }
+
+
+    /**
+     * @param id
+     * @return
+     */
+    @GET
+    @Path("hoi/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Collection<HoiEvidence> getHoiEvidence(@PathParam("id") final Long id) {
+        String sql_statement = ResourceHelper.GetResourceAsString("/resources/evidence/sql/getHoiEvidence.sql");
+        sql_statement = SqlRender.renderSql(sql_statement, new String[] { "id", "CDM_schema" }, 
+					    new String[] { String.valueOf(id), getCdmSchema()});
+	sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect()); // TODO: why is 'sql server' string passed here?
+
+        final List<HoiEvidence> hoiEvidences = new ArrayList<HoiEvidence>();
+
+	//try {
+	List<Map<String, Object>> rows =  getJdbcTemplate().queryForList(sql_statement);
+        //} catch (EmptyResultDataAccessException e) {
+        //    log.debug(String.format("Request for conceptId=%s resulted in 0 results", id));
+        //    throw new WebApplicationException(Response.Status.RESET_CONTENT); // http 205
+        //}
+
+	// count the number of evidence items with the same evidence type, modality, linkout, and hoi
+	int i = 0;
+	HashMap<String, Integer> hmHoiCount = new HashMap<String, Integer>();
+	for (Map rs : rows) {
+	    i++;
+	    String evi_type = (String)rs.get("EV_TYPE");
+	    String modality = String.valueOf((Boolean)rs.get("EV_MODALITY"));
+	    String linkout = (String)rs.get("EV_LINKOUT");
+	    String drug = String.valueOf((Integer)rs.get("EV_DRUG"));
+	    String hoiConcat = evi_type + "_-_" + modality + "_-_" +  linkout + "_-_" +  drug;
+	    if (hmHoiCount.containsKey(hoiConcat)) {
+		hmHoiCount.put(hoiConcat, hmHoiCount.get(hoiConcat) + 1);
+	    } else {
+		hmHoiCount.put(hoiConcat, 1);
+	    }
+	}
+	
+	// construct the return collection
+	Iterator<Map.Entry<String, Integer>> it = hmHoiCount.entrySet().iterator();
+	while (it.hasNext()) {
+	    Map.Entry<String, Integer> ent = it.next();
+	    String[] hoiConcat = ent.getKey().split("_-_");     
+	    HoiEvidence hoiEvidence = new HoiEvidence();
+	    hoiEvidence.evidence =  hoiConcat[0];
+	    hoiEvidence.modality = hoiConcat[1];
+	    hoiEvidence.linkout =  hoiConcat[2];
+	    hoiEvidence.drug = hoiConcat[3];
+	    hoiEvidence.count =  ent.getValue();
+	    hoiEvidences.add(hoiEvidence);
+	}
+	// TODO: return a total number of evidence items somehow
+	return hoiEvidences;
     }
 
 

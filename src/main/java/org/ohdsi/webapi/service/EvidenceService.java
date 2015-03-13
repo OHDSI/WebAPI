@@ -167,7 +167,7 @@ public class EvidenceService extends AbstractDaoService {
 	String drug_id = par[0];
 	String hoi_id = par[1];
         String sql_statement = ResourceHelper.GetResourceAsString("/resources/evidence/sql/getDrugHoiEvidence.sql");
-        sql_statement = SqlRender.renderSql(sql_statement, new String[] { "hoi_id", "drug_id", "CDM_schema" }, 
+        sql_statement = SqlRender.renderSql(sql_statement, new String[] { "drug_id", "hoi_id",  "CDM_schema" }, 
 					    new String[] {drug_id, hoi_id , getCdmSchema()});
 	sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect()); // TODO: why is 'sql server' string passed here?
 

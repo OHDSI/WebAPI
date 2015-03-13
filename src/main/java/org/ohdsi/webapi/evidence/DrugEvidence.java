@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.math.BigDecimal;
+
 /**
  *
  * @author rkboyce and m_rasteger
@@ -20,10 +22,15 @@ public class DrugEvidence {
     @JsonProperty("LINKOUT")
     public String linkout;
 
+    @JsonProperty("STATISTIC_TYPE")
+    public String statisticType;
+
     @JsonProperty("HOI")
     public String hoi;	
     
     @JsonProperty("COUNT")
     public Integer count;	
 
+    @JsonProperty("VALUE")
+    public BigDecimal value;
 }

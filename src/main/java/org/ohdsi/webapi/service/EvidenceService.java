@@ -11,6 +11,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import java.math.BigDecimal;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -64,37 +66,27 @@ public class EvidenceService extends AbstractDaoService {
         //    throw new WebApplicationException(Response.Status.RESET_CONTENT); // http 205
         //}
 
-	// count the number of evidence items with the same evidence type, modality, linkout, and hoi
-	int i = 0;
-	HashMap<String, Integer> hmHoiCount = new HashMap<String, Integer>();
 	for (Map rs : rows) {
-	    i++;
 	    String evi_type = (String)rs.get("EV_TYPE");
 	    String modality = String.valueOf((Boolean)rs.get("EV_MODALITY"));
 	    String linkout = (String)rs.get("EV_LINKOUT");
 	    String hoi = String.valueOf((Integer)rs.get("EV_HOI"));
-	    String hoiConcat = evi_type + "_-_" + modality + "_-_" +  linkout + "_-_" +  hoi;
-	    if (hmHoiCount.containsKey(hoiConcat)) {
-		hmHoiCount.put(hoiConcat, hmHoiCount.get(hoiConcat) + 1);
-	    } else {
-		hmHoiCount.put(hoiConcat, 1);
-	    }
-	}
-	
-	// construct the return collection
-	Iterator<Map.Entry<String, Integer>> it = hmHoiCount.entrySet().iterator();
-	while (it.hasNext()) {
-	    Map.Entry<String, Integer> ent = it.next();
-	    String[] hoiConcat = ent.getKey().split("_-_");     
-	    DrugEvidence drugEvidence = new DrugEvidence();
-	    drugEvidence.evidence =  hoiConcat[0];
-	    drugEvidence.modality = hoiConcat[1];
-	    drugEvidence.linkout =  hoiConcat[2];
-	    drugEvidence.hoi = hoiConcat[3];
-	    drugEvidence.count =  ent.getValue();
-	    drugEvidences.add(drugEvidence);
-	}
-	// TODO: return a total number of evidence items somehow
+	    String statType = (String)rs.get("EV_STAT_TYPE");
+	    BigDecimal statVal = (BigDecimal)rs.get("EV_STAT_VAL");
+	    
+	    DrugEvidence evidence = new DrugEvidence();
+	    evidence.evidence =  evi_type;
+	    evidence.modality = modality;
+	    evidence.linkout =  linkout;
+	    evidence.hoi = hoi;
+	    evidence.statisticType = statType;
+	    if (statType.equals("COUNT"))
+		evidence.count =  statVal.intValue();
+	    else
+		evidence.value = statVal;
+
+	    drugEvidences.add(evidence);
+	}	
 	return drugEvidences;
     }
 
@@ -121,37 +113,27 @@ public class EvidenceService extends AbstractDaoService {
         //    throw new WebApplicationException(Response.Status.RESET_CONTENT); // http 205
         //}
 
-	// count the number of evidence items with the same evidence type, modality, linkout, and hoi
-	int i = 0;
-	HashMap<String, Integer> hmHoiCount = new HashMap<String, Integer>();
 	for (Map rs : rows) {
-	    i++;
 	    String evi_type = (String)rs.get("EV_TYPE");
 	    String modality = String.valueOf((Boolean)rs.get("EV_MODALITY"));
 	    String linkout = (String)rs.get("EV_LINKOUT");
 	    String drug = String.valueOf((Integer)rs.get("EV_DRUG"));
-	    String hoiConcat = evi_type + "_-_" + modality + "_-_" +  linkout + "_-_" +  drug;
-	    if (hmHoiCount.containsKey(hoiConcat)) {
-		hmHoiCount.put(hoiConcat, hmHoiCount.get(hoiConcat) + 1);
-	    } else {
-		hmHoiCount.put(hoiConcat, 1);
-	    }
+	    String statType = (String)rs.get("EV_STAT_TYPE");
+	    BigDecimal statVal = (BigDecimal)rs.get("EV_STAT_VAL");
+	    
+	    HoiEvidence evidence = new HoiEvidence();
+	    evidence.evidence =  evi_type;
+	    evidence.modality = modality;
+	    evidence.linkout =  linkout;
+	    evidence.drug = drug;
+	    evidence.statisticType = statType;
+	    if (statType.equals("COUNT"))
+		evidence.count =  statVal.intValue();
+	    else
+		evidence.value = statVal;
+
+	    hoiEvidences.add(evidence);
 	}
-	
-	// construct the return collection
-	Iterator<Map.Entry<String, Integer>> it = hmHoiCount.entrySet().iterator();
-	while (it.hasNext()) {
-	    Map.Entry<String, Integer> ent = it.next();
-	    String[] hoiConcat = ent.getKey().split("_-_");     
-	    HoiEvidence hoiEvidence = new HoiEvidence();
-	    hoiEvidence.evidence =  hoiConcat[0];
-	    hoiEvidence.modality = hoiConcat[1];
-	    hoiEvidence.linkout =  hoiConcat[2];
-	    hoiEvidence.drug = hoiConcat[3];
-	    hoiEvidence.count =  ent.getValue();
-	    hoiEvidences.add(hoiEvidence);
-	}
-	// TODO: return a total number of evidence items somehow
 	return hoiEvidences;
     }
 
@@ -180,35 +162,25 @@ public class EvidenceService extends AbstractDaoService {
         //    throw new WebApplicationException(Response.Status.RESET_CONTENT); // http 205
         //}
 
-	// count the number of evidence items with the same evidence type, modality, linkout, and hoi
-	int i = 0;
-	HashMap<String, Integer> hmHoiCount = new HashMap<String, Integer>();
 	for (Map rs : rows) {
-	    i++;
 	    String evi_type = (String)rs.get("EV_TYPE");
 	    String modality = String.valueOf((Boolean)rs.get("EV_MODALITY"));
 	    String linkout = (String)rs.get("EV_LINKOUT");
-	    String hoiConcat = evi_type + "_-_" + modality + "_-_" +  linkout;
-	    if (hmHoiCount.containsKey(hoiConcat)) {
-		hmHoiCount.put(hoiConcat, hmHoiCount.get(hoiConcat) + 1);
-	    } else {
-		hmHoiCount.put(hoiConcat, 1);
-	    }
-	}
-	
-	// construct the return collection
-	Iterator<Map.Entry<String, Integer>> it = hmHoiCount.entrySet().iterator();
-	while (it.hasNext()) {
-	    Map.Entry<String, Integer> ent = it.next();
-	    String[] hoiConcat = ent.getKey().split("_-_");     
+	    String statType = (String)rs.get("EV_STAT_TYPE");
+	    BigDecimal statVal = (BigDecimal)rs.get("EV_STAT_VAL");
+	    
 	    DrugHoiEvidence evidence = new DrugHoiEvidence();
-	    evidence.evidence =  hoiConcat[0];
-	    evidence.modality = hoiConcat[1];
-	    evidence.linkout =  hoiConcat[2];
-	    evidence.count =  ent.getValue();
+	    evidence.evidence =  evi_type;
+	    evidence.modality = modality;
+	    evidence.linkout =  linkout;
+	    evidence.statisticType = statType;
+	    if (statType.equals("COUNT"))
+		evidence.count =  statVal.intValue();
+	    else
+		evidence.value = statVal;
+
 	    evidences.add(evidence);
-	}
-	// TODO: return a total number of evidence items somehow
+	}	
 	return evidences;
     }
 

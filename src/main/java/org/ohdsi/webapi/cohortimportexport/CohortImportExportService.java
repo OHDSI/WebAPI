@@ -2,7 +2,9 @@ package org.ohdsi.webapi.cohortimportexport;
 
 import java.util.List;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -27,8 +29,20 @@ public class CohortImportExportService {
 	public List<CohortEntity> getCohortListById(@PathParam("id") final long id) {
 
 		List<CohortEntity> d = this.cohortRepository.getAllCohortsForId(id);
+		
 
 		return d;
+	}
+	
+	@POST
+	@Path("export")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.TEXT_PLAIN)
+	public String saveCohortListToCDM(List<CohortEntity> cohort) {
+
+		this.cohortRepository.save(cohort);
+
+		return "ok";
 	}
 
 }

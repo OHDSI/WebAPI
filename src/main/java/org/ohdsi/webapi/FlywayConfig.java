@@ -18,7 +18,7 @@ public class FlywayConfig {
     @Bean
     @ConfigurationProperties(prefix="flyway.datasource")
     @FlywayDataSource
-    public DataSource secondaryDataSource() {
+    public DataSource ohdsiDataSource() {
         return DataSourceBuilder.create().build();
     }
 }

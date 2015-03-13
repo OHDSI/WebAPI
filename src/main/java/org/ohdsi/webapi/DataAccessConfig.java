@@ -4,11 +4,13 @@ import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -31,7 +33,7 @@ public class DataAccessConfig {
     
     @Bean
     @Primary
-    public DataSource primaryDataSource() {
+    public DataSource cdmDataSource() {
         
         String driver = this.env.getRequiredProperty("datasource.driverClassName");
         String url = this.env.getRequiredProperty("datasource.url");
@@ -58,7 +60,18 @@ public class DataAccessConfig {
     }
     
     @Bean
-    public EntityManagerFactory entityManagerFactory() {
+    @Primary
+    public JdbcTemplate cdmJdbcTemplate(@Qualifier("cdmDataSource") DataSource cdmDataSource){
+        return new JdbcTemplate(cdmDataSource);
+    }
+    
+    @Bean
+    public JdbcTemplate ohdsiJdbcTemplate(@Qualifier("ohdsiDataSource") DataSource ohdsiDataSource){
+        return new JdbcTemplate(ohdsiDataSource);
+    }
+    
+    @Bean
+    public EntityManagerFactory entityManagerFactory(@Qualifier("ohdsiDataSource") DataSource ohdsiDataSource) {
         
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         vendorAdapter.setGenerateDdl(false);
@@ -69,7 +82,7 @@ public class DataAccessConfig {
         LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
         factory.setJpaVendorAdapter(vendorAdapter);
         factory.setPackagesToScan("org.ohdsi.webapi");
-        factory.setDataSource(primaryDataSource());
+        factory.setDataSource(ohdsiDataSource);
         factory.afterPropertiesSet();
         
         return factory.getObject();
@@ -78,10 +91,10 @@ public class DataAccessConfig {
     @Bean
     @Primary
     //This is needed so that JpaTransactionManager is used for autowiring, instead of DataSourceTransactionManager
-    public PlatformTransactionManager jpaTransactionManager() {//EntityManagerFactory entityManagerFactory) {
+    public PlatformTransactionManager jpaTransactionManager(@Qualifier("ohdsiDataSource") DataSource ohdsiDataSource) {
     
         JpaTransactionManager txManager = new JpaTransactionManager();
-        txManager.setEntityManagerFactory(entityManagerFactory());
+        txManager.setEntityManagerFactory(entityManagerFactory(ohdsiDataSource));
         return txManager;
     }
     

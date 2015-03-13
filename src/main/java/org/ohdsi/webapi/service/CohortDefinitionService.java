@@ -284,7 +284,7 @@ public class CohortDefinitionService extends AbstractDaoService {
               .setSourceDialect(this.getSourceDialect())
               .setTargetDialect(this.getDialect());
       
-      GenerateCohortTasklet tasklet = new GenerateCohortTasklet(task, getJdbcTemplate(), getTransactionTemplate(), cohortDefinitionRepository);
+      GenerateCohortTasklet tasklet = new GenerateCohortTasklet(task, getOhdsiJdbcTemplate(), getTransactionTemplate(), cohortDefinitionRepository);
 
       return this.jobTemplate.launchTasklet("generateCohortJob", "generateCohortStep", tasklet, jobParameters);
     }

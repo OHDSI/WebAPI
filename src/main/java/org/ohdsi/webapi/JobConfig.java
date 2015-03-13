@@ -21,6 +21,7 @@ import org.springframework.batch.core.repository.support.JobRepositoryFactoryBea
 import org.springframework.batch.core.repository.support.MapJobRepositoryFactoryBean;
 import org.springframework.batch.support.transaction.ResourcelessTransactionManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -45,6 +46,7 @@ public class JobConfig {
     private String isolationLevelForCreate;
     
     @Autowired
+    @Qualifier("ohdsiDataSource")
     private DataSource dataSource;
     
     @Bean
@@ -84,14 +86,14 @@ public class JobConfig {
         
         private JobExplorer jobExplorer;
         
-        @Autowired
+        //        @Autowired
         public void setDataSource(final DataSource dataSource) {
             this.dataSource = dataSource;
-//            this.transactionManager = new DataSourceTransactionManager(dataSource);
+            //            this.transactionManager = new DataSourceTransactionManager(dataSource);
         }
         
         @Autowired
-        public void setTransactionManager(final PlatformTransactionManager transactionManager){
+        public void setTransactionManager(final PlatformTransactionManager transactionManager) {
             this.transactionManager = transactionManager;
         }
         

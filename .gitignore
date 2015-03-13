@@ -1,7 +1,5 @@
 *application.properties
 sandbox/
-pom.xml
-pom.xml*
 /target/
 .settings
 .classpath

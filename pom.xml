@@ -191,7 +191,7 @@
       </snapshots>
     </repository>
   </repositories>
-	
+
   <pluginRepositories>
     <pluginRepository>
       <id>miredot</id>

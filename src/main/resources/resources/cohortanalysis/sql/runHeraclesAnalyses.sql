@@ -81,10 +81,6 @@ delete from @results_schema.HERACLES_results_dist where cohort_definition_id IN 
 --7. generate results for analysis_results
 
 
-
-IF OBJECT_ID('HERACLES_cohort', 'U') IS NOT NULL --This should only do something in Oracle
-  drop table HERACLES_cohort;
-
 IF OBJECT_ID('tempdb..#HERACLES_cohort', 'U') IS NOT NULL
   drop table #HERACLES_cohort;
   
@@ -492,10 +488,11 @@ group by c1.cohort_definition_id, floor(DATEDIFF(dd, op1.observation_period_star
 
 --{109 IN (@list_of_analysis_ids)}?{
 -- 109	Number of persons with continuous observation in each year
+
 -- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
 
-IF OBJECT_ID('temp_dates', 'U') IS NOT NULL --This should only do something in Oracle
-  drop table temp_dates;
+IF OBJECT_ID('tempdb..#temp_dates', 'U') IS NOT NULL
+  drop table #temp_dates;
 
 SELECT DISTINCT 
   YEAR(observation_period_start_date) AS obs_year,
@@ -541,8 +538,8 @@ DROP TABLE #temp_dates;
 -- 110	Number of persons with continuous observation in each month
 -- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
 
-IF OBJECT_ID('temp_dates', 'U') IS NOT NULL --This should only do something in Oracle
-  drop table temp_dates;
+IF OBJECT_ID('tempdb..#temp_dates', 'U') IS NOT NULL
+  drop table #temp_dates;
 
 SELECT DISTINCT 
   YEAR(observation_period_start_date)*100 + MONTH(observation_period_start_date) AS obs_month,
@@ -681,8 +678,8 @@ group by c1.cohort_definition_id
 -- 116	Number of persons with at least one day of observation in each year by gender and age decile
 -- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
 
-IF OBJECT_ID('temp_dates', 'U') IS NOT NULL --This should only do something in Oracle
-  drop table temp_dates;
+IF OBJECT_ID('tempdb..#temp_dates', 'U') IS NOT NULL
+  drop table #temp_dates;
 
 select distinct 
   YEAR(observation_period_start_date) as obs_year 
@@ -729,8 +726,8 @@ DROP TABLE #temp_dates;
 -- 117	Number of persons with at least one day of observation in each year by gender and age decile
 -- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
 
-IF OBJECT_ID('temp_dates', 'U') IS NOT NULL --This should only do something in Oracle
-  drop table temp_dates;
+IF OBJECT_ID('tempdb..#temp_dates', 'U') IS NOT NULL
+  drop table #temp_dates;
 
 select distinct 
   YEAR(observation_period_start_date)*100 + MONTH(observation_period_start_date)  as obs_month

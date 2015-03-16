@@ -41,6 +41,7 @@ public class CohortImportExportService {
 	public String saveCohortListToCDM(List<CohortEntity> cohort) {
 
 		this.cohortRepository.save(cohort);
+		//System.out.println(cohort);
 
 		return "ok";
 	}

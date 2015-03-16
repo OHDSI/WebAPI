@@ -191,7 +191,7 @@
       </snapshots>
     </repository>
   </repositories>
-	
+
   <pluginRepositories>
     <pluginRepository>
       <id>miredot</id>
@@ -199,7 +199,7 @@
       <url>http://nexus.qmino.com/content/repositories/miredot</url>
     </pluginRepository>
   </pluginRepositories>
-   
+
   <dependencyManagement>
     <dependencies>
       <dependency>

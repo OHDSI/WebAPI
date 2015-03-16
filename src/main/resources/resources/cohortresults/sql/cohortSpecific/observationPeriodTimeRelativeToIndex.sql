@@ -31,4 +31,4 @@ select cohort_definition_id,
 	where hr1.analysis_id in (1806)
 	and hr1.cohort_definition_id in (@cohortDefinitionId)
 ) hr1,
-(select count_value from @resultsSchema.dbo.heracles_results where analysis_id = 1) t1
+(select count_value from @resultsSchema.dbo.heracles_results where analysis_id = 1 and cohort_definition_id in (@cohortDefinitionId)) t1

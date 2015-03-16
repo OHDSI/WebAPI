@@ -1,7 +1,7 @@
 select 'Length of observation' as series_name, 
 	cast(hr1.stratum_1 as int)*30 as x_length_of_observation, 
 	round(1.0*sum(ar2.count_value) / denom.count_value,5) as y_percent_persons
-from (select * from @resultsSchema.dbo.heracles_results where analysis_id = 108) hr1
+from (select * from @resultsSchema.dbo.heracles_results where analysis_id = 108 and cohort_definition_id in (@cohortDefinitionId)) hr1
 inner join
 (
 	select * from @resultsSchema.dbo.heracles_results where analysis_id = 108 and cohort_definition_id in (@cohortDefinitionId)

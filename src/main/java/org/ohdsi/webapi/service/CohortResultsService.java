@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -12,17 +13,20 @@ import javax.ws.rs.core.MediaType;
 
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.cohortresults.CohortAttribute;
 import org.ohdsi.webapi.cohortresults.CohortConditionDrilldown;
 import org.ohdsi.webapi.cohortresults.CohortConditionEraDrilldown;
 import org.ohdsi.webapi.cohortresults.CohortDashboard;
 import org.ohdsi.webapi.cohortresults.CohortDrugDrilldown;
 import org.ohdsi.webapi.cohortresults.CohortDrugEraDrilldown;
 import org.ohdsi.webapi.cohortresults.CohortPersonSummary;
+import org.ohdsi.webapi.cohortresults.CohortSpecificSummary;
 import org.ohdsi.webapi.cohortresults.ConceptCountRecord;
 import org.ohdsi.webapi.cohortresults.ConceptDecileRecord;
 import org.ohdsi.webapi.cohortresults.ConceptQuartileRecord;
 import org.ohdsi.webapi.cohortresults.HierarchicalConceptRecord;
 import org.ohdsi.webapi.cohortresults.PrevalenceRecord;
+import org.ohdsi.webapi.cohortresults.mapper.CohortAttributeMapper;
 import org.ohdsi.webapi.cohortresults.mapper.CohortStatsMapper;
 import org.ohdsi.webapi.cohortresults.mapper.ConceptConditionCountMapper;
 import org.ohdsi.webapi.cohortresults.mapper.ConceptCountMapper;
@@ -33,6 +37,7 @@ import org.ohdsi.webapi.cohortresults.mapper.CumulativeObservationMapper;
 import org.ohdsi.webapi.cohortresults.mapper.HierarchicalConceptEraMapper;
 import org.ohdsi.webapi.cohortresults.mapper.HierarchicalConceptMapper;
 import org.ohdsi.webapi.cohortresults.mapper.MonthObservationMapper;
+import org.ohdsi.webapi.cohortresults.mapper.ObservationPeriodMapper;
 import org.ohdsi.webapi.cohortresults.mapper.PrevalanceMapper;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.springframework.stereotype.Component;
@@ -476,7 +481,7 @@ public class CohortResultsService extends AbstractDaoService {
 	@GET
 	@Path("/{id}/person")
 	@Produces(MediaType.APPLICATION_JSON)
-	public CohortPersonSummary getDrugEraResults(@PathParam("id") final int id, 
+	public CohortPersonSummary getPersonResults(@PathParam("id") final int id, 
 			@QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam, 
 			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam) {
 		CohortPersonSummary person = new CohortPersonSummary();
@@ -507,6 +512,41 @@ public class CohortResultsService extends AbstractDaoService {
 		}
 		
 		return person;
+	}
+	
+	/**
+	 * Queries for cohort analysis cohort specific results for the given cohort definition id
+	 * 
+	 * @param id cohort_defintion id
+	 * @return CohortPersonSummary
+	 */
+	@GET
+	@Path("/{id}/cohortspecific")
+	@Produces(MediaType.APPLICATION_JSON)
+	public CohortSpecificSummary getCohortSpecificResults(@PathParam("id") final int id, 
+			@QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam, 
+			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam) {
+		CohortSpecificSummary summary = new CohortSpecificSummary();
+		
+		String personsByDurationSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/observationPeriodTimeRelativeToIndex.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (personsByDurationSql != null) {
+			summary.setPersonsByDurationFromStartToEnd(this.getJdbcTemplate().query(personsByDurationSql, new ObservationPeriodMapper()));
+		}
+		
+		return summary;
+	}
+	
+	@GET
+	@Path("/{id}/heraclesHeel")
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<CohortAttribute> getHeraclesHeel(@PathParam("id") final int id) {
+		List<CohortAttribute> attrs = new ArrayList<CohortAttribute>();
+		String sql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/heraclesHeel/sqlHeraclesHeel.sql", id, null, null);
+		if (sql != null) {
+			attrs = this.getJdbcTemplate().query(sql, new CohortAttributeMapper());
+		}
+		
+		return attrs;
 	}
 	
 	// HELPER methods	

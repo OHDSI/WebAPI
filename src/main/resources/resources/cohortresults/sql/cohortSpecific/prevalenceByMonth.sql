@@ -10,6 +10,6 @@ from (select stratum_1, count_value
 ) hr1
 	inner join 
 (
-	select stratum_1, count_value from @resultsSchema.dbo.@resultsSchema.dbo.heracles_results where analysis_id = 117
+	select stratum_1, count_value from @resultsSchema.dbo.@resultsSchema.dbo.heracles_results where analysis_id = 117 and cohort_definition_id in (@cohortDefinitionId)
 ) t1
 on hr1.stratum_1 = t1.stratum_1

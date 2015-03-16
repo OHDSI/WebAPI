@@ -119,4 +119,5 @@ inner join
 (select count_value
 from @resultsSchema.dbo.heracles_results
 where analysis_id = 1
+and cohort_definition_id in (@cohortDefinitionId)
 ) denom

@@ -23,6 +23,7 @@ from (select cohort_definition_id,
 	count_value 
 	from @resultsSchema.dbo.@resultsSchema.dbo.heracles_results 
 	where analysis_id = 116
+	and cohort_definition_id in (@cohortDefinitionId)
 ) t1
 on hr1.index_year = t1.index_year
 and hr1.gender_concept_id = t1.gender_concept_id

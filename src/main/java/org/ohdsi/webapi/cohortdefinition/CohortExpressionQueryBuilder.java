@@ -350,13 +350,13 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // ageAtStart
     if (criteria.ageAtStart != null)
     {
-      whereClauses.add(buildNumericRangeClause("DATEPART(year, C.condition_era_start_date) - P.year_of_birth", criteria.ageAtStart));
+      whereClauses.add(buildNumericRangeClause("YEAR(C.condition_era_start_date) - P.year_of_birth", criteria.ageAtStart));
     }
 
     // ageAtEnd
     if (criteria.ageAtEnd != null)
     {
-      whereClauses.add(buildNumericRangeClause("DATEPART(year, C.condition_era_end_date) - P.year_of_birth", criteria.ageAtEnd));
+      whereClauses.add(buildNumericRangeClause("YEAR(C.condition_era_end_date) - P.year_of_birth", criteria.ageAtEnd));
     }
 
     // gender
@@ -435,7 +435,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // age
     if (criteria.age != null)
     {
-      whereClauses.add(buildNumericRangeClause("DATEPART(year, C.condition_start_date) - P.year_of_birth", criteria.age));
+      whereClauses.add(buildNumericRangeClause("YEAR(C.condition_start_date) - P.year_of_birth", criteria.age));
     }
     
     // gender
@@ -526,7 +526,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // age
     if (criteria.age != null)
     {
-      whereClauses.add(buildNumericRangeClause("DATEPART(year, C.death_date) - P.year_of_birth", criteria.age));
+      whereClauses.add(buildNumericRangeClause("YEAR(C.death_date) - P.year_of_birth", criteria.age));
     }
     
     // gender
@@ -610,7 +610,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // age
     if (criteria.age != null)
     {
-      whereClauses.add(buildNumericRangeClause("DATEPART(year, C.device_exposure_start_date) - P.year_of_birth", criteria.age));
+      whereClauses.add(buildNumericRangeClause("YEAR(C.device_exposure_start_date) - P.year_of_birth", criteria.age));
     }
     
     // gender
@@ -698,13 +698,13 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // ageAtStart
     if (criteria.ageAtStart != null)
     {
-      whereClauses.add(buildNumericRangeClause("DATEPART(year, C.dose_era_start_date) - P.year_of_birth", criteria.ageAtStart));
+      whereClauses.add(buildNumericRangeClause("YEAR(C.dose_era_start_date) - P.year_of_birth", criteria.ageAtStart));
     }
 
     // ageAtEnd
     if (criteria.ageAtEnd != null)
     {
-      whereClauses.add(buildNumericRangeClause("DATEPART(year, C.dose_era_end_date) - P.year_of_birth", criteria.ageAtEnd));
+      whereClauses.add(buildNumericRangeClause("YEAR(C.dose_era_end_date) - P.year_of_birth", criteria.ageAtEnd));
     }
 
     // gender
@@ -779,13 +779,13 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // ageAtStart
     if (criteria.ageAtStart != null)
     {
-      whereClauses.add(buildNumericRangeClause("DATEPART(year, C.drug_era_start_date) - P.year_of_birth", criteria.ageAtStart));
+      whereClauses.add(buildNumericRangeClause("YEAR(C.drug_era_start_date) - P.year_of_birth", criteria.ageAtStart));
     }
 
     // ageAtEnd
     if (criteria.ageAtEnd != null)
     {
-      whereClauses.add(buildNumericRangeClause("DATEPART(year, C.drug_era_end_date) - P.year_of_birth", criteria.ageAtEnd));
+      whereClauses.add(buildNumericRangeClause("YEAR(C.drug_era_end_date) - P.year_of_birth", criteria.ageAtEnd));
     }
 
     // gender
@@ -905,7 +905,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // age
     if (criteria.age != null)
     {
-      whereClauses.add(buildNumericRangeClause("DATEPART(year, C.drug_exposure_start_date) - P.year_of_birth", criteria.age));
+      whereClauses.add(buildNumericRangeClause("YEAR(C.drug_exposure_start_date) - P.year_of_birth", criteria.age));
     }
     
     // gender
@@ -1036,7 +1036,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // age
     if (criteria.age != null)
     {
-      whereClauses.add(buildNumericRangeClause("DATEPART(year, C.measurement_date) - P.year_of_birth", criteria.age));
+      whereClauses.add(buildNumericRangeClause("YEAR(C.measurement_date) - P.year_of_birth", criteria.age));
     }
     
     // gender
@@ -1149,7 +1149,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // age
     if (criteria.age != null)
     {
-      whereClauses.add(buildNumericRangeClause("DATEPART(year, C.observation_date) - P.year_of_birth", criteria.age));
+      whereClauses.add(buildNumericRangeClause("YEAR(C.observation_date) - P.year_of_birth", criteria.age));
     }
     
     // gender
@@ -1223,13 +1223,13 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // ageAtStart
     if (criteria.ageAtStart != null)
     {
-      whereClauses.add(buildNumericRangeClause("DATEPART(year, C.observation_period_start_date) - P.year_of_birth", criteria.ageAtStart));
+      whereClauses.add(buildNumericRangeClause("YEAR(C.observation_period_start_date) - P.year_of_birth", criteria.ageAtStart));
     }
 
     // ageAtEnd
     if (criteria.ageAtEnd != null)
     {
-      whereClauses.add(buildNumericRangeClause("DATEPART(year, C.observation_period_end_date) - P.year_of_birth", criteria.ageAtEnd));
+      whereClauses.add(buildNumericRangeClause("YEAR(C.observation_period_end_date) - P.year_of_birth", criteria.ageAtEnd));
     }
     
     String whereClause = "";
@@ -1304,7 +1304,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // age
     if (criteria.age != null)
     {
-      whereClauses.add(buildNumericRangeClause("DATEPART(year, C.procedure_date) - P.year_of_birth", criteria.age));
+      whereClauses.add(buildNumericRangeClause("YEAR(C.procedure_date) - P.year_of_birth", criteria.age));
     }
     
     // gender
@@ -1408,7 +1408,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // age
     if (criteria.age != null)
     {
-      whereClauses.add(buildNumericRangeClause("DATEPART(year, C.specimen_date) - P.year_of_birth", criteria.age));
+      whereClauses.add(buildNumericRangeClause("YEAR(C.specimen_date) - P.year_of_birth", criteria.age));
     }
     
     // gender
@@ -1489,7 +1489,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // age
     if (criteria.age != null)
     {
-      whereClauses.add(buildNumericRangeClause("DATEPART(year, C.visit_start_date) - P.year_of_birth", criteria.age));
+      whereClauses.add(buildNumericRangeClause("YEAR(C.visit_start_date) - P.year_of_birth", criteria.age));
     }
     
     // gender

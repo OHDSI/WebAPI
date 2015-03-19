@@ -5,6 +5,7 @@ public class PrevalenceRecord {
 	private int xCalendarMonth;
 	private long conceptId;
 	private double yPrevalence1000Pp;
+	private int numPersons;
 	
 	/**
 	 * @return the xCalendarMonth
@@ -41,6 +42,18 @@ public class PrevalenceRecord {
 	 */
 	public void setyPrevalence1000Pp(double yPrevalence1000Pp) {
 		this.yPrevalence1000Pp = yPrevalence1000Pp;
+	}
+	/**
+	 * @return the numPersons
+	 */
+	public int getNumPersons() {
+		return numPersons;
+	}
+	/**
+	 * @param numPersons the numPersons to set
+	 */
+	public void setNumPersons(int numPersons) {
+		this.numPersons = numPersons;
 	}
 	
 }

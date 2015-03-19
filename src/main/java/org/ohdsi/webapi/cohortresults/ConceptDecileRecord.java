@@ -12,7 +12,20 @@ public class ConceptDecileRecord {
 	private String seriesName;
 	private double yPrevalence1000Pp;
 	private int xCalendarYear;
+	private int numPersons;
 	
+	/**
+	 * @return the numPersons
+	 */
+	public int getNumPersons() {
+		return numPersons;
+	}
+	/**
+	 * @param numPersons the numPersons to set
+	 */
+	public void setNumPersons(int numPersons) {
+		this.numPersons = numPersons;
+	}
 	/**
 	 * @return the trellisName
 	 */

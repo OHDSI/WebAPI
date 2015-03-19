@@ -6,7 +6,7 @@ import java.sql.SQLException;
 import org.ohdsi.webapi.cohortresults.PrevalenceRecord;
 import org.springframework.jdbc.core.RowMapper;
 
-public class PrevalanceMapper implements RowMapper<PrevalenceRecord> {
+public class PrevalanceConceptMapper implements RowMapper<PrevalenceRecord> {
 
 	@Override
 	public PrevalenceRecord mapRow(ResultSet rs, int rowNum)
@@ -14,7 +14,7 @@ public class PrevalanceMapper implements RowMapper<PrevalenceRecord> {
 		PrevalenceRecord record = new PrevalenceRecord();
 		record.setyPrevalence1000Pp(rs.getDouble("Y_PREVALENCE_1000PP"));
 		record.setxCalendarMonth(rs.getInt("X_CALENDAR_MONTH"));
-		record.setNumPersons(rs.getInt("NUM_PERSONS"));
+		record.setConceptId(rs.getLong("CONCEPT_ID"));
 		return record;
 	}
 

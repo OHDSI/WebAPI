@@ -30,6 +30,7 @@ import org.ohdsi.webapi.cohortresults.mapper.CohortAttributeMapper;
 import org.ohdsi.webapi.cohortresults.mapper.CohortStatsMapper;
 import org.ohdsi.webapi.cohortresults.mapper.ConceptConditionCountMapper;
 import org.ohdsi.webapi.cohortresults.mapper.ConceptCountMapper;
+import org.ohdsi.webapi.cohortresults.mapper.ConceptDecileCountsMapper;
 import org.ohdsi.webapi.cohortresults.mapper.ConceptDecileMapper;
 import org.ohdsi.webapi.cohortresults.mapper.ConceptDistributionMapper;
 import org.ohdsi.webapi.cohortresults.mapper.ConceptQuartileMapper;
@@ -38,6 +39,7 @@ import org.ohdsi.webapi.cohortresults.mapper.HierarchicalConceptEraMapper;
 import org.ohdsi.webapi.cohortresults.mapper.HierarchicalConceptMapper;
 import org.ohdsi.webapi.cohortresults.mapper.MonthObservationMapper;
 import org.ohdsi.webapi.cohortresults.mapper.ObservationPeriodMapper;
+import org.ohdsi.webapi.cohortresults.mapper.PrevalanceConceptMapper;
 import org.ohdsi.webapi.cohortresults.mapper.PrevalanceMapper;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.springframework.stereotype.Component;
@@ -220,7 +222,7 @@ public class CohortResultsService extends AbstractDaoService {
 		String prevalanceMonthSql = this.renderDrillDownCohortSql("sqlPrevalenceByMonth", "condition", id, 
 				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam);
 		if (prevalanceMonthSql != null) {
-			prevalenceByMonth = getJdbcTemplate().query(prevalanceMonthSql, new PrevalanceMapper());
+			prevalenceByMonth = getJdbcTemplate().query(prevalanceMonthSql, new PrevalanceConceptMapper());
 		}
 		drilldown.setPrevalenceByMonth(prevalenceByMonth);
 
@@ -299,7 +301,7 @@ public class CohortResultsService extends AbstractDaoService {
 		String prevalenceByMonthSql = this.renderDrillDownCohortSql("sqlPrevalenceByMonth", "conditionera", id, 
 				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam);
 		if (prevalenceByMonthSql != null) {
-			prevalenceByMonth = getJdbcTemplate().query(prevalenceByMonthSql, new PrevalanceMapper());
+			prevalenceByMonth = getJdbcTemplate().query(prevalenceByMonthSql, new PrevalanceConceptMapper());
 		}
 		drilldown.setPrevalenceByMonth(prevalenceByMonth);
 
@@ -374,7 +376,7 @@ public class CohortResultsService extends AbstractDaoService {
 		String prevalenceByMonthSql = this.renderDrillDownCohortSql("sqlPrevalenceByMonth", "drug", id, 
 				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam);
 		if (prevalenceByMonthSql != null) {
-			drilldown.setPrevalenceByMonth(this.getJdbcTemplate().query(prevalenceByMonthSql, new PrevalanceMapper()));
+			drilldown.setPrevalenceByMonth(this.getJdbcTemplate().query(prevalenceByMonthSql, new PrevalanceConceptMapper()));
 		}
 		
 		String quantityDistributionSql = this.renderDrillDownCohortSql("sqlQuantityDistribution", "drug", id, 
@@ -464,7 +466,7 @@ public class CohortResultsService extends AbstractDaoService {
 		String prevalenceByMonthSql = this.renderDrillDownCohortSql("sqlPrevalenceByMonth", "drugera", id, 
 				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam);
 		if (prevalenceByMonthSql != null) {
-			prevalenceByMonth = getJdbcTemplate().query(prevalenceByMonthSql, new PrevalanceMapper());
+			prevalenceByMonth = getJdbcTemplate().query(prevalenceByMonthSql, new PrevalanceConceptMapper());
 		}
 		drilldown.setPrevalenceByMonth(prevalenceByMonth);
 
@@ -532,6 +534,18 @@ public class CohortResultsService extends AbstractDaoService {
 		if (personsByDurationSql != null) {
 			summary.setPersonsByDurationFromStartToEnd(this.getJdbcTemplate().query(personsByDurationSql, new ObservationPeriodMapper()));
 		}
+		
+		String monthPrevalenceSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/prevalenceByMonth.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (monthPrevalenceSql != null) {
+			summary.setPrevalenceByMonth(this.getJdbcTemplate().query(monthPrevalenceSql, new PrevalanceMapper()));
+		}
+		
+		List<ConceptDecileRecord> prevalenceByGenderAgeYear = null;
+		String prevalenceGenderAgeSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/prevalenceByYearGenderSex.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (prevalenceGenderAgeSql != null) {
+			prevalenceByGenderAgeYear = getJdbcTemplate().query(prevalenceGenderAgeSql, new ConceptDecileCountsMapper());
+		}
+		summary.setNumPersonsByCohortStartByGenderByAge(prevalenceByGenderAgeYear);
 		
 		return summary;
 	}

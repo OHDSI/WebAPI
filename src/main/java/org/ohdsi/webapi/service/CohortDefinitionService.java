@@ -186,9 +186,12 @@ public class CohortDefinitionService extends AbstractDaoService {
             .setDescription(def.description)
             .setCreatedBy("system")
             .setCreatedDate(currentTime)
-            .setExpressionType(def.expressionType);
+            .setExpressionType(def.expressionType).setId(0);
     
     newDef = this.cohortDefinitionRepository.save(newDef);
+    // expression is a required field so set to default if null
+    if(def.expression == null)
+    	def.expression = "{ PrimaryCriteria: {} }";
  
     // associate details
     CohortDefinitionDetails details = new CohortDefinitionDetails();

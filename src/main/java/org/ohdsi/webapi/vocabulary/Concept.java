@@ -19,16 +19,19 @@ public class Concept {
     
     @JsonProperty("STANDARD_CONCEPT")
     public String GetStandardConcept() {
-        switch (standardConcept) {
-            case "N" : 
-                return "Non-Standard";
-            case "S" :
-                return "Standard";
-            case "C" :
-                return "Classification";
-            default:
-                return "Unknown";
-        }
+      if (standardConcept == null)
+        return "Unknown";
+      
+      switch (standardConcept) {
+        case "N" : 
+          return "Non-Standard";
+        case "S" :
+          return "Standard";
+        case "C" :
+          return "Classification";
+        default:
+          return "Unknown";
+      }
     }
     
     @JsonIgnore
@@ -36,16 +39,19 @@ public class Concept {
     
     @JsonProperty("INVALID_REASON")
     public String GetInvalidReason() {
-        switch (invalidReason) {
-            case "V" : 
-                return "Valid";
-            case "D" :
-                return "Invalid";
-            case "U" :
-                return "Invalid";
-            default:
-                return "Unknown";
-        }
+      if (invalidReason == null)
+        return "Unknown";
+      
+      switch (invalidReason) {
+        case "V" : 
+          return "Valid";
+        case "D" :
+          return "Invalid";
+        case "U" :
+            return "Invalid";
+        default:
+          return "Unknown";
+      }
     }
     
     @JsonIgnore

@@ -39,17 +39,19 @@ public class JobTemplate {
         this.stepBuilders = stepBuilders;
     }
     
-    public JobExecutionResource launch(final Job job, final JobParameters jobParameters) throws WebApplicationException {
+    public JobExecutionResource launch(final Job job, JobParameters jobParameters) throws WebApplicationException {
         JobExecution exec = null;
         try {
-            exec = this.jobLauncher.run(job, jobParameters);
-            if (log.isDebugEnabled()) {
-                log.debug("JobExecution queued: " + exec);
-            }
+            jobParameters = new JobParametersBuilder(jobParameters).addLong("time", System.currentTimeMillis())
+                .toJobParameters();          
+          exec = this.jobLauncher.run(job, jobParameters);
+          if (log.isDebugEnabled()) {
+              log.debug("JobExecution queued: " + exec);
+          }
         } catch (final JobExecutionAlreadyRunningException e) {
             throw new WebApplicationException(Response.status(Status.CONFLICT).entity(e.getMessage()).build());
         } catch (final Exception e) {
-            throw new WebApplicationException(Status.INTERNAL_SERVER_ERROR);
+            throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build());
         }
         return JobUtils.toJobExecutionResource(exec);
     }

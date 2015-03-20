@@ -3,6 +3,7 @@ package org.ohdsi.webapi.exampleapplication;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.EntityManager;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -10,6 +11,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ohdsi.webapi.exampleapplication.model.Widget;
@@ -29,9 +31,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  *
@@ -48,6 +49,12 @@ public class ExampleApplicationWithJobService extends AbstractDaoService {
     
     @Autowired
     private WidgetRepository widgetRepository;
+    
+    @Autowired
+    private TransactionTemplate transactionTemplate;
+    
+    @Autowired
+    private EntityManager em;
     
     public static class ExampleApplicationTasklet implements Tasklet {
         
@@ -102,6 +109,48 @@ public class ExampleApplicationWithJobService extends AbstractDaoService {
     //Wrapping in transaction (e.g. TransactionTemplate) not necessary as SimpleJpaRepository.save is annotated with @Transactional.
     public Widget createWidget(Widget w) {
         return this.widgetRepository.save(w);
+    }
+    
+    private List<Widget> createWidgets() {
+        List<Widget> widgets = new ArrayList<Widget>();
+        for (int x = 0; x < 20; x++) {
+            Widget w = new Widget();
+            w.setName(RandomStringUtils.randomAlphanumeric(10));
+            widgets.add(w);
+        }
+        return widgets;
+    }
+    
+    @POST
+    @Path("widgets/batch")
+    public void batchWriteWidgets() {
+        final List<Widget> widgets = createWidgets();
+        this.transactionTemplate.execute(new TransactionCallback<Void>() {
+            @Override
+            public Void doInTransaction(TransactionStatus status) {
+                int i = 0;
+                for (Widget w : widgets) {
+                    em.persist(w);
+                    if (i % 5 == 0) { //5, same as the JDBC batch size
+                        //flush a batch of inserts and release memory:
+                        log.info("Flushing, clearing");
+                        em.flush();
+                        em.clear();
+                    }
+                    i++;
+                }
+                return null;
+            }
+        });
+        log.info(String.format("Persisted %s widgets", widgets.size()));
+    }
+    
+    @POST
+    @Path("widgets")
+    public void writeWidgets() {
+        final List<Widget> widgets = createWidgets();
+        this.widgetRepository.save(widgets);
+        log.info(String.format("Persisted %s widgets", widgets.size()));
     }
     
     @POST

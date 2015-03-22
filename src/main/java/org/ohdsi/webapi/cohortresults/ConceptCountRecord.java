@@ -10,6 +10,9 @@ public class ConceptCountRecord {
 	private String conditionConceptName;
 	private long conditionConceptId;
 	
+	private String observationConceptName;
+	private long observationConceptId;
+	
 	private String conceptName;
 	private long conceptId;
 	
@@ -38,6 +41,30 @@ public class ConceptCountRecord {
 	 */
 	public void setConditionConceptId(long conditionConceptId) {
 		this.conditionConceptId = conditionConceptId;
+	}
+	/**
+	 * @return the observationConceptName
+	 */
+	public String getObservationConceptName() {
+		return observationConceptName;
+	}
+	/**
+	 * @param observationConceptName the observationConceptName to set
+	 */
+	public void setObservationConceptName(String observationConceptName) {
+		this.observationConceptName = observationConceptName;
+	}
+	/**
+	 * @return the observationConceptId
+	 */
+	public long getObservationConceptId() {
+		return observationConceptId;
+	}
+	/**
+	 * @param observationConceptId the observationConceptId to set
+	 */
+	public void setObservationConceptId(long observationConceptId) {
+		this.observationConceptId = observationConceptId;
 	}
 	/**
 	 * @return the conceptName

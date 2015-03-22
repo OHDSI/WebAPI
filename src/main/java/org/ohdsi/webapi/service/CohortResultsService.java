@@ -19,6 +19,7 @@ import org.ohdsi.webapi.cohortresults.CohortConditionEraDrilldown;
 import org.ohdsi.webapi.cohortresults.CohortDashboard;
 import org.ohdsi.webapi.cohortresults.CohortDrugDrilldown;
 import org.ohdsi.webapi.cohortresults.CohortDrugEraDrilldown;
+import org.ohdsi.webapi.cohortresults.CohortObservationDrilldown;
 import org.ohdsi.webapi.cohortresults.CohortPersonSummary;
 import org.ohdsi.webapi.cohortresults.CohortSpecificSummary;
 import org.ohdsi.webapi.cohortresults.ConceptCountRecord;
@@ -33,6 +34,7 @@ import org.ohdsi.webapi.cohortresults.mapper.ConceptCountMapper;
 import org.ohdsi.webapi.cohortresults.mapper.ConceptDecileCountsMapper;
 import org.ohdsi.webapi.cohortresults.mapper.ConceptDecileMapper;
 import org.ohdsi.webapi.cohortresults.mapper.ConceptDistributionMapper;
+import org.ohdsi.webapi.cohortresults.mapper.ConceptObservationCountMapper;
 import org.ohdsi.webapi.cohortresults.mapper.ConceptQuartileMapper;
 import org.ohdsi.webapi.cohortresults.mapper.CumulativeObservationMapper;
 import org.ohdsi.webapi.cohortresults.mapper.HierarchicalConceptEraMapper;
@@ -40,6 +42,7 @@ import org.ohdsi.webapi.cohortresults.mapper.HierarchicalConceptMapper;
 import org.ohdsi.webapi.cohortresults.mapper.MonthObservationMapper;
 import org.ohdsi.webapi.cohortresults.mapper.ObservationPeriodMapper;
 import org.ohdsi.webapi.cohortresults.mapper.PrevalanceConceptMapper;
+import org.ohdsi.webapi.cohortresults.mapper.PrevalanceConceptNameMapper;
 import org.ohdsi.webapi.cohortresults.mapper.PrevalanceMapper;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.springframework.stereotype.Component;
@@ -550,6 +553,104 @@ public class CohortResultsService extends AbstractDaoService {
 		return summary;
 	}
 	
+	/**
+	 * Queries for cohort analysis for observation treemap
+	 * 
+	 * @param id cohort_defintion id
+	 * @return CohortPersonSummary
+	 */
+	@GET
+	@Path("/{id}/observation")
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<HierarchicalConceptRecord> getCohortObservationResults (@PathParam("id") final int id, 
+			@QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam, 
+			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam) {
+		List<HierarchicalConceptRecord> res = null;
+		String sql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observation/sqlObservationTreemap.sql", 
+				id, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (sql != null) {
+			res = getJdbcTemplate().query(sql, new HierarchicalConceptMapper());
+		}
+		
+		return res;
+	}
+	
+
+	/**
+	 * Queries for cohort analysis observation drilldown results for the given cohort definition id and condition id
+	 * 
+	 * @param id cohort_defintion id
+	 * @param conceptId conceptId (from concept)
+	 * @return ConditionDrilldown
+	 */
+	@GET
+	@Path("/{id}/observation/{conceptId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public CohortObservationDrilldown getCohortObservationResultsDrilldown(@PathParam("id") final int id, @PathParam("conceptId") final int conceptId,
+			@QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam, 
+			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam) {
+		CohortObservationDrilldown drilldown = new CohortObservationDrilldown();
+		
+		String ageAtFirstOccurrenceSql = this.renderDrillDownCohortSql("sqlAgeAtFirstOccurrence", "observation", id, 
+				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (ageAtFirstOccurrenceSql != null) {
+			drilldown.setAgeAtFirstOccurrence(this.getJdbcTemplate().query(ageAtFirstOccurrenceSql, new ConceptQuartileMapper()));
+		}
+		
+		String sqlLowerLimitDistribution = this.renderDrillDownCohortSql("sqlLowerLimitDistribution", "observation", id, 
+				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (sqlLowerLimitDistribution != null) {
+			drilldown.setLowerLimitDistribution(this.getJdbcTemplate().query(sqlLowerLimitDistribution, new ConceptQuartileMapper()));
+		}
+		
+		String sqlObservationValueDistribution = this.renderDrillDownCohortSql("sqlObservationValueDistribution", "observation", id, 
+				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (sqlObservationValueDistribution != null) {
+			drilldown.setObservationValueDistribution(this.getJdbcTemplate().query(sqlObservationValueDistribution, new ConceptQuartileMapper()));
+		}
+		
+		String sqlUpperLimitDistribution = this.renderDrillDownCohortSql("sqlUpperLimitDistribution", "observation", id, 
+				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (sqlUpperLimitDistribution != null) {
+			drilldown.setUpperLimitDistribution(this.getJdbcTemplate().query(sqlUpperLimitDistribution, new ConceptQuartileMapper()));
+		}
+		
+		String sqlObservationsByType = this.renderDrillDownCohortSql("sqlObservationsByType", "observation", id, 
+				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (sqlObservationsByType != null) {
+			drilldown.setObservationsByType(this.getJdbcTemplate().query(sqlObservationsByType, new ConceptObservationCountMapper()));
+		}
+		
+		String sqlRecordsByUnit = this.renderDrillDownCohortSql("sqlRecordsByUnit", "observation", id, 
+				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (sqlRecordsByUnit != null) {
+			drilldown.setRecordsByUnit(this.getJdbcTemplate().query(sqlRecordsByUnit, new ConceptObservationCountMapper()));
+		}
+		
+		String sqlValuesRelativeToNorm = this.renderDrillDownCohortSql("sqlValuesRelativeToNorm", "observation", id, 
+				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (sqlValuesRelativeToNorm != null) {
+			drilldown.setValuesRelativeToNorm(this.getJdbcTemplate().query(sqlValuesRelativeToNorm, new ConceptObservationCountMapper()));
+		}
+		
+		String sqlPrevalenceByGenderAgeYear = this.renderDrillDownCohortSql("sqlPrevalenceByGenderAgeYear", "observation", id, 
+				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (sqlPrevalenceByGenderAgeYear != null) {
+			drilldown.setPrevalenceByGenderAgeYear(this.getJdbcTemplate().query(sqlPrevalenceByGenderAgeYear, new ConceptDecileMapper()));
+		}
+		
+		List<PrevalenceRecord> prevalenceByMonth = null;
+		String prevalanceMonthSql = this.renderDrillDownCohortSql("sqlPrevalenceByMonth", "observation", id, 
+				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (prevalanceMonthSql != null) {
+			prevalenceByMonth = getJdbcTemplate().query(prevalanceMonthSql, new PrevalanceConceptNameMapper());
+		}
+		drilldown.setPrevalenceByMonth(prevalenceByMonth);
+
+		return drilldown;
+
+	}
+	
 	@GET
 	@Path("/{id}/heraclesHeel")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -559,6 +660,8 @@ public class CohortResultsService extends AbstractDaoService {
 		if (sql != null) {
 			attrs = this.getJdbcTemplate().query(sql, new CohortAttributeMapper());
 		}
+		
+
 		
 		return attrs;
 	}

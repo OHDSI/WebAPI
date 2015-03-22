@@ -12,4 +12,5 @@ from @resultsSchema.dbo.heracles_results_dist hrd1
 	inner join @cdmSchema.dbo.concept c2 on hrd1.stratum_2 = CAST(c2.concept_id as VARCHAR)
 where hrd1.analysis_id = 817
 and hrd1.count_value > 0
+  and c1.concept_id = @conceptId
 and cohort_definition_id in (@cohortDefinitionId)

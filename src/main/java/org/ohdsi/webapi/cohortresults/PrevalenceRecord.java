@@ -4,6 +4,7 @@ public class PrevalenceRecord {
 
 	private int xCalendarMonth;
 	private long conceptId;
+	private String conceptName;
 	private double yPrevalence1000Pp;
 	private int numPersons;
 	
@@ -30,6 +31,18 @@ public class PrevalenceRecord {
 	 */
 	public void setConceptId(long conceptId) {
 		this.conceptId = conceptId;
+	}
+	/**
+	 * @return the conceptName
+	 */
+	public String getConceptName() {
+		return conceptName;
+	}
+	/**
+	 * @param conceptName the conceptName to set
+	 */
+	public void setConceptName(String conceptName) {
+		this.conceptName = conceptName;
 	}
 	/**
 	 * @return the yPrevalence1000Pp

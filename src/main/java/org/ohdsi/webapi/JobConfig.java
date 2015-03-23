@@ -6,6 +6,10 @@ import javax.sql.DataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ohdsi.webapi.job.JobTemplate;
+import org.springframework.batch.admin.service.JdbcSearchableJobExecutionDao;
+import org.springframework.batch.admin.service.JdbcSearchableJobInstanceDao;
+import org.springframework.batch.admin.service.SearchableJobExecutionDao;
+import org.springframework.batch.admin.service.SearchableJobInstanceDao;
 import org.springframework.batch.core.configuration.BatchConfigurationException;
 import org.springframework.batch.core.configuration.annotation.BatchConfigurer;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
@@ -25,6 +29,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -72,6 +77,20 @@ public class JobConfig {
         return new JobTemplate(jobLauncher, jobBuilders, stepBuilders);
     }
     
+    @Bean
+    public SearchableJobExecutionDao searchableJobExecutionDao(DataSource dataSource) {
+        JdbcSearchableJobExecutionDao dao = new JdbcSearchableJobExecutionDao();
+        dao.setDataSource(dataSource);
+        return dao;
+    }
+    
+    @Bean
+    public SearchableJobInstanceDao searchableJobInstanceDao(JdbcTemplate jdbcTemplate) {
+        JdbcSearchableJobInstanceDao dao = new JdbcSearchableJobInstanceDao();
+        dao.setJdbcTemplate(jdbcTemplate);//no setDataSource as in SearchableJobExecutionDao
+        return dao;
+    }
+    
     class CustomBatchConfigurer implements BatchConfigurer {
         
         private DataSource dataSource;
@@ -87,11 +106,11 @@ public class JobConfig {
         @Autowired
         public void setDataSource(final DataSource dataSource) {
             this.dataSource = dataSource;
-//            this.transactionManager = new DataSourceTransactionManager(dataSource);
+            //            this.transactionManager = new DataSourceTransactionManager(dataSource);
         }
         
         @Autowired
-        public void setTransactionManager(final PlatformTransactionManager transactionManager){
+        public void setTransactionManager(final PlatformTransactionManager transactionManager) {
             this.transactionManager = transactionManager;
         }
         

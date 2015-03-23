@@ -2530,81 +2530,80 @@ group by c1.cohort_definition_id,
 	YEAR(drug_exposure_start_date)*100 + month(drug_exposure_start_date)
 ;
 --}
+/********************************************
 
---/********************************************
+HERACLES Analyses on MEASUREMENT table
 
---HERACLES Analyses on OBSERVATION table
-
---*********************************************/
+*********************************************/
 
 
 
 --{800 IN (@list_of_analysis_ids)}?{
--- 800	Number of persons with at least one observation occurrence, by observation_concept_id
+-- 800	Number of persons with at least one measurement occurrence, by measurement_concept_id
 insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
 select c1.cohort_definition_id, 
 	800 as analysis_id, 
-	o1.observation_CONCEPT_ID as stratum_1,
+	o1.measurement_CONCEPT_ID as stratum_1,
 	COUNT_BIG(distinct o1.PERSON_ID) as count_value
 from
-	@CDM_schema.dbo.observation o1
+	@CDM_schema.dbo.measurement o1
 	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
 --{@observation_concept_ids != ''}?{
-	where o1.observation_concept_id in (@observation_concept_ids)
+	where o1.measurement_concept_id in (@observation_concept_ids)
 --}
 group by c1.cohort_definition_id,
-	o1.observation_CONCEPT_ID
+	o1.measurement_CONCEPT_ID
 ;
 --}
 
 
 --{801 IN (@list_of_analysis_ids)}?{
--- 801	Number of observation occurrence records, by observation_concept_id
+-- 801	Number of measurement occurrence records, by measurement_concept_id
 insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
 select c1.cohort_definition_id, 
 	801 as analysis_id, 
-	o1.observation_CONCEPT_ID as stratum_1,
+	o1.measurement_CONCEPT_ID as stratum_1,
 	COUNT_BIG(o1.PERSON_ID) as count_value
 from
-	@CDM_schema.dbo.observation o1
+	@CDM_schema.dbo.measurement o1
 	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
 --{@observation_concept_ids != ''}?{
-	where o1.observation_concept_id in (@observation_concept_ids)
+	where o1.measurement_concept_id in (@observation_concept_ids)
 --}
 group by c1.cohort_definition_id,
-	o1.observation_CONCEPT_ID
+	o1.measurement_CONCEPT_ID
 ;
 --}
 
 
 
 --{802 IN (@list_of_analysis_ids)}?{
--- 802	Number of persons by observation occurrence start month, by observation_concept_id
+-- 802	Number of persons by measurement occurrence start month, by measurement_concept_id
 insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
 select c1.cohort_definition_id,
 	802 as analysis_id,   
-	o1.observation_concept_id as stratum_1,
-	YEAR(observation_date)*100 + month(observation_date) as stratum_2, 
+	o1.measurement_concept_id as stratum_1,
+	YEAR(measurement_date)*100 + month(measurement_date) as stratum_2, 
 	COUNT_BIG(distinct PERSON_ID) as count_value
 from
-	@CDM_schema.dbo.observation o1
+	@CDM_schema.dbo.measurement o1
 	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
 --{@observation_concept_ids != ''}?{
-	where o1.observation_concept_id in (@observation_concept_ids)
+	where o1.measurement_concept_id in (@observation_concept_ids)
 --}
 group by c1.cohort_definition_id,
-	o1.observation_concept_id, 
-	YEAR(observation_date)*100 + month(observation_date)
+	o1.measurement_concept_id, 
+	YEAR(measurement_date)*100 + month(measurement_date)
 ;
 --}
 
 
 
 --{803 IN (@list_of_analysis_ids)}?{
--- 803	Number of distinct observation occurrence concepts per person
+-- 803	Number of distinct measurement occurrence concepts per person
 insert into HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select cohort_definition_id,
 	803 as analysis_id,
@@ -2621,13 +2620,13 @@ select cohort_definition_id,
 from
 (
 select cohort_definition_id,
-	num_observations as count_value,
-	1.0*(row_number() over (partition by cohort_definition_id order by num_observations))/(COUNT_BIG(num_observations) over (partition by cohort_definition_id)+1) as p1
+	num_measurements as count_value,
+	1.0*(row_number() over (partition by cohort_definition_id order by num_measurements))/(COUNT_BIG(num_measurements) over (partition by cohort_definition_id)+1) as p1
 from
 	(
-	select c1.cohort_definition_id, o1.person_id, COUNT_BIG(distinct o1.observation_concept_id) as num_observations
+	select c1.cohort_definition_id, o1.person_id, COUNT_BIG(distinct o1.measurement_concept_id) as num_measurements
 	from
-	@CDM_schema.dbo.observation o1
+	@CDM_schema.dbo.measurement o1
 	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
 	group by c1.cohort_definition_id, o1.person_id
@@ -2640,61 +2639,61 @@ group by cohort_definition_id
 
 
 --{804 IN (@list_of_analysis_ids)}?{
--- 804	Number of persons with at least one observation occurrence, by observation_concept_id by calendar year by gender by age decile
+-- 804	Number of persons with at least one measurement occurrence, by measurement_concept_id by calendar year by gender by age decile
 insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, count_value)
 select c1.cohort_definition_id,
 	804 as analysis_id,   
-	o1.observation_concept_id as stratum_1,
-	YEAR(observation_date) as stratum_2,
+	o1.measurement_concept_id as stratum_1,
+	YEAR(measurement_date) as stratum_2,
 	p1.gender_concept_id as stratum_3,
-	floor((year(observation_date) - p1.year_of_birth)/10) as stratum_4, 
+	floor((year(measurement_date) - p1.year_of_birth)/10) as stratum_4, 
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from @CDM_schema.dbo.PERSON p1
 	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
 		on p1.person_id = c1.subject_id
 inner join
-@CDM_schema.dbo.observation o1
+@CDM_schema.dbo.measurement o1
 on p1.person_id = o1.person_id
 --{@observation_concept_ids != ''}?{
-	where o1.observation_concept_id in (@observation_concept_ids)
+	where o1.measurement_concept_id in (@observation_concept_ids)
 --}
 group by c1.cohort_definition_id,
-	o1.observation_concept_id, 
-	YEAR(observation_date),
+	o1.measurement_concept_id, 
+	YEAR(measurement_date),
 	p1.gender_concept_id,
-	floor((year(observation_date) - p1.year_of_birth)/10)
+	floor((year(measurement_date) - p1.year_of_birth)/10)
 ;
 --}
 
 --{805 IN (@list_of_analysis_ids)}?{
--- 805	Number of observation occurrence records, by observation_concept_id by observation_type_concept_id
+-- 805	Number of measurement occurrence records, by measurement_concept_id by measurement_type_concept_id
 insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
 select c1.cohort_definition_id,
 	805 as analysis_id, 
-	o1.observation_CONCEPT_ID as stratum_1,
-	o1.observation_type_concept_id as stratum_2,
+	o1.measurement_CONCEPT_ID as stratum_1,
+	o1.measurement_type_concept_id as stratum_2,
 	COUNT_BIG(o1.PERSON_ID) as count_value
 from
-	@CDM_schema.dbo.observation o1
+	@CDM_schema.dbo.measurement o1
 	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
 --{@observation_concept_ids != ''}?{
-	where o1.observation_concept_id in (@observation_concept_ids)
+	where o1.measurement_concept_id in (@observation_concept_ids)
 --}
 group by c1.cohort_definition_id,
-	o1.observation_CONCEPT_ID,	
-	o1.observation_type_concept_id
+	o1.measurement_CONCEPT_ID,	
+	o1.measurement_type_concept_id
 ;
 --}
 
 
 
 --{806 IN (@list_of_analysis_ids)}?{
--- 806	Distribution of age by observation_concept_id
+-- 806	Distribution of age by measurement_concept_id
 insert into HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select cohort_definition_id,
 	806 as analysis_id,
-	observation_concept_id as stratum_1,
+	measurement_concept_id as stratum_1,
 	gender_concept_id as stratum_2,
 	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
@@ -2709,46 +2708,46 @@ select cohort_definition_id,
 from
 (
 select c1.cohort_definition_id,
-	o1.observation_concept_id,
+	o1.measurement_concept_id,
 	p1.gender_concept_id,
-	o1.observation_start_year - p1.year_of_birth as count_value,
-	1.0*(row_number() over (partition by c1.cohort_definition_id, o1.observation_concept_id, p1.gender_concept_id order by o1.observation_start_year - p1.year_of_birth))/(COUNT_BIG(o1.observation_start_year - p1.year_of_birth) over (partition by c1.cohort_definition_id, o1.observation_concept_id, p1.gender_concept_id)+1) as p1
+	o1.measurement_start_year - p1.year_of_birth as count_value,
+	1.0*(row_number() over (partition by c1.cohort_definition_id, o1.measurement_concept_id, p1.gender_concept_id order by o1.measurement_start_year - p1.year_of_birth))/(COUNT_BIG(o1.measurement_start_year - p1.year_of_birth) over (partition by c1.cohort_definition_id, o1.measurement_concept_id, p1.gender_concept_id)+1) as p1
 from @CDM_schema.dbo.PERSON p1
 	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
 		on p1.person_id = c1.subject_id
 inner join
-(select person_id, observation_concept_id, min(year(observation_date)) as observation_start_year
-from @CDM_schema.dbo.observation o1
+(select person_id, measurement_concept_id, min(year(measurement_date)) as measurement_start_year
+from @CDM_schema.dbo.measurement o1
 	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
 --{@observation_concept_ids != ''}?{
-	where o1.observation_concept_id in (@observation_concept_ids)
+	where o1.measurement_concept_id in (@observation_concept_ids)
 --}
-group by person_id, observation_concept_id
+group by person_id, measurement_concept_id
 ) o1
 on p1.person_id = o1.person_id
 ) t1
-group by cohort_definition_id, observation_concept_id, gender_concept_id
+group by cohort_definition_id, measurement_concept_id, gender_concept_id
 ;
 --}
 
 --{807 IN (@list_of_analysis_ids)}?{
--- 807	Number of observation occurrence records, by observation_concept_id and unit_concept_id
+-- 807	Number of measurement occurrence records, by measurement_concept_id and unit_concept_id
 insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
 select c1.cohort_definition_id,
 	807 as analysis_id, 
-	o1.observation_CONCEPT_ID as stratum_1,
+	o1.measurement_CONCEPT_ID as stratum_1,
 	o1.unit_concept_id as stratum_2,
 	COUNT_BIG(o1.PERSON_ID) as count_value
 from
-	@CDM_schema.dbo.observation o1
+	@CDM_schema.dbo.measurement o1
 	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
 --{@observation_concept_ids != ''}?{
-	where o1.observation_concept_id in (@observation_concept_ids)
+	where o1.measurement_concept_id in (@observation_concept_ids)
 --}
 group by c1.cohort_definition_id,
-	o1.observation_CONCEPT_ID,
+	o1.measurement_CONCEPT_ID,
 	o1.unit_concept_id
 ;
 --}
@@ -2758,13 +2757,13 @@ group by c1.cohort_definition_id,
 
 
 --{809 IN (@list_of_analysis_ids)}?{
--- 809	Number of observation records with invalid person_id
+-- 809	Number of measurement records with invalid person_id
 insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
 select c1.cohort_definition_id,
 	809 as analysis_id,  
 	COUNT_BIG(o1.PERSON_ID) as count_value
 from
-	@CDM_schema.dbo.observation o1
+	@CDM_schema.dbo.measurement o1
 	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
 	left join @CDM_schema.dbo.PERSON p1
@@ -2776,19 +2775,19 @@ group by c1.cohort_definition_id
 
 
 --{810 IN (@list_of_analysis_ids)}?{
--- 810	Number of observation records outside valid observation period
+-- 810	Number of measurement records outside valid observation period
 insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
 select c1.cohort_definition_id,
 	810 as analysis_id,  
 	COUNT_BIG(o1.PERSON_ID) as count_value
 from
-	@CDM_schema.dbo.observation o1
+	@CDM_schema.dbo.measurement o1
 	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
 	left join @CDM_schema.dbo.OBSERVATION_PERIOD op1
 	on op1.person_id = o1.person_id
-	and o1.observation_date >= op1.observation_period_start_date
-	and o1.observation_date <= op1.observation_period_end_date
+	and o1.measurement_date >= op1.OBSERVATION_PERIOD_start_date
+	and o1.measurement_date <= op1.OBSERVATION_PERIOD_end_date
 where op1.person_id is null
 group by c1.cohort_definition_id
 ;
@@ -2797,13 +2796,13 @@ group by c1.cohort_definition_id
 
 
 --{812 IN (@list_of_analysis_ids)}?{
--- 812	Number of observation records with invalid provider_id
+-- 812	Number of measurement records with invalid provider_id
 insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
 select c1.cohort_definition_id,
 	812 as analysis_id,  
 	COUNT_BIG(o1.PERSON_ID) as count_value
 from
-	@CDM_schema.dbo.observation o1
+	@CDM_schema.dbo.measurement o1
 	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
 	left join @CDM_schema.dbo.provider p1
@@ -2815,13 +2814,13 @@ group by c1.cohort_definition_id
 --}
 
 --{813 IN (@list_of_analysis_ids)}?{
--- 813	Number of observation records with invalid visit_id
+-- 813	Number of measurement records with invalid visit_id
 insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
 select c1.cohort_definition_id,
 	813 as analysis_id,  
 	COUNT_BIG(o1.PERSON_ID) as count_value
 from
-	@CDM_schema.dbo.observation o1
+	@CDM_schema.dbo.measurement o1
 	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
 	left join @CDM_schema.dbo.visit_occurrence vo1
@@ -2834,13 +2833,13 @@ group by c1.cohort_definition_id
 
 
 --{814 IN (@list_of_analysis_ids)}?{
--- 814	Number of observation records with no value (numeric, string, or concept)
+-- 814	Number of measurement records with no value (numeric, string, or concept)
 insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
 select c1.cohort_definition_id,
 	814 as analysis_id,  
 	COUNT_BIG(o1.PERSON_ID) as count_value
 from
-	@CDM_schema.dbo.observation o1
+	@CDM_schema.dbo.measurement o1
 	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
 where o1.value_as_number is null
@@ -2852,11 +2851,11 @@ group by c1.cohort_definition_id
 
 
 --{815 IN (@list_of_analysis_ids)}?{
--- 815	Distribution of numeric values, by observation_concept_id and unit_concept_id
+-- 815	Distribution of numeric values, by measurement_concept_id and unit_concept_id
 insert into HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select cohort_definition_id,
 	815 as analysis_id,
-	observation_concept_id as stratum_1,
+	measurement_concept_id as stratum_1,
 	unit_concept_id as stratum_2,
 	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
@@ -2871,26 +2870,140 @@ select cohort_definition_id,
 from
 (
 select cohort_definition_id,
-	observation_concept_id, unit_concept_id,
+	measurement_concept_id, unit_concept_id,
 	value_as_number as count_value,
-	1.0*(row_number() over (partition by cohort_definition_id, observation_concept_id, unit_concept_id order by value_as_number))/(COUNT_BIG(value_as_number) over (partition by cohort_definition_id, observation_concept_id, unit_concept_id)+1) as p1
-from @CDM_schema.dbo.observation o1
+	1.0*(row_number() over (partition by cohort_definition_id, measurement_concept_id, unit_concept_id order by value_as_number))/(COUNT_BIG(value_as_number) over (partition by cohort_definition_id, measurement_concept_id, unit_concept_id)+1) as p1
+from @CDM_schema.dbo.measurement o1
 	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
 where o1.unit_concept_id is not null
 	and o1.value_as_number is not null
 	--{@observation_concept_ids != ''}?{
-	and o1.observation_concept_id in (@observation_concept_ids)
+	and o1.measurement_concept_id in (@observation_concept_ids)
 --}
 ) t1
-group by cohort_definition_id, observation_concept_id, unit_concept_id
+group by cohort_definition_id, measurement_concept_id, unit_concept_id
 ;
 --}
 
 
+--{@CDM_version == '5'}?{  
+--{816 IN (@list_of_analysis_ids)}?{
+-- 816	Distribution of low range, by measurement_concept_id and unit_concept_id
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	816 as analysis_id,
+	measurement_concept_id as stratum_1,
+	unit_concept_id as stratum_2,
+	COUNT_BIG(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	stdev(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select cohort_definition_id, measurement_concept_id, unit_concept_id,
+	range_low as count_value,
+	1.0*(row_number() over (partition by cohort_definition_id, measurement_concept_id, unit_concept_id order by range_low))/(COUNT_BIG(range_low) over (partition by cohort_definition_id, measurement_concept_id, unit_concept_id)+1) as p1
+from @CDM_schema.dbo.measurement o1
+	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+		on o1.person_id = c1.subject_id
+where o1.unit_concept_id is not null
+	and o1.value_as_number is not null
+	and o1.range_low is not null
+	and o1.range_high is not null
+	--{@observation_concept_ids != ''}?{
+	and o1.measurement_concept_id in (@observation_concept_ids)
+--}
+) t1
+group by cohort_definition_id, measurement_concept_id, unit_concept_id
+;
+--}
+
+
+--{817 IN (@list_of_analysis_ids)}?{
+-- 817	Distribution of high range, by measurement_concept_id and unit_concept_id
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	817 as analysis_id,
+	measurement_concept_id as stratum_1,
+	unit_concept_id as stratum_2,
+	COUNT_BIG(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	stdev(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select cohort_definition_id, measurement_concept_id, unit_concept_id,
+	range_high as count_value,
+	1.0*(row_number() over (partition by cohort_definition_id, measurement_concept_id, unit_concept_id order by range_high))/(COUNT_BIG(range_high) over (partition by cohort_definition_id, measurement_concept_id, unit_concept_id)+1) as p1
+from @CDM_schema.dbo.measurement o1
+	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+		on o1.person_id = c1.subject_id
+where o1.unit_concept_id is not null
+	and o1.value_as_number is not null
+	and o1.range_low is not null
+	and o1.range_high is not null
+	--{@observation_concept_ids != ''}?{
+	and o1.measurement_concept_id in (@observation_concept_ids)
+--}
+) t1
+group by cohort_definition_id, measurement_concept_id, unit_concept_id
+;
+--}
+
+
+
+--{818 IN (@list_of_analysis_ids)}?{
+-- 818	Number of measurement records below/within/above normal range, by measurement_concept_id and unit_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3, count_value)
+select cohort_definition_id,
+	818 as analysis_id,  
+	measurement_concept_id as stratum_1,
+	unit_concept_id as stratum_2,
+	case when o1.value_as_number < o1.range_low then 'Below Range Low'
+		when o1.value_as_number >= o1.range_low and o1.value_as_number <= o1.range_high then 'Within Range'
+		when o1.value_as_number > o1.range_high then 'Above Range High'
+		else 'Other' end as stratum_3,
+	COUNT_BIG(o1.PERSON_ID) as count_value
+from
+	@CDM_schema.dbo.measurement o1
+	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+		on o1.person_id = c1.subject_id
+where o1.value_as_number is not null
+	and o1.unit_concept_id is not null
+	and o1.range_low is not null
+	and o1.range_high is not null
+	--{@observation_concept_ids != ''}?{
+	and o1.measurement_concept_id in (@observation_concept_ids)
+--}
+group by cohort_definition_id, 
+	measurement_concept_id,
+	unit_concept_id,
+	  case when o1.value_as_number < o1.range_low then 'Below Range Low'
+		when o1.value_as_number >= o1.range_low and o1.value_as_number <= o1.range_high then 'Within Range'
+		when o1.value_as_number > o1.range_high then 'Above Range High'
+		else 'Other' end
+;
+--}
+
+--} --end of if in CDMv5
+
+
 --{@CDM_version == '4'}?{  
 --{816 IN (@list_of_analysis_ids)}?{
--- 816	Distribution of low range, by observation_concept_id and unit_concept_id
+-- 816	Distribution of low range, by measurement_concept_id and unit_concept_id
 insert into HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select cohort_definition_id,
 	816 as analysis_id,
@@ -2999,24 +3112,26 @@ group by cohort_definition_id,
 ;
 --}
 
---} --end of if in CDMv5
+--} --end of if in CDMv4
+
 
 
 --{820 IN (@list_of_analysis_ids)}?{
--- 820	Number of observation records by condition occurrence start month
+-- 820	Number of measurement records by condition occurrence start month
 insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
 select c1.cohort_definition_id, 
 	820 as analysis_id,   
-	YEAR(observation_date)*100 + month(observation_date) as stratum_1, 
+	YEAR(measurement_date)*100 + month(measurement_date) as stratum_1, 
 	COUNT_BIG(PERSON_ID) as count_value
 from
-	@CDM_schema.dbo.observation o1
+	@CDM_schema.dbo.measurement o1
 	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
 group by c1.cohort_definition_id,
-	YEAR(observation_date)*100 + month(observation_date)
+	YEAR(measurement_date)*100 + month(measurement_date)
 ;
 --}
+
 
 
 

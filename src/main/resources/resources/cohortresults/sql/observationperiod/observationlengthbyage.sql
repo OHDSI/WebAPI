@@ -5,7 +5,8 @@
   hrd1.median_value as median_value,
   hrd1.p75_value as p75_value,
   hrd1.p90_value as p90_value,
-  hrd1.max_value as max_value
+  hrd1.max_value as max_value,
+  0 as concept_id
 from @resultsSchema.dbo.heracles_results_dist hrd1
 where hrd1.analysis_id = 107
 and cohort_definition_id in (@cohortDefinitionId)

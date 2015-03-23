@@ -1,4 +1,4 @@
-
+-- I think this is all managed by Flyway now, but will leave for legacy sake
 create table COHORT 
 (
 	COHORT_DEFINITION_ID int NOT NULL,

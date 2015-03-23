@@ -17,9 +17,11 @@ import org.ohdsi.webapi.cohortresults.CohortAttribute;
 import org.ohdsi.webapi.cohortresults.CohortConditionDrilldown;
 import org.ohdsi.webapi.cohortresults.CohortConditionEraDrilldown;
 import org.ohdsi.webapi.cohortresults.CohortDashboard;
+import org.ohdsi.webapi.cohortresults.CohortDataDensity;
 import org.ohdsi.webapi.cohortresults.CohortDrugDrilldown;
 import org.ohdsi.webapi.cohortresults.CohortDrugEraDrilldown;
 import org.ohdsi.webapi.cohortresults.CohortObservationDrilldown;
+import org.ohdsi.webapi.cohortresults.CohortObservationPeriod;
 import org.ohdsi.webapi.cohortresults.CohortPersonSummary;
 import org.ohdsi.webapi.cohortresults.CohortSpecificSummary;
 import org.ohdsi.webapi.cohortresults.ConceptCountRecord;
@@ -44,6 +46,7 @@ import org.ohdsi.webapi.cohortresults.mapper.ObservationPeriodMapper;
 import org.ohdsi.webapi.cohortresults.mapper.PrevalanceConceptMapper;
 import org.ohdsi.webapi.cohortresults.mapper.PrevalanceConceptNameMapper;
 import org.ohdsi.webapi.cohortresults.mapper.PrevalanceMapper;
+import org.ohdsi.webapi.cohortresults.mapper.SeriesPerPersonMapper;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.springframework.stereotype.Component;
 
@@ -581,7 +584,7 @@ public class CohortResultsService extends AbstractDaoService {
 	 * 
 	 * @param id cohort_defintion id
 	 * @param conceptId conceptId (from concept)
-	 * @return ConditionDrilldown
+	 * @return CohortObservationDrilldown
 	 */
 	@GET
 	@Path("/{id}/observation/{conceptId}")
@@ -649,6 +652,126 @@ public class CohortResultsService extends AbstractDaoService {
 
 		return drilldown;
 
+	}
+	
+	/**
+	 * Queries for cohort analysis observation period for the given cohort definition id
+	 * 
+	 * @param id cohort_defintion id
+	 * @param minCovariatePersonCountParam
+	 * @param minIntervalPersonCountParam
+	 * @return CohortObservationPeriod
+	 */
+	@GET
+	@Path("/{id}/observationperiod")
+	@Produces(MediaType.APPLICATION_JSON)
+	public CohortObservationPeriod getCohortObservationPeriod(@PathParam("id") final int id, 
+			@QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam, 
+			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam) {
+		CohortObservationPeriod obsPeriod = new CohortObservationPeriod();
+		
+		String ageAtFirstSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/ageatfirst.sql", 
+				id, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (ageAtFirstSql != null) {
+			obsPeriod.setAgeAtFirst(getJdbcTemplate().query(ageAtFirstSql, new ConceptDistributionMapper()));
+		}
+
+		String obsLengthSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/observationlength_data.sql", 
+				id, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (obsLengthSql != null) {
+			obsPeriod.setObservationLength(getJdbcTemplate().query(obsLengthSql, new ConceptDistributionMapper()));
+		}
+		
+		String obsLengthStatsSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/observationlength_stats.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (obsLengthStatsSql != null) {
+			obsPeriod.setObservationLengthStats(this.getJdbcTemplate().query(obsLengthStatsSql, new CohortStatsMapper()));
+		}
+		
+		String obsYearStatsSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/observedbyyear_stats.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (obsYearStatsSql != null) {
+			obsPeriod.setPersonsWithContinuousObservationsByYearStats(this.getJdbcTemplate().query(obsYearStatsSql, new CohortStatsMapper()));
+		}
+		
+		String personsWithContObsSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/observedbyyear_data.sql", 
+				id, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (personsWithContObsSql != null) {
+			obsPeriod.setPersonsWithContinuousObservationsByYear(getJdbcTemplate().query(personsWithContObsSql, new ConceptDistributionMapper()));
+		}
+		
+		String ageByGenderSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/agebygender.sql", 
+				id, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (ageByGenderSql != null) {
+			obsPeriod.setAgeByGender(getJdbcTemplate().query(ageByGenderSql, new ConceptQuartileMapper()));
+		}
+		
+		String durationByGenderSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/observationlengthbygender.sql", 
+				id, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (durationByGenderSql != null) {
+			obsPeriod.setDurationByGender(getJdbcTemplate().query(durationByGenderSql, new ConceptQuartileMapper()));
+		}
+		
+		String durationByAgeSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/observationlengthbyage.sql", 
+				id, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (durationByAgeSql != null) {
+			obsPeriod.setDurationByAgeDecile(getJdbcTemplate().query(durationByAgeSql, new ConceptQuartileMapper()));
+		}
+		
+		String cumulObsSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/cumulativeduration.sql", id, 
+				minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (cumulObsSql != null) {
+			obsPeriod.setCumulativeObservation(this.getJdbcTemplate().query(cumulObsSql, new CumulativeObservationMapper()));
+		}
+
+		String obsByMonthSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/observedbymonth.sql", id, 
+				minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (obsByMonthSql != null) {
+			obsPeriod.setObservedByMonth(this.getJdbcTemplate().query(obsByMonthSql, new MonthObservationMapper()));
+		}
+		
+
+		String obsPeriodsPerPersonSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/periodsperperson.sql", id, minCovariatePersonCountParam, 
+				minIntervalPersonCountParam);
+		if (obsPeriodsPerPersonSql != null) {
+			obsPeriod.setObservationPeriodsPerPerson(this.getJdbcTemplate().query(obsPeriodsPerPersonSql, new ConceptCountMapper()));
+		}
+		
+		return obsPeriod;
+
+	}
+	
+	/**
+	 * Queries for cohort analysis data density for the given cohort definition id
+	 * 
+	 * @param id cohort_defintion id
+	 * @param minCovariatePersonCountParam
+	 * @param minIntervalPersonCountParam
+	 * @return CohortDataDensity
+	 */
+	@GET
+	@Path("/{id}/datadensity")
+	@Produces(MediaType.APPLICATION_JSON)
+	public CohortDataDensity getCohortDataDensity(@PathParam("id") final int id, 
+			@QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam, 
+			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam) {
+		
+		CohortDataDensity data = new CohortDataDensity();
+		String recordsPerPersonSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/datadensity/recordsperperson.sql", id, 
+				minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (recordsPerPersonSql != null) {
+			data.setRecordsPerPerson(this.getJdbcTemplate().query(recordsPerPersonSql, new SeriesPerPersonMapper()));
+		}
+		String totalRecordsSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/datadensity/totalrecords.sql", id, 
+				minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (totalRecordsSql != null) {
+			data.setTotalRecords(this.getJdbcTemplate().query(totalRecordsSql, new SeriesPerPersonMapper()));
+		}
+		String conceptsPerPersonSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/datadensity/conceptsperperson.sql", id, 
+				minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (conceptsPerPersonSql != null) {
+			data.setConceptsPerPerson(this.getJdbcTemplate().query(conceptsPerPersonSql, new ConceptQuartileMapper()));
+		}
+		return data;
+		
 	}
 	
 	@GET

@@ -5,7 +5,8 @@ select 'Condition occurrence' as Category,
 	hrd1.median_value as median_value,
 	hrd1.p75_value as p75_value,
 	hrd1.p90_value as p90_value,
-	hrd1.max_value as max_value
+	hrd1.max_value as max_value,
+	0 as concept_id
 from @resultsSchema.dbo.heracles_results_dist hrd1
 where hrd1.analysis_id = 403
 and cohort_definition_id in (@cohortDefinitionId)
@@ -19,7 +20,8 @@ select 'Procedure occurrence' as Category,
 	hrd1.median_value as median_value,
 	hrd1.p75_value as p75_value,
 	hrd1.p90_value as p90_value,
-	hrd1.max_value as max_value
+	hrd1.max_value as max_value,
+	0 as concept_id
 from @resultsSchema.dbo.heracles_results_dist hrd1
 where hrd1.analysis_id = 603
 and cohort_definition_id in (@cohortDefinitionId)
@@ -33,7 +35,8 @@ select 'Drug exposure' as Category,
 	hrd1.median_value as median_value,
 	hrd1.p75_value as p75_value,
 	hrd1.p90_value as p90_value,
-	hrd1.max_value as max_value
+	hrd1.max_value as max_value,
+	0 as concept_id
 from @resultsSchema.dbo.heracles_results_dist hrd1
 where hrd1.analysis_id = 703
 and cohort_definition_id in (@cohortDefinitionId)
@@ -47,7 +50,8 @@ select 'Observation' as Category,
 	hrd1.median_value as median_value,
 	hrd1.p75_value as p75_value,
 	hrd1.p90_value as p90_value,
-	hrd1.max_value as max_value
+	hrd1.max_value as max_value,
+	0 as concept_id
 from @resultsSchema.dbo.heracles_results_dist hrd1
 where hrd1.analysis_id = 803
 and cohort_definition_id in (@cohortDefinitionId)
@@ -61,7 +65,8 @@ select 'Drug era' as Category,
 	hrd1.median_value as median_value,
 	hrd1.p75_value as p75_value,
 	hrd1.p90_value as p90_value,
-	hrd1.max_value as max_value
+	hrd1.max_value as max_value,
+	0 as concept_id
 from @resultsSchema.dbo.heracles_results_dist hrd1
 where hrd1.analysis_id = 903
 and cohort_definition_id in (@cohortDefinitionId)
@@ -74,7 +79,8 @@ select 'Condition era' as Category,
 	hrd1.median_value as median_value,
 	hrd1.p75_value as p75_value,
 	hrd1.p90_value as p90_value,
-	hrd1.max_value as max_value
+	hrd1.max_value as max_value,
+	0 as concept_id
 from @resultsSchema.dbo.heracles_results_dist hrd1
 where hrd1.analysis_id = 1003
 and cohort_definition_id in (@cohortDefinitionId)

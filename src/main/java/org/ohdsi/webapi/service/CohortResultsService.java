@@ -123,7 +123,7 @@ public class CohortResultsService extends AbstractDaoService {
 	 * @param minCovariatePersonCountParam
 	 * @param minIntervalPersonCountParam
 	 * @param demographicsOnly only render gender and age
-	 * @return ConditionDrilldown
+	 * @return CohortDashboard
 	 */
 	@GET
 	@Path("/{id}/dashboard")
@@ -168,7 +168,7 @@ public class CohortResultsService extends AbstractDaoService {
 	 * Queries for cohort analysis condition treemap results for the given cohort definition id
 	 * 
 	 * @param id cohort_defintion id
-	 * @return ConditionDrilldown
+	 * @return List<HierarchicalConceptRecord>
 	 */
 	@GET
 	@Path("/{id}/condition/")
@@ -193,7 +193,7 @@ public class CohortResultsService extends AbstractDaoService {
 	 * 
 	 * @param id cohort_defintion id
 	 * @param conditionId condition_id (from concept)
-	 * @return ConditionDrilldown
+	 * @return CohortConditionDrilldown
 	 */
 	@GET
 	@Path("/{id}/condition/{conditionId}")
@@ -243,7 +243,7 @@ public class CohortResultsService extends AbstractDaoService {
 	 * Queries for cohort analysis condition era treemap results for the given cohort definition id
 	 * 
 	 * @param id cohort_defintion id
-	 * @return ConditionDrilldown
+	 * @return List<HierarchicalConceptRecord>
 	 */
 	@GET
 	@Path("/{id}/conditionera/")
@@ -268,7 +268,7 @@ public class CohortResultsService extends AbstractDaoService {
 	 * 
 	 * @param id cohort_defintion id
 	 * @param conditionId condition_id (from concept)
-	 * @return ConditionDrilldown
+	 * @return CohortConditionEraDrilldown
 	 */
 	@GET
 	@Path("/{id}/conditionera/{conditionId}")
@@ -322,7 +322,7 @@ public class CohortResultsService extends AbstractDaoService {
 	 * Queries for drug analysis condition treemap results for the given cohort definition id
 	 * 
 	 * @param id cohort_defintion id
-	 * @return ConditionDrilldown
+	 * @return List<HierarchicalConceptRecord>
 	 */
 	@GET
 	@Path("/{id}/drug/")
@@ -346,56 +346,56 @@ public class CohortResultsService extends AbstractDaoService {
 	 * Queries for cohort analysis drug drilldown results for the given cohort definition id and condition id
 	 * 
 	 * @param id cohort_defintion id
-	 * @param conditionId condition_id (from concept)
-	 * @return ConditionDrilldown
+	 * @param drugId drug_id (from concept)
+	 * @return CohortDrugDrilldown
 	 */
 	@GET
-	@Path("/{id}/drug/{conditionId}")
+	@Path("/{id}/drug/{drugId}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public CohortDrugDrilldown getDrugResults(@PathParam("id") final int id, @PathParam("conditionId") final int conditionId,
+	public CohortDrugDrilldown getDrugResults(@PathParam("id") final int id, @PathParam("drugId") final int drugId,
 			@QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam, 
 			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam) {
 		CohortDrugDrilldown drilldown = new CohortDrugDrilldown();
 
 		String ageAtFirstExposureSql = this.renderDrillDownCohortSql("sqlAgeAtFirstExposure", "drug", id, 
-				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+				drugId, minCovariatePersonCountParam, minIntervalPersonCountParam);
 		if (ageAtFirstExposureSql != null) {
 			drilldown.setAgeAtFirstExposure(this.getJdbcTemplate().query(ageAtFirstExposureSql, new ConceptQuartileMapper()));
 		}
 		
 		String daysSupplySql = this.renderDrillDownCohortSql("sqlDaysSupplyDistribution", "drug", id, 
-				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+				drugId, minCovariatePersonCountParam, minIntervalPersonCountParam);
 		if (daysSupplySql != null) {
 			drilldown.setDaysSupplyDistribution(this.getJdbcTemplate().query(daysSupplySql, new ConceptQuartileMapper()));
 		}
 		
 		String drugsByTypeSql = this.renderDrillDownCohortSql("sqlDrugsByType", "drug", id, 
-				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+				drugId, minCovariatePersonCountParam, minIntervalPersonCountParam);
 		if (drugsByTypeSql != null) {
 			drilldown.setDrugsByType(this.getJdbcTemplate().query(drugsByTypeSql, new ConceptCountMapper()));
 		}
 		
 		String prevalenceByGenderAgeYearSql = this.renderDrillDownCohortSql("sqlPrevalenceByGenderAgeYear", "drug", id, 
-				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+				drugId, minCovariatePersonCountParam, minIntervalPersonCountParam);
 		if (prevalenceByGenderAgeYearSql != null) {
 			drilldown.setPrevalenceByGenderAgeYear(this.getJdbcTemplate().query(prevalenceByGenderAgeYearSql, 
 					new ConceptDecileMapper()));
 		}
 		
 		String prevalenceByMonthSql = this.renderDrillDownCohortSql("sqlPrevalenceByMonth", "drug", id, 
-				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+				drugId, minCovariatePersonCountParam, minIntervalPersonCountParam);
 		if (prevalenceByMonthSql != null) {
 			drilldown.setPrevalenceByMonth(this.getJdbcTemplate().query(prevalenceByMonthSql, new PrevalanceConceptMapper()));
 		}
 		
 		String quantityDistributionSql = this.renderDrillDownCohortSql("sqlQuantityDistribution", "drug", id, 
-				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+				drugId, minCovariatePersonCountParam, minIntervalPersonCountParam);
 		if (quantityDistributionSql != null) {
 			drilldown.setQuantityDistribution(this.getJdbcTemplate().query(quantityDistributionSql, new ConceptQuartileMapper()));
 		}
 		
 		String refillsDistributionSql = this.renderDrillDownCohortSql("sqlRefillsDistribution", "drug", id, 
-				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+				drugId, minCovariatePersonCountParam, minIntervalPersonCountParam);
 		if (refillsDistributionSql != null) {
 			drilldown.setRefillsDistribution(this.getJdbcTemplate().query(refillsDistributionSql, new ConceptQuartileMapper()));
 		}
@@ -408,7 +408,7 @@ public class CohortResultsService extends AbstractDaoService {
 	 * Queries for cohort analysis drug era treemap results for the given cohort definition id
 	 * 
 	 * @param id cohort_defintion id
-	 * @return ConditionDrilldown
+	 * @return List<HierarchicalConceptRecord>
 	 */
 	@GET
 	@Path("/{id}/drugera/")
@@ -432,13 +432,13 @@ public class CohortResultsService extends AbstractDaoService {
 	 * Queries for cohort analysis drug era drilldown results for the given cohort definition id and condition id
 	 * 
 	 * @param id cohort_defintion id
-	 * @param conditionId condition_id (from concept)
-	 * @return ConditionDrilldown
+	 * @param drugId drug_id (from concept)
+	 * @return CohortDrugEraDrilldown
 	 */
 	@GET
-	@Path("/{id}/drugera/{conditionId}")
+	@Path("/{id}/drugera/{drugId}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public CohortDrugEraDrilldown getDrugEraResults(@PathParam("id") final int id, @PathParam("conditionId") final int conditionId,
+	public CohortDrugEraDrilldown getDrugEraResults(@PathParam("id") final int id, @PathParam("drugId") final int drugId,
 			@QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam, 
 			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam) {
 		CohortDrugEraDrilldown drilldown = new CohortDrugEraDrilldown();
@@ -446,7 +446,7 @@ public class CohortResultsService extends AbstractDaoService {
 		// age at first exposure
 		List<ConceptQuartileRecord> ageAtFirstExposure = null;
 		String ageAtFirstExposureSql = this.renderDrillDownCohortSql("sqlAgeAtFirstExposure", "drugera", id, 
-				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+				drugId, minCovariatePersonCountParam, minIntervalPersonCountParam);
 		if (ageAtFirstExposureSql != null) {
 			ageAtFirstExposure = getJdbcTemplate().query(ageAtFirstExposureSql, new ConceptQuartileMapper());
 		}
@@ -455,7 +455,7 @@ public class CohortResultsService extends AbstractDaoService {
 		// length of era
 		List<ConceptQuartileRecord> lengthOfEra = null;
 		String lengthOfEraSql = this.renderDrillDownCohortSql("sqlLengthOfEra", "drugera", id, 
-				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+				drugId, minCovariatePersonCountParam, minIntervalPersonCountParam);
 		if (lengthOfEraSql != null) {
 			lengthOfEra = getJdbcTemplate().query(lengthOfEraSql, new ConceptQuartileMapper());
 		}
@@ -464,7 +464,7 @@ public class CohortResultsService extends AbstractDaoService {
 		// prevalence by gender age year
 		List<ConceptDecileRecord> prevalenceByGenderAgeYear = null;
 		String prevalenceByGenderAgeYearSql = this.renderDrillDownCohortSql("sqlPrevalenceByGenderAgeYear", "drugera", id, 
-				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+				drugId, minCovariatePersonCountParam, minIntervalPersonCountParam);
 		if (prevalenceByGenderAgeYearSql != null) {
 			prevalenceByGenderAgeYear = getJdbcTemplate().query(prevalenceByGenderAgeYearSql, new ConceptDecileMapper());
 		}
@@ -473,7 +473,7 @@ public class CohortResultsService extends AbstractDaoService {
 		// prevalence by month
 		List<PrevalenceRecord> prevalenceByMonth = null;
 		String prevalenceByMonthSql = this.renderDrillDownCohortSql("sqlPrevalenceByMonth", "drugera", id, 
-				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+				drugId, minCovariatePersonCountParam, minIntervalPersonCountParam);
 		if (prevalenceByMonthSql != null) {
 			prevalenceByMonth = getJdbcTemplate().query(prevalenceByMonthSql, new PrevalanceConceptMapper());
 		}
@@ -529,7 +529,7 @@ public class CohortResultsService extends AbstractDaoService {
 	 * Queries for cohort analysis cohort specific results for the given cohort definition id
 	 * 
 	 * @param id cohort_defintion id
-	 * @return CohortPersonSummary
+	 * @return CohortSpecificSummary
 	 */
 	@GET
 	@Path("/{id}/cohortspecific")
@@ -563,7 +563,7 @@ public class CohortResultsService extends AbstractDaoService {
 	 * Queries for cohort analysis for observation treemap
 	 * 
 	 * @param id cohort_defintion id
-	 * @return CohortPersonSummary
+	 * @return List<HierarchicalConceptRecord>
 	 */
 	@GET
 	@Path("/{id}/observation")
@@ -781,7 +781,7 @@ public class CohortResultsService extends AbstractDaoService {
 	 * Queries for cohort analysis procedure treemap results for the given cohort definition id
 	 * 
 	 * @param id cohort_defintion id
-	 * @return ConditionDrilldown
+	 * @return List<HierarchicalConceptRecord> 
 	 */
 	@GET
 	@Path("/{id}/procedure/")
@@ -807,7 +807,7 @@ public class CohortResultsService extends AbstractDaoService {
 	 * @param id cohort_defintion id
 	 * @param minCovariatePersonCountParam
 	 * @param minIntervalPersonCountParam
-	 * @return CohortDataDensity
+	 * @return CohortProceduresDrillDown
 	 */
 	@GET
 	@Path("/{id}/procedure/{conceptId}")
@@ -857,7 +857,7 @@ public class CohortResultsService extends AbstractDaoService {
 	 * Queries for cohort analysis visit treemap results for the given cohort definition id
 	 * 
 	 * @param id cohort_defintion id
-	 * @return ConditionDrilldown
+	 * @return List<HierarchicalConceptRecord>
 	 */
 	@GET
 	@Path("/{id}/visit/")
@@ -883,7 +883,7 @@ public class CohortResultsService extends AbstractDaoService {
 	 * @param id cohort_defintion id
 	 * @param minCovariatePersonCountParam
 	 * @param minIntervalPersonCountParam
-	 * @return CohortDataDensity
+	 * @return CohortVisitsDrilldown
 	 */
 	@GET
 	@Path("/{id}/visit/{conceptId}")
@@ -933,7 +933,7 @@ public class CohortResultsService extends AbstractDaoService {
 	 * @param id cohort_defintion id
 	 * @param minCovariatePersonCountParam
 	 * @param minIntervalPersonCountParam
-	 * @return CohortDataDensity
+	 * @return CohortDeathData
 	 */
 	@GET
 	@Path("/{id}/death")
@@ -978,6 +978,11 @@ public class CohortResultsService extends AbstractDaoService {
 		return data;
 	}
 	
+	/**
+	 * Returns heracles heel results (data quality issues) for the given cohort definition id
+	 * @param id cohort definition id
+	 * @return List<CohortAttribute>
+	 */
 	@GET
 	@Path("/{id}/heraclesHeel")
 	@Produces(MediaType.APPLICATION_JSON)

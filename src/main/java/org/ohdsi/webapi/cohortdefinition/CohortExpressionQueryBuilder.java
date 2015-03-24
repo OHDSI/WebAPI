@@ -151,7 +151,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
         sqlExpression,
         range.op.startsWith("!") ? "not " : "",
         range.value.doubleValue(),
-        range.value.doubleValue());
+        range.extent.doubleValue());
     }
     else
     {
@@ -283,7 +283,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     else
       endExpression = startWindow.end.coeff == -1 ? "P.OP_START_DATE" : "P.OP_END_DATE";
     
-    String windowCriteria = String.format("WHERE A.START_DATE BETWEEN %s and %s", startExpression, endExpression);
+    String windowCriteria = String.format("A.START_DATE BETWEEN %s and %s", startExpression, endExpression);
     query = StringUtils.replace(query,"@windowCriteria",windowCriteria);
 
     String occurrenceCriteria = String.format(
@@ -1136,7 +1136,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // unit
     if (criteria.unit != null && criteria.unit.length > 0)
     {
-      ArrayList<Long> conceptIds = getConceptIdsFromConcepts(criteria.valueAsConcept);
+      ArrayList<Long> conceptIds = getConceptIdsFromConcepts(criteria.unit);
       whereClauses.add(String.format("C.unit_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
     }
        

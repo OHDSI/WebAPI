@@ -15,4 +15,5 @@ from @resultsSchema.dbo.heracles_results_dist hrd1
 	@cdmSchema.dbo.concept c2
 	on CAST(hrd1.stratum_2 AS INT) = c2.concept_id
 where hrd1.analysis_id = 606
+ and c1.concept_id = @conceptId
 and cohort_definition_id in (@cohortDefinitionId)

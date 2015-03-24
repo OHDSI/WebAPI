@@ -8,4 +8,5 @@ from
 	(select * from @resultsSchema.dbo.heracles_results where analysis_id = 117 and cohort_definition_id in (@cohortDefinitionId)) 
 	denom on num.stratum_2 = denom.stratum_1  --calendar year
 	inner join @cdmSchema.dbo.concept c1 on CAST(num.stratum_1 AS INT) = c1.concept_id
+where c1.concept_id = @conceptId
 ORDER BY CAST(num.stratum_2 as INT)

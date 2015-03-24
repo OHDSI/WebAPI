@@ -8,3 +8,4 @@ from @resultsSchema.dbo.heracles_results hr1
 	inner join @cdmSchema.dbo.concept c2 on CAST(hr1.stratum_2 AS INT) = c2.concept_id
 where hr1.analysis_id = 605
 and cohort_definition_id in (@cohortDefinitionId)
+ and c1.concept_id = @conceptId

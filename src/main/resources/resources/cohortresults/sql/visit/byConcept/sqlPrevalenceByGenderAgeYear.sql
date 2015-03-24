@@ -33,6 +33,7 @@ INNER JOIN @cdmSchema.dbo.concept c1
 	ON num_stratum_1 = c1.concept_id
 INNER JOIN @cdmSchema.dbo.concept c2
 	ON num_stratum_3 = c2.concept_id
+where  c1.concept_id = @conceptId
 ORDER BY c1.concept_id,
 	num_stratum_2
 

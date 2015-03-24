@@ -5,7 +5,8 @@ select c2.concept_name as category,
 	hrd1.median_value as median_value,
 	hrd1.p75_value as P75_value,
 	hrd1.p90_value as P90_value,
-	hrd1.max_value as max_value
+	hrd1.max_value as max_value,
+	0 as concept_id
 from @resultsSchema.dbo.heracles_results_dist hrd1
 	inner join
 	@cdmSchema.dbo.concept c2 on CAST(hrd1.stratum_1 as INT) = c2.concept_id

@@ -2843,7 +2843,6 @@ from
 	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
 where o1.value_as_number is null
-	and o1.value_as_string is null
 	and o1.value_as_concept_id is null
 group by c1.cohort_definition_id
 ;

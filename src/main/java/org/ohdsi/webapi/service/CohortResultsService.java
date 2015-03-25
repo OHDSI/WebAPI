@@ -984,7 +984,7 @@ public class CohortResultsService extends AbstractDaoService {
 	 * @return List<CohortAttribute>
 	 */
 	@GET
-	@Path("/{id}/heraclesHeel")
+	@Path("/{id}/heraclesheel")
 	@Produces(MediaType.APPLICATION_JSON)
 	public List<CohortAttribute> getHeraclesHeel(@PathParam("id") final int id) {
 		List<CohortAttribute> attrs = new ArrayList<CohortAttribute>();

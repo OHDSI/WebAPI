@@ -4693,19 +4693,12 @@ DROP TABLE #HERACLES_cohort;
 delete from HERACLES_results where count_value <= @smallcellcount;
 delete from HERACLES_results_dist where count_value <= @smallcellcount;
 
---{@createTable}?{
---HERACLES_Heel part:
+--{@runHERACLESHeel}?{
+-- HERACLES_Heel part:
 
-IF OBJECT_ID('HERACLES_HEEL_results', 'U') IS NOT NULL
-  DROP TABLE HERACLES_HEEL_results;
+DELETE FROM HERACLES_HEEL_results where cohort_definition_id in (@cohort_definition_id);
 
-CREATE TABLE HERACLES_HEEL_results (
-	cohort_definition_id int,
-	analysis_id INT,
-	HERACLES_HEEL_warning VARCHAR(255)
-	);
-
---check for non-zero counts from checks of improper data (invalid ids, out-of-bound data, inconsistent dates)
+-- check for non-zero counts from checks of improper data (invalid ids, out-of-bound data, inconsistent dates)
 INSERT INTO HERACLES_HEEL_results (
 	cohort_definition_id,
 	analysis_id,
@@ -4760,10 +4753,11 @@ WHERE or1.analysis_id IN (
 		1600,
 		1601,
 		1701
-		) --all explicit counts of data anamolies
-	AND or1.count_value > 0;
+		) -- all explicit counts of data anamolies
+	AND or1.count_value > 0
+	 and or1.cohort_definition_id in (@cohort_definition_id);
 
---distributions where min should not be negative
+-- distributions where min should not be negative
 INSERT INTO HERACLES_HEEL_results (
 	cohort_definition_id, 
 	analysis_id,
@@ -4808,7 +4802,8 @@ WHERE ord1.analysis_id IN (
 		1607,
 		1608
 		)
-	AND ord1.min_value < 0;
+	AND ord1.min_value < 0
+	 and cohort_definition_id in (@cohort_definition_id);
 
 --death distributions where max should not be positive
 INSERT INTO HERACLES_HEEL_results (
@@ -4828,7 +4823,8 @@ WHERE ord1.analysis_id IN (
 		514,
 		515
 		)
-	AND ord1.max_value > 30;
+	AND ord1.max_value > 30
+	and  cohort_definition_id in (@cohort_definition_id);
 
 --invalid concept_id
 INSERT INTO HERACLES_HEEL_results (
@@ -4862,6 +4858,7 @@ WHERE or1.analysis_id IN (
 		)
 	AND or1.stratum_1 IS NOT NULL
 	AND c1.concept_id IS NULL
+	 and cohort_definition_id in (@cohort_definition_id)
 GROUP BY or1.cohort_definition_id, 
 	or1.analysis_id,
 	oa1.analysis_name;
@@ -4886,6 +4883,7 @@ WHERE or1.analysis_id IN (
 		705,
 		805
 		)
+		 and cohort_definition_id in (@cohort_definition_id)
 	AND or1.stratum_2 IS NOT NULL
 	AND c1.concept_id IS NULL
 GROUP BY or1.cohort_definition_id, 
@@ -4922,12 +4920,14 @@ WHERE or1.analysis_id IN (
 		1610
 		)
 	AND or1.stratum_1 = '0'
+	and   cohort_definition_id in (@cohort_definition_id)
 GROUP BY or1.cohort_definition_id, 
 	or1.analysis_id,
 	oa1.analysis_name;
 
 --concept from the wrong vocabulary
---gender  - 12 HL7
+--gender  - 12 HL7 -- TODO get the v5 version
+
 INSERT INTO HERACLES_HEEL_results (
 	cohort_definition_id,
 	analysis_id,
@@ -4942,14 +4942,15 @@ INNER JOIN HERACLES_analysis oa1
 INNER JOIN @CDM_schema.dbo.concept c1
 	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
 WHERE or1.analysis_id IN (2)
+ and cohort_definition_id in (@cohort_definition_id)
 	AND or1.stratum_1 IS NOT NULL
 	AND c1.vocabulary_id NOT IN (
-		0,
-		12
+		'Gender'
 		)
 GROUP BY or1.cohort_definition_id, 
 	or1.analysis_id,
 	oa1.analysis_name;
+	
 
 --race  - 13 CDC Race
 INSERT INTO HERACLES_HEEL_results (
@@ -4966,10 +4967,10 @@ INNER JOIN HERACLES_analysis oa1
 INNER JOIN @CDM_schema.dbo.concept c1
 	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
 WHERE or1.analysis_id IN (4)
+ and cohort_definition_id in (@cohort_definition_id)
 	AND or1.stratum_1 IS NOT NULL
 	AND c1.vocabulary_id NOT IN (
-		0,
-		13
+		'Race'
 		)
 GROUP BY or1.cohort_definition_id, 
 	or1.analysis_id,
@@ -4990,10 +4991,10 @@ INNER JOIN HERACLES_analysis oa1
 INNER JOIN @CDM_schema.dbo.concept c1
 	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
 WHERE or1.analysis_id IN (5)
+ and cohort_definition_id in (@cohort_definition_id)
 	AND or1.stratum_1 IS NOT NULL
 	AND c1.vocabulary_id NOT IN (
-		0,
-		44
+		'Ethnicity'
 		)
 GROUP BY or1.cohort_definition_id, 
 	or1.analysis_id,
@@ -5014,11 +5015,10 @@ INNER JOIN HERACLES_analysis oa1
 INNER JOIN @CDM_schema.dbo.concept c1
 	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
 WHERE or1.analysis_id IN (202)
+ and cohort_definition_id in (@cohort_definition_id)
 	AND or1.stratum_1 IS NOT NULL
 	AND c1.vocabulary_id NOT IN (
-		0,
-		14,
-		24
+		'Visit', 'Place of Service'
 		)
 GROUP BY or1.cohort_definition_id, 
 	or1.analysis_id,
@@ -5039,10 +5039,10 @@ INNER JOIN HERACLES_analysis oa1
 INNER JOIN @CDM_schema.dbo.concept c1
 	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
 WHERE or1.analysis_id IN (301)
+ and cohort_definition_id in (@cohort_definition_id)
 	AND or1.stratum_1 IS NOT NULL
 	AND c1.vocabulary_id NOT IN (
-		0,
-		48
+		'Specialty'
 		)
 GROUP BY or1.cohort_definition_id, 
 	or1.analysis_id,
@@ -5066,10 +5066,10 @@ WHERE or1.analysis_id IN (
 		400,
 		1000
 		)
+		 and cohort_definition_id in (@cohort_definition_id)
 	AND or1.stratum_1 IS NOT NULL
 	AND c1.vocabulary_id NOT IN (
-		0,
-		1
+		'SNOMED'
 		)
 GROUP BY or1.cohort_definition_id, 
 	or1.analysis_id,
@@ -5093,10 +5093,10 @@ WHERE or1.analysis_id IN (
 		700,
 		900
 		)
+		 and cohort_definition_id in (@cohort_definition_id)
 	AND or1.stratum_1 IS NOT NULL
 	AND c1.vocabulary_id NOT IN (
-		0,
-		8
+		'RxNorm'
 		)
 GROUP BY or1.cohort_definition_id, 
 	or1.analysis_id,
@@ -5117,12 +5117,10 @@ INNER JOIN HERACLES_analysis oa1
 INNER JOIN @CDM_schema.dbo.concept c1
 	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
 WHERE or1.analysis_id IN (600)
+ and or1.cohort_definition_id in (@cohort_definition_id)
 	AND or1.stratum_1 IS NOT NULL
 	AND c1.vocabulary_id NOT IN (
-		0,
-		3,
-		4,
-		5
+		'CPT4', 'HCPCS', 'ICD9Proc'
 		)
 GROUP BY or1.cohort_definition_id, 
 	or1.analysis_id,
@@ -5143,10 +5141,10 @@ INNER JOIN HERACLES_analysis oa1
 INNER JOIN @CDM_schema.dbo.concept c1
 	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
 WHERE or1.analysis_id IN (800)
+ and or1.cohort_definition_id in (@cohort_definition_id)
 	AND or1.stratum_1 IS NOT NULL
 	AND c1.vocabulary_id NOT IN (
-		0,
-		6
+		'LOINC'
 		)
 GROUP BY or1.cohort_definition_id, 
 	or1.analysis_id,
@@ -5168,10 +5166,10 @@ INNER JOIN HERACLES_analysis oa1
 INNER JOIN @CDM_schema.dbo.concept c1
 	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
 WHERE or1.analysis_id IN (1609)
+ and or1.cohort_definition_id in (@cohort_definition_id)
 	AND or1.stratum_1 IS NOT NULL
 	AND c1.vocabulary_id NOT IN (
-		0,
-		40
+		'DRG'
 		)
 GROUP BY or1.cohort_definition_id, 
 	or1.analysis_id,
@@ -5193,9 +5191,9 @@ INNER JOIN @CDM_schema.dbo.concept c1
 	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
 WHERE or1.analysis_id IN (1610)
 	AND or1.stratum_1 IS NOT NULL
+	 and or1.cohort_definition_id in (@cohort_definition_id)
 	AND c1.vocabulary_id NOT IN (
-		0,
-		43
+		'Revenue Code'
 		)
 GROUP BY or1.cohort_definition_id, 
 	or1.analysis_id,
@@ -5215,6 +5213,7 @@ FROM HERACLES_results or1
 INNER JOIN HERACLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
 WHERE or1.analysis_id IN (3)
+ and or1.cohort_definition_id in (@cohort_definition_id)
 	AND CAST(or1.stratum_1 AS INT) > year(getdate())
 	AND or1.count_value > 0
 GROUP BY or1.cohort_definition_id, 
@@ -5235,6 +5234,7 @@ FROM HERACLES_results or1
 INNER JOIN HERACLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
 WHERE or1.analysis_id IN (3)
+ and cohort_definition_id in (@cohort_definition_id)
 	AND cAST(or1.stratum_1 AS INT) < 1900
 	AND or1.count_value > 0
 GROUP BY or1.cohort_definition_id, 
@@ -5254,6 +5254,7 @@ FROM HERACLES_results or1
 INNER JOIN HERACLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
 WHERE or1.analysis_id IN (101)
+ and cohort_definition_id in (@cohort_definition_id)
 	AND CAST(or1.stratum_1 AS INT) < 0
 	AND or1.count_value > 0
 GROUP BY or1.cohort_definition_id, 
@@ -5273,6 +5274,7 @@ FROM HERACLES_results or1
 INNER JOIN HERACLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
 WHERE or1.analysis_id IN (101)
+ and or1.cohort_definition_id in (@cohort_definition_id)
 	AND CAST(or1.stratum_1 AS INT) > 100
 	AND or1.count_value > 0
 GROUP BY or1.cohort_definition_id, 
@@ -5305,6 +5307,7 @@ WHERE (
 		CAST(her1.stratum_1 AS INT) + 1 = CAST(ar2.stratum_1 AS INT)
 		OR CAST(her1.stratum_1 AS INT) + 89 = CAST(ar2.stratum_1 AS INT)
 		)
+		 and her1.cohort_definition_id in (@cohort_definition_id)
 	AND 1.0 * abs(ar2.count_value - her1.count_value) / her1.count_value > 1
 	AND her1.count_value > 10;
 
@@ -5336,6 +5339,7 @@ WHERE (
 		CAST(her1.stratum_2 AS INT) + 1 = CAST(ar2.stratum_2 AS INT)
 		OR CAST(her1.stratum_2 AS INT) + 89 = CAST(ar2.stratum_2 AS INT)
 		)
+		 and her1.cohort_definition_id in (@cohort_definition_id)
 	AND 1.0 * abs(ar2.count_value - her1.count_value) / her1.count_value > 1
 	AND her1.count_value > 10
 GROUP BY her1.cohort_definition_id,
@@ -5355,6 +5359,7 @@ FROM HERACLES_results_dist ord1
 INNER JOIN HERACLES_analysis oa1
 	ON ord1.analysis_id = oa1.analysis_id
 WHERE ord1.analysis_id IN (715)
+ and ord1.cohort_definition_id in (@cohort_definition_id)
 	AND ord1.max_value > 180;
 
 --WARNING:  refills > 10
@@ -5370,6 +5375,7 @@ FROM HERACLES_results_dist ord1
 INNER JOIN HERACLES_analysis oa1
 	ON ord1.analysis_id = oa1.analysis_id
 WHERE ord1.analysis_id IN (716)
+ and ord1.cohort_definition_id in (@cohort_definition_id)
 	AND ord1.max_value > 10;
 
 --WARNING: quantity > 600
@@ -5385,7 +5391,9 @@ FROM HERACLES_results_dist ord1
 INNER JOIN HERACLES_analysis oa1
 	ON ord1.analysis_id = oa1.analysis_id
 WHERE ord1.analysis_id IN (717)
+ and ord1.cohort_definition_id in (@cohort_definition_id)
 	AND ord1.max_value > 600;
 	
-}
+
+--}
 

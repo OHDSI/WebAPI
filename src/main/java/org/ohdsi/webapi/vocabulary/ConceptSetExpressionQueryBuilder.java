@@ -45,6 +45,10 @@ public class ConceptSetExpressionQueryBuilder {
           ArrayList<Concept> excludeConcepts,
           ArrayList<Concept> excludeDescendantConcepts)
   {
+    if (concepts.size() == 0)
+    {
+      return "select concept_id from @CDM_schema.CONCEPT where 0=1";
+    }
     String conceptSetQuery = StringUtils.replace(CONCEPT_SET_QUERY_TEMPLATE, "@conceptIds",StringUtils.join(getConceptIds(concepts), ","));
     if (descendantConcepts.size() > 0) {
       String includeDescendantQuery = StringUtils.replace(CONCEPT_SET_DESCENDANTS_TEMPLATE, "@conceptIds", StringUtils.join(getConceptIds(descendantConcepts), ","));
@@ -110,10 +114,6 @@ public class ConceptSetExpressionQueryBuilder {
     }
     
     // each ArrayList contains the concepts that are used in the sub-query of the codeset expression query
-    
-    // sanity check: if there are no included concepts, throw exception
-    if (includeConcepts.isEmpty())
-      throw new RuntimeException("Codeset Expression contained zero included concepts.  A codeset expression must contain at least 1 concept that is not excluded.");
     
     String conceptSetQuery = buildConceptSetQuery(includeConcepts, includeDescendantConcepts, excludeConcepts, excludeDescendantConcepts);
     

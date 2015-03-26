@@ -49,9 +49,6 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     @JsonProperty("cdmSchema")  
     public String cdmSchema;
 
-    @JsonProperty("targetSchema")  
-    public String targetSchema;
-
     @JsonProperty("targetTable")  
     public String targetTable;
     
@@ -171,7 +168,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
       return String.format("%s %s like '%s%s%s'", sqlExpression, negation, prefix, value, postfix);
   }
   
-  private String getCodesetQuery(ConceptSet[] conceptSets) {
+  public String getCodesetQuery(ConceptSet[] conceptSets) {
     String codesetQuery = CODESET_QUERY_TEMPLATE;
     
     
@@ -252,7 +249,6 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     {
       // replease query parameters with tokens
       resultSql = StringUtils.replace(resultSql, "@CDM_schema", options.cdmSchema);
-      resultSql = StringUtils.replace(resultSql, "@targetSchema", options.targetSchema);
       resultSql = StringUtils.replace(resultSql, "@targetTable", options.targetTable);
       resultSql = StringUtils.replace(resultSql, "@cohortDefinitionId", options.cohortId.toString());
     }

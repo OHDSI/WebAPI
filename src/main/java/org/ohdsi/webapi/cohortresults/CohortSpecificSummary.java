@@ -6,6 +6,8 @@ public class CohortSpecificSummary {
 	private List<ObservationPeriodRecord> personsByDurationFromStartToEnd;
 	private List<PrevalenceRecord> prevalenceByMonth;
 	private List<ConceptDecileRecord> numPersonsByCohortStartByGenderByAge;
+	private List<ConceptQuartileRecord> ageAtIndexDistribution;
+	private List<MonthObservationRecord> personsInCohortFromCohortStartToEnd;
 
 	/**
 	 * @return the numPersonsByCohortStartByGenderByAge
@@ -49,5 +51,35 @@ public class CohortSpecificSummary {
 	 */
 	public void setPrevalenceByMonth(List<PrevalenceRecord> prevalenceByMonth) {
 		this.prevalenceByMonth = prevalenceByMonth;
+	}
+
+	/**
+	 * @return the ageAtIndexDistribution
+	 */
+	public List<ConceptQuartileRecord> getAgeAtIndexDistribution() {
+		return ageAtIndexDistribution;
+	}
+
+	/**
+	 * @param ageAtIndexDistribution the ageAtIndexDistribution to set
+	 */
+	public void setAgeAtIndexDistribution(
+			List<ConceptQuartileRecord> ageAtIndexDistribution) {
+		this.ageAtIndexDistribution = ageAtIndexDistribution;
+	}
+
+	/**
+	 * @return the personsInCohortFromCohortStartToEnd
+	 */
+	public List<MonthObservationRecord> getPersonsInCohortFromCohortStartToEnd() {
+		return personsInCohortFromCohortStartToEnd;
+	}
+
+	/**
+	 * @param personsInCohortFromCohortStartToEnd the personsInCohortFromCohortStartToEnd to set
+	 */
+	public void setPersonsInCohortFromCohortStartToEnd(
+			List<MonthObservationRecord> personsInCohortFromCohortStartToEnd) {
+		this.personsInCohortFromCohortStartToEnd = personsInCohortFromCohortStartToEnd;
 	}
 }

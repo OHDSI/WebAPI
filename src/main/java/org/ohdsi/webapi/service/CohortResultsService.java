@@ -539,22 +539,40 @@ public class CohortResultsService extends AbstractDaoService {
 			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam) {
 		CohortSpecificSummary summary = new CohortSpecificSummary();
 		
+		// 1805, 1806
 		String personsByDurationSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/observationPeriodTimeRelativeToIndex.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam);
 		if (personsByDurationSql != null) {
 			summary.setPersonsByDurationFromStartToEnd(this.getJdbcTemplate().query(personsByDurationSql, new ObservationPeriodMapper()));
 		}
 		
+		// 1815
 		String monthPrevalenceSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/prevalenceByMonth.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam);
 		if (monthPrevalenceSql != null) {
 			summary.setPrevalenceByMonth(this.getJdbcTemplate().query(monthPrevalenceSql, new PrevalanceMapper()));
 		}
 		
+		// 1814
 		List<ConceptDecileRecord> prevalenceByGenderAgeYear = null;
 		String prevalenceGenderAgeSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/prevalenceByYearGenderSex.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam);
 		if (prevalenceGenderAgeSql != null) {
 			prevalenceByGenderAgeYear = getJdbcTemplate().query(prevalenceGenderAgeSql, new ConceptDecileCountsMapper());
 		}
 		summary.setNumPersonsByCohortStartByGenderByAge(prevalenceByGenderAgeYear);
+		
+		// 1801
+		List<ConceptQuartileRecord> ageAtIndex = null;
+		String ageAtIndexSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/ageAtIndexDistribution.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (ageAtIndexSql != null) {
+			ageAtIndex = getJdbcTemplate().query(ageAtIndexSql, new ConceptQuartileMapper());
+		}
+		summary.setAgeAtIndexDistribution(ageAtIndex);	
+		
+		// 1804
+		String personsInCohortFromCohortStartToEndSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/personsInCohortFromCohortStartToEnd.sql", id, 
+				minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (personsInCohortFromCohortStartToEndSql != null) {
+			summary.setPersonsInCohortFromCohortStartToEnd(this.getJdbcTemplate().query(personsInCohortFromCohortStartToEndSql, new MonthObservationMapper()));
+		}
 		
 		return summary;
 	}

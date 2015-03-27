@@ -567,6 +567,22 @@ public class CohortResultsService extends AbstractDaoService {
 		}
 		summary.setAgeAtIndexDistribution(ageAtIndex);	
 		
+		// 1803
+		List<ConceptQuartileRecord> distributionAgeCohortStartByCohortStartYear = null;
+		String distributionAgeCohortStartByCohortStartYearSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/distributionOfAgeAtCohortStartByCohortStartYear.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (ageAtIndexSql != null) {
+			distributionAgeCohortStartByCohortStartYear = getJdbcTemplate().query(distributionAgeCohortStartByCohortStartYearSql, new ConceptQuartileMapper());
+		}
+		summary.setDistributionAgeCohortStartByCohortStartYear(distributionAgeCohortStartByCohortStartYear);	
+		
+		// 1802
+		List<ConceptQuartileRecord> distributionAgeCohortStartByGender = null;
+		String distributionAgeCohortStartByGenderSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/distributionOfAgeAtCohortStartByGender.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (ageAtIndexSql != null) {
+			distributionAgeCohortStartByGender = getJdbcTemplate().query(distributionAgeCohortStartByGenderSql, new ConceptQuartileMapper());
+		}
+		summary.setDistributionAgeCohortStartByGender(distributionAgeCohortStartByGender);	
+		
 		// 1804
 		String personsInCohortFromCohortStartToEndSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/personsInCohortFromCohortStartToEnd.sql", id, 
 				minCovariatePersonCountParam, minIntervalPersonCountParam);

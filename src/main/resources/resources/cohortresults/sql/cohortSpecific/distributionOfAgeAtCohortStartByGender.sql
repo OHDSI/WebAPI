@@ -6,8 +6,9 @@ hrd1.p25_value as p25_value,
 hrd1.median_value as median_value,
 hrd1.p75_value as p75_value,
 hrd1.p90_value as p90_value,
-hrd1.max_value as max_value
-from HERACLES_results_dist hrd1
+hrd1.max_value as max_value,
+0 as concept_id
+from @resultsSchema.dbo.HERACLES_results_dist hrd1
 inner join @cdmSchema.dbo.concept c1 on CAST(hrd1.stratum_1 AS INT) = c1.concept_id
 where hrd1.analysis_id in (1802)
 and cohort_definition_id in (@cohortDefinitionId)

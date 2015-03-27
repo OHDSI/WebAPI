@@ -8,6 +8,8 @@ public class CohortSpecificSummary {
 	private List<ConceptDecileRecord> numPersonsByCohortStartByGenderByAge;
 	private List<ConceptQuartileRecord> ageAtIndexDistribution;
 	private List<MonthObservationRecord> personsInCohortFromCohortStartToEnd;
+	private List<ConceptQuartileRecord> distributionAgeCohortStartByCohortStartYear;
+	private List<ConceptQuartileRecord> distributionAgeCohortStartByGender;
 
 	/**
 	 * @return the numPersonsByCohortStartByGenderByAge
@@ -81,5 +83,35 @@ public class CohortSpecificSummary {
 	public void setPersonsInCohortFromCohortStartToEnd(
 			List<MonthObservationRecord> personsInCohortFromCohortStartToEnd) {
 		this.personsInCohortFromCohortStartToEnd = personsInCohortFromCohortStartToEnd;
+	}
+
+	/**
+	 * @return the distributionAgeCohortStartByCohortStartYear
+	 */
+	public List<ConceptQuartileRecord> getDistributionAgeCohortStartByCohortStartYear() {
+		return distributionAgeCohortStartByCohortStartYear;
+	}
+
+	/**
+	 * @param distributionAgeCohortStartByCohortStartYear the distributionAgeCohortStartByCohortStartYear to set
+	 */
+	public void setDistributionAgeCohortStartByCohortStartYear(
+			List<ConceptQuartileRecord> distributionAgeCohortStartByCohortStartYear) {
+		this.distributionAgeCohortStartByCohortStartYear = distributionAgeCohortStartByCohortStartYear;
+	}
+
+	/**
+	 * @return the distributionAgeCohortStartByGender
+	 */
+	public List<ConceptQuartileRecord> getDistributionAgeCohortStartByGender() {
+		return distributionAgeCohortStartByGender;
+	}
+
+	/**
+	 * @param distributionAgeCohortStartByGender the distributionAgeCohortStartByGender to set
+	 */
+	public void setDistributionAgeCohortStartByGender(
+			List<ConceptQuartileRecord> distributionAgeCohortStartByGender) {
+		this.distributionAgeCohortStartByGender = distributionAgeCohortStartByGender;
 	}
 }

@@ -51,15 +51,7 @@ public class EvidenceService extends AbstractDaoService {
     public Collection<EvidenceInfo> getInfo() {      
 
         String sql_statement = ResourceHelper.GetResourceAsString("/resources/evidence/sql/getInfo.sql");        
-	// TODO: modify this to use a parameter for the schema where
-	// Laertes' tables reside. For now, we assume they are in the
-	// 'public' schema. If they reside in a new schema (i.e., not
-	// ohdsi or cdm) then a new property datasource.laertes.schema
-	// property will need to be created in application.properties,
-	// filtered in pom.xml, read in AbstractDaoService.java, and
-	// passed to renderSql here.
-        //sql_statement = SqlRender.renderSql(sql_statement, new String[] { "CDM_schema" }, new String[] { getCdmSchema() });
-	sql_statement = SqlRender.renderSql(sql_statement, new String[] { }, new String[] { });
+        sql_statement = SqlRender.renderSql(sql_statement, new String[] { "CDM_schema" }, new String[] { this.getCdmSchema() });
         sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect());  // TODO: why is 'sql server' string passed here?
 
 	final List<EvidenceInfo> infoOnSources = new ArrayList<EvidenceInfo>();
@@ -95,16 +87,9 @@ public class EvidenceService extends AbstractDaoService {
     public Collection<DrugEvidence> getDrugEvidence(@PathParam("id") final Long id) {
         String sql_statement = ResourceHelper.GetResourceAsString("/resources/evidence/sql/getDrugEvidence.sql");
 
-	// TODO: modify this to use a parameter for the schema where
-	// Laertes' tables reside. For now, we assume they are in the
-	// 'public' schema. If they reside in a new schema (i.e., not
-	// ohdsi or cdm) then a new property datasource.laertes.schema
-	// property will need to be created in application.properties,
-	// filtered in pom.xml, read in AbstractDaoService.java, and
-	// passed to renderSql here.
-        sql_statement = SqlRender.renderSql(sql_statement, new String[] { "id" }, 
-					    new String[] { String.valueOf(id)});
-	sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect()); // TODO: why is 'sql server' string passed here?
+        sql_statement = SqlRender.renderSql(sql_statement, new String[] { "id", "CDM_schema" }, 
+					    new String[] { String.valueOf(id), this.getCdmSchema()});
+	sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect()); 
 
         final List<DrugEvidence> drugEvidences = new ArrayList<DrugEvidence>();
 
@@ -149,15 +134,8 @@ public class EvidenceService extends AbstractDaoService {
     @Produces(MediaType.APPLICATION_JSON)
     public Collection<HoiEvidence> getHoiEvidence(@PathParam("id") final Long id) {
         String sql_statement = ResourceHelper.GetResourceAsString("/resources/evidence/sql/getHoiEvidence.sql");
-	// TODO: modify this to use a parameter for the schema where
-	// Laertes' tables reside. For now, we assume they are in the
-	// 'public' schema. If they reside in a new schema (i.e., not
-	// ohdsi or cdm) then a new property datasource.laertes.schema
-	// property will need to be created in application.properties,
-	// filtered in pom.xml, read in AbstractDaoService.java, and
-	// passed to renderSql here.
-        sql_statement = SqlRender.renderSql(sql_statement, new String[] { "id"}, 
-					    new String[] { String.valueOf(id)});
+        sql_statement = SqlRender.renderSql(sql_statement, new String[] { "id", "CDM_schema" }, 
+					    new String[] { String.valueOf(id), this.getCdmSchema()});
 	sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect()); // TODO: why is 'sql server' string passed here?
 
         final List<HoiEvidence> hoiEvidences = new ArrayList<HoiEvidence>();
@@ -205,15 +183,8 @@ public class EvidenceService extends AbstractDaoService {
 	String drug_id = par[0];
 	String hoi_id = par[1];
         String sql_statement = ResourceHelper.GetResourceAsString("/resources/evidence/sql/getDrugHoiEvidence.sql");
-	// TODO: modify this to use a parameter for the schema where
-	// Laertes' tables reside. For now, we assume they are in the
-	// 'public' schema. If they reside in a new schema (i.e., not
-	// ohdsi or cdm) then a new property datasource.laertes.schema
-	// property will need to be created in application.properties,
-	// filtered in pom.xml, read in AbstractDaoService.java, and
-	// passed to renderSql here.
-        sql_statement = SqlRender.renderSql(sql_statement, new String[] { "drug_id", "hoi_id" }, 
-					    new String[] {drug_id, hoi_id});
+        sql_statement = SqlRender.renderSql(sql_statement, new String[] { "drug_id", "hoi_id", "CDM_schema"  }, 
+					    new String[] {drug_id, hoi_id, this.getCdmSchema()});
 	sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect()); // TODO: why is 'sql server' string passed here?
 
         final List<DrugHoiEvidence> evidences = new ArrayList<DrugHoiEvidence>();
@@ -268,15 +239,8 @@ public class EvidenceService extends AbstractDaoService {
 	    return null;
 	}
 
-	// TODO: modify this to use a parameter for the schema where
-	// Laertes' tables reside. For now, we assume they are in the
-	// 'public' schema. If they reside in a new schema (i.e., not
-	// ohdsi or cdm) then a new property datasource.laertes.schema
-	// property will need to be created in application.properties,
-	// filtered in pom.xml, read in AbstractDaoService.java, and
-	// passed to renderSql here.
-        sql_statement = SqlRender.renderSql(sql_statement, new String[] { "id" }, 
-					    new String[] { String.valueOf(id)});
+        sql_statement = SqlRender.renderSql(sql_statement, new String[] { "id", "CDM_schema" }, 
+					    new String[] { String.valueOf(id), this.getCdmSchema()});
 	sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect()); // TODO: why is 'sql server' string passed here?
 
         final List<DrugRollUpEvidence> drugEvidences = new ArrayList<DrugRollUpEvidence>();

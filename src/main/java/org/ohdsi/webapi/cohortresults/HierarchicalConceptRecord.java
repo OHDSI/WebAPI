@@ -12,6 +12,11 @@ public class HierarchicalConceptRecord {
 	private double recordsPerPerson;
 	private double percentPersons;
 	private long numPersons;
+	private double lengthOfEra;
+	private double percentPersonsBefore;
+	private double percentPersonsAfter;
+	private double riskDiffAfterBefore;
+	private double logRRAfterBefore;
 	
 	public HierarchicalConceptRecord() {
 		// default constructor
@@ -89,7 +94,62 @@ public class HierarchicalConceptRecord {
 	public void setLengthOfEra(double lengthOfEra) {
 		this.lengthOfEra = lengthOfEra;
 	}
-	private double lengthOfEra;
+	/**
+	 * @return the percentPersonsBefore
+	 */
+	public double getPercentPersonsBefore() {
+		return percentPersonsBefore;
+	}
+
+	/**
+	 * @param percentPersonsBefore the percentPersonsBefore to set
+	 */
+	public void setPercentPersonsBefore(double percentPersonsBefore) {
+		this.percentPersonsBefore = percentPersonsBefore;
+	}
+
+	/**
+	 * @return the percentPersonsAfter
+	 */
+	public double getPercentPersonsAfter() {
+		return percentPersonsAfter;
+	}
+
+	/**
+	 * @param percentPersonsAfter the percentPersonsAfter to set
+	 */
+	public void setPercentPersonsAfter(double percentPersonsAfter) {
+		this.percentPersonsAfter = percentPersonsAfter;
+	}
+
+	/**
+	 * @return the riskDiffAfterBefore
+	 */
+	public double getRiskDiffAfterBefore() {
+		return riskDiffAfterBefore;
+	}
+
+	/**
+	 * @param riskDiffAfterBefore the riskDiffAfterBefore to set
+	 */
+	public void setRiskDiffAfterBefore(double riskDiffAfterBefore) {
+		this.riskDiffAfterBefore = riskDiffAfterBefore;
+	}
+
+	/**
+	 * @return the logRRAfterBefore
+	 */
+	public double getLogRRAfterBefore() {
+		return logRRAfterBefore;
+	}
+
+	/**
+	 * @param logRRAfterBefore the logRRAfterBefore to set
+	 */
+	public void setLogRRAfterBefore(double logRRAfterBefore) {
+		this.logRRAfterBefore = logRRAfterBefore;
+	}
+
 	
 	
 }

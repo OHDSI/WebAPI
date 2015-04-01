@@ -26,6 +26,7 @@ import org.ohdsi.webapi.cohortresults.CohortObservationPeriod;
 import org.ohdsi.webapi.cohortresults.CohortPersonSummary;
 import org.ohdsi.webapi.cohortresults.CohortProceduresDrillDown;
 import org.ohdsi.webapi.cohortresults.CohortSpecificSummary;
+import org.ohdsi.webapi.cohortresults.CohortSpecificTreemap;
 import org.ohdsi.webapi.cohortresults.CohortVisitsDrilldown;
 import org.ohdsi.webapi.cohortresults.ConceptCountRecord;
 import org.ohdsi.webapi.cohortresults.ConceptDecileRecord;
@@ -44,11 +45,13 @@ import org.ohdsi.webapi.cohortresults.mapper.ConceptQuartileMapper;
 import org.ohdsi.webapi.cohortresults.mapper.CumulativeObservationMapper;
 import org.ohdsi.webapi.cohortresults.mapper.HierarchicalConceptEraMapper;
 import org.ohdsi.webapi.cohortresults.mapper.HierarchicalConceptMapper;
+import org.ohdsi.webapi.cohortresults.mapper.HierarchicalConceptPrevalenceMapper;
 import org.ohdsi.webapi.cohortresults.mapper.MonthObservationMapper;
 import org.ohdsi.webapi.cohortresults.mapper.ObservationPeriodMapper;
 import org.ohdsi.webapi.cohortresults.mapper.PrevalanceConceptMapper;
 import org.ohdsi.webapi.cohortresults.mapper.PrevalanceConceptNameMapper;
 import org.ohdsi.webapi.cohortresults.mapper.PrevalanceMapper;
+import org.ohdsi.webapi.cohortresults.mapper.ScatterplotMapper;
 import org.ohdsi.webapi.cohortresults.mapper.SeriesPerPersonMapper;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.springframework.stereotype.Component;
@@ -589,6 +592,64 @@ public class CohortResultsService extends AbstractDaoService {
 		if (personsInCohortFromCohortStartToEndSql != null) {
 			summary.setPersonsInCohortFromCohortStartToEnd(this.getJdbcTemplate().query(personsInCohortFromCohortStartToEndSql, new MonthObservationMapper()));
 		}
+		
+		// 1870, 1871
+		String drugOccursRelativeToIndexSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/drugOccursRelativeToIndex.sql", id, 
+				minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (drugOccursRelativeToIndexSql != null) {
+			summary.setDrugOccursRelativeToIndex(this.getJdbcTemplate().query(drugOccursRelativeToIndexSql, new ScatterplotMapper()));
+		}
+		
+		// 1820
+		String firstConditionRelativeToIndexSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/firstConditionRelativeToIndex.sql", id, 
+				minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (firstConditionRelativeToIndexSql != null) {
+			summary.setFirstConditionRelativeToIndex(this.getJdbcTemplate().query(firstConditionRelativeToIndexSql, new ScatterplotMapper()));
+		}
+		
+		// 1830
+		String procedureOccursRelativeToIndexSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/procedureOccursRelativeToIndex.sql", id, 
+				minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (procedureOccursRelativeToIndexSql != null) {
+			summary.setProcedureOccursRelativeToIndex(this.getJdbcTemplate().query(procedureOccursRelativeToIndexSql, new ScatterplotMapper()));
+		}
+		
+		return summary;
+	}
+	
+	
+	/**
+	 * Queries for cohort analysis cohort specific treemap results for the given cohort definition id
+	 * 
+	 * @param id cohort_defintion id
+	 * @return CohortSpecificSummary
+	 */
+	@GET
+	@Path("/{id}/cohortspecifictreemap")
+	@Produces(MediaType.APPLICATION_JSON)
+	public CohortSpecificTreemap getCohortSpecificTreemapResults(@PathParam("id") final int id, 
+			@QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam, 
+			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam) {
+		CohortSpecificTreemap summary = new CohortSpecificTreemap();
+		
+		// 1820
+		String conditionOccurrencePrevalenceSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/conditionOccurrencePrevalenceOfCondition.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (conditionOccurrencePrevalenceSql != null) {
+			summary.setConditionOccurrencePrevalence(this.getJdbcTemplate().query(conditionOccurrencePrevalenceSql, new HierarchicalConceptPrevalenceMapper()));
+		}
+		
+		// 1830
+		String procedureOccurrencePrevalenceSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/procedureOccurrencePrevalenceOfDrug.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (procedureOccurrencePrevalenceSql != null) {
+			summary.setProcedureOccurrencePrevalence(this.getJdbcTemplate().query(procedureOccurrencePrevalenceSql, new HierarchicalConceptPrevalenceMapper()));
+		}
+		
+		// 1870
+		String drugEraPrevalenceSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/drugEraPrevalenceOfDrug.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (drugEraPrevalenceSql != null) {
+			summary.setDrugEraPrevalence(this.getJdbcTemplate().query(drugEraPrevalenceSql, new HierarchicalConceptPrevalenceMapper()));
+		}
+		
 		
 		return summary;
 	}

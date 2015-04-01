@@ -21,6 +21,7 @@ import org.ohdsi.webapi.cohortresults.CohortDataDensity;
 import org.ohdsi.webapi.cohortresults.CohortDeathData;
 import org.ohdsi.webapi.cohortresults.CohortDrugDrilldown;
 import org.ohdsi.webapi.cohortresults.CohortDrugEraDrilldown;
+import org.ohdsi.webapi.cohortresults.CohortMeasurementDrilldown;
 import org.ohdsi.webapi.cohortresults.CohortObservationDrilldown;
 import org.ohdsi.webapi.cohortresults.CohortObservationPeriod;
 import org.ohdsi.webapi.cohortresults.CohortPersonSummary;
@@ -698,22 +699,10 @@ public class CohortResultsService extends AbstractDaoService {
 			drilldown.setAgeAtFirstOccurrence(this.getJdbcTemplate().query(ageAtFirstOccurrenceSql, new ConceptQuartileMapper()));
 		}
 		
-		String sqlLowerLimitDistribution = this.renderDrillDownCohortSql("sqlLowerLimitDistribution", "observation", id, 
-				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam);
-		if (sqlLowerLimitDistribution != null) {
-			drilldown.setLowerLimitDistribution(this.getJdbcTemplate().query(sqlLowerLimitDistribution, new ConceptQuartileMapper()));
-		}
-		
 		String sqlObservationValueDistribution = this.renderDrillDownCohortSql("sqlObservationValueDistribution", "observation", id, 
 				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam);
 		if (sqlObservationValueDistribution != null) {
 			drilldown.setObservationValueDistribution(this.getJdbcTemplate().query(sqlObservationValueDistribution, new ConceptQuartileMapper()));
-		}
-		
-		String sqlUpperLimitDistribution = this.renderDrillDownCohortSql("sqlUpperLimitDistribution", "observation", id, 
-				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam);
-		if (sqlUpperLimitDistribution != null) {
-			drilldown.setUpperLimitDistribution(this.getJdbcTemplate().query(sqlUpperLimitDistribution, new ConceptQuartileMapper()));
 		}
 		
 		String sqlObservationsByType = this.renderDrillDownCohortSql("sqlObservationsByType", "observation", id, 
@@ -728,11 +717,6 @@ public class CohortResultsService extends AbstractDaoService {
 			drilldown.setRecordsByUnit(this.getJdbcTemplate().query(sqlRecordsByUnit, new ConceptObservationCountMapper()));
 		}
 		
-		String sqlValuesRelativeToNorm = this.renderDrillDownCohortSql("sqlValuesRelativeToNorm", "observation", id, 
-				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam);
-		if (sqlValuesRelativeToNorm != null) {
-			drilldown.setValuesRelativeToNorm(this.getJdbcTemplate().query(sqlValuesRelativeToNorm, new ConceptObservationCountMapper()));
-		}
 		
 		String sqlPrevalenceByGenderAgeYear = this.renderDrillDownCohortSql("sqlPrevalenceByGenderAgeYear", "observation", id, 
 				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam);
@@ -742,6 +726,104 @@ public class CohortResultsService extends AbstractDaoService {
 		
 		List<PrevalenceRecord> prevalenceByMonth = null;
 		String prevalanceMonthSql = this.renderDrillDownCohortSql("sqlPrevalenceByMonth", "observation", id, 
+				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (prevalanceMonthSql != null) {
+			prevalenceByMonth = getJdbcTemplate().query(prevalanceMonthSql, new PrevalanceConceptNameMapper());
+		}
+		drilldown.setPrevalenceByMonth(prevalenceByMonth);
+
+		return drilldown;
+
+	}
+	
+	/**
+	 * Queries for cohort analysis for measurement treemap
+	 * 
+	 * @param id cohort_defintion id
+	 * @return List<HierarchicalConceptRecord>
+	 */
+	@GET
+	@Path("/{id}/measurement")
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<HierarchicalConceptRecord> getCohortMeasurementResults (@PathParam("id") final int id, 
+			@QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam, 
+			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam) {
+		List<HierarchicalConceptRecord> res = null;
+		String sql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/measurement/sqlMeasurementTreemap.sql", 
+				id, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (sql != null) {
+			res = getJdbcTemplate().query(sql, new HierarchicalConceptMapper());
+		}
+		
+		return res;
+	}
+	
+
+	/**
+	 * Queries for cohort analysis measurement drilldown results for the given cohort definition id and condition id
+	 * 
+	 * @param id cohort_defintion id
+	 * @param conceptId conceptId (from concept)
+	 * @return CohortMeasurementDrilldown
+	 */
+	@GET
+	@Path("/{id}/measurement/{conceptId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public CohortMeasurementDrilldown getCohortMeasurementResultsDrilldown(@PathParam("id") final int id, @PathParam("conceptId") final int conceptId,
+			@QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam, 
+			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam) {
+		CohortMeasurementDrilldown drilldown = new CohortMeasurementDrilldown();
+		
+		String ageAtFirstOccurrenceSql = this.renderDrillDownCohortSql("sqlAgeAtFirstOccurrence", "measurement", id, 
+				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (ageAtFirstOccurrenceSql != null) {
+			drilldown.setAgeAtFirstOccurrence(this.getJdbcTemplate().query(ageAtFirstOccurrenceSql, new ConceptQuartileMapper()));
+		}
+		
+		String sqlLowerLimitDistribution = this.renderDrillDownCohortSql("sqlLowerLimitDistribution", "measurement", id, 
+				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (sqlLowerLimitDistribution != null) {
+			drilldown.setLowerLimitDistribution(this.getJdbcTemplate().query(sqlLowerLimitDistribution, new ConceptQuartileMapper()));
+		}
+		
+		String sqlMeasurementValueDistribution = this.renderDrillDownCohortSql("sqlMeasurementValueDistribution", "measurement", id, 
+				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (sqlMeasurementValueDistribution != null) {
+			drilldown.setMeasurementValueDistribution(this.getJdbcTemplate().query(sqlMeasurementValueDistribution, new ConceptQuartileMapper()));
+		}
+		
+		String sqlUpperLimitDistribution = this.renderDrillDownCohortSql("sqlUpperLimitDistribution", "measurement", id, 
+				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (sqlUpperLimitDistribution != null) {
+			drilldown.setUpperLimitDistribution(this.getJdbcTemplate().query(sqlUpperLimitDistribution, new ConceptQuartileMapper()));
+		}
+		
+		String sqlMeasurementsByType = this.renderDrillDownCohortSql("sqlMeasurementsByType", "measurement", id, 
+				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (sqlMeasurementsByType != null) {
+			drilldown.setMeasurementsByType(this.getJdbcTemplate().query(sqlMeasurementsByType, new ConceptObservationCountMapper()));
+		}
+		
+		String sqlRecordsByUnit = this.renderDrillDownCohortSql("sqlRecordsByUnit", "measurement", id, 
+				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (sqlRecordsByUnit != null) {
+			drilldown.setRecordsByUnit(this.getJdbcTemplate().query(sqlRecordsByUnit, new ConceptObservationCountMapper()));
+		}
+		
+		String sqlValuesRelativeToNorm = this.renderDrillDownCohortSql("sqlValuesRelativeToNorm", "measurement", id, 
+				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (sqlValuesRelativeToNorm != null) {
+			drilldown.setValuesRelativeToNorm(this.getJdbcTemplate().query(sqlValuesRelativeToNorm, new ConceptObservationCountMapper()));
+		}
+		
+		String sqlPrevalenceByGenderAgeYear = this.renderDrillDownCohortSql("sqlPrevalenceByGenderAgeYear", "measurement", id, 
+				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (sqlPrevalenceByGenderAgeYear != null) {
+			drilldown.setPrevalenceByGenderAgeYear(this.getJdbcTemplate().query(sqlPrevalenceByGenderAgeYear, new ConceptDecileMapper()));
+		}
+		
+		List<PrevalenceRecord> prevalenceByMonth = null;
+		String prevalanceMonthSql = this.renderDrillDownCohortSql("sqlPrevalenceByMonth", "measurement", id, 
 				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam);
 		if (prevalanceMonthSql != null) {
 			prevalenceByMonth = getJdbcTemplate().query(prevalanceMonthSql, new PrevalanceConceptNameMapper());

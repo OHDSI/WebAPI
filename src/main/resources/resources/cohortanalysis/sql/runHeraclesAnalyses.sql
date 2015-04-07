@@ -30,6 +30,7 @@
 {DEFAULT @createTable = FALSE}    --createTable = @createTable
 {DEFAULT @runHERACLESHeel = FALSE}   --runHERACLESHeel = @runHERACLESHeel
 {DEFAULT @CDM_version = '4'}  --we support 4 or 5,   CDM_version = @CDM_version
+{DEFAULT @cohort_period_only = FALSE}
 
 {DEFAULT @cohort_definition_id = '2000003550,2000004386'}   --cohort_definition_id = @cohort_definition_id
 
@@ -81,6 +82,10 @@ delete from @results_schema.HERACLES_results_dist where cohort_definition_id IN 
 --7. generate results for analysis_results
 
 
+
+IF OBJECT_ID('HERACLES_cohort', 'U') IS NOT NULL --This should only do something in Oracle
+  drop table HERACLES_cohort;
+
 IF OBJECT_ID('tempdb..#HERACLES_cohort', 'U') IS NOT NULL
   drop table #HERACLES_cohort;
   
@@ -95,14 +100,14 @@ where cohort_definition_id in (@cohort_definition_id)
 insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
 select c1.cohort_definition_id, 0 as analysis_id,  '@source_name' as stratum_1, COUNT_BIG(distinct person_id) as count_value
 from @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 on p1.person_id = c1.subject_id
 group by c1.cohort_definition_id;
 
 insert into HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, count_value)
 select c1.cohort_definition_id, 0 as analysis_id, '@source_name' as stratum_1, COUNT_BIG(distinct person_id) as count_value
 from @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 on p1.person_id = c1.subject_id
 group by c1.cohort_definition_id;
 
@@ -119,7 +124,7 @@ group by c1.cohort_definition_id;
 insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
 select c1.cohort_definition_id, 1 as analysis_id,  COUNT_BIG(distinct person_id) as count_value
 from @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 on p1.person_id = c1.subject_id
 group by c1.cohort_definition_id;
 --}
@@ -130,7 +135,7 @@ group by c1.cohort_definition_id;
 insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
 select c1.cohort_definition_id, 2 as analysis_id,  gender_concept_id as stratum_1, COUNT_BIG(distinct person_id) as count_value
 from @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 on p1.person_id = c1.subject_id
 group by c1.cohort_definition_id, GENDER_CONCEPT_ID
 ;
@@ -143,7 +148,7 @@ group by c1.cohort_definition_id, GENDER_CONCEPT_ID
 insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
 select c1.cohort_definition_id, 3 as analysis_id,  year_of_birth as stratum_1, COUNT_BIG(distinct person_id) as count_value
 from @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 on p1.person_id = c1.subject_id
 group by c1.cohort_definition_id, YEAR_OF_BIRTH
 ;
@@ -155,7 +160,7 @@ group by c1.cohort_definition_id, YEAR_OF_BIRTH
 insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
 select c1.cohort_definition_id, 4 as analysis_id,  RACE_CONCEPT_ID as stratum_1, COUNT_BIG(distinct person_id) as count_value
 from @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 on p1.person_id = c1.subject_id
 group by c1.cohort_definition_id, RACE_CONCEPT_ID
 ;
@@ -168,7 +173,7 @@ group by c1.cohort_definition_id, RACE_CONCEPT_ID
 insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
 select c1.cohort_definition_id, 5 as analysis_id,  ETHNICITY_CONCEPT_ID as stratum_1, COUNT_BIG(distinct person_id) as count_value
 from @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 on p1.person_id = c1.subject_id
 group by c1.cohort_definition_id, ETHNICITY_CONCEPT_ID
 ;
@@ -183,7 +188,7 @@ group by c1.cohort_definition_id, ETHNICITY_CONCEPT_ID
 insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
 select c1.cohort_definition_id, 7 as analysis_id,  COUNT_BIG(p1.person_id) as count_value
 from @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 on p1.person_id = c1.subject_id
 	left join @CDM_schema.dbo.provider pr1
 	on p1.provider_id = pr1.provider_id
@@ -200,7 +205,7 @@ group by c1.cohort_definition_id
 insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
 select c1.cohort_definition_id, 8 as analysis_id,  COUNT_BIG(p1.person_id) as count_value
 from @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 on p1.person_id = c1.subject_id
 	left join @CDM_schema.dbo.location l1
 	on p1.location_id = l1.location_id
@@ -217,7 +222,7 @@ group by c1.cohort_definition_id
 insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
 select c1.cohort_definition_id, 9 as analysis_id,  COUNT_BIG(p1.person_id) as count_value
 from @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 on p1.person_id = c1.subject_id
 	left join @CDM_schema.dbo.care_site cs1
 	on p1.care_site_id = cs1.care_site_id
@@ -244,7 +249,7 @@ group by c1.cohort_definition_id
 insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
 select c1.cohort_definition_id, 101 as analysis_id,   year(op1.index_date) - p1.YEAR_OF_BIRTH as stratum_1, COUNT_BIG(p1.person_id) as count_value
 from @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 on p1.person_id = c1.subject_id
 	inner join (select person_id, MIN(observation_period_start_date) as index_date from @CDM_schema.dbo.OBSERVATION_PERIOD group by PERSON_ID) op1
 	on p1.PERSON_ID = op1.PERSON_ID
@@ -259,7 +264,7 @@ group by c1.cohort_definition_id, year(op1.index_date) - p1.YEAR_OF_BIRTH
 insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
 select c1.cohort_definition_id, 102 as analysis_id,  p1.gender_concept_id as stratum_1, year(op1.index_date) - p1.YEAR_OF_BIRTH as stratum_2, COUNT_BIG(p1.person_id) as count_value
 from @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 on p1.person_id = c1.subject_id
 	inner join (select person_id, MIN(observation_period_start_date) as index_date from @CDM_schema.dbo.OBSERVATION_PERIOD group by PERSON_ID) op1
 	on p1.PERSON_ID = op1.PERSON_ID
@@ -289,7 +294,7 @@ select c1.cohort_definition_id,
 	year(op1.index_date) - p1.YEAR_OF_BIRTH as count_value,
 	1.0*(row_number() over (partition by c1.cohort_definition_id order by year(op1.index_date) - p1.YEAR_OF_BIRTH))/(COUNT_BIG(year(op1.index_date) - p1.YEAR_OF_BIRTH) over (partition by c1.cohort_definition_id)+1) as p1
 from @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 on p1.person_id = c1.subject_id
 	inner join (select person_id, MIN(observation_period_start_date) as index_date from @CDM_schema.dbo.OBSERVATION_PERIOD group by PERSON_ID) op1
 	on p1.PERSON_ID = op1.PERSON_ID
@@ -325,7 +330,7 @@ select c1.cohort_definition_id,
 	year(op1.index_date) - p1.YEAR_OF_BIRTH as count_value,
 	1.0*(row_number() over (partition by p1.gender_concept_id, c1.cohort_definition_id order by year(op1.index_date) - p1.YEAR_OF_BIRTH))/(COUNT_BIG(year(op1.index_date) - p1.YEAR_OF_BIRTH) over (partition by p1.gender_concept_id, c1.cohort_definition_id)+1) as p1
 from @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 on p1.person_id = c1.subject_id
 	inner join (select person_id, MIN(observation_period_start_date) as index_date from @CDM_schema.dbo.OBSERVATION_PERIOD group by PERSON_ID) op1
 	on p1.PERSON_ID = op1.PERSON_ID
@@ -358,7 +363,7 @@ select c1.cohort_definition_id,
 	DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date) as count_value,
 	1.0*(row_number() over (partition by c1.cohort_definition_id order by DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)))/(COUNT_BIG(DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)) over (partition by c1.cohort_definition_id)+1) as p1
 from @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 on p1.person_id = c1.subject_id
 	inner join 
 	(select person_id, 
@@ -398,7 +403,7 @@ select c1.cohort_definition_id,
 	DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date) as count_value,
 	1.0*(row_number() over (partition by p1.gender_concept_id, c1.cohort_definition_id order by DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)))/(COUNT_BIG(DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)) over (partition by p1.gender_concept_id, c1.cohort_definition_id)+1) as p1
 from @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 on p1.person_id = c1.subject_id
 	inner join 
 	(select person_id, 
@@ -439,7 +444,7 @@ select c1.cohort_definition_id,
 	DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date) as count_value,
 	1.0*(row_number() over (partition by floor((year(op1.OBSERVATION_PERIOD_START_DATE) - p1.YEAR_OF_BIRTH)/10), c1.cohort_definition_id order by DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)))/(COUNT_BIG(DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)) over (partition by floor((year(op1.OBSERVATION_PERIOD_START_DATE) - p1.YEAR_OF_BIRTH)/10), c1.cohort_definition_id)+1) as p1
 from @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 on p1.person_id = c1.subject_id
 	inner join 
 	(select person_id, 
@@ -468,7 +473,7 @@ select c1.cohort_definition_id,
 	floor(DATEDIFF(dd, op1.observation_period_start_date, op1.observation_period_end_date)/30) as stratum_1, 
 	COUNT_BIG(distinct p1.person_id) as count_value
 from @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 on p1.person_id = c1.subject_id
 	inner join 
 	(select person_id, 
@@ -488,11 +493,10 @@ group by c1.cohort_definition_id, floor(DATEDIFF(dd, op1.observation_period_star
 
 --{109 IN (@list_of_analysis_ids)}?{
 -- 109	Number of persons with continuous observation in each year
-
 -- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
 
-IF OBJECT_ID('tempdb..#temp_dates', 'U') IS NOT NULL
-  drop table #temp_dates;
+IF OBJECT_ID('temp_dates', 'U') IS NOT NULL --This should only do something in Oracle
+  drop table temp_dates;
 
 SELECT DISTINCT 
   YEAR(observation_period_start_date) AS obs_year,
@@ -538,8 +542,8 @@ DROP TABLE #temp_dates;
 -- 110	Number of persons with continuous observation in each month
 -- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
 
-IF OBJECT_ID('tempdb..#temp_dates', 'U') IS NOT NULL
-  drop table #temp_dates;
+IF OBJECT_ID('temp_dates', 'U') IS NOT NULL --This should only do something in Oracle
+  drop table temp_dates;
 
 SELECT DISTINCT 
   YEAR(observation_period_start_date)*100 + MONTH(observation_period_start_date) AS obs_month,
@@ -548,7 +552,7 @@ SELECT DISTINCT
 INTO
   #temp_dates
 FROM @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on p1.person_id = c1.subject_id
 inner join
   @CDM_schema.dbo.observation_period op1
@@ -562,7 +566,7 @@ select c1.cohort_definition_id,
 	obs_month AS stratum_1, 
 	COUNT_BIG(DISTINCT p1.person_id) AS count_value
 FROM @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on p1.person_id = c1.subject_id
 inner join
   @CDM_schema.dbo.observation_period op1
@@ -591,7 +595,7 @@ select c1.cohort_definition_id,
 	YEAR(observation_period_start_date)*100 + month(OBSERVATION_PERIOD_START_DATE) as stratum_1, 
 	COUNT_BIG(distinct op1.PERSON_ID) as count_value
 from @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on p1.person_id = c1.subject_id
 inner join
   @CDM_schema.dbo.observation_period op1
@@ -610,7 +614,7 @@ select c1.cohort_definition_id,
 	YEAR(observation_period_end_date)*100 + month(observation_period_end_date) as stratum_1, 
 	COUNT_BIG(distinct op1.PERSON_ID) as count_value
 from @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on p1.person_id = c1.subject_id
 inner join
   @CDM_schema.dbo.observation_period op1
@@ -629,7 +633,7 @@ select cohort_definition_id,
 from
 	(select cohort_definition_id, person_id, COUNT_BIG(OBSERVATION_period_start_date) as num_periods 
 		from @CDM_schema.dbo.OBSERVATION_PERIOD op0
-		inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+		inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 			on op0.person_id = c1.subject_id
 		group by cohort_definition_id, PERSON_ID) op1
 group by cohort_definition_id, op1.num_periods
@@ -646,7 +650,7 @@ from
 	@CDM_schema.dbo.PERSON p1
 	inner join (select cohort_definition_id, person_id, MIN(year(OBSERVATION_period_start_date)) as first_obs_year 
 		from @CDM_schema.dbo.OBSERVATION_PERIOD op0
-		inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+		inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 			on op0.person_id = c1.subject_id
 		group by cohort_definition_id, PERSON_ID) op1
 	on p1.person_id = op1.person_id
@@ -662,7 +666,7 @@ select c1.cohort_definition_id,
 	115 as analysis_id,  
 	COUNT_BIG(op1.PERSON_ID) as count_value
 from @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on p1.person_id = c1.subject_id
 inner join
   @CDM_schema.dbo.observation_period op1
@@ -678,15 +682,15 @@ group by c1.cohort_definition_id
 -- 116	Number of persons with at least one day of observation in each year by gender and age decile
 -- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
 
-IF OBJECT_ID('tempdb..#temp_dates', 'U') IS NOT NULL
-  drop table #temp_dates;
+IF OBJECT_ID('temp_dates', 'U') IS NOT NULL --This should only do something in Oracle
+  drop table temp_dates;
 
 select distinct 
   YEAR(observation_period_start_date) as obs_year 
 INTO
   #temp_dates
 FROM @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on p1.person_id = c1.subject_id
 inner join
   @CDM_schema.dbo.observation_period op1
@@ -701,7 +705,7 @@ select c1.cohort_definition_id,
 	floor((t1.obs_year - p1.year_of_birth)/10) as stratum_3,
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 FROM @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on p1.person_id = c1.subject_id
 inner join
   @CDM_schema.dbo.observation_period op1
@@ -726,15 +730,15 @@ DROP TABLE #temp_dates;
 -- 117	Number of persons with at least one day of observation in each year by gender and age decile
 -- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
 
-IF OBJECT_ID('tempdb..#temp_dates', 'U') IS NOT NULL
-  drop table #temp_dates;
+IF OBJECT_ID('temp_dates', 'U') IS NOT NULL --This should only do something in Oracle
+  drop table temp_dates;
 
 select distinct 
   YEAR(observation_period_start_date)*100 + MONTH(observation_period_start_date)  as obs_month
 into 
   #temp_dates
 FROM @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on p1.person_id = c1.subject_id
 inner join
   @CDM_schema.dbo.observation_period op1
@@ -747,7 +751,7 @@ select c1.cohort_definition_id,
 	t1.obs_month as stratum_1,
 	COUNT_BIG(distinct op1.PERSON_ID) as count_value
 FROM @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on p1.person_id = c1.subject_id
 inner join
   @CDM_schema.dbo.observation_period op1
@@ -784,8 +788,11 @@ select c1.cohort_definition_id, 200 as analysis_id,
 	COUNT_BIG(distinct vo1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.visit_occurrence vo1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on vo1.person_id = c1.subject_id
+--{@cohort_period_only == 'TRUE'}?{
+WHERE vo1.visit_start_date>=c1.cohort_start_date and vo1.visit_end_date<=c1.cohort_end_date
+--} 
 group by c1.cohort_definition_id,
 	--{@CDM_version == '4'}?{
 	vo1.place_of_service_CONCEPT_ID
@@ -810,8 +817,11 @@ select c1.cohort_definition_id, 201 as analysis_id,
 	COUNT_BIG(vo1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.visit_occurrence vo1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on vo1.person_id = c1.subject_id
+--{@cohort_period_only == 'TRUE'}?{
+WHERE vo1.visit_start_date>=c1.cohort_start_date and vo1.visit_end_date<=c1.cohort_end_date
+--}  
 group by c1.cohort_definition_id,
 	--{@CDM_version == '4'}?{
 	vo1.place_of_service_CONCEPT_ID
@@ -839,8 +849,11 @@ select c1.cohort_definition_id,
 	COUNT_BIG(distinct PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.visit_occurrence vo1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on vo1.person_id = c1.subject_id
+--{@cohort_period_only == 'TRUE'}?{  
+WHERE vo1.visit_start_date>=c1.cohort_start_date and vo1.visit_end_date<=c1.cohort_end_date
+--}  
 group by c1.cohort_definition_id,
 	--{@CDM_version == '4'}?{
 	vo1.place_of_service_CONCEPT_ID,
@@ -885,9 +898,12 @@ from
 		--}
 	from
 	@CDM_schema.dbo.visit_occurrence vo1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on vo1.person_id = c1.subject_id
-	group by c1.cohort_definition_id, vo1.person_id
+--{@cohort_period_only == 'TRUE'}?{  
+WHERE vo1.visit_start_date>=c1.cohort_start_date and vo1.visit_end_date<=c1.cohort_end_date
+--}
+group by c1.cohort_definition_id, vo1.person_id
 	) t0
 ) t1
 group by cohort_definition_id
@@ -912,11 +928,14 @@ select c1.cohort_definition_id,
 	floor((year(visit_start_date) - p1.year_of_birth)/10) as stratum_4, 
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on p1.person_id = c1.subject_id
 inner join
 @CDM_schema.dbo.visit_occurrence vo1
 on p1.person_id = vo1.person_id
+--{@cohort_period_only == 'TRUE'}?{
+WHERE vo1.visit_start_date>=c1.cohort_start_date and vo1.visit_end_date<=c1.cohort_end_date
+--}
 group by c1.cohort_definition_id,
 	--{@CDM_version == '4'}?{
 	vo1.place_of_service_CONCEPT_ID,
@@ -964,24 +983,29 @@ select c1.cohort_definition_id,
 	vo1.visit_start_year - p1.year_of_birth as count_value,
 	1.0*(row_number() over (partition by c1.cohort_definition_id, {@CDM_version == '4'}?{ vo1.place_of_service_CONCEPT_ID } {@CDM_version == '5'}?{ vo1.visit_CONCEPT_ID }, p1.gender_concept_id order by vo1.visit_start_year - p1.year_of_birth))/(COUNT_BIG(vo1.visit_start_year - p1.year_of_birth) over (partition by c1.cohort_definition_id, {@CDM_version == '4'}?{ vo1.place_of_service_CONCEPT_ID } {@CDM_version == '5'}?{ vo1.visit_CONCEPT_ID }, p1.gender_concept_id)+1) as p1
 from @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on p1.person_id = c1.subject_id
 inner join
-(select vo1.person_id, 
+(select vo0.person_id, 
 	--{@CDM_version == '4'}?{
-	vo1.place_of_service_CONCEPT_ID,
+	vo0.place_of_service_CONCEPT_ID,
 	--}
 	--{@CDM_version == '5'}?{
-	vo1.visit_CONCEPT_ID,
+	vo0.visit_CONCEPT_ID,
 	--} 
-	min(year(vo1.visit_start_date)) as visit_start_year
-from @CDM_schema.dbo.visit_occurrence vo1
+	min(year(vo0.visit_start_date)) as visit_start_year
+from @CDM_schema.dbo.visit_occurrence vo0
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
+	on vo0.person_id = c1.subject_id
+--{@cohort_period_only == 'TRUE'}?{  
+WHERE vo0.visit_start_date>=c1.cohort_start_date and vo0.visit_end_date<=c1.cohort_end_date
+--}
 group by person_id, 
 	--{@CDM_version == '4'}?{
-	vo1.place_of_service_CONCEPT_ID
+	vo0.place_of_service_CONCEPT_ID
 	--}
 	--{@CDM_version == '5'}?{
-	vo1.visit_CONCEPT_ID
+	vo0.visit_CONCEPT_ID
 	--}place_of_service_concept_id
 ) vo1
 on p1.person_id = vo1.person_id
@@ -1001,7 +1025,7 @@ select c1.cohort_definition_id,
 	COUNT_BIG(vo1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.visit_occurrence vo1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on vo1.person_id = c1.subject_id
 	left join @CDM_schema.dbo.PERSON p1
 	on p1.person_id = vo1.person_id
@@ -1019,7 +1043,7 @@ select cohort_definition_id,
 	COUNT_BIG(vo1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.visit_occurrence vo1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on vo1.person_id = c1.subject_id
 	left join @CDM_schema.dbo.OBSERVATION_PERIOD op1
 	on op1.person_id = vo1.person_id
@@ -1030,6 +1054,7 @@ group by c1.cohort_definition_id
 ;
 --}
 
+
 --{209 IN (@list_of_analysis_ids)}?{
 --209	Number of visit records with end date < start date
 insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
@@ -1038,7 +1063,7 @@ select c1.cohort_definition_id,
 	COUNT_BIG(vo1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.visit_occurrence vo1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on vo1.person_id = c1.subject_id
 where visit_end_date < visit_start_date
 group by c1.cohort_definition_id
@@ -1053,7 +1078,7 @@ select c1.cohort_definition_id,
 	COUNT_BIG(vo1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.visit_occurrence vo1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on vo1.person_id = c1.subject_id
 	left join @CDM_schema.dbo.care_site cs1
 	on vo1.care_site_id = cs1.care_site_id
@@ -1098,8 +1123,11 @@ select c1.cohort_definition_id,
 	datediff(dd,visit_start_date,visit_end_date) as count_value,
 	1.0*(row_number() over (partition by c1.cohort_definition_id, {@CDM_version == '4'}?{ vo1.place_of_service_CONCEPT_ID } {@CDM_version == '5'}?{ vo1.visit_CONCEPT_ID } order by datediff(dd,visit_start_date,visit_end_date)))/(COUNT_BIG(datediff(dd,visit_start_date,visit_end_date)) over (partition by c1.cohort_definition_id, {@CDM_version == '4'}?{ vo1.place_of_service_CONCEPT_ID } {@CDM_version == '5'}?{ vo1.visit_CONCEPT_ID })+1) as p1
 from @CDM_schema.dbo.visit_occurrence vo1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on vo1.person_id = c1.subject_id
+--{@cohort_period_only == 'TRUE'}?{
+WHERE vo1.visit_start_date>=c1.cohort_start_date and vo1.visit_end_date<=c1.cohort_end_date
+--}  
 ) t1
 group by cohort_definition_id, 
 	--{@CDM_version == '4'}?{
@@ -1124,8 +1152,11 @@ select c1.cohort_definition_id,
 	COUNT_BIG(PERSON_ID) as count_value
 from
 @CDM_schema.dbo.visit_occurrence vo1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on vo1.person_id = c1.subject_id
+--{@cohort_period_only == 'TRUE'}?{  
+WHERE vo1.visit_start_date>=c1.cohort_start_date and vo1.visit_end_date<=c1.cohort_end_date
+--}  
 group by c1.cohort_definition_id, YEAR(visit_start_date)*100 + month(visit_start_date)
 ;
 --}
@@ -1150,10 +1181,19 @@ select c1.cohort_definition_id,
 	COUNT_BIG(distinct co1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.condition_occurrence co1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on co1.person_id = c1.subject_id
+--{@condition_concept_ids != '' | @cohort_period_only == 'TRUE'}?{
+WHERE
+--{@cohort_period_only == 'TRUE'}?{
+	co1.condition_start_date>=c1.cohort_start_date and co1.condition_end_date<=c1.cohort_end_date
+--}
+--{@condition_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
 --{@condition_concept_ids != ''}?{
-	where co1.condition_concept_id in (@condition_concept_ids)
+	co1.condition_concept_id in (@condition_concept_ids)
+--}
 --}
 group by c1.cohort_definition_id,
 	co1.condition_CONCEPT_ID
@@ -1170,10 +1210,19 @@ select c1.cohort_definition_id,
 	COUNT_BIG(co1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.condition_occurrence co1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on co1.person_id = c1.subject_id
+--{@condition_concept_ids != '' | @cohort_period_only == 'TRUE'}?{
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	co1.condition_start_date>=c1.cohort_start_date and co1.condition_end_date<=c1.cohort_end_date
+--}
+--{@condition_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
 --{@condition_concept_ids != ''}?{
-	where co1.condition_concept_id in (@condition_concept_ids)
+	co1.condition_concept_id in (@condition_concept_ids)
+--}
 --}
 group by c1.cohort_definition_id,
 	co1.condition_CONCEPT_ID
@@ -1192,10 +1241,19 @@ select c1.cohort_definition_id,
 	COUNT_BIG(distinct PERSON_ID) as count_value
 from
 @CDM_schema.dbo.condition_occurrence co1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on co1.person_id = c1.subject_id
+--{@condition_concept_ids != '' | @cohort_period_only == 'TRUE'}?{  
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	co1.condition_start_date>=c1.cohort_start_date and co1.condition_end_date<=c1.cohort_end_date
+--}
+--{@condition_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
 --{@condition_concept_ids != ''}?{
-	where co1.condition_concept_id in (@condition_concept_ids)
+	co1.condition_concept_id in (@condition_concept_ids)
+--}
 --}
 group by c1.cohort_definition_id,
 	co1.condition_concept_id, 
@@ -1230,8 +1288,20 @@ from
 	select c1.cohort_definition_id, co1.person_id, COUNT_BIG(distinct co1.condition_concept_id) as num_conditions
 	from
 	@CDM_schema.dbo.condition_occurrence co1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on co1.person_id = c1.subject_id
+--{@condition_concept_ids != '' | @cohort_period_only == 'TRUE'}?{  
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	co1.condition_start_date>=c1.cohort_start_date and co1.condition_end_date<=c1.cohort_end_date
+--}
+--{@condition_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
+--{@condition_concept_ids != ''}?{
+	co1.condition_concept_id in (@condition_concept_ids)
+--}  
+--}
 	group by c1.cohort_definition_id, co1.person_id
 	) t0
 ) t1
@@ -1252,13 +1322,22 @@ select c1.cohort_definition_id,
 	floor((year(condition_start_date) - p1.year_of_birth)/10) as stratum_4, 
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on p1.person_id = c1.subject_id
 inner join
 @CDM_schema.dbo.condition_occurrence co1
 on p1.person_id = co1.person_id
+--{@condition_concept_ids != '' | @cohort_period_only == 'TRUE'}?{ 
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	co1.condition_start_date>=c1.cohort_start_date and co1.condition_end_date<=c1.cohort_end_date
+--}
+--{@condition_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
 --{@condition_concept_ids != ''}?{
-	where co1.condition_concept_id in (@condition_concept_ids)
+	co1.condition_concept_id in (@condition_concept_ids)
+--}
 --}
 group by c1.cohort_definition_id,
 	co1.condition_concept_id, 
@@ -1278,10 +1357,19 @@ select c1.cohort_definition_id,
 	COUNT_BIG(co1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.condition_occurrence co1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on co1.person_id = c1.subject_id
+--{@condition_concept_ids != '' | @cohort_period_only == 'TRUE'}?{  
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	co1.condition_start_date>=c1.cohort_start_date and co1.condition_end_date<=c1.cohort_end_date
+--}
+--{@condition_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
 --{@condition_concept_ids != ''}?{
-	where co1.condition_concept_id in (@condition_concept_ids)
+	co1.condition_concept_id in (@condition_concept_ids)
+--}
 --}
 group by c1.cohort_definition_id,
 	co1.condition_CONCEPT_ID,	
@@ -1316,13 +1404,24 @@ select c1.cohort_definition_id,
 	co1.condition_start_year - p1.year_of_birth as count_value,
 	1.0*(row_number() over (partition by c1.cohort_definition_id, co1.condition_concept_id, p1.gender_concept_id order by co1.condition_start_year - p1.year_of_birth))/(COUNT_BIG(co1.condition_start_year - p1.year_of_birth) over (partition by c1.cohort_definition_id, co1.condition_concept_id, p1.gender_concept_id)+1) as p1
 from @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on p1.person_id = c1.subject_id
 inner join
 (select person_id, condition_concept_id, min(year(condition_start_date)) as condition_start_year
-from @CDM_schema.dbo.condition_occurrence
+from @CDM_schema.dbo.condition_occurrence co0
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
+	on co0.person_id = c1.subject_id
+--{@condition_concept_ids != '' | @cohort_period_only == 'TRUE'}?{
+WHERE 
 --{@condition_concept_ids != ''}?{
-	where condition_concept_id in (@condition_concept_ids)
+	condition_concept_id in (@condition_concept_ids)
+--}
+--{@condition_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
+--{@cohort_period_only == 'TRUE'}?{
+	co0.condition_start_date>=c1.cohort_start_date and co0.condition_end_date<=c1.cohort_end_date
+--}
 --}
 group by person_id, condition_concept_id
 ) co1
@@ -1336,7 +1435,6 @@ group by cohort_definition_id, condition_concept_id, gender_concept_id
 
 
 
-
 --{409 IN (@list_of_analysis_ids)}?{
 -- 409	Number of condition occurrence records with invalid person_id
 insert into HERACLES_results (cohort_definition_id, analysis_id, count_value)
@@ -1345,7 +1443,7 @@ select c1.cohort_definition_id,
 	COUNT_BIG(co1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.condition_occurrence co1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on co1.person_id = c1.subject_id
 	left join @CDM_schema.dbo.PERSON p1
 	on p1.person_id = co1.person_id
@@ -1363,7 +1461,7 @@ select c1.cohort_definition_id,
 	COUNT_BIG(co1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.condition_occurrence co1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on co1.person_id = c1.subject_id
 	left join @CDM_schema.dbo.OBSERVATION_PERIOD op1
 	on op1.person_id = co1.person_id
@@ -1383,7 +1481,7 @@ select c1.cohort_definition_id,
 	COUNT_BIG(co1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.condition_occurrence co1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on co1.person_id = c1.subject_id
 where co1.condition_end_date < co1.condition_start_date
 group by c1.cohort_definition_id
@@ -1399,7 +1497,7 @@ select c1.cohort_definition_id,
 	COUNT_BIG(co1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.condition_occurrence co1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on co1.person_id = c1.subject_id
 	left join @CDM_schema.dbo.provider p1
 	on p1.provider_id =   {@CDM_version == '4'}?{ co1.associated_provider_id } {@CDM_version == '5'}?{ co1.provider_id } 
@@ -1417,7 +1515,7 @@ select c1.cohort_definition_id,
 	COUNT_BIG(co1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.condition_occurrence co1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on co1.person_id = c1.subject_id
 	left join @CDM_schema.dbo.visit_occurrence vo1
 	on co1.visit_occurrence_id = vo1.visit_occurrence_id
@@ -1436,8 +1534,20 @@ select c1.cohort_definition_id,
 	COUNT_BIG(PERSON_ID) as count_value
 from
 @CDM_schema.dbo.condition_occurrence co1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on co1.person_id = c1.subject_id
+--{@condition_concept_ids != '' | @cohort_period_only == 'TRUE'}?{  
+WHERE
+--{@cohort_period_only == 'TRUE'}?{
+	co1.condition_start_date>=c1.cohort_start_date and co1.condition_end_date<=c1.cohort_end_date
+--}
+--{@condition_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
+--{@condition_concept_ids != ''}?{
+	co1.condition_concept_id in (@condition_concept_ids)
+--}  
+--} 
 group by c1.cohort_definition_id, 
 	YEAR(condition_start_date)*100 + month(condition_start_date)
 ;
@@ -1462,8 +1572,11 @@ select c1.cohort_definition_id,
 	COUNT_BIG(distinct d1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.death d1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on d1.person_id = c1.subject_id
+--{@cohort_period_only == 'TRUE'}?{
+WHERE d1.death_date>=c1.cohort_start_date and d1.death_date<=c1.cohort_end_date
+--}
 group by c1.cohort_definition_id,
 	{@CDM_version == '4'}?{ d1.cause_of_death_concept_id } {@CDM_version == '5'}?{ d1.cause_CONCEPT_ID } 
 ;
@@ -1479,8 +1592,11 @@ select c1.cohort_definition_id,
 	COUNT_BIG(d1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.death d1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on d1.person_id = c1.subject_id
+--{@cohort_period_only == 'TRUE'}?{
+WHERE d1.death_date>=c1.cohort_start_date and d1.death_date<=c1.cohort_end_date
+--}
 group by c1.cohort_definition_id, 
 	{@CDM_version == '4'}?{ d1.cause_of_death_concept_id } {@CDM_version == '5'}?{ d1.cause_CONCEPT_ID } 
 ;
@@ -1497,8 +1613,11 @@ select c1.cohort_definition_id,
 	COUNT_BIG(distinct PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.death d1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on d1.person_id = c1.subject_id
+--{@cohort_period_only == 'TRUE'}?{
+WHERE d1.death_date>=c1.cohort_start_date and d1.death_date<=c1.cohort_end_date
+--}
 group by c1.cohort_definition_id,
 	YEAR(death_date)*100 + month(death_date)
 ;
@@ -1519,8 +1638,11 @@ from @CDM_schema.dbo.PERSON p1
 inner join
 @CDM_schema.dbo.death d1
 on p1.person_id = d1.person_id
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on d1.person_id = c1.subject_id
+--{@cohort_period_only == 'TRUE'}?{  
+WHERE d1.death_date>=c1.cohort_start_date and d1.death_date<=c1.cohort_end_date
+--}
 group by c1.cohort_definition_id,
 	YEAR(death_date),
 	p1.gender_concept_id,
@@ -1537,8 +1659,11 @@ select c1.cohort_definition_id,
 	COUNT_BIG(PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.death d1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on d1.person_id = c1.subject_id
+--{@cohort_period_only == 'TRUE'}?{  
+WHERE d1.death_date>=c1.cohort_start_date and d1.death_date<=c1.cohort_end_date
+--}  
 group by c1.cohort_definition_id,
 	death_type_concept_id
 ;
@@ -1569,11 +1694,16 @@ select c1.cohort_definition_id,
 	d1.death_year - p1.year_of_birth as count_value,
 	1.0*(row_number() over (partition by c1.cohort_definition_id, p1.gender_concept_id order by d1.death_year - p1.year_of_birth))/(COUNT_BIG(d1.death_year - p1.year_of_birth) over (partition by c1.cohort_definition_id, p1.gender_concept_id)+1) as p1
 from @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on p1.person_id = c1.subject_id
 inner join
 (select person_id, min(year(death_date)) as death_year
-from @CDM_schema.dbo.death
+from @CDM_schema.dbo.death d0
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
+	on d0.person_id = c1.subject_id
+--{@cohort_period_only == 'TRUE'}?{  
+WHERE d0.death_date>=c1.cohort_start_date and d0.death_date<=c1.cohort_end_date
+--}
 group by person_id
 ) d1
 on p1.person_id = d1.person_id
@@ -1591,7 +1721,7 @@ select c1.cohort_definition_id, 509 as analysis_id,
 	COUNT_BIG(d1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.death d1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on d1.person_id = c1.subject_id
 		left join @CDM_schema.dbo.PERSON p1
 		on d1.person_id = p1.person_id
@@ -1610,7 +1740,7 @@ select c1.cohort_definition_id,
 	COUNT_BIG(d1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.death d1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on d1.person_id = c1.subject_id
 		left join @CDM_schema.dbo.OBSERVATION_PERIOD op1
 		on d1.person_id = op1.person_id
@@ -1643,17 +1773,20 @@ select c1.cohort_definition_id,
 	datediff(dd,d1.death_date, t0.max_date) as count_value,
 	1.0*(row_number() over (partition by c1.cohort_definition_id order by datediff(dd,d1.death_date, t0.max_date)))/(COUNT_BIG(datediff(dd,d1.death_date, t0.max_date)) over (partition by c1.cohort_definition_id)+1) as p1
 from @CDM_schema.dbo.death d1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on d1.person_id = c1.subject_id
 	inner join
 	(
 		select person_id, max(condition_start_date) as max_date
 		from @CDM_schema.dbo.condition_occurrence co1
-		inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+		inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 			on co1.person_id = c1.subject_id
 		group by person_id
 	) t0
 	on d1.person_id = t0.person_id
+--{@cohort_period_only == 'TRUE'}?{  
+WHERE d1.death_date>=c1.cohort_start_date and d1.death_date<=c1.cohort_end_date
+--}
 ) t1
 group by cohort_definition_id
 ;
@@ -1681,17 +1814,20 @@ select c1.cohort_definition_id,
 	datediff(dd,d1.death_date, t0.max_date) as count_value,
 	1.0*(row_number() over (order by c1.cohort_definition_id, datediff(dd,d1.death_date, t0.max_date)))/(COUNT_BIG(datediff(dd,d1.death_date, t0.max_date)) over (partition by c1.cohort_definition_id)+1) as p1
 from @CDM_schema.dbo.death d1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on d1.person_id = c1.subject_id
 	inner join
 	(
 		select person_id, max(drug_exposure_start_date) as max_date
 		from @CDM_schema.dbo.drug_exposure de1
-		inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+		inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 			on de1.person_id = c1.subject_id
 		group by person_id
 	) t0
 	on d1.person_id = t0.person_id
+--{@cohort_period_only == 'TRUE'}?{  
+WHERE d1.death_date>=c1.cohort_start_date and d1.death_date<=c1.cohort_end_date
+--}
 ) t1
 group by cohort_definition_id
 ;
@@ -1719,17 +1855,20 @@ select c1.cohort_definition_id,
 	datediff(dd,d1.death_date, t0.max_date) as count_value,
 	1.0*(row_number() over (partition by cohort_definition_id order by datediff(dd,d1.death_date, t0.max_date)))/(COUNT_BIG(datediff(dd,d1.death_date, t0.max_date)) over (partition by cohort_definition_id)+1) as p1
 from @CDM_schema.dbo.death d1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on d1.person_id = c1.subject_id
 	inner join
 	(
 		select person_id, max(visit_start_date) as max_date
 		from @CDM_schema.dbo.visit_occurrence vo1
-		inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+		inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 			on vo1.person_id = c1.subject_id
 		group by person_id
 	) t0
 	on d1.person_id = t0.person_id
+--{@cohort_period_only == 'TRUE'}?{  
+WHERE d1.death_date>=c1.cohort_start_date and d1.death_date<=c1.cohort_end_date
+--}
 ) t1
 group by cohort_definition_id
 ;
@@ -1757,17 +1896,20 @@ select c1.cohort_definition_id,
 	datediff(dd,d1.death_date, t0.max_date) as count_value,
 	1.0*(row_number() over (partition by c1.cohort_definition_id order by datediff(dd,d1.death_date, t0.max_date)))/(COUNT_BIG(datediff(dd,d1.death_date, t0.max_date)) over (partition by cohort_definition_id)+1) as p1
 from @CDM_schema.dbo.death d1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on d1.person_id = c1.subject_id
 	inner join
 	(
 		select person_id, max(procedure_date) as max_date
 		from @CDM_schema.dbo.procedure_occurrence po1
-		inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+		inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 			on po1.person_id = c1.subject_id
 		group by person_id
 	) t0
 	on d1.person_id = t0.person_id
+--{@cohort_period_only == 'TRUE'}?{  
+WHERE d1.death_date>=c1.cohort_start_date and d1.death_date<=c1.cohort_end_date
+--}
 ) t1
 group by cohort_definition_id
 ;
@@ -1795,17 +1937,20 @@ select c1.cohort_definition_id,
 	datediff(dd,d1.death_date, t0.max_date) as count_value,
 	1.0*(row_number() over (partition by cohort_definition_id order by datediff(dd,d1.death_date, t0.max_date)))/(COUNT_BIG(datediff(dd,d1.death_date, t0.max_date)) over (partition by cohort_definition_id)+1) as p1
 from @CDM_schema.dbo.death d1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on d1.person_id = c1.subject_id
 	inner join
 	(
 		select person_id, max(observation_date) as max_date
 		from @CDM_schema.dbo.observation o1
-			inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+			inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 			on o1.person_id = c1.subject_id
 		group by person_id
 	) t0
 	on d1.person_id = t0.person_id
+--{@cohort_period_only == 'TRUE'}?{  
+WHERE d1.death_date>=c1.cohort_start_date and d1.death_date<=c1.cohort_end_date
+--}
 ) t1
 group by cohort_definition_id
 ;
@@ -1830,10 +1975,19 @@ select c1.cohort_definition_id,
 	COUNT_BIG(distinct po1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.procedure_occurrence po1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on po1.person_id = c1.subject_id
+--{@procedure_concept_ids != '' | @cohort_period_only == 'TRUE'}?{
+WHERE
+--{@cohort_period_only == 'TRUE'}?{
+	po1.procedure_date>=c1.cohort_start_date and po1.procedure_date<=c1.cohort_end_date
+--}
+--{@procedure_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
 --{@procedure_concept_ids != ''}?{
-	where po1.procedure_concept_id in (@procedure_concept_ids)
+	po1.procedure_concept_id in (@procedure_concept_ids)
+--}
 --}
 group by c1.cohort_definition_id,
 	po1.procedure_CONCEPT_ID
@@ -1850,10 +2004,19 @@ select c1.cohort_definition_id,
 	COUNT_BIG(po1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.procedure_occurrence po1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on po1.person_id = c1.subject_id
+--{@procedure_concept_ids != '' | @cohort_period_only == 'TRUE'}?{
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	po1.procedure_date>=c1.cohort_start_date and po1.procedure_date<=c1.cohort_end_date
+--}
+--{@procedure_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
 --{@procedure_concept_ids != ''}?{
-	where po1.procedure_concept_id in (@procedure_concept_ids)
+	po1.procedure_concept_id in (@procedure_concept_ids)
+--}
 --}
 group by c1.cohort_definition_id,
 	po1.procedure_CONCEPT_ID
@@ -1872,10 +2035,19 @@ select c1.cohort_definition_id,
 	COUNT_BIG(distinct PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.procedure_occurrence po1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on po1.person_id = c1.subject_id
+--{@procedure_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	po1.procedure_date>=c1.cohort_start_date and po1.procedure_date<=c1.cohort_end_date
+--}
+--{@procedure_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
 --{@procedure_concept_ids != ''}?{
-	where po1.procedure_concept_id in (@procedure_concept_ids)
+	po1.procedure_concept_id in (@procedure_concept_ids)
+--}
 --}
 group by c1.cohort_definition_id,
 	po1.procedure_concept_id, 
@@ -1910,8 +2082,20 @@ from
 	select c1.cohort_definition_id, po1.person_id, COUNT_BIG(distinct po1.procedure_concept_id) as num_procedures
 	from
 	@CDM_schema.dbo.procedure_occurrence po1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on po1.person_id = c1.subject_id
+--{@procedure_concept_ids != '' | @cohort_period_only == 'TRUE'}?{     
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	po1.procedure_date>=c1.cohort_start_date and po1.procedure_date<=c1.cohort_end_date
+--}
+--{@procedure_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
+--{@procedure_concept_ids != ''}?{
+	po1.procedure_concept_id in (@procedure_concept_ids)
+--}
+--}
 	group by c1.cohort_definition_id, po1.person_id
 	) t0
 ) t1
@@ -1932,13 +2116,22 @@ select c1.cohort_definition_id,
 	floor((year(procedure_date) - p1.year_of_birth)/10) as stratum_4, 
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on p1.person_id = c1.subject_id
 inner join
 @CDM_schema.dbo.procedure_occurrence po1
 on p1.person_id = po1.person_id
+--{@procedure_concept_ids != '' | @cohort_period_only == 'TRUE'}?{
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	po1.procedure_date>=c1.cohort_start_date and po1.procedure_date<=c1.cohort_end_date
+--}
+--{@procedure_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
 --{@procedure_concept_ids != ''}?{
-	where po1.procedure_concept_id in (@procedure_concept_ids)
+	po1.procedure_concept_id in (@procedure_concept_ids)
+--}
 --}
 group by c1.cohort_definition_id,
 	po1.procedure_concept_id, 
@@ -1958,10 +2151,19 @@ select c1.cohort_definition_id,
 	COUNT_BIG(po1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.procedure_occurrence po1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on po1.person_id = c1.subject_id
+--{@procedure_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	po1.procedure_date>=c1.cohort_start_date and po1.procedure_date<=c1.cohort_end_date
+--}
+--{@procedure_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
 --{@procedure_concept_ids != ''}?{
-	where po1.procedure_concept_id in (@procedure_concept_ids)
+	po1.procedure_concept_id in (@procedure_concept_ids)
+--}
 --}
 group by c1.cohort_definition_id,
 	po1.procedure_CONCEPT_ID,	
@@ -1996,15 +2198,24 @@ select c1.cohort_definition_id,
 	po1.procedure_start_year - p1.year_of_birth as count_value,
 	1.0*(row_number() over (partition by c1.cohort_definition_id, po1.procedure_concept_id, p1.gender_concept_id order by po1.procedure_start_year - p1.year_of_birth))/(COUNT_BIG(po1.procedure_start_year - p1.year_of_birth) over (partition by c1.cohort_definition_id, po1.procedure_concept_id, p1.gender_concept_id)+1) as p1
 from @CDM_schema.dbo.PERSON p1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on p1.person_id = c1.subject_id
 inner join
 (select person_id, procedure_concept_id, min(year(procedure_date)) as procedure_start_year
-from @CDM_schema.dbo.procedure_occurrence po1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
-		on po1.person_id = c1.subject_id
+from @CDM_schema.dbo.procedure_occurrence po0
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
+		on po0.person_id = c1.subject_id
+--{@procedure_concept_ids != '' | @cohort_period_only == 'TRUE'}?{ 
+WHERE 
 --{@procedure_concept_ids != ''}?{
-	where po1.procedure_concept_id in (@procedure_concept_ids)
+	po0.procedure_concept_id in (@procedure_concept_ids)
+--}
+--{@procedure_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
+--{@cohort_period_only == 'TRUE'}?{
+	po0.procedure_date>=c1.cohort_start_date and po0.procedure_date<=c1.cohort_end_date
+--}
 --}
 group by person_id, procedure_concept_id
 ) po1
@@ -2028,7 +2239,7 @@ select c1.cohort_definition_id,
 	COUNT_BIG(po1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.procedure_occurrence po1
-		inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+		inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on po1.person_id = c1.subject_id
 	left join @CDM_schema.dbo.PERSON p1
 	on p1.person_id = po1.person_id
@@ -2046,7 +2257,7 @@ select c1.cohort_definition_id,
 	COUNT_BIG(po1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.procedure_occurrence po1
-		inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+		inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on po1.person_id = c1.subject_id
 	left join @CDM_schema.dbo.OBSERVATION_PERIOD op1
 	on op1.person_id = po1.person_id
@@ -2067,7 +2278,7 @@ select c1.cohort_definition_id,
 	COUNT_BIG(po1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.procedure_occurrence po1
-		inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+		inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on po1.person_id = c1.subject_id
 	left join @CDM_schema.dbo.provider p1
 	on p1.provider_id = {@CDM_version == '4'}?{ po1.associated_provider_id } {@CDM_version == '5'}?{ po1.provider_id } 
@@ -2085,7 +2296,7 @@ select c1.cohort_definition_id,
 	COUNT_BIG(po1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.procedure_occurrence po1
-		inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+		inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on po1.person_id = c1.subject_id
 	left join @CDM_schema.dbo.visit_occurrence vo1
 	on po1.visit_occurrence_id = vo1.visit_occurrence_id
@@ -2105,8 +2316,20 @@ select c1.cohort_definition_id,
 	COUNT_BIG(PERSON_ID) as count_value
 from
 @CDM_schema.dbo.procedure_occurrence po1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on po1.person_id = c1.subject_id
+--{@procedure_concept_ids != '' | @cohort_period_only == 'TRUE'}?{
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	po1.procedure_date>=c1.cohort_start_date and po1.procedure_date<=c1.cohort_end_date
+--}
+--{@procedure_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
+--{@procedure_concept_ids != ''}?{
+	po1.procedure_concept_id in (@procedure_concept_ids)
+--} 
+--} 
 group by c1.cohort_definition_id,
 	YEAR(procedure_date)*100 + month(procedure_date)
 ;
@@ -2131,11 +2354,20 @@ select c1.cohort_definition_id,
 	COUNT_BIG(distinct de1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.drug_exposure de1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on de1.person_id = c1.subject_id
---{@drug_concept_ids != ''}?{
-	where de1.drug_concept_id in (@drug_concept_ids)
+--{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	de1.drug_exposure_start_date>=c1.cohort_start_date and de1.drug_exposure_start_date<=c1.cohort_end_date
 --}
+--{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
+--{@drug_concept_ids != ''}?{
+	de1.drug_concept_id in (@drug_concept_ids)
+--}    
+--} 
 group by c1.cohort_definition_id,
 	de1.drug_CONCEPT_ID
 ;
@@ -2151,11 +2383,20 @@ select c1.cohort_definition_id,
 	COUNT_BIG(de1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.drug_exposure de1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on de1.person_id = c1.subject_id
---{@drug_concept_ids != ''}?{
-	where de1.drug_concept_id in (@drug_concept_ids)
+--{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	de1.drug_exposure_start_date>=c1.cohort_start_date and de1.drug_exposure_start_date<=c1.cohort_end_date
 --}
+--{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
+--{@drug_concept_ids != ''}?{
+	de1.drug_concept_id in (@drug_concept_ids)
+--} 
+--} 
 group by c1.cohort_definition_id,
 	de1.drug_CONCEPT_ID
 ;
@@ -2173,11 +2414,20 @@ select c1.cohort_definition_id,
 	COUNT_BIG(distinct PERSON_ID) as count_value
 from
 @CDM_schema.dbo.drug_exposure de1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on de1.person_id = c1.subject_id
---{@drug_concept_ids != ''}?{
-	where de1.drug_concept_id in (@drug_concept_ids)
+--{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	de1.drug_exposure_start_date>=c1.cohort_start_date and de1.drug_exposure_start_date<=c1.cohort_end_date
 --}
+--{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
+--{@drug_concept_ids != ''}?{
+	de1.drug_concept_id in (@drug_concept_ids)
+--}
+--} 
 group by c1.cohort_definition_id,
 	de1.drug_concept_id, 
 	YEAR(drug_exposure_start_date)*100 + month(drug_exposure_start_date)
@@ -2210,11 +2460,24 @@ from
 	select c1.cohort_definition_id, de1.person_id, COUNT_BIG(distinct de1.drug_concept_id) as num_drugs
 	from
 	@CDM_schema.dbo.drug_exposure de1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on de1.person_id = c1.subject_id
+--{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	de1.drug_exposure_start_date>=c1.cohort_start_date and de1.drug_exposure_start_date<=c1.cohort_end_date
+--}
+--{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
+--{@drug_concept_ids != ''}?{
+	de1.drug_concept_id in (@drug_concept_ids)
+--} 
+--}
 	group by c1.cohort_definition_id, de1.person_id
 	) t0
 ) t1
+
 group by cohort_definition_id
 ;
 --}
@@ -2232,14 +2495,23 @@ select c1.cohort_definition_id,
 	floor((year(drug_exposure_start_date) - p1.year_of_birth)/10) as stratum_4, 
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on p1.person_id = c1.subject_id
 inner join
 @CDM_schema.dbo.drug_exposure de1
 on p1.person_id = de1.person_id
---{@drug_concept_ids != ''}?{
-	where de1.drug_concept_id in (@drug_concept_ids)
+--{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{ 
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	de1.drug_exposure_start_date>=c1.cohort_start_date and de1.drug_exposure_start_date<=c1.cohort_end_date
 --}
+--{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
+--{@drug_concept_ids != ''}?{
+	de1.drug_concept_id in (@drug_concept_ids)
+--} 
+--} 
 group by c1.cohort_definition_id,
 	de1.drug_concept_id, 
 	YEAR(drug_exposure_start_date),
@@ -2258,10 +2530,19 @@ select c1.cohort_definition_id,
 	COUNT_BIG(de1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.drug_exposure de1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on de1.person_id = c1.subject_id
+--{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	de1.drug_exposure_start_date>=c1.cohort_start_date and de1.drug_exposure_start_date<=c1.cohort_end_date
+--}
+--{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
 --{@drug_concept_ids != ''}?{
-	where de1.drug_concept_id in (@drug_concept_ids)
+	de1.drug_concept_id in (@drug_concept_ids)
+--} 
 --}
 group by c1.cohort_definition_id,
 	de1.drug_CONCEPT_ID,	
@@ -2296,15 +2577,24 @@ select c1.cohort_definition_id,
 	de1.drug_start_year - p1.year_of_birth as count_value,
 	1.0*(row_number() over (partition by c1.cohort_definition_id, de1.drug_concept_id, p1.gender_concept_id order by de1.drug_start_year - p1.year_of_birth))/(COUNT_BIG(de1.drug_start_year - p1.year_of_birth) over (partition by c1.cohort_definition_id, de1.drug_concept_id, p1.gender_concept_id)+1) as p1
 from @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on p1.person_id = c1.subject_id
 inner join
 (select person_id, drug_concept_id, min(year(drug_exposure_start_date)) as drug_start_year
 from @CDM_schema.dbo.drug_exposure de0
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on de0.person_id = c1.subject_id
+--{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{     
+WHERE
 --{@drug_concept_ids != ''}?{
-	where de0.drug_concept_id in (@drug_concept_ids)
+	de0.drug_concept_id in (@drug_concept_ids)
+--}
+--{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
+--{@cohort_period_only == 'TRUE'}?{
+	de0.drug_exposure_start_date>=c1.cohort_start_date and de0.drug_exposure_start_date<=c1.cohort_end_date
+--}
 --}
 group by person_id, drug_concept_id
 ) de1
@@ -2325,7 +2615,7 @@ select c1.cohort_definition_id,
 	COUNT_BIG(de1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.drug_exposure de1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on de1.person_id = c1.subject_id
 	left join @CDM_schema.dbo.PERSON p1
 	on p1.person_id = de1.person_id
@@ -2343,7 +2633,7 @@ select c1.cohort_definition_id,
 	COUNT_BIG(de1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.drug_exposure de1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on de1.person_id = c1.subject_id
 	left join @CDM_schema.dbo.OBSERVATION_PERIOD op1
 	on op1.person_id = de1.person_id
@@ -2363,7 +2653,7 @@ select c1.cohort_definition_id,
 	COUNT_BIG(de1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.drug_exposure de1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on de1.person_id = c1.subject_id
 where de1.drug_exposure_end_date < de1.drug_exposure_start_date
 group by c1.cohort_definition_id
@@ -2379,7 +2669,7 @@ select c1.cohort_definition_id,
 	COUNT_BIG(de1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.drug_exposure de1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on de1.person_id = c1.subject_id
 	left join @CDM_schema.dbo.provider p1
 	on p1.provider_id = {@CDM_version == '4'}?{ de1.prescribing_provider_id } {@CDM_version == '5'}?{ de1.provider_id } 
@@ -2397,7 +2687,7 @@ select c1.cohort_definition_id,
 	COUNT_BIG(de1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.drug_exposure de1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on de1.person_id = c1.subject_id
 	left join @CDM_schema.dbo.visit_occurrence vo1
 	on de1.visit_occurrence_id = vo1.visit_occurrence_id
@@ -2431,10 +2721,19 @@ select c1.cohort_definition_id, drug_concept_id,
 	days_supply as count_value,
 	1.0*(row_number() over (partition by c1.cohort_definition_id, drug_concept_id order by days_supply))/(COUNT_BIG(days_supply) over (partition by c1.cohort_definition_id, drug_concept_id)+1) as p1
 from @CDM_schema.dbo.drug_exposure de1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on de1.person_id = c1.subject_id
+--{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{     
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	de1.drug_exposure_start_date>=c1.cohort_start_date and de1.drug_exposure_start_date<=c1.cohort_end_date
+--}
+--{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
 --{@drug_concept_ids != ''}?{
-	where de1.drug_concept_id in (@drug_concept_ids)
+	de1.drug_concept_id in (@drug_concept_ids)
+--} 
 --}
 ) t1
 group by cohort_definition_id, drug_concept_id
@@ -2466,11 +2765,20 @@ select c1.cohort_definition_id,
 	refills as count_value,
 	1.0*(row_number() over (partition by c1.cohort_definition_id, drug_concept_id order by refills))/(COUNT_BIG(refills) over (partition by c1.cohort_definition_id, drug_concept_id)+1) as p1
 from @CDM_schema.dbo.drug_exposure de1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on de1.person_id = c1.subject_id
---{@drug_concept_ids != ''}?{
-	where de1.drug_concept_id in (@drug_concept_ids)
+--{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{     
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	de1.drug_exposure_start_date>=c1.cohort_start_date and de1.drug_exposure_start_date<=c1.cohort_end_date
 --}
+--{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
+--{@drug_concept_ids != ''}?{
+	de1.drug_concept_id in (@drug_concept_ids)
+--} 
+--} 
 ) t1
 group by cohort_definition_id, 
 	drug_concept_id
@@ -2504,10 +2812,19 @@ select c1.cohort_definition_id,
 	quantity as count_value,
 	1.0*(row_number() over (partition by c1.cohort_definition_id, drug_concept_id order by quantity))/(COUNT_BIG(quantity) over (partition by cohort_definition_id, drug_concept_id)+1) as p1
 from @CDM_schema.dbo.drug_exposure de1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on de1.person_id = c1.subject_id
+--{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	de1.drug_exposure_start_date>=c1.cohort_start_date and de1.drug_exposure_start_date<=c1.cohort_end_date
+--}
+--{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
 --{@drug_concept_ids != ''}?{
-	where de1.drug_concept_id in (@drug_concept_ids)
+	de1.drug_concept_id in (@drug_concept_ids)
+--} 
 --}
 ) t1
 group by cohort_definition_id, drug_concept_id
@@ -2524,13 +2841,24 @@ select c1.cohort_definition_id,
 	COUNT_BIG(PERSON_ID) as count_value
 from
 @CDM_schema.dbo.drug_exposure de1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on de1.person_id = c1.subject_id
+--{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	de1.drug_exposure_start_date>=c1.cohort_start_date and de1.drug_exposure_start_date<=c1.cohort_end_date
+--}
+--{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
+--{@drug_concept_ids != ''}?{
+	de1.drug_concept_id in (@drug_concept_ids)
+--} 
+--}  
 group by c1.cohort_definition_id,
 	YEAR(drug_exposure_start_date)*100 + month(drug_exposure_start_date)
 ;
 --}
-
 
 --/********************************************
 
@@ -2549,11 +2877,20 @@ select c1.cohort_definition_id,
 	COUNT_BIG(distinct o1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.observation o1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
---{@observation_concept_ids != ''}?{
-	where o1.observation_concept_id in (@observation_concept_ids)
+--{@observation_concept_ids != '' | @cohort_period_only == 'TRUE'}?{
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	o1.observation_date>=c1.cohort_start_date and o1.observation_date<=c1.cohort_end_date
 --}
+--{@observation_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
+--{@observation_concept_ids != ''}?{
+	o1.observation_concept_id in (@observation_concept_ids)
+--} 
+--} 
 group by c1.cohort_definition_id,
 	o1.observation_CONCEPT_ID
 ;
@@ -2569,11 +2906,20 @@ select c1.cohort_definition_id,
 	COUNT_BIG(o1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.observation o1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
---{@observation_concept_ids != ''}?{
-	where o1.observation_concept_id in (@observation_concept_ids)
+--{@observation_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	o1.observation_date>=c1.cohort_start_date and o1.observation_date<=c1.cohort_end_date
 --}
+--{@observation_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
+--{@observation_concept_ids != ''}?{
+	o1.observation_concept_id in (@observation_concept_ids)
+--} 
+--} 
 group by c1.cohort_definition_id,
 	o1.observation_CONCEPT_ID
 ;
@@ -2591,11 +2937,20 @@ select c1.cohort_definition_id,
 	COUNT_BIG(distinct PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.observation o1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
---{@observation_concept_ids != ''}?{
-	where o1.observation_concept_id in (@observation_concept_ids)
+--{@observation_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	o1.observation_date>=c1.cohort_start_date and o1.observation_date<=c1.cohort_end_date
 --}
+--{@observation_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
+--{@observation_concept_ids != ''}?{
+	o1.observation_concept_id in (@observation_concept_ids)
+--} 
+--} 
 group by c1.cohort_definition_id,
 	o1.observation_concept_id, 
 	YEAR(observation_date)*100 + month(observation_date)
@@ -2629,8 +2984,20 @@ from
 	select c1.cohort_definition_id, o1.person_id, COUNT_BIG(distinct o1.observation_concept_id) as num_observations
 	from
 	@CDM_schema.dbo.observation o1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
+--{@observation_concept_ids != '' | @cohort_period_only == 'TRUE'}?{     
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	o1.observation_date>=c1.cohort_start_date and o1.observation_date<=c1.cohort_end_date
+--}
+--{@observation_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
+--{@observation_concept_ids != ''}?{
+	o1.observation_concept_id in (@observation_concept_ids)
+--} 
+--} 
 	group by c1.cohort_definition_id, o1.person_id
 	) t0
 ) t1
@@ -2651,14 +3018,23 @@ select c1.cohort_definition_id,
 	floor((year(observation_date) - p1.year_of_birth)/10) as stratum_4, 
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from @CDM_schema.dbo.PERSON p1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on p1.person_id = c1.subject_id
 inner join
 @CDM_schema.dbo.observation o1
 on p1.person_id = o1.person_id
---{@observation_concept_ids != ''}?{
-	where o1.observation_concept_id in (@observation_concept_ids)
+--{@observation_concept_ids != '' | @cohort_period_only == 'TRUE'}?{ 
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	o1.observation_date>=c1.cohort_start_date and o1.observation_date<=c1.cohort_end_date
 --}
+--{@observation_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
+--{@observation_concept_ids != ''}?{
+	o1.observation_concept_id in (@observation_concept_ids)
+--} 
+--} 
 group by c1.cohort_definition_id,
 	o1.observation_concept_id, 
 	YEAR(observation_date),
@@ -2677,11 +3053,20 @@ select c1.cohort_definition_id,
 	COUNT_BIG(o1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.observation o1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
---{@observation_concept_ids != ''}?{
-	where o1.observation_concept_id in (@observation_concept_ids)
+--{@observation_concept_ids != '' | @cohort_period_only == 'TRUE'}?{     
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	o1.observation_date>=c1.cohort_start_date and o1.observation_date<=c1.cohort_end_date
 --}
+--{@observation_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
+--{@observation_concept_ids != ''}?{
+	o1.observation_concept_id in (@observation_concept_ids)
+--} 
+--} 
 group by c1.cohort_definition_id,
 	o1.observation_CONCEPT_ID,	
 	o1.observation_type_concept_id
@@ -2715,15 +3100,24 @@ select c1.cohort_definition_id,
 	o1.observation_start_year - p1.year_of_birth as count_value,
 	1.0*(row_number() over (partition by c1.cohort_definition_id, o1.observation_concept_id, p1.gender_concept_id order by o1.observation_start_year - p1.year_of_birth))/(COUNT_BIG(o1.observation_start_year - p1.year_of_birth) over (partition by c1.cohort_definition_id, o1.observation_concept_id, p1.gender_concept_id)+1) as p1
 from @CDM_schema.dbo.PERSON p1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on p1.person_id = c1.subject_id
 inner join
 (select person_id, observation_concept_id, min(year(observation_date)) as observation_start_year
 from @CDM_schema.dbo.observation o1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
+--{@observation_concept_ids != '' | @cohort_period_only == 'TRUE'}?{ 
+WHERE
 --{@observation_concept_ids != ''}?{
-	where o1.observation_concept_id in (@observation_concept_ids)
+	o1.observation_concept_id in (@observation_concept_ids)
+--}
+--{@observation_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
+--{@cohort_period_only == 'TRUE'}?{
+	o1.observation_date>=c1.cohort_start_date and o1.observation_date<=c1.cohort_end_date
+--}
 --}
 group by person_id, observation_concept_id
 ) o1
@@ -2743,11 +3137,20 @@ select c1.cohort_definition_id,
 	COUNT_BIG(o1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.observation o1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
---{@observation_concept_ids != ''}?{
-	where o1.observation_concept_id in (@observation_concept_ids)
+--{@observation_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	o1.observation_date>=c1.cohort_start_date and o1.observation_date<=c1.cohort_end_date
 --}
+--{@observation_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
+--{@observation_concept_ids != ''}?{
+	o1.observation_concept_id in (@observation_concept_ids)
+--} 
+--} 
 group by c1.cohort_definition_id,
 	o1.observation_CONCEPT_ID,
 	o1.unit_concept_id
@@ -2766,7 +3169,7 @@ select c1.cohort_definition_id,
 	COUNT_BIG(o1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.observation o1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
 	left join @CDM_schema.dbo.PERSON p1
 	on p1.person_id = o1.person_id
@@ -2784,7 +3187,7 @@ select c1.cohort_definition_id,
 	COUNT_BIG(o1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.observation o1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
 	left join @CDM_schema.dbo.OBSERVATION_PERIOD op1
 	on op1.person_id = o1.person_id
@@ -2805,7 +3208,7 @@ select c1.cohort_definition_id,
 	COUNT_BIG(o1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.observation o1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
 	left join @CDM_schema.dbo.provider p1
 	on p1.provider_id = {@CDM_version == '4'}?{ o1.associated_provider_id } {@CDM_version == '5'}?{ o1.provider_id } 
@@ -2823,7 +3226,7 @@ select c1.cohort_definition_id,
 	COUNT_BIG(o1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.observation o1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
 	left join @CDM_schema.dbo.visit_occurrence vo1
 	on o1.visit_occurrence_id = vo1.visit_occurrence_id
@@ -2842,9 +3245,10 @@ select c1.cohort_definition_id,
 	COUNT_BIG(o1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.observation o1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
 where o1.value_as_number is null
+	and o1.value_as_string is null
 	and o1.value_as_concept_id is null
 group by c1.cohort_definition_id
 ;
@@ -2875,18 +3279,143 @@ select cohort_definition_id,
 	value_as_number as count_value,
 	1.0*(row_number() over (partition by cohort_definition_id, observation_concept_id, unit_concept_id order by value_as_number))/(COUNT_BIG(value_as_number) over (partition by cohort_definition_id, observation_concept_id, unit_concept_id)+1) as p1
 from @CDM_schema.dbo.observation o1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
 where o1.unit_concept_id is not null
 	and o1.value_as_number is not null
 	--{@observation_concept_ids != ''}?{
 	and o1.observation_concept_id in (@observation_concept_ids)
 --}
+--{@cohort_period_only == 'TRUE'}?{
+	AND o1.observation_date>=c1.cohort_start_date and o1.observation_date<=c1.cohort_end_date
+--}
 ) t1
 group by cohort_definition_id, observation_concept_id, unit_concept_id
 ;
 --}
 
+
+--{@CDM_version == '4'}?{  
+--{816 IN (@list_of_analysis_ids)}?{
+-- 816	Distribution of low range, by observation_concept_id and unit_concept_id
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	816 as analysis_id,
+	observation_concept_id as stratum_1,
+	unit_concept_id as stratum_2,
+	COUNT_BIG(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	stdev(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select cohort_definition_id, observation_concept_id, unit_concept_id,
+	range_low as count_value,
+	1.0*(row_number() over (partition by cohort_definition_id, observation_concept_id, unit_concept_id order by range_low))/(COUNT_BIG(range_low) over (partition by cohort_definition_id, observation_concept_id, unit_concept_id)+1) as p1
+from @CDM_schema.dbo.observation o1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
+		on o1.person_id = c1.subject_id
+where o1.unit_concept_id is not null
+	and o1.value_as_number is not null
+	and o1.range_low is not null
+	and o1.range_high is not null
+	--{@observation_concept_ids != ''}?{
+	and o1.observation_concept_id in (@observation_concept_ids)
+--}
+--{@cohort_period_only == 'TRUE'}?{
+	AND o1.observation_date>=c1.cohort_start_date and o1.observation_date<=c1.cohort_end_date
+--}
+) t1
+group by cohort_definition_id, observation_concept_id, unit_concept_id
+;
+--}
+
+
+--{817 IN (@list_of_analysis_ids)}?{
+-- 817	Distribution of high range, by observation_concept_id and unit_concept_id
+insert into HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select cohort_definition_id,
+	817 as analysis_id,
+	observation_concept_id as stratum_1,
+	unit_concept_id as stratum_2,
+	COUNT_BIG(count_value) as count_value,
+	min(count_value) as min_value,
+	max(count_value) as max_value,
+	avg(1.0*count_value) as avg_value,
+	stdev(count_value) as stdev_value,
+	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+from
+(
+select cohort_definition_id, observation_concept_id, unit_concept_id,
+	range_high as count_value,
+	1.0*(row_number() over (partition by cohort_definition_id, observation_concept_id, unit_concept_id order by range_high))/(COUNT_BIG(range_high) over (partition by cohort_definition_id, observation_concept_id, unit_concept_id)+1) as p1
+from @CDM_schema.dbo.observation o1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
+		on o1.person_id = c1.subject_id
+where o1.unit_concept_id is not null
+	and o1.value_as_number is not null
+	and o1.range_low is not null
+	and o1.range_high is not null
+--{@observation_concept_ids != ''}?{
+	and o1.observation_concept_id in (@observation_concept_ids)
+--}
+--{@cohort_period_only == 'TRUE'}?{
+	AND o1.observation_date>=c1.cohort_start_date and o1.observation_date<=c1.cohort_end_date
+--}
+) t1
+group by cohort_definition_id, observation_concept_id, unit_concept_id
+;
+--}
+
+
+
+--{818 IN (@list_of_analysis_ids)}?{
+-- 818	Number of observation records below/within/above normal range, by observation_concept_id and unit_concept_id
+insert into HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3, count_value)
+select cohort_definition_id,
+	818 as analysis_id,  
+	observation_concept_id as stratum_1,
+	unit_concept_id as stratum_2,
+	case when o1.value_as_number < o1.range_low then 'Below Range Low'
+		when o1.value_as_number >= o1.range_low and o1.value_as_number <= o1.range_high then 'Within Range'
+		when o1.value_as_number > o1.range_high then 'Above Range High'
+		else 'Other' end as stratum_3,
+	COUNT_BIG(o1.PERSON_ID) as count_value
+from
+	@CDM_schema.dbo.observation o1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
+		on o1.person_id = c1.subject_id
+where o1.value_as_number is not null
+	and o1.unit_concept_id is not null
+	and o1.range_low is not null
+	and o1.range_high is not null
+--{@observation_concept_ids != ''}?{
+	and o1.observation_concept_id in (@observation_concept_ids)
+--}  
+--{@cohort_period_only == 'TRUE'}?{
+	AND o1.observation_date>=c1.cohort_start_date and o1.observation_date<=c1.cohort_end_date
+--}
+group by cohort_definition_id, 
+	observation_concept_id,
+	unit_concept_id,
+	  case when o1.value_as_number < o1.range_low then 'Below Range Low'
+		when o1.value_as_number >= o1.range_low and o1.value_as_number <= o1.range_high then 'Within Range'
+		when o1.value_as_number > o1.range_high then 'Above Range High'
+		else 'Other' end
+;
+--}
+
+--} --end of if in CDMv5
 
 
 --{820 IN (@list_of_analysis_ids)}?{
@@ -2898,13 +3427,24 @@ select c1.cohort_definition_id,
 	COUNT_BIG(PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.observation o1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
+--{@observation_concept_ids != '' | @cohort_period_only == 'TRUE'}?{     
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	o1.observation_date>=c1.cohort_start_date and o1.observation_date<=c1.cohort_end_date
+--}
+--{@observation_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+AND
+--}
+--{@observation_concept_ids != ''}?{
+	o1.observation_concept_id in (@observation_concept_ids)
+--}   
+--} 
 group by c1.cohort_definition_id,
 	YEAR(observation_date)*100 + month(observation_date)
 ;
 --}
-
 
 
 
@@ -2925,11 +3465,20 @@ select c1.cohort_definition_id,
 	COUNT_BIG(distinct de1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.drug_era de1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on de1.person_id = c1.subject_id
---{@drug_concept_ids != ''}?{
-	where de1.drug_concept_id in (@drug_concept_ids)
+--{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	de1.drug_era_start_date>=c1.cohort_start_date and de1.drug_era_end_date<=c1.cohort_end_date
 --}
+--{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
+AND
+--}
+--{@drug_concept_ids != ''}?{
+	de1.drug_concept_id in (@drug_concept_ids)
+--}
+--} 
 group by c1.cohort_definition_id, 
 	de1.drug_CONCEPT_ID
 ;
@@ -2945,10 +3494,19 @@ select c1.cohort_definition_id,
 	COUNT_BIG(de1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.drug_era de1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on de1.person_id = c1.subject_id
+--{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{     
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	de1.drug_era_start_date>=c1.cohort_start_date and de1.drug_era_end_date<=c1.cohort_end_date
+--}
+--{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
+AND
+--}
 --{@drug_concept_ids != ''}?{
-	where de1.drug_concept_id in (@drug_concept_ids)
+	de1.drug_concept_id in (@drug_concept_ids)
+--}
 --}
 group by c1.cohort_definition_id,
 	de1.drug_CONCEPT_ID
@@ -2967,10 +3525,19 @@ select cohort_definition_id,
 	COUNT_BIG(distinct PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.drug_era de1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on de1.person_id = c1.subject_id
+--{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{     
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	de1.drug_era_start_date>=c1.cohort_start_date and de1.drug_era_end_date<=c1.cohort_end_date
+--}
+--{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{  
+AND
+--}
 --{@drug_concept_ids != ''}?{
-	where de1.drug_concept_id in (@drug_concept_ids)
+	de1.drug_concept_id in (@drug_concept_ids)
+--}
 --}
 group by c1.cohort_definition_id,
 	de1.drug_concept_id, 
@@ -3005,8 +3572,20 @@ from
 	select c1.cohort_definition_id, de1.person_id, COUNT_BIG(distinct de1.drug_concept_id) as num_drugs
 	from
 	@CDM_schema.dbo.drug_era de1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on de1.person_id = c1.subject_id
+--{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{     
+WHERE     
+--{@cohort_period_only == 'TRUE'}?{
+	de1.drug_era_start_date>=c1.cohort_start_date and de1.drug_era_end_date<=c1.cohort_end_date
+--}
+--{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{  
+AND
+--}
+--{@drug_concept_ids != ''}?{
+	de1.drug_concept_id in (@drug_concept_ids)
+--}   
+--} 
 	group by c1.cohort_definition_id, de1.person_id
 	) t0
 ) t1
@@ -3027,13 +3606,22 @@ select c1.cohort_definition_id,
 	floor((year(drug_era_start_date) - p1.year_of_birth)/10) as stratum_4, 
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from @CDM_schema.dbo.PERSON p1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on p1.person_id = c1.subject_id
 inner join
 @CDM_schema.dbo.drug_era de1
 on p1.person_id = de1.person_id
+--{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{ 
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	de1.drug_era_start_date>=c1.cohort_start_date and de1.drug_era_end_date<=c1.cohort_end_date
+--}
+--{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{  
+AND
+--}
 --{@drug_concept_ids != ''}?{
-	where de1.drug_concept_id in (@drug_concept_ids)
+	de1.drug_concept_id in (@drug_concept_ids)
+--}
 --}
 group by c1.cohort_definition_id,
 	de1.drug_concept_id, 
@@ -3071,15 +3659,24 @@ select c1.cohort_definition_id,
 	de1.drug_start_year - p1.year_of_birth as count_value,
 	1.0*(row_number() over (partition by c1.cohort_definition_id, de1.drug_concept_id, p1.gender_concept_id order by de1.drug_start_year - p1.year_of_birth))/(COUNT_BIG(de1.drug_start_year - p1.year_of_birth) over (partition by c1.cohort_definition_id, de1.drug_concept_id, p1.gender_concept_id)+1) as p1
 from @CDM_schema.dbo.PERSON p1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on p1.person_id = c1.subject_id
 inner join
 (select person_id, drug_concept_id, min(year(drug_era_start_date)) as drug_start_year
 from @CDM_schema.dbo.drug_era de0
-		inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+		inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on de0.person_id = c1.subject_id
+--{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{     
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	de0.drug_era_start_date>=c1.cohort_start_date and de0.drug_era_end_date<=c1.cohort_end_date
+--}
+--{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{  
+AND
+--}
 --{@drug_concept_ids != ''}?{
-	where de0.drug_concept_id in (@drug_concept_ids)
+	de0.drug_concept_id in (@drug_concept_ids)
+--}
 --}
 group by person_id, drug_concept_id
 ) de1
@@ -3116,10 +3713,19 @@ select cohort_definition_id,
 	datediff(dd,drug_era_start_date, drug_era_end_date) as count_value,
 	1.0*(row_number() over (partition by cohort_definition_id, drug_concept_id order by datediff(dd,drug_era_start_date, drug_era_end_date)))/(COUNT_BIG(datediff(dd,drug_era_start_date, drug_era_end_date)) over (partition by cohort_definition_id, drug_concept_id)+1) as p1
 from  @CDM_schema.dbo.drug_era de1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on de1.person_id = c1.subject_id
+--{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	de1.drug_era_start_date>=c1.cohort_start_date and de1.drug_era_end_date<=c1.cohort_end_date
+--}
+--{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{  
+AND
+--}
 --{@drug_concept_ids != ''}?{
-	where de1.drug_concept_id in (@drug_concept_ids)
+	de1.drug_concept_id in (@drug_concept_ids)
+--}
 --}
 ) t1
 group by cohort_definition_id, 
@@ -3137,7 +3743,7 @@ select c1.cohort_definition_id,
 	COUNT_BIG(de1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.drug_era de1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on de1.person_id = c1.subject_id
 	left join @CDM_schema.dbo.PERSON p1
 	on p1.person_id = de1.person_id
@@ -3155,7 +3761,7 @@ select c1.cohort_definition_id,
 	COUNT_BIG(de1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.drug_era de1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on de1.person_id = c1.subject_id
 	left join @CDM_schema.dbo.OBSERVATION_PERIOD op1
 	on op1.person_id = de1.person_id
@@ -3175,7 +3781,7 @@ select c1.cohort_definition_id,
 	COUNT_BIG(de1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.drug_era de1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on de1.person_id = c1.subject_id
 where de1.drug_era_end_date < de1.drug_era_start_date
 group by c1.cohort_definition_id
@@ -3193,8 +3799,20 @@ select c1.cohort_definition_id,
 	COUNT_BIG(PERSON_ID) as count_value
 from
 @CDM_schema.dbo.drug_era de1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on de1.person_id = c1.subject_id
+--{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{     
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	de1.drug_era_start_date>=c1.cohort_start_date and de1.drug_era_end_date<=c1.cohort_end_date
+--}
+--{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{  
+AND
+--}
+--{@drug_concept_ids != ''}?{
+	de1.drug_concept_id in (@drug_concept_ids)
+--}   
+--} 
 group by c1.cohort_definition_id,
 	YEAR(drug_era_start_date)*100 + month(drug_era_start_date)
 ;
@@ -3220,10 +3838,19 @@ select c1.cohort_definition_id,
 	COUNT_BIG(distinct ce1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.condition_era ce1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on ce1.person_id = c1.subject_id
+--{@condition_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	ce1.condition_era_start_date>=c1.cohort_start_date and ce1.condition_era_end_date<=c1.cohort_end_date
+--}
+--{@condition_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
+AND
+--}
 --{@condition_concept_ids != ''}?{
-	where ce1.condition_concept_id in (@condition_concept_ids)
+	ce1.condition_concept_id in (@condition_concept_ids)
+--}
 --}
 group by c1.cohort_definition_id,
 	ce1.condition_CONCEPT_ID
@@ -3240,10 +3867,19 @@ select c1.cohort_definition_id,
 	COUNT_BIG(ce1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.condition_era ce1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on ce1.person_id = c1.subject_id
+--{@condition_concept_ids != '' | @cohort_period_only == 'TRUE'}?{     
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	ce1.condition_era_start_date>=c1.cohort_start_date and ce1.condition_era_end_date<=c1.cohort_end_date
+--}
+--{@condition_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
+AND
+--}
 --{@condition_concept_ids != ''}?{
-	where ce1.condition_concept_id in (@condition_concept_ids)
+	ce1.condition_concept_id in (@condition_concept_ids)
+--}
 --}
 group by c1.cohort_definition_id,
 	ce1.condition_CONCEPT_ID
@@ -3262,10 +3898,19 @@ select c1.cohort_definition_id,
 	COUNT_BIG(distinct PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.condition_era ce1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on ce1.person_id = c1.subject_id
+--{@condition_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	ce1.condition_era_start_date>=c1.cohort_start_date and ce1.condition_era_end_date<=c1.cohort_end_date
+--}
+--{@condition_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
+AND
+--}
 --{@condition_concept_ids != ''}?{
-	where ce1.condition_concept_id in (@condition_concept_ids)
+	ce1.condition_concept_id in (@condition_concept_ids)
+--}
 --}
 group by c1.cohort_definition_id,
 	ce1.condition_concept_id, 
@@ -3299,8 +3944,20 @@ from
 	select c1.cohort_definition_id, ce1.person_id, COUNT_BIG(distinct ce1.condition_concept_id) as num_conditions
 	from
 	@CDM_schema.dbo.condition_era ce1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on ce1.person_id = c1.subject_id
+--{@condition_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	ce1.condition_era_start_date>=c1.cohort_start_date and ce1.condition_era_end_date<=c1.cohort_end_date
+--}
+--{@condition_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
+AND
+--}
+--{@condition_concept_ids != ''}?{
+	ce1.condition_concept_id in (@condition_concept_ids)
+--}   
+--} 
 	group by c1.cohort_definition_id, ce1.person_id
 	) t0
 ) t1
@@ -3321,13 +3978,22 @@ select c1.cohort_definition_id,
 	floor((year(condition_era_start_date) - p1.year_of_birth)/10) as stratum_4, 
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on p1.person_id = c1.subject_id
 inner join
 @CDM_schema.dbo.condition_era ce1
 on p1.person_id = ce1.person_id
+--{@condition_concept_ids != '' | @cohort_period_only == 'TRUE'}?{  
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	ce1.condition_era_start_date>=c1.cohort_start_date and ce1.condition_era_end_date<=c1.cohort_end_date
+--}
+--{@condition_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
+AND
+--}
 --{@condition_concept_ids != ''}?{
-	where ce1.condition_concept_id in (@condition_concept_ids)
+	ce1.condition_concept_id in (@condition_concept_ids)
+--}
 --}
 group by c1.cohort_definition_id,
 	ce1.condition_concept_id, 
@@ -3365,15 +4031,24 @@ select c1.cohort_definition_id,
 	ce1.condition_start_year - p1.year_of_birth as count_value,
 	1.0*(row_number() over (partition by c1.cohort_definition_id, ce1.condition_concept_id, p1.gender_concept_id order by ce1.condition_start_year - p1.year_of_birth))/(COUNT_BIG(ce1.condition_start_year - p1.year_of_birth) over (partition by c1.cohort_definition_id, ce1.condition_concept_id, p1.gender_concept_id)+1) as p1
 from @CDM_schema.dbo.PERSON p1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on p1.person_id = c1.subject_id
 inner join
 (select person_id, condition_concept_id, min(year(condition_era_start_date)) as condition_start_year
 from @CDM_schema.dbo.condition_era ce0
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on ce0.person_id = c1.subject_id
-		--{@condition_concept_ids != ''}?{
-	where ce0.condition_concept_id in (@condition_concept_ids)
+--{@condition_concept_ids != '' | @cohort_period_only == 'TRUE'}?{      
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	ce0.condition_era_start_date>=c1.cohort_start_date and ce0.condition_era_end_date<=c1.cohort_end_date
+--}
+--{@condition_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
+AND
+--}
+--{@condition_concept_ids != ''}?{
+	ce0.condition_concept_id in (@condition_concept_ids)
+--}
 --}
 group by person_id, condition_concept_id
 ) ce1
@@ -3410,10 +4085,19 @@ select c1.cohort_definition_id,
 	datediff(dd,condition_era_start_date, condition_era_end_date) as count_value,
 	1.0*(row_number() over (partition by c1.cohort_definition_id, condition_concept_id order by datediff(dd,condition_era_start_date, condition_era_end_date)))/(COUNT_BIG(datediff(dd,condition_era_start_date, condition_era_end_date)) over (partition by c1.cohort_definition_id, condition_concept_id)+1) as p1
 from  @CDM_schema.dbo.condition_era ce1
-inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on ce1.person_id = c1.subject_id
+--{@condition_concept_ids != '' | @cohort_period_only == 'TRUE'}?{  
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	ce1.condition_era_start_date>=c1.cohort_start_date and ce1.condition_era_end_date<=c1.cohort_end_date
+--}
+--{@condition_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
+AND
+--}
 --{@condition_concept_ids != ''}?{
-	where ce1.condition_concept_id in (@condition_concept_ids)
+	ce1.condition_concept_id in (@condition_concept_ids)
+--}
 --}
 ) t1
 group by cohort_definition_id,
@@ -3431,7 +4115,7 @@ select c1.cohort_definition_id,
 	COUNT_BIG(ce1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.condition_era ce1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on ce1.person_id = c1.subject_id
 	left join @CDM_schema.dbo.PERSON p1
 	on p1.person_id = ce1.person_id
@@ -3449,7 +4133,7 @@ select c1.cohort_definition_id,
 	COUNT_BIG(ce1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.condition_era ce1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on ce1.person_id = c1.subject_id
 	left join @CDM_schema.dbo.OBSERVATION_PERIOD op1
 	on op1.person_id = ce1.person_id
@@ -3469,7 +4153,7 @@ select c1.cohort_definition_id,
 	COUNT_BIG(ce1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.condition_era ce1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on ce1.person_id = c1.subject_id
 where ce1.condition_era_end_date < ce1.condition_era_start_date
 group by c1.cohort_definition_id
@@ -3486,8 +4170,20 @@ select c1.cohort_definition_id,
 	COUNT_BIG(PERSON_ID) as count_value
 from
 @CDM_schema.dbo.condition_era ce1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on ce1.person_id = c1.subject_id
+--{@condition_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	ce1.condition_era_start_date>=c1.cohort_start_date and ce1.condition_era_end_date<=c1.cohort_end_date
+--}
+--{@condition_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
+AND
+--}
+--{@condition_concept_ids != ''}?{
+	ce1.condition_concept_id in (@condition_concept_ids)
+--}    
+--} 
 group by c1.cohort_definition_id,
 	YEAR(condition_era_start_date)*100 + month(condition_era_start_date)
 ;
@@ -3509,7 +4205,7 @@ select c1.cohort_definition_id,
 	1100 as analysis_id,  
 	left(l1.zip,3) as stratum_1, COUNT_BIG(distinct person_id) as count_value
 from @CDM_schema.dbo.PERSON p1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on p1.person_id = c1.subject_id
 	inner join @CDM_schema.dbo.LOCATION l1
 	on p1.location_id = l1.location_id
@@ -3527,7 +4223,7 @@ select c1.cohort_definition_id,
 	1101 as analysis_id,  
 	l1.state as stratum_1, COUNT_BIG(distinct person_id) as count_value
 from @CDM_schema.dbo.PERSON p1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on p1.person_id = c1.subject_id
 	inner join @CDM_schema.dbo.LOCATION l1
 	on p1.location_id = l1.location_id
@@ -3555,7 +4251,7 @@ select c1.cohort_definition_id,
 	cs1.place_of_service_concept_id as stratum_1, 
 	COUNT_BIG(person_id) as count_value
 from @CDM_schema.dbo.PERSON p1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on p1.person_id = c1.subject_id
 	inner join @CDM_schema.dbo.care_site cs1
 	on p1.care_site_id = cs1.care_site_id
@@ -3574,7 +4270,7 @@ select c1.cohort_definition_id,
 	cs1.place_of_service_concept_id as stratum_1, 
 	COUNT_BIG(visit_occurrence_id) as count_value
 from @CDM_schema.dbo.visit_occurrence vo1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on vo1.person_id = c1.subject_id
 	inner join @CDM_schema.dbo.care_site cs1
 	on vo1.care_site_id = cs1.care_site_id
@@ -3602,10 +4298,19 @@ select c1.cohort_definition_id,
 	COUNT_BIG(distinct o1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.measurement o1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
---{@observation_concept_ids != ''}?{
-	where o1.measurement_concept_id in (@observation_concept_ids)
+--{@measurement_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	o1.measurement_date>=c1.cohort_start_date and o1.measurement_date<=c1.cohort_end_date
+--}
+--{@measurement_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
+AND
+--}
+--{@measurement_concept_ids != ''}?{
+	o1.measurement_concept_id in (@measurement_concept_ids)
+--}
 --}
 group by c1.cohort_definition_id,
 	o1.measurement_CONCEPT_ID
@@ -3622,10 +4327,19 @@ select c1.cohort_definition_id,
 	COUNT_BIG(o1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.measurement o1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
---{@observation_concept_ids != ''}?{
-	where o1.measurement_concept_id in (@observation_concept_ids)
+--{@measurement_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	o1.measurement_date>=c1.cohort_start_date and o1.measurement_date<=c1.cohort_end_date
+--}
+--{@measurement_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
+AND
+--}
+--{@measurement_concept_ids != ''}?{
+	o1.measurement_concept_id in (@measurement_concept_ids)
+--}
 --}
 group by c1.cohort_definition_id,
 	o1.measurement_CONCEPT_ID
@@ -3644,10 +4358,19 @@ select c1.cohort_definition_id,
 	COUNT_BIG(distinct PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.measurement o1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
---{@observation_concept_ids != ''}?{
-	where o1.measurement_concept_id in (@observation_concept_ids)
+--{@measurement_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	o1.measurement_date>=c1.cohort_start_date and o1.measurement_date<=c1.cohort_end_date
+--}
+--{@measurement_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
+AND
+--}
+--{@measurement_concept_ids != ''}?{
+	o1.measurement_concept_id in (@measurement_concept_ids)
+--}
 --}
 group by c1.cohort_definition_id,
 	o1.measurement_concept_id, 
@@ -3682,8 +4405,20 @@ from
 	select c1.cohort_definition_id, o1.person_id, COUNT_BIG(distinct o1.measurement_concept_id) as num_measurements
 	from
 	@CDM_schema.dbo.measurement o1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
+--{@measurement_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	o1.measurement_date>=c1.cohort_start_date and o1.measurement_date<=c1.cohort_end_date
+--}
+--{@measurement_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
+AND
+--}
+--{@measurement_concept_ids != ''}?{
+	o1.measurement_concept_id in (@measurement_concept_ids)
+--}
+--}    
 	group by c1.cohort_definition_id, o1.person_id
 	) t0
 ) t1
@@ -3704,13 +4439,22 @@ select c1.cohort_definition_id,
 	floor((year(measurement_date) - p1.year_of_birth)/10) as stratum_4, 
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from @CDM_schema.dbo.PERSON p1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on p1.person_id = c1.subject_id
 inner join
 @CDM_schema.dbo.measurement o1
 on p1.person_id = o1.person_id
---{@observation_concept_ids != ''}?{
-	where o1.measurement_concept_id in (@observation_concept_ids)
+--{@measurement_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	o1.measurement_date>=c1.cohort_start_date and o1.measurement_date<=c1.cohort_end_date
+--}
+--{@measurement_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
+AND
+--}
+--{@measurement_concept_ids != ''}?{
+	o1.measurement_concept_id in (@measurement_concept_ids)
+--}
 --}
 group by c1.cohort_definition_id,
 	o1.measurement_concept_id, 
@@ -3730,10 +4474,19 @@ select c1.cohort_definition_id,
 	COUNT_BIG(o1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.measurement o1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
---{@observation_concept_ids != ''}?{
-	where o1.measurement_concept_id in (@observation_concept_ids)
+--{@measurement_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	o1.measurement_date>=c1.cohort_start_date and o1.measurement_date<=c1.cohort_end_date
+--}
+--{@measurement_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
+AND
+--}
+--{@measurement_concept_ids != ''}?{
+	o1.measurement_concept_id in (@measurement_concept_ids)
+--}
 --}
 group by c1.cohort_definition_id,
 	o1.measurement_CONCEPT_ID,	
@@ -3773,10 +4526,19 @@ from @CDM_schema.dbo.PERSON p1
 inner join
 (select person_id, measurement_concept_id, min(year(measurement_date)) as measurement_start_year
 from @CDM_schema.dbo.measurement o1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
---{@observation_concept_ids != ''}?{
-	where o1.measurement_concept_id in (@observation_concept_ids)
+--{@measurement_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	o1.measurement_date>=c1.cohort_start_date and o1.measurement_date<=c1.cohort_end_date
+--}
+--{@measurement_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
+AND
+--}
+--{@measurement_concept_ids != ''}?{
+	o1.measurement_concept_id in (@measurement_concept_ids)
+--}
 --}
 group by person_id, measurement_concept_id
 ) o1
@@ -3796,10 +4558,19 @@ select c1.cohort_definition_id,
 	COUNT_BIG(o1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.measurement o1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
---{@observation_concept_ids != ''}?{
-	where o1.measurement_concept_id in (@observation_concept_ids)
+--{@measurement_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	o1.measurement_date>=c1.cohort_start_date and o1.measurement_date<=c1.cohort_end_date
+--}
+--{@measurement_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
+AND
+--}
+--{@measurement_concept_ids != ''}?{
+	o1.measurement_concept_id in (@measurement_concept_ids)
+--}
 --}
 group by c1.cohort_definition_id,
 	o1.measurement_CONCEPT_ID,
@@ -3928,12 +4699,15 @@ select cohort_definition_id,
 	value_as_number as count_value,
 	1.0*(row_number() over (partition by cohort_definition_id, measurement_concept_id, unit_concept_id order by value_as_number))/(COUNT_BIG(value_as_number) over (partition by cohort_definition_id, measurement_concept_id, unit_concept_id)+1) as p1
 from @CDM_schema.dbo.measurement o1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
 where o1.unit_concept_id is not null
 	and o1.value_as_number is not null
 	--{@observation_concept_ids != ''}?{
 	and o1.measurement_concept_id in (@observation_concept_ids)
+--}
+--{@cohort_period_only == 'TRUE'}?{
+	and o1.measurement_date>=c1.cohort_start_date and o1.measurement_date<=c1.cohort_end_date
 --}
 ) t1
 group by cohort_definition_id, measurement_concept_id, unit_concept_id
@@ -3963,7 +4737,7 @@ select cohort_definition_id, measurement_concept_id, unit_concept_id,
 	range_low as count_value,
 	1.0*(row_number() over (partition by cohort_definition_id, measurement_concept_id, unit_concept_id order by range_low))/(COUNT_BIG(range_low) over (partition by cohort_definition_id, measurement_concept_id, unit_concept_id)+1) as p1
 from @CDM_schema.dbo.measurement o1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
 where o1.unit_concept_id is not null
 	and o1.value_as_number is not null
@@ -3971,6 +4745,9 @@ where o1.unit_concept_id is not null
 	and o1.range_high is not null
 	--{@observation_concept_ids != ''}?{
 	and o1.measurement_concept_id in (@observation_concept_ids)
+--}
+--{@cohort_period_only == 'TRUE'}?{
+	and o1.measurement_date>=c1.cohort_start_date and o1.measurement_date<=c1.cohort_end_date
 --}
 ) t1
 group by cohort_definition_id, measurement_concept_id, unit_concept_id
@@ -4001,7 +4778,7 @@ select cohort_definition_id, measurement_concept_id, unit_concept_id,
 	range_high as count_value,
 	1.0*(row_number() over (partition by cohort_definition_id, measurement_concept_id, unit_concept_id order by range_high))/(COUNT_BIG(range_high) over (partition by cohort_definition_id, measurement_concept_id, unit_concept_id)+1) as p1
 from @CDM_schema.dbo.measurement o1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
 where o1.unit_concept_id is not null
 	and o1.value_as_number is not null
@@ -4009,6 +4786,9 @@ where o1.unit_concept_id is not null
 	and o1.range_high is not null
 	--{@observation_concept_ids != ''}?{
 	and o1.measurement_concept_id in (@observation_concept_ids)
+--}
+--{@cohort_period_only == 'TRUE'}?{
+	and o1.measurement_date>=c1.cohort_start_date and o1.measurement_date<=c1.cohort_end_date
 --}
 ) t1
 group by cohort_definition_id, measurement_concept_id, unit_concept_id
@@ -4031,7 +4811,7 @@ select cohort_definition_id,
 	COUNT_BIG(o1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.measurement o1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
 where o1.value_as_number is not null
 	and o1.unit_concept_id is not null
@@ -4039,6 +4819,9 @@ where o1.value_as_number is not null
 	and o1.range_high is not null
 	--{@observation_concept_ids != ''}?{
 	and o1.measurement_concept_id in (@observation_concept_ids)
+--}
+--{@cohort_period_only == 'TRUE'}?{
+	and o1.measurement_date>=c1.cohort_start_date and o1.measurement_date<=c1.cohort_end_date
 --}
 group by cohort_definition_id, 
 	measurement_concept_id,
@@ -4059,8 +4842,20 @@ select c1.cohort_definition_id,
 	COUNT_BIG(PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.measurement o1
-	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
+	inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 		on o1.person_id = c1.subject_id
+--{@measurement_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+WHERE 
+--{@cohort_period_only == 'TRUE'}?{
+	o1.measurement_date>=c1.cohort_start_date and o1.measurement_date<=c1.cohort_end_date
+--}
+--{@measurement_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
+AND
+--}
+--{@measurement_concept_ids != ''}?{
+	o1.measurement_concept_id in (@measurement_concept_ids)
+--}
+--}    
 group by c1.cohort_definition_id,
 	YEAR(measurement_date)*100 + month(measurement_date)
 ;

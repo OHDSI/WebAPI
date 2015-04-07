@@ -10,6 +10,8 @@ public class CohortAnalysisTask {
 	
 	private boolean runHeraclesHeel;
 	
+	private boolean cohortPeriodOnly;
+
 	private List<String> cohortDefinitionIds;
 	
 	private List<String> analysisIds;
@@ -150,6 +152,29 @@ public class CohortAnalysisTask {
 		this.measurementConceptIds = measurementConceptIds;
 	}
 	
+	/**
+	 * @return the runHeraclesHeel
+	 */
+	public boolean isRunHeraclesHeel() {
+		return runHeraclesHeel;
+	}
+	
+	
+	/**
+	 * @return the cohortPeriodOnly
+	 */
+	public boolean isCohortPeriodOnly() {
+		return cohortPeriodOnly;
+	}
+
+	/**
+	 * @param cohortPeriodOnly the cohortPeriodOnly to set
+	 */
+	public void setCohortPeriodOnly(boolean cohortPeriodOnly) {
+		this.cohortPeriodOnly = cohortPeriodOnly;
+	}
+
+
 	@Override
 	public String toString() {
 		try {

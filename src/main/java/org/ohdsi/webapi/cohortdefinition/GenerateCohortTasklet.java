@@ -71,6 +71,7 @@ public class GenerateCohortTasklet implements Tasklet {
       result = GenerateCohortTasklet.this.jdbcTemplate.batchUpdate(sqlStatements);
 
     } catch (Exception e) {
+    	log.error(e);
       throw new RuntimeException(e);
     }
 

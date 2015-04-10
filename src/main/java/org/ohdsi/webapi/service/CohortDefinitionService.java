@@ -56,9 +56,6 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Autowired
   private JobTemplate jobTemplate;
 
-  @Autowired
-  private StepBuilderFactory stepBuilders;
-  
   @Value("${cohort.targetTable}")
   private String cohortTable;  
   
@@ -99,7 +96,7 @@ public class CohortDefinitionService extends AbstractDaoService {
     public String expression;
   }
 
-  private CohortDefinitionDTO cohortDefinitionToDTO(CohortDefinition def)
+  public CohortDefinitionDTO cohortDefinitionToDTO(CohortDefinition def)
   {
     CohortDefinitionDTO result = new CohortDefinitionDTO();
     
@@ -131,7 +128,6 @@ public class CohortDefinitionService extends AbstractDaoService {
       options.cohortId = options.cohortId == null ? -1 : options.cohortId;
       options.cdmSchema = (options.cdmSchema == null || options.cdmSchema.trim().length() == 0) ? this.getCdmSchema() : options.cdmSchema.trim();
       options.targetTable = (options.targetTable == null || options.targetTable.trim().length() == 0) ? "cohort" : options.targetTable.trim();
-      options.targetSchema = (options.targetSchema == null || options.targetSchema.trim().length() == 0) ? this.getOhdsiSchema() : options.targetSchema.trim();
     }
     
     GenerateSqlResult result = new GenerateSqlResult();
@@ -176,6 +172,7 @@ public class CohortDefinitionService extends AbstractDaoService {
   @PUT
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)  
   public CohortDefinitionDTO createCohortDefinition(CohortDefinitionDTO def) {
     Date currentTime = Calendar.getInstance().getTime();
 
@@ -229,6 +226,7 @@ public class CohortDefinitionService extends AbstractDaoService {
   @PUT
   @Path("/{id}")
   @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)  
   public CohortDefinitionDTO saveCohortDefinition(@PathParam("id") final int id, CohortDefinitionDTO def) {
     Date currentTime = Calendar.getInstance().getTime();
 
@@ -278,7 +276,6 @@ public class CohortDefinitionService extends AbstractDaoService {
       CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = new CohortExpressionQueryBuilder.BuildExpressionQueryOptions();
       options.cohortId = id;
       options.cdmSchema = this.getCdmSchema();
-      options.targetSchema = this.getOhdsiSchema();
       options.targetTable = this.cohortTable;
 
       GenerateCohortTask task = new GenerateCohortTask()

@@ -49,9 +49,6 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     @JsonProperty("cdmSchema")  
     public String cdmSchema;
 
-    @JsonProperty("targetSchema")  
-    public String targetSchema;
-
     @JsonProperty("targetTable")  
     public String targetTable;
     
@@ -151,7 +148,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
         sqlExpression,
         range.op.startsWith("!") ? "not " : "",
         range.value.doubleValue(),
-        range.value.doubleValue());
+        range.extent.doubleValue());
     }
     else
     {
@@ -171,7 +168,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
       return String.format("%s %s like '%s%s%s'", sqlExpression, negation, prefix, value, postfix);
   }
   
-  private String getCodesetQuery(ConceptSet[] conceptSets) {
+  public String getCodesetQuery(ConceptSet[] conceptSets) {
     String codesetQuery = CODESET_QUERY_TEMPLATE;
     
     
@@ -252,7 +249,6 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     {
       // replease query parameters with tokens
       resultSql = StringUtils.replace(resultSql, "@CDM_schema", options.cdmSchema);
-      resultSql = StringUtils.replace(resultSql, "@targetSchema", options.targetSchema);
       resultSql = StringUtils.replace(resultSql, "@targetTable", options.targetTable);
       resultSql = StringUtils.replace(resultSql, "@cohortDefinitionId", options.cohortId.toString());
     }
@@ -283,7 +279,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     else
       endExpression = startWindow.end.coeff == -1 ? "P.OP_START_DATE" : "P.OP_END_DATE";
     
-    String windowCriteria = String.format("WHERE A.START_DATE BETWEEN %s and %s", startExpression, endExpression);
+    String windowCriteria = String.format("A.START_DATE BETWEEN %s and %s", startExpression, endExpression);
     query = StringUtils.replace(query,"@windowCriteria",windowCriteria);
 
     String occurrenceCriteria = String.format(
@@ -1136,7 +1132,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // unit
     if (criteria.unit != null && criteria.unit.length > 0)
     {
-      ArrayList<Long> conceptIds = getConceptIdsFromConcepts(criteria.valueAsConcept);
+      ArrayList<Long> conceptIds = getConceptIdsFromConcepts(criteria.unit);
       whereClauses.add(String.format("C.unit_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
     }
        

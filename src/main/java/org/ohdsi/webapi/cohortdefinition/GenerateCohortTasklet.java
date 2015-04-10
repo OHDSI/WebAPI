@@ -110,7 +110,7 @@ public class GenerateCohortTasklet implements Tasklet {
       });
       log.debug("Update count: " + ret.length);
       info.setIsValid(true);
-    } catch (final TransactionException e) {
+    } catch (final Exception e) {
       info.setIsValid(false);
       log.error(e.getMessage(), e);
       throw e;//FAIL job status

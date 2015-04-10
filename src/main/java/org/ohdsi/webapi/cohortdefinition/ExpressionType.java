@@ -21,5 +21,6 @@ package org.ohdsi.webapi.cohortdefinition;
 public enum ExpressionType
 {
   SIMPLE_EXPRESSION,
-  CUSTOM_SQL
+  CUSTOM_SQL,
+  EXTERNAL_SOURCED
 }

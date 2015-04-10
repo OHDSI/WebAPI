@@ -52,10 +52,6 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     @JsonProperty("targetTable")  
     public String targetTable;
     
-    @JsonProperty("targetSchema")  
-    public String targetSchema;
-    
-    
 
   }  
   
@@ -254,7 +250,6 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
       // replease query parameters with tokens
       resultSql = StringUtils.replace(resultSql, "@CDM_schema", options.cdmSchema);
       resultSql = StringUtils.replace(resultSql, "@targetTable", options.targetTable);
-      resultSql = StringUtils.replace(resultSql, "@targetSchema", options.targetSchema);
       resultSql = StringUtils.replace(resultSql, "@cohortDefinitionId", options.cohortId.toString());
     }
     return resultSql;

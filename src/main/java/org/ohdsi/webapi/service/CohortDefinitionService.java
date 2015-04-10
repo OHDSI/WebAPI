@@ -128,7 +128,6 @@ public class CohortDefinitionService extends AbstractDaoService {
       options.cohortId = options.cohortId == null ? -1 : options.cohortId;
       options.cdmSchema = (options.cdmSchema == null || options.cdmSchema.trim().length() == 0) ? this.getCdmSchema() : options.cdmSchema.trim();
       options.targetTable = (options.targetTable == null || options.targetTable.trim().length() == 0) ? "cohort" : options.targetTable.trim();
-      options.targetSchema = (options.targetSchema == null || options.targetSchema.trim().length() == 0) ? this.getOhdsiSchema() : options.targetSchema.trim();
     }
     
     GenerateSqlResult result = new GenerateSqlResult();
@@ -275,7 +274,6 @@ public class CohortDefinitionService extends AbstractDaoService {
       options.cohortId = id;
       options.cdmSchema = this.getCdmSchema();
       options.targetTable = this.cohortTable;
-      options.targetSchema = this.getOhdsiSchema();
 
       GenerateCohortTask task = new GenerateCohortTask()
               .setCohortDefinition(currentDefinition)

@@ -333,6 +333,7 @@
     <profile>
       <id>webapi-oracle</id>
       <properties>
+        <cohort.targetTable>OHDSI.COHORT</cohort.targetTable>
         <datasource.driverClassName>oracle.jdbc.OracleDriver</datasource.driverClassName>
         <datasource.url>jdbc:oracle:thin:@127.0.0.1:1521:cdm</datasource.url>
         <datasource.username>user</datasource.username>

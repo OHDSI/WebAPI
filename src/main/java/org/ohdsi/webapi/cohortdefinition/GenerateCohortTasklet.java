@@ -15,24 +15,26 @@
  */
 package org.ohdsi.webapi.cohortdefinition;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Calendar;
 import java.util.Date;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  *
@@ -66,7 +68,7 @@ public class GenerateCohortTasklet implements Tasklet {
 
       CohortExpression expression = mapper.readValue(this.task.getCohortDefinition().getDetails().getExpression(), CohortExpression.class);
       String expressionSql = expressionQueryBuilder.buildExpressionQuery(expression, this.task.getOptions());
-      String translatedSql = SqlTranslate.translateSql(expressionSql, this.task.getSourceDialect(), this.task.getTargetDialect());
+      String translatedSql = SqlTranslate.translateSql(expressionSql, this.task.getSourceDialect(), this.task.getTargetDialect(), SessionUtils.sessionId(), null);
       String[] sqlStatements = SqlSplit.splitSql(translatedSql);
       result = GenerateCohortTasklet.this.jdbcTemplate.batchUpdate(sqlStatements);
 

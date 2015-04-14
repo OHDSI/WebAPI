@@ -1,15 +1,5 @@
-create table #PrimaryCriteriaEvents
-(
-	person_id bigint,
-	start_date datetime,
-	end_date datetime,
-	op_start_date datetime,
-	op_end_date datetime
-)
-;
-
-INSERT INTO #PrimaryCriteriaEvents (person_id, start_date, end_date, op_start_date, op_end_date)
-select P.person_id, P.start_date, P.end_date, OP.observation_period_start_date, OP.observation_period_end_date
+select row_number() over (order by P.person_id) as event_id, P.person_id, P.start_date, P.end_date, OP.observation_period_start_date as op_start_date, OP.observation_period_end_date as op_end_date
+INTO #PrimaryCriteriaEvents
 FROM
 (
   select P.person_id, P.start_date, P.end_date, ROW_NUMBER() OVER (PARTITION BY person_id ORDER BY start_date @EventSort) ordinal

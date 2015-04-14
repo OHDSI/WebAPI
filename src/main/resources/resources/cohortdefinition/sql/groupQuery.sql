@@ -1,5 +1,10 @@
-select person_id, start_date, end_date
+select @indexId as index_id, event_id
 FROM
 (
-  @criteriaQueries
+  select event_id FROM
+  (
+    @criteriaQueries
+  ) CQ
+  GROUP BY event_id
+  @intersectClause
 ) G

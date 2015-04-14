@@ -9,8 +9,8 @@ FROM
   select RawEvents.*, row_number() over (partition by RawEvents.person_id order by RawEvents.start_date @EventSort) as ordinal
   FROM
   (
-    select person_id, start_date, end_date
-    FROM #PrimaryCriteriaEvents
+    select pe.person_id, pe.start_date, pe.end_date
+    FROM #PrimaryCriteriaEvents pe
     @additionalCriteriaQuery
   ) RawEvents
 ) Results

@@ -232,7 +232,11 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     String additionalCriteriaQuery = "";
     if (expression.additionalCriteria != null)
     {
-       additionalCriteriaQuery = "\nINTERSECT\n" + expression.additionalCriteria.accept(this);
+      CriteriaGroup acGroup = expression.additionalCriteria;
+      String acGroupQuery = acGroup.accept(this);
+      acGroupQuery = StringUtils.replace(acGroupQuery,"@indexId", "" + 0);
+      acGroupQuery = StringUtils.replace(acGroupQuery, "@intersectClause", acGroup.type.equalsIgnoreCase("ALL") ? "HAVING COUNT(index_id) = " + (acGroup.criteriaList.length + acGroup.groups.length) : "");
+      additionalCriteriaQuery = "\nJOIN (\n" + acGroupQuery + ") AC on AC.event_id = pe.event_id";
     }
     resultSql = StringUtils.replace(resultSql, "@additionalCriteriaQuery", additionalCriteriaQuery);
 
@@ -464,17 +468,24 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     String query = GROUP_QUERY_TEMPLATE;
     ArrayList<String> additionalCriteriaQueries = new ArrayList<>();
     
-    for(AdditionalCriteria ac : group.criteriaList)
+    for(int i = 0; i< group.criteriaList.length; i++)
     {
-      additionalCriteriaQueries.add(ac.accept(this));
+      AdditionalCriteria ac = group.criteriaList[i];
+      String acQuery = ac.accept(this);
+      acQuery = StringUtils.replace(acQuery, "@indexId", "" + i);
+      additionalCriteriaQueries.add(acQuery);
     }
     
-    for(CriteriaGroup g : group.groups)
+    for(int i=0; i< group.groups.length; i++)
     {
-      additionalCriteriaQueries.add(g.accept(this));      
+      CriteriaGroup g = group.groups[i];
+      String gQuery = g.accept(this);
+      gQuery = StringUtils.replace(gQuery, "@indexId", "" + (group.criteriaList.length + i));
+      gQuery = StringUtils.replace(gQuery, "@intersectClause", group.type.equalsIgnoreCase("ALL") ? "HAVING COUNT(index_id) = " + (g.criteriaList.length + g.groups.length) : "");
+      additionalCriteriaQueries.add(gQuery);      
     }
     
-    query = StringUtils.replace(query, "@criteriaQueries", StringUtils.join(additionalCriteriaQueries, group.type.equalsIgnoreCase("ANY") ? "\nUNION\n" : "\nINTERSECT\n"));
+    query = StringUtils.replace(query, "@criteriaQueries", StringUtils.join(additionalCriteriaQueries, "\nUNION\n"));
     
     return query;    
   }

@@ -2,6 +2,8 @@ package org.ohdsi.webapi.cohortanalysis;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ohdsi.sql.SqlSplit;
+import org.ohdsi.webapi.service.CohortAnalysisService;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
@@ -16,15 +18,18 @@ public class CohortAnalysisTasklet implements Tasklet {
     
     private static final Log log = LogFactory.getLog(CohortAnalysisTasklet.class);
     
-    private final String[] sql;
+    private final CohortAnalysisTask task;
+    
+    private final CohortAnalysisUtilities utils;
     
     private final JdbcTemplate jdbcTemplate;
     
     private final TransactionTemplate transactionTemplate;
     
-    public CohortAnalysisTasklet(final String[] taskSql, final JdbcTemplate jdbcTemplate,
+    public CohortAnalysisTasklet(CohortAnalysisTask task, CohortAnalysisUtilities utils, final JdbcTemplate jdbcTemplate,
         final TransactionTemplate transactionTemplate) {
-        this.sql = taskSql;
+        this.task = task;
+        this.utils = utils;
         this.jdbcTemplate = jdbcTemplate;
         this.transactionTemplate = transactionTemplate;
     }
@@ -37,7 +42,19 @@ public class CohortAnalysisTasklet implements Tasklet {
                 
                 @Override
                 public int[] doInTransaction(final TransactionStatus status) {
-                    return CohortAnalysisTasklet.this.jdbcTemplate.batchUpdate(CohortAnalysisTasklet.this.sql);
+                	String cohortSql = CohortAnalysisService.getCohortAnalysisSql(task, utils);
+                	
+                	String[] stmts = null;
+                	if (cohortSql != null) {
+                		if (log.isDebugEnabled()) {
+                			
+                			stmts = SqlSplit.splitSql(cohortSql);
+                            for (int x = 0; x < stmts.length; x++) {
+                                log.debug(String.format("Split SQL %s : %s", x, stmts[x]));
+                            }
+                        }
+                	}
+                    return CohortAnalysisTasklet.this.jdbcTemplate.batchUpdate(stmts);
                 }
             });
             log.debug("Update count: " + ret.length);

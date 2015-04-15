@@ -5,6 +5,8 @@ import java.util.List;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class CohortAnalysisTask {
+	
+	private String jobName;
 
 	private int smallCellCount;
 	
@@ -31,6 +33,20 @@ public class CohortAnalysisTask {
 	 */
 	public int getSmallCellCount() {
 		return smallCellCount;
+	}
+
+	/**
+	 * @return the jobName
+	 */
+	public String getJobName() {
+		return jobName;
+	}
+
+	/**
+	 * @param jobName the jobName to set
+	 */
+	public void setJobName(String jobName) {
+		this.jobName = jobName;
 	}
 
 	/**

@@ -21,6 +21,7 @@ import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysis;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTask;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTasklet;
+import org.ohdsi.webapi.cohortanalysis.CohortAnalysisUtilities;
 import org.ohdsi.webapi.cohortanalysis.CohortSummary;
 import org.ohdsi.webapi.cohortresults.CohortDashboard;
 import org.ohdsi.webapi.helper.ResourceHelper;
@@ -34,6 +35,7 @@ import org.springframework.batch.core.configuration.annotation.StepBuilderFactor
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 /**
  * Services related to running Heracles analyses
@@ -175,6 +177,21 @@ public class CohortAnalysisService extends AbstractDaoService {
     @Produces(MediaType.TEXT_PLAIN)
     @Consumes(MediaType.APPLICATION_JSON)
     public String getRunCohortAnalysisSql(CohortAnalysisTask task) {
+    	return getCohortAnalysisSql(task, getCohortAnalysisUtils());
+    }
+    
+    public CohortAnalysisUtilities getCohortAnalysisUtils() {
+    	CohortAnalysisUtilities utils = new CohortAnalysisUtilities();
+    	utils.setCdmSchema(this.getCdmSchema());
+    	utils.setCdmVersion(this.getCdmVersion());
+    	utils.setDialect(this.getDialect());
+    	utils.setOhdsiSchema(this.getOhdsiSchema());
+    	utils.setSourceDialect(this.getSourceDialect());
+    	utils.setSourceName(this.getSourceName());
+    	return utils;
+    }
+    
+    public static String getCohortAnalysisSql(CohortAnalysisTask task, CohortAnalysisUtilities utils) {
         String sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/runHeraclesAnalyses.sql");
         
         String cohortDefinitionIds = (task.getCohortDefinitionIds() == null ? "" : Joiner.on(",").join(
@@ -194,13 +211,13 @@ public class CohortAnalysisService extends AbstractDaoService {
                 "smallcellcount", "runHERACLESHeel", "CDM_version", "cohort_definition_id", "list_of_analysis_ids",
                 "condition_concept_ids", "drug_concept_ids", "procedure_concept_ids", "observation_concept_ids",
                 "measurement_concept_ids", "cohort_period_only" };
-        String[] values = new String[] { this.getCdmSchema(), this.getOhdsiSchema(), this.getSourceName(), 
+        String[] values = new String[] { utils.getCdmSchema(), utils.getOhdsiSchema(), utils.getSourceName(), 
         		String.valueOf(task.getSmallCellCount()),
-                String.valueOf(task.runHeraclesHeel()).toUpperCase(), this.getCdmVersion(), cohortDefinitionIds,
+                String.valueOf(task.runHeraclesHeel()).toUpperCase(), utils.getCdmVersion(), cohortDefinitionIds,
                 analysisIds, conditionIds, drugIds, procedureIds, observationIds, measurementIds,
                 String.valueOf(task.isCohortPeriodOnly()) };
         sql = SqlRender.renderSql(sql, params, values);
-        sql = SqlTranslate.translateSql(sql, getSourceDialect(), getDialect(), SessionUtils.sessionId(), getOhdsiSchema());
+        sql = SqlTranslate.translateSql(sql, utils.getSourceDialect(), utils.getDialect(), SessionUtils.sessionId(), utils.getOhdsiSchema());
         
         return sql;
     }
@@ -248,12 +265,14 @@ public class CohortAnalysisService extends AbstractDaoService {
         for(String cd : task.getCohortDefinitionIds()){
             builder.addString(paramPrefixCD + cd, cd);
         }
+        if (!StringUtils.isEmpty(task.getJobName())) {
+        	builder.addString("jobName", task.getJobName());
+        } 
         //TODO consider analysisId
         final String taskString = task.toString();
         final JobParameters jobParameters = builder.toJobParameters();
-        String[] sql = this.getRunCohortAnalysisSqlBatch(task);
         log.info(String.format("Beginning run for cohort analysis task: \n %s", taskString));
-        CohortAnalysisTasklet tasklet = new CohortAnalysisTasklet(sql, getJdbcTemplate(), getTransactionTemplate());
+        CohortAnalysisTasklet tasklet = new CohortAnalysisTasklet(task, this.getCohortAnalysisUtils(), getJdbcTemplate(), getTransactionTemplate());
         
         return this.jobTemplate.launchTasklet("cohortAnalysisJob", "cohortAnalysisStep", tasklet, jobParameters);
     }

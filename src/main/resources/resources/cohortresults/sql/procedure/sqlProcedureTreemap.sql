@@ -6,9 +6,9 @@ select 	concept_hierarchy.concept_id,
 	hr1.count_value as num_persons, 
 	1.0*hr1.count_value / denom.count_value as percent_persons,
 	1.0*hr2.count_value / hr1.count_value as records_per_person
-from (select * from @resultsSchema.dbo.heracles_results where analysis_id = 600 and cohort_definition_id in (@cohortDefinitionId)) hr1
+from (select * from @resultsSchema.heracles_results where analysis_id = 600 and cohort_definition_id in (@cohortDefinitionId)) hr1
 	inner join
-	(select * from @resultsSchema.dbo.heracles_results where analysis_id = 601 and cohort_definition_id in (@cohortDefinitionId)) hr2
+	(select * from @resultsSchema.heracles_results where analysis_id = 601 and cohort_definition_id in (@cohortDefinitionId)) hr2
 	on hr1.stratum_1 = hr2.stratum_1
 	inner join
 	(
@@ -21,8 +21,8 @@ from (select * from @resultsSchema.dbo.heracles_results where analysis_id = 600 
 		(
 		select c1.concept_id, 
 			v1.vocabulary_name + ' ' + c1.concept_code + ': ' + c1.concept_name as proc_concept_name
-		from @cdmSchema.dbo.concept c1
-			inner join @cdmSchema.dbo.vocabulary v1
+		from @cdmSchema.concept c1
+			inner join @cdmSchema.vocabulary v1
 			on c1.vocabulary_id = v1.vocabulary_id
 		where (
 			c1.vocabulary_id in ('ICD9Proc', 'HCPCS','CPT4')
@@ -32,18 +32,18 @@ from (select * from @resultsSchema.dbo.heracles_results where analysis_id = 600 
 
 	left join
 		(select ca0.DESCENDANT_CONCEPT_ID, max(ca0.ancestor_concept_id) as ancestor_concept_id
-		from @cdmSchema.dbo.concept_ancestor ca0
+		from @cdmSchema.concept_ancestor ca0
 		inner join
 		(select distinct c2.concept_id as os3_concept_id
-		 from @cdmSchema.dbo.concept_ancestor ca1
+		 from @cdmSchema.concept_ancestor ca1
 			inner join
-			@cdmSchema.dbo.concept c1
+			@cdmSchema.concept c1
 			on ca1.DESCENDANT_CONCEPT_ID = c1.concept_id
 			inner join
-			@cdmSchema.dbo.concept_ancestor ca2
+			@cdmSchema.concept_ancestor ca2
 			on c1.concept_id = ca2.ANCESTOR_CONCEPT_ID
 			inner join
-			@cdmSchema.dbo.concept c2
+			@cdmSchema.concept c2
 			on ca2.DESCENDANT_CONCEPT_ID = c2.concept_id
 		 where ca1.ancestor_concept_id = 4040390
 		 and ca1.Min_LEVELS_OF_SEPARATION = 2
@@ -64,9 +64,9 @@ from (select * from @resultsSchema.dbo.heracles_results where analysis_id = 600 
 		proc_by_os3.os3_concept_id
 	from
 	 (select DESCENDANT_CONCEPT_ID as os1_concept_id, concept_name as os1_concept_name
-	 from @cdmSchema.dbo.concept_ancestor ca1
+	 from @cdmSchema.concept_ancestor ca1
 		inner join
-		@cdmSchema.dbo.concept c1
+		@cdmSchema.concept c1
 		on ca1.DESCENDANT_CONCEPT_ID = c1.concept_id
 	 where ancestor_concept_id = 4040390
 	 and Min_LEVELS_OF_SEPARATION = 1
@@ -74,15 +74,15 @@ from (select * from @resultsSchema.dbo.heracles_results where analysis_id = 600 
 
 	 inner join
 	 (select max(c1.CONCEPT_ID) as os1_concept_id, c2.concept_id as os2_concept_id, c2.concept_name as os2_concept_name
-	 from @cdmSchema.dbo.concept_ancestor ca1
+	 from @cdmSchema.concept_ancestor ca1
 		inner join
-		@cdmSchema.dbo.concept c1
+		@cdmSchema.concept c1
 		on ca1.DESCENDANT_CONCEPT_ID = c1.concept_id
 		inner join
-		@cdmSchema.dbo.concept_ancestor ca2
+		@cdmSchema.concept_ancestor ca2
 		on c1.concept_id = ca2.ANCESTOR_CONCEPT_ID
 		inner join
-		@cdmSchema.dbo.concept c2
+		@cdmSchema.concept c2
 		on ca2.DESCENDANT_CONCEPT_ID = c2.concept_id
 	 where ca1.ancestor_concept_id = 4040390
 	 and ca1.Min_LEVELS_OF_SEPARATION = 1
@@ -93,15 +93,15 @@ from (select * from @resultsSchema.dbo.heracles_results where analysis_id = 600 
 
 	 inner join
 	 (select max(c1.CONCEPT_ID) as os2_concept_id, c2.concept_id as os3_concept_id, c2.concept_name as os3_concept_name
-	 from @cdmSchema.dbo.concept_ancestor ca1
+	 from @cdmSchema.concept_ancestor ca1
 		inner join
-		@cdmSchema.dbo.concept c1
+		@cdmSchema.concept c1
 		on ca1.DESCENDANT_CONCEPT_ID = c1.concept_id
 		inner join
-		@cdmSchema.dbo.concept_ancestor ca2
+		@cdmSchema.concept_ancestor ca2
 		on c1.concept_id = ca2.ANCESTOR_CONCEPT_ID
 		inner join
-		@cdmSchema.dbo.concept c2
+		@cdmSchema.concept c2
 		on ca2.DESCENDANT_CONCEPT_ID = c2.concept_id
 	 where ca1.ancestor_concept_id = 4040390
 	 and ca1.Min_LEVELS_OF_SEPARATION = 2
@@ -117,6 +117,6 @@ from (select * from @resultsSchema.dbo.heracles_results where analysis_id = 600 
 	) concept_hierarchy
 	on CAST(hr1.stratum_1 AS INT) = concept_hierarchy.concept_id
 	,
-	(select count_value from @resultsSchema.dbo.heracles_results where analysis_id = 1 and cohort_definition_id in (@cohortDefinitionId)) denom
+	(select count_value from @resultsSchema.heracles_results where analysis_id = 1 and cohort_definition_id in (@cohortDefinitionId)) denom
 
 order by hr1.count_value desc

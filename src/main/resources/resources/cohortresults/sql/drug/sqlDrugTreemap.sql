@@ -7,9 +7,9 @@ select 	concept_hierarchy.concept_id,
 	hr1.count_value as num_persons, 
 	round(1.0*hr1.count_value / denom.count_value,5) as percent_persons,
 	round(1.0*hr2.count_value / hr1.count_value,5) as records_per_person
-from (select * from @resultsSchema.dbo.heracles_results where analysis_id = 700 and cohort_definition_id in (@cohortDefinitionId)) hr1
+from (select * from @resultsSchema.heracles_results where analysis_id = 700 and cohort_definition_id in (@cohortDefinitionId)) hr1
 	inner join
-	(select * from @resultsSchema.dbo.heracles_results where analysis_id = 701 and cohort_definition_id in (@cohortDefinitionId)) hr2
+	(select * from @resultsSchema.heracles_results where analysis_id = 701 and cohort_definition_id in (@cohortDefinitionId)) hr2
 	on hr1.stratum_1 = hr2.stratum_1
 	inner join
 	(
@@ -25,11 +25,11 @@ from (select * from @resultsSchema.dbo.heracles_results where analysis_id = 700 
 			c1.concept_name, 
 			c2.concept_id as rxnorm_ingredient_concept_id, 
 			c2.concept_name as RxNorm_ingredient_concept_name
-		from @cdmSchema.dbo.concept c1
-			inner join @cdmSchema.dbo.concept_ancestor ca1
+		from @cdmSchema.concept c1
+			inner join @cdmSchema.concept_ancestor ca1
 			on c1.concept_id = ca1.descendant_concept_id
 			and c1.vocabulary_id = 'RxNorm'
-			inner join @cdmSchema.dbo.concept c2
+			inner join @cdmSchema.concept c2
 			on ca1.ancestor_concept_id = c2.concept_id
 			and c2.vocabulary_id = 'RxNorm'
 			and c2.concept_class_id = 'Ingredient'
@@ -37,14 +37,14 @@ from (select * from @resultsSchema.dbo.heracles_results where analysis_id = 700 
 		left join
 			(select c1.concept_id as rxnorm_ingredient_concept_id, max(c2.concept_id) as atc5_concept_id
 			from
-			@cdmSchema.dbo.concept c1
+			@cdmSchema.concept c1
 			inner join 
-			@cdmSchema.dbo.concept_ancestor ca1
+			@cdmSchema.concept_ancestor ca1
 			on c1.concept_id = ca1.descendant_concept_id
 			and c1.vocabulary_id = 'RxNorm'
 			and c1.concept_class_id = 'Ingredient'
 			inner join 
-			@cdmSchema.dbo.concept c2
+			@cdmSchema.concept c2
 			on ca1.ancestor_concept_id = c2.concept_id
 			and c2.vocabulary_id = 'ATC'
 			and c2.concept_class_id = 'ATC 4th'
@@ -55,14 +55,14 @@ from (select * from @resultsSchema.dbo.heracles_results where analysis_id = 700 
 		left join
 			(select c1.concept_id as atc5_concept_id, c1.concept_name as atc5_concept_name, max(c2.concept_id) as atc3_concept_id
 			from
-			@cdmSchema.dbo.concept c1
+			@cdmSchema.concept c1
 			inner join 
-			@cdmSchema.dbo.concept_ancestor ca1
+			@cdmSchema.concept_ancestor ca1
 			on c1.concept_id = ca1.descendant_concept_id
 			and c1.vocabulary_id = 'ATC'
 			and c1.concept_class_id = 'ATC 4th'
 			inner join 
-			@cdmSchema.dbo.concept c2
+			@cdmSchema.concept c2
 			on ca1.ancestor_concept_id = c2.concept_id
 			and c2.vocabulary_id = 'ATC'
 			and c2.concept_class_id = 'ATC 2nd'
@@ -73,14 +73,14 @@ from (select * from @resultsSchema.dbo.heracles_results where analysis_id = 700 
 		left join
 			(select c1.concept_id as atc3_concept_id, c1.concept_name as atc3_concept_name, max(c2.concept_id) as atc1_concept_id
 			from
-			@cdmSchema.dbo.concept c1
+			@cdmSchema.concept c1
 			inner join 
-			@cdmSchema.dbo.concept_ancestor ca1
+			@cdmSchema.concept_ancestor ca1
 			on c1.concept_id = ca1.descendant_concept_id
 			and c1.vocabulary_id = 'ATC'
 			and c1.concept_class_id = 'ATC 2nd'
 			inner join 
-			@cdmSchema.dbo.concept c2
+			@cdmSchema.concept c2
 			on ca1.ancestor_concept_id = c2.concept_id
 			and c2.vocabulary_id = 'ATC'
   		and c2.concept_class_id = 'ATC 1st'
@@ -88,11 +88,11 @@ from (select * from @resultsSchema.dbo.heracles_results where analysis_id = 700 
 			) atc3_to_atc1
 		on atc5_to_atc3.atc3_concept_id = atc3_to_atc1.atc3_concept_id
 
-		left join @cdmSchema.dbo.concept atc1
+		left join @cdmSchema.concept atc1
 		 on atc3_to_atc1.atc1_concept_id = atc1.concept_id
 	) concept_hierarchy
 	on hr1.stratum_1 = CAST(concept_hierarchy.concept_id AS VARCHAR)
 	,
-	(select count_value from @resultsSchema.dbo.heracles_results where analysis_id = 1 and cohort_definition_id in (@cohortDefinitionId)) denom
+	(select count_value from @resultsSchema.heracles_results where analysis_id = 1 and cohort_definition_id in (@cohortDefinitionId)) denom
 
 order by hr1.count_value desc

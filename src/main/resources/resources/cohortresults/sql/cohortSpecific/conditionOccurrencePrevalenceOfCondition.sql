@@ -24,7 +24,7 @@ from
 	sum(count_value) as num_persons,
 	sum(case when stratum_2 < 0 then count_value else 0 end) as num_persons_before,
 	sum(case when stratum_2 > 0 then count_value else 0 end) as num_persons_after
-from @resultsSchema.dbo.heracles_results
+from @resultsSchema.heracles_results
 where analysis_id in (1820) --first occurrence of condition
 and cohort_definition_id in (@cohortDefinitionId)
 group by cast(stratum_1 as int)
@@ -40,20 +40,20 @@ inner join
 		from	
 		(
 		select concept_id, concept_name
-		from @cdmSchema.dbo.concept
+		from @cdmSchema.concept
 		where vocabulary_id = 'SNOMED'
 		) snomed
 		left join
 			(select c1.concept_id as snomed_concept_id, max(c2.concept_id) as pt_concept_id
 			from
-			@cdmSchema.dbo.concept c1
+			@cdmSchema.concept c1
 			inner join 
-			@cdmSchema.dbo.concept_ancestor ca1
+			@cdmSchema.concept_ancestor ca1
 			on c1.concept_id = ca1.descendant_concept_id
 			and c1.vocabulary_id = 'SNOMED'
 			and ca1.min_levels_of_separation = 1
 			inner join 
-			@cdmSchema.dbo.concept c2
+			@cdmSchema.concept c2
 			on ca1.ancestor_concept_id = c2.concept_id
 			and c2.vocabulary_id = 'MedDRA'
 			group by c1.concept_id
@@ -63,14 +63,14 @@ inner join
 		left join
 			(select c1.concept_id as pt_concept_id, c1.concept_name as pt_concept_name, max(c2.concept_id) as hlt_concept_id
 			from
-			@cdmSchema.dbo.concept c1
+			@cdmSchema.concept c1
 			inner join 
-			@cdmSchema.dbo.concept_ancestor ca1
+			@cdmSchema.concept_ancestor ca1
 			on c1.concept_id = ca1.descendant_concept_id
 			and c1.vocabulary_id = 'MedDRA'
 			and ca1.min_levels_of_separation = 1
 			inner join 
-		  @cdmSchema.dbo.concept c2
+		  @cdmSchema.concept c2
 			on ca1.ancestor_concept_id = c2.concept_id
 			and c2.vocabulary_id = 'MedDRA'
 			group by c1.concept_id, c1.concept_name
@@ -80,14 +80,14 @@ inner join
 		left join
 			(select c1.concept_id as hlt_concept_id, c1.concept_name as hlt_concept_name, max(c2.concept_id) as hlgt_concept_id
 			from
-			@cdmSchema.dbo.concept c1
+			@cdmSchema.concept c1
 			inner join 
-			@cdmSchema.dbo.concept_ancestor ca1
+			@cdmSchema.concept_ancestor ca1
 			on c1.concept_id = ca1.descendant_concept_id
 			and c1.vocabulary_id = 'MedDRA'
 			and ca1.min_levels_of_separation = 1
 			inner join 
-			@cdmSchema.dbo.concept c2
+			@cdmSchema.concept c2
 			on ca1.ancestor_concept_id = c2.concept_id
 			and c2.vocabulary_id = 'MedDRA'
 			group by c1.concept_id, c1.concept_name
@@ -97,28 +97,28 @@ inner join
 		left join
 			(select c1.concept_id as hlgt_concept_id, c1.concept_name as hlgt_concept_name, max(c2.concept_id) as soc_concept_id
 			from
-			@cdmSchema.dbo.concept c1
+			@cdmSchema.concept c1
 			inner join 
-			@cdmSchema.dbo.concept_ancestor ca1
+			@cdmSchema.concept_ancestor ca1
 			on c1.concept_id = ca1.descendant_concept_id
 			and c1.vocabulary_id = 'MedDRA'
 			and ca1.min_levels_of_separation = 1
 			inner join 
-			@cdmSchema.dbo.concept c2
+			@cdmSchema.concept c2
 			on ca1.ancestor_concept_id = c2.concept_id
 			and c2.vocabulary_id = 'MedDRA'
 			group by c1.concept_id, c1.concept_name
 			) hlgt_to_soc
 		on hlt_to_hlgt.hlgt_concept_id = hlgt_to_soc.hlgt_concept_id
 
-		left join @cdmSchema.dbo.concept soc
+		left join @cdmSchema.concept soc
 		 on hlgt_to_soc.soc_concept_id = soc.concept_id
 
 	) concept_hierarchy
 	on hr1.concept_id = concept_hierarchy.concept_id
 ,
 (select count_value
-from @resultsSchema.dbo.heracles_results
+from @resultsSchema.heracles_results
 where analysis_id = 1
 and cohort_definition_id in (@cohortDefinitionId)
 ) denom

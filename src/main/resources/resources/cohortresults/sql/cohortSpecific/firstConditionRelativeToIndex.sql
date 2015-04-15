@@ -19,7 +19,7 @@ from
 	cast(stratum_1 as integer) as concept_id,
 	cast(stratum_2 as integer)*30 as duration,
 	count_value
-from @resultsSchema.dbo.heracles_results
+from @resultsSchema.heracles_results
 where analysis_id in (1820) 
 and cohort_definition_id in (@cohortDefinitionId)
 ) hr1
@@ -29,7 +29,7 @@ inner join
 		-1* cast(stratum_1 as integer)*30 as duration,
 		sum(count_value) over (partition by cohort_definition_id order by -1* cast(stratum_1 as integer)*30 asc) as count_value
 	from
-	@resultsSchema.dbo.heracles_results
+	@resultsSchema.heracles_results
 	where analysis_id in (1805)
 	and cohort_definition_id in (@cohortDefinitionId)
 	and cast(stratum_1 as integer) > 0
@@ -40,10 +40,10 @@ inner join
 		cast(hr1.stratum_1 as integer)*30 as duration,
 		t1.count_value - sum(hr1.count_value) over (partition by hr1.cohort_definition_id order by cast(hr1.stratum_1 as integer)*30 asc) as count_value
 	from
-	@resultsSchema.dbo.heracles_results hr1
+	@resultsSchema.heracles_results hr1
 	inner join
 	(select cohort_definition_id, sum(count_value) as count_value 
-	from @resultsSchema.dbo.heracles_results 
+	from @resultsSchema.heracles_results 
 	where analysis_id = 1806
 	and cohort_definition_id in (@cohortDefinitionId)
 	group by cohort_definition_id) t1
@@ -58,7 +58,7 @@ inner join
 (select cohort_definition_id,
 	cast(stratum_1 as integer) as concept_id,
 	sum(count_value) as count_value
-from @resultsSchema.dbo.heracles_results
+from @resultsSchema.heracles_results
 where analysis_id in (1820) 
 and cohort_definition_id in (@cohortDefinitionId)
 group by cohort_definition_id,
@@ -68,7 +68,7 @@ having sum(count_value) > @minCovariatePersonCount
 on hr1.cohort_definition_id = ct1.cohort_definition_id
 and hr1.concept_id = ct1.concept_id
 inner join
-@cdmSchema.dbo.concept c1
+@cdmSchema.concept c1
 on hr1.concept_id = c1.concept_id
 where t1.count_value > @minIntervalPersonCount
 
@@ -87,7 +87,7 @@ from
 	cast(stratum_1 as integer) as concept_id,
 	cast(stratum_2 as integer)*30 as duration,
 	count_value
-from @resultsSchema.dbo.heracles_results
+from @resultsSchema.heracles_results
 where analysis_id in (1821) 
 and cohort_definition_id in (@cohortDefinitionId)
 ) hr1
@@ -97,7 +97,7 @@ inner join
 		-1* cast(stratum_1 as integer)*30 as duration,
 		sum(count_value) over (partition by cohort_definition_id order by -1* cast(stratum_1 as integer)*30 asc) as count_value
 	from
-	@resultsSchema.dbo.heracles_results
+	@resultsSchema.heracles_results
 	where analysis_id in (1805)
 	and cohort_definition_id in (@cohortDefinitionId)
 	and cast(stratum_1 as integer) > 0
@@ -108,10 +108,10 @@ inner join
 		cast(hr1.stratum_1 as integer)*30 as duration,
 		t1.count_value - sum(hr1.count_value) over (partition by hr1.cohort_definition_id order by cast(hr1.stratum_1 as integer)*30 asc) as count_value
 	from
-	@resultsSchema.dbo.heracles_results hr1
+	@resultsSchema.heracles_results hr1
 	inner join
 	(select cohort_definition_id, sum(count_value) as count_value 
-	from @resultsSchema.dbo.heracles_results 
+	from @resultsSchema.heracles_results 
 	where analysis_id = 1806
 	and cohort_definition_id in (@cohortDefinitionId)
 	group by cohort_definition_id) t1
@@ -126,7 +126,7 @@ inner join
 (select cohort_definition_id,
 	cast(stratum_1 as integer) as concept_id,
 	sum(count_value) as count_value
-from @resultsSchema.dbo.heracles_results
+from @resultsSchema.heracles_results
 where analysis_id in (1821) 
 and cohort_definition_id in (@cohortDefinitionId)
 group by cohort_definition_id,
@@ -136,6 +136,6 @@ having sum(count_value) > @minCovariatePersonCount
 on hr1.cohort_definition_id = ct1.cohort_definition_id
 and hr1.concept_id = ct1.concept_id
 inner join
-@cdmSchema.dbo.concept c1
+@cdmSchema.concept c1
 on hr1.concept_id = c1.concept_id
 where t1.count_value > @minIntervalPersonCount

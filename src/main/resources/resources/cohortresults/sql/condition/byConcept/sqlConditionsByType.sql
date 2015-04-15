@@ -3,9 +3,9 @@ select c1.concept_id as condition_concept_id,
        c2.concept_group_id as concept_id,
        c2.concept_group_name as concept_name, 
        sum(hr1.count_value) as count_value
-from @resultsSchema.dbo.heracles_results hr1
+from @resultsSchema.heracles_results hr1
        inner join
-       @cdmSchema.dbo.concept c1
+       @cdmSchema.concept c1
        on CAST(hr1.stratum_1 AS INT) = c1.concept_id
        inner join
        (
@@ -26,7 +26,7 @@ from @resultsSchema.dbo.heracles_results hr1
                     case when (concept_name like 'Inpatient%' or concept_name like 'Outpatient%' ) and (concept_name like '%primary%' or concept_name like '%1st position%') then 'Primary diagnosis'
                     when (concept_name like 'Inpatient%' or concept_name like 'Outpatient%' ) and (concept_name not like '%primary%' and concept_name not like '%1st position%') then 'Secondary diagnosis'
                     else '' end as concept_group_name
-       from @cdmSchema.dbo.concept
+       from @cdmSchema.concept
        where lower(domain_id) = 'condition type' 
        
        ) c2

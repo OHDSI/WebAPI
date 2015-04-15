@@ -13,14 +13,14 @@ FROM (
 		denom.count_value AS denom_count_value
 	FROM (
 		SELECT *
-		FROM @resultsSchema.dbo.heracles_results
+		FROM @resultsSchema.heracles_results
 		WHERE analysis_id = 204
 			AND stratum_3 IN ('8507', '8532')
 			and cohort_definition_id in (@cohortDefinitionId)
 		) num
 	INNER JOIN (
 		SELECT *
-		FROM @resultsSchema.dbo.heracles_results
+		FROM @resultsSchema.heracles_results
 		WHERE analysis_id = 116
 			AND stratum_2 IN ('8507', '8532')
 			and cohort_definition_id in (@cohortDefinitionId)
@@ -29,9 +29,9 @@ FROM (
 			AND num.stratum_3 = denom.stratum_2
 			AND num.stratum_4 = denom.stratum_3
 	) tmp
-INNER JOIN @cdmSchema.dbo.concept c1
+INNER JOIN @cdmSchema.concept c1
 	ON num_stratum_1 = c1.concept_id
-INNER JOIN @cdmSchema.dbo.concept c2
+INNER JOIN @cdmSchema.concept c2
 	ON num_stratum_3 = c2.concept_id
 where  c1.concept_id = @conceptId
 ORDER BY c1.concept_id,

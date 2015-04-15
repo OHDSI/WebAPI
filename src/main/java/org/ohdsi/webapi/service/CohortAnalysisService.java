@@ -101,7 +101,7 @@ public class CohortAnalysisService extends AbstractDaoService {
     public List<Analysis> getCohortAnalyses() {
         
         String sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/getCohortAnalyses.sql");
-        sql = SqlRender.renderSql(sql, new String[] { "resultsSchema" }, new String[] { this.getOhdsiSchema() });
+        sql = SqlRender.renderSql(sql, new String[] { "ohdsi_database_schema" }, new String[] { this.getOhdsiSchema() });
         sql = SqlTranslate.translateSql(sql, getSourceDialect(), getDialect(), SessionUtils.sessionId(), getOhdsiSchema());
         
         return getJdbcTemplate().query(sql, this.analysisMapper);
@@ -120,7 +120,7 @@ public class CohortAnalysisService extends AbstractDaoService {
         String sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/getCohortAnalysesForCohort.sql");
         sql = SqlRender.renderSql(
             sql,
-            new String[] { "resultsSchema", "cohortDefinitionId" },
+            new String[] { "ohdsi_database_schema", "cohortDefinitionId" },
             new String[] { this.getOhdsiSchema(), String.valueOf(id) });
         sql = SqlTranslate.translateSql(sql, getSourceDialect(), getDialect(), SessionUtils.sessionId(), getOhdsiSchema());
         

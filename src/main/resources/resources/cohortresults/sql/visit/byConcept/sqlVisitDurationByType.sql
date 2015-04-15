@@ -7,9 +7,9 @@ select c1.concept_id as concept_id,
 	hrd1.p75_value as p75_value,
 	hrd1.p90_value as p90_value,
 	hrd1.max_value as max_value
-from @resultsSchema.heracles_results_dist hrd1
+from @ohdsi_database_schema.heracles_results_dist hrd1
 	inner join
-	@cdmSchema.concept c1 on CAST(hrd1.stratum_1 AS INT) = c1.concept_id
+	@cdm_database_schema.concept c1 on CAST(hrd1.stratum_1 AS INT) = c1.concept_id
 where hrd1.analysis_id = 211
 and  c1.concept_id = @conceptId
 and cohort_definition_id in (@cohortDefinitionId)

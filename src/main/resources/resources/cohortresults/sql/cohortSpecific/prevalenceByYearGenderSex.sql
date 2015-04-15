@@ -10,7 +10,7 @@ from (select cohort_definition_id,
 	cast(stratum_2 as integer) as gender_concept_id,
 	cast(stratum_3 as integer) as age_decile,
 	count_value 
-	from @resultsSchema.heracles_results
+	from @ohdsi_database_schema.heracles_results
 	where analysis_id in (1814)
 	and cohort_definition_id in (@cohortDefinitionId)
 	and stratum_2 in (8507,8532)
@@ -23,7 +23,7 @@ from (select cohort_definition_id,
 	cast(stratum_2 as integer) as gender_concept_id,
 	cast(stratum_3 as integer) as age_decile,
 	count_value 
-	from @resultsSchema.heracles_results 
+	from @ohdsi_database_schema.heracles_results 
 	where analysis_id = 116
 	and cohort_definition_id in (@cohortDefinitionId)
 ) t1
@@ -31,5 +31,5 @@ on hr1.index_year = t1.index_year
 and hr1.gender_concept_id = t1.gender_concept_id
 and hr1.age_decile = t1.age_decile
 inner join
-@cdmSchema.concept c1
+@cdm_database_schema.concept c1
 on hr1.gender_concept_id = c1.concept_id

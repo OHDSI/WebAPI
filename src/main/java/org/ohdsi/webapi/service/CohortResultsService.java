@@ -71,11 +71,11 @@ public class CohortResultsService extends AbstractDaoService {
 	
 	public static final String BASE_SQL_PATH = "/resources/cohortresults/sql";
 	
-	private static final String[] STANDARD_COLUMNS = new String[] { "cdmSchema", 
-		"resultsSchema", "cohortDefinitionId",
+	private static final String[] STANDARD_COLUMNS = new String[] { "cdm_database_schema", 
+		"ohdsi_database_schema", "cohortDefinitionId",
 		"minCovariatePersonCount", "minIntervalPersonCount"};
-	private static final String[] DRILLDOWN_COLUMNS = new String[] { "cdmSchema", 
-		"resultsSchema", "cohortDefinitionId",
+	private static final String[] DRILLDOWN_COLUMNS = new String[] { "cdm_database_schema", 
+		"ohdsi_database_schema", "cohortDefinitionId",
 		"minCovariatePersonCount", "minIntervalPersonCount", "conceptId"};
 
 	/**
@@ -99,8 +99,8 @@ public class CohortResultsService extends AbstractDaoService {
 		try {
 			sql = ResourceHelper.GetResourceAsString(BASE_SQL_PATH + "/" + analysisGroup + "/" + analysisName + ".sql");
 
-			sql = SqlRender.renderSql(sql, new String[] { "cdmSchema", 
-					"resultsSchema", "cohortDefinitionId",
+			sql = SqlRender.renderSql(sql, new String[] { "cdm_database_schema", 
+					"ohdsi_database_schema", "cohortDefinitionId",
 					"minCovariatePersonCount", "minIntervalPersonCount"},
 					new String[] { this.getCdmSchema(),
 					this.getOhdsiSchema(), String.valueOf(id),

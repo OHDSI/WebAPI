@@ -29,7 +29,7 @@ from
 	sum(count_value) as num_persons,
 	sum(case when stratum_2 < 0 then count_value else 0 end) as num_persons_before,
 	sum(case when stratum_2 > 0 then count_value else 0 end) as num_persons_after
-from @resultsSchema.heracles_results
+from @ohdsi_database_schema.heracles_results
 where analysis_id in (1830) --first occurrence of procedure
 and cohort_definition_id in (@cohortDefinitionId)
 group by cast(stratum_1 as int)
@@ -45,8 +45,8 @@ inner join
 		(
 		select c1.concept_id, 
 			v1.vocabulary_name + ' ' + c1.concept_code + ': ' + c1.concept_name as proc_concept_name
-		from @cdmSchema.concept c1
-			inner join @cdmSchema.vocabulary v1
+		from @cdm_database_schema.concept c1
+			inner join @cdm_database_schema.vocabulary v1
 			on c1.vocabulary_id = v1.vocabulary_id
 		where (
 			c1.vocabulary_id in ('ICD9Proc', 'HCPCS','CPT4')
@@ -56,18 +56,18 @@ inner join
 
 	left join
 		(select ca0.DESCENDANT_CONCEPT_ID, max(ca0.ancestor_concept_id) as ancestor_concept_id
-		from @cdmSchema.concept_ancestor ca0
+		from @cdm_database_schema.concept_ancestor ca0
 		inner join
 		(select distinct c2.concept_id as os3_concept_id
-		 from @cdmSchema.concept_ancestor ca1
+		 from @cdm_database_schema.concept_ancestor ca1
 			inner join
-			@cdmSchema.concept c1
+			@cdm_database_schema.concept c1
 			on ca1.DESCENDANT_CONCEPT_ID = c1.concept_id
 			inner join
-			@cdmSchema.concept_ancestor ca2
+			@cdm_database_schema.concept_ancestor ca2
 			on c1.concept_id = ca2.ANCESTOR_CONCEPT_ID
 			inner join
-			@cdmSchema.concept c2
+			@cdm_database_schema.concept c2
 			on ca2.DESCENDANT_CONCEPT_ID = c2.concept_id
 		 where ca1.ancestor_concept_id = 4040390
 		 and ca1.Min_LEVELS_OF_SEPARATION = 2
@@ -88,9 +88,9 @@ inner join
 		proc_by_os3.os3_concept_id
 	from
 	 (select DESCENDANT_CONCEPT_ID as os1_concept_id, concept_name as os1_concept_name
-	 from @cdmSchema.concept_ancestor ca1
+	 from @cdm_database_schema.concept_ancestor ca1
 		inner join
-		@cdmSchema.concept c1
+		@cdm_database_schema.concept c1
 		on ca1.DESCENDANT_CONCEPT_ID = c1.concept_id
 	 where ancestor_concept_id = 4040390
 	 and Min_LEVELS_OF_SEPARATION = 1
@@ -98,15 +98,15 @@ inner join
 
 	 inner join
 	 (select max(c1.CONCEPT_ID) as os1_concept_id, c2.concept_id as os2_concept_id, c2.concept_name as os2_concept_name
-	 from @cdmSchema.concept_ancestor ca1
+	 from @cdm_database_schema.concept_ancestor ca1
 		inner join
-		@cdmSchema.concept c1
+		@cdm_database_schema.concept c1
 		on ca1.DESCENDANT_CONCEPT_ID = c1.concept_id
 		inner join
-		@cdmSchema.concept_ancestor ca2
+		@cdm_database_schema.concept_ancestor ca2
 		on c1.concept_id = ca2.ANCESTOR_CONCEPT_ID
 		inner join
-		@cdmSchema.concept c2
+		@cdm_database_schema.concept c2
 		on ca2.DESCENDANT_CONCEPT_ID = c2.concept_id
 	 where ca1.ancestor_concept_id = 4040390
 	 and ca1.Min_LEVELS_OF_SEPARATION = 1
@@ -117,15 +117,15 @@ inner join
 
 	 inner join
 	 (select max(c1.CONCEPT_ID) as os2_concept_id, c2.concept_id as os3_concept_id, c2.concept_name as os3_concept_name
-	 from @cdmSchema.concept_ancestor ca1
+	 from @cdm_database_schema.concept_ancestor ca1
 		inner join
-		@cdmSchema.concept c1
+		@cdm_database_schema.concept c1
 		on ca1.DESCENDANT_CONCEPT_ID = c1.concept_id
 		inner join
-		@cdmSchema.concept_ancestor ca2
+		@cdm_database_schema.concept_ancestor ca2
 		on c1.concept_id = ca2.ANCESTOR_CONCEPT_ID
 		inner join
-		@cdmSchema.concept c2
+		@cdm_database_schema.concept c2
 		on ca2.DESCENDANT_CONCEPT_ID = c2.concept_id
 	 where ca1.ancestor_concept_id = 4040390
 	 and ca1.Min_LEVELS_OF_SEPARATION = 2
@@ -142,7 +142,7 @@ inner join
 	on hr1.concept_id = concept_hierarchy.concept_id
 ,
 (select count_value
-from @resultsSchema.heracles_results
+from @ohdsi_database_schema.heracles_results
 where analysis_id = 1
 and cohort_definition_id in (@cohortDefinitionId)
 ) denom

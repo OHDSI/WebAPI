@@ -13,14 +13,14 @@ FROM (
 		denom.count_value AS denom_count_value
 	FROM (
 		SELECT *
-		FROM @resultsSchema.heracles_results
+		FROM @ohdsi_database_schema.heracles_results
 		WHERE analysis_id = 704
 			AND stratum_3 IN ('8507', '8532')
 			AND cohort_definition_id in (@cohortDefinitionId)
 		) num
 	INNER JOIN (
 		SELECT *
-		FROM @resultsSchema.heracles_results
+		FROM @ohdsi_database_schema.heracles_results
 		WHERE analysis_id = 116
 			AND stratum_2 IN ('8507', '8532')
 			AND cohort_definition_id in (@cohortDefinitionId)
@@ -29,9 +29,9 @@ FROM (
 			AND num.stratum_3 = denom.stratum_2
 			AND num.stratum_4 = denom.stratum_3
 	) tmp
-INNER JOIN @cdmSchema.concept c1
+INNER JOIN @cdm_database_schema.concept c1
 	ON num_stratum_1 = c1.concept_id
-INNER JOIN @cdmSchema.concept c2
+INNER JOIN @cdm_database_schema.concept c2
 	ON num_stratum_3 = c2.concept_id
 WHERE c1.concept_id = @conceptId
 ORDER BY c1.concept_id,

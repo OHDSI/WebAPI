@@ -41,17 +41,13 @@ import org.hibernate.Hibernate;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.feasibility.InclusionRule;
 import org.ohdsi.webapi.feasibility.FeasibilityStudy;
-import org.ohdsi.webapi.feasibility.FeasibilityStudyQueryBuilder;
-import org.ohdsi.webapi.feasibility.PerformFeasibilityTask;
 import org.ohdsi.webapi.feasibility.PerformFeasibilityTasklet;
 import org.ohdsi.webapi.feasibility.StudyInfo;
 import org.ohdsi.webapi.feasibility.FeasibilityReport;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
-import org.ohdsi.webapi.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.webapi.TerminateJobStepExceptionHandler;
 import org.ohdsi.webapi.feasibility.FeasibilityStudyRepository;
-import org.ohdsi.webapi.cohortdefinition.GenerateCohortTask;
 import org.ohdsi.webapi.cohortdefinition.GenerateCohortTasklet;
 import org.ohdsi.webapi.cohortdefinition.GenerationStatus;
 import org.ohdsi.webapi.job.JobExecutionResource;
@@ -64,7 +60,6 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionDefinition;
@@ -96,9 +91,6 @@ public class FeasibilityService extends AbstractDaoService {
     
   @Autowired
   private JobTemplate jobTemplate;
-  
-  @Value("${cohort.targetTable}")
-  private String cohortTable;  
   
   @Context
   ServletContext context;
@@ -390,49 +382,34 @@ public class FeasibilityService extends AbstractDaoService {
       .setStartTime(null)
       .setExecutionDuration(null);
     this.feasibilityStudyRepository.save(study);
-    int indexRuleId = study.getIndexRule().getId();
     this.getTransactionTemplate().getTransactionManager().commit(initStatus);    
 
-    CohortExpressionQueryBuilder.BuildExpressionQueryOptions indexRuleOptions = new CohortExpressionQueryBuilder.BuildExpressionQueryOptions();
-    indexRuleOptions.cohortId = indexRuleId;
-    indexRuleOptions.cdmSchema = this.getCdmSchema();
-    indexRuleOptions.targetTable = this.cohortTable;
-      
     JobParametersBuilder builder = new JobParametersBuilder();
+    builder.addString("cdm_database_schema", this.getCdmSchema());
+    builder.addString("target_database_schema", this.getOhdsiSchema());
+    builder.addString("target_dialect", this.getDialect());
+    builder.addString("target_table", "cohort");
+    builder.addString("cohort_definition_id", "" + indexRule.getId());    
     builder.addString("study_id", ("" + id));
+      
     final JobParameters jobParameters = builder.toJobParameters();
 
-    GenerateCohortTask generateTask = new GenerateCohortTask()
-            .setCohortDefinition(indexRule)
-            .setOptions(indexRuleOptions)
-            .setSourceDialect(this.getSourceDialect())
-            .setTargetDialect(this.getDialect());
-      
-    GenerateCohortTasklet indexRuleTasklet = new GenerateCohortTasklet(generateTask, getJdbcTemplate(), getTransactionTemplate(), cohortDefinitionRepository);
+    GenerateCohortTasklet indexRuleTasklet = new GenerateCohortTasklet(getJdbcTemplate(), getTransactionTemplate(), cohortDefinitionRepository);
     
     Step generateCohortStep = stepBuilders.get("performStudy.generateIndexCohort")
       .tasklet(indexRuleTasklet)
       .exceptionHandler(new TerminateJobStepExceptionHandler())
       .build();
     
-    FeasibilityStudyQueryBuilder.BuildExpressionQueryOptions simulationQueryOptions = new FeasibilityStudyQueryBuilder.BuildExpressionQueryOptions();
-    simulationQueryOptions.cdmSchema = this.getCdmSchema();
-    simulationQueryOptions.cohortTable = this.cohortTable;
-    
-    PerformFeasibilityTask simulateTask = new PerformFeasibilityTask()
-            .setOptions(simulationQueryOptions) // use same options as index rule to map to the correct CDM and Cohort table
-            .setSourceDialect(this.getSourceDialect())
-            .setTargetDialect(this.getDialect());
+    PerformFeasibilityTasklet simulateTasket = new PerformFeasibilityTasklet(getJdbcTemplate(), getTransactionTemplate(), feasibilityStudyRepository, cohortDefinitionRepository);
             
-    PerformFeasibilityTasklet simulateTasket = new PerformFeasibilityTasklet(simulateTask, getJdbcTemplate(), getTransactionTemplate(), feasibilityStudyRepository, cohortDefinitionRepository);
-            
-    Step generateCohortStep2 = stepBuilders.get("performStudy.performStudy")
+    Step performStudyStep = stepBuilders.get("performStudy.performStudy")
       .tasklet(simulateTasket)
       .build();    
     
     Job performStudyJob = jobBuilders.get("performStudy")
       .start(generateCohortStep)
-      .next(generateCohortStep2)
+      .next(performStudyStep)
       .build();
     
     JobExecutionResource jobExec = this.jobTemplate.launch(performStudyJob, jobParameters);

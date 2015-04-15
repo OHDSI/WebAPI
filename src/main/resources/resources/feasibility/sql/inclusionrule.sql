@@ -3,7 +3,7 @@ select @inclusion_rule_id as inclusion_rule_id, person_id as subject_id, start_d
 FROM 
 (
   select person_id, start_date, end_date
-  FROM #PrimaryCriteriaEvents
+  FROM #PrimaryCriteriaEvents pe
   @additionalCriteriaQuery
 ) Results
 ;

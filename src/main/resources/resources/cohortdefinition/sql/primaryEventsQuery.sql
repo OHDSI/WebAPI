@@ -8,6 +8,6 @@ FROM
   @criteriaQueries
   ) P
 ) P
-JOIN @CDM_schema.observation_period OP on P.person_id = OP.person_id and P.start_date between OP.observation_period_start_date and op.observation_period_end_date
+JOIN @cdm_database_schema.observation_period OP on P.person_id = OP.person_id and P.start_date between OP.observation_period_start_date and op.observation_period_end_date
 WHERE @primaryEventsFilter
 ;

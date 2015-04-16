@@ -261,12 +261,32 @@ public class CohortAnalysisService extends AbstractDaoService {
             return null;
         }
         JobParametersBuilder builder = new JobParametersBuilder();
-        String paramPrefixCD = "cohortDefinitionId:";
-        for(String cd : task.getCohortDefinitionIds()){
-            builder.addString(paramPrefixCD + cd, cd);
+
+        builder.addString("cohortDefinitionIds", limitJobParams(Joiner.on(",").join(task.getCohortDefinitionIds())));
+        builder.addString("analysisIds", limitJobParams(Joiner.on(",").join(task.getAnalysisIds())));
+        if (task.getConditionConceptIds() != null && task.getConditionConceptIds().size() > 0) {
+        	builder.addString("conditionIds", limitJobParams(Joiner.on(",").join(task.getConditionConceptIds())));
+        }
+        if (task.getDrugConceptIds() != null && task.getDrugConceptIds().size() > 0) {
+        	builder.addString("drugIds", limitJobParams(Joiner.on(",").join(task.getDrugConceptIds())));
+        }
+        if (task.getMeasurementConceptIds() != null && task.getMeasurementConceptIds().size() > 0) {
+        	builder.addString("measurementIds", limitJobParams(Joiner.on(",").join(task.getMeasurementConceptIds())));
+        }
+        if (task.getObservationConceptIds() != null && task.getObservationConceptIds().size() > 0) {
+        	builder.addString("observationIds", limitJobParams(Joiner.on(",").join(task.getObservationConceptIds())));
+        }
+        if (task.getProcedureConceptIds() != null && task.getProcedureConceptIds().size() > 0) {
+        	builder.addString("procedureIds", limitJobParams(Joiner.on(",").join(task.getProcedureConceptIds())));
+        }
+        if (task.isRunHeraclesHeel()) {
+        	builder.addString("heraclesHeel", "true");
+        }
+        if (task.isCohortPeriodOnly()) {
+        	builder.addString("cohortPeriodOnly", "true");
         }
         if (!StringUtils.isEmpty(task.getJobName())) {
-        	builder.addString("jobName", task.getJobName());
+        	builder.addString("jobName", limitJobParams(task.getJobName()));
         } 
         //TODO consider analysisId
         final String taskString = task.toString();
@@ -275,5 +295,12 @@ public class CohortAnalysisService extends AbstractDaoService {
         CohortAnalysisTasklet tasklet = new CohortAnalysisTasklet(task, this.getCohortAnalysisUtils(), getJdbcTemplate(), getTransactionTemplate());
         
         return this.jobTemplate.launchTasklet("cohortAnalysisJob", "cohortAnalysisStep", tasklet, jobParameters);
+    }
+    
+    private String limitJobParams(String param) {
+    	if (param.length() >= 250) {
+    		return param.substring(0, 245) + "...";
+    	}
+    	return param;
     }
 }

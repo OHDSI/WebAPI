@@ -32,6 +32,7 @@ import org.ohdsi.webapi.evidence.DrugEvidence;
 import org.ohdsi.webapi.evidence.HoiEvidence;
 import org.ohdsi.webapi.evidence.DrugHoiEvidence;
 import org.ohdsi.webapi.evidence.EvidenceInfo;
+import org.ohdsi.webapi.evidence.DrugRollUpEvidence;
 
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
@@ -43,6 +44,38 @@ import org.springframework.stereotype.Component;
 @Path("/evidence/")
 @Component
 public class EvidenceService extends AbstractDaoService {
+
+    @GET
+    @Path("info")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Collection<EvidenceInfo> getInfo() {      
+
+        String sql_statement = ResourceHelper.GetResourceAsString("/resources/evidence/sql/getInfo.sql");        
+        sql_statement = SqlRender.renderSql(sql_statement, new String[] { "CDM_schema" }, new String[] { this.getCdmSchema() });
+        sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect());  // TODO: why is 'sql server' string passed here?
+
+	final List<EvidenceInfo> infoOnSources = new ArrayList<EvidenceInfo>();
+	
+	//try {
+	List<Map<String, Object>> rows =  getJdbcTemplate().queryForList(sql_statement);
+        //} catch (EmptyResultDataAccessException e) {
+        //    log.debug(String.format("Request for conceptId=%s resulted in 0 results", id));
+        //    throw new WebApplicationException(Response.Status.RESET_CONTENT); // http 205
+        //}
+
+	for (Map rs : rows) {
+	    EvidenceInfo info = new EvidenceInfo();
+	    info.title = (String)rs.get("TITLE");
+	    info.description = (String)rs.get("DESCRIPTION");
+	    info.contributer = (String)rs.get("CONTRIBUTER");
+	    info.creator = (String)rs.get("CREATOR");
+	    info.creationDate = (Date)rs.get("CREATION_DATE");
+	    info.rights = (String)rs.get("RIGHTS");
+	    info.source = (String)rs.get("SOURCE");
+	    infoOnSources.add(info);
+	}
+	return infoOnSources;
+    }
     
     /**
      * @param id
@@ -54,16 +87,9 @@ public class EvidenceService extends AbstractDaoService {
     public Collection<DrugEvidence> getDrugEvidence(@PathParam("id") final Long id) {
         String sql_statement = ResourceHelper.GetResourceAsString("/resources/evidence/sql/getDrugEvidence.sql");
 
-	// TODO: modify this to use a parameter for the schema where
-	// Laertes' tables reside. For now, we assume they are in the
-	// 'public' schema. If they reside in a new schema (i.e., not
-	// ohdsi or cdm) then a new property datasource.laertes.schema
-	// property will need to be created in application.properties,
-	// filtered in pom.xml, read in AbstractDaoService.java, and
-	// passed to renderSql here.
-        sql_statement = SqlRender.renderSql(sql_statement, new String[] { "id" }, 
-					    new String[] { String.valueOf(id)});
-	sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect()); // TODO: why is 'sql server' string passed here?
+        sql_statement = SqlRender.renderSql(sql_statement, new String[] { "id", "CDM_schema" }, 
+					    new String[] { String.valueOf(id), this.getCdmSchema()});
+	sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect()); 
 
         final List<DrugEvidence> drugEvidences = new ArrayList<DrugEvidence>();
 
@@ -108,15 +134,8 @@ public class EvidenceService extends AbstractDaoService {
     @Produces(MediaType.APPLICATION_JSON)
     public Collection<HoiEvidence> getHoiEvidence(@PathParam("id") final Long id) {
         String sql_statement = ResourceHelper.GetResourceAsString("/resources/evidence/sql/getHoiEvidence.sql");
-	// TODO: modify this to use a parameter for the schema where
-	// Laertes' tables reside. For now, we assume they are in the
-	// 'public' schema. If they reside in a new schema (i.e., not
-	// ohdsi or cdm) then a new property datasource.laertes.schema
-	// property will need to be created in application.properties,
-	// filtered in pom.xml, read in AbstractDaoService.java, and
-	// passed to renderSql here.
-        sql_statement = SqlRender.renderSql(sql_statement, new String[] { "id"}, 
-					    new String[] { String.valueOf(id)});
+        sql_statement = SqlRender.renderSql(sql_statement, new String[] { "id", "CDM_schema" }, 
+					    new String[] { String.valueOf(id), this.getCdmSchema()});
 	sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect()); // TODO: why is 'sql server' string passed here?
 
         final List<HoiEvidence> hoiEvidences = new ArrayList<HoiEvidence>();
@@ -164,15 +183,8 @@ public class EvidenceService extends AbstractDaoService {
 	String drug_id = par[0];
 	String hoi_id = par[1];
         String sql_statement = ResourceHelper.GetResourceAsString("/resources/evidence/sql/getDrugHoiEvidence.sql");
-	// TODO: modify this to use a parameter for the schema where
-	// Laertes' tables reside. For now, we assume they are in the
-	// 'public' schema. If they reside in a new schema (i.e., not
-	// ohdsi or cdm) then a new property datasource.laertes.schema
-	// property will need to be created in application.properties,
-	// filtered in pom.xml, read in AbstractDaoService.java, and
-	// passed to renderSql here.
-        sql_statement = SqlRender.renderSql(sql_statement, new String[] { "drug_id", "hoi_id" }, 
-					    new String[] {drug_id, hoi_id});
+        sql_statement = SqlRender.renderSql(sql_statement, new String[] { "drug_id", "hoi_id", "CDM_schema"  }, 
+					    new String[] {drug_id, hoi_id, this.getCdmSchema()});
 	sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect()); // TODO: why is 'sql server' string passed here?
 
         final List<DrugHoiEvidence> evidences = new ArrayList<DrugHoiEvidence>();
@@ -206,26 +218,33 @@ public class EvidenceService extends AbstractDaoService {
 	return evidences;
     }
 
-
+    /**
+     * @param id
+     * @param filter
+     * @return
+     */
     @GET
-    @Path("info")
+    @Path("drugrollup/{filter}/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Collection<EvidenceInfo> getInfo() {      
+    public Collection<DrugRollUpEvidence> getDrugRollupIngredientEvidence(@PathParam("id") final Long id, @PathParam("filter") final String filter) {
+	String sql_statement = "";
+	if (filter.equals("ingredient")){
+	    sql_statement = ResourceHelper.GetResourceAsString("/resources/evidence/sql/getDrugEvidenceRollupByIngredient.sql");
+	} else if (filter.equals("clinicaldrug")){
+	    sql_statement = ResourceHelper.GetResourceAsString("/resources/evidence/sql/getDrugEvidenceRollupByClinicalDrug.sql");
+	} else if (filter.equals("brandeddrug")){
+	    sql_statement = ResourceHelper.GetResourceAsString("/resources/evidence/sql/getDrugEvidenceRollupByBrandedDrug.sql");
+	} else {
+	    log.debug(String.format("The call did not specify an appropriate roll up filter (e.g., ingredient, clinicaldrug, brandeddrug)", id));
+	    return null;
+	}
 
-        String sql_statement = ResourceHelper.GetResourceAsString("/resources/evidence/sql/getInfo.sql");        
-	// TODO: modify this to use a parameter for the schema where
-	// Laertes' tables reside. For now, we assume they are in the
-	// 'public' schema. If they reside in a new schema (i.e., not
-	// ohdsi or cdm) then a new property datasource.laertes.schema
-	// property will need to be created in application.properties,
-	// filtered in pom.xml, read in AbstractDaoService.java, and
-	// passed to renderSql here.
-        //sql_statement = SqlRender.renderSql(sql_statement, new String[] { "CDM_schema" }, new String[] { getCdmSchema() });
-	sql_statement = SqlRender.renderSql(sql_statement, new String[] { }, new String[] { });
-        sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect());  // TODO: why is 'sql server' string passed here?
+        sql_statement = SqlRender.renderSql(sql_statement, new String[] { "id", "CDM_schema" }, 
+					    new String[] { String.valueOf(id), this.getCdmSchema()});
+	sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect()); // TODO: why is 'sql server' string passed here?
 
-	final List<EvidenceInfo> infoOnSources = new ArrayList<EvidenceInfo>();
-	
+        final List<DrugRollUpEvidence> drugEvidences = new ArrayList<DrugRollUpEvidence>();
+
 	//try {
 	List<Map<String, Object>> rows =  getJdbcTemplate().queryForList(sql_statement);
         //} catch (EmptyResultDataAccessException e) {
@@ -234,18 +253,30 @@ public class EvidenceService extends AbstractDaoService {
         //}
 
 	for (Map rs : rows) {
-	    EvidenceInfo info = new EvidenceInfo();
-	    info.title = (String)rs.get("TITLE");
-	    info.description = (String)rs.get("DESCRIPTION");
-	    info.contributer = (String)rs.get("CONTRIBUTER");
-	    info.creator = (String)rs.get("CREATOR");
-	    info.creationDate = (Date)rs.get("CREATION_DATE");
-	    info.rights = (String)rs.get("RIGHTS");
-	    info.source = (String)rs.get("SOURCE");
-	    infoOnSources.add(info);
-	}
-	return infoOnSources;
-    }
-    
+	    DrugRollUpEvidence evidence = new DrugRollUpEvidence();
+	    evidence.reportName = (String)rs.get("REPORT_NAME");
+	    evidence.ingredientId = (Integer)rs.get("INGREDIENT_ID");
+	    evidence.ingredientName = (String)rs.get("INGREDIENT");
+	    evidence.clinicalDrugId = (Integer)rs.get("CLINICAL_DRUG_ID");
+	    evidence.clinicalDrugName = (String)rs.get("CLINICAL_DRUG");
+	    evidence.hoiId = (Integer)rs.get("HOI_ID");
+	    evidence.hoiName = (String)rs.get("HOI");
+	    evidence.pubmedMeshCTcount = (Integer)rs.get("CT_COUNT");
+	    evidence.pubmedMeshCaseReportcount = (Integer)rs.get("CASE_COUNT");
+	    evidence.pubmedMeshOthercount = (Integer)rs.get("OTHER_COUNT");
+	    evidence.splicerCount = (Integer)rs.get("SPLICER_COUNT");
+	    evidence.euSPCcount = (Integer)rs.get("EU_SPC_COUNT"); 
+	    evidence.semmedCTcount = (Integer)rs.get("SEMMEDDB_CT_COUNT");
+	    evidence.semmedCaseReportcount = (Integer)rs.get("SEMMEDDB_CASE_COUNT");
+	    evidence.semmedNegCTcount = (Integer)rs.get("SEMMEDDB_NEG_CT_COUNT");
+	    evidence.semmedNegCaseReportcount = (Integer)rs.get("SEMMEDDB_NEG_CASE_COUNT");
+	    evidence.eb05 = (BigDecimal)rs.get("EB05");
+	    evidence.ebgm = (BigDecimal)rs.get("EBGM");
+	    evidence.aersReportCount = (Integer)rs.get("AERS_REPORT_COUNT");   
+
+	    drugEvidences.add(evidence);
+	}	
+	return drugEvidences;
+    }    
 
 }

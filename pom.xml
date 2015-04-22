@@ -43,9 +43,6 @@
     <source.name>CDM_NAME</source.name>
     <cdm.version>5</cdm.version>
 
-    <!-- cohort generation propertise -->
-    <cohort.targetTable>dbo.COHORT</cohort.targetTable>
-
     <spring.batch.repository.tableprefix>BATCH_</spring.batch.repository.tableprefix>
     <spring.batch.repository.isolationLevelForCreate>ISOLATION_READ_COMMITTED</spring.batch.repository.isolationLevelForCreate>
 		
@@ -333,7 +330,6 @@
     <profile>
       <id>webapi-oracle</id>
       <properties>
-        <cohort.targetTable>OHDSI.COHORT</cohort.targetTable>
         <datasource.driverClassName>oracle.jdbc.OracleDriver</datasource.driverClassName>
         <datasource.url>jdbc:oracle:thin:@127.0.0.1:1521:cdm</datasource.url>
         <datasource.username>user</datasource.username>
@@ -341,7 +337,6 @@
         <datasource.dialect>oracle</datasource.dialect>
         <datasource.cdm.schema>omopv5_de</datasource.cdm.schema>
         <datasource.ohdsi.schema>OHDSI</datasource.ohdsi.schema>
-        <datasource.cohort.schema>OHDSI</datasource.cohort.schema>
         <!--<datasource.validationQuery>SELECT 1 FROM DUAL</datasource.validationQuery>-->
         <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
         <flyway.datasource.url>jdbc:oracle:thin@127.0.0.1:1521:ohdsi</flyway.datasource.url>
@@ -368,7 +363,6 @@
         <datasource.dialect>postgresql</datasource.dialect>
         <datasource.cdm.schema>unrestricted</datasource.cdm.schema>
         <datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>
-        <datasource.cohort.schema>ohdsi</datasource.cohort.schema>
         <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
         <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
         <flyway.datasource.username>userWithWritesToOhdsiSchema</flyway.datasource.username>
@@ -393,7 +387,6 @@
         <datasource.dialect>sql server</datasource.dialect>
         <datasource.cdm.schema>CDM_schema</datasource.cdm.schema>
         <datasource.ohdsi.schema>OHDSI_schema</datasource.ohdsi.schema>
-        <datasource.cohort.schema>COHORT_schema</datasource.cohort.schema>
         <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
         <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
         <flyway.datasource.username>FLYWAY_USER</flyway.datasource.username>

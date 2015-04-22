@@ -2,7 +2,7 @@ select C.person_id, C.drug_exposure_start_date as start_date, COALESCE(C.drug_ex
 from 
 (
   select de.*, ROW_NUMBER() over (PARTITION BY de.person_id ORDER BY de.drug_exposure_start_date) as ordinal
-  FROM @CDM_schema.DRUG_EXPOSURE de
+  FROM @cdm_database_schema.DRUG_EXPOSURE de
 @codesetClause
 ) C
 @joinClause

@@ -50,7 +50,8 @@ public class FeasibilityStudyQueryBuilder {
   private String getInclusionRuleQuery(CriteriaGroup inclusionRule)
   {
     String resultSql = INCLUSION_RULE_QUERY_TEMPLATE;
-    String additionalCriteriaQuery = "\nINTERSECT\n" + cohortExpressionQueryBuilder.visit(inclusionRule);
+    String additionalCriteriaQuery = "\nJOIN (\n" + cohortExpressionQueryBuilder.visit(inclusionRule) + ") AC on AC.event_id = pe.event_id";
+    additionalCriteriaQuery = StringUtils.replace(additionalCriteriaQuery,"@indexId", "" + 0);
     resultSql = StringUtils.replace(resultSql, "@additionalCriteriaQuery", additionalCriteriaQuery);
     return resultSql;
   }
@@ -97,7 +98,7 @@ public class FeasibilityStudyQueryBuilder {
     if (options != null)
     {
       // replease query parameters with tokens
-      resultSql = StringUtils.replace(resultSql, "@CDM_schema", options.cdmSchema);
+      resultSql = StringUtils.replace(resultSql, "@cdm_database_schema", options.cdmSchema);
       resultSql = StringUtils.replace(resultSql, "@cohortTable", options.cohortTable);
     }
     

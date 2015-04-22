@@ -184,7 +184,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
       codesetQuery = StringUtils.replace(codesetQuery, "@codesetQueries", StringUtils.join(codesetQueries, "\nUNION\n"));
     }
     else {
-      codesetQuery = StringUtils.replace(codesetQuery, "@codesetQueries", "SELECT -1 as codeset_id, concept_id FROM @CDM_schema.CONCEPT where 0 = 1"); // by default, return an empty resultset
+      codesetQuery = StringUtils.replace(codesetQuery, "@codesetQueries", "SELECT -1 as codeset_id, concept_id FROM @cdm_database_schema.CONCEPT where 0 = 1"); // by default, return an empty resultset
     }
     return codesetQuery;
   }
@@ -232,7 +232,10 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     String additionalCriteriaQuery = "";
     if (expression.additionalCriteria != null)
     {
-       additionalCriteriaQuery = "\nINTERSECT\n" + expression.additionalCriteria.accept(this);
+      CriteriaGroup acGroup = expression.additionalCriteria;
+      String acGroupQuery = acGroup.accept(this);
+      acGroupQuery = StringUtils.replace(acGroupQuery,"@indexId", "" + 0);
+      additionalCriteriaQuery = "\nJOIN (\n" + acGroupQuery + ") AC on AC.event_id = pe.event_id";
     }
     resultSql = StringUtils.replace(resultSql, "@additionalCriteriaQuery", additionalCriteriaQuery);
 
@@ -248,9 +251,9 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     if (options != null)
     {
       // replease query parameters with tokens
-      resultSql = StringUtils.replace(resultSql, "@CDM_schema", options.cdmSchema);
-      resultSql = StringUtils.replace(resultSql, "@targetTable", options.targetTable);
-      resultSql = StringUtils.replace(resultSql, "@cohortDefinitionId", options.cohortId.toString());
+      resultSql = StringUtils.replace(resultSql, "@cdm_database_schema", options.cdmSchema);
+      resultSql = StringUtils.replace(resultSql, "@target_database_schema.@target_cohort_table", options.targetTable);
+      resultSql = StringUtils.replace(resultSql, "@cohort_definition_id", options.cohortId.toString());
     }
     return resultSql;
   }
@@ -309,7 +312,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     ArrayList<String> joinClauses = new ArrayList<>();
     
     if (criteria.ageAtStart != null || criteria.ageAtEnd != null || (criteria.gender != null && criteria.gender.length > 0)) // join to PERSON
-      joinClauses.add("JOIN @CDM_schema.PERSON P on C.person_id = P.person_id");
+      joinClauses.add("JOIN @cdm_database_schema.PERSON P on C.person_id = P.person_id");
 
     query = StringUtils.replace(query,"@joinClause", StringUtils.join(joinClauses,"\n"));
     
@@ -383,11 +386,11 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     ArrayList<String> joinClauses = new ArrayList<>();
     
     if (criteria.age != null || (criteria.gender != null && criteria.gender.length > 0)) // join to PERSON
-      joinClauses.add("JOIN @CDM_schema.PERSON P on C.person_id = P.person_id");
+      joinClauses.add("JOIN @cdm_database_schema.PERSON P on C.person_id = P.person_id");
     if (criteria.visitType != null && criteria.visitType.length > 0)
-      joinClauses.add("JOIN @CDM_schema.VISIT_OCCURRENCE V on C.visit_occurrence_id = V.visit_occurrence_id and C.person_id = V.person_id");
+      joinClauses.add("JOIN @cdm_database_schema.VISIT_OCCURRENCE V on C.visit_occurrence_id = V.visit_occurrence_id and C.person_id = V.person_id");
     if (criteria.providerSpecialty != null && criteria.providerSpecialty.length > 0)
-      joinClauses.add("LEFT JOIN @CDM_schema.PROVIDER PR on C.provider_id = PR.provider_id");
+      joinClauses.add("LEFT JOIN @cdm_database_schema.PROVIDER PR on C.provider_id = PR.provider_id");
     
     query = StringUtils.replace(query,"@joinClause", StringUtils.join(joinClauses,"\n"));
     
@@ -464,17 +467,24 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     String query = GROUP_QUERY_TEMPLATE;
     ArrayList<String> additionalCriteriaQueries = new ArrayList<>();
     
-    for(AdditionalCriteria ac : group.criteriaList)
+    for(int i = 0; i< group.criteriaList.length; i++)
     {
-      additionalCriteriaQueries.add(ac.accept(this));
+      AdditionalCriteria ac = group.criteriaList[i];
+      String acQuery = ac.accept(this);
+      acQuery = StringUtils.replace(acQuery, "@indexId", "" + i);
+      additionalCriteriaQueries.add(acQuery);
     }
     
-    for(CriteriaGroup g : group.groups)
+    for(int i=0; i< group.groups.length; i++)
     {
-      additionalCriteriaQueries.add(g.accept(this));      
+      CriteriaGroup g = group.groups[i];
+      String gQuery = g.accept(this);
+      gQuery = StringUtils.replace(gQuery, "@indexId", "" + (group.criteriaList.length + i));
+      additionalCriteriaQueries.add(gQuery);      
     }
     
-    query = StringUtils.replace(query, "@criteriaQueries", StringUtils.join(additionalCriteriaQueries, group.type.equalsIgnoreCase("ANY") ? "\nUNION\n" : "\nINTERSECT\n"));
+    query = StringUtils.replace(query, "@intersectClause", group.type.equalsIgnoreCase("ALL") ? "HAVING COUNT(index_id) = " + (group.criteriaList.length + group.groups.length) : "");
+    query = StringUtils.replace(query, "@criteriaQueries", StringUtils.join(additionalCriteriaQueries, "\nUNION\n"));
     
     return query;    
   }
@@ -494,7 +504,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     ArrayList<String> joinClauses = new ArrayList<>();
     
     if (criteria.age != null || (criteria.gender != null && criteria.gender.length > 0)) // join to PERSON
-      joinClauses.add("JOIN @CDM_schema.PERSON P on C.person_id = P.person_id");
+      joinClauses.add("JOIN @cdm_database_schema.PERSON P on C.person_id = P.person_id");
     
     query = StringUtils.replace(query,"@joinClause", StringUtils.join(joinClauses,"\n"));
     
@@ -553,11 +563,11 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     ArrayList<String> joinClauses = new ArrayList<>();
     
     if (criteria.age != null || (criteria.gender != null && criteria.gender.length > 0)) // join to PERSON
-      joinClauses.add("JOIN @CDM_schema.PERSON P on C.person_id = P.person_id");
+      joinClauses.add("JOIN @cdm_database_schema.PERSON P on C.person_id = P.person_id");
     if (criteria.visitType != null && criteria.visitType.length > 0)
-      joinClauses.add("JOIN @CDM_schema.VISIT_OCCURRENCE V on C.visit_occurrence_id = V.visit_occurrence_id and C.person_id = V.person_id");
+      joinClauses.add("JOIN @cdm_database_schema.VISIT_OCCURRENCE V on C.visit_occurrence_id = V.visit_occurrence_id and C.person_id = V.person_id");
     if (criteria.providerSpecialty != null && criteria.providerSpecialty.length > 0)
-      joinClauses.add("LEFT JOIN @CDM_schema.PROVIDER PR on C.provider_id = PR.provider_id");
+      joinClauses.add("LEFT JOIN @cdm_database_schema.PROVIDER PR on C.provider_id = PR.provider_id");
     
     query = StringUtils.replace(query,"@joinClause", StringUtils.join(joinClauses,"\n"));
     
@@ -651,7 +661,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     ArrayList<String> joinClauses = new ArrayList<>();
     
     if (criteria.ageAtStart != null || criteria.ageAtEnd != null) // join to PERSON
-      joinClauses.add("JOIN @CDM_schema.PERSON P on C.person_id = P.person_id");
+      joinClauses.add("JOIN @cdm_database_schema.PERSON P on C.person_id = P.person_id");
     
     query = StringUtils.replace(query,"@joinClause", StringUtils.join(joinClauses,"\n"));
     
@@ -732,7 +742,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     ArrayList<String> joinClauses = new ArrayList<>();
     
     if (criteria.ageAtStart != null || criteria.ageAtEnd != null) // join to PERSON
-      joinClauses.add("JOIN @CDM_schema.PERSON P on C.person_id = P.person_id");
+      joinClauses.add("JOIN @cdm_database_schema.PERSON P on C.person_id = P.person_id");
     
     query = StringUtils.replace(query,"@joinClause", StringUtils.join(joinClauses,"\n"));
     
@@ -812,11 +822,11 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     ArrayList<String> joinClauses = new ArrayList<>();
     
     if (criteria.age != null || (criteria.gender != null && criteria.gender.length > 0)) // join to PERSON
-      joinClauses.add("JOIN @CDM_schema.PERSON P on C.person_id = P.person_id");
+      joinClauses.add("JOIN @cdm_database_schema.PERSON P on C.person_id = P.person_id");
     if (criteria.visitType != null && criteria.visitType.length > 0)
-      joinClauses.add("JOIN @CDM_schema.VISIT_OCCURRENCE V on C.visit_occurrence_id = V.visit_occurrence_id and C.person_id = V.person_id");
+      joinClauses.add("JOIN @cdm_database_schema.VISIT_OCCURRENCE V on C.visit_occurrence_id = V.visit_occurrence_id and C.person_id = V.person_id");
     if (criteria.providerSpecialty != null && criteria.providerSpecialty.length > 0)
-      joinClauses.add("LEFT JOIN @CDM_schema.PROVIDER PR on C.provider_id = PR.provider_id");
+      joinClauses.add("LEFT JOIN @cdm_database_schema.PROVIDER PR on C.provider_id = PR.provider_id");
     
     query = StringUtils.replace(query,"@joinClause", StringUtils.join(joinClauses,"\n"));
     
@@ -945,11 +955,11 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     ArrayList<String> joinClauses = new ArrayList<>();
     
     if (criteria.age != null || (criteria.gender != null && criteria.gender.length > 0)) // join to PERSON
-      joinClauses.add("JOIN @CDM_schema.PERSON P on C.person_id = P.person_id");
+      joinClauses.add("JOIN @cdm_database_schema.PERSON P on C.person_id = P.person_id");
     if (criteria.visitType != null && criteria.visitType.length > 0)
-      joinClauses.add("JOIN @CDM_schema.VISIT_OCCURRENCE V on C.visit_occurrence_id = V.visit_occurrence_id and C.person_id = V.person_id");
+      joinClauses.add("JOIN @cdm_database_schema.VISIT_OCCURRENCE V on C.visit_occurrence_id = V.visit_occurrence_id and C.person_id = V.person_id");
     if (criteria.providerSpecialty != null && criteria.providerSpecialty.length > 0)
-      joinClauses.add("LEFT JOIN @CDM_schema.PROVIDER PR on C.provider_id = PR.provider_id");
+      joinClauses.add("LEFT JOIN @cdm_database_schema.PROVIDER PR on C.provider_id = PR.provider_id");
     
     query = StringUtils.replace(query,"@joinClause", StringUtils.join(joinClauses,"\n"));
 
@@ -1076,11 +1086,11 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     ArrayList<String> joinClauses = new ArrayList<>();
     
     if (criteria.age != null || (criteria.gender != null && criteria.gender.length > 0)) // join to PERSON
-      joinClauses.add("JOIN @CDM_schema.PERSON P on C.person_id = P.person_id");
+      joinClauses.add("JOIN @cdm_database_schema.PERSON P on C.person_id = P.person_id");
     if (criteria.visitType != null && criteria.visitType.length > 0)
-      joinClauses.add("JOIN @CDM_schema.VISIT_OCCURRENCE V on C.visit_occurrence_id = V.visit_occurrence_id and C.person_id = V.person_id");
+      joinClauses.add("JOIN @cdm_database_schema.VISIT_OCCURRENCE V on C.visit_occurrence_id = V.visit_occurrence_id and C.person_id = V.person_id");
     if (criteria.providerSpecialty != null && criteria.providerSpecialty.length > 0)
-      joinClauses.add("LEFT JOIN @CDM_schema.PROVIDER PR on C.provider_id = PR.provider_id");
+      joinClauses.add("LEFT JOIN @cdm_database_schema.PROVIDER PR on C.provider_id = PR.provider_id");
     
     query = StringUtils.replace(query,"@joinClause", StringUtils.join(joinClauses,"\n"));
     
@@ -1182,7 +1192,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     ArrayList<String> joinClauses = new ArrayList<>();
     
     if (criteria.ageAtStart != null || criteria.ageAtEnd != null) // join to PERSON
-      joinClauses.add("JOIN @CDM_schema.PERSON P on C.person_id = P.person_id");
+      joinClauses.add("JOIN @cdm_database_schema.PERSON P on C.person_id = P.person_id");
     
     query = StringUtils.replace(query,"@joinClause", StringUtils.join(joinClauses,"\n"));
 
@@ -1251,11 +1261,11 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     ArrayList<String> joinClauses = new ArrayList<>();
     
     if (criteria.age != null || (criteria.gender != null && criteria.gender.length > 0)) // join to PERSON
-      joinClauses.add("JOIN @CDM_schema.PERSON P on C.person_id = P.person_id");
+      joinClauses.add("JOIN @cdm_database_schema.PERSON P on C.person_id = P.person_id");
     if (criteria.visitType != null && criteria.visitType.length > 0)
-      joinClauses.add("JOIN @CDM_schema.VISIT_OCCURRENCE V on C.visit_occurrence_id = V.visit_occurrence_id and C.person_id = V.person_id");
+      joinClauses.add("JOIN @cdm_database_schema.VISIT_OCCURRENCE V on C.visit_occurrence_id = V.visit_occurrence_id and C.person_id = V.person_id");
     if (criteria.providerSpecialty != null && criteria.providerSpecialty.length > 0)
-      joinClauses.add("LEFT JOIN @CDM_schema.PROVIDER PR on C.provider_id = PR.provider_id");
+      joinClauses.add("LEFT JOIN @cdm_database_schema.PROVIDER PR on C.provider_id = PR.provider_id");
     
     query = StringUtils.replace(query,"@joinClause", StringUtils.join(joinClauses,"\n"));
     
@@ -1345,7 +1355,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     ArrayList<String> joinClauses = new ArrayList<>();
     
     if (criteria.age != null || (criteria.gender != null && criteria.gender.length > 0)) // join to PERSON
-      joinClauses.add("JOIN @CDM_schema.PERSON P on C.person_id = P.person_id");
+      joinClauses.add("JOIN @cdm_database_schema.PERSON P on C.person_id = P.person_id");
     
     query = StringUtils.replace(query,"@joinClause", StringUtils.join(joinClauses,"\n"));
     
@@ -1436,11 +1446,11 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     ArrayList<String> joinClauses = new ArrayList<>();
     
     if (criteria.age != null || (criteria.gender != null && criteria.gender.length > 0)) // join to PERSON
-      joinClauses.add("JOIN @CDM_schema.PERSON P on C.person_id = P.person_id");
+      joinClauses.add("JOIN @cdm_database_schema.PERSON P on C.person_id = P.person_id");
     if (criteria.placeOfService != null && criteria.placeOfService.length > 0)
-      joinClauses.add("JOIN @CDM_schema.CARE_SITE CS on C.care_site_id = CS.care_site_id");
+      joinClauses.add("JOIN @cdm_database_schema.CARE_SITE CS on C.care_site_id = CS.care_site_id");
     if (criteria.providerSpecialty != null && criteria.providerSpecialty.length > 0)
-      joinClauses.add("LEFT JOIN @CDM_schema.PROVIDER PR on C.provider_id = PR.provider_id");
+      joinClauses.add("LEFT JOIN @cdm_database_schema.PROVIDER PR on C.provider_id = PR.provider_id");
     query = StringUtils.replace(query,"@joinClause", StringUtils.join(joinClauses,"\n"));
     
     

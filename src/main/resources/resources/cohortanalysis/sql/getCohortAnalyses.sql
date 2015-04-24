@@ -1,2 +1,2 @@
 SELECT *
-	FROM @resultsSchema.HERACLES_analysis
+	FROM @ohdsi_database_schema.HERACLES_analysis

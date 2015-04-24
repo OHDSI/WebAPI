@@ -21,7 +21,9 @@ import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysis;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTask;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTasklet;
+import org.ohdsi.webapi.cohortanalysis.CohortAnalysisUtilities;
 import org.ohdsi.webapi.cohortanalysis.CohortSummary;
+import org.ohdsi.webapi.cohortresults.CohortDashboard;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
@@ -33,6 +35,7 @@ import org.springframework.batch.core.configuration.annotation.StepBuilderFactor
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 /**
  * Services related to running Heracles analyses
@@ -98,7 +101,7 @@ public class CohortAnalysisService extends AbstractDaoService {
     public List<Analysis> getCohortAnalyses() {
         
         String sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/getCohortAnalyses.sql");
-        sql = SqlRender.renderSql(sql, new String[] { "resultsSchema" }, new String[] { this.getOhdsiSchema() });
+        sql = SqlRender.renderSql(sql, new String[] { "ohdsi_database_schema" }, new String[] { this.getOhdsiSchema() });
         sql = SqlTranslate.translateSql(sql, getSourceDialect(), getDialect(), SessionUtils.sessionId(), getOhdsiSchema());
         
         return getJdbcTemplate().query(sql, this.analysisMapper);
@@ -117,7 +120,7 @@ public class CohortAnalysisService extends AbstractDaoService {
         String sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/getCohortAnalysesForCohort.sql");
         sql = SqlRender.renderSql(
             sql,
-            new String[] { "resultsSchema", "cohortDefinitionId" },
+            new String[] { "ohdsi_database_schema", "cohortDefinitionId" },
             new String[] { this.getOhdsiSchema(), String.valueOf(id) });
         sql = SqlTranslate.translateSql(sql, getSourceDialect(), getDialect(), SessionUtils.sessionId(), getOhdsiSchema());
         
@@ -142,23 +145,23 @@ public class CohortAnalysisService extends AbstractDaoService {
         summary.setAnalyses(this.getCohortAnalysesForCohortDefinition(id));
         
         // total patients
-        List<Map<String, String>> cohortSize = this.resultsService.getCohortResults(id, "cohortSize", null, null);
+        List<Map<String, String>> cohortSize = this.resultsService.getCohortResultsRaw(id, "cohortSpecific", "cohortSize", null, null);
         if (cohortSize != null && cohortSize.size() > 0) {
             summary.setTotalPatients(cohortSize.get(0).get("NUM_PERSONS"));
         }
         
-        List<Map<String, String>> ageAtIndexDistribution = this.resultsService.getCohortResults(id, "ageAtIndexDistribution", null, null);
+        List<Map<String, String>> ageAtIndexDistribution = this.resultsService.getCohortResultsRaw(id, "cohortSpecific", "ageAtIndexDistribution", null, null);
         if (ageAtIndexDistribution != null && ageAtIndexDistribution.size() > 0) {
         	summary.setMeanAge(ageAtIndexDistribution.get(0).get("AVG_VALUE"));
         }
         
         // TODO mean obs period
-        
-        // gender distribution
-        summary.setGenderDistribution(this.resultsService.getCohortResults(id, "gender", null, null));
-        
-        // age distribution
-        summary.setAgeDistribution(this.resultsService.getCohortResults(id, "ageAtIndex", null, null));
+
+        CohortDashboard dashboard = this.resultsService.getDashboard(id, null, null, true);
+        if (dashboard != null) {
+        	summary.setGenderDistribution(dashboard.getGender());
+        	summary.setAgeDistribution(dashboard.getAgeAtFirstObservation());
+        }
         
         return summary;
     }
@@ -174,6 +177,21 @@ public class CohortAnalysisService extends AbstractDaoService {
     @Produces(MediaType.TEXT_PLAIN)
     @Consumes(MediaType.APPLICATION_JSON)
     public String getRunCohortAnalysisSql(CohortAnalysisTask task) {
+    	return getCohortAnalysisSql(task, getCohortAnalysisUtils());
+    }
+    
+    public CohortAnalysisUtilities getCohortAnalysisUtils() {
+    	CohortAnalysisUtilities utils = new CohortAnalysisUtilities();
+    	utils.setCdmSchema(this.getCdmSchema());
+    	utils.setCdmVersion(this.getCdmVersion());
+    	utils.setDialect(this.getDialect());
+    	utils.setOhdsiSchema(this.getOhdsiSchema());
+    	utils.setSourceDialect(this.getSourceDialect());
+    	utils.setSourceName(this.getSourceName());
+    	return utils;
+    }
+    
+    public static String getCohortAnalysisSql(CohortAnalysisTask task, CohortAnalysisUtilities utils) {
         String sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/runHeraclesAnalyses.sql");
         
         String cohortDefinitionIds = (task.getCohortDefinitionIds() == null ? "" : Joiner.on(",").join(
@@ -192,13 +210,14 @@ public class CohortAnalysisService extends AbstractDaoService {
         String[] params = new String[] { "CDM_schema", "results_schema", "source_name",
                 "smallcellcount", "runHERACLESHeel", "CDM_version", "cohort_definition_id", "list_of_analysis_ids",
                 "condition_concept_ids", "drug_concept_ids", "procedure_concept_ids", "observation_concept_ids",
-                "measurement_concept_ids" };
-        String[] values = new String[] { this.getCdmSchema(), this.getOhdsiSchema(), this.getSourceName(), 
+                "measurement_concept_ids", "cohort_period_only" };
+        String[] values = new String[] { utils.getCdmSchema(), utils.getOhdsiSchema(), utils.getSourceName(), 
         		String.valueOf(task.getSmallCellCount()),
-                String.valueOf(task.runHeraclesHeel()).toUpperCase(), this.getCdmVersion(), cohortDefinitionIds,
-                analysisIds, conditionIds, drugIds, procedureIds, observationIds, measurementIds };
+                String.valueOf(task.runHeraclesHeel()).toUpperCase(), utils.getCdmVersion(), cohortDefinitionIds,
+                analysisIds, conditionIds, drugIds, procedureIds, observationIds, measurementIds,
+                String.valueOf(task.isCohortPeriodOnly()) };
         sql = SqlRender.renderSql(sql, params, values);
-        sql = SqlTranslate.translateSql(sql, getSourceDialect(), getDialect(), SessionUtils.sessionId(), getOhdsiSchema());
+        sql = SqlTranslate.translateSql(sql, utils.getSourceDialect(), utils.getDialect(), SessionUtils.sessionId(), utils.getOhdsiSchema());
         
         return sql;
     }
@@ -242,17 +261,46 @@ public class CohortAnalysisService extends AbstractDaoService {
             return null;
         }
         JobParametersBuilder builder = new JobParametersBuilder();
-        String paramPrefixCD = "cohortDefinitionId:";
-        for(String cd : task.getCohortDefinitionIds()){
-            builder.addString(paramPrefixCD + cd, cd);
+
+        builder.addString("cohortDefinitionIds", limitJobParams(Joiner.on(",").join(task.getCohortDefinitionIds())));
+        builder.addString("analysisIds", limitJobParams(Joiner.on(",").join(task.getAnalysisIds())));
+        if (task.getConditionConceptIds() != null && task.getConditionConceptIds().size() > 0) {
+        	builder.addString("conditionIds", limitJobParams(Joiner.on(",").join(task.getConditionConceptIds())));
         }
+        if (task.getDrugConceptIds() != null && task.getDrugConceptIds().size() > 0) {
+        	builder.addString("drugIds", limitJobParams(Joiner.on(",").join(task.getDrugConceptIds())));
+        }
+        if (task.getMeasurementConceptIds() != null && task.getMeasurementConceptIds().size() > 0) {
+        	builder.addString("measurementIds", limitJobParams(Joiner.on(",").join(task.getMeasurementConceptIds())));
+        }
+        if (task.getObservationConceptIds() != null && task.getObservationConceptIds().size() > 0) {
+        	builder.addString("observationIds", limitJobParams(Joiner.on(",").join(task.getObservationConceptIds())));
+        }
+        if (task.getProcedureConceptIds() != null && task.getProcedureConceptIds().size() > 0) {
+        	builder.addString("procedureIds", limitJobParams(Joiner.on(",").join(task.getProcedureConceptIds())));
+        }
+        if (task.isRunHeraclesHeel()) {
+        	builder.addString("heraclesHeel", "true");
+        }
+        if (task.isCohortPeriodOnly()) {
+        	builder.addString("cohortPeriodOnly", "true");
+        }
+        if (!StringUtils.isEmpty(task.getJobName())) {
+        	builder.addString("jobName", limitJobParams(task.getJobName()));
+        } 
         //TODO consider analysisId
         final String taskString = task.toString();
         final JobParameters jobParameters = builder.toJobParameters();
-        String[] sql = this.getRunCohortAnalysisSqlBatch(task);
         log.info(String.format("Beginning run for cohort analysis task: \n %s", taskString));
-        CohortAnalysisTasklet tasklet = new CohortAnalysisTasklet(sql, getJdbcTemplate(), getTransactionTemplate());
+        CohortAnalysisTasklet tasklet = new CohortAnalysisTasklet(task, this.getCohortAnalysisUtils(), getJdbcTemplate(), getTransactionTemplate());
         
         return this.jobTemplate.launchTasklet("cohortAnalysisJob", "cohortAnalysisStep", tasklet, jobParameters);
+    }
+    
+    private String limitJobParams(String param) {
+    	if (param.length() >= 250) {
+    		return param.substring(0, 245) + "...";
+    	}
+    	return param;
     }
 }

@@ -47,7 +47,7 @@ public class ConceptSetExpressionQueryBuilder {
   {
     if (concepts.size() == 0)
     {
-      return "select concept_id from @CDM_schema.CONCEPT where 0=1";
+      return "select concept_id from @cdm_database_schema.CONCEPT where 0=1";
     }
     String conceptSetQuery = StringUtils.replace(CONCEPT_SET_QUERY_TEMPLATE, "@conceptIds",StringUtils.join(getConceptIds(concepts), ","));
     if (descendantConcepts.size() > 0) {

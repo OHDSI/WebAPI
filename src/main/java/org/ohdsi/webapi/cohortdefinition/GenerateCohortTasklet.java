@@ -35,6 +35,7 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Map;
 
 /**
  *
@@ -46,29 +47,43 @@ public class GenerateCohortTasklet implements Tasklet {
 
   private final static CohortExpressionQueryBuilder expressionQueryBuilder = new CohortExpressionQueryBuilder();
 
-  private final GenerateCohortTask task;
   private final JdbcTemplate jdbcTemplate;
   private final TransactionTemplate transactionTemplate;
   private final CohortDefinitionRepository cohortDefinitionRepository;
 
-  public GenerateCohortTasklet(GenerateCohortTask task, 
+  public GenerateCohortTasklet(
           final JdbcTemplate jdbcTemplate, 
           final TransactionTemplate transactionTemplate,
           final CohortDefinitionRepository cohortDefinitionRepository) {
-    this.task = task;
     this.jdbcTemplate = jdbcTemplate;
     this.transactionTemplate = transactionTemplate;
     this.cohortDefinitionRepository = cohortDefinitionRepository;
   }
 
-  private int[] doTask() {
+  private int[] doTask(ChunkContext chunkContext) {
     int[] result = null;
+    
+    Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
+    Integer defId = Integer.valueOf(jobParams.get("cohort_definition_id").toString());
+
     try {
       ObjectMapper mapper = new ObjectMapper();
 
-      CohortExpression expression = mapper.readValue(this.task.getCohortDefinition().getDetails().getExpression(), CohortExpression.class);
-      String expressionSql = expressionQueryBuilder.buildExpressionQuery(expression, this.task.getOptions());
-      String translatedSql = SqlTranslate.translateSql(expressionSql, this.task.getSourceDialect(), this.task.getTargetDialect(), SessionUtils.sessionId(), null);
+      DefaultTransactionDefinition requresNewTx = new DefaultTransactionDefinition();
+      requresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+    
+      TransactionStatus initStatus = this.transactionTemplate.getTransactionManager().getTransaction(requresNewTx);
+      CohortDefinition def = this.cohortDefinitionRepository.findOne(defId);
+      CohortExpression expression = mapper.readValue(def.getDetails().getExpression(), CohortExpression.class);
+      this.transactionTemplate.getTransactionManager().commit(initStatus);
+      
+      CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = new CohortExpressionQueryBuilder.BuildExpressionQueryOptions();
+      options.cohortId = defId;
+      options.cdmSchema = jobParams.get("cdm_database_schema").toString();
+      options.targetTable = jobParams.get("target_database_schema").toString() + "." + jobParams.get("target_table").toString();
+      
+      String expressionSql = expressionQueryBuilder.buildExpressionQuery(expression, options);
+      String translatedSql = SqlTranslate.translateSql(expressionSql, "sql server", jobParams.get("target_dialect").toString(), SessionUtils.sessionId(), null);
       String[] sqlStatements = SqlSplit.splitSql(translatedSql);
       result = GenerateCohortTasklet.this.jdbcTemplate.batchUpdate(sqlStatements);
 
@@ -82,11 +97,13 @@ public class GenerateCohortTasklet implements Tasklet {
   @Override
   public RepeatStatus execute(final StepContribution contribution, final ChunkContext chunkContext) throws Exception {
     Date startTime = Calendar.getInstance().getTime();
+    Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
+    Integer defId = Integer.valueOf(jobParams.get("cohort_definition_id").toString());
     
     DefaultTransactionDefinition initTx = new DefaultTransactionDefinition();
     initTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     TransactionStatus initStatus = this.transactionTemplate.getTransactionManager().getTransaction(initTx);
-    CohortDefinition df = this.cohortDefinitionRepository.findOne(this.task.getCohortDefinition().getId());
+    CohortDefinition df = this.cohortDefinitionRepository.findOne(defId);
     CohortGenerationInfo info = df.getGenerationInfo();
     if (info == null)
     {
@@ -107,7 +124,7 @@ public class GenerateCohortTasklet implements Tasklet {
 
         @Override
         public int[] doInTransaction(final TransactionStatus status) {
-          return doTask();
+          return doTask(chunkContext);
         }
       });
       log.debug("Update count: " + ret.length);

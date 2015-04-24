@@ -5,11 +5,15 @@ import java.util.List;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class CohortAnalysisTask {
+	
+	private String jobName;
 
 	private int smallCellCount;
 	
 	private boolean runHeraclesHeel;
 	
+	private boolean cohortPeriodOnly;
+
 	private List<String> cohortDefinitionIds;
 	
 	private List<String> analysisIds;
@@ -29,6 +33,20 @@ public class CohortAnalysisTask {
 	 */
 	public int getSmallCellCount() {
 		return smallCellCount;
+	}
+
+	/**
+	 * @return the jobName
+	 */
+	public String getJobName() {
+		return jobName;
+	}
+
+	/**
+	 * @param jobName the jobName to set
+	 */
+	public void setJobName(String jobName) {
+		this.jobName = jobName;
 	}
 
 	/**
@@ -150,6 +168,29 @@ public class CohortAnalysisTask {
 		this.measurementConceptIds = measurementConceptIds;
 	}
 	
+	/**
+	 * @return the runHeraclesHeel
+	 */
+	public boolean isRunHeraclesHeel() {
+		return runHeraclesHeel;
+	}
+	
+	
+	/**
+	 * @return the cohortPeriodOnly
+	 */
+	public boolean isCohortPeriodOnly() {
+		return cohortPeriodOnly;
+	}
+
+	/**
+	 * @param cohortPeriodOnly the cohortPeriodOnly to set
+	 */
+	public void setCohortPeriodOnly(boolean cohortPeriodOnly) {
+		this.cohortPeriodOnly = cohortPeriodOnly;
+	}
+
+
 	@Override
 	public String toString() {
 		try {

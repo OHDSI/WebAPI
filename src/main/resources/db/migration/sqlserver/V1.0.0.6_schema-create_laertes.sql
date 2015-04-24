@@ -1,4 +1,4 @@
--- Authors: Richard D Boyce, Jeremy Jao, Erica Voss, Lee Evans
+-- Authors: Richard D Boyce, Erica Voss, Lee Evans
 -- 2014/2015
 -- SQL Server script
 

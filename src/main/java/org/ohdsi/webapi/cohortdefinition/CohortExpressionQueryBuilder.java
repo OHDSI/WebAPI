@@ -1005,7 +1005,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // unit
     if (criteria.unit != null && criteria.unit.length > 0)
     {
-      ArrayList<Long> conceptIds = getConceptIdsFromConcepts(criteria.valueAsConcept);
+      ArrayList<Long> conceptIds = getConceptIdsFromConcepts(criteria.unit);
       whereClauses.add(String.format("C.unit_concept_id in (%s)", StringUtils.join(conceptIds, ",")));
     }
     

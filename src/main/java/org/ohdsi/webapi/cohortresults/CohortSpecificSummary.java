@@ -10,9 +10,6 @@ public class CohortSpecificSummary {
 	private List<MonthObservationRecord> personsInCohortFromCohortStartToEnd;
 	private List<ConceptQuartileRecord> distributionAgeCohortStartByCohortStartYear;
 	private List<ConceptQuartileRecord> distributionAgeCohortStartByGender;
-	private List<ScatterplotRecord> drugOccursRelativeToIndex;
-	private List<ScatterplotRecord> firstConditionRelativeToIndex;
-	private List<ScatterplotRecord> procedureOccursRelativeToIndex;
 
 	/**
 	 * @return the numPersonsByCohortStartByGenderByAge
@@ -118,49 +115,5 @@ public class CohortSpecificSummary {
 		this.distributionAgeCohortStartByGender = distributionAgeCohortStartByGender;
 	}
 
-	/**
-	 * @return the drugOccursRelativeToIndex
-	 */
-	public List<ScatterplotRecord> getDrugOccursRelativeToIndex() {
-		return drugOccursRelativeToIndex;
-	}
-
-	/**
-	 * @param drugOccursRelativeToIndex the drugOccursRelativeToIndex to set
-	 */
-	public void setDrugOccursRelativeToIndex(
-			List<ScatterplotRecord> drugOccursRelativeToIndex) {
-		this.drugOccursRelativeToIndex = drugOccursRelativeToIndex;
-	}
-
-	/**
-	 * @return the firstConditionRelativeToIndex
-	 */
-	public List<ScatterplotRecord> getFirstConditionRelativeToIndex() {
-		return firstConditionRelativeToIndex;
-	}
-
-	/**
-	 * @param firstConditionRelativeToIndex the firstConditionRelativeToIndex to set
-	 */
-	public void setFirstConditionRelativeToIndex(
-			List<ScatterplotRecord> firstConditionRelativeToIndex) {
-		this.firstConditionRelativeToIndex = firstConditionRelativeToIndex;
-	}
-
-	/**
-	 * @return the procedureOccursRelativeToIndex
-	 */
-	public List<ScatterplotRecord> getProcedureOccursRelativeToIndex() {
-		return procedureOccursRelativeToIndex;
-	}
-
-	/**
-	 * @param procedureOccursRelativeToIndex the procedureOccursRelativeToIndex to set
-	 */
-	public void setProcedureOccursRelativeToIndex(
-			List<ScatterplotRecord> procedureOccursRelativeToIndex) {
-		this.procedureOccursRelativeToIndex = procedureOccursRelativeToIndex;
-	}
 
 }

@@ -34,6 +34,7 @@ import org.ohdsi.webapi.cohortresults.ConceptDecileRecord;
 import org.ohdsi.webapi.cohortresults.ConceptQuartileRecord;
 import org.ohdsi.webapi.cohortresults.HierarchicalConceptRecord;
 import org.ohdsi.webapi.cohortresults.PrevalenceRecord;
+import org.ohdsi.webapi.cohortresults.ScatterplotRecord;
 import org.ohdsi.webapi.cohortresults.mapper.CohortAttributeMapper;
 import org.ohdsi.webapi.cohortresults.mapper.CohortStatsMapper;
 import org.ohdsi.webapi.cohortresults.mapper.ConceptConditionCountMapper;
@@ -594,27 +595,6 @@ public class CohortResultsService extends AbstractDaoService {
 			summary.setPersonsInCohortFromCohortStartToEnd(this.getJdbcTemplate().query(personsInCohortFromCohortStartToEndSql, new MonthObservationMapper()));
 		}
 		
-		// 1870, 1871
-		String drugOccursRelativeToIndexSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/drugOccursRelativeToIndex.sql", id, 
-				minCovariatePersonCountParam, minIntervalPersonCountParam);
-		if (drugOccursRelativeToIndexSql != null) {
-			summary.setDrugOccursRelativeToIndex(this.getJdbcTemplate().query(drugOccursRelativeToIndexSql, new ScatterplotMapper()));
-		}
-		
-		// 1820
-		String firstConditionRelativeToIndexSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/firstConditionRelativeToIndex.sql", id, 
-				minCovariatePersonCountParam, minIntervalPersonCountParam);
-		if (firstConditionRelativeToIndexSql != null) {
-			summary.setFirstConditionRelativeToIndex(this.getJdbcTemplate().query(firstConditionRelativeToIndexSql, new ScatterplotMapper()));
-		}
-		
-		// 1830
-		String procedureOccursRelativeToIndexSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/procedureOccursRelativeToIndex.sql", id, 
-				minCovariatePersonCountParam, minIntervalPersonCountParam);
-		if (procedureOccursRelativeToIndexSql != null) {
-			summary.setProcedureOccursRelativeToIndex(this.getJdbcTemplate().query(procedureOccursRelativeToIndexSql, new ScatterplotMapper()));
-		}
-		
 		return summary;
 	}
 	
@@ -653,6 +633,81 @@ public class CohortResultsService extends AbstractDaoService {
 		
 		
 		return summary;
+	}
+	
+	/**
+	 * Queries for cohort analysis procedure drilldown results for the given cohort definition id and concept id
+	 * 
+	 * @param id cohort_defintion id
+	 * @param conceptId conceptId (from concept)
+	 * @return List<ScatterplotRecord>
+	 */
+	@GET
+	@Path("/{id}/cohortspecificprocedure/{conceptId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<ScatterplotRecord> getCohortProcedureDrilldown(@PathParam("id") final int id, @PathParam("conceptId") final int conceptId,
+			@QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam, 
+			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam) {
+		
+		List<ScatterplotRecord> records = new ArrayList<ScatterplotRecord>();
+
+		final String sql = this.renderDrillDownCohortSql("procedureOccursRelativeToIndex", "cohortSpecific", id, 
+				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (sql != null) {
+			records = this.getJdbcTemplate().query(sql, new ScatterplotMapper());
+		}
+		
+		return records;
+	}
+	
+	/**
+	 * Queries for cohort analysis drug drilldown results for the given cohort definition id and concept id
+	 * 
+	 * @param id cohort_defintion id
+	 * @param conceptId conceptId (from concept)
+	 * @return List<ScatterplotRecord>
+	 */
+	@GET
+	@Path("/{id}/cohortspecificdrug/{conceptId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<ScatterplotRecord> getCohortDrugDrilldown(@PathParam("id") final int id, @PathParam("conceptId") final int conceptId,
+			@QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam, 
+			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam) {
+		
+		List<ScatterplotRecord> records = new ArrayList<ScatterplotRecord>();
+		
+		final String sql = this.renderDrillDownCohortSql("drugOccursRelativeToIndex", "cohortSpecific", id, 
+				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (sql != null) {
+			records = this.getJdbcTemplate().query(sql, new ScatterplotMapper());
+		}
+		return records;
+	}
+	
+	
+	/**
+	 * Queries for cohort analysis condition drilldown results for the given cohort definition id and concept id
+	 * 
+	 * @param id cohort_defintion id
+	 * @param conceptId conceptId (from concept)
+	 * @return List<ScatterplotRecord>
+	 */
+	@GET
+	@Path("/{id}/cohortspecificcondition/{conceptId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<ScatterplotRecord> getCohortConditionDrilldown(@PathParam("id") final int id, @PathParam("conceptId") final int conceptId,
+			@QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam, 
+			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam) {
+		
+		List<ScatterplotRecord> records = new ArrayList<ScatterplotRecord>();
+
+		final String sql = this.renderDrillDownCohortSql("firstConditionRelativeToIndex", "cohortSpecific", id, 
+				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam);
+		if (sql != null) {
+			records = this.getJdbcTemplate().query(sql, new ScatterplotMapper());
+		}
+		
+		return records;
 	}
 	
 	/**

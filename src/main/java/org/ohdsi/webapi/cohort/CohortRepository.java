@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.cohortimportexport;
+package org.ohdsi.webapi.cohort;
 
 import java.util.List;
 

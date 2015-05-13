@@ -168,6 +168,32 @@ public class VocabularyService extends AbstractDaoService {
         return concepts.values();
     }
     
+    @POST
+    @Path("commonAncestors")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)    
+    public Collection<RelatedConcept> getCommonAncestors(Object[] identifiers) {
+        final Map<Long, RelatedConcept> concepts = new HashMap<>();
+        String conceptIdentifierList = org.springframework.util.StringUtils.arrayToCommaDelimitedString(identifiers);
+        String conceptIdentifierListLength = Integer.toString(identifiers.length);
+        
+        String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/getCommonAncestors.sql");
+        sql_statement = SqlRender.renderSql(sql_statement, new String[] { "conceptIdentifierList", "conceptIdentifierListLength", "CDM_schema" },
+            new String[] { conceptIdentifierList, conceptIdentifierListLength, getCdmSchema() });
+        sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect());
+        
+        getJdbcTemplate().query(sql_statement, new RowMapper<Void>() {
+            
+            @Override
+            public Void mapRow(ResultSet resultSet, int arg1) throws SQLException {
+                addRelationships(concepts, resultSet);
+                return null;
+            }
+        });
+        
+        return concepts.values();
+    }
+    
     @GET
     @Path("concept/{id}/descendants")
     @Produces(MediaType.APPLICATION_JSON)

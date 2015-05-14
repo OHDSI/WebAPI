@@ -74,6 +74,8 @@ public class EvidenceService extends AbstractDaoService {
 	    info.rights = (String)rs.get("RIGHTS");
 	    info.source = (String)rs.get("SOURCE");
 	    infoOnSources.add(info);
+	    info.coverageStartDate = (Date)rs.get("COVERAGE_START_DATE");
+	    info.coverageEndDate = (Date)rs.get("COVERAGE_END_DATE");
 	}
 	return infoOnSources;
     }
@@ -275,9 +277,8 @@ public class EvidenceService extends AbstractDaoService {
 	    evidence.semmedCaseReportcount = (Integer)rs.get("SEMMEDDB_CASE_COUNT");
 	    evidence.semmedNegCTcount = (Integer)rs.get("SEMMEDDB_NEG_CT_COUNT");
 	    evidence.semmedNegCaseReportcount = (Integer)rs.get("SEMMEDDB_NEG_CASE_COUNT");
-	    evidence.eb05 = (BigDecimal)rs.get("EB05");
-	    evidence.ebgm = (BigDecimal)rs.get("EBGM");
 	    evidence.aersReportCount = (Integer)rs.get("AERS_REPORT_COUNT");   
+	    evidence.prr = (BigDecimal)rs.get("PRR");
 
 	    drugEvidences.add(evidence);
 	}	

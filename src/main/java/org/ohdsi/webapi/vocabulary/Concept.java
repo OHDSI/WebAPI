@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.vocabulary;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @author fdefalco
  */
 @JsonInclude(Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Concept {
     @JsonProperty("CONCEPT_ID")
     public Long conceptId;
@@ -17,7 +18,7 @@ public class Concept {
     @JsonProperty("CONCEPT_NAME")
     public String conceptName;
     
-    @JsonProperty("STANDARD_CONCEPT")
+    @JsonProperty("STANDARD_CONCEPT_CAPTION")
     public String GetStandardConcept() {
       if (standardConcept == null)
         return "Unknown";
@@ -34,10 +35,10 @@ public class Concept {
       }
     }
     
-    @JsonIgnore
+    @JsonProperty("STANDARD_CONCEPT")
     public String standardConcept;
     
-    @JsonProperty("INVALID_REASON")
+    @JsonProperty("INVALID_REASON_CAPTION")
     public String GetInvalidReason() {
       if (invalidReason == null)
         return "Unknown";
@@ -54,7 +55,7 @@ public class Concept {
       }
     }
     
-    @JsonIgnore
+    @JsonProperty("INVALID_REASON")
     public String invalidReason;
     
     @JsonProperty("CONCEPT_CODE")

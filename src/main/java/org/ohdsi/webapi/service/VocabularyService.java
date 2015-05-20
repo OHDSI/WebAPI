@@ -20,6 +20,7 @@ import javax.ws.rs.core.Response;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.helper.ResourceHelper;
+import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.vocabulary.Concept;
 import org.ohdsi.webapi.vocabulary.ConceptRelationship;
 import org.ohdsi.webapi.vocabulary.ConceptSearch;
@@ -144,13 +145,16 @@ public class VocabularyService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   public Concept getConcept(@PathParam("id") final long id) {
 
+    int sourceId = 1;
+    Source source = getSourceRepository().findOne(sourceId);
+    
     String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/getConcept.sql");
     sql_statement = SqlRender.renderSql(sql_statement, new String[]{"id", "CDM_schema"},
             new String[]{String.valueOf(id), getCdmSchema()});
     sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect());
     Concept concept = null;
     try {
-      concept = getJdbcTemplate().queryForObject(sql_statement, this.rowMapper);
+      concept = getSourceJdbcTemplate(source).queryForObject(sql_statement, this.rowMapper);
     } catch (EmptyResultDataAccessException e) {
       log.debug(String.format("Request for conceptId=%s resulted in 0 results", id));
       throw new WebApplicationException(Response.Status.RESET_CONTENT); // http 205

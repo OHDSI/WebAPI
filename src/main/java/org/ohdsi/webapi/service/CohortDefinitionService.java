@@ -259,7 +259,7 @@ public class CohortDefinitionService extends AbstractDaoService {
       CohortGenerationInfo info = currentDefinition.getGenerationInfo();
       if (info == null)
       {
-        info = new CohortGenerationInfo().setCohortDefinition(currentDefinition);
+        info = new CohortGenerationInfo(currentDefinition);
         currentDefinition.setGenerationInfo(info);
       }
       info.setStatus(GenerationStatus.PENDING)

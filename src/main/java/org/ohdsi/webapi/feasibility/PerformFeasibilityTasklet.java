@@ -105,78 +105,12 @@ public class PerformFeasibilityTasklet implements Tasklet {
     TransactionStatus initStatus = this.transactionTemplate.getTransactionManager().getTransaction(requresNewTx);
     FeasibilityStudy p = this.feasibilityStudyRepository.findOne(studyId);
     
-    // get result definition, create a new definition if it does not exist.
     CohortDefinition resultDef = p.getResultRule();
-    if (resultDef == null)
-    {
-      resultDef = new CohortDefinition()
-              .setCreatedBy("system")
-              .setCreatedDate(startTime)
-              .setExpressionType(ExpressionType.SIMPLE_EXPRESSION)
-              .setName("Matching Population for Feasability Study: " + p.getName())
-              .setDescription("Created by Feasability Study Process");
-      resultDef = this.cohortDefinitionRepository.save(resultDef);
-      p.setResultRule(resultDef);
-    }
-    CohortDefinitionDetails resultDetails = resultDef.getDetails();
-    if (resultDetails == null)
-    {
-      resultDetails = new CohortDefinitionDetails();
-      resultDetails.setCohortDefinition(resultDef);
-      resultDef.setDetails(resultDetails);
-    }
     CohortGenerationInfo resultInfo = resultDef.getGenerationInfo();
-    if (resultInfo == null)
-    {
-      resultInfo = new CohortGenerationInfo().setCohortDefinition(resultDef);
-      resultDef.setGenerationInfo(resultInfo);
-    }
     resultInfo.setIsValid(false)
             .setStatus(GenerationStatus.RUNNING)
             .setStartTime(startTime)
             .setExecutionDuration(null);
-
-    // all resultRule repository objects are initalized; create 'all criteria' cohort definition from index rule + inclusion rules
-    ObjectMapper mapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
-    CohortExpression indexRuleExpression = mapper.readValue(p.getIndexRule().getDetails().getExpression(), CohortExpression.class);
-    if (p.getInclusionRules().size() > 0) // if we have inclusion rules, add then to the index rule expression, else the matching expression == index rule expression
-    {
-      if (indexRuleExpression.additionalCriteria == null)
-      {
-        CriteriaGroup additionalCriteria = new CriteriaGroup();
-        additionalCriteria.type="ALL";
-        indexRuleExpression.additionalCriteria = additionalCriteria;
-      } else {
-        if ("ANY".equalsIgnoreCase(indexRuleExpression.additionalCriteria.type))
-        {
-          // move this CriteriaGroup inside a new parent CriteriaGroup where the parent CriteriaGroup.type == "ALL"
-          CriteriaGroup parentGroup = new CriteriaGroup();
-          parentGroup.type = "ALL";
-          parentGroup.groups = new CriteriaGroup[1];
-          parentGroup.groups[0] = indexRuleExpression.additionalCriteria;
-          indexRuleExpression.additionalCriteria = parentGroup;
-        }
-      }
-      // place each inclusion rule (which is a CriteriaGroup) in the indexRuleExpression.additionalCriteria.group array to create the 'allCriteriaExpression'
-      ArrayList<CriteriaGroup> additionalCriteriaGroups = new ArrayList<>();
-      if (indexRuleExpression.additionalCriteria.groups != null)
-        additionalCriteriaGroups.addAll(Arrays.asList(indexRuleExpression.additionalCriteria.groups));
-
-      for(InclusionRule inclusionRule : p.getInclusionRules())
-      {
-        String inclusionRuleJSON = inclusionRule.getExpression();
-        CriteriaGroup inclusionRuleGroup =  mapper.readValue(inclusionRuleJSON, CriteriaGroup.class);
-        additionalCriteriaGroups.add(inclusionRuleGroup);
-      }
-      // overwrite indexRule additional criteria groups with the new list of groups with inclusion rules
-      indexRuleExpression.additionalCriteria.groups = additionalCriteriaGroups.toArray(new CriteriaGroup[0]);
-    }
-    String allCriteriaExpression = mapper.writeValueAsString(indexRuleExpression); // index rule expression now contains all inclusion criteria as additional criteria
-    resultDetails.setExpression(allCriteriaExpression);
-    
-    resultDef  = cohortDefinitionRepository.save(resultDef);
-    p.setResultRule(resultDef);
-    
     StudyInfo info = p.getInfo();
     if (info == null)
     {

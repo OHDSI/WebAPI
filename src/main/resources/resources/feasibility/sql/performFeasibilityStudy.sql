@@ -71,7 +71,7 @@ left join
 ) T on cti.sequence = T.inclusion_rule_id
 CROSS APPLY (select count(*) as total_rules from feasibility_inclusion where study_id = @studyId) RuleTotal
 CROSS APPLY (select count(distinct person_id) as total from #PrimaryCriteriaEvents) PersonTotal
-LEFT JOIN feas_study_result SR on (POWER(2,RuleTotal.total_rules) - POWER(2,cti.sequence) - 1) = SR.inclusion_rule_mask -- POWER(2,rule count) - POWER(2,rule sequence) - 1 is the mask for 'all except this rule' 
+LEFT JOIN feas_study_result SR on SR.study_id = @studyId AND (POWER(2,RuleTotal.total_rules) - POWER(2,cti.sequence) - 1) = SR.inclusion_rule_mask -- POWER(2,rule count) - POWER(2,rule sequence) - 1 is the mask for 'all except this rule' 
 WHERE cti.study_id = @studyId
 ;
 

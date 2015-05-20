@@ -19,9 +19,8 @@ import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.MapsId;
 import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 
 /**
@@ -33,13 +32,22 @@ import javax.persistence.Table;
 public class CohortGenerationInfo {
   private static final long serialVersionUID = 1L;
 
+  public CohortGenerationInfo()
+  {
+  }
+  
+  public CohortGenerationInfo(CohortDefinition cohortDefinition)
+  {
+    this.id = cohortDefinition.getId();
+    this.cohortDefinition = cohortDefinition;
+  }
+  
   @Id
   private Integer id;
   
-  @MapsId
-  @OneToOne
-  @JoinColumn(name="id")
-  private CohortDefinition definition;
+  @OneToOne(optional = true)
+  @PrimaryKeyJoinColumn
+  private CohortDefinition cohortDefinition;
 
   @Column(name="start_time")
   private Date startTime;  
@@ -96,11 +104,6 @@ public class CohortGenerationInfo {
 
   public CohortGenerationInfo setIsValid(boolean isValid) {
     this.isValid = isValid;
-    return this;
-  }
-  
-  public CohortGenerationInfo setCohortDefinition(CohortDefinition definition) {
-    this.definition = definition;
     return this;
   }
 }

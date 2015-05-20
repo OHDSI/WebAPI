@@ -105,12 +105,6 @@ public class GenerateCohortTasklet implements Tasklet {
     TransactionStatus initStatus = this.transactionTemplate.getTransactionManager().getTransaction(initTx);
     CohortDefinition df = this.cohortDefinitionRepository.findOne(defId);
     CohortGenerationInfo info = df.getGenerationInfo();
-    if (info == null)
-    {
-      info = new CohortGenerationInfo().setCohortDefinition(df);
-      df.setGenerationInfo(info);
-    }
-
     info.setIsValid(false);
     info.setStartTime(startTime);
     info.setStatus(GenerationStatus.RUNNING);    

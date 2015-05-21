@@ -56,6 +56,7 @@ import org.ohdsi.webapi.cohortresults.mapper.PrevalanceMapper;
 import org.ohdsi.webapi.cohortresults.mapper.ScatterplotMapper;
 import org.ohdsi.webapi.cohortresults.mapper.SeriesPerPersonMapper;
 import org.ohdsi.webapi.helper.ResourceHelper;
+import org.ohdsi.webapi.source.Source;
 import org.springframework.stereotype.Component;
 
 /**
@@ -63,7 +64,7 @@ import org.springframework.stereotype.Component;
  * Services related to viewing Heracles analyses
  *
  */
-@Path("/cohortresults/")
+@Path("{sourceKey}/cohortresults/")
 @Component
 public class CohortResultsService extends AbstractDaoService {
 
@@ -178,7 +179,7 @@ public class CohortResultsService extends AbstractDaoService {
 	@GET
 	@Path("/{id}/condition/")
 	@Produces(MediaType.APPLICATION_JSON)
-	public List<HierarchicalConceptRecord> getConditionTreemap(@PathParam("id") final int id, 
+	public List<HierarchicalConceptRecord> getConditionTreemap(@PathParam("sourceKey") String sourceKey, @PathParam("id") final int id, 
 			@QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam, 
 			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam) {
 		
@@ -187,7 +188,8 @@ public class CohortResultsService extends AbstractDaoService {
 		String sql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/condition/sqlConditionTreemap.sql", 
 				id, minCovariatePersonCountParam, minIntervalPersonCountParam);
 		if (sql != null) {
-			res = getJdbcTemplate().query(sql, new HierarchicalConceptMapper());
+      Source source = getSourceRepository().findBySourceKey(sourceKey);
+			res = getSourceJdbcTemplate(source).query(sql, new HierarchicalConceptMapper());
 		}
 		
 		return res;

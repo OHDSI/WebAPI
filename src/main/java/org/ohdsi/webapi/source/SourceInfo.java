@@ -24,11 +24,13 @@ public class SourceInfo {
   public int sourceType;
   public String sourceName;
   public String sourceDialect;
+  public String sourceKey;
   
   public SourceInfo(Source s) {
     sourceId = s.getSourceId();
     sourceType = s.getSourceType();
     sourceName = s.getSourceName();
     sourceDialect = s.getSourceDialect();
+    sourceKey = s.getSourceKey();
   }
 }

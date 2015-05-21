@@ -28,6 +28,8 @@ import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.model.results.Analysis;
+import org.ohdsi.webapi.service.CohortDefinitionService.CohortDefinitionDTO;
+import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -141,6 +143,8 @@ public class CohortAnalysisService extends AbstractDaoService {
     public CohortSummary getCohortSummary(@PathParam("id") final int id) {
         
         CohortSummary summary = new CohortSummary();
+        
+        CohortDefinitionDTO cdd = this.definitionService.getCohortDefinition(id);
         summary.setCohortDefinition(this.definitionService.getCohortDefinition(id));
         summary.setAnalyses(this.getCohortAnalysesForCohortDefinition(id));
         
@@ -262,6 +266,8 @@ public class CohortAnalysisService extends AbstractDaoService {
         }
         JobParametersBuilder builder = new JobParametersBuilder();
 
+        Source source = getSourceRepository().findBySourceKey(task.getSourceKey());
+        
         builder.addString("cohortDefinitionIds", limitJobParams(Joiner.on(",").join(task.getCohortDefinitionIds())));
         builder.addString("analysisIds", limitJobParams(Joiner.on(",").join(task.getAnalysisIds())));
         if (task.getConditionConceptIds() != null && task.getConditionConceptIds().size() > 0) {
@@ -292,7 +298,11 @@ public class CohortAnalysisService extends AbstractDaoService {
         final String taskString = task.toString();
         final JobParameters jobParameters = builder.toJobParameters();
         log.info(String.format("Beginning run for cohort analysis task: \n %s", taskString));
-        CohortAnalysisTasklet tasklet = new CohortAnalysisTasklet(task, this.getCohortAnalysisUtils(), getJdbcTemplate(), getTransactionTemplate());
+        
+        CohortAnalysisUtilities analysisUtilities = this.getCohortAnalysisUtils();
+        analysisUtilities.setDialect(source.getSourceDialect());
+        
+        CohortAnalysisTasklet tasklet = new CohortAnalysisTasklet(task, analysisUtilities, getSourceJdbcTemplate(source), getTransactionTemplate());
         
         return this.jobTemplate.launchTasklet("cohortAnalysisJob", "cohortAnalysisStep", tasklet, jobParameters);
     }

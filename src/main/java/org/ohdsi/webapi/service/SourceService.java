@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import org.ohdsi.webapi.source.Source;
@@ -29,5 +30,12 @@ public class SourceService extends AbstractDaoService {
     }
     return sources;
   }
+  
+  @Path("{key}")
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  public SourceInfo getSource(@PathParam("key") final String sourceKey) {
+    return sourceRepository.findBySourceKey(sourceKey).getSourceInfo();
+  }    
 }
 

@@ -47,6 +47,17 @@ public class Source implements Serializable {
   @Column(name="SOURCE_CONNECTION")  
   private String sourceConnection;
   
+  @Column(name="SOURCE_KEY")
+  private String sourceKey;
+
+  public String getSourceKey() {
+    return sourceKey;
+  }
+
+  public void setSourceKey(String sourceKey) {
+    this.sourceKey = sourceKey;
+  }
+  
   public int getSourceId() {
     return sourceId;
   }
@@ -87,4 +98,7 @@ public class Source implements Serializable {
     this.sourceConnection = sourceConnection;
   } 
 
+  public SourceInfo getSourceInfo() {
+    return new SourceInfo(this);
+  }
 }

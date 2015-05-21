@@ -7,7 +7,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class CohortAnalysisTask {
 	
 	private String jobName;
-
+  
+  private String sourceKey = "TRUVENCCAE";
+ 
 	private int smallCellCount;
 	
 	private boolean runHeraclesHeel;
@@ -28,6 +30,14 @@ public class CohortAnalysisTask {
 	
 	private List<String> measurementConceptIds;
 
+  public String getSourceKey() {
+    return sourceKey;
+  }
+
+  public void setSourceKey(String sourceKey) {
+    this.sourceKey = sourceKey;
+  }
+  
 	/**
 	 * @return the smallCellCount
 	 */

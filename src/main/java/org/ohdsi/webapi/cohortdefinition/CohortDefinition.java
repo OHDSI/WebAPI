@@ -16,6 +16,7 @@ package org.ohdsi.webapi.cohortdefinition;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -28,6 +29,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.NamedAttributeNode;
 import javax.persistence.NamedEntityGraph;
 import javax.persistence.NamedSubgraph;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -60,11 +62,10 @@ public class CohortDefinition implements Serializable{
   
   @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional=false, orphanRemoval = true)
   @JoinColumn(name="id")
-  CohortDefinitionDetails details;
+  private CohortDefinitionDetails details;
 
-  @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional=true, orphanRemoval = true)
-  @JoinColumn(name="id")
-  CohortGenerationInfo generationInfo;
+  @OneToMany(mappedBy="cohortDefinition")
+  private Set<CohortGenerationInfo> generationInfoList;
   
   @Column(name="created_by")
   private String createdBy;
@@ -158,12 +159,12 @@ public class CohortDefinition implements Serializable{
     return this;
   }
 
-  public CohortGenerationInfo getGenerationInfo() {
-    return this.generationInfo;
+  public Set<CohortGenerationInfo> getGenerationInfoList() {
+    return this.generationInfoList;
   }
   
-  public CohortDefinition setGenerationInfo(CohortGenerationInfo info) {
-    this.generationInfo = info;
+  public CohortDefinition setGenerationInfoList(Set<CohortGenerationInfo> list) {
+    this.generationInfoList = list;
     return this;
   }
 }

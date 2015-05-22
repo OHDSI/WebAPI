@@ -30,6 +30,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -59,6 +60,7 @@ import org.ohdsi.webapi.cohortdefinition.GenerateCohortTasklet;
 import org.ohdsi.webapi.cohortdefinition.GenerationStatus;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
+import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
@@ -103,6 +105,15 @@ public class FeasibilityService extends AbstractDaoService {
   @Context
   ServletContext context;
 
+  private CohortGenerationInfo findBySourceId(Set<CohortGenerationInfo> infoList, Integer sourceId)
+  {
+    for (CohortGenerationInfo info : infoList) {
+      if (info.getSourceId() == sourceId)
+        return info;
+    }
+    return null;
+  }
+  
   public static class FeasibilityStudyListItem {
 
     public Integer id;
@@ -439,11 +450,13 @@ public class FeasibilityService extends AbstractDaoService {
   }
 
   @GET
-  @Path("/{id}/generate")
+  @Path("/{id}/generate/{sourceKey}")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public JobExecutionResource performStudy(@PathParam("id") final int id) {
+  public JobExecutionResource performStudy(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey) {
     Date startTime = Calendar.getInstance().getTime();
+    
+    Source source = this.getSourceRepository().findBySourceKey(sourceKey);
 
     DefaultTransactionDefinition requresNewTx = new DefaultTransactionDefinition();
     requresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -453,11 +466,11 @@ public class FeasibilityService extends AbstractDaoService {
     FeasibilityStudy study = this.feasibilityStudyRepository.findOne(id);
 
     CohortDefinition indexRule = this.cohortDefinitionRepository.findOne(study.getIndexRule().getId());
-    CohortGenerationInfo indexInfo = indexRule.getGenerationInfo();
+    CohortGenerationInfo indexInfo = findBySourceId(indexRule.getGenerationInfoList(), source.getSourceId());
     if (indexInfo == null)
     {
       indexInfo = new CohortGenerationInfo(indexRule);
-      indexRule.setGenerationInfo(indexInfo);
+      indexInfo.setSourceId(source.getSourceId());
     }
     indexInfo.setStatus(GenerationStatus.PENDING)
             .setStartTime(startTime)
@@ -465,11 +478,11 @@ public class FeasibilityService extends AbstractDaoService {
     this.cohortDefinitionRepository.save(indexRule);
     
     CohortDefinition resultRule = this.cohortDefinitionRepository.findOne(study.getResultRule().getId());
-    CohortGenerationInfo resultInfo = resultRule.getGenerationInfo();
+    CohortGenerationInfo resultInfo = findBySourceId(resultRule.getGenerationInfoList(), source.getSourceId());
     if (resultInfo == null)
     {
       resultInfo = new CohortGenerationInfo(resultRule);
-      resultRule.setGenerationInfo(resultInfo);
+      resultInfo.setSourceId(source.getSourceId());
     }
     resultInfo.setStatus(GenerationStatus.PENDING)
             .setStartTime(startTime)

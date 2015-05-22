@@ -11,8 +11,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.ServletContext;
+import javax.transaction.Transactional;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -35,6 +37,7 @@ import org.ohdsi.webapi.cohortdefinition.GenerateCohortTasklet;
 import org.ohdsi.webapi.cohortdefinition.GenerationStatus;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
+import org.ohdsi.webapi.source.Source;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -52,6 +55,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class CohortDefinitionService extends AbstractDaoService {
 
+  private static final CohortExpressionQueryBuilder queryBuilder = new CohortExpressionQueryBuilder();
+  
   @Autowired
   private CohortDefinitionRepository cohortDefinitionRepository;  
 
@@ -64,6 +69,15 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Autowired
   private JobTemplate jobTemplate;  
 
+  private CohortGenerationInfo findBySourceId(Set<CohortGenerationInfo> infoList, Integer sourceId)
+  {
+    for (CohortGenerationInfo info : infoList) {
+      if (info.getSourceId() == sourceId)
+        return info;
+    }
+    return null;
+  }
+  
   public static class GenerateSqlRequest {
 
     public GenerateSqlRequest() {
@@ -117,8 +131,6 @@ public class CohortDefinitionService extends AbstractDaoService {
     return result;
   }  
   
-  private static final CohortExpressionQueryBuilder queryBuilder = new CohortExpressionQueryBuilder();
-
   @Context
   ServletContext context;
 
@@ -252,15 +264,18 @@ public class CohortDefinitionService extends AbstractDaoService {
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("/{id}/generate")    
-    public JobExecutionResource generateCohort(@PathParam("id") final int id) {
+    @Path("/{id}/generate/{sourceKey}")
+    @Transactional
+    public JobExecutionResource generateCohort(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey) {
 
+      Source source = this.getSourceRepository().findBySourceKey(sourceKey);
       CohortDefinition currentDefinition = this.cohortDefinitionRepository.findOneWithDetail(id);
-      CohortGenerationInfo info = currentDefinition.getGenerationInfo();
+      CohortGenerationInfo info = findBySourceId(currentDefinition.getGenerationInfoList(), source.getSourceId());
       if (info == null)
       {
         info = new CohortGenerationInfo(currentDefinition);
-        currentDefinition.setGenerationInfo(info);
+        info.setSourceId(source.getSourceId());
+        currentDefinition.getGenerationInfoList().add(info);
       }
       info.setStatus(GenerationStatus.PENDING)
         .setStartTime(Calendar.getInstance().getTime());
@@ -289,8 +304,9 @@ public class CohortDefinitionService extends AbstractDaoService {
         .start(generateCohortStep)
         .build();
     
-      JobExecutionResource jobExec = this.jobTemplate.launch(generateCohortJob, jobParameters);
-      return jobExec;
+      //JobExecutionResource jobExec = this.jobTemplate.launch(generateCohortJob, jobParameters);
+      //return jobExec;
+      return null;
     
     }
     
@@ -304,9 +320,15 @@ public class CohortDefinitionService extends AbstractDaoService {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/info")    
-    public CohortGenerationInfo getInfo(@PathParam("id") final int id) {
+    public List<CohortGenerationInfo> getInfo(@PathParam("id") final int id) {
       CohortDefinition def = this.cohortDefinitionRepository.findOne(id);
-      return def.getGenerationInfo();
+      Set<CohortGenerationInfo> infoList = def.getGenerationInfoList();
+      
+      List<CohortGenerationInfo> result = new ArrayList<>();
+      for (CohortGenerationInfo info : infoList) {
+         result.add(info);
+       }
+      return result;
     }    
   
 }

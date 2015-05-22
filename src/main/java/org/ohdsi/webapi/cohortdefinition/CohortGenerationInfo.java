@@ -15,10 +15,14 @@
  */
 package org.ohdsi.webapi.cohortdefinition;
 
+import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Column;
+import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
@@ -29,24 +33,25 @@ import javax.persistence.Table;
  */
 @Entity(name = "CohortGenerationInfo")
 @Table(name="cohort_generation_info")
-public class CohortGenerationInfo {
+public class CohortGenerationInfo implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  public CohortGenerationInfo()
-  {
+  private  CohortGenerationInfo()
+  {    
   }
   
   public CohortGenerationInfo(CohortDefinition cohortDefinition)
   {
-    this.id = cohortDefinition.getId();
     this.cohortDefinition = cohortDefinition;
   }
   
   @Id
-  private Integer id;
+  @Column(name="source_id")
+  private Integer sourceId;
   
-  @OneToOne(optional = true)
-  @PrimaryKeyJoinColumn
+  @ManyToOne
+  @Id
+  @JoinColumn(name="id", referencedColumnName="id")
   private CohortDefinition cohortDefinition;
 
   @Column(name="start_time")
@@ -60,17 +65,17 @@ public class CohortGenerationInfo {
   
   @Column(name="is_valid")
   private boolean isValid;
-  
-  
-  public Integer getId() {
-    return id;
+
+
+  public Integer getSourceId()
+  {
+    return this.sourceId;
   }
 
-  public CohortGenerationInfo setId(Integer id) {
-    this.id = id;
-    return this;
+  public void setSourceId(Integer sourceId) {
+    this.sourceId = sourceId;
   }
-
+  
   public Date getStartTime() {
     return startTime;
   }

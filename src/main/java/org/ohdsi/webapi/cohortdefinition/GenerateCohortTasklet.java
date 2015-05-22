@@ -35,7 +35,9 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 /**
  *
@@ -94,25 +96,34 @@ public class GenerateCohortTasklet implements Tasklet {
     return result;
   }
 
+  private CohortGenerationInfo findBySourceId(Set<CohortGenerationInfo> infoList, Integer sourceId)
+  {
+    for(Iterator<CohortGenerationInfo> iterator = infoList.iterator(); iterator.hasNext(); )
+    {
+      CohortGenerationInfo info = iterator.next();
+      if (info.getSourceId() == sourceId)
+        return info;
+    }
+    return null;
+  }
   @Override
   public RepeatStatus execute(final StepContribution contribution, final ChunkContext chunkContext) throws Exception {
     Date startTime = Calendar.getInstance().getTime();
     Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
     Integer defId = Integer.valueOf(jobParams.get("cohort_definition_id").toString());
+    Integer sourceId = Integer.valueOf(jobParams.get("source_id").toString());
     
     DefaultTransactionDefinition initTx = new DefaultTransactionDefinition();
     initTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     TransactionStatus initStatus = this.transactionTemplate.getTransactionManager().getTransaction(initTx);
     CohortDefinition df = this.cohortDefinitionRepository.findOne(defId);
-    CohortGenerationInfo info = df.getGenerationInfo();
+    CohortGenerationInfo info = findBySourceId(df.getGenerationInfoList(), sourceId);
     info.setIsValid(false);
     info.setStartTime(startTime);
     info.setStatus(GenerationStatus.RUNNING);    
     df = this.cohortDefinitionRepository.save(df);
     this.transactionTemplate.getTransactionManager().commit(initStatus);
-    
-    info = df.getGenerationInfo();
-    
+   
     try {
       final int[] ret = this.transactionTemplate.execute(new TransactionCallback<int[]>() {
 

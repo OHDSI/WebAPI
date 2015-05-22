@@ -106,7 +106,7 @@ public class PerformFeasibilityTasklet implements Tasklet {
     FeasibilityStudy p = this.feasibilityStudyRepository.findOne(studyId);
     
     CohortDefinition resultDef = p.getResultRule();
-    CohortGenerationInfo resultInfo = resultDef.getGenerationInfo();
+    CohortGenerationInfo resultInfo = null; //resultDef.getGenerationInfo();
     resultInfo.setIsValid(false)
             .setStatus(GenerationStatus.RUNNING)
             .setStartTime(startTime)

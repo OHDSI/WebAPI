@@ -35,6 +35,7 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -96,12 +97,12 @@ public class GenerateCohortTasklet implements Tasklet {
     return result;
   }
 
-  private CohortGenerationInfo findBySourceId(Set<CohortGenerationInfo> infoList, Integer sourceId)
+  private CohortGenerationInfo findBySourceId(Collection<CohortGenerationInfo> infoList, Integer sourceId)
   {
     for(Iterator<CohortGenerationInfo> iterator = infoList.iterator(); iterator.hasNext(); )
     {
       CohortGenerationInfo info = iterator.next();
-      if (info.getSourceId() == sourceId)
+      if (info.getId().getSourceId()== sourceId)
         return info;
     }
     return null;

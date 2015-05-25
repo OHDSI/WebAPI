@@ -108,7 +108,7 @@ public class FeasibilityService extends AbstractDaoService {
   private CohortGenerationInfo findBySourceId(Set<CohortGenerationInfo> infoList, Integer sourceId)
   {
     for (CohortGenerationInfo info : infoList) {
-      if (info.getSourceId() == sourceId)
+      if (info.getId().getSourceId() == sourceId)
         return info;
     }
     return null;
@@ -469,8 +469,8 @@ public class FeasibilityService extends AbstractDaoService {
     CohortGenerationInfo indexInfo = findBySourceId(indexRule.getGenerationInfoList(), source.getSourceId());
     if (indexInfo == null)
     {
-      indexInfo = new CohortGenerationInfo(indexRule);
-      indexInfo.setSourceId(source.getSourceId());
+      indexInfo = new CohortGenerationInfo(indexRule, source.getSourceId());
+      indexRule.getGenerationInfoList().add(indexInfo);
     }
     indexInfo.setStatus(GenerationStatus.PENDING)
             .setStartTime(startTime)
@@ -481,8 +481,8 @@ public class FeasibilityService extends AbstractDaoService {
     CohortGenerationInfo resultInfo = findBySourceId(resultRule.getGenerationInfoList(), source.getSourceId());
     if (resultInfo == null)
     {
-      resultInfo = new CohortGenerationInfo(resultRule);
-      resultInfo.setSourceId(source.getSourceId());
+      resultInfo = new CohortGenerationInfo(resultRule, source.getSourceId());
+      resultRule.getGenerationInfoList().add(resultInfo);
     }
     resultInfo.setStatus(GenerationStatus.PENDING)
             .setStartTime(startTime)

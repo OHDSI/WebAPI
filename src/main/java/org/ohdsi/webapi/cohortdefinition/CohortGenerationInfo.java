@@ -20,12 +20,16 @@ import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.MapsId;
 import javax.persistence.OneToOne;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 /**
  *
@@ -36,24 +40,24 @@ import javax.persistence.Table;
 public class CohortGenerationInfo implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  private  CohortGenerationInfo()
+  public  CohortGenerationInfo()
   {    
   }
-  
-  public CohortGenerationInfo(CohortDefinition cohortDefinition)
-  {
-    this.cohortDefinition = cohortDefinition;
+
+  public  CohortGenerationInfo(CohortDefinition definition, Integer sourceId)
+  {    
+    this.id = new CohortGenerationInfoId(definition.getId(), sourceId);
+    this.cohortDefinition = definition;
   }
-  
-  @Id
-  @Column(name="source_id")
-  private Integer sourceId;
+
+  @EmbeddedId
+  private CohortGenerationInfoId id;
   
   @ManyToOne
-  @Id
+  @MapsId("cohortDefinitionId")
   @JoinColumn(name="id", referencedColumnName="id")
   private CohortDefinition cohortDefinition;
-
+  
   @Column(name="start_time")
   private Date startTime;  
   
@@ -66,14 +70,8 @@ public class CohortGenerationInfo implements Serializable {
   @Column(name="is_valid")
   private boolean isValid;
 
-
-  public Integer getSourceId()
-  {
-    return this.sourceId;
-  }
-
-  public void setSourceId(Integer sourceId) {
-    this.sourceId = sourceId;
+  public CohortGenerationInfoId getId() {
+    return id;
   }
   
   public Date getStartTime() {

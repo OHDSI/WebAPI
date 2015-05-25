@@ -15,6 +15,7 @@
 package org.ohdsi.webapi.cohortdefinition;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Set;
 import javax.persistence.CascadeType;
@@ -64,7 +65,7 @@ public class CohortDefinition implements Serializable{
   @JoinColumn(name="id")
   private CohortDefinitionDetails details;
 
-  @OneToMany(mappedBy="cohortDefinition")
+  @OneToMany(fetch= FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "cohortDefinition")
   private Set<CohortGenerationInfo> generationInfoList;
   
   @Column(name="created_by")

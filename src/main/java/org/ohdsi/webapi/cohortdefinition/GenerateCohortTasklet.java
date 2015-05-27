@@ -113,13 +113,14 @@ public class GenerateCohortTasklet implements Tasklet {
     Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
     Integer defId = Integer.valueOf(jobParams.get("cohort_definition_id").toString());
     Integer sourceId = Integer.valueOf(jobParams.get("source_id").toString());
+    boolean isValid = false;
     
     DefaultTransactionDefinition initTx = new DefaultTransactionDefinition();
     initTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     TransactionStatus initStatus = this.transactionTemplate.getTransactionManager().getTransaction(initTx);
     CohortDefinition df = this.cohortDefinitionRepository.findOne(defId);
     CohortGenerationInfo info = findBySourceId(df.getGenerationInfoList(), sourceId);
-    info.setIsValid(false);
+    info.setIsValid(isValid);
     info.setStartTime(startTime);
     info.setStatus(GenerationStatus.RUNNING);    
     df = this.cohortDefinitionRepository.save(df);
@@ -134,9 +135,8 @@ public class GenerateCohortTasklet implements Tasklet {
         }
       });
       log.debug("Update count: " + ret.length);
-      info.setIsValid(true);
+      isValid = true;
     } catch (final Exception e) {
-      info.setIsValid(false);
       log.error(e.getMessage(), e);
       throw e;//FAIL job status
     }
@@ -144,8 +144,11 @@ public class GenerateCohortTasklet implements Tasklet {
       DefaultTransactionDefinition completeTx = new DefaultTransactionDefinition();
       completeTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
       TransactionStatus completeStatus = this.transactionTemplate.getTransactionManager().getTransaction(completeTx);      
+      df = this.cohortDefinitionRepository.findOne(defId);
+      info = findBySourceId(df.getGenerationInfoList(), sourceId);
       Date endTime = Calendar.getInstance().getTime();
       info.setExecutionDuration(new Integer((int)(endTime.getTime() - startTime.getTime())));
+      info.setIsValid(isValid);
       info.setStatus(GenerationStatus.COMPLETE);
       this.cohortDefinitionRepository.save(df);
       this.transactionTemplate.getTransactionManager().commit(completeStatus);

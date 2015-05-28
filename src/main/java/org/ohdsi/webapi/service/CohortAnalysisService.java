@@ -148,6 +148,7 @@ public class CohortAnalysisService extends AbstractDaoService {
         summary.setCohortDefinition(this.definitionService.getCohortDefinition(id));
         summary.setAnalyses(this.getCohortAnalysesForCohortDefinition(id));
         
+        /*
         // total patients
         List<Map<String, String>> cohortSize = this.resultsService.getCohortResultsRaw(id, "cohortSpecific", "cohortSize", null, null);
         if (cohortSize != null && cohortSize.size() > 0) {
@@ -161,11 +162,12 @@ public class CohortAnalysisService extends AbstractDaoService {
         
         // TODO mean obs period
 
-        CohortDashboard dashboard = this.resultsService.getDashboard(id, null, null, true);
+        CohortDashboard dashboard = this.resultsService.getDashboard(id, null, null, true, sourceKey);
         if (dashboard != null) {
         	summary.setGenderDistribution(dashboard.getGender());
         	summary.setAgeDistribution(dashboard.getAgeAtFirstObservation());
         }
+        */
         
         return summary;
     }

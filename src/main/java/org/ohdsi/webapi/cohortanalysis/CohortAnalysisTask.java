@@ -8,7 +8,7 @@ public class CohortAnalysisTask {
 	
 	private String jobName;
   
-  private String sourceKey = "TRUVENCCAE";
+  private String sourceKey;
  
 	private int smallCellCount;
 	

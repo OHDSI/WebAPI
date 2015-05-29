@@ -233,10 +233,10 @@ public class FeasibilityService extends AbstractDaoService {
 
   }
 
-  private List<FeasibilityReport.InclusionRuleStatistic> getSimulationInclusionRuleStatistics(int id) {
+  private List<FeasibilityReport.InclusionRuleStatistic> getSimulationInclusionRuleStatistics(int id, Source source) {
     String statisticsQuery = String.format("select rule_sequence, name, person_count, gain_count, person_total from %s.feas_study_inclusion_stats where study_id = %d", this.getOhdsiSchema(), id);
     String translatedSql = SqlTranslate.translateSql(statisticsQuery, getSourceDialect(), getDialect(), SessionUtils.sessionId(), this.getOhdsiSchema());
-    return this.getJdbcTemplate().query(translatedSql, inclusionRuleStatisticMapper);
+    return this.getSourceJdbcTemplate(source).query(translatedSql, inclusionRuleStatisticMapper);
   }
 
   private int countSetBits(long n) {
@@ -565,12 +565,13 @@ public class FeasibilityService extends AbstractDaoService {
   @GET
   @Path("/{id}/report/{sourceKey}")
   @Produces(MediaType.APPLICATION_JSON)
+  @Transactional
   public FeasibilityReport getSimulationReport(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey) {
 
     Source source = this.getSourceRepository().findBySourceKey(sourceKey);
     
     FeasibilityReport.Summary summary = getSimulationSummary(id, source);
-    List<FeasibilityReport.InclusionRuleStatistic> inclusionRuleStats = getSimulationInclusionRuleStatistics(id);
+    List<FeasibilityReport.InclusionRuleStatistic> inclusionRuleStats = getSimulationInclusionRuleStatistics(id, source);
     String treemapData = getInclusionRuleTreemapData(id, inclusionRuleStats.size(), source);
 
     FeasibilityReport report = new FeasibilityReport();

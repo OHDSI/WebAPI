@@ -18,6 +18,7 @@ package org.ohdsi.webapi.feasibility;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
+import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.cohortdefinition.CohortExpressionQueryBuilder;
@@ -43,10 +44,27 @@ public class FeasibilityStudyQueryBuilder {
     @JsonProperty("cdmSchema")  
     public String cdmSchema;
 
+    @JsonProperty("ohdsiSchema")  
+    public String ohdsiSchema;
+    
     @JsonProperty("cohortTable")  
     public String cohortTable;
   } 
   
+  private String getInclusionRuleInserts(FeasibilityStudy study)
+  {
+    String insertTemplate = "insert into #inclusionRules vaues (%d, %d, %s)\n";
+    StringBuilder insertStatements = new StringBuilder();
+    
+    List<InclusionRule> inclusionRules = study.getInclusionRules();
+    for (int i = 0; i< inclusionRules.size(); i++)
+    {
+      InclusionRule r = inclusionRules.get(i);
+      insertStatements.append(String.format(insertTemplate, study.getId(), i, r.getName()));
+    }
+    return insertStatements.toString();
+  }
+
   private String getInclusionRuleQuery(CriteriaGroup inclusionRule)
   {
     String resultSql = INCLUSION_RULE_QUERY_TEMPLATE;
@@ -93,12 +111,13 @@ public class FeasibilityStudyQueryBuilder {
       inclusionRuleInserts.add(inclusionRuleInsert);
     }
     
-    resultSql = StringUtils.replace(resultSql,"@inclusionInserts", StringUtils.join(inclusionRuleInserts,"\n"));
+    resultSql = StringUtils.replace(resultSql,"@inclusionCohortInserts", StringUtils.join(inclusionRuleInserts,"\n"));
     
     if (options != null)
     {
       // replease query parameters with tokens
       resultSql = StringUtils.replace(resultSql, "@cdm_database_schema", options.cdmSchema);
+      resultSql = StringUtils.replace(resultSql, "@ohdsi_database_schema", options.ohdsiSchema);
       resultSql = StringUtils.replace(resultSql, "@cohortTable", options.cohortTable);
     }
     

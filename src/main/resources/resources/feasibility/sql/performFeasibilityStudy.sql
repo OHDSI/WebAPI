@@ -6,10 +6,10 @@ create table #inclusionRuleCohorts
   inclusion_rule_id bigint,
   subject_id bigint,
   cohort_start_date datetime,
-  cohort_end_date datetime,
+  cohort_end_date datetime
 )
 ;
-@inclusionInserts
+@inclusionCohortInserts
 
 create table #BestMatchEvent
 (
@@ -41,12 +41,12 @@ from
   LEFT JOIN #inclusionRuleCohorts I on c.person_id = i.subject_id and c.start_date = i.cohort_start_date and c.end_date = i.cohort_end_date
   GROUP BY C.person_id, C.start_date, C.end_date
 ) MG -- matching groups
-CROSS APPLY (select count(*) as total_rules from feasibility_inclusion where study_id = @studyId) RuleTotal
+CROSS APPLY (select count(*) as total_rules from #inclusionRules where study_id = @studyId) RuleTotal
 WHERE MG.inclusion_rule_mask = POWER(2,RuleTotal.total_rules)-1
 
 -- calculte matching group counts
-delete from feas_study_result where study_id = @studyId;
-insert into feas_study_result (study_id, inclusion_rule_mask, person_count)
+delete from @ohdsi_database_schema.feas_study_result where study_id = @studyId;
+insert into @ohdsi_database_schema.feas_study_result (study_id, inclusion_rule_mask, person_count)
 select @studyId as study_id, inclusion_rule_mask, count(*) as person_count
 from
 (
@@ -58,32 +58,32 @@ from
 group by inclusion_rule_mask;
 
 -- calculate gain counts
-delete from feas_study_inclusion_stats where study_id = @studyId;
-insert into feas_study_inclusion_stats (study_id, rule_sequence, name, person_count, gain_count, person_total)
-select cti.study_id, cti.sequence, cti.name, coalesce(T.person_count, 0) as person_count, coalesce(SR.person_count, 0) gain_count, PersonTotal.total
-from feasibility_inclusion cti
+delete from @ohdsi_database_schema.feas_study_inclusion_stats where study_id = @studyId;
+insert into @ohdsi_database_schema.feas_study_inclusion_stats (study_id, rule_sequence, name, person_count, gain_count, person_total)
+select ir.study_id, ir.sequence, ir.name, coalesce(T.person_count, 0) as person_count, coalesce(SR.person_count, 0) gain_count, PersonTotal.total
+from #inclusionRules ir
 left join
 (
   select i.inclusion_rule_id, count(i.subject_id) as person_count
   from #BestMatchEvent C
   JOIN #inclusionRuleCohorts i on C.person_id = i.subject_id and c.start_date = i.cohort_start_date and c.end_date = i.cohort_end_date
   group by i.inclusion_rule_id
-) T on cti.sequence = T.inclusion_rule_id
-CROSS APPLY (select count(*) as total_rules from feasibility_inclusion where study_id = @studyId) RuleTotal
+) T on ir.sequence = T.inclusion_rule_id
+CROSS APPLY (select count(*) as total_rules from #inclusionRules where study_id = @studyId) RuleTotal
 CROSS APPLY (select count(distinct person_id) as total from #PrimaryCriteriaEvents) PersonTotal
-LEFT JOIN feas_study_result SR on SR.study_id = @studyId AND (POWER(2,RuleTotal.total_rules) - POWER(2,cti.sequence) - 1) = SR.inclusion_rule_mask -- POWER(2,rule count) - POWER(2,rule sequence) - 1 is the mask for 'all except this rule' 
-WHERE cti.study_id = @studyId
+LEFT JOIN feas_study_result SR on SR.study_id = @studyId AND (POWER(2,RuleTotal.total_rules) - POWER(2,ir.sequence) - 1) = SR.inclusion_rule_mask -- POWER(2,rule count) - POWER(2,rule sequence) - 1 is the mask for 'all except this rule' 
+WHERE ir.study_id = @studyId
 ;
 
 -- calculate totals
-delete from feas_study_index_stats where study_id = @studyId;
-insert into feas_study_index_stats (study_id, person_count, match_count)
+delete from @ohdsi_database_schema.feas_study_index_stats where study_id = @studyId;
+insert into @ohdsi_database_schema.feas_study_index_stats (study_id, person_count, match_count)
 select @studyId as study_id, 
 (select count(distinct person_id) as total from #PrimaryCriteriaEvents) as person_count,
 coalesce((
   select sr.person_count 
   from feas_study_result sr
-  CROSS APPLY (select count(*) as total_rules from feasibility_inclusion where study_id = @studyId) RuleTotal
+  CROSS APPLY (select count(*) as total_rules from #inclusionRules where study_id = @studyId) RuleTotal
   where study_id = @studyId and sr.inclusion_rule_mask = POWER(2,RuleTotal.total_rules)-1
 ),0) as match_count
 ;

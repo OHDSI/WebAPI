@@ -24,7 +24,7 @@ import org.junit.runner.RunWith;
 import org.ohdsi.webapi.WebApi;
 import org.ohdsi.webapi.feasibility.FeasibilityStudy;
 import org.ohdsi.webapi.feasibility.FeasibilityStudyRepository;
-import org.ohdsi.webapi.feasibility.StudyInfo;
+import org.ohdsi.webapi.feasibility.StudyGenerationInfo;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.GenerationStatus;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,14 +68,14 @@ public class StudyInfoTest {
     FeasibilityStudy newStudy = new FeasibilityStudy();
     newStudy.setName("Test Info Study");
     newStudy = this.studyRepository.save(newStudy);
-    StudyInfo info = new StudyInfo(newStudy);
+    StudyGenerationInfo info = new StudyGenerationInfo(newStudy, 1); // for testing, assume a sourceId of 1 exists.
     info.setStatus(GenerationStatus.PENDING);
-    newStudy.setInfo(info);
+    newStudy.getStudyGenerationInfoList().add(info);
     this.studyRepository.save(newStudy);
     this.transactionTemplate.getTransactionManager().commit(saveTx);
     
     TransactionStatus updateTx = this.transactionTemplate.getTransactionManager().getTransaction(requiresNewTx);
-    newStudy.setInfo(null);
+    newStudy.getStudyGenerationInfoList().clear();
     this.studyRepository.save(newStudy);
     this.transactionTemplate.getTransactionManager().commit(updateTx);
     

@@ -38,7 +38,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 /**
  *
@@ -99,9 +98,7 @@ public class GenerateCohortTasklet implements Tasklet {
 
   private CohortGenerationInfo findBySourceId(Collection<CohortGenerationInfo> infoList, Integer sourceId)
   {
-    for(Iterator<CohortGenerationInfo> iterator = infoList.iterator(); iterator.hasNext(); )
-    {
-      CohortGenerationInfo info = iterator.next();
+    for (CohortGenerationInfo info : infoList) {
       if (info.getId().getSourceId()== sourceId)
         return info;
     }

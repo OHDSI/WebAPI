@@ -18,31 +18,31 @@ package org.ohdsi.webapi.feasibility;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Column;
+import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.MapsId;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
-import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfo;
 import org.ohdsi.webapi.cohortdefinition.GenerationStatus;
 
 /**
  *
  * @author Chris Knoll <cknoll@ohdsi.org>
  */
-@Entity(name = "StudyInfo")
+@Entity(name = "StudyGenerationInfo")
 @Table(name="feas_study_generation_info")
-public class StudyInfo implements Serializable {
+public class StudyGenerationInfo implements Serializable {
  private static final long serialVersionUID = 1L;
 
-  @Id
-  private Integer id;
+  @EmbeddedId
+  private StudyGenerationInfoId id;
   
-  @MapsId
-  @OneToOne
-  @JoinColumn(name="study_id")
+  @ManyToOne
+  @MapsId("studyId")
+  @JoinColumn(name="study_id", referencedColumnName="id")
   private FeasibilityStudy study;
 
   @Column(name="start_time")
@@ -57,30 +57,29 @@ public class StudyInfo implements Serializable {
   @Column(name="is_valid")
   private boolean isValid;
   
-  public StudyInfo(){
-    super(); 
+  public  StudyGenerationInfo()
+  {    
   }
-  
-  public StudyInfo(FeasibilityStudy study)
-  {
-    this();
+
+  public  StudyGenerationInfo(FeasibilityStudy study, Integer sourceId)
+  {    
+    this.id = new StudyGenerationInfoId(study.getId(), sourceId);
     this.study = study;
   }
-  
-  public Integer getId() {
+
+  public StudyGenerationInfoId getId() {
     return id;
   }
 
-  public StudyInfo setId(Integer id) {
+  public void setId(StudyGenerationInfoId id) {
     this.id = id;
-    return this;
   }
 
   public Date getStartTime() {
     return startTime;
   }
 
-  public StudyInfo setStartTime(Date startTime) {
+  public StudyGenerationInfo setStartTime(Date startTime) {
     this.startTime = startTime;
     return this;
   }
@@ -89,7 +88,7 @@ public class StudyInfo implements Serializable {
     return executionDuration;
   }
 
-  public StudyInfo setExecutionDuration(Integer executionDuration) {
+  public StudyGenerationInfo setExecutionDuration(Integer executionDuration) {
     this.executionDuration = executionDuration;
     return this;
   }
@@ -98,7 +97,7 @@ public class StudyInfo implements Serializable {
     return status;
   }
 
-  public StudyInfo setStatus(GenerationStatus status) {
+  public StudyGenerationInfo setStatus(GenerationStatus status) {
     this.status = status;
     return this;
   }
@@ -107,7 +106,7 @@ public class StudyInfo implements Serializable {
     return isValid;
   }
 
-  public StudyInfo setIsValid(boolean isValid) {
+  public StudyGenerationInfo setIsValid(boolean isValid) {
     this.isValid = isValid;
     return this;
   }

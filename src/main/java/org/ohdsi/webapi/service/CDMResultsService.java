@@ -2,7 +2,6 @@ package org.ohdsi.webapi.service;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.List;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -18,7 +17,6 @@ import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.report.MonthlyPrevalence;
 import org.ohdsi.webapi.report.PackedConceptNode;
 import org.ohdsi.webapi.source.Source;
-import org.ohdsi.webapi.vocabulary.Concept;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
@@ -59,6 +57,8 @@ public class CDMResultsService extends AbstractDaoService {
     }
   }
 
+  private PackedConceptNode root;
+  
   private final RowMapper<PackedConceptNode> rowMapper = new RowMapper<PackedConceptNode>() {
     @Override
     public PackedConceptNode mapRow(final ResultSet resultSet, final int arg1) throws SQLException {
@@ -73,7 +73,7 @@ public class CDMResultsService extends AbstractDaoService {
   @POST
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public Collection<PackedConceptNode> getConceptRecordCount(@PathParam("sourceKey") String sourceKey, String[] identifiers) {
+  public PackedConceptNode getConceptRecordCount(@PathParam("sourceKey") String sourceKey, String[] identifiers) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
 
    for (int i=0; i<identifiers.length; i++) {
@@ -87,7 +87,11 @@ public class CDMResultsService extends AbstractDaoService {
 
     List<PackedConceptNode> nodes;
     nodes = getSourceJdbcTemplate(source).query(sql_statement, rowMapper);
-    return nodes;
+    
+    PackedConceptNode root = new PackedConceptNode();
+    root.conceptName = "root";
+    root.children = nodes;
+    return root;
   }
 
 }

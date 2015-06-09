@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -351,7 +352,7 @@ public class FeasibilityService extends AbstractDaoService {
             .setDescription(study.description)
             .setCreatedBy("system")
             .setCreatedDate(currentTime)
-            .setInclusionRules(study.inclusionRules);
+            .setInclusionRules(new ArrayList<InclusionRule>(study.inclusionRules));
 
     // create index cohort
     study.indexRule.name = "Index Population for FeasabilityStudy: " + newStudy.getName();
@@ -546,4 +547,35 @@ public class FeasibilityService extends AbstractDaoService {
 
     return report;
   }
+  
+  /**
+   * Copies the specified cohort definition
+   * 
+   * @param id - the Cohort Definition ID to copy
+   * @return the copied cohort definition as a CohortDefinitionDTO
+   */
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/{id}/copy")
+  @javax.transaction.Transactional
+  public FeasibilityStudyDTO copy(@PathParam("id") final int id) {
+    FeasibilityStudyDTO sourceStudy = getStudy(id);
+    sourceStudy.id = null; // clear the ID
+    sourceStudy.name = "COPY OF: " + sourceStudy.name;
+
+    FeasibilityStudyDTO copyStudy = createStudy(sourceStudy);
+    return copyStudy;
+  }      
+
+  /**
+   * Deletes the specified cohort definition
+   * 
+   * @param id - the Cohort Definition ID to copy
+   */
+  @DELETE
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/{id}")
+  public void delete(@PathParam("id") final int id) {
+   feasibilityStudyRepository.delete(id);
+  }    
 }

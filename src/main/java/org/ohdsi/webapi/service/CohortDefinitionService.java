@@ -13,7 +13,9 @@ import java.util.Date;
 import java.util.List;
 
 import javax.servlet.ServletContext;
+import javax.transaction.Transactional;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -244,69 +246,100 @@ public class CohortDefinitionService extends AbstractDaoService {
     return getCohortDefinition(id);
   }
   
-    /**
-     * Queues up a generate cohort task for the specified cohort definition id.
-     * 
-     * @param id - the Cohort Definition ID to generate
-     * @return information about the Cohort Analysis Job
-     */
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("/{id}/generate")    
-    public JobExecutionResource generateCohort(@PathParam("id") final int id) {
+  /**
+   * Queues up a generate cohort task for the specified cohort definition id.
+   * 
+   * @param id - the Cohort Definition ID to generate
+   * @return information about the Cohort Analysis Job
+   */
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/{id}/generate")    
+  public JobExecutionResource generateCohort(@PathParam("id") final int id) {
 
-      CohortDefinition currentDefinition = this.cohortDefinitionRepository.findOneWithDetail(id);
-      CohortGenerationInfo info = currentDefinition.getGenerationInfo();
-      if (info == null)
-      {
-        info = new CohortGenerationInfo(currentDefinition);
-        currentDefinition.setGenerationInfo(info);
-      }
-      info.setStatus(GenerationStatus.PENDING)
-        .setStartTime(Calendar.getInstance().getTime());
-
-      this.cohortDefinitionRepository.save(currentDefinition);
-    
-      JobParametersBuilder builder = new JobParametersBuilder();
-      builder.addString("cdm_database_schema", this.getCdmSchema());
-      builder.addString("target_database_schema", this.getOhdsiSchema());
-      builder.addString("target_dialect", this.getDialect());
-      builder.addString("target_table", "cohort");
-      builder.addString("cohort_definition_id", ("" + id));
-      
-      final JobParameters jobParameters = builder.toJobParameters();
-
-      log.info(String.format("Beginning generate cohort for cohort definition id: \n %s", "" + id));
-
-      GenerateCohortTasklet generateTasklet = new GenerateCohortTasklet(getJdbcTemplate(), getTransactionTemplate(), cohortDefinitionRepository);
-      
-      Step generateCohortStep = stepBuilders.get("cohortDefinition.generateCohort")
-        .tasklet(generateTasklet)
-        .exceptionHandler(new TerminateJobStepExceptionHandler())
-      .build();
-    
-      Job generateCohortJob = jobBuilders.get("generateCohort")
-        .start(generateCohortStep)
-        .build();
-    
-      JobExecutionResource jobExec = this.jobTemplate.launch(generateCohortJob, jobParameters);
-      return jobExec;
-    
+    CohortDefinition currentDefinition = this.cohortDefinitionRepository.findOneWithDetail(id);
+    CohortGenerationInfo info = currentDefinition.getGenerationInfo();
+    if (info == null)
+    {
+      info = new CohortGenerationInfo(currentDefinition);
+      currentDefinition.setGenerationInfo(info);
     }
-    
-    /**
-     * Queues up a generate cohort task for the specified cohort definition id.
-     * 
-     * @param id - the Cohort Definition ID to generate
-     * @return information about the Cohort Analysis Job
-     * @throws Exception
-     */
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("/{id}/info")    
-    public CohortGenerationInfo getInfo(@PathParam("id") final int id) {
-      CohortDefinition def = this.cohortDefinitionRepository.findOne(id);
-      return def.getGenerationInfo();
-    }    
+    info.setStatus(GenerationStatus.PENDING)
+      .setStartTime(Calendar.getInstance().getTime());
+
+    this.cohortDefinitionRepository.save(currentDefinition);
+
+    JobParametersBuilder builder = new JobParametersBuilder();
+    builder.addString("cdm_database_schema", this.getCdmSchema());
+    builder.addString("target_database_schema", this.getOhdsiSchema());
+    builder.addString("target_dialect", this.getDialect());
+    builder.addString("target_table", "cohort");
+    builder.addString("cohort_definition_id", ("" + id));
+
+    final JobParameters jobParameters = builder.toJobParameters();
+
+    log.info(String.format("Beginning generate cohort for cohort definition id: \n %s", "" + id));
+
+    GenerateCohortTasklet generateTasklet = new GenerateCohortTasklet(getJdbcTemplate(), getTransactionTemplate(), cohortDefinitionRepository);
+
+    Step generateCohortStep = stepBuilders.get("cohortDefinition.generateCohort")
+      .tasklet(generateTasklet)
+      .exceptionHandler(new TerminateJobStepExceptionHandler())
+    .build();
+
+    Job generateCohortJob = jobBuilders.get("generateCohort")
+      .start(generateCohortStep)
+      .build();
+
+    JobExecutionResource jobExec = this.jobTemplate.launch(generateCohortJob, jobParameters);
+    return jobExec;
+
+  }
+
+  /**
+   * Queues up a generate cohort task for the specified cohort definition id.
+   * 
+   * @param id - the Cohort Definition ID to generate
+   * @return information about the Cohort Analysis Job
+   * @throws Exception
+   */
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/{id}/info")    
+  public CohortGenerationInfo getInfo(@PathParam("id") final int id) {
+    CohortDefinition def = this.cohortDefinitionRepository.findOne(id);
+    return def.getGenerationInfo();
+  }    
   
+  /**
+   * Copies the specified cohort definition
+   * 
+   * @param id - the Cohort Definition ID to copy
+   * @return the copied cohort definition as a CohortDefinitionDTO
+   */
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/{id}/copy")
+  @Transactional
+  public CohortDefinitionDTO copy(@PathParam("id") final int id) {
+    CohortDefinitionDTO sourceDef = getCohortDefinition(id);
+    sourceDef.id = null; // clear the ID
+    sourceDef.name = "COPY OF: " + sourceDef.name;
+
+    CohortDefinitionDTO copyDef = createCohortDefinition(sourceDef);
+
+    return copyDef;
+  }      
+
+  /**
+   * Deletes the specified cohort definition
+   * 
+   * @param id - the Cohort Definition ID to copy
+   */
+  @DELETE
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/{id}")
+  public void delete(@PathParam("id") final int id) {
+   cohortDefinitionRepository.delete(id);
+  }      
 }

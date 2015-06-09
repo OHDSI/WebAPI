@@ -58,7 +58,7 @@ public class CohortDefinition implements Serializable{
   @Column(name="expression_type")  
   private ExpressionType expressionType;
   
-  @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional=false, orphanRemoval = true)
+  @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional=true, orphanRemoval = true)
   @JoinColumn(name="id")
   CohortDefinitionDetails details;
 

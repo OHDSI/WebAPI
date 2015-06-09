@@ -38,6 +38,7 @@
     <flyway.locations>classpath:db/migration/sqlserver</flyway.locations>
     <!-- Note: Schema name is case-sensitive. -->
     <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
+    <flyway.validateOnMigrate>false</flyway.validateOnMigrate>
 		
     <!-- CDM properties -->
     <source.name>CDM_NAME</source.name>

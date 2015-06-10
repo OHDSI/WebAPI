@@ -38,6 +38,7 @@ import org.ohdsi.webapi.cohortdefinition.GenerationStatus;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceDaimon;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -144,12 +145,6 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Consumes(MediaType.APPLICATION_JSON)
   public GenerateSqlResult generateSql(GenerateSqlRequest request) {
     CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = request.options;
-    if (options != null) {
-      options.cohortId = options.cohortId == null ? -1 : options.cohortId;
-      options.cdmSchema = (options.cdmSchema == null || options.cdmSchema.trim().length() == 0) ? this.getCdmSchema() : options.cdmSchema.trim();
-      options.targetTable = (options.targetTable == null || options.targetTable.trim().length() == 0) ? "cohort" : options.targetTable.trim();
-    }
-
     GenerateSqlResult result = new GenerateSqlResult();
     result.templateSql = queryBuilder.buildExpressionQuery(request.expression, options);
 
@@ -269,10 +264,14 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Path("/{id}/generate/{sourceKey}")
   public JobExecutionResource generateCohort(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey) {
 
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);    
+    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);    
+    
     DefaultTransactionDefinition requresNewTx = new DefaultTransactionDefinition();
     requresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     TransactionStatus initStatus = this.getTransactionTemplate().getTransactionManager().getTransaction(requresNewTx);
-    Source source = this.getSourceRepository().findBySourceKey(sourceKey);
+
     CohortDefinition currentDefinition = this.cohortDefinitionRepository.findOne(id);
     CohortGenerationInfo info = findBySourceId(currentDefinition.getGenerationInfoList(), source.getSourceId());
     if (info == null) {
@@ -287,8 +286,8 @@ public class CohortDefinitionService extends AbstractDaoService {
     
 
     JobParametersBuilder builder = new JobParametersBuilder();
-    builder.addString("cdm_database_schema", this.getCdmSchema());
-    builder.addString("target_database_schema", this.getOhdsiSchema());
+    builder.addString("cdm_database_schema", cdmTableQualifier);
+    builder.addString("target_database_schema", resultsTableQualifier);
     builder.addString("target_dialect", source.getSourceDialect());
     builder.addString("target_table", "cohort");
     builder.addString("cohort_definition_id", ("" + id));

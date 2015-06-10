@@ -16,11 +16,16 @@
 package org.ohdsi.webapi.source;
 
 import java.io.Serializable;
+import java.util.Collection;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import org.ohdsi.webapi.source.SourceDaimon.DaimonType;
 
 /**
  *
@@ -34,6 +39,9 @@ public class Source implements Serializable {
   @GeneratedValue  
   @Column(name="SOURCE_ID")  
   private int sourceId;
+  
+  @OneToMany(fetch= FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "source")
+  private Collection<SourceDaimon> daimons;
   
   @Column(name="SOURCE_TYPE")  
   private int sourceType;
@@ -50,8 +58,27 @@ public class Source implements Serializable {
   @Column(name="SOURCE_KEY")
   private String sourceKey;
 
+  
+  public String getTableQualifier(DaimonType daimonType) {
+    for (SourceDaimon sourceDaimon : this.getDaimons()) {
+      if (sourceDaimon.getDaimonType() == daimonType) {
+        return sourceDaimon.getTableQualifier();
+      } 
+    }
+    
+    throw new RuntimeException("DaimonType not found in Source");
+  }
+  
   public String getSourceKey() {
     return sourceKey;
+  }
+
+  public Collection<SourceDaimon> getDaimons() {
+    return daimons;
+  }
+
+  public void setDaimons(Collection<SourceDaimon> daimons) {
+    this.daimons = daimons;
   }
 
   public void setSourceKey(String sourceKey) {

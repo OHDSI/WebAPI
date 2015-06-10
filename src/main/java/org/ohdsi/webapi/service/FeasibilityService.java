@@ -63,6 +63,7 @@ import org.ohdsi.webapi.cohortdefinition.GenerationStatus;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
@@ -163,8 +164,11 @@ public class FeasibilityService extends AbstractDaoService {
   };
 
   private FeasibilityReport.Summary getSimulationSummary(int id, Source source) {
-    String summaryQuery = String.format("select person_count, match_count from %s.feas_study_index_stats where study_id = %d", this.getOhdsiSchema(), id);
-    String translatedSql = SqlTranslate.translateSql(summaryQuery, getSourceDialect(), getDialect(), SessionUtils.sessionId(), this.getOhdsiSchema());
+    
+    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    
+    String summaryQuery = String.format("select person_count, match_count from %s.feas_study_index_stats where study_id = %d", resultsTableQualifier, id);
+    String translatedSql = SqlTranslate.translateSql(summaryQuery, "sql server", source.getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
     return this.getSourceJdbcTemplate(source).queryForObject(translatedSql, summaryMapper);
   }
 
@@ -234,8 +238,9 @@ public class FeasibilityService extends AbstractDaoService {
   }
 
   private List<FeasibilityReport.InclusionRuleStatistic> getSimulationInclusionRuleStatistics(int id, Source source) {
-    String statisticsQuery = String.format("select rule_sequence, name, person_count, gain_count, person_total from %s.feas_study_inclusion_stats where study_id = %d", this.getOhdsiSchema(), id);
-    String translatedSql = SqlTranslate.translateSql(statisticsQuery, getSourceDialect(), getDialect(), SessionUtils.sessionId(), this.getOhdsiSchema());
+    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    String statisticsQuery = String.format("select rule_sequence, name, person_count, gain_count, person_total from %s.feas_study_inclusion_stats where study_id = %d", resultsTableQualifier, id);
+    String translatedSql = SqlTranslate.translateSql(statisticsQuery, "sql server", source.getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
     return this.getSourceJdbcTemplate(source).query(translatedSql, inclusionRuleStatisticMapper);
   }
 
@@ -264,9 +269,10 @@ public class FeasibilityService extends AbstractDaoService {
   };
 
   private String getInclusionRuleTreemapData(int id, int inclusionRuleCount, Source source) {
+    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
     String smulationResultsQuery = String.format("select inclusion_rule_mask, person_count from %s.feas_study_result where study_id = %d",
-            this.getOhdsiSchema(), id);
-    String translatedSql = SqlTranslate.translateSql(smulationResultsQuery, getSourceDialect(), getDialect(), SessionUtils.sessionId(), this.getOhdsiSchema());
+            resultsTableQualifier, id);
+    String translatedSql = SqlTranslate.translateSql(smulationResultsQuery, "sql server", source.getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
 
     // [0] is the inclusion rule bitmask, [1] is the count of the match
     List<Long[]> items = this.getSourceJdbcTemplate(source).query(translatedSql, simulationResultItemMapper);
@@ -469,7 +475,9 @@ public class FeasibilityService extends AbstractDaoService {
     Date startTime = Calendar.getInstance().getTime();
     
     Source source = this.getSourceRepository().findBySourceKey(sourceKey);
-
+    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+    
     DefaultTransactionDefinition requresNewTx = new DefaultTransactionDefinition();
     requresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 
@@ -515,8 +523,8 @@ public class FeasibilityService extends AbstractDaoService {
     this.getTransactionTemplate().getTransactionManager().commit(initStatus);
 
     JobParametersBuilder builder = new JobParametersBuilder();
-    builder.addString("cdm_database_schema", this.getCdmSchema());
-    builder.addString("target_database_schema", this.getOhdsiSchema());
+    builder.addString("cdm_database_schema", cdmTableQualifier);
+    builder.addString("target_database_schema", resultsTableQualifier);
     builder.addString("target_dialect", source.getSourceDialect());
     builder.addString("target_table", "cohort");
     builder.addString("cohort_definition_id", ("" + indexRule.getId()));

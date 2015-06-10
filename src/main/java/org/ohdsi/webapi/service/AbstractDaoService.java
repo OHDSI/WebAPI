@@ -64,38 +64,6 @@ public abstract class AbstractDaoService {
   }
   
   /**
-   * if cdmDatabase is provided, return cdmDatabase.cdmSchema, else return
-   * cdmSchema.
-   *
-   * @return the cdmSchema
-   */
-  public String getCdmSchema() {
-    String schema = (cdmDatabase != null && cdmDatabase.length() > 0) ? cdmDatabase + "." : "";
-    return schema + cdmSchema;
-  }
-
-  /**
-   * @param cdmSchema the cdmSchema to set
-   */
-  public void setCdmSchema(String cdmSchema) {
-    this.cdmSchema = cdmSchema;
-  }
-
-  /**
-   * @return the ohdsiSchema
-   */
-  public String getOhdsiSchema() {
-    return ohdsiSchema;
-  }
-
-  /**
-   * @param ohdsiSchema the ohdsiSchema to set
-   */
-  public void setOhdsiSchema(String ohdsiSchema) {
-    this.ohdsiSchema = ohdsiSchema;
-  }
-
-  /**
    * @return the dialect
    */
   public String getDialect() {

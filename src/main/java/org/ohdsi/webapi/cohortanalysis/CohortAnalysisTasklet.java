@@ -19,17 +19,14 @@ public class CohortAnalysisTasklet implements Tasklet {
     private static final Log log = LogFactory.getLog(CohortAnalysisTasklet.class);
     
     private final CohortAnalysisTask task;
-    
-    private final CohortAnalysisUtilities utils;
-    
+       
     private final JdbcTemplate jdbcTemplate;
     
     private final TransactionTemplate transactionTemplate;
     
-    public CohortAnalysisTasklet(CohortAnalysisTask task, CohortAnalysisUtilities utils, final JdbcTemplate jdbcTemplate,
+    public CohortAnalysisTasklet(CohortAnalysisTask task, final JdbcTemplate jdbcTemplate,
         final TransactionTemplate transactionTemplate) {
         this.task = task;
-        this.utils = utils;
         this.jdbcTemplate = jdbcTemplate;
         this.transactionTemplate = transactionTemplate;
     }
@@ -42,7 +39,8 @@ public class CohortAnalysisTasklet implements Tasklet {
                 
                 @Override
                 public int[] doInTransaction(final TransactionStatus status) {
-                	String cohortSql = CohortAnalysisService.getCohortAnalysisSql(task, utils);
+                  CohortAnalysisService cas = new CohortAnalysisService();
+                	String cohortSql = cas.getCohortAnalysisSql(task);
                 	
                 	String[] stmts = null;
                 	if (cohortSql != null) {

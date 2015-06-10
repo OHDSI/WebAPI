@@ -40,126 +40,125 @@ import org.springframework.stereotype.Component;
 @Path("/job/")
 @Component
 public class JobService extends AbstractDaoService {
-    
-    @Autowired
-    private String batchTablePrefix;
-    
-    @Autowired
-    private JobExplorer jobExplorer;
-    
-    @Autowired
-    private JobLocator jobLocator;
-    
-    @Autowired
-    private SearchableJobExecutionDao jobExecutionDao;
-    
-    @Autowired
-    private SearchableJobInstanceDao jobInstanceDao;
-    
-    @GET
-    @Path("{jobId}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public JobInstanceResource findJob(@PathParam("jobId") final Long jobId) {
-        final JobInstance job = this.jobExplorer.getJobInstance(jobId);
-        if (job == null) {
-            return null;//TODO #8 conventions under review
+
+  @Autowired
+  private String batchTablePrefix;
+
+  @Autowired
+  private JobExplorer jobExplorer;
+
+  @Autowired
+  private JobLocator jobLocator;
+
+  @Autowired
+  private SearchableJobExecutionDao jobExecutionDao;
+
+  @Autowired
+  private SearchableJobInstanceDao jobInstanceDao;
+
+  @GET
+  @Path("{jobId}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public JobInstanceResource findJob(@PathParam("jobId") final Long jobId) {
+    final JobInstance job = this.jobExplorer.getJobInstance(jobId);
+    if (job == null) {
+      return null;//TODO #8 conventions under review
+    }
+    return JobUtils.toJobInstanceResource(job);
+  }
+
+  @GET
+  @Path("{jobId}/execution/{executionId}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public JobExecutionResource findJobExecution(@PathParam("jobId") final Long jobId,
+          @PathParam("executionId") final Long executionId) {
+    return service(jobId, executionId);
+  }
+
+  /**
+   * Overloaded findJobExecution method.
+   *
+   * @param executionId
+   * @return
+   */
+  @GET
+  @Path("/execution/{executionId}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public JobExecutionResource findJobExecution(@PathParam("executionId") final Long executionId) {
+    return service(null, executionId);
+  }
+
+  private JobExecutionResource service(final Long jobId, final Long executionId) {
+    final JobExecution exec = this.jobExplorer.getJobExecution(executionId);
+    if ((exec == null) || ((jobId != null) && !jobId.equals(exec.getJobId()))) {
+      return null;//TODO #8 conventions under review
+    }
+    return JobUtils.toJobExecutionResource(exec);
+  }
+
+  /**
+   * Get job names (unique names). Note: this path (GET /job) should really
+   * return pages of job instances. This could be implemented should the need
+   * arise. See {@link JobService#list(String, Integer, Integer)} to obtain
+   * executions and filter by job name.
+   *
+   * @return
+   */
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  public List<String> findJobNames() {
+    return this.jobExplorer.getJobNames();
+  }
+
+  /**
+   * <i>Variation of spring-batch-admin support:
+   * org.springframework.batch.admin.web.BatchJobExecutionsController</i>.
+   * <p>
+   * Return a paged collection of job executions. Filter for a given job.
+   * Returned in pages.
+   *
+   * @param jobName name of the job
+   * @param pageIndex start index for the job execution list
+   * @param pageSize page size for the list
+   * @param comprehensivePage boolean if true returns a comprehensive resultset
+   * as a page (i.e. pageRequest(0,resultset.size()))
+   * @return collection of JobExecutionInfo
+   * @throws NoSuchJobException
+   */
+  @GET
+  @Path("/execution")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Page<JobExecutionResource> list(@QueryParam("jobName") final String jobName,
+          @DefaultValue("0") @QueryParam("pageIndex") final Integer pageIndex,
+          @DefaultValue("20") @QueryParam("pageSize") final Integer pageSize,
+          @QueryParam("comprehensivePage") boolean comprehensivePage)
+          throws NoSuchJobException {
+
+    List<JobExecutionResource> resources = null;
+
+    if (comprehensivePage) {
+      String sql_statement = ResourceHelper.GetResourceAsString("/resources/job/sql/jobExecutions.sql");
+      sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect());
+      log.debug("Translated sql:" + sql_statement);
+
+      resources = getJdbcTemplate().query(sql_statement, new ResultSetExtractor<List<JobExecutionResource>>() {
+
+        @Override
+        public List<JobExecutionResource> extractData(ResultSet rs) throws SQLException, DataAccessException {
+          return JobUtils.toJobExecutionResource(rs);
         }
-        return JobUtils.toJobInstanceResource(job);
+      });
+
+      return new PageImpl<JobExecutionResource>(resources, new PageRequest(0, pageSize), resources.size());
+    } else {
+      resources = new ArrayList<JobExecutionResource>();
+      for (final JobExecution jobExecution : (jobName == null ? this.jobExecutionDao.getJobExecutions(pageIndex,
+              pageSize) : this.jobExecutionDao.getJobExecutions(jobName, pageIndex, pageSize))) {
+        resources.add(JobUtils.toJobExecutionResource(jobExecution));
+      }
+      return new PageImpl<JobExecutionResource>(resources, new PageRequest(pageIndex, pageSize),
+              this.jobExecutionDao.countJobExecutions());
     }
-    
-    @GET
-    @Path("{jobId}/execution/{executionId}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public JobExecutionResource findJobExecution(@PathParam("jobId") final Long jobId,
-                                                 @PathParam("executionId") final Long executionId) {
-        return service(jobId, executionId);
-    }
-    
-    /**
-     * Overloaded findJobExecution method.
-     * 
-     * @param executionId
-     * @return
-     */
-    @GET
-    @Path("/execution/{executionId}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public JobExecutionResource findJobExecution(@PathParam("executionId") final Long executionId) {
-        return service(null, executionId);
-    }
-    
-    private JobExecutionResource service(final Long jobId, final Long executionId) {
-        final JobExecution exec = this.jobExplorer.getJobExecution(executionId);
-        if ((exec == null) || ((jobId != null) && !jobId.equals(exec.getJobId()))) {
-            return null;//TODO #8 conventions under review
-        }
-        return JobUtils.toJobExecutionResource(exec);
-    }
-    
-    /**
-     * Get job names (unique names). Note: this path (GET /job) should really return pages of job
-     * instances. This could be implemented should the need arise. See
-     * {@link JobService#list(String, Integer, Integer)} to obtain executions and filter by job
-     * name.
-     * 
-     * @return
-     */
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public List<String> findJobNames() {
-        return this.jobExplorer.getJobNames();
-    }
-    
-    /**
-     * <i>Variation of spring-batch-admin support:
-     * org.springframework.batch.admin.web.BatchJobExecutionsController</i>.
-     * <p>
-     * Return a paged collection of job executions. Filter for a given job. Returned in pages.
-     *
-     * @param jobName name of the job
-     * @param pageIndex start index for the job execution list
-     * @param pageSize page size for the list
-     * @param comprehensivePage boolean if true returns a comprehensive resultset as a page (i.e.
-     *            pageRequest(0,resultset.size()))
-     * @return collection of JobExecutionInfo
-     * @throws NoSuchJobException
-     */
-    @GET
-    @Path("/execution")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Page<JobExecutionResource> list(@QueryParam("jobName") final String jobName,
-                                           @DefaultValue("0") @QueryParam("pageIndex") final Integer pageIndex,
-                                           @DefaultValue("20") @QueryParam("pageSize") final Integer pageSize,
-                                           @QueryParam("comprehensivePage") boolean comprehensivePage)
-                                                                                                      throws NoSuchJobException {
-        
-        List<JobExecutionResource> resources = null;
-        
-        if (comprehensivePage) {
-            String sql_statement = ResourceHelper.GetResourceAsString("/resources/job/sql/jobExecutions.sql");
-            sql_statement = SqlRender.renderSql(sql_statement, new String[] { "results_schema" },
-                new String[] { getOhdsiSchema() });
-            sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect());
-            log.debug("Translated sql:" + sql_statement);
-            
-            resources = getJdbcTemplate().query(sql_statement, new ResultSetExtractor<List<JobExecutionResource>>() {
-                
-                @Override
-                public List<JobExecutionResource> extractData(ResultSet rs) throws SQLException, DataAccessException {
-                    return JobUtils.toJobExecutionResource(rs);
-                }
-            });
-            
-            return new PageImpl<JobExecutionResource>(resources, new PageRequest(0, pageSize), resources.size());
-        } else {
-            resources = new ArrayList<JobExecutionResource>();
-            for (final JobExecution jobExecution : (jobName == null ? this.jobExecutionDao.getJobExecutions(pageIndex,
-                pageSize) : this.jobExecutionDao.getJobExecutions(jobName, pageIndex, pageSize))) {
-                resources.add(JobUtils.toJobExecutionResource(jobExecution));
-            }
-            return new PageImpl<JobExecutionResource>(resources, new PageRequest(pageIndex, pageSize),
-                    this.jobExecutionDao.countJobExecutions());
-        }
-        
-    }
+
+  }
 }

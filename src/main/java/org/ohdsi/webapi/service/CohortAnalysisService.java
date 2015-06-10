@@ -30,6 +30,7 @@ import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.model.results.Analysis;
 import org.ohdsi.webapi.service.CohortDefinitionService.CohortDefinitionDTO;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -103,9 +104,7 @@ public class CohortAnalysisService extends AbstractDaoService {
     public List<Analysis> getCohortAnalyses() {
         
         String sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/getCohortAnalyses.sql");
-        sql = SqlRender.renderSql(sql, new String[] { "ohdsi_database_schema" }, new String[] { this.getOhdsiSchema() });
-        sql = SqlTranslate.translateSql(sql, getSourceDialect(), getDialect(), SessionUtils.sessionId(), getOhdsiSchema());
-        
+        sql = SqlTranslate.translateSql(sql, getSourceDialect(), getDialect());
         return getJdbcTemplate().query(sql, this.analysisMapper);
     }
     
@@ -120,11 +119,15 @@ public class CohortAnalysisService extends AbstractDaoService {
     public List<CohortAnalysis> getCohortAnalysesForCohortDefinition(@PathParam("id") final int id) {
         
         String sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/getCohortAnalysesForCohort.sql");
+        
+        // temporarily disable until i understand this better, do we really need the analysis table on the result schema?
+        /*
         sql = SqlRender.renderSql(
             sql,
             new String[] { "ohdsi_database_schema", "cohortDefinitionId" },
             new String[] { this.getOhdsiSchema(), String.valueOf(id) });
         sql = SqlTranslate.translateSql(sql, getSourceDialect(), getDialect(), SessionUtils.sessionId(), getOhdsiSchema());
+        */
         
         return getJdbcTemplate().query(sql, this.cohortAnalysisMapper);
     }
@@ -183,23 +186,15 @@ public class CohortAnalysisService extends AbstractDaoService {
     @Produces(MediaType.TEXT_PLAIN)
     @Consumes(MediaType.APPLICATION_JSON)
     public String getRunCohortAnalysisSql(CohortAnalysisTask task) {
-    	return getCohortAnalysisSql(task, getCohortAnalysisUtils());
+    	return getCohortAnalysisSql(task);
     }
-    
-    public CohortAnalysisUtilities getCohortAnalysisUtils() {
-    	CohortAnalysisUtilities utils = new CohortAnalysisUtilities();
-    	utils.setCdmSchema(this.getCdmSchema());
-    	utils.setCdmVersion(this.getCdmVersion());
-    	utils.setDialect(this.getDialect());
-    	utils.setOhdsiSchema(this.getOhdsiSchema());
-    	utils.setSourceDialect(this.getSourceDialect());
-    	utils.setSourceName(this.getSourceName());
-    	return utils;
-    }
-    
-    public static String getCohortAnalysisSql(CohortAnalysisTask task, CohortAnalysisUtilities utils) {
+       
+    public String getCohortAnalysisSql(CohortAnalysisTask task) {
         String sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/runHeraclesAnalyses.sql");
-        
+        Source source = getSourceRepository().findBySourceKey(task.getSourceKey());
+        String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+        String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+                
         String cohortDefinitionIds = (task.getCohortDefinitionIds() == null ? "" : Joiner.on(",").join(
             task.getCohortDefinitionIds()));
         String analysisIds = (task.getAnalysisIds() == null ? "" : Joiner.on(",").join(task.getAnalysisIds()));
@@ -217,13 +212,13 @@ public class CohortAnalysisService extends AbstractDaoService {
                 "smallcellcount", "runHERACLESHeel", "CDM_version", "cohort_definition_id", "list_of_analysis_ids",
                 "condition_concept_ids", "drug_concept_ids", "procedure_concept_ids", "observation_concept_ids",
                 "measurement_concept_ids", "cohort_period_only" };
-        String[] values = new String[] { utils.getCdmSchema(), utils.getOhdsiSchema(), utils.getSourceName(), 
+        String[] values = new String[] { cdmTableQualifier, resultsTableQualifier, this.getSourceName(), 
         		String.valueOf(task.getSmallCellCount()),
-                String.valueOf(task.runHeraclesHeel()).toUpperCase(), utils.getCdmVersion(), cohortDefinitionIds,
+                String.valueOf(task.runHeraclesHeel()).toUpperCase(), this.getCdmVersion(), cohortDefinitionIds,
                 analysisIds, conditionIds, drugIds, procedureIds, observationIds, measurementIds,
                 String.valueOf(task.isCohortPeriodOnly()) };
         sql = SqlRender.renderSql(sql, params, values);
-        sql = SqlTranslate.translateSql(sql, utils.getSourceDialect(), utils.getDialect(), SessionUtils.sessionId(), utils.getOhdsiSchema());
+        sql = SqlTranslate.translateSql(sql, this.getSourceDialect(), this.getDialect(), SessionUtils.sessionId(), resultsTableQualifier);
         
         return sql;
     }
@@ -301,10 +296,7 @@ public class CohortAnalysisService extends AbstractDaoService {
         final JobParameters jobParameters = builder.toJobParameters();
         log.info(String.format("Beginning run for cohort analysis task: \n %s", taskString));
         
-        CohortAnalysisUtilities analysisUtilities = this.getCohortAnalysisUtils();
-        analysisUtilities.setDialect(source.getSourceDialect());
-        
-        CohortAnalysisTasklet tasklet = new CohortAnalysisTasklet(task, analysisUtilities, getSourceJdbcTemplate(source), getTransactionTemplate());
+        CohortAnalysisTasklet tasklet = new CohortAnalysisTasklet(task, getSourceJdbcTemplate(source), getTransactionTemplate());
         
         return this.jobTemplate.launchTasklet("cohortAnalysisJob", "cohortAnalysisStep", tasklet, jobParameters);
     }

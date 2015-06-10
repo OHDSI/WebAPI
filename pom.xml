@@ -224,6 +224,11 @@
   <dependencies>
     <!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-actuator</artifactId> 
     <version>${spring.boot.version}</version> </dependency> -->
+        <dependency>
+          <groupId>postgresql</groupId>
+          <artifactId>postgresql</artifactId>
+          <version>9.1-901-1.jdbc4</version>
+        </dependency>    
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter</artifactId>

@@ -21,6 +21,7 @@ import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.vocabulary.Concept;
 import org.ohdsi.webapi.vocabulary.ConceptRelationship;
 import org.ohdsi.webapi.vocabulary.ConceptSearch;
@@ -64,10 +65,12 @@ public class VocabularyService extends AbstractDaoService {
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<Concept> executeLookup(@PathParam("sourceKey") String sourceKey, String[] identifiers) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);        
+    
     String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/lookup.sql");
     sql_statement = SqlRender.renderSql(sql_statement, new String[]{"identifiers", "CDM_schema"}, new String[]{
-      JoinArray(identifiers), getCdmSchema()});
-    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect());
+      JoinArray(identifiers), tableQualifier});
+    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
 
     return getSourceJdbcTemplate(source).query(sql_statement, this.rowMapper);
   }
@@ -113,10 +116,11 @@ public class VocabularyService extends AbstractDaoService {
       }
     }
 
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary); 
     String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/search.sql");
     sql_statement = SqlRender.renderSql(sql_statement, new String[]{"query", "CDM_schema", "filters"}, new String[]{
-      search.query.toLowerCase(), getCdmSchema(), filters});
-    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect());
+      search.query.toLowerCase(), tableQualifier, filters});
+    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
    
     return getSourceJdbcTemplate(source).query(sql_statement, this.rowMapper);
   }
@@ -134,10 +138,12 @@ public class VocabularyService extends AbstractDaoService {
     query = query.replace("[", "[[]");
     
     Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary); 
+
     String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/search.sql");
     sql_statement = SqlRender.renderSql(sql_statement, new String[]{"query", "CDM_schema", "filters"}, new String[]{
-      query, getCdmSchema(), ""});
-    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect());
+      query, tableQualifier, ""});
+    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
 
     return getSourceJdbcTemplate(source).query(sql_statement, this.rowMapper);
   }
@@ -151,11 +157,12 @@ public class VocabularyService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   public Concept getConcept(@PathParam("sourceKey") final String sourceKey, @PathParam("id") final long id) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary); 
     
     String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/getConcept.sql");
     sql_statement = SqlRender.renderSql(sql_statement, new String[]{"id", "CDM_schema"},
-            new String[]{String.valueOf(id), getCdmSchema()});
-    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect());
+            new String[]{String.valueOf(id), tableQualifier});
+    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
     Concept concept = null;
     try {
       concept = getSourceJdbcTemplate(source).queryForObject(sql_statement, this.rowMapper);
@@ -176,11 +183,12 @@ public class VocabularyService extends AbstractDaoService {
   public Collection<RelatedConcept> getRelatedConcepts(@PathParam("sourceKey") String sourceKey, @PathParam("id") final Long id) {
     final Map<Long, RelatedConcept> concepts = new HashMap<>();
     Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary); 
     
     String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/getRelatedConcepts.sql");
     sql_statement = SqlRender.renderSql(sql_statement, new String[]{"id", "CDM_schema"},
-            new String[]{String.valueOf(id), getCdmSchema()});
-    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect());
+            new String[]{String.valueOf(id),tableQualifier});
+    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
 
     getSourceJdbcTemplate(source).query(sql_statement, new RowMapper<Void>() {
 
@@ -200,14 +208,16 @@ public class VocabularyService extends AbstractDaoService {
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<RelatedConcept> getCommonAncestors(@PathParam("sourceKey") String sourceKey, Object[] identifiers) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);    
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary); 
+    
     final Map<Long, RelatedConcept> concepts = new HashMap<>();
     String conceptIdentifierList = org.springframework.util.StringUtils.arrayToCommaDelimitedString(identifiers);
     String conceptIdentifierListLength = Integer.toString(identifiers.length);
 
     String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/getCommonAncestors.sql");
     sql_statement = SqlRender.renderSql(sql_statement, new String[]{"conceptIdentifierList", "conceptIdentifierListLength", "CDM_schema"},
-            new String[]{conceptIdentifierList, conceptIdentifierListLength, getCdmSchema()});
-    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect());
+            new String[]{conceptIdentifierList, conceptIdentifierListLength, tableQualifier});
+    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
 
     getSourceJdbcTemplate(source).query(sql_statement, new RowMapper<Void>() {
 
@@ -229,12 +239,13 @@ public class VocabularyService extends AbstractDaoService {
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<Long> resolveConceptSetExpression(@PathParam("sourceKey") String sourceKey, ConceptSetExpression conceptSetExpression) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary); 
     
     ConceptSetExpressionQueryBuilder builder = new ConceptSetExpressionQueryBuilder();
     String query = builder.buildExpressionQuery(conceptSetExpression);
 
-    query = SqlRender.renderSql(query, new String[]{"cdm_database_schema"}, new String[]{getCdmSchema()});
-    query = SqlTranslate.translateSql(query, "sql server", getDialect());
+    query = SqlRender.renderSql(query, new String[]{"cdm_database_schema"}, new String[]{tableQualifier});
+    query = SqlTranslate.translateSql(query, "sql server", source.getSourceDialect());
 
     identifiers = new ArrayList<>();
     getSourceJdbcTemplate(source).query(query, new RowCallbackHandler() {
@@ -253,11 +264,12 @@ public class VocabularyService extends AbstractDaoService {
   public Collection<RelatedConcept> getDescendantConcepts(@PathParam("sourceKey") String sourceKey, @PathParam("id") final Long id) {
     final Map<Long, RelatedConcept> concepts = new HashMap<>();
     Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary); 
     
     String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/getDescendantConcepts.sql");
     sql_statement = SqlRender.renderSql(sql_statement, new String[]{"id", "CDM_schema"},
-            new String[]{String.valueOf(id), getCdmSchema()});
-    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect());
+            new String[]{String.valueOf(id), tableQualifier});
+    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
 
     getSourceJdbcTemplate(source).query(sql_statement, new RowMapper<Void>() {
       @Override
@@ -274,10 +286,12 @@ public class VocabularyService extends AbstractDaoService {
   @Path("domains")
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<Domain> getDomains(@PathParam("sourceKey") String sourceKey) {
-    String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/getDomains.sql");
-    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"CDM_schema"}, new String[]{getCdmSchema()});
-    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect());
     Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary); 
+    
+    String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/getDomains.sql");
+    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"CDM_schema"}, new String[]{tableQualifier});
+    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
     
     return getSourceJdbcTemplate(source).query(sql_statement, new RowMapper<Domain>() {
 
@@ -296,10 +310,12 @@ public class VocabularyService extends AbstractDaoService {
   @Path("vocabularies")
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<Vocabulary> getVocabularies(@PathParam("sourceKey") String sourceKey) {
-    Source source = getSourceRepository().findBySourceKey(sourceKey);    
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary); 
+    
     String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/getVocabularies.sql");
-    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"CDM_schema"}, new String[]{getCdmSchema()});
-    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect());
+    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"CDM_schema"}, new String[]{tableQualifier});
+    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
 
     return getSourceJdbcTemplate(source).query(sql_statement, new RowMapper<Vocabulary>() {
 
@@ -350,12 +366,13 @@ public class VocabularyService extends AbstractDaoService {
   public VocabularyInfo getInfo(@PathParam("sourceKey") String sourceKey) {
     final VocabularyInfo info = new VocabularyInfo();
     Source source = getSourceRepository().findBySourceKey(sourceKey);    
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);     
 
     String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/getInfo.sql");
-    info.dialect = getDialect();
-
-    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"CDM_schema"}, new String[]{getCdmSchema()});
-    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect());
+    info.dialect = source.getSourceDialect();
+    
+    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"CDM_schema"}, new String[]{tableQualifier});
+    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
 
     return getSourceJdbcTemplate(source).queryForObject(sql_statement, new RowMapper<VocabularyInfo>() {
       @Override

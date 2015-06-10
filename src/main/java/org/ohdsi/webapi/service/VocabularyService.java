@@ -80,6 +80,9 @@ public class VocabularyService extends AbstractDaoService {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     // escape single quote for queries
     search.query = search.query.replace("'", "''");
+    
+    // escape for bracket
+    search.query = search.query.replace("[", "[[]");
 
     String filters = "";
     if (search.domainId != null) {
@@ -128,6 +131,8 @@ public class VocabularyService extends AbstractDaoService {
   public Collection<Concept> executeSearch(@PathParam("sourceKey") String sourceKey, @PathParam("query") String query) {
     // escape single quote for queries
     query = query.replace("'", "''");
+    query = query.replace("[", "[[]");
+    
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/search.sql");
     sql_statement = SqlRender.renderSql(sql_statement, new String[]{"query", "CDM_schema", "filters"}, new String[]{

@@ -15,7 +15,7 @@
  */
 package org.ohdsi.webapi.report;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -23,13 +23,12 @@ import java.util.ArrayList;
  */
 public class PackedConceptNode {
   public PackedConceptNode() {
-    children = new ArrayList<>();
   }
   
   public String conceptName;
   public long conceptId;
   public long size;
-  public ArrayList<PackedConceptNode> children;
+  public List<PackedConceptNode> children;
   public boolean hasChildren() {
     return children.size() > 0;
   }

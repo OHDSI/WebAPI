@@ -16,6 +16,7 @@ import java.util.Set;
 import javax.servlet.ServletContext;
 import javax.transaction.Transactional;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -280,7 +281,7 @@ public class CohortDefinitionService extends AbstractDaoService {
       currentDefinition.getGenerationInfoList().add(info);
     }
     info.setStatus(GenerationStatus.PENDING)
-            .setStartTime(Calendar.getInstance().getTime());
+      .setStartTime(Calendar.getInstance().getTime());
 
     this.cohortDefinitionRepository.save(currentDefinition);
     this.getTransactionTemplate().getTransactionManager().commit(initStatus);
@@ -301,13 +302,13 @@ public class CohortDefinitionService extends AbstractDaoService {
     GenerateCohortTasklet generateTasklet = new GenerateCohortTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), cohortDefinitionRepository);
 
     Step generateCohortStep = stepBuilders.get("cohortDefinition.generateCohort")
-            .tasklet(generateTasklet)
-            .exceptionHandler(new TerminateJobStepExceptionHandler())
-            .build();
+      .tasklet(generateTasklet)
+      .exceptionHandler(new TerminateJobStepExceptionHandler())
+    .build();
 
     Job generateCohortJob = jobBuilders.get("generateCohort")
-            .start(generateCohortStep)
-            .build();
+      .start(generateCohortStep)
+      .build();
 
     JobExecutionResource jobExec = this.jobTemplate.launch(generateCohortJob, jobParameters);
     return jobExec;
@@ -335,4 +336,35 @@ public class CohortDefinitionService extends AbstractDaoService {
     return result;
   }
 
+  /**
+   * Copies the specified cohort definition
+   * 
+   * @param id - the Cohort Definition ID to copy
+   * @return the copied cohort definition as a CohortDefinitionDTO
+   */
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/{id}/copy")
+  @Transactional
+  public CohortDefinitionDTO copy(@PathParam("id") final int id) {
+    CohortDefinitionDTO sourceDef = getCohortDefinition(id);
+    sourceDef.id = null; // clear the ID
+    sourceDef.name = "COPY OF: " + sourceDef.name;
+
+    CohortDefinitionDTO copyDef = createCohortDefinition(sourceDef);
+
+    return copyDef;
+  }      
+
+  /**
+   * Deletes the specified cohort definition
+   * 
+   * @param id - the Cohort Definition ID to copy
+   */
+  @DELETE
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/{id}")
+  public void delete(@PathParam("id") final int id) {
+   cohortDefinitionRepository.delete(id);
+  }      
 }

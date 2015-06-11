@@ -153,6 +153,7 @@ public class FeasibilityService extends AbstractDaoService {
       FeasibilityReport.InclusionRuleStatistic statistic = new FeasibilityReport.InclusionRuleStatistic();
       statistic.id = rs.getInt("rule_sequence");
       statistic.name = rs.getString("name");
+      statistic.countSatisfying = rs.getLong("person_count");
       long personTotal = rs.getLong("person_total");
 
       long gainCount = rs.getLong("gain_count");

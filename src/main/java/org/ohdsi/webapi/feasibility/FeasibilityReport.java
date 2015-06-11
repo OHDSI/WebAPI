@@ -35,6 +35,7 @@ public class FeasibilityReport {
       public String name;
       public String percentExcluded;
       public String percentSatisfying;
+      public long countSatisfying;
   }
   
   public Summary summary;

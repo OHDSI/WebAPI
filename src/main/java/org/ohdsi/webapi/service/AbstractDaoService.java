@@ -132,10 +132,10 @@ public abstract class AbstractDaoService {
     this.cdmVersion = cdmVersion;
   }
 
-  protected List<Map<String, String>> genericResultSetLoader(String sql) {
+  protected List<Map<String, String>> genericResultSetLoader(String sql, Source source) {
     List<Map<String, String>> results = null;
     try {
-      results = getJdbcTemplate().query(sql, new RowMapper<Map<String, String>>() {
+      results = getSourceJdbcTemplate(source).query(sql, new RowMapper<Map<String, String>>() {
 
         @Override
         public Map<String, String> mapRow(ResultSet rs, int rowNum)

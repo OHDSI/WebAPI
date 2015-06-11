@@ -102,12 +102,12 @@ public class CohortResultsService extends AbstractDaoService {
     List<Map<String, String>> results = null;
 
     String sql = null;
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String vocabularyTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
+    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 
     try {
-      Source source = getSourceRepository().findBySourceKey(sourceKey);      
-      String vocabularyTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
-      String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-      
+
       sql = ResourceHelper.GetResourceAsString(BASE_SQL_PATH + "/" + analysisGroup + "/" + analysisName + ".sql");
 
       sql = SqlRender.renderSql(sql, new String[]{"cdm_database_schema",
@@ -125,7 +125,7 @@ public class CohortResultsService extends AbstractDaoService {
     }
 
     if (sql != null) {
-      results = genericResultSetLoader(sql);
+      results = genericResultSetLoader(sql, source);
     }
 
     return results;
@@ -205,6 +205,19 @@ public class CohortResultsService extends AbstractDaoService {
     }
 
     return res;
+  }
+
+  @GET
+  @Path("/{id}/distinctPersonCount/")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Integer getRawDistinctPersonCount(@PathParam("sourceKey") String sourceKey, @PathParam("id") String id) {
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    String sql = ResourceHelper.GetResourceAsString(BASE_SQL_PATH + "/raw/getTotalDistinctPeople.sql");
+    sql = SqlRender.renderSql(sql, new String[]{"tableQualifier", "id"}, new String[]{tableQualifier, id});
+    sql = SqlTranslate.translateSql(sql, "sql server", source.getSourceDialect());
+    Integer result = getSourceJdbcTemplate(source).queryForObject(sql, Integer.class);
+    return result;
   }
 
   /**
@@ -1336,10 +1349,10 @@ public class CohortResultsService extends AbstractDaoService {
           final String minCovariatePersonCountParam, final String minIntervalPersonCountParam,
           Source source) {
     String sql = null;
-    
+
     String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
     String vocabularyTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
-    
+
     try {
       String[] cols;
       String[] colValues;

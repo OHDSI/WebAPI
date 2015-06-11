@@ -3,7 +3,6 @@ package org.ohdsi.webapi.service;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -21,9 +20,7 @@ import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysis;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTask;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTasklet;
-import org.ohdsi.webapi.cohortanalysis.CohortAnalysisUtilities;
 import org.ohdsi.webapi.cohortanalysis.CohortSummary;
-import org.ohdsi.webapi.cohortresults.CohortDashboard;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
@@ -102,7 +99,6 @@ public class CohortAnalysisService extends AbstractDaoService {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public List<Analysis> getCohortAnalyses() {
-        
         String sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/getCohortAnalyses.sql");
         sql = SqlTranslate.translateSql(sql, getSourceDialect(), getDialect());
         return getJdbcTemplate().query(sql, this.analysisMapper);
@@ -117,18 +113,16 @@ public class CohortAnalysisService extends AbstractDaoService {
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public List<CohortAnalysis> getCohortAnalysesForCohortDefinition(@PathParam("id") final int id) {
-        
+
         String sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/getCohortAnalysesForCohort.sql");
         
-        // temporarily disable until i understand this better, do we really need the analysis table on the result schema?
-        /*
+        /*        
         sql = SqlRender.renderSql(
             sql,
             new String[] { "ohdsi_database_schema", "cohortDefinitionId" },
             new String[] { this.getOhdsiSchema(), String.valueOf(id) });
         sql = SqlTranslate.translateSql(sql, getSourceDialect(), getDialect(), SessionUtils.sessionId(), getOhdsiSchema());
         */
-        
         return getJdbcTemplate().query(sql, this.cohortAnalysisMapper);
     }
     
@@ -149,7 +143,11 @@ public class CohortAnalysisService extends AbstractDaoService {
         
         CohortDefinitionDTO cdd = this.definitionService.getCohortDefinition(id);
         summary.setCohortDefinition(this.definitionService.getCohortDefinition(id));
-        summary.setAnalyses(this.getCohortAnalysesForCohortDefinition(id));
+        
+        // so for now, we want to assume that we are living in a multihomed world so we can't assume a specific
+        // source when loading a particular cohort definition.
+        
+        //summary.setAnalyses(this.getCohortAnalysesForCohortDefinition(id));
         
         /*
         // total patients

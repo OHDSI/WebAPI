@@ -147,7 +147,8 @@ public class FeasibilityService extends AbstractDaoService {
 
   public static class FeasibilityStudyDTO extends FeasibilityStudyListItem {
 
-    public CohortDefinitionService.CohortDefinitionDTO indexRule;
+    public String indexRule;
+    public String indexDescription;
     public List<InclusionRule> inclusionRules;
   }
 
@@ -197,12 +198,15 @@ public class FeasibilityService extends AbstractDaoService {
   };
 
   private String getMatchingCriteriaExpression(FeasibilityStudy p) {
+    
+    if (p.getInclusionRules().size() == 0)
+      throw new RuntimeException("Study must have at least 1 inclusion rule");
+
     try {
       // all resultRule repository objects are initalized; create 'all criteria' cohort definition from index rule + inclusion rules
       ObjectMapper mapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
       CohortExpression indexRuleExpression = mapper.readValue(p.getIndexRule().getDetails().getExpression(), CohortExpression.class);
-      if (p.getInclusionRules().size() > 0) // if we have inclusion rules, add then to the index rule expression, else the matching expression == index rule expression
-      {
+      
         if (indexRuleExpression.additionalCriteria == null) {
           CriteriaGroup additionalCriteria = new CriteriaGroup();
           additionalCriteria.type = "ALL";
@@ -230,7 +234,7 @@ public class FeasibilityService extends AbstractDaoService {
         }
         // overwrite indexRule additional criteria groups with the new list of groups with inclusion rules
         indexRuleExpression.additionalCriteria.groups = additionalCriteriaGroups.toArray(new CriteriaGroup[0]);
-      }
+        
       String allCriteriaExpression = mapper.writeValueAsString(indexRuleExpression); // index rule expression now contains all inclusion criteria as additional criteria
       return allCriteriaExpression;
     } catch (Exception e) {
@@ -330,7 +334,8 @@ public class FeasibilityService extends AbstractDaoService {
     pDTO.createdDate = study.getCreatedDate();
     pDTO.modifiedBy = study.getModifiedBy();
     pDTO.modifiedDate = study.getModifiedDate();
-    pDTO.indexRule = this.definitionService.cohortDefinitionToDTO(study.getIndexRule());
+    pDTO.indexRule = study.getIndexRule().getDetails().getExpression();
+    pDTO.indexDescription = study.getIndexRule().getDescription();
     pDTO.inclusionRules = study.getInclusionRules();
 
     return pDTO;
@@ -385,27 +390,38 @@ public class FeasibilityService extends AbstractDaoService {
             .setInclusionRules(new ArrayList<InclusionRule>(study.inclusionRules));
 
     // create index cohort
-    study.indexRule.name = "Index Population: " + newStudy.getName();
-    study.indexRule = this.definitionService.createCohortDefinition(study.indexRule);
-    CohortDefinition indexRule = this.cohortDefinitionRepository.findOne(study.indexRule.id);
+    CohortDefinition indexRule = new CohortDefinition()
+            .setName("Index Population for Study: " + newStudy.getName())
+            .setDescription(study.indexDescription)
+            .setCreatedBy("system")
+            .setCreatedDate(currentTime)
+            .setExpressionType(ExpressionType.SIMPLE_EXPRESSION);
+    
+    CohortDefinitionDetails indexDetails = new CohortDefinitionDetails();
+    indexDetails.setCohortDefinition(indexRule)
+            .setExpression(study.indexRule);
+    indexRule.setDetails(indexDetails);
     newStudy.setIndexRule(indexRule);
 
-    // build matching cohort from inclusion rules
+    // build matching cohort from inclusion rules if inclusion rules exist
+    if (newStudy.getInclusionRules().size() > 0)
+    {
     CohortDefinition resultDef = new CohortDefinition()
+                .setName("Matching Population for Study: " + newStudy.getName())
+                .setDescription(newStudy.getDescription())
               .setCreatedBy("system")
               .setCreatedDate(currentTime)
-              .setExpressionType(ExpressionType.SIMPLE_EXPRESSION)
-              .setName("Matching Population: " + newStudy.getName())
-              .setDescription(newStudy.getDescription());
-    resultDef = this.cohortDefinitionRepository.save(resultDef);
+                .setExpressionType(ExpressionType.SIMPLE_EXPRESSION);
 
     CohortDefinitionDetails resultDetails = new CohortDefinitionDetails();
     resultDetails.setCohortDefinition(resultDef)
             .setExpression(getMatchingCriteriaExpression(newStudy));
     resultDef.setDetails(resultDetails);
     newStudy.setResultRule(resultDef);
+    }
     
     FeasibilityStudy createdStudy = this.feasibilityStudyRepository.save(newStudy);
+    
     return feasibilityStudyToDTO(createdStudy);
   }
 
@@ -436,34 +452,40 @@ public class FeasibilityService extends AbstractDaoService {
     updatedStudy.getIndexRule()
             .setModifiedBy("system")
             .setModifiedDate(currentTime)
-            .setName("Index Population: " + updatedStudy.getName())
-            .setDescription(study.indexRule.description)
-            .setExpressionType(study.indexRule.expressionType)
-            .getDetails().setExpression(study.indexRule.expression);
+            .setName("Index Population for Study: " + updatedStudy.getName())
+            .setDescription(study.indexDescription)
+            .getDetails().setExpression(study.indexRule);
     
-    // for leagacy studies, the result cohort may not have been created
     CohortDefinition resultRule = updatedStudy.getResultRule();
+    if (updatedStudy.getInclusionRules().size() > 0)
+    {
     if (resultRule == null)
     {
       resultRule = new CohortDefinition();
-      resultRule.setName("") // can't be null, but will update it later
+        resultRule.setName("Matching Population for Study: " + updatedStudy.getName())
               .setCreatedBy("system")
-              .setCreatedDate(currentTime);
-      this.cohortDefinitionRepository.save(resultRule);
+                .setCreatedDate(currentTime)
+                .setExpressionType(ExpressionType.SIMPLE_EXPRESSION);
+
       CohortDefinitionDetails resultDetails = new CohortDefinitionDetails();
-      resultDetails.setCohortDefinition(resultRule)
-              .setExpression(""); // can't save with a null expression, but will update it later.
-        
+        resultDetails.setCohortDefinition(resultRule);
       resultRule.setDetails(resultDetails);
-      this.cohortDefinitionRepository.save(resultRule);
     }
-    resultRule.setName("Matching Population: " + updatedStudy.getName())
+
+      resultRule.setModifiedBy("system")
+              .setModifiedDate(currentTime)
+              .setName("Matching Population for Study: " + updatedStudy.getName())
             .setDescription(updatedStudy.getDescription())
-            .setExpressionType(study.indexRule.expressionType)
             .setModifiedBy("system")
             .setModifiedDate(currentTime)
             .getDetails().setExpression(getMatchingCriteriaExpression(updatedStudy));
-
+    }
+    else {
+      updatedStudy.setResultRule(null);
+      if (resultRule != null) {
+        cohortDefinitionRepository.delete(resultRule);
+      }
+    }
     this.feasibilityStudyRepository.save(updatedStudy);
 
     return getStudy(id);

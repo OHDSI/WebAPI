@@ -299,6 +299,18 @@ public class CohortResultsService extends AbstractDaoService {
 
     return res;
   }
+  
+  @GET
+  @Path("/{id}/analyses")
+  @Produces(MediaType.APPLICATION_JSON)
+  public List<Integer> getCompletedAnalyses(@PathParam("sourceKey") String sourceKey, @PathParam("id") String id) {
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    String sql = ResourceHelper.GetResourceAsString(BASE_SQL_PATH + "/raw/getCompletedAnalyses.sql");
+    sql = SqlRender.renderSql(sql, new String[]{"tableQualifier", "id"}, new String[]{tableQualifier, id});
+    sql = SqlTranslate.translateSql(sql, "sql server", source.getSourceDialect());
+    return getSourceJdbcTemplate(source).queryForList(sql, Integer.class);
+  }
 
   /**
    * Queries for cohort analysis condition era drilldown results for the given

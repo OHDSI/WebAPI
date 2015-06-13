@@ -3,13 +3,16 @@ package org.ohdsi.webapi.cohortanalysis;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.ohdsi.webapi.source.Source;
 
 public class CohortAnalysisTask {
 	
 	private String jobName;
+   
+  private Source source;
   
   private String sourceKey;
- 
+  
 	private int smallCellCount;
 	
 	private boolean runHeraclesHeel;
@@ -36,6 +39,14 @@ public class CohortAnalysisTask {
 
   public void setSourceKey(String sourceKey) {
     this.sourceKey = sourceKey;
+  }
+    
+  public Source getSource() {
+    return source;
+  }
+
+  public void setSource(Source source) {
+    this.source = source;
   }
   
 	/**

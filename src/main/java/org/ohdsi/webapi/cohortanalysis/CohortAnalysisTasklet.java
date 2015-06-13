@@ -4,6 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.webapi.service.CohortAnalysisService;
+import org.ohdsi.webapi.source.Source;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
@@ -22,6 +23,7 @@ public class CohortAnalysisTasklet implements Tasklet {
        
     private final JdbcTemplate jdbcTemplate;
     
+    
     private final TransactionTemplate transactionTemplate;
     
     public CohortAnalysisTasklet(CohortAnalysisTask task, final JdbcTemplate jdbcTemplate,
@@ -39,8 +41,7 @@ public class CohortAnalysisTasklet implements Tasklet {
                 
                 @Override
                 public int[] doInTransaction(final TransactionStatus status) {
-                  CohortAnalysisService cas = new CohortAnalysisService();
-                	String cohortSql = cas.getCohortAnalysisSql(task);
+                	String cohortSql = CohortAnalysisService.getCohortAnalysisSql(task);
                 	
                 	String[] stmts = null;
                 	if (cohortSql != null) {

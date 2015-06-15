@@ -129,7 +129,7 @@ public class CohortDefinitionService extends AbstractDaoService {
     result.createdDate = def.getCreatedDate();
     result.description = def.getDescription();
     result.expressionType = def.getExpressionType();
-    result.expression = def.getDetails().getExpression();
+    result.expression = def.getDetails() != null ? def.getDetails().getExpression() : null;
     result.modifiedBy = def.getModifiedBy();
     result.modifiedDate = def.getModifiedDate();
     result.name = def.getName();

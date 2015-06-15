@@ -42,7 +42,7 @@ import org.springframework.transaction.support.TransactionTemplate;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = WebApi.class)
-@TransactionConfiguration(defaultRollback = false, transactionManager = "transactionManager")
+@TransactionConfiguration(defaultRollback = true, transactionManager = "transactionManager")
 public class StudyInfoTest {
 
   @Autowired

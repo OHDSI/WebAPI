@@ -120,16 +120,23 @@ public class PerformFeasibilityTasklet implements Tasklet {
       options.cdmSchema = jobParams.get("cdm_database_schema").toString();
       options.ohdsiSchema = jobParams.get("target_database_schema").toString();
       options.cohortTable = jobParams.get("target_database_schema").toString() + "." + jobParams.get("target_table").toString();
-      prepareTempTables(study, jobParams.get("target_dialect").toString(), sessionId);
-      String expressionSql = studyQueryBuilder.buildSimulateQuery(study, options);
-      String translatedSql = SqlTranslate.translateSql(expressionSql, "sql server", jobParams.get("target_dialect").toString(), sessionId, null);
-      String[] sqlStatements = SqlSplit.splitSql(translatedSql);
-      result = PerformFeasibilityTasklet.this.jdbcTemplate.batchUpdate(sqlStatements);
-      cleanupTempTables(jobParams.get("target_dialect").toString(), sessionId);
+      if (study.getResultRule() != null) {
+        prepareTempTables(study, jobParams.get("target_dialect").toString(), sessionId);
+        String expressionSql = studyQueryBuilder.buildSimulateQuery(study, options);
+        String translatedSql = SqlTranslate.translateSql(expressionSql, "sql server", jobParams.get("target_dialect").toString(), sessionId, null);
+        String[] sqlStatements = SqlSplit.splitSql(translatedSql);
+        result = PerformFeasibilityTasklet.this.jdbcTemplate.batchUpdate(sqlStatements);
+        cleanupTempTables(jobParams.get("target_dialect").toString(), sessionId);
+      }
+      else {
+        String expressionSql = studyQueryBuilder.buildNullQuery(study, options);
+        String translatedSql = SqlTranslate.translateSql(expressionSql, "sql server", jobParams.get("target_dialect").toString(), sessionId, null);
+        String[] sqlStatements = SqlSplit.splitSql(translatedSql);
+        result = PerformFeasibilityTasklet.this.jdbcTemplate.batchUpdate(sqlStatements);
+      }
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-
     return result;
   }
 
@@ -148,12 +155,14 @@ public class PerformFeasibilityTasklet implements Tasklet {
     FeasibilityStudy study = this.feasibilityStudyRepository.findOne(studyId);
     
     CohortDefinition resultDef = study.getResultRule();
-    CohortGenerationInfo resultInfo = findCohortGenerationInfoBySourceId(resultDef.getGenerationInfoList(), sourceId);
-    resultInfo.setIsValid(false)
-            .setStatus(GenerationStatus.RUNNING)
-            .setStartTime(startTime)
-            .setExecutionDuration(null);
-    
+    if (resultDef != null)
+    {
+      CohortGenerationInfo resultInfo = findCohortGenerationInfoBySourceId(resultDef.getGenerationInfoList(), sourceId);
+      resultInfo.setIsValid(false)
+              .setStatus(GenerationStatus.RUNNING)
+              .setStartTime(startTime)
+              .setExecutionDuration(null);
+    }
     StudyGenerationInfo studyInfo = findStudyGenerationInfoBySourceId(study.getStudyGenerationInfoList(), sourceId);
     studyInfo.setIsValid(false);
     studyInfo.setStartTime(startTime);
@@ -182,10 +191,14 @@ public class PerformFeasibilityTasklet implements Tasklet {
       Date endTime = Calendar.getInstance().getTime();
       study = this.feasibilityStudyRepository.findOne(studyId);
       resultDef = study.getResultRule();
-      resultInfo = findCohortGenerationInfoBySourceId(resultDef.getGenerationInfoList(), sourceId);
-      resultInfo.setIsValid(isValid);
-      resultInfo.setExecutionDuration(new Integer((int)(endTime.getTime() - startTime.getTime())));
-      resultInfo.setStatus(GenerationStatus.COMPLETE);
+      if (resultDef != null)
+      {
+        CohortGenerationInfo resultInfo = findCohortGenerationInfoBySourceId(resultDef.getGenerationInfoList(), sourceId);
+        resultInfo = findCohortGenerationInfoBySourceId(resultDef.getGenerationInfoList(), sourceId);
+        resultInfo.setIsValid(isValid);
+        resultInfo.setExecutionDuration(new Integer((int)(endTime.getTime() - startTime.getTime())));
+        resultInfo.setStatus(GenerationStatus.COMPLETE);
+      }
       
       studyInfo = findStudyGenerationInfoBySourceId(study.getStudyGenerationInfoList(), sourceId);
       studyInfo.setIsValid(isValid);

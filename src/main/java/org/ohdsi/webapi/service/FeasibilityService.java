@@ -110,24 +110,24 @@ public class FeasibilityService extends AbstractDaoService {
   @Context
   ServletContext context;
 
-  private StudyGenerationInfo findStudyGenerationInfoBySourceId(Collection<StudyGenerationInfo> infoList, Integer sourceId)
-  {
+  private StudyGenerationInfo findStudyGenerationInfoBySourceId(Collection<StudyGenerationInfo> infoList, Integer sourceId) {
     for (StudyGenerationInfo info : infoList) {
-      if (info.getId().getSourceId()== sourceId)
+      if (info.getId().getSourceId() == sourceId) {
         return info;
+      }
     }
     return null;
   }
-  
-  private CohortGenerationInfo findCohortGenerationInfoBySourceId(Collection<CohortGenerationInfo> infoList, Integer sourceId)
-  {
+
+  private CohortGenerationInfo findCohortGenerationInfoBySourceId(Collection<CohortGenerationInfo> infoList, Integer sourceId) {
     for (CohortGenerationInfo info : infoList) {
-      if (info.getId().getSourceId() == sourceId)
+      if (info.getId().getSourceId() == sourceId) {
         return info;
+      }
     }
     return null;
   }
-  
+
   public static class FeasibilityStudyListItem {
 
     public Integer id;
@@ -166,9 +166,9 @@ public class FeasibilityService extends AbstractDaoService {
   };
 
   private FeasibilityReport.Summary getSimulationSummary(int id, Source source) {
-    
+
     String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-    
+
     String summaryQuery = String.format("select person_count, match_count from %s.feas_study_index_stats where study_id = %d", resultsTableQualifier, id);
     String translatedSql = SqlTranslate.translateSql(summaryQuery, "sql server", source.getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
     return this.getSourceJdbcTemplate(source).queryForObject(translatedSql, summaryMapper);
@@ -198,43 +198,44 @@ public class FeasibilityService extends AbstractDaoService {
   };
 
   private String getMatchingCriteriaExpression(FeasibilityStudy p) {
-    
-    if (p.getInclusionRules().size() == 0)
+
+    if (p.getInclusionRules().size() == 0) {
       throw new RuntimeException("Study must have at least 1 inclusion rule");
+    }
 
     try {
       // all resultRule repository objects are initalized; create 'all criteria' cohort definition from index rule + inclusion rules
       ObjectMapper mapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
       CohortExpression indexRuleExpression = mapper.readValue(p.getIndexRule().getDetails().getExpression(), CohortExpression.class);
-      
-        if (indexRuleExpression.additionalCriteria == null) {
-          CriteriaGroup additionalCriteria = new CriteriaGroup();
-          additionalCriteria.type = "ALL";
-          indexRuleExpression.additionalCriteria = additionalCriteria;
-        } else {
-          if ("ANY".equalsIgnoreCase(indexRuleExpression.additionalCriteria.type)) {
-            // move this CriteriaGroup inside a new parent CriteriaGroup where the parent CriteriaGroup.type == "ALL"
-            CriteriaGroup parentGroup = new CriteriaGroup();
-            parentGroup.type = "ALL";
-            parentGroup.groups = new CriteriaGroup[1];
-            parentGroup.groups[0] = indexRuleExpression.additionalCriteria;
-            indexRuleExpression.additionalCriteria = parentGroup;
-          }
-        }
-        // place each inclusion rule (which is a CriteriaGroup) in the indexRuleExpression.additionalCriteria.group array to create the 'allCriteriaExpression'
-        ArrayList<CriteriaGroup> additionalCriteriaGroups = new ArrayList<>();
-        if (indexRuleExpression.additionalCriteria.groups != null) {
-          additionalCriteriaGroups.addAll(Arrays.asList(indexRuleExpression.additionalCriteria.groups));
-        }
 
-        for (InclusionRule inclusionRule : p.getInclusionRules()) {
-          String inclusionRuleJSON = inclusionRule.getExpression();
-          CriteriaGroup inclusionRuleGroup = mapper.readValue(inclusionRuleJSON, CriteriaGroup.class);
-          additionalCriteriaGroups.add(inclusionRuleGroup);
+      if (indexRuleExpression.additionalCriteria == null) {
+        CriteriaGroup additionalCriteria = new CriteriaGroup();
+        additionalCriteria.type = "ALL";
+        indexRuleExpression.additionalCriteria = additionalCriteria;
+      } else {
+        if ("ANY".equalsIgnoreCase(indexRuleExpression.additionalCriteria.type)) {
+          // move this CriteriaGroup inside a new parent CriteriaGroup where the parent CriteriaGroup.type == "ALL"
+          CriteriaGroup parentGroup = new CriteriaGroup();
+          parentGroup.type = "ALL";
+          parentGroup.groups = new CriteriaGroup[1];
+          parentGroup.groups[0] = indexRuleExpression.additionalCriteria;
+          indexRuleExpression.additionalCriteria = parentGroup;
         }
-        // overwrite indexRule additional criteria groups with the new list of groups with inclusion rules
-        indexRuleExpression.additionalCriteria.groups = additionalCriteriaGroups.toArray(new CriteriaGroup[0]);
-        
+      }
+      // place each inclusion rule (which is a CriteriaGroup) in the indexRuleExpression.additionalCriteria.group array to create the 'allCriteriaExpression'
+      ArrayList<CriteriaGroup> additionalCriteriaGroups = new ArrayList<>();
+      if (indexRuleExpression.additionalCriteria.groups != null) {
+        additionalCriteriaGroups.addAll(Arrays.asList(indexRuleExpression.additionalCriteria.groups));
+      }
+
+      for (InclusionRule inclusionRule : p.getInclusionRules()) {
+        String inclusionRuleJSON = inclusionRule.getExpression();
+        CriteriaGroup inclusionRuleGroup = mapper.readValue(inclusionRuleJSON, CriteriaGroup.class);
+        additionalCriteriaGroups.add(inclusionRuleGroup);
+      }
+      // overwrite indexRule additional criteria groups with the new list of groups with inclusion rules
+      indexRuleExpression.additionalCriteria.groups = additionalCriteriaGroups.toArray(new CriteriaGroup[0]);
+
       String allCriteriaExpression = mapper.writeValueAsString(indexRuleExpression); // index rule expression now contains all inclusion criteria as additional criteria
       return allCriteriaExpression;
     } catch (Exception e) {
@@ -396,7 +397,7 @@ public class FeasibilityService extends AbstractDaoService {
             .setCreatedBy("system")
             .setCreatedDate(currentTime)
             .setExpressionType(ExpressionType.SIMPLE_EXPRESSION);
-    
+
     CohortDefinitionDetails indexDetails = new CohortDefinitionDetails();
     indexDetails.setCohortDefinition(indexRule)
             .setExpression(study.indexRule);
@@ -404,24 +405,23 @@ public class FeasibilityService extends AbstractDaoService {
     newStudy.setIndexRule(indexRule);
 
     // build matching cohort from inclusion rules if inclusion rules exist
-    if (newStudy.getInclusionRules().size() > 0)
-    {
-    CohortDefinition resultDef = new CohortDefinition()
-                .setName("Matching Population for Study: " + newStudy.getName())
-                .setDescription(newStudy.getDescription())
+    if (newStudy.getInclusionRules().size() > 0) {
+      CohortDefinition resultDef = new CohortDefinition()
+              .setName("Matching Population for Study: " + newStudy.getName())
+              .setDescription(newStudy.getDescription())
               .setCreatedBy("system")
               .setCreatedDate(currentTime)
-                .setExpressionType(ExpressionType.SIMPLE_EXPRESSION);
+              .setExpressionType(ExpressionType.SIMPLE_EXPRESSION);
 
-    CohortDefinitionDetails resultDetails = new CohortDefinitionDetails();
-    resultDetails.setCohortDefinition(resultDef)
-            .setExpression(getMatchingCriteriaExpression(newStudy));
-    resultDef.setDetails(resultDetails);
-    newStudy.setResultRule(resultDef);
+      CohortDefinitionDetails resultDetails = new CohortDefinitionDetails();
+      resultDetails.setCohortDefinition(resultDef)
+              .setExpression(getMatchingCriteriaExpression(newStudy));
+      resultDef.setDetails(resultDetails);
+      newStudy.setResultRule(resultDef);
     }
-    
+
     FeasibilityStudy createdStudy = this.feasibilityStudyRepository.save(newStudy);
-    
+
     return feasibilityStudyToDTO(createdStudy);
   }
 
@@ -455,32 +455,30 @@ public class FeasibilityService extends AbstractDaoService {
             .setName("Index Population for Study: " + updatedStudy.getName())
             .setDescription(study.indexDescription)
             .getDetails().setExpression(study.indexRule);
-    
+
     CohortDefinition resultRule = updatedStudy.getResultRule();
-    if (updatedStudy.getInclusionRules().size() > 0)
-    {
-    if (resultRule == null)
-    {
-      resultRule = new CohortDefinition();
+    if (updatedStudy.getInclusionRules().size() > 0) {
+      if (resultRule == null) {
+        resultRule = new CohortDefinition();
         resultRule.setName("Matching Population for Study: " + updatedStudy.getName())
-              .setCreatedBy("system")
+                .setCreatedBy("system")
                 .setCreatedDate(currentTime)
                 .setExpressionType(ExpressionType.SIMPLE_EXPRESSION);
 
-      CohortDefinitionDetails resultDetails = new CohortDefinitionDetails();
+        CohortDefinitionDetails resultDetails = new CohortDefinitionDetails();
         resultDetails.setCohortDefinition(resultRule);
-      resultRule.setDetails(resultDetails);
-    }
+        resultRule.setDetails(resultDetails);
+        updatedStudy.setResultRule(resultRule);
+      }
 
       resultRule.setModifiedBy("system")
               .setModifiedDate(currentTime)
               .setName("Matching Population for Study: " + updatedStudy.getName())
-            .setDescription(updatedStudy.getDescription())
-            .setModifiedBy("system")
-            .setModifiedDate(currentTime)
-            .getDetails().setExpression(getMatchingCriteriaExpression(updatedStudy));
-    }
-    else {
+              .setDescription(updatedStudy.getDescription())
+              .setModifiedBy("system")
+              .setModifiedDate(currentTime)
+              .getDetails().setExpression(getMatchingCriteriaExpression(updatedStudy));
+    } else {
       updatedStudy.setResultRule(null);
       if (resultRule != null) {
         cohortDefinitionRepository.delete(resultRule);
@@ -497,11 +495,11 @@ public class FeasibilityService extends AbstractDaoService {
   @Consumes(MediaType.APPLICATION_JSON)
   public JobExecutionResource performStudy(@PathParam("study_id") final int study_id, @PathParam("sourceKey") final String sourceKey) {
     Date startTime = Calendar.getInstance().getTime();
-    
+
     Source source = this.getSourceRepository().findBySourceKey(sourceKey);
     String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
     String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
-    
+
     DefaultTransactionDefinition requresNewTx = new DefaultTransactionDefinition();
     requresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 
@@ -511,8 +509,7 @@ public class FeasibilityService extends AbstractDaoService {
 
     CohortDefinition indexRule = this.cohortDefinitionRepository.findOne(study.getIndexRule().getId());
     CohortGenerationInfo indexInfo = findCohortGenerationInfoBySourceId(indexRule.getGenerationInfoList(), source.getSourceId());
-    if (indexInfo == null)
-    {
+    if (indexInfo == null) {
       indexInfo = new CohortGenerationInfo(indexRule, source.getSourceId());
       indexRule.getGenerationInfoList().add(indexInfo);
     }
@@ -520,19 +517,21 @@ public class FeasibilityService extends AbstractDaoService {
             .setStartTime(startTime)
             .setExecutionDuration(null);
     this.cohortDefinitionRepository.save(indexRule);
-    
-    CohortDefinition resultRule = this.cohortDefinitionRepository.findOne(study.getResultRule().getId());
-    CohortGenerationInfo resultInfo = findCohortGenerationInfoBySourceId(resultRule.getGenerationInfoList(), source.getSourceId());
-    if (resultInfo == null)
-    {
-      resultInfo = new CohortGenerationInfo(resultRule, source.getSourceId());
-      resultRule.getGenerationInfoList().add(resultInfo);
-    }
-    resultInfo.setStatus(GenerationStatus.PENDING)
-            .setStartTime(startTime)
-            .setExecutionDuration(null);
-    this.cohortDefinitionRepository.save(resultRule);
 
+    if (study.getResultRule() != null)
+    {
+      CohortDefinition resultRule = this.cohortDefinitionRepository.findOne(study.getResultRule().getId());
+      CohortGenerationInfo resultInfo = findCohortGenerationInfoBySourceId(resultRule.getGenerationInfoList(), source.getSourceId());
+      if (resultInfo == null) {
+        resultInfo = new CohortGenerationInfo(resultRule, source.getSourceId());
+        resultRule.getGenerationInfoList().add(resultInfo);
+      }
+      resultInfo.setStatus(GenerationStatus.PENDING)
+              .setStartTime(startTime)
+              .setExecutionDuration(null);
+      this.cohortDefinitionRepository.save(resultRule);
+    }
+    
     StudyGenerationInfo studyInfo = findStudyGenerationInfoBySourceId(study.getStudyGenerationInfoList(), source.getSourceId());
     if (studyInfo == null) {
       studyInfo = new StudyGenerationInfo(study, source.getSourceId());
@@ -543,7 +542,7 @@ public class FeasibilityService extends AbstractDaoService {
             .setExecutionDuration(null);
 
     this.feasibilityStudyRepository.save(study);
-    
+
     this.getTransactionTemplate().getTransactionManager().commit(initStatus);
 
     JobParametersBuilder builder = new JobParametersBuilder();
@@ -557,7 +556,7 @@ public class FeasibilityService extends AbstractDaoService {
 
     final JobParameters jobParameters = builder.toJobParameters();
     final JdbcTemplate sourceJdbcTemplate = getSourceJdbcTemplate(source);
-    
+
     GenerateCohortTasklet indexRuleTasklet = new GenerateCohortTasklet(sourceJdbcTemplate, getTransactionTemplate(), cohortDefinitionRepository);
 
     Step generateCohortStep = stepBuilders.get("performStudy.generateIndexCohort")
@@ -586,7 +585,7 @@ public class FeasibilityService extends AbstractDaoService {
   @Transactional
   public List<StudyGenerationInfo> getSimulationInfo(@PathParam("id") final int id) {
     FeasibilityStudy study = this.feasibilityStudyRepository.findOne(id);
-    
+
     List<StudyGenerationInfo> result = new ArrayList<>();
     for (StudyGenerationInfo info : study.getStudyGenerationInfoList()) {
       result.add(info);
@@ -601,7 +600,7 @@ public class FeasibilityService extends AbstractDaoService {
   public FeasibilityReport getSimulationReport(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey) {
 
     Source source = this.getSourceRepository().findBySourceKey(sourceKey);
-    
+
     FeasibilityReport.Summary summary = getSimulationSummary(id, source);
     List<FeasibilityReport.InclusionRuleStatistic> inclusionRuleStats = getSimulationInclusionRuleStatistics(id, source);
     String treemapData = getInclusionRuleTreemapData(id, inclusionRuleStats.size(), source);
@@ -613,10 +612,10 @@ public class FeasibilityService extends AbstractDaoService {
 
     return report;
   }
-  
+
   /**
    * Copies the specified cohort definition
-   * 
+   *
    * @param id - the Cohort Definition ID to copy
    * @return the copied cohort definition as a CohortDefinitionDTO
    */
@@ -631,17 +630,17 @@ public class FeasibilityService extends AbstractDaoService {
 
     FeasibilityStudyDTO copyStudy = createStudy(sourceStudy);
     return copyStudy;
-  }      
+  }
 
   /**
    * Deletes the specified cohort definition
-   * 
+   *
    * @param id - the Cohort Definition ID to copy
    */
   @DELETE
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/{id}")
   public void delete(@PathParam("id") final int id) {
-   feasibilityStudyRepository.delete(id);
-  }    
+    feasibilityStudyRepository.delete(id);
+  }
 }

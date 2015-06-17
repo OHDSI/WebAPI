@@ -36,6 +36,7 @@ public class FeasibilityStudyQueryBuilder {
   private final static CohortExpressionQueryBuilder cohortExpressionQueryBuilder = new CohortExpressionQueryBuilder();
   
   private final static String PERFORM_FEASIBILITY_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/feasibility/sql/performFeasibilityStudy.sql"); 
+  private final static String PERFORM_NULL_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/feasibility/sql/nullStudy.sql"); 
   private final static String INDEX_COHORT_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/feasibility/sql/indexCohort.sql"); 
   private final static String INCLUSION_RULE_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/feasibility/sql/inclusionrule.sql");  
   
@@ -107,4 +108,21 @@ public class FeasibilityStudyQueryBuilder {
 
     return resultSql;
   }
+ 
+  public String buildNullQuery(FeasibilityStudy study, BuildExpressionQueryOptions options)
+  {
+    String resultSql = PERFORM_NULL_QUERY_TEMPLATE;
+
+    if (options != null)
+    {
+      // replease query parameters with tokens
+      resultSql = StringUtils.replace(resultSql, "@cdm_database_schema", options.cdmSchema);
+      resultSql = StringUtils.replace(resultSql, "@cohortTable", options.cohortTable);
+    }
+    
+    resultSql = StringUtils.replace(resultSql, "@indexCohortId", "" + study.getIndexRule().getId());
+    resultSql = StringUtils.replace(resultSql, "@studyId", study.getId().toString());
+    
+    return resultSql;
+  }  
 }

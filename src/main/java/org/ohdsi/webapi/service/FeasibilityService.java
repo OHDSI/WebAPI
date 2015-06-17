@@ -486,18 +486,20 @@ public class FeasibilityService extends AbstractDaoService {
             .setExecutionDuration(null);
     this.cohortDefinitionRepository.save(indexRule);
     
-    CohortDefinition resultRule = this.cohortDefinitionRepository.findOne(study.getResultRule().getId());
-    CohortGenerationInfo resultInfo = resultRule.getGenerationInfo();
-    if (resultInfo == null)
-    {
-      resultInfo = new CohortGenerationInfo(resultRule);
-      resultRule.setGenerationInfo(resultInfo);
-    }
-    resultInfo.setStatus(GenerationStatus.PENDING)
-            .setStartTime(startTime)
-            .setExecutionDuration(null);
-    this.cohortDefinitionRepository.save(resultRule);
+    if (study.getResultRule() != null) {
 
+      CohortDefinition resultRule = this.cohortDefinitionRepository.findOne(study.getResultRule().getId());
+      CohortGenerationInfo resultInfo = resultRule.getGenerationInfo();
+      if (resultInfo == null) {
+        resultInfo = new CohortGenerationInfo(resultRule);
+        resultRule.setGenerationInfo(resultInfo);
+      }
+      resultInfo.setStatus(GenerationStatus.PENDING)
+              .setStartTime(startTime)
+              .setExecutionDuration(null);
+      this.cohortDefinitionRepository.save(resultRule);
+    }
+    
     StudyInfo info = study.getInfo();
     if (info == null) {
       info = new StudyInfo(study);

@@ -82,11 +82,18 @@ public class PerformFeasibilityTasklet implements Tasklet {
       FeasibilityStudyQueryBuilder.BuildExpressionQueryOptions options = new FeasibilityStudyQueryBuilder.BuildExpressionQueryOptions();
       options.cdmSchema = jobParams.get("cdm_database_schema").toString();
       options.cohortTable = jobParams.get("target_database_schema").toString() + "." + jobParams.get("target_table").toString();
-      
-      String expressionSql = studyQueryBuilder.buildSimulateQuery(p, options);
-      String translatedSql = SqlTranslate.translateSql(expressionSql, "sql server", jobParams.get("target_dialect").toString(), SessionUtils.sessionId(), null);
-      String[] sqlStatements = SqlSplit.splitSql(translatedSql);
-      result = PerformFeasibilityTasklet.this.jdbcTemplate.batchUpdate(sqlStatements);
+      if (p.getResultRule() != null) {
+        String expressionSql = studyQueryBuilder.buildSimulateQuery(p, options);
+        String translatedSql = SqlTranslate.translateSql(expressionSql, "sql server", jobParams.get("target_dialect").toString(), SessionUtils.sessionId(), null);
+        String[] sqlStatements = SqlSplit.splitSql(translatedSql);
+        result = PerformFeasibilityTasklet.this.jdbcTemplate.batchUpdate(sqlStatements);
+      }
+      else {
+        String expressionSql = studyQueryBuilder.buildNullQuery(p, options);
+        String translatedSql = SqlTranslate.translateSql(expressionSql, "sql server", jobParams.get("target_dialect").toString(), SessionUtils.sessionId(), null);
+        String[] sqlStatements = SqlSplit.splitSql(translatedSql);
+        result = PerformFeasibilityTasklet.this.jdbcTemplate.batchUpdate(sqlStatements);
+      }    
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -101,16 +108,19 @@ public class PerformFeasibilityTasklet implements Tasklet {
     
     DefaultTransactionDefinition requresNewTx = new DefaultTransactionDefinition();
     requresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+    boolean isValid = false;
     
     TransactionStatus initStatus = this.transactionTemplate.getTransactionManager().getTransaction(requresNewTx);
     FeasibilityStudy p = this.feasibilityStudyRepository.findOne(studyId);
     
     CohortDefinition resultDef = p.getResultRule();
-    CohortGenerationInfo resultInfo = resultDef.getGenerationInfo();
-    resultInfo.setIsValid(false)
-            .setStatus(GenerationStatus.RUNNING)
-            .setStartTime(startTime)
-            .setExecutionDuration(null);
+    if (resultDef != null) {    
+      CohortGenerationInfo resultInfo = resultDef.getGenerationInfo();
+      resultInfo.setIsValid(isValid)
+              .setStatus(GenerationStatus.RUNNING)
+              .setStartTime(startTime)
+              .setExecutionDuration(null);
+    }
     StudyInfo info = p.getInfo();
     if (info == null)
     {
@@ -133,21 +143,28 @@ public class PerformFeasibilityTasklet implements Tasklet {
         }
       });
       log.debug("Update count: " + ret.length);
-      info.setIsValid(true);
-      resultInfo.setIsValid(true);
+      isValid = true;
     } catch (final TransactionException e) {
-      info.setIsValid(false);
-      resultInfo.setIsValid(false);
+      isValid = false;
       log.error(e.getMessage(), e);
       throw e;//FAIL job status
     }
     finally {
       TransactionStatus completeStatus = this.transactionTemplate.getTransactionManager().getTransaction(requresNewTx);
       Date endTime = Calendar.getInstance().getTime();
+      p = this.feasibilityStudyRepository.findOne(studyId);
+      resultDef = p.getResultRule();
+      if (resultDef != null) {
+        CohortGenerationInfo resultInfo = resultDef.getGenerationInfo();
+        resultInfo.setIsValid(isValid)
+                .setStatus(GenerationStatus.COMPLETE)
+                .setExecutionDuration(new Integer((int)(endTime.getTime() - startTime.getTime())));
+      }
+      info = p.getInfo();
+      info.setIsValid(isValid);
       info.setExecutionDuration(new Integer((int)(endTime.getTime() - startTime.getTime())));
       info.setStatus(GenerationStatus.COMPLETE);
-      resultInfo.setExecutionDuration(info.getExecutionDuration());
-      resultInfo.setStatus(GenerationStatus.COMPLETE);
+
       this.feasibilityStudyRepository.save(p);
       this.transactionTemplate.getTransactionManager().commit(completeStatus);
     }

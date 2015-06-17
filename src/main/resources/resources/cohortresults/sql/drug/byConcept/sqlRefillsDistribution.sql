@@ -10,7 +10,7 @@ select c1.concept_id as concept_id,
 from @ohdsi_database_schema.heracles_results_dist hrd1
 	inner join
 	@cdm_database_schema.concept c1
-	on CAST(hrd1.stratum_1 AS INT) = c1.concept_id
+	on hrd1.stratum_1 = CAST(c1.concept_id as VARCHAR(255))
 where hrd1.analysis_id = 716
 and cohort_definition_id in (@cohortDefinitionId)
 and hrd1.count_value > 0

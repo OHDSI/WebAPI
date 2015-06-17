@@ -115,7 +115,7 @@ from (select * from @ohdsi_database_schema.heracles_results where analysis_id = 
 		procs.proc_concept_name
 
 	) concept_hierarchy
-	on CAST(hr1.stratum_1 AS INT) = concept_hierarchy.concept_id
+	on hr1.stratum_1 = CAST(concept_hierarchy.concept_id as VARCHAR)
 	,
 	(select count_value from @ohdsi_database_schema.heracles_results where analysis_id = 1 and cohort_definition_id in (@cohortDefinitionId)) denom
 

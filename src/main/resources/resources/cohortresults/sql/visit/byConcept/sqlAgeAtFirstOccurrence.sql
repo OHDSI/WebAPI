@@ -8,8 +8,8 @@ select c1.concept_id as concept_id,
 	hrd1.p90_value as p90_value,
 	hrd1.max_value as max_value
 from @ohdsi_database_schema.heracles_results_dist hrd1
-	inner join @cdm_database_schema.concept c1 on CAST(hrd1.stratum_1 AS INT) = c1.concept_id
-	inner join @cdm_database_schema.concept c2 on CAST(hrd1.stratum_2 AS INT) = c2.concept_id
+	inner join @cdm_database_schema.concept c1 on hrd1.stratum_1 = CAST(c1.concept_id as VARCHAR)
+	inner join @cdm_database_schema.concept c2 on hrd1.stratum_2 = CAST(c2.concept_id as VARCHAR)
 where hrd1.analysis_id = 206
 and  c1.concept_id = @conceptId
 and cohort_definition_id in (@cohortDefinitionId)

@@ -9,6 +9,6 @@ from
 	on num.stratum_2 = denom.stratum_1  --calendar year
 	inner join
 	@cdm_database_schema.concept c1
-	on CAST(num.stratum_1 AS INT) = c1.concept_id
+	on num.stratum_1 = CAST(c1.concept_id as VARCHAR)
 WHERE c1.concept_id = @conceptId
 ORDER BY CAST(num.stratum_2 as INT)

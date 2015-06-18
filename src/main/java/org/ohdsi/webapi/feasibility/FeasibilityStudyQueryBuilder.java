@@ -135,6 +135,7 @@ public class FeasibilityStudyQueryBuilder {
     if (options != null)
     {
       // replease query parameters with tokens
+      resultSql = StringUtils.replace(resultSql, "@cdm_database_schema", options.cdmSchema);
       resultSql = StringUtils.replace(resultSql, "@ohdsi_database_schema", options.ohdsiSchema);
       resultSql = StringUtils.replace(resultSql, "@cohortTable", options.cohortTable);
     }

@@ -287,6 +287,7 @@ public class CohortDefinitionService extends AbstractDaoService {
     
 
     JobParametersBuilder builder = new JobParametersBuilder();
+    builder.addString("jobName", "Generate Cohort");
     builder.addString("cdm_database_schema", cdmTableQualifier);
     builder.addString("target_database_schema", resultsTableQualifier);
     builder.addString("target_dialect", source.getSourceDialect());

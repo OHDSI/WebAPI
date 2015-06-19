@@ -66,7 +66,7 @@ public class Source implements Serializable {
       } 
     }
     
-    throw new RuntimeException("DaimonType not found in Source");
+    throw new RuntimeException("DaimonType (" + daimonType + ") not found in Source");
   }
   
   public String getSourceKey() {

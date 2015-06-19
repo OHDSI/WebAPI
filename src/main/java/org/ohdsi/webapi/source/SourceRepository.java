@@ -15,7 +15,6 @@
  */
 package org.ohdsi.webapi.source;
 
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
 /**
@@ -23,6 +22,5 @@ import org.springframework.data.repository.CrudRepository;
  * @author fdefalco
  */
 public interface SourceRepository extends CrudRepository<Source, Integer> {
-  
   Source findBySourceKey(String sourceKey);
 }

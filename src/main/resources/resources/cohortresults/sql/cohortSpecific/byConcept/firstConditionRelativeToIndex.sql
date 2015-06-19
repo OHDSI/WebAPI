@@ -1,12 +1,3 @@
-/* 
-CONDITION_OCCURRENCE 
-
---drilldown of when first condition occurs relative to index 
---graph:  scatterplot 
---analysis_id: 1820 
---x:  time (30-day increments) 
---y:  %    
-*/ 
 SELECT hr1.cohort_definition_id, 
        'First' AS record_type, 
        c1.concept_id, 
@@ -23,22 +14,38 @@ FROM   (SELECT cohort_definition_id,
                count_value 
         FROM   @ohdsi_database_schema.heracles_results 
         WHERE  analysis_id IN ( 1820 ) 
-               AND cohort_definition_id IN ( @cohortDefinitionId )) hr1 
-       INNER JOIN (SELECT cohort_definition_id, 
-                          -1 * Cast(stratum_1 AS INTEGER) * 30                AS 
+               AND cohort_definition_id IN ( @cohortDefinitionId )
+                        ) hr1 
+       INNER JOIN (SELECT -1 * Cast(stratum_1 AS INTEGER) * 30                AS 
               duration, 
                           Sum(count_value) 
                             OVER ( 
-                              partition BY cohort_definition_id 
                               ORDER BY -1* Cast(stratum_1 AS INTEGER)*30 ASC) AS 
               count_value 
-                   FROM   @ohdsi_database_schema.heracles_results 
-                   WHERE  analysis_id IN ( 1805 ) 
-                          AND cohort_definition_id IN ( @cohortDefinitionId ) 
-                          AND Cast(stratum_1 AS INTEGER) > 0 
+                   FROM  (
+                                             select stratum_1, max(count_value) as count_value
+                                                  from
+                                                  (
+                                                  select row_number() over (order by analysis_id) as stratum_1, 0 as count_value
+                                                  from heracles_results
+                                                  where analysis_id = 1805
+                                                  and cohort_definition_id = @cohortDefinitionId
+
+                                                  union
+
+                                                  select cast(stratum_1 as integer) as stratum_1, count_value
+                                                  from heracles_results
+                                                  where analysis_id = 1805
+                                                  and cohort_definition_id = @cohortDefinitionId
+                                                  ) t1
+                                                  where stratum_1<=10 or count_value > 0
+                                                  group by stratum_1
+                                             ) t0
+                                             
+                                             
+                                             WHERE Cast(stratum_1 AS INTEGER) > 0 
                    UNION 
-                   SELECT hr1.cohort_definition_id, 
-                          Cast(hr1.stratum_1 AS INTEGER) * 30 
+                   SELECT Cast(hr1.stratum_1 AS INTEGER) * 30 
                           AS 
                           duration, 
                           t1.count_value - Sum(hr1.count_value) 
@@ -60,24 +67,20 @@ FROM   (SELECT cohort_definition_id,
                                      t1.cohort_definition_id 
                    WHERE  hr1.analysis_id IN ( 1806 ) 
                           AND hr1.cohort_definition_id IN 
-                              ( @cohortDefinitionId )) t1 
-               ON hr1.cohort_definition_id = t1.cohort_definition_id 
-                  AND hr1.duration = t1.duration 
-       INNER JOIN (SELECT cohort_definition_id, 
-                          Cast(stratum_1 AS INTEGER) AS concept_id, 
+                              ( @cohortDefinitionId )
+                                                    ) t1 
+               ON  hr1.duration = t1.duration 
+       INNER JOIN (SELECT Cast(stratum_1 AS INTEGER) AS concept_id, 
                           Sum(count_value)           AS count_value 
                    FROM   @ohdsi_database_schema.heracles_results 
                    WHERE  analysis_id IN ( 1820 ) 
-                          AND cohort_definition_id IN ( @cohortDefinitionId ) 
-                   GROUP  BY cohort_definition_id, 
-                             Cast(stratum_1 AS INTEGER) 
-                   HAVING Sum(count_value) > @minCovariatePersonCount) ct1 
-               ON hr1.cohort_definition_id = ct1.cohort_definition_id 
-                  AND hr1.concept_id = ct1.concept_id 
-       INNER JOIN @cdm_database_schema.concept c1 
+                           GROUP  BY Cast(stratum_1 AS INTEGER) 
+										HAVING Sum(count_value) > @minCovariatePersonCount
+                   ) ct1 
+               ON hr1.concept_id = ct1.concept_id 
+       INNER JOIN @ohdsi_database_schema.concept c1 
                ON hr1.concept_id = c1.concept_id 
-WHERE  t1.count_value > @minIntervalPersonCount 
-	AND c1.concept_id = @conceptId
+WHERE  c1.concept_id = @conceptId and t1.count_value > @minIntervalPersonCount 
 UNION 
 SELECT hr1.cohort_definition_id, 
        'All' AS record_type, 
@@ -93,24 +96,39 @@ FROM   (SELECT cohort_definition_id,
                Cast(stratum_1 AS INTEGER)      AS concept_id, 
                Cast(stratum_2 AS INTEGER) * 30 AS duration, 
                count_value 
-        FROM   @ohdsi_database_schema.heracles_results 
+        FROM   @ohdsi_database_schema.heracles_results  
         WHERE  analysis_id IN ( 1821 ) 
                AND cohort_definition_id IN ( @cohortDefinitionId )) hr1 
-       INNER JOIN (SELECT cohort_definition_id, 
-                          -1 * Cast(stratum_1 AS INTEGER) * 30                AS 
+       INNER JOIN (SELECT -1 * Cast(stratum_1 AS INTEGER) * 30                AS 
               duration, 
                           Sum(count_value) 
                             OVER ( 
-                              partition BY cohort_definition_id 
                               ORDER BY -1* Cast(stratum_1 AS INTEGER)*30 ASC) AS 
               count_value 
-                   FROM   @ohdsi_database_schema.heracles_results 
-                   WHERE  analysis_id IN ( 1805 ) 
-                          AND cohort_definition_id IN ( @cohortDefinitionId ) 
-                          AND Cast(stratum_1 AS INTEGER) > 0 
+                   FROM  (
+                                             select stratum_1, max(count_value) as count_value
+                                                  from
+                                                  (
+                                                  select row_number() over (order by analysis_id) as stratum_1, 0 as count_value
+                                                  from heracles_results
+                                                  where analysis_id = 1805
+                                                  and cohort_definition_id = @cohortDefinitionId
+
+                                                  union
+
+                                                  select cast(stratum_1 as integer) as stratum_1, count_value
+                                                  from heracles_results
+                                                  where analysis_id = 1805
+                                                  and cohort_definition_id = @cohortDefinitionId
+                                                  ) t1
+                                                  where stratum_1<=10 or count_value > 0
+                                                  group by stratum_1
+                                             ) t0
+                                             
+                                             
+                                             WHERE Cast(stratum_1 AS INTEGER) > 0 
                    UNION 
-                   SELECT hr1.cohort_definition_id, 
-                          Cast(hr1.stratum_1 AS INTEGER) * 30 
+                   SELECT Cast(hr1.stratum_1 AS INTEGER) * 30 
                           AS 
                           duration, 
                           t1.count_value - Sum(hr1.count_value) 
@@ -132,21 +150,17 @@ FROM   (SELECT cohort_definition_id,
                                      t1.cohort_definition_id 
                    WHERE  hr1.analysis_id IN ( 1806 ) 
                           AND hr1.cohort_definition_id IN 
-                              ( @cohortDefinitionId )) t1 
-               ON hr1.cohort_definition_id = t1.cohort_definition_id 
-                  AND hr1.duration = t1.duration 
-       INNER JOIN (SELECT cohort_definition_id, 
-                          Cast(stratum_1 AS INTEGER) AS concept_id, 
+                              ( @cohortDefinitionId )
+                                                    ) t1 
+               ON  hr1.duration = t1.duration 
+       INNER JOIN (SELECT Cast(stratum_1 AS INTEGER) AS concept_id, 
                           Sum(count_value)           AS count_value 
                    FROM   @ohdsi_database_schema.heracles_results 
-                   WHERE  analysis_id IN ( 1821 ) 
-                          AND cohort_definition_id IN ( @cohortDefinitionId ) 
-                   GROUP  BY cohort_definition_id, 
-                             Cast(stratum_1 AS INTEGER) 
-                   HAVING Sum(count_value) > @minCovariatePersonCount) ct1 
-               ON hr1.cohort_definition_id = ct1.cohort_definition_id 
-                  AND hr1.concept_id = ct1.concept_id 
-       INNER JOIN @cdm_database_schema.concept c1 
+                   WHERE  analysis_id IN ( 1820 ) 
+                           GROUP  BY Cast(stratum_1 AS INTEGER) 
+										HAVING Sum(count_value) > @minCovariatePersonCount
+                   ) ct1 
+               ON hr1.concept_id = ct1.concept_id 
+       INNER JOIN @ohdsi_database_schema.concept c1 
                ON hr1.concept_id = c1.concept_id 
-WHERE  t1.count_value > @minIntervalPersonCount 
-	AND c1.concept_id = @conceptId
+WHERE  c1.concept_id = @conceptId and t1.count_value > @minIntervalPersonCount 

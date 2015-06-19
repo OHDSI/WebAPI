@@ -69,8 +69,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class CohortResultsService extends AbstractDaoService {
 
-  private static final String MIN_COVARIATE_PERSON_COUNT = "500";
-  private static final String MIN_INTERVAL_PERSON_COUNT = "1000";
+  private static final String MIN_COVARIATE_PERSON_COUNT = "0";
+  private static final String MIN_INTERVAL_PERSON_COUNT = "0";
 
   public static final String BASE_SQL_PATH = "/resources/cohortresults/sql";
 

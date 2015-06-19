@@ -152,6 +152,11 @@ public class FeasibilityService extends AbstractDaoService {
     public List<InclusionRule> inclusionRules;
   }
 
+  public static class StudyInfoDTO {
+    public StudyGenerationInfo generationInfo;
+    public FeasibilityReport.Summary summary;
+  }
+  
   private final RowMapper<FeasibilityReport.Summary> summaryMapper = new RowMapper<FeasibilityReport.Summary>() {
     @Override
     public FeasibilityReport.Summary mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -171,7 +176,11 @@ public class FeasibilityService extends AbstractDaoService {
 
     String summaryQuery = String.format("select person_count, match_count from %s.feas_study_index_stats where study_id = %d", resultsTableQualifier, id);
     String translatedSql = SqlTranslate.translateSql(summaryQuery, "sql server", source.getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
-    return this.getSourceJdbcTemplate(source).queryForObject(translatedSql, summaryMapper);
+    List<FeasibilityReport.Summary> summaryList = this.getSourceJdbcTemplate(source).query(translatedSql, summaryMapper);
+    if (summaryList.size() > 0)
+      return summaryList.get(0);
+    
+    return null;
   }
 
   private final RowMapper<FeasibilityReport.InclusionRuleStatistic> inclusionRuleStatisticMapper = new RowMapper<FeasibilityReport.InclusionRuleStatistic>() {
@@ -429,7 +438,7 @@ public class FeasibilityService extends AbstractDaoService {
   @Path("/{id}")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  @Transactional
+  @Transactional(readOnly = true)
   public FeasibilityService.FeasibilityStudyDTO getStudy(@PathParam("id") final int id) {
     FeasibilityStudy s = this.feasibilityStudyRepository.findOneWithDetail(id);
     return feasibilityStudyToDTO(s);
@@ -534,7 +543,7 @@ public class FeasibilityService extends AbstractDaoService {
     
     StudyGenerationInfo studyInfo = findStudyGenerationInfoBySourceId(study.getStudyGenerationInfoList(), source.getSourceId());
     if (studyInfo == null) {
-      studyInfo = new StudyGenerationInfo(study, source.getSourceId());
+      studyInfo = new StudyGenerationInfo(study, source);
       study.getStudyGenerationInfoList().add(studyInfo);
     }
     studyInfo.setStatus(GenerationStatus.PENDING)
@@ -583,12 +592,15 @@ public class FeasibilityService extends AbstractDaoService {
   @GET
   @Path("/{id}/info")
   @Produces(MediaType.APPLICATION_JSON)
-  @Transactional
-  public List<StudyGenerationInfo> getSimulationInfo(@PathParam("id") final int id) {
+  @Transactional(readOnly = true)
+  public List<StudyInfoDTO> getSimulationInfo(@PathParam("id") final int id) {
     FeasibilityStudy study = this.feasibilityStudyRepository.findOne(id);
 
-    List<StudyGenerationInfo> result = new ArrayList<>();
-    for (StudyGenerationInfo info : study.getStudyGenerationInfoList()) {
+    List<StudyInfoDTO> result = new ArrayList<>();
+    for (StudyGenerationInfo generationInfo : study.getStudyGenerationInfoList()) {
+      StudyInfoDTO info = new StudyInfoDTO();
+      info.generationInfo = generationInfo;
+      info.summary = getSimulationSummary(id, generationInfo.getSource());
       result.add(info);
     }
     return result;
@@ -644,4 +656,29 @@ public class FeasibilityService extends AbstractDaoService {
   public void delete(@PathParam("id") final int id) {
     feasibilityStudyRepository.delete(id);
   }
+  
+  /**
+   * Deletes the specified cohort definition
+   *
+   * @param id - the Cohort Definition ID to copy
+   */
+  @DELETE
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/{id}/info/{sourceKey}")
+  @Transactional    
+  public void deleteInfo(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey) {
+    FeasibilityStudy study = feasibilityStudyRepository.findOne(id);
+    StudyGenerationInfo itemToRemove = null;
+    for (StudyGenerationInfo info : study.getStudyGenerationInfoList())
+    {
+      if (info.getSource().getSourceKey().equals(sourceKey))
+        itemToRemove = info;
+    }
+    
+    if (itemToRemove != null)
+      study.getStudyGenerationInfoList().remove(itemToRemove);
+    
+    feasibilityStudyRepository.save(study);
+  }
+  
 }

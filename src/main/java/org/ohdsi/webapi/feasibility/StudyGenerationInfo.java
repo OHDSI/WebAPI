@@ -15,18 +15,19 @@
  */
 package org.ohdsi.webapi.feasibility;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.MapsId;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import org.ohdsi.webapi.cohortdefinition.GenerationStatus;
+import org.ohdsi.webapi.source.Source;
 
 /**
  *
@@ -40,11 +41,19 @@ public class StudyGenerationInfo implements Serializable {
   @EmbeddedId
   private StudyGenerationInfoId id;
   
+  @JsonIgnore
   @ManyToOne
   @MapsId("studyId")
   @JoinColumn(name="study_id", referencedColumnName="id")
   private FeasibilityStudy study;
 
+  @JsonIgnore
+  @ManyToOne
+  @MapsId("sourceId")
+  @JoinColumn(name="source_id", referencedColumnName="source_id")
+  private Source source;
+  
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd, HH:mm")
   @Column(name="start_time")
   private Date startTime;  
   
@@ -61,9 +70,10 @@ public class StudyGenerationInfo implements Serializable {
   {    
   }
 
-  public  StudyGenerationInfo(FeasibilityStudy study, Integer sourceId)
+  public  StudyGenerationInfo(FeasibilityStudy study, Source source)
   {    
-    this.id = new StudyGenerationInfoId(study.getId(), sourceId);
+    this.id = new StudyGenerationInfoId(study.getId(), source.getSourceId());
+    this.source = source;
     this.study = study;
   }
 
@@ -109,5 +119,13 @@ public class StudyGenerationInfo implements Serializable {
   public StudyGenerationInfo setIsValid(boolean isValid) {
     this.isValid = isValid;
     return this;
+  }
+
+  public FeasibilityStudy getStudy() {
+    return study;
+  }
+
+  public Source getSource() {
+    return source;
   }
 }

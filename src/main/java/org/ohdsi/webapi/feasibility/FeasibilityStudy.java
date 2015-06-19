@@ -79,7 +79,7 @@ public class FeasibilityStudy {
   @JoinColumn(name="result_def_id")
   private CohortDefinition resultRule;  
 
-  @OneToMany(fetch= FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "study")
+  @OneToMany(fetch= FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "study", orphanRemoval=true)
   private Set<StudyGenerationInfo> studyGenerationInfoList;  
   
   @Column(name="created_by")

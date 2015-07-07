@@ -13,8 +13,8 @@ from (select cohort_definition_id,
 	from @ohdsi_database_schema.heracles_results
 	where analysis_id in (1814)
 	and cohort_definition_id in (@cohortDefinitionId)
-	and stratum_2 in (8507,8532)
-	and stratum_3 >= 0 
+	and CAST(stratum_2 AS INT) in (8507,8532)
+	and CAST(stratum_3 AS INT) >= 0 
 	--and stratum_4 <10
 ) hr1
 	inner join 

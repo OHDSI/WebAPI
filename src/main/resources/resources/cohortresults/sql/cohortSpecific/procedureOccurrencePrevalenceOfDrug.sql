@@ -27,8 +27,8 @@ select   concept_hierarchy.concept_id,
 from
 (select cast(stratum_1 as integer) as concept_id,
 	sum(count_value) as num_persons,
-	sum(case when stratum_2 < 0 then count_value else 0 end) as num_persons_before,
-	sum(case when stratum_2 > 0 then count_value else 0 end) as num_persons_after
+	sum(case when CAST(stratum_2 AS INT) < 0 then count_value else 0 end) as num_persons_before,
+	sum(case when CAST(stratum_2 AS INT) > 0 then count_value else 0 end) as num_persons_after
 from @ohdsi_database_schema.heracles_results
 where analysis_id in (1830) --first occurrence of procedure
 and cohort_definition_id in (@cohortDefinitionId)

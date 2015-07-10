@@ -331,6 +331,11 @@
       	</exclusion>
       </exclusions>
     </dependency>
+    <dependency>
+      <groupId>com.amazon.redshift</groupId>
+      <artifactId>jdbc41</artifactId>
+      <version>1.1.6.1006</version>
+    </dependency>
   </dependencies>
   <profiles>
     <profile>

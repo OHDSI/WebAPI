@@ -1,9 +1,12 @@
 package org.ohdsi.webapi.service;
 
+import java.sql.Driver;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -367,7 +370,7 @@ public class VocabularyService extends AbstractDaoService {
     final VocabularyInfo info = new VocabularyInfo();
     Source source = getSourceRepository().findBySourceKey(sourceKey);    
     String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);     
-
+    
     String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/getInfo.sql");
     info.dialect = source.getSourceDialect();
     

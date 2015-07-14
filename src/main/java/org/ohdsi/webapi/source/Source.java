@@ -42,10 +42,7 @@ public class Source implements Serializable {
   
   @OneToMany(fetch= FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "source")
   private Collection<SourceDaimon> daimons;
-  
-  @Column(name="SOURCE_TYPE")  
-  private int sourceType;
-  
+    
   @Column(name="SOURCE_NAME")  
   private String sourceName;
   
@@ -91,14 +88,6 @@ public class Source implements Serializable {
 
   public void setSourceId(int sourceId) {
     this.sourceId = sourceId;
-  }
-
-  public int getSourceType() {
-    return sourceType;
-  }
-
-  public void setSourceType(int sourceType) {
-    this.sourceType = sourceType;
   }
 
   public String getSourceName() {

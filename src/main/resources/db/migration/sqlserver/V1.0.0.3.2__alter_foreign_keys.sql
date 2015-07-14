@@ -1,7 +1,7 @@
 IF (EXISTS (SELECT * 
                  FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS 
                  WHERE CONSTRAINT_SCHEMA = 'dbo' 
-                 AND  CONSTRAINT_NAME = 'FK_feasibility_inclusion_feasibility_study'))
+                 AND  CONSTRAINT_NAME = 'FK_cohort_definition_details_cohort_definition'))
 BEGIN
 ALTER TABLE dbo.cohort_definition_details
   DROP CONSTRAINT FK_cohort_definition_details_cohort_definition

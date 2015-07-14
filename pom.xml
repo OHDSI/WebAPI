@@ -39,7 +39,7 @@
     <!-- Note: Schema name is case-sensitive. -->
     <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
     <flyway.validateOnMigrate>false</flyway.validateOnMigrate>
-		
+    <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>		
     <!-- CDM properties -->
     <source.name>CDM_NAME</source.name>
     <cdm.version>5</cdm.version>

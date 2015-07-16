@@ -59,6 +59,7 @@ public class DataAccessConfig {
     for (String driverName : supportedDrivers) {
       try {
         Class.forName(driverName);
+        System.out.println("driver loaded: " + driverName);
       } catch (Exception ex) {
         System.out.println("error loading " + driverName + " driver.");
       }

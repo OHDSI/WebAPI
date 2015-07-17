@@ -1,3 +1,4 @@
+/*
 ALTER TABLE feasibility_study DROP CONSTRAINT FK_feasibility_study_feas_study_generation_info;
 
 CREATE TABLE tmp_ms_xx_feas_study_generation_info (
@@ -32,3 +33,4 @@ ALTER TABLE feasibility_study DROP COLUMN generate_info_id;
 
 ALTER TABLE feas_study_generation_info
   ADD CONSTRAINT FK_feas_study_generation_info_feasibility_study FOREIGN KEY (study_id) REFERENCES feasibility_study (id);
+*/

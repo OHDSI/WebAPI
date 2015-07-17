@@ -1,3 +1,4 @@
+/*
 ALTER TABLE cohort_generation_info DROP CONSTRAINT FK_cohort_generation_info_cohort_definition;
 
 CREATE TABLE tmp_ms_xx_cohort_generation_info (
@@ -32,3 +33,4 @@ ALTER TABLE cohort_generation_info
   ADD CONSTRAINT FK_cohort_generation_info_cohort_definition 
   FOREIGN KEY (id) REFERENCES cohort_definition (id) 
   ON DELETE CASCADE ON UPDATE CASCADE;
+*/

@@ -3,10 +3,10 @@ ALTER TABLE feasibility_study DROP CONSTRAINT FK_feasibility_study_feas_study_ge
 CREATE TABLE tmp_ms_xx_feas_study_generation_info (
     study_id           INT      NOT NULL,
     source_id          INT      NOT NULL,
-    start_time         DATETIME NULL,
+    start_time         Timestamp(3) NULL,
     execution_duration INT      NULL,
     status             INT      NOT NULL,
-    is_valid           BIT      NOT NULL,
+    is_valid           Boolean      NOT NULL,
     CONSTRAINT tmp_ms_xx_constraint_PK_feas_study_generation_info PRIMARY KEY (study_id,source_id)
 );
 

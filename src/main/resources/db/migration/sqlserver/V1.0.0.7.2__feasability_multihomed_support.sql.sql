@@ -32,5 +32,5 @@ EXECUTE sp_rename N'[dbo].[tmp_ms_xx_constraint_PK_feas_study_generation_info]',
 
 ALTER TABLE [dbo].[feasibility_study] DROP COLUMN [generate_info_id];
 
-ALTER TABLE [dbo].[feas_study_generation_info] WITH NOCHECK
+ALTER TABLE [dbo].[feas_study_generation_info]
     ADD CONSTRAINT [FK_feas_study_generation_info_feasibility_study] FOREIGN KEY ([study_id]) REFERENCES [dbo].[feasibility_study] ([id]);

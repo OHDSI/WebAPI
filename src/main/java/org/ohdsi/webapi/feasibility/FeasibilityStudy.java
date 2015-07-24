@@ -18,6 +18,7 @@ package org.ohdsi.webapi.feasibility;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
@@ -27,16 +28,14 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.MapsId;
 import javax.persistence.NamedAttributeNode;
 import javax.persistence.NamedEntityGraph;
 import javax.persistence.NamedEntityGraphs;
-import javax.persistence.NamedSubgraph;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.OrderColumn;
 import javax.persistence.Table;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 
 /**
  *
@@ -55,7 +54,7 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
   @NamedEntityGraph(
       name = "FeasibilityStudy.forInfo",
       attributeNodes = { 
-        @NamedAttributeNode(value = "info")
+        @NamedAttributeNode(value = "studyGenerationInfoList")
       }
   )
 })
@@ -79,11 +78,10 @@ public class FeasibilityStudy {
   @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
   @JoinColumn(name="result_def_id")
   private CohortDefinition resultRule;  
+
+  @OneToMany(fetch= FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "study", orphanRemoval=true)
+  private Set<StudyGenerationInfo> studyGenerationInfoList;  
   
-  @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, optional = true, orphanRemoval = true)
-  @JoinColumn(name="generate_info_id")
-  private StudyInfo info;  
-   
   @Column(name="created_by")
   private String createdBy;
   
@@ -145,15 +143,15 @@ public class FeasibilityStudy {
     this.resultRule = resultRule;
     return this;
   }
-  
-  public StudyInfo getInfo() {
-    return info;
+
+  public Set<StudyGenerationInfo> getStudyGenerationInfoList() {
+    return studyGenerationInfoList;
   }
 
-  public FeasibilityStudy setInfo(StudyInfo info) {
-    this.info = info;
+  public FeasibilityStudy setStudyGenerationInfoList(Set<StudyGenerationInfo> studyGenerationInfoList) {
+    this.studyGenerationInfoList = studyGenerationInfoList;
     return this;
-  }  
+  }
 
   public String getCreatedBy() {
     return createdBy;

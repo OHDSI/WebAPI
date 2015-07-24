@@ -9,193 +9,175 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.springframework.util.StringUtils;
 
 /**
  *
  */
 public abstract class AbstractDaoService {
-    
-    protected final Log log = LogFactory.getLog(getClass());
-    
-    @Value("${datasource.cdm.database}")
-    private String cdmDatabase;
-    
-    @Value("${datasource.cdm.schema}")
-    private String cdmSchema;
-    
-    @Value("${datasource.ohdsi.schema}")
-    private String ohdsiSchema;
-    
-    @Value("${datasource.dialect}")
-    private String dialect;
-    
-    @Value("${datasource.dialect.source}")
-    private String sourceDialect;
-    
-    @Value("${source.name}")
-    private String sourceName;
-    
-    @Value("${cdm.version}")
-    private String cdmVersion;
-    
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-    
-    @Autowired
-    private TransactionTemplate transactionTemplate;
-    
-    @Autowired
-    private TransactionTemplate transactionTemplateRequiresNew;
-    
-    /**
-     * if cdmDatabase is provided, return cdmDatabase.cdmSchema, else return cdmSchema.
-     * @return the cdmSchema
-     */
-    public String getCdmSchema() {
-      String schema = (cdmDatabase != null && cdmDatabase.length() > 0) ? cdmDatabase + "." : "";
-      return schema + cdmSchema;
-    }
-    
-    /**
-     * @param cdmSchema the cdmSchema to set
-     */
-    public void setCdmSchema(String cdmSchema) {
-        this.cdmSchema = cdmSchema;
-    }
-    
-    /**
-     * @return the ohdsiSchema
-     */
-    public String getOhdsiSchema() {
-        return ohdsiSchema;
-    }
-    
-    /**
-     * @param ohdsiSchema the ohdsiSchema to set
-     */
-    public void setOhdsiSchema(String ohdsiSchema) {
-        this.ohdsiSchema = ohdsiSchema;
-    }
-    
-    /**
-     * @return the dialect
-     */
-    public String getDialect() {
-        return dialect;
-    }
-    
-    /**
-     * @param dialect the dialect to set
-     */
-    public void setDialect(String dialect) {
-        this.dialect = dialect;
-    }
-    
-    /**
-     * @return the jdbcTemplate
-     */
-    public JdbcTemplate getJdbcTemplate() {
-        return jdbcTemplate;
-    }
-    
-    /**
-     * @return the sourceDialect
-     */
-    public String getSourceDialect() {
-        return sourceDialect;
-    }
-    
-    /**
-     * @param sourceDialect the sourceDialect to set
-     */
-    public void setSourceDialect(String sourceDialect) {
-        this.sourceDialect = sourceDialect;
-    }
+
+  protected final Log log = LogFactory.getLog(getClass());
+
+  @Value("${datasource.cdm.database}")
+  private String cdmDatabase;
+
+  @Value("${datasource.cdm.schema}")
+  private String cdmSchema;
+
+  @Value("${datasource.ohdsi.schema}")
+  private String ohdsiSchema;
+
+  @Value("${datasource.dialect}")
+  private String dialect;
+
+  @Value("${datasource.dialect.source}")
+  private String sourceDialect;
+
+  @Value("${source.name}")
+  private String sourceName;
+
+  @Value("${cdm.version}")
+  private String cdmVersion;
+
+  @Autowired
+  private JdbcTemplate jdbcTemplate;
 
 
-	/**
-	 * @return the sourceName
-	 */
-	public String getSourceName() {
-		return sourceName;
-	}
+  @Autowired
+  private SourceRepository sourceRepository;
 
-	/**
-	 * @param sourceName the sourceName to set
-	 */
-	public void setSourceName(String sourceName) {
-		this.sourceName = sourceName;
-	}
+  @Autowired
+  private TransactionTemplate transactionTemplate;
 
-	/**
-	 * @return the cdmVersion
-	 */
-	public String getCdmVersion() {
-		return cdmVersion;
-	}
+  @Autowired
+  private TransactionTemplate transactionTemplateRequiresNew;
 
-	/**
-	 * @param cdmVersion the cdmVersion to set
-	 */
-	public void setCdmVersion(String cdmVersion) {
-		this.cdmVersion = cdmVersion;
-	}
+  public SourceRepository getSourceRepository() {
+    return sourceRepository;
+  }
+  
+  /**
+   * @return the dialect
+   */
+  public String getDialect() {
+    return dialect;
+  }
 
-	protected List<Map<String, String>> genericResultSetLoader(String sql) {
-		List<Map<String, String>> results = null;
-		try {
-			results = getJdbcTemplate().query(sql, new RowMapper<Map<String, String>>(){
+  /**
+   * @param dialect the dialect to set
+   */
+  public void setDialect(String dialect) {
+    this.dialect = dialect;
+  }
 
-				@Override
-				public Map<String, String> mapRow(ResultSet rs, int rowNum)
-						throws SQLException {
-					Map<String, String> result = new HashMap<String, String>();
-					ResultSetMetaData metaData = rs.getMetaData();
-					int colCount = metaData.getColumnCount();
-					for (int i = 1; i <= colCount; i++) {
-						String columnLabel = metaData.getColumnLabel(i);
-						String columnValue = String.valueOf(rs.getObject(i));
-						result.put(columnLabel, columnValue);
-					}
-					return result;
-				}
+  /**
+   * @return the jdbcTemplate
+   */
+  public JdbcTemplate getJdbcTemplate() {
+    return jdbcTemplate;
+  }
 
-			});
+  public JdbcTemplate getSourceJdbcTemplate(Source source) {
+    DriverManagerDataSource dataSource = new DriverManagerDataSource(source.getSourceConnection());
+    JdbcTemplate template = new JdbcTemplate(dataSource);
+    return template;
+  }
 
-		} catch (Exception e) {
-			log.error("error loading in result set", e);
-		}
-		return results;
-	}
+  /**
+   * @return the sourceDialect
+   */
+  public String getSourceDialect() {
+    return sourceDialect;
+  }
 
-    
-    /**
-     * @return the transactionTemplate
-     */
-    public TransactionTemplate getTransactionTemplate() {
-        return transactionTemplate;
+  /**
+   * @param sourceDialect the sourceDialect to set
+   */
+  public void setSourceDialect(String sourceDialect) {
+    this.sourceDialect = sourceDialect;
+  }
+
+  /**
+   * @return the sourceName
+   */
+  public String getSourceName() {
+    return sourceName;
+  }
+
+  /**
+   * @param sourceName the sourceName to set
+   */
+  public void setSourceName(String sourceName) {
+    this.sourceName = sourceName;
+  }
+
+  /**
+   * @return the cdmVersion
+   */
+  public String getCdmVersion() {
+    return cdmVersion;
+  }
+
+  /**
+   * @param cdmVersion the cdmVersion to set
+   */
+  public void setCdmVersion(String cdmVersion) {
+    this.cdmVersion = cdmVersion;
+  }
+
+  protected List<Map<String, String>> genericResultSetLoader(String sql, Source source) {
+    List<Map<String, String>> results = null;
+    try {
+      results = getSourceJdbcTemplate(source).query(sql, new RowMapper<Map<String, String>>() {
+
+        @Override
+        public Map<String, String> mapRow(ResultSet rs, int rowNum)
+                throws SQLException {
+          Map<String, String> result = new HashMap<String, String>();
+          ResultSetMetaData metaData = rs.getMetaData();
+          int colCount = metaData.getColumnCount();
+          for (int i = 1; i <= colCount; i++) {
+            String columnLabel = metaData.getColumnLabel(i);
+            String columnValue = String.valueOf(rs.getObject(i));
+            result.put(columnLabel, columnValue);
+          }
+          return result;
+        }
+
+      });
+
+    } catch (Exception e) {
+      log.error("error loading in result set", e);
     }
+    return results;
+  }
 
-    
-    /**
-     * @return the transactionTemplateRequiresNew
-     */
-    public TransactionTemplate getTransactionTemplateRequiresNew() {
-        return transactionTemplateRequiresNew;
-    }
+  /**
+   * @return the transactionTemplate
+   */
+  public TransactionTemplate getTransactionTemplate() {
+    return transactionTemplate;
+  }
 
-    
-    /**
-     * @param transactionTemplateRequiresNew the transactionTemplateRequiresNew to set
-     */
-    public void setTransactionTemplateRequiresNew(TransactionTemplate transactionTemplateRequiresNew) {
-        this.transactionTemplateRequiresNew = transactionTemplateRequiresNew;
-    }
+  /**
+   * @return the transactionTemplateRequiresNew
+   */
+  public TransactionTemplate getTransactionTemplateRequiresNew() {
+    return transactionTemplateRequiresNew;
+  }
+
+  /**
+   * @param transactionTemplateRequiresNew the transactionTemplateRequiresNew to
+   * set
+   */
+  public void setTransactionTemplateRequiresNew(TransactionTemplate transactionTemplateRequiresNew) {
+    this.transactionTemplateRequiresNew = transactionTemplateRequiresNew;
+  }
 }
- 

@@ -15,25 +15,21 @@
  */
 package org.ohdsi.webapi.feasibility;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
-import org.ohdsi.webapi.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfo;
-import org.ohdsi.webapi.cohortdefinition.CriteriaGroup;
-import org.ohdsi.webapi.cohortdefinition.ExpressionType;
 import org.ohdsi.webapi.cohortdefinition.GenerationStatus;
+import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
@@ -56,6 +52,8 @@ public class PerformFeasibilityTasklet implements Tasklet {
   private static final Log log = LogFactory.getLog(PerformFeasibilityTasklet.class);
 
   private final static FeasibilityStudyQueryBuilder studyQueryBuilder = new FeasibilityStudyQueryBuilder();
+  private final static String CREATE_TEMP_TABLES_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/feasibility/sql/inclusionRuleTable_CREATE.sql"); 
+  private final static String DROP_TEMP_TABLES_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/feasibility/sql/inclusionRuleTable_DROP.sql"); 
 
   private final JdbcTemplate jdbcTemplate;
   private final TransactionTemplate transactionTemplate;
@@ -73,121 +71,104 @@ public class PerformFeasibilityTasklet implements Tasklet {
     this.cohortDefinitionRepository = cohortDefinitionRepository;
   }
 
+  private StudyGenerationInfo findStudyGenerationInfoBySourceId(Collection<StudyGenerationInfo> infoList, Integer sourceId)
+  {
+    for (StudyGenerationInfo info : infoList) {
+      if (info.getId().getSourceId()== sourceId)
+        return info;
+    }
+    return null;
+  }
+  
+  private CohortGenerationInfo findCohortGenerationInfoBySourceId(Collection<CohortGenerationInfo> infoList, Integer sourceId)
+  {
+    for (CohortGenerationInfo info : infoList) {
+      if (info.getId().getSourceId()== sourceId)
+        return info;
+    }
+    return null;
+  }
+  
+  private void prepareTempTables(FeasibilityStudy study, String dialect, String sessionId)
+  {
+      String translatedSql = SqlTranslate.translateSql(CREATE_TEMP_TABLES_TEMPLATE, "sql server", dialect, SessionUtils.sessionId(), null);
+      this.jdbcTemplate.execute(translatedSql);
+      
+      String insertSql = SqlTranslate.translateSql("INSERT INTO #inclusionRules (study_id, sequence, name) VALUES (?,?,?)","sql server", dialect, sessionId, null);
+      List<InclusionRule> inclusionRules = study.getInclusionRules();
+      for (int i = 0; i< inclusionRules.size(); i++)
+      {
+        InclusionRule r = inclusionRules.get(i);
+        this.jdbcTemplate.update(insertSql, new Object[] { study.getId(), i, r.getName()});
+      }
+  }
+  
+  private void cleanupTempTables(String dialect, String sessionId)
+  {
+    String translatedSql = SqlTranslate.translateSql(DROP_TEMP_TABLES_TEMPLATE, "sql server", dialect, SessionUtils.sessionId(), null);
+    this.jdbcTemplate.execute(translatedSql);
+  }
+  
   private int[] doTask(ChunkContext chunkContext) {
     Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
     Integer studyId = Integer.valueOf(jobParams.get("study_id").toString());
     int[] result = null;
     try {
-      FeasibilityStudy p = this.feasibilityStudyRepository.findOne(studyId);
+      String sessionId = SessionUtils.sessionId();
+      FeasibilityStudy study = this.feasibilityStudyRepository.findOne(studyId);
       FeasibilityStudyQueryBuilder.BuildExpressionQueryOptions options = new FeasibilityStudyQueryBuilder.BuildExpressionQueryOptions();
       options.cdmSchema = jobParams.get("cdm_database_schema").toString();
+      options.ohdsiSchema = jobParams.get("target_database_schema").toString();
       options.cohortTable = jobParams.get("target_database_schema").toString() + "." + jobParams.get("target_table").toString();
-      
-      String expressionSql = studyQueryBuilder.buildSimulateQuery(p, options);
-      String translatedSql = SqlTranslate.translateSql(expressionSql, "sql server", jobParams.get("target_dialect").toString(), SessionUtils.sessionId(), null);
-      String[] sqlStatements = SqlSplit.splitSql(translatedSql);
-      result = PerformFeasibilityTasklet.this.jdbcTemplate.batchUpdate(sqlStatements);
+      if (study.getResultRule() != null) {
+        prepareTempTables(study, jobParams.get("target_dialect").toString(), sessionId);
+        String expressionSql = studyQueryBuilder.buildSimulateQuery(study, options);
+        String translatedSql = SqlTranslate.translateSql(expressionSql, "sql server", jobParams.get("target_dialect").toString(), sessionId, null);
+        String[] sqlStatements = SqlSplit.splitSql(translatedSql);
+        result = PerformFeasibilityTasklet.this.jdbcTemplate.batchUpdate(sqlStatements);
+        cleanupTempTables(jobParams.get("target_dialect").toString(), sessionId);
+      }
+      else {
+        String expressionSql = studyQueryBuilder.buildNullQuery(study, options);
+        String translatedSql = SqlTranslate.translateSql(expressionSql, "sql server", jobParams.get("target_dialect").toString(), sessionId, null);
+        String[] sqlStatements = SqlSplit.splitSql(translatedSql);
+        result = PerformFeasibilityTasklet.this.jdbcTemplate.batchUpdate(sqlStatements);
+      }
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-
     return result;
   }
 
   @Override
   public RepeatStatus execute(final StepContribution contribution, final ChunkContext chunkContext) throws Exception {
-    Integer studyId = Integer.valueOf(chunkContext.getStepContext().getJobParameters().get("study_id").toString());
     Date startTime = Calendar.getInstance().getTime();
-    
+    Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
+    Integer studyId = Integer.valueOf(jobParams.get("study_id").toString());
+    Integer sourceId = Integer.valueOf(jobParams.get("source_id").toString());
+    boolean isValid = false;
+
     DefaultTransactionDefinition requresNewTx = new DefaultTransactionDefinition();
     requresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     
     TransactionStatus initStatus = this.transactionTemplate.getTransactionManager().getTransaction(requresNewTx);
-    FeasibilityStudy p = this.feasibilityStudyRepository.findOne(studyId);
+    FeasibilityStudy study = this.feasibilityStudyRepository.findOne(studyId);
     
-    // get result definition, create a new definition if it does not exist.
-    CohortDefinition resultDef = p.getResultRule();
-    if (resultDef == null)
+    CohortDefinition resultDef = study.getResultRule();
+    if (resultDef != null)
     {
-      resultDef = new CohortDefinition()
-              .setCreatedBy("system")
-              .setCreatedDate(startTime)
-              .setExpressionType(ExpressionType.SIMPLE_EXPRESSION)
-              .setName("Matching Population for Feasability Study: " + p.getName())
-              .setDescription("Created by Feasability Study Process");
-      resultDef = this.cohortDefinitionRepository.save(resultDef);
-      p.setResultRule(resultDef);
+      CohortGenerationInfo resultInfo = findCohortGenerationInfoBySourceId(resultDef.getGenerationInfoList(), sourceId);
+      resultInfo.setIsValid(false)
+              .setStatus(GenerationStatus.RUNNING)
+              .setStartTime(startTime)
+              .setExecutionDuration(null);
     }
-    CohortDefinitionDetails resultDetails = resultDef.getDetails();
-    if (resultDetails == null)
-    {
-      resultDetails = new CohortDefinitionDetails();
-      resultDetails.setCohortDefinition(resultDef);
-      resultDef.setDetails(resultDetails);
-    }
-    CohortGenerationInfo resultInfo = resultDef.getGenerationInfo();
-    if (resultInfo == null)
-    {
-      resultInfo = new CohortGenerationInfo().setCohortDefinition(resultDef);
-      resultDef.setGenerationInfo(resultInfo);
-    }
-    resultInfo.setIsValid(false)
-            .setStatus(GenerationStatus.RUNNING)
-            .setStartTime(startTime)
-            .setExecutionDuration(null);
-
-    // all resultRule repository objects are initalized; create 'all criteria' cohort definition from index rule + inclusion rules
-    ObjectMapper mapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
-    CohortExpression indexRuleExpression = mapper.readValue(p.getIndexRule().getDetails().getExpression(), CohortExpression.class);
-    if (p.getInclusionRules().size() > 0) // if we have inclusion rules, add then to the index rule expression, else the matching expression == index rule expression
-    {
-      if (indexRuleExpression.additionalCriteria == null)
-      {
-        CriteriaGroup additionalCriteria = new CriteriaGroup();
-        additionalCriteria.type="ALL";
-        indexRuleExpression.additionalCriteria = additionalCriteria;
-      } else {
-        if ("ANY".equalsIgnoreCase(indexRuleExpression.additionalCriteria.type))
-        {
-          // move this CriteriaGroup inside a new parent CriteriaGroup where the parent CriteriaGroup.type == "ALL"
-          CriteriaGroup parentGroup = new CriteriaGroup();
-          parentGroup.type = "ALL";
-          parentGroup.groups = new CriteriaGroup[1];
-          parentGroup.groups[0] = indexRuleExpression.additionalCriteria;
-          indexRuleExpression.additionalCriteria = parentGroup;
-        }
-      }
-      // place each inclusion rule (which is a CriteriaGroup) in the indexRuleExpression.additionalCriteria.group array to create the 'allCriteriaExpression'
-      ArrayList<CriteriaGroup> additionalCriteriaGroups = new ArrayList<>();
-      if (indexRuleExpression.additionalCriteria.groups != null)
-        additionalCriteriaGroups.addAll(Arrays.asList(indexRuleExpression.additionalCriteria.groups));
-
-      for(InclusionRule inclusionRule : p.getInclusionRules())
-      {
-        String inclusionRuleJSON = inclusionRule.getExpression();
-        CriteriaGroup inclusionRuleGroup =  mapper.readValue(inclusionRuleJSON, CriteriaGroup.class);
-        additionalCriteriaGroups.add(inclusionRuleGroup);
-      }
-      // overwrite indexRule additional criteria groups with the new list of groups with inclusion rules
-      indexRuleExpression.additionalCriteria.groups = additionalCriteriaGroups.toArray(new CriteriaGroup[0]);
-    }
-    String allCriteriaExpression = mapper.writeValueAsString(indexRuleExpression); // index rule expression now contains all inclusion criteria as additional criteria
-    resultDetails.setExpression(allCriteriaExpression);
+    StudyGenerationInfo studyInfo = findStudyGenerationInfoBySourceId(study.getStudyGenerationInfoList(), sourceId);
+    studyInfo.setIsValid(false);
+    studyInfo.setStartTime(startTime);
+    studyInfo.setStatus(GenerationStatus.RUNNING);
     
-    resultDef  = cohortDefinitionRepository.save(resultDef);
-    p.setResultRule(resultDef);
-    
-    StudyInfo info = p.getInfo();
-    if (info == null)
-    {
-      info = new StudyInfo(p);
-      p.setInfo(info);
-    }
-    info.setIsValid(false);
-    info.setStartTime(startTime);
-    info.setStatus(GenerationStatus.RUNNING);
-    
-    this.feasibilityStudyRepository.save(p);
+    this.feasibilityStudyRepository.save(study);
     this.transactionTemplate.getTransactionManager().commit(initStatus);
     
     try {
@@ -199,22 +180,32 @@ public class PerformFeasibilityTasklet implements Tasklet {
         }
       });
       log.debug("Update count: " + ret.length);
-      info.setIsValid(true);
-      resultInfo.setIsValid(true);
+      isValid = true;
     } catch (final TransactionException e) {
-      info.setIsValid(false);
-      resultInfo.setIsValid(false);
+      isValid = false;
       log.error(e.getMessage(), e);
       throw e;//FAIL job status
     }
     finally {
       TransactionStatus completeStatus = this.transactionTemplate.getTransactionManager().getTransaction(requresNewTx);
       Date endTime = Calendar.getInstance().getTime();
-      info.setExecutionDuration(new Integer((int)(endTime.getTime() - startTime.getTime())));
-      info.setStatus(GenerationStatus.COMPLETE);
-      resultInfo.setExecutionDuration(info.getExecutionDuration());
-      resultInfo.setStatus(GenerationStatus.COMPLETE);
-      this.feasibilityStudyRepository.save(p);
+      study = this.feasibilityStudyRepository.findOne(studyId);
+      resultDef = study.getResultRule();
+      if (resultDef != null)
+      {
+        CohortGenerationInfo resultInfo = findCohortGenerationInfoBySourceId(resultDef.getGenerationInfoList(), sourceId);
+        resultInfo = findCohortGenerationInfoBySourceId(resultDef.getGenerationInfoList(), sourceId);
+        resultInfo.setIsValid(isValid);
+        resultInfo.setExecutionDuration(new Integer((int)(endTime.getTime() - startTime.getTime())));
+        resultInfo.setStatus(GenerationStatus.COMPLETE);
+      }
+      
+      studyInfo = findStudyGenerationInfoBySourceId(study.getStudyGenerationInfoList(), sourceId);
+      studyInfo.setIsValid(isValid);
+      studyInfo.setExecutionDuration(new Integer((int)(endTime.getTime() - startTime.getTime())));
+      studyInfo.setStatus(GenerationStatus.COMPLETE);
+      
+      this.feasibilityStudyRepository.save(study);
       this.transactionTemplate.getTransactionManager().commit(completeStatus);
     }
 

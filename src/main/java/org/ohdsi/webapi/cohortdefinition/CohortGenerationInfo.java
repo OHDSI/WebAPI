@@ -15,13 +15,14 @@
  */
 package org.ohdsi.webapi.cohortdefinition;
 
+import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Column;
+import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.MapsId;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 /**
@@ -30,17 +31,27 @@ import javax.persistence.Table;
  */
 @Entity(name = "CohortGenerationInfo")
 @Table(name="cohort_generation_info")
-public class CohortGenerationInfo {
+public class CohortGenerationInfo implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  @Id
-  private Integer id;
-  
-  @MapsId
-  @OneToOne
-  @JoinColumn(name="id")
-  private CohortDefinition definition;
+  public  CohortGenerationInfo()
+  {    
+  }
 
+  public  CohortGenerationInfo(CohortDefinition definition, Integer sourceId)
+  {    
+    this.id = new CohortGenerationInfoId(definition.getId(), sourceId);
+    this.cohortDefinition = definition;
+  }
+
+  @EmbeddedId
+  private CohortGenerationInfoId id;
+  
+  @ManyToOne
+  @MapsId("cohortDefinitionId")
+  @JoinColumn(name="id", referencedColumnName="id")
+  private CohortDefinition cohortDefinition;
+  
   @Column(name="start_time")
   private Date startTime;  
   
@@ -52,17 +63,11 @@ public class CohortGenerationInfo {
   
   @Column(name="is_valid")
   private boolean isValid;
-  
-  
-  public Integer getId() {
+
+  public CohortGenerationInfoId getId() {
     return id;
   }
-
-  public CohortGenerationInfo setId(Integer id) {
-    this.id = id;
-    return this;
-  }
-
+  
   public Date getStartTime() {
     return startTime;
   }
@@ -96,11 +101,6 @@ public class CohortGenerationInfo {
 
   public CohortGenerationInfo setIsValid(boolean isValid) {
     this.isValid = isValid;
-    return this;
-  }
-  
-  public CohortGenerationInfo setCohortDefinition(CohortDefinition definition) {
-    this.definition = definition;
     return this;
   }
 }

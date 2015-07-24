@@ -452,7 +452,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // visitType
     if (criteria.visitType != null && criteria.visitType.length > 0)
     {
-      whereClauses.add(String.format("V.visit_type_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.visitType),",")));
+      whereClauses.add(String.format("V.visit_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.visitType),",")));
     }
 
     String whereClause = "";
@@ -634,7 +634,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // visitType
     if (criteria.visitType != null && criteria.visitType.length > 0)
     {
-      whereClauses.add(String.format("V.visit_type_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.visitType),",")));
+      whereClauses.add(String.format("V.visit_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.visitType),",")));
     }
     
     String whereClause = "";
@@ -929,7 +929,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // visitType
     if (criteria.visitType != null && criteria.visitType.length > 0)
     {
-      whereClauses.add(String.format("V.visit_type_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.visitType),",")));
+      whereClauses.add(String.format("V.visit_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.visitType),",")));
     }
     
     String whereClause = "";
@@ -1060,7 +1060,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // visitType
     if (criteria.visitType != null && criteria.visitType.length > 0)
     {
-      whereClauses.add(String.format("V.visit_type_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.visitType),",")));
+      whereClauses.add(String.format("V.visit_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.visitType),",")));
     }
     
     String whereClause = "";
@@ -1173,7 +1173,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // visitType
     if (criteria.visitType != null && criteria.visitType.length > 0)
     {
-      whereClauses.add(String.format("V.visit_type_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.visitType),",")));
+      whereClauses.add(String.format("V.visit_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.visitType),",")));
     }
     
     String whereClause = "";
@@ -1328,7 +1328,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     // visitType
     if (criteria.visitType != null && criteria.visitType.length > 0)
     {
-      whereClauses.add(String.format("V.visit_type_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.visitType),",")));
+      whereClauses.add(String.format("V.visit_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.visitType),",")));
     }
 
     

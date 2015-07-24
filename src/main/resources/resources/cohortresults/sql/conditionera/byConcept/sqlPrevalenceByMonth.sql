@@ -7,5 +7,5 @@ from
 	(select * from @ohdsi_database_schema.heracles_results where analysis_id = 117 and cohort_definition_id in (@cohortDefinitionId)) denom
 	on num.stratum_2 = denom.stratum_1  --calendar year
 	inner join
-	@cdm_database_schema.concept c1 on CAST(num.stratum_1 as INT) = c1.concept_id
+	@cdm_database_schema.concept c1 on num.stratum_1  = CAST(c1.concept_id as VARCHAR)
 WHERE c1.concept_id = @conceptId

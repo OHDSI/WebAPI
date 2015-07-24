@@ -38,6 +38,7 @@
     <flyway.locations>classpath:db/migration/sqlserver</flyway.locations>
     <!-- Note: Schema name is case-sensitive. -->
     <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
+    <flyway.validateOnMigrate>false</flyway.validateOnMigrate>
 		
     <!-- CDM properties -->
     <source.name>CDM_NAME</source.name>
@@ -177,6 +178,11 @@
       <url>http://repo.ohdsi.org:8085/nexus/content/repositories/releases</url>
     </repository>
     <repository>
+      <id>ohdsi.thirdparty</id>
+      <name>repo.ohdsi.org</name>
+      <url>http://repo.ohdsi.org:8085/nexus/content/repositories/thirdparty</url>
+    </repository>    
+    <repository>
       <id>ohdsi.snapshots</id>
       <name>repo.ohdsi.org-snapshots</name>
       <url>http://repo.ohdsi.org:8085/nexus/content/repositories/snapshots</url>
@@ -223,6 +229,11 @@
   <dependencies>
     <!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-actuator</artifactId> 
     <version>${spring.boot.version}</version> </dependency> -->
+    <dependency>
+      <groupId>postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>9.1-901-1.jdbc4</version>
+    </dependency>    
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter</artifactId>
@@ -315,15 +326,20 @@
       <artifactId>spring-batch-admin-manager</artifactId>
       <version>2.0.0.M1</version>
       <exclusions>
-      	<exclusion>
-      		<artifactId>freemarker</artifactId>
-      		<groupId>org.freemarker</groupId>
-      	</exclusion>
-      	<exclusion>
-      		<artifactId>commons-dbcp</artifactId>
-      		<groupId>commons-dbcp</groupId>
-      	</exclusion>
+        <exclusion>
+          <artifactId>freemarker</artifactId>
+          <groupId>org.freemarker</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>commons-dbcp</artifactId>
+          <groupId>commons-dbcp</groupId>
+        </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.amazon</groupId>
+      <artifactId>redshiftjdbc41</artifactId>
+      <version>1.1.6.1006</version>
     </dependency>
   </dependencies>
   <profiles>
@@ -401,6 +417,31 @@
           <type>jar</type>
         </dependency>
       </dependencies>	            
-    </profile>                  
+    </profile>  
+    <profile>
+      <id>webapi-local</id>
+      <properties>
+        <datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</datasource.driverClassName>
+        <datasource.url>jdbc:sqlserver://server</datasource.url>
+        <datasource.username>USER</datasource.username>
+        <datasource.password>PASS</datasource.password>
+        <datasource.dialect>sql server</datasource.dialect>
+        <datasource.cdm.schema>CDM_schema</datasource.cdm.schema>
+        <datasource.ohdsi.schema>OHDSI_schema</datasource.ohdsi.schema>
+        <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
+        <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
+        <flyway.datasource.username>FLYWAY_USER</flyway.datasource.username>
+        <flyway.datasource.password>FLYWAY_PASS</flyway.datasource.password>
+        <flyway.locations>classpath:db/migration/sqlserver</flyway.locations>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>com.microsoft.sqlserver</groupId>
+          <artifactId>sqljdbc4</artifactId>
+          <version>4.0</version>
+          <type>jar</type>
+        </dependency>
+      </dependencies>	            
+    </profile>                         
   </profiles>
 </project>

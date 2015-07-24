@@ -6,7 +6,7 @@ select c1.concept_id as condition_concept_id,
 from @ohdsi_database_schema.heracles_results hr1
        inner join
        @cdm_database_schema.concept c1
-       on CAST(hr1.stratum_1 AS INT) = c1.concept_id
+       on hr1.stratum_1 = CAST(c1.concept_id as VARCHAR(255))
        inner join
        (
        select concept_id,
@@ -30,7 +30,7 @@ from @ohdsi_database_schema.heracles_results hr1
        where lower(domain_id) = 'condition type' 
        
        ) c2
-       on CAST(hr1.stratum_2 AS INT) = c2.concept_id
+       on hr1.stratum_2 = CAST(c2.concept_id as VARCHAR(255))
 where hr1.analysis_id = 405
 and hr1.cohort_definition_id in (@cohortDefinitionId)
   and c1.concept_id = @conceptId

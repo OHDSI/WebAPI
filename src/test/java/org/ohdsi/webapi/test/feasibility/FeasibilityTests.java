@@ -40,7 +40,7 @@ import org.springframework.test.context.transaction.TransactionConfiguration;
  */
 @RunWith(SpringJUnit4ClassRunner.class) 
 @SpringApplicationConfiguration(classes = WebApi.class)
-@TransactionConfiguration(defaultRollback=false,transactionManager="transactionManager")
+@TransactionConfiguration(defaultRollback=true,transactionManager="transactionManager")
 public class FeasibilityTests {
   
   @Autowired

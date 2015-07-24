@@ -24,9 +24,11 @@ import org.junit.runner.RunWith;
 import org.ohdsi.webapi.WebApi;
 import org.ohdsi.webapi.feasibility.FeasibilityStudy;
 import org.ohdsi.webapi.feasibility.FeasibilityStudyRepository;
-import org.ohdsi.webapi.feasibility.StudyInfo;
+import org.ohdsi.webapi.feasibility.StudyGenerationInfo;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.GenerationStatus;
+import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -42,7 +44,7 @@ import org.springframework.transaction.support.TransactionTemplate;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = WebApi.class)
-@TransactionConfiguration(defaultRollback = false, transactionManager = "transactionManager")
+@TransactionConfiguration(defaultRollback = true, transactionManager = "transactionManager")
 public class StudyInfoTest {
 
   @Autowired
@@ -50,7 +52,10 @@ public class StudyInfoTest {
 
   @Autowired
   private FeasibilityStudyRepository studyRepository;
-
+  
+  @Autowired
+  private SourceRepository sourceRepository;
+  
   @Autowired
   private TransactionTemplate transactionTemplate;  
   
@@ -64,18 +69,20 @@ public class StudyInfoTest {
     DefaultTransactionDefinition requiresNewTx = new DefaultTransactionDefinition();
     requiresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     
+    Source source = sourceRepository.findOne(1);
+    
     TransactionStatus saveTx = this.transactionTemplate.getTransactionManager().getTransaction(requiresNewTx);
     FeasibilityStudy newStudy = new FeasibilityStudy();
     newStudy.setName("Test Info Study");
     newStudy = this.studyRepository.save(newStudy);
-    StudyInfo info = new StudyInfo(newStudy);
+    StudyGenerationInfo info = new StudyGenerationInfo(newStudy, source); // for testing, assume a sourceId of 1 exists.
     info.setStatus(GenerationStatus.PENDING);
-    newStudy.setInfo(info);
+    newStudy.getStudyGenerationInfoList().add(info);
     this.studyRepository.save(newStudy);
     this.transactionTemplate.getTransactionManager().commit(saveTx);
     
     TransactionStatus updateTx = this.transactionTemplate.getTransactionManager().getTransaction(requiresNewTx);
-    newStudy.setInfo(null);
+    newStudy.getStudyGenerationInfoList().clear();
     this.studyRepository.save(newStudy);
     this.transactionTemplate.getTransactionManager().commit(updateTx);
     

@@ -97,7 +97,7 @@ public class EvidenceService extends AbstractDaoService {
 
     for (Map rs : rows) {
       String evi_type = (String) rs.get("EV_TYPE");
-      String modality = (String) rs.get("EV_MODALITY");
+      boolean modality = (boolean) rs.get("EV_MODALITY");
       String linkout = (String) rs.get("EV_LINKOUT");
       String hoi = String.valueOf((Integer) rs.get("EV_HOI"));
       String statType = (String) rs.get("EV_STAT_TYPE");
@@ -148,7 +148,7 @@ public class EvidenceService extends AbstractDaoService {
 
     for (Map rs : rows) {
       String evi_type = (String) rs.get("EV_TYPE");
-      String modality = (String) rs.get("EV_MODALITY");
+      boolean modality = (boolean) rs.get("EV_MODALITY");
       String linkout = (String) rs.get("EV_LINKOUT");
       String drug = String.valueOf((Integer) rs.get("EV_DRUG"));
       String statType = (String) rs.get("EV_STAT_TYPE");
@@ -202,7 +202,7 @@ public class EvidenceService extends AbstractDaoService {
 
     for (Map rs : rows) {
       String evi_type = (String) rs.get("EV_TYPE");
-      String modality = (String) rs.get("EV_MODALITY");
+      boolean modality = (boolean) rs.get("EV_MODALITY");
       String linkout = (String) rs.get("EV_LINKOUT");
       String statType = (String) rs.get("EV_STAT_TYPE");
       BigDecimal statVal = (BigDecimal) rs.get("EV_STAT_VAL");
@@ -280,8 +280,9 @@ public class EvidenceService extends AbstractDaoService {
       evidence.semmedCaseReportcount = (Integer) rs.get("SEMMEDDB_CASE_COUNT");
       evidence.semmedNegCTcount = (Integer) rs.get("SEMMEDDB_NEG_CT_COUNT");
       evidence.semmedNegCaseReportcount = (Integer) rs.get("SEMMEDDB_NEG_CASE_COUNT");
-      evidence.eb05 = (BigDecimal) rs.get("EB05");
-      evidence.ebgm = (BigDecimal) rs.get("EBGM");
+      //evidence.eb05 = (BigDecimal) rs.get("EB05");
+      //evidence.ebgm = (BigDecimal) rs.get("EBGM");
+      evidence.prr = (BigDecimal) rs.get("PRR");
       evidence.aersReportCount = (Integer) rs.get("AERS_REPORT_COUNT");
 
       drugEvidences.add(evidence);

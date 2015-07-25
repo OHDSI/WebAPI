@@ -17,7 +17,7 @@ public class HoiEvidence {
     public String evidence;
     
     @JsonProperty("MODALITY")
-    public String modality;
+    public boolean modality;
     
     @JsonProperty("LINKOUT")
     public String linkout;

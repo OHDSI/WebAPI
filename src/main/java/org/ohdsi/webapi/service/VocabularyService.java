@@ -1,12 +1,9 @@
 package org.ohdsi.webapi.service;
 
-import java.sql.Driver;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,6 +19,8 @@ import javax.ws.rs.core.Response;
 
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.activity.Activity.ActivityType;
+import org.ohdsi.webapi.activity.Tracker;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
@@ -83,6 +82,8 @@ public class VocabularyService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<Concept> executeSearch(@PathParam("sourceKey") String sourceKey, ConceptSearch search) {
+    Tracker.trackActivity(ActivityType.Search, search.query);
+    
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     // escape single quote for queries
     search.query = search.query.replace("'", "''");
@@ -136,6 +137,8 @@ public class VocabularyService extends AbstractDaoService {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<Concept> executeSearch(@PathParam("sourceKey") String sourceKey, @PathParam("query") String query) {
+    Tracker.trackActivity(ActivityType.Search, query);
+    
     // escape single quote for queries
     query = query.replace("'", "''");
     query = query.replace("[", "[[]");
@@ -145,7 +148,7 @@ public class VocabularyService extends AbstractDaoService {
 
     String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/search.sql");
     sql_statement = SqlRender.renderSql(sql_statement, new String[]{"query", "CDM_schema", "filters"}, new String[]{
-      query, tableQualifier, ""});
+      query.toLowerCase(), tableQualifier, ""});
     sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
 
     return getSourceJdbcTemplate(source).query(sql_statement, this.rowMapper);

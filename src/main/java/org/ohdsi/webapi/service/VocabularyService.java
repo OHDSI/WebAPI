@@ -61,21 +61,65 @@ public class VocabularyService extends AbstractDaoService {
     }
   };
 
-  @Path("lookup")
+  @Path("lookup/identifiers")
   @POST
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public Collection<Concept> executeLookup(@PathParam("sourceKey") String sourceKey, String[] identifiers) {
+  public Collection<Concept> executeIdentifierLookup(@PathParam("sourceKey") String sourceKey, String[] identifiers) {
+    if (identifiers.length == 0)
+      return new ArrayList<>();
+    
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);        
     
-    String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/lookup.sql");
+    String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/lookupIdentifiers.sql");
     sql_statement = SqlRender.renderSql(sql_statement, new String[]{"identifiers", "CDM_schema"}, new String[]{
       JoinArray(identifiers), tableQualifier});
     sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
 
     return getSourceJdbcTemplate(source).query(sql_statement, this.rowMapper);
-  }
+  }  
+  
+  @Path("lookup/sourcecodes")
+  @POST
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Collection<Concept> executeSourcecodeLookup(@PathParam("sourceKey") String sourceKey, String[] sourcecodes) {
+    if (sourcecodes.length == 0)
+      return new ArrayList<>();
+    
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);        
+    
+    for (String sourcecode : sourcecodes) {
+      sourcecode = "'" + sourcecode + "'";
+    }
+    String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/lookupSourcecodes.sql");
+    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"sourcecodes", "CDM_schema"}, new String[]{
+      JoinArray(sourcecodes), tableQualifier});
+    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
+
+    return getSourceJdbcTemplate(source).query(sql_statement, this.rowMapper);
+  }  
+  
+  @Path("lookup/mapped")
+  @POST
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Collection<Concept> executeMappedLookup(@PathParam("sourceKey") String sourceKey, String[] identifiers) {
+    if (identifiers.length == 0)
+      return new ArrayList<>();
+    
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);        
+    
+    String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/getMappedSourcecodes.sql");
+    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"identifiers", "CDM_schema"}, new String[]{
+      JoinArray(identifiers), tableQualifier});
+    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
+
+    return getSourceJdbcTemplate(source).query(sql_statement, this.rowMapper);
+  }  
   
   @Path("search")
   @POST

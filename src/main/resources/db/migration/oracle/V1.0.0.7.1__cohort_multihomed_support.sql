@@ -1,4 +1,4 @@
-ALTER TABLE cohort_generation_info DROP CONSTRAINT FK_cdd_cd;
+ALTER TABLE cohort_generation_info DROP CONSTRAINT FK_cgi_cd;
 
 DROP TABLE cohort_generation_info;
 

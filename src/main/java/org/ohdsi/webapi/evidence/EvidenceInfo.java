@@ -35,4 +35,10 @@ public class EvidenceInfo {
 
     @JsonProperty("SOURCE")
     public String source;
+
+    @JsonProperty("COVERAGE_START_DATE")
+    public Date coverageStartDate;
+
+    @JsonProperty("COVERAGE_END_DATE")
+    public Date coverageEndDate;
 }

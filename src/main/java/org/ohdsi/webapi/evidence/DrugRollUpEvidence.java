@@ -61,12 +61,10 @@ public class DrugRollUpEvidence {
     @JsonProperty("SEMMEDDB_NEG_CASE_COUNT")
     public Integer semmedNegCaseReportcount;	
 
-    @JsonProperty("EB05")
-    public BigDecimal eb05;
-
-    @JsonProperty("EBGM")
-    public BigDecimal ebgm;
-
     @JsonProperty("AERS_REPORT_COUNT")
     public Integer aersReportCount;	
+
+    @JsonProperty("PRR")
+    public BigDecimal prr;
+
 }

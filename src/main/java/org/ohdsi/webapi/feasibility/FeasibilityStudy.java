@@ -17,6 +17,7 @@ package org.ohdsi.webapi.feasibility;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.persistence.CascadeType;
@@ -80,7 +81,7 @@ public class FeasibilityStudy {
   private CohortDefinition resultRule;  
 
   @OneToMany(fetch= FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "study", orphanRemoval=true)
-  private Set<StudyGenerationInfo> studyGenerationInfoList;  
+  private Set<StudyGenerationInfo> studyGenerationInfoList = new HashSet<StudyGenerationInfo>();  
   
   @Column(name="created_by")
   private String createdBy;

@@ -3,7 +3,6 @@ package org.ohdsi.webapi.service;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -23,11 +22,12 @@ import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTask;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTasklet;
 import org.ohdsi.webapi.cohortanalysis.CohortSummary;
 import org.ohdsi.webapi.cohortresults.CohortDashboard;
+import org.ohdsi.webapi.cohortresults.CohortSpecificSummary;
+import org.ohdsi.webapi.cohortresults.VisualizationDataRepository;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.model.results.Analysis;
-import org.ohdsi.webapi.service.CohortDefinitionService.CohortDefinitionDTO;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.SessionUtils;
@@ -53,6 +53,9 @@ public class CohortAnalysisService extends AbstractDaoService {
 
 	@Autowired
 	private CohortResultsService resultsService;
+	
+	@Autowired
+	private VisualizationDataRepository visualizationDataRepository;
 
 	private final RowMapper<Analysis> analysisMapper = new RowMapper<Analysis>() {
 
@@ -149,19 +152,18 @@ public class CohortAnalysisService extends AbstractDaoService {
 		summary.setAnalyses(this.getCohortAnalysesForCohortDefinition(id, sourceKey));
 
 		// total patients
-		List<Map<String, String>> cohortSize = this.resultsService.getCohortResultsRaw(id, "cohortSpecific", "cohortSize", null, null, sourceKey);
-		if (cohortSize != null && cohortSize.size() > 0) {
-			summary.setTotalPatients(cohortSize.get(0).get("NUM_PERSONS"));
-		}
+		Integer persons = this.resultsService.getRawDistinctPersonCount(sourceKey, String.valueOf(id), false);
+		summary.setTotalPatients(String.valueOf(persons));
 
-		List<Map<String, String>> ageAtIndexDistribution = this.resultsService.getCohortResultsRaw(id, "cohortSpecific", "ageAtIndexDistribution", null, null, sourceKey);
-		if (ageAtIndexDistribution != null && ageAtIndexDistribution.size() > 0) {
-			summary.setMeanAge(ageAtIndexDistribution.get(0).get("AVG_VALUE"));
+
+		// median age
+		CohortSpecificSummary cohortSpecific = this.resultsService.getCohortSpecificResults(id, null, null, sourceKey, false);
+		if (cohortSpecific != null && cohortSpecific.getAgeAtIndexDistribution() != null && cohortSpecific.getAgeAtIndexDistribution().size() > 0) {
+			summary.setMeanAge(String.valueOf(cohortSpecific.getAgeAtIndexDistribution().get(0).getMedianValue()));
 		}
 
 		// TODO mean obs period
-
-		CohortDashboard dashboard = this.resultsService.getDashboard(id, null, null, true, sourceKey);
+		CohortDashboard dashboard = this.resultsService.getDashboard(id, null, null, true, sourceKey, false);
 		if (dashboard != null) {
 			summary.setGenderDistribution(dashboard.getGender());
 			summary.setAgeDistribution(dashboard.getAgeAtFirstObservation());
@@ -209,12 +211,12 @@ public class CohortAnalysisService extends AbstractDaoService {
 		String[] params = new String[]{"CDM_schema", "results_schema", "source_name",
 				"smallcellcount", "runHERACLESHeel", "CDM_version", "cohort_definition_id", "list_of_analysis_ids",
 				"condition_concept_ids", "drug_concept_ids", "procedure_concept_ids", "observation_concept_ids",
-				"measurement_concept_ids", "cohort_period_only"};
+				"measurement_concept_ids", "cohort_period_only", "source_id"};
 		String[] values = new String[]{cdmTableQualifier, resultsTableQualifier, task.getSource().getSourceName(),
 				String.valueOf(task.getSmallCellCount()),
 				String.valueOf(task.runHeraclesHeel()).toUpperCase(), "5", cohortDefinitionIds,
 				analysisIds, conditionIds, drugIds, procedureIds, observationIds, measurementIds,
-				String.valueOf(task.isCohortPeriodOnly())};
+				String.valueOf(task.isCohortPeriodOnly()), String.valueOf(task.getSource().getSourceId())};
 		sql = SqlRender.renderSql(sql, params, values);
 		sql = SqlTranslate.translateSql(sql, "sql server", task.getSource().getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
 
@@ -296,7 +298,8 @@ public class CohortAnalysisService extends AbstractDaoService {
 		final JobParameters jobParameters = builder.toJobParameters();
 		log.info(String.format("Beginning run for cohort analysis task: \n %s", taskString));
 
-		CohortAnalysisTasklet tasklet = new CohortAnalysisTasklet(task, getSourceJdbcTemplate(task.getSource()), getTransactionTemplate());
+		CohortAnalysisTasklet tasklet = new CohortAnalysisTasklet(task, getSourceJdbcTemplate(task.getSource()), 
+				getTransactionTemplate(), this.visualizationDataRepository);
 
 		return this.jobTemplate.launchTasklet("cohortAnalysisJob", "cohortAnalysisStep", tasklet, jobParameters);
 	}

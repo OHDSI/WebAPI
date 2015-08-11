@@ -147,26 +147,51 @@ public class CohortAnalysisService extends AbstractDaoService {
 			@PathParam("sourceKey") String sourceKey) {
 
 		CohortSummary summary = new CohortSummary();
-		// FIXME CohortDefinitionService should have a method that passes in source
-		summary.setCohortDefinition(this.definitionService.getCohortDefinition(id));
-		summary.setAnalyses(this.getCohortAnalysesForCohortDefinition(id, sourceKey));
-
-		// total patients
-		Integer persons = this.resultsService.getRawDistinctPersonCount(sourceKey, String.valueOf(id), false);
-		summary.setTotalPatients(String.valueOf(persons));
-
-
-		// median age
-		CohortSpecificSummary cohortSpecific = this.resultsService.getCohortSpecificResults(id, null, null, sourceKey, false);
-		if (cohortSpecific != null && cohortSpecific.getAgeAtIndexDistribution() != null && cohortSpecific.getAgeAtIndexDistribution().size() > 0) {
-			summary.setMeanAge(String.valueOf(cohortSpecific.getAgeAtIndexDistribution().get(0).getMedianValue()));
+		try {
+			summary.setCohortDefinition(this.definitionService.getCohortDefinition(id));
+			summary.setAnalyses(this.getCohortAnalysesForCohortDefinition(id, sourceKey));
+		} catch (Exception e) {
+			log.error("unable to get cohort summary", e);
 		}
 
-		// TODO mean obs period
-		CohortDashboard dashboard = this.resultsService.getDashboard(id, null, null, true, sourceKey, false);
-		if (dashboard != null) {
-			summary.setGenderDistribution(dashboard.getGender());
-			summary.setAgeDistribution(dashboard.getAgeAtFirstObservation());
+		return summary;
+	}
+	
+	/**
+	 * Returns the summary for the cohort
+	 *
+	 * @param id - the cohort_defintion id
+	 * @return Summary data including top summary visualization data this cohort
+	 *
+	 */
+	@GET
+	@Path("/{id}/summarydata")
+	@Produces(MediaType.APPLICATION_JSON)
+	public CohortSummary getCohortSummaryData(@PathParam("id") final int id,
+			@PathParam("sourceKey") String sourceKey) {
+
+		CohortSummary summary = new CohortSummary();
+		
+		try {
+			// total patients
+			Integer persons = this.resultsService.getRawDistinctPersonCount(sourceKey, String.valueOf(id), false);
+			summary.setTotalPatients(String.valueOf(persons));
+	
+	
+			// median age
+			CohortSpecificSummary cohortSpecific = this.resultsService.getCohortSpecificResults(id, null, null, sourceKey, false);
+			if (cohortSpecific != null && cohortSpecific.getAgeAtIndexDistribution() != null && cohortSpecific.getAgeAtIndexDistribution().size() > 0) {
+				summary.setMeanAge(String.valueOf(cohortSpecific.getAgeAtIndexDistribution().get(0).getMedianValue()));
+			}
+	
+			// TODO mean obs period
+			CohortDashboard dashboard = this.resultsService.getDashboard(id, null, null, true, sourceKey, false);
+			if (dashboard != null) {
+				summary.setGenderDistribution(dashboard.getGender());
+				summary.setAgeDistribution(dashboard.getAgeAtFirstObservation());
+			}
+		} catch (Exception e) {
+			log.error(e);
 		}
 
 		return summary;

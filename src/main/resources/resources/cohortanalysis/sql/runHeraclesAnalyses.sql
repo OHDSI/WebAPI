@@ -74,9 +74,6 @@
 
 delete from @results_schema.HERACLES_results where cohort_definition_id IN (@cohort_definition_id) and analysis_id IN (@list_of_analysis_ids);
 delete from @results_schema.HERACLES_results_dist where cohort_definition_id IN (@cohort_definition_id) and analysis_id IN (@list_of_analysis_ids);
--- for now delete all cached viz data, should move to just deleting the ones ran
-delete from @results_schema.HERACLES_visualization_data where cohort_definition_id IN (@cohort_definition_id) 
-	and source_id = @source_id;
 
 --7. generate results for analysis_results
 

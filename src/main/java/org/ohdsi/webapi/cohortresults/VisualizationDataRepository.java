@@ -1,5 +1,7 @@
 package org.ohdsi.webapi.cohortresults;
 
+import java.util.List;
+
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,6 +12,12 @@ public interface VisualizationDataRepository extends CrudRepository<Visualizatio
 				int sourceId,
 				String visualizationKey
 			);
+	
+	public List<VisualizationData> findDistinctVisualizationDataByCohortDefinitionIdAndSourceIdAndVisualizationKey(
+			int cohortDefinitionId,
+			int sourceId,
+			String visualizationKey
+		);
 	
 	public VisualizationData findByCohortDefinitionIdAndSourceIdAndVisualizationKeyAndDrilldownId(
 			int cohortDefinitionId,

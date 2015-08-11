@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.ws.rs.PathParam;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ohdsi.sql.SqlRender;
@@ -129,6 +130,7 @@ public class CohortResultsAnalysisRunner {
 
 		CohortDataDensity data = new CohortDataDensity();
 		final String key = DATA_DENSITY;
+		boolean empty = true;
 
 		String recordsPerPersonSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/datadensity/recordsperperson.sql", id,
 				minCovariatePersonCountParam, minIntervalPersonCountParam, source);
@@ -145,8 +147,14 @@ public class CohortResultsAnalysisRunner {
 		if (conceptsPerPersonSql != null) {
 			data.setConceptsPerPerson(jdbcTemplate.query(conceptsPerPersonSql, new ConceptQuartileMapper()));
 		}
+		
+		if (CollectionUtils.isNotEmpty(data.getRecordsPerPerson())
+				|| CollectionUtils.isNotEmpty(data.getTotalRecords())
+				|| CollectionUtils.isNotEmpty(data.getConceptsPerPerson())) {
+			empty = false;
+		}
 
-		if (save) {
+		if (!empty && save) {
 			this.saveEntity(id, source.getSourceId(), key, data);
 		}
 
@@ -161,6 +169,7 @@ public class CohortResultsAnalysisRunner {
 			boolean save) {
 		CohortDeathData data = new CohortDeathData();
 		final String key = DEATH;
+		boolean empty = true;
 
 		List<ConceptQuartileRecord> age = null;
 		String ageSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/death/sqlAgeAtDeath.sql", id,
@@ -194,7 +203,13 @@ public class CohortResultsAnalysisRunner {
 		}
 		data.setPrevalenceByMonth(prevalenceByMonth);
 
-		if (save) {
+		if (CollectionUtils.isNotEmpty(data.getAgetAtDeath())
+				|| CollectionUtils.isNotEmpty(data.getDeathByType())
+				|| CollectionUtils.isNotEmpty(data.getPrevalenceByGenderAgeYear())
+				|| CollectionUtils.isNotEmpty(data.getPrevalenceByMonth())) {
+			empty = false;
+		}
+		if (!empty && save) {
 			this.saveEntity(id, source.getSourceId(), key, data);
 		}
 
@@ -253,6 +268,7 @@ public class CohortResultsAnalysisRunner {
 			boolean save) {
 		CohortMeasurementDrilldown drilldown = new CohortMeasurementDrilldown();
 		final String key = MEASUREMENT_DRILLDOWN;
+		boolean empty = true;
 
 		String ageAtFirstOccurrenceSql = this.renderDrillDownCohortSql("sqlAgeAtFirstOccurrence", MEASUREMENT, id,
 				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
@@ -310,7 +326,19 @@ public class CohortResultsAnalysisRunner {
 		}
 		drilldown.setPrevalenceByMonth(prevalenceByMonth);
 
-		if (save) {
+		if (CollectionUtils.isNotEmpty(drilldown.getAgeAtFirstOccurrence())
+				|| CollectionUtils.isNotEmpty(drilldown.getLowerLimitDistribution())
+				|| CollectionUtils.isNotEmpty(drilldown.getMeasurementsByType())
+				|| CollectionUtils.isNotEmpty(drilldown.getMeasurementValueDistribution())
+				|| CollectionUtils.isNotEmpty(drilldown.getPrevalenceByGenderAgeYear())
+				|| CollectionUtils.isNotEmpty(drilldown.getPrevalenceByMonth())
+				|| CollectionUtils.isNotEmpty(drilldown.getRecordsByUnit())
+				|| CollectionUtils.isNotEmpty(drilldown.getUpperLimitDistribution())
+				|| CollectionUtils.isNotEmpty(drilldown.getValuesRelativeToNorm()))  {
+			empty = false;
+		}
+		
+		if (!empty && save) {
 			this.saveEntityDrilldown(id, source.getSourceId(), key, conceptId, drilldown);
 		}
 
@@ -325,6 +353,7 @@ public class CohortResultsAnalysisRunner {
 			boolean save) {
 		CohortObservationPeriod obsPeriod = new CohortObservationPeriod();
 		final String key = OBSERVATION_PERIOD;
+		boolean empty = true;
 
 		String ageAtFirstSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/ageatfirst.sql",
 				id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
@@ -389,8 +418,22 @@ public class CohortResultsAnalysisRunner {
 		if (obsPeriodsPerPersonSql != null) {
 			obsPeriod.setObservationPeriodsPerPerson(jdbcTemplate.query(obsPeriodsPerPersonSql, new ConceptCountMapper()));
 		}
+		
+		if (CollectionUtils.isNotEmpty(obsPeriod.getAgeAtFirst())
+				|| CollectionUtils.isNotEmpty(obsPeriod.getAgeByGender())
+				|| CollectionUtils.isNotEmpty(obsPeriod.getCumulativeObservation())
+				|| CollectionUtils.isNotEmpty(obsPeriod.getDurationByAgeDecile())
+				|| CollectionUtils.isNotEmpty(obsPeriod.getDurationByGender())
+				|| CollectionUtils.isNotEmpty(obsPeriod.getObservationLength())
+				|| CollectionUtils.isNotEmpty(obsPeriod.getObservationLengthStats())
+				|| CollectionUtils.isNotEmpty(obsPeriod.getObservationPeriodsPerPerson())
+				|| CollectionUtils.isNotEmpty(obsPeriod.getObservedByMonth())
+				|| CollectionUtils.isNotEmpty(obsPeriod.getPersonsWithContinuousObservationsByYear())
+				|| CollectionUtils.isNotEmpty(obsPeriod.getPersonsWithContinuousObservationsByYearStats())) {
+			empty = false;
+		}
 
-		if (save) {
+		if (!empty && save) {
 			this.saveEntity(id, source.getSourceId(), key, obsPeriod);
 		}
 
@@ -428,6 +471,7 @@ public class CohortResultsAnalysisRunner {
 			boolean save) {
 		CohortObservationDrilldown drilldown = new CohortObservationDrilldown();
 		final String key = OBSERVATION_DRILLDOWN;
+		boolean empty = true;
 
 		String ageAtFirstOccurrenceSql = this.renderDrillDownCohortSql("sqlAgeAtFirstOccurrence", OBSERVATION, id,
 				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
@@ -466,8 +510,20 @@ public class CohortResultsAnalysisRunner {
 			prevalenceByMonth = jdbcTemplate.query(prevalanceMonthSql, new PrevalanceConceptNameMapper());
 		}
 		drilldown.setPrevalenceByMonth(prevalenceByMonth);
-
-		if (save) {
+		
+		if (CollectionUtils.isNotEmpty(drilldown.getAgeAtFirstOccurrence())
+				|| CollectionUtils.isNotEmpty(drilldown.getLowerLimitDistribution())
+				|| CollectionUtils.isNotEmpty(drilldown.getObservationsByType())
+				|| CollectionUtils.isNotEmpty(drilldown.getObservationValueDistribution())
+				|| CollectionUtils.isNotEmpty(drilldown.getPrevalenceByGenderAgeYear())
+				|| CollectionUtils.isNotEmpty(drilldown.getPrevalenceByMonth())
+				|| CollectionUtils.isNotEmpty(drilldown.getRecordsByUnit())
+				|| CollectionUtils.isNotEmpty(drilldown.getUpperLimitDistribution())
+				|| CollectionUtils.isNotEmpty(drilldown.getValuesRelativeToNorm())) {
+			empty = false;
+		}
+		
+		if (!empty && save) {
 			this.saveEntityDrilldown(id, source.getSourceId(), key, conceptId, drilldown);
 		}
 		return drilldown;
@@ -505,7 +561,8 @@ public class CohortResultsAnalysisRunner {
 			boolean save) {
 		CohortProceduresDrillDown drilldown = new CohortProceduresDrillDown();
 		final String key = PROCEDURE_DRILLDOWN;
-
+		boolean empty = true;
+		
 		List<ConceptQuartileRecord> ageAtFirst = null;
 		String ageAtFirstSql = this.renderDrillDownCohortSql("sqlAgeAtFirstOccurrence", PROCEDURE, id,
 				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
@@ -537,8 +594,15 @@ public class CohortResultsAnalysisRunner {
 			prevalenceByMonth = jdbcTemplate.query(prevalanceMonthSql, new PrevalanceConceptMapper());
 		}
 		drilldown.setPrevalenceByMonth(prevalenceByMonth);
+		
+		if (CollectionUtils.isNotEmpty(drilldown.getAgeAtFirstOccurrence())
+				|| CollectionUtils.isNotEmpty(drilldown.getPrevalenceByGenderAgeYear())
+				|| CollectionUtils.isNotEmpty(drilldown.getPrevalenceByMonth())
+				|| CollectionUtils.isNotEmpty(drilldown.getProceduresByType())) {
+			empty = false;
+		}
 
-		if (save) {
+		if (!empty && save) {
 			this.saveEntityDrilldown(id, source.getSourceId(), key, conceptId, drilldown);
 		}
 
@@ -553,6 +617,8 @@ public class CohortResultsAnalysisRunner {
 			boolean save) {
 		final String key = COHORT_SPECIFIC;
 		CohortSpecificSummary summary = new CohortSpecificSummary();
+		boolean empty = true;
+		
 		// 1805, 1806
 		String personsByDurationSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/observationPeriodTimeRelativeToIndex.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (personsByDurationSql != null) {
@@ -603,8 +669,18 @@ public class CohortResultsAnalysisRunner {
 		if (personsInCohortFromCohortStartToEndSql != null) {
 			summary.setPersonsInCohortFromCohortStartToEnd(jdbcTemplate.query(personsInCohortFromCohortStartToEndSql, new MonthObservationMapper()));
 		}
+		
+		if (CollectionUtils.isNotEmpty(summary.getAgeAtIndexDistribution())
+				|| CollectionUtils.isNotEmpty(summary.getDistributionAgeCohortStartByCohortStartYear())
+				|| CollectionUtils.isNotEmpty(summary.getDistributionAgeCohortStartByGender())
+				|| CollectionUtils.isNotEmpty(summary.getNumPersonsByCohortStartByGenderByAge())
+				|| CollectionUtils.isNotEmpty(summary.getPersonsByDurationFromStartToEnd())
+				|| CollectionUtils.isNotEmpty(summary.getPersonsInCohortFromCohortStartToEnd())
+				|| CollectionUtils.isNotEmpty(summary.getPrevalenceByMonth()))  {
+			empty = false;
+		}
 
-		if (save) {
+		if (!empty && save) {
 			this.saveEntity(id, source.getSourceId(), key, summary);
 		}
 
@@ -618,6 +694,8 @@ public class CohortResultsAnalysisRunner {
 
 		final String key = COHORT_SPECIFIC_TREEMAP;
 		CohortSpecificTreemap summary = new CohortSpecificTreemap();
+		boolean empty = true;
+		
 		// 1820
 		String conditionOccurrencePrevalenceSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/conditionOccurrencePrevalenceOfCondition.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (conditionOccurrencePrevalenceSql != null) {
@@ -635,8 +713,14 @@ public class CohortResultsAnalysisRunner {
 		if (drugEraPrevalenceSql != null) {
 			summary.setDrugEraPrevalence(jdbcTemplate.query(drugEraPrevalenceSql, new HierarchicalConceptPrevalenceMapper()));
 		}
+		
+		if (CollectionUtils.isNotEmpty(summary.getConditionOccurrencePrevalence())
+				|| CollectionUtils.isNotEmpty(summary.getProcedureOccurrencePrevalence())
+				|| CollectionUtils.isNotEmpty(summary.getDrugEraPrevalence())) {
+			empty = false;
+		}
 
-		if (save) {
+		if (!empty && save) {
 			this.saveEntity(id, source.getSourceId(), key, summary);
 		}
 
@@ -650,8 +734,10 @@ public class CohortResultsAnalysisRunner {
 			final String minIntervalPersonCountParam,
 			Source source,
 			boolean save) {
+		
 		CohortVisitsDrilldown drilldown = new CohortVisitsDrilldown();
 		final String key = VISIT_DRILLDOWN;
+		boolean empty = true;
 
 		List<ConceptQuartileRecord> ageAtFirst = null;
 		String ageAtFirstSql = this.renderDrillDownCohortSql("sqlAgeAtFirstOccurrence", VISIT, id,
@@ -684,8 +770,15 @@ public class CohortResultsAnalysisRunner {
 			prevalenceByMonth = jdbcTemplate.query(prevalanceMonthSql, new PrevalanceConceptMapper());
 		}
 		drilldown.setPrevalenceByMonth(prevalenceByMonth);
+		
+		if (CollectionUtils.isNotEmpty(drilldown.getAgeAtFirstOccurrence())
+				|| CollectionUtils.isNotEmpty(drilldown.getPrevalenceByGenderAgeYear())
+				|| CollectionUtils.isNotEmpty(drilldown.getPrevalenceByMonth())
+				|| CollectionUtils.isNotEmpty(drilldown.getVisitDurationByType())) {
+			empty = false;
+		}
 
-		if (save) {
+		if (!empty && save) {
 			this.saveEntityDrilldown(id, source.getSourceId(), key, conceptId, drilldown);
 		}
 
@@ -700,9 +793,9 @@ public class CohortResultsAnalysisRunner {
 			Source source, boolean save) {
 
 		final String key = CONDITION_ERA_DRILLDOWN;
-
-
 		CohortConditionEraDrilldown drilldown = new CohortConditionEraDrilldown();
+		boolean empty = true;
+		
 		// age at first diagnosis
 		List<ConceptQuartileRecord> ageAtFirst = null;
 		String ageAtFirstSql = this.renderDrillDownCohortSql("sqlAgeAtFirstDiagnosis", "conditionera", id,
@@ -738,8 +831,15 @@ public class CohortResultsAnalysisRunner {
 			prevalenceByMonth = jdbcTemplate.query(prevalenceByMonthSql, new PrevalanceConceptMapper());
 		}
 		drilldown.setPrevalenceByMonth(prevalenceByMonth);
+		
+		if (CollectionUtils.isNotEmpty(drilldown.getAgeAtFirstDiagnosis())
+				|| CollectionUtils.isNotEmpty(drilldown.getLengthOfEra())
+				|| CollectionUtils.isNotEmpty(drilldown.getPrevalenceByGenderAgeYear())
+				|| CollectionUtils.isNotEmpty(drilldown.getPrevalenceByMonth())) {
+			empty = false;
+		}
 
-		if (save) {
+		if (!empty && save) {
 			this.saveEntityDrilldown(id, source.getSourceId(), key, conditionId, drilldown);
 		}
 
@@ -774,8 +874,10 @@ public class CohortResultsAnalysisRunner {
 			final String minIntervalPersonCountParam,
 			Source source,
 			boolean save) {
+		
 		final String key = CONDITION_DRILLDOWN;
 		CohortConditionDrilldown drilldown = new CohortConditionDrilldown();
+		boolean empty = true;
 
 		List<ConceptQuartileRecord> ageAtFirstDiagnosis = null;
 		String ageAtFirstSql = this.renderDrillDownCohortSql("sqlAgeAtFirstDiagnosis", CONDITION, id,
@@ -809,7 +911,14 @@ public class CohortResultsAnalysisRunner {
 		}
 		drilldown.setPrevalenceByMonth(prevalenceByMonth);
 
-		if (save) {
+		if (CollectionUtils.isNotEmpty(drilldown.getAgeAtFirstDiagnosis())
+				|| CollectionUtils.isNotEmpty(drilldown.getConditionsByType())
+				|| CollectionUtils.isNotEmpty(drilldown.getPrevalenceByGenderAgeYear())
+				|| CollectionUtils.isNotEmpty(drilldown.getPrevalenceByMonth())) {
+			empty = false;
+		}
+		
+		if (!empty && save) {
 			this.saveEntityDrilldown(id, source.getSourceId(), key, conditionId, drilldown);
 		}
 		return drilldown;
@@ -840,8 +949,11 @@ public class CohortResultsAnalysisRunner {
 			String minCovariatePersonCountParam, String minIntervalPersonCountParam, 
 			boolean demographicsOnly,
 			boolean save) {
+		
 		final String key = DASHBOARD;
 		CohortDashboard dashboard = new CohortDashboard();
+		boolean empty = true;
+		
 		String ageAtFirstObsSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/ageatfirst.sql", id,
 				minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (ageAtFirstObsSql != null) {
@@ -867,8 +979,15 @@ public class CohortResultsAnalysisRunner {
 				dashboard.setObservedByMonth(jdbcTemplate.query(obsByMonthSql, new MonthObservationMapper()));
 			}
 		}
+		
+		if (CollectionUtils.isNotEmpty(dashboard.getAgeAtFirstObservation())
+				|| CollectionUtils.isNotEmpty(dashboard.getCumulativeObservation())
+				|| CollectionUtils.isNotEmpty(dashboard.getGender())
+				|| CollectionUtils.isNotEmpty(dashboard.getObservedByMonth())) {
+			empty = false;
+		}
 
-		if (save) {
+		if (!empty && save) {
 			this.saveEntity(id, source.getSourceId(), key, dashboard);
 		}
 
@@ -883,8 +1002,10 @@ public class CohortResultsAnalysisRunner {
 			final String minIntervalPersonCountParam,
 			Source source,
 			boolean save) {
+		
 		final String key = DRUG_ERA_DRILLDOWN;
 		CohortDrugEraDrilldown drilldown = new CohortDrugEraDrilldown();
+		boolean empty = true;
 
 		// age at first exposure
 		List<ConceptQuartileRecord> ageAtFirstExposure = null;
@@ -922,7 +1043,14 @@ public class CohortResultsAnalysisRunner {
 		}
 		drilldown.setPrevalenceByMonth(prevalenceByMonth);
 
-		if (save) {
+		if (CollectionUtils.isNotEmpty(drilldown.getAgeAtFirstExposure())
+				|| CollectionUtils.isNotEmpty(drilldown.getLengthOfEra())
+				|| CollectionUtils.isNotEmpty(drilldown.getPrevalenceByGenderAgeYear())
+				|| CollectionUtils.isNotEmpty(drilldown.getPrevalenceByMonth())) {
+			empty = false;
+		}
+		
+		if (!empty && save) {
 			this.saveEntityDrilldown(id, source.getSourceId(), key, drugId, drilldown);
 		}
 
@@ -962,6 +1090,7 @@ public class CohortResultsAnalysisRunner {
 
 		final String key = DRUG_DRILLDOWN;
 		CohortDrugDrilldown drilldown = new CohortDrugDrilldown();
+		boolean empty = true;
 
 		String ageAtFirstExposureSql = this.renderDrillDownCohortSql("sqlAgeAtFirstExposure", DRUG, id,
 				drugId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
@@ -1005,8 +1134,18 @@ public class CohortResultsAnalysisRunner {
 		if (refillsDistributionSql != null) {
 			drilldown.setRefillsDistribution(jdbcTemplate.query(refillsDistributionSql, new ConceptQuartileMapper()));
 		}
+		
+		if (CollectionUtils.isNotEmpty(drilldown.getAgeAtFirstExposure())
+				|| CollectionUtils.isNotEmpty(drilldown.getDaysSupplyDistribution())
+				|| CollectionUtils.isNotEmpty(drilldown.getDrugsByType())
+				|| CollectionUtils.isNotEmpty(drilldown.getPrevalenceByGenderAgeYear())
+				|| CollectionUtils.isNotEmpty(drilldown.getPrevalenceByMonth())
+				|| CollectionUtils.isNotEmpty(drilldown.getQuantityDistribution())
+				|| CollectionUtils.isNotEmpty(drilldown.getRefillsDistribution())) {
+			empty = false;
+		}
 
-		if (save) {
+		if (!empty && save) {
 			this.saveEntityDrilldown(id, source.getSourceId(), key, drugId, drilldown);
 		}
 
@@ -1068,9 +1207,11 @@ public class CohortResultsAnalysisRunner {
 			final String minIntervalPersonCountParam,
 			final Source source,
 			boolean save) {
+		
 		final String key = PERSON;
-
 		CohortPersonSummary person = new CohortPersonSummary();
+		boolean empty = true;
+		
 		String yobSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/yearofbirth_data.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (yobSql != null) {
 			person.setYearOfBirth(jdbcTemplate.query(yobSql, new ConceptDistributionMapper()));
@@ -1095,8 +1236,16 @@ public class CohortResultsAnalysisRunner {
 		if (ethnicitySql != null) {
 			person.setEthnicity(jdbcTemplate.query(ethnicitySql, new ConceptCountMapper()));
 		}
+		
+		if (CollectionUtils.isNotEmpty(person.getEthnicity())
+				|| CollectionUtils.isNotEmpty(person.getGender())
+				|| CollectionUtils.isNotEmpty(person.getRace())
+				|| CollectionUtils.isNotEmpty(person.getYearOfBirth())
+				|| CollectionUtils.isNotEmpty(person.getYearOfBirthStats())) {
+			empty = false;
+		}
 
-		if (save) {
+		if (!empty && save) {
 			this.saveEntity(id, source.getSourceId(), key, person);
 		}
 
@@ -1239,6 +1388,15 @@ public class CohortResultsAnalysisRunner {
 		try {
 			this.visualizationDataRepository
 				.deleteByCohortDefinitionIdAndSourceIdAndVisualizationKey(cohortDefinitionId, sourceId, visualizationKey);
+			
+			// delete any 'drilldown'
+			List<VisualizationData> drilldownData = this.visualizationDataRepository
+					.findDistinctVisualizationDataByCohortDefinitionIdAndSourceIdAndVisualizationKey(cohortDefinitionId, sourceId, visualizationKey + "_drilldown");
+			if (CollectionUtils.isNotEmpty(drilldownData)) {
+				for (VisualizationData drilldownItem : drilldownData) {
+					this.visualizationDataRepository.delete(drilldownItem);
+				}
+			}
 		} catch (Exception e) {
 			log.error(e);
 		}

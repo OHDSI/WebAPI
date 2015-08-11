@@ -5,11 +5,13 @@ import java.sql.SQLException;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import jersey.repackaged.com.google.common.base.Joiner;
@@ -116,9 +118,17 @@ public class CohortAnalysisService extends AbstractDaoService {
 	@GET
 	@Path("/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public List<CohortAnalysis> getCohortAnalysesForCohortDefinition(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey) {
+	public List<CohortAnalysis> getCohortAnalysesForCohortDefinition(@PathParam("id") final int id, 
+			@PathParam("sourceKey") String sourceKey,
+			@DefaultValue("true") @QueryParam("fullDetail") boolean retrieveFullDetail) {
 
-		String sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/getCohortAnalysesForCohort.sql");
+		String sql = null;
+		if (retrieveFullDetail) {
+			sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/getCohortAnalysesForCohortFull.sql");
+		} else {
+			sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/getCohortAnalysesForCohort.sql");
+		}
+		
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 
@@ -149,7 +159,30 @@ public class CohortAnalysisService extends AbstractDaoService {
 		CohortSummary summary = new CohortSummary();
 		try {
 			summary.setCohortDefinition(this.definitionService.getCohortDefinition(id));
-			summary.setAnalyses(this.getCohortAnalysesForCohortDefinition(id, sourceKey));
+			summary.setAnalyses(this.getCohortAnalysesForCohortDefinition(id, sourceKey, false));
+		} catch (Exception e) {
+			log.error("unable to get cohort summary", e);
+		}
+
+		return summary;
+	}
+	
+	/**
+	 * Returns the summary for the cohort
+	 *
+	 * @param id - the cohort_defintion id
+	 * @return Summary which includes analyses with complete time
+	 *
+	 */
+	@GET
+	@Path("/{id}/summaryanalyses")
+	@Produces(MediaType.APPLICATION_JSON)
+	public CohortSummary getCohortSummaryAnalyses(@PathParam("id") final int id,
+			@PathParam("sourceKey") String sourceKey) {
+
+		CohortSummary summary = new CohortSummary();
+		try {
+			summary.setAnalyses(this.getCohortAnalysesForCohortDefinition(id, sourceKey, true));
 		} catch (Exception e) {
 			log.error("unable to get cohort summary", e);
 		}

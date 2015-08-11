@@ -3,6 +3,7 @@ package org.ohdsi.webapi.cohortanalysis;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ohdsi.sql.SqlSplit;
+import org.ohdsi.webapi.cohortresults.CohortResultsAnalysisRunner;
 import org.ohdsi.webapi.cohortresults.VisualizationDataRepository;
 import org.ohdsi.webapi.service.CohortAnalysisService;
 import org.springframework.batch.core.StepContribution;
@@ -25,14 +26,15 @@ public class CohortAnalysisTasklet implements Tasklet {
     
     private final TransactionTemplate transactionTemplate;
     
-    private final VisualizationDataRepository visualizationDataRepository;
+    private final CohortResultsAnalysisRunner analysisRunner;
     
     public CohortAnalysisTasklet(CohortAnalysisTask task, final JdbcTemplate jdbcTemplate,
-        final TransactionTemplate transactionTemplate, VisualizationDataRepository visualizationDataRepository) {
+        final TransactionTemplate transactionTemplate, 
+        String sourceDialect, VisualizationDataRepository visualizationDataRepository) {
         this.task = task;
         this.jdbcTemplate = jdbcTemplate;
         this.transactionTemplate = transactionTemplate;
-        this.visualizationDataRepository = visualizationDataRepository;
+        this.analysisRunner = new CohortResultsAnalysisRunner(sourceDialect, visualizationDataRepository);
     }
     
     @Override
@@ -60,6 +62,10 @@ public class CohortAnalysisTasklet implements Tasklet {
                 }
             });
             log.debug("Update count: " + ret.length);
+            
+            log.debug("warm up visualizations");
+            final int count = this.analysisRunner.warmupData(jdbcTemplate, task);
+            log.debug("warmed up " + count + " visualization");
         } catch (final TransactionException e) {
             log.error(e.getMessage(), e);
             throw e;//FAIL job status

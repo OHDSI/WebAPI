@@ -5,7 +5,7 @@ CREATE TABLE HERACLES_VISUALIZATION_DATA (
 	cohort_definition_id integer NOT NULL ,
 	source_id integer NOT NULL,
 	visualization_key VARCHAR(300) NOT NULL,
-	drilldown_id integer(10),
+	drilldown_id integer,
 	data TEXT NOT NULL,
 	end_time Timestamp NOT NULL,
 	CONSTRAINT PK_heracles_viz_data PRIMARY KEY (id) 

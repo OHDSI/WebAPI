@@ -1227,8 +1227,17 @@ public class CohortResultsAnalysisRunner {
 			return;
 		}
 
+		// delete the old one
+		try {
+			this.visualizationDataRepository
+				.deleteByCohortDefinitionIdAndSourceIdAndVisualizationKey(cohortDefinitionId, sourceId, visualizationKey);
+		} catch (Exception e) {
+			log.error(e);
+		}
+		
 		// save entity
 		try {
+			
 			VisualizationData entity = new VisualizationData();
 			entity.setCohortDefinitionId(cohortDefinitionId);
 			entity.setSourceId(sourceId);
@@ -1245,6 +1254,19 @@ public class CohortResultsAnalysisRunner {
 	}
 
 	private void saveEntityDrilldown(int cohortDefinitionId, int sourceId, String visualizationKey, int drilldownId, Object dataObject) {
+		if (dataObject == null) {
+			log.error(String.format("cannot store null entity %s",  visualizationKey));
+			return;
+		}
+		
+		// delete the old one
+		try {
+			this.visualizationDataRepository
+				.deleteByCohortDefinitionIdAndSourceIdAndVisualizationKeyAndDrilldownId(cohortDefinitionId, sourceId, visualizationKey, drilldownId);
+		} catch (Exception e) {
+			log.error(e);
+		}
+		
 		// save entity
 		try {
 			VisualizationData entity = new VisualizationData();

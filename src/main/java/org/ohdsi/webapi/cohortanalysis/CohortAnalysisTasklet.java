@@ -65,7 +65,7 @@ public class CohortAnalysisTasklet implements Tasklet {
             
             log.debug("warm up visualizations");
             final int count = this.analysisRunner.warmupData(jdbcTemplate, task);
-            log.debug("warmed up " + count + " visualization");
+            log.debug("warmed up " + count + " visualizations");
         } catch (final TransactionException e) {
             log.error(e.getMessage(), e);
             throw e;//FAIL job status

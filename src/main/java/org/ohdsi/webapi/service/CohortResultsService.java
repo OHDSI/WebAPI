@@ -128,9 +128,8 @@ public class CohortResultsService extends AbstractDaoService {
 	@Path("/{id}/warmup")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
-	public boolean warmUpVisualizationData(CohortAnalysisTask task) {
-		// TODO
-		return false;
+	public int warmUpVisualizationData(CohortAnalysisTask task) {
+		return this.queryRunner.warmupData(this.getSourceJdbcTemplate(task.getSource()), task);
 
 	}
 
@@ -156,8 +155,7 @@ public class CohortResultsService extends AbstractDaoService {
 
 		final String key = CohortResultsAnalysisRunner.DASHBOARD;
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
-		VisualizationData data = this.visualizationDataRepository
-				.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
+		VisualizationData data = refresh ? null : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
 
 		CohortDashboard dashboard = null;
 
@@ -195,7 +193,7 @@ public class CohortResultsService extends AbstractDaoService {
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		final String key = CohortResultsAnalysisRunner.CONDITION;
 		List<HierarchicalConceptRecord> res = null;
-		VisualizationData data = this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
+		VisualizationData data = refresh ? null : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
 
 		if (refresh || data == null) {
 			res = this.queryRunner.getConditionTreemap(this.getSourceJdbcTemplate(source), id, minCovariatePersonCountParam, minIntervalPersonCountParam, source, true);
@@ -247,7 +245,7 @@ public class CohortResultsService extends AbstractDaoService {
 		CohortConditionDrilldown drilldown = null;
 		final String key = CohortResultsAnalysisRunner.CONDITION_DRILLDOWN;
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
-		VisualizationData data = this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKeyAndDrilldownId(id, source.getSourceId(), key, conditionId);
+		VisualizationData data = refresh ? null : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKeyAndDrilldownId(id, source.getSourceId(), key, conditionId);
 
 		if (refresh || data == null) {
 			drilldown = this.queryRunner.getConditionResults(this.getSourceJdbcTemplate(source), id, conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam, source, true);
@@ -281,7 +279,7 @@ public class CohortResultsService extends AbstractDaoService {
 
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		final String key = CohortResultsAnalysisRunner.CONDITION_ERA;
-		VisualizationData data = this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
+		VisualizationData data = refresh ? null : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
 
 		List<HierarchicalConceptRecord> res = null;
 
@@ -330,7 +328,7 @@ public class CohortResultsService extends AbstractDaoService {
 		CohortConditionEraDrilldown drilldown = null;
 		final String key = CohortResultsAnalysisRunner.CONDITION_ERA_DRILLDOWN;
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
-		VisualizationData data = this.visualizationDataRepository
+		VisualizationData data = refresh ? null : this.visualizationDataRepository
 				.findByCohortDefinitionIdAndSourceIdAndVisualizationKeyAndDrilldownId(id, source.getSourceId(), key, conditionId);
 
 		if (refresh || data == null) {
@@ -365,7 +363,7 @@ public class CohortResultsService extends AbstractDaoService {
 
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		final String key = CohortResultsAnalysisRunner.DRUG;
-		VisualizationData data = this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
+		VisualizationData data = refresh ? null : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
 
 		List<HierarchicalConceptRecord> res = null;
 		if (refresh || data == null) {
@@ -400,7 +398,7 @@ public class CohortResultsService extends AbstractDaoService {
 		CohortDrugDrilldown drilldown = null;
 		final String key = CohortResultsAnalysisRunner.DRUG_DRILLDOWN;
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
-		VisualizationData data = this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKeyAndDrilldownId(id, source.getSourceId(), key, drugId);
+		VisualizationData data = refresh ? null : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKeyAndDrilldownId(id, source.getSourceId(), key, drugId);
 
 		if (refresh || data == null) {
 			drilldown = this.queryRunner.getDrugResults(this.getSourceJdbcTemplate(source), id, drugId, minCovariatePersonCountParam, minIntervalPersonCountParam, source, true);
@@ -435,7 +433,7 @@ public class CohortResultsService extends AbstractDaoService {
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		List<HierarchicalConceptRecord> res = null;
 		final String key = CohortResultsAnalysisRunner.DRUG_ERA;
-		VisualizationData data = this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
+		VisualizationData data = refresh ? null : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
 
 		if (refresh || data == null) {
 			res = this.queryRunner.getDrugEraTreemap(this.getSourceJdbcTemplate(source), id, minCovariatePersonCountParam, minIntervalPersonCountParam, source, true);
@@ -469,7 +467,7 @@ public class CohortResultsService extends AbstractDaoService {
 		CohortDrugEraDrilldown drilldown = null;
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		final String key = CohortResultsAnalysisRunner.DRUG_ERA_DRILLDOWN;
-		VisualizationData data = this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKeyAndDrilldownId(id, source.getSourceId(), key, drugId);
+		VisualizationData data = refresh ? null : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKeyAndDrilldownId(id, source.getSourceId(), key, drugId);
 
 		if (refresh || data == null) {
 			drilldown = this.queryRunner.getDrugEraResults(this.getSourceJdbcTemplate(source), id, drugId, minCovariatePersonCountParam, minIntervalPersonCountParam, source, true);
@@ -503,7 +501,7 @@ public class CohortResultsService extends AbstractDaoService {
 		CohortPersonSummary person = null;
 		final String key = CohortResultsAnalysisRunner.PERSON;
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
-		VisualizationData data = this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
+		VisualizationData data = refresh ? null : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
 
 		if (refresh || data == null) {
 			person = this.queryRunner.getPersonResults(this.getSourceJdbcTemplate(source), id, minCovariatePersonCountParam, minIntervalPersonCountParam, source, true);
@@ -536,7 +534,7 @@ public class CohortResultsService extends AbstractDaoService {
 		CohortSpecificSummary summary = null;
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		final String key = CohortResultsAnalysisRunner.COHORT_SPECIFIC;
-		VisualizationData data = this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
+		VisualizationData data = refresh ? null : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
 
 		if (refresh || data == null) {
 			summary = queryRunner.getCohortSpecificSummary(getSourceJdbcTemplate(source), id, minCovariatePersonCountParam, minIntervalPersonCountParam, source, true);
@@ -570,7 +568,7 @@ public class CohortResultsService extends AbstractDaoService {
 		CohortSpecificTreemap summary = null;
 		final String key = CohortResultsAnalysisRunner.COHORT_SPECIFIC_TREEMAP;
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
-		VisualizationData data = this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
+		VisualizationData data = refresh ? null : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
 
 		if (refresh || data == null) {
 			summary = queryRunner.getCohortSpecificTreemapResults(getSourceJdbcTemplate(source), id, minCovariatePersonCountParam, minIntervalPersonCountParam, source, true);
@@ -606,7 +604,7 @@ public class CohortResultsService extends AbstractDaoService {
 		List<ScatterplotRecord> records = new ArrayList<ScatterplotRecord>();
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		final String key = CohortResultsAnalysisRunner.COHORT_SPECIFIC_PROCEDURE_DRILLDOWN;
-		VisualizationData data = this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKeyAndDrilldownId(id, source.getSourceId(), key, conceptId);
+		VisualizationData data = refresh ? null : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKeyAndDrilldownId(id, source.getSourceId(), key, conceptId);
 
 		if (refresh || data == null) {
 			records = this.queryRunner.getCohortProcedureDrilldown(this.getSourceJdbcTemplate(source), id, conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source, true);
@@ -642,7 +640,7 @@ public class CohortResultsService extends AbstractDaoService {
 		List<ScatterplotRecord> records = new ArrayList<ScatterplotRecord>();
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		final String key = CohortResultsAnalysisRunner.COHORT_SPECIFIC_DRUG_DRILLDOWN;
-		VisualizationData data = this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKeyAndDrilldownId(id, source.getSourceId(), key, conceptId);
+		VisualizationData data = refresh ? null : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKeyAndDrilldownId(id, source.getSourceId(), key, conceptId);
 
 		if (refresh || data == null) {
 			records = this.queryRunner.getCohortDrugDrilldown(this.getSourceJdbcTemplate(source), id, conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source, true);
@@ -678,7 +676,7 @@ public class CohortResultsService extends AbstractDaoService {
 
 		final String key = CohortResultsAnalysisRunner.COHORT_SPECIFIC_CONDITION_DRILLDOWN;
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
-		VisualizationData data = this.visualizationDataRepository
+		VisualizationData data = refresh ? null : this.visualizationDataRepository
 				.findByCohortDefinitionIdAndSourceIdAndVisualizationKeyAndDrilldownId(id, source.getSourceId(), key, conceptId);
 
 		if (refresh || data == null) {
@@ -712,7 +710,7 @@ public class CohortResultsService extends AbstractDaoService {
 
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		final String key = CohortResultsAnalysisRunner.OBSERVATION;
-		VisualizationData data = this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
+		VisualizationData data = refresh ? null : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
 
 		if (refresh || data == null) {
 			res = this.queryRunner.getCohortObservationResults(this.getSourceJdbcTemplate(source), id, minCovariatePersonCountParam, minIntervalPersonCountParam, source, true);
@@ -749,7 +747,7 @@ public class CohortResultsService extends AbstractDaoService {
 		CohortObservationDrilldown drilldown = new CohortObservationDrilldown();
 		final String key = CohortResultsAnalysisRunner.OBSERVATION_DRILLDOWN;
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
-		VisualizationData data = this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKeyAndDrilldownId(id, source.getSourceId(), key, conceptId);
+		VisualizationData data = refresh ? null : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKeyAndDrilldownId(id, source.getSourceId(), key, conceptId);
 
 		if (refresh || data == null) {
 			drilldown = this.queryRunner.getCohortObservationResultsDrilldown(this.getSourceJdbcTemplate(source), id, conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source, true);
@@ -782,7 +780,7 @@ public class CohortResultsService extends AbstractDaoService {
 		List<HierarchicalConceptRecord> res = null;
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		final String key = CohortResultsAnalysisRunner.MEASUREMENT;
-		VisualizationData data = this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
+		VisualizationData data = refresh ? null : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
 
 		if (refresh || data == null) {
 			res = this.queryRunner.getCohortMeasurementResults(this.getSourceJdbcTemplate(source), id, minCovariatePersonCountParam, minIntervalPersonCountParam, source, true);
@@ -816,7 +814,7 @@ public class CohortResultsService extends AbstractDaoService {
 		CohortMeasurementDrilldown drilldown = new CohortMeasurementDrilldown();
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		final String key = CohortResultsAnalysisRunner.MEASUREMENT_DRILLDOWN;
-		VisualizationData data = this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKeyAndDrilldownId(id, source.getSourceId(), key, conceptId);
+		VisualizationData data = refresh ? null : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKeyAndDrilldownId(id, source.getSourceId(), key, conceptId);
 
 		if (refresh || data == null) {
 			drilldown = this.queryRunner.getCohortMeasurementResultsDrilldown(this.getSourceJdbcTemplate(source), id, conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source, true);
@@ -851,7 +849,7 @@ public class CohortResultsService extends AbstractDaoService {
 		CohortObservationPeriod obsPeriod = new CohortObservationPeriod();
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		final String key = CohortResultsAnalysisRunner.OBSERVATION_PERIOD;
-		VisualizationData data = this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
+		VisualizationData data = refresh ? null : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
 
 		if (refresh || data == null) {
 			obsPeriod = this.queryRunner.getCohortObservationPeriod(this.getSourceJdbcTemplate(source), id, minCovariatePersonCountParam, minIntervalPersonCountParam, source, true);
@@ -886,7 +884,7 @@ public class CohortResultsService extends AbstractDaoService {
 		CohortDataDensity data = new CohortDataDensity();
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		final String key = CohortResultsAnalysisRunner.DATA_DENSITY;
-		VisualizationData vizData = this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
+		VisualizationData vizData = refresh ? null : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
 
 		if (refresh || vizData == null) {
 			data = this.queryRunner.getCohortDataDensity(this.getSourceJdbcTemplate(source), id, minCovariatePersonCountParam, minIntervalPersonCountParam, source, true);
@@ -920,7 +918,7 @@ public class CohortResultsService extends AbstractDaoService {
 		List<HierarchicalConceptRecord> res = null;
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		final String key = CohortResultsAnalysisRunner.PROCEDURE;
-		VisualizationData data = this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
+		VisualizationData data = refresh ? null : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
 
 		if (refresh || data == null) {
 			res = this.queryRunner.getProcedureTreemap(this.getSourceJdbcTemplate(source), id, minCovariatePersonCountParam, minIntervalPersonCountParam, source, true);
@@ -956,7 +954,7 @@ public class CohortResultsService extends AbstractDaoService {
 		CohortProceduresDrillDown drilldown = new CohortProceduresDrillDown();
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		final String key = CohortResultsAnalysisRunner.PROCEDURE_DRILLDOWN;
-		VisualizationData data = this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKeyAndDrilldownId(id, source.getSourceId(), key, conceptId);
+		VisualizationData data = refresh ? null : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKeyAndDrilldownId(id, source.getSourceId(), key, conceptId);
 
 		if (refresh || data == null) {
 			drilldown = this.queryRunner.getCohortProceduresDrilldown(this.getSourceJdbcTemplate(source), id, conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source, true);
@@ -990,7 +988,7 @@ public class CohortResultsService extends AbstractDaoService {
 		List<HierarchicalConceptRecord> res = null;
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		final String key = CohortResultsAnalysisRunner.VISIT;
-		VisualizationData data = this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
+		VisualizationData data = refresh ? null : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
 
 		if (refresh || data == null) {
 			res = queryRunner.getVisitTreemap(this.getSourceJdbcTemplate(source), id, minCovariatePersonCountParam, minIntervalPersonCountParam, source, true);
@@ -1026,7 +1024,7 @@ public class CohortResultsService extends AbstractDaoService {
 		CohortVisitsDrilldown drilldown = new CohortVisitsDrilldown();
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		final String key = CohortResultsAnalysisRunner.VISIT_DRILLDOWN;
-		VisualizationData data = this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKeyAndDrilldownId(id, source.getSourceId(), key, conceptId);
+		VisualizationData data = refresh ? null : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKeyAndDrilldownId(id, source.getSourceId(), key, conceptId);
 
 		if (refresh || data == null) {
 			drilldown = this.queryRunner.getCohortVisitsDrilldown(this.getSourceJdbcTemplate(source), id, conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source, true);
@@ -1059,7 +1057,7 @@ public class CohortResultsService extends AbstractDaoService {
 		CohortDeathData data = new CohortDeathData();
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		final String key = CohortResultsAnalysisRunner.DEATH;
-		VisualizationData vizData = this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
+		VisualizationData vizData = refresh ? null : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
 
 		if (refresh || vizData == null) {
 			data = this.queryRunner.getCohortDeathData(this.getSourceJdbcTemplate(source), id, minCovariatePersonCountParam, minIntervalPersonCountParam, source, true);
@@ -1090,7 +1088,7 @@ public class CohortResultsService extends AbstractDaoService {
 		List<CohortAttribute> attrs = new ArrayList<CohortAttribute>();
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		final String key = CohortResultsAnalysisRunner.HERACLES_HEEL;
-		VisualizationData data = this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
+		VisualizationData data = refresh ? null : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
 
 		if (refresh || data == null) {
 			attrs = this.queryRunner.getHeraclesHeel(this.getSourceJdbcTemplate(source), id, source, true);

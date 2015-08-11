@@ -6,49 +6,51 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ohdsi.webapi.source.Source;
 
 public class CohortAnalysisTask {
-	
+
 	private String jobName;
-   
-  private Source source;
-  
-  private String sourceKey;
-  
+
+	private Source source;
+
+	private String sourceKey;
+
 	private int smallCellCount;
-	
+
 	private boolean runHeraclesHeel;
-	
+
 	private boolean cohortPeriodOnly;
+	
+	private List<String> visualizations;
 
 	private List<String> cohortDefinitionIds;
-	
+
 	private List<String> analysisIds;
-	
+
 	private List<String> conditionConceptIds;
-	
+
 	private List<String> drugConceptIds;
-	
+
 	private List<String> procedureConceptIds;
-	
+
 	private List<String> observationConceptIds;
-	
+
 	private List<String> measurementConceptIds;
 
-  public String getSourceKey() {
-    return sourceKey;
-  }
+	public String getSourceKey() {
+		return sourceKey;
+	}
 
-  public void setSourceKey(String sourceKey) {
-    this.sourceKey = sourceKey;
-  }
-    
-  public Source getSource() {
-    return source;
-  }
+	public void setSourceKey(String sourceKey) {
+		this.sourceKey = sourceKey;
+	}
 
-  public void setSource(Source source) {
-    this.source = source;
-  }
-  
+	public Source getSource() {
+		return source;
+	}
+
+	public void setSource(Source source) {
+		this.source = source;
+	}
+
 	/**
 	 * @return the smallCellCount
 	 */
@@ -188,15 +190,15 @@ public class CohortAnalysisTask {
 	public void setMeasurementConceptIds(List<String> measurementConceptIds) {
 		this.measurementConceptIds = measurementConceptIds;
 	}
-	
+
 	/**
 	 * @return the runHeraclesHeel
 	 */
 	public boolean isRunHeraclesHeel() {
 		return runHeraclesHeel;
 	}
-	
-	
+
+
 	/**
 	 * @return the cohortPeriodOnly
 	 */
@@ -212,15 +214,28 @@ public class CohortAnalysisTask {
 	}
 
 
+	/**
+	 * @return the visualizations
+	 */
+	public List<String> getVisualizations() {
+		return visualizations;
+	}
+
+	/**
+	 * @param visualizations the visualizations to set
+	 */
+	public void setVisualizations(List<String> visualizations) {
+		this.visualizations = visualizations;
+	}
+
 	@Override
 	public String toString() {
 		try {
 			ObjectMapper mapper = new ObjectMapper();
 			return mapper.writeValueAsString(this);
 		} catch (Exception e) {}
-		
+
 		return super.toString();
-		
+
 	}
 }
- 

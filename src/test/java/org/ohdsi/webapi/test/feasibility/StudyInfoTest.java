@@ -66,12 +66,7 @@ public class StudyInfoTest {
   @Transactional
   public void testStudyCRUD() {
     
-    DefaultTransactionDefinition requiresNewTx = new DefaultTransactionDefinition();
-    requiresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-    
     Source source = sourceRepository.findOne(1);
-    
-    TransactionStatus saveTx = this.transactionTemplate.getTransactionManager().getTransaction(requiresNewTx);
     FeasibilityStudy newStudy = new FeasibilityStudy();
     newStudy.setName("Test Info Study");
     newStudy = this.studyRepository.save(newStudy);
@@ -79,12 +74,7 @@ public class StudyInfoTest {
     info.setStatus(GenerationStatus.PENDING);
     newStudy.getStudyGenerationInfoList().add(info);
     this.studyRepository.save(newStudy);
-    this.transactionTemplate.getTransactionManager().commit(saveTx);
-    
-    TransactionStatus updateTx = this.transactionTemplate.getTransactionManager().getTransaction(requiresNewTx);
     newStudy.getStudyGenerationInfoList().clear();
     this.studyRepository.save(newStudy);
-    this.transactionTemplate.getTransactionManager().commit(updateTx);
-    
   }
 }

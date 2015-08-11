@@ -1226,6 +1226,14 @@ public class CohortResultsAnalysisRunner {
 			log.error(String.format("cannot store null entity %s",  visualizationKey));
 			return;
 		}
+		
+		if (dataObject instanceof List) {
+			List<?> listObject = (List<?>) dataObject;
+			if (listObject.size() == 0) {
+				log.debug(String.format("no need to store empty list for %s",  visualizationKey));
+				return;
+			}
+		}
 
 		// delete the old one
 		try {
@@ -1257,6 +1265,14 @@ public class CohortResultsAnalysisRunner {
 		if (dataObject == null) {
 			log.error(String.format("cannot store null entity %s",  visualizationKey));
 			return;
+		}
+		
+		if (dataObject instanceof List) {
+			List<?> listObject = (List<?>) dataObject;
+			if (listObject.size() == 0) {
+				log.debug(String.format("no need to store empty list for %s",  visualizationKey));
+				return;
+			}
 		}
 		
 		// delete the old one

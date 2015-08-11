@@ -230,11 +230,6 @@
     <!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-actuator</artifactId> 
     <version>${spring.boot.version}</version> </dependency> -->
     <dependency>
-      <groupId>postgresql</groupId>
-      <artifactId>postgresql</artifactId>
-      <version>9.1-901-1.jdbc4</version>
-    </dependency>    
-    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter</artifactId>
       <version>${spring.boot.version}</version>
@@ -337,9 +332,10 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>com.amazon</groupId>
-      <artifactId>redshiftjdbc41</artifactId>
-      <version>1.1.6.1006</version>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>9.4-1201-jdbc41</version>
+      <type>jar</type>
     </dependency>
   </dependencies>
   <profiles>
@@ -385,13 +381,6 @@
         <flyway.datasource.password>PASS</flyway.datasource.password>
         <flyway.locations>classpath:db/migration/postgresql</flyway.locations>
       </properties>
-      <dependencies>
-        <dependency>
-          <groupId>postgresql</groupId>
-          <artifactId>postgresql</artifactId>
-          <version>9.1-901-1.jdbc4</version>
-        </dependency>
-      </dependencies>
     </profile>
     <profile>
       <id>webapi-mssql</id>

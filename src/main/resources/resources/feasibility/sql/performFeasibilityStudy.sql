@@ -29,6 +29,7 @@ from
   group by p.person_id, p.start_date, p.end_date
 ) Q
 where Q.rn = 1
+;
 
 -- the matching group with all bits set ( POWER(2,# of inclusion rules) - 1 = inclusion_rule_mask
 DELETE FROM @cohortTable where cohort_definition_id = @resultCohortId;
@@ -41,8 +42,9 @@ from
   LEFT JOIN #inclusionRuleCohorts I on c.person_id = i.subject_id and c.start_date = i.cohort_start_date and c.end_date = i.cohort_end_date
   GROUP BY C.person_id, C.start_date, C.end_date
 ) MG -- matching groups
-CROSS APPLY (select count(*) as total_rules from #inclusionRules where study_id = @studyId) RuleTotal
+CROSS JOIN (select count(*) as total_rules from #inclusionRules where study_id = @studyId) RuleTotal
 WHERE MG.inclusion_rule_mask = POWER(2,RuleTotal.total_rules)-1
+;
 
 -- calculte matching group counts
 delete from @ohdsi_database_schema.feas_study_result where study_id = @studyId;
@@ -55,7 +57,8 @@ from
   LEFT JOIN #inclusionRuleCohorts I on c.person_id = i.subject_id and c.start_date = i.cohort_start_date and c.end_date = i.cohort_end_date
   GROUP BY C.person_id, C.start_date, C.end_date
 ) MG -- matching groups
-group by inclusion_rule_mask;
+group by inclusion_rule_mask
+;
 
 -- calculate gain counts
 delete from @ohdsi_database_schema.feas_study_inclusion_stats where study_id = @studyId;
@@ -69,8 +72,8 @@ left join
   JOIN #inclusionRuleCohorts i on C.person_id = i.subject_id and c.start_date = i.cohort_start_date and c.end_date = i.cohort_end_date
   group by i.inclusion_rule_id
 ) T on ir.sequence = T.inclusion_rule_id
-CROSS APPLY (select count(*) as total_rules from #inclusionRules where study_id = @studyId) RuleTotal
-CROSS APPLY (select count(distinct person_id) as total from #PrimaryCriteriaEvents) PersonTotal
+CROSS JOIN (select count(*) as total_rules from #inclusionRules where study_id = @studyId) RuleTotal
+CROSS JOIN (select count(distinct person_id) as total from #PrimaryCriteriaEvents) PersonTotal
 LEFT JOIN feas_study_result SR on SR.study_id = @studyId AND (POWER(2,RuleTotal.total_rules) - POWER(2,ir.sequence) - 1) = SR.inclusion_rule_mask -- POWER(2,rule count) - POWER(2,rule sequence) - 1 is the mask for 'all except this rule' 
 WHERE ir.study_id = @studyId
 ;
@@ -83,7 +86,7 @@ select @studyId as study_id,
 coalesce((
   select sr.person_count 
   from feas_study_result sr
-  CROSS APPLY (select count(*) as total_rules from #inclusionRules where study_id = @studyId) RuleTotal
+  CROSS JOIN (select count(*) as total_rules from #inclusionRules where study_id = @studyId) RuleTotal
   where study_id = @studyId and sr.inclusion_rule_mask = POWER(2,RuleTotal.total_rules)-1
 ),0) as match_count
 ;
@@ -91,7 +94,7 @@ coalesce((
 TRUNCATE TABLE #BestMatchEvent;
 DROP TABLE #BestMatchEvent;
 
-TRUNCATE TABLE #inclusionRuleCohorts 
+TRUNCATE TABLE #inclusionRuleCohorts;
 DROP TABLE #inclusionRuleCohorts;
 
 TRUNCATE TABLE #PrimaryCriteriaEvents;

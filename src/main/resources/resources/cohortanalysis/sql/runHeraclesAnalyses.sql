@@ -499,7 +499,7 @@ SELECT DISTINCT
 INTO
   #temp_dates
 from @CDM_schema.PERSON p1
-inner join (select subject_id, cohort_definition_id as cohort_definition_id from @CDM_schema.COHORT where cohort_definition_id in (@cohort_definition_id)) c1
+inner join (select subject_id, cohort_definition_id as cohort_definition_id from @results_schema.COHORT where cohort_definition_id in (@cohort_definition_id)) c1
 	on p1.person_id = c1.subject_id
 inner join
   @CDM_schema.observation_period op1
@@ -512,7 +512,7 @@ select c1.cohort_definition_id,
 	obs_year AS stratum_1, 
 	COUNT_BIG(DISTINCT p1.person_id) AS count_value
 FROM @CDM_schema.PERSON p1
-inner join (select subject_id, cohort_definition_id as cohort_definition_id from @CDM_schema.COHORT where cohort_definition_id in (@cohort_definition_id)) c1
+inner join (select subject_id, cohort_definition_id as cohort_definition_id from @results_schema.COHORT where cohort_definition_id in (@cohort_definition_id)) c1
 	on p1.person_id = c1.subject_id
 inner join
   @CDM_schema.observation_period op1
@@ -4873,7 +4873,7 @@ select c2.cohort_definition_id,
 	c1.cohort_definition_id as stratum_1, 
 	COUNT_BIG(c1.subject_ID) as count_value
 from
-	@CDM_schema.cohort c1
+	@results_schema.COHORT c1
 	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c2
 on c1.subject_id = c2.subject_id
 group by c2.cohort_definition_id,
@@ -4889,7 +4889,7 @@ select c2.cohort_definition_id,
 	1701 as analysis_id, 
 	COUNT_BIG(c1.subject_ID) as count_value
 from	
-	@CDM_schema.cohort c1
+	@results_schema.COHORT c1
 	inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c2
 on c1.subject_id = c2.subject_id
 where c1.cohort_end_date < c1.cohort_start_date

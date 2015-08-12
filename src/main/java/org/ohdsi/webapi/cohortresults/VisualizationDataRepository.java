@@ -7,6 +7,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 public interface VisualizationDataRepository extends CrudRepository<VisualizationData, Long> {
 
+	public List<VisualizationData> findByCohortDefinitionIdAndSourceId(
+			int cohortDefinitionId,
+			int sourceId
+		);
+	
 	public VisualizationData findByCohortDefinitionIdAndSourceIdAndVisualizationKey(
 				int cohortDefinitionId,
 				int sourceId,

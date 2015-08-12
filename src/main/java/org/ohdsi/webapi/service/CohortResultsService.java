@@ -1,8 +1,11 @@
 package org.ohdsi.webapi.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.ws.rs.Consumes;
@@ -15,6 +18,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTask;
@@ -131,6 +135,23 @@ public class CohortResultsService extends AbstractDaoService {
 	public int warmUpVisualizationData(CohortAnalysisTask task) {
 		return this.queryRunner.warmupData(this.getSourceJdbcTemplate(task.getSource()), task);
 
+	}
+	
+	@GET
+	@Path("/{id}/completed")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Collection<String> getCompletedVisualiztion(@PathParam("id") final int id,
+			@PathParam("sourceKey") final String sourceKey) {
+		Source source = getSourceRepository().findBySourceKey(sourceKey);
+		List<VisualizationData> vizData = this.visualizationDataRepository.findByCohortDefinitionIdAndSourceId(id, source.getSourceId());
+		Set<String> completed = new HashSet<String>();
+		if (CollectionUtils.isNotEmpty(vizData)) {
+			for (VisualizationData viz : vizData) {
+				completed.add(viz.getVisualizationKey());
+			}
+		}
+		return completed;
 	}
 
 

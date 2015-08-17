@@ -7,11 +7,13 @@ import java.util.List;
 import java.util.Map;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.helper.ResourceHelper;
@@ -23,7 +25,6 @@ import org.ohdsi.webapi.evidence.DrugRollUpEvidence;
 import org.ohdsi.webapi.evidence.Evidence;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
-
 import org.springframework.stereotype.Component;
 
 /**
@@ -68,6 +69,7 @@ public class EvidenceService extends AbstractDaoService {
     }
     return infoOnSources;
   }
+  
 
   /**
    * @param id
@@ -290,7 +292,7 @@ public class EvidenceService extends AbstractDaoService {
     return drugEvidences;
   }
   
-@GET
+  @GET
   @Path("{id}")
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<Evidence> getEvidence(@PathParam("sourceKey") String sourceKey, @PathParam("id") final Long id) {

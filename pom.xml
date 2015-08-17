@@ -335,6 +335,18 @@
       <version>${flyway.version}</version>
     </dependency>
     <dependency>
+	<groupId>org.apache.httpcomponents</groupId>
+	<artifactId>httpclient</artifactId>
+	<version>4.3.6</version>
+</dependency>
+<dependency>
+	<groupId>commons-httpclient</groupId>
+	<artifactId>commons-httpclient</artifactId>
+	<version>3.1</version>
+</dependency>
+
+    
+    <dependency>
       <groupId>org.springframework.batch</groupId>
       <artifactId>spring-batch-admin-manager</artifactId>
       <version>2.0.0.M1</version>
@@ -349,11 +361,6 @@
         </exclusion>
       </exclusions>
     </dependency>
-     <dependency>
-	<groupId>org.apache.jena</groupId>
-	<artifactId>jena-osgi</artifactId>
-	<version>3.0.0</version>
-	</dependency>
    
     <dependency>
       <groupId>com.amazon</groupId>

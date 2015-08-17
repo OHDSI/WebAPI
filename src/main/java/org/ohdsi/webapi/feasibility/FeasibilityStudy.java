@@ -20,6 +20,8 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
@@ -64,6 +66,7 @@ public class FeasibilityStudy {
   @Id
   @GeneratedValue
   @Column(name="id")
+  @Access(AccessType.PROPERTY) 
   private Integer id; 
   
   @Column(name="name")

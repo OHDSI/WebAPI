@@ -18,6 +18,8 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Set;
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -51,6 +53,7 @@ public class CohortDefinition implements Serializable{
     
   @Id
   @GeneratedValue
+  @Access(AccessType.PROPERTY) 
   private Integer id;
   
   private String name;

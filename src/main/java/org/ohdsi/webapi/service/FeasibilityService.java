@@ -133,11 +133,9 @@ public class FeasibilityService extends AbstractDaoService {
     public Integer id;
     public String name;
     public String description;
-    public Integer phaseId;
-    public Integer sampleSize;
-    public String documentUrl;
-    public String clinicalTrialsIdentifier;
     public String createdBy;
+    public Integer indexCohortId;
+    public Integer matchingCohortId;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd, HH:mm")
     public Date createdDate;
     public String modifiedBy;
@@ -337,9 +335,10 @@ public class FeasibilityService extends AbstractDaoService {
   public FeasibilityStudyDTO feasibilityStudyToDTO(FeasibilityStudy study) {
     FeasibilityStudyDTO pDTO = new FeasibilityStudyDTO();
     pDTO.id = study.getId();
-    pDTO.id = study.getId();
     pDTO.name = study.getName();
     pDTO.description = study.getDescription();
+    pDTO.indexCohortId = study.getIndexRule().getId();
+    pDTO.matchingCohortId = study.getResultRule() != null ? study.getResultRule().getId() : null;
     pDTO.createdBy = study.getCreatedBy();
     pDTO.createdDate = study.getCreatedDate();
     pDTO.modifiedBy = study.getModifiedBy();
@@ -367,6 +366,8 @@ public class FeasibilityService extends AbstractDaoService {
       item.id = p.getId();
       item.name = p.getName();
       item.description = p.getDescription();
+      item.indexCohortId = p.getIndexRule().getId();
+      item.matchingCohortId = p.getResultRule() != null ? p.getResultRule().getId() : null;
       item.createdBy = p.getCreatedBy();
       item.createdDate = p.getCreatedDate();
       item.modifiedBy = p.getModifiedBy();

@@ -309,11 +309,6 @@
       <version>1.6</version>
     </dependency>
     <dependency>
-		<groupId>mysql</groupId>
-		<artifactId>mysql-connector-java</artifactId>
-		<version>5.1.6</version>
-	</dependency>
-    <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
       <version>2.4</version>
@@ -399,20 +394,16 @@
       <id>webapi-postgresql</id>
       <properties>
         <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
-        <!-- <datasource.url>jdbc:postgresql://laertes.ohdsi.org:5432/vocabularyv5</datasource.url> -->
-	<datasource.url>jdbc:postgresql://laertes.ohdsi.org:5432/vocabularyv5?user=webapi&amp;password=auHpR9J3Z2DKv4YEj</datasource.url>
-        <!-- <datasource.username>rich</datasource.username> -->
-	<datasource.username>webapi</datasource.username>
-        <!-- <datasource.password>rich!@123</datasource.password> -->
-	<datasource.password>auHpR9J3Z2DKv4YEj</datasource.password>
+        <datasource.url>jdbc:postgresql://54.209.111.128:5432/vocabularyv5</datasource.url>
+        <datasource.username>USER</datasource.username>
+        <datasource.password>PASS</datasource.password>
         <datasource.dialect>postgresql</datasource.dialect>
         <datasource.cdm.schema>unrestricted</datasource.cdm.schema>
         <datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>
-        <datasource.cohort.schema>ohdsi</datasource.cohort.schema>
         <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
         <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
-        <flyway.datasource.username>webapi</flyway.datasource.username>
-        <flyway.datasource.password>auHpR9J3Z2DKv4YEj</flyway.datasource.password>
+        <flyway.datasource.username>userWithWritesToOhdsiSchema</flyway.datasource.username>
+        <flyway.datasource.password>PASS</flyway.datasource.password>
         <flyway.locations>classpath:db/migration/postgresql</flyway.locations>
       </properties>
       <dependencies>

@@ -26,20 +26,15 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import org.ohdsi.sql.SqlRender;
-import org.ohdsi.sql.SqlTranslate;
-import org.ohdsi.webapi.DataAccessConfig;
-import org.ohdsi.webapi.evidence.EvidenceInfo;
+import org.ohdsi.webapi.evidence.LinkoutData;
 import org.ohdsi.webapi.evidence.RdfInfo;
 import org.ohdsi.webapi.helper.ResourceHelper;
-import org.ohdsi.webapi.source.Source;
-import org.ohdsi.webapi.source.SourceDaimon;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 
-@Path("sparql/")
+@Path("evidence/")
 @Component
 public class SparqlService {
 	
@@ -47,7 +42,7 @@ public class SparqlService {
 	  private Environment env;
 	
 	@GET
-	  @Path("source")
+	  @Path("rdfinfo")
 	  @Produces(MediaType.APPLICATION_JSON)
 	  public Collection<RdfInfo> getInfo() throws JSONException {
 		
@@ -63,19 +58,76 @@ public class SparqlService {
 		}
 		uriQuery = uriQuery + "&format=application%2Fsparql-results%2Bjson";
 	    List<RdfInfo> infoOnSources = new ArrayList<RdfInfo>();
-	    infoOnSources = readJSONFeed(uriQuery);
+	    JSONArray lineItems = readJSONFeed(uriQuery);
+	    for (int i = 0; i < lineItems.length(); ++i) {
+	        JSONObject tempItem = lineItems.getJSONObject(i);
+	        JSONObject tempSource = tempItem.getJSONObject("sourceDocument");
+	        String source = tempSource.getString("value");
+	        RdfInfo info = new RdfInfo();
+	        info.sourceDocument = source;
+	        infoOnSources.add(info);
+	    }
 	    
 	    return infoOnSources;
 	  }
 	
 	
+	@GET
+	  @Path("linkoutdata/{linkout}")
+	  @Produces(MediaType.APPLICATION_JSON)
+	  public Collection<LinkoutData> getLinkout(@PathParam("linkout") String linkout) throws JSONException {
+		
+		String query = ResourceHelper.GetResourceAsString("/resources/evidence/sparql/linkout.sparql");
+		query = query.replaceAll("ConceptID", linkout);
+		String uriQuery = null;
+		String sparqlEndpoint = this.env.getRequiredProperty("sparql.endpoint");
+		query = sparqlEndpoint + query;
+		try {
+			uriQuery = URIUtil.encodeQuery(query);
+		} catch (URIException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		uriQuery = uriQuery + "&format=application%2Fsparql-results%2Bjson";
+	    List<LinkoutData> infoOnLinkout = new ArrayList<LinkoutData>();
+	    JSONArray lineItems = readJSONFeed(uriQuery);
+	    for (int i = 0; i < lineItems.length(); ++i) {
+	        JSONObject tempItem = lineItems.getJSONObject(i);
+	        JSONObject tempSource = tempItem.getJSONObject("an");
+	        String source = tempSource.getString("value");
+	        LinkoutData info = new LinkoutData();
+	        info.an = source;
+	        tempSource = tempItem.getJSONObject("body");
+	        source = tempSource.getString("value");
+	        info.body = source;
+	        tempSource = tempItem.getJSONObject("target");
+	        source = tempSource.getString("value");
+	        info.target = source;
+	        tempSource = tempItem.getJSONObject("sourceURL");
+	        source = tempSource.getString("value");
+	        info.sourceURL = source;
+	        tempSource = tempItem.getJSONObject("selector");
+	        source = tempSource.getString("value");
+	        info.selector = source;
+	        tempSource = tempItem.getJSONObject("spl");
+	        source = tempSource.getString("value");
+	        info.spl = source;
+	        tempSource = tempItem.getJSONObject("text");
+	        source = tempSource.getString("value");
+	        info.text = source;
+	        infoOnLinkout.add(info);
+	    }
+	    
+	    return infoOnLinkout;
+	  }
 	
-	//readJSON function
-	private static List<RdfInfo> readJSONFeed(String URL) throws JSONException {
+	
+	
+	//get and parse JSON function
+	private static JSONArray readJSONFeed(String URL) throws JSONException {
 	    StringBuilder stringBuilder = new StringBuilder();
-	    HttpClient httpClient = new DefaultHttpClient();
+		HttpClient httpClient = new DefaultHttpClient();
 	    HttpGet httpGet = new HttpGet(URL);
-	    List<RdfInfo> infoOnSources = new ArrayList<RdfInfo>();
 
 	    try {
 
@@ -101,14 +153,6 @@ public class SparqlService {
 	    }
 	    JSONObject jsonObj = new JSONObject(stringBuilder.toString());
 	    JSONArray lineItems = jsonObj.getJSONObject("results").getJSONArray("bindings");
-	    for (int i = 0; i < lineItems.length(); ++i) {
-	        JSONObject tempItem = lineItems.getJSONObject(i);
-	        JSONObject tempSource = tempItem.getJSONObject("sourceDocument");
-	        String source = tempSource.getString("value");
-	        RdfInfo info = new RdfInfo();
-	        info.sourceDocument = source;
-	        infoOnSources.add(info);
-	    }
-	    return infoOnSources;
+	    return lineItems;
 	}
 }

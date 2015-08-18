@@ -1,0 +1,28 @@
+# drill down query for a drug and HOI in the SPLICER ADRAnnotation graph joined with LinkedSPLs
+PREFIX ohdsi:<http://purl.org/net/ohdsi#>
+PREFIX oa:<http://www.w3.org/ns/oa#>
+PREFIX meddra:<http://purl.bioontology.org/ontology/MEDDRA/>
+PREFIX ncbit: <http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX linkedspls_vocabulary: <http://bio2rdf.org/linkedspls_vocabulary:>
+
+SELECT *
+WHERE {
+ GRAPH <http://purl.org/net/nlprepository/ohdsi-adr-splicer-poc> {
+  ?an a ohdsi:ADRAnnotation;
+   oa:hasBody ?body;
+   oa:hasTarget ?target.
+
+   ?body ohdsi:ImedsDrug ohdsi:ConceptID.
+
+   ?target oa:hasSource ?sourceURL.
+   ?target oa:hasSelector ?selector.
+
+   ?selector linkedspls_vocabulary:splSection <http://www.hipaaspace.com/Medical_Billing/Coding/Logical.Observation.Identifiers.Names.and.Codes/34084-4>.
+  }
+ GRAPH <http://purl.org/net/nlprepository/spl-core> {
+  ?spl a ncbit:Label;
+   foaf:homepage ?sourceURL;
+   <http://www.hipaaspace.com/Medical_Billing/Coding/Logical.Observation.Identifiers.Names.and.Codes/34084-4> ?text.
+ }
+}

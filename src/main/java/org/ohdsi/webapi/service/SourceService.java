@@ -8,6 +8,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,12 +31,33 @@ public class SourceService extends AbstractDaoService {
     }
     return sources;
   }
-  
+
+  @Path("priorityVocabulary")
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)  
+  public SourceInfo getPriorityVocabularySourceInfo() {
+    int priority = 0;
+    SourceInfo priorityVocabularySourceInfo = null;
+
+    for (Source source : sourceRepository.findAll()) {
+      for (SourceDaimon daimon : source.getDaimons()) {
+        if (daimon.getDaimonType() == SourceDaimon.DaimonType.Vocabulary) {
+          int daimonPriority = Integer.parseInt(daimon.getPriority());
+          if (daimonPriority >= priority) {
+            priority = daimonPriority;
+            priorityVocabularySourceInfo = new SourceInfo(source);
+          }
+        }
+      }
+    }
+    
+    return priorityVocabularySourceInfo;
+  }
+
   @Path("{key}")
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public SourceInfo getSource(@PathParam("key") final String sourceKey) {
     return sourceRepository.findBySourceKey(sourceKey).getSourceInfo();
-  }    
+  }
 }
-

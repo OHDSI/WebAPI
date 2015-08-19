@@ -110,4 +110,11 @@ public class DataAccessConfig {
     transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     return transactionTemplate;
   }
+  
+  /*
+  public String getSparqlEndpoint()
+  {
+	  String sparqlEndpoint = this.env.getRequiredProperty("sparql.endpoint");
+	  return sparqlEndpoint;
+  }*/
 }

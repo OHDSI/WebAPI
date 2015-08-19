@@ -7,6 +7,4 @@ public class RdfInfo {
 	@JsonProperty("SOURCE")
     public String sourceDocument;
 	
-	@JsonProperty("TESTINFO")
-    public String testinfo;
 }

@@ -1,8 +1,12 @@
 package org.ohdsi.webapi.service;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.Proxy;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -26,6 +30,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.ohdsi.webapi.evidence.CommandList;
 import org.ohdsi.webapi.evidence.LinkoutData;
 import org.ohdsi.webapi.evidence.RdfInfo;
 import org.ohdsi.webapi.helper.ResourceHelper;
@@ -40,6 +45,34 @@ public class SparqlService {
 	
 	@Autowired
 	  private Environment env;
+	
+	
+	
+	@GET
+	  @Path("")
+	  @Produces(MediaType.APPLICATION_JSON)
+	  public Collection<CommandList> getAllCommand() throws JSONException {
+		
+		List<CommandList> infoOnCommand = new ArrayList<CommandList>();
+	    	
+	    	CommandList command1 = new CommandList();
+	    	command1.Param = "rdfinfo";
+	    	command1.Example = "rdfinfo";
+	    	command1.Description = "List the basic infomation about the RDF endpoint.";
+	    	infoOnCommand.add(command1);
+	    	CommandList command2 = new CommandList();
+	    	command2.Param = "linkoutdata/{linkout}";
+	    	command2.Example = "linkoutdata/http%3A%252F%252Fdbmi-icode-01.dbmi.pitt.edu%252Fl%252Findex.php%3Fid%3Dsplicer-237164";
+	    	command2.Description = "List all the linkout data of certain drug.";
+	    	infoOnCommand.add(command2);
+	    	CommandList command3 = new CommandList();
+	    	command3.Param = "?";
+	    	command3.Example = "?";
+	    	command3.Description = "List all available commands with the prefix of 'WebAPI/evidence/'";
+	    	infoOnCommand.add(command3);
+	    
+	    return infoOnCommand;
+	  }
 	
 	@GET
 	  @Path("rdfinfo")
@@ -75,22 +108,14 @@ public class SparqlService {
 	@GET
 	  @Path("linkoutdata/{linkout}")
 	  @Produces(MediaType.APPLICATION_JSON)
-	  public Collection<LinkoutData> getLinkout(@PathParam("linkout") String linkout) throws JSONException {
+	  public Collection<LinkoutData> getLinkout(@PathParam("linkout") String linkout) throws JSONException, IOException {
 		
-		String query = ResourceHelper.GetResourceAsString("/resources/evidence/sparql/linkout.sparql");
-		query = query.replaceAll("ConceptID", linkout);
-		String uriQuery = null;
-		String sparqlEndpoint = this.env.getRequiredProperty("sparql.endpoint");
-		query = sparqlEndpoint + query;
-		try {
-			uriQuery = URIUtil.encodeQuery(query);
-		} catch (URIException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		uriQuery = uriQuery + "&format=application%2Fsparql-results%2Bjson";
+		String expandedURL = URIUtil.decode(linkout);
+		expandedURL = expandUrl(expandedURL);
+		expandedURL = URIUtil.decode(expandedURL);;
+		expandedURL = URIUtil.encodeQuery(expandedURL);
 	    List<LinkoutData> infoOnLinkout = new ArrayList<LinkoutData>();
-	    JSONArray lineItems = readJSONFeed(uriQuery);
+	    JSONArray lineItems = readJSONFeed(expandedURL);
 	    for (int i = 0; i < lineItems.length(); ++i) {
 	        JSONObject tempItem = lineItems.getJSONObject(i);
 	        JSONObject tempSource = tempItem.getJSONObject("an");
@@ -121,7 +146,21 @@ public class SparqlService {
 	    return infoOnLinkout;
 	  }
 	
-	
+	//expand URL from short URL
+	public static String expandUrl(String shortenedUrl) throws IOException {
+        URL url = new URL(shortenedUrl);    
+        // open connection
+        HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection(Proxy.NO_PROXY); 
+        
+        // stop following browser redirect
+        httpURLConnection.setInstanceFollowRedirects(false);
+         
+        // extract location header containing the actual destination URL
+        String expandedURL = httpURLConnection.getHeaderField("Location");
+        httpURLConnection.disconnect();
+        System.out.println("EXPAND: "+expandedURL);
+        return expandedURL;
+    }
 	
 	//get and parse JSON function
 	private static JSONArray readJSONFeed(String URL) throws JSONException {

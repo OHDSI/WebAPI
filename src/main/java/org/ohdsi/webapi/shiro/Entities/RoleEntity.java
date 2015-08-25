@@ -10,7 +10,6 @@ import java.util.Set;
 
 @Entity(name = "RoleEntity")
 @Table(name = "SEC_ROLE")
-@IdClass(RoleEntity.class)
 public class RoleEntity implements Serializable{
 
     private static final long serialVersionUID = 6257846375334314942L;

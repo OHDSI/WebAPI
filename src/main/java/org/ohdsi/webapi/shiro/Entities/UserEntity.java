@@ -10,7 +10,6 @@ import java.util.Set;
 
 @Entity(name = "UserEntity")
 @Table(name = "SEC_USER")
-@IdClass(UserEntity.class)
 public class UserEntity implements Serializable{
     private static final long serialVersionUID = -2697485161468660016L;
 
@@ -29,7 +28,7 @@ public class UserEntity implements Serializable{
 
     private String name;
 
-    private Set<RoleEntity> roles;
+//    private Set<RoleEntity> roles;
 
     @Id
     @Column(name = "ID")
@@ -77,15 +76,33 @@ public class UserEntity implements Serializable{
         this.name = name;
     }
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, targetEntity = RoleEntity.class, fetch = FetchType.EAGER)
-    @JoinTable(name = "SEC_USER_ROLE",
-        joinColumns = {@JoinColumn(name = "USER_ID", nullable = false)},
-        inverseJoinColumns = {@JoinColumn(name = "ROLE_ID", nullable = true)})
-    public Set<RoleEntity> getRoles() {
-        return roles;
+//    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, targetEntity = RoleEntity.class, fetch = FetchType.EAGER)
+//    @JoinTable(name = "SEC_USER_ROLE",
+//        joinColumns = {@JoinColumn(name = "USER_ID", nullable = false)},
+//        inverseJoinColumns = {@JoinColumn(name = "ROLE_ID", nullable = true)})
+//    public Set<RoleEntity> getRoles() {
+//        return roles;
+//    }
+//
+//    public void setRoles(Set<RoleEntity> roles) {
+//        this.roles = roles;
+//    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof UserEntity)) return false;
+
+        UserEntity that = (UserEntity) o;
+
+        if (!id.equals(that.id)) return false;
+
+        return true;
     }
 
-    public void setRoles(Set<RoleEntity> roles) {
-        this.roles = roles;
+    @Override
+    public int hashCode() {
+        return id.hashCode();
     }
 }

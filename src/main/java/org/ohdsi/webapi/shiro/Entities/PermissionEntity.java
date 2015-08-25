@@ -10,7 +10,6 @@ import java.util.Set;
 
 @Entity(name = "PermissionEntity")
 @Table(name = "SEC_PERMISSION")
-@IdClass(PermissionEntity.class)
 public class PermissionEntity implements Serializable {
 
     private static final long serialVersionUID = 1810877985769153135L;

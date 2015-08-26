@@ -2,6 +2,7 @@ package org.ohdsi.webapi;
 
 import org.apache.shiro.authc.credential.DefaultPasswordService;
 import org.apache.shiro.authc.credential.PasswordMatcher;
+import org.apache.shiro.authc.credential.SimpleCredentialsMatcher;
 import org.apache.shiro.spring.LifecycleBeanPostProcessor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
@@ -45,20 +46,8 @@ public class ShiroConfiguration {
     @DependsOn("lifecycleBeanPostProcessor")
     public SampleRealm realm(){
         final SampleRealm realm = new SampleRealm();
-        realm.setCredentialsMatcher(credentialsMatcher());
+        realm.setCredentialsMatcher(new SimpleCredentialsMatcher());
         return realm;
-    }
-
-    @Bean(name = "credentialsMatcher")
-    public PasswordMatcher credentialsMatcher(){
-        final PasswordMatcher credentialsMatcher = new PasswordMatcher();
-        credentialsMatcher.setPasswordService(passwordService());
-        return credentialsMatcher;
-    }
-
-    @Bean(name = "passwordService")
-    public DefaultPasswordService passwordService(){
-        return new DefaultPasswordService();
     }
 
     @Bean

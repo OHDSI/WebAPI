@@ -16,7 +16,6 @@ public class RoleEntity implements Serializable{
 
     private Long id;
     private String name;
-    private Set<UserEntity> users;
     private Set<PermissionEntity> permissions;
 
     @Id
@@ -36,15 +35,6 @@ public class RoleEntity implements Serializable{
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    @ManyToMany(mappedBy = "roles")
-    public Set<UserEntity> getUsers() {
-        return users;
-    }
-
-    public void setUsers(Set<UserEntity> users) {
-        this.users = users;
     }
 
     @OneToMany(mappedBy = "role", fetch = FetchType.EAGER)

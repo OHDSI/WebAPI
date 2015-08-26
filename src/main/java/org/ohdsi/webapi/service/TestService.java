@@ -57,8 +57,48 @@ public class TestService {
             } catch (AuthenticationException ae) {
                 return "Authentication failed";
             }
-
+            return "User successfully logged";
         }
-        return "Login: " + login + " " + "Password: " + password;
+        return "User already authenticated";
+    }
+
+    @GET
+    @Path("roleCheck")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String roleCheck() {
+        Subject currentUser = SecurityUtils.getSubject();
+        if(!currentUser.isAuthenticated()){
+            return "Action forbidden for unauthenticated users.";
+        } else if (currentUser.hasRole("Admin")){
+            return "Success!";
+        } else{
+            return "This action allowed only for Admin";
+        }
+    }
+
+    @GET
+    @Path("permissionCheck")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String permissionCheck() {
+        Subject currentUser = SecurityUtils.getSubject();
+        if(!currentUser.isAuthenticated()){
+            return "Action forbidden for unauthenticated users.";
+        } else if (currentUser.isPermitted("edit vocabulary")){
+            return "Success!";
+        } else {
+            return "Action is not authorized for current account";
+        }
+    }
+
+    @POST
+    @Path("logout")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String shiroLogout() {
+        Subject currentUser = SecurityUtils.getSubject();
+        if(currentUser.isAuthenticated()){
+            currentUser.logout();
+            return "User logged out.";
+        }
+        return "User is not authenticated. Unable to logout";
     }
 }

@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  */
 
 @Configuration
-@EnableJpaRepositories
 public class ShiroConfiguration {
 
     @Bean

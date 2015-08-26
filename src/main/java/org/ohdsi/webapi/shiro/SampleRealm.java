@@ -30,7 +30,7 @@ public class SampleRealm extends AuthorizingRealm{
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
         final String login = (String) principalCollection.getPrimaryPrincipal();
-        final UserEntity userEntity = userRepository.getByLogin(login);
+        final UserEntity userEntity = userRepository.findByLogin(login);
         if(userEntity == null){
             throw new UnknownAccountException("Account does not exist");
         }
@@ -45,7 +45,6 @@ public class SampleRealm extends AuthorizingRealm{
                 }
             }
         }
-
         final SimpleAuthorizationInfo info = new SimpleAuthorizationInfo(roleNames);
         info.setStringPermissions(permissionNames);
         return info;
@@ -59,11 +58,12 @@ public class SampleRealm extends AuthorizingRealm{
             throw new UnknownAccountException("Login not provided");
         }
 
-        final UserEntity userEntity = userRepository.getByLogin(login);
+        final UserEntity userEntity = userRepository.findByLogin(login);
         if (userEntity == null){
             throw new UnknownAccountException("Account does not exist");
         }
-        return new SimpleAuthenticationInfo(login,userEntity.getPassword().toCharArray(),
-                ByteSource.Util.bytes(login), getName());
+        return new SimpleAuthenticationInfo(login, userEntity.getPassword(),getName());
+//        return new SimpleAuthenticationInfo(login,userEntity.getPassword().toCharArray(),
+//                ByteSource.Util.bytes(login), getName());
     }
 }

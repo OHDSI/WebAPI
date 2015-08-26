@@ -8,6 +8,8 @@ import org.springframework.data.repository.CrudRepository;
  */
 public interface UserRepository extends CrudRepository<UserEntity, Long> {
 
-    @Query("from UserEntity where login = ?1")
-    public UserEntity getByLogin(String login);
+    public UserEntity findByLogin(String login);
+
+    @Query("from UserEntity where login = 'testLogin'")
+    public UserEntity getTestUser();
 }

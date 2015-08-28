@@ -15,6 +15,7 @@
     <spring.boot.version>1.2.1.RELEASE</spring.boot.version>
     <spring.batch.version>3.0.3.RELEASE</spring.batch.version>
     <flyway.version>3.1</flyway.version>
+    <waffle.version>1.7.3</waffle.version>
     <start-class>org.ohdsi.webapi.WebApi</start-class>
 
     <!-- Primary DataSource -->
@@ -235,6 +236,11 @@
     <!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-actuator</artifactId> 
     <version>${spring.boot.version}</version> </dependency> -->
     <dependency>
+      <groupId>com.github.dblock.waffle</groupId>
+      <artifactId>waffle-jna</artifactId>
+      <version>${waffle.version}</version>
+    </dependency>    
+    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter</artifactId>
       <version>${spring.boot.version}</version>
@@ -367,23 +373,21 @@
       <version>4.1</version>
       <type>jar</type>
     </dependency>
-      <dependency>
-          <groupId>org.apache.shiro</groupId>
-          <artifactId>shiro-core</artifactId>
-          <version>1.2.4</version>
-      </dependency>
-
-      <dependency>
-          <groupId>org.apache.shiro</groupId>
-          <artifactId>shiro-web</artifactId>
-          <version>1.2.4</version>
-      </dependency>
-
-      <dependency>
-          <groupId>org.apache.shiro</groupId>
-          <artifactId>shiro-spring</artifactId>
-          <version>1.2.4</version>
-      </dependency>
+    <dependency>
+        <groupId>org.apache.shiro</groupId>
+        <artifactId>shiro-core</artifactId>
+        <version>1.2.4</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.shiro</groupId>
+      <artifactId>shiro-web</artifactId>
+      <version>1.2.4</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.shiro</groupId>
+      <artifactId>shiro-spring</artifactId>
+      <version>1.2.4</version>
+    </dependency>
   </dependencies>
   <profiles>
     <profile>

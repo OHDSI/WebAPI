@@ -32,11 +32,13 @@ public class TestService {
     @GET
     @Path("info")
     @Produces(MediaType.APPLICATION_JSON)
-    public String getTestResponse() {
+    public boolean getTestResponse() {
+        Subject currentUser = SecurityUtils.getSubject();
+        
         UserEntity secondEntity = userRepository.findByLogin("testLogin");
         RoleEntity roleEntity = roleRepository.findById(1L);
         PermissionEntity permissionEntity = permissionRepository.findById(1L);
-        return "Test response!";
+        return currentUser.isAuthenticated();
     }
 
     @POST

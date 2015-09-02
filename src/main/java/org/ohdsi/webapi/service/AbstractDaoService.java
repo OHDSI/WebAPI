@@ -195,4 +195,11 @@ public abstract class AbstractDaoService {
   public void setTransactionTemplateRequiresNew(TransactionTemplate transactionTemplateRequiresNew) {
     this.transactionTemplateRequiresNew = transactionTemplateRequiresNew;
   }
+  
+  /**
+   * @return the ohdsiSchema
+   */
+  public String getOhdsiSchema() {
+      return ohdsiSchema;
+  }
 }

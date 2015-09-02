@@ -43,7 +43,7 @@ import org.springframework.util.StringUtils;
 /**
  * Services related to running Heracles analyses
  */
-@Path("{sourceKey}/cohortanalysis/")
+@Path("/cohortanalysis/")
 @Component
 public class CohortAnalysisService extends AbstractDaoService {
 
@@ -107,129 +107,47 @@ public class CohortAnalysisService extends AbstractDaoService {
 		return getJdbcTemplate().query(sql, this.analysisMapper);
 	}
 
-	/**
-	 * Returns all cohort analyses in the results/OHDSI schema for the given
-	 * cohort_definition_id
-	 * @param sourceKey 
-	 *
-	 * @return List of all cohort analyses and their statuses for the given
-	 * cohort_defintion_id
-	 */
-	@GET
-	@Path("/{id}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public List<CohortAnalysis> getCohortAnalysesForCohortDefinition(@PathParam("id") final int id, 
-			@PathParam("sourceKey") String sourceKey,
-			@DefaultValue("true") @QueryParam("fullDetail") boolean retrieveFullDetail) {
+    /**
+     * Returns all cohort analyses in the results/OHDSI schema for the given cohort_definition_id
+     * 
+     * @return List of all cohort analyses and their statuses for the given cohort_defintion_id
+     */
+    @GET
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<CohortAnalysis> getCohortAnalysesForCohortDefinition(@PathParam("id") final int id) {
+        String sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/getCohortAnalysesForCohort.sql");
+        
+        sql = SqlRender.renderSql(sql, new String[] { "ohdsi_database_schema", "cohortDefinitionId" },
+            new String[] { this.getOhdsiSchema(), String.valueOf(id) });
+        sql = SqlTranslate.translateSql(sql, getSourceDialect(), getDialect(), SessionUtils.sessionId(), getOhdsiSchema());
+        
+        return getJdbcTemplate().query(sql, this.cohortAnalysisMapper);
+    }
 
-		String sql = null;
-		if (retrieveFullDetail) {
-			sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/getCohortAnalysesForCohortFull.sql");
-		} else {
-			sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/getCohortAnalysesForCohort.sql");
-		}
-		
-		Source source = getSourceRepository().findBySourceKey(sourceKey);
-		String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    /**
+     * Returns the summary for the cohort
+     * 
+     * @param id - the cohort_defintion id
+     * @return Summary which includes the base cohort_definition, the cohort analyses list and their
+     *         statuses for this cohort, and a base set of common cohort results that may or may not
+     *         yet have been ran
+     */
+    @GET
+    @Path("/{id}/summary")
+    @Produces(MediaType.APPLICATION_JSON)
+    public CohortSummary getCohortSummary(@PathParam("id") final int id) {
 
-		sql = SqlRender.renderSql(
-				sql,
-				new String[] { "ohdsi_database_schema", "cohortDefinitionId" },
-				new String[] { resultsTableQualifier, String.valueOf(id) });
-		sql = SqlTranslate.translateSql(sql, getSourceDialect(), source.getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
+        CohortSummary summary = new CohortSummary();
+        try {
+            summary.setCohortDefinition(this.definitionService.getCohortDefinition(id));
+            summary.setAnalyses(this.getCohortAnalysesForCohortDefinition(id));
+        } catch (Exception e) {
+            log.error("unable to get cohort summary", e);
+        }
 
-		return getSourceJdbcTemplate(source).query(sql, this.cohortAnalysisMapper);
-	}
-
-	/**
-	 * Returns the summary for the cohort
-	 *
-	 * @param id - the cohort_defintion id
-	 * @return Summary which includes the base cohort_definition, the cohort
-	 * analyses list and their statuses for this cohort, and a base set of common
-	 * cohort results that may or may not yet have been ran
-	 *
-	 */
-	@GET
-	@Path("/{id}/summary")
-	@Produces(MediaType.APPLICATION_JSON)
-	public CohortSummary getCohortSummary(@PathParam("id") final int id,
-			@PathParam("sourceKey") String sourceKey) {
-
-		CohortSummary summary = new CohortSummary();
-		try {
-			summary.setCohortDefinition(this.definitionService.getCohortDefinition(id));
-			summary.setAnalyses(this.getCohortAnalysesForCohortDefinition(id, sourceKey, false));
-		} catch (Exception e) {
-			log.error("unable to get cohort summary", e);
-		}
-
-		return summary;
-	}
-	
-	/**
-	 * Returns the summary for the cohort
-	 *
-	 * @param id - the cohort_defintion id
-	 * @return Summary which includes analyses with complete time
-	 *
-	 */
-	@GET
-	@Path("/{id}/summaryanalyses")
-	@Produces(MediaType.APPLICATION_JSON)
-	public CohortSummary getCohortSummaryAnalyses(@PathParam("id") final int id,
-			@PathParam("sourceKey") String sourceKey) {
-
-		CohortSummary summary = new CohortSummary();
-		try {
-			summary.setAnalyses(this.getCohortAnalysesForCohortDefinition(id, sourceKey, true));
-		} catch (Exception e) {
-			log.error("unable to get cohort summary", e);
-		}
-
-		return summary;
-	}
-	
-	/**
-	 * Returns the summary for the cohort
-	 *
-	 * @param id - the cohort_defintion id
-	 * @return Summary data including top summary visualization data this cohort
-	 *
-	 */
-	@GET
-	@Path("/{id}/summarydata")
-	@Produces(MediaType.APPLICATION_JSON)
-	public CohortSummary getCohortSummaryData(@PathParam("id") final int id,
-			@PathParam("sourceKey") String sourceKey) {
-
-		CohortSummary summary = new CohortSummary();
-		
-		try {
-			// total patients
-			Integer persons = this.resultsService.getRawDistinctPersonCount(sourceKey, String.valueOf(id), false);
-			summary.setTotalPatients(String.valueOf(persons));
-	
-	
-			// median age
-			CohortSpecificSummary cohortSpecific = this.resultsService.getCohortSpecificResults(id, null, null, sourceKey, false);
-			if (cohortSpecific != null && cohortSpecific.getAgeAtIndexDistribution() != null && cohortSpecific.getAgeAtIndexDistribution().size() > 0) {
-				summary.setMeanAge(String.valueOf(cohortSpecific.getAgeAtIndexDistribution().get(0).getMedianValue()));
-			}
-	
-			// TODO mean obs period
-			CohortDashboard dashboard = this.resultsService.getDashboard(id, null, null, true, sourceKey, false);
-			if (dashboard != null) {
-				summary.setGenderDistribution(dashboard.getGender());
-				summary.setAgeDistribution(dashboard.getAgeAtFirstObservation());
-			}
-		} catch (Exception e) {
-			log.error(e);
-		}
-
-		return summary;
-	}
-
+        return summary;
+    }
 	/**
 	 * Generates a preview of the cohort analysis SQL to be ran for the Cohort
 	 * Analysis Job

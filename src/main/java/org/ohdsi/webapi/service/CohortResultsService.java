@@ -1,5 +1,7 @@
 package org.ohdsi.webapi.service;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -21,7 +23,9 @@ import javax.ws.rs.core.MediaType;
 import org.apache.commons.collections.CollectionUtils;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.cohortanalysis.CohortAnalysis;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTask;
+import org.ohdsi.webapi.cohortanalysis.CohortSummary;
 import org.ohdsi.webapi.cohortresults.CohortAttribute;
 import org.ohdsi.webapi.cohortresults.CohortConditionDrilldown;
 import org.ohdsi.webapi.cohortresults.CohortConditionEraDrilldown;
@@ -44,9 +48,12 @@ import org.ohdsi.webapi.cohortresults.ScatterplotRecord;
 import org.ohdsi.webapi.cohortresults.VisualizationData;
 import org.ohdsi.webapi.cohortresults.VisualizationDataRepository;
 import org.ohdsi.webapi.helper.ResourceHelper;
+import org.ohdsi.webapi.model.results.Analysis;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -1060,6 +1067,46 @@ public class CohortResultsService extends AbstractDaoService {
 	}
 
 	/**
+     * Returns the summary for the cohort
+     *
+     * @param id - the cohort_defintion id
+     * @return Summary data including top summary visualization data this cohort
+     *
+     */
+    @GET
+    @Path("/{id}/summarydata")
+    @Produces(MediaType.APPLICATION_JSON)
+    public CohortSummary getCohortSummaryData(@PathParam("id") final int id,
+            @PathParam("sourceKey") String sourceKey) {
+
+        CohortSummary summary = new CohortSummary();
+        
+        try {
+            // total patients
+            Integer persons = this.getRawDistinctPersonCount(sourceKey, String.valueOf(id), false);
+            summary.setTotalPatients(String.valueOf(persons));
+    
+    
+            // median age
+            CohortSpecificSummary cohortSpecific = this.getCohortSpecificResults(id, null, null, sourceKey, false);
+            if (cohortSpecific != null && cohortSpecific.getAgeAtIndexDistribution() != null && cohortSpecific.getAgeAtIndexDistribution().size() > 0) {
+                summary.setMeanAge(String.valueOf(cohortSpecific.getAgeAtIndexDistribution().get(0).getMedianValue()));
+            }
+    
+            // TODO mean obs period
+            CohortDashboard dashboard = this.getDashboard(id, null, null, true, sourceKey, false);
+            if (dashboard != null) {
+                summary.setGenderDistribution(dashboard.getGender());
+                summary.setAgeDistribution(dashboard.getAgeAtFirstObservation());
+            }
+        } catch (Exception e) {
+            log.error(e);
+        }
+
+        return summary;
+    }
+    
+	/**
 	 * Queries for cohort analysis death data for the given cohort definition id
 	 *
 	 * @param id cohort_defintion id
@@ -1093,36 +1140,79 @@ public class CohortResultsService extends AbstractDaoService {
 		return data;
 	}
 
-	/**
-	 * Returns heracles heel results (data quality issues) for the given cohort
-	 * definition id
-	 *
-	 * @param id cohort definition id
-	 * @return List<CohortAttribute>
-	 */
-	@GET
-	@Path("/{id}/heraclesheel")
-	@Produces(MediaType.APPLICATION_JSON)
-	public List<CohortAttribute> getHeraclesHeel(@PathParam("id") final int id, 
-			@PathParam("sourceKey") final String sourceKey,
-			@DefaultValue("false") @QueryParam("refresh") boolean refresh) {
-		List<CohortAttribute> attrs = new ArrayList<CohortAttribute>();
-		Source source = getSourceRepository().findBySourceKey(sourceKey);
-		final String key = CohortResultsAnalysisRunner.HERACLES_HEEL;
-		VisualizationData data = refresh ? null : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
-
-		if (refresh || data == null) {
-			attrs = this.queryRunner.getHeraclesHeel(this.getSourceJdbcTemplate(source), id, source, true);
-		} else {
-			try {
-				attrs = mapper.readValue(data.getData(), new TypeReference<List<CohortAttribute>>(){});
-			} catch (Exception e) {
-				log.error(e);
-			}
-		}
-
-		return attrs;
-	}
-
-
+    /**
+     * Returns the summary for the cohort
+     * 
+     * @param id - the cohort_defintion id
+     * @return Summary which includes analyses with complete time
+     */
+    @GET
+    @Path("/{id}/summaryanalyses")
+    @Produces(MediaType.APPLICATION_JSON)
+    public CohortSummary getCohortSummaryAnalyses(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey) {
+        
+        CohortSummary summary = new CohortSummary();
+        try {
+            summary.setAnalyses(getCohortAnalysesForCohortDefinition(id, sourceKey, true));
+        } catch (Exception e) {
+            log.error("unable to get cohort summary", e);
+        }
+        
+        return summary;
+    }
+    
+    /**
+     * Returns all cohort analyses in the results/OHDSI schema for the given cohort_definition_id
+     * 
+     * @param sourceKey
+     * @return List of all cohort analyses and their statuses for the given cohort_defintion_id
+     */
+    @GET
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<CohortAnalysis> getCohortAnalysesForCohortDefinition(@PathParam("id") final int id,
+                                                                     @PathParam("sourceKey") String sourceKey,
+                                                                     @DefaultValue("true") @QueryParam("fullDetail") boolean retrieveFullDetail) {
+        
+        String sql = null;
+        if (retrieveFullDetail) {
+            sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/getCohortAnalysesForCohortFull.sql");
+        } else {
+            sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/getCohortAnalysesForCohort.sql");
+        }
+        
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+        String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+        
+        sql = SqlRender.renderSql(sql, new String[] { "ohdsi_database_schema", "cohortDefinitionId" }, new String[] {
+                resultsTableQualifier, String.valueOf(id) });
+        sql = SqlTranslate.translateSql(sql, getSourceDialect(), source.getSourceDialect(), SessionUtils.sessionId(),
+            resultsTableQualifier);
+        
+        return getSourceJdbcTemplate(source).query(sql, this.cohortAnalysisMapper);
+    }
+    
+    private final RowMapper<CohortAnalysis> cohortAnalysisMapper = new RowMapper<CohortAnalysis>() {
+        
+        @Override
+        public CohortAnalysis mapRow(final ResultSet rs, final int rowNum) throws SQLException {
+            final CohortAnalysis cohortAnalysis = new CohortAnalysis();
+            mapAnalysis(cohortAnalysis, rs, rowNum);
+            cohortAnalysis.setAnalysisComplete(rs.getInt(CohortAnalysis.ANALYSIS_COMPLETE) == 1);
+            cohortAnalysis.setCohortDefinitionId(rs.getInt(CohortAnalysis.COHORT_DEFINITION_ID));
+            cohortAnalysis.setLastUpdateTime(rs.getTimestamp(CohortAnalysis.LAST_UPDATE_TIME));
+            return cohortAnalysis;
+        }
+    };
+    
+    private void mapAnalysis(final Analysis analysis, final ResultSet rs, final int rowNum) throws SQLException {
+        analysis.setAnalysisId(rs.getInt(Analysis.ANALYSIS_ID));
+        analysis.setAnalysisName(rs.getString(Analysis.ANALYSIS_NAME));
+        analysis.setStratum1Name(rs.getString(Analysis.STRATUM_1_NAME));
+        analysis.setStratum2Name(rs.getString(Analysis.STRATUM_2_NAME));
+        analysis.setStratum3Name(rs.getString(Analysis.STRATUM_3_NAME));
+        analysis.setStratum4Name(rs.getString(Analysis.STRATUM_4_NAME));
+        analysis.setStratum5Name(rs.getString(Analysis.STRATUM_5_NAME));
+        analysis.setAnalysisType(rs.getString(Analysis.ANALYSIS_TYPE));
+    }
 };

@@ -9,6 +9,8 @@ import org.apache.shiro.subject.Subject;
 import org.ohdsi.webapi.shiro.Entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import waffle.windows.auth.IWindowsAccount;
+import waffle.windows.auth.impl.WindowsAuthProviderImpl;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -34,11 +36,16 @@ public class TestService {
     @Produces(MediaType.APPLICATION_JSON)
     public boolean getTestResponse() {
         Subject currentUser = SecurityUtils.getSubject();
-        
-        UserEntity secondEntity = userRepository.findByLogin("testLogin");
-        RoleEntity roleEntity = roleRepository.findById(1L);
-        PermissionEntity permissionEntity = permissionRepository.findById(1L);
-        return currentUser.isAuthenticated();
+        WindowsAuthProviderImpl waffle = new WindowsAuthProviderImpl();
+        IWindowsAccount test = waffle.lookupAccount(waffle.getCurrentComputer().getComputerName());
+        UsernamePasswordToken token = new UsernamePasswordToken("Login","Password");
+        currentUser.login(token);
+    return currentUser.isAuthenticated();
+//        Subject currentUser = SecurityUtils.getSubject();
+//        UserEntity secondEntity = userRepository.findByLogin("testLogin");
+//        RoleEntity roleEntity = roleRepository.findById(1L);
+//        PermissionEntity permissionEntity = permissionRepository.findById(1L);
+//        return currentUser.isAuthenticated();
     }
 
     @POST

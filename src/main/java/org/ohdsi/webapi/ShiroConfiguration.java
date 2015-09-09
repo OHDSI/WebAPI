@@ -8,6 +8,7 @@ import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
 import org.ohdsi.webapi.shiro.SampleRealm;
+import org.ohdsi.webapi.shiro.SampleShiroWaffleRealm;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
@@ -42,10 +43,18 @@ public class ShiroConfiguration {
         return sessionManager;
     }
 
+//    @Bean(name = "realm")
+//    @DependsOn("lifecycleBeanPostProcessor")
+//    public SampleRealm realm(){
+//        final SampleRealm realm = new SampleRealm();
+//        realm.setCredentialsMatcher(new SimpleCredentialsMatcher());
+//        return realm;
+//    }
+
     @Bean(name = "realm")
     @DependsOn("lifecycleBeanPostProcessor")
-    public SampleRealm realm(){
-        final SampleRealm realm = new SampleRealm();
+    public SampleShiroWaffleRealm realm(){
+        final SampleShiroWaffleRealm realm = new SampleShiroWaffleRealm();
         realm.setCredentialsMatcher(new SimpleCredentialsMatcher());
         return realm;
     }

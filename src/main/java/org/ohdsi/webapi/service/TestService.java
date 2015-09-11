@@ -35,17 +35,17 @@ public class TestService {
     @Path("info")
     @Produces(MediaType.APPLICATION_JSON)
     public boolean getTestResponse() {
-        Subject currentUser = SecurityUtils.getSubject();
-        WindowsAuthProviderImpl waffle = new WindowsAuthProviderImpl();
-        IWindowsAccount test = waffle.lookupAccount(waffle.getCurrentComputer().getComputerName());
-        UsernamePasswordToken token = new UsernamePasswordToken("Login","Password");
-        currentUser.login(token);
-    return currentUser.isAuthenticated();
 //        Subject currentUser = SecurityUtils.getSubject();
-//        UserEntity secondEntity = userRepository.findByLogin("testLogin");
-//        RoleEntity roleEntity = roleRepository.findById(1L);
-//        PermissionEntity permissionEntity = permissionRepository.findById(1L);
-//        return currentUser.isAuthenticated();
+//        WindowsAuthProviderImpl waffle = new WindowsAuthProviderImpl();
+//        IWindowsAccount test = waffle.lookupAccount(waffle.getCurrentComputer().getComputerName());
+//        UsernamePasswordToken token = new UsernamePasswordToken("Login","Password");
+//        currentUser.login(token);
+//    return currentUser.isAuthenticated();
+        Subject currentUser = SecurityUtils.getSubject();
+        UserEntity secondEntity = userRepository.findByLogin("testLogin");
+        RoleEntity roleEntity = roleRepository.findById(1L);
+        PermissionEntity permissionEntity = permissionRepository.findById(1L);
+        return currentUser.isAuthenticated();
     }
 
     @POST

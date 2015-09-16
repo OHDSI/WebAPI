@@ -22,6 +22,6 @@ CREATE TABLE [dbo].[concept_set_item] (
     [include_descendants] INT NOT NULL,
     [include_mapped]      INT NOT NULL
 );
-END
+END;
 
 

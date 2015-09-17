@@ -61,6 +61,12 @@ public class VocabularyService extends AbstractDaoService {
     }
   };
 
+  /**
+   * @summary Perform a lookup of an array of concept identifiers returning the matching concepts with their detailed properties.
+   * @param sourceKey path parameter specifying the source key identifying the source to use for access to the set of vocabulary tables
+   * @param identifiers an array of concept identifiers
+   * @return collection of concepts 
+   */
   @Path("lookup/identifiers")
   @POST
   @Produces(MediaType.APPLICATION_JSON)
@@ -80,6 +86,12 @@ public class VocabularyService extends AbstractDaoService {
     return getSourceJdbcTemplate(source).query(sql_statement, this.rowMapper);
   }  
   
+  /**
+   * @summary Lookup source codes in the specified vocabulary
+   * @param sourceKey path parameter specifying the source key identifying the source to use for access to the set of vocabulary tables
+   * @param sourcecodes array of source codes
+   * @return collection of concepts
+   */
   @Path("lookup/sourcecodes")
   @POST
   @Produces(MediaType.APPLICATION_JSON)
@@ -102,6 +114,12 @@ public class VocabularyService extends AbstractDaoService {
     return getSourceJdbcTemplate(source).query(sql_statement, this.rowMapper);
   }  
   
+  /**
+   * @summary find all concepts mapped to the identifiers provided
+   * @param sourceKey path parameter specifying the source key identifying the source to use for access to the set of vocabulary tables
+   * @param identifiers an array of concept identifiers
+   * @return collection of concepts
+   */
   @Path("lookup/mapped")
   @POST
   @Produces(MediaType.APPLICATION_JSON)

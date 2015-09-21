@@ -22,8 +22,8 @@ select distinct * from (
             select * from @CDM_schema.concept where concept_id = @id
     ) c1
     join @CDM_schema.concept_ancestor ca1 on c1.concept_id = ca1.ancestor_concept_id
-    join @CDM_schema.concept_relationship cr1 on ca1.descendant_concept_id = cr1.concept_id_1 and cr1.relationship_id = 'Mapped from' and cr1.invalid_reason IS NULL
+    join @CDM_schema.concept_relationship cr1 on ca1.descendant_concept_id = cr1.concept_id_2 and cr1.relationship_id = 'Maps to' and cr1.invalid_reason IS NULL
     join @CDM_schema.relationship r on r.relationship_id = cr1.relationship_id
-    join @CDM_schema.concept c3 on cr1.concept_id_2 = c3.concept_id
+    join @CDM_schema.concept c3 on cr1.concept_id_1 = c3.concept_id
 ) ALL_RELATED 
 order by RELATIONSHIP_DISTANCE ASC

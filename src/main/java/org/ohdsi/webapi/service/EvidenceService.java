@@ -3,6 +3,7 @@ package org.ohdsi.webapi.service;
 import java.util.Collection;
 import java.util.Date;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.math.BigDecimal;
@@ -18,6 +19,8 @@ import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.evidence.DrugEvidence;
+import org.ohdsi.webapi.evidence.EvidenceSummary;
+import org.ohdsi.webapi.evidence.EvidenceUniverse;
 import org.ohdsi.webapi.evidence.HoiEvidence;
 import org.ohdsi.webapi.evidence.DrugHoiEvidence;
 import org.ohdsi.webapi.evidence.EvidenceInfo;
@@ -325,5 +328,112 @@ public class EvidenceService extends AbstractDaoService {
     }
     return evidences;
   }  
+  
+  
+  //test
+  @GET
+  @Path("evidencesummary")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Collection<EvidenceUniverse> getEvidenceSummary(@PathParam("sourceKey") String sourceKey) {
+    
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Evidence);
+    
+    String sql_statement = ResourceHelper.GetResourceAsString("/resources/evidence/sql/getEvidenceSummary.sql");
+    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"tableQualifier"},
+            new String[]{tableQualifier});
+    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect()); 
+
+    final List<EvidenceUniverse> evidences = new ArrayList<EvidenceUniverse>();
+
+    List<Map<String, Object>> rows = getSourceJdbcTemplate(source).queryForList(sql_statement);
+    
+    for (Map rs : rows) {
+       EvidenceUniverse e = new EvidenceUniverse();
+      e.condition_concept_id = (Integer) rs.get("condition_concept_id");
+      e.condition_concept_name = (String) rs.get("condition_concept_name");
+      e.ingredient_concept_id = (Integer) rs.get("ingredient_concept_id");
+      e.ingredient_concept_name = (String) rs.get("ingredient_concept_name");
+      e.evidence_type = (String) rs.get("evidence_type");
+      e.modality = (boolean) rs.get("modality");
+      e.statistic_value = (BigDecimal) rs.get("statistic_value");
+      e.evidence_linkouts = (String) rs.get("evidence_linkouts");
+
+      evidences.add(e);
+    }
+    return evidences;
+  }
+  
+  
+  
+  @GET
+  @Path("evidencesummary/{drugID}/{conditionID}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Collection<EvidenceSummary> getEvidenceSummaryBySource(@PathParam("sourceKey") String sourceKey,
+  																@PathParam("drugID") final long drugID,
+  																@PathParam("conditionID") final long conditionID) {
+    
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Evidence);
+    
+    String sql_statement = ResourceHelper.GetResourceAsString("/resources/evidence/sql/getEvidenceSummaryBySource.sql");
+    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"drugID","conditionID","tableQualifier"},
+            new String[]{String.valueOf(drugID), String.valueOf(conditionID), tableQualifier});
+    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect()); 
+
+    final List<EvidenceSummary> evidences = new ArrayList<EvidenceSummary>();
+
+    List<Map<String, Object>> rows = getSourceJdbcTemplate(source).queryForList(sql_statement);
+    
+    for (Map rs : rows) {
+    	
+      EvidenceSummary e = new EvidenceSummary();
+      e.evidence_type = (String) rs.get("evidence_type");
+      String tempcount = String.valueOf(rs.get("ct"));
+      e.totalNumber = Integer.parseInt(tempcount);
+
+      evidences.add(e);
+    }
+    return evidences;
+  }
+  
+  @GET
+  @Path("evidencedetails/{drugID}/{conditionID}/{evidenceType}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Collection<EvidenceUniverse> getEvidenceDetails(@PathParam("sourceKey") String sourceKey,
+  																@PathParam("drugID") final long drugID,
+  																@PathParam("conditionID") final long conditionID,
+  																@PathParam("evidenceType") final String evidenceType) {
+    
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Evidence);
+    
+    String sql_statement = ResourceHelper.GetResourceAsString("/resources/evidence/sql/getEvidenceDetails.sql");
+    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"drugID","conditionID","evidenceType","tableQualifier"},
+            new String[]{String.valueOf(drugID), String.valueOf(conditionID), evidenceType, tableQualifier});
+    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect()); 
+
+    final List<EvidenceUniverse> evidences = new ArrayList<EvidenceUniverse>();
+
+    List<Map<String, Object>> rows = getSourceJdbcTemplate(source).queryForList(sql_statement);
+    
+    for (Map rs : rows) {
+       EvidenceUniverse e = new EvidenceUniverse();
+      //e.condition_concept_id = (Integer) rs.get("condition_concept_id");
+      //e.condition_concept_name = (String) rs.get("condition_concept_name");
+      //e.ingredient_concept_id = (Integer) rs.get("ingredient_concept_id");
+      
+      //e.ingredient_concept_name = (String) rs.get("ingredient_concept_name");
+      e.evidence_linkouts = String.valueOf(rs.get("evidence_linkouts"));
+      
+      //e.condition_concept_name = (String) rs.get("totalNum");
+      //e.modality = (boolean) rs.get("modality");
+      //e.statistic_value = (BigDecimal) rs.get("statistic_value");
+      //e.evidence_linkouts = (String) rs.get("evidence_linkouts");
+
+      evidences.add(e);
+    }
+    return evidences;
+  }
 
 }

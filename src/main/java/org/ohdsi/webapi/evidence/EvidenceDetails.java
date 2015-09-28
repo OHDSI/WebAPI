@@ -22,11 +22,11 @@ import java.math.BigDecimal;
  *
  * @author fdefalco
  */
-public class EvidenceSummary {
+public class EvidenceDetails {
 
-  @JsonProperty("evidence_group_name")
-  public String evidence_group_name;
+  @JsonProperty("linkout")
+  public String linkout;
 
-  @JsonProperty("evidence_count")
-  public int  evidence_count;
+  @JsonProperty("snippet")
+  public int  snippet;
 }

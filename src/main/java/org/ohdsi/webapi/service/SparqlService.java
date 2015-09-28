@@ -108,7 +108,7 @@ public class SparqlService {
 	@GET
 	  @Path("linkoutdata/{linkout}")
 	  @Produces(MediaType.APPLICATION_JSON)
-	  public Collection<LinkoutData> getLinkout(@PathParam("linkout") String linkout) throws JSONException, IOException {
+	  public static Collection<LinkoutData> getLinkout(@PathParam("linkout") String linkout) throws JSONException, IOException {
 		
 		String expandedURL = URIUtil.decode(linkout);
 		expandedURL = expandUrl(expandedURL);
@@ -158,12 +158,12 @@ public class SparqlService {
         // extract location header containing the actual destination URL
         String expandedURL = httpURLConnection.getHeaderField("Location");
         httpURLConnection.disconnect();
-        System.out.println("EXPAND: "+expandedURL);
+        //System.out.println("EXPAND: "+expandedURL);
         return expandedURL;
     }
 	
 	//get and parse JSON function
-	private static JSONArray readJSONFeed(String URL) throws JSONException {
+	public static JSONArray readJSONFeed(String URL) throws JSONException {
 	    StringBuilder stringBuilder = new StringBuilder();
 		HttpClient httpClient = new DefaultHttpClient();
 	    HttpGet httpGet = new HttpGet(URL);

@@ -39,7 +39,7 @@ test-sparql:
 	wget -O tests/test-rdf-info.json "http://localhost:8080/WebAPI/evidence/rdfinfo"
 	wget -O tests/test-rdf-linkoutdata.json "http://localhost:8080/WebAPI/evidence/linkoutdata/http%3A%252F%252Fdbmi-icode-01.dbmi.pitt.edu%252Fl%252Findex.php%3Fid%3Dsplicer-237164"
 	wget -O tests/test-rdf-commandlist.json "http://localhost:8080/WebAPI/evidence/?"
-	wget -O tests/test-rdf-evidencesummary.json "http://localhost:8080/WebAPI/CS1/evidence/evidencesummary/1115008/25572"
+	wget -O tests/test-rdf-evidencesummary.json "http://localhost:8080/WebAPI/CS1/evidence/evidencesummary?conditionID=194984&drugID=1115008&evidenceGroup=Literature"
 
 test-public:
 	wget -O tests/test-general-evidence.json "http://api.ohdsi.org/WebAPI/CS1/evidence/1000640"

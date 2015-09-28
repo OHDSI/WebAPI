@@ -3,26 +3,43 @@ package org.ohdsi.webapi.service;
 import java.util.Collection;
 import java.util.Date;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URLEncoder;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriInfo;
 
+import org.apache.commons.httpclient.URIException;
+import org.apache.commons.httpclient.util.URIUtil;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.evidence.DrugEvidence;
+import org.ohdsi.webapi.evidence.EvidenceDetails;
+import org.ohdsi.webapi.evidence.EvidenceSummary;
+import org.ohdsi.webapi.evidence.EvidenceUniverse;
 import org.ohdsi.webapi.evidence.HoiEvidence;
 import org.ohdsi.webapi.evidence.DrugHoiEvidence;
 import org.ohdsi.webapi.evidence.EvidenceInfo;
 import org.ohdsi.webapi.evidence.DrugRollUpEvidence;
 import org.ohdsi.webapi.evidence.Evidence;
+import org.ohdsi.webapi.evidence.LinkoutData;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.springframework.stereotype.Component;
@@ -325,5 +342,199 @@ public class EvidenceService extends AbstractDaoService {
     }
     return evidences;
   }  
+  
+  
+  //test
+  @GET
+  @Path("evidencesummarytest")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Collection<EvidenceUniverse> getEvidenceSummary(@PathParam("sourceKey") String sourceKey) {
+    
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Evidence);
+    
+    String sql_statement = ResourceHelper.GetResourceAsString("/resources/evidence/sql/getEvidenceSummary.sql");
+    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"tableQualifier"},
+            new String[]{tableQualifier});
+    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect()); 
+
+    final List<EvidenceUniverse> evidences = new ArrayList<EvidenceUniverse>();
+
+    List<Map<String, Object>> rows = getSourceJdbcTemplate(source).queryForList(sql_statement);
+    
+    for (Map rs : rows) {
+       EvidenceUniverse e = new EvidenceUniverse();
+      e.condition_concept_id = (Integer) rs.get("condition_concept_id");
+      e.condition_concept_name = (String) rs.get("condition_concept_name");
+      e.ingredient_concept_id = (Integer) rs.get("ingredient_concept_id");
+      e.ingredient_concept_name = (String) rs.get("ingredient_concept_name");
+      e.evidence_type = (String) rs.get("evidence_type");
+      e.modality = (boolean) rs.get("modality");
+      e.statistic_value = (BigDecimal) rs.get("statistic_value");
+      e.evidence_linkouts = (String) rs.get("evidence_linkouts");
+
+      evidences.add(e);
+    }
+    return evidences;
+  }
+  
+
+  
+  
+  @GET
+  @Path("evidencesummary/{drugID}/{conditionID}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Collection<EvidenceSummary> getEvidenceSummaryBySource(@PathParam("sourceKey") String sourceKey,
+  																@PathParam("drugID") final long drugID,
+  																@PathParam("conditionID") final long conditionID) {
+    
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Evidence);
+    
+    String sql_statement = ResourceHelper.GetResourceAsString("/resources/evidence/sql/getEvidenceSummaryBySource.sql");
+    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"drugID","conditionID","tableQualifier"},
+            new String[]{String.valueOf(drugID), String.valueOf(conditionID), tableQualifier});
+    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect()); 
+
+    final List<EvidenceSummary> evidences = new ArrayList<EvidenceSummary>();
+
+    List<Map<String, Object>> rows = getSourceJdbcTemplate(source).queryForList(sql_statement);
+    
+    for (Map rs : rows) {
+    	
+      EvidenceSummary e = new EvidenceSummary();
+      e.evidence_group_name = (String) rs.get("evidence_type");
+      String tempcount = String.valueOf(rs.get("ct"));
+      e.evidence_count = Integer.parseInt(tempcount);
+
+      evidences.add(e);
+    }
+    return evidences;
+  }
+  
+  @GET
+  @Path("evidencesummary")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Collection<EvidenceSummary> getEvidenceSum(@PathParam("sourceKey") String sourceKey, @QueryParam("conditionID") String conditionID, @QueryParam("drugID") String drugID, @QueryParam("evidenceGroup") String evidenceGroup) {
+	  Source source = getSourceRepository().findBySourceKey(sourceKey);
+	  String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Evidence);
+	  String groupList = getEvidenceGrouplist(evidenceGroup);
+	  String sql_statement = ResourceHelper.GetResourceAsString("/resources/evidence/sql/getEvidenceSummaryBySource.sql");
+	  sql_statement = SqlRender.renderSql(sql_statement, new String[]{"drugID","conditionID","evidenceGroup","tableQualifier"},
+	            new String[]{String.valueOf(drugID), String.valueOf(conditionID), String.valueOf(groupList), tableQualifier});
+	  sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
+	  final List<EvidenceSummary> evidences = new ArrayList<EvidenceSummary>();
+	  List<Map<String, Object>> rows = getSourceJdbcTemplate(source).queryForList(sql_statement);
+	  for (Map rs : rows) {
+	    	
+	      EvidenceSummary e = new EvidenceSummary();
+	      e.evidence_group_name = evidenceGroup;
+	      String tempcount = String.valueOf(rs.get("ct"));
+	      e.evidence_count = Integer.parseInt(tempcount);
+
+	      evidences.add(e);
+	    }
+	  
+	  return evidences;
+  }
+  
+  public String getEvidenceGrouplist(String evidenceGroup) {
+	  String groupList=null;
+	  if(evidenceGroup.equalsIgnoreCase("Literature"))
+	  {
+		  groupList = "'MEDLINE_MeSH_CR','MEDLINE_SemMedDB_CR','MEDLINE_MeSH_Other','MEDLINE_SemMedDB_Other'";
+	  }
+	  if(evidenceGroup.equalsIgnoreCase("ClinicalTrials"))
+	  {
+		  groupList = "'MEDLINE_MeSH_ClinTrial','MEDLINE_SemMedDB_ClinTrial'";
+	  }
+	  if(evidenceGroup.equalsIgnoreCase("Report"))
+	  {
+		  groupList = "'aers_prr','aers_report_count'";
+	  }
+	  return groupList;
+  }
+  
+  @GET
+  @Path("evidencedetails")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Collection<EvidenceDetails> getEvidenceDetails(@PathParam("sourceKey") String sourceKey, @QueryParam("conditionID") String conditionID, @QueryParam("drugID") String drugID, @QueryParam("evidenceType") String evidenceType) throws JSONException, IOException {
+	  Source source = getSourceRepository().findBySourceKey(sourceKey);
+	  String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Evidence);
+	  String sql_statement = ResourceHelper.GetResourceAsString("/resources/evidence/sql/getEvidenceDetails.sql");
+	  sql_statement = SqlRender.renderSql(sql_statement, new String[]{"drugID","conditionID","evidenceType","tableQualifier"},
+	            new String[]{String.valueOf(drugID), String.valueOf(conditionID),String.valueOf(evidenceType), tableQualifier});
+	  sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
+	  final List<EvidenceDetails> evidences = new ArrayList<EvidenceDetails>();
+	  List<Map<String, Object>> rows = getSourceJdbcTemplate(source).queryForList(sql_statement);
+	  List<LinkoutData> infoOnLinkout = new ArrayList<LinkoutData>();
+	  String linkoutlist = null;
+	  String[] linkouts = null;
+	  for (Map rs : rows) {
+	    	
+	      //EvidenceSummary e = new EvidenceSummary();
+	      linkoutlist = String.valueOf(rs.get("evidence_linkouts"));
+	      if(linkoutlist.contains("|"))
+	      {
+	    	  linkouts = linkoutlist.split(Pattern.quote("|"));
+	      }
+	      else
+	      {
+	    	  linkouts[0] = linkoutlist;
+	      }
+	      for(int i=0;i<linkouts.length;i++)
+	      {
+	    	  EvidenceDetails e = new EvidenceDetails();
+	    	  linkouts[i] = URLEncoder.encode(linkouts[i],"UTF-8");
+		      linkouts[i] = linkouts[i].replaceAll("%2F", "%252F");
+		      e.linkout = linkouts[i];
+		      evidences.add(e);
+	      }
+	      //infoOnLinkout = (List<LinkoutData>) getLinkout(linkouts[0]);
+	      
+	      
+	    }
+	  
+	  return evidences;
+  }
+  
+  public Collection<LinkoutData> getLinkout(String linkout) throws JSONException, IOException {
+		
+		String expandedURL = URIUtil.decode(linkout);
+		expandedURL = SparqlService.expandUrl(expandedURL);
+		expandedURL = URIUtil.decode(expandedURL);;
+		expandedURL = URIUtil.encodeQuery(expandedURL);
+	    List<LinkoutData> infoOnLinkout = new ArrayList<LinkoutData>();
+	    JSONArray lineItems = SparqlService.readJSONFeed(expandedURL);
+	    for (int i = 0; i < lineItems.length(); ++i) {
+	        JSONObject tempItem = lineItems.getJSONObject(i);
+	        JSONObject tempSource = tempItem.getJSONObject("an");
+	        String source = tempSource.getString("value");
+	        LinkoutData info = new LinkoutData();
+	        info.an = source;
+	        tempSource = tempItem.getJSONObject("body");
+	        source = tempSource.getString("value");
+	        info.body = source;
+	        tempSource = tempItem.getJSONObject("target");
+	        source = tempSource.getString("value");
+	        info.target = source;
+	        tempSource = tempItem.getJSONObject("sourceURL");
+	        source = tempSource.getString("value");
+	        info.sourceURL = source;
+	        tempSource = tempItem.getJSONObject("selector");
+	        source = tempSource.getString("value");
+	        info.selector = source;
+	        tempSource = tempItem.getJSONObject("spl");
+	        source = tempSource.getString("value");
+	        info.spl = source;
+	        tempSource = tempItem.getJSONObject("text");
+	        source = tempSource.getString("value");
+	        info.text = source;
+	        infoOnLinkout.add(info);
+	    }
+	    
+	    return infoOnLinkout;
+	  }
+
 
 }

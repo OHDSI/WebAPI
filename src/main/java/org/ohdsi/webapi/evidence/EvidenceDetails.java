@@ -16,17 +16,83 @@
 package org.ohdsi.webapi.evidence;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.math.BigDecimal;
 
-/**
- *
- * @author fdefalco
- */
 public class EvidenceDetails {
 
-  @JsonProperty("linkout")
-  public String linkout;
+	//metadata on annotation
+	
+	@JsonProperty("label")
+	public String label;
+	
+	@JsonProperty("lastSavedOn")
+	public String lastSavedOn;
+	
+	@JsonProperty("wasGeneratedBy")
+	public String wasGeneratedBy;
+	
+	@JsonProperty("annotatedAt")
+	public String annotatedAt;
+	
+	@JsonProperty("annotatedBy")
+	public String annotatedBy;
+	
+	@JsonProperty("motivatedBy")
+	public String motivatedBy;
+	
+	@JsonProperty("metaType")
+	public String metaType;
+	
+	//Source(Target)
+	
+	@JsonProperty("target")
+	public String target;
+	
+	@JsonProperty("studyType")
+	public String studyType;
+	
+	@JsonProperty("sourceURL")
+	public String sourceURL;
+	
+	@JsonProperty("text")
+	public String text;
+	
+	//Tagging(multiple Body)
+	
+	@JsonProperty("bodyLabel")
+	public String bodyLabel;
+	
+	@JsonProperty("description")
+	public String description;
+	
+	@JsonProperty("tagType")
+	public String tagType;
+	
+	@JsonProperty("ImedsDrug")
+	public String ImedsDrug;
+	
+	@JsonProperty("ImedsHoi")
+	public String ImedsHoi;
+	
+	@JsonProperty("predicateLabel")
+	public String predicateLabel;
+	
+	//Selector
+	
+	@JsonProperty("selector")
+	public String selector;
+	
+	@JsonProperty("splSection")
+	public String splSection;
+	
+	@JsonProperty("exact")
+	public String exact;
+	
+	@JsonProperty("prefix")
+	public String prefix;
+	
+	@JsonProperty("postfix")
+	public String postfix;
 
-  @JsonProperty("snippet")
-  public int  snippet;
 }

@@ -108,7 +108,7 @@ public class SparqlService {
 	@GET
 	  @Path("linkoutdata/{linkout}")
 	  @Produces(MediaType.APPLICATION_JSON)
-	  public static Collection<LinkoutData> getLinkout(@PathParam("linkout") String linkout) throws JSONException, IOException {
+	  public Collection<LinkoutData> getLinkout(@PathParam("linkout") String linkout) throws JSONException, IOException {
 		
 		String expandedURL = URIUtil.decode(linkout);
 		expandedURL = expandUrl(expandedURL);
@@ -147,7 +147,7 @@ public class SparqlService {
 	  }
 	
 	//expand URL from short URL
-	public static String expandUrl(String shortenedUrl) throws IOException {
+	public String expandUrl(String shortenedUrl) throws IOException {
         URL url = new URL(shortenedUrl);    
         // open connection
         HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection(Proxy.NO_PROXY); 
@@ -163,7 +163,7 @@ public class SparqlService {
     }
 	
 	//get and parse JSON function
-	public static JSONArray readJSONFeed(String URL) throws JSONException {
+	public JSONArray readJSONFeed(String URL) throws JSONException {
 	    StringBuilder stringBuilder = new StringBuilder();
 		HttpClient httpClient = new DefaultHttpClient();
 	    HttpGet httpGet = new HttpGet(URL);

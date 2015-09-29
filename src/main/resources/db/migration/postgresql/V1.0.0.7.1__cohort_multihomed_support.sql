@@ -1,4 +1,3 @@
-/*
 ALTER TABLE cohort_generation_info DROP CONSTRAINT FK_cohort_generation_info_cohort_definition;
 
 CREATE TABLE tmp_ms_xx_cohort_generation_info (
@@ -11,17 +10,14 @@ CREATE TABLE tmp_ms_xx_cohort_generation_info (
     CONSTRAINT tmp_ms_xx_constraint_PK_cohort_generation_info PRIMARY KEY (id, source_id)
 );
 
-IF EXISTS (SELECT 1 FROM cohort_generation_info LIMIT 1) THEN
-BEGIN
-  INSERT INTO tmp_ms_xx_cohort_generation_info (id, source_id, start_time, execution_duration, status, is_valid)
-  SELECT  id,
-          1,
-          start_time,
-          execution_duration,
-          status,
-          is_valid
-  FROM  cohort_generation_info
-END IF;
+INSERT INTO tmp_ms_xx_cohort_generation_info (id, source_id, start_time, execution_duration, status, is_valid)
+SELECT  id,
+        1,
+        start_time,
+        execution_duration,
+        status,
+        is_valid
+FROM  cohort_generation_info;
 
 DROP TABLE cohort_generation_info;
 
@@ -33,4 +29,3 @@ ALTER TABLE cohort_generation_info
   ADD CONSTRAINT FK_cohort_generation_info_cohort_definition 
   FOREIGN KEY (id) REFERENCES cohort_definition (id) 
   ON DELETE CASCADE ON UPDATE CASCADE;
-*/

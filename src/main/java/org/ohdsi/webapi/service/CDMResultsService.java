@@ -60,54 +60,23 @@ public class CDMResultsService extends AbstractDaoService {
     }
   }
 
-  private PackedConceptNode root;
-
-  private final RowMapper<PackedConceptNode> nodeMapper = new RowMapper<PackedConceptNode>() {
+  private final RowMapper<SimpleEntry<Long, Long[]>> rowMapper = new RowMapper<SimpleEntry<Long, Long[]>>() {
     @Override
-    public PackedConceptNode mapRow(final ResultSet resultSet, final int arg1) throws SQLException {
-      final PackedConceptNode node = new PackedConceptNode();
-      node.conceptId = resultSet.getLong("CONCEPT_ID");
-      node.size = resultSet.getLong("NUM_RECORDS");
-      return node;
-    }
-  };
+    public SimpleEntry<Long, Long[]> mapRow(final ResultSet resultSet, final int arg1) throws SQLException {
+      long id = resultSet.getLong("concept_id");
+      long record_count = resultSet.getLong("record_count");
+      long descendant_record_count = resultSet.getLong("descendant_record_count");
 
-  private final RowMapper<SimpleEntry<Long, Long>> rowMapper = new RowMapper<SimpleEntry<Long, Long>>() {
-    @Override
-    public SimpleEntry<Long, Long> mapRow(final ResultSet resultSet, final int arg1) throws SQLException {
-      long id = resultSet.getLong("CONCEPT_ID");
-      long records = resultSet.getLong("NUM_RECORDS");
-
-      SimpleEntry<Long, Long> entry = new SimpleEntry<Long, Long>(id, records);
+      SimpleEntry<Long, Long[]> entry = new SimpleEntry<Long, Long[]>(id, new Long[] { record_count, descendant_record_count });
       return entry;
     }
   };
-
-  @Path("conceptDensity")
-  @POST
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public List<SimpleEntry<Long, Long>> getConceptDensity(@PathParam("sourceKey") String sourceKey, String[] identifiers) {
-    Source source = getSourceRepository().findBySourceKey(sourceKey);
-    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-
-    for (int i = 0; i < identifiers.length; i++) {
-      identifiers[i] = "'" + identifiers[i] + "'";
-    }
-
-    String identifierList = StringUtils.join(identifiers, ",");
-    String sql_statement = ResourceHelper.GetResourceAsString("/resources/cdmresults/sql/getConceptDensity.sql");
-    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"OHDSI_schema", "conceptIdentifiers"}, new String[]{tableQualifier, identifierList});
-    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
-
-    return getSourceJdbcTemplate(source).query(sql_statement, rowMapper);
-  }
 
   @Path("conceptRecordCount")
   @POST
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public PackedConceptNode getConceptRecordCount(@PathParam("sourceKey") String sourceKey, String[] identifiers) {
+  public List<SimpleEntry<Long, Long[]>> getConceptRecordCount(@PathParam("sourceKey") String sourceKey, String[] identifiers) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 
@@ -117,16 +86,9 @@ public class CDMResultsService extends AbstractDaoService {
 
     String identifierList = StringUtils.join(identifiers, ",");
     String sql_statement = ResourceHelper.GetResourceAsString("/resources/cdmresults/sql/getConceptRecordCount.sql");
-    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"OHDSI_schema", "conceptIdentifiers"}, new String[]{tableQualifier, identifierList});
+    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"tableQualifier", "conceptIdentifiers"}, new String[]{tableQualifier, identifierList});
     sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
 
-    List<PackedConceptNode> nodes;
-    nodes = getSourceJdbcTemplate(source).query(sql_statement, nodeMapper);
-
-    PackedConceptNode root = new PackedConceptNode();
-    root.conceptName = "root";
-    root.children = nodes;
-    return root;
+    return getSourceJdbcTemplate(source).query(sql_statement, rowMapper);
   }
-
 }

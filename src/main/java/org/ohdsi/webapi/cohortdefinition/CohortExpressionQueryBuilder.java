@@ -1033,6 +1033,12 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
       whereClauses.add(buildNumericRangeClause("(C.value_as_number / C.range_high)",criteria.rangeHighRatio,".4f"));
     }
     
+    // abnormal
+    if (criteria.abnormal != null && criteria.abnormal.booleanValue())
+    {
+      whereClauses.add("(C.value_as_number < C.range_low or C.value_as_number > C.range_high or C.value_as_concept_id in (4155142, 4155143))");
+    }
+    
     // measurementSourceConcept
     if (criteria.measurementSourceConcept != null)
     {

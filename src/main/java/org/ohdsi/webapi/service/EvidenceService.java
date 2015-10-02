@@ -377,6 +377,7 @@ public class EvidenceService extends AbstractDaoService {
 	  for (Map rs : rows) {	
 	      EvidenceSummary e = new EvidenceSummary();
 	      e.evidence_group_name = evidenceGroup;
+	      e.evidence_id = BigInteger.valueOf((long)rs.get("id"));
 	      e.evidence_type = String.valueOf(rs.get("evidence_type"));
 	      e.modality = (boolean)rs.get("modality");
 	      e.evidence_count = Double.valueOf(String.valueOf(rs.get("statistic_value")));

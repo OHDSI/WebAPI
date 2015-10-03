@@ -377,6 +377,7 @@ public class EvidenceService extends AbstractDaoService {
 	  for (Map rs : rows) {	
 	      EvidenceSummary e = new EvidenceSummary();
 	      e.evidence_group_name = evidenceGroup;
+	      e.evidence_id = BigInteger.valueOf((long)rs.get("id"));
 	      e.evidence_type = String.valueOf(rs.get("evidence_type"));
 	      e.modality = (boolean)rs.get("modality");
 	      e.evidence_count = Double.valueOf(String.valueOf(rs.get("statistic_value")));
@@ -386,7 +387,7 @@ public class EvidenceService extends AbstractDaoService {
 	  return evidences;
   }
   
-
+  
   /**
    * @param conditionID
    * @param drugID
@@ -450,20 +451,35 @@ public class EvidenceService extends AbstractDaoService {
   private EvidenceDetails getADRlinkout(JSONArray lineItems,int j) throws JSONException {
 	  EvidenceDetails e = new EvidenceDetails();
 	  JSONObject tempItem = lineItems.getJSONObject(j);
-      JSONObject tempSource = tempItem.getJSONObject("an");
-      e.label = tempSource.getString("value");
-      tempSource = tempItem.getJSONObject("body");
-      e.bodyLabel = tempSource.getString("value");
-      tempSource = tempItem.getJSONObject("target");
-      e.target = tempSource.getString("value");
-      tempSource = tempItem.getJSONObject("sourceURL");
-      e.sourceURL = tempSource.getString("value");
-      tempSource = tempItem.getJSONObject("selector");
-      e.selector = tempSource.getString("value");
-      tempSource = tempItem.getJSONObject("spl");
-      e.splSection = tempSource.getString("value");
-      tempSource = tempItem.getJSONObject("text");
-      e.text = tempSource.getString("value");
+      JSONObject tempSource;
+      if(tempItem.has("an")) {
+    	  tempSource = tempItem.getJSONObject("an");
+    	  e.label = tempSource.getString("value");
+      }
+      if(tempItem.has("body")) {
+    	  tempSource = tempItem.getJSONObject("body");
+    	  e.bodyLabel = tempSource.getString("value");
+      }
+      if(tempItem.has("target")) {
+    	  tempSource = tempItem.getJSONObject("target");
+    	  e.target = tempSource.getString("value");
+      }
+      if(tempItem.has("sourceURL")) {
+    	  tempSource = tempItem.getJSONObject("sourceURL");
+    	  e.sourceURL = tempSource.getString("value");
+      }
+      if(tempItem.has("selector")) {
+    	  tempSource = tempItem.getJSONObject("selector");
+    	  e.selector = tempSource.getString("value");
+      }
+      if(tempItem.has("spl")) {
+    	  tempSource = tempItem.getJSONObject("spl");
+    	  e.splSection = tempSource.getString("value");
+      }
+      if(tempItem.has("text")) {
+    	  tempSource = tempItem.getJSONObject("text");
+    	  e.text = tempSource.getString("value");
+      }
 	  return e;
   }
   
@@ -471,10 +487,15 @@ public class EvidenceService extends AbstractDaoService {
   private EvidenceDetails getPubMedlinkout(JSONArray lineItems,int j) throws JSONException {
 	  EvidenceDetails e = new EvidenceDetails();
 	  JSONObject tempItem = lineItems.getJSONObject(j);
-      JSONObject tempSource = tempItem.getJSONObject("an");
-      e.label = tempSource.getString("value");
-      tempSource = tempItem.getJSONObject("source");
-      e.sourceURL = tempSource.getString("value");
+      JSONObject tempSource;
+      if(tempItem.has("an")) {
+    	  tempSource = tempItem.getJSONObject("an");
+    	  e.label = tempSource.getString("value");
+      }
+      if(tempItem.has("source")) {
+    	  tempSource = tempItem.getJSONObject("source");
+    	  e.sourceURL = tempSource.getString("value");
+      }
 
 	  return e;
   }
@@ -483,18 +504,31 @@ public class EvidenceService extends AbstractDaoService {
   private EvidenceDetails getSemMedlinkout(JSONArray lineItems,int j) throws JSONException {
 	  EvidenceDetails e = new EvidenceDetails();
 	  JSONObject tempItem = lineItems.getJSONObject(j);
-      JSONObject tempSource = tempItem.getJSONObject("predicateLab");
-      e.predicateLabel = tempSource.getString("value");
-      tempSource = tempItem.getJSONObject("pmid");
-      e.sourceURL = tempSource.getString("value");
-      tempSource = tempItem.getJSONObject("studyType");
-      e.studyType = tempSource.getString("value");
-      tempSource = tempItem.getJSONObject("exact");
-      e.exact = tempSource.getString("value");
-      tempSource = tempItem.getJSONObject("prefix");
-      e.prefix = tempSource.getString("value");
-      tempSource = tempItem.getJSONObject("postfix");
-      e.postfix = tempSource.getString("value");
+      JSONObject tempSource;
+      if(tempItem.has("predicateLab")) {
+    	  tempSource= tempItem.getJSONObject("predicateLab");
+    	  e.predicateLabel = tempSource.getString("value");
+      }
+      if(tempItem.has("pmid")) {
+    	  tempSource = tempItem.getJSONObject("pmid");
+    	  e.sourceURL = tempSource.getString("value");
+      }
+      if(tempItem.has("studyType")) {
+    	  tempSource = tempItem.getJSONObject("studyType");
+    	  e.studyType = tempSource.getString("value");
+      }
+      if(tempItem.has("exact")) {
+    	  tempSource = tempItem.getJSONObject("exact");
+    	  e.exact = tempSource.getString("value");
+      }
+      if(tempItem.has("prefix")) {
+    	  tempSource = tempItem.getJSONObject("prefix");
+    	  e.prefix = tempSource.getString("value");
+      }
+      if(tempItem.has("postfix")) {
+    	  tempSource = tempItem.getJSONObject("postfix");
+    	  e.postfix = tempSource.getString("value");
+      }
 	  return e;
   }
   

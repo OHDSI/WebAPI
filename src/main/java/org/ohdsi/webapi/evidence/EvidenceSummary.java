@@ -16,7 +16,9 @@
 package org.ohdsi.webapi.evidence;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 /**
  *
@@ -26,6 +28,9 @@ public class EvidenceSummary {
 
   @JsonProperty("evidence_group_name")
   public String evidence_group_name;
+  
+  @JsonProperty("evidence_id")
+  public BigInteger evidence_id;
   
   @JsonProperty("evidence_type")
   public String evidence_type;

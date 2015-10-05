@@ -29,8 +29,10 @@ import org.ohdsi.webapi.vocabulary.ConceptRelationship;
 import org.ohdsi.webapi.vocabulary.ConceptSearch;
 import org.ohdsi.webapi.vocabulary.ConceptSetExpression;
 import org.ohdsi.webapi.vocabulary.ConceptSetExpressionQueryBuilder;
+import org.ohdsi.webapi.vocabulary.DescendentOfAncestorSearch;
 import org.ohdsi.webapi.vocabulary.Domain;
 import org.ohdsi.webapi.vocabulary.RelatedConcept;
+import org.ohdsi.webapi.vocabulary.RelatedConceptSearch;
 import org.ohdsi.webapi.vocabulary.Vocabulary;
 import org.ohdsi.webapi.vocabulary.VocabularyInfo;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -388,6 +390,52 @@ public class VocabularyService extends AbstractDaoService {
       }
     });
   }
+  
+  @POST
+  @Path("descendantofancestor")
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Collection<Concept> getDescendantOfAncestorConcepts(@PathParam("sourceKey") String sourceKey, DescendentOfAncestorSearch search) {
+    Tracker.trackActivity(ActivityType.Search, "getDescendantOfAncestorConcepts");
+    
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary); 
+    
+    String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/getDescendentOfAncestorConcepts.sql");
+    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"CDM_schema", "id", "ancestorVocabularyId", "ancestorClassId", "siblingVocabularyId", "siblingClassId"}, new String[]{
+      tableQualifier, search.conceptId, search.ancestorVocabularyId, search.ancestorClassId, search.siblingVocabularyId, search.siblingClassId});
+    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
+   
+    return getSourceJdbcTemplate(source).query(sql_statement, this.rowMapper);
+  }
+
+  @Path("relatedconcepts")
+  @POST
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Collection<Concept> getRelatedConcepts(@PathParam("sourceKey") String sourceKey, RelatedConceptSearch search) {
+    Tracker.trackActivity(ActivityType.Search, "getRelatedConcepts");
+    
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    
+    ArrayList<String> filterList = new ArrayList<String>();
+    
+    if (search.vocabularyId != null && search.vocabularyId.length > 0) {
+      filterList.add("VOCABULARY_ID IN (" + JoinArray(search.vocabularyId) + ")");
+    }
+
+    if (search.conceptClassId != null) {
+      filterList.add("CONCEPT_CLASS_ID IN (" + JoinArray(search.conceptClassId) + ")");
+    }
+
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary); 
+    String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/getRelatedConceptsFiltered.sql");
+    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"CDM_schema", "conceptList", "filters"}, new String[]{
+      tableQualifier, this.JoinArray(search.conceptId), this.JoinArrayList(filterList)});
+    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
+   
+    return getSourceJdbcTemplate(source).query(sql_statement, this.rowMapper);
+  }
 
   private String JoinArray(final String[] array) {
     String result = "";
@@ -399,6 +447,20 @@ public class VocabularyService extends AbstractDaoService {
 
       result += "'" + array[i] + "'";
     }
+
+    return result;
+  }
+  
+  private String JoinArrayList(final ArrayList<String> array){
+      String result = "";
+    
+      for (int i = 0; i < array.size(); i++) {
+        if (i > 0) {
+          result += " AND ";
+        }
+
+        result += array.get(i);
+      }
 
     return result;
   }

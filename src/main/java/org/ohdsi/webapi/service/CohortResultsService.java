@@ -58,6 +58,7 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.ohdsi.webapi.person.CohortPerson;
 
 /**
  *
@@ -1162,6 +1163,50 @@ public class CohortResultsService extends AbstractDaoService {
     }
     
     /**
+     * Returns the person identifiers of all members of a generated cohort definition identifier
+     * 
+     * @param id
+     * @param sourceKey
+     * @return List of all members of a generated cohort definition identifier
+     */
+    @GET
+    @Path("/{id}/members")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Collection<CohortPerson> getCohortMembers(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey) {
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+        String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+        String sql = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/raw/getMembers.sql");        
+        sql = SqlRender.renderSql(sql, new String[] { "tableQualifier", "cohortDefinitionId" }, new String[] {
+                resultsTableQualifier, String.valueOf(id) });
+        sql = SqlTranslate.translateSql(sql, getSourceDialect(), source.getSourceDialect(), SessionUtils.sessionId(),
+            resultsTableQualifier);
+        
+        return getSourceJdbcTemplate(source).query(sql, this.cohortMemberMapper);     
+    }
+    
+    /**
+     * Returns the person identifiers of all members of a generated cohort definition identifier
+     * 
+     * @param id
+     * @param sourceKey
+     * @return List of all members of a generated cohort definition identifier
+     */
+    @GET
+    @Path("/{id}/members/count")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Long getCohortMemberCount(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey) {
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+        String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+        String sql = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/raw/getMemberCount.sql");        
+        sql = SqlRender.renderSql(sql, new String[] { "tableQualifier", "cohortDefinitionId" }, new String[] {
+                resultsTableQualifier, String.valueOf(id) });
+        sql = SqlTranslate.translateSql(sql, getSourceDialect(), source.getSourceDialect(), SessionUtils.sessionId(),
+            resultsTableQualifier);
+        
+        return getSourceJdbcTemplate(source).queryForObject(sql, Long.class);
+    }    
+    
+    /**
      * Returns all cohort analyses in the results/OHDSI schema for the given cohort_definition_id
      * 
      * @param sourceKey
@@ -1191,6 +1236,17 @@ public class CohortResultsService extends AbstractDaoService {
         
         return getSourceJdbcTemplate(source).query(sql, this.cohortAnalysisMapper);
     }
+    
+    private final RowMapper<CohortPerson> cohortMemberMapper = new RowMapper<CohortPerson>() {
+        @Override
+        public CohortPerson mapRow(final ResultSet rs, final int rowNum) throws SQLException {
+          CohortPerson person = new CohortPerson();
+          person.personId = rs.getLong("subject_id");
+          person.startDate = rs.getTimestamp("cohort_start_date");
+          person.endDate = rs.getTimestamp("cohort_end_date");
+          return person;
+        }
+    };
     
     private final RowMapper<CohortAnalysis> cohortAnalysisMapper = new RowMapper<CohortAnalysis>() {
         

@@ -78,7 +78,7 @@ FROM   (SELECT cohort_definition_id,
 										HAVING Sum(count_value) > @minCovariatePersonCount
                    ) ct1 
                ON hr1.concept_id = ct1.concept_id 
-       INNER JOIN @ohdsi_database_schema.concept c1 
+       INNER JOIN @cdm_database_schema.concept c1 
                ON hr1.concept_id = c1.concept_id 
 WHERE  c1.concept_id = @conceptId and t1.count_value > @minIntervalPersonCount 
 UNION 
@@ -161,6 +161,6 @@ FROM   (SELECT cohort_definition_id,
 										HAVING Sum(count_value) > @minCovariatePersonCount
                    ) ct1 
                ON hr1.concept_id = ct1.concept_id 
-       INNER JOIN @ohdsi_database_schema.concept c1 
+       INNER JOIN @cdm_database_schema.concept c1 
                ON hr1.concept_id = c1.concept_id 
 WHERE  c1.concept_id = @conceptId and t1.count_value > @minIntervalPersonCount 

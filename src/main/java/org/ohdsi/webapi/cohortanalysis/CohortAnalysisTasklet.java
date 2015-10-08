@@ -3,8 +3,9 @@ package org.ohdsi.webapi.cohortanalysis;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ohdsi.sql.SqlSplit;
+import org.ohdsi.webapi.cohortresults.CohortResultsAnalysisRunner;
+import org.ohdsi.webapi.cohortresults.VisualizationDataRepository;
 import org.ohdsi.webapi.service.CohortAnalysisService;
-import org.ohdsi.webapi.source.Source;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
@@ -23,14 +24,17 @@ public class CohortAnalysisTasklet implements Tasklet {
        
     private final JdbcTemplate jdbcTemplate;
     
-    
     private final TransactionTemplate transactionTemplate;
     
+    private final CohortResultsAnalysisRunner analysisRunner;
+    
     public CohortAnalysisTasklet(CohortAnalysisTask task, final JdbcTemplate jdbcTemplate,
-        final TransactionTemplate transactionTemplate) {
+        final TransactionTemplate transactionTemplate, 
+        String sourceDialect, VisualizationDataRepository visualizationDataRepository) {
         this.task = task;
         this.jdbcTemplate = jdbcTemplate;
         this.transactionTemplate = transactionTemplate;
+        this.analysisRunner = new CohortResultsAnalysisRunner(sourceDialect, visualizationDataRepository);
     }
     
     @Override
@@ -41,6 +45,7 @@ public class CohortAnalysisTasklet implements Tasklet {
                 
                 @Override
                 public int[] doInTransaction(final TransactionStatus status) {
+                	
                 	String cohortSql = CohortAnalysisService.getCohortAnalysisSql(task);
                 	
                 	String[] stmts = null;
@@ -57,6 +62,10 @@ public class CohortAnalysisTasklet implements Tasklet {
                 }
             });
             log.debug("Update count: " + ret.length);
+            
+            log.debug("warm up visualizations");
+            final int count = this.analysisRunner.warmupData(jdbcTemplate, task);
+            log.debug("warmed up " + count + " visualizations");
         } catch (final TransactionException e) {
             log.error(e.getMessage(), e);
             throw e;//FAIL job status

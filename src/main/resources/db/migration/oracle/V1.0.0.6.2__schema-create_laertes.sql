@@ -8,6 +8,6 @@ COMMENT ON COLUMN evidence_sources.coverage_start_date IS 'The start date of cov
 COMMENT ON COLUMN evidence_sources.coverage_end_date IS 'The date of coverage for the resource. Data can be trusted on or after the coverage_start_date date and up to and including this date';
 
 
-ALTER TABLE LAERTES_SUMMARY DROP eb05;
-ALTER TABLE LAERTES_SUMMARY DROP ebgm;
+ALTER TABLE LAERTES_SUMMARY DROP COLUMN eb05;
+ALTER TABLE LAERTES_SUMMARY DROP COLUMN ebgm;
 ALTER TABLE LAERTES_SUMMARY ADD prr numeric;

@@ -16,7 +16,6 @@ import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.report.MonthlyPrevalence;
-import org.ohdsi.webapi.report.PackedConceptNode;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.springframework.dao.DataAccessException;
@@ -78,7 +77,8 @@ public class CDMResultsService extends AbstractDaoService {
   @Consumes(MediaType.APPLICATION_JSON)
   public List<SimpleEntry<Long, Long[]>> getConceptRecordCount(@PathParam("sourceKey") String sourceKey, String[] identifiers) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    String resultTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    String vocabularyTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
 
     for (int i = 0; i < identifiers.length; i++) {
       identifiers[i] = "'" + identifiers[i] + "'";
@@ -86,7 +86,7 @@ public class CDMResultsService extends AbstractDaoService {
 
     String identifierList = StringUtils.join(identifiers, ",");
     String sql_statement = ResourceHelper.GetResourceAsString("/resources/cdmresults/sql/getConceptRecordCount.sql");
-    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"tableQualifier", "conceptIdentifiers"}, new String[]{tableQualifier, identifierList});
+    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"resultTableQualifier", "vocabularyTableQualifier", "conceptIdentifiers"}, new String[]{resultTableQualifier, vocabularyTableQualifier, identifierList});
     sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
 
     return getSourceJdbcTemplate(source).query(sql_statement, rowMapper);

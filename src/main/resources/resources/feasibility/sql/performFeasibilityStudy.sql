@@ -9,14 +9,6 @@ create table #inclusionRuleCohorts
 ;
 @inclusionCohortInserts
 
-create table #BestMatchEvent
-(
-  person_id bigint,
-  start_date datetime,
-  end_date datetime
-)
-;
-
 -- the matching group with all bits set ( POWER(2,# of inclusion rules) - 1 = inclusion_rule_mask
 DELETE FROM @cohortTable where cohort_definition_id = @resultCohortId;
 INSERT INTO @cohortTable (cohort_definition_id, subject_id, cohort_start_date, cohort_end_date)

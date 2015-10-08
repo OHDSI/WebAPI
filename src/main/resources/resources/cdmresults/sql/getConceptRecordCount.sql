@@ -1,15 +1,15 @@
 with concepts as (
 	select CAST(ancestor_concept_id as VARCHAR) ancestor_id, CAST(descendant_concept_id as VARCHAR) descendant_id 
-	from concept_ancestor ca 
+	from @vocabularyTableQualifier.concept_ancestor ca 
 	where ancestor_concept_id in (@conceptIdentifiers)
 ), counts as (
 	select stratum_1 concept_id, max(count_value) agg_count_value
-	from @tableQualifier.achilles_results
+	from @resultTableQualifier.achilles_results
 	where analysis_id in (2, 4, 5, 201, 301, 401, 501, 505, 601, 701, 801, 901, 1001,1201)
 	group by stratum_1
 	union
 	select stratum_2 as concept_id, sum(count_value) as agg_count_value
-	from @tableQualifier.achilles_results
+	from @resultTableQualifier.achilles_results
 	where analysis_id in (405, 605, 705, 805, 807)
 	group by stratum_2
 )

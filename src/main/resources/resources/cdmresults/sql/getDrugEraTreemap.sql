@@ -42,7 +42,7 @@ from (select * from @ohdsi_database_schema.achilles_results where analysis_id = 
 			on ca1.ancestor_concept_id = c2.concept_id
 			and c2.vocabulary_id = 'ATC'
 			and c2.concept_class_id = 'ATC 4th'
-			where and c1.concept_id in (@conceptList)
+			where c1.concept_id in (@conceptList)
 			group by c1.concept_id
 			) rxnorm_to_atc5
 		on rxnorm.rxnorm_ingredient_concept_id = rxnorm_to_atc5.rxnorm_ingredient_concept_id

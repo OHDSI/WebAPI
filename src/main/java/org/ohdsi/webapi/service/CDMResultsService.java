@@ -151,7 +151,7 @@ public class CDMResultsService extends AbstractDaoService {
           d.trellisName = String.valueOf(rs.get("trellis_name"));
           d.seriesName = String.valueOf(rs.get("series_name"));
           d.xCalendarYear = Long.valueOf(String.valueOf(rs.get("x_calendar_year")));
-          d.yPrevalencePer1kPeople = Float.valueOf(String.valueOf(rs.get("y_prevalence_1000pp")));
+          d.yPrevalence1000Pp = Float.valueOf(String.valueOf(rs.get("y_prevalence_1000pp")));
           listOfResults.add(d);
       }
 

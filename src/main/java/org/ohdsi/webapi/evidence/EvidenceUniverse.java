@@ -23,6 +23,9 @@ import java.math.BigDecimal;
  * @author fdefalco
  */
 public class EvidenceUniverse {
+  @JsonProperty("evidence_id")
+  public int evidence_id;
+    
   @JsonProperty("condition_concept_id")
   public int condition_concept_id;
 

@@ -519,6 +519,36 @@ public class EvidenceService extends AbstractDaoService {
 	  return results;
   }
   
+  @POST
+  @Path("labelevidence")
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Collection<EvidenceUniverse> labelEvidence(@PathParam("sourceKey") String sourceKey, EvidenceSearch search) throws JSONException, IOException {
+	  Source dbsource = getSourceRepository().findBySourceKey(sourceKey);
+	  String tableQualifier = dbsource.getTableQualifier(SourceDaimon.DaimonType.Evidence);
+	  String sql_statement = ResourceHelper.GetResourceAsString("/resources/evidence/sql/getLabelEvidence.sql");          
+          String conditionConceptListForQuery = this.JoinArray(search.conditionConceptList);
+          String ingredientConceptListForQuery = this.JoinArray(search.ingredientConceptList);
+          String evidenceTypeListForQuery = this.JoinArray(search.evidenceTypeList);
+
+          sql_statement = SqlRender.renderSql(sql_statement, new String[]{"conditionConceptList","ingredientConceptList","evidenceTypeList","tableQualifier"},
+	            new String[]{conditionConceptListForQuery, ingredientConceptListForQuery, evidenceTypeListForQuery, tableQualifier});
+	  sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", dbsource.getSourceDialect());
+	  
+	  final List<EvidenceUniverse> results = new ArrayList<EvidenceUniverse>();
+	  List<Map<String, Object>> rows = getSourceJdbcTemplate(dbsource).queryForList(sql_statement);
+	  for (Map rs : rows) {	
+	      EvidenceUniverse e = new EvidenceUniverse();
+	      e.hasEvidence = String.valueOf((rs.get("Has_Evidence")));
+	      e.ingredient_concept_id = Integer.valueOf(String.valueOf(rs.get("INGREDIENT_CONCEPT_ID")));
+	      e.ingredient_concept_name = String.valueOf(rs.get("INGREDIENT_CONCEPT_NAME"));
+              
+	      results.add(e);
+	    }
+	  
+	  return results;
+  }
+
   //parse ADRAnnotation linkouts
   private EvidenceDetails getADRlinkout(JSONArray lineItems,int j) throws JSONException {
 	  EvidenceDetails e = new EvidenceDetails();

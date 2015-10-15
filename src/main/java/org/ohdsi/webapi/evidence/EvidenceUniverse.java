@@ -52,4 +52,7 @@ public class EvidenceUniverse {
   
   @JsonProperty("totalNumber")
   public int  totalNumber;
+  
+  @JsonProperty("hasEvidence")
+  public String hasEvidence;
 }

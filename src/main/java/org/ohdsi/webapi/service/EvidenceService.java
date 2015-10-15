@@ -428,7 +428,7 @@ public class EvidenceService extends AbstractDaoService {
 	      for(int i=0;i<linkouts.length;i++)
 	      {
 	  		  linkouts[i] = sparqlentity.expandUrl(linkouts[i]);
-	  		  linkouts[i] = URIUtil.decode(linkouts[i]);;
+	  		  linkouts[i] = URIUtil.decode(linkouts[i]);
 	  		  linkouts[i] = URIUtil.encodeQuery(linkouts[i]);
 	  		  JSONArray lineItems = sparqlentity.readJSONFeed(linkouts[i]);
 	  		  

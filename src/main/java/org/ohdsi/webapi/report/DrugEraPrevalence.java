@@ -17,5 +17,5 @@ public class DrugEraPrevalence {
   public String trellisName;
   public String seriesName;
   public long xCalendarYear;
-  public Float yPrevalencePer1kPeople;    
+  public Float yPrevalence1000Pp;    
 }

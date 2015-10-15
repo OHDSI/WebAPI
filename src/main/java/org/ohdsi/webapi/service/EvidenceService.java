@@ -3,18 +3,12 @@ package org.ohdsi.webapi.service;
 import java.util.Collection;
 import java.util.Date;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.net.HttpURLConnection;
-import java.net.Proxy;
-import java.net.URL;
-import java.net.URLEncoder;
 import javax.ws.rs.Consumes;
 
 import javax.ws.rs.GET;
@@ -23,34 +17,33 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriInfo;
-
-import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.evidence.ConceptCohortMapping;
+import org.ohdsi.webapi.evidence.ConceptCohortMappingRepository;
 import org.ohdsi.webapi.helper.ResourceHelper;
-import org.ohdsi.webapi.evidence.CommandList;
 import org.ohdsi.webapi.evidence.DrugEvidence;
 import org.ohdsi.webapi.evidence.EvidenceDetails;
 import org.ohdsi.webapi.evidence.EvidenceSummary;
 import org.ohdsi.webapi.evidence.EvidenceUniverse;
 import org.ohdsi.webapi.evidence.HoiEvidence;
 import org.ohdsi.webapi.evidence.DrugHoiEvidence;
+import org.ohdsi.webapi.evidence.DrugLabel;
+import org.ohdsi.webapi.evidence.DrugLabelRepository;
 import org.ohdsi.webapi.evidence.EvidenceInfo;
 import org.ohdsi.webapi.evidence.DrugRollUpEvidence;
 import org.ohdsi.webapi.evidence.Evidence;
 import org.ohdsi.webapi.evidence.LinkoutData;
 import org.ohdsi.webapi.evidence.SpontaneousReport;
 import org.ohdsi.webapi.evidence.EvidenceSearch;
-import org.ohdsi.webapi.service.SparqlService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -61,6 +54,26 @@ import org.springframework.stereotype.Component;
 @Component
 public class EvidenceService extends AbstractDaoService {
 
+  @Autowired
+  private DrugLabelRepository drugLabelRepository;
+
+  @Autowired
+  private ConceptCohortMappingRepository mappingRepository;
+
+  @GET
+  @Path("mapping/{conceptId}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Collection<ConceptCohortMapping> getConceptCohortMapping(@PathParam("conceptId") int conceptId) {
+    return mappingRepository.findByConceptId(conceptId);
+  }
+  
+  @GET
+  @Path("label/{setid}")
+  @Produces(MediaType.APPLICATION_JSON) 
+  public Collection<DrugLabel> getDrugLabels(@PathParam("setid") String setid) {
+    return drugLabelRepository.findAllBySetid(setid);
+  }
+  
   @GET
   @Path("info")
   @Produces(MediaType.APPLICATION_JSON)
@@ -95,7 +108,6 @@ public class EvidenceService extends AbstractDaoService {
     }
     return infoOnSources;
   }
-  
 
   /**
    * @param id

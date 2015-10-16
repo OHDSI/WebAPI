@@ -1361,7 +1361,7 @@ public class CohortResultsService extends AbstractDaoService {
   public List<ExposureCohortResult> getExposureOutcomeCohortRates(@PathParam("sourceKey") String sourceKey, ExposureCohortSearch search) {
     Source dbsource = getSourceRepository().findBySourceKey(sourceKey);
     String resultsTableQualifier = dbsource.getTableQualifier(SourceDaimon.DaimonType.Results);
-    String sql_statement = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/cohortspecific/getExposureOutcomeCohortRates.sql");          
+    String sql_statement = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/cohortSpecific/getExposureOutcomeCohortRates.sql");          
     String exposureCohortList = this.JoinArray(search.exposureCohortList);
     String outcomeCohortList = this.JoinArray(search.outcomeCohortList);
 
@@ -1394,7 +1394,7 @@ public class CohortResultsService extends AbstractDaoService {
   public List<TimeToEventResult> getTimeToEventDrilldown(@PathParam("sourceKey") String sourceKey, ExposureCohortSearch search) {
     Source dbsource = getSourceRepository().findBySourceKey(sourceKey);
     String resultsTableQualifier = dbsource.getTableQualifier(SourceDaimon.DaimonType.Results);
-    String sql_statement = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/cohortspecific/getTimeToEventDrilldown.sql");          
+    String sql_statement = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/cohortSpecific/getTimeToEventDrilldown.sql");          
     String exposureCohortList = this.JoinArray(search.exposureCohortList);
     String outcomeCohortList = this.JoinArray(search.outcomeCohortList);
 
@@ -1427,7 +1427,7 @@ public class CohortResultsService extends AbstractDaoService {
     Source dbsource = getSourceRepository().findBySourceKey(sourceKey);
     String resultsTableQualifier = dbsource.getTableQualifier(SourceDaimon.DaimonType.Results);
     String cdmTableQualifier = dbsource.getTableQualifier(SourceDaimon.DaimonType.CDM);
-    String sql_statement = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/cohortspecific/getExposureOutcomePredictors.sql");          
+    String sql_statement = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/cohortSpecific/getExposureOutcomePredictors.sql");          
     String exposureCohortList = this.JoinArray(search.exposureCohortList);
     String outcomeCohortList = this.JoinArray(search.outcomeCohortList);
     String minCellCount = String.valueOf(search.minCellCount);

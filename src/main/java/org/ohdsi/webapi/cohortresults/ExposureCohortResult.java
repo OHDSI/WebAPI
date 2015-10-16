@@ -6,6 +6,7 @@
 package org.ohdsi.webapi.cohortresults;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.math.BigDecimal;
 
 /**
  *
@@ -19,17 +20,17 @@ public class ExposureCohortResult {
     public String outcomeCohortDefinitionId;
     
     @JsonProperty("num_persons_exposed")
-    public String numPersonsExposed;
+    public long numPersonsExposed;
 
     @JsonProperty("num_persons_w_outcome_pre_exposure")
-    public String numPersonsWithOutcomePreExposure;
+    public long numPersonsWithOutcomePreExposure;
     
     @JsonProperty("num_persons_w_outcome_post_exposure")
-    public String numPersonsWithOutcomePostExposure;
+    public long numPersonsWithOutcomePostExposure;
     
     @JsonProperty("time_at_risk")
-    public String timeAtRisk;
+    public Float timeAtRisk;
     
     @JsonProperty("incidence_rate_1000py")
-    public String incidenceRate1000py;
+    public Float incidenceRate1000py;
 }

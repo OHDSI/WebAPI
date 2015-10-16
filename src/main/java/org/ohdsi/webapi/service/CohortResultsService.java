@@ -58,6 +58,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayOutputStream;
+import java.math.BigDecimal;
 import java.sql.ResultSetMetaData;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -1374,12 +1375,12 @@ public class CohortResultsService extends AbstractDaoService {
     for (Map rs : rows) {	
         ExposureCohortResult e = new ExposureCohortResult();
         e.exposureCohortDefinitionId = String.valueOf(rs.get("exposure_cohort_definition_id"));
-        e.incidenceRate1000py = String.valueOf(rs.get("incidence_rate_1000py"));
-        e.numPersonsExposed = String.valueOf(rs.get("num_persons_exposed"));
-        e.numPersonsWithOutcomePostExposure = String.valueOf(rs.get("num_persons_w_outcome_post_exposure"));
-        e.numPersonsWithOutcomePreExposure = String.valueOf(rs.get("num_persons_w_outcome_pre_exposure"));
+        e.incidenceRate1000py = Float.valueOf(String.valueOf(rs.get("incidence_rate_1000py")));
+        e.numPersonsExposed = Long.valueOf(String.valueOf(rs.get("num_persons_exposed")));
+        e.numPersonsWithOutcomePostExposure = Long.valueOf(String.valueOf(rs.get("num_persons_w_outcome_post_exposure")));
+        e.numPersonsWithOutcomePreExposure = Long.valueOf(String.valueOf(rs.get("num_persons_w_outcome_pre_exposure")));
         e.outcomeCohortDefinitionId = String.valueOf(rs.get("outcome_cohort_definition_id"));
-        e.timeAtRisk = String.valueOf(rs.get("time_at_risk"));
+        e.timeAtRisk = Float.valueOf(String.valueOf(rs.get("time_at_risk")));
 
         results.add(e);
       }

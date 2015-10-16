@@ -123,7 +123,7 @@ public class CDMResultsService extends AbstractDaoService {
           d.conceptPath = String.valueOf(rs.get("concept_path"));
           d.lengthOfEra = Float.valueOf(String.valueOf(rs.get("length_of_era")));
           d.numPersons = Long.valueOf(String.valueOf(rs.get("num_persons")));
-          d.percentPersons = Float.valueOf(String.valueOf(rs.get("length_of_era")));
+          d.percentPersons = Float.valueOf(String.valueOf(rs.get("percent_persons")));
           listOfResults.add(d);
       }
 

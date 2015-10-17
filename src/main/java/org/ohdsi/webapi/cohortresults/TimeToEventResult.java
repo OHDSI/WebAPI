@@ -22,10 +22,10 @@ public class TimeToEventResult {
     public String recordType;
 
     @JsonProperty("duration")
-    public String duration;
+    public long duration;
     
     @JsonProperty("count_value")
-    public String countValue;
+    public long countValue;
     
     @JsonProperty("pctPersons")
     public double pctPersons;

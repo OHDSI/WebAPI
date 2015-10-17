@@ -1407,8 +1407,8 @@ public class CohortResultsService extends AbstractDaoService {
     List<Map<String, Object>> rows = getSourceJdbcTemplate(dbsource).queryForList(sql_statement);
     for (Map rs : rows) {	
         TimeToEventResult e = new TimeToEventResult();
-        e.countValue = String.valueOf(rs.get("count_value"));
-        e.duration = String.valueOf(rs.get("duration"));
+        e.countValue = Long.valueOf(String.valueOf(rs.get("count_value")));
+        e.duration = Long.valueOf(String.valueOf(rs.get("duration")));
         e.exposureCohortDefinitionId = String.valueOf(rs.get("exposure_cohort_definition_id"));
         e.outcomeCohortDefinitionId = String.valueOf(rs.get("outcome_cohort_definition_id"));
         e.pctPersons = Double.valueOf(String.valueOf(rs.get("pct_persons")));

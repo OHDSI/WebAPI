@@ -108,13 +108,13 @@ numerator_all as
 )
 SELECT denominator.exposure_cohort_definition_id,
 	denominator.outcome_cohort_definition_id,
-	'First' as record_type,
+	'All' as record_type,
 	denominator.duration,
 	case when numerator.count_value is null then 0 else numerator.count_value end as count_value,
 	case when denominator.count_value > 0 then 1.0*case when numerator.count_value is null then 0 else numerator.count_value end / denominator.count_value else 0 end as pct_persons
 FROM denominator
 LEFT JOIN
-numerator_first numerator
+numerator_all numerator
 ON denominator.exposure_cohort_definition_id = numerator.exposure_cohort_definition_id
 AND denominator.outcome_cohort_definition_id = numerator.outcome_cohort_definition_id
 AND denominator.duration = numerator.duration
@@ -123,13 +123,13 @@ UNION
 
 SELECT denominator.exposure_cohort_definition_id,
 	denominator.outcome_cohort_definition_id,
-	'All' as record_type,
+	'First' as record_type,
 	denominator.duration,
 	case when numerator.count_value is null then 0 else numerator.count_value end as count_value,
 	case when denominator.count_value > 0 then 1.0*case when numerator.count_value is null then 0 else numerator.count_value end / denominator.count_value else 0 end as pct_persons
 FROM denominator
 LEFT JOIN
-numerator_all numerator
+numerator_first numerator
 ON denominator.exposure_cohort_definition_id = numerator.exposure_cohort_definition_id
 AND denominator.outcome_cohort_definition_id = numerator.outcome_cohort_definition_id
 AND denominator.duration = numerator.duration

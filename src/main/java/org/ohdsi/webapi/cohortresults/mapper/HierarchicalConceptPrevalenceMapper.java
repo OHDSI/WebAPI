@@ -19,6 +19,7 @@ public class HierarchicalConceptPrevalenceMapper implements RowMapper<Hierarchic
 		record.setPercentPersonsAfter(rs.getDouble("PERCENT_PERSONS_AFTER"));
 		record.setRiskDiffAfterBefore(rs.getDouble("RISK_DIFF_AFTER_BEFORE"));
 		record.setLogRRAfterBefore(rs.getDouble("LOGRR_AFTER_BEFORE"));
+                record.setCountValue(rs.getLong("COUNT_VALUE"));
 		return record;
 	}
 

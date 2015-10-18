@@ -17,6 +17,7 @@ public class HierarchicalConceptRecord {
 	private double percentPersonsAfter;
 	private double riskDiffAfterBefore;
 	private double logRRAfterBefore;
+        private long countValue;
 	
 	public HierarchicalConceptRecord() {
 		// default constructor
@@ -150,6 +151,17 @@ public class HierarchicalConceptRecord {
 		this.logRRAfterBefore = logRRAfterBefore;
 	}
 
-	
+        /**
+	 * @return the countValue
+	 */
+	public long getCountValue() {
+		return countValue;
+	}
+	/**
+	 * @param countValue the countValue to set
+	 */
+	public void setCountValue(long countValue) {
+		this.countValue = countValue;
+	}
 	
 }

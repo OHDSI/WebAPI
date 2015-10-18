@@ -23,7 +23,7 @@ concept_w_outcome AS (
 	FROM @ohdsi_database_schema.penelope_results
 	WHERE exposure_cohort_definition_id in ( @exposure_cohort_definition_id )
 		AND outcome_cohort_definition_id in ( @outcome_cohort_definition_id )
-		AND analysis_id in (1822, 1832, 1842, 1852, 1862, 1872, 1882)
+		AND analysis_id in (1822, 1832, 1852, 1872, 1882)
 		AND stratum_1 = 'Outcome post-exposure'
 		AND stratum_3 = '-1'
 		AND stratum_2 <> '0'
@@ -35,7 +35,7 @@ concept_total AS (
 	FROM @ohdsi_database_schema.penelope_results
 	WHERE exposure_cohort_definition_id in ( @exposure_cohort_definition_id )
 		AND outcome_cohort_definition_id in ( @outcome_cohort_definition_id )
-		AND analysis_id in (1822, 1832, 1842, 1852, 1862, 1872, 1882)
+		AND analysis_id in (1822, 1832, 1852, 1872, 1882)
 		AND stratum_1 in ('Exposure with no outcome','Outcome post-exposure')
 		AND stratum_3 = '-1'
 		AND stratum_2 <> '0'

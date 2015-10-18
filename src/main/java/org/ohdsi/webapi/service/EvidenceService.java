@@ -26,6 +26,8 @@ import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.evidence.ConceptCohortMapping;
 import org.ohdsi.webapi.evidence.ConceptCohortMappingRepository;
+import org.ohdsi.webapi.evidence.ConceptOfInterestMapping;
+import org.ohdsi.webapi.evidence.ConceptOfInterestMappingRepository;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.evidence.DrugEvidence;
 import org.ohdsi.webapi.evidence.EvidenceDetails;
@@ -59,12 +61,22 @@ public class EvidenceService extends AbstractDaoService {
 
   @Autowired
   private ConceptCohortMappingRepository mappingRepository;
+  
+  @Autowired
+  private ConceptOfInterestMappingRepository conceptOfInterestMappingRepository;
 
   @GET
   @Path("mapping/{conceptId}")
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<ConceptCohortMapping> getConceptCohortMapping(@PathParam("conceptId") int conceptId) {
     return mappingRepository.findByConceptId(conceptId);
+  }
+
+  @GET
+  @Path("conceptofinterest/{conceptId}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Collection<ConceptOfInterestMapping> getConceptOfInterest(@PathParam("conceptId") int conceptId) {
+    return conceptOfInterestMappingRepository.findAllByConceptId(conceptId);
   }
   
   @GET

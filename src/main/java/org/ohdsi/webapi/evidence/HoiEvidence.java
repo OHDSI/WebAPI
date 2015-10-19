@@ -28,6 +28,9 @@ public class HoiEvidence {
     @JsonProperty("DRUG")
     public String drug;	
     
+    @JsonProperty("DRUG-NAME")
+    public String drugName;	
+    
     @JsonProperty("COUNT")
     public Integer count;	
 

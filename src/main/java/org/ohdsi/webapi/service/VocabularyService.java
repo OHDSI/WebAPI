@@ -517,6 +517,32 @@ public class VocabularyService extends AbstractDaoService {
     return getSourceJdbcTemplate(source).query(sql_statement, this.rowMapper);
   }
 
+  @Path("conceptlist/descendants")
+  @POST
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Collection<RelatedConcept> getDescendantConceptsByList(@PathParam("sourceKey") String sourceKey, String[] conceptList) {
+    final Map<Long, RelatedConcept> concepts = new HashMap<>();
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
+    String conceptListForQuery = this.JoinArray(conceptList);
+
+    String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/getDescendantConceptsMultipleConcepts.sql");
+    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"id", "CDM_schema"},
+            new String[]{conceptListForQuery, tableQualifier});
+    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
+
+    getSourceJdbcTemplate(source).query(sql_statement, new RowMapper<Void>() {
+      @Override
+      public Void mapRow(ResultSet resultSet, int arg1) throws SQLException {
+        addRelationships(concepts, resultSet);
+        return null;
+      }
+    });
+
+    return concepts.values();
+  }
+
   private String JoinArray(final String[] array) {
     String result = "";
 

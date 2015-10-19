@@ -81,7 +81,7 @@ public class CohortResultsService extends AbstractDaoService {
 
   @Autowired
   private VisualizationDataRepository visualizationDataRepository;
-  
+
   @Autowired
   private CohortDefinitionService cohortDefinitionService;
 
@@ -152,11 +152,11 @@ public class CohortResultsService extends AbstractDaoService {
 
     try {
       Source source = getSourceRepository().findBySourceKey(sourceKey);
-      String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);     
+      String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
       String sql = null;
       final StringBuilder resultData = new StringBuilder();
       final StringBuilder resultDistributionData = new StringBuilder();
-      
+
       // results export
       sql = ResourceHelper.GetResourceAsString(BASE_SQL_PATH + "/raw/getAllResults.sql");
       sql = SqlRender.renderSql(sql, new String[]{"tableQualifier", "cohortDefinitionId"},
@@ -169,7 +169,10 @@ public class CohortResultsService extends AbstractDaoService {
           ResultSetMetaData metaData = rs.getMetaData();
           int colCount = metaData.getColumnCount();
           for (int i = 1; i <= colCount; i++) {
-            resultData.append(String.valueOf(rs.getObject(i))).append("\t");
+            if (i > 1) {
+              resultData.append("\t");
+            }
+            resultData.append(String.valueOf(rs.getObject(i)));
           }
           resultData.append("\r\n");
           return null;
@@ -181,7 +184,7 @@ public class CohortResultsService extends AbstractDaoService {
       zos.putNextEntry(resultsEntry);
       zos.write(resultData.toString().getBytes());
       zos.closeEntry();
-      
+
       // result distribution export
       sql = ResourceHelper.GetResourceAsString(BASE_SQL_PATH + "/raw/getAllResultDistributions.sql");
       sql = SqlRender.renderSql(sql, new String[]{"tableQualifier", "cohortDefinitionId"},
@@ -194,7 +197,10 @@ public class CohortResultsService extends AbstractDaoService {
           ResultSetMetaData metaData = rs.getMetaData();
           int colCount = metaData.getColumnCount();
           for (int i = 1; i <= colCount; i++) {
-            resultDistributionData.append(String.valueOf(rs.getObject(i))).append("\t");
+            if (i > 1) {
+              resultDistributionData.append("\t");
+            }
+            resultDistributionData.append(String.valueOf(rs.getObject(i)));
           }
           resultDistributionData.append("\r\n");
           return null;
@@ -204,19 +210,19 @@ public class CohortResultsService extends AbstractDaoService {
       ZipEntry resultsDistEntry = new ZipEntry("cohort_" + String.valueOf(id) + "_results_dist.tsv");
       zos.putNextEntry(resultsDistEntry);
       zos.write(resultDistributionData.toString().getBytes());
-      zos.closeEntry();      
-      
+      zos.closeEntry();
+
       // include cohort definition in export
       CohortDefinitionDTO cohortDefinition = cohortDefinitionService.getCohortDefinition(id);
       ByteArrayOutputStream cohortDefinitionStream = new ByteArrayOutputStream();
       mapper.writeValue(cohortDefinitionStream, cohortDefinition);
       cohortDefinitionStream.flush();
-      
+
       ZipEntry cohortDefinitionEntry = new ZipEntry("cohort_" + String.valueOf(id) + "_definition.json");
       zos.putNextEntry(cohortDefinitionEntry);
       zos.write(cohortDefinitionStream.toByteArray());
       zos.closeEntry();
-      
+
       zos.close();
       baos.flush();
       baos.close();

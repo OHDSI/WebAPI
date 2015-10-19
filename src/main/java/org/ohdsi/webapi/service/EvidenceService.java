@@ -15,8 +15,10 @@ import java.net.HttpURLConnection;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.URLEncoder;
+import javax.ws.rs.Consumes;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -44,6 +46,8 @@ import org.ohdsi.webapi.evidence.EvidenceInfo;
 import org.ohdsi.webapi.evidence.DrugRollUpEvidence;
 import org.ohdsi.webapi.evidence.Evidence;
 import org.ohdsi.webapi.evidence.LinkoutData;
+import org.ohdsi.webapi.evidence.SpontaneousReport;
+import org.ohdsi.webapi.evidence.EvidenceSearch;
 import org.ohdsi.webapi.service.SparqlService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
@@ -439,7 +443,7 @@ public class EvidenceService extends AbstractDaoService {
 	      for(int i=0;i<linkouts.length;i++)
 	      {
 	  		  linkouts[i] = sparqlentity.expandUrl(linkouts[i]);
-	  		  linkouts[i] = URIUtil.decode(linkouts[i]);;
+	  		  linkouts[i] = URIUtil.decode(linkouts[i]);
 	  		  linkouts[i] = URIUtil.encodeQuery(linkouts[i]);
 	  		  JSONArray lineItems = sparqlentity.readJSONFeed(linkouts[i]);
 	  		  
@@ -461,7 +465,105 @@ public class EvidenceService extends AbstractDaoService {
 	  
 	  return evidences;
   }
+
+  @POST
+  @Path("spontaneousreports")
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Collection<SpontaneousReport> getSpontaneousReports(@PathParam("sourceKey") String sourceKey, EvidenceSearch search) throws JSONException, IOException {
+	  Source dbsource = getSourceRepository().findBySourceKey(sourceKey);
+	  String tableQualifier = dbsource.getTableQualifier(SourceDaimon.DaimonType.Evidence);
+	  String sql_statement = ResourceHelper.GetResourceAsString("/resources/evidence/sql/getSpontaneousReports.sql");          
+          String conditionConceptListForQuery = this.JoinArray(search.conditionConceptList);
+          String ingredientConceptListForQuery = this.JoinArray(search.ingredientConceptList);
+
+          sql_statement = SqlRender.renderSql(sql_statement, new String[]{"conditionConceptList","ingredientConceptList", "tableQualifier"},
+	            new String[]{conditionConceptListForQuery, ingredientConceptListForQuery, tableQualifier});
+	  sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", dbsource.getSourceDialect());
+	  
+	  final List<SpontaneousReport> results = new ArrayList<SpontaneousReport>();
+	  List<Map<String, Object>> rows = getSourceJdbcTemplate(dbsource).queryForList(sql_statement);
+	  for (Map rs : rows) {	
+	      SpontaneousReport e = new SpontaneousReport();
+	      e.conditionConceptId = String.valueOf(rs.get("CONDITION_CONCEPT_ID"));
+	      e.conditionConceptName = String.valueOf(rs.get("CONDITION_CONCEPT_NAME"));
+	      e.ingredientConceptId = String.valueOf(rs.get("INGREDIENT_CONCEPT_ID"));
+	      e.ingredientConceptName = String.valueOf(rs.get("INGREDIENT_CONCEPT_NAME"));
+              e.reportCount = Integer.valueOf(String.valueOf(rs.get("AERS")));
+	      e.prr = BigDecimal.valueOf(Double.valueOf(String.valueOf(rs.get("AERS_PRR_ORIGINAL"))));
+	      
+	      results.add(e);
+	    }
+	  
+	  return results;
+  }
+
+  @POST
+  @Path("evidencesearch")
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Collection<EvidenceUniverse> evidenceSearch(@PathParam("sourceKey") String sourceKey, EvidenceSearch search) throws JSONException, IOException {
+	  Source dbsource = getSourceRepository().findBySourceKey(sourceKey);
+	  String tableQualifier = dbsource.getTableQualifier(SourceDaimon.DaimonType.Evidence);
+	  String sql_statement = ResourceHelper.GetResourceAsString("/resources/evidence/sql/getEvidenceFromUniverse.sql");          
+          String conditionConceptListForQuery = this.JoinArray(search.conditionConceptList);
+          String ingredientConceptListForQuery = this.JoinArray(search.ingredientConceptList);
+          String evidenceTypeListForQuery = this.JoinArray(search.evidenceTypeList);
+
+          sql_statement = SqlRender.renderSql(sql_statement, new String[]{"conditionConceptList","ingredientConceptList","evidenceTypeList","tableQualifier"},
+	            new String[]{conditionConceptListForQuery, ingredientConceptListForQuery, evidenceTypeListForQuery, tableQualifier});
+	  sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", dbsource.getSourceDialect());
+	  
+	  final List<EvidenceUniverse> results = new ArrayList<EvidenceUniverse>();
+	  List<Map<String, Object>> rows = getSourceJdbcTemplate(dbsource).queryForList(sql_statement);
+	  for (Map rs : rows) {	
+	      EvidenceUniverse e = new EvidenceUniverse();
+              e.evidence_id = Integer.valueOf(String.valueOf(rs.get("ID")));
+	      e.condition_concept_id = Integer.valueOf(String.valueOf(rs.get("CONDITION_CONCEPT_ID")));
+	      e.condition_concept_name = String.valueOf(rs.get("CONDITION_CONCEPT_NAME"));
+	      e.ingredient_concept_id = Integer.valueOf(String.valueOf(rs.get("INGREDIENT_CONCEPT_ID")));
+	      e.ingredient_concept_name = String.valueOf(rs.get("INGREDIENT_CONCEPT_NAME"));
+              e.evidence_type = String.valueOf(rs.get("EVIDENCE_TYPE"));
+              e.modality = (boolean) rs.get("MODALITY");
+              e.statistic_value = BigDecimal.valueOf(Double.valueOf(String.valueOf(rs.get("STATISTIC_VALUE"))));
+              e.evidence_linkouts = String.valueOf(rs.get("EVIDENCE_LINKOUTS"));
+	      
+	      results.add(e);
+	    }
+	  
+	  return results;
+  }
   
+  @POST
+  @Path("labelevidence")
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Collection<EvidenceUniverse> labelEvidence(@PathParam("sourceKey") String sourceKey, EvidenceSearch search) throws JSONException, IOException {
+	  Source dbsource = getSourceRepository().findBySourceKey(sourceKey);
+	  String tableQualifier = dbsource.getTableQualifier(SourceDaimon.DaimonType.Evidence);
+	  String sql_statement = ResourceHelper.GetResourceAsString("/resources/evidence/sql/getLabelEvidence.sql");          
+          String conditionConceptListForQuery = this.JoinArray(search.conditionConceptList);
+          String ingredientConceptListForQuery = this.JoinArray(search.ingredientConceptList);
+          String evidenceTypeListForQuery = this.JoinArray(search.evidenceTypeList);
+
+          sql_statement = SqlRender.renderSql(sql_statement, new String[]{"conditionConceptList","ingredientConceptList","evidenceTypeList","tableQualifier"},
+	            new String[]{conditionConceptListForQuery, ingredientConceptListForQuery, evidenceTypeListForQuery, tableQualifier});
+	  sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", dbsource.getSourceDialect());
+	  
+	  final List<EvidenceUniverse> results = new ArrayList<EvidenceUniverse>();
+	  List<Map<String, Object>> rows = getSourceJdbcTemplate(dbsource).queryForList(sql_statement);
+	  for (Map rs : rows) {	
+	      EvidenceUniverse e = new EvidenceUniverse();
+	      e.hasEvidence = String.valueOf((rs.get("Has_Evidence")));
+	      e.ingredient_concept_id = Integer.valueOf(String.valueOf(rs.get("INGREDIENT_CONCEPT_ID")));
+	      e.ingredient_concept_name = String.valueOf(rs.get("INGREDIENT_CONCEPT_NAME"));
+              
+	      results.add(e);
+	    }
+	  
+	  return results;
+  }
+
   //parse ADRAnnotation linkouts
   private EvidenceDetails getADRlinkout(JSONArray lineItems,int j) throws JSONException {
 	  EvidenceDetails e = new EvidenceDetails();
@@ -547,6 +649,18 @@ public class EvidenceService extends AbstractDaoService {
 	  return e;
   }
   
+  private String JoinArray(final String[] array) {
+    String result = "";
 
+    for (int i = 0; i < array.length; i++) {
+      if (i > 0) {
+        result += ",";
+      }
+
+      result += "'" + array[i] + "'";
+    }
+
+    return result;
+  }
 
 }

@@ -118,6 +118,7 @@ numerator_all numerator
 ON denominator.exposure_cohort_definition_id = numerator.exposure_cohort_definition_id
 AND denominator.outcome_cohort_definition_id = numerator.outcome_cohort_definition_id
 AND denominator.duration = numerator.duration
+WHERE denominator.duration between -1000 and 1000
 
 UNION
 
@@ -133,4 +134,5 @@ numerator_first numerator
 ON denominator.exposure_cohort_definition_id = numerator.exposure_cohort_definition_id
 AND denominator.outcome_cohort_definition_id = numerator.outcome_cohort_definition_id
 AND denominator.duration = numerator.duration
+WHERE denominator.duration between -1000 and 1000
 ;

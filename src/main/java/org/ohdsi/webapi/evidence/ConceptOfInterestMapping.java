@@ -29,12 +29,23 @@ import javax.persistence.Table;
 @Table(name="penelope_concept_of_interest")
 public class ConceptOfInterestMapping implements Serializable {
   @Id
+  @Column(name = "id")
+  private Integer id;
+
   @Column(name = "concept_id")
   private Integer conceptId;
 
   @Column(name = "concept_of_interest_id")
   private Integer conceptOfInterestId;
   
+  public Integer getId() {
+    return id;
+  }
+
+  public void setId(Integer id) {
+    this.id = id;
+  }
+
   public Integer getConceptId() {
     return conceptId;
   }

@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Arrays;
 import javax.ws.rs.Consumes;
 
 import javax.ws.rs.GET;
@@ -622,8 +623,12 @@ public class EvidenceService extends AbstractDaoService {
     	  tempSource = tempItem.getJSONObject("source");
     	  e.sourceURL = tempSource.getString("value");
       }
+      if(tempItem.has("pmid")) {
+    	  tempSource = tempItem.getJSONObject("pmid");
+    	  e.sourceURL = tempSource.getString("value");
+      }
 
-	  return e;
+    return e;
   }
   
   //parse SemMed linkouts

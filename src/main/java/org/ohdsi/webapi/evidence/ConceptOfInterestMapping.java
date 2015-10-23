@@ -26,7 +26,7 @@ import javax.persistence.Table;
  * @author asena5
  */
 @Entity(name = "ConceptOfInterestMapping")
-@Table(name="penelope_concept_of_interest")
+@Table(name="concept_of_interest")
 public class ConceptOfInterestMapping implements Serializable {
   @Id
   @Column(name = "id")

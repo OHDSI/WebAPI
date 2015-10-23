@@ -27,7 +27,7 @@ import javax.persistence.Table;
  */
 
 @Entity(name = "ConceptCohortMapping")
-@Table(name="penelope_cohort")
+@Table(name="cohort_concept_map")
 public class ConceptCohortMapping implements Serializable {
   
   @Id

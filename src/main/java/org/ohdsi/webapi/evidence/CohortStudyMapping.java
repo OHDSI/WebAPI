@@ -15,7 +15,7 @@ import javax.persistence.Table;
  * @author asena5
  */
 @Entity(name = "CohortStudyMapping")
-@Table(name="penelope_cohort_study")
+@Table(name="cohort_study")
 public class CohortStudyMapping {
   @Id
   @Column(name = "cohort_study_id")

@@ -27,17 +27,17 @@ import javax.persistence.Table;
  * @author fdefalco
  */
 @Entity(name = "DrugLabel")
-@Table(name="penelope_drug_labels")
+@Table(name="drug_labels")
 public class DrugLabel implements Serializable {
 
   @Id
-  @Column(name="penelope_drug_label_id")
+  @Column(name="drug_label_id")
   private int drugLabelId;
   
   @Column(name="setid")  
   private String setid;
    
-  @Column(name="penelope_search_name")  
+  @Column(name="search_name")  
   private String searchName;
   
   @Column(name="ingredient_concept_name")
@@ -118,9 +118,5 @@ public class DrugLabel implements Serializable {
   public void setDate(Timestamp date) {
     this.date = date;
   }
-  
-  
-  
-  
 }
 

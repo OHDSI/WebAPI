@@ -25,6 +25,8 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.evidence.CohortStudyMapping;
+import org.ohdsi.webapi.evidence.CohortStudyMappingRepository;
 import org.ohdsi.webapi.evidence.ConceptCohortMapping;
 import org.ohdsi.webapi.evidence.ConceptCohortMappingRepository;
 import org.ohdsi.webapi.evidence.ConceptOfInterestMapping;
@@ -65,6 +67,16 @@ public class EvidenceService extends AbstractDaoService {
   
   @Autowired
   private ConceptOfInterestMappingRepository conceptOfInterestMappingRepository;
+
+  @Autowired
+  private CohortStudyMappingRepository cohortStudyMappingRepository;
+  
+  @GET
+  @Path("study/{cohortId}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Collection<CohortStudyMapping> getCohortStudyMapping(@PathParam("cohortId") int cohortId) {
+    return cohortStudyMappingRepository.findByCohortDefinitionId(cohortId);
+  }
 
   @GET
   @Path("mapping/{conceptId}")

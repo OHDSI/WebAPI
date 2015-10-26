@@ -235,7 +235,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
       CriteriaGroup acGroup = expression.additionalCriteria;
       String acGroupQuery = acGroup.accept(this);
       acGroupQuery = StringUtils.replace(acGroupQuery,"@indexId", "" + 0);
-      additionalCriteriaQuery = "\nJOIN (\n" + acGroupQuery + ") AC on AC.event_id = pe.event_id";
+      additionalCriteriaQuery = "\nLEFT JOIN (\n" + acGroupQuery + ") AC on AC.event_id = pe.event_id";
     }
     resultSql = StringUtils.replace(resultSql, "@additionalCriteriaQuery", additionalCriteriaQuery);
 
@@ -483,7 +483,23 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
       additionalCriteriaQueries.add(gQuery);      
     }
     
-    query = StringUtils.replace(query, "@intersectClause", group.type.equalsIgnoreCase("ALL") ? "HAVING COUNT(index_id) = " + (group.criteriaList.length + group.groups.length) : "");
+    String intersectClause = "HAVING COUNT(index_id) ";
+    
+    if (group.type.equalsIgnoreCase("ALL")) // count must match number of criteria + sub-groups in group.
+      intersectClause += "= " + (group.criteriaList.length + group.groups.length);
+    
+    if (group.type.equalsIgnoreCase("ANY")) // count must be > 0 for an 'ANY' criteria
+      intersectClause += "> 0"; 
+    
+    if (group.type.toUpperCase().startsWith("AT_"))
+    {
+      if (group.type.toUpperCase().endsWith("LEAST"))
+        intersectClause += ">= " + group.count;
+      else
+        intersectClause += "<= " + group.count;
+    }
+           
+    query = StringUtils.replace(query, "@intersectClause", intersectClause);
     query = StringUtils.replace(query, "@criteriaQueries", StringUtils.join(additionalCriteriaQueries, "\nUNION\n"));
     
     return query;    

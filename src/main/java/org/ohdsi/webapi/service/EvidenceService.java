@@ -159,28 +159,41 @@ public class EvidenceService extends AbstractDaoService {
     //    log.debug(String.format("Request for conceptId=%s resulted in 0 results", id));
     //    throw new WebApplicationException(Response.Status.RESET_CONTENT); // http 205
     //}
-
+    String tempDrugHoi = "";
+    String tempEvidenceType = "";
+    Boolean tempModality = false;
     for (Map rs : rows) {
+
       String evi_type = (String) rs.get("EV_TYPE");
-      boolean modality = (boolean) rs.get("EV_MODALITY");
+      Boolean modality = (Boolean) rs.get("EV_MODALITY");
       String linkout = (String) rs.get("EV_LINKOUT");
       String hoi = String.valueOf((Integer) rs.get("EV_HOI"));
+      String hoiName = (String)rs.get("EV_SNOMED_HOI");
       String statType = (String) rs.get("EV_STAT_TYPE");
       BigDecimal statVal = (BigDecimal) rs.get("EV_STAT_VAL");
-
+      String drugHoi = (String)rs.get("EV_DRUGHOI");
+      
+      if((!drugHoi.equalsIgnoreCase(tempDrugHoi))||(!evi_type.equalsIgnoreCase(tempEvidenceType))||(!modality.equals(tempModality)))
+      {
       DrugEvidence evidence = new DrugEvidence();
+      tempDrugHoi = drugHoi;
+      tempEvidenceType = evi_type;
+      tempModality = modality;
+      //evidence.drughoi = drugHoi;
       evidence.evidence = evi_type;
       evidence.modality = modality;
       evidence.linkout = linkout;
       evidence.hoi = hoi;
+      evidence.hoiName = hoiName;
       evidence.statisticType = statType;
       if (statType.equals("COUNT")) {
         evidence.count = statVal.intValue();
       } else {
         evidence.value = statVal;
       }
-
+      
       drugEvidences.add(evidence);
+      }
     }
     return drugEvidences;
   }
@@ -216,6 +229,7 @@ public class EvidenceService extends AbstractDaoService {
       boolean modality = (boolean) rs.get("EV_MODALITY");
       String linkout = (String) rs.get("EV_LINKOUT");
       String drug = String.valueOf((Integer) rs.get("EV_DRUG"));
+      String drugName = (String) rs.get("EV_RXNORM_DRUG");
       String statType = (String) rs.get("EV_STAT_TYPE");
       BigDecimal statVal = (BigDecimal) rs.get("EV_STAT_VAL");
 
@@ -224,6 +238,7 @@ public class EvidenceService extends AbstractDaoService {
       evidence.modality = modality;
       evidence.linkout = linkout;
       evidence.drug = drug;
+      evidence.drugName = drugName;
       evidence.statisticType = statType;
       if (statType.equals("COUNT")) {
         evidence.count = statVal.intValue();

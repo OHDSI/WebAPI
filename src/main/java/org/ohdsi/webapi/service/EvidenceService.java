@@ -100,6 +100,14 @@ public class EvidenceService extends AbstractDaoService {
   }
   
   @GET
+  @Path("labelsearch/{searchTerm}")
+  @Produces(MediaType.APPLICATION_JSON) 
+  public Collection<DrugLabel> searchDrugLabels(@PathParam("searchTerm") String searchTerm) {
+    return drugLabelRepository.searchNameContainsTerm(searchTerm);
+  }
+  
+  
+  @GET
   @Path("info")
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<EvidenceInfo> getInfo(@PathParam("sourceKey") String sourceKey) {

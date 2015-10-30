@@ -26,7 +26,7 @@ CREATE TABLE drug_labels(
         ingredient_concept_id bigint NULL,
         ingredient_concept_name varchar(255) NULL,
         setid varchar(255) NULL,
-        Date datetime NULL,
+        Date Timestamp(3) NULL,
         cohort_id int NULL,
         image_url varchar(255) NULL,
         CONSTRAINT PK_drug_labels PRIMARY KEY (drug_label_id)

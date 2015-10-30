@@ -1,6 +1,5 @@
 SELECT 
-    id
-    ,condition_concept_id
+    condition_concept_id
     ,condition_concept_name
     ,ingredient_concept_id
     ,ingredient_concept_name

@@ -58,10 +58,15 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayOutputStream;
+import java.math.BigDecimal;
 import java.sql.ResultSetMetaData;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.ws.rs.core.Response;
+import org.ohdsi.webapi.cohortresults.ExposureCohortResult;
+import org.ohdsi.webapi.cohortresults.ExposureCohortSearch;
+import org.ohdsi.webapi.cohortresults.PredictorResult;
+import org.ohdsi.webapi.cohortresults.TimeToEventResult;
 import org.ohdsi.webapi.person.CohortPerson;
 import org.ohdsi.webapi.service.CohortDefinitionService.CohortDefinitionDTO;
 
@@ -1350,6 +1355,122 @@ public class CohortResultsService extends AbstractDaoService {
     return getSourceJdbcTemplate(source).query(sql, this.cohortAnalysisMapper);
   }
 
+  @POST
+  @Path("exposurecohortrates")
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public List<ExposureCohortResult> getExposureOutcomeCohortRates(@PathParam("sourceKey") String sourceKey, ExposureCohortSearch search) {
+    Source dbsource = getSourceRepository().findBySourceKey(sourceKey);
+    String resultsTableQualifier = dbsource.getTableQualifier(SourceDaimon.DaimonType.Results);
+    String sql_statement = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/cohortSpecific/getExposureOutcomeCohortRates.sql");          
+    String exposureCohortList = this.JoinArray(search.exposureCohortList);
+    String outcomeCohortList = this.JoinArray(search.outcomeCohortList);
+
+    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"exposure_cohort_definition_id","outcome_cohort_definition_id","ohdsi_database_schema"},
+              new String[]{exposureCohortList, outcomeCohortList, resultsTableQualifier});
+    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", dbsource.getSourceDialect());
+	  
+    final List<ExposureCohortResult> results = new ArrayList<ExposureCohortResult>();
+    List<Map<String, Object>> rows = getSourceJdbcTemplate(dbsource).queryForList(sql_statement);
+    for (Map rs : rows) {	
+        ExposureCohortResult e = new ExposureCohortResult();
+        e.exposureCohortDefinitionId = String.valueOf(rs.get("exposure_cohort_definition_id"));
+        e.incidenceRate1000py = Float.valueOf(String.valueOf(rs.get("incidence_rate_1000py")));
+        e.numPersonsExposed = Long.valueOf(String.valueOf(rs.get("num_persons_exposed")));
+        e.numPersonsWithOutcomePostExposure = Long.valueOf(String.valueOf(rs.get("num_persons_w_outcome_post_exposure")));
+        e.numPersonsWithOutcomePreExposure = Long.valueOf(String.valueOf(rs.get("num_persons_w_outcome_pre_exposure")));
+        e.outcomeCohortDefinitionId = String.valueOf(rs.get("outcome_cohort_definition_id"));
+        e.timeAtRisk = Float.valueOf(String.valueOf(rs.get("time_at_risk")));
+
+        results.add(e);
+      }
+          
+    return results;
+  }
+ 
+  @POST
+  @Path("timetoevent")
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public List<TimeToEventResult> getTimeToEventDrilldown(@PathParam("sourceKey") String sourceKey, ExposureCohortSearch search) {
+    Source dbsource = getSourceRepository().findBySourceKey(sourceKey);
+    String resultsTableQualifier = dbsource.getTableQualifier(SourceDaimon.DaimonType.Results);
+    String sql_statement = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/cohortSpecific/getTimeToEventDrilldown.sql");          
+    String exposureCohortList = this.JoinArray(search.exposureCohortList);
+    String outcomeCohortList = this.JoinArray(search.outcomeCohortList);
+
+    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"exposure_cohort_definition_id","outcome_cohort_definition_id","ohdsi_database_schema"},
+              new String[]{exposureCohortList, outcomeCohortList, resultsTableQualifier});
+    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", dbsource.getSourceDialect());
+	  
+    final List<TimeToEventResult> results = new ArrayList<TimeToEventResult>();
+    List<Map<String, Object>> rows = getSourceJdbcTemplate(dbsource).queryForList(sql_statement);
+    for (Map rs : rows) {	
+        TimeToEventResult e = new TimeToEventResult();
+        e.countValue = Long.valueOf(String.valueOf(rs.get("count_value")));
+        e.duration = Long.valueOf(String.valueOf(rs.get("duration")));
+        e.exposureCohortDefinitionId = String.valueOf(rs.get("exposure_cohort_definition_id"));
+        e.outcomeCohortDefinitionId = String.valueOf(rs.get("outcome_cohort_definition_id"));
+        e.pctPersons = Double.valueOf(String.valueOf(rs.get("pct_persons")));
+        e.recordType = String.valueOf(rs.get("record_type"));
+
+        results.add(e);
+      }
+          
+    return results;
+  }
+
+  @POST
+  @Path("predictors")
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public List<PredictorResult> getExposureOutcomeCohortPredictors(@PathParam("sourceKey") String sourceKey, ExposureCohortSearch search) {
+    Source dbsource = getSourceRepository().findBySourceKey(sourceKey);
+    String resultsTableQualifier = dbsource.getTableQualifier(SourceDaimon.DaimonType.Results);
+    String cdmTableQualifier = dbsource.getTableQualifier(SourceDaimon.DaimonType.CDM);
+    String sql_statement = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/cohortSpecific/getExposureOutcomePredictors.sql");          
+    String exposureCohortList = this.JoinArray(search.exposureCohortList);
+    String outcomeCohortList = this.JoinArray(search.outcomeCohortList);
+    String minCellCount = String.valueOf(search.minCellCount);
+
+    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"exposure_cohort_definition_id","outcome_cohort_definition_id","minCellCount","ohdsi_database_schema", "cdm_schema"},
+              new String[]{exposureCohortList, outcomeCohortList, minCellCount, resultsTableQualifier, cdmTableQualifier});
+    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", dbsource.getSourceDialect());
+	  
+    final List<PredictorResult> results = new ArrayList<PredictorResult>();
+    List<Map<String, Object>> rows = getSourceJdbcTemplate(dbsource).queryForList(sql_statement);
+    for (Map rs : rows) {	
+        PredictorResult e = new PredictorResult();
+        e.absStdDiff = String.valueOf(rs.get("abs_std_diff"));
+        e.conceptId = String.valueOf(rs.get("concept_id"));
+        e.conceptName = String.valueOf(rs.get("concept_name"));
+        e.conceptWithOutcome = String.valueOf(rs.get("concept_w_outcome"));
+        e.domainId = String.valueOf(rs.get("domain_id"));
+        e.pctOutcomeWithConcept = String.valueOf(rs.get("pct_outcome_w_concept"));
+        e.pctNoOutcomeWithConcept = String.valueOf(rs.get("pct_nooutcome_w_concept"));
+        e.exposureCohortDefinitionId = String.valueOf(rs.get("exposure_cohort_definition_id"));
+        e.outcomeCohortDefinitionId = String.valueOf(rs.get("outcome_cohort_definition_id"));
+
+        results.add(e);
+      }
+          
+    return results;
+  }
+
+   private String JoinArray(final String[] array) {
+    String result = "";
+
+    for (int i = 0; i < array.length; i++) {
+      if (i > 0) {
+        result += ",";
+      }
+
+      result += "'" + array[i] + "'";
+    }
+
+    return result;
+  }
+    
   private final RowMapper<CohortPerson> cohortMemberMapper = new RowMapper<CohortPerson>() {
     @Override
     public CohortPerson mapRow(final ResultSet rs, final int rowNum) throws SQLException {

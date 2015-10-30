@@ -1,7 +1,7 @@
 SELECT     
     DrugUniverse.ingredient_concept_id
     ,DrugUniverse.ingredient_concept_name
-    ,CASE WHEN(LabelEvidence.ingredient_concept_id IS NULL) THEN false ELSE true END "Has_Evidence"
+    ,CASE WHEN(LabelEvidence.ingredient_concept_id IS NULL) THEN 0 ELSE 1 END "Has_Evidence"
 FROM 
 (
     SELECT DISTINCT ingredient_concept_id, ingredient_concept_name

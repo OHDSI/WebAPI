@@ -21,12 +21,12 @@ CREATE TABLE CONCEPT_OF_INTEREST(
  );
 
 CREATE TABLE drug_labels(
-        drug_label_id bigint NOT NULL,
+        drug_label_id number(19,0) NOT NULL,
         search_name varchar(255) NULL,
-        ingredient_concept_id bigint NULL,
+        ingredient_concept_id number(19,0) NULL,
         ingredient_concept_name varchar(255) NULL,
         setid varchar(255) NULL,
-        Date datetime NULL,
+        "Date" timestamp NULL,
         cohort_id int NULL,
         image_url varchar(255) NULL,
         CONSTRAINT PK_drug_labels PRIMARY KEY (drug_label_id)

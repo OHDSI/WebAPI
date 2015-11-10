@@ -235,7 +235,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
       CriteriaGroup acGroup = expression.additionalCriteria;
       String acGroupQuery = acGroup.accept(this);
       acGroupQuery = StringUtils.replace(acGroupQuery,"@indexId", "" + 0);
-      additionalCriteriaQuery = "\nLEFT JOIN (\n" + acGroupQuery + ") AC on AC.event_id = pe.event_id";
+      additionalCriteriaQuery = "\nJOIN (\n" + acGroupQuery + ") AC on AC.event_id = pe.event_id\n";
     }
     resultSql = StringUtils.replace(resultSql, "@additionalCriteriaQuery", additionalCriteriaQuery);
 

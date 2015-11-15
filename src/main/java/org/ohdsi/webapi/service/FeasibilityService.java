@@ -220,7 +220,7 @@ public class FeasibilityService extends AbstractDaoService {
         additionalCriteria.type = "ALL";
         indexRuleExpression.additionalCriteria = additionalCriteria;
       } else {
-        if ("ANY".equalsIgnoreCase(indexRuleExpression.additionalCriteria.type)) {
+        if (!"ALL".equalsIgnoreCase(indexRuleExpression.additionalCriteria.type)) {
           // move this CriteriaGroup inside a new parent CriteriaGroup where the parent CriteriaGroup.type == "ALL"
           CriteriaGroup parentGroup = new CriteriaGroup();
           parentGroup.type = "ALL";

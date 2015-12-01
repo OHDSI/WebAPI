@@ -16,6 +16,9 @@ public class CriteriaGroup implements ICohortExpressionElement {
   @JsonProperty("Type")
   public String type;
 
+  @JsonProperty("Count")
+  public Integer count;
+  
   @JsonProperty("CriteriaList")
   public AdditionalCriteria[] criteriaList;
 

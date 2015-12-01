@@ -1,19 +1,28 @@
--- Authors: Richard D Boyce, Jeremy Jao, Erica Voss, Lee Evans
+-- Authors: Richard D Boyce, Erica Voss, Lee Evans
 -- 2014/2015
--- Postgresql script
+-- Oracle script
 
-DROP TABLE IF EXISTS ${ohdsiSchema}.DRUG_HOI_EVIDENCE;
-DROP SEQUENCE IF EXISTS ${ohdsiSchema}.DRUG_HOI_EVIDENCE_SEQUENCE;
-CREATE SEQUENCE ${ohdsiSchema}.DRUG_HOI_EVIDENCE_SEQUENCE MAXVALUE 9223372036854775807 NO CYCLE;
+-- DROP any existing objects from previous runs
+-- for Oracle only, this section is commented out for reference in case they need to be run manually
+-- the other DBMS create scripts can dynamically drop objects instead
+-- DROP TABLE DRUG_HOI_EVIDENCE;
+-- DROP SEQUENCE DRUG_HOI_EVIDENCE_SEQUENCE;
+-- DROP TABLE EVIDENCE_SOURCES;
+-- DROP SEQUENCE EVIDENCE_SOURCES_SEQUENCE;
+-- DROP TABLE DRUG_HOI_RELATIONSHIP;
+-- DROP TABLE LAERTES_SUMMARY;
+-- DROP SEQUENCE LAERTES_SUMMARY_SEQUENCE;
+
+CREATE SEQUENCE ${ohdsiSchema}.DRUG_HOI_EVIDENCE_SEQUENCE MAXVALUE 9223372036854775807 NOCYCLE;
 CREATE TABLE ${ohdsiSchema}.DRUG_HOI_EVIDENCE (
-    ID                          INTEGER NOT NULL DEFAULT NEXTVAL('${ohdsiSchema}.DRUG_HOI_EVIDENCE_SEQUENCE'),
-    DRUG_HOI_RELATIONSHIP       VARCHAR(50),
-    EVIDENCE_TYPE               VARCHAR(4000),
-    MODALITY                    VARCHAR(1),
+    ID                          INTEGER NOT NULL,
+    DRUG_HOI_RELATIONSHIP       VARCHAR2(50),
+    EVIDENCE_TYPE               VARCHAR2(4000),
+    MODALITY                    VARCHAR2(1),
     EVIDENCE_SOURCE_CODE_ID     INTEGER,
     STATISTIC_VALUE             NUMERIC NOT NULL,
-    EVIDENCE_LINKOUT            VARCHAR(4000),
-    STATISTIC_TYPE              VARCHAR(4000) 
+    EVIDENCE_LINKOUT            VARCHAR2(4000),
+    STATISTIC_TYPE              VARCHAR2(4000) 
 );
 COMMENT ON COLUMN ${ohdsiSchema}.DRUG_HOI_EVIDENCE.ID IS 'primary key';
 COMMENT ON COLUMN ${ohdsiSchema}.DRUG_HOI_EVIDENCE.DRUG_HOI_RELATIONSHIP IS 'foreign key to the drug_HOI_relationship id';
@@ -24,20 +33,18 @@ COMMENT ON COLUMN ${ohdsiSchema}.DRUG_HOI_EVIDENCE.STATISTIC_VALUE IS 'For liter
 COMMENT ON COLUMN ${ohdsiSchema}.DRUG_HOI_EVIDENCE.EVIDENCE_LINKOUT IS 'For literature-like (e.g., PubMed abstracts, product labeling), this holds a URL that will resolve to a query against the RDF endpoint for all resources used to generate the evidence_count. For signal detection sources, this holds a link to metadata on the algorithm and how it was applied to arrive at the statistical value.';
 COMMENT ON COLUMN ${ohdsiSchema}.DRUG_HOI_EVIDENCE.STATISTIC_TYPE IS 'For literature-like (e.g., PubMed abstracts, product labeling), and other count based methods this holds COUNT. For signal detection sources, this holds a string indicating the type of the result value (e.g., AERS_EBGM, AERS_EB05)';
 
-DROP TABLE IF EXISTS ${ohdsiSchema}.EVIDENCE_SOURCES;
-DROP SEQUENCE IF EXISTS ${ohdsiSchema}.EVIDENCE_SOURCES_SEQUENCE;
-CREATE SEQUENCE ${ohdsiSchema}.EVIDENCE_SOURCES_SEQUENCE MAXVALUE 9223372036854775807 NO CYCLE;
+CREATE SEQUENCE ${ohdsiSchema}.EVIDENCE_SOURCES_SEQUENCE MAXVALUE 9223372036854775807 NOCYCLE;
 CREATE TABLE ${ohdsiSchema}.EVIDENCE_SOURCES (
-    ID                          INTEGER NOT NULL DEFAULT NEXTVAL('${ohdsiSchema}.EVIDENCE_SOURCES_SEQUENCE'),
-    TITLE                       VARCHAR(4000),
-    DESCRIPTION                 VARCHAR(4000),
-    CONTRIBUTER                 VARCHAR(4000),
-    CREATOR                     VARCHAR(4000),
+    ID                          INTEGER NOT NULL,
+    TITLE                       VARCHAR2(4000),
+    DESCRIPTION                 VARCHAR2(4000),
+    CONTRIBUTER                 VARCHAR2(4000),
+    CREATOR                     VARCHAR2(4000),
     CREATION_DATE               DATE NOT NULL, 
-    RIGHTS                      VARCHAR(4000),
-    SOURCE                      VARCHAR(4000)
+    RIGHTS                      VARCHAR2(4000),
+    SOURCE                      VARCHAR2(4000) 
 );
-COMMENT ON COLUMN ${ohdsiSchema}.EVIDENCE_SOURCES.TITLE IS 'a short name for the evidence source. Same as http://purl.org/dc/elements/1.1/title';
+
 COMMENT ON COLUMN ${ohdsiSchema}.EVIDENCE_SOURCES.DESCRIPTION IS 'Description of the evidence source. Same as http://purl.org/dc/elements/1.1/description';
 COMMENT ON COLUMN ${ohdsiSchema}.EVIDENCE_SOURCES.CONTRIBUTER IS 'Same as http://purl.org/dc/elements/1.1/contributor';
 COMMENT ON COLUMN ${ohdsiSchema}.EVIDENCE_SOURCES.CREATOR IS 'Same as http://purl.org/dc/elements/1.1/creator';
@@ -45,32 +52,29 @@ COMMENT ON COLUMN ${ohdsiSchema}.EVIDENCE_SOURCES.CREATION_DATE IS 'Date that th
 COMMENT ON COLUMN ${ohdsiSchema}.EVIDENCE_SOURCES.RIGHTS IS 'Same as http://purl.org/dc/elements/1.1/rights';
 COMMENT ON COLUMN ${ohdsiSchema}.EVIDENCE_SOURCES.SOURCE IS 'The source from which this data was derived. Same as http://purl.org/dc/elements/1.1/source';
 
-DROP TABLE IF EXISTS ${ohdsiSchema}.DRUG_HOI_RELATIONSHIP;
 CREATE TABLE ${ohdsiSchema}.DRUG_HOI_RELATIONSHIP (
-    ID                          VARCHAR(50),
+    ID                          VARCHAR2(50),
     DRUG                        INTEGER,
-    RXNORM_DRUG                 VARCHAR(4000),
+    RXNORM_DRUG                 VARCHAR2(4000),
     HOI                         INTEGER,
-    SNOMED_HOI                  VARCHAR(4000)
+    SNOMED_HOI                  VARCHAR2(4000)
 );
 COMMENT ON COLUMN ${ohdsiSchema}.DRUG_HOI_RELATIONSHIP.DRUG IS 'OMOP/IMEDS Concept ID for the drug';
 COMMENT ON COLUMN ${ohdsiSchema}.DRUG_HOI_RELATIONSHIP.RXNORM_DRUG IS 'RxNorm Preferred Term of the Drug';
 COMMENT ON COLUMN ${ohdsiSchema}.DRUG_HOI_RELATIONSHIP.HOI IS 'OMOP/IMEDS Concept ID for the Health Outcome of Interest';
 COMMENT ON COLUMN ${ohdsiSchema}.DRUG_HOI_RELATIONSHIP.SNOMED_HOI IS 'SNOMED preferred term of the Health Outcome of Interest';
 
-DROP TABLE IF EXISTS ${ohdsiSchema}.LAERTES_SUMMARY;
-DROP SEQUENCE IF EXISTS ${ohdsiSchema}.LAERTES_SUMMARY_SEQUENCE;
-CREATE SEQUENCE ${ohdsiSchema}.LAERTES_SUMMARY_SEQUENCE MAXVALUE 9223372036854775807 NO CYCLE;
+CREATE SEQUENCE ${ohdsiSchema}.LAERTES_SUMMARY_SEQUENCE MAXVALUE 9223372036854775807 NOCYCLE;
 CREATE TABLE ${ohdsiSchema}.LAERTES_SUMMARY (
-	ID                      INTEGER NOT NULL DEFAULT NEXTVAL('LAERTES_SUMMARY_SEQUENCE'),
+	ID                      INTEGER NOT NULL,
 	REPORT_ORDER            INTEGER,
-	REPORT_NAME             VARCHAR(4000),
+	REPORT_NAME             VARCHAR2(4000),
 	INGREDIENT_ID           INTEGER,
-	INGREDIENT              VARCHAR(4000),
+	INGREDIENT              VARCHAR2(4000),
 	CLINICAL_DRUG_ID        INTEGER,
-	CLINICAL_DRUG           VARCHAR(4000),
+	CLINICAL_DRUG           VARCHAR2(4000),
 	HOI_ID                  INTEGER,
-	HOI                     VARCHAR(4000),
+	HOI                     VARCHAR2(4000),
 	CT_COUNT                INTEGER,
 	CASE_COUNT              INTEGER,
 	OTHER_COUNT             INTEGER,
@@ -116,6 +120,6 @@ ALTER TABLE ${ohdsiSchema}.DRUG_HOI_RELATIONSHIP ADD CONSTRAINT PK_DRUG_HOI_RELA
 ALTER TABLE ${ohdsiSchema}.LAERTES_SUMMARY ADD CONSTRAINT PK_LAERTES_SUMMARY PRIMARY KEY (ID);
 
 -- add DRUG_HOI_EVIDENCE table constraints
-ALTER TABLE ${ohdsiSchema}.DRUG_HOI_EVIDENCE ADD CONSTRAINT FK_DRUG_HOI_RELATIONSHIP FOREIGN KEY (DRUG_HOI_RELATIONSHIP) REFERENCES ${ohdsiSchema}.DRUG_HOI_RELATIONSHIP(ID);
-ALTER TABLE ${ohdsiSchema}.DRUG_HOI_EVIDENCE ADD CONSTRAINT FK_EVIDENCE_SOURCES FOREIGN KEY (EVIDENCE_SOURCE_CODE_ID) REFERENCES ${ohdsiSchema}.EVIDENCE_SOURCES(ID);
+ALTER TABLE ${ohdsiSchema}.DRUG_HOI_EVIDENCE ADD CONSTRAINT FK_DRUG_HOI_RELATIONSHIP FOREIGN KEY (DRUG_HOI_RELATIONSHIP) REFERENCES DRUG_HOI_RELATIONSHIP(ID);
+ALTER TABLE ${ohdsiSchema}.DRUG_HOI_EVIDENCE ADD CONSTRAINT FK_EVIDENCE_SOURCES FOREIGN KEY (EVIDENCE_SOURCE_CODE_ID) REFERENCES EVIDENCE_SOURCES(ID);
 ALTER TABLE ${ohdsiSchema}.DRUG_HOI_EVIDENCE ADD CONSTRAINT PK_DRUG_HOI_EVIDENCE PRIMARY KEY (ID);

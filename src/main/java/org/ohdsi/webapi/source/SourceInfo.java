@@ -23,7 +23,6 @@ import java.util.Collection;
  */
 public class SourceInfo {
   public int sourceId;
-  public int sourceType;
   public String sourceName;
   public String sourceDialect;
   public String sourceKey;
@@ -31,7 +30,6 @@ public class SourceInfo {
   
   public SourceInfo(Source s) {
     sourceId = s.getSourceId();
-    sourceType = s.getSourceType();
     sourceName = s.getSourceName();
     sourceDialect = s.getSourceDialect();
     sourceKey = s.getSourceKey();

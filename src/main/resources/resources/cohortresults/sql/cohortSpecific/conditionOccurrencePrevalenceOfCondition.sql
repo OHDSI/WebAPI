@@ -18,12 +18,13 @@ select   concept_hierarchy.concept_id,
 	1.0*hr1.num_persons_after / denom.count_value as percent_persons_after,
 	1.0*(hr1.num_persons_after - hr1.num_persons_before)/denom.count_value as risk_diff_after_before,
 	log(1.0*(hr1.num_persons_after + 0.5) / (hr1.num_persons_before + 0.5)) as logRR_after_before,
-	hr1.num_persons
+	hr1.num_persons,
+        denom.count_value
 from
 (select stratum_1 as concept_id,
 	sum(count_value) as num_persons,
-	sum(case when stratum_2 < 0 then count_value else 0 end) as num_persons_before,
-	sum(case when stratum_2 > 0 then count_value else 0 end) as num_persons_after
+	sum(case when CAST(stratum_2 AS INT) < 0 then count_value else 0 end) as num_persons_before,
+	sum(case when CAST(stratum_2 AS INT) > 0 then count_value else 0 end) as num_persons_after
 from @ohdsi_database_schema.heracles_results
 where analysis_id in (1820) --first occurrence of condition
 and cohort_definition_id in (@cohortDefinitionId)

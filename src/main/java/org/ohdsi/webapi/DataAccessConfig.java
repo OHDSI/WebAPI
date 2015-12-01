@@ -67,6 +67,7 @@ public class DataAccessConfig {
     for (String driverName : supportedDrivers) {
       try {
         Class.forName(driverName);
+        System.out.println("driver loaded: " + driverName);
       } catch (Exception ex) {
         System.out.println("error loading " + driverName + " driver.");
       }
@@ -118,4 +119,11 @@ public class DataAccessConfig {
     transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     return transactionTemplate;
   }
+  
+  /*
+  public String getSparqlEndpoint()
+  {
+	  String sparqlEndpoint = this.env.getRequiredProperty("sparql.endpoint");
+	  return sparqlEndpoint;
+  }*/
 }

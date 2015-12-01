@@ -13,11 +13,12 @@ import java.math.BigDecimal;
  */
 @JsonInclude(Include.NON_NULL)
 public class DrugEvidence {
-    @JsonProperty("EVIDENCE")
+	
+	@JsonProperty("EVIDENCE")
     public String evidence;
     
     @JsonProperty("MODALITY")
-    public String modality;
+    public boolean modality;
     
     @JsonProperty("LINKOUT")
     public String linkout;
@@ -27,6 +28,9 @@ public class DrugEvidence {
 
     @JsonProperty("HOI")
     public String hoi;	
+    
+    @JsonProperty("HOI-NAME")
+    public String hoiName;	
     
     @JsonProperty("COUNT")
     public Integer count;	

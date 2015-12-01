@@ -17,7 +17,7 @@ public class HoiEvidence {
     public String evidence;
     
     @JsonProperty("MODALITY")
-    public String modality;
+    public boolean modality;
     
     @JsonProperty("LINKOUT")
     public String linkout;
@@ -27,6 +27,9 @@ public class HoiEvidence {
 
     @JsonProperty("DRUG")
     public String drug;	
+    
+    @JsonProperty("DRUG-NAME")
+    public String drugName;	
     
     @JsonProperty("COUNT")
     public Integer count;	

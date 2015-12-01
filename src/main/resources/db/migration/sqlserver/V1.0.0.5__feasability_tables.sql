@@ -83,7 +83,7 @@ END;
 IF (NOT EXISTS (SELECT * 
                  FROM INFORMATION_SCHEMA.TABLES 
                  WHERE TABLE_SCHEMA = '${ohdsiSchema}' 
-                 AND  TABLE_NAME = 'feas_study_index_stats'))
+                 AND  TABLE_NAME = 'feas_study_inclusion_stats'))
 BEGIN
 CREATE TABLE [${ohdsiSchema}].[feas_study_inclusion_stats](
   [study_id] [int] NOT NULL,

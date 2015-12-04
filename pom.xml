@@ -25,9 +25,6 @@
     <datasource.password>password</datasource.password>
     <!--<datasource.validationQuery>SELECT 1</datasource.validationQuery>-->
     <datasource.dialect>sql server</datasource.dialect>
-    <!-- specify cdm.database if CDM instance is in a different database name then the one specified in primary jdbc url connection -->
-    <datasource.cdm.database />
-    <datasource.cdm.schema>dbo</datasource.cdm.schema>
     <datasource.ohdsi.schema>dbo</datasource.ohdsi.schema>
     <datasource.dialect.source>sql server</datasource.dialect.source>
     <!-- DB Change Management / Migration -->
@@ -44,7 +41,7 @@
     <source.name>CDM_NAME</source.name>
     <cdm.version>5</cdm.version>
 
-    <spring.batch.repository.tableprefix>BATCH_</spring.batch.repository.tableprefix>
+    <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
     <spring.batch.repository.isolationLevelForCreate>ISOLATION_READ_COMMITTED</spring.batch.repository.isolationLevelForCreate>
 		
     <spring.profiles.active>default</spring.profiles.active>
@@ -368,7 +365,6 @@
         <datasource.username>user</datasource.username>
         <datasource.password>password</datasource.password>
         <datasource.dialect>oracle</datasource.dialect>
-        <datasource.cdm.schema>omopv5_de</datasource.cdm.schema>
         <datasource.ohdsi.schema>OHDSI</datasource.ohdsi.schema>
         <!--<datasource.validationQuery>SELECT 1 FROM DUAL</datasource.validationQuery>-->
         <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
@@ -394,7 +390,6 @@
         <datasource.username>USER</datasource.username>
         <datasource.password>PASS</datasource.password>
         <datasource.dialect>postgresql</datasource.dialect>
-        <datasource.cdm.schema>unrestricted</datasource.cdm.schema>
         <datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>
         <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
         <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
@@ -411,7 +406,6 @@
         <datasource.username>USER</datasource.username>
         <datasource.password>PASS</datasource.password>
         <datasource.dialect>sql server</datasource.dialect>
-        <datasource.cdm.schema>CDM_schema</datasource.cdm.schema>
         <datasource.ohdsi.schema>OHDSI_schema</datasource.ohdsi.schema>
         <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
         <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
@@ -436,7 +430,6 @@
         <datasource.username>USER</datasource.username>
         <datasource.password>PASS</datasource.password>
         <datasource.dialect>sql server</datasource.dialect>
-        <datasource.cdm.schema>CDM_schema</datasource.cdm.schema>
         <datasource.ohdsi.schema>OHDSI_schema</datasource.ohdsi.schema>
         <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
         <flyway.datasource.url>${datasource.url}</flyway.datasource.url>

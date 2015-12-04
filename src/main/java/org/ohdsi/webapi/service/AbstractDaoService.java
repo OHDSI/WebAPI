@@ -27,12 +27,6 @@ public abstract class AbstractDaoService {
 
   protected final Log log = LogFactory.getLog(getClass());
 
-  @Value("${datasource.cdm.database}")
-  private String cdmDatabase;
-
-  @Value("${datasource.cdm.schema}")
-  private String cdmSchema;
-
   @Value("${datasource.ohdsi.schema}")
   private String ohdsiSchema;
 

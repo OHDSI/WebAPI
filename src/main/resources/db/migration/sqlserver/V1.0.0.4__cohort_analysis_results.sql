@@ -1,8 +1,3 @@
-IF (NOT EXISTS (SELECT * 
-                 FROM INFORMATION_SCHEMA.TABLES 
-                 WHERE TABLE_SCHEMA = '${ohdsiSchema}' 
-                 AND  TABLE_NAME = 'cohort'))
-BEGIN
 create table ${ohdsiSchema}.cohort 
 (
 	COHORT_DEFINITION_ID int NOT NULL,
@@ -10,14 +5,8 @@ create table ${ohdsiSchema}.cohort
 	cohort_start_date date NOT NULL,
 	cohort_end_date date NOT NULL
 ) ON [PRIMARY]
-END
 ;
 
-IF (NOT EXISTS (SELECT * 
-                 FROM INFORMATION_SCHEMA.TABLES 
-                 WHERE TABLE_SCHEMA = '${ohdsiSchema}' 
-                 AND  TABLE_NAME = 'heracles_analysis'))
-BEGIN
 create table ${ohdsiSchema}.heracles_analysis
 (
 	analysis_id int,
@@ -29,7 +18,6 @@ create table ${ohdsiSchema}.heracles_analysis
 	stratum_5_name varchar(255),
 	analysis_type varchar(255)
 ) on [PRIMARY]
-END
 ;
 
 TRUNCATE TABLE ${ohdsiSchema}.heracles_analysis;
@@ -202,11 +190,6 @@ insert into ${ohdsiSchema}.heracles_analysis (ANALYSIS_ID,ANALYSIS_NAME,STRATUM_
 insert into ${ohdsiSchema}.heracles_analysis (ANALYSIS_ID,ANALYSIS_NAME,STRATUM_1_NAME,STRATUM_2_NAME,STRATUM_3_NAME,STRATUM_4_NAME,STRATUM_5_NAME,ANALYSIS_TYPE) values (1870,'Number of persons by duration from cohort start to first occurrence of drug era, by drug_concept_id','drug_concept_id','time-to-event 30d increments',null,null,null,'COHORT_SPECIFIC_ANALYSES');
 insert into ${ohdsiSchema}.heracles_analysis (ANALYSIS_ID,ANALYSIS_NAME,STRATUM_1_NAME,STRATUM_2_NAME,STRATUM_3_NAME,STRATUM_4_NAME,STRATUM_5_NAME,ANALYSIS_TYPE) values (1871,'Number of events by duration from cohort start to all occurrences of drug era, by drug_concept_id','drug_concept_id','time-to-event 30d increments',null,null,null,'COHORT_SPECIFIC_ANALYSES');
 
-IF (NOT EXISTS (SELECT * 
-                 FROM INFORMATION_SCHEMA.TABLES 
-                 WHERE TABLE_SCHEMA = '${ohdsiSchema}' 
-                 AND  TABLE_NAME = 'heracles_results'))
-BEGIN
 create table ${ohdsiSchema}.heracles_results
 (
 	cohort_definition_id int,
@@ -220,13 +203,8 @@ create table ${ohdsiSchema}.heracles_results
 	last_update_time datetime 
           CONSTRAINT DF_HERACLES_results_last_update DEFAULT GETDATE()
 ) on [PRIMARY]
-END;
+;
 
-IF (NOT EXISTS (SELECT * 
-                 FROM INFORMATION_SCHEMA.TABLES 
-                 WHERE TABLE_SCHEMA = '${ohdsiSchema}' 
-                 AND  TABLE_NAME = 'heracles_results_dist'))
-BEGIN
 create table ${ohdsiSchema}.heracles_results_dist
 (
 	cohort_definition_id int,
@@ -249,4 +227,4 @@ create table ${ohdsiSchema}.heracles_results_dist
 	last_update_time datetime
           CONSTRAINT DF_heracles_results_dist_last_update DEFAULT GETDATE()
 ) on [PRIMARY]
-END;
+;

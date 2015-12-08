@@ -1,6 +1,3 @@
---Needed for JPA/hibernate
-CREATE SEQUENCE ${ohdsiSchema}.COHORT_DEFINITION_SEQUENCE MAXVALUE 9223372036854775807 NO CYCLE;
-
 CREATE TABLE ${ohdsiSchema}.cohort_definition(
 	id int NOT NULL,
 	name varchar(255) NOT NULL,

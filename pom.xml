@@ -361,14 +361,14 @@
       <id>webapi-oracle</id>
       <properties>
         <datasource.driverClassName>oracle.jdbc.OracleDriver</datasource.driverClassName>
-        <datasource.url>jdbc:oracle:thin:@127.0.0.1:1521:cdm</datasource.url>
+        <datasource.url>jdbc:oracle:thin:@127.0.0.1:1521/ohdsi</datasource.url>
         <datasource.username>user</datasource.username>
         <datasource.password>password</datasource.password>
         <datasource.dialect>oracle</datasource.dialect>
         <datasource.ohdsi.schema>OHDSI</datasource.ohdsi.schema>
         <!--<datasource.validationQuery>SELECT 1 FROM DUAL</datasource.validationQuery>-->
         <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
-        <flyway.datasource.url>jdbc:oracle:thin@127.0.0.1:1521:ohdsi</flyway.datasource.url>
+        <flyway.datasource.url>jdbc:oracle:thin:@127.0.0.1:152/ohdsi</flyway.datasource.url>
         <flyway.datasource.username>user</flyway.datasource.username>
         <flyway.datasource.password>pass</flyway.datasource.password>
         <flyway.locations>classpath:db/migration/oracle</flyway.locations>
@@ -379,6 +379,12 @@
           <artifactId>ojdbc</artifactId>
           <version>6.0.0</version>
           <!-- If you have it local and not in a repository <systemPath></systemPath> -->
+        </dependency>
+        <dependency>
+          <groupId>com.microsoft.sqlserver</groupId>
+          <artifactId>sqljdbc4</artifactId>
+          <version>4.0</version>
+          <type>jar</type>
         </dependency>
       </dependencies>
     </profile>

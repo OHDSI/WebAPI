@@ -1,6 +1,3 @@
---Needed for JPA/hibernate
-CREATE SEQUENCE ${ohdsiSchema}.FEASIBILITY_STUDY_SEQUENCE MAXVALUE 9223372036854775807 NOCYCLE;
-
 CREATE TABLE ${ohdsiSchema}.feas_study_generation_info(
   study_id number(10) NOT NULL,
   start_time Timestamp(3) NULL,

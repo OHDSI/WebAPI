@@ -1,7 +1,4 @@
---Needed for JPA/hibernate
-CREATE SEQUENCE FEASIBILITY_STUDY_SEQUENCE MAXVALUE 9223372036854775807 NO CYCLE;
-
-CREATE TABLE IF NOT EXISTS feas_study_generation_info(
+CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.feas_study_generation_info(
   study_id int NOT NULL,
   start_time Timestamp(3) NULL,
   execution_duration int NULL,
@@ -10,7 +7,7 @@ CREATE TABLE IF NOT EXISTS feas_study_generation_info(
   CONSTRAINT PK_feas_study_generation_info PRIMARY KEY (study_id)
 );
 
-CREATE TABLE IF NOT EXISTS  feasibility_study(
+CREATE TABLE IF NOT EXISTS  ${ohdsiSchema}.feasibility_study(
   id int NOT NULL,
   name varchar(255) NOT NULL,
   description varchar(1000) NULL,
@@ -23,38 +20,38 @@ CREATE TABLE IF NOT EXISTS  feasibility_study(
   modified_date Timestamp(3) NULL,
   CONSTRAINT PK_clinical_trial_protocol PRIMARY KEY (id),
   CONSTRAINT FK_feasibility_study_cohort_definition_index FOREIGN KEY(index_def_id)
-    REFERENCES cohort_definition (id),
+    REFERENCES ${ohdsiSchema}.cohort_definition (id),
   CONSTRAINT FK_feasibility_study_cohort_definition_result FOREIGN KEY(result_def_id)
-    REFERENCES cohort_definition (id),
+    REFERENCES ${ohdsiSchema}.cohort_definition (id),
   CONSTRAINT FK_feasibility_study_feas_study_generation_info FOREIGN KEY(generate_info_id)
-    REFERENCES feas_study_generation_info (study_id)
+    REFERENCES ${ohdsiSchema}.feas_study_generation_info (study_id)
 );
 
-CREATE TABLE IF NOT EXISTS feasibility_inclusion(
+CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.feasibility_inclusion(
   study_id int NOT NULL,
   sequence int NOT NULL,
   name varchar(255) NULL,
   description varchar(1000) NULL,
   expression Text NULL,
   CONSTRAINT FK_feasibility_inclusion_feasibility_study FOREIGN KEY(study_id)
-    REFERENCES feasibility_study (id)
+    REFERENCES ${ohdsiSchema}.feasibility_study (id)
     ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS feas_study_result(
+CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.feas_study_result(
   study_id int NOT NULL,
   inclusion_rule_mask bigint NOT NULL,
   person_count bigint NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS feas_study_index_stats(
+CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.feas_study_index_stats(
   study_id int NOT NULL,
   person_count bigint NOT NULL,
   match_count bigint NOT NULL
 );
 
 
-CREATE TABLE IF NOT EXISTS feas_study_inclusion_stats(
+CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.feas_study_inclusion_stats(
   study_id int NOT NULL,
   rule_sequence int NOT NULL,
   name varchar(255) NOT NULL,

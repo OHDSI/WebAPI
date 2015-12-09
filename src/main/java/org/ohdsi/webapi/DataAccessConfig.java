@@ -1,6 +1,7 @@
 package org.ohdsi.webapi;
 
 import java.sql.DriverManager;
+import java.util.Properties;
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
@@ -30,6 +31,13 @@ public class DataAccessConfig {
   @Autowired
   private Environment env;
 
+  
+  private Properties getJPAProperties() {
+    Properties properties = new Properties();
+    properties.setProperty("hibernate.default_schema", this.env.getProperty("spring.jpa.properties.hibernate.default_schema"));
+    return properties;
+  }
+      
   @Bean
   @Primary
   public DataSource primaryDataSource() {
@@ -76,9 +84,10 @@ public class DataAccessConfig {
     vendorAdapter.setShowSql(Boolean.valueOf(this.env.getRequiredProperty("spring.jpa.show-sql")));
         //hibernate.dialect is resolved based on driver
     //vendorAdapter.setDatabasePlatform(hibernateDialect);
-
+    
     LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
     factory.setJpaVendorAdapter(vendorAdapter);
+    factory.setJpaProperties(getJPAProperties());
     factory.setPackagesToScan("org.ohdsi.webapi");
     factory.setDataSource(primaryDataSource());
     factory.afterPropertiesSet();

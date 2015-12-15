@@ -101,10 +101,12 @@ public class CohortAnalysisService extends AbstractDaoService {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	public List<Analysis> getCohortAnalyses() {
-		String sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/getCohortAnalyses.sql");
-		
-		sql = SqlTranslate.translateSql(sql, getSourceDialect(), getDialect());
-		return getJdbcTemplate().query(sql, this.analysisMapper);
+          String sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/getCohortAnalyses.sql");
+
+          sql = SqlRender.renderSql(sql, new String[]{"ohdsi_database_schema"},
+                  new String[]{this.getOhdsiSchema()});
+          sql = SqlTranslate.translateSql(sql, getSourceDialect(), getDialect());
+          return getJdbcTemplate().query(sql, this.analysisMapper);
 	}
 
     /**

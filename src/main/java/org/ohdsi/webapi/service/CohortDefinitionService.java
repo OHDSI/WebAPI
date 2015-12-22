@@ -162,7 +162,7 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   public List<CohortDefinitionListItem> getCohortDefinitionList() {
     ArrayList<CohortDefinitionListItem> result = new ArrayList<>();
-    Iterable<CohortDefinition> defs = this.cohortDefinitionRepository.findAll();
+    Iterable<CohortDefinition> defs = this.cohortDefinitionRepository.list();
     for (CohortDefinition d : defs) {
       CohortDefinitionListItem item = new CohortDefinitionListItem();
       item.id = d.getId();

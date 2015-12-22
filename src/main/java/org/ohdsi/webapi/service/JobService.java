@@ -138,6 +138,8 @@ public class JobService extends AbstractDaoService {
 
     if (comprehensivePage) {
       String sql_statement = ResourceHelper.GetResourceAsString("/resources/job/sql/jobExecutions.sql");
+      sql_statement = SqlRender.renderSql(sql_statement, new String[]{"ohdsi_schema"},
+              new String[]{this.getOhdsiSchema()});
       sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect());
       log.debug("Translated sql:" + sql_statement);
 

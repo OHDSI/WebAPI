@@ -20,10 +20,10 @@ public class CriteriaGroup implements ICohortExpressionElement {
   public Integer count;
   
   @JsonProperty("CriteriaList")
-  public AdditionalCriteria[] criteriaList;
+  public AdditionalCriteria[] criteriaList = new AdditionalCriteria[0];
 
   @JsonProperty("Groups")
-  public CriteriaGroup[] groups;
+  public CriteriaGroup[] groups = new CriteriaGroup[0];
 
   @Override
   public String accept(ICohortExpressionElementVisitor visitor) {

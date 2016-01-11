@@ -101,20 +101,26 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     return getOperator(range.op);
   }
   
+  private String dateStringToSql(String date)
+  {
+    String[] dateParts = StringUtils.split(date,'-');
+    return String.format("DATEFROMPARTS(%s, %s, %s)", dateParts[0], dateParts[1], dateParts[2]);
+  }
+  
   private String buildDateRangeClause(String sqlExpression, DateRange range)
   {
     String clause;
     if (range.op.endsWith("bt")) // range with a 'between' op
     {
-      clause = String.format("%s %sbetween '%s' and '%s'",
+      clause = String.format("%s %sbetween %s and %s",
           sqlExpression,
           range.op.startsWith("!") ? "not " : "",
-          range.value,
-          range.extent);
+          dateStringToSql(range.value),
+          dateStringToSql(range.extent));
     }
     else // single value range (less than/eq/greater than, etc)
     {
-      clause = String.format("%s %s '%s'", sqlExpression, getOperator(range), range.value);
+      clause = String.format("%s %s %s", sqlExpression, getOperator(range), dateStringToSql(range.value));
     }
     return clause;
   }

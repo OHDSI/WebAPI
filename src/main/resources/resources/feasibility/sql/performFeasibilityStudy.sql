@@ -52,7 +52,7 @@ left join
 ) T on ir.sequence = T.inclusion_rule_id
 CROSS JOIN (select count(*) as total_rules from #inclusionRules where study_id = @studyId) RuleTotal
 CROSS JOIN (select count(event_id) as total from #PrimaryCriteriaEvents) EventTotal
-LEFT JOIN feas_study_result SR on SR.study_id = @studyId AND (POWER(2,RuleTotal.total_rules) - POWER(2,ir.sequence) - 1) = SR.inclusion_rule_mask -- POWER(2,rule count) - POWER(2,rule sequence) - 1 is the mask for 'all except this rule' 
+LEFT JOIN @ohdsi_database_schema.feas_study_result SR on SR.study_id = @studyId AND (POWER(2,RuleTotal.total_rules) - POWER(2,ir.sequence) - 1) = SR.inclusion_rule_mask -- POWER(2,rule count) - POWER(2,rule sequence) - 1 is the mask for 'all except this rule' 
 WHERE ir.study_id = @studyId
 ;
 
@@ -63,7 +63,7 @@ select @studyId as study_id,
 (select count(event_id) as total from #PrimaryCriteriaEvents) as person_count,
 coalesce((
   select sr.person_count 
-  from feas_study_result sr
+  from @ohdsi_database_schema.feas_study_result sr
   CROSS JOIN (select count(*) as total_rules from #inclusionRules where study_id = @studyId) RuleTotal
   where study_id = @studyId and sr.inclusion_rule_mask = POWER(2,RuleTotal.total_rules)-1
 ),0) as match_count

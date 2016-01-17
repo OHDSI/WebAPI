@@ -15,13 +15,13 @@ INSERT INTO @cohortTable (cohort_definition_id, subject_id, cohort_start_date, c
 select @resultCohortId as cohort_definition_id, MG.person_id, MG.start_date, MG.end_date
 from
 (
-  select C.event_id, C.person_id, C.start_date, C.end_date, SUM(coalesce(POWER(2, I.inclusion_rule_id), 0)) as inclusion_rule_mask
+  select C.event_id, C.person_id, C.start_date, C.end_date, SUM(coalesce(POWER(cast(2 as bigint), I.inclusion_rule_id), 0)) as inclusion_rule_mask
   from #PrimaryCriteriaEvents C
   LEFT JOIN #inclusionRuleCohorts I on I.event_id = C.event_id
   GROUP BY C.event_id, C.person_id, C.start_date, C.end_date
 ) MG -- matching groups
 CROSS JOIN (select count(*) as total_rules from #inclusionRules where study_id = @studyId) RuleTotal
-WHERE MG.inclusion_rule_mask = POWER(2,RuleTotal.total_rules)-1
+WHERE MG.inclusion_rule_mask = POWER(cast(2 as bigint),RuleTotal.total_rules)-1
 ;
 
 -- calculte matching group counts
@@ -30,7 +30,7 @@ insert into @ohdsi_database_schema.feas_study_result (study_id, inclusion_rule_m
 select @studyId as study_id, inclusion_rule_mask, count(*) as person_count
 from
 (
-  select C.event_id, SUM(coalesce(POWER(2, I.inclusion_rule_id), 0)) as inclusion_rule_mask
+  select C.event_id, SUM(coalesce(POWER(cast(2 as bigint), I.inclusion_rule_id), 0)) as inclusion_rule_mask
   from #PrimaryCriteriaEvents C
   LEFT JOIN #inclusionRuleCohorts I on c.event_id = i.event_id
   GROUP BY C.event_id
@@ -52,7 +52,7 @@ left join
 ) T on ir.sequence = T.inclusion_rule_id
 CROSS JOIN (select count(*) as total_rules from #inclusionRules where study_id = @studyId) RuleTotal
 CROSS JOIN (select count(event_id) as total from #PrimaryCriteriaEvents) EventTotal
-LEFT JOIN @ohdsi_database_schema.feas_study_result SR on SR.study_id = @studyId AND (POWER(2,RuleTotal.total_rules) - POWER(2,ir.sequence) - 1) = SR.inclusion_rule_mask -- POWER(2,rule count) - POWER(2,rule sequence) - 1 is the mask for 'all except this rule' 
+LEFT JOIN @ohdsi_database_schema.feas_study_result SR on SR.study_id = @studyId AND (POWER(cast(2 as bigint),RuleTotal.total_rules) - POWER(cast(2 as bigint),ir.sequence) - 1) = SR.inclusion_rule_mask -- POWER(2,rule count) - POWER(2,rule sequence) - 1 is the mask for 'all except this rule' 
 WHERE ir.study_id = @studyId
 ;
 
@@ -65,7 +65,7 @@ coalesce((
   select sr.person_count 
   from @ohdsi_database_schema.feas_study_result sr
   CROSS JOIN (select count(*) as total_rules from #inclusionRules where study_id = @studyId) RuleTotal
-  where study_id = @studyId and sr.inclusion_rule_mask = POWER(2,RuleTotal.total_rules)-1
+  where study_id = @studyId and sr.inclusion_rule_mask = POWER(cast(2 as bigint),RuleTotal.total_rules)-1
 ),0) as match_count
 ;
 

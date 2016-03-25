@@ -99,7 +99,7 @@ public class GenerateCohortTasklet implements Tasklet {
   private CohortGenerationInfo findBySourceId(Collection<CohortGenerationInfo> infoList, Integer sourceId)
   {
     for (CohortGenerationInfo info : infoList) {
-      if (info.getId().getSourceId()== sourceId)
+      if (info.getId().getSourceId().equals(sourceId))
         return info;
     }
     return null;

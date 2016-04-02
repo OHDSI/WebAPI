@@ -41,8 +41,8 @@ public class EvidenceUniverse {
   @JsonProperty("evidence_type")
   public String evidence_type;
 
-  @JsonProperty("modality")
-  public boolean modality;
+  @JsonProperty("supports")
+  public Character supports;
   
   @JsonProperty("statistic_value")
   public BigDecimal statistic_value;

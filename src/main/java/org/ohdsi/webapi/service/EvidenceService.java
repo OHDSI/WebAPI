@@ -169,11 +169,20 @@ public class EvidenceService extends AbstractDaoService {
     //}
     String tempDrugHoi = "";
     String tempEvidenceType = "";
-    Boolean tempModality = false;
+    Character tempSupports = new Character('f');
     for (Map rs : rows) {
 
       String evi_type = (String) rs.get("EV_TYPE");
-      Boolean modality = (Boolean) rs.get("EV_MODALITY");
+
+      Character supports = null;
+      if (rs.get("EV_SUPPORTS") == null){
+	  supports = new Character('u');
+      } else if ((String) rs.get("EV_SUPPORTS") == "t"){
+	  supports = new Character('t');
+      } else {
+	  supports = new Character('f');
+      }
+      
       String linkout = (String) rs.get("EV_LINKOUT");
       String hoi = String.valueOf((Integer) rs.get("EV_HOI"));
       String hoiName = (String)rs.get("EV_SNOMED_HOI");
@@ -181,15 +190,15 @@ public class EvidenceService extends AbstractDaoService {
       BigDecimal statVal = (BigDecimal) rs.get("EV_STAT_VAL");
       String drugHoi = (String)rs.get("EV_DRUGHOI");
       
-      if((!drugHoi.equalsIgnoreCase(tempDrugHoi))||(!evi_type.equalsIgnoreCase(tempEvidenceType))||(!modality.equals(tempModality)))
+      if((!drugHoi.equalsIgnoreCase(tempDrugHoi))||(!evi_type.equalsIgnoreCase(tempEvidenceType))||(!(Character.toLowerCase(supports) == (Character.toLowerCase(tempSupports)))))
       {
       DrugEvidence evidence = new DrugEvidence();
       tempDrugHoi = drugHoi;
       tempEvidenceType = evi_type;
-      tempModality = modality;
+      tempSupports = supports;
       //evidence.drughoi = drugHoi;
       evidence.evidence = evi_type;
-      evidence.modality = modality;
+      evidence.supports = supports;
       evidence.linkout = linkout;
       evidence.hoi = hoi;
       evidence.hoiName = hoiName;
@@ -234,7 +243,16 @@ public class EvidenceService extends AbstractDaoService {
 
     for (Map rs : rows) {
       String evi_type = (String) rs.get("EV_TYPE");
-      boolean modality = (boolean) rs.get("EV_MODALITY");
+
+      Character supports = null;
+      if (rs.get("EV_SUPPORTS") == null){
+	  supports = new Character('u');
+      } else if ((String) rs.get("EV_SUPPORTS") == "t"){
+	  supports = new Character('t');
+      } else {
+	  supports = new Character('f');
+      }
+
       String linkout = (String) rs.get("EV_LINKOUT");
       String drug = String.valueOf((Integer) rs.get("EV_DRUG"));
       String drugName = (String) rs.get("EV_RXNORM_DRUG");
@@ -243,7 +261,7 @@ public class EvidenceService extends AbstractDaoService {
 
       HoiEvidence evidence = new HoiEvidence();
       evidence.evidence = evi_type;
-      evidence.modality = modality;
+      evidence.supports = supports;
       evidence.linkout = linkout;
       evidence.drug = drug;
       evidence.drugName = drugName;
@@ -290,14 +308,22 @@ public class EvidenceService extends AbstractDaoService {
 
     for (Map rs : rows) {
       String evi_type = (String) rs.get("EV_TYPE");
-      boolean modality = (boolean) rs.get("EV_MODALITY");
+      Character supports = null;
+      if (rs.get("EV_SUPPORTS") == null){
+	  supports = new Character('u');
+      } else if ((String) rs.get("EV_SUPPORTS") == "t"){
+	  supports = new Character('t');
+      } else {
+	  supports = new Character('f');
+      }
+
       String linkout = (String) rs.get("EV_LINKOUT");
       String statType = (String) rs.get("EV_STAT_TYPE");
       BigDecimal statVal = (BigDecimal) rs.get("EV_STAT_VAL");
 
       DrugHoiEvidence evidence = new DrugHoiEvidence();
       evidence.evidence = evi_type;
-      evidence.modality = modality;
+      evidence.supports = supports;
       evidence.linkout = linkout;
       evidence.statisticType = statType;
       if (statType.equals("COUNT")) {
@@ -359,20 +385,21 @@ public class EvidenceService extends AbstractDaoService {
       evidence.clinicalDrugName = (String) rs.get("CLINICAL_DRUG");
       evidence.hoiId = (Integer) rs.get("HOI_ID");
       evidence.hoiName = (String) rs.get("HOI");
-      evidence.pubmedMeshCTcount = (Integer) rs.get("CT_COUNT");
-      evidence.pubmedMeshCaseReportcount = (Integer) rs.get("CASE_COUNT");
-      evidence.pubmedMeshOthercount = (Integer) rs.get("OTHER_COUNT");
+      evidence.pubmedMeshCTcount = (Integer) rs.get("MEDLINE_CT_COUNT");
+      evidence.pubmedMeshCaseReportcount = (Integer) rs.get("MEDLINE_CASE_COUNT");
+      evidence.pubmedMeshOthercount = (Integer) rs.get("MEDLINE_OTHER_COUNT");
+      evidence.ctdChemicalDiseaseCount = (Integer) rs.get("CTD_CHEMICAL_DISEASE_COUNT");
       evidence.splicerCount = (Integer) rs.get("SPLICER_COUNT");
       evidence.euSPCcount = (Integer) rs.get("EU_SPC_COUNT");
       evidence.semmedCTcount = (Integer) rs.get("SEMMEDDB_CT_COUNT");
       evidence.semmedCaseReportcount = (Integer) rs.get("SEMMEDDB_CASE_COUNT");
+      evidence.semmedOthercount = (Integer) rs.get("SEMMEDDB_OTHER_COUNT");
       evidence.semmedNegCTcount = (Integer) rs.get("SEMMEDDB_NEG_CT_COUNT");
       evidence.semmedNegCaseReportcount = (Integer) rs.get("SEMMEDDB_NEG_CASE_COUNT");
-      //evidence.eb05 = (BigDecimal) rs.get("EB05");
-      //evidence.ebgm = (BigDecimal) rs.get("EBGM");
-      evidence.prr = (BigDecimal) rs.get("PRR");
+      evidence.semmedNegOthercount = (Integer) rs.get("SEMMEDDB_NEG_OTHER_COUNT");
       evidence.aersReportCount = (Integer) rs.get("AERS_REPORT_COUNT");
-
+      evidence.prr = (BigDecimal) rs.get("PRR");
+      
       drugEvidences.add(evidence);
     }
     return drugEvidences;
@@ -397,13 +424,21 @@ public class EvidenceService extends AbstractDaoService {
     List<Map<String, Object>> rows = getSourceJdbcTemplate(source).queryForList(sql_statement);
     
     for (Map rs : rows) {
-       Evidence e = new Evidence();
+      Evidence e = new Evidence();
       e.conditionId = (Integer) rs.get("CONDITION_ID");
       e.drugId = (Integer) rs.get("DRUG_ID");
       e.drugName = (String) rs.get("DRUG_NAME");
       e.conditionName = (String) rs.get("CONDITION_NAME");
       e.evidenceType = (String) rs.get("EVIDENCE_TYPE");
-      e.modality = (boolean) rs.get("MODALITY");
+
+      if (rs.get("SUPPORTS") == null){
+	  e.supports = new Character('u');
+      } else if (((String) rs.get("SUPPORTS")).equalsIgnoreCase("t")){
+	  e.supports = new Character('t');
+      } else {
+	  e.supports = new Character('f');
+      }
+
       e.statisticType = (String) rs.get("STATISTIC_TYPE");
       e.linkout = (String) rs.get("EVIDENCE_LINKOUT");
       e.value = (BigDecimal) rs.get("STATISTIC_VALUE");
@@ -443,7 +478,7 @@ public class EvidenceService extends AbstractDaoService {
 	      e.evidence_group_name = evidenceGroup;
 	      //e.evidence_id = BigInteger.valueOf((long)rs.get("id"));
 	      e.evidence_type = String.valueOf(rs.get("evidence_type"));
-	      //e.modality = (boolean)rs.get("modality");
+	      //e.supports = (Character)rs.get("supports");
 	      e.evidence_count = Double.valueOf(String.valueOf(rs.get("statistic_value")));
 	      
 	      evidences.add(e);
@@ -569,7 +604,15 @@ public class EvidenceService extends AbstractDaoService {
 	      e.ingredient_concept_id = Integer.valueOf(String.valueOf(rs.get("INGREDIENT_CONCEPT_ID")));
 	      e.ingredient_concept_name = String.valueOf(rs.get("INGREDIENT_CONCEPT_NAME"));
               e.evidence_type = String.valueOf(rs.get("EVIDENCE_TYPE"));
-              e.modality = (boolean) rs.get("MODALITY");
+
+	      if (rs.get("SUPPORTS") == null){
+		  e.supports = new Character('u');
+	      } else if (((String) rs.get("SUPPORTS")).equalsIgnoreCase("t")){
+		  e.supports = new Character('t');
+	      } else {
+		  e.supports = new Character('f');
+	      }
+	      
               e.statistic_value = BigDecimal.valueOf(Double.valueOf(String.valueOf(rs.get("STATISTIC_VALUE"))));
               e.evidence_linkouts = String.valueOf(rs.get("EVIDENCE_LINKOUTS"));
 	      

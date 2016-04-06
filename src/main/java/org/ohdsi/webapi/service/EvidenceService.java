@@ -433,7 +433,7 @@ public class EvidenceService extends AbstractDaoService {
 
       if (rs.get("SUPPORTS") == null){
 	  e.supports = new Character('u');
-      } else if ((String) rs.get("SUPPORTS") == "t"){
+      } else if (((String) rs.get("SUPPORTS")).equalsIgnoreCase("t")){
 	  e.supports = new Character('t');
       } else {
 	  e.supports = new Character('f');
@@ -607,7 +607,7 @@ public class EvidenceService extends AbstractDaoService {
 
 	      if (rs.get("SUPPORTS") == null){
 		  e.supports = new Character('u');
-	      } else if ((String) rs.get("SUPPORTS") == "t"){
+	      } else if (((String) rs.get("SUPPORTS")).equalsIgnoreCase("t")){
 		  e.supports = new Character('t');
 	      } else {
 		  e.supports = new Character('f');

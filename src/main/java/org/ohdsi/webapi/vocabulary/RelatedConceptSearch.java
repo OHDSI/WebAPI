@@ -23,5 +23,5 @@ public class RelatedConceptSearch {
     public String[] conceptClassId;    
     
     @JsonProperty("CONCEPT_ID")
-    public String[] conceptId;    
+    public long[] conceptId;    
 }

@@ -84,10 +84,10 @@ public class ConceptSetService extends AbstractDaoService {
     expression.items = new ConceptSetExpression.ConceptSetItem[map.size()];
 
     // lookup the concepts we need information for
-    String[] identifiers = new String[map.size()];
+    long[] identifiers = new long[map.size()];
     int identifierIndex = 0;
     for (Long identifier : map.keySet()) {
-      identifiers[identifierIndex] = identifier.toString();
+      identifiers[identifierIndex] = identifier;
       identifierIndex++;
     }
     

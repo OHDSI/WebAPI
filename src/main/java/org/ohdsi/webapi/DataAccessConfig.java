@@ -37,7 +37,7 @@ public class DataAccessConfig {
     properties.setProperty("hibernate.default_schema", this.env.getProperty("spring.jpa.properties.hibernate.default_schema"));
     return properties;
   }
-      
+
   @Bean
   @Primary
   public DataSource primaryDataSource() {

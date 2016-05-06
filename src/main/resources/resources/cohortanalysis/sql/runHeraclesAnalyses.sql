@@ -5247,7 +5247,7 @@ group by cohort_definition_id
 -- 1813	Distribution of duration (days) from cohort end to observation end
 insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select cohort_definition_id,
-	1812 as analysis_id,
+	1813 as analysis_id,
 	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,

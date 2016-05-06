@@ -78,28 +78,17 @@ public class VocabularyService extends AbstractDaoService {
   @POST
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public Collection<Concept> executeIdentifierLookup(@PathParam("sourceKey") String sourceKey, String[] identifiers) {
+  public Collection<Concept> executeIdentifierLookup(@PathParam("sourceKey") String sourceKey, long[] identifiers) {
     if (identifiers.length == 0) {
       return new ArrayList<>();
     }
     
-    int[] intIdentifiers =new int[identifiers.length];
-    int i=0;
-    for(String identifier:identifiers){
-        try {
-            intIdentifiers[i]=Integer.parseInt(identifier);
-            i++;
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Not a number: " + identifier + " at index " + i, e);
-        }
-    }
-
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
 
     String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/lookupIdentifiers.sql");
     sql_statement = SqlRender.renderSql(sql_statement, new String[]{"identifiers", "CDM_schema"}, new String[]{
-      JoinArray(intIdentifiers), tableQualifier});
+      JoinArray(identifiers), tableQualifier});
     sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
 
     return getSourceJdbcTemplate(source).query(sql_statement, this.rowMapper);
@@ -146,7 +135,7 @@ public class VocabularyService extends AbstractDaoService {
   @POST
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public Collection<Concept> executeMappedLookup(@PathParam("sourceKey") String sourceKey, String[] identifiers) {
+  public Collection<Concept> executeMappedLookup(@PathParam("sourceKey") String sourceKey, long[] identifiers) {
     if (identifiers.length == 0) {
       return new ArrayList<>();
     }
@@ -511,16 +500,7 @@ public class VocabularyService extends AbstractDaoService {
     
     ArrayList<String> filterList = new ArrayList<String>();
     
-    int[] conceptIds =new int[search.conceptId.length];
-    int i=0;
-    for (String conceptId : search.conceptId) {
-      try {
-        conceptIds[i] = Integer.parseInt(conceptId);
-        i++;
-      } catch (NumberFormatException e) {
-        throw new IllegalArgumentException("Not a number: " + conceptId + " at index " + i, e);
-      }
-    } 
+    long[] conceptIds = search.conceptId;
     
     if (search.vocabularyId != null && search.vocabularyId.length > 0) {
       filterList.add("VOCABULARY_ID IN (" + JoinArray(search.vocabularyId) + ")");
@@ -565,7 +545,7 @@ public class VocabularyService extends AbstractDaoService {
     return concepts.values();
   }
 
-  private String JoinArray(final int[] array) {
+  private String JoinArray(final long[] array) {
     String result = "";
 
     for (int i = 0; i < array.length; i++) {

@@ -4,7 +4,7 @@ SELECT
     ,ingredient_concept_id
     ,ingredient_concept_name
     ,evidence_type
-    ,modality
+    ,supports
     ,statistic_value
     ,evidence_linkouts
 FROM @tableQualifier.penelope_laertes_universe

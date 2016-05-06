@@ -70,13 +70,3 @@ See org.ohdsi.webapi.exampleapplication.ExampleApplicationConfig & ExampleApplic
 
 See JobServiceIT (integration test) for more detail (java client).
 
-
-
-
-
-
-
-
-
-
-

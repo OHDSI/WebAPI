@@ -35,8 +35,8 @@ public class EvidenceSummary {
   @JsonProperty("evidence_type")
   public String evidence_type;
   
-  @JsonProperty("modality")
-  public boolean modality;
+  @JsonProperty("supports")
+  public boolean supports;
 
   @JsonProperty("evidence_count")
   public double  evidence_count;

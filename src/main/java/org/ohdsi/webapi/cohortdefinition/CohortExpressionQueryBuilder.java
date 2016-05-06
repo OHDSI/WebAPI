@@ -288,7 +288,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     else
       endExpression = startWindow.end.coeff == -1 ? "P.OP_START_DATE" : "P.OP_END_DATE";
     
-    String windowCriteria = String.format("A.START_DATE BETWEEN %s and %s", startExpression, endExpression);
+    String windowCriteria = String.format("A.START_DATE BETWEEN P.OP_START_DATE AND P.OP_END_DATE AND A.START_DATE BETWEEN %s and %s", startExpression, endExpression);
     query = StringUtils.replace(query,"@windowCriteria",windowCriteria);
 
     String occurrenceCriteria = String.format(

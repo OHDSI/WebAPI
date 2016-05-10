@@ -179,19 +179,17 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     
     
     if (conceptSets.length > 0) {
-      ArrayList<String> codesetQueries = new ArrayList<>();
+      ArrayList<String> codesetInserts = new ArrayList<>();
       for (ConceptSet cs : conceptSets) {
         // construct main target codeset query
         String conceptExpressionQuery = conceptSetQueryBuilder.buildExpressionQuery(cs.expression);
         // attach the conceptSetId to the result query from the expession query builder
-        String conceptSetQuery = String.format("SELECT %d as codeset_id, c.concept_id FROM (%s) C", cs.id, conceptExpressionQuery);
-        codesetQueries.add(conceptSetQuery);
+        String conceptSetInsert = String.format("INSERT INTO #Codesets (codeset_id, concept_id)\nSELECT %d as codeset_id, c.concept_id FROM (%s) C;", cs.id, conceptExpressionQuery);
+        codesetInserts.add(conceptSetInsert);
       }
-      codesetQuery = StringUtils.replace(codesetQuery, "@codesetQueries", StringUtils.join(codesetQueries, "\nUNION\n"));
+      codesetQuery = StringUtils.replace(codesetQuery, "@codesetInserts", StringUtils.join(codesetInserts, "\n"));
     }
-    else {
-      codesetQuery = StringUtils.replace(codesetQuery, "@codesetQueries", "SELECT -1 as codeset_id, concept_id FROM @cdm_database_schema.CONCEPT where 0 = 1"); // by default, return an empty resultset
-    }
+
     return codesetQuery;
   }
  

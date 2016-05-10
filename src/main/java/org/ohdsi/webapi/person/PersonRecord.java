@@ -22,9 +22,12 @@ import java.sql.Timestamp;
  * @author fdefalco
  */
 public class PersonRecord {
-  public String recordType;
+  public String domain;
   public Long conceptId;
   public String conceptName;
+  public String classificationConceptName;
+  public Long classificationConceptId;
   public Timestamp startDate;
   public Timestamp endDate;
+  public Boolean[] included;
 }

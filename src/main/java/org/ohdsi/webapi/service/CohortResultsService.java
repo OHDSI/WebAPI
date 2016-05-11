@@ -1285,14 +1285,14 @@ public class CohortResultsService extends AbstractDaoService {
    * @return List of all members of a generated cohort definition identifier
    */
   @GET
-  @Path("/{id}/members")
+  @Path("/{id}/members/{min}-{max}")
   @Produces(MediaType.APPLICATION_JSON)
-  public Collection<CohortPerson> getCohortMembers(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey) {
+  public Collection<CohortPerson> getCohortMembers(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey, @PathParam("min") final int min, @PathParam("max") final int max) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
     String sql = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/raw/getMembers.sql");
-    sql = SqlRender.renderSql(sql, new String[]{"tableQualifier", "cohortDefinitionId"}, new String[]{
-      resultsTableQualifier, String.valueOf(id)});
+    sql = SqlRender.renderSql(sql, new String[]{"tableQualifier", "cohortDefinitionId","min","max"}, new String[]{
+      resultsTableQualifier, String.valueOf(id), String.valueOf(min), String.valueOf(max)});
     sql = SqlTranslate.translateSql(sql, getSourceDialect(), source.getSourceDialect(), SessionUtils.sessionId(),
             resultsTableQualifier);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 fdefalco.
+ * Copyright 2016 fdefalco.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,26 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ohdsi.webapi.person;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.ArrayList;
+package org.ohdsi.webapi.rsb;
 
 /**
  *
  * @author fdefalco
  */
-public class PersonProfile {
-
-  public ArrayList<PersonRecord> records;
-
-  public PersonProfile() {
-    records = new ArrayList<>();
-  }
-
-  @JsonProperty("recordCount") 
-  public Integer getRecordCount() {
-    return this.records.size();
-  }
-  
+public class ProxyResult {
+  public String message;
+  public String status;
 }

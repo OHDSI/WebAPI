@@ -23,6 +23,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import org.apache.shiro.SecurityUtils;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.helper.ResourceHelper;
@@ -49,6 +50,9 @@ public class TherapyPathResultsService extends AbstractDaoService {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public List<TherapyPathReport> getReports(@PathParam("sourceKey") String sourceKey) {
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:txpathresults:reports", sourceKey));
+
     try {
 
       Source source = getSourceRepository().findBySourceKey(sourceKey);
@@ -83,6 +87,9 @@ public class TherapyPathResultsService extends AbstractDaoService {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public List<TherapyPathVector> getTherapyPathVectors(@PathParam("id") String id, @PathParam("sourceKey") String sourceKey) {
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:txpathresults:report:%s", sourceKey, id));
+
     try {
       
       Source source = getSourceRepository().findBySourceKey(sourceKey);
@@ -110,6 +117,9 @@ public class TherapyPathResultsService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public List<TherapySummary> getSummaries(@PathParam("sourceKey") String sourceKey, String[] identifiers) {
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:txpathresults:summary", sourceKey));
+
     try {
       String sql_statement = ResourceHelper.GetResourceAsString("/resources/therapypathresults/sql/getTherapySummaries.sql");
 

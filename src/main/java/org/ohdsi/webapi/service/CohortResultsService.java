@@ -1,6 +1,10 @@
 package org.ohdsi.webapi.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.ByteArrayOutputStream;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -8,7 +12,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import javax.annotation.PostConstruct;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -19,7 +24,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
-
+import javax.ws.rs.core.Response;
 import org.apache.commons.collections.CollectionUtils;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
@@ -43,33 +48,24 @@ import org.ohdsi.webapi.cohortresults.CohortResultsAnalysisRunner;
 import org.ohdsi.webapi.cohortresults.CohortSpecificSummary;
 import org.ohdsi.webapi.cohortresults.CohortSpecificTreemap;
 import org.ohdsi.webapi.cohortresults.CohortVisitsDrilldown;
+import org.ohdsi.webapi.cohortresults.ExposureCohortResult;
+import org.ohdsi.webapi.cohortresults.ExposureCohortSearch;
 import org.ohdsi.webapi.cohortresults.HierarchicalConceptRecord;
+import org.ohdsi.webapi.cohortresults.PredictorResult;
 import org.ohdsi.webapi.cohortresults.ScatterplotRecord;
+import org.ohdsi.webapi.cohortresults.TimeToEventResult;
 import org.ohdsi.webapi.cohortresults.VisualizationData;
 import org.ohdsi.webapi.cohortresults.VisualizationDataRepository;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.model.results.Analysis;
+import org.ohdsi.webapi.person.CohortPerson;
+import org.ohdsi.webapi.service.CohortDefinitionService.CohortDefinitionDTO;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.ByteArrayOutputStream;
-import java.math.BigDecimal;
-import java.sql.ResultSetMetaData;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-import javax.ws.rs.core.Response;
-import org.ohdsi.webapi.cohortresults.ExposureCohortResult;
-import org.ohdsi.webapi.cohortresults.ExposureCohortSearch;
-import org.ohdsi.webapi.cohortresults.PredictorResult;
-import org.ohdsi.webapi.cohortresults.TimeToEventResult;
-import org.ohdsi.webapi.person.CohortPerson;
-import org.ohdsi.webapi.service.CohortDefinitionService.CohortDefinitionDTO;
 
 /**
  *

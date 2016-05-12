@@ -9,6 +9,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
@@ -29,6 +30,7 @@ public class SqlRenderService {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
+    @RequiresPermissions("read:sqlrender:translate")
     public TranslatedStatement translateSQL(SourceStatement sourceStatement) {
 
         TranslatedStatement translated = new TranslatedStatement();

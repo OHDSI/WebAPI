@@ -15,6 +15,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import jersey.repackaged.com.google.common.base.Joiner;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
@@ -100,6 +102,7 @@ public class CohortAnalysisService extends AbstractDaoService {
 	 */
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
+  @RequiresPermissions("read:cohortanalysis:cohortanalysis")
 	public List<Analysis> getCohortAnalyses() {
           String sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/getCohortAnalyses.sql");
 
@@ -163,6 +166,7 @@ public class CohortAnalysisService extends AbstractDaoService {
 	@Path("/preview")
 	@Produces(MediaType.TEXT_PLAIN)
 	@Consumes(MediaType.APPLICATION_JSON)
+  @RequiresPermissions("read:cohortanalysis:preview")
 	public String getRunCohortAnalysisSql(CohortAnalysisTask task) {
 		return getCohortAnalysisSql(task);
 	}
@@ -239,6 +243,10 @@ public class CohortAnalysisService extends AbstractDaoService {
 		if (task == null) {
 			return null;
 		}
+    
+    SecurityUtils.getSubject().checkPermission(
+            String.format("execute:%s:cohortanalysis:cohortanalysis", task.getSourceKey()));
+
 		JobParametersBuilder builder = new JobParametersBuilder();
 
 		// source key comes from the client, we look it up here and hand it off to the tasklet

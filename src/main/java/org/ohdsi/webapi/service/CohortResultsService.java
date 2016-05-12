@@ -51,6 +51,8 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 
 /**
  *
@@ -96,7 +98,11 @@ public class CohortResultsService extends AbstractDaoService {
 			@QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
 			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
 			@PathParam("sourceKey") String sourceKey) {
-		List<Map<String, String>> results = null;
+    
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortresults:%d:raw:%s:%s", sourceKey, id, analysisGroup, analysisName));
+
+    List<Map<String, String>> results = null;
 
 		String sql = null;
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
@@ -132,9 +138,9 @@ public class CohortResultsService extends AbstractDaoService {
 	@Path("/{id}/warmup")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
+  @RequiresPermissions("execute:cohortresults:warmup")
 	public int warmUpVisualizationData(CohortAnalysisTask task) {
 		return this.queryRunner.warmupData(this.getSourceJdbcTemplate(task.getSource()), task);
-
 	}
 	
 	@GET
@@ -143,6 +149,9 @@ public class CohortResultsService extends AbstractDaoService {
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Collection<String> getCompletedVisualiztion(@PathParam("id") final int id,
 			@PathParam("sourceKey") final String sourceKey) {
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortresults:%d:completed", sourceKey, id));
+
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		List<VisualizationData> vizData = this.visualizationDataRepository.findByCohortDefinitionIdAndSourceId(id, source.getSourceId());
 		Set<String> completed = new HashSet<String>();
@@ -174,7 +183,10 @@ public class CohortResultsService extends AbstractDaoService {
 			@PathParam("sourceKey") final String sourceKey,
 			@DefaultValue("false") @QueryParam("refresh") boolean refresh) {
 
-		final String key = CohortResultsAnalysisRunner.DASHBOARD;
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortresults:%d:dashboard", sourceKey, id));
+
+    final String key = CohortResultsAnalysisRunner.DASHBOARD;
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		VisualizationData data = refresh ? null : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
 
@@ -211,6 +223,9 @@ public class CohortResultsService extends AbstractDaoService {
 			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
 			@DefaultValue("false") @QueryParam("refresh") boolean refresh) {
 
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortresults:%d:condition", sourceKey, id));
+
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		final String key = CohortResultsAnalysisRunner.CONDITION;
 		List<HierarchicalConceptRecord> res = null;
@@ -235,6 +250,10 @@ public class CohortResultsService extends AbstractDaoService {
 	public Integer getRawDistinctPersonCount(@PathParam("sourceKey") String sourceKey, 
 			@PathParam("id") String id,
 			@DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortresults:%s:distinctPersonCount", sourceKey, id));
+
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 
@@ -263,6 +282,10 @@ public class CohortResultsService extends AbstractDaoService {
 			@QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
 			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
 			@DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortresults:%d:condition:%d", sourceKey, id, conditionId));
+
 		CohortConditionDrilldown drilldown = null;
 		final String key = CohortResultsAnalysisRunner.CONDITION_DRILLDOWN;
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
@@ -298,6 +321,9 @@ public class CohortResultsService extends AbstractDaoService {
 			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
 			@DefaultValue("false") @QueryParam("refresh") boolean refresh) {
 
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortresults:%d:conditionera", sourceKey, id));
+
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		final String key = CohortResultsAnalysisRunner.CONDITION_ERA;
 		VisualizationData data = refresh ? null : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
@@ -321,6 +347,9 @@ public class CohortResultsService extends AbstractDaoService {
 	@Path("/{id}/analyses")
 	@Produces(MediaType.APPLICATION_JSON)
 	public List<Integer> getCompletedAnalyses(@PathParam("sourceKey") String sourceKey, @PathParam("id") String id) {
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortresults:%s:analyses", sourceKey, id));
+
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 		String sql = ResourceHelper.GetResourceAsString(BASE_SQL_PATH + "/raw/getCompletedAnalyses.sql");
@@ -346,7 +375,10 @@ public class CohortResultsService extends AbstractDaoService {
 			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
 			@PathParam("sourceKey") final String sourceKey,
 			@DefaultValue("false") @QueryParam("refresh") boolean refresh) {
-		CohortConditionEraDrilldown drilldown = null;
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortresults:%d:conditionera:%d", sourceKey, id, conditionId));
+
+    CohortConditionEraDrilldown drilldown = null;
 		final String key = CohortResultsAnalysisRunner.CONDITION_ERA_DRILLDOWN;
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		VisualizationData data = refresh ? null : this.visualizationDataRepository
@@ -382,7 +414,10 @@ public class CohortResultsService extends AbstractDaoService {
 			@PathParam("sourceKey") final String sourceKey,
 			@DefaultValue("false") @QueryParam("refresh") boolean refresh) {
 
-		Source source = getSourceRepository().findBySourceKey(sourceKey);
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortresults:%d:drug", sourceKey, id));
+
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
 		final String key = CohortResultsAnalysisRunner.DRUG;
 		VisualizationData data = refresh ? null : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
 
@@ -416,6 +451,9 @@ public class CohortResultsService extends AbstractDaoService {
 			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
 			@PathParam("sourceKey") final String sourceKey,
 			@DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortresults:%d:drug:%d", sourceKey, id, drugId));
+
 		CohortDrugDrilldown drilldown = null;
 		final String key = CohortResultsAnalysisRunner.DRUG_DRILLDOWN;
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
@@ -451,6 +489,9 @@ public class CohortResultsService extends AbstractDaoService {
 			@PathParam("sourceKey") final String sourceKey,
 			@DefaultValue("false") @QueryParam("refresh") boolean refresh) {
 
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortresults:%d:drugera", sourceKey, id));
+
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		List<HierarchicalConceptRecord> res = null;
 		final String key = CohortResultsAnalysisRunner.DRUG_ERA;
@@ -485,6 +526,9 @@ public class CohortResultsService extends AbstractDaoService {
 			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
 			@PathParam("sourceKey") final String sourceKey,
 			@DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortresults:%d:drugera:%d", sourceKey, id, drugId));
+
 		CohortDrugEraDrilldown drilldown = null;
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		final String key = CohortResultsAnalysisRunner.DRUG_ERA_DRILLDOWN;
@@ -519,6 +563,9 @@ public class CohortResultsService extends AbstractDaoService {
 			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
 			@PathParam("sourceKey") final String sourceKey,
 			@DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortresults:%d:person", sourceKey, id));
+
 		CohortPersonSummary person = null;
 		final String key = CohortResultsAnalysisRunner.PERSON;
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
@@ -552,6 +599,9 @@ public class CohortResultsService extends AbstractDaoService {
 			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
 			@PathParam("sourceKey") final String sourceKey,
 			@DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortresults:%d:cohortspecific", sourceKey, id));
+
 		CohortSpecificSummary summary = null;
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		final String key = CohortResultsAnalysisRunner.COHORT_SPECIFIC;
@@ -585,6 +635,9 @@ public class CohortResultsService extends AbstractDaoService {
 			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
 			@PathParam("sourceKey") final String sourceKey,
 			@DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortresults:%d:cohortspecifictreemap", sourceKey, id));
 
 		CohortSpecificTreemap summary = null;
 		final String key = CohortResultsAnalysisRunner.COHORT_SPECIFIC_TREEMAP;
@@ -622,6 +675,9 @@ public class CohortResultsService extends AbstractDaoService {
 			@PathParam("sourceKey") final String sourceKey,
 			@DefaultValue("false") @QueryParam("refresh") boolean refresh) {
 
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortresults:%d:cohortspecificprocedure:%d", sourceKey, id, conceptId));
+
 		List<ScatterplotRecord> records = new ArrayList<ScatterplotRecord>();
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		final String key = CohortResultsAnalysisRunner.COHORT_SPECIFIC_PROCEDURE_DRILLDOWN;
@@ -658,6 +714,9 @@ public class CohortResultsService extends AbstractDaoService {
 			@PathParam("sourceKey") final String sourceKey,
 			@DefaultValue("false") @QueryParam("refresh") boolean refresh) {
 
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortresults:%d:cohortspecificdrug:%d", sourceKey, id, conceptId));
+
 		List<ScatterplotRecord> records = new ArrayList<ScatterplotRecord>();
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		final String key = CohortResultsAnalysisRunner.COHORT_SPECIFIC_DRUG_DRILLDOWN;
@@ -693,6 +752,9 @@ public class CohortResultsService extends AbstractDaoService {
 			@PathParam("sourceKey") final String sourceKey,
 			@DefaultValue("false") @QueryParam("refresh") boolean refresh) {
 
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortresults:%d:cohortspecificcondition:%d", sourceKey, id, conceptId));
+
 		List<ScatterplotRecord> records = null;
 
 		final String key = CohortResultsAnalysisRunner.COHORT_SPECIFIC_CONDITION_DRILLDOWN;
@@ -727,6 +789,9 @@ public class CohortResultsService extends AbstractDaoService {
 			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
 			@PathParam("sourceKey") final String sourceKey,
 			@DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortresults:%d:observation", sourceKey, id));
+
 		List<HierarchicalConceptRecord> res = null;
 
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
@@ -765,6 +830,9 @@ public class CohortResultsService extends AbstractDaoService {
 			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
 			@PathParam("sourceKey") final String sourceKey,
 			@DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortresults:%d:observation:%d", sourceKey, id, conceptId));
+
 		CohortObservationDrilldown drilldown = new CohortObservationDrilldown();
 		final String key = CohortResultsAnalysisRunner.OBSERVATION_DRILLDOWN;
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
@@ -798,6 +866,9 @@ public class CohortResultsService extends AbstractDaoService {
 			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
 			@PathParam("sourceKey") final String sourceKey,
 			@DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortresults:%d:measurement", sourceKey, id));
+
 		List<HierarchicalConceptRecord> res = null;
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		final String key = CohortResultsAnalysisRunner.MEASUREMENT;
@@ -832,6 +903,9 @@ public class CohortResultsService extends AbstractDaoService {
 			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
 			@PathParam("sourceKey") final String sourceKey,
 			@DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortresults:%d:measurement:%d", sourceKey, id, conceptId));
+
 		CohortMeasurementDrilldown drilldown = new CohortMeasurementDrilldown();
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		final String key = CohortResultsAnalysisRunner.MEASUREMENT_DRILLDOWN;
@@ -867,6 +941,9 @@ public class CohortResultsService extends AbstractDaoService {
 			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
 			@PathParam("sourceKey") final String sourceKey,
 			@DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortresults:%d:observationperiod", sourceKey, id));
+
 		CohortObservationPeriod obsPeriod = new CohortObservationPeriod();
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		final String key = CohortResultsAnalysisRunner.OBSERVATION_PERIOD;
@@ -902,6 +979,9 @@ public class CohortResultsService extends AbstractDaoService {
 			@PathParam("sourceKey") final String sourceKey,
 			@DefaultValue("false") @QueryParam("refresh") boolean refresh) {
 
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortresults:%d:datadensity", sourceKey, id));
+
 		CohortDataDensity data = new CohortDataDensity();
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		final String key = CohortResultsAnalysisRunner.DATA_DENSITY;
@@ -935,6 +1015,9 @@ public class CohortResultsService extends AbstractDaoService {
 			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
 			@PathParam("sourceKey") final String sourceKey,
 			@DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortresults:%d:procedure", sourceKey, id));
 
 		List<HierarchicalConceptRecord> res = null;
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
@@ -972,6 +1055,9 @@ public class CohortResultsService extends AbstractDaoService {
 			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
 			@PathParam("sourceKey") final String sourceKey,
 			@DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortresults:%d:procedure:%d", sourceKey, id, conceptId));
+
 		CohortProceduresDrillDown drilldown = new CohortProceduresDrillDown();
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		final String key = CohortResultsAnalysisRunner.PROCEDURE_DRILLDOWN;
@@ -1005,6 +1091,9 @@ public class CohortResultsService extends AbstractDaoService {
 			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
 			@PathParam("sourceKey") final String sourceKey,
 			@DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortresults:%d:visit", sourceKey, id));
 
 		List<HierarchicalConceptRecord> res = null;
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
@@ -1042,6 +1131,9 @@ public class CohortResultsService extends AbstractDaoService {
 			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
 			@PathParam("sourceKey") final String sourceKey,
 			@DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortresults:%d:visit:%d", sourceKey, id, conceptId));
+
 		CohortVisitsDrilldown drilldown = new CohortVisitsDrilldown();
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		final String key = CohortResultsAnalysisRunner.VISIT_DRILLDOWN;
@@ -1075,6 +1167,9 @@ public class CohortResultsService extends AbstractDaoService {
 			@QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
 			@PathParam("sourceKey") final String sourceKey,
 			@DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortresults:%d:death", sourceKey, id));
+
 		CohortDeathData data = new CohortDeathData();
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		final String key = CohortResultsAnalysisRunner.DEATH;
@@ -1106,6 +1201,9 @@ public class CohortResultsService extends AbstractDaoService {
 	public List<CohortAttribute> getHeraclesHeel(@PathParam("id") final int id, 
 			@PathParam("sourceKey") final String sourceKey,
 			@DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortresults:%d:heraclesheel", sourceKey, id));
+
 		List<CohortAttribute> attrs = new ArrayList<CohortAttribute>();
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		final String key = CohortResultsAnalysisRunner.HERACLES_HEEL;

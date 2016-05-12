@@ -15,6 +15,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import jersey.repackaged.com.google.common.base.Joiner;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
@@ -100,6 +102,7 @@ public class CohortAnalysisService extends AbstractDaoService {
 	 */
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
+  @RequiresPermissions("read:cohortanalysis:cohortanalysis")
 	public List<Analysis> getCohortAnalyses() {
 		String sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/getCohortAnalyses.sql");
 		
@@ -122,7 +125,10 @@ public class CohortAnalysisService extends AbstractDaoService {
 			@PathParam("sourceKey") String sourceKey,
 			@DefaultValue("true") @QueryParam("fullDetail") boolean retrieveFullDetail) {
 
-		String sql = null;
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortanalysis:cohortanalysis:%d", sourceKey, id));
+
+    String sql = null;
 		if (retrieveFullDetail) {
 			sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/getCohortAnalysesForCohortFull.sql");
 		} else {
@@ -156,7 +162,10 @@ public class CohortAnalysisService extends AbstractDaoService {
 	public CohortSummary getCohortSummary(@PathParam("id") final int id,
 			@PathParam("sourceKey") String sourceKey) {
 
-		CohortSummary summary = new CohortSummary();
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortanalysis:%d:summary", sourceKey, id));
+
+    CohortSummary summary = new CohortSummary();
 		try {
 			summary.setCohortDefinition(this.definitionService.getCohortDefinition(id));
 			summary.setAnalyses(this.getCohortAnalysesForCohortDefinition(id, sourceKey, false));
@@ -180,6 +189,9 @@ public class CohortAnalysisService extends AbstractDaoService {
 	public CohortSummary getCohortSummaryAnalyses(@PathParam("id") final int id,
 			@PathParam("sourceKey") String sourceKey) {
 
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortanalysis:%d:summaryanalyses", sourceKey, id));
+
 		CohortSummary summary = new CohortSummary();
 		try {
 			summary.setAnalyses(this.getCohortAnalysesForCohortDefinition(id, sourceKey, true));
@@ -202,6 +214,9 @@ public class CohortAnalysisService extends AbstractDaoService {
 	@Produces(MediaType.APPLICATION_JSON)
 	public CohortSummary getCohortSummaryData(@PathParam("id") final int id,
 			@PathParam("sourceKey") String sourceKey) {
+
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cohortanalysis:%d:summarydata", sourceKey, id));
 
 		CohortSummary summary = new CohortSummary();
 		
@@ -243,6 +258,7 @@ public class CohortAnalysisService extends AbstractDaoService {
 	@Path("/preview")
 	@Produces(MediaType.TEXT_PLAIN)
 	@Consumes(MediaType.APPLICATION_JSON)
+  @RequiresPermissions("read:cohortanalysis:preview")
 	public String getRunCohortAnalysisSql(CohortAnalysisTask task) {
 		return getCohortAnalysisSql(task);
 	}
@@ -319,6 +335,10 @@ public class CohortAnalysisService extends AbstractDaoService {
 		if (task == null) {
 			return null;
 		}
+    
+    SecurityUtils.getSubject().checkPermission(
+            String.format("execute:%s:cohortanalysis:cohortanalysis", task.getSourceKey()));
+
 		JobParametersBuilder builder = new JobParametersBuilder();
 
 		// source key comes from the client, we look it up here and hand it off to the tasklet

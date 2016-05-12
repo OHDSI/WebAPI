@@ -12,6 +12,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.SecurityUtils;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.helper.ResourceHelper;
@@ -36,6 +37,9 @@ public class CDMResultsService extends AbstractDaoService {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public MonthlyPrevalence getMonthlyConditionOccurrencePrevalence(@PathParam("sourceKey") String sourceKey, @PathParam("conceptId") String conceptId) {
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cdmresults:%s:monthlyConditionOccurrencePrevalence", sourceKey, conceptId));
+    
     try {
       Source source = getSourceRepository().findBySourceKey(sourceKey);
       String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
@@ -88,6 +92,9 @@ public class CDMResultsService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public List<SimpleEntry<Long, Long>> getConceptDensity(@PathParam("sourceKey") String sourceKey, String[] identifiers) {
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cdmresults:conceptDensity", sourceKey));
+    
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 
@@ -108,6 +115,9 @@ public class CDMResultsService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public PackedConceptNode getConceptRecordCount(@PathParam("sourceKey") String sourceKey, String[] identifiers) {
+    SecurityUtils.getSubject().checkPermission(
+            String.format("read:%s:cdmresults:conceptRecordCount", sourceKey));
+
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 

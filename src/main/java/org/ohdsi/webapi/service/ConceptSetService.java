@@ -45,6 +45,7 @@ import javax.ws.rs.core.StreamingOutput;
 import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ConceptSetItem;
+import org.ohdsi.webapi.conceptset.ExportUtil;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.vocabulary.Concept;
 import org.ohdsi.webapi.vocabulary.ConceptSetExpression;
@@ -156,7 +157,7 @@ public class ConceptSetService extends AbstractDaoService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response exportConceptSetList(@QueryParam("conceptsets") final String conceptSetList) throws Exception {
-        ArrayList<Integer> conceptSetIds = new ArrayList<Integer>();
+        ArrayList<Integer> conceptSetIds = new ArrayList<>();
         try {
             String[] conceptSetItems = conceptSetList.split("\\+");
             for(String csi : conceptSetItems) {
@@ -168,9 +169,10 @@ public class ConceptSetService extends AbstractDaoService {
         } catch (Exception e) {
             throw e;
         }
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+        ByteArrayOutputStream baos;
         SourceInfo sourceInfo = sourceService.getPriorityVocabularySourceInfo();
-        ArrayList<ConceptSetExport> cs = new ArrayList<ConceptSetExport>();
+        ArrayList<ConceptSetExport> cs = new ArrayList<>();
         Response response = null;
         try {
             // Load all of the concept sets requested
@@ -179,7 +181,7 @@ public class ConceptSetService extends AbstractDaoService {
                 cs.add(getConceptSetForExport(conceptSetIds.get(i), sourceInfo));
             }
            // Write Concept Set Expression to a CSV
-            baos = writeConceptSetToCSVAndZip(cs);
+            baos = ExportUtil.writeConceptSetExportToCSVAndZip(cs);
 
             response = Response
                     .ok(baos)
@@ -240,105 +242,4 @@ public class ConceptSetService extends AbstractDaoService {
         return cs;
     }
 
-    private ByteArrayOutputStream writeConceptSetToCSVAndZip(ArrayList<ConceptSetExport> conceptSetExportList) throws Exception {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ZipOutputStream zos = new ZipOutputStream(baos);
-        StringWriter sw;
-        CSVWriter csvWriter;
-        String[] headings;
-        try {
-            // Write Concept Set Expression to a CSV
-            sw = new StringWriter();
-            csvWriter = new CSVWriter(sw);
-            ArrayList<String[]> allLines = new ArrayList<String[]>();
-            headings = "Concept Set ID#Name#Concept ID#Concept Code#Concept Name#Domain#Vocabulary#Standard Concept#Exclude#Descendants#Mapped".split("#");
-            allLines.add(headings);
-            for (ConceptSetExport cs : conceptSetExportList) {
-                for (ConceptSetExpression.ConceptSetItem item : cs.csExpression.items) {
-                    ArrayList<String> csItem = new ArrayList<String>();
-                    csItem.add(String.valueOf(cs.ConceptSetId));
-                    csItem.add(cs.ConceptSetName);
-                    csItem.add(String.valueOf(item.concept.conceptId));
-                    csItem.add(String.valueOf(item.concept.conceptCode));
-                    csItem.add(item.concept.conceptName);
-                    csItem.add(item.concept.domainId);
-                    csItem.add(item.concept.vocabularyId);
-                    csItem.add(item.concept.standardConcept);
-                    csItem.add(String.valueOf(item.isExcluded));
-                    csItem.add(String.valueOf(item.includeDescendants));
-                    csItem.add(String.valueOf(item.includeMapped));
-                    allLines.add(csItem.toArray(new String[0]));
-                }
-            }
-            csvWriter.writeAll(allLines);
-            csvWriter.flush();
-
-            ZipEntry resultsEntry = new ZipEntry("conceptSetExpression.csv");
-            zos.putNextEntry(resultsEntry);
-            zos.write(sw.getBuffer().toString().getBytes());
-
-            // Write included concepts to a CSV
-            sw = new StringWriter();
-            csvWriter = new CSVWriter(sw);
-            allLines = new ArrayList<String[]>();
-            headings = "Concept Set ID#Name#Concept ID#Concept Code#Concept Name#Concept Class ID#Domain#Vocabulary".split("#");
-            allLines.add(headings);
-            for (ConceptSetExport cs : conceptSetExportList) {
-                for (Concept c : cs.identifierConcepts) {
-                    ArrayList<String> csItem = new ArrayList<String>();
-                    csItem.add(String.valueOf(cs.ConceptSetId));
-                    csItem.add(cs.ConceptSetName);
-                    csItem.add(String.valueOf(c.conceptId));
-                    csItem.add(String.valueOf(c.conceptCode));
-                    csItem.add(c.conceptName);
-                    csItem.add(c.conceptClassId);
-                    csItem.add(c.domainId);
-                    csItem.add(c.vocabularyId);
-                    allLines.add(csItem.toArray(new String[0]));
-                }
-            }
-            csvWriter.writeAll(allLines);
-            csvWriter.flush();
-
-            resultsEntry = new ZipEntry("includedConcepts.csv");
-            zos.putNextEntry(resultsEntry);
-            zos.write(sw.getBuffer().toString().getBytes());
-
-            // Write mapped concepts to a CSV
-            sw = new StringWriter();
-            csvWriter = new CSVWriter(sw);
-            allLines = new ArrayList<String[]>();
-            headings = "Concept Set ID#Name#Concept ID#Concept Code#Concept Name#Concept Class ID#Domain#Vocabulary".split("#");
-            allLines.add(headings);
-            for (ConceptSetExport cs : conceptSetExportList) {
-                for (Concept c : cs.mappedConcepts) {
-                    ArrayList<String> csItem = new ArrayList<String>();
-                    csItem.add(String.valueOf(cs.ConceptSetId));
-                    csItem.add(cs.ConceptSetName);
-                    csItem.add(String.valueOf(c.conceptId));
-                    csItem.add(String.valueOf(c.conceptCode));
-                    csItem.add(c.conceptName);
-                    csItem.add(c.conceptClassId);
-                    csItem.add(c.domainId);
-                    csItem.add(c.vocabularyId);
-                    allLines.add(csItem.toArray(new String[0]));
-                }
-            }
-            csvWriter.writeAll(allLines);
-            csvWriter.flush();
-
-            resultsEntry = new ZipEntry("mappedConcepts.csv");
-            zos.putNextEntry(resultsEntry);
-            zos.write(sw.getBuffer().toString().getBytes());
-
-            zos.closeEntry();
-            zos.close();
-            baos.flush();
-            baos.close();
-            return baos;
-        } catch (IOException ex) {
-            throw ex;
-        }
-
-    }
 }

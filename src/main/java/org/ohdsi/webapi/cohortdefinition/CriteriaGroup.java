@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author cknoll1
  */
-public class CriteriaGroup implements ICohortExpressionElement {
+public class CriteriaGroup {
 
   @JsonProperty("Type")
   public String type;
@@ -24,10 +24,5 @@ public class CriteriaGroup implements ICohortExpressionElement {
 
   @JsonProperty("Groups")
   public CriteriaGroup[] groups = new CriteriaGroup[0];
-
-  @Override
-  public String accept(ICohortExpressionElementVisitor visitor) {
-    return visitor.visit(this);
-  }
 }
 

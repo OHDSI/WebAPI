@@ -36,8 +36,11 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang.StringUtils;
+import org.ohdsi.sql.SqlRender;
+import org.springframework.transaction.TransactionException;
 
 /**
  *
@@ -67,6 +70,7 @@ public class GenerateCohortTasklet implements Tasklet {
     
     Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
     Integer defId = Integer.valueOf(jobParams.get("cohort_definition_id").toString());
+    String sessionId = SessionUtils.sessionId();
 
     try {
       ObjectMapper mapper = new ObjectMapper();
@@ -83,9 +87,24 @@ public class GenerateCohortTasklet implements Tasklet {
       options.cohortId = defId;
       options.cdmSchema = jobParams.get("cdm_database_schema").toString();
       options.targetTable = jobParams.get("target_database_schema").toString() + "." + jobParams.get("target_table").toString();
+      options.resultSchema = jobParams.get("results_database_schema").toString();
+      options.generateStats = Boolean.valueOf(jobParams.get("generate_stats").toString());
+      
+      String deleteSql = String.format("DELETE FROM %s.cohort_inclusion WHERE cohort_definition_id = %d", options.resultSchema, options.cohortId);
+      this.jdbcTemplate.update(deleteSql);
+
+      String insertSql = StringUtils.replace("INSERT INTO @results_schema.cohort_inclusion (cohort_definition_id, rule_sequence, name, description) VALUES (?,?,?,?)", "@results_schema", options.resultSchema);
+      insertSql = SqlTranslate.translateSql(insertSql,"sql server", jobParams.get("target_dialect").toString(), sessionId, null);
+      List<InclusionRule> inclusionRules = expression.inclusionRules;
+      for (int i = 0; i< inclusionRules.size(); i++)
+      {
+        InclusionRule r = inclusionRules.get(i);
+        this.jdbcTemplate.update(insertSql, new Object[] { options.cohortId, i, r.name, r.description});
+      }
       
       String expressionSql = expressionQueryBuilder.buildExpressionQuery(expression, options);
-      String translatedSql = SqlTranslate.translateSql(expressionSql, "sql server", jobParams.get("target_dialect").toString(), SessionUtils.sessionId(), null);
+      expressionSql = SqlRender.renderSql(expressionSql, null, null);
+      String translatedSql = SqlTranslate.translateSql(expressionSql, "sql server", jobParams.get("target_dialect").toString(), sessionId, null);
       String[] sqlStatements = SqlSplit.splitSql(translatedSql);
       result = GenerateCohortTasklet.this.jdbcTemplate.batchUpdate(sqlStatements);
 
@@ -133,7 +152,7 @@ public class GenerateCohortTasklet implements Tasklet {
       });
       log.debug("Update count: " + ret.length);
       isValid = true;
-    } catch (final Exception e) {
+    } catch (final TransactionException e) {
       log.error(e.getMessage(), e);
       throw e;//FAIL job status
     }
@@ -153,5 +172,4 @@ public class GenerateCohortTasklet implements Tasklet {
 
     return RepeatStatus.FINISHED;
   }
-
 }

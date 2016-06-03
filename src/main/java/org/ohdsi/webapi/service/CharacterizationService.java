@@ -23,6 +23,8 @@ import javax.ws.rs.core.MediaType;
 import org.apache.commons.collections.CollectionUtils;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.characterization.CharacterizationRunner;
+import org.ohdsi.webapi.characterization.Dashboard;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysis;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTask;
 import org.ohdsi.webapi.cohortanalysis.CohortSummary;
@@ -57,12 +59,14 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.sql.ResultSetMetaData;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.ws.rs.core.Response;
+
 import org.ohdsi.webapi.cohortresults.ExposureCohortResult;
 import org.ohdsi.webapi.cohortresults.ExposureCohortSearch;
 import org.ohdsi.webapi.cohortresults.PredictorResult;
@@ -71,43 +75,41 @@ import org.ohdsi.webapi.person.CohortPerson;
 import org.ohdsi.webapi.service.CohortDefinitionService.CohortDefinitionDTO;
 
 /**
- *
- * Services related to cohort level analysis results
- *
+ * Services related to characterization/sum
  */
 @Path("{sourceKey}/achilles/")
 @Component
 public class CharacterizationService extends AbstractDaoService {
 
-        public static final String MIN_COVARIATE_PERSON_COUNT = "10";
-        public static final String MIN_INTERVAL_PERSON_COUNT = "10";
+//        public static final String MIN_COVARIATE_PERSON_COUNT = "10";
+//        public static final String MIN_INTERVAL_PERSON_COUNT = "10";
 
-        public static final String BASE_SQL_PATH = "/resources/cohortresults/sql";
+    public static final String BASE_SQL_PATH = "/resources/cohortresults/sql";
 
-        @Autowired
-        private VisualizationDataRepository visualizationDataRepository;
+    @Autowired
+    private VisualizationDataRepository visualizationDataRepository;
 
-        @Autowired
-        private CohortDefinitionService cohortDefinitionService;
+    @Autowired
+    private CohortDefinitionService cohortDefinitionService;
 
-        private ObjectMapper mapper = new ObjectMapper();
-        private CohortResultsAnalysisRunner queryRunner = null;
+    private ObjectMapper mapper = new ObjectMapper();
+    private CharacterizationRunner queryRunner = null;
 
-        @PostConstruct
-        public void init() {
-            queryRunner = new CohortResultsAnalysisRunner(this.getSourceDialect(), this.visualizationDataRepository);
-        }
+    @PostConstruct
+    public void init() {
+        queryRunner = new CharacterizationRunner(this.getSourceDialect(), this.visualizationDataRepository);
+    }
 
-        /**
-         * Queries for cohort analysis results for the given cohort definition id
-         *
-         * @param id cohort_defintion id
-         * @param analysisGroup Name of the analysisGrouping under the
-         * /resources/cohortresults/sql/ directory
-         * @param analysisName Name of the analysis, currently the same name as the
-         * sql file under analysisGroup
-         * @return List of key, value pairs
-         */
+    /**
+     * Queries for cohort analysis results for the given cohort definition id
+     *
+     * @param id cohort_defintion id
+     * @param analysisGroup Name of the analysisGrouping under the
+     * /resources/cohortresults/sql/ directory
+     * @param analysisName Name of the analysis, currently the same name as the
+     * sql file under analysisGroup
+     * @return List of key, value pairs
+     */
 //        @GET
 //        @Path("/{id}/raw/{analysis_group}/{analysis_name}")
 //        @Produces(MediaType.APPLICATION_JSON)
@@ -269,54 +271,49 @@ public class CharacterizationService extends AbstractDaoService {
 //            return completed;
 //        }
 
-        /**
-         * Queries for cohort analysis dashboard for the given cohort definition id
-         *
-         * @param id cohort_defintion id
-         * @param minCovariatePersonCountParam
-         * @param minIntervalPersonCountParam
-         * @param demographicsOnly only render gender and age
-         * @return CohortDashboard
-         */
-        @GET
-        @Path("/{id}/dashboard")
-        @Produces(MediaType.APPLICATION_JSON)
-        public CohortDashboard getDashboard(@PathParam("id") final int id,
-                                            @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
-                                            @QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
-                                            @QueryParam("demographics_only") final boolean demographicsOnly,
-                                            @PathParam("sourceKey") final String sourceKey,
-                                            @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+    /**
+     * Queries for cohort analysis dashboard for the given cohort definition id
+     *
+     * @param id datasource
+     * @return Dashboard
+     */
+    @GET
+    @Path("/{id}/dashboard")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Dashboard getDashboard(@PathParam("id") final int id,
+                                  @PathParam("sourceKey") final String sourceKey,
+                                  @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
 
-            final String key = CohortResultsAnalysisRunner.DASHBOARD;
-            Source source = getSourceRepository().findBySourceKey(sourceKey);
-            VisualizationData data = refresh ? null : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
+        final String key = CharacterizationRunner.DASHBOARD;
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+//        VisualizationData data = refresh ? null : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key);
 
-            CohortDashboard dashboard = null;
+        Dashboard dashboard = null;
 
-            if (refresh || data == null) {
-                dashboard = queryRunner.getDashboard(getSourceJdbcTemplate(source), id, source,
-                        minCovariatePersonCountParam, minIntervalPersonCountParam, demographicsOnly, true);
+//        if (refresh || data == null) {
+        if (refresh) {
+            dashboard = queryRunner.getDashboard(getSourceJdbcTemplate(source), id, source,
+                    null, null, false, true);
 
-            } else {
-                try {
-                    dashboard = mapper.readValue(data.getData(), CohortDashboard.class);
-                } catch (Exception e) {
-                    log.error(e);
-                }
+        } else {
+            try {
+//                dashboard = mapper.readValue(data.getData(), CohortDashboard.class);
+            } catch (Exception e) {
+                log.error(e);
             }
-
-            return dashboard;
-
         }
 
-        /**
-         * Queries for cohort analysis condition treemap results for the given cohort
-         * definition id
-         *
-         * @param id cohort_defintion id
-         * @return List<HierarchicalConceptRecord>
-         */
+        return dashboard;
+
+    }
+
+//    /**
+//     * Queries for cohort analysis condition treemap results for the given cohort
+//     * definition id
+//     *
+//     * @param id cohort_defintion id
+//     * @return List<HierarchicalConceptRecord>
+//     */
 //        @GET
 //        @Path("/{id}/condition/")
 //        @Produces(MediaType.APPLICATION_JSON)
@@ -361,14 +358,14 @@ public class CharacterizationService extends AbstractDaoService {
 //            return result;
 //        }
 
-        /**
-         * Queries for cohort analysis condition drilldown results for the given
-         * cohort definition id and condition id
-         *
-         * @param id cohort_defintion id
-         * @param conditionId condition_id (from concept)
-         * @return CohortConditionDrilldown
-         */
+//    /**
+//     * Queries for cohort analysis condition drilldown results for the given
+//     * cohort definition id and condition id
+//     *
+//     * @param id cohort_defintion id
+//     * @param conditionId condition_id (from concept)
+//     * @return CohortConditionDrilldown
+//     */
 //        @GET
 //        @Path("/{id}/condition/{conditionId}")
 //        @Produces(MediaType.APPLICATION_JSON)
@@ -397,13 +394,13 @@ public class CharacterizationService extends AbstractDaoService {
 //
 //        }
 
-        /**
-         * Queries for cohort analysis condition era treemap results for the given
-         * cohort definition id
-         *
-         * @param id cohort_defintion id
-         * @return List<HierarchicalConceptRecord>
-         */
+//    /**
+//     * Queries for cohort analysis condition era treemap results for the given
+//     * cohort definition id
+//     *
+//     * @param id cohort_defintion id
+//     * @return List<HierarchicalConceptRecord>
+//     */
 //        @GET
 //        @Path("/{id}/conditionera/")
 //        @Produces(MediaType.APPLICATION_JSON)
@@ -445,14 +442,14 @@ public class CharacterizationService extends AbstractDaoService {
 //            return getSourceJdbcTemplate(source).queryForList(sql, Integer.class);
 //        }
 
-        /**
-         * Queries for cohort analysis condition era drilldown results for the given
-         * cohort definition id and condition id
-         *
-         * @param id cohort_defintion id
-         * @param conditionId condition_id (from concept)
-         * @return CohortConditionEraDrilldown
-         */
+//    /**
+//     * Queries for cohort analysis condition era drilldown results for the given
+//     * cohort definition id and condition id
+//     *
+//     * @param id cohort_defintion id
+//     * @param conditionId condition_id (from concept)
+//     * @return CohortConditionEraDrilldown
+//     */
 //        @GET
 //        @Path("/{id}/conditionera/{conditionId}")
 //        @Produces(MediaType.APPLICATION_JSON)
@@ -482,13 +479,13 @@ public class CharacterizationService extends AbstractDaoService {
 //
 //        }
 
-        /**
-         * Queries for drug analysis condition treemap results for the given cohort
-         * definition id
-         *
-         * @param id cohort_defintion id
-         * @return List<HierarchicalConceptRecord>
-         */
+//    /**
+//     * Queries for drug analysis condition treemap results for the given cohort
+//     * definition id
+//     *
+//     * @param id cohort_defintion id
+//     * @return List<HierarchicalConceptRecord>
+//     */
 //        @GET
 //        @Path("/{id}/drug/")
 //        @Produces(MediaType.APPLICATION_JSON)
@@ -517,14 +514,14 @@ public class CharacterizationService extends AbstractDaoService {
 //            return res;
 //        }
 
-        /**
-         * Queries for cohort analysis drug drilldown results for the given cohort
-         * definition id and condition id
-         *
-         * @param id cohort_defintion id
-         * @param drugId drug_id (from concept)
-         * @return CohortDrugDrilldown
-         */
+//    /**
+//     * Queries for cohort analysis drug drilldown results for the given cohort
+//     * definition id and condition id
+//     *
+//     * @param id     cohort_defintion id
+//     * @param drugId drug_id (from concept)
+//     * @return CohortDrugDrilldown
+//     */
 //        @GET
 //        @Path("/{id}/drug/{drugId}")
 //        @Produces(MediaType.APPLICATION_JSON)
@@ -1456,20 +1453,19 @@ public class CharacterizationService extends AbstractDaoService {
 //
 //            return results;
 //        }
+    private String JoinArray(final String[] array) {
+        String result = "";
 
-        private String JoinArray(final String[] array) {
-            String result = "";
-
-            for (int i = 0; i < array.length; i++) {
-                if (i > 0) {
-                    result += ",";
-                }
-
-                result += "'" + array[i] + "'";
+        for (int i = 0; i < array.length; i++) {
+            if (i > 0) {
+                result += ",";
             }
 
-            return result;
+            result += "'" + array[i] + "'";
         }
+
+        return result;
+    }
 
 //        private final RowMapper<CohortPerson> cohortMemberMapper = new RowMapper<CohortPerson>() {
 //            @Override

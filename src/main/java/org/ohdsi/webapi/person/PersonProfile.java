@@ -25,6 +25,7 @@ import java.util.ArrayList;
 public class PersonProfile {
 
   public ArrayList<PersonRecord> records;
+  public String gender;
 
   public PersonProfile() {
     records = new ArrayList<>();

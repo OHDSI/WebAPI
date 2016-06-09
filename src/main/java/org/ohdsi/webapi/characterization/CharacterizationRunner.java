@@ -6,7 +6,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
-import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTask;
 import org.ohdsi.webapi.cohortresults.*;
 import org.ohdsi.webapi.cohortresults.mapper.*;
 import org.ohdsi.webapi.helper.ResourceHelper;
@@ -14,68 +13,68 @@ import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import javax.ws.rs.PathParam;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 public class CharacterizationRunner {
 
-	public static final String COHORT_SPECIFIC = "cohort_specific";
-	public static final String COHORT_SPECIFIC_CONDITION_DRILLDOWN = "cohort_specific_condition_drilldown";
-	public static final String COHORT_SPECIFIC_DRUG_DRILLDOWN = "cohort_specific_drug_drilldown";
-	public static final String COHORT_SPECIFIC_PROCEDURE_DRILLDOWN = "cohort_specific_procedure_drilldown";
-	public static final String COHORT_SPECIFIC_TREEMAP = "cohort_specific_treemap";
-	public static final String CONDITION = "condition";
-	public static final String CONDITION_DRILLDOWN = "condition_drilldown";
-	public static final String CONDITION_ERA = "condition_era";
-	public static final String CONDITION_ERA_DRILLDOWN = "condition_era_drilldown";
-	public static final String DASHBOARD = "dashboard";
-	public static final String DATA_DENSITY = "data_density";
-	public static final String DEATH = "death";
-	public static final String DEFAULT = "default";
-	public static final String DRUG = "drug";
-	public static final String DRUG_DRILLDOWN = "drug_drilldown";
-	public static final String DRUG_ERA = "drug_era";
-	public static final String DRUG_ERA_DRILLDOWN = "drug_era_drilldown";
-	public static final String DRUG_EXPOSURE = "drug_exposure";
-	public static final String HERACLES_HEEL = "heracles_heel";
-	public static final String MEASUREMENT = "measurement";
-	public static final String MEASUREMENT_DRILLDOWN = "measurement_drilldown";
-	public static final String OBSERVATION = "observation";
-	public static final String OBSERVATION_DRILLDOWN = "observation_drilldown";
-	public static final String OBSERVATION_PERIOD = "observation_period";
-	public static final String OBSERVATION_PERIODS = "observation_periods";
-	public static final String PERSON = "person";
-	public static final String PROCEDURE = "procedure";
-	public static final String PROCEDURE_DRILLDOWN = "procedure_drilldown";
-	public static final String VISIT = "visit";
-	public static final String VISIT_DRILLDOWN = "visit_drilldown";
+    //    public static final String COHORT_SPECIFIC = "cohort_specific";
+//    public static final String COHORT_SPECIFIC_CONDITION_DRILLDOWN = "cohort_specific_condition_drilldown";
+//    public static final String COHORT_SPECIFIC_DRUG_DRILLDOWN = "cohort_specific_drug_drilldown";
+//    public static final String COHORT_SPECIFIC_PROCEDURE_DRILLDOWN = "cohort_specific_procedure_drilldown";
+//    public static final String COHORT_SPECIFIC_TREEMAP = "cohort_specific_treemap";
+    public static final String CONDITION = "condition";
+    public static final String CONDITION_DRILLDOWN = "condition_drilldown";
+    public static final String CONDITION_ERA = "condition_era";
+    public static final String CONDITION_ERA_DRILLDOWN = "condition_era_drilldown";
+    public static final String DATASOURCES = "datasources";
+    public static final String DASHBOARD = "dashboard";
+    public static final String DATA_DENSITY = "data_density";
+    public static final String DEATH = "death";
+    public static final String DEFAULT = "default";
+    public static final String DRUG = "drug";
+    public static final String DRUG_DRILLDOWN = "drug_drilldown";
+    public static final String DRUG_ERA = "drug_era";
+    public static final String DRUG_ERA_DRILLDOWN = "drug_era_drilldown";
+    public static final String DRUG_EXPOSURE = "drug_exposure";
+    public static final String HERACLES_HEEL = "heracles_heel";
+    public static final String MEASUREMENT = "measurement";
+    public static final String MEASUREMENT_DRILLDOWN = "measurement_drilldown";
+    public static final String OBSERVATION = "observation";
+    public static final String OBSERVATION_DRILLDOWN = "observation_drilldown";
+    public static final String OBSERVATION_PERIOD = "observation_period";
+    public static final String OBSERVATION_PERIODS = "observation_periods";
+    public static final String PERSON = "person";
+    public static final String PROCEDURE = "procedure";
+    public static final String PROCEDURE_DRILLDOWN = "procedure_drilldown";
+    public static final String VISIT = "visit";
+    public static final String VISIT_DRILLDOWN = "visit_drilldown";
 
-	private static final Log log = LogFactory.getLog(CharacterizationRunner.class);
+    private static final Log log = LogFactory.getLog(CharacterizationRunner.class);
 
-	public static final String BASE_SQL_PATH = "/resources/cohortresults/sql";
+    public static final String BASE_SQL_PATH = "/resources/characterization/sql";
 
-	private static final String[] STANDARD_COLUMNS = new String[]{"cdm_database_schema",
-		"ohdsi_database_schema", "cohortDefinitionId",
-		"minCovariatePersonCount", "minIntervalPersonCount"};
+    private static final String[] STANDARD_COLUMNS = new String[]{"cdm_database_schema",
+            "ohdsi_database_schema", "cohortDefinitionId",
+            "minCovariatePersonCount", "minIntervalPersonCount"};
 
-	private static final String[] DRILLDOWN_COLUMNS = new String[]{"cdm_database_schema",
-		"ohdsi_database_schema", "cohortDefinitionId",
-		"minCovariatePersonCount", "minIntervalPersonCount", "conceptId"};
+    private static final String[] DRILLDOWN_COLUMNS = new String[]{"cdm_database_schema",
+            "ohdsi_database_schema", "cohortDefinitionId",
+            "minCovariatePersonCount", "minIntervalPersonCount", "conceptId"};
 
-	public static final String MIN_COVARIATE_PERSON_COUNT = "10";
-	public static final String MIN_INTERVAL_PERSON_COUNT = "10";
+    public static final String MIN_COVARIATE_PERSON_COUNT = "10";
+    public static final String MIN_INTERVAL_PERSON_COUNT = "10";
 
-	private ObjectMapper mapper;
-	private String sourceDialect;
-	private VisualizationDataRepository visualizationDataRepository;
+    private ObjectMapper mapper;
+    private String sourceDialect;
+    private VisualizationDataRepository visualizationDataRepository;
 
-	public CharacterizationRunner(String sourceDialect, VisualizationDataRepository visualizationDataRepository) {
-		this.sourceDialect = sourceDialect;
-		this.visualizationDataRepository = visualizationDataRepository;
-		mapper = new ObjectMapper();
-	}
+    public CharacterizationRunner(String sourceDialect, VisualizationDataRepository visualizationDataRepository) {
+        this.sourceDialect = sourceDialect;
+        this.visualizationDataRepository = visualizationDataRepository;
+        mapper = new ObjectMapper();
+    }
 
 //	public List<ScatterplotRecord> getCohortConditionDrilldown(JdbcTemplate jdbcTemplate,
 //			final int id,
@@ -923,56 +922,56 @@ public class CharacterizationRunner {
 //		return res;
 //	}
 
-	public Dashboard getDashboard(JdbcTemplate jdbcTemplate,
-								  int id, Source source,
-								  String minCovariatePersonCountParam, String minIntervalPersonCountParam,
-								  boolean demographicsOnly,
-								  boolean save) {
+    public SourceDashboard getDashboard(JdbcTemplate jdbcTemplate,
+                                        int id, Source source,
+                                        String minCovariatePersonCountParam, String minIntervalPersonCountParam,
+                                        boolean demographicsOnly,
+                                        boolean save) {
 
-		final String key = DASHBOARD;
-		Dashboard dashboard = new Dashboard();
-		boolean empty = true;
+        final String key = DASHBOARD;
+        SourceDashboard dashboard = new SourceDashboard();
+        boolean empty = true;
 
-		String ageAtFirstObsSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/ageatfirst.sql", id,
-				minCovariatePersonCountParam, minIntervalPersonCountParam, source);
-		if (ageAtFirstObsSql != null) {
-			dashboard.setAgeAtFirstObservation(jdbcTemplate.query(ageAtFirstObsSql, new ConceptDistributionMapper()));
-		}
+        String ageAtFirstObsSql = this.renderTranslateSql(BASE_SQL_PATH + "/observationperiod/ageatfirst.sql", id,
+                minCovariatePersonCountParam, minIntervalPersonCountParam, source);
+        if (ageAtFirstObsSql != null) {
+            dashboard.setAgeAtFirstObservation(jdbcTemplate.query(ageAtFirstObsSql, new ConceptDistributionMapper()));
+        }
 
-		String genderSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/gender.sql", id, minCovariatePersonCountParam,
-				minIntervalPersonCountParam, source);
-		if (genderSql != null) {
-			dashboard.setGender(jdbcTemplate.query(genderSql, new ConceptCountMapper()));
-		}
+        String genderSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/gender.sql", /*id,*/ minCovariatePersonCountParam,
+                minIntervalPersonCountParam, source);
+        if (genderSql != null) {
+            dashboard.setGender(jdbcTemplate.query(genderSql, new ConceptCountMapper()));
+        }
 
-		if (!demographicsOnly) {
-			String cumulObsSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/cumulativeduration.sql", id,
-					minCovariatePersonCountParam, minIntervalPersonCountParam, source);
-			if (cumulObsSql != null) {
-				dashboard.setCumulativeObservation(jdbcTemplate.query(cumulObsSql, new CumulativeObservationMapper()));
-			}
+        if (!demographicsOnly) {
+            String cumulObsSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/cumulativeduration.sql", /*id,*/
+                    minCovariatePersonCountParam, minIntervalPersonCountParam, source);
+            if (cumulObsSql != null) {
+                dashboard.setCumulativeObservation(jdbcTemplate.query(cumulObsSql, new CumulativeObservationMapper()));
+            }
 
-			String obsByMonthSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/observedbymonth.sql", id,
-					minCovariatePersonCountParam, minIntervalPersonCountParam, source);
-			if (obsByMonthSql != null) {
-				dashboard.setObservedByMonth(jdbcTemplate.query(obsByMonthSql, new MonthObservationMapper()));
-			}
-		}
+            String obsByMonthSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/observedbymonth.sql", /*id,*/
+                    minCovariatePersonCountParam, minIntervalPersonCountParam, source);
+            if (obsByMonthSql != null) {
+                dashboard.setObservedByMonth(jdbcTemplate.query(obsByMonthSql, new MonthObservationMapper()));
+            }
+        }
 
-		if (CollectionUtils.isNotEmpty(dashboard.getAgeAtFirstObservation())
-				|| CollectionUtils.isNotEmpty(dashboard.getCumulativeObservation())
-				|| CollectionUtils.isNotEmpty(dashboard.getGender())
-				|| CollectionUtils.isNotEmpty(dashboard.getObservedByMonth())) {
-			empty = false;
-		}
+        if (CollectionUtils.isNotEmpty(dashboard.getAgeAtFirstObservation())
+                || CollectionUtils.isNotEmpty(dashboard.getCumulativeObservation())
+                || CollectionUtils.isNotEmpty(dashboard.getGender())
+                || CollectionUtils.isNotEmpty(dashboard.getObservedByMonth())) {
+            empty = false;
+        }
 
-		if (!empty && save) {
-			this.saveEntity(id, source.getSourceId(), key, dashboard);
-		}
+        if (!empty && save) {
+            this.saveEntity(id, source.getSourceId(), key, dashboard);
+        }
 
-		return dashboard;
+        return dashboard;
 
-	}
+    }
 
 //	public CohortDrugEraDrilldown getDrugEraResults(JdbcTemplate jdbcTemplate,
 //			final int id,
@@ -1155,31 +1154,31 @@ public class CharacterizationRunner {
 //		return res;
 //	}
 
-	public List<CohortAttribute> getHeraclesHeel(JdbcTemplate jdbcTemplate,
-			final int id,
-			Source source,
-			boolean save) {
-		List<CohortAttribute> attrs = new ArrayList<CohortAttribute>();
-		final String key = HERACLES_HEEL;
+//    public List<CohortAttribute> getHeraclesHeel(JdbcTemplate jdbcTemplate,
+//                                                 final int id,
+//                                                 Source source,
+//                                                 boolean save) {
+//        List<CohortAttribute> attrs = new ArrayList<CohortAttribute>();
+//        final String key = HERACLES_HEEL;
+//
+//        String sql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/heraclesHeel/sqlHeraclesHeel.sql", id, null, null, source);
+//        if (sql != null) {
+//            attrs = jdbcTemplate.query(sql, new CohortAttributeMapper());
+//        }
+//        if (save) {
+//            this.saveEntity(/*id, */source.getSourceId(), key, attrs);
+//        }
+//
+//        return attrs;
+//    }
 
-		String sql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/heraclesHeel/sqlHeraclesHeel.sql", id, null, null, source);
-		if (sql != null) {
-			attrs = jdbcTemplate.query(sql, new CohortAttributeMapper());
-		}
-		if (save) {
-			this.saveEntity(id, source.getSourceId(), key, attrs);
-		}
-
-		return attrs;
-	}
-
-	/**
-	 * Queries for cohort analysis person results for the given cohort definition
-	 * id
-	 *
-	 * @param id cohort_defintion id
-	 * @return CohortPersonSummary
-	 */
+    /**
+     * Queries for cohort analysis person results for the given cohort definition
+     * id
+     *
+     * @param id cohort_defintion id
+     * @return CohortPersonSummary
+     */
 //	public CohortPersonSummary getPersonResults(JdbcTemplate jdbcTemplate,
 //			final int id,
 //			final String minCovariatePersonCountParam,
@@ -1276,18 +1275,18 @@ public class CharacterizationRunner {
 //		return res;
 //	}
 
-	// HELPER methods
-	/**
-	 * Renders and Translates drilldown SQL by concept
-	 *
-	 * @param analysisName
-	 * @param analysisType
-	 * @param id
-	 * @param conceptId
-	 * @param minCovariatePersonCountParam
-	 * @param minIntervalPersonCountParam
-	 * @return
-	 */
+    // HELPER methods
+    /**
+     * Renders and Translates drilldown SQL by concept
+     *
+     * @param analysisName
+     * @param analysisType
+     * @param id
+     * @param conceptId
+     * @param minCovariatePersonCountParam
+     * @param minIntervalPersonCountParam
+     * @return
+     */
 
 //	public String renderDrillDownCohortSql(String analysisName, String analysisType, int id, int conceptId,
 //			final String minCovariatePersonCountParam, final String minIntervalPersonCountParam, Source source) {
@@ -1296,206 +1295,145 @@ public class CharacterizationRunner {
 //	}
 
 
-	/**
-	 * Passes in common params for cohort results, and performs SQL
-	 * translate/render
-	 */
-	public String renderTranslateCohortSql(String sqlPath, Integer id, Integer conceptId,
-			final String minCovariatePersonCountParam, final String minIntervalPersonCountParam,
-			Source source) {
-		String sql = null;
+    /**
+     * Passes in common params for cohort results, and performs SQL
+     * translate/render
+     */
+    public String renderTranslateSql(String sqlPath, Integer id, Integer conceptId,
+                                     final String minCovariatePersonCountParam, final String minIntervalPersonCountParam,
+                                     Source source) {
+        String sql = null;
 
-		String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-		String vocabularyTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
+        String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+        String vocabularyTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
 
-		try {
-			String[] cols;
-			String[] colValues;
-			if (conceptId != null) {
-				cols = DRILLDOWN_COLUMNS;
-				colValues = new String[]{vocabularyTableQualifier,
-						resultsTableQualifier, String.valueOf(id),
-						minCovariatePersonCountParam == null ? MIN_COVARIATE_PERSON_COUNT
-								: minCovariatePersonCountParam,
-								minIntervalPersonCountParam == null ? MIN_INTERVAL_PERSON_COUNT
-										: minIntervalPersonCountParam,
-										String.valueOf(conceptId)};
-			} else {
-				cols = STANDARD_COLUMNS;
-				colValues = new String[]{vocabularyTableQualifier,
-						resultsTableQualifier, String.valueOf(id),
-						minCovariatePersonCountParam == null ? MIN_COVARIATE_PERSON_COUNT
-								: minCovariatePersonCountParam,
-								minIntervalPersonCountParam == null ? MIN_INTERVAL_PERSON_COUNT
-										: minIntervalPersonCountParam};
-			}
+        try {
+            String[] cols;
+            String[] colValues;
+            if (conceptId != null) {
+                cols = DRILLDOWN_COLUMNS;
+                colValues = new String[]{vocabularyTableQualifier,
+                        resultsTableQualifier, String.valueOf(id),
+                        minCovariatePersonCountParam == null ? MIN_COVARIATE_PERSON_COUNT
+                                : minCovariatePersonCountParam,
+                        minIntervalPersonCountParam == null ? MIN_INTERVAL_PERSON_COUNT
+                                : minIntervalPersonCountParam,
+                        String.valueOf(conceptId)};
+            } else {
+                cols = STANDARD_COLUMNS;
+                colValues = new String[]{vocabularyTableQualifier,
+                        resultsTableQualifier, String.valueOf(id),
+                        minCovariatePersonCountParam == null ? MIN_COVARIATE_PERSON_COUNT
+                                : minCovariatePersonCountParam,
+                        minIntervalPersonCountParam == null ? MIN_INTERVAL_PERSON_COUNT
+                                : minIntervalPersonCountParam};
+            }
 
-			sql = ResourceHelper.GetResourceAsString(sqlPath);
-			sql = SqlRender.renderSql(sql, cols, colValues);
-			sql = SqlTranslate.translateSql(sql, sourceDialect, source.getSourceDialect());
-		} catch (Exception e) {
-			log.error(String.format("Unable to translate sql for  %s", sql), e);
-		}
+            sql = ResourceHelper.GetResourceAsString(sqlPath);
+            sql = SqlRender.renderSql(sql, cols, colValues);
+            sql = SqlTranslate.translateSql(sql, sourceDialect, source.getSourceDialect());
+        } catch (Exception e) {
+            log.error(String.format("Unable to translate sql for  %s", sql), e);
+        }
 
-		return sql;
-	}
+        return sql;
+    }
 
-	/**
-	 * Passes in common params for cohort results, and performs SQL
-	 * translate/render
-	 */
-	public String renderTranslateCohortSql(String sqlPath, Integer id,
-			final String minCovariatePersonCountParam, final String minIntervalPersonCountParam, Source source) {
-		return renderTranslateCohortSql(sqlPath, id, null, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
-	}
+    /**
+     * Passes in common params for cohort results, and performs SQL
+     * translate/render
+     */
+    public String renderTranslateSql(String sqlPath, final String minCovariatePersonCountParam, final String minIntervalPersonCountParam, Source source) {
+        return renderTranslateSql(sqlPath, null, null, null, null, source);
+    }
 
-	private void saveEntity(int cohortDefinitionId, int sourceId, String visualizationKey, Object dataObject) {
-		if (dataObject == null) {
-			log.error(String.format("cannot store null entity %s",  visualizationKey));
-			return;
-		}
+    private void saveEntity(int sourceId, String visualizationKey, Object dataObject) {
+        if (dataObject == null) {
+            log.error(String.format("cannot store null entity %s", visualizationKey));
+            return;
+        }
 
-		if (dataObject instanceof List) {
-			List<?> listObject = (List<?>) dataObject;
-			if (listObject.size() == 0) {
-				log.debug(String.format("no need to store empty list for %s",  visualizationKey));
-				return;
-			}
-		}
+        if (dataObject instanceof List) {
+            List<?> listObject = (List<?>) dataObject;
+            if (listObject.size() == 0) {
+                log.debug(String.format("no need to store empty list for %s", visualizationKey));
+                return;
+            }
+        }
 
-		// delete the old one
-		try {
-			this.visualizationDataRepository
-				.deleteByCohortDefinitionIdAndSourceIdAndVisualizationKey(cohortDefinitionId, sourceId, visualizationKey);
+        // delete the old one
+        try {
+            this.visualizationDataRepository
+                    .deleteBySourceIdAndVisualizationKey(sourceId, visualizationKey);
 
-			// delete any 'drilldown'
-			List<VisualizationData> drilldownData = this.visualizationDataRepository
-					.findDistinctVisualizationDataByCohortDefinitionIdAndSourceIdAndVisualizationKey(cohortDefinitionId, sourceId, visualizationKey + "_drilldown");
-			if (CollectionUtils.isNotEmpty(drilldownData)) {
-				for (VisualizationData drilldownItem : drilldownData) {
-					this.visualizationDataRepository.delete(drilldownItem);
-				}
-			}
-		} catch (Exception e) {
-			log.error(e);
-		}
+            // delete any 'drilldown'
+            List<VisualizationData> drilldownData = this.visualizationDataRepository
+                    .findDistinctVisualizationDataBySourceIdAndVisualizationKey(sourceId, visualizationKey + "_drilldown");
+            if (CollectionUtils.isNotEmpty(drilldownData)) {
+                for (VisualizationData drilldownItem : drilldownData) {
+                    this.visualizationDataRepository.delete(drilldownItem);
+                }
+            }
+        } catch (Exception e) {
+            log.error(e);
+        }
 
-		// save entity
-		try {
+        // save entity
+        try {
 
-			VisualizationData entity = new VisualizationData();
-			entity.setCohortDefinitionId(cohortDefinitionId);
-			entity.setSourceId(sourceId);
-			entity.setVisualizationKey(visualizationKey);
-			entity.setEndTime(new Date());
+            VisualizationData entity = new VisualizationData();
+            entity.setSourceId(sourceId);
+            entity.setVisualizationKey(visualizationKey);
+            entity.setEndTime(new Date());
 
-			String dataString = mapper.writeValueAsString(dataObject);
-			entity.setData(dataString);
+            String dataString = mapper.writeValueAsString(dataObject);
+            entity.setData(dataString);
 
-			this.visualizationDataRepository.save(entity);
-		} catch (Exception e) {
-			log.error(e);
-		}
-	}
+            this.visualizationDataRepository.save(entity);
+        } catch (Exception e) {
+            log.error(e);
+        }
+    }
 
-//	private void saveEntityDrilldown(int cohortDefinitionId, int sourceId, String visualizationKey, int drilldownId, Object dataObject) {
-//		if (dataObject == null) {
-//			log.error(String.format("cannot store null entity %s",  visualizationKey));
-//			return;
-//		}
-//
-//		if (dataObject instanceof List) {
-//			List<?> listObject = (List<?>) dataObject;
-//			if (listObject.size() == 0) {
-//				log.debug(String.format("no need to store empty list for %s",  visualizationKey));
-//				return;
-//			}
-//		}
-//
-//		// delete the old one
-//		try {
-//			this.visualizationDataRepository
-//				.deleteByCohortDefinitionIdAndSourceIdAndVisualizationKeyAndDrilldownId(cohortDefinitionId, sourceId, visualizationKey, drilldownId);
-//		} catch (Exception e) {
-//			log.error(e);
-//		}
-//
-//		// save entity
-//		try {
-//			VisualizationData entity = new VisualizationData();
-//			entity.setCohortDefinitionId(cohortDefinitionId);
-//			entity.setSourceId(sourceId);
-//			entity.setVisualizationKey(visualizationKey);
-//			entity.setDrilldownId(drilldownId);
-//			entity.setEndTime(new Date());
-//
-//			String dataString = mapper.writeValueAsString(dataObject);
-//			entity.setData(dataString);
-//
-//			this.visualizationDataRepository.save(entity);
-//		} catch (Exception e) {
-//			log.error(e);
-//		}
-//	}
+    private void saveEntityDrilldown(int datasourceName, int sourceId, String visualizationKey, int drilldownId, Object dataObject) {
+        if (dataObject == null) {
+            log.error(String.format("cannot store null entity %s", visualizationKey));
+            return;
+        }
 
-//	public int warmupData(JdbcTemplate jdbcTemplate, CohortAnalysisTask task) {
-//		int count = 0;
-//		if (task != null && task.getCohortDefinitionIds() != null && task.getVisualizations() != null) {
-//			for (String id : task.getCohortDefinitionIds()) {
-//				for (String viz : task.getVisualizations()) {
-//					if (DEFAULT.equals(viz) || DASHBOARD.equals(viz)) {
-//						getDashboard(jdbcTemplate, Integer.valueOf(id), task.getSource(), null, null, false, true);
-//						count++;
-//					} else if (COHORT_SPECIFIC.equals(viz)) {
-//						getCohortSpecificSummary(jdbcTemplate, Integer.valueOf(id), null, null, task.getSource(), true);
-//						count++;
-//						// treemaps are separate
-//						getCohortSpecificTreemapResults(jdbcTemplate, Integer.valueOf(id), null, null, task.getSource(), true);
-//						count++;
-//					} else if (CONDITION.equals(viz)) {
-//						getConditionTreemap(jdbcTemplate, Integer.valueOf(id), null, null, task.getSource(), true);
-//						count++;
-//					} else if (CONDITION_ERA.equals(viz)) {
-//						getConditionEraTreemap(jdbcTemplate, Integer.valueOf(id), null, null, task.getSource(), true);
-//						count++;
-//					} else if (DRUG.equals(viz) || DRUG_EXPOSURE.equals(viz)) {
-//						getDrugTreemap(jdbcTemplate, Integer.valueOf(id), null, null, task.getSource(), true);
-//						count++;
-//					} else if (DRUG_ERA.equals(viz)) {
-//						getDrugEraTreemap(jdbcTemplate, Integer.valueOf(id), null, null, task.getSource(), true);
-//						count++;
-//					} else if (PERSON.equals(viz)) {
-//						getPersonResults(jdbcTemplate, Integer.valueOf(id), null, null, task.getSource(), true);
-//						count++;
-//					} else if (OBSERVATION.equals(viz)) {
-//						getCohortObservationResults(jdbcTemplate, Integer.valueOf(id), null, null, task.getSource(), true);
-//						count++;
-//					} else if (MEASUREMENT.equals(viz)) {
-//						getCohortMeasurementResults(jdbcTemplate, Integer.valueOf(id), null, null, task.getSource(), true);
-//						count++;
-//					} else if (OBSERVATION_PERIOD.equals(viz) || OBSERVATION_PERIODS.equals(viz)) {
-//						getCohortObservationPeriod(jdbcTemplate, Integer.valueOf(id), null, null, task.getSource(), true);
-//						count++;
-//					} else if (DATA_DENSITY.equals(viz)) {
-//						getCohortDataDensity(jdbcTemplate, Integer.valueOf(id), null, null, task.getSource(), true);
-//						count++;
-//					} else if (PROCEDURE.equals(viz)) {
-//						getProcedureTreemap(jdbcTemplate, Integer.valueOf(id), null, null, task.getSource(), true);
-//						count++;
-//					} else if (VISIT.equals(viz)) {
-//						getVisitTreemap(jdbcTemplate, Integer.valueOf(id), null, null, task.getSource(), true);
-//						count++;
-//					} else if (DEATH.equals(viz)) {
-//						getCohortDeathData(jdbcTemplate, Integer.valueOf(id), null, null, task.getSource(), true);
-//						count++;
-//					} else if (HERACLES_HEEL.equals(viz)) {
-//						getHeraclesHeel(jdbcTemplate, Integer.valueOf(id), task.getSource(), true);
-//						count++;
-//					}
-//				}
-//			}
-//		}
-//
-//		return count;
-//	}
+        if (dataObject instanceof List) {
+            List<?> listObject = (List<?>) dataObject;
+            if (listObject.size() == 0) {
+                log.debug(String.format("no need to store empty list for %s", visualizationKey));
+                return;
+            }
+        }
+
+        // delete the old one
+        try {
+            this.visualizationDataRepository
+                    .deleteBySourceIdAndVisualizationKeyAndDrilldownId(/*cohortDefinitionId,*/ sourceId, visualizationKey, drilldownId);
+        } catch (Exception e) {
+            log.error(e);
+        }
+
+        // save entity
+        try {
+            VisualizationData entity = new VisualizationData();
+			entity.setDatasourceName(datasourceName);
+            entity.setSourceId(sourceId);
+            entity.setVisualizationKey(visualizationKey);
+            entity.setDrilldownId(drilldownId);
+            entity.setEndTime(new Date());
+
+            String dataString = mapper.writeValueAsString(dataObject);
+            entity.setData(dataString);
+
+            this.visualizationDataRepository.save(entity);
+        } catch (Exception e) {
+            log.error(e);
+        }
+    }
+
+
 }

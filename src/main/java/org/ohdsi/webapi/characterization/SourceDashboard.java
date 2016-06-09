@@ -7,7 +7,7 @@ import org.ohdsi.webapi.cohortresults.MonthObservationRecord;
 
 import java.util.List;
 
-public class Dashboard {
+public class SourceDashboard {
 
 	private List<ConceptCountRecord> gender;
 	private List<ConceptDistributionRecord> ageAtFirstObservation;

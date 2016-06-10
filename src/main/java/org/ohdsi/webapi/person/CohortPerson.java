@@ -23,6 +23,7 @@ import java.sql.Timestamp;
  */
 public class CohortPerson {
   public Long personId;
+  public Long cohortDefinitionId;
   public Timestamp startDate;
   public Timestamp endDate;
 }

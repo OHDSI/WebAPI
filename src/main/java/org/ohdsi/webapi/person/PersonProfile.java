@@ -25,10 +25,12 @@ import java.util.ArrayList;
 public class PersonProfile {
 
   public ArrayList<PersonRecord> records;
+  public ArrayList<CohortPerson> cohorts;
   public String gender;
 
   public PersonProfile() {
     records = new ArrayList<>();
+    cohorts = new ArrayList<>();
   }
 
   @JsonProperty("recordCount") 

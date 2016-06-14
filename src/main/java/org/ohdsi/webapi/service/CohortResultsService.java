@@ -26,6 +26,7 @@ import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysis;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTask;
 import org.ohdsi.webapi.cohortanalysis.CohortSummary;
+import org.ohdsi.webapi.cohortresults.CohortBreakdown;
 import org.ohdsi.webapi.cohortresults.CohortConditionDrilldown;
 import org.ohdsi.webapi.cohortresults.CohortConditionEraDrilldown;
 import org.ohdsi.webapi.cohortresults.CohortDashboard;
@@ -1300,6 +1301,28 @@ public class CohortResultsService extends AbstractDaoService {
   }
 
   /**
+   * Returns breakdown with counts about people in cohort
+   *
+   * @param id
+   * @param sourceKey
+   * @return List of all members of a generated cohort definition identifier
+   */
+  @GET
+  @Path("/{id}/breakdown")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Collection<CohortBreakdown> getCohortBreakdown(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey) {
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+    String sql = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/raw/getCohortBreakdown.sql");
+    sql = SqlRender.renderSql(sql, new String[]{"tableQualifier", "cohortDefinitionId"}, new String[]{
+      resultsTableQualifier, String.valueOf(id)});
+    sql = SqlTranslate.translateSql(sql, getSourceDialect(), source.getSourceDialect(), SessionUtils.sessionId(),
+            resultsTableQualifier);
+
+    return getSourceJdbcTemplate(source).query(sql, this.cohortBreakdownMapper);
+  }
+
+  /**
    * Returns the person identifiers of all members of a generated cohort
    * definition identifier
    *
@@ -1479,6 +1502,19 @@ public class CohortResultsService extends AbstractDaoService {
       person.startDate = rs.getTimestamp("cohort_start_date");
       person.endDate = rs.getTimestamp("cohort_end_date");
       return person;
+    }
+  };
+
+  private final RowMapper<CohortBreakdown> cohortBreakdownMapper = new RowMapper<CohortBreakdown>() {
+    @Override
+    public CohortBreakdown mapRow(final ResultSet rs, final int rowNum) throws SQLException {
+      CohortBreakdown group = new CohortBreakdown();
+      group.people = rs.getLong("people");
+      group.gender = rs.getString("gender");
+      group.age = rs.getString("age");
+      group.conditions = rs.getLong("conditions");
+      group.drugs = rs.getLong("drugs");
+      return group;
     }
   };
 

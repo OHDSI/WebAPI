@@ -1344,21 +1344,32 @@ public class CohortResultsService extends AbstractDaoService {
                                         @PathParam("gender") String gender, 
                                         @PathParam("age") String age, 
                                         @PathParam("conditions") String conditions, 
-                                        @PathParam("drugs") String drugs, 
+                                        @PathParam("drugs") String drugs,
                                         @PathParam("rows") final int rows) {
     ArrayList<String> params;
+    ArrayList<String> wherecols;
     params = new ArrayList<>();
+    wherecols = new ArrayList<>();
+    int groups = 1;
     if (gender.length() > 0 && !gender.equals("''")) {
         params.add(" gender in (@gender) ");
+        wherecols.add("gender");
+        groups = groups * gender.split(",").length;
     }
     if (age.length() > 0 && !age.equals("''")) {
         params.add(" age in (@age) ");
+        wherecols.add("age");
+        groups = groups * age.split(",").length;
     }
     if (conditions.length() > 0 && !conditions.equals("''")) {
         params.add(" conditions in (@conditions) ");
+        wherecols.add("conditions");
+        groups = groups * conditions.split(",").length;
     }
     if (drugs.length() > 0 && !drugs.equals("''")) {
         params.add(" drugs in (@drugs) ");
+        wherecols.add("drugs");
+        groups = groups * drugs.split(",").length;
     }
     String clause = " where 1=1\n";
     for (String param: params) {
@@ -1368,14 +1379,19 @@ public class CohortResultsService extends AbstractDaoService {
     String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
     String sql = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/raw/getCohortBreakdownPeople.sql");
     sql = sql.replace("/*whereclause*/", clause);
+    if (wherecols.isEmpty()) {
+        sql = sql.replace("partition by", "");
+    }
     sql = SqlRender.renderSql(sql, 
-            new String[]{"tableQualifier", "cohortDefinitionId","gender", "age", "conditions", "drugs", "rows"}, 
+            new String[]{"tableQualifier", "cohortDefinitionId","gender", "age", "conditions", "drugs", "rows","wherecols","groups"}, 
             new String[]{resultsTableQualifier, String.valueOf(id), 
                 String.valueOf(gender), 
                 String.valueOf(age), 
                 String.valueOf(conditions), 
                 String.valueOf(drugs), 
-                String.valueOf(rows)});
+                String.valueOf(rows),
+                String.valueOf(String.join(",", wherecols)),
+                String.valueOf(groups)});
     sql = SqlTranslate.translateSql(sql, getSourceDialect(), source.getSourceDialect(), SessionUtils.sessionId(),
             resultsTableQualifier);
 

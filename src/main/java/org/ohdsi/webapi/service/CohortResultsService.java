@@ -1348,24 +1348,21 @@ public class CohortResultsService extends AbstractDaoService {
                                         @PathParam("rows") final int rows) {
     ArrayList<String> params;
     params = new ArrayList<>();
-    if (gender.length() > 0) {
+    if (gender.length() > 0 && !gender.equals("''")) {
         params.add(" gender in (@gender) ");
     }
-    if (age.length() > 0) {
+    if (age.length() > 0 && !age.equals("''")) {
         params.add(" age in (@age) ");
     }
-    if (age.length() > 0) {
+    if (conditions.length() > 0 && !conditions.equals("''")) {
         params.add(" conditions in (@conditions) ");
     }
-    if (age.length() > 0) {
+    if (drugs.length() > 0 && !drugs.equals("''")) {
         params.add(" drugs in (@drugs) ");
     }
-    String clause = " where ";
-    for (int i=0; i < params.size(); i++) {
-        if (i > 0) {
-            clause += " and ";
-        }
-        clause += (params.get(i) + "\n");
+    String clause = " where 1=1\n";
+    for (String param: params) {
+        clause += (" and " + param + "\n");
     }
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);

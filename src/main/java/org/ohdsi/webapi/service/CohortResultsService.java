@@ -1283,6 +1283,8 @@ public class CohortResultsService extends AbstractDaoService {
    *
    * @param id
    * @param sourceKey
+   * @param min
+   * @param max
    * @return List of all members of a generated cohort definition identifier
    */
   @GET
@@ -1321,7 +1323,68 @@ public class CohortResultsService extends AbstractDaoService {
 
     return getSourceJdbcTemplate(source).query(sql, this.cohortBreakdownMapper);
   }
+  /**
+   * Returns the person identifiers of all members of a cohort breakdown from above
+   *
+   * @param id
+   * @param sourceKey
+   * @param gender
+   * @param age
+   * @param conditions
+   * @param drugs
+   * @param rows
+   * @return List of all members of a generated cohort definition identifier
+   */
+  @GET
+  @Path("/{id}/breakdown/{gender}/{age}/{conditions}/{drugs}/{rows}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Collection<CohortPerson> getCohortMembers(
+                                        @PathParam("id") final int id, 
+                                        @PathParam("sourceKey") String sourceKey, 
+                                        @PathParam("gender") String gender, 
+                                        @PathParam("age") String age, 
+                                        @PathParam("conditions") String conditions, 
+                                        @PathParam("drugs") String drugs, 
+                                        @PathParam("rows") final int rows) {
+    ArrayList<String> params;
+    params = new ArrayList<>();
+    if (gender.length() > 0) {
+        params.add(" gender in (@gender) ");
+    }
+    if (age.length() > 0) {
+        params.add(" age in (@age) ");
+    }
+    if (age.length() > 0) {
+        params.add(" conditions in (@conditions) ");
+    }
+    if (age.length() > 0) {
+        params.add(" drugs in (@drugs) ");
+    }
+    String clause = " where ";
+    for (int i=0; i < params.size(); i++) {
+        if (i > 0) {
+            clause += " and ";
+        }
+        clause += (params.get(i) + "\n");
+    }
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+    String sql = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/raw/getCohortBreakdownPeople.sql");
+    sql = sql.replace("/*whereclause*/", clause);
+    sql = SqlRender.renderSql(sql, 
+            new String[]{"tableQualifier", "cohortDefinitionId","gender", "age", "conditions", "drugs", "rows"}, 
+            new String[]{resultsTableQualifier, String.valueOf(id), 
+                String.valueOf(gender), 
+                String.valueOf(age), 
+                String.valueOf(conditions), 
+                String.valueOf(drugs), 
+                String.valueOf(rows)});
+    sql = SqlTranslate.translateSql(sql, getSourceDialect(), source.getSourceDialect(), SessionUtils.sessionId(),
+            resultsTableQualifier);
 
+    return getSourceJdbcTemplate(source).query(sql, this.cohortMemberMapper);
+  }
+  
   /**
    * Returns the person identifiers of all members of a generated cohort
    * definition identifier

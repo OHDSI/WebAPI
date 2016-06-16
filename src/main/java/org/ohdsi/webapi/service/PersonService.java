@@ -63,6 +63,7 @@ public class PersonService extends AbstractDaoService {
     sql_statement = SqlRender.renderSql(sql_statement, new String[]{"personId", "tableQualifier"}, new String[]{personId, tableQualifier});
     sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
     
+    profile.gender = "not found";
     getSourceJdbcTemplate(source).query(sql_statement, new RowMapper<Void>() {
       @Override
       public Void mapRow(ResultSet resultSet, int arg1) throws SQLException {
@@ -70,6 +71,9 @@ public class PersonService extends AbstractDaoService {
         return null;
       }
     });
+    if (profile.gender.equals("not found")) {
+        throw new RuntimeException("Can't find person " + personId);        
+    }
 
     sql_statement = ResourceHelper.GetResourceAsString("/resources/person/sql/getRecords.sql");
     sql_statement = SqlRender.renderSql(sql_statement, new String[]{"personId", "tableQualifier"}, new String[]{personId, tableQualifier});

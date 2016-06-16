@@ -235,6 +235,13 @@
   <dependencies>
     <!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-actuator</artifactId> 
     <version>${spring.boot.version}</version> </dependency> -->
+    
+    <dependency>
+      <groupId>io.jsonwebtoken</groupId>
+      <artifactId>jjwt</artifactId>
+      <version>0.6.0</version>
+    </dependency>    
+    
     <dependency>
       <groupId>com.github.dblock.waffle</groupId>
       <artifactId>waffle-jna</artifactId>

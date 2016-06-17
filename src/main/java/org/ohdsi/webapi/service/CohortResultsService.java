@@ -1346,10 +1346,8 @@ public class CohortResultsService extends AbstractDaoService {
                                         @PathParam("conditions") String conditions, 
                                         @PathParam("drugs") String drugs,
                                         @PathParam("rows") final int rows) {
-    ArrayList<String> params;
-    ArrayList<String> wherecols;
-    params = new ArrayList<>();
-    wherecols = new ArrayList<>();
+    List<String> params = new ArrayList<>();
+    List<String> wherecols = new ArrayList<>();
     int groups = 1;
     if (gender.length() > 0 && !gender.equals("''")) {
         params.add(" gender in (@gender) ");
@@ -1379,8 +1377,14 @@ public class CohortResultsService extends AbstractDaoService {
     String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
     String sql = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/raw/getCohortBreakdownPeople.sql");
     sql = sql.replace("/*whereclause*/", clause);
+    String wherecolsStr = "";
     if (wherecols.isEmpty()) {
         sql = sql.replace("partition by", "");
+    } else {
+        wherecolsStr += wherecols.get(0);
+        for (int i=1; i < wherecols.size(); i++) {
+            wherecolsStr += (',' + wherecols.get(i));
+        }
     }
     sql = SqlRender.renderSql(sql, 
             new String[]{"tableQualifier", "cohortDefinitionId","gender", "age", "conditions", "drugs", "rows","wherecols","groups"}, 
@@ -1390,7 +1394,7 @@ public class CohortResultsService extends AbstractDaoService {
                 String.valueOf(conditions), 
                 String.valueOf(drugs), 
                 String.valueOf(rows),
-                String.valueOf(String.join(",", wherecols)),
+                String.valueOf(wherecolsStr),
                 String.valueOf(groups)});
     sql = SqlTranslate.translateSql(sql, getSourceDialect(), source.getSourceDialect(), SessionUtils.sessionId(),
             resultsTableQualifier);

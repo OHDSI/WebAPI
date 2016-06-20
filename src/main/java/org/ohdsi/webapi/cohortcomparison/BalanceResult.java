@@ -13,26 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ohdsi.webapi.service;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import org.springframework.stereotype.Component;
+package org.ohdsi.webapi.cohortcomparison;
 
 /**
  *
  * @author fdefalco
  */
-@Path("rsb/")
-@Component
-public class RSBProxyService extends AbstractDaoService {
-  @Path("test")
-  @GET
-  @Produces(MediaType.APPLICATION_JSON)
-  public String test(@PathParam("sourceKey") String sourceKey) {
-    return "pass";
-  }
+public class BalanceResult {
+    public int covariateId;
+    public int conceptId;
+    public String covariateName;
+    public float beforeMatchingStdDiff;
+    public float afterMatchingStdDiff;
 }

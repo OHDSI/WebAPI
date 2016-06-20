@@ -13,26 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ohdsi.webapi.service;
+package org.ohdsi.webapi.rsb;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import org.springframework.stereotype.Component;
-
+import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  *
  * @author fdefalco
  */
-@Path("rsb/")
-@Component
-public class RSBProxyService extends AbstractDaoService {
-  @Path("test")
-  @GET
-  @Produces(MediaType.APPLICATION_JSON)
-  public String test(@PathParam("sourceKey") String sourceKey) {
-    return "pass";
-  }
+public class CohortComparisonRequest {
+  @JsonProperty("treatment")
+  public Integer treatment;
+  
+  @JsonProperty("comparator")
+  public Integer comparator;  
+  
+  @JsonProperty("outcome")
+  public Integer outcome;  
+  
+  @JsonProperty("exclusions")
+  public Integer exclusions; 
+  
+  @JsonProperty("timeAtRisk")
+  public Integer timeAtRisk;  
+
+  @JsonProperty("sourceKey")
+  public String sourceKey;  
 }

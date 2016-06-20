@@ -1,5 +1,4 @@
 /*
- * Copyright 2016 fdefalco.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,26 +12,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ohdsi.webapi.service;
+package org.ohdsi.webapi.cohortcomparison;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import org.springframework.stereotype.Component;
+import java.util.List;
+import org.springframework.data.repository.CrudRepository;
 
 /**
- *
- * @author fdefalco
+ * @author Frank DeFalco <fdefalco@ohdsi.org>
  */
-@Path("rsb/")
-@Component
-public class RSBProxyService extends AbstractDaoService {
-  @Path("test")
-  @GET
-  @Produces(MediaType.APPLICATION_JSON)
-  public String test(@PathParam("sourceKey") String sourceKey) {
-    return "pass";
-  }
+
+public interface ComparativeCohortAnalysisExecutionRepository extends CrudRepository<ComparativeCohortAnalysisExecution,Integer>{
+  List<ComparativeCohortAnalysisExecution> findAllByAnalysisId(Integer analysisId);  
+  ComparativeCohortAnalysisExecution findByExecutionId(Integer executionId);
 }

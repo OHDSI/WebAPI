@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.characterization;
+package org.ohdsi.webapi.report;
 
 import org.ohdsi.webapi.cohortresults.ConceptCountRecord;
 import org.ohdsi.webapi.cohortresults.ConceptDistributionRecord;

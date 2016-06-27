@@ -222,22 +222,10 @@ public class ConceptSetService extends AbstractDaoService {
         // Get the concept set expression
         cs.csExpression = this.getConceptSetExpression(conceptSetId);
 
-        // Resolve the concept set
-        cs.conceptIds = vocabService.resolveConceptSetExpression(vocabSource.sourceKey, cs.csExpression);
-
-        // Create an array of concept Ids that will be used in the subsequent calls
-        long[] conceptIds = new long[cs.conceptIds.size()];
-        Iterator<Long> iter = cs.conceptIds.iterator();
-        for (int j = 0; iter.hasNext(); j++) {
-            conceptIds[j] = iter.next();
-        }
-        //Java 8 this will be more efficent:
-        //long[] conceptIds = cs.conceptIds.stream().mapToLong(i->i).toArray();
-
         // Lookup the identifiers
-        cs.identifierConcepts = vocabService.executeIdentifierLookup(vocabSource.sourceKey, conceptIds);
+        cs.identifierConcepts = vocabService.executeIncludedConceptLookup(vocabSource.sourceKey, cs.csExpression); //vocabService.executeIdentifierLookup(vocabSource.sourceKey, conceptIds);
         // Lookup the mapped items
-        cs.mappedConcepts = vocabService.executeMappedLookup(vocabSource.sourceKey, conceptIds);
+        cs.mappedConcepts = vocabService.executeMappedLookup(vocabSource.sourceKey, cs.csExpression);
 
         return cs;
     }

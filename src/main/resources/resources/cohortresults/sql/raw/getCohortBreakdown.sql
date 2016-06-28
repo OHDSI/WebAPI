@@ -4,10 +4,10 @@ from
 (select c.*, gc.concept_name as gender,
         cast(floor((year(cohort_start_date) - year_of_birth) / 10) * 10 as varchar(5)) + '-' +
             cast(floor((year(cohort_start_date) - year_of_birth) / 10 + 1) * 10 - 1 as varchar(5)) as age,
-        (select round(count(*), - floor(log10(abs(count(*) + 0.01)))) 
+        (select round(count(*), cast(- floor(log10(abs(count(*) + 0.01))) as int)) 
          from @tableQualifier.condition_occurrence co 
          where co.person_id = c.subject_id) as conditions,
-        (select round(count(*), - floor(log10(abs(count(*) + 0.01))))
+        (select round(count(*), cast(- floor(log10(abs(count(*) + 0.01))) as int))
          from @tableQualifier.drug_exposure de 
          where de.person_id = c.subject_id) as drugs
 from @tableQualifier.cohort c

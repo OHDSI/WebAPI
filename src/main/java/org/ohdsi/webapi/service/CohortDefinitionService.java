@@ -543,20 +543,10 @@ public class CohortDefinitionService extends AbstractDaoService {
       export.ConceptSetName = cs.name;
       export.csExpression = cs.expression;
 
-      // Resolve the concept set
-      export.conceptIds = vocabService.resolveConceptSetExpression(vocabSource.sourceKey, export.csExpression);
-
-      // Create an array of concept Ids that will be used in the subsequent calls
-      long[] conceptIds = new long[export.conceptIds.size()];
-      Iterator<Long> iter = export.conceptIds.iterator();
-      for (int j = 0; iter.hasNext(); j++) {
-        conceptIds[j] = iter.next();
-      }
-
       // Lookup the identifiers
-      export.identifierConcepts = vocabService.executeIdentifierLookup(vocabSource.sourceKey, conceptIds);
+      export.identifierConcepts = vocabService.executeIncludedConceptLookup(vocabSource.sourceKey, cs.expression);
       // Lookup the mapped items
-      export.mappedConcepts = vocabService.executeMappedLookup(vocabSource.sourceKey, conceptIds);
+      export.mappedConcepts = vocabService.executeMappedLookup(vocabSource.sourceKey, cs.expression);
 
       exports.add(export);
     }

@@ -23,10 +23,7 @@ public class ConceptSetExport {
     
     @JsonProperty("ConceptSetExpression")
     public ConceptSetExpression csExpression;
-    
-    @JsonProperty("ConceptIds")
-    public Collection<Long> conceptIds;
-    
+        
     @JsonProperty("IdentifierConcepts")
     public Collection<Concept> identifierConcepts;
     

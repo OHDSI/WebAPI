@@ -303,6 +303,10 @@ public class CohortDefinitionService extends AbstractDaoService {
   public GenerateSqlResult generateSql(GenerateSqlRequest request) {
     CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = request.options;
     GenerateSqlResult result = new GenerateSqlResult();
+    if (options == null)
+    {
+      options = new CohortExpressionQueryBuilder.BuildExpressionQueryOptions();
+    }
     result.templateSql = queryBuilder.buildExpressionQuery(request.expression, options);
 
     return result;

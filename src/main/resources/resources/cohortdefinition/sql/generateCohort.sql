@@ -24,7 +24,6 @@ create table #inclusionRuleCohorts
 ;
 @inclusionCohortInserts
 
--- the matching group with all bits set ( POWER(2,# of inclusion rules) - 1 = inclusion_rule_mask
 DELETE FROM @target_database_schema.@target_cohort_table where cohort_definition_id = @target_cohort_id;
 INSERT INTO @target_database_schema.@target_cohort_table (cohort_definition_id, subject_id, cohort_start_date, cohort_end_date)
 select @target_cohort_id as cohort_definition_id, MG.person_id, MG.start_date, MG.end_date
@@ -36,10 +35,12 @@ from
   GROUP BY C.event_id, C.person_id, C.start_date, C.end_date
 ) MG -- matching groups
 {@ruleTotal != 0}?{
+-- the matching group with all bits set ( POWER(2,# of inclusion rules) - 1 = inclusion_rule_mask
 WHERE (MG.inclusion_rule_mask = POWER(cast(2 as bigint),@ruleTotal)-1)
 }
 ;
 
+{@generateStats != 0}?{
 -- calculte matching group counts
 delete from @results_database_schema.cohort_inclusion_result where cohort_definition_id = @target_cohort_id;
 insert into @results_database_schema.cohort_inclusion_result (cohort_definition_id, inclusion_rule_mask, person_count)
@@ -84,6 +85,7 @@ coalesce((
   where cohort_definition_id = @target_cohort_id and sr.inclusion_rule_mask = POWER(cast(2 as bigint),RuleTotal.total_rules)-1
 ),0) as final_count
 ;
+}
 
 TRUNCATE TABLE #inclusionRuleCohorts;
 DROP TABLE #inclusionRuleCohorts;

@@ -275,10 +275,15 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     if (options != null)
     {
       // replease query parameters with tokens
-      resultSql = StringUtils.replace(resultSql, "@cdm_database_schema", options.cdmSchema);
-      resultSql = StringUtils.replace(resultSql, "@target_database_schema.@target_cohort_table", options.targetTable);
-      resultSql = StringUtils.replace(resultSql, "@results_database_schema", options.resultSchema);
-      resultSql = StringUtils.replace(resultSql, "@target_cohort_id", options.cohortId.toString());
+      if (options.cdmSchema != null)
+        resultSql = StringUtils.replace(resultSql, "@cdm_database_schema", options.cdmSchema);
+      if (options.targetTable != null)
+        resultSql = StringUtils.replace(resultSql, "@target_database_schema.@target_cohort_table", options.targetTable);
+      if (options.resultSchema != null)
+        resultSql = StringUtils.replace(resultSql, "@results_database_schema", options.resultSchema);
+      if (options.cohortId != null)
+        resultSql = StringUtils.replace(resultSql, "@target_cohort_id", options.cohortId.toString());
+       resultSql = StringUtils.replace(resultSql, "@generateStats", options.generateStats ? "1": "0");
     }
     return resultSql;
   }

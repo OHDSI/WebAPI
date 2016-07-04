@@ -4,8 +4,11 @@ OHDSI WebAPI contains all OHDSI services that can be called from OHDSI applicati
 NOTE: Check license information for individual sources on the [Web API documentation page](http://www.ohdsi.org/web/wiki/doku.php?id=documentation:software:webapi)
 
 #### Getting Started
+
+New documentation can be found a tthe [Web API Installation Guide](https://github.com/OHDSI/WebAPI/wiki/WebAPI-Installation-Guide)
+
 ##### Compilation
-Compiling the WebAPI project will require Maven.  Any Maven compliant IDE will be able to resolve all dependencies and compile the project.
+Compiling the WebAPI project will require Maven.  Maven is a command line tool that will build the WAR for deployment to a servlet container.
 
 ##### JDBC Drivers
 JDBC Drivers are not included with the source or any release packages.  Obtaining JDBC Drivers and making them available on the hosting server via environment classpath or web server configuration are left as an excercise for the developer / system administrator.  
@@ -66,14 +69,4 @@ Services should use the org.ohdsi.webapi.JobTemplate to launch Jobs.
 See org.ohdsi.webapi.exampleapplication.ExampleApplicationConfig & ExampleApplicationWithJobService for how to submit jobs.
 
 See JobServiceIT (integration test) for more detail (java client).
-
-
-
-
-
-
-
-
-
-
 

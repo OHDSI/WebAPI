@@ -23,7 +23,8 @@ select   concept_hierarchy.concept_id,
 	1.0*hr1.num_persons_after / denom.count_value as percent_persons_after,
 	1.0*(hr1.num_persons_after - hr1.num_persons_before)/denom.count_value as risk_diff_after_before,
 	log(1.0*(hr1.num_persons_after + 0.5) / (hr1.num_persons_before + 0.5)) as logRR_after_before,
-	hr1.num_persons
+	hr1.num_persons,
+        denom.count_value
 from
 (select stratum_1 as concept_id,
 	sum(count_value) as num_persons,

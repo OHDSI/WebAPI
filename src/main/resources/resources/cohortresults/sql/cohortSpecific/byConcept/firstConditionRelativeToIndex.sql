@@ -15,6 +15,7 @@ FROM   (SELECT cohort_definition_id,
         FROM   @ohdsi_database_schema.heracles_results 
         WHERE  analysis_id IN ( 1820 ) 
                AND cohort_definition_id IN ( @cohortDefinitionId )
+               AND Cast(stratum_2 AS INTEGER) * 30 BETWEEN -1000 AND 1000
                         ) hr1 
        INNER JOIN (SELECT -1 * Cast(stratum_1 AS INTEGER) * 30                AS 
               duration, 
@@ -98,7 +99,9 @@ FROM   (SELECT cohort_definition_id,
                count_value 
         FROM   @ohdsi_database_schema.heracles_results  
         WHERE  analysis_id IN ( 1821 ) 
-               AND cohort_definition_id IN ( @cohortDefinitionId )) hr1 
+               AND cohort_definition_id IN ( @cohortDefinitionId )
+               AND Cast(stratum_2 AS INTEGER) * 30 BETWEEN -1000 AND 1000
+               ) hr1 
        INNER JOIN (SELECT -1 * Cast(stratum_1 AS INTEGER) * 30                AS 
               duration, 
                           Sum(count_value) 

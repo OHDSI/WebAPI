@@ -14,6 +14,7 @@
  */
 package org.ohdsi.webapi.cohortdefinition;
 
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -32,4 +33,8 @@ public interface CohortDefinitionRepository extends CrudRepository<CohortDefinit
   @EntityGraph(value = "CohortDefinition.withDetail", type = EntityGraph.EntityGraphType.LOAD)
   @Query("select cd from CohortDefinition cd where id = ?1")
   CohortDefinition findOneWithDetail(Integer id);
+  
+  @Query("select cd from CohortDefinition AS cd JOIN FETCH cd.details as d")          
+  List<CohortDefinition> list();
+  
 }

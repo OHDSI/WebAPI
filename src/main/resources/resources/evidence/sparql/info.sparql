@@ -1,0 +1,8 @@
+PREFIX oa: <http://www.w3.org/ns/oa#>
+PREFIX ohdsi: <http://purl.org/net/ohdsi#>
+SELECT ?sourceDocument
+WHERE {
+?s a ohdsi:PubMedDrugHOIAnnotation;
+oa:hasTarget ?target.
+?target oa:hasSource ?sourceDocument.
+}

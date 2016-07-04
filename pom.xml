@@ -26,9 +26,6 @@
     <datasource.password>password</datasource.password>
     <!--<datasource.validationQuery>SELECT 1</datasource.validationQuery>-->
     <datasource.dialect>sql server</datasource.dialect>
-    <!-- specify cdm.database if CDM instance is in a different database name then the one specified in primary jdbc url connection -->
-    <datasource.cdm.database />
-    <datasource.cdm.schema>dbo</datasource.cdm.schema>
     <datasource.ohdsi.schema>dbo</datasource.ohdsi.schema>
     <datasource.dialect.source>sql server</datasource.dialect.source>
     <!-- DB Change Management / Migration -->
@@ -40,12 +37,12 @@
     <!-- Note: Schema name is case-sensitive. -->
     <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
     <flyway.validateOnMigrate>false</flyway.validateOnMigrate>
-		
+    <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>		
     <!-- CDM properties -->
     <source.name>CDM_NAME</source.name>
     <cdm.version>5</cdm.version>
 
-    <spring.batch.repository.tableprefix>BATCH_</spring.batch.repository.tableprefix>
+    <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
     <spring.batch.repository.isolationLevelForCreate>ISOLATION_READ_COMMITTED</spring.batch.repository.isolationLevelForCreate>
 		
     <spring.profiles.active>default</spring.profiles.active>
@@ -111,6 +108,14 @@
         </executions>
         -->
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.18.1</version>
+        <configuration>
+          <skipTests>true</skipTests>
+        </configuration>
+</plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -332,6 +337,18 @@
       <version>${flyway.version}</version>
     </dependency>
     <dependency>
+	<groupId>org.apache.httpcomponents</groupId>
+	<artifactId>httpclient</artifactId>
+	<version>4.3.6</version>
+</dependency>
+<dependency>
+	<groupId>commons-httpclient</groupId>
+	<artifactId>commons-httpclient</artifactId>
+	<version>3.1</version>
+</dependency>
+
+    
+    <dependency>
       <groupId>org.springframework.batch</groupId>
       <artifactId>spring-batch-admin-manager</artifactId>
       <version>2.0.0.M1</version>
@@ -346,12 +363,19 @@
         </exclusion>
       </exclusions>
     </dependency>
+   
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
       <version>9.4-1201-jdbc41</version>
       <type>jar</type>
     </dependency>
+    <dependency>
+      <groupId>com.opencsv</groupId>
+      <artifactId>opencsv</artifactId>
+      <version>3.7</version>
+      <type>jar</type>
+    </dependency>    
     <dependency>
       <groupId>org.apache.shiro</groupId>
       <artifactId>shiro-core</artifactId>
@@ -382,15 +406,14 @@
       <id>webapi-oracle</id>
       <properties>
         <datasource.driverClassName>oracle.jdbc.OracleDriver</datasource.driverClassName>
-        <datasource.url>jdbc:oracle:thin:@127.0.0.1:1521:cdm</datasource.url>
+        <datasource.url>jdbc:oracle:thin:@127.0.0.1:1521/ohdsi</datasource.url>
         <datasource.username>user</datasource.username>
         <datasource.password>password</datasource.password>
         <datasource.dialect>oracle</datasource.dialect>
-        <datasource.cdm.schema>omopv5_de</datasource.cdm.schema>
         <datasource.ohdsi.schema>OHDSI</datasource.ohdsi.schema>
         <!--<datasource.validationQuery>SELECT 1 FROM DUAL</datasource.validationQuery>-->
         <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
-        <flyway.datasource.url>jdbc:oracle:thin@127.0.0.1:1521:ohdsi</flyway.datasource.url>
+        <flyway.datasource.url>jdbc:oracle:thin:@127.0.0.1:152/ohdsi</flyway.datasource.url>
         <flyway.datasource.username>user</flyway.datasource.username>
         <flyway.datasource.password>pass</flyway.datasource.password>
         <flyway.locations>classpath:db/migration/oracle</flyway.locations>
@@ -429,7 +452,6 @@
         <datasource.username>USER</datasource.username>
         <datasource.password>PASS</datasource.password>
         <datasource.dialect>sql server</datasource.dialect>
-        <datasource.cdm.schema>CDM_schema</datasource.cdm.schema>
         <datasource.ohdsi.schema>OHDSI_schema</datasource.ohdsi.schema>
         <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
         <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
@@ -454,7 +476,30 @@
         <datasource.username>USER</datasource.username>
         <datasource.password>PASS</datasource.password>
         <datasource.dialect>sql server</datasource.dialect>
-        <datasource.cdm.schema>CDM_schema</datasource.cdm.schema>
+        <datasource.ohdsi.schema>OHDSI_schema</datasource.ohdsi.schema>
+        <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
+        <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
+        <flyway.datasource.username>FLYWAY_USER</flyway.datasource.username>
+        <flyway.datasource.password>FLYWAY_PASS</flyway.datasource.password>
+        <flyway.locations>classpath:db/migration/sqlserver</flyway.locations>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>com.microsoft.sqlserver</groupId>
+          <artifactId>sqljdbc4</artifactId>
+          <version>4.0</version>
+          <type>jar</type>
+        </dependency>
+      </dependencies>	            
+    </profile>                         
+    <profile>
+      <id>webapi-alpha</id>
+      <properties>
+        <datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</datasource.driverClassName>
+        <datasource.url>jdbc:sqlserver://server</datasource.url>
+        <datasource.username>USER</datasource.username>
+        <datasource.password>PASS</datasource.password>
+        <datasource.dialect>sql server</datasource.dialect>
         <datasource.ohdsi.schema>OHDSI_schema</datasource.ohdsi.schema>
         <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
         <flyway.datasource.url>${datasource.url}</flyway.datasource.url>

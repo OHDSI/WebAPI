@@ -3,7 +3,9 @@ package org.ohdsi.webapi.service;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -16,8 +18,10 @@ import org.apache.shiro.SecurityUtils;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.helper.ResourceHelper;
+import org.ohdsi.webapi.report.ConditionOccurrenceTreemapNode;
+import org.ohdsi.webapi.report.DrugPrevalence;
+import org.ohdsi.webapi.report.DrugEraPrevalence;
 import org.ohdsi.webapi.report.MonthlyPrevalence;
-import org.ohdsi.webapi.report.PackedConceptNode;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.springframework.dao.DataAccessException;
@@ -64,62 +68,26 @@ public class CDMResultsService extends AbstractDaoService {
     }
   }
 
-  private PackedConceptNode root;
-
-  private final RowMapper<PackedConceptNode> nodeMapper = new RowMapper<PackedConceptNode>() {
+  private final RowMapper<SimpleEntry<Long, Long[]>> rowMapper = new RowMapper<SimpleEntry<Long, Long[]>>() {
     @Override
-    public PackedConceptNode mapRow(final ResultSet resultSet, final int arg1) throws SQLException {
-      final PackedConceptNode node = new PackedConceptNode();
-      node.conceptId = resultSet.getLong("CONCEPT_ID");
-      node.size = resultSet.getLong("NUM_RECORDS");
-      return node;
-    }
-  };
+    public SimpleEntry<Long, Long[]> mapRow(final ResultSet resultSet, final int arg1) throws SQLException {
+      long id = resultSet.getLong("concept_id");
+      long record_count = resultSet.getLong("record_count");
+      long descendant_record_count = resultSet.getLong("descendant_record_count");
 
-  private final RowMapper<SimpleEntry<Long, Long>> rowMapper = new RowMapper<SimpleEntry<Long, Long>>() {
-    @Override
-    public SimpleEntry<Long, Long> mapRow(final ResultSet resultSet, final int arg1) throws SQLException {
-      long id = resultSet.getLong("CONCEPT_ID");
-      long records = resultSet.getLong("NUM_RECORDS");
-
-      SimpleEntry<Long, Long> entry = new SimpleEntry<Long, Long>(id, records);
+      SimpleEntry<Long, Long[]> entry = new SimpleEntry<Long, Long[]>(id, new Long[] { record_count, descendant_record_count });
       return entry;
     }
   };
-
-  @Path("conceptDensity")
-  @POST
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public List<SimpleEntry<Long, Long>> getConceptDensity(@PathParam("sourceKey") String sourceKey, String[] identifiers) {
-    SecurityUtils.getSubject().checkPermission(
-            String.format("read:%s:cdmresults:conceptDensity", sourceKey));
-    
-    Source source = getSourceRepository().findBySourceKey(sourceKey);
-    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-
-    for (int i = 0; i < identifiers.length; i++) {
-      identifiers[i] = "'" + identifiers[i] + "'";
-    }
-
-    String identifierList = StringUtils.join(identifiers, ",");
-    String sql_statement = ResourceHelper.GetResourceAsString("/resources/cdmresults/sql/getConceptDensity.sql");
-    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"OHDSI_schema", "conceptIdentifiers"}, new String[]{tableQualifier, identifierList});
-    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
-
-    return getSourceJdbcTemplate(source).query(sql_statement, rowMapper);
-  }
 
   @Path("conceptRecordCount")
   @POST
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public PackedConceptNode getConceptRecordCount(@PathParam("sourceKey") String sourceKey, String[] identifiers) {
-    SecurityUtils.getSubject().checkPermission(
-            String.format("read:%s:cdmresults:conceptRecordCount", sourceKey));
-
+  public List<SimpleEntry<Long, Long[]>> getConceptRecordCount(@PathParam("sourceKey") String sourceKey, String[] identifiers) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    String resultTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    String vocabularyTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
 
     for (int i = 0; i < identifiers.length; i++) {
       identifiers[i] = "'" + identifiers[i] + "'";
@@ -127,16 +95,104 @@ public class CDMResultsService extends AbstractDaoService {
 
     String identifierList = StringUtils.join(identifiers, ",");
     String sql_statement = ResourceHelper.GetResourceAsString("/resources/cdmresults/sql/getConceptRecordCount.sql");
-    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"OHDSI_schema", "conceptIdentifiers"}, new String[]{tableQualifier, identifierList});
+    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"resultTableQualifier", "vocabularyTableQualifier", "conceptIdentifiers"}, new String[]{resultTableQualifier, vocabularyTableQualifier, identifierList});
     sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
 
-    List<PackedConceptNode> nodes;
-    nodes = getSourceJdbcTemplate(source).query(sql_statement, nodeMapper);
+    return getSourceJdbcTemplate(source).query(sql_statement, rowMapper);
+  }
+  @Path("drugeratreemap")
+  @POST
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public List<DrugPrevalence> getDrugEraTreemap(@PathParam("sourceKey") String sourceKey, String[] identifiers) {
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    String vocabularyTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
 
-    PackedConceptNode root = new PackedConceptNode();
-    root.conceptName = "root";
-    root.children = nodes;
-    return root;
+    for (int i = 0; i < identifiers.length; i++) {
+      identifiers[i] = "'" + identifiers[i] + "'";
+    }
+
+    String identifierList = StringUtils.join(identifiers, ",");
+    String sql_statement = ResourceHelper.GetResourceAsString("/resources/cdmresults/sql/getDrugEraTreemap.sql");
+    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"ohdsi_database_schema", "vocabulary_database_schema", "conceptList"}, new String[]{tableQualifier, vocabularyTableQualifier, identifierList});
+    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
+
+    
+    List<Map<String, Object>> rows = getSourceJdbcTemplate(source).queryForList(sql_statement);
+    List<DrugPrevalence> listOfResults = new ArrayList<DrugPrevalence>();
+    for (Map rs : rows) {
+          DrugPrevalence d = new DrugPrevalence();
+          d.conceptId = Long.valueOf(String.valueOf(rs.get("concept_id")));
+          d.conceptPath = String.valueOf(rs.get("concept_path"));
+          d.lengthOfEra = Float.valueOf(String.valueOf(rs.get("length_of_era")));
+          d.numPersons = Long.valueOf(String.valueOf(rs.get("num_persons")));
+          d.percentPersons = Float.valueOf(String.valueOf(rs.get("percent_persons")));
+          listOfResults.add(d);
+      }
+
+    return listOfResults;
   }
 
+  @Path("{conceptId}/drugeraprevalence")
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  public List<DrugEraPrevalence> getDrugEraPrevalenceByGenderAgeYear(@PathParam("sourceKey") String sourceKey, @PathParam("conceptId") String conceptId) {
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    String vocabularyTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
+
+    String sql_statement = ResourceHelper.GetResourceAsString("/resources/cdmresults/sql/getDrugEraPrevalenceByGenderAgeYear.sql");
+    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"ohdsi_database_schema", "vocabulary_database_schema", "conceptId"}, new String[]{tableQualifier, vocabularyTableQualifier, conceptId});
+    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
+
+    
+    List<Map<String, Object>> rows = getSourceJdbcTemplate(source).queryForList(sql_statement);
+    List<DrugEraPrevalence> listOfResults = new ArrayList<DrugEraPrevalence>();
+    for (Map rs : rows) {
+          DrugEraPrevalence d = new DrugEraPrevalence();
+          d.conceptId = Long.valueOf(String.valueOf(rs.get("concept_id")));
+          d.trellisName = String.valueOf(rs.get("trellis_name"));
+          d.seriesName = String.valueOf(rs.get("series_name"));
+          d.xCalendarYear = Long.valueOf(String.valueOf(rs.get("x_calendar_year")));
+          d.yPrevalence1000Pp = Float.valueOf(String.valueOf(rs.get("y_prevalence_1000pp")));
+          listOfResults.add(d);
+      }
+
+    return listOfResults;
+  }
+
+  @Path("conditionoccurrencetreemap")
+  @POST
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public List<ConditionOccurrenceTreemapNode> getConditionOccurrenceTreemap(@PathParam("sourceKey") String sourceKey, String[] identifiers) {
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+
+    for (int i = 0; i < identifiers.length; i++) {
+      identifiers[i] = "'" + identifiers[i] + "'";
+    }
+
+    String identifierList = StringUtils.join(identifiers, ",");
+    String sql_statement = ResourceHelper.GetResourceAsString("/resources/cdmresults/sql/getConditionOccurrenceTreemap.sql");
+    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"ohdsi_database_schema", "cdm_database_schema", "conceptIdList"}, new String[]{tableQualifier, cdmTableQualifier, identifierList});
+    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
+
+    
+    List<Map<String, Object>> rows = getSourceJdbcTemplate(source).queryForList(sql_statement);
+    List<ConditionOccurrenceTreemapNode> listOfResults = new ArrayList<ConditionOccurrenceTreemapNode>();
+    for (Map rs : rows) {
+          ConditionOccurrenceTreemapNode c = new ConditionOccurrenceTreemapNode();
+          c.conceptId = Long.valueOf(String.valueOf(rs.get("concept_id")));
+          c.conceptPath = String.valueOf(rs.get("concept_path"));
+          c.numPersons = Long.valueOf(String.valueOf(rs.get("num_persons")));
+          c.percentPersons = Float.valueOf(String.valueOf(rs.get("percent_persons")));
+          c.recordsPerPerson = Float.valueOf(String.valueOf(rs.get("records_per_person")));
+          listOfResults.add(c);
+      }
+
+    return listOfResults;
+  }
 }

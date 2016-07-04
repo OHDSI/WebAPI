@@ -1,7 +1,4 @@
---Needed for JPA/hibernate
-CREATE SEQUENCE FEASIBILITY_STUDY_SEQUENCE MAXVALUE 9223372036854775807 NOCYCLE;
-
-CREATE TABLE feas_study_generation_info(
+CREATE TABLE ${ohdsiSchema}.feas_study_generation_info(
   study_id number(10) NOT NULL,
   start_time Timestamp(3) NULL,
   execution_duration number(10) NULL,
@@ -10,7 +7,7 @@ CREATE TABLE feas_study_generation_info(
   CONSTRAINT PK_fs_gen_info PRIMARY KEY (study_id)
 );
 
-CREATE TABLE  feasibility_study(
+CREATE TABLE ${ohdsiSchema}.feasibility_study(
   id number(10) NOT NULL,
   name varchar2(255) NOT NULL,
   description varchar2(1000) NULL,
@@ -23,31 +20,31 @@ CREATE TABLE  feasibility_study(
   modified_date Timestamp(3) NULL,
   CONSTRAINT PK_feasibility_study PRIMARY KEY (id),
   CONSTRAINT FK_fs_cd_index FOREIGN KEY(index_def_id)
-    REFERENCES cohort_definition (id),
+    REFERENCES ${ohdsiSchema}.cohort_definition (id),
   CONSTRAINT FK_fs_cd_result FOREIGN KEY(result_def_id)
-    REFERENCES cohort_definition (id),
+    REFERENCES ${ohdsiSchema}.cohort_definition (id),
   CONSTRAINT FK_fs_fsgi FOREIGN KEY(generate_info_id)
-    REFERENCES feas_study_generation_info (study_id)
+    REFERENCES ${ohdsiSchema}.feas_study_generation_info (study_id)
 );
 
-CREATE TABLE feasibility_inclusion(
+CREATE TABLE ${ohdsiSchema}.feasibility_inclusion(
   study_id number(10) NOT NULL,
   sequence number(10) NOT NULL,
   name varchar2(255) NULL,
   description varchar2(1000) NULL,
   expression Clob NULL,
   CONSTRAINT FK_fi_fs FOREIGN KEY(study_id)
-    REFERENCES feasibility_study (id)
+    REFERENCES ${ohdsiSchema}.feasibility_study (id)
     ON DELETE CASCADE
 );
 
-CREATE TABLE feas_study_result(
+CREATE TABLE ${ohdsiSchema}.feas_study_result(
   study_id number(10) NOT NULL,
   inclusion_rule_mask number(19) NOT NULL,
   person_count number(19) NOT NULL
 );
 
-CREATE TABLE feas_study_index_stats(
+CREATE TABLE ${ohdsiSchema}.feas_study_index_stats(
   study_id number(10) NOT NULL,
   person_count number(19) NOT NULL,
   match_count number(19) NOT NULL

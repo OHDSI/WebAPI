@@ -220,7 +220,7 @@ public class FeasibilityService extends AbstractDaoService {
         additionalCriteria.type = "ALL";
         indexRuleExpression.additionalCriteria = additionalCriteria;
       } else {
-        if ("ANY".equalsIgnoreCase(indexRuleExpression.additionalCriteria.type)) {
+        if (!"ALL".equalsIgnoreCase(indexRuleExpression.additionalCriteria.type)) {
           // move this CriteriaGroup inside a new parent CriteriaGroup where the parent CriteriaGroup.type == "ALL"
           CriteriaGroup parentGroup = new CriteriaGroup();
           parentGroup.type = "ALL";
@@ -567,7 +567,7 @@ public class FeasibilityService extends AbstractDaoService {
     this.getTransactionTemplate().getTransactionManager().commit(initStatus);
 
     JobParametersBuilder builder = new JobParametersBuilder();
-    builder.addString("jobName", "Perform Study");
+    builder.addString("jobName", "performing feasibility study on " + indexRule.getName() + " : " + source.getSourceName() + " (" + source.getSourceKey() + ")");
     builder.addString("cdm_database_schema", cdmTableQualifier);
     builder.addString("target_database_schema", resultsTableQualifier);
     builder.addString("target_dialect", source.getSourceDialect());

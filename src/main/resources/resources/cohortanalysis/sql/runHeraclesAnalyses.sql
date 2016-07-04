@@ -497,7 +497,7 @@ SELECT DISTINCT
   CAST(CAST(YEAR(observation_period_start_date) AS VARCHAR(4)) +  '01' + '01' AS DATE) AS obs_year_start,	
   CAST(CAST(YEAR(observation_period_start_date) AS VARCHAR(4)) +  '12' + '31' AS DATE) AS obs_year_end
 INTO
-  #temp_dates
+  #temp_dates_1
 from @CDM_schema.PERSON p1
 inner join (select subject_id, cohort_definition_id as cohort_definition_id from @results_schema.COHORT where cohort_definition_id in (@cohort_definition_id)) c1
 	on p1.person_id = c1.subject_id
@@ -517,7 +517,7 @@ inner join (select subject_id, cohort_definition_id as cohort_definition_id from
 inner join
   @CDM_schema.observation_period op1
   on p1.person_id = op1.person_id,
-	#temp_dates
+	#temp_dates_1
 WHERE  
 		observation_period_start_date <= obs_year_start
 	AND 
@@ -526,8 +526,8 @@ GROUP BY
 	c1.cohort_definition_id, obs_year
 ;
 
-TRUNCATE TABLE #temp_dates;
-DROP TABLE #temp_dates;
+TRUNCATE TABLE #temp_dates_1;
+DROP TABLE #temp_dates_1;
 
 --}
 
@@ -544,7 +544,7 @@ SELECT DISTINCT
   CAST(CAST(YEAR(observation_period_start_date) AS VARCHAR(4)) +  RIGHT('0' + CAST(MONTH(OBSERVATION_PERIOD_START_DATE) AS VARCHAR(2)), 2) + '01' AS DATE) AS obs_month_start,  
   DATEADD(dd,-1,DATEADD(mm,1,CAST(CAST(YEAR(observation_period_start_date) AS VARCHAR(4)) +  RIGHT('0' + CAST(MONTH(OBSERVATION_PERIOD_START_DATE) AS VARCHAR(2)), 2) + '01' AS DATE))) AS obs_month_end
 INTO
-  #temp_dates
+  #temp_dates_2
 FROM @CDM_schema.PERSON p1
 inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on p1.person_id = c1.subject_id
@@ -565,7 +565,7 @@ inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_e
 inner join
   @CDM_schema.observation_period op1
   on p1.person_id = op1.person_id,
-	#temp_Dates
+	#temp_dates_2
 WHERE 
 		observation_period_start_date <= obs_month_start
 	AND 
@@ -574,8 +574,8 @@ GROUP BY
 	c1.cohort_definition_id, obs_month
 ;
 
-TRUNCATE TABLE #temp_dates;
-DROP TABLE #temp_dates;
+TRUNCATE TABLE #temp_dates_2;
+DROP TABLE #temp_dates_2;
 
 --}
 
@@ -682,7 +682,7 @@ IF OBJECT_ID('temp_dates', 'U') IS NOT NULL --This should only do something in O
 select distinct 
   YEAR(observation_period_start_date) as obs_year 
 INTO
-  #temp_dates
+  #temp_dates_3
 FROM @CDM_schema.PERSON p1
 inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on p1.person_id = c1.subject_id
@@ -705,7 +705,7 @@ inner join
   @CDM_schema.observation_period op1
   on p1.person_id = op1.person_id
 	,
-	#temp_dates t1 
+	#temp_dates_3 t1
 where year(op1.OBSERVATION_PERIOD_START_DATE) <= t1.obs_year
 	and year(op1.OBSERVATION_PERIOD_END_DATE) >= t1.obs_year
 group by c1.cohort_definition_id,
@@ -714,8 +714,8 @@ group by c1.cohort_definition_id,
 	floor((t1.obs_year - p1.year_of_birth)/10)
 ;
 
-TRUNCATE TABLE #temp_dates;
-DROP TABLE #temp_dates;
+TRUNCATE TABLE #temp_dates_3;
+DROP TABLE #temp_dates_3;
 
 --}
 
@@ -730,7 +730,7 @@ IF OBJECT_ID('temp_dates', 'U') IS NOT NULL --This should only do something in O
 select distinct 
   YEAR(observation_period_start_date)*100 + MONTH(observation_period_start_date)  as obs_month
 into 
-  #temp_dates
+  #temp_dates_4
 FROM @CDM_schema.PERSON p1
 inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
 	on p1.person_id = c1.subject_id
@@ -750,14 +750,14 @@ inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_e
 inner join
   @CDM_schema.observation_period op1
   on p1.person_id = op1.person_id,
-	#temp_dates t1 
+	#temp_dates_4 t1
 where YEAR(observation_period_start_date)*100 + MONTH(observation_period_start_date) <= t1.obs_month
 	and YEAR(observation_period_end_date)*100 + MONTH(observation_period_end_date) >= t1.obs_month
 group by c1.cohort_definition_id, t1.obs_month
 ;
 
-TRUNCATE TABLE #temp_dates;
-DROP TABLE #temp_dates;
+TRUNCATE TABLE #temp_dates_4;
+DROP TABLE #temp_dates_4;
 
 --}
 
@@ -5247,7 +5247,7 @@ group by cohort_definition_id
 -- 1813	Distribution of duration (days) from cohort end to observation end
 insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select cohort_definition_id,
-	1812 as analysis_id,
+	1813 as analysis_id,
 	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,

@@ -26,8 +26,8 @@ public class Evidence {
   @JsonProperty("evidenceType")
   public String evidenceType;
 
-  @JsonProperty("modality")
-  public boolean modality;
+  @JsonProperty("supports")
+  public Character supports;
 
   @JsonProperty("linkout")
   public String linkout;

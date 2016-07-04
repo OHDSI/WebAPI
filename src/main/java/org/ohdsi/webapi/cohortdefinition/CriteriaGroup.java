@@ -11,20 +11,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author cknoll1
  */
-public class CriteriaGroup implements ICohortExpressionElement {
+public class CriteriaGroup {
 
   @JsonProperty("Type")
   public String type;
 
+  @JsonProperty("Count")
+  public Integer count;
+  
   @JsonProperty("CriteriaList")
-  public AdditionalCriteria[] criteriaList;
+  public AdditionalCriteria[] criteriaList = new AdditionalCriteria[0];
 
   @JsonProperty("Groups")
-  public CriteriaGroup[] groups;
-
-  @Override
-  public String accept(ICohortExpressionElementVisitor visitor) {
-    return visitor.visit(this);
-  }
+  public CriteriaGroup[] groups = new CriteriaGroup[0];
 }
 

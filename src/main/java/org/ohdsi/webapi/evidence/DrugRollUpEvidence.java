@@ -34,14 +34,17 @@ public class DrugRollUpEvidence {
     @JsonProperty("HOI")
     public String hoiName;	
     
-    @JsonProperty("CT_COUNT")
+    @JsonProperty("MEDLINE_CT_COUNT")
     public Integer pubmedMeshCTcount;	
 
-    @JsonProperty("CASE_COUNT")
+    @JsonProperty("MEDLINE_CASE_COUNT")
     public Integer pubmedMeshCaseReportcount;	
 
-    @JsonProperty("OTHER_COUNT")
-    public Integer pubmedMeshOthercount;	
+    @JsonProperty("MEDLINE_OTHER_COUNT")
+    public Integer pubmedMeshOthercount;
+
+    @JsonProperty("CTD_CHEMICAL_DISEASE_COUNT")
+    public Integer ctdChemicalDiseaseCount;	
 
     @JsonProperty("SPLICER_COUNT")
     public Integer splicerCount;	
@@ -53,7 +56,10 @@ public class DrugRollUpEvidence {
     public Integer semmedCTcount;	
 
     @JsonProperty("SEMMEDDB_CASE_COUNT")
-    public Integer semmedCaseReportcount;	
+    public Integer semmedCaseReportcount;
+
+    @JsonProperty("SEMMEDDB_OTHER_COUNT")
+    public Integer semmedOthercount;	
 
     @JsonProperty("SEMMEDDB_NEG_CT_COUNT")
     public Integer semmedNegCTcount;	
@@ -61,6 +67,9 @@ public class DrugRollUpEvidence {
     @JsonProperty("SEMMEDDB_NEG_CASE_COUNT")
     public Integer semmedNegCaseReportcount;	
 
+    @JsonProperty("SEMMEDDB_NEG_OTHER_COUNT")
+    public Integer semmedNegOthercount;
+    
     @JsonProperty("AERS_REPORT_COUNT")
     public Integer aersReportCount;	
 

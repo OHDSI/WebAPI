@@ -1,7 +1,4 @@
---Needed for JPA/hibernate
-CREATE SEQUENCE COHORT_DEFINITION_SEQUENCE MAXVALUE 9223372036854775807 NO CYCLE;
-
-CREATE TABLE cohort_definition(
+CREATE TABLE ${ohdsiSchema}.cohort_definition(
 	id int NOT NULL,
 	name varchar(255) NOT NULL,
 	description varchar(1000) NULL,
@@ -13,12 +10,12 @@ CREATE TABLE cohort_definition(
 	CONSTRAINT PK_cohort_definition PRIMARY KEY (id) 
 );
 
-CREATE TABLE cohort_definition_details(
+CREATE TABLE ${ohdsiSchema}.cohort_definition_details(
 	id int,
 	expression Text NOT NULL,
 	CONSTRAINT PK_cohort_definition_details PRIMARY KEY (id),
 	CONSTRAINT FK_cohort_definition_details_cohort_definition 
 		FOREIGN KEY (id)
-		REFERENCES cohort_definition(id)
+		REFERENCES ${ohdsiSchema}.cohort_definition(id)
 );
 

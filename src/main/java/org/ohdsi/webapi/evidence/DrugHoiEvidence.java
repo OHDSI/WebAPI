@@ -16,8 +16,8 @@ public class DrugHoiEvidence {
     @JsonProperty("EVIDENCE")
     public String evidence;
     
-    @JsonProperty("MODALITY")
-    public boolean modality;
+    @JsonProperty("SUPPORTS")
+    public Character supports;
     
     @JsonProperty("LINKOUT")
     public String linkout;

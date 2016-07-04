@@ -1,4 +1,4 @@
-CREATE TABLE HERACLES_HEEL_results 
+CREATE TABLE ${ohdsiSchema}.HERACLES_HEEL_results 
 ( 
 cohort_definition_id int, 
 analysis_id INT, 

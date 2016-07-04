@@ -1,5 +1,5 @@
 SELECT @indexId as index_id, p.event_id
-FROM #PrimaryCriteriaEvents P
+FROM @eventTable P
 LEFT JOIN
 (
   @criteriaQuery

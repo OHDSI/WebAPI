@@ -1,6 +1,4 @@
-CREATE SEQUENCE COHORT_DEFINITION_SEQUENCE START WITH 0 MINVALUE 0 MAXVALUE 9223372036854775807 NOCYCLE;
-
-CREATE TABLE cohort_definition(
+CREATE TABLE ${ohdsiSchema}.cohort_definition(
 	id Number(10) NOT NULL ,
 	name Varchar2(255) NOT NULL,
 	description Varchar2(1000) NULL,
@@ -12,7 +10,7 @@ CREATE TABLE cohort_definition(
 	CONSTRAINT PK_cohort_definition PRIMARY KEY (id) 
 );
 
-CREATE TABLE cohort_definition_details(
+CREATE TABLE ${ohdsiSchema}.cohort_definition_details(
 	id Number(10),
 	expression CLOB NOT NULL,
 	CONSTRAINT PK_cohort_def_details PRIMARY KEY (id),

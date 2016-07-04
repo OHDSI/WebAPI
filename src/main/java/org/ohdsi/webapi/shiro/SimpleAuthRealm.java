@@ -19,6 +19,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class SimpleAuthRealm extends AuthorizingRealm {
   
+  public SimpleAuthRealm() {
+    setAuthenticationTokenClass(SimpleAuthToken.class);
+  }
+  
     @Autowired
     private UserRepository userRepository;
     
@@ -33,7 +37,7 @@ public class SimpleAuthRealm extends AuthorizingRealm {
     
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
-      final UsernamePasswordToken credentials = (UsernamePasswordToken) authenticationToken;
+      final SimpleAuthToken credentials = (SimpleAuthToken) authenticationToken;
       final String login = credentials.getUsername();
       if (login == null) {
         throw new UnknownAccountException("Login not provided");
@@ -44,6 +48,6 @@ public class SimpleAuthRealm extends AuthorizingRealm {
         throw new UnknownAccountException("Account does not exist");
       }
       
-      return new SimpleAuthenticationInfo(login, userEntity.getPassword(), getName());
+      return new SimpleAuthenticationInfo(login, "", getName());
     }
 }

@@ -2,6 +2,7 @@ package org.ohdsi.webapi.shiro.Entities;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -16,10 +17,13 @@ public class RoleEntity implements Serializable{
 
     private Long id;
     private String name;
-    private Set<PermissionEntity> permissions;
+    private Set<PermissionEntity> permissions = new HashSet<>(0);
+    private Set<UserEntity> users = new HashSet<>(0);
 
     @Id
     @Column(name = "ID")
+    @GeneratedValue(strategy=GenerationType.SEQUENCE)
+    @SequenceGenerator(name="sec_role_sequence", sequenceName="sec_role_sequence",initialValue = 10, allocationSize=1)
     public Long getId() {
         return id;
     }
@@ -44,5 +48,14 @@ public class RoleEntity implements Serializable{
 
     public void setPermissions(Set<PermissionEntity> permissions) {
         this.permissions = permissions;
+    }
+    
+    @ManyToMany(mappedBy = "roles", fetch = FetchType.EAGER)
+    public Set<UserEntity> getUsers() {
+      return users;
+    }
+    
+    public void setUsers(Set<UserEntity> users) {
+      this.users = users;
     }
 }

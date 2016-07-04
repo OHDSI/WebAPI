@@ -2,6 +2,7 @@ package org.ohdsi.webapi.shiro.Entities;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -28,10 +29,12 @@ public class UserEntity implements Serializable{
 
     private String name;
 
-    private Set<RoleEntity> roles;
+    private Set<RoleEntity> roles = new HashSet<>(0);
 
     @Id
     @Column(name = "ID")
+    @GeneratedValue(strategy=GenerationType.SEQUENCE)
+    @SequenceGenerator(name="sec_user_sequence", sequenceName="sec_user_sequence", initialValue = 1, allocationSize=1)
     public Long getId() {
         return id;
     }
@@ -79,7 +82,7 @@ public class UserEntity implements Serializable{
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, targetEntity = RoleEntity.class, fetch = FetchType.EAGER)
     @JoinTable(name = "SEC_USER_ROLE",
         joinColumns = {@JoinColumn(name = "USER_ID", nullable = false)},
-        inverseJoinColumns = {@JoinColumn(name = "ROLE_ID", nullable = true)})
+        inverseJoinColumns = {@JoinColumn(name = "ROLE_ID", nullable = false)})
     public Set<RoleEntity> getRoles() {
         return roles;
     }

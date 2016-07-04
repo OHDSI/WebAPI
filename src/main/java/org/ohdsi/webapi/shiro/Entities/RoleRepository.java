@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.shiro.Entities;
 
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
 /**
@@ -7,5 +8,8 @@ import org.springframework.data.repository.CrudRepository;
  */
 public interface RoleRepository extends CrudRepository<RoleEntity, Long> {
 
-    public RoleEntity findById(Long id);
+  public RoleEntity findById(Long id);
+
+  @Query("from RoleEntity where id = 1")
+  public RoleEntity getDefaultRole();
 }

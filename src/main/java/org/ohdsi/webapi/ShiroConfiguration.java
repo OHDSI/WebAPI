@@ -11,6 +11,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 
 import java.util.*;
+import org.apache.shiro.authc.Authenticator;
+import org.apache.shiro.authc.pam.FirstSuccessfulStrategy;
+import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.ohdsi.webapi.shiro.JwtAuthFilter;
 import org.ohdsi.webapi.shiro.JwtAuthRealm;
@@ -31,8 +34,6 @@ public class ShiroConfiguration {
 
         Map<String, String> filterChain = new HashMap<>();
         Map<String, javax.servlet.Filter> filters = new HashMap<>();
-//        filters.put("authBasic", new BasicHttpAuthenticationFilter());
-//        filterChain.put("/user/test", "authBasic");
         filters.put("bearerTokenAuthFilter", new JwtAuthFilter());
         filterChain.put("/user/test", "bearerTokenAuthFilter");
         shiroFilter.setFilters(filters);
@@ -44,15 +45,25 @@ public class ShiroConfiguration {
     @Bean(name = "securityManager")
     public DefaultWebSecurityManager securityManager(){
         final DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
+        
+        securityManager.setAuthenticator(authenticator());
+        
         List<Realm> realms = new ArrayList<>();
         realms.add(jwtRealm());
         realms.add(windowsAuthRealm());
         realms.add(basicAuthRealm());
         securityManager.setRealms(realms);
+                
         return securityManager;
     }
 
-
+    @Bean
+    public Authenticator authenticator() {
+        ModularRealmAuthenticator authenticator = new ModularRealmAuthenticator();
+        authenticator.setAuthenticationStrategy(new FirstSuccessfulStrategy());
+        return authenticator;
+    }
+            
     @Bean
     public DefaultWebSessionManager sessionManager(){
         final DefaultWebSessionManager sessionManager = new DefaultWebSessionManager();

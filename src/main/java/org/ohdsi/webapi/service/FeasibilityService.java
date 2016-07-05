@@ -558,12 +558,14 @@ public class FeasibilityService extends AbstractDaoService {
     JobParametersBuilder builder = new JobParametersBuilder();
     builder.addString("jobName", "performing feasibility study on " + indexRule.getName() + " : " + source.getSourceName() + " (" + source.getSourceKey() + ")");
     builder.addString("cdm_database_schema", cdmTableQualifier);
+    builder.addString("results_database_schema", resultsTableQualifier);
     builder.addString("target_database_schema", resultsTableQualifier);
     builder.addString("target_dialect", source.getSourceDialect());
     builder.addString("target_table", "cohort");
     builder.addString("cohort_definition_id", ("" + indexRule.getId()));
     builder.addString("study_id", ("" + study_id));
     builder.addString("source_id", ("" + source.getSourceId()));
+    builder.addString("generate_stats", Boolean.TRUE.toString());
 
     final JobParameters jobParameters = builder.toJobParameters();
     final JdbcTemplate sourceJdbcTemplate = getSourceJdbcTemplate(source);

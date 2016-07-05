@@ -90,6 +90,9 @@ coalesce((
 TRUNCATE TABLE #inclusionRuleCohorts;
 DROP TABLE #inclusionRuleCohorts;
 
+TRUNCATE TABLE #cohort_candidate;
+DROP TABLE #cohort_candidate;
+
 TRUNCATE TABLE #PrimaryCriteriaEvents;
 DROP TABLE #PrimaryCriteriaEvents;
 

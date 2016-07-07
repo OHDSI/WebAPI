@@ -38,6 +38,8 @@ import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.sql.SqlTranslate;
 import javax.ws.rs.core.Response;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.ohdsi.webapi.TerminateJobStepExceptionHandler;
 
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;

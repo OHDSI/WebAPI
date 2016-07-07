@@ -85,7 +85,6 @@ public class UserService {
   @GET
   @Path("test")
   @Produces(MediaType.APPLICATION_JSON)
-  @RequiresPermissions("read")
   public String test() {
     Subject user = SecurityUtils.getSubject();
     

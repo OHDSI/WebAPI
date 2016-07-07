@@ -376,7 +376,10 @@
       <version>3.7</version>
       <type>jar</type>
     </dependency>    
+<<<<<<< HEAD
     <dependency>
+=======
+>>>>>>> d1b61a858917d2ea67b9f59e14f6c59a623eaefb
       <groupId>org.apache.shiro</groupId>
       <artifactId>shiro-core</artifactId>
       <version>1.2.4</version>

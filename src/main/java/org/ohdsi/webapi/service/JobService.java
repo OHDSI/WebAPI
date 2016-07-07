@@ -14,6 +14,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.ohdsi.sql.SqlRender;
 
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.helper.ResourceHelper;

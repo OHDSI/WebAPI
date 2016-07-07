@@ -23,7 +23,10 @@ public class RoleEntity implements Serializable{
     @Id
     @Column(name = "ID")
     @GeneratedValue(strategy=GenerationType.SEQUENCE)
-    @SequenceGenerator(name="sec_role_sequence", sequenceName="sec_role_sequence",initialValue = 10, allocationSize=1)
+    @SequenceGenerator(
+            name="sec_role_sequence", 
+            sequenceName="sec_role_sequence"
+    )
     public Long getId() {
         return id;
     }

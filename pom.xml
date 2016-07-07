@@ -384,6 +384,11 @@
         <groupId>org.apache.shiro</groupId>
         <artifactId>shiro-core</artifactId>
         <version>1.2.4</version>
+    </dependency>    
+    <dependency>
+      <groupId>org.apache.shiro</groupId>
+      <artifactId>shiro-core</artifactId>
+      <version>1.2.4</version>
     </dependency>
     <dependency>
       <groupId>org.apache.shiro</groupId>
@@ -395,13 +400,11 @@
       <artifactId>shiro-spring</artifactId>
       <version>1.2.4</version>
     </dependency>
-
-      <dependency>
-          <groupId>com.github.dblock.waffle</groupId>
-          <artifactId>waffle-shiro</artifactId>
-          <version>1.7.4</version>
-      </dependency>
-
+    <dependency>
+        <groupId>com.github.dblock.waffle</groupId>
+        <artifactId>waffle-shiro</artifactId>
+        <version>1.7.4</version>
+    </dependency>
   </dependencies>
   <profiles>
     <profile>

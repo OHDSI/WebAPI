@@ -253,7 +253,7 @@ public class FeasibilityService extends AbstractDaoService {
 
   private List<FeasibilityReport.InclusionRuleStatistic> getSimulationInclusionRuleStatistics(int id, Source source) {
     String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-    String statisticsQuery = String.format("select rule_sequence, name, person_count, gain_count, person_total from %s.feas_study_inclusion_stats where study_id = %d", resultsTableQualifier, id);
+    String statisticsQuery = String.format("select rule_sequence, name, person_count, gain_count, person_total from %s.feas_study_inclusion_stats where study_id = %d ORDER BY rule_sequence", resultsTableQualifier, id);
     String translatedSql = SqlTranslate.translateSql(statisticsQuery, "sql server", source.getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
     return this.getSourceJdbcTemplate(source).query(translatedSql, inclusionRuleStatisticMapper);
   }

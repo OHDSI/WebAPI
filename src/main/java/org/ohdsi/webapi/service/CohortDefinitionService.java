@@ -39,7 +39,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.sql.SqlTranslate;
 import javax.ws.rs.core.Response;
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.ohdsi.webapi.TerminateJobStepExceptionHandler;
 
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
@@ -302,7 +301,6 @@ public class CohortDefinitionService extends AbstractDaoService {
   @POST
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  @RequiresPermissions("read:cohortdefinition:sql")
   public GenerateSqlResult generateSql(GenerateSqlRequest request) {
     CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = request.options;
     GenerateSqlResult result = new GenerateSqlResult();
@@ -323,7 +321,6 @@ public class CohortDefinitionService extends AbstractDaoService {
   @GET
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
-  @RequiresPermissions("read:cohortdefinition:cohortdefinition")
   public List<CohortDefinitionListItem> getCohortDefinitionList() {
     ArrayList<CohortDefinitionListItem> result = new ArrayList<>();
     Iterable<CohortDefinition> defs = this.cohortDefinitionRepository.list();
@@ -352,7 +349,6 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  @RequiresPermissions("create:cohortdefinition:cohortdefinition")
   public CohortDefinitionDTO createCohortDefinition(CohortDefinitionDTO def) {
     Date currentTime = Calendar.getInstance().getTime();
 

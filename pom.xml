@@ -237,18 +237,6 @@
   <dependencies>
     <!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-actuator</artifactId> 
     <version>${spring.boot.version}</version> </dependency> -->
-    
-	<dependency>
-      <groupId>io.jsonwebtoken</groupId>
-      <artifactId>jjwt</artifactId>
-      <version>0.6.0</version>
-    </dependency>    
-    
-	<dependency>
-      <groupId>com.github.dblock.waffle</groupId>
-      <artifactId>waffle-jna</artifactId>
-      <version>${waffle.version}</version>
-    </dependency>    
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter</artifactId>
@@ -376,10 +364,7 @@
       <version>3.7</version>
       <type>jar</type>
     </dependency>    
-<<<<<<< HEAD
     <dependency>
-=======
->>>>>>> d1b61a858917d2ea67b9f59e14f6c59a623eaefb
       <groupId>org.apache.shiro</groupId>
       <artifactId>shiro-core</artifactId>
       <version>1.2.4</version>
@@ -396,12 +381,24 @@
       <artifactId>shiro-spring</artifactId>
       <version>1.2.4</version>
     </dependency>
-
-      <dependency>
-          <groupId>com.github.dblock.waffle</groupId>
-          <artifactId>waffle-shiro</artifactId>
-          <version>1.7.4</version>
-      </dependency>
+    
+    <dependency>
+        <groupId>com.github.dblock.waffle</groupId>
+        <artifactId>waffle-shiro</artifactId>
+        <version>1.7.4</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.github.dblock.waffle</groupId>
+      <artifactId>waffle-jna</artifactId>
+      <version>${waffle.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>io.jsonwebtoken</groupId>
+      <artifactId>jjwt</artifactId>
+      <version>0.6.0</version>
+    </dependency>       
 
   </dependencies>
   <profiles>
@@ -433,7 +430,6 @@
     <profile>
       <id>webapi-postgresql</id>
       <properties>
-        <datasource.cdm.schema>unrestricted</datasource.cdm.schema>
         <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
         <datasource.url>jdbc:postgresql://localhost:5432/OHDSI</datasource.url>
         <datasource.username>ohdsi_app_user</datasource.username>

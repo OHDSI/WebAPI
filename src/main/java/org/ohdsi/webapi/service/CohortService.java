@@ -11,7 +11,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
 
 import org.ohdsi.webapi.cohort.CohortEntity;
 import org.ohdsi.webapi.cohort.CohortRepository;
@@ -66,7 +65,6 @@ public class CohortService {
 	@Path("import")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.TEXT_PLAIN)
-  @RequiresPermissions("create:cohort:import")
 	public String saveCohortListToCDM(final List<CohortEntity> cohort) {
 
 		this.transactionTemplate.execute(new TransactionCallback<Void>() {

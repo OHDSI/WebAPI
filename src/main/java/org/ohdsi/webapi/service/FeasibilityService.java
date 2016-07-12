@@ -43,7 +43,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.feasibility.InclusionRule;
 import org.ohdsi.webapi.feasibility.FeasibilityStudy;
@@ -358,7 +357,6 @@ public class FeasibilityService extends AbstractDaoService {
   @GET
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
-  @RequiresPermissions("read:feasibility:feasibility")
   public List<FeasibilityService.FeasibilityStudyListItem> getFeasibilityStudyList() {
     ArrayList<FeasibilityService.FeasibilityStudyListItem> result = new ArrayList<>();
     Iterable<FeasibilityStudy> studies = this.feasibilityStudyRepository.findAll();
@@ -389,7 +387,6 @@ public class FeasibilityService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   @Transactional
-  @RequiresPermissions("create:feasibility:feasibility")
   public FeasibilityService.FeasibilityStudyDTO createStudy(FeasibilityService.FeasibilityStudyDTO study) {
     Date currentTime = Calendar.getInstance().getTime();
 

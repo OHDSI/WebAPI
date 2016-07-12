@@ -10,7 +10,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
@@ -46,7 +45,6 @@ public class SourceService extends AbstractDaoService {
   @Path("sources")
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  @RequiresPermissions("read:source:sources")
   public Collection<SourceInfo> getSources() {
 
     if (cachedSources == null) {

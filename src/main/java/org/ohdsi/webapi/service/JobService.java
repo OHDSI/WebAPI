@@ -12,7 +12,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.helper.ResourceHelper;
@@ -115,7 +114,6 @@ public class JobService extends AbstractDaoService {
    */
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  @RequiresPermissions("read:job:job")
   public List<String> findJobNames() {
     return this.jobExplorer.getJobNames();
   }
@@ -138,7 +136,6 @@ public class JobService extends AbstractDaoService {
   @GET
   @Path("/execution")
   @Produces(MediaType.APPLICATION_JSON)
-  @RequiresPermissions("read:job:execution")
   public Page<JobExecutionResource> list(@QueryParam("jobName") final String jobName,
           @DefaultValue("0") @QueryParam("pageIndex") final Integer pageIndex,
           @DefaultValue("20") @QueryParam("pageSize") final Integer pageSize,

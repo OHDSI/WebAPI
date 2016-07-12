@@ -8,14 +8,13 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.subject.Subject;
 import org.ohdsi.webapi.exceptions.HttpUnauthorizedException;
 import org.ohdsi.webapi.shiro.SimpleAuthToken;
-import org.ohdsi.webapi.shiro.SimpleAuthorizer;
 import org.springframework.stereotype.Component;
-import org.ohdsi.webapi.shiro.TokenManager;
 import org.ohdsi.webapi.shiro.WindowsAuthToken;
+
+import org.ohdsi.webapi.shiro.management.Security;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -28,8 +27,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class UserService {
   
   @Autowired
-  private SimpleAuthorizer authorizer;
-
+  private Security security;
+  
   @POST
   @Path("login/win")
   @Produces(MediaType.APPLICATION_JSON)
@@ -37,36 +36,36 @@ public class UserService {
   public String winLogin(@FormParam("login") String login, @FormParam("password") String password) throws HttpUnauthorizedException {
     SimpleAuthToken simpleToken = new SimpleAuthToken(login);           // to check if user is registred in the system
     WindowsAuthToken winToken = new WindowsAuthToken(login, password);  // for windows authentication
-    Subject user = SecurityUtils.getSubject();
+
     try {
-        user.login(simpleToken);
-        user.login(winToken);
+      security.login(simpleToken);
+      security.login(winToken);
     } 
     catch (Exception ex) {
-        throw new HttpUnauthorizedException();
-    }
+      throw new HttpUnauthorizedException();
+    }    
     
-    return TokenManager.createJsonWebToken(login);
+    return security.getAccessToken(login);
   } 
   
   @POST
   @Path("register/win")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-  public String winRegister(@FormParam("login") String login, @FormParam("password") String password) throws Exception {
-    
-    WindowsAuthToken winToken = new WindowsAuthToken(login, password);
-    Subject user = SecurityUtils.getSubject();
+  public String winRegister(@FormParam("login") String login, @FormParam("password") String password) throws HttpUnauthorizedException {
+    WindowsAuthToken winToken = new WindowsAuthToken(login, password);    
+
     try {
-        user.login(winToken);
+      security.login(winToken);
     } 
     catch (Exception ex) {
-        throw new HttpUnauthorizedException();
+      throw new HttpUnauthorizedException();
     }
-        
-    authorizer.registerUser(login);
-    return TokenManager.createJsonWebToken(login);
-  } 
+
+    security.registerUser(login);
+    
+    return security.getAccessToken(login);
+  }
   
   @POST
   @Path("logout")
@@ -94,6 +93,5 @@ public class UserService {
     else {
       return "User has no access!";
     }
-  }
-  
+  }  
 }

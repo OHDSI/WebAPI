@@ -1,24 +1,16 @@
 package org.ohdsi.webapi;
 
-import org.apache.shiro.authc.credential.SimpleCredentialsMatcher;
 import org.apache.shiro.realm.Realm;
-import org.apache.shiro.spring.LifecycleBeanPostProcessor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
 
 import java.util.*;
-import org.apache.shiro.authc.Authenticator;
-import org.apache.shiro.authc.pam.FirstSuccessfulStrategy;
-import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
-import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
-import org.ohdsi.webapi.shiro.JwtAuthFilter;
-import org.ohdsi.webapi.shiro.JwtAuthRealm;
-import org.ohdsi.webapi.shiro.SimpleAuthRealm;
-import org.ohdsi.webapi.shiro.WindowsAuthRealm;
+import org.ohdsi.webapi.shiro.management.DefaultSecurity;
+import org.ohdsi.webapi.shiro.management.Security;
+import org.springframework.context.annotation.Primary;
 
 /**
  * Created by GMalikov on 20.08.2015.
@@ -26,84 +18,42 @@ import org.ohdsi.webapi.shiro.WindowsAuthRealm;
 
 @Configuration
 public class ShiroConfiguration {
-
-    @Bean
-    public ShiroFilterFactoryBean shiroFilter(){
-        ShiroFilterFactoryBean shiroFilter = new ShiroFilterFactoryBean();
-        shiroFilter.setSecurityManager(securityManager());
-
-        Map<String, String> filterChain = new HashMap<>();
-        Map<String, javax.servlet.Filter> filters = new HashMap<>();
-        filters.put("bearerTokenAuthFilter", new JwtAuthFilter());
-        filterChain.put("/user/test", "bearerTokenAuthFilter");
-        shiroFilter.setFilters(filters);
-        shiroFilter.setFilterChainDefinitionMap(filterChain);
- 
-        return shiroFilter;
-    }
-
-    @Bean(name = "securityManager")
-    public DefaultWebSecurityManager securityManager(){
-        final DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
-        
-        securityManager.setAuthenticator(authenticator());
-        
-        List<Realm> realms = new ArrayList<>();
-        realms.add(jwtRealm());
-        realms.add(windowsAuthRealm());
-        realms.add(basicAuthRealm());
-        securityManager.setRealms(realms);
-                
-        return securityManager;
-    }
-
-    @Bean
-    public Authenticator authenticator() {
-        ModularRealmAuthenticator authenticator = new ModularRealmAuthenticator();
-        authenticator.setAuthenticationStrategy(new FirstSuccessfulStrategy());
-        return authenticator;
-    }
-            
-    @Bean
-    public DefaultWebSessionManager sessionManager(){
-        final DefaultWebSessionManager sessionManager = new DefaultWebSessionManager();
-        return sessionManager;
-    }
     
-    @Bean(name = "jwtRealm")
-    @DependsOn("lifecycleBeanPostProcessor")
-    public JwtAuthRealm jwtRealm(){
-        final JwtAuthRealm realm = new JwtAuthRealm();
-        realm.setCredentialsMatcher(new SimpleCredentialsMatcher());
-        realm.setAuthenticationTokenClass(org.ohdsi.webapi.shiro.JwtAuthToken.class);
-        return realm;
-    }
+  @Bean
+  @Primary
+  public Security security() {
+    return new DefaultSecurity();
+  }
+    
+  @Bean
+  public ShiroFilterFactoryBean shiroFilter(){
+    ShiroFilterFactoryBean shiroFilter = new ShiroFilterFactoryBean();
+    shiroFilter.setSecurityManager(securityManager());
 
-    @Bean(name = "basicAuthRealm")
-    @DependsOn("lifecycleBeanPostProcessor")
-    public SimpleAuthRealm basicAuthRealm(){
-        final SimpleAuthRealm realm = new SimpleAuthRealm();
-        realm.setCredentialsMatcher(new SimpleCredentialsMatcher());
-        return realm;
-    }
+    Security security = security();
+    shiroFilter.setFilters(security.getFilters());
+    shiroFilter.setFilterChainDefinitionMap(security.getFilterChain());
 
-    @Bean(name = "windowsAuthRealm")
-    @DependsOn("lifecycleBeanPostProcessor")
-    public WindowsAuthRealm windowsAuthRealm(){
-        final WindowsAuthRealm realm = new WindowsAuthRealm();
-        realm.setCredentialsMatcher(new SimpleCredentialsMatcher());
-        return realm;
-    }
+    return shiroFilter;
+  }
 
-    @Bean
-    public LifecycleBeanPostProcessor lifecycleBeanPostProcessor(){
-        return new LifecycleBeanPostProcessor();
-    }
+  @Bean(name = "securityManager")
+  public DefaultWebSecurityManager securityManager(){
+    final DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
+    final Security security = security();
 
-    @Bean
-    public AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor() {
-        AuthorizationAttributeSourceAdvisor advisor = new AuthorizationAttributeSourceAdvisor();
-        advisor.setSecurityManager(securityManager());
-        return advisor;
-    }
+    securityManager.setAuthenticator(security.getAuthenticator());
+    
+    Set<Realm> realms = security.getRealms();
+    if (realms != null && !realms.isEmpty())
+      securityManager.setRealms(realms);
+
+    return securityManager;
+  }
+
+  @Bean
+  public DefaultWebSessionManager sessionManager(){
+    final DefaultWebSessionManager sessionManager = new DefaultWebSessionManager();
+    return sessionManager;
+  }
 }

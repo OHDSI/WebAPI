@@ -19,7 +19,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.ohdsi.webapi.activity.Tracker;
 import org.springframework.stereotype.Component;
 
@@ -29,7 +28,6 @@ public class ActivityService {
   @Path("latest")
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  @RequiresPermissions("read:activity:latest")
   public Object[] getLatestActivity() {
     return Tracker.getActivity();
   }

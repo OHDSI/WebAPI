@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.ohdsi.webapi.shiro;
 
 import io.jsonwebtoken.Claims;
@@ -14,25 +9,31 @@ import io.jsonwebtoken.SigningKeyResolverAdapter;
 import io.jsonwebtoken.impl.crypto.MacProvider;
 import java.security.Key;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
+import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
+import org.apache.shiro.web.util.WebUtils;
 
 /**
  *
  * @author gennadiy.anisimov
  */
 public class TokenManager {
-
+  
+  private static final String AUTHORIZATION_HEADER = "Authorization";
+  
   private static final Map<String, Key> userToKeyMap = new HashMap<>();
   
-  public static String createJsonWebToken(String userId) {
+  public static String createJsonWebToken(String subject) {
     Key key = MacProvider.generateKey();
-    if (userToKeyMap.containsKey(userId)) 
-      userToKeyMap.replace(userId, key);
+    if (userToKeyMap.containsKey(subject)) 
+      userToKeyMap.replace(subject, key);
     else 
-      userToKeyMap.put(userId, key);
+      userToKeyMap.put(subject, key);
     
     return Jwts.builder()
-            .setSubject(userId)
+            .setSubject(subject)
             .signWith(SignatureAlgorithm.HS512, key)
             .compact();
   }
@@ -56,6 +57,22 @@ public class TokenManager {
       .getSubject();
   }
   
+  public static Boolean invalidate(String jwt) {
+    String subject;
+    try {
+      subject = getSubject(jwt);
+    }
+    catch(JwtException e) {
+      return false;
+    }
+      
+    if (!userToKeyMap.containsKey(subject))
+      return false;
+
+    userToKeyMap.remove(subject);
+    return true;
+  }
+  
   public static Boolean isValidToken(String jwt) {
     try {
       getSubject(jwt);
@@ -64,5 +81,19 @@ public class TokenManager {
     }       
     
     return true;
+  }
+  
+  public static String extractToken(ServletRequest request) {
+    HttpServletRequest httpRequest = WebUtils.toHttp(request);
+    
+    String header =  httpRequest.getHeader(AUTHORIZATION_HEADER);
+    if (header == null || header.isEmpty())
+      return null;
+    
+    if (!header.toLowerCase(Locale.ENGLISH).startsWith("Bearer".toLowerCase(Locale.ENGLISH)))
+      return null;
+    
+    String jwt = header.split(" ")[1];
+    return jwt;
   }
 }

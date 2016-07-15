@@ -13,19 +13,15 @@ import org.apache.shiro.authc.AuthenticationToken;
  */
 public class JwtAuthToken implements AuthenticationToken {
   
-  private String jwt;
+  private String subject;
   
-  public JwtAuthToken(String jwt) {    
-    this.jwt = jwt;
+  public JwtAuthToken(String subject) {    
+    this.subject = subject;
   }
   
-  public String getJwt() {
-    return jwt;
-  }
-
   @Override
   public Object getPrincipal() {
-    return jwt == null ? null : TokenManager.getSubject(jwt);
+    return this.subject;
   }
 
   @Override

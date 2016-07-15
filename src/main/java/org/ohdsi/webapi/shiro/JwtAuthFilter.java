@@ -1,14 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.ohdsi.webapi.shiro;
 
-import java.util.Locale;
+import io.jsonwebtoken.JwtException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.web.util.WebUtils;
@@ -19,14 +13,17 @@ import org.apache.shiro.web.util.WebUtils;
  */
 public final class JwtAuthFilter extends org.apache.shiro.web.filter.authc.AuthenticatingFilter {
 
-  private static final String AUTHORIZATION_HEADER = "Authorization";
-  
   @Override
   protected JwtAuthToken createToken(ServletRequest request, ServletResponse response) throws Exception {
-    String authHeader = getAuthHeader(request);
-    String jwt = authHeader.split(" ")[1];
+    String jwt = TokenManager.extractToken(request);
+    String subject;
+    try {
+      subject = TokenManager.getSubject(jwt);
+    } catch (JwtException e) {
+      throw new AuthenticationException(e);
+    }
     
-    return new JwtAuthToken(jwt);
+    return new JwtAuthToken(subject);
   }
 
   @Override
@@ -50,18 +47,6 @@ public final class JwtAuthFilter extends org.apache.shiro.web.filter.authc.Authe
   }
 
   protected boolean isLoginAttempt(ServletRequest request, ServletResponse response) {
-    String authHeader = getAuthHeader(request);    
-    if (authHeader == null) 
-      return false;
-    
-    return 
-            authHeader.toLowerCase(Locale.ENGLISH).startsWith("Bearer".toLowerCase(Locale.ENGLISH)) 
-            && 
-            authHeader.split(" ").length == 2;
-  }
-  
-  private String getAuthHeader(ServletRequest request) {
-    HttpServletRequest httpRequest = WebUtils.toHttp(request);
-    return httpRequest.getHeader(AUTHORIZATION_HEADER);    
+    return TokenManager.extractToken(request) != null;
   }
 }

@@ -10,6 +10,7 @@ import org.apache.shiro.authc.Authenticator;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
 import org.apache.shiro.realm.Realm;
 import org.ohdsi.webapi.exceptions.HttpForbiddenException;
+import org.ohdsi.webapi.shiro.InvalidateAccessTokenFilter;
 import org.ohdsi.webapi.shiro.JwtAuthFilter;
 import org.ohdsi.webapi.shiro.JwtAuthRealm;
 import org.ohdsi.webapi.shiro.SimpleAuthorizer;
@@ -44,6 +45,7 @@ public class DefaultSecurity extends Security {
     
     filterChain.put("/user/test", "noSessionCreation, bearerTokenAuthFilter");
     filterChain.put("/user/login", "noSessionCreation, negotiateAuthFilter, updateAccessTokenFilter");
+    filterChain.put("/user/logout", "noSessionCreation, invalidateAccessTokenFilter");
     
     return filterChain;
   }
@@ -55,6 +57,7 @@ public class DefaultSecurity extends Security {
     filters.put("bearerTokenAuthFilter", new JwtAuthFilter());
     filters.put("negotiateAuthFilter", new NegotiateAuthenticationFilter());
     filters.put("updateAccessTokenFilter", new UpdateAccessTokenFilter(this.authorizer));
+    filters.put("invalidateAccessTokenFilter", new InvalidateAccessTokenFilter());
     
     return filters;
   }

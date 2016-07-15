@@ -3,7 +3,6 @@ package org.ohdsi.webapi;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
-import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -49,11 +48,5 @@ public class ShiroConfiguration {
       securityManager.setRealms(realms);
 
     return securityManager;
-  }
-
-  @Bean
-  public DefaultWebSessionManager sessionManager(){
-    final DefaultWebSessionManager sessionManager = new DefaultWebSessionManager();
-    return sessionManager;
   }
 }

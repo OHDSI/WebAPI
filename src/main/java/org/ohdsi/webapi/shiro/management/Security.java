@@ -23,11 +23,5 @@ public abstract class Security {
   
   public abstract Authenticator getAuthenticator();
   
-  public abstract void registerUser(String login);
-
-  public abstract void login(AuthenticationToken token);
-
-  public abstract String getAccessToken(String login);
-
   public abstract void checkPermission(String permission) throws HttpForbiddenException ;
 }

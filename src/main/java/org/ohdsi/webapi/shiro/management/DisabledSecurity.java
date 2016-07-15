@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.servlet.Filter;
-import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.Authenticator;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
 import org.apache.shiro.realm.Realm;
@@ -18,25 +17,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class DisabledSecurity extends Security {
 
-    @Override
-    public void checkPermission(String permission) {
-        return;
-    }
-
-    @Override
-    public void login(AuthenticationToken token) {
-        return;
-    }
-
-    @Override
-    public void registerUser(String login) {
-        return;
-    }
-
-    @Override
-    public String getAccessToken(String login) {
-        return null;
-    }
+  @Override
+  public void checkPermission(String permission) {
+    return;
+  }
 
   @Override
   public Map<String, String> getFilterChain() {
@@ -57,5 +41,4 @@ public class DisabledSecurity extends Security {
   public Authenticator getAuthenticator() {
     return new ModularRealmAuthenticator();
   }
-
 }

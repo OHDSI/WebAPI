@@ -22,13 +22,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class JwtAuthRealm extends AuthorizingRealm {
   
-  public JwtAuthRealm() {
-    setAuthenticationTokenClass(org.ohdsi.webapi.shiro.JwtAuthToken.class);
-  }
+  private final SimpleAuthorizer authorizer;
 
-  @Autowired
-  private SimpleAuthorizer authorizer;
-    
+  public JwtAuthRealm(SimpleAuthorizer authorizer) {
+    setAuthenticationTokenClass(org.ohdsi.webapi.shiro.JwtAuthToken.class);
+    this.authorizer = authorizer;
+  }
+   
   @Override
   protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
     final String login = (String) principals.getPrimaryPrincipal();

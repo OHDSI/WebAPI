@@ -2,10 +2,8 @@ package org.ohdsi.webapi.shiro.management;
 
 import java.util.Map;
 import java.util.Set;
-import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.Authenticator;
 import org.apache.shiro.realm.Realm;
-import org.ohdsi.webapi.exceptions.HttpForbiddenException;
 import org.springframework.stereotype.Component;
 
 /**
@@ -23,5 +21,5 @@ public abstract class Security {
   
   public abstract Authenticator getAuthenticator();
   
-  public abstract void checkPermission(String permission) throws HttpForbiddenException ;
+  public abstract boolean isPermitted(String permission);
 }

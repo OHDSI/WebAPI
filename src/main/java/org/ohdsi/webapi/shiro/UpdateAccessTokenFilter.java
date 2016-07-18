@@ -8,7 +8,6 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.shiro.web.servlet.AdviceFilter;
 import org.apache.shiro.web.util.WebUtils;
-import org.springframework.http.HttpStatus;
 
 /**
  *
@@ -43,7 +42,7 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
     
     HttpServletResponse httpResponse = WebUtils.toHttp(response);
     httpResponse.setHeader("Bearer", jwt);
-    httpResponse.setStatus(HttpStatus.OK.value());
+    httpResponse.setStatus(HttpServletResponse.SC_OK);
     
     return false;
   }

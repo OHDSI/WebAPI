@@ -18,11 +18,6 @@ import org.springframework.stereotype.Component;
 public class DisabledSecurity extends Security {
 
   @Override
-  public void checkPermission(String permission) {
-    return;
-  }
-
-  @Override
   public Map<String, String> getFilterChain() {
     return new HashMap<>();
   }
@@ -40,5 +35,10 @@ public class DisabledSecurity extends Security {
   @Override
   public Authenticator getAuthenticator() {
     return new ModularRealmAuthenticator();
+  }
+
+  @Override
+  public boolean isPermitted(String permission) {
+    return true;
   }
 }

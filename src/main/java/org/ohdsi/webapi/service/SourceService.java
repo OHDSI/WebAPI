@@ -37,6 +37,14 @@ public class SourceService extends AbstractDaoService {
     }
     return cachedSources;
   }
+  
+  @Path("refresh")
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)  
+  public Collection<SourceInfo> refreshSources() {
+    cachedSources = null;
+    return getSources();
+  }  
 
   @Path("priorityVocabulary")
   @GET

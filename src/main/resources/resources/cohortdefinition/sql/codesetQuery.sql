@@ -1,7 +1,7 @@
-select codeset_id, concept_id 
-INTO #Codesets
-FROM
-(
- @codesetQueries
-) C
+CREATE TABLE #Codesets (
+  codeset_id int NOT NULL,
+  concept_id bigint NOT NULL
+)
 ;
+
+@codesetInserts

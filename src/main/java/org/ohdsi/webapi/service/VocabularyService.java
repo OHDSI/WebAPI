@@ -93,6 +93,24 @@ public class VocabularyService extends AbstractDaoService {
 
     return getSourceJdbcTemplate(source).query(sql_statement, this.rowMapper);
   }
+  
+  public Collection<Concept> executeIncludedConceptLookup(String sourceKey, ConceptSetExpression conceptSetExpression) {
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
+
+    ConceptSetExpressionQueryBuilder builder = new ConceptSetExpressionQueryBuilder();
+    String query = builder.buildExpressionQuery(conceptSetExpression);
+
+    query = SqlRender.renderSql(query, new String[]{"cdm_database_schema"}, new String[]{tableQualifier});
+    
+    String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/lookupIdentifiers.sql");
+    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"identifiers", "CDM_schema"}, new String[]{
+      query, tableQualifier});
+    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
+
+    return getSourceJdbcTemplate(source).query(sql_statement, this.rowMapper);
+  }
+  
 
   /**
    * @summary Lookup source codes in the specified vocabulary
@@ -146,6 +164,23 @@ public class VocabularyService extends AbstractDaoService {
     String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/getMappedSourcecodes.sql");
     sql_statement = SqlRender.renderSql(sql_statement, new String[]{"identifiers", "CDM_schema"}, new String[]{
       JoinArray(identifiers), tableQualifier});
+    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
+
+    return getSourceJdbcTemplate(source).query(sql_statement, this.rowMapper);
+  }
+
+    public Collection<Concept> executeMappedLookup(String sourceKey, ConceptSetExpression conceptSetExpression) {
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
+
+    ConceptSetExpressionQueryBuilder builder = new ConceptSetExpressionQueryBuilder();
+    String query = builder.buildExpressionQuery(conceptSetExpression);
+
+    query = SqlRender.renderSql(query, new String[]{"cdm_database_schema"}, new String[]{tableQualifier});
+
+    String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/getMappedSourcecodes.sql");
+    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"identifiers", "CDM_schema"}, new String[]{
+      query, tableQualifier});
     sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
 
     return getSourceJdbcTemplate(source).query(sql_statement, this.rowMapper);

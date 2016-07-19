@@ -253,7 +253,7 @@ public class FeasibilityService extends AbstractDaoService {
 
   private List<FeasibilityReport.InclusionRuleStatistic> getSimulationInclusionRuleStatistics(int id, Source source) {
     String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-    String statisticsQuery = String.format("select rule_sequence, name, person_count, gain_count, person_total from %s.feas_study_inclusion_stats where study_id = %d", resultsTableQualifier, id);
+    String statisticsQuery = String.format("select rule_sequence, name, person_count, gain_count, person_total from %s.feas_study_inclusion_stats where study_id = %d ORDER BY rule_sequence", resultsTableQualifier, id);
     String translatedSql = SqlTranslate.translateSql(statisticsQuery, "sql server", source.getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
     return this.getSourceJdbcTemplate(source).query(translatedSql, inclusionRuleStatisticMapper);
   }
@@ -558,12 +558,14 @@ public class FeasibilityService extends AbstractDaoService {
     JobParametersBuilder builder = new JobParametersBuilder();
     builder.addString("jobName", "performing feasibility study on " + indexRule.getName() + " : " + source.getSourceName() + " (" + source.getSourceKey() + ")");
     builder.addString("cdm_database_schema", cdmTableQualifier);
+    builder.addString("results_database_schema", resultsTableQualifier);
     builder.addString("target_database_schema", resultsTableQualifier);
     builder.addString("target_dialect", source.getSourceDialect());
     builder.addString("target_table", "cohort");
     builder.addString("cohort_definition_id", ("" + indexRule.getId()));
     builder.addString("study_id", ("" + study_id));
     builder.addString("source_id", ("" + source.getSourceId()));
+    builder.addString("generate_stats", Boolean.TRUE.toString());
 
     final JobParameters jobParameters = builder.toJobParameters();
     final JdbcTemplate sourceJdbcTemplate = getSourceJdbcTemplate(source);

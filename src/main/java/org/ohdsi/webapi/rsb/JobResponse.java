@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 fdefalco.
+ * Copyright 2016 fdefalco.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,29 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ohdsi.webapi.person;
+package org.ohdsi.webapi.rsb;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.ArrayList;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 /**
  *
  * @author fdefalco
  */
-public class PersonProfile {
+@JsonPropertyOrder({
+  "jobToken"
+})
+public class JobResponse {
 
-  public ArrayList<PersonRecord> records;
-  public ArrayList<CohortPerson> cohorts;
-  public String gender;
+  @JsonProperty("jobToken")
+  private JobToken jobToken;
 
-  public PersonProfile() {
-    records = new ArrayList<>();
-    cohorts = new ArrayList<>();
+  /**
+   *
+   * @return The jobToken
+   */
+  @JsonProperty("jobToken")
+  public JobToken getJobToken() {
+    return jobToken;
   }
 
-  @JsonProperty("recordCount") 
-  public Integer getRecordCount() {
-    return this.records.size();
+  /**
+   *
+   * @param jobToken The jobToken
+   */
+  @JsonProperty("jobToken")
+  public void setJobToken(JobToken jobToken) {
+    this.jobToken = jobToken;
   }
-  
+
 }

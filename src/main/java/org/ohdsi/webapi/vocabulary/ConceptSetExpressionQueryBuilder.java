@@ -24,10 +24,11 @@ import org.ohdsi.webapi.helper.ResourceHelper;
  */
 public class ConceptSetExpressionQueryBuilder {
 
-  private final static String CONCEPT_SET_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/conceptSetExpression.sql");
-  private final static String CONCEPT_SET_EXCLUDE_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/conceptSetExclude.sql");
+  private final static String CONCEPT_SET_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/conceptSetQuery.sql");
   private final static String CONCEPT_SET_DESCENDANTS_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/conceptSetDescendants.sql");
   private final static String CONCEPT_SET_MAPPED_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/conceptSetMapped.sql");
+  private final static String CONCEPT_SET_INCLUDE_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/conceptSetInclude.sql");
+  private final static String CONCEPT_SET_EXCLUDE_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/conceptSetExclude.sql");
 
 
   private ArrayList<Long> getConceptIds(ArrayList<Concept> concepts)
@@ -39,35 +40,51 @@ public class ConceptSetExpressionQueryBuilder {
     return conceptIdList;     
   }
   
+  
+ 
+  private String buildConceptSetSubQuery (
+          ArrayList<Concept> concepts,
+          ArrayList<Concept> descendantConcepts
+  )
+  {
+    ArrayList<String> queries = new ArrayList<>();
+    if (concepts.size() > 0) {
+      queries.add(StringUtils.replace(CONCEPT_SET_QUERY_TEMPLATE, "@conceptIds", StringUtils.join(getConceptIds(concepts), ",")));
+    }
+    if (descendantConcepts.size() > 0) {
+      queries.add(StringUtils.replace(CONCEPT_SET_DESCENDANTS_TEMPLATE, "@conceptIds", StringUtils.join(getConceptIds(descendantConcepts), ",")));
+    }
+    
+    return StringUtils.join(queries, "UNION");
+    
+  }
+  
+  private String buildConceptSetMappedQuery (
+          ArrayList<Concept> mappedConcepts,
+          ArrayList<Concept> mappedDescendantConcepts
+  ) {
+    String conceptSetQuery = buildConceptSetSubQuery(mappedConcepts, mappedDescendantConcepts);
+    return StringUtils.replace(CONCEPT_SET_MAPPED_TEMPLATE, "@conceptsetQuery", conceptSetQuery);
+  }
+  
   private String buildConceptSetQuery(
           ArrayList<Concept> concepts,
           ArrayList<Concept> descendantConcepts,
-          ArrayList<Concept> excludeConcepts,
-          ArrayList<Concept> excludeDescendantConcepts)
+          ArrayList<Concept> mappedConcepts,
+          ArrayList<Concept> mappedDesandantConcepts)
   {
     if (concepts.size() == 0)
     {
       return "select concept_id from @cdm_database_schema.CONCEPT where 0=1";
     }
-    String conceptSetQuery = StringUtils.replace(CONCEPT_SET_QUERY_TEMPLATE, "@conceptIds",StringUtils.join(getConceptIds(concepts), ","));
-    if (descendantConcepts.size() > 0) {
-      String includeDescendantQuery = StringUtils.replace(CONCEPT_SET_DESCENDANTS_TEMPLATE, "@conceptIds", StringUtils.join(getConceptIds(descendantConcepts), ","));
-      conceptSetQuery = StringUtils.replace(conceptSetQuery,"@descendantQuery", includeDescendantQuery);
-    } else {
-      conceptSetQuery = StringUtils.replace(conceptSetQuery, "@descendantQuery", "");
-    }
-    if (excludeConcepts.size() > 0)
-    {
-      String excludeClause = StringUtils.replace(CONCEPT_SET_EXCLUDE_TEMPLATE,"@conceptIds", StringUtils.join(getConceptIds(excludeConcepts),","));
-      if (excludeDescendantConcepts.size() > 0){
-        String excludeClauseDescendantQuery = StringUtils.replace(CONCEPT_SET_DESCENDANTS_TEMPLATE, "@conceptIds", StringUtils.join(getConceptIds(excludeDescendantConcepts), ","));
-        excludeClause = StringUtils.replace(excludeClause, "@descendantQuery", excludeClauseDescendantQuery);
-      } else {
-        excludeClause = StringUtils.replace(excludeClause, "@descendantQuery", "");
-      }
-      conceptSetQuery += excludeClause;
-    }
     
+    String conceptSetQuery = buildConceptSetSubQuery(concepts, descendantConcepts);
+
+    if (mappedConcepts.size() > 0 || mappedDesandantConcepts.size() > 0)
+    {
+      buildConceptSetMappedQuery(mappedConcepts,mappedDesandantConcepts);
+      conceptSetQuery += "UNION\n" + buildConceptSetMappedQuery(mappedConcepts,mappedDesandantConcepts);
+    }
     return conceptSetQuery;
   }
   
@@ -76,11 +93,11 @@ public class ConceptSetExpressionQueryBuilder {
     // handle included concepts.
     ArrayList<Concept> includeConcepts = new ArrayList<>();
     ArrayList<Concept> includeDescendantConcepts = new ArrayList<>();
-    ArrayList<Concept> excludeConcepts = new ArrayList<>();
-    ArrayList<Concept> excludeDescendantConcepts = new ArrayList<>();
-    
     ArrayList<Concept> includeMappedConcepts = new ArrayList<>();
     ArrayList<Concept> includeMappedDescendantConcepts = new ArrayList<>();
+ 
+    ArrayList<Concept> excludeConcepts = new ArrayList<>();
+    ArrayList<Concept> excludeDescendantConcepts = new ArrayList<>();
     ArrayList<Concept> excludeMappedConcepts = new ArrayList<>();
     ArrayList<Concept> excludeMappedDescendantConcepts = new ArrayList<>();
     
@@ -115,11 +132,11 @@ public class ConceptSetExpressionQueryBuilder {
     
     // each ArrayList contains the concepts that are used in the sub-query of the codeset expression query
     
-    String conceptSetQuery = buildConceptSetQuery(includeConcepts, includeDescendantConcepts, excludeConcepts, excludeDescendantConcepts);
+    String conceptSetQuery = StringUtils.replace(CONCEPT_SET_INCLUDE_TEMPLATE,"@includeQuery", buildConceptSetQuery(includeConcepts, includeDescendantConcepts, includeMappedConcepts, includeMappedDescendantConcepts));
     
-    if (includeMappedConcepts.size() > 0){
-      String mappedConceptsQuery = buildConceptSetQuery(includeMappedConcepts, includeMappedDescendantConcepts, excludeMappedConcepts, excludeMappedDescendantConcepts);
-      conceptSetQuery += "\nUNION\n" + StringUtils.replace(CONCEPT_SET_MAPPED_TEMPLATE, "@conceptsetQuery", mappedConceptsQuery);
+    if (excludeConcepts.size() > 0){
+      String excludeConceptsQuery = StringUtils.replace(CONCEPT_SET_EXCLUDE_TEMPLATE, "@excludeQuery", buildConceptSetQuery(excludeConcepts, excludeDescendantConcepts, excludeMappedConcepts, excludeMappedDescendantConcepts));
+      conceptSetQuery += excludeConceptsQuery;
     }
     
     return conceptSetQuery;

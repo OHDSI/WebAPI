@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 fdefalco.
+ * Copyright 2016 fdefalco.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,29 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ohdsi.webapi.person;
+package org.ohdsi.webapi.rsb;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.ArrayList;
 
 /**
  *
  * @author fdefalco
  */
-public class PersonProfile {
+public class ClusterCohortRequest {
 
-  public ArrayList<PersonRecord> records;
-  public ArrayList<CohortPerson> cohorts;
-  public String gender;
-
-  public PersonProfile() {
-    records = new ArrayList<>();
-    cohorts = new ArrayList<>();
-  }
-
-  @JsonProperty("recordCount") 
-  public Integer getRecordCount() {
-    return this.records.size();
-  }
+  @JsonProperty("cohort_definition_id")
+  public Integer cohortDefinitionId;
   
+  @JsonProperty("source_key")
+  public String sourceKey;
+
+  public ClusterCohortRequest() {
+
+  }
 }

@@ -355,6 +355,12 @@
       <version>9.4-1201-jdbc41</version>
       <type>jar</type>
     </dependency>
+    <dependency>
+      <groupId>com.opencsv</groupId>
+      <artifactId>opencsv</artifactId>
+      <version>3.7</version>
+      <type>jar</type>
+    </dependency>    
   </dependencies>
   <profiles>
     <profile>
@@ -424,6 +430,30 @@
     </profile>  
     <profile>
       <id>webapi-local</id>
+      <properties>
+        <datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</datasource.driverClassName>
+        <datasource.url>jdbc:sqlserver://server</datasource.url>
+        <datasource.username>USER</datasource.username>
+        <datasource.password>PASS</datasource.password>
+        <datasource.dialect>sql server</datasource.dialect>
+        <datasource.ohdsi.schema>OHDSI_schema</datasource.ohdsi.schema>
+        <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
+        <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
+        <flyway.datasource.username>FLYWAY_USER</flyway.datasource.username>
+        <flyway.datasource.password>FLYWAY_PASS</flyway.datasource.password>
+        <flyway.locations>classpath:db/migration/sqlserver</flyway.locations>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>com.microsoft.sqlserver</groupId>
+          <artifactId>sqljdbc4</artifactId>
+          <version>4.0</version>
+          <type>jar</type>
+        </dependency>
+      </dependencies>	            
+    </profile>                         
+    <profile>
+      <id>webapi-alpha</id>
       <properties>
         <datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</datasource.driverClassName>
         <datasource.url>jdbc:sqlserver://server</datasource.url>

@@ -10,12 +10,13 @@ import org.apache.shiro.authc.Authenticator;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
 import org.apache.shiro.realm.Realm;
 import org.ohdsi.webapi.shiro.InvalidateAccessTokenFilter;
-import org.ohdsi.webapi.shiro.JwtAuthFilter;
+import org.ohdsi.webapi.shiro.JwtAuthenticatingFilter;
 import org.ohdsi.webapi.shiro.JwtAuthRealm;
 import org.ohdsi.webapi.shiro.SimpleAuthorizer;
 import org.ohdsi.webapi.shiro.UpdateAccessTokenFilter;
 import org.ohdsi.webapi.shiro.UrlBasedAuthorizingFilter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import waffle.shiro.negotiate.NegotiateAuthenticationFilter;
 import waffle.shiro.negotiate.NegotiateAuthenticationRealm;
@@ -31,14 +32,19 @@ public class DefaultSecurity extends Security {
   @Autowired
   private SimpleAuthorizer authorizer;
   
+  @Value("${security.token.expiration}")
+  private int tokenExpirationIntervalInSeconds;
+  
   @Override
   public Map<String, String> getFilterChain() {
     Map<String, String> filterChain = new HashMap<>();    
     
-    filterChain.put("/user/test/*", "noSessionCreation, bearerTokenAuthFilter, authorizingFilter");
-    filterChain.put("/user/login", "noSessionCreation, negotiateAuthFilter, updateAccessTokenFilter");
+    filterChain.put("/user/login", "noSessionCreation, negotiateAuthcFilter, updateAccessTokenFilter");
+    filterChain.put("/user/refresh", "noSessionCreation, jwtAuthcFilter, updateAccessTokenFilter");
     filterChain.put("/user/logout", "noSessionCreation, invalidateAccessTokenFilter");
     
+    filterChain.put("/user/test/*", "noSessionCreation, jwtAuthcFilter, authzFilter");
+
     return filterChain;
   }
 
@@ -46,11 +52,11 @@ public class DefaultSecurity extends Security {
   public Map<String, Filter> getFilters() {
     Map<String, javax.servlet.Filter> filters = new HashMap<>();
     
-    filters.put("bearerTokenAuthFilter", new JwtAuthFilter());
-    filters.put("negotiateAuthFilter", new NegotiateAuthenticationFilter());
-    filters.put("updateAccessTokenFilter", new UpdateAccessTokenFilter(this.authorizer));
+    filters.put("jwtAuthcFilter", new JwtAuthenticatingFilter());
+    filters.put("negotiateAuthcFilter", new NegotiateAuthenticationFilter());
+    filters.put("updateAccessTokenFilter", new UpdateAccessTokenFilter(this.authorizer, this.tokenExpirationIntervalInSeconds));
     filters.put("invalidateAccessTokenFilter", new InvalidateAccessTokenFilter());
-    filters.put("authorizingFilter", new UrlBasedAuthorizingFilter(this));
+    filters.put("authzFilter", new UrlBasedAuthorizingFilter(this));
     
     return filters;
   }

@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.shiro;
 
 import io.jsonwebtoken.JwtException;
+import java.security.Principal;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
@@ -11,7 +12,7 @@ import org.apache.shiro.web.util.WebUtils;
  *
  * @author gennadiy.anisimov
  */
-public final class JwtAuthFilter extends org.apache.shiro.web.filter.authc.AuthenticatingFilter {
+public final class JwtAuthenticatingFilter extends org.apache.shiro.web.filter.authc.AuthenticatingFilter {
 
   @Override
   protected JwtAuthToken createToken(ServletRequest request, ServletResponse response) throws Exception {
@@ -23,12 +24,14 @@ public final class JwtAuthFilter extends org.apache.shiro.web.filter.authc.Authe
       throw new AuthenticationException(e);
     }
     
+    request.setAttribute("MY_SUBJECT", subject);    
     return new JwtAuthToken(subject);
   }
 
   @Override
   protected boolean onAccessDenied(ServletRequest request, ServletResponse response) throws Exception {
-    boolean loggedIn = false; 
+    boolean loggedIn = false;
+    
     if (isLoginAttempt(request, response)) {      
       try {
         loggedIn = executeLogin(request, response);

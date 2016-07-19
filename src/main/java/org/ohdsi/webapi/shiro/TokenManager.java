@@ -4,10 +4,13 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwsHeader;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MissingClaimException;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.SigningKeyResolverAdapter;
 import io.jsonwebtoken.impl.crypto.MacProvider;
 import java.security.Key;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -25,7 +28,7 @@ public class TokenManager {
   
   private static final Map<String, Key> userToKeyMap = new HashMap<>();
   
-  public static String createJsonWebToken(String subject) {
+  public static String createJsonWebToken(String subject, Date expiration) {
     Key key = MacProvider.generateKey();
     if (userToKeyMap.containsKey(subject)) 
       userToKeyMap.replace(subject, key);
@@ -34,27 +37,31 @@ public class TokenManager {
     
     return Jwts.builder()
             .setSubject(subject)
+            .setExpiration(expiration)
             .signWith(SignatureAlgorithm.HS512, key)
             .compact();
   }
   
   public static String getSubject(String jwt) throws JwtException {    
+    return getBody(jwt).getSubject();
+  }
+  
+  private static Claims getBody(String jwt) {
     return Jwts.parser()
       .setSigningKeyResolver(new SigningKeyResolverAdapter() {
           @Override
           public Key resolveSigningKey(JwsHeader header, Claims claims) {
             String subject = claims.getSubject();
             if (subject == null || subject.isEmpty()) 
-              throw new JwtException("Subject is not provided in JWT");
+              throw new MissingClaimException(header, claims, "Subject is not provided in JWT.");
 
             if (!userToKeyMap.containsKey(subject)) 
-              throw new JwtException("Signing key is not reqistred for the subject");
-
+              throw new SignatureException("Signing key is not reqistred for the subject.");
+            
             return userToKeyMap.get(subject);
           }})
       .parseClaimsJws(jwt)
-      .getBody()
-      .getSubject();
+      .getBody();   
   }
   
   public static Boolean invalidate(String jwt) {
@@ -73,16 +80,6 @@ public class TokenManager {
     return true;
   }
   
-  public static Boolean isValidToken(String jwt) {
-    try {
-      getSubject(jwt);
-    } catch (JwtException e) {
-      return false;
-    }       
-    
-    return true;
-  }
-  
   public static String extractToken(ServletRequest request) {
     HttpServletRequest httpRequest = WebUtils.toHttp(request);
     
@@ -90,10 +87,14 @@ public class TokenManager {
     if (header == null || header.isEmpty())
       return null;
     
-    if (!header.toLowerCase(Locale.ENGLISH).startsWith("Bearer".toLowerCase(Locale.ENGLISH)))
+    if (!header.toLowerCase(Locale.ENGLISH).startsWith("bearer"))
       return null;
     
-    String jwt = header.split(" ")[1];
+    String[] headerParts = header.split(" ");
+    if (headerParts.length != 2)
+      return null;
+    
+    String jwt = headerParts[1];
     return jwt;
   }
 }

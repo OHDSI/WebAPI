@@ -1,6 +1,8 @@
 package org.ohdsi.webapi.shiro;
 
 import java.security.Principal;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Set;
 import javax.security.auth.Subject;
 import javax.servlet.ServletRequest;
@@ -18,32 +20,55 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
   private final String SUBJECT_ATTRIBUTE = "MY_SUBJECT";
   
   private final SimpleAuthorizer authorizer;
+  private final int tokenExpirationIntervalInSeconds;
   
-  public UpdateAccessTokenFilter(SimpleAuthorizer authorizer) {
+  public UpdateAccessTokenFilter(SimpleAuthorizer authorizer, int tokenExpirationIntervalInSeconds) {
     this.authorizer = authorizer;
+    this.tokenExpirationIntervalInSeconds = tokenExpirationIntervalInSeconds;
   }
   
   @Override
   protected boolean preHandle(ServletRequest request, ServletResponse response) throws Exception {
-    Subject subject = (Subject) request.getAttribute(SUBJECT_ATTRIBUTE);
+    HttpServletResponse httpResponse = WebUtils.toHttp(response);
+    httpResponse.setStatus(HttpServletResponse.SC_FORBIDDEN);
     
-    if (subject == null)
+    Object subjectObject = request.getAttribute(SUBJECT_ATTRIBUTE);
+    if (subjectObject == null)
       return false;
     
-    Set<Principal> principals = subject.getPrincipals();
-    if (principals.isEmpty())
+    String user;    
+    if (subjectObject instanceof Subject) {
+      Subject subject = (Subject) subjectObject;
+
+      Set<Principal> principals = subject.getPrincipals();
+      if (principals.isEmpty())
+        return false;
+
+      Principal principal = principals.iterator().next();
+      user = principal.getName();      
+    } else if (subjectObject instanceof String) {
+      user = (String) subjectObject;
+    } else {
       return false;
+    }
     
-    Principal principal = principals.iterator().next();
-    String user = principal.getName();
+    if (user == null || user.isEmpty())
+      return false;
     
     this.authorizer.registerUser(user);
-    String jwt = TokenManager.createJsonWebToken(user);
     
-    HttpServletResponse httpResponse = WebUtils.toHttp(response);
+    Date expiration = this.getExpiration();
+    String jwt = TokenManager.createJsonWebToken(user, expiration);
+    
     httpResponse.setHeader("Bearer", jwt);
     httpResponse.setStatus(HttpServletResponse.SC_OK);
     
     return false;
+  }
+  
+  private Date getExpiration() {
+    Calendar calendar = Calendar.getInstance();
+    calendar.add(Calendar.SECOND, this.tokenExpirationIntervalInSeconds);
+    return calendar.getTime();    
   }
 }

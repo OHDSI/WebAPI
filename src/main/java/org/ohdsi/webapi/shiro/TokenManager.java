@@ -65,6 +65,9 @@ public class TokenManager {
   }
   
   public static Boolean invalidate(String jwt) {
+    if (jwt == null) 
+      return false;   
+
     String subject;
     try {
       subject = getSubject(jwt);

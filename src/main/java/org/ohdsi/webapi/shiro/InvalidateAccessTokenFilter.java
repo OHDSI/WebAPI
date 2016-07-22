@@ -15,14 +15,12 @@ public class InvalidateAccessTokenFilter extends AdviceFilter {
   @Override
   protected boolean preHandle(ServletRequest request, ServletResponse response) throws Exception {
     HttpServletResponse httpResponse = WebUtils.toHttp(response);
+    httpResponse.setStatus(HttpServletResponse.SC_FORBIDDEN);
     
     String jwt = TokenManager.extractToken(request);
-    if (jwt == null) 
-      return false;      
     
-    TokenManager.invalidate(jwt);
-    
-    httpResponse.setStatus(HttpServletResponse.SC_OK);
+    if (TokenManager.invalidate(jwt))    
+      httpResponse.setStatus(HttpServletResponse.SC_OK);
 
     return false;
   }

@@ -49,9 +49,9 @@ public class VisitOccurrence extends Criteria {
 
   
   @Override
-  public String accept(ICohortExpressionElementVisitor visitor)
+  public String accept(IGetCriteriaSqlDispatcher dispatcher)
   {
-    return visitor.visit(this);
+    return dispatcher.getCriteriaSql(this);
   }
   
   

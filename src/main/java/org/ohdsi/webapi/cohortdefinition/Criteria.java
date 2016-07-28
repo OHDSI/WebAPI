@@ -30,5 +30,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
   @JsonSubTypes.Type(value = Specimen.class, name = "Specimen"),
   @JsonSubTypes.Type(value = VisitOccurrence.class, name = "VisitOccurrence")
 })
-public abstract class Criteria implements ICohortExpressionElement {
+public abstract class Criteria {
+  public abstract String accept(IGetCriteriaSqlDispatcher dispatcher);
 }

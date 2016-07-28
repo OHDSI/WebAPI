@@ -16,7 +16,7 @@ import org.ohdsi.webapi.vocabulary.ConceptSetExpressionQueryBuilder;
  *
  * @author cknoll1
  */
-public class CohortExpressionQueryBuilder implements ICohortExpressionElementVisitor {
+public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher {
 
   private final static ConceptSetExpressionQueryBuilder conceptSetQueryBuilder = new ConceptSetExpressionQueryBuilder();
   private final static String CODESET_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/codesetQuery.sql");
@@ -337,7 +337,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
   }
   
   @Override
-  public String visit(ConditionEra criteria)
+  public String getCriteriaSql(ConditionEra criteria)
   {
     String query = CONDITION_ERA_TEMPLATE;
     
@@ -411,7 +411,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
   }
 
   @Override
-  public String visit(ConditionOccurrence criteria)
+  public String getCriteriaSql(ConditionOccurrence criteria)
   {
     String query = CONDITION_OCCURRENCE_TEMPLATE;
     
@@ -544,7 +544,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
   }
   
   @Override
-  public String visit(Death criteria)
+  public String getCriteriaSql(Death criteria)
   {
     String query = DEATH_TEMPLATE;
 
@@ -603,7 +603,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
   }
     
   @Override
-  public String visit(DeviceExposure criteria)
+  public String getCriteriaSql(DeviceExposure criteria)
   {
     String query = DEVICE_EXPOSURE_TEMPLATE;
 
@@ -701,7 +701,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
 
   
   @Override
-  public String visit(DoseEra criteria)
+  public String getCriteriaSql(DoseEra criteria)
   {
     String query = DOSE_ERA_TEMPLATE;
     
@@ -782,7 +782,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
   }
     
   @Override
-  public String visit(DrugEra criteria)
+  public String getCriteriaSql(DrugEra criteria)
   {
     String query = DRUG_ERA_TEMPLATE;
     
@@ -862,7 +862,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
   }
   
   @Override
-  public String visit(DrugExposure criteria)
+  public String getCriteriaSql(DrugExposure criteria)
   {
     String query = DRUG_EXPOSURE_TEMPLATE;
 
@@ -995,7 +995,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
   }  
   
   @Override
-  public String visit(Measurement criteria)
+  public String getCriteriaSql(Measurement criteria)
   {
     String query = MEASUREMENT_TEMPLATE;
     
@@ -1132,7 +1132,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
   }
   
   @Override
-  public String visit(Observation criteria)
+  public String getCriteriaSql(Observation criteria)
   {
     String query = OBSERVATION_TEMPLATE;
     
@@ -1245,7 +1245,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
   }  
 
   @Override
-  public String visit(ObservationPeriod criteria)
+  public String getCriteriaSql(ObservationPeriod criteria)
   {
     String query = OBSERVATION_PERIOD_TEMPLATE;
 
@@ -1307,7 +1307,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
   }
 
   @Override
-  public String visit(ProcedureOccurrence criteria)
+  public String getCriteriaSql(ProcedureOccurrence criteria)
   {
     String query = PROCEDURE_OCCURRENCE_TEMPLATE;
     
@@ -1401,7 +1401,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
   }
   
   @Override
-  public String visit(Specimen criteria) 
+  public String getCriteriaSql(Specimen criteria) 
   {
     String query = SPECIMEN_TEMPLATE;
     
@@ -1492,7 +1492,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
   }
 
   @Override
-  public String visit(VisitOccurrence criteria) 
+  public String getCriteriaSql(VisitOccurrence criteria) 
   {
     String query = VISIT_OCCURRENCE_TEMPLATE;
     

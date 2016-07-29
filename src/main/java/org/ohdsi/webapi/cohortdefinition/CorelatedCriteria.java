@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author cknoll1
  */
-public class AdditionalCriteria {
+public class CorelatedCriteria {
   @JsonProperty("Criteria")
   public Criteria criteria;  
   

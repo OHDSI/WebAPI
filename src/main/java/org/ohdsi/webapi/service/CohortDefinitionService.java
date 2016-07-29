@@ -38,6 +38,7 @@ import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.sql.SqlTranslate;
 import javax.ws.rs.core.Response;
+import org.ohdsi.sql.SqlRender;
 import org.ohdsi.webapi.TerminateJobStepExceptionHandler;
 
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
@@ -307,7 +308,8 @@ public class CohortDefinitionService extends AbstractDaoService {
     {
       options = new CohortExpressionQueryBuilder.BuildExpressionQueryOptions();
     }
-    result.templateSql = queryBuilder.buildExpressionQuery(request.expression, options);
+    String expressionSql = queryBuilder.buildExpressionQuery(request.expression, options);
+    result.templateSql = SqlRender.renderSql(expressionSql, null, null);
 
     return result;
   }

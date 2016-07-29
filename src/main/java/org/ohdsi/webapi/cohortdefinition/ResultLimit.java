@@ -13,5 +13,5 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class ResultLimit {
     @JsonProperty("Type")  
-    public String type;
+    public String type = "First";
 }

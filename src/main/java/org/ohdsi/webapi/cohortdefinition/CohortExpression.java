@@ -30,9 +30,16 @@ public class CohortExpression {
   @JsonProperty("ConceptSets")
   public ConceptSet[] conceptSets;
   
-  @JsonProperty("ExpressionLimit")
-  public ResultLimit limit;
+  @JsonProperty("QualifiedLimit")  
+  public ResultLimit qualifiedLimit = new ResultLimit();
   
+  @JsonProperty("ExpressionLimit")
+  public ResultLimit expressionLimit = new ResultLimit();
+
   @JsonProperty("InclusionRules")
   public List<InclusionRule> inclusionRules = new ArrayList<>();
+  
+  @JsonProperty("EndStrategy")
+  public EndStrategy endStrategy;
+  
 }

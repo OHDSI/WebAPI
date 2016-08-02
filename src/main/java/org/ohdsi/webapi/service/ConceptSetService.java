@@ -100,8 +100,9 @@ public class ConceptSetService extends AbstractDaoService {
 
         // create our expression to return
         ConceptSetExpression expression = new ConceptSetExpression();
-        expression.items = new ConceptSetExpression.ConceptSetItem[map.size()];
-
+//        expression.items = new ConceptSetExpression.ConceptSetItem[map.size()];
+        ArrayList<ConceptSetExpression.ConceptSetItem> expressionItems = new ArrayList<>();
+        
         // lookup the concepts we need information for
         long[] identifiers = new long[map.size()];
         int identifierIndex = 0;
@@ -115,18 +116,17 @@ public class ConceptSetService extends AbstractDaoService {
         Collection<Concept> concepts = vocabService.executeIdentifierLookup(vocabSourceInfo.sourceKey, identifiers);
 
         // put the concept information into the expression along with the concept set item information 
-        int conceptIndex = 0;
         for (Concept concept : concepts) {
-            expression.items[conceptIndex] = new ConceptSetExpression.ConceptSetItem();
-            expression.items[conceptIndex].concept = concept;
-
-            ConceptSetItem csi = map.get(concept.conceptId);
-            expression.items[conceptIndex].includeDescendants = (csi.getIncludeDescendants() == 1);
-            expression.items[conceptIndex].includeMapped = (csi.getIncludeMapped() == 1);
-            expression.items[conceptIndex].isExcluded = (csi.getIsExcluded() == 1);
-            conceptIndex++;
+          ConceptSetExpression.ConceptSetItem currentItem  = new ConceptSetExpression.ConceptSetItem();
+          currentItem.concept = concept;
+          ConceptSetItem csi = map.get(concept.conceptId);
+          currentItem.includeDescendants = (csi.getIncludeDescendants() == 1);
+          currentItem.includeMapped = (csi.getIncludeMapped() == 1);
+          currentItem.isExcluded = (csi.getIsExcluded() == 1);
+          expressionItems.add(currentItem); 
         }
-
+        expression.items = expressionItems.toArray(new ConceptSetExpression.ConceptSetItem[0]);
+        
         return expression;
     }
 

@@ -128,7 +128,7 @@ public class ComparativeCohortAnalysisInfo extends ComparativeCohortAnalysis imp
       this.setPsDemographicsRace(analysis.getPsDemographicsRace());
       this.setPsDemographicsYear(analysis.getPsDemographicsYear());
       this.setPsDrugEra(analysis.getPsDrugEra());
-      this.setPsDrugEra30d(analysis.getPsDrugEra());
+      this.setPsDrugEra30d(analysis.getPsDrugEra30d());
       this.setPsDrugEra365d(analysis.getPsDrugEra365d());
       this.setPsDrugEraEver(analysis.getPsDrugEraEver());
       this.setPsDrugEraOverlap(analysis.getPsDrugEraOverlap());

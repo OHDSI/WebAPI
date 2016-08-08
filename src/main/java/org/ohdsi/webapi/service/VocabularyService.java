@@ -346,8 +346,6 @@ public class VocabularyService extends AbstractDaoService {
     return concepts.values();
   }
 
-  private ArrayList<Long> identifiers;
-
   @POST
   @Path("resolveConceptSetExpression")
   @Produces(MediaType.APPLICATION_JSON)
@@ -362,7 +360,7 @@ public class VocabularyService extends AbstractDaoService {
     query = SqlRender.renderSql(query, new String[]{"cdm_database_schema"}, new String[]{tableQualifier});
     query = SqlTranslate.translateSql(query, "sql server", source.getSourceDialect());
 
-    identifiers = new ArrayList<>();
+    final ArrayList<Long> identifiers = new ArrayList<>();
     getSourceJdbcTemplate(source).query(query, new RowCallbackHandler() {
       @Override
       public void processRow(ResultSet rs) throws SQLException {
@@ -372,7 +370,18 @@ public class VocabularyService extends AbstractDaoService {
 
     return identifiers;
   }
-
+  
+  @POST
+  @Path("conceptSetExpressionSQL")
+  @Produces(MediaType.TEXT_PLAIN)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public String getConceptSetExpressionSQL(ConceptSetExpression conceptSetExpression) {
+    ConceptSetExpressionQueryBuilder builder = new ConceptSetExpressionQueryBuilder();
+    String query = builder.buildExpressionQuery(conceptSetExpression);
+    
+    return query;
+  }
+  
   @GET
   @Path("concept/{id}/descendants")
   @Produces(MediaType.APPLICATION_JSON)

@@ -1314,12 +1314,13 @@ public class CohortResultsService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<CohortBreakdown> getCohortBreakdown(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
     String sql = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/raw/getCohortBreakdown.sql");
-    sql = SqlRender.renderSql(sql, new String[]{"tableQualifier", "cohortDefinitionId"}, new String[]{
-      resultsTableQualifier, String.valueOf(id)});
+    sql = SqlRender.renderSql(sql, new String[]{"resultsTableQualifier", "tableQualifier", "cohortDefinitionId"}, new String[]{
+      resultsTableQualifier, tableQualifier, String.valueOf(id)});
     sql = SqlTranslate.translateSql(sql, getSourceDialect(), source.getSourceDialect(), SessionUtils.sessionId(),
-            resultsTableQualifier);
+            tableQualifier);
 
     return getSourceJdbcTemplate(source).query(sql, this.cohortBreakdownMapper);
   }
@@ -1374,7 +1375,8 @@ public class CohortResultsService extends AbstractDaoService {
         clause += (" and " + param + "\n");
     }
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
     String sql = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/raw/getCohortBreakdownPeople.sql");
     sql = sql.replace("/*whereclause*/", clause);
     String wherecolsStr = "";
@@ -1387,8 +1389,8 @@ public class CohortResultsService extends AbstractDaoService {
         }
     }
     sql = SqlRender.renderSql(sql, 
-            new String[]{"tableQualifier", "cohortDefinitionId","gender", "age", "conditions", "drugs", "rows","wherecols","groups"}, 
-            new String[]{resultsTableQualifier, String.valueOf(id), 
+            new String[]{"resultsTableQualifier", "tableQualifier", "cohortDefinitionId","gender", "age", "conditions", "drugs", "rows","wherecols","groups"},
+            new String[]{resultsTableQualifier, tableQualifier, String.valueOf(id),
                 String.valueOf(gender), 
                 String.valueOf(age), 
                 String.valueOf(conditions), 

@@ -1,14 +1,14 @@
 package org.ohdsi.webapi;
 
+import java.util.*;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
+import org.ohdsi.webapi.shiro.SimpleAuthorizer;
+import org.ohdsi.webapi.shiro.management.AtlasSecurity;
+import org.ohdsi.webapi.shiro.management.Security;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.*;
-import org.ohdsi.webapi.shiro.management.DefaultSecurity;
-import org.ohdsi.webapi.shiro.management.Security;
 import org.springframework.context.annotation.Primary;
 
 /**
@@ -17,11 +17,16 @@ import org.springframework.context.annotation.Primary;
 
 @Configuration
 public class ShiroConfiguration {
-    
+
   @Bean
+  public SimpleAuthorizer authorizer() {
+    return new SimpleAuthorizer();
+  }
+
+  @Bean(initMethod = "init")
   @Primary
   public Security security() {
-    return new DefaultSecurity();
+    return new AtlasSecurity();
   }
     
   @Bean

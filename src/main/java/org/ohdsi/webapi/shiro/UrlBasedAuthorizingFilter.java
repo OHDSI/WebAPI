@@ -6,7 +6,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.shiro.web.servlet.AdviceFilter;
 import org.apache.shiro.web.util.WebUtils;
-import org.ohdsi.webapi.shiro.management.Security;
 
 /**
  *
@@ -14,10 +13,10 @@ import org.ohdsi.webapi.shiro.management.Security;
  */
 public class UrlBasedAuthorizingFilter extends AdviceFilter {
   
-  private final Security security;
+  private final SimpleAuthorizer authorizer;
   
-  public UrlBasedAuthorizingFilter(Security security) {
-    this.security = security;
+  public UrlBasedAuthorizingFilter(SimpleAuthorizer authorizer) {
+    this.authorizer = authorizer;
   }
   
   @Override
@@ -28,9 +27,9 @@ public class UrlBasedAuthorizingFilter extends AdviceFilter {
                               .replaceAll("^/+", "")
                               .replaceAll("/+$", "");
     String method = httpRequest.getMethod();    
-    String permission = String.format("%s:%s", method, path.replace("/", ":")).toLowerCase();
+    String permission = String.format("%s:%s", path.replace("/", ":"), method).toLowerCase();
     
-    if (security.isPermitted(permission))    
+    if (this.authorizer.isPermitted(permission))
       return true;
     
     HttpServletResponse httpResponse = WebUtils.toHttp(response);

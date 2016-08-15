@@ -21,10 +21,15 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
   
   private final SimpleAuthorizer authorizer;
   private final int tokenExpirationIntervalInSeconds;
+  private final Set<String> defaultRoles;
   
-  public UpdateAccessTokenFilter(SimpleAuthorizer authorizer, int tokenExpirationIntervalInSeconds) {
+  public UpdateAccessTokenFilter(
+          SimpleAuthorizer authorizer,
+          Set<String> defaultRoles,
+          int tokenExpirationIntervalInSeconds) {
     this.authorizer = authorizer;
     this.tokenExpirationIntervalInSeconds = tokenExpirationIntervalInSeconds;
+    this.defaultRoles = defaultRoles;
   }
   
   @Override
@@ -55,7 +60,7 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
     if (user == null || user.isEmpty())
       return false;
     
-    this.authorizer.registerUser(user);
+    this.authorizer.registerUser(user, defaultRoles);
     
     Date expiration = this.getExpiration();
     String jwt = TokenManager.createJsonWebToken(user, expiration);

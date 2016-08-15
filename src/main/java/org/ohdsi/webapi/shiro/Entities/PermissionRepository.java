@@ -7,5 +7,8 @@ import org.springframework.data.repository.CrudRepository;
  */
 public interface PermissionRepository extends CrudRepository<PermissionEntity, Long> {
 
-    public PermissionEntity findById(Long id);
+  public PermissionEntity findById(Long id);
+
+//  public List<PermissionEntity> findFirstByValueIgnoreCase(String permission);
+  public PermissionEntity findByValueIgnoreCase(String permission);
 }

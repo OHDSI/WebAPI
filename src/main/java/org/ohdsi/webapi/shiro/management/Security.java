@@ -13,6 +13,8 @@ import org.springframework.stereotype.Component;
 @Component
 public abstract class Security {
 
+  public abstract void init();
+
   public abstract Set<Realm> getRealms();
   
   public abstract Map<String, javax.servlet.Filter> getFilters();
@@ -20,6 +22,4 @@ public abstract class Security {
   public abstract Map<String, String> getFilterChain();
   
   public abstract Authenticator getAuthenticator();
-  
-  public abstract boolean isPermitted(String permission);
 }

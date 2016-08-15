@@ -51,9 +51,9 @@ public class Specimen extends Criteria {
   public Concept[] gender;
 
   @Override
-  public String accept(ICohortExpressionElementVisitor visitor)
+  public String accept(IGetCriteriaSqlDispatcher dispatcher)
   {
-    return visitor.visit(this);
+    return dispatcher.getCriteriaSql(this);
   }  
   
 }

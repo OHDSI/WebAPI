@@ -51,3 +51,26 @@ select 'measurement' as "domain", measurement_concept_id concept_id, concept_nam
 from @tableQualifier.measurement m
 join @tableQualifier.concept c on m.measurement_concept_id = c.concept_id
 where person_id = @personId
+
+union 
+
+select 'device' as "domain", device_concept_id concept_id, concept_name, device_exposure_start_date start_date, device_exposure_end_date end_date 
+from @tableQualifier.device_exposure de
+join @tableQualifier.concept c on de.device_concept_id = c.concept_id
+where person_id = @personId
+
+union 
+
+select 'procedure' as "domain", procedure_concept_id concept_id, concept_name, procedure_date start_date, procedure_date end_date 
+from @tableQualifier.procedure_occurrence po
+join @tableQualifier.concept c on po.procedure_concept_id = c.concept_id
+where person_id = @personId
+
+union
+
+select 'specimen' as "domain", specimen_concept_id concept_id, concept_name, specimen_date start_date, specimen_date end_date 
+from @tableQualifier.specimen s
+join @tableQualifier.concept c on s.specimen_concept_id = c.concept_id
+where person_id = @personId
+
+

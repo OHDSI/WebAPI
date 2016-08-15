@@ -16,7 +16,7 @@ import org.ohdsi.webapi.vocabulary.ConceptSetExpressionQueryBuilder;
  *
  * @author cknoll1
  */
-public class CohortExpressionQueryBuilder implements ICohortExpressionElementVisitor {
+public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, IGetEndStrategySqlDispatcher {
 
   private final static ConceptSetExpressionQueryBuilder conceptSetQueryBuilder = new ConceptSetExpressionQueryBuilder();
   private final static String CODESET_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/codesetQuery.sql");
@@ -41,10 +41,14 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
   private final static String PROCEDURE_OCCURRENCE_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/procedureOccurrence.sql");
   private final static String SPECIMEN_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/specimen.sql");
   private final static String VISIT_OCCURRENCE_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/visitOccurrence.sql");
-  public final static String PRIMARY_CRITERIA_EVENTS_TABLE = "#PrimaryCriteriaEvents";
+  public final static String PRIMARY_CRITERIA_EVENTS_TABLE = "#primary_events";
   public final static String QUALIFIED_PRIMARY_EVENTS_TABLE = "#QualifiedPrimaryEvents";
   private final static String INCLUSION_RULE_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/inclusionrule.sql");  
 
+  // Strategy templates
+  private final static String DATE_OFFSET_STRATEGY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/dateOffsetStrategy.sql");
+  private final static String CUSTOM_ERA_STRATEGY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/customEraStrategy.sql");
+  
   public static class BuildExpressionQueryOptions {
     @JsonProperty("cohortId")  
     public Integer cohortId;
@@ -220,9 +224,9 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
       )
     );
     
-    query = StringUtils.replace(query, "@EventSort", (primaryCriteria.limit.type != null && primaryCriteria.limit.type.equalsIgnoreCase("LAST")) ? "DESC" : "ASC");
+    query = StringUtils.replace(query, "@EventSort", (primaryCriteria.primaryLimit.type != null && primaryCriteria.primaryLimit.type.equalsIgnoreCase("LAST")) ? "DESC" : "ASC");
     
-    if (!primaryCriteria.limit.type.equalsIgnoreCase("ALL"))
+    if (!primaryCriteria.primaryLimit.type.equalsIgnoreCase("ALL"))
     {
       primaryEventsFilters.add("P.ordinal = 1");
     }
@@ -250,7 +254,14 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     }
     resultSql = StringUtils.replace(resultSql, "@additionalCriteriaQuery", additionalCriteriaQuery);
 
-    resultSql = StringUtils.replace(resultSql, "@EventSort", (expression.limit.type != null && expression.limit.type.equalsIgnoreCase("LAST")) ? "DESC" : "ASC");
+    resultSql = StringUtils.replace(resultSql, "@QualifiedEventSort", (expression.qualifiedLimit.type != null && expression.qualifiedLimit.type.equalsIgnoreCase("LAST")) ? "DESC" : "ASC");
+
+    if (expression.qualifiedLimit.type != null && !expression.qualifiedLimit.type.equalsIgnoreCase("ALL"))
+    {
+      resultSql = StringUtils.replace(resultSql, "@QualifiedLimitFilter","WHERE QE.ordinal = 1");
+    }
+    else
+      resultSql = StringUtils.replace(resultSql, "@QualifiedLimitFilter","");    
     
     ArrayList<String> inclusionRuleInserts = new ArrayList<>();
     for (int i = 0; i < expression.inclusionRules.size(); i++)
@@ -260,10 +271,12 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
       inclusionRuleInsert = StringUtils.replace(inclusionRuleInsert, "@inclusion_rule_id", "" +  i);
       inclusionRuleInserts.add(inclusionRuleInsert);
     }
-
+    
     resultSql = StringUtils.replace(resultSql,"@inclusionCohortInserts", StringUtils.join(inclusionRuleInserts,"\n"));
 
-    if (expression.limit.type != null && !expression.limit.type.equalsIgnoreCase("ALL"))
+    resultSql = StringUtils.replace(resultSql, "@IncludedEventSort", (expression.expressionLimit.type != null && expression.expressionLimit.type.equalsIgnoreCase("LAST")) ? "DESC" : "ASC");
+
+    if (expression.expressionLimit.type != null && !expression.expressionLimit.type.equalsIgnoreCase("ALL"))
     {
       resultSql = StringUtils.replace(resultSql, "@ResultLimitFilter","WHERE Results.ordinal = 1");
     }
@@ -271,7 +284,12 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
       resultSql = StringUtils.replace(resultSql, "@ResultLimitFilter","");
     
     resultSql = StringUtils.replace(resultSql, "@ruleTotal", String.valueOf(expression.inclusionRules.size()));
-        
+
+    if (expression.endStrategy != null)
+      resultSql = StringUtils.replace(resultSql, "@strategyInserts", expression.endStrategy.accept(this, "#included_events"));
+    else
+      resultSql = StringUtils.replace(resultSql, "@strategyInserts", "");
+    
     if (options != null)
     {
       // replease query parameters with tokens
@@ -287,18 +305,58 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     }
     return resultSql;
   }
+  public String getCriteriaGroupQuery(CriteriaGroup group, String eventTable) {
+    String query = GROUP_QUERY_TEMPLATE;
+    ArrayList<String> additionalCriteriaQueries = new ArrayList<>();
+    
+    for(int i = 0; i< group.criteriaList.length; i++)
+    {
+      CorelatedCriteria ac = group.criteriaList[i];
+      String acQuery = this.getAdditionalCriteriaQuery(ac, eventTable); //ac.accept(this);
+      acQuery = StringUtils.replace(acQuery, "@indexId", "" + i);
+      additionalCriteriaQueries.add(acQuery);
+    }
+    
+    for(int i=0; i< group.groups.length; i++)
+    {
+      CriteriaGroup g = group.groups[i];
+      String gQuery = this.getCriteriaGroupQuery(g, eventTable); //g.accept(this);
+      gQuery = StringUtils.replace(gQuery, "@indexId", "" + (group.criteriaList.length + i));
+      additionalCriteriaQueries.add(gQuery);      
+    }
+    
+    String intersectClause = "HAVING COUNT(index_id) ";
+    
+    if (group.type.equalsIgnoreCase("ALL")) // count must match number of criteria + sub-groups in group.
+      intersectClause += "= " + (group.criteriaList.length + group.groups.length);
+    
+    if (group.type.equalsIgnoreCase("ANY")) // count must be > 0 for an 'ANY' criteria
+      intersectClause += "> 0"; 
+    
+    if (group.type.toUpperCase().startsWith("AT_"))
+    {
+      if (group.type.toUpperCase().endsWith("LEAST"))
+        intersectClause += ">= " + group.count;
+      else
+        intersectClause += "<= " + group.count;
+    }
+           
+    query = StringUtils.replace(query, "@intersectClause", intersectClause);
+    query = StringUtils.replace(query, "@criteriaQueries", StringUtils.join(additionalCriteriaQueries, "\nUNION\n"));
+    
+    return query;    
+  }
   
   private String getInclusionRuleQuery(CriteriaGroup inclusionRule)
   {
     String resultSql = INCLUSION_RULE_QUERY_TEMPLATE;
-    String additionalCriteriaQuery = "\nJOIN (\n" + getCriteriaGroupQuery(inclusionRule, "#cohort_candidate") + ") AC on AC.event_id = pe.event_id";
+    String additionalCriteriaQuery = "\nJOIN (\n" + getCriteriaGroupQuery(inclusionRule, "#qualified_events") + ") AC on AC.event_id = pe.event_id";
     additionalCriteriaQuery = StringUtils.replace(additionalCriteriaQuery,"@indexId", "" + 0);
     resultSql = StringUtils.replace(resultSql, "@additionalCriteriaQuery", additionalCriteriaQuery);
     return resultSql;
   }
   
-// <editor-fold defaultstate="collapsed" desc="ICohortExpressionVisitor implementation">
-  public String getAdditionalCriteriaQuery(AdditionalCriteria additionalCriteria, String eventTable)
+  public String getAdditionalCriteriaQuery(CorelatedCriteria additionalCriteria, String eventTable)
   {
     String query = ADDITIONAL_CRITERIA_TEMMPLATE;
     
@@ -335,9 +393,11 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
 
     return query;
   }
+
+// <editor-fold defaultstate="collapsed" desc="ICriteriaSqlDispatcher implementation">
   
   @Override
-  public String visit(ConditionEra criteria)
+  public String getCriteriaSql(ConditionEra criteria)
   {
     String query = CONDITION_ERA_TEMPLATE;
     
@@ -411,7 +471,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
   }
 
   @Override
-  public String visit(ConditionOccurrence criteria)
+  public String getCriteriaSql(ConditionOccurrence criteria)
   {
     String query = CONDITION_OCCURRENCE_TEMPLATE;
     
@@ -500,51 +560,9 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     query = StringUtils.replace(query, "@whereClause",whereClause);
     return query;
   }
-  
-  public String getCriteriaGroupQuery(CriteriaGroup group, String eventTable) {
-    String query = GROUP_QUERY_TEMPLATE;
-    ArrayList<String> additionalCriteriaQueries = new ArrayList<>();
     
-    for(int i = 0; i< group.criteriaList.length; i++)
-    {
-      AdditionalCriteria ac = group.criteriaList[i];
-      String acQuery = this.getAdditionalCriteriaQuery(ac, eventTable); //ac.accept(this);
-      acQuery = StringUtils.replace(acQuery, "@indexId", "" + i);
-      additionalCriteriaQueries.add(acQuery);
-    }
-    
-    for(int i=0; i< group.groups.length; i++)
-    {
-      CriteriaGroup g = group.groups[i];
-      String gQuery = this.getCriteriaGroupQuery(g, eventTable); //g.accept(this);
-      gQuery = StringUtils.replace(gQuery, "@indexId", "" + (group.criteriaList.length + i));
-      additionalCriteriaQueries.add(gQuery);      
-    }
-    
-    String intersectClause = "HAVING COUNT(index_id) ";
-    
-    if (group.type.equalsIgnoreCase("ALL")) // count must match number of criteria + sub-groups in group.
-      intersectClause += "= " + (group.criteriaList.length + group.groups.length);
-    
-    if (group.type.equalsIgnoreCase("ANY")) // count must be > 0 for an 'ANY' criteria
-      intersectClause += "> 0"; 
-    
-    if (group.type.toUpperCase().startsWith("AT_"))
-    {
-      if (group.type.toUpperCase().endsWith("LEAST"))
-        intersectClause += ">= " + group.count;
-      else
-        intersectClause += "<= " + group.count;
-    }
-           
-    query = StringUtils.replace(query, "@intersectClause", intersectClause);
-    query = StringUtils.replace(query, "@criteriaQueries", StringUtils.join(additionalCriteriaQueries, "\nUNION\n"));
-    
-    return query;    
-  }
-  
   @Override
-  public String visit(Death criteria)
+  public String getCriteriaSql(Death criteria)
   {
     String query = DEATH_TEMPLATE;
 
@@ -603,7 +621,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
   }
     
   @Override
-  public String visit(DeviceExposure criteria)
+  public String getCriteriaSql(DeviceExposure criteria)
   {
     String query = DEVICE_EXPOSURE_TEMPLATE;
 
@@ -701,7 +719,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
 
   
   @Override
-  public String visit(DoseEra criteria)
+  public String getCriteriaSql(DoseEra criteria)
   {
     String query = DOSE_ERA_TEMPLATE;
     
@@ -782,7 +800,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
   }
     
   @Override
-  public String visit(DrugEra criteria)
+  public String getCriteriaSql(DrugEra criteria)
   {
     String query = DRUG_ERA_TEMPLATE;
     
@@ -862,7 +880,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
   }
   
   @Override
-  public String visit(DrugExposure criteria)
+  public String getCriteriaSql(DrugExposure criteria)
   {
     String query = DRUG_EXPOSURE_TEMPLATE;
 
@@ -995,7 +1013,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
   }  
   
   @Override
-  public String visit(Measurement criteria)
+  public String getCriteriaSql(Measurement criteria)
   {
     String query = MEASUREMENT_TEMPLATE;
     
@@ -1132,7 +1150,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
   }
   
   @Override
-  public String visit(Observation criteria)
+  public String getCriteriaSql(Observation criteria)
   {
     String query = OBSERVATION_TEMPLATE;
     
@@ -1245,7 +1263,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
   }  
 
   @Override
-  public String visit(ObservationPeriod criteria)
+  public String getCriteriaSql(ObservationPeriod criteria)
   {
     String query = OBSERVATION_PERIOD_TEMPLATE;
 
@@ -1307,7 +1325,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
   }
 
   @Override
-  public String visit(ProcedureOccurrence criteria)
+  public String getCriteriaSql(ProcedureOccurrence criteria)
   {
     String query = PROCEDURE_OCCURRENCE_TEMPLATE;
     
@@ -1401,7 +1419,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
   }
   
   @Override
-  public String visit(Specimen criteria) 
+  public String getCriteriaSql(Specimen criteria) 
   {
     String query = SPECIMEN_TEMPLATE;
     
@@ -1492,7 +1510,7 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
   }
 
   @Override
-  public String visit(VisitOccurrence criteria) 
+  public String getCriteriaSql(VisitOccurrence criteria) 
   {
     String query = VISIT_OCCURRENCE_TEMPLATE;
     
@@ -1584,6 +1602,52 @@ public class CohortExpressionQueryBuilder implements ICohortExpressionElementVis
     
     return query;
   }
+  
+// </editor-fold>
+
+// <editor-fold defaultstate="collapsed" desc="IEndStrategyDispatcher implementation">
+
+  private String getDateFieldForOffsetStrategy (DateOffsetStrategy.DateField dateField) {
+    switch (dateField) {
+      case StartDate: 
+        return "start_date";
+      case EndDate:
+        return "end_date";
+    }
+    return "start_date";
+  }
+  
+  @Override
+  public String getStrategySql(DateOffsetStrategy strat, String eventTable) 
+  {
+    String insertSql = "-- Date Offset Strategy\nINSERT INTO #cohort_ends (event_id,  person_id, end_date)\n@dateOffsetStrategySql;";
+    
+    String strategySql = StringUtils.replace(DATE_OFFSET_STRATEGY_TEMPLATE, "@eventTable",eventTable);
+    strategySql = StringUtils.replace(strategySql, "@offset",Integer.toString(strat.offset));
+    strategySql = StringUtils.replace(strategySql, "@dateField",getDateFieldForOffsetStrategy(strat.dateField));
+   
+    insertSql = StringUtils.replace(insertSql, "@dateOffsetStrategySql",strategySql);
+    return insertSql;
+  }
+
+  @Override
+  public String getStrategySql(CustomEraStrategy strat, String eventTable) 
+  {
+    if (strat.drugCodesetId == null)
+      throw new RuntimeException("Drug Codeset ID can not be NULL.");
+    
+    String insertSql = "-- Custom Era Strategy\nINSERT INTO #cohort_ends (event_id,  person_id, end_date)\n@customEraStrategySql;";
+
+    String strategySql = StringUtils.replace(CUSTOM_ERA_STRATEGY_TEMPLATE, "@eventTable",eventTable);
+    strategySql = StringUtils.replace(strategySql, "@drugCodesetId",strat.drugCodesetId.toString());
+    strategySql = StringUtils.replace(strategySql, "@gapDays",Integer.toString(strat.gapDays));
+    strategySql = StringUtils.replace(strategySql, "@offset",Integer.toString(strat.offset));
+    
+    insertSql = StringUtils.replace(insertSql, "@customEraStrategySql",strategySql);
+    
+    return insertSql;    
+  }
+  
   
 // </editor-fold>
   

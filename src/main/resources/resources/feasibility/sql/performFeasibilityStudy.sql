@@ -16,7 +16,7 @@ select @resultCohortId as cohort_definition_id, MG.person_id, MG.start_date, MG.
 from
 (
   select C.event_id, C.person_id, C.start_date, C.end_date, SUM(coalesce(POWER(cast(2 as bigint), I.inclusion_rule_id), 0)) as inclusion_rule_mask
-  from #PrimaryCriteriaEvents C
+  from #primary_events C
   LEFT JOIN #inclusionRuleCohorts I on I.event_id = C.event_id
   GROUP BY C.event_id, C.person_id, C.start_date, C.end_date
 ) MG -- matching groups
@@ -31,7 +31,7 @@ select @studyId as study_id, inclusion_rule_mask, count(*) as person_count
 from
 (
   select C.event_id, SUM(coalesce(POWER(cast(2 as bigint), I.inclusion_rule_id), 0)) as inclusion_rule_mask
-  from #PrimaryCriteriaEvents C
+  from #primary_events C
   LEFT JOIN #inclusionRuleCohorts I on c.event_id = i.event_id
   GROUP BY C.event_id
 ) MG -- matching groups
@@ -46,12 +46,12 @@ from #inclusionRules ir
 left join
 (
   select i.inclusion_rule_id, count(i.event_id) as person_count
-  from #PrimaryCriteriaEvents C
+  from #primary_events C
   JOIN #inclusionRuleCohorts i on C.event_id = i.event_id
   group by i.inclusion_rule_id
 ) T on ir.sequence = T.inclusion_rule_id
 CROSS JOIN (select count(*) as total_rules from #inclusionRules where study_id = @studyId) RuleTotal
-CROSS JOIN (select count(event_id) as total from #PrimaryCriteriaEvents) EventTotal
+CROSS JOIN (select count(event_id) as total from #primary_events) EventTotal
 LEFT JOIN @ohdsi_database_schema.feas_study_result SR on SR.study_id = @studyId AND (POWER(cast(2 as bigint),RuleTotal.total_rules) - POWER(cast(2 as bigint),ir.sequence) - 1) = SR.inclusion_rule_mask -- POWER(2,rule count) - POWER(2,rule sequence) - 1 is the mask for 'all except this rule' 
 WHERE ir.study_id = @studyId
 ;
@@ -60,7 +60,7 @@ WHERE ir.study_id = @studyId
 delete from @ohdsi_database_schema.feas_study_index_stats where study_id = @studyId;
 insert into @ohdsi_database_schema.feas_study_index_stats (study_id, person_count, match_count)
 select @studyId as study_id, 
-(select count(event_id) as total from #PrimaryCriteriaEvents) as person_count,
+(select count(event_id) as total from #primary_events) as person_count,
 coalesce((
   select sr.person_count 
   from @ohdsi_database_schema.feas_study_result sr
@@ -72,8 +72,8 @@ coalesce((
 TRUNCATE TABLE #inclusionRuleCohorts;
 DROP TABLE #inclusionRuleCohorts;
 
-TRUNCATE TABLE #PrimaryCriteriaEvents;
-DROP TABLE #PrimaryCriteriaEvents;
+TRUNCATE TABLE #primary_events;
+DROP TABLE #primary_events;
 
 TRUNCATE TABLE #Codesets;
 DROP TABLE #Codesets;

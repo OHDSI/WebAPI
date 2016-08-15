@@ -352,7 +352,7 @@ public class CohortResultsService extends AbstractDaoService {
           @PathParam("id") String id,
           @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
 
     String sql = ResourceHelper.GetResourceAsString(BASE_SQL_PATH + "/raw/getTotalDistinctPeople.sql");
     sql = SqlRender.renderSql(sql, new String[]{"tableQualifier", "id"}, new String[]{tableQualifier, id});

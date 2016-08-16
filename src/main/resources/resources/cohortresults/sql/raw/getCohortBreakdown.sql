@@ -10,7 +10,7 @@ from
         (select round(count(*), cast(- floor(log10(abs(count(*) + 0.01))) as int))
          from @tableQualifier.drug_exposure de 
          where de.person_id = c.subject_id) as drugs
-from @tableQualifier.cohort c
+from @resultsTableQualifier.cohort c
 join @tableQualifier.person p on c.subject_id = p.person_id
 join @tableQualifier.concept gc on p.gender_concept_id = gc.concept_id
 where cohort_definition_id = @cohortDefinitionId

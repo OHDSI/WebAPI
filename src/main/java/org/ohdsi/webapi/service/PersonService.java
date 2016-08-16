@@ -58,6 +58,7 @@ public class PersonService extends AbstractDaoService {
     
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 
     String sql_statement = ResourceHelper.GetResourceAsString("/resources/person/sql/personInfo.sql");
     sql_statement = SqlRender.renderSql(sql_statement, new String[]{"personId", "tableQualifier"}, new String[]{personId, tableQualifier});
@@ -96,7 +97,7 @@ public class PersonService extends AbstractDaoService {
     });
 
     sql_statement = ResourceHelper.GetResourceAsString("/resources/person/sql/getCohorts.sql");
-    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"subjectId", "tableQualifier"}, new String[]{personId, tableQualifier});
+    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"subjectId", "tableQualifier"}, new String[]{personId, resultsTableQualifier});
     sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
 
     getSourceJdbcTemplate(source).query(sql_statement, new RowMapper<Void>() {

@@ -256,7 +256,8 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
 
     resultSql = StringUtils.replace(resultSql, "@QualifiedEventSort", (expression.qualifiedLimit.type != null && expression.qualifiedLimit.type.equalsIgnoreCase("LAST")) ? "DESC" : "ASC");
 
-    if (expression.qualifiedLimit.type != null && !expression.qualifiedLimit.type.equalsIgnoreCase("ALL"))
+    // Only apply qualified limit filter if additional criteria is specified.
+    if (expression.additionalCriteria != null && expression.qualifiedLimit.type != null && !expression.qualifiedLimit.type.equalsIgnoreCase("ALL"))
     {
       resultSql = StringUtils.replace(resultSql, "@QualifiedLimitFilter","WHERE QE.ordinal = 1");
     }

@@ -188,10 +188,9 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
   
   public String getCodesetQuery(ConceptSet[] conceptSets) {
     String codesetQuery = CODESET_QUERY_TEMPLATE;
-    
+    ArrayList<String> codesetInserts = new ArrayList<>();
     
     if (conceptSets.length > 0) {
-      ArrayList<String> codesetInserts = new ArrayList<>();
       for (ConceptSet cs : conceptSets) {
         // construct main target codeset query
         String conceptExpressionQuery = conceptSetQueryBuilder.buildExpressionQuery(cs.expression);
@@ -199,9 +198,9 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
         String conceptSetInsert = String.format("INSERT INTO #Codesets (codeset_id, concept_id)\nSELECT %d as codeset_id, c.concept_id FROM (%s) C;", cs.id, conceptExpressionQuery);
         codesetInserts.add(conceptSetInsert);
       }
-      codesetQuery = StringUtils.replace(codesetQuery, "@codesetInserts", StringUtils.join(codesetInserts, "\n"));
     }
 
+    codesetQuery = StringUtils.replace(codesetQuery, "@codesetInserts", StringUtils.join(codesetInserts, "\n"));
     return codesetQuery;
   }
  

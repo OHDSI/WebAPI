@@ -13,35 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ohdsi.webapi.feasibility;
+package org.ohdsi.webapi.ircalc;
 
-import java.util.List;
-import javax.xml.bind.annotation.XmlType;
+import org.ohdsi.webapi.cohortdefinition.CriteriaGroup;
 
 /**
  *
  * @author Chris Knoll <cknoll@ohdsi.org>
  */
-public class FeasibilityReport {
-  
-  @XmlType(name="Summary", namespace="http://ohdsi.org/webapi/feasibility")
-  public static class Summary {
-    public long totalPersons;
-    public long matchingPersons;
-    public String percentMatched;
-  }
-  
-  public static class InclusionRuleStatistic
-  {
-      public int id;
-      public String name;
-      public String percentExcluded;
-      public String percentSatisfying;
-      public long countSatisfying;
-  }
-  
-  public Summary summary;
-  public List<InclusionRuleStatistic> inclusionRuleStats;
-  public String treemapData;
-  
+public class StratifyRule {
+  public String name;
+  public String description;
+  public CriteriaGroup expression;
 }

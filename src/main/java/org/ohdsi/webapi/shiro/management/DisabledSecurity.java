@@ -8,6 +8,7 @@ import javax.servlet.Filter;
 import org.apache.shiro.authc.Authenticator;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
 import org.apache.shiro.realm.Realm;
+import org.ohdsi.webapi.shiro.HideResourceFilter;
 import org.springframework.stereotype.Component;
 
 /**
@@ -24,12 +25,16 @@ public class DisabledSecurity extends Security {
 
   @Override
   public Map<String, String> getFilterChain() {
-    return new HashMap<>();
+    Map<String, String> filterChain = new HashMap<>();
+    filterChain.put("/user/**", "hideResourceFilter");
+    return filterChain;
   }
 
   @Override
   public Map<String, Filter> getFilters() {
-    return new HashMap<>();
+    Map<String, javax.servlet.Filter> filters = new HashMap<>();
+    filters.put("hideResourceFilter", new HideResourceFilter());
+    return filters;
   }
 
   @Override

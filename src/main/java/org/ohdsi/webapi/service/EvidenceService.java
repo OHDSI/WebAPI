@@ -18,7 +18,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.shiro.SecurityUtils;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -129,9 +128,6 @@ public class EvidenceService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<EvidenceInfo> getInfo(@PathParam("sourceKey") String sourceKey) {
 
-    SecurityUtils.getSubject().checkPermission(
-            String.format("read:%s:evidence:info", sourceKey));
-
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Evidence);
     
@@ -170,9 +166,6 @@ public class EvidenceService extends AbstractDaoService {
   @Path("drug/{id}")
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<DrugEvidence> getDrugEvidence(@PathParam("sourceKey") String sourceKey, @PathParam("id") final Long id) {
-    SecurityUtils.getSubject().checkPermission(
-            String.format("read:%s:evidence:drug:%d", sourceKey, id));
-
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Evidence);
     
@@ -247,9 +240,6 @@ public class EvidenceService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<HoiEvidence> getHoiEvidence(@PathParam("sourceKey") String sourceKey, @PathParam("id") final Long id) {
     
-    SecurityUtils.getSubject().checkPermission(
-            String.format("read:%s:evidence:hoi:%d", sourceKey, id));
-
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Evidence);
     
@@ -311,9 +301,6 @@ public class EvidenceService extends AbstractDaoService {
   @Path("drughoi/{key}")
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<DrugHoiEvidence> getDrugHoiEvidence(@PathParam("sourceKey") String sourceKey, @PathParam("key") final String key) {
-    SecurityUtils.getSubject().checkPermission(
-            String.format("read:%s:evidence:drughoi:%s", sourceKey, key));
-
     String[] par = key.split("-");
     String drug_id = par[0];
     String hoi_id = par[1];
@@ -375,9 +362,6 @@ public class EvidenceService extends AbstractDaoService {
   @Path("drugrollup/{filter}/{id}")
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<DrugRollUpEvidence> getDrugRollupIngredientEvidence(@PathParam("sourceKey") String sourceKey, @PathParam("id") final Long id, @PathParam("filter") final String filter) {
-    SecurityUtils.getSubject().checkPermission(
-            String.format("read:%s:evidence:drugrollup:%s:%d", sourceKey, filter, id));
-    
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String evidenceTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Evidence);
     String vocabularyTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
@@ -441,9 +425,6 @@ public class EvidenceService extends AbstractDaoService {
   @Path("{id}")
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<Evidence> getEvidence(@PathParam("sourceKey") String sourceKey, @PathParam("id") final Long id) {
-    SecurityUtils.getSubject().checkPermission(
-            String.format("read:%s:evidence:evidence:%d", sourceKey, id));
-   
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Evidence);
     

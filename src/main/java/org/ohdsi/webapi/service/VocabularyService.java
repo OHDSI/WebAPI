@@ -17,7 +17,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.apache.shiro.SecurityUtils;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.activity.Activity.ActivityType;
@@ -193,9 +192,6 @@ public class VocabularyService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<Concept> executeSearch(@PathParam("sourceKey") String sourceKey, ConceptSearch search) {
-    SecurityUtils.getSubject().checkPermission(
-            String.format("read:%s:vocabulary:search", sourceKey));
-
     Tracker.trackActivity(ActivityType.Search, search.query);
 
     Source source = getSourceRepository().findBySourceKey(sourceKey);
@@ -251,9 +247,6 @@ public class VocabularyService extends AbstractDaoService {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<Concept> executeSearch(@PathParam("sourceKey") String sourceKey, @PathParam("query") String query) {
-    SecurityUtils.getSubject().checkPermission(
-            String.format("read:%s:vocabulary:search", sourceKey));
-
     Tracker.trackActivity(ActivityType.Search, query);
 
     // escape single quote for queries
@@ -279,9 +272,6 @@ public class VocabularyService extends AbstractDaoService {
   @Path("concept/{id}")
   @Produces(MediaType.APPLICATION_JSON)
   public Concept getConcept(@PathParam("sourceKey") final String sourceKey, @PathParam("id") final long id) {
-    SecurityUtils.getSubject().checkPermission(
-            String.format("read:%s:vocabulary:concept:%d", sourceKey, id));
-
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
 
@@ -307,9 +297,6 @@ public class VocabularyService extends AbstractDaoService {
   @Path("concept/{id}/related")
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<RelatedConcept> getRelatedConcepts(@PathParam("sourceKey") String sourceKey, @PathParam("id") final Long id) {
-    SecurityUtils.getSubject().checkPermission(
-            String.format("read:%s:vocabulary:concept:%d:related", sourceKey, id));
-
     final Map<Long, RelatedConcept> concepts = new HashMap<>();
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
@@ -365,9 +352,6 @@ public class VocabularyService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<Long> resolveConceptSetExpression(@PathParam("sourceKey") String sourceKey, ConceptSetExpression conceptSetExpression) {
-    SecurityUtils.getSubject().checkPermission(
-            String.format("read:%s:vocabulary:resolveConceptSetExpression", sourceKey));
-
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
 
@@ -403,9 +387,6 @@ public class VocabularyService extends AbstractDaoService {
   @Path("concept/{id}/descendants")
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<RelatedConcept> getDescendantConcepts(@PathParam("sourceKey") String sourceKey, @PathParam("id") final Long id) {
-    SecurityUtils.getSubject().checkPermission(
-            String.format("read:%s:vocabulary:concept:%d:descendants", sourceKey, id));
-
     final Map<Long, RelatedConcept> concepts = new HashMap<>();
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
@@ -430,9 +411,6 @@ public class VocabularyService extends AbstractDaoService {
   @Path("domains")
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<Domain> getDomains(@PathParam("sourceKey") String sourceKey) {
-    SecurityUtils.getSubject().checkPermission(
-            String.format("read:%s:vocabulary:domains", sourceKey));
-
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
 
@@ -457,9 +435,6 @@ public class VocabularyService extends AbstractDaoService {
   @Path("vocabularies")
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<Vocabulary> getVocabularies(@PathParam("sourceKey") String sourceKey) {
-    SecurityUtils.getSubject().checkPermission(
-            String.format("read:%s:vocabulary:vocabularies", sourceKey));
-
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
 

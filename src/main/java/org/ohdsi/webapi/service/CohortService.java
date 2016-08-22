@@ -1,7 +1,6 @@
 package org.ohdsi.webapi.service;
 
 import java.util.List;
-
 import javax.persistence.EntityManager;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -10,8 +9,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import org.apache.shiro.SecurityUtils;
-
 import org.ohdsi.webapi.cohort.CohortEntity;
 import org.ohdsi.webapi.cohort.CohortRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,9 +44,6 @@ public class CohortService {
 	@Path("{id}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public List<CohortEntity> getCohortListById(@PathParam("id") final long id) {
-
-    SecurityUtils.getSubject().checkPermission(
-            String.format("read:cohort:cohort:%d", id));
 
 		List<CohortEntity> d = this.cohortRepository.getAllCohortsForId(id);
 		return d;

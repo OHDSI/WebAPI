@@ -352,7 +352,7 @@ public class CohortResultsService extends AbstractDaoService {
           @PathParam("id") String id,
           @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 
     String sql = ResourceHelper.GetResourceAsString(BASE_SQL_PATH + "/raw/getTotalDistinctPeople.sql");
     sql = SqlRender.renderSql(sql, new String[]{"tableQualifier", "id"}, new String[]{tableQualifier, id});
@@ -1314,10 +1314,11 @@ public class CohortResultsService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<CohortBreakdown> getCohortBreakdown(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
     String sql = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/raw/getCohortBreakdown.sql");
-    sql = SqlRender.renderSql(sql, new String[]{"tableQualifier", "cohortDefinitionId"}, new String[]{
-      resultsTableQualifier, String.valueOf(id)});
+    sql = SqlRender.renderSql(sql, new String[]{"tableQualifier","resultsTableQualifier", "cohortDefinitionId"}, new String[]{
+      cdmTableQualifier, resultsTableQualifier, String.valueOf(id)});
     sql = SqlTranslate.translateSql(sql, getSourceDialect(), source.getSourceDialect(), SessionUtils.sessionId(),
             resultsTableQualifier);
 
@@ -1374,7 +1375,9 @@ public class CohortResultsService extends AbstractDaoService {
         clause += (" and " + param + "\n");
     }
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+    
     String sql = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/raw/getCohortBreakdownPeople.sql");
     sql = sql.replace("/*whereclause*/", clause);
     String wherecolsStr = "";
@@ -1387,8 +1390,8 @@ public class CohortResultsService extends AbstractDaoService {
         }
     }
     sql = SqlRender.renderSql(sql, 
-            new String[]{"tableQualifier", "cohortDefinitionId","gender", "age", "conditions", "drugs", "rows","wherecols","groups"}, 
-            new String[]{resultsTableQualifier, String.valueOf(id), 
+            new String[]{"tableQualifier", "resultsTableQualifier", "cohortDefinitionId","gender", "age", "conditions", "drugs", "rows","wherecols","groups"}, 
+            new String[]{cdmTableQualifier, resultsTableQualifier, String.valueOf(id), 
                 String.valueOf(gender), 
                 String.valueOf(age), 
                 String.valueOf(conditions), 

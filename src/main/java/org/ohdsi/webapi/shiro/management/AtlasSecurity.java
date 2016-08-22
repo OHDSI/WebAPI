@@ -70,7 +70,7 @@ public class AtlasSecurity extends Security {
 
       RoleEntity conceptSetEditorRole = this.authorizer.addRole("concept set editor");
       this.authorizer.addPermission(conceptSetEditorRole, "conceptset:*:*:exists:get", "Check if Concept Set exitsts");
-      this.authorizer.addPermission(conceptSetEditorRole, "conceptset:post", "Save Concept Set");
+      this.authorizer.addPermission(conceptSetEditorRole, "conceptset:post", "Create Concept Set");
       this.authorizer.addPermission(conceptSetEditorRole, "conceptset:*:items:post", "Save Concept Set items");
       this.authorizer.addPermission(conceptSetEditorRole, "conceptset:edit:ui", null);
 
@@ -104,8 +104,7 @@ public class AtlasSecurity extends Security {
     filterChain.put("/user/roles/**", "noSessionCreation, jwtAuthcFilter, authzFilter");
 
     filterChain.put("/conceptset", "noSessionCreation, jwtAuthcFilter, authzFilter");
-    filterChain.put("/conceptset/**/items", "noSessionCreation, jwtAuthcFilter, authzFilter");
-    filterChain.put("/**/conceptset", "noSessionCreation, jwtAuthcFilter, authzFilter");
+    filterChain.put("/conceptset/**", "noSessionCreation, jwtAuthcFilter, authzFilter");
     filterChain.put("/cohortdefinition", "noSessionCreation, jwtAuthcFilter, authzFilter");
     filterChain.put("/cohortdefinition/**", "noSessionCreation, jwtAuthcFilter, authzFilter");
     filterChain.put("/job/execution", "noSessionCreation, jwtAuthcFilter, authzFilter");

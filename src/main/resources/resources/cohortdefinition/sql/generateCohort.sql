@@ -42,7 +42,7 @@ FROM cteIncludedEvents Results
 @ResultLimitFilter
 ;
 
--- TODO: Apply end date stratagies
+-- Apply end date stratagies
 -- by default, all events extend to the op_end_date.
 select event_id, person_id, op_end_date as end_date
 into #cohort_ends
@@ -109,6 +109,8 @@ coalesce((
 ;
 }
 
+TRUNCATE TABLE #cohort_ends;
+DROP TABLE #cohort_ends;
 
 TRUNCATE TABLE #inclusionRuleCohorts;
 DROP TABLE #inclusionRuleCohorts;

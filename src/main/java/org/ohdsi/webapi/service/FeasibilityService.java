@@ -42,24 +42,23 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.shiro.SecurityUtils;
 import org.ohdsi.sql.SqlTranslate;
-import org.ohdsi.webapi.feasibility.InclusionRule;
-import org.ohdsi.webapi.feasibility.FeasibilityStudy;
-import org.ohdsi.webapi.feasibility.PerformFeasibilityTasklet;
-import org.ohdsi.webapi.feasibility.StudyGenerationInfo;
-import org.ohdsi.webapi.feasibility.FeasibilityReport;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.TerminateJobStepExceptionHandler;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfo;
 import org.ohdsi.webapi.cohortdefinition.CriteriaGroup;
 import org.ohdsi.webapi.cohortdefinition.ExpressionType;
-import org.ohdsi.webapi.feasibility.FeasibilityStudyRepository;
 import org.ohdsi.webapi.cohortdefinition.GenerateCohortTasklet;
 import org.ohdsi.webapi.cohortdefinition.GenerationStatus;
+import org.ohdsi.webapi.feasibility.FeasibilityReport;
+import org.ohdsi.webapi.feasibility.FeasibilityStudy;
+import org.ohdsi.webapi.feasibility.FeasibilityStudyRepository;
+import org.ohdsi.webapi.feasibility.InclusionRule;
+import org.ohdsi.webapi.feasibility.PerformFeasibilityTasklet;
+import org.ohdsi.webapi.feasibility.StudyGenerationInfo;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.source.Source;
@@ -440,9 +439,6 @@ public class FeasibilityService extends AbstractDaoService {
   @Consumes(MediaType.APPLICATION_JSON)
   @Transactional(readOnly = true)
   public FeasibilityService.FeasibilityStudyDTO getStudy(@PathParam("id") final int id) {
-    SecurityUtils.getSubject().checkPermission(
-            String.format("read:feasibility:feasibility:%d", id));
-    
     FeasibilityStudy s = this.feasibilityStudyRepository.findOneWithDetail(id);
     return feasibilityStudyToDTO(s);
   }
@@ -452,9 +448,6 @@ public class FeasibilityService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Transactional
   public FeasibilityService.FeasibilityStudyDTO saveStudy(@PathParam("id") final int id, FeasibilityStudyDTO study) {
-    SecurityUtils.getSubject().checkPermission(
-            String.format("update:feasibility:feasibility:%d", id));
-
     Date currentTime = Calendar.getInstance().getTime();
 
     FeasibilityStudy updatedStudy = this.feasibilityStudyRepository.findOne(id);
@@ -509,9 +502,6 @@ public class FeasibilityService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public JobExecutionResource performStudy(@PathParam("study_id") final int study_id, @PathParam("sourceKey") final String sourceKey) {
-    SecurityUtils.getSubject().checkPermission(
-            String.format("execute:feasibility:%d:generate:%s", study_id, sourceKey));
-
     Date startTime = Calendar.getInstance().getTime();
 
     Source source = this.getSourceRepository().findBySourceKey(sourceKey);
@@ -603,9 +593,6 @@ public class FeasibilityService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Transactional(readOnly = true)
   public List<StudyInfoDTO> getSimulationInfo(@PathParam("id") final int id) {
-    SecurityUtils.getSubject().checkPermission(
-            String.format("read:feasibility:%d:info", id));
-
     FeasibilityStudy study = this.feasibilityStudyRepository.findOne(id);
 
     List<StudyInfoDTO> result = new ArrayList<>();
@@ -623,9 +610,6 @@ public class FeasibilityService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Transactional
   public FeasibilityReport getSimulationReport(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey) {
-
-    SecurityUtils.getSubject().checkPermission(
-            String.format("read:feasibility:%d:report:%s", id, sourceKey));
 
     Source source = this.getSourceRepository().findBySourceKey(sourceKey);
 
@@ -653,9 +637,6 @@ public class FeasibilityService extends AbstractDaoService {
   @javax.transaction.Transactional
   public FeasibilityStudyDTO copy(@PathParam("id") final int id) {
     
-    SecurityUtils.getSubject().checkPermission(
-            String.format("create:feasibility:%d:copy", id));
-
     FeasibilityStudyDTO sourceStudy = getStudy(id);
     sourceStudy.id = null; // clear the ID
     sourceStudy.name = "COPY OF: " + sourceStudy.name;
@@ -673,9 +654,6 @@ public class FeasibilityService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/{id}")
   public void delete(@PathParam("id") final int id) {
-    SecurityUtils.getSubject().checkPermission(
-            String.format("delete:feasibility:feasibility:%d", id));
-
     feasibilityStudyRepository.delete(id);
   }
   
@@ -689,9 +667,6 @@ public class FeasibilityService extends AbstractDaoService {
   @Path("/{id}/info/{sourceKey}")
   @Transactional    
   public void deleteInfo(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey) {
-
-    SecurityUtils.getSubject().checkPermission(
-            String.format("delete:feasibility:%d:info:%s", id, sourceKey));
 
     FeasibilityStudy study = feasibilityStudyRepository.findOne(id);
     StudyGenerationInfo itemToRemove = null;

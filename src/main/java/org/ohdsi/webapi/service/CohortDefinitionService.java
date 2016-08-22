@@ -7,10 +7,10 @@ package org.ohdsi.webapi.service;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.math.BigDecimal;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.math.RoundingMode;
 import java.io.ByteArrayOutputStream;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -18,11 +18,9 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.servlet.ServletContext;
 import javax.transaction.Transactional;
 import javax.ws.rs.Consumes;
@@ -35,12 +33,10 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.sql.SqlTranslate;
-import javax.ws.rs.core.Response;
-import org.apache.shiro.SecurityUtils;
 import org.ohdsi.webapi.TerminateJobStepExceptionHandler;
-
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
@@ -58,8 +54,8 @@ import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
-import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.source.SourceInfo;
+import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -385,9 +381,6 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Path("/{id}")  
   @Produces(MediaType.APPLICATION_JSON)
   public CohortDefinitionDTO getCohortDefinition(@PathParam("id") final int id) {
-    SecurityUtils.getSubject().checkPermission(
-            String.format("read:cohortdefinition:cohortdefinition:%d", id));
-    
     CohortDefinition d = this.cohortDefinitionRepository.findOneWithDetail(id);
     return cohortDefinitionToDTO(d);
   }
@@ -403,8 +396,6 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public CohortDefinitionDTO saveCohortDefinition(@PathParam("id") final int id, CohortDefinitionDTO def) {
-    SecurityUtils.getSubject().checkPermission(
-            String.format("update:cohortdefinition:cohortdefinition:%d", id));
     
     Date currentTime = Calendar.getInstance().getTime();
 
@@ -431,9 +422,6 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/{id}/generate/{sourceKey}")
   public JobExecutionResource generateCohort(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey) {
-
-    SecurityUtils.getSubject().checkPermission(
-            String.format("execute:cohortdefinition:%d:generate:%s", id, sourceKey));
 
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);    
@@ -497,9 +485,6 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Path("/{id}/info")
   @Transactional
   public List<CohortGenerationInfo> getInfo(@PathParam("id") final int id) {
-    SecurityUtils.getSubject().checkPermission(
-            String.format("read:cohortdefinition:%d:info", id));
-
     CohortDefinition def = this.cohortDefinitionRepository.findOne(id);
     Set<CohortGenerationInfo> infoList = def.getGenerationInfoList();
 
@@ -521,9 +506,6 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Path("/{id}/copy")
   @Transactional
   public CohortDefinitionDTO copy(@PathParam("id") final int id) {
-    SecurityUtils.getSubject().checkPermission(
-            String.format("create:cohortdefinition:%d:copy", id));
-
     CohortDefinitionDTO sourceDef = getCohortDefinition(id);
     sourceDef.id = null; // clear the ID
     sourceDef.name = "COPY OF: " + sourceDef.name;
@@ -542,9 +524,6 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/{id}")
   public void delete(@PathParam("id") final int id) {
-    SecurityUtils.getSubject().checkPermission(
-            String.format("delete:cohortdefinition:cohortdefinition:%d", id));
-
    cohortDefinitionRepository.delete(id);
   }
   

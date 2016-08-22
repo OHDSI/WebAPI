@@ -4,7 +4,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -12,9 +11,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
-import org.apache.shiro.SecurityUtils;
 import org.ohdsi.sql.SqlRender;
-
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.job.JobExecutionResource;
@@ -61,9 +58,6 @@ public class JobService extends AbstractDaoService {
   @Path("{jobId}")
   @Produces(MediaType.APPLICATION_JSON)
   public JobInstanceResource findJob(@PathParam("jobId") final Long jobId) {
-    SecurityUtils.getSubject().checkPermission(
-            String.format("read:job:job:%d", jobId));
-
     final JobInstance job = this.jobExplorer.getJobInstance(jobId);
     if (job == null) {
       return null;//TODO #8 conventions under review
@@ -76,9 +70,6 @@ public class JobService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   public JobExecutionResource findJobExecution(@PathParam("jobId") final Long jobId,
           @PathParam("executionId") final Long executionId) {
-    SecurityUtils.getSubject().checkPermission(
-            String.format("read:job:%d:execution:%d", jobId, executionId));
-
     return service(jobId, executionId);
   }
 
@@ -92,9 +83,6 @@ public class JobService extends AbstractDaoService {
   @Path("/execution/{executionId}")
   @Produces(MediaType.APPLICATION_JSON)
   public JobExecutionResource findJobExecution(@PathParam("executionId") final Long executionId) {
-    SecurityUtils.getSubject().checkPermission(
-            String.format("read:job:execution:%d", executionId));
-
     return service(null, executionId);
   }
 

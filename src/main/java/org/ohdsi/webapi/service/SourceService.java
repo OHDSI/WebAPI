@@ -7,7 +7,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import org.apache.shiro.SecurityUtils;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
@@ -73,9 +72,6 @@ public class SourceService extends AbstractDaoService {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public SourceInfo getSource(@PathParam("key") final String sourceKey) {
-    SecurityUtils.getSubject().checkPermission(
-            String.format("read:source:source:%s", sourceKey));
-
     return sourceRepository.findBySourceKey(sourceKey).getSourceInfo();
   }
 }

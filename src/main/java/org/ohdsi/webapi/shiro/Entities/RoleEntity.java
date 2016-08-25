@@ -15,18 +15,22 @@ public class RoleEntity implements Serializable{
 
   private static final long serialVersionUID = 6257846375334314942L;
 
-  private Long id;
-  private String name;
-  private Set<RolePermissionEntity> rolePermissions = new HashSet<>(0);
-  private Set<UserRoleEntity> userRoles = new HashSet<>(0);
-
   @Id
   @Column(name = "ID")
-  @GeneratedValue(strategy=GenerationType.SEQUENCE)
-  @SequenceGenerator(
-          name="sec_role_sequence",
-          sequenceName="sec_role_sequence"
-  )
+  @SequenceGenerator(name = "SEC_ROLE_SEQUENCE_GENERATOR", sequenceName = "SEC_ROLE_SEQUENCE", allocationSize = 1, initialValue = 1)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEC_ROLE_SEQUENCE_GENERATOR")
+  private Long id;
+
+  @Column(name = "NAME")
+  private String name;
+
+  @OneToMany(mappedBy = "role", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+  private Set<RolePermissionEntity> rolePermissions = new HashSet<>(0);
+
+  @OneToMany(mappedBy = "role", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+  private Set<UserRoleEntity> userRoles = new HashSet<>(0);
+
+  
   public Long getId() {
     return id;
   }
@@ -35,7 +39,6 @@ public class RoleEntity implements Serializable{
     this.id = id;
   }
 
-  @Column(name = "NAME")
   public String getName() {
     return name;
   }
@@ -44,7 +47,6 @@ public class RoleEntity implements Serializable{
     this.name = name;
   }
 
-  @OneToMany(mappedBy = "role", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
   public Set<RolePermissionEntity> getRolePermissions() {
     return rolePermissions;
   }
@@ -53,7 +55,6 @@ public class RoleEntity implements Serializable{
     this.rolePermissions = rolePermissions;
   }
 
-  @OneToMany(mappedBy = "role", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
   public Set<UserRoleEntity> getUserRoles() {
     return userRoles;
   }

@@ -24,11 +24,8 @@ public class UserEntity implements Serializable{
 
   @Id
   @Column(name = "ID")
-  @GeneratedValue(strategy=GenerationType.SEQUENCE)
-  @SequenceGenerator(
-          name="sec_user_sequence", 
-          sequenceName="sec_user_sequence"
-  )
+  @SequenceGenerator(name = "SEC_USER_SEQUENCE_GENERATOR", sequenceName = "SEC_USER_SEQUENCE", allocationSize = 1, initialValue = 1)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEC_USER_SEQUENCE_GENERATOR")
   public Long getId() {
       return id;
   }

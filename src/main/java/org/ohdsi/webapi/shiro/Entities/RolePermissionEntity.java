@@ -27,11 +27,8 @@ public class RolePermissionEntity implements Serializable {
 
   @Id
   @Column(name = "ID")
-  @GeneratedValue(strategy=GenerationType.SEQUENCE)
-  @SequenceGenerator(
-          name="SEC_ROLE_PERMISSION_SEQUENCE", 
-          sequenceName="SEC_ROLE_PERMISSION_SEQUENCE"
-  )
+  @SequenceGenerator(name = "SEC_ROLE_PERMISSION_SEQUENCE_GENERATOR", sequenceName = "SEC_ROLE_PERMISSION_SEQUENCE", allocationSize = 1, initialValue = 1)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEC_ROLE_PERMISSION_SEQUENCE_GENERATOR")
   public Long getId() {
     return id;
   }

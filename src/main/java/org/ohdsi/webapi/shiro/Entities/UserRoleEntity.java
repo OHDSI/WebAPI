@@ -28,11 +28,8 @@ public class UserRoleEntity implements Serializable {
 
   @Id
   @Column(name = "ID")
-  @GeneratedValue(strategy=GenerationType.SEQUENCE)
-  @SequenceGenerator(
-          name="SEC_USER_ROLE_SEQUENCE",
-          sequenceName="SEC_USER_ROLE_SEQUENCE"
-  )
+  @SequenceGenerator(name = "SEC_USER_ROLE_SEQUENCE_GENERATOR", sequenceName = "SEC_USER_ROLE_SEQUENCE", allocationSize = 1, initialValue = 1)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEC_USER_ROLE_SEQUENCE_GENERATOR")
   public Long getId() {
     return id;
   }

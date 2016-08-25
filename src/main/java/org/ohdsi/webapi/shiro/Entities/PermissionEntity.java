@@ -22,11 +22,8 @@ public class PermissionEntity implements Serializable {
 
   @Id
   @Column(name = "ID")
-  @GeneratedValue(strategy=GenerationType.SEQUENCE)
-  @SequenceGenerator(
-          name="sec_permission_sequence", 
-          sequenceName="sec_permission_sequence"
-  )
+  @SequenceGenerator(name = "SEC_PERMISSION_SEQUENCE_GENERATOR", sequenceName = "SEC_PERMISSION_SEQUENCE", allocationSize = 1, initialValue = 1)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEC_PERMISSION_SEQUENCE_GENERATOR")
   public Long getId() {
     return id;
   }

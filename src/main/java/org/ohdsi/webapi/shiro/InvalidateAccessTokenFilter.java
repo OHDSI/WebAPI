@@ -15,7 +15,7 @@ public class InvalidateAccessTokenFilter extends AdviceFilter {
   @Override
   protected boolean preHandle(ServletRequest request, ServletResponse response) throws Exception {
     HttpServletResponse httpResponse = WebUtils.toHttp(response);
-    httpResponse.setStatus(HttpServletResponse.SC_FORBIDDEN);
+    httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     
     String jwt = TokenManager.extractToken(request);
     

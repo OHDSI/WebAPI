@@ -63,6 +63,42 @@ public class SimpleAuthorizer {
     return role;
   }
 
+  public String addUserToRole(String roleName, String login) {
+    Guard.checkNotEmpty(roleName);
+    Guard.checkNotEmpty(login);
+    
+    RoleEntity role = this.getRoleByName(roleName);
+    UserEntity user = this.getUserByLogin(login);
+
+    UserRoleEntity userRole = this.addRole(user, role, null);
+    return userRole.getStatus();
+  }
+
+  public void removeUserFromRole(String roleName, String login) {
+    Guard.checkNotEmpty(roleName);
+    Guard.checkNotEmpty(login);
+
+    if (roleName.equalsIgnoreCase(login))
+      throw new IllegalArgumentException("Can't remove user from personal role");
+
+    RoleEntity role = this.getRoleByName(roleName);
+    UserEntity user = this.getUserByLogin(login);
+
+    UserRoleEntity userRole = this.userRoleRepository.findByUserAndRole(user, role);
+    if (userRole != null)
+      this.userRoleRepository.delete(userRole);
+  }
+
+  public Set<String> getRoles() {
+    Iterable<RoleEntity> roleEntities = this.roleRepository.findAll();
+    Set<String> roles = new HashSet<>(0);
+    for (RoleEntity roleEntity : roleEntities) {
+      roles.add(roleEntity.getName());
+    }
+
+    return roles;
+  }
+
   public PermissionEntity addPermission(final RoleEntity role, final String permissionName, final String permissionDescription) {
     PermissionEntity permission = this.addPermission(permissionName, permissionDescription);
     this.addPermission(role, permission, null);
@@ -232,6 +268,7 @@ public class SimpleAuthorizer {
 
     return user;
   }
+
   private RoleEntity getRoleByName(String roleName) {
     final RoleEntity roleEntity = this.roleRepository.findByName(roleName);
     if (roleEntity == null)

@@ -24,7 +24,7 @@ public class RoleEntity implements Serializable{
   @Column(name = "ID")
   @GeneratedValue(strategy=GenerationType.SEQUENCE)
   @SequenceGenerator(
-          name="sec_role_sequence", 
+          name="sec_role_sequence",
           sequenceName="sec_role_sequence"
   )
   public Long getId() {
@@ -43,7 +43,7 @@ public class RoleEntity implements Serializable{
   public void setName(String name) {
     this.name = name;
   }
-  
+
   @OneToMany(mappedBy = "role", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
   public Set<RolePermissionEntity> getRolePermissions() {
     return rolePermissions;

@@ -1,5 +1,5 @@
 select row_number() over (order by person_id, start_date) as event_id, person_id, start_date, end_date, op_start_date, op_end_date
-INTO #PrimaryCriteriaEvents
+INTO #primary_events
 FROM
 (
   select c.subject_id as person_id, c.cohort_start_date as start_date, c.cohort_end_date as end_date, 

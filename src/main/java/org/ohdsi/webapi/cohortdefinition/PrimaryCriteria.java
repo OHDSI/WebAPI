@@ -20,6 +20,6 @@ public class PrimaryCriteria {
   public ObservationFilter observationWindow;
   
   @JsonProperty("PrimaryCriteriaLimit")  
-  public ResultLimit limit;
-  
+  public ResultLimit primaryLimit = new ResultLimit();
+
 }

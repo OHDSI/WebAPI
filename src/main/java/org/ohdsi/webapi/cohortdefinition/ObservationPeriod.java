@@ -37,7 +37,7 @@ public class ObservationPeriod extends Criteria {
   
   
   @Override
-  public String accept(ICohortExpressionElementVisitor visitor) {
-    return visitor.visit(this);
+  public String accept(IGetCriteriaSqlDispatcher dispatcher) {
+    return dispatcher.getCriteriaSql(this);
   }  
 }

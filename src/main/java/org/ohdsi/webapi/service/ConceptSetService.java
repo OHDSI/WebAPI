@@ -205,8 +205,12 @@ public class ConceptSetService extends AbstractDaoService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public ConceptSet createConceptSet(ConceptSet conceptSet) {
-        conceptSet = this.getConceptSetRepository().save(conceptSet);
-        return conceptSet;
+        ConceptSet currentConceptSet = this.getConceptSetRepository().findById(conceptSet.getId());
+        if (currentConceptSet != null)
+            throw new IllegalArgumentException("Can't create Concept Set, it allready exists.");
+
+        currentConceptSet = this.getConceptSetRepository().save(conceptSet);
+        return currentConceptSet;
     }
 
     @Path("/{id}")
@@ -214,13 +218,13 @@ public class ConceptSetService extends AbstractDaoService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public ConceptSet updateConceptSet(@PathParam("id") final int id, final ConceptSet conceptSet) {
-        ConceptSet updated = this.getConceptSetRepository().findById(id);
-        if (updated == null)
-            throw new IllegalArgumentException("Concept set doesn't exist");
+        ConceptSet currentConceptSet = this.getConceptSetRepository().findById(id);
+        if (currentConceptSet == null)
+            throw new IllegalArgumentException("Can't update Concept Set. There is no Concept Set with given ID");
         
-        updated.setName(conceptSet.getName());
-        updated = this.getConceptSetRepository().save(updated);
-        return updated;
+        currentConceptSet.setName(conceptSet.getName());
+        currentConceptSet = this.getConceptSetRepository().save(currentConceptSet);
+        return currentConceptSet;
     }
     
     private ConceptSetExport getConceptSetForExport(int conceptSetId, SourceInfo vocabSource) {

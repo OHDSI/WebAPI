@@ -47,7 +47,7 @@ public class AtlasSecurity extends Security {
       this.authorizer.addPermission(publicRole, "user:roles:request:*:put", "Request role");
       this.authorizer.addPermission(publicRole, "user:permissions:request:*:*:put", "Request permission");
       this.authorizer.addPermission(publicRole, "user:permissions:request:*:*:*:put", "Request permission");
-      this.authorizer.addPermission(publicRole, "user:permitted:*:get", "Check if user has permission");
+      this.authorizer.addPermission(publicRole, "user:permitted:post", "Check if user has permission");
 
 
       // for test purposes only
@@ -55,14 +55,23 @@ public class AtlasSecurity extends Security {
       this.authorizer.addPermission(publicRole, "user:permissions:requested:get", "Get list of requested permissions");
       this.authorizer.addPermission(publicRole, "user:permissions:approve:*:post", "Approve request for permission");
       this.authorizer.addPermission(publicRole, "user:permissions:refuse:*:post", "Refuse request for permission");
+      this.authorizer.addPermission(publicRole, "user:roles:get", "Get list of roles");
+      this.authorizer.addPermission(publicRole, "user:roles:requested:get", "Get list of requested roles");
+      this.authorizer.addPermission(publicRole, "user:roles:approve:*:post", "Approve request for role");
+      this.authorizer.addPermission(publicRole, "user:roles:refuse:*:post", "Refuse request for role");
+      this.authorizer.addPermission(publicRole, "user:roles:add:put", "Add user to role");
+      this.authorizer.addPermission(publicRole, "user:roles:remove:delete", "Delete user from role");
       // for test purposes only - end
 
 
 
       RoleEntity adminRole = this.authorizer.addRole("admin");
+      this.authorizer.addPermission(adminRole, "user:roles:get", "Get list of roles");
       this.authorizer.addPermission(adminRole, "user:roles:requested:get", "Get list of requested roles");
       this.authorizer.addPermission(adminRole, "user:roles:approve:*:post", "Approve request for role");
       this.authorizer.addPermission(adminRole, "user:roles:refuse:*:post", "Refuse request for role");
+      this.authorizer.addPermission(adminRole, "user:roles:add:put", "Add user to role");
+      this.authorizer.addPermission(adminRole, "user:roles:remove:delete", "Delete user from role");
       this.authorizer.addPermission(adminRole, "user:permissions:requested:get", "Get list of requested permissions");
       this.authorizer.addPermission(adminRole, "user:permissions:approve:*:post", "Approve request for permission");
       this.authorizer.addPermission(adminRole, "user:permissions:refuse:*:post", "Refuse request for permission");
@@ -102,6 +111,7 @@ public class AtlasSecurity extends Security {
 
     filterChain.put("/user/permissions/**", "noSessionCreation, jwtAuthcFilter, authzFilter");
     filterChain.put("/user/roles/**", "noSessionCreation, jwtAuthcFilter, authzFilter");
+    filterChain.put("/user/permitted", "noSessionCreation, jwtAuthcFilter, authzFilter");
 
     filterChain.put("/conceptset", "noSessionCreation, jwtAuthcFilter, authzFilter");
     filterChain.put("/conceptset/**", "noSessionCreation, jwtAuthcFilter, authzFilter");

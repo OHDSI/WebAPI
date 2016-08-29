@@ -163,6 +163,60 @@ public class CDMResultsService extends AbstractDaoService {
         return person;
     }
 
+    /**
+     * Queries for person report results for the given sourceKey
+     *
+     * @return CDMPersonSummary
+     */
+    @GET
+    @Path("/person")
+    @Produces(MediaType.APPLICATION_JSON)
+    public CDMPersonSummary getDrugReport(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+        CDMPersonSummary person = null;
+        final String key = CDMResultsAnalysisRunner.PERSON;
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+        VisualizationData data = /*refresh ?*/ null /*: this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(source.getSourceId(), key)*/;
+
+        if (refresh || data == null) {
+            person = this.queryRunner.getPersonResults(this.getSourceJdbcTemplate(source), source, true);
+        } else {
+            try {
+                person = mapper.readValue(data.getData(), CDMPersonSummary.class);
+            } catch (Exception e) {
+                log.error(e);
+            }
+        }
+
+        return person;
+    }
+
+    /**
+     * Queries for person report results for the given sourceKey
+     *
+     * @return CDMPersonSummary
+     */
+    @GET
+    @Path("/person")
+    @Produces(MediaType.APPLICATION_JSON)
+    public CDMPersonSummary getProcedureReport(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+        CDMPersonSummary person = null;
+        final String key = CDMResultsAnalysisRunner.PERSON;
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+        VisualizationData data = /*refresh ?*/ null /*: this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(source.getSourceId(), key)*/;
+
+        if (refresh || data == null) {
+            person = this.queryRunner.getPersonResults(this.getSourceJdbcTemplate(source), source, true);
+        } else {
+            try {
+                person = mapper.readValue(data.getData(), CDMPersonSummary.class);
+            } catch (Exception e) {
+                log.error(e);
+            }
+        }
+
+        return person;
+    }
+
     @Path("drugeratreemap")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -320,7 +374,7 @@ public class CDMResultsService extends AbstractDaoService {
         /**
          * Queries for CDM person results for the given source
          *
-         * @param jdbcTemplate
+         * @param jdbcTemplate JDBCTemplate
          * @return CDMPersonSummary
          */
         public CDMPersonSummary getPersonResults(JdbcTemplate jdbcTemplate,

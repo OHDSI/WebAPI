@@ -14,9 +14,9 @@ import org.apache.shiro.subject.PrincipalCollection;
  */
 public class JwtAuthRealm extends AuthorizingRealm {
   
-  private final SimpleAuthorizer authorizer;
+  private final PermissionManager authorizer;
 
-  public JwtAuthRealm(SimpleAuthorizer authorizer) {
+  public JwtAuthRealm(PermissionManager authorizer) {
     setAuthenticationTokenClass(org.ohdsi.webapi.shiro.JwtAuthToken.class);
     this.authorizer = authorizer;
   }

@@ -12,7 +12,7 @@ import waffle.shiro.WaffleFqnPrincipal;
 public class WindowsAuthRealm extends AbstractWaffleRealm {
     
   @Autowired
-  private SimpleAuthorizer authorizer;
+  private PermissionManager authorizer;
   
   @Override
   protected AuthorizationInfo buildAuthorizationInfo(WaffleFqnPrincipal waffleFqnPrincipal) {

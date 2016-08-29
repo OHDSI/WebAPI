@@ -19,12 +19,12 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
 
   private final String SUBJECT_ATTRIBUTE = "MY_SUBJECT";
   
-  private final SimpleAuthorizer authorizer;
+  private final PermissionManager authorizer;
   private final int tokenExpirationIntervalInSeconds;
   private final Set<String> defaultRoles;
   
   public UpdateAccessTokenFilter(
-          SimpleAuthorizer authorizer,
+          PermissionManager authorizer,
           Set<String> defaultRoles,
           int tokenExpirationIntervalInSeconds) {
     this.authorizer = authorizer;

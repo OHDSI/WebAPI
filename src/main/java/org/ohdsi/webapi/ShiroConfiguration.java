@@ -4,7 +4,7 @@ import java.util.*;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
-import org.ohdsi.webapi.shiro.SimpleAuthorizer;
+import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.management.AtlasSecurity;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.springframework.context.annotation.Bean;
@@ -19,8 +19,8 @@ import org.springframework.context.annotation.Primary;
 public class ShiroConfiguration {
 
   @Bean
-  public SimpleAuthorizer authorizer() {
-    return new SimpleAuthorizer();
+  public PermissionManager authorizer() {
+    return new PermissionManager();
   }
 
   @Bean(initMethod = "init")

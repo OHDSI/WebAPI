@@ -2,6 +2,7 @@ package org.ohdsi.webapi.shiro.management;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import javax.servlet.Filter;
@@ -11,7 +12,7 @@ import org.apache.shiro.realm.Realm;
 import org.ohdsi.webapi.shiro.InvalidateAccessTokenFilter;
 import org.ohdsi.webapi.shiro.JwtAuthRealm;
 import org.ohdsi.webapi.shiro.JwtAuthenticatingFilter;
-import org.ohdsi.webapi.shiro.SimpleAuthorizer;
+import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.UpdateAccessTokenFilter;
 import org.ohdsi.webapi.shiro.UrlBasedAuthorizingFilter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +30,7 @@ import waffle.shiro.negotiate.NegotiateAuthenticationStrategy;
 public class AtlasSecurity extends Security {
 
   @Autowired
-  private SimpleAuthorizer authorizer;
+  private PermissionManager authorizer;
   
   @Value("${security.token.expiration}")
   private int tokenExpirationIntervalInSeconds;
@@ -44,21 +45,13 @@ public class AtlasSecurity extends Security {
 
   @Override
   public Map<String, String> getFilterChain() {
-    Map<String, String> filterChain = new HashMap<>();    
+    Map<String, String> filterChain = new LinkedHashMap<>();
     
     filterChain.put("/user/login", "noSessionCreation, negotiateAuthcFilter, updateAccessTokenFilter");
     filterChain.put("/user/refresh", "noSessionCreation, jwtAuthcFilter, updateAccessTokenFilter");
     filterChain.put("/user/logout", "noSessionCreation, invalidateAccessTokenFilter");
 
-    filterChain.put("/user/permissions/**", "noSessionCreation, jwtAuthcFilter, authzFilter");
-    filterChain.put("/user/roles/**", "noSessionCreation, jwtAuthcFilter, authzFilter");
-    filterChain.put("/user/permitted", "noSessionCreation, jwtAuthcFilter, authzFilter");
-
-    filterChain.put("/conceptset", "noSessionCreation, jwtAuthcFilter, authzFilter");
-    filterChain.put("/conceptset/**", "noSessionCreation, jwtAuthcFilter, authzFilter");
-    filterChain.put("/cohortdefinition", "noSessionCreation, jwtAuthcFilter, authzFilter");
-    filterChain.put("/cohortdefinition/**", "noSessionCreation, jwtAuthcFilter, authzFilter");
-    filterChain.put("/job/execution", "noSessionCreation, jwtAuthcFilter, authzFilter");
+    filterChain.put("/**", "noSessionCreation, jwtAuthcFilter, authzFilter");
 
     return filterChain;
   }

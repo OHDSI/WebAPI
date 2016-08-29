@@ -13,9 +13,9 @@ import org.apache.shiro.web.util.WebUtils;
  */
 public class UrlBasedAuthorizingFilter extends AdviceFilter {
   
-  private final SimpleAuthorizer authorizer;
+  private final PermissionManager authorizer;
   
-  public UrlBasedAuthorizingFilter(SimpleAuthorizer authorizer) {
+  public UrlBasedAuthorizingFilter(PermissionManager authorizer) {
     this.authorizer = authorizer;
   }
   

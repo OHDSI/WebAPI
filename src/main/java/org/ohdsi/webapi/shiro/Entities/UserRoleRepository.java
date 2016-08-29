@@ -15,4 +15,8 @@ public interface UserRoleRepository extends CrudRepository<UserRoleEntity, Long>
 
   public List<UserRoleEntity> findByStatusIgnoreCase(String status);
 
+  public List<UserRoleEntity> findByUserId(Long userId);
+
+  public UserRoleEntity findByUserIdAndRoleId(Long userId, Long roleId);
+
 }

@@ -27,7 +27,7 @@ public class SimpleAuthRealm extends AuthorizingRealm {
     private UserRepository userRepository;
     
     @Autowired
-    private SimpleAuthorizer authorizer;
+    private PermissionManager authorizer;
   
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {

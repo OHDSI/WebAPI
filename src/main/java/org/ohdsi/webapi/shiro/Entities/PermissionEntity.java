@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.shiro.Entities;
 
 import java.io.Serializable;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.persistence.*;
 
@@ -17,7 +17,7 @@ public class PermissionEntity implements Serializable {
   private Long id;
   private String value;
   private String description;
-  private Set<RolePermissionEntity> rolePermissions = new HashSet<>(0);
+  private Set<RolePermissionEntity> rolePermissions = new LinkedHashSet<>();
 
 
   @Id

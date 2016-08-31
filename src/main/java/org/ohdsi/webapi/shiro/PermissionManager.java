@@ -1,8 +1,6 @@
 package org.ohdsi.webapi.shiro;
 
-import com.google.common.collect.Sets;
 import java.security.Principal;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -91,8 +89,8 @@ public class PermissionManager {
       this.userRoleRepository.delete(userRole);
   }
 
-  public Set<RoleEntity> getRoles() {
-    return Sets.newHashSet(this.roleRepository.findAll());
+  public Iterable<RoleEntity> getRoles() {
+    return this.roleRepository.findAll();
   }
 
   public AuthorizationInfo getAuthorizationInfo(final String login) {
@@ -183,7 +181,7 @@ public class PermissionManager {
 
   public Set<PermissionRequest> getRequestedPermissions() {
     List<RolePermissionEntity> requestedRolePermissions = this.rolePermissionRepository.findByStatusIgnoreCase(RequestStatus.REQUESTED);
-    Set<PermissionRequest> requests = new HashSet<>();
+    Set<PermissionRequest> requests = new LinkedHashSet<>();
     for (RolePermissionEntity rp: requestedRolePermissions) {
       PermissionRequest request = new PermissionRequest();
       request.setId(rp.getId());
@@ -219,7 +217,7 @@ public class PermissionManager {
 
   public Set<RoleRequest> getRequestedRoles() {
     List<UserRoleEntity> requestedUserRoles = this.userRoleRepository.findByStatusIgnoreCase(RequestStatus.REQUESTED);
-    Set<RoleRequest> requests = new HashSet<>();
+    Set<RoleRequest> requests = new LinkedHashSet<>();
     for (UserRoleEntity userRole: requestedUserRoles) {
       RoleRequest request = new RoleRequest();
       request.setId(userRole.getId());
@@ -240,8 +238,8 @@ public class PermissionManager {
     return this.changeRoleRequestStatus(requestId, RequestStatus.REFUSED);
   }
 
-  public Set<UserEntity> getUsers() {
-    return Sets.newHashSet(this.userRepository.findAll());
+  public Iterable<UserEntity> getUsers() {
+    return this.userRepository.findAll();
   }
 
   public PermissionEntity addPermission(final String permissionName, final String permissionDescription) throws Exception {
@@ -265,8 +263,8 @@ public class PermissionManager {
     return roles;
   }
 
-  public Set<PermissionEntity> getPermissions() {
-    return Sets.newHashSet(this.permissionRepository.findAll());
+  public Iterable<PermissionEntity> getPermissions() {
+    return this.permissionRepository.findAll();
   }
 
   public Set<PermissionEntity> getUserPermissions(Long userId) throws Exception {

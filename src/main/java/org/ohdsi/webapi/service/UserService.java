@@ -1,5 +1,9 @@
 package org.ohdsi.webapi.service;
 
+import com.gs.collections.impl.block.factory.Comparators;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Set;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -29,7 +33,7 @@ public class UserService {
   @Autowired
   private PermissionManager authorizer;
 
-  public static class User {
+  public static class User implements Comparable<User> {
     public Long id;
     public String login;
 
@@ -39,9 +43,18 @@ public class UserService {
       this.id = userEntity.getId();
       this.login = userEntity.getLogin();
     }
+
+    @Override
+    public int compareTo(User o) {
+      Comparator c = Comparators.naturalOrder();
+      if (this.id == null && o.id == null)
+        return c.compare(this.login, o.login);
+      else
+        return c.compare(this.id, o.id);
+    }
   }
 
-  public static class Permission {
+  public static class Permission implements Comparable<Permission> {
     public Long id;
     public String permission;
     public String description;
@@ -53,9 +66,18 @@ public class UserService {
       this.permission = permissionEntity.getValue();
       this.description = permissionEntity.getDescription();
     }
+
+    @Override
+    public int compareTo(Permission o) {
+      Comparator c = Comparators.naturalOrder();
+      if (this.id == null && o.id == null)
+        return c.compare(this.permission, o.permission);
+      else
+        return c.compare(this.id, o.id);
+    }
   }
 
-  public static class Role {
+  public static class Role implements Comparable<Role> {
     public Long id;
     public String role;
 
@@ -66,23 +88,23 @@ public class UserService {
       this.role = roleEntity.getName();
     }
 
+    @Override
+    public int compareTo(Role o) {
+      Comparator c = Comparators.naturalOrder();
+      if (this.id == null && o.id == null)
+        return c.compare(this.role, o.role);
+      else
+        return c.compare(this.id, o.id);
+    }
+
   }
 
   @GET
   @Path("user")
   @Produces(MediaType.APPLICATION_JSON)
-  public User[] getUsers() {
-    Set<UserEntity> userEntities = this.authorizer.getUsers();
-    User[] users = new User[userEntities.size()];
-    int i = 0;
-    for (UserEntity userEntity : userEntities) {
-      User user = new User();
-      user.id = userEntity.getId();
-      user.login = userEntity.getLogin();
-      users[i] = user;
-      i++;
-    }
-
+  public ArrayList<User> getUsers() {
+    Iterable<UserEntity> userEntities = this.authorizer.getUsers();
+    ArrayList<User> users = convertUsers(userEntities);
     return users;
   }
 
@@ -98,18 +120,20 @@ public class UserService {
   @GET
   @Path("user/{userId}/permissions")
   @Produces(MediaType.APPLICATION_JSON)
-  public Permission[] getUsersPermissions(@PathParam("userId") Long userId) throws Exception {
+  public ArrayList<Permission> getUsersPermissions(@PathParam("userId") Long userId) throws Exception {
     Set<PermissionEntity> permissionEntities = this.authorizer.getUserPermissions(userId);
-    Permission[] permissions = convertPermissions(permissionEntities);
+    ArrayList<Permission> permissions = convertPermissions(permissionEntities);
+    Collections.sort(permissions);
     return permissions;
   }
 
   @GET
   @Path("user/{userId}/roles")
   @Produces(MediaType.APPLICATION_JSON)
-  public Role[] getUserRoles(@PathParam("userId") Long userId) throws Exception {
+  public ArrayList<Role> getUserRoles(@PathParam("userId") Long userId) throws Exception {
     Set<RoleEntity> roleEntities = this.authorizer.getUserRoles(userId);
-    Role[] roles = convertRoles(roleEntities);
+    ArrayList<Role> roles = convertRoles(roleEntities);
+    Collections.sort(roles);
     return roles;
   }
 
@@ -126,9 +150,9 @@ public class UserService {
   @GET
   @Path("role")
   @Produces(MediaType.APPLICATION_JSON)
-  public Role[] getRoles() {
-    Set<RoleEntity> roleEntities = this.authorizer.getRoles();
-    Role[] roles = convertRoles(roleEntities);
+  public ArrayList<Role> getRoles() {
+    Iterable<RoleEntity> roleEntities = this.authorizer.getRoles();
+    ArrayList<Role> roles = convertRoles(roleEntities);
     return roles;
   }
 
@@ -141,9 +165,10 @@ public class UserService {
   @GET
   @Path("role/{roleId}/permissions")
   @Produces(MediaType.APPLICATION_JSON)
-  public Permission[] getRolePermissions(@PathParam("roleId") Long roleId) throws Exception {
+  public ArrayList<Permission> getRolePermissions(@PathParam("roleId") Long roleId) throws Exception {
     Set<PermissionEntity> permissionEntities = this.authorizer.getRolePermissions(roleId);
-    Permission[] permissions = convertPermissions(permissionEntities);
+    ArrayList<Permission> permissions = convertPermissions(permissionEntities);
+    Collections.sort(permissions);
     return permissions;
   }
 
@@ -162,9 +187,10 @@ public class UserService {
   @GET
   @Path("role/{roleId}/users")
   @Produces(MediaType.APPLICATION_JSON)
-  public User[] getRoleUsers(@PathParam("roleId") Long roleId) throws Exception {
+  public ArrayList<User> getRoleUsers(@PathParam("roleId") Long roleId) throws Exception {
     Set<UserEntity> userEntities = this.authorizer.getRoleUsers(roleId);
-    User[] users = this.convertUsers(userEntities);
+    ArrayList<User> users = this.convertUsers(userEntities);
+    Collections.sort(users);
     return users;
   }
 
@@ -183,9 +209,9 @@ public class UserService {
   @GET
   @Path("permission")
   @Produces(MediaType.APPLICATION_JSON)
-  public Permission[] getPermissions() {
-    Set<PermissionEntity> permissionEntities = this.authorizer.getPermissions();
-    Permission[] permissions = convertPermissions(permissionEntities);
+  public ArrayList<Permission> getPermissions() {
+    Iterable<PermissionEntity> permissionEntities = this.authorizer.getPermissions();
+    ArrayList<Permission> permissions = convertPermissions(permissionEntities);
     return permissions;
   }
 
@@ -207,37 +233,31 @@ public class UserService {
 
 
 
-  private Permission[] convertPermissions(final Set<PermissionEntity> permissionEntities) {
-    Permission[] permissions = new Permission[permissionEntities.size()];
-    int i = 0;
+  private ArrayList<Permission> convertPermissions(final Iterable<PermissionEntity> permissionEntities) {
+    ArrayList<Permission> permissions = new ArrayList<Permission>();
     for (PermissionEntity permissionEntity : permissionEntities) {
       Permission permission = new Permission(permissionEntity);
-      permissions[i] = permission;
-      i++;
+      permissions.add(permission);
     }
 
     return permissions;
   }
 
-  private Role[] convertRoles(Set<RoleEntity> roleEntities) {
-    Role[] roles = new Role[roleEntities.size()];
-    int i = 0;
+  private ArrayList<Role> convertRoles(final Iterable<RoleEntity> roleEntities) {
+    ArrayList<Role> roles = new ArrayList<Role>();
     for (RoleEntity roleEntity : roleEntities) {
       Role role = new Role(roleEntity);
-      roles[i] = role;
-      i++;
+      roles.add(role);
     }
 
     return roles;
   }
 
-  private User[] convertUsers(Set<UserEntity> userEntities) {
-    User[] users = new User[userEntities.size()];
-    int i = 0;
+  private ArrayList<User> convertUsers(final Iterable<UserEntity> userEntities) {
+    ArrayList<User> users = new ArrayList<User>();
     for (UserEntity userEntity : userEntities) {
       User user = new User(userEntity);
-      users[i] = user;
-      i++;
+      users.add(user);
     }
 
     return users;

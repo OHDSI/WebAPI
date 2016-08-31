@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.shiro.Entities;
 
 import java.io.Serializable;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.persistence.*;
 
@@ -25,10 +25,10 @@ public class RoleEntity implements Serializable{
   private String name;
 
   @OneToMany(mappedBy = "role", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
-  private Set<RolePermissionEntity> rolePermissions = new HashSet<>(0);
+  private Set<RolePermissionEntity> rolePermissions = new LinkedHashSet<>();
 
   @OneToMany(mappedBy = "role", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
-  private Set<UserRoleEntity> userRoles = new HashSet<>(0);
+  private Set<UserRoleEntity> userRoles = new LinkedHashSet<>();
 
   
   public Long getId() {

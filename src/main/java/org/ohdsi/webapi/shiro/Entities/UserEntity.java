@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.shiro.Entities;
 
 import java.io.Serializable;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.persistence.*;
 
@@ -20,7 +20,7 @@ public class UserEntity implements Serializable{
   private String password;
   private String salt;
   private String name;
-  private Set<UserRoleEntity> userRoles = new HashSet<>(0);
+  private Set<UserRoleEntity> userRoles = new LinkedHashSet<>();
 
   @Id
   @Column(name = "ID")

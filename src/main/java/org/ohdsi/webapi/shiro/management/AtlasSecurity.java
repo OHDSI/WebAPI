@@ -1,8 +1,8 @@
 package org.ohdsi.webapi.shiro.management;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.servlet.Filter;
@@ -44,7 +44,7 @@ public class AtlasSecurity extends Security {
   @Value("${security.token.expiration}")
   private int tokenExpirationIntervalInSeconds;
 
-  private final Set<String> defaultRoles = new HashSet<>();
+  private final Set<String> defaultRoles = new LinkedHashSet<>();
 
   private final Map<String, String> cohortdefinitionCreatorPermissionTemplates = new LinkedHashMap<>();
 
@@ -129,7 +129,7 @@ public class AtlasSecurity extends Security {
 
   @Override
   public Set<Realm> getRealms() {
-    Set<Realm> realms = new HashSet<>();
+    Set<Realm> realms = new LinkedHashSet<>();
 
     realms.add(new JwtAuthRealm(this.authorizer));
     realms.add(new NegotiateAuthenticationRealm());

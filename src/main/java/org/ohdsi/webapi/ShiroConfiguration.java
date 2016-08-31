@@ -23,7 +23,7 @@ public class ShiroConfiguration {
     return new PermissionManager();
   }
 
-  @Bean(initMethod = "init")
+  @Bean
   @Primary
   public Security security() {
     return new AtlasSecurity();

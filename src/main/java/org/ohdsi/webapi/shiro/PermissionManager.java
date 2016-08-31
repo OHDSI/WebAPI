@@ -292,6 +292,10 @@ public class PermissionManager {
     this.addPermission(role, permission, null);
   }
 
+  public void addPermission(RoleEntity role, PermissionEntity permission) {
+    this.addPermission(role, permission, null);
+  }
+
   public void removePermission(Long permissionId, Long roleId) {
     RolePermissionEntity rolePermission = this.rolePermissionRepository.findByRoleIdAndPermissionId(roleId, permissionId);
     if (rolePermission != null)
@@ -319,6 +323,21 @@ public class PermissionManager {
 
   public void removePermission(Long permissionId) {
     this.permissionRepository.delete(permissionId);
+  }
+
+  public void removePermission(String value) {
+    PermissionEntity permission = this.permissionRepository.findByValueIgnoreCase(value);
+    if (permission != null)
+      this.permissionRepository.delete(permission);
+  }
+
+  public RoleEntity getCurrentUserPersonalRole() throws Exception {
+    String roleName = this.getSubjectName();
+    RoleEntity role = this.roleRepository.findByName(roleName);
+    if (role == null)
+      throw new Exception(String.format("There is now personal role for user %s", roleName));
+
+    return role;
   }
 
 

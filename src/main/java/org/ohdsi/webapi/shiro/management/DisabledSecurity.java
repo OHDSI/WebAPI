@@ -19,11 +19,6 @@ import org.springframework.stereotype.Component;
 public class DisabledSecurity extends Security {
 
   @Override
-  public void init() {
-    return;
-  }
-
-  @Override
   public Map<String, String> getFilterChain() {
     Map<String, String> filterChain = new HashMap<>();
     filterChain.put("/user/**", "hideResourceFilter");

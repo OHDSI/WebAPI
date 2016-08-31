@@ -64,6 +64,8 @@ public class AtlasSecurity extends Security {
     filterChain.put("/user/refresh", "noSessionCreation, jwtAuthcFilter, updateAccessTokenFilter");
     filterChain.put("/user/logout", "noSessionCreation, invalidateAccessTokenFilter");
 
+    filterChain.put("/*/vocabulary/search/*", "noSessionCreation, anon");
+
     filterChain.put("/cohortdefinition", "noSessionCreation, jwtAuthcFilter, authzFilter, createPermissionsOnCreateCohortDefinitionFilter");
     filterChain.put("/cohortdefinition/*", "noSessionCreation, jwtAuthcFilter, authzFilter, deletePermissionsOnDeleteCohortDefinitionFilter");
 

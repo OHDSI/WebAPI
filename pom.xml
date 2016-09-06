@@ -48,6 +48,7 @@
     <spring.profiles.active>default</spring.profiles.active>
 	
 	<security.token.expiration>43200</security.token.expiration>
+	<security.allowOrigin>http://localhost:8080</security.allowOrigin>
   </properties>
   <build>
     <finalName>WebAPI</finalName>

@@ -108,6 +108,14 @@ public class UserService {
     return users;
   }
 
+  @GET
+  @Path("user/loggedIn")
+  @Produces(MediaType.APPLICATION_JSON)
+  public boolean isLoggedIn() {
+    // since this method is protected with authc filter, if we're here, user is logged in
+    return true;
+  }
+
   @POST
   @Path("user/permitted")
   @Consumes(MediaType.APPLICATION_JSON)

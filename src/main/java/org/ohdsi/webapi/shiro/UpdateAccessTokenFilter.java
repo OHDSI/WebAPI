@@ -66,9 +66,9 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
     String jwt = TokenManager.createJsonWebToken(user, expiration);
     
     httpResponse.setHeader("Bearer", jwt);
-    httpResponse.setStatus(HttpServletResponse.SC_OK);
+    httpResponse.setStatus(HttpServletResponse.SC_NO_CONTENT);
     
-    return false;
+    return true;
   }
   
   private Date getExpiration() {

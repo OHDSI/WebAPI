@@ -20,8 +20,8 @@ public class InvalidateAccessTokenFilter extends AdviceFilter {
     String jwt = TokenManager.extractToken(request);
     
     if (TokenManager.invalidate(jwt))    
-      httpResponse.setStatus(HttpServletResponse.SC_OK);
+      httpResponse.setStatus(HttpServletResponse.SC_NO_CONTENT);
 
-    return false;
+    return true;
   }
 }

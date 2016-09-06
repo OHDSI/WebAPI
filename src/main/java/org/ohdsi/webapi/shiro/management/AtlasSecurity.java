@@ -9,10 +9,12 @@ import javax.servlet.Filter;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.HttpMethod;
 import org.apache.shiro.authc.Authenticator;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
 import org.apache.shiro.realm.Realm;
+import org.apache.shiro.web.filter.session.NoSessionCreationFilter;
 import org.apache.shiro.web.servlet.AdviceFilter;
 import org.apache.shiro.web.util.WebUtils;
 import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
@@ -44,6 +46,9 @@ public class AtlasSecurity extends Security {
   @Value("${security.token.expiration}")
   private int tokenExpirationIntervalInSeconds;
 
+  @Value("${security.allowOrigin}")
+  private String allowOrigin;
+
   private final Set<String> defaultRoles = new LinkedHashSet<>();
 
   private final Map<String, String> cohortdefinitionCreatorPermissionTemplates = new LinkedHashMap<>();
@@ -60,16 +65,26 @@ public class AtlasSecurity extends Security {
   public Map<String, String> getFilterChain() {
     Map<String, String> filterChain = new LinkedHashMap<>();
     
-    filterChain.put("/user/login", "noSessionCreation, negotiateAuthcFilter, updateAccessTokenFilter");
-    filterChain.put("/user/refresh", "noSessionCreation, jwtAuthcFilter, updateAccessTokenFilter");
-    filterChain.put("/user/logout", "noSessionCreation, invalidateAccessTokenFilter");
+    // not protected resources
+    //
+    filterChain.put("/*/vocabulary/**", "noSessionCreation, corsFilter");
+    filterChain.put("/source/sources", "noSessionCreation, corsFilter");
 
-    filterChain.put("/*/vocabulary/search/*", "noSessionCreation, anon");
+    // protected resources
+    //
+    filterChain.put(
+            "/user/login",
+            "noSessionCreation, corsFilter, negotiateAuthcFilter, updateAccessTokenFilter, stopProcessingFilter");
+    filterChain.put(
+            "/user/refresh",
+            "noSessionCreation, corsFilter, jwtAuthcFilter, updateAccessTokenFilter, stopProcessingFilter");
+    filterChain.put("/user/logout", "noSessionCreation, corsFilter, invalidateAccessTokenFilter, stopProcessingFilter");
+    filterChain.put("/user/loggedIn", "noSessionCreation, corsFilter, jwtAuthcFilter");
 
-    filterChain.put("/cohortdefinition", "noSessionCreation, jwtAuthcFilter, authzFilter, createPermissionsOnCreateCohortDefinitionFilter");
-    filterChain.put("/cohortdefinition/*", "noSessionCreation, jwtAuthcFilter, authzFilter, deletePermissionsOnDeleteCohortDefinitionFilter");
+    filterChain.put("/cohortdefinition", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter, createPermissionsOnCreateCohortDefinitionFilter");
+    filterChain.put("/cohortdefinition/*", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter, deletePermissionsOnDeleteCohortDefinitionFilter");
 
-    filterChain.put("/**", "noSessionCreation, jwtAuthcFilter, authzFilter");
+    filterChain.put("/**", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
 
     return filterChain;
   }
@@ -77,7 +92,8 @@ public class AtlasSecurity extends Security {
   @Override
   public Map<String, Filter> getFilters() {
     Map<String, javax.servlet.Filter> filters = new HashMap<>();
-    
+
+    filters.put("noSessionCreation", new NoSessionCreationFilter());
     filters.put("jwtAuthcFilter", new JwtAuthenticatingFilter());
     filters.put("negotiateAuthcFilter", new NegotiateAuthenticationFilter());
     filters.put("updateAccessTokenFilter", new UpdateAccessTokenFilter(this.authorizer, this.defaultRoles, this.tokenExpirationIntervalInSeconds));
@@ -121,6 +137,49 @@ public class AtlasSecurity extends Security {
           String value = String.format(entry.getKey(), id);
           authorizer.removePermission(value);
         }
+      }
+    });
+    filters.put("stopProcessingFilter", new AdviceFilter() {
+      @Override
+      protected boolean preHandle(ServletRequest request, ServletResponse response) throws Exception {
+        return false;
+      }
+    });
+    filters.put("corsFilter", new AdviceFilter() {
+      @Override
+      protected boolean preHandle(ServletRequest request, ServletResponse response) throws Exception {
+        
+        // check if it's CORS request
+        //
+        HttpServletRequest httpRequest = WebUtils.toHttp(request);
+        String origin = httpRequest.getHeader("Origin");
+        if (origin == null) {
+          return true;
+        }
+
+        // set headers
+        //
+        HttpServletResponse httpResponse = WebUtils.toHttp(response);
+        httpResponse.setHeader("Access-Control-Allow-Origin", allowOrigin);
+        httpResponse.setHeader("Access-Control-Allow-Credentials", "true");
+
+        // stop processing if it's preflight request
+        //
+        String requestMethod = httpRequest.getHeader("Access-Control-Request-Method");
+        String method = httpRequest.getMethod();
+        if (requestMethod != null && "OPTIONS".equalsIgnoreCase(method)) {
+          httpResponse.setHeader("Access-Control-Allow-Headers", "origin, content-type, accept, authorization");
+          httpResponse.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+          httpResponse.setHeader("Access-Control-Max-Age", "1209600");
+          httpResponse.setStatus(HttpServletResponse.SC_OK);
+
+          return false;
+        }
+
+        // continue processing request
+        //
+        httpResponse.setHeader("Access-Control-Expose-Headers", "Bearer");
+        return true;
       }
     });
     

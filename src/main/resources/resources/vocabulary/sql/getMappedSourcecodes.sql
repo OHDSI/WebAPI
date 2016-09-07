@@ -2,7 +2,7 @@
 
 Select concept_id, concept_name, ISNULL(standard_concept, 'N') standard_concept, ISNULL(invalid_reason, 'V') INVALID_REASON,
 CONCEPT_CODE, CONCEPT_CLASS_ID, DOMAIN_ID, VOCABULARY_ID
-from concept 
+from @CDM_schema.concept 
 where concept_id in (@identifiers)
 
 UNION

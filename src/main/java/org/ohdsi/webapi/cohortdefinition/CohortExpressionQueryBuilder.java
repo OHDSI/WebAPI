@@ -41,10 +41,11 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
   private final static String PROCEDURE_OCCURRENCE_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/procedureOccurrence.sql");
   private final static String SPECIMEN_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/specimen.sql");
   private final static String VISIT_OCCURRENCE_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/visitOccurrence.sql");
-  public final static String PRIMARY_CRITERIA_EVENTS_TABLE = "#primary_events";
-  public final static String QUALIFIED_PRIMARY_EVENTS_TABLE = "#QualifiedPrimaryEvents";
+  private final static String PRIMARY_CRITERIA_EVENTS_TABLE = "#primary_events";
   private final static String INCLUSION_RULE_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/inclusionrule.sql");  
 
+  private final static String DEMOGRAPHIC_CRITERIA_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/demographicCriteria.sql");
+  
   // Strategy templates
   private final static String DATE_OFFSET_STRATEGY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/dateOffsetStrategy.sql");
   private final static String CUSTOM_ERA_STRATEGY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/customEraStrategy.sql");
@@ -310,26 +311,35 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
     String query = GROUP_QUERY_TEMPLATE;
     ArrayList<String> additionalCriteriaQueries = new ArrayList<>();
     
-    for(int i = 0; i< group.criteriaList.length; i++)
+    int indexId = 0;
+    for(CorelatedCriteria cc : group.criteriaList)
     {
-      CorelatedCriteria ac = group.criteriaList[i];
-      String acQuery = this.getAdditionalCriteriaQuery(ac, eventTable); //ac.accept(this);
-      acQuery = StringUtils.replace(acQuery, "@indexId", "" + i);
+      String acQuery = this.getCorelatedlCriteriaQuery(cc, eventTable); //ac.accept(this);
+      acQuery = StringUtils.replace(acQuery, "@indexId", "" + indexId);
       additionalCriteriaQueries.add(acQuery);
+      indexId++;
     }
     
-    for(int i=0; i< group.groups.length; i++)
+    for(DemographicCriteria dc : group.demographicCriteriaList)
     {
-      CriteriaGroup g = group.groups[i];
+      String dcQuery = this.getDemographicCriteriaQuery(dc, eventTable); //ac.accept(this);
+      dcQuery = StringUtils.replace(dcQuery, "@indexId", "" + indexId);
+      additionalCriteriaQueries.add(dcQuery);
+      indexId++;
+    } 
+    
+    for(CriteriaGroup g : group.groups)
+    {
       String gQuery = this.getCriteriaGroupQuery(g, eventTable); //g.accept(this);
-      gQuery = StringUtils.replace(gQuery, "@indexId", "" + (group.criteriaList.length + i));
-      additionalCriteriaQueries.add(gQuery);      
+      gQuery = StringUtils.replace(gQuery, "@indexId", "" + indexId);
+      additionalCriteriaQueries.add(gQuery);  
+      indexId++;
     }
     
     String intersectClause = "HAVING COUNT(index_id) ";
     
     if (group.type.equalsIgnoreCase("ALL")) // count must match number of criteria + sub-groups in group.
-      intersectClause += "= " + (group.criteriaList.length + group.groups.length);
+      intersectClause += "= " + indexId;
     
     if (group.type.equalsIgnoreCase("ANY")) // count must be > 0 for an 'ANY' criteria
       intersectClause += "> 0"; 
@@ -357,19 +367,80 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
     return resultSql;
   }
   
-  public String getAdditionalCriteriaQuery(CorelatedCriteria additionalCriteria, String eventTable)
+  public String getDemographicCriteriaQuery(DemographicCriteria criteria, String eventTable)
+  {
+    String query = DEMOGRAPHIC_CRITERIA_QUERY_TEMPLATE;
+    query = StringUtils.replace(query,"@eventTable",eventTable);
+    
+    ArrayList<String> whereClauses = new ArrayList<>();
+
+    // Age
+    if (criteria.age != null)
+    {
+      whereClauses.add(buildNumericRangeClause("YEAR(E.start_date) - P.year_of_birth", criteria.age));
+    }
+
+    // Gender
+    if (criteria.gender != null && criteria.gender.length > 0)
+    {
+      whereClauses.add(String.format("P.gender_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.gender),",")));
+    }
+    
+    // Race
+    if (criteria.race != null && criteria.race.length > 0)
+    {
+      whereClauses.add(String.format("P.race_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.race),",")));
+    }
+
+    // Race
+    if (criteria.race != null && criteria.race.length > 0)
+    {
+      whereClauses.add(String.format("P.race_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.race),",")));
+    }
+
+    // Ethnicity
+    if (criteria.ethnicity != null && criteria.ethnicity.length > 0)
+    {
+      whereClauses.add(String.format("P.ethnicity_concept_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.ethnicity),",")));
+    }
+    
+    // occurrenceStartDate
+    if (criteria.occurrenceStartDate != null)
+    {
+      whereClauses.add(buildDateRangeClause("E.start_date",criteria.occurrenceStartDate));
+    }
+
+    // occurrenceEndDate
+    if (criteria.occurrenceEndDate != null)
+    {
+      whereClauses.add(buildDateRangeClause("E.end_date",criteria.occurrenceEndDate));
+    }
+
+    if (whereClauses.size() > 0) {
+      query = StringUtils.replace(query, "@whereClause", "WHERE " + StringUtils.join(whereClauses, " AND "));
+    } else {
+      query = StringUtils.replace(query, "@whereClause", "");
+    }
+    
+    return query;
+  }
+  
+  public String getCorelatedlCriteriaQuery(CorelatedCriteria corelatedCriteria, String eventTable)
   {
     String query = ADDITIONAL_CRITERIA_TEMMPLATE;
     
-    String criteriaQuery = additionalCriteria.criteria.accept(this);
+    String criteriaQuery = corelatedCriteria.criteria.accept(this);
     query = StringUtils.replace(query,"@criteriaQuery",criteriaQuery);
     query = StringUtils.replace(query,"@eventTable",eventTable);
     
     // build index date window expression
-    Window startWindow = additionalCriteria.startWindow;
     String startExpression;
     String endExpression;
+    ArrayList<String> clauses = new ArrayList<>();
+    clauses.add("A.START_DATE BETWEEN P.OP_START_DATE AND P.OP_END_DATE");
     
+    // StartWindow
+    Window startWindow = corelatedCriteria.startWindow;
     if (startWindow.start.days != null)
       startExpression = String.format("DATEADD(day,%d,P.START_DATE)", startWindow.start.coeff * startWindow.start.days);
     else
@@ -380,14 +451,31 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
     else
       endExpression = startWindow.end.coeff == -1 ? "P.OP_START_DATE" : "P.OP_END_DATE";
     
-    String windowCriteria = String.format("A.START_DATE BETWEEN P.OP_START_DATE AND P.OP_END_DATE AND A.START_DATE BETWEEN %s and %s", startExpression, endExpression);
-    query = StringUtils.replace(query,"@windowCriteria",windowCriteria);
+    clauses.add(String.format("A.START_DATE BETWEEN %s and %s", startExpression, endExpression));
+    
+    // EndWindow
+    Window endWindow = corelatedCriteria.endWindow;
 
+    if (endWindow.start.days != null)
+      startExpression = String.format("DATEADD(day,%d,P.END_DATE)", endWindow.start.coeff * endWindow.start.days);
+    else
+      startExpression = endWindow.start.coeff == -1 ? "P.OP_START_DATE" : "P.OP_END_DATE";
+    
+    if (endWindow.end.days != null)
+      endExpression = String.format("DATEADD(day,%d,P.END_DATE)", endWindow.end.coeff * endWindow.end.days);
+    else
+      endExpression = endWindow.end.coeff == -1 ? "P.OP_START_DATE" : "P.OP_END_DATE";
+    
+    clauses.add(String.format("A.END_DATE BETWEEN %s and %s", startExpression, endExpression));    
+
+    query = StringUtils.replace(query,"@windowCriteria",StringUtils.join(clauses, " AND "));
+
+    // Occurrence criteria
     String occurrenceCriteria = String.format(
       "HAVING COUNT(%sA.TARGET_CONCEPT_ID) %s %d",
-      additionalCriteria.occurrence.isDistinct ? "DISTINCT " : "",
-      getOccurrenceOperator(additionalCriteria.occurrence.type), 
-      additionalCriteria.occurrence.count
+      corelatedCriteria.occurrence.isDistinct ? "DISTINCT " : "",
+      getOccurrenceOperator(corelatedCriteria.occurrence.type), 
+      corelatedCriteria.occurrence.count
     );
     
     query = StringUtils.replace(query, "@occurrenceCriteria", occurrenceCriteria);

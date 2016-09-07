@@ -18,6 +18,9 @@ public class CorelatedCriteria {
   @JsonProperty("StartWindow")
   public Window startWindow;  
 
+  @JsonProperty("EndWindow")
+  public Window endWindow;  
+  
   @JsonProperty("Occurrence")
   public Occurrence occurrence;  
 }

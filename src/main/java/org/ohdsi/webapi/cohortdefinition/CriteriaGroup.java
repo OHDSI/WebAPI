@@ -21,6 +21,9 @@ public class CriteriaGroup {
   
   @JsonProperty("CriteriaList")
   public CorelatedCriteria[] criteriaList = new CorelatedCriteria[0];
+  
+  @JsonProperty("DemographicCriteriaList")
+  public DemographicCriteria[] demographicCriteriaList = new DemographicCriteria[0];  
 
   @JsonProperty("Groups")
   public CriteriaGroup[] groups = new CriteriaGroup[0];

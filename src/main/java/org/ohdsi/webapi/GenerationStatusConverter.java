@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ohdsi.webapi.cohortdefinition;
+package org.ohdsi.webapi;
 
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
@@ -28,6 +28,8 @@ public class GenerationStatusConverter implements AttributeConverter<GenerationS
   @Override
   public Integer convertToDatabaseColumn(GenerationStatus status) {
     switch (status) {
+      case ERROR:
+        return -1;
       case PENDING:
         return 0;
       case RUNNING:
@@ -42,6 +44,7 @@ public class GenerationStatusConverter implements AttributeConverter<GenerationS
   @Override
   public GenerationStatus convertToEntityAttribute(Integer statusValue) {
     switch (statusValue) {
+      case -1: return GenerationStatus.ERROR;
       case 0: return GenerationStatus.PENDING;
       case 1: return GenerationStatus.RUNNING;
       case 2: return GenerationStatus.COMPLETE;

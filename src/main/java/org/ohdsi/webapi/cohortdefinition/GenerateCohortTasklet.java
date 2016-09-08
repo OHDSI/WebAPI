@@ -15,6 +15,7 @@
  */
 package org.ohdsi.webapi.cohortdefinition;
 
+import org.ohdsi.webapi.GenerationStatus;
 import java.util.Calendar;
 import java.util.Date;
 

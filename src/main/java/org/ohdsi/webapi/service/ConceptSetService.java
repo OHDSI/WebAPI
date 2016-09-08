@@ -44,6 +44,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
+import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfo;
+import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetItem;
 import org.ohdsi.webapi.conceptset.ExportUtil;
 import org.ohdsi.webapi.source.SourceInfo;
@@ -59,6 +61,10 @@ import org.springframework.stereotype.Component;
 @Path("/conceptset/")
 @Component
 public class ConceptSetService extends AbstractDaoService {
+
+  @Autowired
+  private ConceptSetGenerationInfoRepository conceptSetGenerationInfoRepository;
+    
 
     @Autowired
     private VocabularyService vocabService;
@@ -230,4 +236,11 @@ public class ConceptSetService extends AbstractDaoService {
         return cs;
     }
 
+  
+  @GET
+  @Path("{id}/generationinfo")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Collection<ConceptSetGenerationInfo> getConceptSetGenerationInfo(@PathParam("id") final int id) {
+      return this.conceptSetGenerationInfoRepository.findAllByConceptSetId(id);
+  }
 }

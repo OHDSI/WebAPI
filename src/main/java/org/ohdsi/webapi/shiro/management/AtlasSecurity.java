@@ -14,6 +14,7 @@ import javax.ws.rs.HttpMethod;
 import org.apache.shiro.authc.Authenticator;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
 import org.apache.shiro.realm.Realm;
+import org.apache.shiro.web.filter.authc.AnonymousFilter;
 import org.apache.shiro.web.filter.session.NoSessionCreationFilter;
 import org.apache.shiro.web.servlet.AdviceFilter;
 import org.apache.shiro.web.util.WebUtils;
@@ -67,8 +68,11 @@ public class AtlasSecurity extends Security {
     
     // not protected resources
     //
-    filterChain.put("/*/vocabulary/**", "noSessionCreation, corsFilter");
-    filterChain.put("/source/sources", "noSessionCreation, corsFilter");
+    filterChain.put("/source/sources/", "noSessionCreation, corsFilter, anon");
+    filterChain.put("/source/sources", "noSessionCreation, corsFilter, anon");
+    filterChain.put("/conceptset/", "noSessionCreation, corsFilter, anon");
+    filterChain.put("/conceptset", "noSessionCreation, corsFilter, anon");
+    filterChain.put("/*/vocabulary/**", "noSessionCreation, corsFilter, anon");
 
     // protected resources
     //
@@ -94,6 +98,7 @@ public class AtlasSecurity extends Security {
     Map<String, javax.servlet.Filter> filters = new HashMap<>();
 
     filters.put("noSessionCreation", new NoSessionCreationFilter());
+    filters.put("anon", new AnonymousFilter());
     filters.put("jwtAuthcFilter", new JwtAuthenticatingFilter());
     filters.put("negotiateAuthcFilter", new NegotiateAuthenticationFilter());
     filters.put("updateAccessTokenFilter", new UpdateAccessTokenFilter(this.authorizer, this.defaultRoles, this.tokenExpirationIntervalInSeconds));

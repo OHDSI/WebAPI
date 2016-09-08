@@ -10,12 +10,14 @@ import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.SigningKeyResolverAdapter;
 import io.jsonwebtoken.impl.crypto.MacProvider;
 import java.security.Key;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
+import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.web.util.WebUtils;
 
 /**
@@ -28,14 +30,18 @@ public class TokenManager {
   
   private static final Map<String, Key> userToKeyMap = new HashMap<>();
   
-  public static String createJsonWebToken(String subject, Date expiration) {
+  public static String createJsonWebToken(String subject, Date expiration, Collection<String> permissions) {
     Key key = MacProvider.generateKey();
     if (userToKeyMap.containsKey(subject)) 
       userToKeyMap.replace(subject, key);
     else 
       userToKeyMap.put(subject, key);
-    
+
+    String permissionsString = StringUtils.join(permissions, ",");
+    Map<String, Object> claims = new HashMap<>();
+    claims.put("permissions", permissionsString);
     return Jwts.builder()
+            .setClaims(claims)
             .setSubject(subject)
             .setExpiration(expiration)
             .signWith(SignatureAlgorithm.HS512, key)

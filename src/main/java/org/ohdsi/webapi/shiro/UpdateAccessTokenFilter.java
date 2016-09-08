@@ -2,6 +2,7 @@ package org.ohdsi.webapi.shiro;
 
 import java.security.Principal;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Set;
 import javax.security.auth.Subject;
@@ -63,7 +64,8 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
     this.authorizer.registerUser(user, defaultRoles);
     
     Date expiration = this.getExpiration();
-    String jwt = TokenManager.createJsonWebToken(user, expiration);
+    Collection<String> permissions = this.authorizer.getAuthorizationInfo(user).getStringPermissions();
+    String jwt = TokenManager.createJsonWebToken(user, expiration, permissions);
     
     httpResponse.setHeader("Bearer", jwt);
     httpResponse.setStatus(HttpServletResponse.SC_NO_CONTENT);

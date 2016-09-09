@@ -44,6 +44,7 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
   private final static String PRIMARY_CRITERIA_EVENTS_TABLE = "primary_events";
   private final static String INCLUSION_RULE_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/inclusionrule.sql");  
 
+  private final static String EVENT_TABLE_EXPRESSION_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/eventTableExpression.sql");  
   private final static String DEMOGRAPHIC_CRITERIA_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/demographicCriteria.sql");
   
   // Strategy templates
@@ -187,6 +188,17 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
       String postfix = filter.op.endsWith("startsWith") || filter.op.endsWith("contains") ? "%" : "";
       
       return String.format("%s %s like '%s%s%s'", sqlExpression, negation, prefix, value, postfix);
+  }
+  
+  private String wrapCriteriaQuery(String query, CriteriaGroup group)
+  {
+    String eventQuery = StringUtils.replace(EVENT_TABLE_EXPRESSION_TEMPLATE, "@eventQuery", query);
+    String groupQuery = this.getCriteriaGroupQuery(group, String.format("(%s)", eventQuery));
+    groupQuery = StringUtils.replace(groupQuery,"@indexId", "" + 0);
+    String wrappedQuery = String.format(
+        "select PE.person_id, PE.event_id, PE.start_date, PE.end_date, PE.target_concept_id FROM (\n%s\n) PE\nJOIN (\n%s) AC on AC.person_id = pe.person_id and AC.event_id = pe.event_id\n",
+        query, groupQuery);
+    return wrappedQuery;
   }
   
   public String getCodesetQuery(ConceptSet[] conceptSets) {
@@ -338,24 +350,24 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
       indexId++;
     }
     
-    String intersectClause = "HAVING COUNT(index_id) ";
+    String occurrenceCountClause = "HAVING COUNT(index_id) ";
     
     if (group.type.equalsIgnoreCase("ALL")) // count must match number of criteria + sub-groups in group.
-      intersectClause += "= " + indexId;
+      occurrenceCountClause += "= " + indexId;
     
     if (group.type.equalsIgnoreCase("ANY")) // count must be > 0 for an 'ANY' criteria
-      intersectClause += "> 0"; 
+      occurrenceCountClause += "> 0"; 
     
     if (group.type.toUpperCase().startsWith("AT_"))
     {
       if (group.type.toUpperCase().endsWith("LEAST"))
-        intersectClause += ">= " + group.count;
+        occurrenceCountClause += ">= " + group.count;
       else
-        intersectClause += "<= " + group.count;
+        occurrenceCountClause += "<= " + group.count;
     }
            
     query = StringUtils.replace(query, "@eventTable", eventTable);
-    query = StringUtils.replace(query, "@intersectClause", intersectClause);
+    query = StringUtils.replace(query, "@occurrenceCountClause", occurrenceCountClause);
     query = StringUtils.replace(query, "@criteriaQueries", StringUtils.join(additionalCriteriaQueries, "\nUNION ALL\n"));
     
     return query;    
@@ -462,12 +474,12 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
     if (endWindow != null)
     {
       if (endWindow.start.days != null)
-        startExpression = String.format("DATEADD(day,%d,P.START_DATE)", endWindow.start.coeff * endWindow.start.days);
+          startExpression = String.format("DATEADD(day,%d,P.START_DATE)", endWindow.start.coeff * endWindow.start.days);
       else
         startExpression = endWindow.start.coeff == -1 ? "P.OP_START_DATE" : "P.OP_END_DATE";
 
       if (endWindow.end.days != null)
-        endExpression = String.format("DATEADD(day,%d,P.START_DATE)", endWindow.end.coeff * endWindow.end.days);
+          endExpression = String.format("DATEADD(day,%d,P.START_DATE)", endWindow.end.coeff * endWindow.end.days);
       else
         endExpression = endWindow.end.coeff == -1 ? "P.OP_START_DATE" : "P.OP_END_DATE";
 
@@ -561,6 +573,12 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
     if (whereClauses.size() > 0)
       whereClause = "WHERE " + StringUtils.join(whereClauses, "\nAND ");
     query = StringUtils.replace(query, "@whereClause",whereClause);
+    
+    if (criteria.CorrelatedCriteria != null)
+    {
+      query = wrapCriteriaQuery(query, criteria.CorrelatedCriteria);
+    }
+    
     return query;
   }
 
@@ -652,6 +670,13 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
     if (whereClauses.size() > 0)
       whereClause = "WHERE " + StringUtils.join(whereClauses, "\nAND ");
     query = StringUtils.replace(query, "@whereClause",whereClause);
+    
+    if (criteria.CorrelatedCriteria != null)
+    {
+      query = wrapCriteriaQuery(query, criteria.CorrelatedCriteria);
+    }
+
+    
     return query;
   }
     
@@ -711,6 +736,12 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
     if (whereClauses.size() > 0)
       whereClause = "WHERE " + StringUtils.join(whereClauses, "\nAND ");
     query = StringUtils.replace(query, "@whereClause",whereClause);
+    
+    if (criteria.CorrelatedCriteria != null)
+    {
+      query = wrapCriteriaQuery(query, criteria.CorrelatedCriteria);
+    }
+    
     return query;
   }
     
@@ -808,6 +839,11 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
       whereClause = "WHERE " + StringUtils.join(whereClauses, "\nAND ");
     query = StringUtils.replace(query, "@whereClause",whereClause);
     
+    if (criteria.CorrelatedCriteria != null)
+    {
+      query = wrapCriteriaQuery(query, criteria.CorrelatedCriteria);
+    }
+    
     return query;
   }
 
@@ -890,6 +926,12 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
     if (whereClauses.size() > 0)
       whereClause = "WHERE " + StringUtils.join(whereClauses, "\nAND ");
     query = StringUtils.replace(query, "@whereClause",whereClause);
+    
+    if (criteria.CorrelatedCriteria != null)
+    {
+      query = wrapCriteriaQuery(query, criteria.CorrelatedCriteria);
+    }
+    
     return query;
   }
     
@@ -970,6 +1012,12 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
     if (whereClauses.size() > 0)
       whereClause = "WHERE " + StringUtils.join(whereClauses, "\nAND ");
     query = StringUtils.replace(query, "@whereClause",whereClause);
+    
+    if (criteria.CorrelatedCriteria != null)
+    {
+      query = wrapCriteriaQuery(query, criteria.CorrelatedCriteria);
+    }
+    
     return query;
   }
   
@@ -1102,6 +1150,11 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
     if (whereClauses.size() > 0)
       whereClause = "WHERE " + StringUtils.join(whereClauses, "\nAND ");
     query = StringUtils.replace(query, "@whereClause",whereClause);
+    
+    if (criteria.CorrelatedCriteria != null)
+    {
+      query = wrapCriteriaQuery(query, criteria.CorrelatedCriteria);
+    }
     
     return query;
   }  
@@ -1240,6 +1293,11 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
       whereClause = "WHERE " + StringUtils.join(whereClauses, "\nAND ");
     query = StringUtils.replace(query, "@whereClause",whereClause);
     
+    if (criteria.CorrelatedCriteria != null)
+    {
+      query = wrapCriteriaQuery(query, criteria.CorrelatedCriteria);
+    }
+    
     return query;
   }
   
@@ -1353,6 +1411,11 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
       whereClause = "WHERE " + StringUtils.join(whereClauses, "\nAND ");
     query = StringUtils.replace(query, "@whereClause",whereClause);
     
+    if (criteria.CorrelatedCriteria != null)
+    {
+      query = wrapCriteriaQuery(query, criteria.CorrelatedCriteria);
+    }
+    
     return query;
   }  
 
@@ -1414,6 +1477,11 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
     if (whereClauses.size() > 0)
       whereClause = "WHERE " + StringUtils.join(whereClauses, "\nAND ");
     query = StringUtils.replace(query, "@whereClause",whereClause);
+    
+    if (criteria.CorrelatedCriteria != null)
+    {
+      query = wrapCriteriaQuery(query, criteria.CorrelatedCriteria);
+    }
     
     return query;
   }
@@ -1509,6 +1577,11 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
       whereClause = "WHERE " + StringUtils.join(whereClauses, "\nAND ");
     query = StringUtils.replace(query, "@whereClause",whereClause);
     
+    if (criteria.CorrelatedCriteria != null)
+    {
+      query = wrapCriteriaQuery(query, criteria.CorrelatedCriteria);
+    }
+    
     return query;
   }
   
@@ -1599,6 +1672,11 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
     if (whereClauses.size() > 0)
       whereClause = "WHERE " + StringUtils.join(whereClauses, "\nAND ");
     query = StringUtils.replace(query, "@whereClause",whereClause);
+    
+    if (criteria.CorrelatedCriteria != null)
+    {
+      query = wrapCriteriaQuery(query, criteria.CorrelatedCriteria);
+    }
     
     return query;
   }
@@ -1693,6 +1771,10 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
       whereClause = "WHERE " + StringUtils.join(whereClauses, "\nAND ");
     query = StringUtils.replace(query, "@whereClause",whereClause);
     
+    if (criteria.CorrelatedCriteria != null)
+    {
+      query = wrapCriteriaQuery(query, criteria.CorrelatedCriteria);
+    }
     
     return query;
   }

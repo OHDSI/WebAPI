@@ -70,9 +70,15 @@ public class AtlasSecurity extends Security {
     //
     filterChain.put("/source/sources/", "noSessionCreation, corsFilter, anon");
     filterChain.put("/source/sources", "noSessionCreation, corsFilter, anon");
+    filterChain.put("/*/vocabulary/**", "noSessionCreation, corsFilter, anon");
+    // conceptset read access
     filterChain.put("/conceptset/", "noSessionCreation, corsFilter, anon");
     filterChain.put("/conceptset", "noSessionCreation, corsFilter, anon");
-    filterChain.put("/*/vocabulary/**", "noSessionCreation, corsFilter, anon");
+    filterChain.put("/conceptset/*", "noSessionCreation, corsFilter, anon");
+    filterChain.put("/conceptset/*/expression", "noSessionCreation, corsFilter, anon");
+    filterChain.put("/conceptset/*/expression/", "noSessionCreation, corsFilter, anon");
+    filterChain.put("/conceptset/exportlist/", "noSessionCreation, corsFilter, anon");
+
 
     // protected resources
     //

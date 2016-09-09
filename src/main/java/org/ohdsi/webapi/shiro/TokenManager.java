@@ -37,7 +37,7 @@ public class TokenManager {
     else 
       userToKeyMap.put(subject, key);
 
-    String permissionsString = StringUtils.join(permissions, ",");
+    String permissionsString = StringUtils.join(permissions, "|");
     Map<String, Object> claims = new HashMap<>();
     claims.put("permissions", permissionsString);
     return Jwts.builder()

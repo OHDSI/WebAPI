@@ -10,22 +10,12 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
-import org.ohdsi.webapi.cohortresults.CohortPersonSummary;
-import org.ohdsi.webapi.cohortresults.mapper.CohortStatsMapper;
-import org.ohdsi.webapi.cohortresults.mapper.ConceptCountMapper;
-import org.ohdsi.webapi.cohortresults.mapper.ConceptDistributionMapper;
-import org.ohdsi.webapi.report.CDMPersonSummary;
-import org.ohdsi.webapi.report.CDMDashboard;
+import org.ohdsi.webapi.report.*;
 import org.ohdsi.webapi.cohortresults.VisualizationData;
 import org.ohdsi.webapi.helper.ResourceHelper;
-import org.ohdsi.webapi.report.ConditionOccurrenceTreemapNode;
-import org.ohdsi.webapi.report.DrugPrevalence;
-import org.ohdsi.webapi.report.DrugEraPrevalence;
-import org.ohdsi.webapi.report.MonthlyPrevalence;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.springframework.dao.DataAccessException;
@@ -111,7 +101,7 @@ public class CDMResultsService extends AbstractDaoService {
      * @return CDMDashboard
      */
     @GET
-    @Path("/dashboard")
+    @Path("dashboard")
     @Produces(MediaType.APPLICATION_JSON)
     public CDMDashboard getDashboard(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
 
@@ -142,13 +132,13 @@ public class CDMResultsService extends AbstractDaoService {
      * @return CDMPersonSummary
      */
     @GET
-    @Path("/person")
+    @Path("person")
     @Produces(MediaType.APPLICATION_JSON)
     public CDMPersonSummary getPersonReport(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
         CDMPersonSummary person = null;
         final String key = CDMResultsAnalysisRunner.PERSON;
         Source source = getSourceRepository().findBySourceKey(sourceKey);
-        VisualizationData data = /*refresh ?*/ null /*: this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(source.getSourceId(), key)*/;
+        VisualizationData data = /* refresh ?*/ null /*: this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(source.getSourceId(), key)*/;
 
         if (refresh || data == null) {
             person = this.queryRunner.getPersonResults(this.getSourceJdbcTemplate(source), source, true);
@@ -169,25 +159,25 @@ public class CDMResultsService extends AbstractDaoService {
      * @return CDMPersonSummary
      */
     @GET
-    @Path("/person")
+    @Path("drug")
     @Produces(MediaType.APPLICATION_JSON)
-    public CDMPersonSummary getDrugReport(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
-        CDMPersonSummary person = null;
+    public CDMDrugSummary getDrugReport(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+        CDMDrugSummary drugSummary = null;
         final String key = CDMResultsAnalysisRunner.PERSON;
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         VisualizationData data = /*refresh ?*/ null /*: this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(source.getSourceId(), key)*/;
 
         if (refresh || data == null) {
-            person = this.queryRunner.getPersonResults(this.getSourceJdbcTemplate(source), source, true);
+            drugSummary = this.queryRunner.getDrugResults(this.getSourceJdbcTemplate(source), source, true);
         } else {
             try {
-                person = mapper.readValue(data.getData(), CDMPersonSummary.class);
+                drugSummary = mapper.readValue(data.getData(), CDMDrugSummary.class);
             } catch (Exception e) {
                 log.error(e);
             }
         }
 
-        return person;
+        return drugSummary;
     }
 
     /**
@@ -196,25 +186,25 @@ public class CDMResultsService extends AbstractDaoService {
      * @return CDMPersonSummary
      */
     @GET
-    @Path("/person")
+    @Path("procedure")
     @Produces(MediaType.APPLICATION_JSON)
-    public CDMPersonSummary getProcedureReport(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
-        CDMPersonSummary person = null;
+    public CDMProcedureSummary getProcedureReport(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+        CDMProcedureSummary procedureSummary = null;
         final String key = CDMResultsAnalysisRunner.PERSON;
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         VisualizationData data = /*refresh ?*/ null /*: this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(source.getSourceId(), key)*/;
 
         if (refresh || data == null) {
-            person = this.queryRunner.getPersonResults(this.getSourceJdbcTemplate(source), source, true);
+            procedureSummary = this.queryRunner.getProcedureResults(this.getSourceJdbcTemplate(source), source, true);
         } else {
             try {
-                person = mapper.readValue(data.getData(), CDMPersonSummary.class);
+                procedureSummary = mapper.readValue(data.getData(), CDMProcedureSummary.class);
             } catch (Exception e) {
                 log.error(e);
             }
         }
 
-        return person;
+        return procedureSummary;
     }
 
     @Path("drugeratreemap")
@@ -476,6 +466,97 @@ public class CDMResultsService extends AbstractDaoService {
                                                Source source) {
             return renderTranslateCohortSql(sqlPath, id, null, source);
         }
+
+        public CDMDrugSummary getDrugResults(JdbcTemplate sourceJdbcTemplate, Source source, boolean b) {
+            final String key = PERSON;
+            CDMDrugSummary cdmDrugSummary = new CDMDrugSummary();
+            boolean empty = true;
+
+            String personSummaryData = this.renderTranslateCohortSql(BASE_SQL_PATH + "report/person/population.sql", null, source);
+//            if (personSummaryData != null) {
+//                person.setYearOfBirth(jdbcTemplate.query(yobSql, new ConceptDistributionMapper()));
+//            }
+
+//            String yobStatSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/yearofbirth_stats.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
+//            if (yobStatSql != null) {
+//                person.setYearOfBirthStats(jdbcTemplate.query(yobStatSql, new CohortStatsMapper()));
+//            }
+//
+//            String genderSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/gender.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
+//            if (genderSql != null) {
+//                person.setGender(jdbcTemplate.query(genderSql, new ConceptCountMapper()));
+//            }
+//
+//            String raceSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/race.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
+//            if (raceSql != null) {
+//                person.setRace(jdbcTemplate.query(raceSql, new ConceptCountMapper()));
+//            }
+//
+//            String ethnicitySql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/ethnicity.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
+//            if (ethnicitySql != null) {
+//                person.setEthnicity(jdbcTemplate.query(ethnicitySql, new ConceptCountMapper()));
+//            }
+//
+//            if (CollectionUtils.isNotEmpty(person.getEthnicity())
+//                    || CollectionUtils.isNotEmpty(person.getGender())
+//                    || CollectionUtils.isNotEmpty(person.getRace())
+//                    || CollectionUtils.isNotEmpty(person.getYearOfBirth())
+//                    || CollectionUtils.isNotEmpty(person.getYearOfBirthStats())) {
+//                empty = false;
+//            }
+//
+//            if (!empty && save) {
+//                this.saveEntity(id, source.getSourceId(), key, person);
+//            }
+
+            return cdmDrugSummary;
+        }
+
+        public CDMProcedureSummary getProcedureResults(JdbcTemplate sourceJdbcTemplate, Source source, boolean b) {
+            final String key = PERSON;
+            CDMProcedureSummary cdmProcedureSummary = new CDMProcedureSummary();
+            boolean empty = true;
+
+            String personSummaryData = this.renderTranslateCohortSql(BASE_SQL_PATH + "report/person/population.sql", null, source);
+//            if (personSummaryData != null) {
+//                person.setYearOfBirth(jdbcTemplate.query(yobSql, new ConceptDistributionMapper()));
+//            }
+
+//            String yobStatSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/yearofbirth_stats.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
+//            if (yobStatSql != null) {
+//                person.setYearOfBirthStats(jdbcTemplate.query(yobStatSql, new CohortStatsMapper()));
+//            }
+//
+//            String genderSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/gender.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
+//            if (genderSql != null) {
+//                person.setGender(jdbcTemplate.query(genderSql, new ConceptCountMapper()));
+//            }
+//
+//            String raceSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/race.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
+//            if (raceSql != null) {
+//                person.setRace(jdbcTemplate.query(raceSql, new ConceptCountMapper()));
+//            }
+//
+//            String ethnicitySql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/ethnicity.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
+//            if (ethnicitySql != null) {
+//                person.setEthnicity(jdbcTemplate.query(ethnicitySql, new ConceptCountMapper()));
+//            }
+//
+//            if (CollectionUtils.isNotEmpty(person.getEthnicity())
+//                    || CollectionUtils.isNotEmpty(person.getGender())
+//                    || CollectionUtils.isNotEmpty(person.getRace())
+//                    || CollectionUtils.isNotEmpty(person.getYearOfBirth())
+//                    || CollectionUtils.isNotEmpty(person.getYearOfBirthStats())) {
+//                empty = false;
+//            }
+//
+//            if (!empty && save) {
+//                this.saveEntity(id, source.getSourceId(), key, person);
+//            }
+
+            return cdmProcedureSummary;
+        }
     }
+
 }
 

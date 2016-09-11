@@ -437,7 +437,7 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
     String startExpression;
     String endExpression;
     ArrayList<String> clauses = new ArrayList<>();
-    clauses.add("A.START_DATE BETWEEN P.OP_START_DATE AND P.OP_END_DATE");
+    clauses.add("A.START_DATE >= P.OP_START_DATE AND A.START_DATE <= P.OP_END_DATE");
     
     // StartWindow
     Window startWindow = corelatedCriteria.startWindow;
@@ -445,28 +445,28 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
       startExpression = String.format("DATEADD(day,%d,P.START_DATE)", startWindow.start.coeff * startWindow.start.days);
     else
       startExpression = startWindow.start.coeff == -1 ? "P.OP_START_DATE" : "P.OP_END_DATE";
-    
+
     if (startWindow.end.days != null)
       endExpression = String.format("DATEADD(day,%d,P.START_DATE)", startWindow.end.coeff * startWindow.end.days);
     else
       endExpression = startWindow.end.coeff == -1 ? "P.OP_START_DATE" : "P.OP_END_DATE";
     
-    clauses.add(String.format("A.START_DATE BETWEEN %s and %s", startExpression, endExpression));
+    clauses.add(String.format("A.START_DATE >= %s and A.START_DATE <= %s", startExpression, endExpression));
     
     // EndWindow
     Window endWindow = corelatedCriteria.endWindow;
 
     if (endWindow.start.days != null)
-      startExpression = String.format("DATEADD(day,%d,P.END_DATE)", endWindow.start.coeff * endWindow.start.days);
+      startExpression = String.format("DATEADD(day,%d,P.START_DATE)", endWindow.start.coeff * endWindow.start.days);
     else
       startExpression = endWindow.start.coeff == -1 ? "P.OP_START_DATE" : "P.OP_END_DATE";
     
     if (endWindow.end.days != null)
-      endExpression = String.format("DATEADD(day,%d,P.END_DATE)", endWindow.end.coeff * endWindow.end.days);
+      endExpression = String.format("DATEADD(day,%d,P.START_DATE)", endWindow.end.coeff * endWindow.end.days);
     else
       endExpression = endWindow.end.coeff == -1 ? "P.OP_START_DATE" : "P.OP_END_DATE";
     
-    clauses.add(String.format("A.END_DATE BETWEEN %s and %s", startExpression, endExpression));    
+    clauses.add(String.format("A.END_DATE >= %s AND A.END_DATE <= %s", startExpression, endExpression));    
 
     query = StringUtils.replace(query,"@windowCriteria",StringUtils.join(clauses, " AND "));
 

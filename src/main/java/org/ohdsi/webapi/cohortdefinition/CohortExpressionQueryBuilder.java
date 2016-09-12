@@ -124,10 +124,11 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
     String clause;
     if (range.op.endsWith("bt")) // range with a 'between' op
     {
-      clause = String.format("%s %sbetween %s and %s",
-          sqlExpression,
+      clause = String.format("%s(%s >= %s and %s <= %s)",
           range.op.startsWith("!") ? "not " : "",
+          sqlExpression,
           dateStringToSql(range.value),
+          sqlExpression,
           dateStringToSql(range.extent));
     }
     else // single value range (less than/eq/greater than, etc)
@@ -143,10 +144,11 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
     String clause;
     if (range.op.endsWith("bt"))
     {
-      clause = String.format("%s %sbetween %d and %d",
-        sqlExpression,
+      clause = String.format("%s(%s >= %d and %s <= %d)",
         range.op.startsWith("!") ? "not " : "",
+        sqlExpression,
         range.value.intValue(),
+        sqlExpression,
         range.extent.intValue());
     }
     else
@@ -162,10 +164,11 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
     String clause;
     if (range.op.endsWith("bt"))
     {
-      clause = String.format("%s %sbetween %" + format + " and %" + format,
-        sqlExpression,
+      clause = String.format("%s(%s >= %" + format + " and %s <= %" + format + ")",
         range.op.startsWith("!") ? "not " : "",
+        sqlExpression,
         range.value.doubleValue(),
+        sqlExpression,
         range.extent.doubleValue());
     }
     else

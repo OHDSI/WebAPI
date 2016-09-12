@@ -34,11 +34,9 @@ import org.ohdsi.webapi.cohortcomparison.BalanceResult;
 import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysis;
 import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisExecution;
 import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisInfo;
-import org.ohdsi.webapi.cohortcomparison.PopDistributionValue;
+import org.ohdsi.webapi.cohortcomparison.ModelScoreDistributionValue;
 import org.ohdsi.webapi.cohortcomparison.PropensityScoreModelCovariate;
 import org.ohdsi.webapi.cohortcomparison.PropensityScoreModelReport;
-import org.ohdsi.webapi.cohortcomparison.StratPopDistributionData;
-import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
@@ -247,17 +245,6 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
         return getComparativeCohortAnalysisExecutionRepository().findByExecutionId(executionId);
     }
 
-    private final RowMapper<StratPopDistributionData> matchedDistributionMapper = new RowMapper<StratPopDistributionData>() {
-        @Override
-        public StratPopDistributionData mapRow(final ResultSet resultSet, final int arg1) throws SQLException {
-            StratPopDistributionData data = new StratPopDistributionData();
-            data.ps = resultSet.getFloat("ps");
-            data.treatment = resultSet.getInt("treatment");
-            data.person_count = resultSet.getInt("person_count");
-            return data;
-        }
-    };
-
     private final RowMapper<PropensityScoreModelCovariate> covariateMapper = new RowMapper<PropensityScoreModelCovariate>() {
         @Override
         public PropensityScoreModelCovariate mapRow(final ResultSet resultSet, final int arg1) throws SQLException {
@@ -273,19 +260,19 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
         }
     };
 
-    private final RowMapper<PopDistributionValue> psmodelDistributionMapper = new RowMapper<PopDistributionValue>() {
+    private final RowMapper<ModelScoreDistributionValue> ScoreDistributionMapper = new RowMapper<ModelScoreDistributionValue>() {
         @Override
-        public PopDistributionValue mapRow(final ResultSet resultSet, final int arg1) throws SQLException {
-            float ps = resultSet.getFloat("ps");
+        public ModelScoreDistributionValue mapRow(final ResultSet resultSet, final int arg1) throws SQLException {
+            float score = resultSet.getFloat("score");
             int treatment = resultSet.getInt("treatment");
             int comparator = resultSet.getInt("comparator");
 
-            PopDistributionValue popDistributionValue = new PopDistributionValue();
-            popDistributionValue.ps = ps;
-            popDistributionValue.treatment = treatment;
-            popDistributionValue.comparator = comparator;
+            ModelScoreDistributionValue distributionValue = new ModelScoreDistributionValue();
+            distributionValue.score = score;
+            distributionValue.treatment = treatment;
+            distributionValue.comparator = comparator;
 
-            return popDistributionValue;
+            return distributionValue;
         }
     };
 
@@ -355,49 +342,48 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
     }    
 
     @GET
-    @Path("execution/{eid}/psmodeldist")
+    @Path("execution/{eid}/psmodelpropscore")
     @Produces(MediaType.APPLICATION_JSON)
-    public Collection<PopDistributionValue> getPsModelDistribution(@PathParam("eid") int executionId) {
+    public Collection<ModelScoreDistributionValue> getPsModelPropScore(@PathParam("eid") int executionId) {
         ComparativeCohortAnalysisExecution ccae = getComparativeCohortAnalysisExecution(executionId);
         Source source = getSourceRepository().findBySourceId(ccae.getSourceId());
         String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 
-        String sqlDist = ResourceHelper.GetResourceAsString("/resources/cohortcomparison/sql/ps_model_agg.sql");
+        String sqlDist = ResourceHelper.GetResourceAsString("/resources/cohortcomparison/sql/psmodel_prop_score.sql");
         sqlDist = SqlRender.renderSql(sqlDist, new String[]{"resultsTableQualifier", "executionId"}, new String[]{
             tableQualifier, Integer.toString(executionId)});
         sqlDist = SqlTranslate.translateSql(sqlDist, "sql server", source.getSourceDialect());
-        return getSourceJdbcTemplate(source).query(sqlDist, psmodelDistributionMapper);
+        return getSourceJdbcTemplate(source).query(sqlDist, ScoreDistributionMapper);
     }
+    
+    @GET
+    @Path("execution/{eid}/psmodelprefscore")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Collection<ModelScoreDistributionValue> getPsModelPrefScore(@PathParam("eid") int executionId) {
+        ComparativeCohortAnalysisExecution ccae = getComparativeCohortAnalysisExecution(executionId);
+        Source source = getSourceRepository().findBySourceId(ccae.getSourceId());
+        String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+
+        String sqlDist = ResourceHelper.GetResourceAsString("/resources/cohortcomparison/sql/psmodel_pref_score.sql");
+        sqlDist = SqlRender.renderSql(sqlDist, new String[]{"resultsTableQualifier", "executionId"}, new String[]{
+            tableQualifier, Integer.toString(executionId)});
+        sqlDist = SqlTranslate.translateSql(sqlDist, "sql server", source.getSourceDialect());
+        return getSourceJdbcTemplate(source).query(sqlDist, ScoreDistributionMapper);
+    }    
 
     @GET
-    @Path("execution/{eid}/matchedpopdist")
+    @Path("execution/{eid}/poppropdist")
     @Produces(MediaType.APPLICATION_JSON)
-    public Collection<PopDistributionValue> getMatchedPopDistribution(@PathParam("eid") int executionId) {
+    public Collection<ModelScoreDistributionValue> getPopPropDistribution(@PathParam("eid") int executionId) {
         ComparativeCohortAnalysisExecution ccae = getComparativeCohortAnalysisExecution(executionId);
         Source source = getSourceRepository().findBySourceId(ccae.getSourceId());
         String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 
-        String sqlDist = ResourceHelper.GetResourceAsString("/resources/cohortcomparison/sql/matched_pop_agg.sql");
+        String sqlDist = ResourceHelper.GetResourceAsString("/resources/cohortcomparison/sql/pop_prop_score.sql");
         sqlDist = SqlRender.renderSql(sqlDist, new String[]{"resultsTableQualifier", "executionId"}, new String[]{
             tableQualifier, Integer.toString(executionId)});
         sqlDist = SqlTranslate.translateSql(sqlDist, "sql server", source.getSourceDialect());
-        ArrayList<StratPopDistributionData> datum = (ArrayList<StratPopDistributionData>) getSourceJdbcTemplate(source).query(sqlDist, matchedDistributionMapper);
-        HashMap<Float, PopDistributionValue> results = new HashMap<>();
-        for (StratPopDistributionData data : datum) {
-            if (!results.containsKey(data.ps)) {
-                PopDistributionValue value = new PopDistributionValue();
-                value.ps = data.ps;
-                results.put(value.ps, value);
-            }
-
-            if (data.treatment == 0) {
-                results.get(data.ps).comparator = data.person_count;
-            } else if (data.treatment == 1) {
-                results.get(data.ps).treatment = data.person_count;
-            }
-        }
-
-        return results.values();
+        return getSourceJdbcTemplate(source).query(sqlDist, ScoreDistributionMapper);
     }
 
     @GET

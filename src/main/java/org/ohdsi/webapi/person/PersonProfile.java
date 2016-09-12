@@ -26,11 +26,15 @@ public class PersonProfile {
 
   public ArrayList<PersonRecord> records;
   public ArrayList<CohortPerson> cohorts;
+  public ArrayList<ObservationPeriod> observationPeriods;
+  
   public String gender;
+  public int yearOfBirth;
 
   public PersonProfile() {
     records = new ArrayList<>();
     cohorts = new ArrayList<>();
+    observationPeriods = new ArrayList<>();
   }
 
   @JsonProperty("recordCount") 

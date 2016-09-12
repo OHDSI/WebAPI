@@ -19,8 +19,8 @@ package org.ohdsi.webapi.cohortcomparison;
  *
  * @author fdefalco
  */
-public class PopDistributionValue {
-    public float ps;
+public class ModelScoreDistributionValue {
+    public float score;
     public int treatment;
     public int comparator;
 }

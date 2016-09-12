@@ -13,14 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ohdsi.webapi.cohortcomparison;
+package org.ohdsi.webapi.person;
+
+import java.sql.Timestamp;
 
 /**
  *
  * @author fdefalco
  */
-public class StratPopDistributionData {
-    public float ps;
-    public int treatment;
-    public int person_count;
+public class ObservationPeriod {
+    public ObservationPeriod() {
+        
+    }
+    
+    public long id;
+    public Timestamp startDate;
+    public Timestamp endDate;
+    public String type;
 }

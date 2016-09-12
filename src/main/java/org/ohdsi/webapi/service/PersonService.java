@@ -17,24 +17,20 @@ package org.ohdsi.webapi.service;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.person.ObservationPeriod;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.person.PersonRecord;
 import org.ohdsi.webapi.person.CohortPerson;
 import org.ohdsi.webapi.person.PersonProfile;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
-import org.ohdsi.webapi.vocabulary.ConceptSetExpression;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -65,9 +61,12 @@ public class PersonService extends AbstractDaoService {
     sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
     
     profile.gender = "not found";
+    profile.yearOfBirth = 0;
+    
     getSourceJdbcTemplate(source).query(sql_statement, new RowMapper<Void>() {
       @Override
       public Void mapRow(ResultSet resultSet, int arg1) throws SQLException {
+        profile.yearOfBirth = resultSet.getInt("year_of_birth");
         profile.gender = resultSet.getString("gender");
         return null;
       }
@@ -76,6 +75,27 @@ public class PersonService extends AbstractDaoService {
         throw new RuntimeException("Can't find person " + personId);        
     }
 
+    // get observation periods
+    String sqlObservationPeriods = ResourceHelper.GetResourceAsString("/resources/person/sql/getObservationPeriods.sql");
+    sqlObservationPeriods = SqlRender.renderSql(sqlObservationPeriods, new String[]{"personId", "tableQualifier"}, new String[]{personId, tableQualifier});
+    sqlObservationPeriods = SqlTranslate.translateSql(sqlObservationPeriods, "sql server", source.getSourceDialect());    
+    
+    getSourceJdbcTemplate(source).query(sqlObservationPeriods, new RowMapper<Void>() {
+      @Override
+      public Void mapRow(ResultSet resultSet, int arg1) throws SQLException {
+        ObservationPeriod op = new ObservationPeriod();
+        
+        op.startDate = resultSet.getTimestamp("start_date");
+        op.endDate = resultSet.getTimestamp("end_date");
+        op.type = resultSet.getString("observation_period_type");
+        op.id = resultSet.getInt("observation_period_id");
+        
+        profile.observationPeriods.add(op);
+        return null;
+      }
+    });    
+    
+    // get simplified records
     sql_statement = ResourceHelper.GetResourceAsString("/resources/person/sql/getRecords.sql");
     sql_statement = SqlRender.renderSql(sql_statement, new String[]{"personId", "tableQualifier"}, new String[]{personId, tableQualifier});
     sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
@@ -115,41 +135,5 @@ public class PersonService extends AbstractDaoService {
     });
     
     return profile;
-  }
-  
-  /**
-   *
-   * @param sourceKey
-   * @param personId
-   * @param conceptSetIdentifiers
-   * @return
-   */
-  @Path("{personId}")
-  @POST
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public PersonProfile getEnhancedPersonProfile(@PathParam("sourceKey") String sourceKey, @PathParam("personId") String personId, int[] conceptSetIdentifiers) {
-    ArrayList<Collection<Long>> cseLookups = new ArrayList<>();
-    
-    // resolve concept sets to create lookup
-    for (int conceptSetIdentifier : conceptSetIdentifiers) {
-      ConceptSetExpression cse = conceptSetService.getConceptSetExpression(conceptSetIdentifier);
-      cseLookups.add(vocabService.resolveConceptSetExpression(sourceKey, cse));
-    }
-    
-    // obtain record
-    PersonProfile p = getPersonProfile(sourceKey, personId);
-    
-    // enhance records with concept set inclusion flags
-    for (PersonRecord record : p.records) {
-      int i = 0;
-      record.included = new Boolean[conceptSetIdentifiers.length];
-      for (Collection<Long> c : cseLookups) {
-        record.included[i] = c.contains(record.conceptId);
-        i++;
-      }
-    }
-    
-    return p;
   }
 }

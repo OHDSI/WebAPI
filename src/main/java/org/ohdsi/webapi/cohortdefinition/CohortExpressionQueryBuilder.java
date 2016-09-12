@@ -458,18 +458,20 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
     // EndWindow
     Window endWindow = corelatedCriteria.endWindow;
 
-    if (endWindow.start.days != null)
-      startExpression = String.format("DATEADD(day,%d,P.START_DATE)", endWindow.start.coeff * endWindow.start.days);
-    else
-      startExpression = endWindow.start.coeff == -1 ? "P.OP_START_DATE" : "P.OP_END_DATE";
-    
-    if (endWindow.end.days != null)
-      endExpression = String.format("DATEADD(day,%d,P.START_DATE)", endWindow.end.coeff * endWindow.end.days);
-    else
-      endExpression = endWindow.end.coeff == -1 ? "P.OP_START_DATE" : "P.OP_END_DATE";
-    
-    clauses.add(String.format("A.END_DATE >= %s AND A.END_DATE <= %s", startExpression, endExpression));    
+    if (endWindow != null)
+    {
+      if (endWindow.start.days != null)
+        startExpression = String.format("DATEADD(day,%d,P.START_DATE)", endWindow.start.coeff * endWindow.start.days);
+      else
+        startExpression = endWindow.start.coeff == -1 ? "P.OP_START_DATE" : "P.OP_END_DATE";
 
+      if (endWindow.end.days != null)
+        endExpression = String.format("DATEADD(day,%d,P.START_DATE)", endWindow.end.coeff * endWindow.end.days);
+      else
+        endExpression = endWindow.end.coeff == -1 ? "P.OP_START_DATE" : "P.OP_END_DATE";
+
+      clauses.add(String.format("A.END_DATE >= %s AND A.END_DATE <= %s", startExpression, endExpression));    
+    }
     query = StringUtils.replace(query,"@windowCriteria",StringUtils.join(clauses, " AND "));
 
     // Occurrence criteria

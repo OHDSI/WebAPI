@@ -24,6 +24,7 @@ import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.activity.Activity.ActivityType;
 import org.ohdsi.webapi.activity.Tracker;
 import org.ohdsi.webapi.conceptset.ConceptSetComparison;
+import org.ohdsi.webapi.conceptset.ConceptSetOptimizationResult;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
@@ -644,7 +645,7 @@ public class VocabularyService extends AbstractDaoService {
   @POST
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public ConceptSetExpression optimizeConceptSet(@PathParam("sourceKey") String sourceKey, ConceptSetExpression conceptSetExpression) throws Exception {
+  public ConceptSetOptimizationResult optimizeConceptSet(@PathParam("sourceKey") String sourceKey, ConceptSetExpression conceptSetExpression) throws Exception {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
     
@@ -681,15 +682,22 @@ public class VocabularyService extends AbstractDaoService {
     // most optimized version of the concept set. Then, using these results,
     // construct a new ConceptSetExpression object that only contains the
     // concepts that were identified as optimal to achieve the same definition
-    ConceptSetExpression returnVal = new ConceptSetExpression();
+    ConceptSetOptimizationResult returnVal = new ConceptSetOptimizationResult();
     ArrayList<ConceptSetExpression.ConceptSetItem> optimzedExpressionItems = new ArrayList<>();
+    ArrayList<ConceptSetExpression.ConceptSetItem> removedExpressionItems = new ArrayList<>();
     List<Map<String, Object>> rows = getSourceJdbcTemplate(source).queryForList(sql_statement);
     for (Map rs : rows) {
-        String originalConceptId = String.valueOf(rs.get("original_concept_id"));
-        ConceptSetExpression.ConceptSetItem csi = allConceptSetItems.get(originalConceptId);
-        optimzedExpressionItems.add(csi);
+        String conceptId = String.valueOf(rs.get("concept_id"));
+        String removed = String.valueOf(rs.get("removed"));
+        ConceptSetExpression.ConceptSetItem csi = allConceptSetItems.get(conceptId);
+        if (removed.equals("0")) {
+            optimzedExpressionItems.add(csi);            
+        } else {
+            removedExpressionItems.add(csi);
+        }
     }
-    returnVal.items = optimzedExpressionItems.toArray(new ConceptSetExpression.ConceptSetItem[optimzedExpressionItems.size()]);
+    returnVal.optimizedConceptSet.items = optimzedExpressionItems.toArray(new ConceptSetExpression.ConceptSetItem[optimzedExpressionItems.size()]);
+    returnVal.removedConceptSet.items = removedExpressionItems.toArray(new ConceptSetExpression.ConceptSetItem[removedExpressionItems.size()]);
     
     return returnVal;
   }

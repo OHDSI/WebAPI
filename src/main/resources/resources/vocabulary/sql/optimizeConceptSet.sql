@@ -9,7 +9,7 @@ WITH conceptSetConcepts AS (
 	from @cdm_database_schema.concept_ancestor
 	where ancestor_concept_id in (@descendantConcepts)
 	  and ancestor_concept_id != descendant_concept_id -- Exclude the selected ancestor itself
-), conceptSetOptimized AS (
+), conceptSetAnalysis AS (
 	SELECT 
 		a.concept_id original_concept_id
 		, c1.concept_name original_concept_name
@@ -22,7 +22,22 @@ WITH conceptSetConcepts AS (
 	LEFT JOIN @cdm_database_schema.concept c1 ON a.concept_id = c1.concept_id
 	LEFT JOIN @cdm_database_schema.concept c2 ON b.concept_id = c2.concept_id
 	LEFT JOIN @cdm_database_schema.concept c3 ON b.ancestor_concept_id = c3.concept_id
-)
-SELECT *
+), conceptSetOptimized AS (
+	SELECT 
+		original_concept_id concept_id
+		, original_concept_name concept_name
+	FROM conceptSetAnalysis
+	WHERE subsumed_concept_id is null
+), conceptSetRemoved AS (
+	SELECT DISTINCT 
+		subsumed_concept_id concept_id
+		, subsumed_concept_name concept_name
+	FROM conceptSetAnalysis
+	WHERE subsumed_concept_id is not null
+)	
+SELECT *, 0 removed
 FROM conceptSetOptimized
-where subsumed_concept_id is null
+UNION
+SELECT *, 1 removed
+FROM conceptSetRemoved
+;

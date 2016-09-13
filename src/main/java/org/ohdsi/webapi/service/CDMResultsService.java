@@ -6,6 +6,7 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.PostConstruct;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
@@ -33,6 +34,11 @@ public class CDMResultsService extends AbstractDaoService {
 
     private ObjectMapper mapper = new ObjectMapper();
     private CDMResultsAnalysisRunner queryRunner = null;
+
+    @PostConstruct
+    public void init() {
+        queryRunner = new CDMResultsAnalysisRunner(this.getSourceDialect()/*, this.visualizationDataRepository*/);
+    }
 
     @Path("{conceptId}/monthlyConditionOccurrencePrevalence")
     @GET
@@ -310,6 +316,16 @@ public class CDMResultsService extends AbstractDaoService {
         public static final String DASHBOARD = "dashboard";
         public static final String PERSON = "person";
         public static final String BASE_SQL_PATH = "/resources/cdmresults/sql";
+
+        private ObjectMapper mapper;
+        private String sourceDialect;
+        //private VisualizationDataRepository visualizationDataRepository;
+        public CDMResultsAnalysisRunner(String sourceDialect) {
+
+            this.sourceDialect = sourceDialect;
+            //this.visualizationDataRepository = visualizationDataRepository;
+            mapper = new ObjectMapper();
+        }
 
         public CDMDashboard getDashboard(JdbcTemplate jdbcTemplate,
                                             /*int id,*/ Source source,

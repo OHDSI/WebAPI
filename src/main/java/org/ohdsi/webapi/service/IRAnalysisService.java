@@ -47,7 +47,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.TerminateJobStepExceptionHandler;
-import org.ohdsi.webapi.cohortdefinition.GenerationStatus;
+import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.ircalc.AnalysisReport;
 import org.ohdsi.webapi.ircalc.ExecutionInfo;

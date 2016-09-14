@@ -26,7 +26,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.MapsId;
 import javax.persistence.Table;
-import org.ohdsi.webapi.cohortdefinition.GenerationStatus;
+import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.source.Source;
 
 /**

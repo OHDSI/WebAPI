@@ -11,6 +11,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.HttpMethod;
+import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.authc.Authenticator;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
 import org.apache.shiro.realm.Realm;
@@ -92,6 +93,9 @@ public class AtlasSecurity extends Security {
     filterChain.put("/user/loggedIn", "noSessionCreation, corsFilter, jwtAuthcFilter");
 
     filterChain.put("/cohortdefinition", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter, createPermissionsOnCreateCohortDefinitionFilter");
+    filterChain.put("/cohortdefinition/", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter, createPermissionsOnCreateCohortDefinitionFilter");
+    filterChain.put("/cohortdefinition/*/copy", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter, createPermissionsOnCreateCohortDefinitionFilter");
+    filterChain.put("/cohortdefinition/*/copy/", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter, createPermissionsOnCreateCohortDefinitionFilter");
     filterChain.put("/cohortdefinition/*", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter, deletePermissionsOnDeleteCohortDefinitionFilter");
 
     filterChain.put("/**", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
@@ -113,7 +117,16 @@ public class AtlasSecurity extends Security {
     filters.put("createPermissionsOnCreateCohortDefinitionFilter", new ProcessResponseContentFilter() {
       @Override
       protected boolean shouldProcess(ServletRequest request, ServletResponse response) {
-        return  HttpMethod.PUT.equalsIgnoreCase(this.getHttpMethod(request));
+        HttpServletRequest httpRequest = WebUtils.toHttp(request);
+        String path = httpRequest.getPathInfo().replaceAll("/+$", "");
+
+        if (StringUtils.endsWithIgnoreCase(path, "copy")) {
+          return HttpMethod.GET.equalsIgnoreCase(this.getHttpMethod(request));
+        } 
+        else {
+          return  HttpMethod.PUT.equalsIgnoreCase(this.getHttpMethod(request));
+        }
+
       }
 
       @Override

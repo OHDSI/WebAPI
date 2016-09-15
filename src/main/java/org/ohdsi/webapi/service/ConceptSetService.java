@@ -48,10 +48,12 @@ import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfo;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetItem;
 import org.ohdsi.webapi.conceptset.ExportUtil;
+import org.ohdsi.webapi.evidence.NegativeControlRepository;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.vocabulary.Concept;
 import org.ohdsi.webapi.vocabulary.ConceptSetExpression;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
 
 /**
@@ -62,9 +64,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class ConceptSetService extends AbstractDaoService {
 
-  @Autowired
-  private ConceptSetGenerationInfoRepository conceptSetGenerationInfoRepository;
-    
+    @Autowired
+    private ConceptSetGenerationInfoRepository conceptSetGenerationInfoRepository;
+
+    @Autowired
+    private NegativeControlRepository negativeControlRepository;
 
     @Autowired
     private VocabularyService vocabService;
@@ -242,5 +246,54 @@ public class ConceptSetService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<ConceptSetGenerationInfo> getConceptSetGenerationInfo(@PathParam("id") final int id) {
       return this.conceptSetGenerationInfoRepository.findAllByConceptSetId(id);
+  }
+  
+  @POST
+  @Transactional(rollbackOn = Exception.class, dontRollbackOn = EmptyResultDataAccessException.class)
+  @Path("{id}/delete")
+  public void deleteConceptSet(@PathParam("id") final int id) throws Exception {
+      // Remove the concept set
+      try {
+        getConceptSetRepository().delete(id);
+      } catch (EmptyResultDataAccessException e) {
+          // Ignore - there may be no data
+          log.debug(e.getMessage());
+      }
+      catch (Exception e) {
+          throw e;
+      }
+
+      // Remove the concept set items
+      try {
+        getConceptSetItemRepository().deleteByConceptSetId(id);
+      } catch (EmptyResultDataAccessException e) {
+          // Ignore - there may be no data
+          log.debug(e.getMessage());
+      }
+      catch (Exception e) {
+          throw e;
+      }
+
+      // Remove any generation info
+      try {
+        this.conceptSetGenerationInfoRepository.deleteByConceptSetId(id);
+      } catch (EmptyResultDataAccessException e) {
+          // Ignore - there may be no data
+          log.debug(e.getMessage());
+      }
+      catch (Exception e) {
+          throw e;
+      }
+  
+      // Remove any evidence
+      try {
+        this.negativeControlRepository.deleteAllByConceptSetId(id);
+      } catch (EmptyResultDataAccessException e) {
+          // Ignore - there may be no data
+          log.debug(e.getMessage());
+      }
+      catch (Exception e) {
+          throw e;
+      }
   }
 }

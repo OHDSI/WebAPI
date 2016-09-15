@@ -658,6 +658,7 @@ public class VocabularyService extends AbstractDaoService {
     Hashtable<String, ConceptSetExpression.ConceptSetItem> allConceptSetItems = new Hashtable<String, ConceptSetExpression.ConceptSetItem>();
     ArrayList<String> includedConcepts = new ArrayList<String>();
     ArrayList<String> descendantConcepts = new ArrayList<String>();
+    ArrayList<String> allOtherConcepts = new ArrayList<String>();
     for(ConceptSetExpression.ConceptSetItem item : conceptSetExpression.items) {
         allConceptSetItems.put(item.concept.conceptId.toString(), item);
         if (!item.isExcluded) {
@@ -665,6 +666,8 @@ public class VocabularyService extends AbstractDaoService {
             if (item.includeDescendants) {
                 descendantConcepts.add(item.concept.conceptId.toString());
             }
+        } else {
+            allOtherConcepts.add(item.concept.conceptId.toString());
         }
     }
     
@@ -695,6 +698,12 @@ public class VocabularyService extends AbstractDaoService {
         } else {
             removedExpressionItems.add(csi);
         }
+    }
+    // Re-add back the other concepts that are not considered
+    // as part of the optimizatin process
+    for(String conceptId : allOtherConcepts) {
+        ConceptSetExpression.ConceptSetItem csi = allConceptSetItems.get(conceptId);
+        optimzedExpressionItems.add(csi);
     }
     returnVal.optimizedConceptSet.items = optimzedExpressionItems.toArray(new ConceptSetExpression.ConceptSetItem[optimzedExpressionItems.size()]);
     returnVal.removedConceptSet.items = removedExpressionItems.toArray(new ConceptSetExpression.ConceptSetItem[removedExpressionItems.size()]);

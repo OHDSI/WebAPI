@@ -35,6 +35,7 @@ import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysis;
 import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisExecution;
 import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisInfo;
 import org.ohdsi.webapi.cohortcomparison.ModelScoreDistributionValue;
+import org.ohdsi.webapi.cohortcomparison.OutcomeModel;
 import org.ohdsi.webapi.cohortcomparison.PropensityScoreModelCovariate;
 import org.ohdsi.webapi.cohortcomparison.PropensityScoreModelReport;
 import org.ohdsi.webapi.helper.ResourceHelper;
@@ -310,6 +311,22 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
             return balanceResult;
         }
     };    
+    
+    private final RowMapper<OutcomeModel> outcomeModelMapper = new RowMapper<OutcomeModel>() {
+        @Override
+        public OutcomeModel mapRow(final ResultSet resultSet, final int arg1) throws SQLException {
+            OutcomeModel om = new OutcomeModel();
+            om.comparatorId = resultSet.getInt("comparator_id");
+            om.treatmentId = resultSet.getInt("treatment_id");
+            om.outcomeId = resultSet.getInt("outcome_id");
+            om.estimate = resultSet.getFloat("estimate");
+            om.lower95 = resultSet.getFloat("lower95");
+            om.upper95 = resultSet.getFloat("upper95");
+            om.logRr = resultSet.getFloat("log_rr");
+            om.seLogRr = resultSet.getFloat("se_log_rr");
+            return om;
+        }
+    };    
 
     @GET
     @Path("execution/{eid}/attrition")
@@ -341,6 +358,21 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
         return getSourceJdbcTemplate(source).query(sqlBalance, balanceMapper);
     }    
 
+    @GET
+    @Path("execution/{eid}/om")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Collection<OutcomeModel> getOutcomeModel(@PathParam("eid") int executionId) {
+        ComparativeCohortAnalysisExecution ccae = getComparativeCohortAnalysisExecution(executionId);
+        Source source = getSourceRepository().findBySourceId(ccae.getSourceId());
+        String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+
+        String sqlDist = ResourceHelper.GetResourceAsString("/resources/cohortcomparison/sql/outcome_model.sql");
+        sqlDist = SqlRender.renderSql(sqlDist, new String[]{"resultsTableQualifier", "executionId"}, new String[]{
+            tableQualifier, Integer.toString(executionId)});
+        sqlDist = SqlTranslate.translateSql(sqlDist, "sql server", source.getSourceDialect());
+        return getSourceJdbcTemplate(source).query(sqlDist, outcomeModelMapper);
+    }
+    
     @GET
     @Path("execution/{eid}/psmodelpropscore")
     @Produces(MediaType.APPLICATION_JSON)

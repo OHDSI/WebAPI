@@ -73,10 +73,10 @@ WITH cte_concepts_of_interest AS
 	**********************************************/
 	 SELECT
 	 
-		0 CONDITION_CONCEPT_ID
+		0 @CONCEPT_DOMAIN_ID_CONCEPT_ID
 		, CAST('@CONCEPT_SET_NAME' AS TEXT) CONDITION_CONCEPT_NAME
-		, DRUG_CONCEPT_ID
-		, DRUG_CONCEPT_NAME
+		, @TARGET_DOMAIN_ID_CONCEPT_ID
+		, @TARGET_DOMAIN_ID_CONCEPT_NAME
 		, evidence_type
 		, supports
 		, CASE 
@@ -85,13 +85,12 @@ WITH cte_concepts_of_interest AS
 			ELSE NULL
 		END STATISTIC_VALUE
 		--, STRING_AGG(EVIDENCE_LINKOUT, '|') AS EVIDENCE_LINKOUTS
-
 	FROM
 	 cte_filter_data_to_universe
-	WHERE CONDITION_CONCEPT_ID IN (
+	WHERE @CONCEPT_DOMAIN_ID_CONCEPT_ID IN (
 		SELECT coi_concept_id FROM cte_concepts_of_interest
 	)
-	GROUP BY DRUG_CONCEPT_ID, DRUG_CONCEPT_NAME, evidence_type, supports
+	GROUP BY @TARGET_DOMAIN_ID_CONCEPT_ID, @TARGET_DOMAIN_ID_CONCEPT_NAME, evidence_type, supports
 ), cte_summarize  AS  (
 	SELECT DISTINCT 
                 u.@TARGET_DOMAIN_ID_CONCEPT_ID, 
@@ -310,7 +309,7 @@ WITH cte_concepts_of_interest AS
 	LEFT OUTER JOIN @tableQualifier.positive_negative_control_betas b3 ON b3.evidence_type = 'MEDLINE_MeSH_Other'
 	LEFT OUTER JOIN @tableQualifier.positive_negative_control_betas b4 ON b4.evidence_type = 'MEDLINE_SemMedDB_ClinTrial'
 	LEFT OUTER JOIN @tableQualifier.positive_negative_control_betas b5 ON b5.evidence_type = 'MEDLINE_SemMedDB_CR'
-	LEFT OUTER JOIN @tableQualifier.positive_negative_control_betas b6 ON b6.evidence_type = 'SPL_eu_spc'
+	LEFT OUTER JOIN @tableQualifier.positive_negative_control_betas b6 ON b6.evidence_type = 'SPL_EU_SPC'
 	LEFT OUTER JOIN @tableQualifier.positive_negative_control_betas b7 ON b7.evidence_type = 'SPL_SPLICER_ADR'
 	LEFT OUTER JOIN @tableQualifier.positive_negative_control_betas b8 ON b8.evidence_type = 'aers_report_count'
 	LEFT OUTER JOIN @tableQualifier.positive_negative_control_betas b9 ON b9.evidence_type = 'aers_report_prr'

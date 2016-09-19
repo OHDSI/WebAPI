@@ -1,8 +1,16 @@
-ALTER TABLE [${ohdsiSchema}].[concept_set] ADD CONSTRAINT [PK_concept_set] PRIMARY KEY CLUSTERED 
-(
-	[concept_set_id] ASC
-)
+IF (NOT EXISTS (SELECT * 
+		    FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS 
+		    WHERE CONSTRAINT_TYPE = 'PRIMARY KEY' 
+                    AND TABLE_NAME = 'concept_set' 
+		    AND TABLE_SCHEMA ='dbo' ))
+BEGIN
+    ALTER TABLE [${ohdsiSchema}].[concept_set] ADD CONSTRAINT [PK_concept_set] PRIMARY KEY CLUSTERED 
+    (
+            [concept_set_id] ASC
+    )
+END
 ;
+
 
 CREATE TABLE [${ohdsiSchema}].[concept_set_generation_info](
   [concept_set_id] INT NOT NULL,

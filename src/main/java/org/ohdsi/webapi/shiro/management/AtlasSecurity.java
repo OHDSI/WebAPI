@@ -55,6 +55,7 @@ public class AtlasSecurity extends Security {
   private final Set<String> defaultRoles = new LinkedHashSet<>();
 
   private final Map<String, String> cohortdefinitionCreatorPermissionTemplates = new LinkedHashMap<>();
+  private final Map<String, String> conceptsetCreatorPermissionTemplates = new LinkedHashMap<>();
 
   public AtlasSecurity() {
     this.defaultRoles.add("public");
@@ -62,6 +63,9 @@ public class AtlasSecurity extends Security {
 
     this.cohortdefinitionCreatorPermissionTemplates.put("cohortdefinition:%s:put", "Update Cohort Definition with ID = %s");
     this.cohortdefinitionCreatorPermissionTemplates.put("cohortdefinition:%s:delete", "Delete Cohort Definition with ID = %s");
+
+    this.conceptsetCreatorPermissionTemplates.put("conceptset:%s:post", "Update Concept Set with ID = %s");
+    this.conceptsetCreatorPermissionTemplates.put("conceptset:%s:delete:post", "Delete Concept Set with ID = %s");
   }
 
   @Override
@@ -86,11 +90,11 @@ public class AtlasSecurity extends Security {
     //
     // user
     filterChain.put(
-            "/user/login",
-            "noSessionCreation, corsFilter, negotiateAuthcFilter, updateAccessTokenFilter, stopProcessingFilter");
+      "/user/login",
+      "noSessionCreation, corsFilter, negotiateAuthcFilter, updateAccessTokenFilter, stopProcessingFilter");
     filterChain.put(
-            "/user/refresh",
-            "noSessionCreation, corsFilter, jwtAuthcFilter, updateAccessTokenFilter, stopProcessingFilter");
+      "/user/refresh",
+      "noSessionCreation, corsFilter, jwtAuthcFilter, updateAccessTokenFilter, stopProcessingFilter");
     filterChain.put("/user/logout", "noSessionCreation, corsFilter, invalidateAccessTokenFilter, stopProcessingFilter");
 
     filterChain.put("/user/**", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
@@ -100,10 +104,17 @@ public class AtlasSecurity extends Security {
     // concept set
     filterChain.put("/conceptset/*/*/exists", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
     filterChain.put("/conceptset/*/*/exists/", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
-    filterChain.put("/conceptset", "noSessionCreation, corsFilter, processOnlyPostRequestsFilter, jwtAuthcFilter, authzFilter"); // only POST method is protected
-    filterChain.put("/conceptset/", "noSessionCreation, corsFilter, processOnlyPostRequestsFilter, jwtAuthcFilter, authzFilter"); // only POST method is protected
+    filterChain.put(
+      "/conceptset",
+      "noSessionCreation, corsFilter, processOnlyPutRequestsFilter, jwtAuthcFilter, authzFilter, createPermissionsOnCreateConceptSetFilter"); // only PUT method is protected
+    filterChain.put(
+      "/conceptset/",
+      "noSessionCreation, corsFilter, processOnlyPutRequestsFilter, jwtAuthcFilter, authzFilter, createPermissionsOnCreateConceptSetFilter"); // only PUT method is protected
     filterChain.put("/conceptset/*/items", "noSessionCreation, corsFilter, processOnlyPostRequestsFilter, jwtAuthcFilter, authzFilter"); // only POST method is protected
     filterChain.put("/conceptset/*/items/", "noSessionCreation, corsFilter, processOnlyPostRequestsFilter, jwtAuthcFilter, authzFilter"); // only POST method is protected
+    filterChain.put("/conceptset/*", "noSessionCreation, corsFilter, processOnlyPostRequestsFilter, jwtAuthcFilter, authzFilter"); // only POST method is protected
+    filterChain.put("/conceptset/*/delete", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter, deletePermissionsOnDeleteConceptSetFilter");
+    filterChain.put("/conceptset/*/delete/", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter, deletePermissionsOnDeleteConceptSetFilter");
 
     // cohort definition
     filterChain.put("/cohortdefinition", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter, createPermissionsOnCreateCohortDefinitionFilter");
@@ -157,27 +168,32 @@ public class AtlasSecurity extends Security {
         else {
           return  HttpMethod.PUT.equalsIgnoreCase(this.getHttpMethod(request));
         }
-
       }
 
       @Override
       protected void doProcessResponseContent(String content) throws Exception {
         String id = this.parseJsonField(content, "id");
         RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
+        addPermissions(currentUserPersonalRole, cohortdefinitionCreatorPermissionTemplates, id);
+      }
+    });
+    filters.put("createPermissionsOnCreateConceptSetFilter", new ProcessResponseContentFilter() {
+      @Override
+      protected boolean shouldProcess(ServletRequest request, ServletResponse response) {
+        return  HttpMethod.PUT.equalsIgnoreCase(this.getHttpMethod(request));
+      }
 
-        for (Map.Entry<String, String> entry : cohortdefinitionCreatorPermissionTemplates.entrySet()) {
-          String value = String.format(entry.getKey(), id);
-          String description = String.format(entry.getValue(), id);
-          PermissionEntity permission = authorizer.addPermission(value, description);
-          authorizer.addPermission(currentUserPersonalRole, permission);
-        }
+      @Override
+      protected void doProcessResponseContent(String content) throws Exception {
+        String id = this.parseJsonField(content, "id");
+        RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
+        addPermissions(currentUserPersonalRole, conceptsetCreatorPermissionTemplates, id);
       }
     });
     filters.put("deletePermissionsOnDeleteCohortDefinitionFilter", new AdviceFilter() {
       @Override
       protected void postHandle(ServletRequest request, ServletResponse response) {
         HttpServletRequest httpRequest = WebUtils.toHttp(request);
-        
         if (!HttpMethod.DELETE.equalsIgnoreCase(httpRequest.getMethod())) {
           return;
         }
@@ -187,11 +203,23 @@ public class AtlasSecurity extends Security {
                 .replaceAll("/+$", "")
                 .split("/")
                 [1];
-
-        for (Map.Entry<String, String> entry : cohortdefinitionCreatorPermissionTemplates.entrySet()) {
-          String value = String.format(entry.getKey(), id);
-          authorizer.removePermission(value);
+        removePermissions(cohortdefinitionCreatorPermissionTemplates, id);
+      }
+    });
+    filters.put("deletePermissionsOnDeleteConceptSetFilter", new AdviceFilter() {
+      @Override
+      protected void postHandle(ServletRequest request, ServletResponse response) {
+        HttpServletRequest httpRequest = WebUtils.toHttp(request);
+        if (!HttpMethod.POST.equalsIgnoreCase(httpRequest.getMethod())) {
+          return;
         }
+
+        String id = httpRequest.getPathInfo()
+                .replaceAll("^/+", "")
+                .replaceAll("/+$", "")
+                .split("/")
+                [1];
+        removePermissions(conceptsetCreatorPermissionTemplates, id);
       }
     });
     filters.put("stopProcessingFilter", new AdviceFilter() {
@@ -243,6 +271,12 @@ public class AtlasSecurity extends Security {
         return !HttpMethod.POST.equalsIgnoreCase(WebUtils.toHttp(request).getMethod());
       }
     });
+    filters.put("processOnlyPutRequestsFilter", new SkipFurtherFilteringFilter() {
+      @Override
+      protected boolean shouldSkip(ServletRequest request, ServletResponse response) {
+        return !HttpMethod.PUT.equalsIgnoreCase(WebUtils.toHttp(request).getMethod());
+      }
+    });
     
     return filters;
   }
@@ -263,5 +297,21 @@ public class AtlasSecurity extends Security {
     authenticator.setAuthenticationStrategy(new NegotiateAuthenticationStrategy());
     
     return authenticator;
+  }
+
+  private void addPermissions(RoleEntity roleEntity, Map<String, String> templates, String value) throws Exception {
+    for (Map.Entry<String, String> entry : templates.entrySet()) {
+      String permission = String.format(entry.getKey(), value);
+      String description = String.format(entry.getValue(), value);
+      PermissionEntity permissionEntity = authorizer.addPermission(permission, description);
+      authorizer.addPermission(roleEntity, permissionEntity);
+    }
+  }
+
+  private void removePermissions(Map<String, String> templates, String value) {
+    for (Map.Entry<String, String> entry : templates.entrySet()) {
+      String permission = String.format(entry.getKey(), value);
+      authorizer.removePermission(permission);
+    }
   }
 }

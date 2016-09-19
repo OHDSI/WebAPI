@@ -55,7 +55,7 @@ INSERT INTO SEC_ROLE_PERMISSION (ROLE_ID, PERMISSION_ID) VALUES (2, 215);
 -- concept set editor
 INSERT INTO SEC_PERMISSION (ID, VALUE, DESCRIPTION) VALUES (30, 'conceptset:edit:ui', null);
 INSERT INTO SEC_PERMISSION (ID, VALUE, DESCRIPTION) VALUES (31, 'conceptset:*:*:exists:get', 'Check if Concept Set exitsts');
-INSERT INTO SEC_PERMISSION (ID, VALUE, DESCRIPTION) VALUES (32, 'conceptset:post', 'Create Concept Set');
+INSERT INTO SEC_PERMISSION (ID, VALUE, DESCRIPTION) VALUES (32, 'conceptset:put', 'Create Concept Set');
 INSERT INTO SEC_PERMISSION (ID, VALUE, DESCRIPTION) VALUES (33, 'conceptset:*:items:post', 'Save Concept Set items');
 
 INSERT INTO SEC_ROLE_PERMISSION (ROLE_ID, PERMISSION_ID) VALUES (3, 30);

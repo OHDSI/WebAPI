@@ -26,6 +26,7 @@ import org.ohdsi.webapi.shiro.JwtAuthRealm;
 import org.ohdsi.webapi.shiro.JwtAuthenticatingFilter;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.ProcessResponseContentFilter;
+import org.ohdsi.webapi.shiro.SkipFurtherFilteringFilter;
 import org.ohdsi.webapi.shiro.UpdateAccessTokenFilter;
 import org.ohdsi.webapi.shiro.UrlBasedAuthorizingFilter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,22 +68,23 @@ public class AtlasSecurity extends Security {
   public Map<String, String> getFilterChain() {
     Map<String, String> filterChain = new LinkedHashMap<>();
     
-    // not protected resources
-    //
-    filterChain.put("/source/sources/", "noSessionCreation, corsFilter, anon");
-    filterChain.put("/source/sources", "noSessionCreation, corsFilter, anon");
-    filterChain.put("/*/vocabulary/**", "noSessionCreation, corsFilter, anon");
-    // conceptset read access
-    filterChain.put("/conceptset/", "noSessionCreation, corsFilter, anon");
-    filterChain.put("/conceptset", "noSessionCreation, corsFilter, anon");
-    filterChain.put("/conceptset/*", "noSessionCreation, corsFilter, anon");
-    filterChain.put("/conceptset/*/expression", "noSessionCreation, corsFilter, anon");
-    filterChain.put("/conceptset/*/expression/", "noSessionCreation, corsFilter, anon");
-    filterChain.put("/conceptset/exportlist/", "noSessionCreation, corsFilter, anon");
-
+//    // not protected resources
+//    //
+//    filterChain.put("/source/sources/", "noSessionCreation, corsFilter, anon");
+//    filterChain.put("/source/sources", "noSessionCreation, corsFilter, anon");
+//    filterChain.put("/*/vocabulary/**", "noSessionCreation, corsFilter, anon");
+//    // conceptset read access
+//    filterChain.put("/conceptset/", "noSessionCreation, corsFilter, anon");
+//    filterChain.put("/conceptset", "noSessionCreation, corsFilter, anon");
+//    filterChain.put("/conceptset/*", "noSessionCreation, corsFilter, anon");
+//    filterChain.put("/conceptset/*/expression", "noSessionCreation, corsFilter, anon");
+//    filterChain.put("/conceptset/*/expression/", "noSessionCreation, corsFilter, anon");
+//    filterChain.put("/conceptset/exportlist/", "noSessionCreation, corsFilter, anon");
+//
 
     // protected resources
     //
+    // user
     filterChain.put(
             "/user/login",
             "noSessionCreation, corsFilter, negotiateAuthcFilter, updateAccessTokenFilter, stopProcessingFilter");
@@ -90,15 +92,44 @@ public class AtlasSecurity extends Security {
             "/user/refresh",
             "noSessionCreation, corsFilter, jwtAuthcFilter, updateAccessTokenFilter, stopProcessingFilter");
     filterChain.put("/user/logout", "noSessionCreation, corsFilter, invalidateAccessTokenFilter, stopProcessingFilter");
-    filterChain.put("/user/loggedIn", "noSessionCreation, corsFilter, jwtAuthcFilter");
 
+    filterChain.put("/user/**", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
+    filterChain.put("/role/**", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
+    filterChain.put("/permission/**", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
+
+    // concept set
+    filterChain.put("/conceptset/*/*/exists", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
+    filterChain.put("/conceptset/*/*/exists/", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
+    filterChain.put("/conceptset", "noSessionCreation, corsFilter, processOnlyPostRequestsFilter, jwtAuthcFilter, authzFilter"); // only POST method is protected
+    filterChain.put("/conceptset/", "noSessionCreation, corsFilter, processOnlyPostRequestsFilter, jwtAuthcFilter, authzFilter"); // only POST method is protected
+    filterChain.put("/conceptset/*/items", "noSessionCreation, corsFilter, processOnlyPostRequestsFilter, jwtAuthcFilter, authzFilter"); // only POST method is protected
+    filterChain.put("/conceptset/*/items/", "noSessionCreation, corsFilter, processOnlyPostRequestsFilter, jwtAuthcFilter, authzFilter"); // only POST method is protected
+
+    // cohort definition
     filterChain.put("/cohortdefinition", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter, createPermissionsOnCreateCohortDefinitionFilter");
     filterChain.put("/cohortdefinition/", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter, createPermissionsOnCreateCohortDefinitionFilter");
     filterChain.put("/cohortdefinition/*/copy", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter, createPermissionsOnCreateCohortDefinitionFilter");
     filterChain.put("/cohortdefinition/*/copy/", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter, createPermissionsOnCreateCohortDefinitionFilter");
     filterChain.put("/cohortdefinition/*", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter, deletePermissionsOnDeleteCohortDefinitionFilter");
+    filterChain.put("/cohortdefinition/*/info", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
+    filterChain.put("/cohortdefinition/*/info/", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
+//    filterChain.put("/*/vocabulary/lookup/identifiers", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
+//    filterChain.put("/*/vocabulary/lookup/identifiers/", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
+    filterChain.put("/cohortdefinition/sql", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
+    filterChain.put("/cohortdefinition/sql/", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
+    filterChain.put("/cohortdefinition/*/generate/*", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
+    filterChain.put("/cohortdefinition/*/report/*", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
+    filterChain.put("/*/cohortresults/*/breakdown", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
+    filterChain.put("/*/cohortresults/*/breakdown/", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
 
-    filterChain.put("/**", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
+    // job
+    filterChain.put("/job/execution", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
+    filterChain.put("/job/execution/", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
+
+
+    // allowed resources
+    //
+    filterChain.put("/**", "noSessionCreation, corsFilter");
 
     return filterChain;
   }
@@ -204,6 +235,12 @@ public class AtlasSecurity extends Security {
         //
         httpResponse.setHeader("Access-Control-Expose-Headers", "Bearer");
         return true;
+      }
+    });
+    filters.put("processOnlyPostRequestsFilter", new SkipFurtherFilteringFilter() {
+      @Override
+      protected boolean shouldSkip(ServletRequest request, ServletResponse response) {
+        return !HttpMethod.POST.equalsIgnoreCase(WebUtils.toHttp(request).getMethod());
       }
     });
     

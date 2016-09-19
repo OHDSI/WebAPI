@@ -403,6 +403,12 @@
       <version>0.6.0</version>
     </dependency>       
 
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-collections4</artifactId>
+      <version>4.1</version>
+      <type>jar</type>
+    </dependency>
   </dependencies>
   <profiles>
     <profile>

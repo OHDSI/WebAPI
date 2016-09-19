@@ -3,12 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.ohdsi.webapi.cohortdefinition;
+package org.ohdsi.webapi.conceptset;
 
 /**
  *
- * @author cknoll1
+ * @author Anthony Sena <https://github.com/ohdsi>
  */
-public interface ICohortExpressionElement {
-  String accept(ICohortExpressionElementVisitor visitor);
+public enum ConceptSetGenerationType {
+  NEGATIVE_CONTROLS
 }

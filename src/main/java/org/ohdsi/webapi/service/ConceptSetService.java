@@ -31,12 +31,16 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
+import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfo;
+import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetItem;
 import org.ohdsi.webapi.conceptset.ExportUtil;
+import org.ohdsi.webapi.evidence.NegativeControlRepository;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.vocabulary.Concept;
 import org.ohdsi.webapi.vocabulary.ConceptSetExpression;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
 
 /**
@@ -46,6 +50,12 @@ import org.springframework.stereotype.Component;
 @Path("/conceptset/")
 @Component
 public class ConceptSetService extends AbstractDaoService {
+
+    @Autowired
+    private ConceptSetGenerationInfoRepository conceptSetGenerationInfoRepository;
+
+    @Autowired
+    private NegativeControlRepository negativeControlRepository;
 
     @Autowired
     private VocabularyService vocabService;
@@ -87,8 +97,9 @@ public class ConceptSetService extends AbstractDaoService {
 
         // create our expression to return
         ConceptSetExpression expression = new ConceptSetExpression();
-        expression.items = new ConceptSetExpression.ConceptSetItem[map.size()];
-
+//        expression.items = new ConceptSetExpression.ConceptSetItem[map.size()];
+        ArrayList<ConceptSetExpression.ConceptSetItem> expressionItems = new ArrayList<>();
+        
         // lookup the concepts we need information for
         long[] identifiers = new long[map.size()];
         int identifierIndex = 0;
@@ -102,18 +113,17 @@ public class ConceptSetService extends AbstractDaoService {
         Collection<Concept> concepts = vocabService.executeIdentifierLookup(vocabSourceInfo.sourceKey, identifiers);
 
         // put the concept information into the expression along with the concept set item information 
-        int conceptIndex = 0;
         for (Concept concept : concepts) {
-            expression.items[conceptIndex] = new ConceptSetExpression.ConceptSetItem();
-            expression.items[conceptIndex].concept = concept;
-
-            ConceptSetItem csi = map.get(concept.conceptId);
-            expression.items[conceptIndex].includeDescendants = (csi.getIncludeDescendants() == 1);
-            expression.items[conceptIndex].includeMapped = (csi.getIncludeMapped() == 1);
-            expression.items[conceptIndex].isExcluded = (csi.getIsExcluded() == 1);
-            conceptIndex++;
+          ConceptSetExpression.ConceptSetItem currentItem  = new ConceptSetExpression.ConceptSetItem();
+          currentItem.concept = concept;
+          ConceptSetItem csi = map.get(concept.conceptId);
+          currentItem.includeDescendants = (csi.getIncludeDescendants() == 1);
+          currentItem.includeMapped = (csi.getIncludeMapped() == 1);
+          currentItem.isExcluded = (csi.getIsExcluded() == 1);
+          expressionItems.add(currentItem); 
         }
-
+        expression.items = expressionItems.toArray(new ConceptSetExpression.ConceptSetItem[0]);
+        
         return expression;
     }
 
@@ -217,4 +227,60 @@ public class ConceptSetService extends AbstractDaoService {
         return cs;
     }
 
+  
+  @GET
+  @Path("{id}/generationinfo")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Collection<ConceptSetGenerationInfo> getConceptSetGenerationInfo(@PathParam("id") final int id) {
+      return this.conceptSetGenerationInfoRepository.findAllByConceptSetId(id);
+  }
+  
+  @POST
+  @Transactional(rollbackOn = Exception.class, dontRollbackOn = EmptyResultDataAccessException.class)
+  @Path("{id}/delete")
+  public void deleteConceptSet(@PathParam("id") final int id) throws Exception {
+      // Remove the concept set
+      try {
+        getConceptSetRepository().delete(id);
+      } catch (EmptyResultDataAccessException e) {
+          // Ignore - there may be no data
+          log.debug(e.getMessage());
+      }
+      catch (Exception e) {
+          throw e;
+      }
+
+      // Remove the concept set items
+      try {
+        getConceptSetItemRepository().deleteByConceptSetId(id);
+      } catch (EmptyResultDataAccessException e) {
+          // Ignore - there may be no data
+          log.debug(e.getMessage());
+      }
+      catch (Exception e) {
+          throw e;
+      }
+
+      // Remove any generation info
+      try {
+        this.conceptSetGenerationInfoRepository.deleteByConceptSetId(id);
+      } catch (EmptyResultDataAccessException e) {
+          // Ignore - there may be no data
+          log.debug(e.getMessage());
+      }
+      catch (Exception e) {
+          throw e;
+      }
+  
+      // Remove any evidence
+      try {
+        this.negativeControlRepository.deleteAllByConceptSetId(id);
+      } catch (EmptyResultDataAccessException e) {
+          // Ignore - there may be no data
+          log.debug(e.getMessage());
+      }
+      catch (Exception e) {
+          throw e;
+      }
+  }
 }

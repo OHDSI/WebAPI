@@ -9,6 +9,8 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisExecutionRepository;
+import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetItemRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetRepository;
 import org.ohdsi.webapi.source.Source;
@@ -61,6 +63,18 @@ public abstract class AbstractDaoService {
   public ConceptSetRepository getConceptSetRepository() {
     return conceptSetRepository;
   }
+  
+  @Autowired
+  private ComparativeCohortAnalysisRepository comparativeCohortAnalysisRepository;
+  public ComparativeCohortAnalysisRepository getComparativeCohortAnalysisRepository() {
+    return comparativeCohortAnalysisRepository;
+  }
+  
+  @Autowired
+  private ComparativeCohortAnalysisExecutionRepository comparativeCohortAnalysisExecutionRepository;
+  public ComparativeCohortAnalysisExecutionRepository getComparativeCohortAnalysisExecutionRepository() {
+    return comparativeCohortAnalysisExecutionRepository;
+  }  
   
   @Autowired
   private TransactionTemplate transactionTemplate;

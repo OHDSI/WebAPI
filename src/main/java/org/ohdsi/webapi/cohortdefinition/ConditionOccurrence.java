@@ -51,8 +51,8 @@ public class ConditionOccurrence extends Criteria {
   public Concept[] visitType;
 
   @Override
-  public String accept(ICohortExpressionElementVisitor visitor)
+  public String accept(IGetCriteriaSqlDispatcher dispatcher)
   {
-    return visitor.visit(this);
+    return dispatcher.getCriteriaSql(this);
   }
 }

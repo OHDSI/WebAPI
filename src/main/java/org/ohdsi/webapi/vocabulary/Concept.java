@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author fdefalco
  */
-@JsonInclude(Include.NON_NULL)
+@JsonInclude(Include.ALWAYS)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Concept {
     @JsonProperty("CONCEPT_ID")

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Observational Health Data Sciences and Informatics [OHDSI.org].
+ * Copyright 2016 Observational Health Data Sciences and Informatics [OHDSI.org].
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ohdsi.webapi.cohortdefinition;
+package org.ohdsi.webapi.ircalc;
+
+import org.ohdsi.webapi.cohortdefinition.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  *
  * @author Chris Knoll <cknoll@ohdsi.org>
  */
-public enum GenerationStatus {
-  PENDING,
-  RUNNING,
-  COMPLETE
-}  
+public class FieldOffset {
+
+  public enum DateField {
+    StartDate, EndDate
+  }
+  
+  @JsonProperty("DateField")
+  public DateField dateField = DateField.StartDate;
+
+  @JsonProperty("Offset")
+  public int offset = 0;
+  
+}

@@ -48,8 +48,8 @@ public class ProcedureOccurrence extends Criteria {
   public Concept[] visitType;
 
   @Override
-  public String accept(ICohortExpressionElementVisitor visitor) {
-    return visitor.visit(this);
+  public String accept(IGetCriteriaSqlDispatcher dispatcher) {
+    return dispatcher.getCriteriaSql(this);
   }
 
 }

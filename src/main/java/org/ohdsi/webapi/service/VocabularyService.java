@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -20,6 +21,8 @@ import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.activity.Activity.ActivityType;
 import org.ohdsi.webapi.activity.Tracker;
+import org.ohdsi.webapi.conceptset.ConceptSetComparison;
+import org.ohdsi.webapi.conceptset.ConceptSetOptimizationResult;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
@@ -27,6 +30,7 @@ import org.ohdsi.webapi.vocabulary.Concept;
 import org.ohdsi.webapi.vocabulary.ConceptRelationship;
 import org.ohdsi.webapi.vocabulary.ConceptSearch;
 import org.ohdsi.webapi.vocabulary.ConceptSetExpression;
+import org.ohdsi.webapi.vocabulary.ConceptSetExpression.ConceptSetItem;
 import org.ohdsi.webapi.vocabulary.ConceptSetExpressionQueryBuilder;
 import org.ohdsi.webapi.vocabulary.DescendentOfAncestorSearch;
 import org.ohdsi.webapi.vocabulary.Domain;
@@ -344,8 +348,6 @@ public class VocabularyService extends AbstractDaoService {
     return concepts.values();
   }
 
-  private ArrayList<Long> identifiers;
-
   @POST
   @Path("resolveConceptSetExpression")
   @Produces(MediaType.APPLICATION_JSON)
@@ -360,7 +362,7 @@ public class VocabularyService extends AbstractDaoService {
     query = SqlRender.renderSql(query, new String[]{"cdm_database_schema"}, new String[]{tableQualifier});
     query = SqlTranslate.translateSql(query, "sql server", source.getSourceDialect());
 
-    identifiers = new ArrayList<>();
+    final ArrayList<Long> identifiers = new ArrayList<>();
     getSourceJdbcTemplate(source).query(query, new RowCallbackHandler() {
       @Override
       public void processRow(ResultSet rs) throws SQLException {
@@ -370,7 +372,18 @@ public class VocabularyService extends AbstractDaoService {
 
     return identifiers;
   }
-
+  
+  @POST
+  @Path("conceptSetExpressionSQL")
+  @Produces(MediaType.TEXT_PLAIN)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public String getConceptSetExpressionSQL(ConceptSetExpression conceptSetExpression) {
+    ConceptSetExpressionQueryBuilder builder = new ConceptSetExpressionQueryBuilder();
+    String query = builder.buildExpressionQuery(conceptSetExpression);
+    
+    return query;
+  }
+  
   @GET
   @Path("concept/{id}/descendants")
   @Produces(MediaType.APPLICATION_JSON)
@@ -578,6 +591,124 @@ public class VocabularyService extends AbstractDaoService {
     return concepts.values();
   }
 
+  @Path("compare")
+  @POST
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Collection<ConceptSetComparison> compareConceptSets(@PathParam("sourceKey") String sourceKey, ConceptSetExpression[] conceptSetExpressionList) throws Exception {
+      if (conceptSetExpressionList.length != 2) {
+          throw new Exception("You must specify two concept set expressions in order to use this method.");
+      }
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
+    
+    // Get the comparison script
+    String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/compareConceptSets.sql");
+
+    // Get the queries that represent the ConceptSetExpressions that were passed
+    // into the function
+    ConceptSetExpressionQueryBuilder builder = new ConceptSetExpressionQueryBuilder();
+    String cs1Query = builder.buildExpressionQuery(conceptSetExpressionList[0]);
+    String cs2Query = builder.buildExpressionQuery(conceptSetExpressionList[1]);
+
+    // Insert the queries into the overall comparison script
+    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"cs1_expression", "cs2_expression"}, new String[]{cs1Query, cs2Query});
+    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"cdm_database_schema"}, new String[]{tableQualifier});
+    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
+    
+    // Execute the query
+    Collection<ConceptSetComparison> returnVal = getSourceJdbcTemplate(source).query(sql_statement, new RowMapper<ConceptSetComparison>() {
+      @Override
+      public ConceptSetComparison mapRow(ResultSet rs, int rowNum) throws SQLException {
+        ConceptSetComparison csc = new ConceptSetComparison();
+        csc.conceptId = rs.getLong("concept_id");
+        csc.conceptIn1Only = rs.getLong("concept_in_1_only");
+        csc.conceptIn2Only = rs.getLong("concept_in_2_only");
+        csc.conceptIn1And2 = rs.getLong("concept_in_both_1_and_2");
+        csc.conceptName = rs.getString("concept_name");
+        csc.standardConcept = rs.getString("standard_concept");
+        csc.invalidReason = rs.getString("invalid_reason");
+        csc.conceptCode = rs.getString("concept_code");
+        csc.domainId = rs.getString("domain_id");
+        csc.vocabularyId = rs.getString("vocabulary_id");
+        csc.conceptClassId = rs.getString("concept_class_id");
+        return csc;
+      }
+    });
+    
+    return returnVal;
+  }
+  
+  @Path("optimize")
+  @POST
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public ConceptSetOptimizationResult optimizeConceptSet(@PathParam("sourceKey") String sourceKey, ConceptSetExpression conceptSetExpression) throws Exception {
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
+    
+    // Get the optimization script
+    String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/optimizeConceptSet.sql");
+    
+    // Find all of the concepts that should be considered for optimization
+    // Create a hashtable to hold all of the contents of the ConceptSetExpression
+    // for use later
+    Hashtable<String, ConceptSetExpression.ConceptSetItem> allConceptSetItems = new Hashtable<String, ConceptSetExpression.ConceptSetItem>();
+    ArrayList<String> includedConcepts = new ArrayList<String>();
+    ArrayList<String> descendantConcepts = new ArrayList<String>();
+    ArrayList<String> allOtherConcepts = new ArrayList<String>();
+    for(ConceptSetExpression.ConceptSetItem item : conceptSetExpression.items) {
+        allConceptSetItems.put(item.concept.conceptId.toString(), item);
+        if (!item.isExcluded) {
+            includedConcepts.add(item.concept.conceptId.toString());
+            if (item.includeDescendants) {
+                descendantConcepts.add(item.concept.conceptId.toString());
+            }
+        } else {
+            allOtherConcepts.add(item.concept.conceptId.toString());
+        }
+    }
+    
+    // If no descendant concepts are specified, initialize this field to use concept_id = 0 so the query will work properly
+    if (descendantConcepts.isEmpty())
+        descendantConcepts.add("0");
+    
+    String allConceptsList = this.JoinArray(includedConcepts.toArray(new String[includedConcepts.size()]));
+    String descendantConceptsList = this.JoinArray(descendantConcepts.toArray(new String[descendantConcepts.size()]));
+    
+    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"allConcepts", "descendantConcepts", "cdm_database_schema"}, new String[]{allConceptsList, descendantConceptsList, tableQualifier});
+    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
+
+    // Execute the query to obtain a result set that contains the
+    // most optimized version of the concept set. Then, using these results,
+    // construct a new ConceptSetExpression object that only contains the
+    // concepts that were identified as optimal to achieve the same definition
+    ConceptSetOptimizationResult returnVal = new ConceptSetOptimizationResult();
+    ArrayList<ConceptSetExpression.ConceptSetItem> optimzedExpressionItems = new ArrayList<>();
+    ArrayList<ConceptSetExpression.ConceptSetItem> removedExpressionItems = new ArrayList<>();
+    List<Map<String, Object>> rows = getSourceJdbcTemplate(source).queryForList(sql_statement);
+    for (Map rs : rows) {
+        String conceptId = String.valueOf(rs.get("concept_id"));
+        String removed = String.valueOf(rs.get("removed"));
+        ConceptSetExpression.ConceptSetItem csi = allConceptSetItems.get(conceptId);
+        if (removed.equals("0")) {
+            optimzedExpressionItems.add(csi);            
+        } else {
+            removedExpressionItems.add(csi);
+        }
+    }
+    // Re-add back the other concepts that are not considered
+    // as part of the optimizatin process
+    for(String conceptId : allOtherConcepts) {
+        ConceptSetExpression.ConceptSetItem csi = allConceptSetItems.get(conceptId);
+        optimzedExpressionItems.add(csi);
+    }
+    returnVal.optimizedConceptSet.items = optimzedExpressionItems.toArray(new ConceptSetExpression.ConceptSetItem[optimzedExpressionItems.size()]);
+    returnVal.removedConceptSet.items = removedExpressionItems.toArray(new ConceptSetExpression.ConceptSetItem[removedExpressionItems.size()]);
+    
+    return returnVal;
+  }
+  
   private String JoinArray(final long[] array) {
     String result = "";
 

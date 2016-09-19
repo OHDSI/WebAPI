@@ -20,7 +20,10 @@ public class CriteriaGroup {
   public Integer count;
   
   @JsonProperty("CriteriaList")
-  public AdditionalCriteria[] criteriaList = new AdditionalCriteria[0];
+  public CorelatedCriteria[] criteriaList = new CorelatedCriteria[0];
+  
+  @JsonProperty("DemographicCriteriaList")
+  public DemographicCriteria[] demographicCriteriaList = new DemographicCriteria[0];  
 
   @JsonProperty("Groups")
   public CriteriaGroup[] groups = new CriteriaGroup[0];

@@ -16,6 +16,7 @@
 package org.ohdsi.webapi.feasibility;
 
 import java.util.List;
+import javax.xml.bind.annotation.XmlType;
 
 /**
  *
@@ -23,6 +24,7 @@ import java.util.List;
  */
 public class FeasibilityReport {
   
+  @XmlType(name="Summary", namespace="http://ohdsi.org/webapi/feasibility")
   public static class Summary {
     public long totalPersons;
     public long matchingPersons;

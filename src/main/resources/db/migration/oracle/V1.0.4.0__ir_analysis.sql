@@ -6,7 +6,7 @@ CREATE TABLE ${ohdsiSchema}.ir_analysis(
   created_date Timestamp(3) NULL,
   modified_by varchar2(255) NULL,
   modified_date Timestamp(3) NULL,
-  CONSTRAINT PK_ir_analysis PRIMARY KEY CLUSTERED (id ASC)
+  CONSTRAINT PK_ir_analysis PRIMARY KEY (id)
 )
 ;
 
@@ -27,7 +27,7 @@ CREATE TABLE ${ohdsiSchema}.ir_execution (
   status              number(10)      NOT NULL,
   is_valid            number(1)      NOT NULL,
   message             varchar2(2000) NULL,
-  CONSTRAINT PK_ir_exec PRIMARY KEY CLUSTERED (analysis_id ASC, source_id ASC)
+  CONSTRAINT PK_ir_exec PRIMARY KEY (analysis_id, source_id)
 )
 ;
 

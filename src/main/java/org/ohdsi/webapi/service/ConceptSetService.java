@@ -23,6 +23,7 @@ import javax.transaction.Transactional;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -201,12 +202,32 @@ public class ConceptSetService extends AbstractDaoService {
     }
 
     @Path("/")
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public ConceptSet createConceptSet(ConceptSet conceptSet) {
+        ConceptSet updated = new ConceptSet();
+        return updateConceptSet(updated, conceptSet);
+    }
+
+    @Path("/{id}")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ConceptSet saveConceptSet(ConceptSet conceptSet) {
-        conceptSet = this.getConceptSetRepository().save(conceptSet);
-        return conceptSet;
+    public ConceptSet updateConceptSet(@PathParam("id") final int id, ConceptSet conceptSet) throws Exception {
+        ConceptSet updated = this.getConceptSet(id);
+        if (updated == null) {
+          throw new Exception("Concept Set does not exist.");
+        }
+
+        return updateConceptSet(updated, conceptSet);
+    }
+
+    private ConceptSet updateConceptSet(ConceptSet dst, ConceptSet src) {
+        dst.setName(src.getName());
+        
+        dst = this.getConceptSetRepository().save(dst);
+        return dst;
     }
 
     private ConceptSetExport getConceptSetForExport(int conceptSetId, SourceInfo vocabSource) {

@@ -132,7 +132,7 @@ cross join (
 ) combos
 left join
 (
-  select T.target_id, T.outcome_id, S.strata_sequence, count(S.event_id) as person_count, sum(T.time_at_risk) as time_at_risk, sum(T.is_case) as cases
+  select T.target_id, T.outcome_id, S.strata_sequence, count(S.event_id) as person_count, sum(1.0 * T.time_at_risk / 365.25) as time_at_risk, sum(T.is_case) as cases
   from #analysis_events E
   JOIN #strataCohorts S on E.event_id = S.event_id
 	join #time_at_risk T on T.subject_id = E.person_id and T.cohort_start_date = E.start_date and T.cohort_end_date = E.end_date

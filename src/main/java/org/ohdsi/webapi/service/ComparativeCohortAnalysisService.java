@@ -137,23 +137,170 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
         ccae.setExecutionStatus(ComparativeCohortAnalysisExecution.status.RUNNING);
         ccae.setUserId(0);
         getComparativeCohortAnalysisExecutionRepository().save(ccae);
-
-        ConceptSetExpression cse = conceptSetService.getConceptSetExpression(ccae.getPsExclusionId());
-        Collection<Long> exclusions = vocabularyService.resolveConceptSetExpression(sourceKey, cse);
-        
+       
         String functionName = "executeComparativeCohortAnalysis";
         HashMap<String, Object> parameters = new HashMap();
-        parameters.put("treatment", ccae.getTreatmentId());
-        parameters.put("comparator", ccae.getComparatorId());
-        parameters.put("outcome", ccae.getOutcomeId());
-        parameters.put("timeAtRisk", ccae.getTimeAtRiskEnd());
+        parameters.put("treatmentId", ccae.getTreatmentId());
+        parameters.put("comparatorId", ccae.getComparatorId());
+        parameters.put("outcomeId", ccae.getOutcomeId());
+        parameters.put("modelType", ccae.getModelType());
         parameters.put("executionId", ccae.getExecutionId());
-        parameters.put("exclusions", exclusions);
+        parameters.put("dbms", dbms);        
         parameters.put("connectionString", connectionString);
-        parameters.put("dbms", dbms);
         parameters.put("cdmTableQualifier", cdmTableQualifier);
         parameters.put("resultsTableQualifier", resultsTableQualifier);
+        parameters.put("timeAtRiskStart", ccae.getTimeAtRiskStart());
+        parameters.put("timeAtRiskEnd", ccae.getTimeAtRiskEnd());
+        parameters.put("addExposureDaysToEnd", ccae.getAddExposureDaysToEnd());
+        parameters.put("minimumWashoutPeriod", ccae.getMinimumWashoutPeriod());
+        parameters.put("minimumDaysAtRisk", ccae.getMinimumDaysAtRisk());
+        parameters.put("rmSubjectsInBothCohorts", ccae.getRmSubjectsInBothCohorts());
+        parameters.put("rmPriorOutcomes", ccae.getRmPriorOutcomes());
+        parameters.put("psAdjustment", ccae.getPsAdjustment());
+        
+        if (ccae.getPsExclusionId() > 0) {
+            ConceptSetExpression cse = conceptSetService.getConceptSetExpression(ccae.getPsExclusionId());
+            Collection<Long> exclusions = vocabularyService.resolveConceptSetExpression(sourceKey, cse);
+            parameters.put("psExclusions" , exclusions);
+        }
 
+        if (ccae.getPsExclusionId() > 0) {
+            ConceptSetExpression cse = conceptSetService.getConceptSetExpression(ccae.getPsInclusionId());
+            Collection<Long> inclusions = vocabularyService.resolveConceptSetExpression(sourceKey, cse);
+            parameters.put("psInclusions" , inclusions);
+        }
+        
+        parameters.put("psDemographics", ccae.getPsDemographics());
+        parameters.put("psDemographicsGender", ccae.getPsDemographicsGender());
+        parameters.put("psDemographicsRace", ccae.getPsDemographicsRace());
+        parameters.put("psDemographicsEthnicity", ccae.getPsDemographicsEthnicity());
+        parameters.put("psDemographicsAge", ccae.getPsDemographicsAge());
+        parameters.put("psDemographicsYear", ccae.getPsDemographicsYear());
+        parameters.put("psDemographicsMonth", ccae.getPsDemographicsMonth());
+        parameters.put("psTrim", ccae.getPsTrim());
+        parameters.put("psTrimFraction", ccae.getPsTrimFraction());
+        parameters.put("psMatch", ccae.getPsMatch());
+        parameters.put("psMatchMaxRatio", ccae.getPsMatchMaxRatio());
+        parameters.put("psStrat", ccae.getPsStrat());
+        parameters.put("psStratNumStrata", ccae.getPsStratNumStrata());
+        parameters.put("psConditionOcc", ccae.getPsConditionOcc());
+        parameters.put("psConditionOcc365d", ccae.getPsConditionOcc365d());
+        parameters.put("psConditionOcc30d", ccae.getPsConditionOcc30d());
+        parameters.put("psConditionOccInpt180d", ccae.getPsConditionOccInpt180d());
+        parameters.put("psConditionEra", ccae.getPsConditionEra());
+        parameters.put("psConditionEraEver", ccae.getPsConditionEraEver());
+        parameters.put("psConditionEraOverlap", ccae.getPsConditionEraOverlap());
+        parameters.put("psConditionGroup", ccae.getPsConditionGroup());
+        parameters.put("psConditionGroupMeddra", ccae.getPsConditionGroupMeddra());
+        parameters.put("psConditionGroupSnomed", ccae.getPsConditionGroupSnomed());
+        parameters.put("psDrugExposure", ccae.getPsDrugExposure());
+        parameters.put("psDrugExposure365d", ccae.getPsDrugExposure365d());
+        parameters.put("psDrugExposure30d", ccae.getPsDrugEra30d());
+        parameters.put("psDrugEra", ccae.getPsDrugEra());
+        parameters.put("psDrugEra365d", ccae.getPsDrugEra365d());
+        parameters.put("psDrugEra30d", ccae.getPsDrugEra30d());
+        parameters.put("psDrugEraOverlap", ccae.getPsDrugEraOverlap());
+        parameters.put("psDrugEraEver", ccae.getPsDrugEraEver());
+        parameters.put("psDrugGroup", ccae.getPsDrugGroup());
+        parameters.put("psProcedureOcc", ccae.getPsProcedureOcc());
+        parameters.put("psProcedureOcc365d", ccae.getPsProcedureOcc365d());
+        parameters.put("psProcedureOcc30d", ccae.getPsProcedureOcc30d());
+        parameters.put("psProcedureGroup", ccae.getPsProcedureGroup());
+        parameters.put("psObservation", ccae.getPsObservation());
+        parameters.put("psObservation365d", ccae.getPsObservation365d());
+        parameters.put("psObservation30d", ccae.getPsObservation30d());
+        parameters.put("psObservationCount365d", ccae.getPsObservationCount365d());
+        parameters.put("psMeasurement", ccae.getPsMeasurement());
+        parameters.put("psMeasurement365d", ccae.getPsMeasurement365d());
+        parameters.put("psMeasurement30d", ccae.getPsMeasurement30d());
+        parameters.put("psMeasurementCount365d", ccae.getPsMeasurementCount365d());
+        parameters.put("psMeasurementBelow", ccae.getPsMeasurementBelow());
+        parameters.put("psMeasurementAbove", ccae.getPsMeasurementAbove());
+        parameters.put("psConceptCounts", ccae.getPsConceptCounts());
+        parameters.put("psRiskScores", ccae.getPsRiskScores());
+        parameters.put("psRiskScoresCharlson", ccae.getPsRiskScoresCharlson());
+        parameters.put("psRiskScoresDcsi", ccae.getPsRiskScoresDcsi());
+        parameters.put("psRiskScoresChads2", ccae.getPsRiskScoresChads2());
+        parameters.put("psRiskScoresChads2vasc", ccae.getPsRiskScoresChads2vasc());
+        parameters.put("psInteractionYear", ccae.getPsInteractionYear());
+        parameters.put("psInteractionMonth", ccae.getPsInteractionMonth());        
+        parameters.put("omCovariates", ccae.getOmCovariates());
+        
+        if (ccae.getOmExclusionId() > 0) {
+            ConceptSetExpression cse = conceptSetService.getConceptSetExpression(ccae.getOmExclusionId());
+            Collection<Long> exclusions = vocabularyService.resolveConceptSetExpression(sourceKey, cse);
+            parameters.put("omExclusions" , exclusions);
+        }
+        
+        if (ccae.getOmInclusionId() > 0) {
+            ConceptSetExpression cse = conceptSetService.getConceptSetExpression(ccae.getOmInclusionId());
+            Collection<Long> inclusions = vocabularyService.resolveConceptSetExpression(sourceKey, cse);
+            parameters.put("omInclusions" , inclusions);
+        }        
+
+        parameters.put("omDemographics", ccae.getOmDemographics());
+        parameters.put("omDemographicsGender", ccae.getOmDemographicsGender());
+        parameters.put("omDemographicsRace", ccae.getOmDemographicsRace());
+        parameters.put("omDemographicsEthnicity", ccae.getOmDemographicsEthnicity());
+        parameters.put("omDemographicsAge", ccae.getOmDemographicsAge());
+        parameters.put("omDemographicsYear", ccae.getOmDemographicsYear());
+        parameters.put("omDemographicsMonth", ccae.getOmDemographicsMonth());
+        parameters.put("omTrim", ccae.getOmTrim());
+        parameters.put("omTrimFraction", ccae.getOmTrimFraction());
+        parameters.put("omMatch", ccae.getOmMatch());
+        parameters.put("omMatchMaxRatio", ccae.getOmMatchMaxRatio());
+        parameters.put("omStrat", ccae.getOmStrat());
+        parameters.put("omStratNumStrata", ccae.getOmStratNumStrata());
+        parameters.put("omConditionOcc", ccae.getOmConditionOcc());
+        parameters.put("omConditionOcc365d", ccae.getOmConditionOcc365d());
+        parameters.put("omConditionOcc30d", ccae.getOmConditionOcc30d());
+        parameters.put("omConditionOccInpt180d", ccae.getOmConditionOccInpt180d());
+        parameters.put("omConditionEra", ccae.getOmConditionEra());
+        parameters.put("omConditionEraEver", ccae.getOmConditionEraEver());
+        parameters.put("omConditionEraOverlap", ccae.getOmConditionEraOverlap());
+        parameters.put("omConditionGroup", ccae.getOmConditionGroup());
+        parameters.put("omConditionGroupMeddra", ccae.getOmConditionGroupMeddra());
+        parameters.put("omConditionGroupSnomed", ccae.getOmConditionGroupSnomed());
+        parameters.put("omDrugExposure", ccae.getOmDrugExposure());
+        parameters.put("omDrugExposure365d", ccae.getOmDrugExposure365d());
+        parameters.put("omDrugExposure30d", ccae.getOmDrugEra30d());
+        parameters.put("omDrugEra", ccae.getOmDrugEra());
+        parameters.put("omDrugEra365d", ccae.getOmDrugEra365d());
+        parameters.put("omDrugEra30d", ccae.getOmDrugEra30d());
+        parameters.put("omDrugEraOverlap", ccae.getOmDrugEraOverlap());
+        parameters.put("omDrugEraEver", ccae.getOmDrugEraEver());
+        parameters.put("omDrugGroup", ccae.getOmDrugGroup());
+        parameters.put("omProcedureOcc", ccae.getOmProcedureOcc());
+        parameters.put("omProcedureOcc365d", ccae.getOmProcedureOcc365d());
+        parameters.put("omProcedureOcc30d", ccae.getOmProcedureOcc30d());
+        parameters.put("omProcedureGroup", ccae.getOmProcedureGroup());
+        parameters.put("omObservation", ccae.getOmObservation());
+        parameters.put("omObservation365d", ccae.getOmObservation365d());
+        parameters.put("omObservation30d", ccae.getOmObservation30d());
+        parameters.put("omObservationCount365d", ccae.getOmObservationCount365d());
+        parameters.put("omMeasurement", ccae.getOmMeasurement());
+        parameters.put("omMeasurement365d", ccae.getOmMeasurement365d());
+        parameters.put("omMeasurement30d", ccae.getOmMeasurement30d());
+        parameters.put("omMeasurementCount365d", ccae.getOmMeasurementCount365d());
+        parameters.put("omMeasurementBelow", ccae.getOmMeasurementBelow());
+        parameters.put("omMeasurementAbove", ccae.getOmMeasurementAbove());
+        parameters.put("omConceptCounts", ccae.getOmConceptCounts());
+        parameters.put("omRiskScores", ccae.getOmRiskScores());
+        parameters.put("omRiskScoresCharlson", ccae.getOmRiskScoresCharlson());
+        parameters.put("omRiskScoresDcsi", ccae.getOmRiskScoresDcsi());
+        parameters.put("omRiskScoresChads2", ccae.getOmRiskScoresChads2());
+        parameters.put("omRiskScoresChads2vasc", ccae.getOmRiskScoresChads2vasc());
+        parameters.put("omInteractionYear", ccae.getOmInteractionYear());
+        parameters.put("omInteractionMonth", ccae.getOmInteractionMonth());
+
+        parameters.put("delCovariatesSmallCount", ccae.getDelCovariatesSmallCount());
+        
+        if (ccae.getNegativeControlId() > 0) {
+            ConceptSetExpression cse = conceptSetService.getConceptSetExpression(ccae.getNegativeControlId());
+            Collection<Long> inclusions = vocabularyService.resolveConceptSetExpression(sourceKey, cse);
+            parameters.put("negativeControls" , inclusions);
+        }          
+        
         RSBTasklet t = new RSBTasklet(getComparativeCohortAnalysisExecutionRepository());
         t.setFunctionName(functionName);
         t.setParameters(parameters);

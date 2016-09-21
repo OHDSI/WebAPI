@@ -1,12 +1,12 @@
 WITH C as (
 	select propensity_score score, count(*) comparator
-	from results.cca_pop 
+	from @resultsTableQualifier.cca_pop 
 	where execution_id = @executionId and treatment = 0
 	group by propensity_score, treatment
 ), 
 T as (
 	select propensity_score score, count(*) treatment
-	from results.cca_pop 
+	from @resultsTableQualifier.cca_pop 
 	where execution_id = @executionId and treatment = 1
 	group by propensity_score, treatment
 )

@@ -3,6 +3,7 @@ package org.ohdsi.webapi.shiro;
 import java.security.Principal;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UnknownAccountException;
@@ -510,5 +511,29 @@ public class PermissionManager {
     }
 
     return userRole.getStatus();
+  }
+
+  public RoleEntity getRole(Long id) {
+    return this.roleRepository.findById(id);
+  }
+
+  public RoleEntity updateRole(RoleEntity roleEntity) {
+    return this.roleRepository.save(roleEntity);
+  }
+
+  public void addPermissionsFromTemplate(RoleEntity roleEntity, Map<String, String> template, String value) throws Exception {
+    for (Map.Entry<String, String> entry : template.entrySet()) {
+      String permission = String.format(entry.getKey(), value);
+      String description = String.format(entry.getValue(), value);
+      PermissionEntity permissionEntity = this.addPermission(permission, description);
+      this.addPermission(roleEntity, permissionEntity);
+    }
+  }
+
+  public void removePermissionsFromTemplate(Map<String, String> template, String value) {
+    for (Map.Entry<String, String> entry : template.entrySet()) {
+      String permission = String.format(entry.getKey(), value);
+      this.removePermission(permission);
+    }
   }
 }

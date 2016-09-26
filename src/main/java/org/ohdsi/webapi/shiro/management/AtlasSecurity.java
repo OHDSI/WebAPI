@@ -19,7 +19,6 @@ import org.apache.shiro.web.filter.authc.AnonymousFilter;
 import org.apache.shiro.web.filter.session.NoSessionCreationFilter;
 import org.apache.shiro.web.servlet.AdviceFilter;
 import org.apache.shiro.web.util.WebUtils;
-import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.InvalidateAccessTokenFilter;
 import org.ohdsi.webapi.shiro.JwtAuthRealm;
@@ -174,7 +173,7 @@ public class AtlasSecurity extends Security {
       protected void doProcessResponseContent(String content) throws Exception {
         String id = this.parseJsonField(content, "id");
         RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
-        addPermissions(currentUserPersonalRole, cohortdefinitionCreatorPermissionTemplates, id);
+        authorizer.addPermissionsFromTemplate(currentUserPersonalRole, cohortdefinitionCreatorPermissionTemplates, id);
       }
     });
     filters.put("createPermissionsOnCreateConceptSetFilter", new ProcessResponseContentFilter() {
@@ -187,7 +186,7 @@ public class AtlasSecurity extends Security {
       protected void doProcessResponseContent(String content) throws Exception {
         String id = this.parseJsonField(content, "id");
         RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
-        addPermissions(currentUserPersonalRole, conceptsetCreatorPermissionTemplates, id);
+        authorizer.addPermissionsFromTemplate(currentUserPersonalRole, conceptsetCreatorPermissionTemplates, id);
       }
     });
     filters.put("deletePermissionsOnDeleteCohortDefinitionFilter", new AdviceFilter() {
@@ -203,7 +202,7 @@ public class AtlasSecurity extends Security {
                 .replaceAll("/+$", "")
                 .split("/")
                 [1];
-        removePermissions(cohortdefinitionCreatorPermissionTemplates, id);
+        authorizer.removePermissionsFromTemplate(cohortdefinitionCreatorPermissionTemplates, id);
       }
     });
     filters.put("deletePermissionsOnDeleteConceptSetFilter", new AdviceFilter() {
@@ -219,7 +218,7 @@ public class AtlasSecurity extends Security {
                 .replaceAll("/+$", "")
                 .split("/")
                 [1];
-        removePermissions(conceptsetCreatorPermissionTemplates, id);
+        authorizer.removePermissionsFromTemplate(conceptsetCreatorPermissionTemplates, id);
       }
     });
     filters.put("stopProcessingFilter", new AdviceFilter() {
@@ -297,21 +296,5 @@ public class AtlasSecurity extends Security {
     authenticator.setAuthenticationStrategy(new NegotiateAuthenticationStrategy());
     
     return authenticator;
-  }
-
-  private void addPermissions(RoleEntity roleEntity, Map<String, String> templates, String value) throws Exception {
-    for (Map.Entry<String, String> entry : templates.entrySet()) {
-      String permission = String.format(entry.getKey(), value);
-      String description = String.format(entry.getValue(), value);
-      PermissionEntity permissionEntity = authorizer.addPermission(permission, description);
-      authorizer.addPermission(roleEntity, permissionEntity);
-    }
-  }
-
-  private void removePermissions(Map<String, String> templates, String value) {
-    for (Map.Entry<String, String> entry : templates.entrySet()) {
-      String permission = String.format(entry.getKey(), value);
-      authorizer.removePermission(permission);
-    }
   }
 }

@@ -4,6 +4,8 @@ import com.gs.collections.impl.block.factory.Comparators;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -32,6 +34,15 @@ public class UserService {
 
   @Autowired
   private PermissionManager authorizer;
+
+  private Map<String, String> roleCreatorPermissionsTemplate = new LinkedHashMap<>();
+
+  public UserService() {
+    this.roleCreatorPermissionsTemplate.put("role:%s:permissions:*:put", "Add permissions to role with ID = %s");
+    this.roleCreatorPermissionsTemplate.put("role:%s:permissions:*:delete", "Remove permissions frome role with ID = %s");
+    this.roleCreatorPermissionsTemplate.put("role:%s:post", "Update role with ID = %s");
+    this.roleCreatorPermissionsTemplate.put("role:%s:delete", "Delete role with ID = %s");
+  }
 
   public static class User implements Comparable<User> {
     public Long id;
@@ -151,8 +162,27 @@ public class UserService {
   @Produces(MediaType.APPLICATION_JSON)
   public Role createRole(Role role) throws Exception {
     RoleEntity roleEntity = this.authorizer.addRole(role.role);
+    RoleEntity personalRole = this.authorizer.getCurrentUserPersonalRole();
+    this.authorizer.addPermissionsFromTemplate(
+            personalRole,
+            this.roleCreatorPermissionsTemplate,
+            String.valueOf(roleEntity.getId()));
     Role newRole = new Role(roleEntity);
     return newRole;
+  }
+
+  @POST
+  @Path("role/{roleId}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Role updateRole(@PathParam("roleId") Long id, Role role) throws Exception {
+    RoleEntity roleEntity = this.authorizer.getRole(id);
+    if (roleEntity == null) {
+      throw new Exception("Role doesn't exist");
+    }
+    roleEntity.setName(role.role);
+    roleEntity = this.authorizer.updateRole(roleEntity);
+    return new Role(roleEntity);
   }
 
   @GET
@@ -164,10 +194,20 @@ public class UserService {
     return roles;
   }
 
+  @GET
+  @Path("role/{roleId}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Role getRole(@PathParam("roleId") Long id) {
+    RoleEntity roleEntity = this.authorizer.getRole(id);
+    Role role = new Role(roleEntity);
+    return role;
+  }
+
   @DELETE
   @Path("role/{roleId}")
   public void removeRole(@PathParam("roleId") Long roleId) {
     this.authorizer.removeRole(roleId);
+    this.authorizer.removePermissionsFromTemplate(this.roleCreatorPermissionsTemplate, String.valueOf(roleId));
   }
 
   @GET
@@ -181,15 +221,21 @@ public class UserService {
   }
 
   @PUT
-  @Path("role/{roleId}/permissions/{permissionId}")
-  public void addPermissionToRole(@PathParam("roleId") Long roleId, @PathParam("permissionId") Long permissionId) throws Exception {
-    this.authorizer.addPermission(roleId, permissionId);
+  @Path("role/{roleId}/permissions/{permissionIdList}")
+  public void addPermissionToRole(@PathParam("roleId") Long roleId, @PathParam("permissionIdList") String permissionIdList) throws Exception {
+    for (String permissionIdString: permissionIdList.split("\\+")) {
+      Long permissionId = Long.parseLong(permissionIdString);
+      this.authorizer.addPermission(roleId, permissionId);
+    }
   }
 
   @DELETE
-  @Path("role/{roleId}/permissions/{permissionId}")
-  public void removePermissionFromRole(@PathParam("roleId") Long roleId, @PathParam("permissionId") Long permissionId) {
-    this.authorizer.removePermission(permissionId, roleId);
+  @Path("role/{roleId}/permissions/{permissionIdList}")
+  public void removePermissionFromRole(@PathParam("roleId") Long roleId, @PathParam("permissionIdList") String permissionIdList) {
+    for (String permissionIdString: permissionIdList.split("\\+")) {
+      Long permissionId = Long.parseLong(permissionIdString);
+      this.authorizer.removePermission(permissionId, roleId);
+    }
   }
 
   @GET
@@ -203,15 +249,21 @@ public class UserService {
   }
 
   @PUT
-  @Path("role/{roleId}/users/{userId}")
-  public void addUserToRole(@PathParam("roleId") Long roleId, @PathParam("userId") Long userId) throws Exception {
-    this.authorizer.addUser(userId, roleId);
+  @Path("role/{roleId}/users/{userIdList}")
+  public void addUserToRole(@PathParam("roleId") Long roleId, @PathParam("userIdList") String userIdList) throws Exception {
+    for (String userIdString: userIdList.split("\\+")) {
+      Long userId = Long.parseLong(userIdString);
+      this.authorizer.addUser(userId, roleId);
+    }
   }
 
   @DELETE
-  @Path("role/{roleId}/users/{userId}")
-  public void removeUserFromRole(@PathParam("roleId") Long roleId, @PathParam("userId") Long userId) {
-    this.authorizer.removeUser(userId, roleId);
+  @Path("role/{roleId}/users/{userIdList}")
+  public void removeUserFromRole(@PathParam("roleId") Long roleId, @PathParam("userIdList") String userIdList) {
+    for (String userIdString: userIdList.split("\\+")) {
+      Long userId = Long.parseLong(userIdString);
+      this.authorizer.removeUser(userId, roleId);
+    }
   }
 
   @GET

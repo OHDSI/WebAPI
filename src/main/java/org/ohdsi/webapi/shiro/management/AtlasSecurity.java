@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.PostConstruct;
 import javax.servlet.Filter;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -12,6 +13,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.HttpMethod;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.shiro.authc.Authenticator;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
 import org.apache.shiro.realm.Realm;
@@ -28,6 +31,8 @@ import org.ohdsi.webapi.shiro.ProcessResponseContentFilter;
 import org.ohdsi.webapi.shiro.SkipFurtherFilteringFilter;
 import org.ohdsi.webapi.shiro.UpdateAccessTokenFilter;
 import org.ohdsi.webapi.shiro.UrlBasedAuthorizingFilter;
+import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -42,8 +47,13 @@ import waffle.shiro.negotiate.NegotiateAuthenticationStrategy;
 @Component
 public class AtlasSecurity extends Security {
 
+  private final Log log = LogFactory.getLog(getClass());
+  
   @Autowired
   private PermissionManager authorizer;
+
+  @Autowired
+  SourceRepository sourceRepository;
 
   @Value("${security.token.expiration}")
   private int tokenExpirationIntervalInSeconds;
@@ -55,36 +65,25 @@ public class AtlasSecurity extends Security {
 
   private final Map<String, String> cohortdefinitionCreatorPermissionTemplates = new LinkedHashMap<>();
   private final Map<String, String> conceptsetCreatorPermissionTemplates = new LinkedHashMap<>();
+  private final Map<String, String> sourcePermissionTemplates = new LinkedHashMap<>();
 
   public AtlasSecurity() {
     this.defaultRoles.add("public");
-    this.defaultRoles.add("concept set reader");
 
     this.cohortdefinitionCreatorPermissionTemplates.put("cohortdefinition:%s:put", "Update Cohort Definition with ID = %s");
     this.cohortdefinitionCreatorPermissionTemplates.put("cohortdefinition:%s:delete", "Delete Cohort Definition with ID = %s");
 
     this.conceptsetCreatorPermissionTemplates.put("conceptset:%s:post", "Update Concept Set with ID = %s");
     this.conceptsetCreatorPermissionTemplates.put("conceptset:%s:delete:post", "Delete Concept Set with ID = %s");
+
+    this.sourcePermissionTemplates.put("cohortdefinition:*:report:%s:get", "Get Inclusion Rule Report for Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("cohortdefinition:*:generate:%s:get", "Generate Cohort on Source with SourceKey = %s");
   }
 
   @Override
   public Map<String, String> getFilterChain() {
     Map<String, String> filterChain = new LinkedHashMap<>();
     
-//    // not protected resources
-//    //
-//    filterChain.put("/source/sources/", "noSessionCreation, corsFilter, anon");
-//    filterChain.put("/source/sources", "noSessionCreation, corsFilter, anon");
-//    filterChain.put("/*/vocabulary/**", "noSessionCreation, corsFilter, anon");
-//    // conceptset read access
-//    filterChain.put("/conceptset/", "noSessionCreation, corsFilter, anon");
-//    filterChain.put("/conceptset", "noSessionCreation, corsFilter, anon");
-//    filterChain.put("/conceptset/*", "noSessionCreation, corsFilter, anon");
-//    filterChain.put("/conceptset/*/expression", "noSessionCreation, corsFilter, anon");
-//    filterChain.put("/conceptset/*/expression/", "noSessionCreation, corsFilter, anon");
-//    filterChain.put("/conceptset/exportlist/", "noSessionCreation, corsFilter, anon");
-//
-
     // protected resources
     //
     // user
@@ -123,8 +122,6 @@ public class AtlasSecurity extends Security {
     filterChain.put("/cohortdefinition/*", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter, deletePermissionsOnDeleteCohortDefinitionFilter");
     filterChain.put("/cohortdefinition/*/info", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
     filterChain.put("/cohortdefinition/*/info/", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
-//    filterChain.put("/*/vocabulary/lookup/identifiers", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
-//    filterChain.put("/*/vocabulary/lookup/identifiers/", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
     filterChain.put("/cohortdefinition/sql", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
     filterChain.put("/cohortdefinition/sql/", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
     filterChain.put("/cohortdefinition/*/generate/*", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
@@ -296,5 +293,27 @@ public class AtlasSecurity extends Security {
     authenticator.setAuthenticationStrategy(new NegotiateAuthenticationStrategy());
     
     return authenticator;
+  }
+
+  private void addSourceRole(String sourceKey) throws Exception {
+    String roleName = String.format("Source user (%s)", sourceKey);
+    if (this.authorizer.roleExists(roleName)) {
+      return;
+    }
+
+    RoleEntity role = this.authorizer.addRole(roleName);
+    this.authorizer.addPermissionsFromTemplate(role, this.sourcePermissionTemplates, sourceKey);
+  }
+
+  @PostConstruct
+  private void initRolesForSources() {
+     for (Source source : sourceRepository.findAll()) {
+       try {
+         this.addSourceRole(source.getSourceKey());
+       }
+       catch (Exception e) {
+         log.error(e);
+       }
+     }
   }
 }

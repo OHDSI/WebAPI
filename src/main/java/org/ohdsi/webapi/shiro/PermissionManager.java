@@ -536,4 +536,8 @@ public class PermissionManager {
       this.removePermission(permission);
     }
   }
+
+  public boolean roleExists(String roleName) {
+    return this.roleRepository.existsByName(roleName);
+  }
 }

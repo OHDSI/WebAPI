@@ -51,13 +51,6 @@ INSERT INTO SEC_ROLE_PERMISSION (ROLE_ID, PERMISSION_ID) VALUES (3, 31);
 INSERT INTO SEC_ROLE_PERMISSION (ROLE_ID, PERMISSION_ID) VALUES (3, 32);
 INSERT INTO SEC_ROLE_PERMISSION (ROLE_ID, PERMISSION_ID) VALUES (3, 33);
 
--- concept set reader
--- INSERT INTO SEC_PERMISSION (ID, VALUE, DESCRIPTION) VALUES (40, 'conceptset:read:ui', null);
--- INSERT INTO SEC_PERMISSION (ID, VALUE, DESCRIPTION) VALUES (41, 'conceptset:get', 'Get list of Concept Sets');
--- 
--- INSERT INTO SEC_ROLE_PERMISSION (ROLE_ID, PERMISSION_ID) VALUES (4, 40);
--- INSERT INTO SEC_ROLE_PERMISSION (ROLE_ID, PERMISSION_ID) VALUES (4, 41);
-
 -- cohort editor
 INSERT INTO SEC_PERMISSION (ID, VALUE, DESCRIPTION) VALUES (50, 'cohort:edit:ui', null);
 INSERT INTO SEC_PERMISSION (ID, VALUE, DESCRIPTION) VALUES (51, 'cohortdefinition:put', 'Save new Cohort');
@@ -70,15 +63,12 @@ INSERT INTO SEC_ROLE_PERMISSION (ROLE_ID, PERMISSION_ID) VALUES (5, 52);
 INSERT INTO SEC_ROLE_PERMISSION (ROLE_ID, PERMISSION_ID) VALUES (5, 53);
 
 -- cohort reader
-INSERT INTO SEC_PERMISSION (ID, VALUE, DESCRIPTION) VALUES (60, 'cohort:read:ui', null);
-INSERT INTO SEC_PERMISSION (ID, VALUE, DESCRIPTION) VALUES (61, 'cohortdefinition:get', 'Get list of Cohorts');
-INSERT INTO SEC_PERMISSION (ID, VALUE, DESCRIPTION) VALUES (62, 'cohortdefinition:*:get', 'Get Cohort Definition by ID');
-INSERT INTO SEC_PERMISSION (ID, VALUE, DESCRIPTION) VALUES (63, 'cohortdefinition:*:info:get', '');
-INSERT INTO SEC_PERMISSION (ID, VALUE, DESCRIPTION) VALUES (64, '*:vocabulary:lookup:identifiers:post', 'Perform a lookup of an array of concept identifiers returning the matching concepts with their detailed properties.');
-INSERT INTO SEC_PERMISSION (ID, VALUE, DESCRIPTION) VALUES (65, 'cohortdefinition:sql:post', 'Generate SQL from Cohort expression');
-INSERT INTO SEC_PERMISSION (ID, VALUE, DESCRIPTION) VALUES (66, 'cohortdefinition:*:generate:*:get', 'Queue up a generate cohort task for the specified cohort definition id');
-INSERT INTO SEC_PERMISSION (ID, VALUE, DESCRIPTION) VALUES (67, 'cohortdefinition:*:report:*:get', 'Get inclusion rule report');
-INSERT INTO SEC_PERMISSION (ID, VALUE, DESCRIPTION) VALUES (68, '*:cohortresults:*:breakdown:get', 'Get breakdown with counts about people in cohort');
+INSERT INTO SEC_PERMISSION (ID, VALUE, DESCRIPTION) VALUES (60, 'cohortdefinition:get', 'Get list of Cohorts');
+INSERT INTO SEC_PERMISSION (ID, VALUE, DESCRIPTION) VALUES (61, 'cohortdefinition:*:get', 'Get Cohort Definition by ID');
+INSERT INTO SEC_PERMISSION (ID, VALUE, DESCRIPTION) VALUES (62, 'cohortdefinition:*:info:get', '');
+INSERT INTO SEC_PERMISSION (ID, VALUE, DESCRIPTION) VALUES (63, '*:vocabulary:lookup:identifiers:post', 'Perform a lookup of an array of concept identifiers returning the matching concepts with their detailed properties.');
+INSERT INTO SEC_PERMISSION (ID, VALUE, DESCRIPTION) VALUES (64, 'cohortdefinition:sql:post', 'Generate SQL from Cohort expression');
+INSERT INTO SEC_PERMISSION (ID, VALUE, DESCRIPTION) VALUES (65, '*:cohortresults:*:breakdown:get', 'Get breakdown with counts about people in cohort');
 
 INSERT INTO SEC_ROLE_PERMISSION (ROLE_ID, PERMISSION_ID) VALUES (6, 60);
 INSERT INTO SEC_ROLE_PERMISSION (ROLE_ID, PERMISSION_ID) VALUES (6, 61);
@@ -86,6 +76,3 @@ INSERT INTO SEC_ROLE_PERMISSION (ROLE_ID, PERMISSION_ID) VALUES (6, 62);
 INSERT INTO SEC_ROLE_PERMISSION (ROLE_ID, PERMISSION_ID) VALUES (6, 63);
 INSERT INTO SEC_ROLE_PERMISSION (ROLE_ID, PERMISSION_ID) VALUES (6, 64);
 INSERT INTO SEC_ROLE_PERMISSION (ROLE_ID, PERMISSION_ID) VALUES (6, 65);
-INSERT INTO SEC_ROLE_PERMISSION (ROLE_ID, PERMISSION_ID) VALUES (6, 66);
-INSERT INTO SEC_ROLE_PERMISSION (ROLE_ID, PERMISSION_ID) VALUES (6, 67);
-INSERT INTO SEC_ROLE_PERMISSION (ROLE_ID, PERMISSION_ID) VALUES (6, 68);

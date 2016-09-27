@@ -24,10 +24,10 @@ public class RoleEntity implements Serializable{
   @Column(name = "NAME")
   private String name;
 
-  @OneToMany(mappedBy = "role", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+  @OneToMany(mappedBy = "role", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   private Set<RolePermissionEntity> rolePermissions = new LinkedHashSet<>();
 
-  @OneToMany(mappedBy = "role", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+  @OneToMany(mappedBy = "role", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   private Set<UserRoleEntity> userRoles = new LinkedHashSet<>();
 
   

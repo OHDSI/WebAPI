@@ -50,7 +50,7 @@ public class PermissionEntity implements Serializable {
     this.description = description;
   }
 
-  @OneToMany(mappedBy = "permission", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+  @OneToMany(mappedBy = "permission", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   public Set<RolePermissionEntity> getRolePermissions() {
     return rolePermissions;
   }

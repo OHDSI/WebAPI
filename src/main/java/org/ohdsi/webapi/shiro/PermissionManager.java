@@ -31,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * @author gennadiy.anisimov
  */
+@Transactional
 public class PermissionManager {
   
   @Autowired

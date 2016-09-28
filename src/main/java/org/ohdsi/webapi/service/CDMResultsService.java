@@ -14,6 +14,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.cohortresults.mapper.ConceptCountMapper;
+import org.ohdsi.webapi.cohortresults.mapper.ConceptDistributionMapper;
 import org.ohdsi.webapi.report.*;
 import org.ohdsi.webapi.cohortresults.VisualizationData;
 import org.ohdsi.webapi.helper.ResourceHelper;
@@ -317,6 +319,14 @@ public class CDMResultsService extends AbstractDaoService {
         public static final String PERSON = "person";
         public static final String BASE_SQL_PATH = "/resources/cdmresults/sql";
 
+        public /*static*/ final String[] STANDARD_COLUMNS = new String[]{"cdm_database_schema",
+                "results_database_schema"/*, "cohortDefinitionId",
+                "minCovariatePersonCount", "minIntervalPersonCount"*/};
+
+        public /*static*/ final String[] DRILLDOWN_COLUMNS = new String[]{"cdm_database_schema",
+                "results_database_schema", /*"cohortDefinitionId",
+                "minCovariatePersonCount", "minIntervalPersonCount",*/ "conceptId"};
+
         private ObjectMapper mapper;
         private String sourceDialect;
         //private VisualizationDataRepository visualizationDataRepository;
@@ -390,32 +400,33 @@ public class CDMResultsService extends AbstractDaoService {
             final String key = PERSON;
             CDMPersonSummary person = new CDMPersonSummary();
             boolean empty = true;
+            Integer id = null;
 
-            String personSummaryData = this.renderTranslateCohortSql(BASE_SQL_PATH + "report/person/population.sql", null, source);
-//            if (personSummaryData != null) {
-//                person.setYearOfBirth(jdbcTemplate.query(yobSql, new ConceptDistributionMapper()));
-//            }
+            String personSummaryData = this.renderTranslateCohortSql(BASE_SQL_PATH + "/report/person/population.sql", null, source);
+            if (personSummaryData != null) {
+                person.setYearOfBirth(jdbcTemplate.query(personSummaryData, new ConceptDistributionMapper()));
+            }
 
 //            String yobStatSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/yearofbirth_stats.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 //            if (yobStatSql != null) {
 //                person.setYearOfBirthStats(jdbcTemplate.query(yobStatSql, new CohortStatsMapper()));
 //            }
-//
-//            String genderSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/gender.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
-//            if (genderSql != null) {
-//                person.setGender(jdbcTemplate.query(genderSql, new ConceptCountMapper()));
-//            }
-//
-//            String raceSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/race.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
-//            if (raceSql != null) {
-//                person.setRace(jdbcTemplate.query(raceSql, new ConceptCountMapper()));
-//            }
-//
-//            String ethnicitySql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/ethnicity.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
-//            if (ethnicitySql != null) {
-//                person.setEthnicity(jdbcTemplate.query(ethnicitySql, new ConceptCountMapper()));
-//            }
-//
+
+            String genderSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/gender.sql", id, /*minCovariatePersonCountParam, minIntervalPersonCountParam,*/ source);
+            if (genderSql != null) {
+                person.setGender(jdbcTemplate.query(genderSql, new ConceptCountMapper()));
+            }
+
+            String raceSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/race.sql", id, /*minCovariatePersonCountParam, minIntervalPersonCountParam,*/ source);
+            if (raceSql != null) {
+                person.setRace(jdbcTemplate.query(raceSql, new ConceptCountMapper()));
+            }
+
+            String ethnicitySql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/ethnicity.sql", id, /*minCovariatePersonCountParam, minIntervalPersonCountParam,*/ source);
+            if (ethnicitySql != null) {
+                person.setEthnicity(jdbcTemplate.query(ethnicitySql, new ConceptCountMapper()));
+            }
+
 //            if (CollectionUtils.isNotEmpty(person.getEthnicity())
 //                    || CollectionUtils.isNotEmpty(person.getGender())
 //                    || CollectionUtils.isNotEmpty(person.getRace())
@@ -439,37 +450,37 @@ public class CDMResultsService extends AbstractDaoService {
                                                Source source) {
             String sql = null;
 
-//            String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-//            String vocabularyTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
-//
-//            try {
-//                String[] cols;
-//                String[] colValues;
-//                if (conceptId != null) {
-//                    cols = DRILLDOWN_COLUMNS;
-//                    colValues = new String[]{vocabularyTableQualifier,
-//                            resultsTableQualifier, String.valueOf(id),
-//                            minCovariatePersonCountParam == null ? MIN_COVARIATE_PERSON_COUNT
-//                                    : minCovariatePersonCountParam,
-//                            minIntervalPersonCountParam == null ? MIN_INTERVAL_PERSON_COUNT
-//                                    : minIntervalPersonCountParam,
-//                            String.valueOf(conceptId)};
-//                } else {
-//                    cols = STANDARD_COLUMNS;
-//                    colValues = new String[]{vocabularyTableQualifier,
-//                            resultsTableQualifier, String.valueOf(id),
-//                            minCovariatePersonCountParam == null ? MIN_COVARIATE_PERSON_COUNT
-//                                    : minCovariatePersonCountParam,
-//                            minIntervalPersonCountParam == null ? MIN_INTERVAL_PERSON_COUNT
-//                                    : minIntervalPersonCountParam};
-//                }
-//
-//                sql = ResourceHelper.GetResourceAsString(sqlPath);
-//                sql = SqlRender.renderSql(sql, cols, colValues);
-//                sql = SqlTranslate.translateSql(sql, sourceDialect, source.getSourceDialect());
-//            } catch (Exception e) {
-//                log.error(String.format("Unable to translate sql for  %s", sql), e);
-//            }
+            String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+            String vocabularyTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
+
+            try {
+                String[] cols;
+                String[] colValues;
+                if (conceptId != null) {
+                    cols = DRILLDOWN_COLUMNS;
+                    colValues = new String[]{vocabularyTableQualifier,
+                            resultsTableQualifier, /*String.valueOf(id),
+                            minCovariatePersonCountParam == null ? MIN_COVARIATE_PERSON_COUNT
+                                    : minCovariatePersonCountParam,
+                            minIntervalPersonCountParam == null ? MIN_INTERVAL_PERSON_COUNT
+                                    : minIntervalPersonCountParam,*/
+                            String.valueOf(conceptId)};
+                } else {
+                    cols = STANDARD_COLUMNS;
+                    colValues = new String[]{vocabularyTableQualifier,
+                            resultsTableQualifier, /*String.valueOf(id),
+                            minCovariatePersonCountParam == null ? MIN_COVARIATE_PERSON_COUNT
+                                    : minCovariatePersonCountParam,
+                            minIntervalPersonCountParam == null ? MIN_INTERVAL_PERSON_COUNT
+                                    : minIntervalPersonCountParam*/};
+                }
+
+                sql = ResourceHelper.GetResourceAsString(sqlPath);
+                sql = SqlRender.renderSql(sql, cols, colValues);
+                sql = SqlTranslate.translateSql(sql, sourceDialect, source.getSourceDialect());
+            } catch (Exception e) {
+                log.error(String.format("Unable to translate sql for  %s", sql), e);
+            }
 
             return sql;
         }

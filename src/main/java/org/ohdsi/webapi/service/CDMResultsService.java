@@ -14,9 +14,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
-import org.ohdsi.webapi.cohortresults.mapper.ConceptCountMapper;
-import org.ohdsi.webapi.cohortresults.mapper.ConceptDistributionMapper;
 import org.ohdsi.webapi.report.*;
+import org.ohdsi.webapi.report.mapper.*;
 import org.ohdsi.webapi.cohortresults.VisualizationData;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.source.Source;
@@ -121,7 +120,6 @@ public class CDMResultsService extends AbstractDaoService {
 
         if (refresh /*|| data == null*/) {
             dashboard = queryRunner.getDashboard(getSourceJdbcTemplate(source), /*id,*/ source, /*demographicsOnly,*/ true);
-
         } else {
             try {
                 dashboard = mapper.readValue(data.getData(), CDMDashboard.class);
@@ -214,6 +212,7 @@ public class CDMResultsService extends AbstractDaoService {
 
         return procedureSummary;
     }
+
 
     @Path("drugeratreemap")
     @POST
@@ -329,6 +328,7 @@ public class CDMResultsService extends AbstractDaoService {
 
         private ObjectMapper mapper;
         private String sourceDialect;
+
         //private VisualizationDataRepository visualizationDataRepository;
         public CDMResultsAnalysisRunner(String sourceDialect) {
 
@@ -346,43 +346,39 @@ public class CDMResultsService extends AbstractDaoService {
             CDMDashboard dashboard = new CDMDashboard();
             boolean empty = true;
 
-//        String ageAtFirstObsSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/ageatfirst.sql", id,
-//                minCovariatePersonCountParam, minIntervalPersonCountParam, source);
-//        if (ageAtFirstObsSql != null) {
-//          dashboard.setAgeAtFirstObservation(jdbcTemplate.query(ageAtFirstObsSql, new ConceptDistributionMapper()));
-//        }
+            String ageAtFirstObsSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/ageatfirst.sql", null, source);
+            if (ageAtFirstObsSql != null) {
+                dashboard.setAgeAtFirstObservation(jdbcTemplate.query(ageAtFirstObsSql, new ConceptDistributionMapper()));
+            }
+
+            String genderSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/gender.sql", null, source);
+            if (genderSql != null) {
+                dashboard.setGender(jdbcTemplate.query(genderSql, new ConceptCountMapper()));
+            }
+
+//            if (!demographicsOnly) {
+            String cumulObsSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/cumulativeduration.sql", null, source);
+            if (cumulObsSql != null) {
+                dashboard.setCumulativeObservation(jdbcTemplate.query(cumulObsSql, new CumulativeObservationMapper()));
+            }
+
+            String obsByMonthSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/observedbymonth.sql", null, source);
+            if (obsByMonthSql != null) {
+                dashboard.setObservedByMonth(jdbcTemplate.query(obsByMonthSql, new MonthObservationMapper()));
+            }
+//            }
+
+//            if (CollectionUtils.isNotEmpty(dashboard.getAgeAtFirstObservation())
+//                    || CollectionUtils.isNotEmpty(dashboard.getCumulativeObservation())
+//                    || CollectionUtils.isNotEmpty(dashboard.getGender())
+//                    || CollectionUtils.isNotEmpty(dashboard.getObservedByMonth())) {
+//                empty = false;
+//            }
 //
-//        String genderSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/gender.sql", id, minCovariatePersonCountParam,
-//                minIntervalPersonCountParam, source);
-//        if (genderSql != null) {
-//          dashboard.setGender(jdbcTemplate.query(genderSql, new ConceptCountMapper()));
-//        }
-//
-//        if (!demographicsOnly) {
-//          String cumulObsSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/cumulativeduration.sql", id,
-//                  minCovariatePersonCountParam, minIntervalPersonCountParam, source);
-//          if (cumulObsSql != null) {
-//            dashboard.setCumulativeObservation(jdbcTemplate.query(cumulObsSql, new CumulativeObservationMapper()));
-//          }
-//
-//          String obsByMonthSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/observedbymonth.sql", id,
-//                  minCovariatePersonCountParam, minIntervalPersonCountParam, source);
-//          if (obsByMonthSql != null) {
-//            dashboard.setObservedByMonth(jdbcTemplate.query(obsByMonthSql, new MonthObservationMapper()));
-//          }
-//        }
-//
-//        if (CollectionUtils.isNotEmpty(dashboard.getAgeAtFirstObservation())
-//                || CollectionUtils.isNotEmpty(dashboard.getCumulativeObservation())
-//                || CollectionUtils.isNotEmpty(dashboard.getGender())
-//                || CollectionUtils.isNotEmpty(dashboard.getObservedByMonth())) {
-//          empty = false;
-//        }
-//
-//        if (!empty && save) {
-//          this.saveEntity(id, source.getSourceId(), key, dashboard);
-//        }
-//
+//            if (!empty && save) {
+//                this.saveEntity(id, source.getSourceId(), key, dashboard);
+//            }
+
             return dashboard;
 
         }
@@ -500,30 +496,8 @@ public class CDMResultsService extends AbstractDaoService {
             boolean empty = true;
 
             String personSummaryData = this.renderTranslateCohortSql(BASE_SQL_PATH + "report/person/population.sql", null, source);
-//            if (personSummaryData != null) {
-//                person.setYearOfBirth(jdbcTemplate.query(yobSql, new ConceptDistributionMapper()));
-//            }
 
-//            String yobStatSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/yearofbirth_stats.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
-//            if (yobStatSql != null) {
-//                person.setYearOfBirthStats(jdbcTemplate.query(yobStatSql, new CohortStatsMapper()));
-//            }
-//
-//            String genderSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/gender.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
-//            if (genderSql != null) {
-//                person.setGender(jdbcTemplate.query(genderSql, new ConceptCountMapper()));
-//            }
-//
-//            String raceSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/race.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
-//            if (raceSql != null) {
-//                person.setRace(jdbcTemplate.query(raceSql, new ConceptCountMapper()));
-//            }
-//
-//            String ethnicitySql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/ethnicity.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
-//            if (ethnicitySql != null) {
-//                person.setEthnicity(jdbcTemplate.query(ethnicitySql, new ConceptCountMapper()));
-//            }
-//
+
 //            if (CollectionUtils.isNotEmpty(person.getEthnicity())
 //                    || CollectionUtils.isNotEmpty(person.getGender())
 //                    || CollectionUtils.isNotEmpty(person.getRace())
@@ -531,7 +505,7 @@ public class CDMResultsService extends AbstractDaoService {
 //                    || CollectionUtils.isNotEmpty(person.getYearOfBirthStats())) {
 //                empty = false;
 //            }
-//
+
 //            if (!empty && save) {
 //                this.saveEntity(id, source.getSourceId(), key, person);
 //            }

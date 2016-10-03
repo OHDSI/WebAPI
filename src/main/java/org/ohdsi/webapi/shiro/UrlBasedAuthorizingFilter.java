@@ -25,7 +25,12 @@ public class UrlBasedAuthorizingFilter extends AdviceFilter {
     
     String path = httpRequest.getPathInfo()
                               .replaceAll("^/+", "")
-                              .replaceAll("/+$", "");
+                              .replaceAll("/+$", "")
+                              // replace special characters
+                              .replace(":", "&colon;")
+                              .replace(",", "&comma;")
+                              .replace("*", "&asterisk;");
+
     String method = httpRequest.getMethod();    
     String permission = String.format("%s:%s", path.replace("/", ":"), method).toLowerCase();
     

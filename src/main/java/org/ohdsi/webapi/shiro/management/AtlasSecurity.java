@@ -74,6 +74,7 @@ public class AtlasSecurity extends Security {
     this.cohortdefinitionCreatorPermissionTemplates.put("cohortdefinition:%s:delete", "Delete Cohort Definition with ID = %s");
 
     this.conceptsetCreatorPermissionTemplates.put("conceptset:%s:post", "Update Concept Set with ID = %s");
+    this.conceptsetCreatorPermissionTemplates.put("conceptset:%s:items:post", "Update Items of Concept Set with ID = %s");
     this.conceptsetCreatorPermissionTemplates.put("conceptset:%s:delete:post", "Delete Concept Set with ID = %s");
 
     this.sourcePermissionTemplates.put("cohortdefinition:*:report:%s:get", "Get Inclusion Rule Report for Source with SourceKey = %s");
@@ -100,14 +101,12 @@ public class AtlasSecurity extends Security {
     filterChain.put("/permission/**", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
 
     // concept set
-    filterChain.put("/conceptset/*/*/exists", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
-    filterChain.put("/conceptset/*/*/exists/", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
     filterChain.put(
       "/conceptset",
-      "noSessionCreation, corsFilter, processOnlyPutRequestsFilter, jwtAuthcFilter, authzFilter, createPermissionsOnCreateConceptSetFilter"); // only PUT method is protected
+      "noSessionCreation, corsFilter, processOnlyPutAndPostRequestsFilter, jwtAuthcFilter, authzFilter, createPermissionsOnCreateConceptSetFilter"); // only PUT and POST methods are protected
     filterChain.put(
       "/conceptset/",
-      "noSessionCreation, corsFilter, processOnlyPutRequestsFilter, jwtAuthcFilter, authzFilter, createPermissionsOnCreateConceptSetFilter"); // only PUT method is protected
+      "noSessionCreation, corsFilter, processOnlyPutAndPostRequestsFilter, jwtAuthcFilter, authzFilter, createPermissionsOnCreateConceptSetFilter"); // only PUT and POST methods are protected
     filterChain.put("/conceptset/*/items", "noSessionCreation, corsFilter, processOnlyPostRequestsFilter, jwtAuthcFilter, authzFilter"); // only POST method is protected
     filterChain.put("/conceptset/*/items/", "noSessionCreation, corsFilter, processOnlyPostRequestsFilter, jwtAuthcFilter, authzFilter"); // only POST method is protected
     filterChain.put("/conceptset/*", "noSessionCreation, corsFilter, processOnlyPostRequestsFilter, jwtAuthcFilter, authzFilter"); // only POST method is protected
@@ -271,6 +270,13 @@ public class AtlasSecurity extends Security {
       @Override
       protected boolean shouldSkip(ServletRequest request, ServletResponse response) {
         return !HttpMethod.PUT.equalsIgnoreCase(WebUtils.toHttp(request).getMethod());
+      }
+    });
+    filters.put("processOnlyPutAndPostRequestsFilter", new SkipFurtherFilteringFilter() {
+      @Override
+      protected boolean shouldSkip(ServletRequest request, ServletResponse response) {
+        String httpMethod = WebUtils.toHttp(request).getMethod();
+        return !(HttpMethod.PUT.equalsIgnoreCase(httpMethod) || HttpMethod.POST.equalsIgnoreCase(httpMethod));
       }
     });
     

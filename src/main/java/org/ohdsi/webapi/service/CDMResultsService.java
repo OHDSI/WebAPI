@@ -2,10 +2,8 @@ package org.ohdsi.webapi.service;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -16,7 +14,7 @@ import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.report.*;
 import org.ohdsi.webapi.report.mapper.*;
-import org.ohdsi.webapi.cohortresults.VisualizationData;
+//import org.ohdsi.webapi.cohortresults.VisualizationData;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
@@ -114,7 +112,7 @@ public class CDMResultsService extends AbstractDaoService {
 
         final String key = CDMResultsAnalysisRunner.DASHBOARD;
         Source source = getSourceRepository().findBySourceKey(sourceKey);
-        VisualizationData data = /*refresh ?*/ null /* : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key)*/;
+//        AchillesVisualizationData data = /*refresh ?*/ null /* : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key)*/;
 
         CDMDashboard dashboard = null;
 
@@ -122,7 +120,7 @@ public class CDMResultsService extends AbstractDaoService {
             dashboard = queryRunner.getDashboard(getSourceJdbcTemplate(source), /*id,*/ source, /*demographicsOnly,*/ true);
         } else {
             try {
-                dashboard = mapper.readValue(data.getData(), CDMDashboard.class);
+//                dashboard = mapper.readValue(data.getData(), CDMDashboard.class);
             } catch (Exception e) {
                 log.error(e);
             }
@@ -144,13 +142,13 @@ public class CDMResultsService extends AbstractDaoService {
         CDMPersonSummary person = null;
         final String key = CDMResultsAnalysisRunner.PERSON;
         Source source = getSourceRepository().findBySourceKey(sourceKey);
-        VisualizationData data = /* refresh ?*/ null /*: this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(source.getSourceId(), key)*/;
+//        AchillesVisualizationData data = /* refresh ?*/ null /*: this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(source.getSourceId(), key)*/;
 
-        if (refresh || data == null) {
+        if (refresh /*|| data == null*/) {
             person = this.queryRunner.getPersonResults(this.getSourceJdbcTemplate(source), source, true);
         } else {
             try {
-                person = mapper.readValue(data.getData(), CDMPersonSummary.class);
+//                person = mapper.readValue(data.getData(), CDMPersonSummary.class);
             } catch (Exception e) {
                 log.error(e);
             }
@@ -160,24 +158,24 @@ public class CDMResultsService extends AbstractDaoService {
     }
 
     /**
-     * Queries for person report results for the given sourceKey
+     * Queries for drug report results for the given sourceKey
      *
-     * @return CDMPersonSummary
+     * @return CDMDrugSummary
      */
     @GET
     @Path("drug")
     @Produces(MediaType.APPLICATION_JSON)
     public CDMDrugSummary getDrugReport(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
         CDMDrugSummary drugSummary = null;
-        final String key = CDMResultsAnalysisRunner.PERSON;
+        final String key = CDMResultsAnalysisRunner.DRUG;
         Source source = getSourceRepository().findBySourceKey(sourceKey);
-        VisualizationData data = /*refresh ?*/ null /*: this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(source.getSourceId(), key)*/;
+//        AchillesVisualizationData data = /*refresh ?*/ null /*: this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(source.getSourceId(), key)*/;
 
-        if (refresh || data == null) {
+        if (refresh /*|| data == null*/) {
             drugSummary = this.queryRunner.getDrugResults(this.getSourceJdbcTemplate(source), source, true);
         } else {
             try {
-                drugSummary = mapper.readValue(data.getData(), CDMDrugSummary.class);
+//                drugSummary = mapper.readValue(data.getData(), CDMDrugSummary.class);
             } catch (Exception e) {
                 log.error(e);
             }
@@ -189,28 +187,190 @@ public class CDMResultsService extends AbstractDaoService {
     /**
      * Queries for person report results for the given sourceKey
      *
-     * @return CDMPersonSummary
+     * @return CDMProcedureSummary
      */
     @GET
     @Path("procedure")
     @Produces(MediaType.APPLICATION_JSON)
     public CDMProcedureSummary getProcedureReport(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
         CDMProcedureSummary procedureSummary = null;
-        final String key = CDMResultsAnalysisRunner.PERSON;
+        final String key = CDMResultsAnalysisRunner.PROCEDURE;
         Source source = getSourceRepository().findBySourceKey(sourceKey);
-        VisualizationData data = /*refresh ?*/ null /*: this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(source.getSourceId(), key)*/;
+//        AchillesVisualizationData data = /*refresh ?*/ null /*: this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(source.getSourceId(), key)*/;
 
-        if (refresh || data == null) {
+        if (refresh /*|| data == null*/) {
             procedureSummary = this.queryRunner.getProcedureResults(this.getSourceJdbcTemplate(source), source, true);
         } else {
             try {
-                procedureSummary = mapper.readValue(data.getData(), CDMProcedureSummary.class);
+//                procedureSummary = mapper.readValue(data.getData(), CDMProcedureSummary.class);
             } catch (Exception e) {
                 log.error(e);
             }
         }
 
         return procedureSummary;
+    }
+
+    /**
+     * Queries for achilles heel report for the given sourceKey
+     *
+     * @return CDMAchillesHeel
+     */
+    @GET
+    @Path("achillesheel")
+    @Produces(MediaType.APPLICATION_JSON)
+    public CDMAchillesHeel getAchillesHeelReport(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+        CDMAchillesHeel cdmAchillesHeel = null;
+        final String key = CDMResultsAnalysisRunner.HEEL;
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+//        AchillesVisualizationData data = /*refresh ?*/ null /*: this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(source.getSourceId(), key)*/;
+
+        if (refresh /*|| data == null*/) {
+            cdmAchillesHeel = this.queryRunner.getHeelResults(this.getSourceJdbcTemplate(source), source, true);
+        } else {
+            try {
+//                procedureSummary = mapper.readValue(data.getData(), CDMProcedureSummary.class);
+            } catch (Exception e) {
+                log.error(e);
+            }
+        }
+
+        return cdmAchillesHeel;
+    }
+
+    /**
+     * Queries for observation period report for the given sourceKey
+     *
+     * @return CDMObservationPeriod
+     */
+    @GET
+    @Path("observationperiod")
+    @Produces(MediaType.APPLICATION_JSON)
+    public CDMObservationPeriod getObservationPeriods(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+        CDMObservationPeriod cdmObservationPeriod = null;
+        final String key = CDMResultsAnalysisRunner.OBSERVATIONPERIOD;
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+//        AchillesVisualizationData data = /*refresh ?*/ null /*: this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(source.getSourceId(), key)*/;
+
+        if (refresh /*|| data == null*/) {
+            cdmObservationPeriod = this.queryRunner.getObservationPeriodResults(this.getSourceJdbcTemplate(source), source, true);
+        } else {
+            try {
+//                procedureSummary = mapper.readValue(data.getData(), CDMProcedureSummary.class);
+            } catch (Exception e) {
+                log.error(e);
+            }
+        }
+
+        return cdmObservationPeriod;
+    }
+
+    /**
+     * Queries for observations report for the given sourceKey
+     *
+     * @return CDMObservation
+     */
+    @GET
+    @Path("observation")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<CDMObservation> getObservations(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+        List<CDMObservation> cdmObservationPeriods = null;
+        final String key = CDMResultsAnalysisRunner.OBSERVATION;
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+//        AchillesVisualizationData data = /*refresh ?*/ null /*: this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(source.getSourceId(), key)*/;
+
+        if (refresh /*|| data == null*/) {
+            cdmObservationPeriods = this.queryRunner.getObservationResults(this.getSourceJdbcTemplate(source), source, true);
+        } else {
+            try {
+//                procedureSummary = mapper.readValue(data.getData(), CDMProcedureSummary.class);
+            } catch (Exception e) {
+                log.error(e);
+            }
+        }
+
+        return cdmObservationPeriods;
+    }
+
+    /**
+     * Queries for data density report for the given sourceKey
+     *
+     * @return CDMDataDensity
+     */
+    @GET
+    @Path("datadensity")
+    @Produces(MediaType.APPLICATION_JSON)
+    public CDMDataDensity getDataDensity(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+        CDMDataDensity cdmDataDensity = null;
+        final String key = CDMResultsAnalysisRunner.DATADENSITY;
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+//        AchillesVisualizationData data = /*refresh ?*/ null /*: this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(source.getSourceId(), key)*/;
+
+        if (refresh /*|| data == null*/) {
+            cdmDataDensity = this.queryRunner.getDataDensityResults(this.getSourceJdbcTemplate(source), source, true);
+        } else {
+            try {
+//                procedureSummary = mapper.readValue(data.getData(), CDMProcedureSummary.class);
+            } catch (Exception e) {
+                log.error(e);
+            }
+        }
+
+        return cdmDataDensity;
+    }
+
+    /**
+     * Queries for condition report for the given sourceKey
+     *
+     * @return CDMConditionTree
+     */
+    @GET
+    @Path("condition_treemap")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<CDMCondition> getConditionTreeMap(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+        List<CDMCondition> cdmConditions = null;
+        final String key = CDMResultsAnalysisRunner.CONDITION;
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+//        AchillesVisualizationData data = /*refresh ?*/ null /*: this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(source.getSourceId(), key)*/;
+
+        if (refresh /*|| data == null*/) {
+            cdmConditions = this.queryRunner.getCondition(this.getSourceJdbcTemplate(source), source, true);
+        } else {
+            try {
+//                procedureSummary = mapper.readValue(data.getData(), CDMProcedureSummary.class);
+            } catch (Exception e) {
+                log.error(e);
+            }
+        }
+
+        return cdmConditions;
+    }
+
+    /**
+     * Queries for condition era report for the given sourceKey
+     *
+     * @return CDMConditionEra
+     */
+    @GET
+    @Path("conditionera_treemap")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<CDMConditionEra> getConditionEraTreeMap(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+        List<CDMConditionEra> cdmConditionEras = null;
+        final String key = CDMResultsAnalysisRunner.CONDITIONERA;
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+//        AchillesVisualizationData data = /*refresh ?*/ null /*: this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(source.getSourceId(), key)*/;
+
+        if (refresh /*|| data == null*/) {
+            cdmConditionEras = this.queryRunner.getConditionEras(this.getSourceJdbcTemplate(source), source, true);
+        } else {
+            try {
+//                procedureSummary = mapper.readValue(data.getData(), CDMProcedureSummary.class);
+            } catch (Exception e) {
+                log.error(e);
+            }
+        }
+
+        return cdmConditionEras;
     }
 
 
@@ -317,6 +477,14 @@ public class CDMResultsService extends AbstractDaoService {
         public static final String DASHBOARD = "dashboard";
         public static final String PERSON = "person";
         public static final String BASE_SQL_PATH = "/resources/cdmresults/sql";
+        public static final String DRUG = "drug";
+        public static final String CONDITION = "condition";
+        public static final String CONDITIONERA = "conditionera";
+        public static final String OBSERVATIONPERIOD = "observationperiod";
+        public static final String HEEL = "heel";
+        public static final String PROCEDURE = "procedure";
+        public static final String DATADENSITY = "datadensity";
+        public static final String OBSERVATION = "observation";
 
         public /*static*/ final String[] STANDARD_COLUMNS = new String[]{"cdm_database_schema",
                 "results_database_schema"/*, "cohortDefinitionId",
@@ -329,11 +497,12 @@ public class CDMResultsService extends AbstractDaoService {
         private ObjectMapper mapper;
         private String sourceDialect;
 
-        //private VisualizationDataRepository visualizationDataRepository;
+//        private AchillesVisualizationDataRepository visualizationDataRepository;
+
         public CDMResultsAnalysisRunner(String sourceDialect) {
 
             this.sourceDialect = sourceDialect;
-            //this.visualizationDataRepository = visualizationDataRepository;
+//            this.visualizationDataRepository = visualizationDataRepository;
             mapper = new ObjectMapper();
         }
 
@@ -556,6 +725,30 @@ public class CDMResultsService extends AbstractDaoService {
 //            }
 
             return cdmProcedureSummary;
+        }
+
+        public CDMAchillesHeel getHeelResults(JdbcTemplate sourceJdbcTemplate, Source source, boolean b) {
+            return new CDMAchillesHeel();
+        }
+
+        public CDMObservationPeriod getObservationPeriodResults(JdbcTemplate sourceJdbcTemplate, Source source, boolean b) {
+            return new CDMObservationPeriod();
+        }
+
+        public CDMDataDensity getDataDensityResults(JdbcTemplate sourceJdbcTemplate, Source source, boolean b) {
+            return new CDMDataDensity();
+        }
+
+        public List<CDMCondition> getCondition(JdbcTemplate sourceJdbcTemplate, Source source, boolean b) {
+            return new ArrayList<CDMCondition>();
+        }
+
+        public List<CDMConditionEra> getConditionEras(JdbcTemplate sourceJdbcTemplate, Source source, boolean b) {
+            return new ArrayList<CDMConditionEra>();
+        }
+
+        public List<CDMObservation> getObservationResults(JdbcTemplate sourceJdbcTemplate, Source source, boolean b) {
+            return new ArrayList<CDMObservation>();
         }
     }
 

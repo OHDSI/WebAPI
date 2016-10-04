@@ -28,97 +28,97 @@ import org.springframework.transaction.support.TransactionTemplate;
 @EnableTransactionManagement
 public class DataAccessConfig {
 
-  @Autowired
-  private Environment env;
+    @Autowired
+    private Environment env;
 
-  
-  private Properties getJPAProperties() {
-    Properties properties = new Properties();
-    properties.setProperty("hibernate.default_schema", this.env.getProperty("spring.jpa.properties.hibernate.default_schema"));
-    return properties;
-  }
-      
-  @Bean
-  @Primary
-  public DataSource primaryDataSource() {
 
-    String driver = this.env.getRequiredProperty("datasource.driverClassName");
-    String url = this.env.getRequiredProperty("datasource.url");
-    String user = this.env.getRequiredProperty("datasource.username");
-    String pass = this.env.getRequiredProperty("datasource.password");
-    boolean autoCommit = false;
+    private Properties getJPAProperties() {
+        Properties properties = new Properties();
+        properties.setProperty("hibernate.default_schema", this.env.getProperty("spring.jpa.properties.hibernate.default_schema"));
+        return properties;
+    }
+
+    @Bean
+    @Primary
+    public DataSource primaryDataSource() {
+
+        String driver = this.env.getRequiredProperty("datasource.driverClassName");
+        String url = this.env.getRequiredProperty("datasource.url");
+        String user = this.env.getRequiredProperty("datasource.username");
+        String pass = this.env.getRequiredProperty("datasource.password");
+        boolean autoCommit = false;
 
         //pooling - currently issues with (at least) oracle with use of temp tables and "on commit preserve rows" instead of "on commit delete rows";
-    //http://forums.ohdsi.org/t/transaction-vs-session-scope-for-global-temp-tables-statements/333/2
+        //http://forums.ohdsi.org/t/transaction-vs-session-scope-for-global-temp-tables-statements/333/2
         /*final PoolConfiguration pc = new org.apache.tomcat.jdbc.pool.PoolProperties();
      pc.setDriverClassName(driver);
      pc.setUrl(url);
      pc.setUsername(user);
      pc.setPassword(pass);
      pc.setDefaultAutoCommit(autoCommit);*/
-    //non-pooling
-    DriverManagerDataSource ds = new DriverManagerDataSource(url, user, pass);
-    ds.setDriverClassName(driver);
+        //non-pooling
+        DriverManagerDataSource ds = new DriverManagerDataSource(url, user, pass);
+        ds.setDriverClassName(driver);
         //note autocommit defaults vary across vendors. use provided @Autowired TransactionTemplate
 
-    String[] supportedDrivers;
-    supportedDrivers = new String[]{"org.postgresql.Driver", "com.microsoft.sqlserver.jdbc.SQLServerDriver", "oracle.jdbc.driver.OracleDriver", "com.amazon.redshift.jdbc41.Driver"};
+        String[] supportedDrivers;
+        supportedDrivers = new String[]{"org.postgresql.Driver", "com.microsoft.sqlserver.jdbc.SQLServerDriver", "oracle.jdbc.driver.OracleDriver", "com.amazon.redshift.jdbc41.Driver"};
 
-    for (String driverName : supportedDrivers) {
-      try {
-        Class.forName(driverName);
-        System.out.println("driver loaded: " + driverName);
-      } catch (Exception ex) {
-        System.out.println("error loading " + driverName + " driver.");
-      }
+        for (String driverName : supportedDrivers) {
+            try {
+                Class.forName(driverName);
+                System.out.println("driver loaded: " + driverName);
+            } catch (Exception ex) {
+                System.out.println("error loading " + driverName + " driver.");
+            }
+        }
+        return ds;
+        //return new org.apache.tomcat.jdbc.pool.DataSource(pc);
     }
-    return ds;
-    //return new org.apache.tomcat.jdbc.pool.DataSource(pc);        
-  }
 
-  @Bean
-  public EntityManagerFactory entityManagerFactory() {
+    @Bean
+    public EntityManagerFactory entityManagerFactory() {
 
-    HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
-    vendorAdapter.setGenerateDdl(false);
-    vendorAdapter.setShowSql(Boolean.valueOf(this.env.getRequiredProperty("spring.jpa.show-sql")));
+        HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+        vendorAdapter.setGenerateDdl(false);
+        vendorAdapter.setShowSql(Boolean.valueOf(this.env.getRequiredProperty("spring.jpa.show-sql")));
         //hibernate.dialect is resolved based on driver
-    //vendorAdapter.setDatabasePlatform(hibernateDialect);
-    
-    LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
-    factory.setJpaVendorAdapter(vendorAdapter);
-    factory.setJpaProperties(getJPAProperties());
-    factory.setPackagesToScan("org.ohdsi.webapi");
-    factory.setDataSource(primaryDataSource());
-    factory.afterPropertiesSet();
+        //vendorAdapter.setDatabasePlatform(hibernateDialect);
 
-    return factory.getObject();
-  }
+        LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
+        factory.setJpaVendorAdapter(vendorAdapter);
+        factory.setJpaProperties(getJPAProperties());
+        factory.setPackagesToScan("org.ohdsi.webapi");
+        factory.setDataSource(primaryDataSource());
+        factory.afterPropertiesSet();
 
-  @Bean
-  @Primary
-  //This is needed so that JpaTransactionManager is used for autowiring, instead of DataSourceTransactionManager
-  public PlatformTransactionManager jpaTransactionManager() {//EntityManagerFactory entityManagerFactory) {
+        return factory.getObject();
+    }
 
-    JpaTransactionManager txManager = new JpaTransactionManager();
-    txManager.setEntityManagerFactory(entityManagerFactory());
-    return txManager;
-  }
+    @Bean
+    @Primary
+    //This is needed so that JpaTransactionManager is used for autowiring, instead of DataSourceTransactionManager
+    public PlatformTransactionManager jpaTransactionManager() {//EntityManagerFactory entityManagerFactory) {
 
-  @Bean
-  public TransactionTemplate transactionTemplate(PlatformTransactionManager transactionManager) {
-    TransactionTemplate transactionTemplate = new TransactionTemplate();
-    transactionTemplate.setTransactionManager(transactionManager);
-    return transactionTemplate;
-  }
+        JpaTransactionManager txManager = new JpaTransactionManager();
+        txManager.setEntityManagerFactory(entityManagerFactory());
+        return txManager;
+    }
 
-  @Bean
-  public TransactionTemplate transactionTemplateRequiresNew(PlatformTransactionManager transactionManager) {
-    TransactionTemplate transactionTemplate = new TransactionTemplate();
-    transactionTemplate.setTransactionManager(transactionManager);
-    transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-    return transactionTemplate;
-  }
+    @Bean
+    public TransactionTemplate transactionTemplate(PlatformTransactionManager transactionManager) {
+        TransactionTemplate transactionTemplate = new TransactionTemplate();
+        transactionTemplate.setTransactionManager(transactionManager);
+        return transactionTemplate;
+    }
+
+    @Bean
+    public TransactionTemplate transactionTemplateRequiresNew(PlatformTransactionManager transactionManager) {
+        TransactionTemplate transactionTemplate = new TransactionTemplate();
+        transactionTemplate.setTransactionManager(transactionManager);
+        transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        return transactionTemplate;
+    }
   
   /*
   public String getSparqlEndpoint()

@@ -291,8 +291,6 @@ public class UserService {
     this.authorizer.removePermission(permissionId);
   }
 
-
-
   private ArrayList<Permission> convertPermissions(final Iterable<PermissionEntity> permissionEntities) {
     ArrayList<Permission> permissions = new ArrayList<Permission>();
     for (PermissionEntity permissionEntity : permissionEntities) {

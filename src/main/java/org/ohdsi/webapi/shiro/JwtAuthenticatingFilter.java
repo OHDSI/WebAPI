@@ -1,7 +1,6 @@
 package org.ohdsi.webapi.shiro;
 
 import io.jsonwebtoken.JwtException;
-import java.security.Principal;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
@@ -24,7 +23,6 @@ public final class JwtAuthenticatingFilter extends org.apache.shiro.web.filter.a
       throw new AuthenticationException(e);
     }
     
-    request.setAttribute("MY_SUBJECT", subject);    
     return new JwtAuthToken(subject);
   }
 

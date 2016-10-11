@@ -19,6 +19,7 @@ import org.apache.shiro.authc.Authenticator;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.web.filter.authc.AnonymousFilter;
+import org.apache.shiro.web.filter.authz.SslFilter;
 import org.apache.shiro.web.filter.session.NoSessionCreationFilter;
 import org.apache.shiro.web.servlet.AdviceFilter;
 import org.apache.shiro.web.util.WebUtils;
@@ -61,6 +62,12 @@ public class AtlasSecurity extends Security {
   @Value("${security.allowOrigin}")
   private String allowOrigin;
 
+  @Value("${security.ssl.port}")
+  private int sslPort;
+
+  @Value("${security.ssl.enabled}")
+  private boolean sslEnabled;
+
   private final Set<String> defaultRoles = new LinkedHashSet<>();
 
   private final Map<String, String> cohortdefinitionCreatorPermissionTemplates = new LinkedHashMap<>();
@@ -90,52 +97,52 @@ public class AtlasSecurity extends Security {
     // user
     filterChain.put(
       "/user/login",
-      "noSessionCreation, corsFilter, negotiateAuthcFilter, updateAccessTokenFilter, stopProcessingFilter");
+      "ssl, noSessionCreation, corsFilter, negotiateAuthcFilter, updateAccessTokenFilter, stopProcessingFilter");
     filterChain.put(
       "/user/refresh",
-      "noSessionCreation, corsFilter, jwtAuthcFilter, updateAccessTokenFilter, stopProcessingFilter");
+      "ssl, noSessionCreation, corsFilter, jwtAuthcFilter, updateAccessTokenFilter, stopProcessingFilter");
     filterChain.put("/user/logout", "noSessionCreation, corsFilter, invalidateAccessTokenFilter, stopProcessingFilter");
 
-    filterChain.put("/user/**", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
-    filterChain.put("/role/**", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
-    filterChain.put("/permission/**", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
+    filterChain.put("/user/**", "ssl, noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
+    filterChain.put("/role/**", "ssl, noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
+    filterChain.put("/permission/**", "ssl, noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
 
     // concept set
     filterChain.put(
       "/conceptset",
-      "noSessionCreation, corsFilter, processOnlyPutAndPostRequestsFilter, jwtAuthcFilter, authzFilter, createPermissionsOnCreateConceptSetFilter"); // only PUT and POST methods are protected
+      "ssl, noSessionCreation, corsFilter, processOnlyPutAndPostRequestsFilter, jwtAuthcFilter, authzFilter, createPermissionsOnCreateConceptSetFilter"); // only PUT and POST methods are protected
     filterChain.put(
       "/conceptset/",
-      "noSessionCreation, corsFilter, processOnlyPutAndPostRequestsFilter, jwtAuthcFilter, authzFilter, createPermissionsOnCreateConceptSetFilter"); // only PUT and POST methods are protected
-    filterChain.put("/conceptset/*/items", "noSessionCreation, corsFilter, processOnlyPostRequestsFilter, jwtAuthcFilter, authzFilter"); // only POST method is protected
-    filterChain.put("/conceptset/*/items/", "noSessionCreation, corsFilter, processOnlyPostRequestsFilter, jwtAuthcFilter, authzFilter"); // only POST method is protected
-    filterChain.put("/conceptset/*", "noSessionCreation, corsFilter, processOnlyPostRequestsFilter, jwtAuthcFilter, authzFilter"); // only POST method is protected
-    filterChain.put("/conceptset/*/delete", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter, deletePermissionsOnDeleteConceptSetFilter");
-    filterChain.put("/conceptset/*/delete/", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter, deletePermissionsOnDeleteConceptSetFilter");
+      "ssl, noSessionCreation, corsFilter, processOnlyPutAndPostRequestsFilter, jwtAuthcFilter, authzFilter, createPermissionsOnCreateConceptSetFilter"); // only PUT and POST methods are protected
+    filterChain.put("/conceptset/*/items", "ssl, noSessionCreation, corsFilter, processOnlyPostRequestsFilter, jwtAuthcFilter, authzFilter"); // only POST method is protected
+    filterChain.put("/conceptset/*/items/", "ssl, noSessionCreation, corsFilter, processOnlyPostRequestsFilter, jwtAuthcFilter, authzFilter"); // only POST method is protected
+    filterChain.put("/conceptset/*", "ssl, noSessionCreation, corsFilter, processOnlyPostRequestsFilter, jwtAuthcFilter, authzFilter"); // only POST method is protected
+    filterChain.put("/conceptset/*/delete", "ssl, noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter, deletePermissionsOnDeleteConceptSetFilter");
+    filterChain.put("/conceptset/*/delete/", "ssl, noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter, deletePermissionsOnDeleteConceptSetFilter");
 
     // cohort definition
-    filterChain.put("/cohortdefinition", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter, createPermissionsOnCreateCohortDefinitionFilter");
-    filterChain.put("/cohortdefinition/", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter, createPermissionsOnCreateCohortDefinitionFilter");
-    filterChain.put("/cohortdefinition/*/copy", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter, createPermissionsOnCreateCohortDefinitionFilter");
-    filterChain.put("/cohortdefinition/*/copy/", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter, createPermissionsOnCreateCohortDefinitionFilter");
-    filterChain.put("/cohortdefinition/*", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter, deletePermissionsOnDeleteCohortDefinitionFilter");
-    filterChain.put("/cohortdefinition/*/info", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
-    filterChain.put("/cohortdefinition/*/info/", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
-    filterChain.put("/cohortdefinition/sql", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
-    filterChain.put("/cohortdefinition/sql/", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
-    filterChain.put("/cohortdefinition/*/generate/*", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
-    filterChain.put("/cohortdefinition/*/report/*", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
-    filterChain.put("/*/cohortresults/*/breakdown", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
-    filterChain.put("/*/cohortresults/*/breakdown/", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
+    filterChain.put("/cohortdefinition", "ssl, noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter, createPermissionsOnCreateCohortDefinitionFilter");
+    filterChain.put("/cohortdefinition/", "ssl, noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter, createPermissionsOnCreateCohortDefinitionFilter");
+    filterChain.put("/cohortdefinition/*/copy", "ssl, noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter, createPermissionsOnCreateCohortDefinitionFilter");
+    filterChain.put("/cohortdefinition/*/copy/", "ssl, noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter, createPermissionsOnCreateCohortDefinitionFilter");
+    filterChain.put("/cohortdefinition/*", "ssl, noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter, deletePermissionsOnDeleteCohortDefinitionFilter");
+    filterChain.put("/cohortdefinition/*/info", "ssl, noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
+    filterChain.put("/cohortdefinition/*/info/", "ssl, noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
+    filterChain.put("/cohortdefinition/sql", "ssl, noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
+    filterChain.put("/cohortdefinition/sql/", "ssl, noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
+    filterChain.put("/cohortdefinition/*/generate/*", "ssl, noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
+    filterChain.put("/cohortdefinition/*/report/*", "ssl, noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
+    filterChain.put("/*/cohortresults/*/breakdown", "ssl, noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
+    filterChain.put("/*/cohortresults/*/breakdown/", "ssl, noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
 
     // job
-    filterChain.put("/job/execution", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
-    filterChain.put("/job/execution/", "noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
+    filterChain.put("/job/execution", "ssl, noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
+    filterChain.put("/job/execution/", "ssl, noSessionCreation, corsFilter, jwtAuthcFilter, authzFilter");
 
 
     // allowed resources
     //
-    filterChain.put("/**", "noSessionCreation, corsFilter");
+    filterChain.put("/**", "ssl, noSessionCreation, corsFilter");
 
     return filterChain;
   }
@@ -279,6 +286,11 @@ public class AtlasSecurity extends Security {
         return !(HttpMethod.PUT.equalsIgnoreCase(httpMethod) || HttpMethod.POST.equalsIgnoreCase(httpMethod));
       }
     });
+
+    SslFilter sslFilter = new SslFilter();
+    sslFilter.setPort(sslPort);
+    sslFilter.setEnabled(sslEnabled);
+    filters.put("ssl", sslFilter);
     
     return filters;
   }

@@ -49,6 +49,8 @@
 	
 	<security.token.expiration>43200</security.token.expiration>
 	<security.allowOrigin>http://localhost:8080</security.allowOrigin>
+    <security.ssl.port>8443</security.ssl.port>
+    <security.ssl.enabled>false</security.ssl.enabled>
   </properties>
   <build>
     <finalName>WebAPI</finalName>

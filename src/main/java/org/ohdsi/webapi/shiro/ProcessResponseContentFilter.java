@@ -21,7 +21,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.WriteListener;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 import org.apache.shiro.web.util.WebUtils;
@@ -66,7 +65,7 @@ public abstract class ProcessResponseContentFilter implements Filter {
     this.processResponseContent(responseString);
   }
 
-  protected void processResponseContent(String content) {
+  private void processResponseContent(String content) {
     try {
       this.doProcessResponseContent(content);
     } catch (Exception ex) {
@@ -77,12 +76,6 @@ public abstract class ProcessResponseContentFilter implements Filter {
   protected abstract boolean shouldProcess(ServletRequest request, ServletResponse response);
   
   protected abstract void doProcessResponseContent(String content) throws Exception;
-
-  protected String getHttpMethod(ServletRequest request) {
-    HttpServletRequest httpRequest = WebUtils.toHttp(request);
-    String method = httpRequest.getMethod();
-    return method;
-  }
 
   protected String parseJsonField(String json, String field) throws IOException {
     ObjectMapper mapper = new ObjectMapper();

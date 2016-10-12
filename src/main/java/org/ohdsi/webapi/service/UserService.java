@@ -127,15 +127,6 @@ public class UserService {
     return true;
   }
 
-  @POST
-  @Path("user/permitted")
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
-  public boolean isPermitted (String permission) {
-    boolean isPermitted = this.authorizer.isPermitted(permission);
-    return isPermitted;
-  }
-
   @GET
   @Path("user/{userId}/permissions")
   @Produces(MediaType.APPLICATION_JSON)
@@ -275,22 +266,7 @@ public class UserService {
     return permissions;
   }
 
-  @PUT
-  @Path("permission")
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
-  public Permission addPermissions(Permission permission) throws Exception {
-    PermissionEntity permissionEntity = this.authorizer.addPermission(permission.permission, permission.description);
-    Permission newPermission = new Permission(permissionEntity);
-    return newPermission;
-  }
-
-  @DELETE
-  @Path("permission/{permissionId}")
-  public void deletePermission(@PathParam("permissionId") Long permissionId) {
-    this.authorizer.removePermission(permissionId);
-  }
-
+  
   private ArrayList<Permission> convertPermissions(final Iterable<PermissionEntity> permissionEntities) {
     ArrayList<Permission> permissions = new ArrayList<Permission>();
     for (PermissionEntity permissionEntity : permissionEntities) {

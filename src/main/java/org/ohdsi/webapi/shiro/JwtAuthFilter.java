@@ -11,7 +11,7 @@ import org.apache.shiro.web.util.WebUtils;
  *
  * @author gennadiy.anisimov
  */
-public final class JwtAuthenticatingFilter extends org.apache.shiro.web.filter.authc.AuthenticatingFilter {
+public final class JwtAuthFilter extends org.apache.shiro.web.filter.authc.AuthenticatingFilter {
 
   @Override
   protected JwtAuthToken createToken(ServletRequest request, ServletResponse response) throws Exception {
@@ -22,28 +22,28 @@ public final class JwtAuthenticatingFilter extends org.apache.shiro.web.filter.a
     } catch (JwtException e) {
       throw new AuthenticationException(e);
     }
-    
+
     return new JwtAuthToken(subject);
   }
 
   @Override
   protected boolean onAccessDenied(ServletRequest request, ServletResponse response) throws Exception {
     boolean loggedIn = false;
-    
-    if (isLoginAttempt(request, response)) {      
+
+    if (isLoginAttempt(request, response)) {
       try {
         loggedIn = executeLogin(request, response);
       }
       catch(AuthenticationException ae) {
         loggedIn = false;
-      }      
+      }
     }
-    
+
     if (!loggedIn) {
         HttpServletResponse httpResponse = WebUtils.toHttp(response);
         httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     }
-    
+
     return loggedIn;
   }
 

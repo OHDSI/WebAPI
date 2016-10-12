@@ -4,6 +4,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.web.servlet.AdviceFilter;
 import org.apache.shiro.web.util.WebUtils;
 
@@ -12,12 +13,6 @@ import org.apache.shiro.web.util.WebUtils;
  * @author gennadiy.anisimov
  */
 public class UrlBasedAuthorizingFilter extends AdviceFilter {
-  
-  private final PermissionManager authorizer;
-  
-  public UrlBasedAuthorizingFilter(PermissionManager authorizer) {
-    this.authorizer = authorizer;
-  }
   
   @Override
   protected boolean preHandle(ServletRequest request, ServletResponse response) throws Exception {
@@ -33,12 +28,16 @@ public class UrlBasedAuthorizingFilter extends AdviceFilter {
 
     String method = httpRequest.getMethod();    
     String permission = String.format("%s:%s", path.replace("/", ":"), method).toLowerCase();
-    
-    if (this.authorizer.isPermitted(permission))
+
+    if (this.isPermitted(permission))
       return true;
     
     HttpServletResponse httpResponse = WebUtils.toHttp(response);
     httpResponse.setStatus(HttpServletResponse.SC_FORBIDDEN);
     return false;
   }
+
+  protected boolean isPermitted(String permission) {
+    return SecurityUtils.getSubject().isPermitted(permission);
+  };
 }

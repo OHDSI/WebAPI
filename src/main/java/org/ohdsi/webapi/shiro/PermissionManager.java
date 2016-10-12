@@ -205,10 +205,6 @@ public class PermissionManager {
     return this.changePermissionRequestStatus(requestId, RequestStatus.REFUSED);
   }
 
-  public boolean isPermitted(final String permission) {
-    return SecurityUtils.getSubject().isPermitted(permission);
-  }
-
   public String requestRole(final String role) throws Exception {
     final RoleEntity roleEntity = this.getRoleByName(role);    
     final UserEntity userEntity = this.getCurrentUser();

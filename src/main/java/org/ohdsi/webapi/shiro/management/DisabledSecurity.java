@@ -8,6 +8,7 @@ import javax.servlet.Filter;
 import org.apache.shiro.authc.Authenticator;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
 import org.apache.shiro.realm.Realm;
+import org.ohdsi.webapi.shiro.CorsFilter;
 import org.ohdsi.webapi.shiro.HideResourceFilter;
 import org.springframework.stereotype.Component;
 
@@ -21,14 +22,18 @@ public class DisabledSecurity extends Security {
   @Override
   public Map<String, String> getFilterChain() {
     Map<String, String> filterChain = new HashMap<>();
-    filterChain.put("/user/**", "hideResourceFilter");
+    filterChain.put("/user/**", "hideResource");
+    filterChain.put("/role/**", "hideResource");
+    filterChain.put("/permission/**", "hideResource");
+    filterChain.put("/**", "cors");
     return filterChain;
   }
 
   @Override
   public Map<String, Filter> getFilters() {
     Map<String, javax.servlet.Filter> filters = new HashMap<>();
-    filters.put("hideResourceFilter", new HideResourceFilter());
+    filters.put("hideResource", new HideResourceFilter());
+    filters.put("cors", new CorsFilter());
     return filters;
   }
 

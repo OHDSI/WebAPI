@@ -42,6 +42,7 @@ import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.pac4j.core.client.Clients;
 import org.pac4j.core.config.Config;
+import org.pac4j.oauth.client.FacebookClient;
 import org.pac4j.oauth.client.Google2Client;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -86,6 +87,13 @@ public class AtlasSecurity extends Security {
   @Value("${security.oauth.google.apiSecret}")
   private String googleApiSecret;
 
+  @Value("${security.oauth.facebook.apiKey}")
+  private String facebookApiKey;
+
+  @Value("${security.oauth.facebook.apiSecret}")
+  private String facebookApiSecret;
+
+
   private final Set<String> defaultRoles = new LinkedHashSet<>();
 
   private final Map<String, String> cohortdefinitionCreatorPermissionTemplates = new LinkedHashMap<>();
@@ -124,6 +132,7 @@ public class AtlasSecurity extends Security {
       .addRestPath("/user/refresh", "jwtAuthc, updateToken, sendTokenInHeader")
       .addRestPath("/user/logout", "invalidateToken, logout")
       .addNonRestPath("/user/oauth/google", "googleAuthc, updateToken, sendTokenInUrl")
+      .addNonRestPath("/user/oauth/facebook", "facebookAuthc, updateToken, sendTokenInUrl")
       .addPath("/user/oauth/callback", "ssl, oauthCallback")
 
       // permissions
@@ -179,11 +188,19 @@ public class AtlasSecurity extends Security {
 
     // OAuth
     //
+    Google2Client googleClient = new Google2Client(this.googleApiKey, this.googleApiSecret);
+    googleClient.setScope(Google2Client.Google2Scope.EMAIL);
+
+    FacebookClient facebookClient = new FacebookClient(this.facebookApiKey, this.facebookApiSecret);
+    facebookClient.setScope("email");
+    facebookClient.setFields("email");
+
     Config cfg =
             new Config(
                     new Clients(
-                            this.oauthApiCallback,
-                            new Google2Client(this.googleApiKey, this.googleApiSecret)
+                            this.oauthApiCallback
+                            , googleClient
+                            , facebookClient
                             // ... put new clients here and then assign them to filters ...
                     )
             );
@@ -193,6 +210,11 @@ public class AtlasSecurity extends Security {
     googleOauthFilter.setConfig(cfg);
     googleOauthFilter.setClients("Google2Client");
     filters.put("googleAuthc", googleOauthFilter);
+
+    SecurityFilter facebookOauthFilter = new SecurityFilter();
+    facebookOauthFilter.setConfig(cfg);
+    facebookOauthFilter.setClients("FacebookClient");
+    filters.put("facebookAuthc", facebookOauthFilter);
 
     CallbackFilter callbackFilter = new CallbackFilter();
     callbackFilter.setConfig(cfg);

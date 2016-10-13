@@ -14,7 +14,6 @@ import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.web.servlet.AdviceFilter;
 import org.apache.shiro.web.util.WebUtils;
-import org.ohdsi.webapi.helper.Guard;
 
 /**
  *
@@ -43,6 +42,7 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
     }
 
     String login;
+    String jwt = null;
     final PrincipalCollection principals = SecurityUtils.getSubject().getPrincipals();
     Object principal = principals.getPrimaryPrincipal();
     
@@ -50,14 +50,14 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
       login = ((Principal)principal).getName();
     } else if (principal instanceof Pac4jPrincipal) {
       login = ((Pac4jPrincipal)principal).getProfile().getEmail();
+      if (login == null) {
+        // user doesn't provide email - send empty token
+        jwt = "";
+      }
     } else if (principal instanceof String) {
       login = (String)principal;
     } else {
-      login = null;
-    }
-    
-    if (Guard.isNullOrEmpty(login)) {
-      throw new Exception("Login can't be empty");
+      throw new Exception("Unknown type of principal");
     }
 
     // stop session to make logout of OAuth users possible
@@ -66,11 +66,13 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
       session.stop();
     }
 
-    this.authorizer.registerUser(login, defaultRoles);
-    
-    Date expiration = this.getExpirationDate(this.tokenExpirationIntervalInSeconds);
-    Collection<String> permissions = this.authorizer.getAuthorizationInfo(login).getStringPermissions();
-    String jwt = TokenManager.createJsonWebToken(login, expiration, permissions);
+    if (jwt == null) {
+      this.authorizer.registerUser(login, defaultRoles);
+
+      Date expiration = this.getExpirationDate(this.tokenExpirationIntervalInSeconds);
+      Collection<String> permissions = this.authorizer.getAuthorizationInfo(login).getStringPermissions();
+      jwt = TokenManager.createJsonWebToken(login, expiration, permissions);
+    }
 
     request.setAttribute("TOKEN", jwt);
     return true;

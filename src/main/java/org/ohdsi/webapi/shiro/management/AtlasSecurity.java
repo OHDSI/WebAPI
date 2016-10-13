@@ -33,6 +33,7 @@ import org.ohdsi.webapi.shiro.JwtAuthRealm;
 import org.ohdsi.webapi.shiro.LogoutFilter;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.ProcessResponseContentFilter;
+import org.ohdsi.webapi.shiro.RedirectOnFailedOAuthFilter;
 import org.ohdsi.webapi.shiro.SendTokenInHeaderFilter;
 import org.ohdsi.webapi.shiro.SendTokenInUrlFilter;
 import org.ohdsi.webapi.shiro.SkipFurtherFilteringFilter;
@@ -133,7 +134,7 @@ public class AtlasSecurity extends Security {
       .addRestPath("/user/logout", "invalidateToken, logout")
       .addNonRestPath("/user/oauth/google", "googleAuthc, updateToken, sendTokenInUrl")
       .addNonRestPath("/user/oauth/facebook", "facebookAuthc, updateToken, sendTokenInUrl")
-      .addPath("/user/oauth/callback", "ssl, oauthCallback")
+      .addPath("/user/oauth/callback", "ssl, handleUnsuccessfullOAuth, oauthCallback")
 
       // permissions
       .addProtectedRestPath("/user/**")
@@ -219,6 +220,7 @@ public class AtlasSecurity extends Security {
     CallbackFilter callbackFilter = new CallbackFilter();
     callbackFilter.setConfig(cfg);
     filters.put("oauthCallback", callbackFilter);
+    filters.put("handleUnsuccessfullOAuth", new RedirectOnFailedOAuthFilter(this.oauthUiCallback));
 
     return filters;
   }
@@ -436,5 +438,4 @@ public class AtlasSecurity extends Security {
       return filterChain;
     }
   }
-
 }

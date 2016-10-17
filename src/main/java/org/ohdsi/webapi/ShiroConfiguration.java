@@ -4,12 +4,10 @@ import java.util.*;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
-import org.ohdsi.webapi.shiro.PermissionManager;
-import org.ohdsi.webapi.shiro.management.AtlasSecurity;
 import org.ohdsi.webapi.shiro.management.Security;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 
 /**
  * Created by GMalikov on 20.08.2015.
@@ -18,23 +16,14 @@ import org.springframework.context.annotation.Primary;
 @Configuration
 public class ShiroConfiguration {
 
-  @Bean
-  public PermissionManager authorizer() {
-    return new PermissionManager();
-  }
+  @Autowired
+  Security security;
 
-  @Bean
-  @Primary
-  public Security security() {
-    return new AtlasSecurity();
-  }
-    
   @Bean
   public ShiroFilterFactoryBean shiroFilter(){
     ShiroFilterFactoryBean shiroFilter = new ShiroFilterFactoryBean();
     shiroFilter.setSecurityManager(securityManager());
 
-    Security security = security();
     shiroFilter.setFilters(security.getFilters());
     shiroFilter.setFilterChainDefinitionMap(security.getFilterChain());
 
@@ -44,7 +33,6 @@ public class ShiroConfiguration {
   @Bean(name = "securityManager")
   public DefaultWebSecurityManager securityManager(){
     final DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
-    final Security security = security();
 
     securityManager.setAuthenticator(security.getAuthenticator());
     

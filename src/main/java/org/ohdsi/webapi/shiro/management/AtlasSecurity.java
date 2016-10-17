@@ -47,6 +47,7 @@ import org.pac4j.oauth.client.FacebookClient;
 import org.pac4j.oauth.client.Google2Client;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 import waffle.shiro.negotiate.NegotiateAuthenticationFilter;
 import waffle.shiro.negotiate.NegotiateAuthenticationRealm;
@@ -57,6 +58,7 @@ import waffle.shiro.negotiate.NegotiateAuthenticationStrategy;
  * @author gennadiy.anisimov
  */
 @Component
+@Primary
 public class AtlasSecurity extends Security {
 
   private final Log log = LogFactory.getLog(getClass());
@@ -119,7 +121,7 @@ public class AtlasSecurity extends Security {
   public Map<String, String> getFilterChain() {
 
     return new FilterChainBuilder()
-      .setNonRestFilters("ssl, cors, forceSessionCreation")
+      .setOAuthFilters("ssl, cors, forceSessionCreation", "updateToken, sendTokenInUrl")
       .setRestFilters("ssl, noSessionCreation, cors")
       .setAuthcFilter("jwtAuthc")
       .setAuthzFilter("authz")
@@ -132,8 +134,8 @@ public class AtlasSecurity extends Security {
       .addRestPath("/user/login", "negotiateAuthc, updateToken, sendTokenInHeader")
       .addRestPath("/user/refresh", "jwtAuthc, updateToken, sendTokenInHeader")
       .addRestPath("/user/logout", "invalidateToken, logout")
-      .addNonRestPath("/user/oauth/google", "googleAuthc, updateToken, sendTokenInUrl")
-      .addNonRestPath("/user/oauth/facebook", "facebookAuthc, updateToken, sendTokenInUrl")
+      .addOAuthPath("/user/oauth/google", "googleAuthc")
+      .addOAuthPath("/user/oauth/facebook", "facebookAuthc")
       .addPath("/user/oauth/callback", "ssl, handleUnsuccessfullOAuth, oauthCallback")
 
       // permissions
@@ -374,17 +376,19 @@ public class AtlasSecurity extends Security {
 
     private Map<String, String> filterChain = new LinkedHashMap<>();
     private String restFilters;
-    private String nonRestFilters;
     private String authcFilter;
     private String authzFilter;
+    private String filtersBeforeOAuth;
+    private String filtersAfterOAuth;
 
     public FilterChainBuilder setRestFilters(String restFilters) {
       this.restFilters = restFilters;
       return this;
     }
 
-    public FilterChainBuilder setNonRestFilters(String nonRestFilters) {
-      this.nonRestFilters = nonRestFilters;
+    public FilterChainBuilder setOAuthFilters(String filtersBeforeOAuth, String filtersAfterOAuth) {
+      this.filtersBeforeOAuth = filtersBeforeOAuth;
+      this.filtersAfterOAuth = filtersAfterOAuth;
       return this;
     }
 
@@ -406,8 +410,8 @@ public class AtlasSecurity extends Security {
       return this.addPath(path, this.restFilters);
     }
 
-    public FilterChainBuilder addNonRestPath(String path, String filters) {
-      return this.addPath(path, this.nonRestFilters + ", " + filters);
+    public FilterChainBuilder addOAuthPath(String path, String oauthFilter) {
+      return this.addPath(path, filtersBeforeOAuth + ", " + oauthFilter + ", " + filtersAfterOAuth);
     }
 
     public FilterChainBuilder addProtectedRestPath(String path) {

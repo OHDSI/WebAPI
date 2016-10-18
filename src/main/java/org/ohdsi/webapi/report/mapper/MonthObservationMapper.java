@@ -1,7 +1,7 @@
 	package org.ohdsi.webapi.report.mapper;
 
-	import org.ohdsi.webapi.cohortresults.MonthObservationRecord;
-	import org.springframework.jdbc.core.RowMapper;
+    import org.ohdsi.webapi.report.MonthObservationRecord;
+    import org.springframework.jdbc.core.RowMapper;
 
 	import java.sql.ResultSet;
 	import java.sql.SQLException;

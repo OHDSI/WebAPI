@@ -1,9 +1,5 @@
 package org.ohdsi.webapi.report;
 
-import org.ohdsi.webapi.cohortresults.CohortStatsRecord;
-import org.ohdsi.webapi.cohortresults.ConceptCountRecord;
-import org.ohdsi.webapi.cohortresults.ConceptDistributionRecord;
-
 import java.util.List;
 
 /**

@@ -9,6 +9,5 @@ public interface PermissionRepository extends CrudRepository<PermissionEntity, L
 
   public PermissionEntity findById(Long id);
 
-//  public List<PermissionEntity> findFirstByValueIgnoreCase(String permission);
   public PermissionEntity findByValueIgnoreCase(String permission);
 }

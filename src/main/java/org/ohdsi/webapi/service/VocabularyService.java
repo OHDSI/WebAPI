@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -17,6 +18,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.activity.Activity.ActivityType;
@@ -30,6 +32,7 @@ import org.ohdsi.webapi.vocabulary.Concept;
 import org.ohdsi.webapi.vocabulary.ConceptRelationship;
 import org.ohdsi.webapi.vocabulary.ConceptSearch;
 import org.ohdsi.webapi.vocabulary.ConceptSetExpression;
+import org.ohdsi.webapi.vocabulary.ConceptSetExpression.ConceptSetItem;
 import org.ohdsi.webapi.vocabulary.ConceptSetExpressionQueryBuilder;
 import org.ohdsi.webapi.vocabulary.DescendentOfAncestorSearch;
 import org.ohdsi.webapi.vocabulary.Domain;

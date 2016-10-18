@@ -29,8 +29,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -43,22 +45,22 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.sql.SqlTranslate;
-import org.ohdsi.webapi.GenerationStatus;
-import org.ohdsi.webapi.TerminateJobStepExceptionHandler;
+import org.ohdsi.webapi.feasibility.InclusionRule;
+import org.ohdsi.webapi.feasibility.FeasibilityStudy;
+import org.ohdsi.webapi.feasibility.PerformFeasibilityTasklet;
+import org.ohdsi.webapi.feasibility.StudyGenerationInfo;
+import org.ohdsi.webapi.feasibility.FeasibilityReport;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
+import org.ohdsi.webapi.TerminateJobStepExceptionHandler;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfo;
 import org.ohdsi.webapi.cohortdefinition.CriteriaGroup;
 import org.ohdsi.webapi.cohortdefinition.ExpressionType;
-import org.ohdsi.webapi.cohortdefinition.GenerateCohortTasklet;
-import org.ohdsi.webapi.feasibility.FeasibilityReport;
-import org.ohdsi.webapi.feasibility.FeasibilityStudy;
 import org.ohdsi.webapi.feasibility.FeasibilityStudyRepository;
-import org.ohdsi.webapi.feasibility.InclusionRule;
-import org.ohdsi.webapi.feasibility.PerformFeasibilityTasklet;
-import org.ohdsi.webapi.feasibility.StudyGenerationInfo;
+import org.ohdsi.webapi.cohortdefinition.GenerateCohortTasklet;
+import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.source.Source;
@@ -638,7 +640,6 @@ public class FeasibilityService extends AbstractDaoService {
   @Path("/{id}/copy")
   @javax.transaction.Transactional
   public FeasibilityStudyDTO copy(@PathParam("id") final int id) {
-    
     FeasibilityStudyDTO sourceStudy = getStudy(id);
     sourceStudy.id = null; // clear the ID
     sourceStudy.name = "COPY OF: " + sourceStudy.name;
@@ -669,7 +670,6 @@ public class FeasibilityService extends AbstractDaoService {
   @Path("/{id}/info/{sourceKey}")
   @Transactional    
   public void deleteInfo(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey) {
-
     FeasibilityStudy study = feasibilityStudyRepository.findOne(id);
     StudyGenerationInfo itemToRemove = null;
     for (StudyGenerationInfo info : study.getStudyGenerationInfoList())

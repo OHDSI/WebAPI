@@ -30,7 +30,7 @@ public class ShiroConfiguration {
     return shiroFilter;
   }
 
-  @Bean(name = "securityManager")
+  @Bean
   public DefaultWebSecurityManager securityManager(){
     final DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
 

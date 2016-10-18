@@ -120,14 +120,6 @@ public class UserService {
   }
 
   @GET
-  @Path("user/loggedIn")
-  @Produces(MediaType.APPLICATION_JSON)
-  public boolean isLoggedIn() {
-    // since this method is protected with authc filter, if we're here, user is logged in
-    return true;
-  }
-
-  @GET
   @Path("user/{userId}/permissions")
   @Produces(MediaType.APPLICATION_JSON)
   public ArrayList<Permission> getUsersPermissions(@PathParam("userId") Long userId) throws Exception {

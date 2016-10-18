@@ -3,14 +3,19 @@ package org.ohdsi.webapi.service;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+
 import jersey.repackaged.com.google.common.base.Joiner;
+
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
@@ -18,6 +23,8 @@ import org.ohdsi.webapi.cohortanalysis.CohortAnalysis;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTask;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTasklet;
 import org.ohdsi.webapi.cohortanalysis.CohortSummary;
+import org.ohdsi.webapi.cohortresults.CohortDashboard;
+import org.ohdsi.webapi.cohortresults.CohortSpecificSummary;
 import org.ohdsi.webapi.cohortresults.VisualizationDataRepository;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.job.JobExecutionResource;
@@ -232,7 +239,6 @@ public class CohortAnalysisService extends AbstractDaoService {
 		if (task == null) {
 			return null;
 		}
-
 		JobParametersBuilder builder = new JobParametersBuilder();
 
 		// source key comes from the client, we look it up here and hand it off to the tasklet

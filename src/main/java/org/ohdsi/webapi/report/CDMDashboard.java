@@ -1,10 +1,5 @@
 package org.ohdsi.webapi.report;
 
-import org.ohdsi.webapi.cohortresults.ConceptCountRecord;
-import org.ohdsi.webapi.cohortresults.ConceptDistributionRecord;
-import org.ohdsi.webapi.cohortresults.CumulativeObservationRecord;
-import org.ohdsi.webapi.cohortresults.MonthObservationRecord;
-
 import java.util.List;
 
 public class CDMDashboard {

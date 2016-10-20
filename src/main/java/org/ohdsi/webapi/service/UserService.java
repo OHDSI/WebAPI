@@ -9,12 +9,14 @@ import java.util.Map;
 import java.util.Set;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
@@ -171,8 +173,9 @@ public class UserService {
   @GET
   @Path("role")
   @Produces(MediaType.APPLICATION_JSON)
-  public ArrayList<Role> getRoles() {
-    Iterable<RoleEntity> roleEntities = this.authorizer.getRoles();
+  public ArrayList<Role> getRoles(
+          @DefaultValue("false") @QueryParam("include_personal") boolean includePersonalRoles) {
+    Iterable<RoleEntity> roleEntities = this.authorizer.getRoles(includePersonalRoles);
     ArrayList<Role> roles = convertRoles(roleEntities);
     return roles;
   }

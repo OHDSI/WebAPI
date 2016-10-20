@@ -1,6 +1,8 @@
 package org.ohdsi.webapi.shiro;
 
 import java.security.Principal;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -93,8 +95,21 @@ public class PermissionManager {
       this.userRoleRepository.delete(userRole);
   }
 
-  public Iterable<RoleEntity> getRoles() {
-    return this.roleRepository.findAll();
+  public Iterable<RoleEntity> getRoles(boolean includePersonalRoles) {
+    Iterable<RoleEntity> roles = this.roleRepository.findAll();
+    if (includePersonalRoles) {
+      return roles;
+    }
+
+    Set<String> logins = this.userRepository.getUserLogins();
+    HashSet<RoleEntity> filteredRoles = new HashSet<>();
+    for (RoleEntity role : roles) {
+      if (!logins.contains(role.getName())) {
+        filteredRoles.add(role);
+      }
+    }
+
+    return filteredRoles;
   }
 
   public AuthorizationInfo getAuthorizationInfo(final String login) {

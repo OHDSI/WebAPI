@@ -13,13 +13,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.report.*;
-import org.ohdsi.webapi.report.mapper.*;
 //import org.ohdsi.webapi.cohortresults.VisualizationData;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -155,60 +153,6 @@ public class CDMResultsService extends AbstractDaoService {
         }
 
         return person;
-    }
-
-    /**
-     * Queries for drug report results for the given sourceKey
-     *
-     * @return CDMDrugSummary
-     */
-    @GET
-    @Path("drug")
-    @Produces(MediaType.APPLICATION_JSON)
-    public CDMDrugSummary getDrugReport(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
-        CDMDrugSummary drugSummary = null;
-        final String key = CDMResultsAnalysisRunner.DRUG;
-        Source source = getSourceRepository().findBySourceKey(sourceKey);
-//        AchillesVisualizationData data = /*refresh ?*/ null /*: this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(source.getSourceId(), key)*/;
-
-        if (refresh /*|| data == null*/) {
-            drugSummary = this.queryRunner.getDrugResults(this.getSourceJdbcTemplate(source), source, true);
-        } else {
-            try {
-//                drugSummary = mapper.readValue(data.getData(), CDMDrugSummary.class);
-            } catch (Exception e) {
-                log.error(e);
-            }
-        }
-
-        return drugSummary;
-    }
-
-    /**
-     * Queries for person report results for the given sourceKey
-     *
-     * @return CDMProcedureSummary
-     */
-    @GET
-    @Path("procedure")
-    @Produces(MediaType.APPLICATION_JSON)
-    public CDMProcedureSummary getProcedureReport(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
-        CDMProcedureSummary procedureSummary = null;
-        final String key = CDMResultsAnalysisRunner.PROCEDURE;
-        Source source = getSourceRepository().findBySourceKey(sourceKey);
-//        AchillesVisualizationData data = /*refresh ?*/ null /*: this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(source.getSourceId(), key)*/;
-
-        if (refresh /*|| data == null*/) {
-            procedureSummary = this.queryRunner.getProcedureResults(this.getSourceJdbcTemplate(source), source, true);
-        } else {
-            try {
-//                procedureSummary = mapper.readValue(data.getData(), CDMProcedureSummary.class);
-            } catch (Exception e) {
-                log.error(e);
-            }
-        }
-
-        return procedureSummary;
     }
 
     /**
@@ -472,284 +416,86 @@ public class CDMResultsService extends AbstractDaoService {
         return listOfResults;
     }
 
-    class CDMResultsAnalysisRunner {
-
-        public static final String DASHBOARD = "dashboard";
-        public static final String PERSON = "person";
-        public static final String BASE_SQL_PATH = "/resources/cdmresults/sql";
-        public static final String DRUG = "drug";
-        public static final String CONDITION = "condition";
-        public static final String CONDITIONERA = "conditionera";
-        public static final String OBSERVATIONPERIOD = "observationperiod";
-        public static final String HEEL = "heel";
-        public static final String PROCEDURE = "procedure";
-        public static final String DATADENSITY = "datadensity";
-        public static final String OBSERVATION = "observation";
-
-        public /*static*/ final String[] STANDARD_COLUMNS = new String[]{"cdm_database_schema",
-                "results_database_schema"/*, "cohortDefinitionId",
-                "minCovariatePersonCount", "minIntervalPersonCount"*/};
-
-        public /*static*/ final String[] DRILLDOWN_COLUMNS = new String[]{"cdm_database_schema",
-                "results_database_schema", /*"cohortDefinitionId",
-                "minCovariatePersonCount", "minIntervalPersonCount",*/ "conceptId"};
-
-        private ObjectMapper mapper;
-        private String sourceDialect;
-
-//        private AchillesVisualizationDataRepository visualizationDataRepository;
-
-        public CDMResultsAnalysisRunner(String sourceDialect) {
-
-            this.sourceDialect = sourceDialect;
-//            this.visualizationDataRepository = visualizationDataRepository;
-            mapper = new ObjectMapper();
-        }
-
-        public CDMDashboard getDashboard(JdbcTemplate jdbcTemplate,
-                                            /*int id,*/ Source source,
-                                            /*boolean demographicsOnly,*/
-                                         boolean save) {
-
-            final String key = DASHBOARD;
-            CDMDashboard dashboard = new CDMDashboard();
-            boolean empty = true;
-
-            String ageAtFirstObsSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/ageatfirst.sql", null, source);
-            if (ageAtFirstObsSql != null) {
-                dashboard.setAgeAtFirstObservation(jdbcTemplate.query(ageAtFirstObsSql, new ConceptDistributionMapper()));
-            }
-
-            String genderSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/gender.sql", null, source);
-            if (genderSql != null) {
-                dashboard.setGender(jdbcTemplate.query(genderSql, new ConceptCountMapper()));
-            }
-
-//            if (!demographicsOnly) {
-            String cumulObsSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/cumulativeduration.sql", null, source);
-            if (cumulObsSql != null) {
-                dashboard.setCumulativeObservation(jdbcTemplate.query(cumulObsSql, new CumulativeObservationMapper()));
-            }
-
-            String obsByMonthSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/observedbymonth.sql", null, source);
-            if (obsByMonthSql != null) {
-                dashboard.setObservedByMonth(jdbcTemplate.query(obsByMonthSql, new MonthObservationMapper()));
-            }
-//            }
-
-//            if (CollectionUtils.isNotEmpty(dashboard.getAgeAtFirstObservation())
-//                    || CollectionUtils.isNotEmpty(dashboard.getCumulativeObservation())
-//                    || CollectionUtils.isNotEmpty(dashboard.getGender())
-//                    || CollectionUtils.isNotEmpty(dashboard.getObservedByMonth())) {
-//                empty = false;
-//            }
-//
-//            if (!empty && save) {
-//                this.saveEntity(id, source.getSourceId(), key, dashboard);
-//            }
-
-            return dashboard;
-
-        }
-
-        /**
-         * Queries for CDM person results for the given source
-         *
-         * @param jdbcTemplate JDBCTemplate
-         * @return CDMPersonSummary
-         */
-        public CDMPersonSummary getPersonResults(JdbcTemplate jdbcTemplate,
-                                                 final Source source,
-                                                 boolean save) {
-
-            final String key = PERSON;
-            CDMPersonSummary person = new CDMPersonSummary();
-            boolean empty = true;
-            Integer id = null;
-
-            String personSummaryData = this.renderTranslateCohortSql(BASE_SQL_PATH + "/report/person/population.sql", null, source);
-            if (personSummaryData != null) {
-                person.setYearOfBirth(jdbcTemplate.query(personSummaryData, new ConceptDistributionMapper()));
-            }
-
-//            String yobStatSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/yearofbirth_stats.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
-//            if (yobStatSql != null) {
-//                person.setYearOfBirthStats(jdbcTemplate.query(yobStatSql, new CohortStatsMapper()));
-//            }
-
-            String genderSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/gender.sql", id, /*minCovariatePersonCountParam, minIntervalPersonCountParam,*/ source);
-            if (genderSql != null) {
-                person.setGender(jdbcTemplate.query(genderSql, new ConceptCountMapper()));
-            }
-
-            String raceSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/race.sql", id, /*minCovariatePersonCountParam, minIntervalPersonCountParam,*/ source);
-            if (raceSql != null) {
-                person.setRace(jdbcTemplate.query(raceSql, new ConceptCountMapper()));
-            }
-
-            String ethnicitySql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/ethnicity.sql", id, /*minCovariatePersonCountParam, minIntervalPersonCountParam,*/ source);
-            if (ethnicitySql != null) {
-                person.setEthnicity(jdbcTemplate.query(ethnicitySql, new ConceptCountMapper()));
-            }
-
-//            if (CollectionUtils.isNotEmpty(person.getEthnicity())
-//                    || CollectionUtils.isNotEmpty(person.getGender())
-//                    || CollectionUtils.isNotEmpty(person.getRace())
-//                    || CollectionUtils.isNotEmpty(person.getYearOfBirth())
-//                    || CollectionUtils.isNotEmpty(person.getYearOfBirthStats())) {
-//                empty = false;
-//            }
-//
-//            if (!empty && save) {
-//                this.saveEntity(id, source.getSourceId(), key, person);
-//            }
-
-            return person;
-        }
-
-        /**
-         * Passes in common params for cdm results, and performs SQL
-         * translate/render
-         */
-        public String renderTranslateCohortSql(String sqlPath, Integer id, Integer conceptId,
-                                               Source source) {
-            String sql = null;
-
-            String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-            String vocabularyTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
-
-            try {
-                String[] cols;
-                String[] colValues;
-                if (conceptId != null) {
-                    cols = DRILLDOWN_COLUMNS;
-                    colValues = new String[]{vocabularyTableQualifier,
-                            resultsTableQualifier, /*String.valueOf(id),
-                            minCovariatePersonCountParam == null ? MIN_COVARIATE_PERSON_COUNT
-                                    : minCovariatePersonCountParam,
-                            minIntervalPersonCountParam == null ? MIN_INTERVAL_PERSON_COUNT
-                                    : minIntervalPersonCountParam,*/
-                            String.valueOf(conceptId)};
-                } else {
-                    cols = STANDARD_COLUMNS;
-                    colValues = new String[]{vocabularyTableQualifier,
-                            resultsTableQualifier, /*String.valueOf(id),
-                            minCovariatePersonCountParam == null ? MIN_COVARIATE_PERSON_COUNT
-                                    : minCovariatePersonCountParam,
-                            minIntervalPersonCountParam == null ? MIN_INTERVAL_PERSON_COUNT
-                                    : minIntervalPersonCountParam*/};
-                }
-
-                sql = ResourceHelper.GetResourceAsString(sqlPath);
-                sql = SqlRender.renderSql(sql, cols, colValues);
-                sql = SqlTranslate.translateSql(sql, sourceDialect, source.getSourceDialect());
-            } catch (Exception e) {
-                log.error(String.format("Unable to translate sql for  %s", sql), e);
-            }
-
-            return sql;
-        }
-
-        /**
-         * Passes in common params for cdm results, and performs SQL
-         * translate/render
-         */
-        public String renderTranslateCohortSql(String sqlPath, Integer id,
-                                               Source source) {
-            return renderTranslateCohortSql(sqlPath, id, null, source);
-        }
-
-        public CDMDrugSummary getDrugResults(JdbcTemplate sourceJdbcTemplate, Source source, boolean b) {
-            final String key = PERSON;
-            CDMDrugSummary cdmDrugSummary = new CDMDrugSummary();
-            boolean empty = true;
-
-            String personSummaryData = this.renderTranslateCohortSql(BASE_SQL_PATH + "report/person/population.sql", null, source);
 
 
-//            if (CollectionUtils.isNotEmpty(person.getEthnicity())
-//                    || CollectionUtils.isNotEmpty(person.getGender())
-//                    || CollectionUtils.isNotEmpty(person.getRace())
-//                    || CollectionUtils.isNotEmpty(person.getYearOfBirth())
-//                    || CollectionUtils.isNotEmpty(person.getYearOfBirthStats())) {
-//                empty = false;
-//            }
+    /**
+     * Queries for visit treemap results
+     *
+     * @return List<HierarchicalConceptRecord>
+     */
+    @GET
+    @Path("/visit/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<org.ohdsi.webapi.cohortresults.HierarchicalConceptRecord> getVisitTreemap(
+                                                           @PathParam("sourceKey") final String sourceKey) {
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+        return queryRunner.getTreemap(this.getSourceJdbcTemplate(source), "Visit", source);
+    }
 
-//            if (!empty && save) {
-//                this.saveEntity(id, source.getSourceId(), key, person);
-//            }
+    /**
+     * Queries for condition treemap results
+     *
+     * @return List<HierarchicalConceptRecord>
+     */
+    @GET
+    @Path("/condition/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<org.ohdsi.webapi.cohortresults.HierarchicalConceptRecord> getConditionTreemap(
+            @PathParam("sourceKey") final String sourceKey) {
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+        return queryRunner.getTreemap(this.getSourceJdbcTemplate(source), "Condition", source);
+    }
 
-            return cdmDrugSummary;
-        }
+    /**
+     * Queries for procedure treemap results
+     *
+     * @return List<HierarchicalConceptRecord>
+     */
+    @GET
+    @Path("/procedure/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<org.ohdsi.webapi.cohortresults.HierarchicalConceptRecord> getProcedureTreemap(
+            @PathParam("sourceKey") final String sourceKey) {
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+        return queryRunner.getTreemap(this.getSourceJdbcTemplate(source), "Procedure", source);
+    }
 
-        public CDMProcedureSummary getProcedureResults(JdbcTemplate sourceJdbcTemplate, Source source, boolean b) {
-            final String key = PERSON;
-            CDMProcedureSummary cdmProcedureSummary = new CDMProcedureSummary();
-            boolean empty = true;
+    /**
+     * Queries for drug treemap results
+     *
+     * @return List<HierarchicalConceptRecord>
+     */
+    @GET
+    @Path("/drug/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<org.ohdsi.webapi.cohortresults.HierarchicalConceptRecord> getDrugTreemap(
+            @PathParam("sourceKey") final String sourceKey) {
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+        return queryRunner.getTreemap(this.getSourceJdbcTemplate(source), "Drug", source);
+    }
 
-            String personSummaryData = this.renderTranslateCohortSql(BASE_SQL_PATH + "report/person/population.sql", null, source);
-//            if (personSummaryData != null) {
-//                person.setYearOfBirth(jdbcTemplate.query(yobSql, new ConceptDistributionMapper()));
-//            }
+    /**
+     * Queries for measurement treemap results
+     *
+     * @return List<HierarchicalConceptRecord>
+     */
+    @GET
+    @Path("/measurement/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<org.ohdsi.webapi.cohortresults.HierarchicalConceptRecord> getMeasurementTreemap(
+            @PathParam("sourceKey") final String sourceKey) {
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+        return queryRunner.getTreemap(this.getSourceJdbcTemplate(source), "Measurement", source);
+    }
 
-//            String yobStatSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/yearofbirth_stats.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
-//            if (yobStatSql != null) {
-//                person.setYearOfBirthStats(jdbcTemplate.query(yobStatSql, new CohortStatsMapper()));
-//            }
-//
-//            String genderSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/gender.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
-//            if (genderSql != null) {
-//                person.setGender(jdbcTemplate.query(genderSql, new ConceptCountMapper()));
-//            }
-//
-//            String raceSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/race.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
-//            if (raceSql != null) {
-//                person.setRace(jdbcTemplate.query(raceSql, new ConceptCountMapper()));
-//            }
-//
-//            String ethnicitySql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/ethnicity.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
-//            if (ethnicitySql != null) {
-//                person.setEthnicity(jdbcTemplate.query(ethnicitySql, new ConceptCountMapper()));
-//            }
-//
-//            if (CollectionUtils.isNotEmpty(person.getEthnicity())
-//                    || CollectionUtils.isNotEmpty(person.getGender())
-//                    || CollectionUtils.isNotEmpty(person.getRace())
-//                    || CollectionUtils.isNotEmpty(person.getYearOfBirth())
-//                    || CollectionUtils.isNotEmpty(person.getYearOfBirthStats())) {
-//                empty = false;
-//            }
-//
-//            if (!empty && save) {
-//                this.saveEntity(id, source.getSourceId(), key, person);
-//            }
-
-            return cdmProcedureSummary;
-        }
-
-        public CDMAchillesHeel getHeelResults(JdbcTemplate sourceJdbcTemplate, Source source, boolean b) {
-            return new CDMAchillesHeel();
-        }
-
-        public CDMObservationPeriod getObservationPeriodResults(JdbcTemplate sourceJdbcTemplate, Source source, boolean b) {
-            return new CDMObservationPeriod();
-        }
-
-        public CDMDataDensity getDataDensityResults(JdbcTemplate sourceJdbcTemplate, Source source, boolean b) {
-            return new CDMDataDensity();
-        }
-
-        public List<CDMCondition> getCondition(JdbcTemplate sourceJdbcTemplate, Source source, boolean b) {
-            return new ArrayList<CDMCondition>();
-        }
-
-        public List<CDMConditionEra> getConditionEras(JdbcTemplate sourceJdbcTemplate, Source source, boolean b) {
-            return new ArrayList<CDMConditionEra>();
-        }
-
-        public List<CDMObservation> getObservationResults(JdbcTemplate sourceJdbcTemplate, Source source, boolean b) {
-            return new ArrayList<CDMObservation>();
-        }
+    @GET
+    @Path("/visit/{conceptId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public org.ohdsi.webapi.cohortresults.CohortVisitsDrilldown getVisitsDrilldown(@PathParam("conceptId") final int conceptId,
+                                                                                         @PathParam("sourceKey") final String sourceKey) {
+        org.ohdsi.webapi.cohortresults.CohortVisitsDrilldown drilldown = new org.ohdsi.webapi.cohortresults.CohortVisitsDrilldown();
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+        return this.queryRunner.getVisitsDrilldown(this.getSourceJdbcTemplate(source), conceptId, source);
     }
 
 }

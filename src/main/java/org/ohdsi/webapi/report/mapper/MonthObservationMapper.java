@@ -11,9 +11,9 @@
         @Override
         public MonthObservationRecord mapRow(ResultSet rs, int rowNum) throws SQLException {
             MonthObservationRecord record = new MonthObservationRecord();
-            record.setMonthYear(rs.getInt("MONTH_YEAR"));
-            record.setPercentValue(rs.getDouble("PERCENT_VALUE"));
-            record.setCountValue(rs.getLong("COUNT_VALUE"));
+            record.setMonthYear(rs.getInt("MONTHYEAR"));
+            record.setPercentValue(rs.getDouble("PERCENTVALUE"));
+            record.setCountValue(rs.getLong("COUNTVALUE"));
             return record;
         }
 

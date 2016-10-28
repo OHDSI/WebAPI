@@ -12,9 +12,9 @@ public class ConceptDistributionMapper implements RowMapper<ConceptDistributionR
 	public ConceptDistributionRecord mapRow(ResultSet rs, int rowNum)
 			throws SQLException {
 		ConceptDistributionRecord record = new ConceptDistributionRecord();
-		record.setCountValue(rs.getLong("COUNT_VALUE"));
-		record.setIntervalIndex(rs.getInt("INTERVAL_INDEX"));
-		record.setPercentValue(rs.getDouble("PERCENT_VALUE"));
+		record.setCountValue(rs.getLong("COUNTVALUE"));
+		record.setIntervalIndex(rs.getInt("INTERVALINDEX"));
+		record.setPercentValue(rs.getDouble("PERCENTVALUE"));
 		return record;
 	}
 

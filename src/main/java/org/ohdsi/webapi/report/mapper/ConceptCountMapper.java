@@ -11,9 +11,9 @@ public class ConceptCountMapper implements RowMapper<ConceptCountRecord> {
 	@Override
 	public ConceptCountRecord mapRow(ResultSet rs, int rowNum) throws SQLException {
 		ConceptCountRecord record = new ConceptCountRecord();
-		record.setConceptId(rs.getLong("CONCEPT_ID"));
-		record.setConceptName(rs.getString("CONCEPT_NAME"));
-		record.setCountValue(rs.getLong("COUNT_VALUE"));
+		record.setConceptId(rs.getLong("CONCEPTID"));
+		record.setConceptName(rs.getString("CONCEPTNAME"));
+		record.setCountValue(rs.getLong("COUNTVALUE"));
 		return record;
 	}
 

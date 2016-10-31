@@ -354,6 +354,7 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
         intersectClause += "<= " + group.count;
     }
            
+    query = StringUtils.replace(query, "@eventTable", eventTable);
     query = StringUtils.replace(query, "@intersectClause", intersectClause);
     query = StringUtils.replace(query, "@criteriaQueries", StringUtils.join(additionalCriteriaQueries, "\nUNION\n"));
     

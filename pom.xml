@@ -367,11 +367,6 @@
       <version>4.1</version>
       <type>jar</type>
     </dependency>
-    <dependency>
-      <groupId>org.codehaus.jettison</groupId>
-      <artifactId>jettison</artifactId>
-      <version>1.2</version>
-    </dependency>
   </dependencies>
   <profiles>
     <profile>

@@ -1,6 +1,9 @@
 package org.ohdsi.webapi.report;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.commons.lang.WordUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ohdsi.sql.SqlRender;
@@ -8,12 +11,14 @@ import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortresults.*;
 import org.ohdsi.webapi.cohortresults.mapper.HierarchicalConceptMapper;
 import org.ohdsi.webapi.helper.ResourceHelper;
-import org.ohdsi.webapi.report.mapper.ConceptCountMapper;
-import org.ohdsi.webapi.report.mapper.ConceptDistributionMapper;
-import org.ohdsi.webapi.report.mapper.CumulativeObservationMapper;
-import org.ohdsi.webapi.report.mapper.MonthObservationMapper;
+import org.ohdsi.webapi.report.mapper.*;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
+import org.springframework.data.mapping.model.CamelCaseAbbreviatingFieldNamingStrategy;
+import org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.ArrayList;
@@ -366,5 +371,37 @@ public class CDMResultsAnalysisRunner {
         drilldown.setPrevalenceByMonth(prevalenceByMonth);
 
         return drilldown;
+    }
+
+    public JsonNode getDrilldown(JdbcTemplate jdbcTemplate,
+                                 final String domain,
+                                 final int conceptId,
+                                 Source source) {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode objectNode = mapper.createObjectNode();
+
+        ClassLoader cl = this.getClass().getClassLoader();
+        ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(cl);
+        String pattern = BASE_SQL_PATH + "/report/" + domain.toLowerCase() + "/*.sql";
+        try {
+            Resource[] resources = resolver.getResources(pattern);
+            for (Resource resource : resources) {
+                String fullSqlPath = resource.getURL().getPath();
+                if (!fullSqlPath.toLowerCase().contains("tree")) {
+                    int startIndex = fullSqlPath.indexOf(BASE_SQL_PATH);
+                    String sqlPath = fullSqlPath.substring(startIndex);
+                    String sql = this.renderTranslateSql(sqlPath, conceptId, source);
+                    if (sql != null) {
+                        List<JsonNode> l = jdbcTemplate.query(sql, new GenericRowMapper());
+                        String analysisName = resource.getFilename().substring(3).replace(".sql", "");
+                        String fieldName = analysisName.substring(0,1).toLowerCase() + analysisName.substring(1);
+                        objectNode.putArray(fieldName).addAll(l);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error(e);
+        }
+        return objectNode;
     }
 }

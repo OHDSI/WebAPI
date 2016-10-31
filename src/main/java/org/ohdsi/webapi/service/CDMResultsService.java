@@ -8,7 +8,9 @@ import javax.annotation.PostConstruct;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
@@ -18,6 +20,7 @@ import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -489,13 +492,14 @@ public class CDMResultsService extends AbstractDaoService {
     }
 
     @GET
-    @Path("/visit/{conceptId}")
+    @Path("/{domain}/{conceptId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public org.ohdsi.webapi.cohortresults.CohortVisitsDrilldown getVisitsDrilldown(@PathParam("conceptId") final int conceptId,
-                                                                                         @PathParam("sourceKey") final String sourceKey) {
-        org.ohdsi.webapi.cohortresults.CohortVisitsDrilldown drilldown = new org.ohdsi.webapi.cohortresults.CohortVisitsDrilldown();
+    public JsonNode getDrilldown(@PathParam("domain") final String domain,
+                                 @PathParam("conceptId") final int conceptId,
+                                 @PathParam("sourceKey") final String sourceKey) {
         Source source = getSourceRepository().findBySourceKey(sourceKey);
-        return this.queryRunner.getVisitsDrilldown(this.getSourceJdbcTemplate(source), conceptId, source);
+        JdbcTemplate jdbcTemplate = this.getSourceJdbcTemplate(source);
+        return queryRunner.getDrilldown(jdbcTemplate, domain, conceptId, source);
     }
 
 }

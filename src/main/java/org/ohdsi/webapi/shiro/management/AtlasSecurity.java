@@ -17,6 +17,7 @@ import javax.ws.rs.HttpMethod;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.Authenticator;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
 import org.apache.shiro.realm.Realm;
@@ -370,6 +371,14 @@ public class AtlasSecurity extends Security {
     sslFilter.setPort(sslPort);
     sslFilter.setEnabled(sslEnabled);
     return sslFilter;
+  }
+
+  @Override
+  public String getSubject() {
+    if (SecurityUtils.getSubject().isAuthenticated())
+      return authorizer.getSubjectName();
+    else
+      return "anonymous";
   }
 
   private class FilterChainBuilder {

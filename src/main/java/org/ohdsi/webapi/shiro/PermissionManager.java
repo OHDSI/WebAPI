@@ -348,7 +348,7 @@ public class PermissionManager {
     String roleName = this.getSubjectName();
     RoleEntity role = this.roleRepository.findByName(roleName);
     if (role == null)
-      throw new Exception(String.format("There is now personal role for user %s", roleName));
+      throw new Exception(String.format("There is no personal role for user %s", roleName));
 
     return role;
   }
@@ -491,7 +491,7 @@ public class PermissionManager {
     return relation;
   }
 
-  private String getSubjectName() {
+  public String getSubjectName() {
     Subject subject = SecurityUtils.getSubject();
     Object principalObject = subject.getPrincipals().getPrimaryPrincipal();
 

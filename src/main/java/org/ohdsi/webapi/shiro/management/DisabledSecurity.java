@@ -46,4 +46,9 @@ public class DisabledSecurity extends Security {
   public Authenticator getAuthenticator() {
     return new ModularRealmAuthenticator();
   }
+
+  @Override
+  public String getSubject() {
+    return "anonymous";
+  }
 }

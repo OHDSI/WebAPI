@@ -13,6 +13,8 @@ import org.springframework.stereotype.Component;
 @Component
 public abstract class Security {
 
+  public abstract String getSubject();
+
   public abstract Set<Realm> getRealms();
   
   public abstract Map<String, javax.servlet.Filter> getFilters();

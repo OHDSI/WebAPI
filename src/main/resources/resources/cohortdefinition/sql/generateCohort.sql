@@ -1,12 +1,15 @@
 @codesetQuery
-@primaryEventsQuery
 
+with primary_events (event_id, person_id, start_date, end_date, op_start_date, op_end_date) as
+(
+@primaryEventsQuery
+)
 SELECT event_id, person_id, start_date, end_date, op_start_date, op_end_date
 INTO #qualified_events
 FROM 
 (
   select pe.event_id, pe.person_id, pe.start_date, pe.end_date, pe.op_start_date, pe.op_end_date, row_number() over (partition by pe.person_id order by pe.start_date @QualifiedEventSort) as ordinal
-  FROM #primary_events pe
+  FROM primary_events pe
   @additionalCriteriaQuery
 ) QE
 @QualifiedLimitFilter
@@ -16,6 +19,7 @@ FROM
 create table #inclusionRuleCohorts 
 (
   inclusion_rule_id bigint,
+  person_id bigint,
   event_id bigint
 )
 ;
@@ -28,7 +32,7 @@ with cteIncludedEvents(event_id, person_id, start_date, end_date, op_start_date,
   (
     select Q.event_id, Q.person_id, Q.start_date, Q.end_date, Q.op_start_date, Q.op_end_date, SUM(coalesce(POWER(cast(2 as bigint), I.inclusion_rule_id), 0)) as inclusion_rule_mask
     from #qualified_events Q
-    LEFT JOIN #inclusionRuleCohorts I on I.event_id = Q.event_id
+    LEFT JOIN #inclusionRuleCohorts I on I.person_id = Q.person_id and I.event_id = Q.event_id
     GROUP BY Q.event_id, Q.person_id, Q.start_date, Q.end_date, Q.op_start_date, Q.op_end_date
   ) MG -- matching groups
 {@ruleTotal != 0}?{
@@ -120,9 +124,6 @@ DROP TABLE #qualified_events;
 
 TRUNCATE TABLE #included_events;
 DROP TABLE #included_events;
-
-TRUNCATE TABLE #primary_events;
-DROP TABLE #primary_events;
 
 TRUNCATE TABLE #Codesets;
 DROP TABLE #Codesets;

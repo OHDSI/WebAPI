@@ -1,6 +1,6 @@
 (SELECT
-   aa1.analysis_name AS attribute_name,
-   ar1.stratum_1     AS attribute_value
+   aa1.analysis_name AS attributeName,
+   ar1.stratum_1     AS attributeValue
  FROM @results_database_schema.ACHILLES_analysis aa1
 INNER JOIN
 @results_database_schema.ACHILLES_results ar1

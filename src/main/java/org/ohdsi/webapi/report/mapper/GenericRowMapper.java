@@ -26,34 +26,29 @@ public class GenericRowMapper implements RowMapper<JsonNode> {
         int columnCount = rsmd.getColumnCount();
         for (int index = 1; index <= columnCount; index++) {
             String column = JdbcUtils.lookupColumnName(rsmd, index);
-            String capitalized = WordUtils.capitalizeFully(column, new char[]{'_'}).replaceAll("_", "");
-            String fieldName = capitalized.substring(0, 1).toLowerCase() + capitalized.substring(1);
-            if(fieldName.endsWith("pp")){
-                fieldName = fieldName.replace("pp", "Pp");
-            }
             Object value = rs.getObject(column);
             if (value == null) {
-                objectNode.putNull(fieldName);
+                objectNode.putNull(column);
             } else if (value instanceof Integer) {
-                objectNode.put(fieldName, (Integer) value);
+                objectNode.put(column, (Integer) value);
             } else if (value instanceof String) {
-                objectNode.put(fieldName, (String) value);
+                objectNode.put(column, (String) value);
             } else if (value instanceof Boolean) {
-                objectNode.put(fieldName, (Boolean) value);
+                objectNode.put(column, (Boolean) value);
             } else if (value instanceof Date) {
-                objectNode.put(fieldName, ((Date) value).getTime());
+                objectNode.put(column, ((Date) value).getTime());
             } else if (value instanceof Long) {
-                objectNode.put(fieldName, (Long) value);
+                objectNode.put(column, (Long) value);
             } else if (value instanceof Double) {
-                objectNode.put(fieldName, (Double) value);
+                objectNode.put(column, (Double) value);
             } else if (value instanceof Float) {
-                objectNode.put(fieldName, (Float) value);
+                objectNode.put(column, (Float) value);
             } else if (value instanceof BigDecimal) {
-                objectNode.put(fieldName, (BigDecimal) value);
+                objectNode.put(column, (BigDecimal) value);
             } else if (value instanceof Byte) {
-                objectNode.put(fieldName, (Byte) value);
+                objectNode.put(column, (Byte) value);
             } else if (value instanceof byte[]) {
-                objectNode.put(fieldName, (byte[]) value);
+                objectNode.put(column, (byte[]) value);
             } else {
                 throw new IllegalArgumentException("Unmappable object type: " + value.getClass());
             }

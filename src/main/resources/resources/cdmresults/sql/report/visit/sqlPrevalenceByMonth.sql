@@ -1,10 +1,10 @@
 SELECT
-  c1.concept_id                                      AS concept_id,
+  c1.concept_id                                      AS conceptId,
   --all rows for all concepts, but you may split by conceptid
-  c1.concept_name                                    AS concept_name,
-  num.stratum_2                                      AS x_calendar_month,
+  c1.concept_name                                    AS conceptName,
+  num.stratum_2                                      AS xCalendarMonth,
   -- calendar year, note, there could be blanks
-  1000 * (1.0 * num.count_value / denom.count_value) AS y_prevalence_1000pp --prevalence, per 1000 persons
+  1000 * (1.0 * num.count_value / denom.count_value) AS yPrevalence1000Pp --prevalence, per 1000 persons
 FROM
   (SELECT *
    FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 202) num

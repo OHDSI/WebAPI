@@ -1,9 +1,9 @@
 SELECT
-  c1.concept_id         AS condition_concept_id,
-  c1.concept_name       AS condition_concept_name,
-  c2.concept_group_id   AS concept_id,
-  c2.concept_group_name AS concept_name,
-  sum(ar1.count_value)  AS count_value
+  c1.concept_id         AS conditionConceptId,
+  c1.concept_name       AS conditionConceptName,
+  c2.concept_group_id   AS conceptId,
+  c2.concept_group_name AS conceptName,
+  sum(ar1.count_value)  AS countValue
 FROM @results_database_schema.ACHILLES_results ar1
 INNER JOIN
 @vocab_database_schema.concept c1

@@ -1,7 +1,7 @@
 SELECT
-  'Length of observation'                                  AS series_name,
-  cast(ar1.stratum_1 AS INT) * 30                          AS x_length_of_observation,
-  round(1.0 * sum(ar2.count_value) / denom.count_value, 5) AS y_percent_persons
+  'Length of observation'                                  AS seriesName,
+  cast(ar1.stratum_1 AS INT) * 30                          AS xLengthOfObservation,
+  round(1.0 * sum(ar2.count_value) / denom.count_value, 5) AS yPercentPersons
 FROM (SELECT *
       FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 108) ar1
   INNER JOIN

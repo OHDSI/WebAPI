@@ -1,7 +1,7 @@
 SELECT
-  cast(ar1.stratum_1 AS INT)                          AS interval_index,
-  ar1.count_value                                     AS count_value,
-  round(1.0 * ar1.count_value / denom.count_value, 5) AS percent_value
+  cast(ar1.stratum_1 AS INT)                          AS intervalIndex,
+  ar1.count_value                                     AS countValue,
+  round(1.0 * ar1.count_value / denom.count_value, 5) AS percentValue
 FROM
   (
     SELECT *

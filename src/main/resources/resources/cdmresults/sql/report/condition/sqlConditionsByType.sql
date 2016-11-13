@@ -1,38 +1,39 @@
-select c1.concept_id as condition_concept_id, 
-       c1.concept_name as condition_concept_name,
-       c2.concept_group_id as concept_id,
-       c2.concept_group_name as concept_name, 
-       sum(ar1.count_value) as count_value
-from @results_database_schema.ACHILLES_results ar1
-       inner join
-       @vocab_database_schema.concept c1
-       on ar1.stratum_1 = cast(c1.concept_id as VARCHAR)
-       inner join
-       (
-       select concept_id,
-             case when concept_name like 'Inpatient%' then 10
-                    when concept_name like 'Outpatient%' then 20
-                    else concept_id end  
-                    +
-                    case when (concept_name like 'Inpatient%' or concept_name like 'Outpatient%' ) and (concept_name like '%primary%' or concept_name like '%1st position%') then 1
-                    when (concept_name like 'Inpatient%' or concept_name like 'Outpatient%' ) and (concept_name not like '%primary%' and concept_name not like '%1st position%') then 2
-                    else 0 end as concept_group_id,
-             case when concept_name like 'Inpatient%' then 'Claim- Inpatient: '
-                    when concept_name like 'Outpatient%' then 'Claim- Outpatient: '
-                    else concept_name end  
-                    +
-                    ''
-                    +
-                    case when (concept_name like 'Inpatient%' or concept_name like 'Outpatient%' ) and (concept_name like '%primary%' or concept_name like '%1st position%') then 'Primary diagnosis'
-                    when (concept_name like 'Inpatient%' or concept_name like 'Outpatient%' ) and (concept_name not like '%primary%' and concept_name not like '%1st position%') then 'Secondary diagnosis'
-                    else '' end as concept_group_name
-       from @vocab_database_schema.concept
-       where lower(domain_id) = 'condition type' 
-       
-       ) c2
-       on ar1.stratum_2 = cast(c2.concept_id as VARCHAR)
-where ar1.analysis_id = 405
-group by c1.concept_id, 
-       c1.concept_name,
-       c2.concept_group_id,
-       c2.concept_group_name
+SELECT
+  c1.concept_id         AS condition_concept_id,
+  c1.concept_name       AS condition_concept_name,
+  c2.concept_group_id   AS concept_id,
+  c2.concept_group_name AS concept_name,
+  sum(ar1.count_value)  AS count_value
+FROM @results_database_schema.ACHILLES_results ar1
+INNER JOIN
+@vocab_database_schema.concept c1
+ON ar1.stratum_1 = cast(c1.concept_id AS VARCHAR )
+INNER JOIN
+(
+SELECT concept_id,
+CASE WHEN concept_name LIKE 'Inpatient%' THEN 10
+WHEN concept_name LIKE 'Outpatient%' THEN 20
+ELSE concept_id END
++
+CASE WHEN (concept_name LIKE 'Inpatient%' OR concept_name LIKE 'Outpatient%' ) AND (concept_name LIKE '%primary%' OR concept_name LIKE '%1st position%') THEN 1
+WHEN (concept_name LIKE 'Inpatient%' OR concept_name LIKE 'Outpatient%' ) AND (concept_name NOT LIKE '%primary%' AND concept_name NOT LIKE '%1st position%') THEN 2
+ELSE 0 END AS concept_group_id,
+CASE WHEN concept_name LIKE 'Inpatient%' THEN 'Claim- Inpatient: '
+WHEN concept_name LIKE 'Outpatient%' THEN 'Claim- Outpatient: '
+ELSE concept_name END
++
+''
++
+CASE WHEN (concept_name LIKE 'Inpatient%' OR concept_name LIKE 'Outpatient%' ) AND (concept_name LIKE '%primary%' OR concept_name LIKE '%1st position%') THEN 'Primary diagnosis'
+WHEN (concept_name LIKE 'Inpatient%' OR concept_name LIKE 'Outpatient%' ) AND (concept_name NOT LIKE '%primary%' AND concept_name NOT LIKE '%1st position%') THEN 'Secondary diagnosis'
+ELSE '' END AS concept_group_name
+FROM @vocab_database_schema.concept
+WHERE lower(domain_id) = 'condition type'
+
+) c2
+ON ar1.stratum_2 = cast(c2.concept_id AS VARCHAR )
+WHERE ar1.analysis_id = 405
+GROUP BY c1.concept_id,
+c1.concept_name,
+c2.concept_group_id,
+c2.concept_group_name

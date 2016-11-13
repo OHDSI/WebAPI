@@ -1,9 +1,10 @@
-select  min(cast(ar1.stratum_1 as int)) * 30 as min_value, 
-	max(cast(ar1.stratum_1 as int)) * 30 as max_value, 
-	30 as interval_size
-from @results_database_schema.ACHILLES_analysis aa1
-inner join @results_database_schema.ACHILLES_results ar1 on aa1.analysis_id = ar1.analysis_id,
+SELECT
+  min(cast(ar1.stratum_1 AS INT)) * 30 AS min_value,
+  max(cast(ar1.stratum_1 AS INT)) * 30 AS max_value,
+  30                                   AS interval_size
+FROM @results_database_schema.ACHILLES_analysis aa1
+INNER JOIN @results_database_schema.ACHILLES_results ar1 ON aa1.analysis_id = ar1.analysis_id,
 (
-	select count_value from @results_database_schema.ACHILLES_results where analysis_id = 1
+SELECT count_value FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 1
 ) denom
-where aa1.analysis_id = 108
+WHERE aa1.analysis_id = 108

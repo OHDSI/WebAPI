@@ -1,5 +1,6 @@
-select min(cast(ar1.stratum_1 as int)) as min_value,
-  max(cast(ar1.stratum_1 as int)) as max_value,
-	1 as interval_size
-from @results_database_schema.ACHILLES_results ar1
-where ar1.analysis_id = 3
+SELECT
+  min(cast(ar1.stratum_1 AS INT)) AS min_value,
+  max(cast(ar1.stratum_1 AS INT)) AS max_value,
+  1                               AS interval_size
+FROM @results_database_schema.ACHILLES_results ar1
+WHERE ar1.analysis_id = 3

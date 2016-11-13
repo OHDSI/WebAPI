@@ -1,15 +1,16 @@
-select c1.concept_id as drug_concept_id,
-	'Quantity' as category,
-	ard1.min_value as min_value,
-	ard1.p10_value as p10_value,
-	ard1.p25_value as p25_value,
-	ard1.median_value as median_value,
-	ard1.p75_value as p75_value,
-	ard1.p90_value as p90_value,
-	ard1.max_value as max_value
-from @results_database_schema.ACHILLES_results_dist ard1
-	inner join
-	@vocab_database_schema.concept c1
-	on ard1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
-where ard1.analysis_id = 717
-and ard1.count_value > 0
+SELECT
+  c1.concept_id     AS drug_concept_id,
+  'Quantity'        AS category,
+  ard1.min_value    AS min_value,
+  ard1.p10_value    AS p10_value,
+  ard1.p25_value    AS p25_value,
+  ard1.median_value AS median_value,
+  ard1.p75_value    AS p75_value,
+  ard1.p90_value    AS p90_value,
+  ard1.max_value    AS max_value
+FROM @results_database_schema.ACHILLES_results_dist ard1
+INNER JOIN
+@vocab_database_schema.concept c1
+ON ard1.stratum_1 = CAST(c1.concept_id AS VARCHAR )
+WHERE ard1.analysis_id = 717
+AND ard1.count_value > 0

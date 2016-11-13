@@ -1,5 +1,5 @@
 SELECT
-  concept_hierarchy.concept_id,
+  concept_hierarchy.concept_id                          AS concept_id,
   isNull(concept_hierarchy.level3_concept_name, 'NA')
   + '||' + isNull(concept_hierarchy.level2_concept_name, 'NA')
   + '||' + isNull(concept_hierarchy.level1_concept_name, 'NA')

@@ -56,6 +56,12 @@
     <security.oauth.google.apiSecret></security.oauth.google.apiSecret>
     <security.oauth.facebook.apiKey></security.oauth.facebook.apiKey>
     <security.oauth.facebook.apiSecret></security.oauth.facebook.apiSecret>
+
+    <!-- EMBEDDED SERVER CONFIGURATION (ServerProperties) -->
+    <server.port>8080</server.port>
+    <server.ssl.key-store></server.ssl.key-store>
+    <server.ssl.key-store-password></server.ssl.key-store-password>
+    <server.ssl.key-password></server.ssl.key-password>
   </properties>
   <build>
     <finalName>WebAPI</finalName>

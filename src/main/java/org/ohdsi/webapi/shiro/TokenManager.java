@@ -32,10 +32,7 @@ public class TokenManager {
   
   public static String createJsonWebToken(String subject, Date expiration, Collection<String> permissions) {
     Key key = MacProvider.generateKey();
-    if (userToKeyMap.containsKey(subject)) 
-      userToKeyMap.replace(subject, key);
-    else 
-      userToKeyMap.put(subject, key);
+    userToKeyMap.put(subject, key);
 
     String permissionsString = StringUtils.join(permissions, "|");
     Map<String, Object> claims = new HashMap<>();

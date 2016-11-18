@@ -466,7 +466,6 @@ public class CohortDefinitionService extends AbstractDaoService {
 
     Step generateCohortStep = stepBuilders.get("cohortDefinition.generateCohort")
       .tasklet(generateTasklet)
-      .exceptionHandler(new TerminateJobStepExceptionHandler())
     .build();
 
     Job generateCohortJob = jobBuilders.get("generateCohort")

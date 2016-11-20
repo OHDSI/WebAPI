@@ -10,6 +10,7 @@ import javax.ws.rs.core.MediaType;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.sql.SqlRender;
@@ -419,76 +420,19 @@ public class CDMResultsService extends AbstractDaoService {
         return listOfResults;
     }
 
-
-
-    /**
-     * Queries for visit treemap results
-     *
-     * @return List<HierarchicalConceptRecord>
-     */
-    @GET
-    @Path("/visit/")
-    @Produces(MediaType.APPLICATION_JSON)
-    public List<org.ohdsi.webapi.cohortresults.HierarchicalConceptRecord> getVisitTreemap(
-                                                           @PathParam("sourceKey") final String sourceKey) {
-        Source source = getSourceRepository().findBySourceKey(sourceKey);
-        return queryRunner.getTreemap(this.getSourceJdbcTemplate(source), "Visit", source);
-    }
-
-    /**
-     * Queries for condition treemap results
-     *
-     * @return List<HierarchicalConceptRecord>
-     */
-    @GET
-    @Path("/condition/")
-    @Produces(MediaType.APPLICATION_JSON)
-    public List<org.ohdsi.webapi.cohortresults.HierarchicalConceptRecord> getConditionTreemap(
-            @PathParam("sourceKey") final String sourceKey) {
-        Source source = getSourceRepository().findBySourceKey(sourceKey);
-        return queryRunner.getTreemap(this.getSourceJdbcTemplate(source), "Condition", source);
-    }
-
-    /**
-     * Queries for procedure treemap results
-     *
-     * @return List<HierarchicalConceptRecord>
-     */
-    @GET
-    @Path("/procedure/")
-    @Produces(MediaType.APPLICATION_JSON)
-    public List<org.ohdsi.webapi.cohortresults.HierarchicalConceptRecord> getProcedureTreemap(
-            @PathParam("sourceKey") final String sourceKey) {
-        Source source = getSourceRepository().findBySourceKey(sourceKey);
-        return queryRunner.getTreemap(this.getSourceJdbcTemplate(source), "Procedure", source);
-    }
-
-    /**
-     * Queries for drug treemap results
-     *
-     * @return List<HierarchicalConceptRecord>
-     */
-    @GET
-    @Path("/drug/")
-    @Produces(MediaType.APPLICATION_JSON)
-    public List<org.ohdsi.webapi.cohortresults.HierarchicalConceptRecord> getDrugTreemap(
-            @PathParam("sourceKey") final String sourceKey) {
-        Source source = getSourceRepository().findBySourceKey(sourceKey);
-        return queryRunner.getTreemap(this.getSourceJdbcTemplate(source), "Drug", source);
-    }
-
     /**
      * Queries for measurement treemap results
      *
      * @return List<HierarchicalConceptRecord>
      */
     @GET
-    @Path("/measurement/")
+    @Path("/{domain}/")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<org.ohdsi.webapi.cohortresults.HierarchicalConceptRecord> getMeasurementTreemap(
+    public ArrayNode getTreemap(
+            @PathParam("domain") final String domain,
             @PathParam("sourceKey") final String sourceKey) {
         Source source = getSourceRepository().findBySourceKey(sourceKey);
-        return queryRunner.getTreemap(this.getSourceJdbcTemplate(source), "Measurement", source);
+        return queryRunner.getTreemap(this.getSourceJdbcTemplate(source), domain, source);
     }
 
     @GET

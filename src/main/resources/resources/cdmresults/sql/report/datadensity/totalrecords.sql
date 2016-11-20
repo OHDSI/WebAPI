@@ -1,7 +1,7 @@
 SELECT
-  table_name  AS seriesName,
-  stratum_1   AS xCalendarMonth,
-  count_value AS yRecordCount
+  table_name  AS "seriesName",
+  stratum_1   AS "xCalendarMonth",
+  count_value AS "yRecordCount"
 FROM
   (
     SELECT

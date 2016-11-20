@@ -2,6 +2,7 @@ package org.ohdsi.webapi.report;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang.WordUtils;
 import org.apache.commons.logging.Log;
@@ -324,16 +325,19 @@ public class CDMResultsAnalysisRunner {
         return renderTranslateSql(BASE_SQL_PATH + "/report/" + analysisType + "/" + analysisName + ".sql", conceptId, source);
     }
 
-    public List<org.ohdsi.webapi.cohortresults.HierarchicalConceptRecord> getTreemap(JdbcTemplate jdbcTemplate,
-                                                                                     String domain,
-                                                                                     Source source) {
-        List<org.ohdsi.webapi.cohortresults.HierarchicalConceptRecord> res = null;
-        String sqlPath = BASE_SQL_PATH + "/report/" + domain.toLowerCase() +"/sql" + domain + "Treemap.sql";
+    public ArrayNode getTreemap(JdbcTemplate jdbcTemplate,
+                                String domain,
+                                Source source) {
+        ObjectMapper mapper = new ObjectMapper();
+        ArrayNode arrayNode = mapper.createArrayNode();
+
+        String sqlPath = BASE_SQL_PATH + "/report/" + domain.toLowerCase() + "/treemap.sql";
         String sql = this.renderTranslateSql(sqlPath, source);
         if (sql != null) {
-            res = jdbcTemplate.query(sql, new HierarchicalConceptMapper());
+            List<JsonNode> list = jdbcTemplate.query(sql, new GenericRowMapper(mapper));
+            arrayNode.addAll(list);
         }
-        return res;
+        return arrayNode;
     }
 
     public org.ohdsi.webapi.cohortresults.CohortVisitsDrilldown getVisitsDrilldown(JdbcTemplate jdbcTemplate,
@@ -392,7 +396,7 @@ public class CDMResultsAnalysisRunner {
                     String sqlPath = fullSqlPath.substring(startIndex);
                     String sql = this.renderTranslateSql(sqlPath, conceptId, source);
                     if (sql != null) {
-                        List<JsonNode> l = jdbcTemplate.query(sql, new GenericRowMapper());
+                        List<JsonNode> l = jdbcTemplate.query(sql, new GenericRowMapper(mapper));
                         String analysisName = resource.getFilename().substring(3).replace(".sql", "");
                         String fieldName = analysisName.substring(0,1).toLowerCase() + analysisName.substring(1);
                         objectNode.putArray(fieldName).addAll(l);

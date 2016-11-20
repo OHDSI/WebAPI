@@ -1,42 +1,37 @@
 SELECT
-  concept_hierarchy.concept_id                        AS conceptId,
+  concept_hierarchy.rxnorm_ingredient_concept_id                 AS "conceptId",
   isnull(concept_hierarchy.atc1_concept_name, 'NA') + '||' +
   isnull(concept_hierarchy.atc3_concept_name, 'NA') + '||' +
   isnull(concept_hierarchy.atc5_concept_name, 'NA') + '||' +
-  isnull(concept_hierarchy.rxnorm_ingredient_concept_name, 'NA') + '||' +
-  concept_hierarchy.rxnorm_concept_name               AS conceptPath,
-  ar1.count_value                                     AS numPersons,
-  round(1.0 * ar1.count_value / denom.count_value, 5) AS percentPersons,
-  round(1.0 * ar2.count_value / ar1.count_value, 5)   AS recordsPerPerson
+  isnull(concept_hierarchy.rxnorm_ingredient_concept_name, '||') AS "conceptPath",
+  ar1.count_value                                                AS "numPersons",
+  1.0 * ar1.count_value / denom.count_value                      AS "percentPersons",
+  ar2.avg_value                                                  AS "lengthOfEra"
 FROM (SELECT *
-      FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 700) ar1
+      FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 900) ar1
   INNER JOIN
-  (SELECT *
-   FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 701) ar2
+  (SELECT
+     stratum_1,
+     avg_value
+   FROM @results_database_schema.ACHILLES_results_dist WHERE analysis_id = 907) ar2
     ON ar1.stratum_1 = ar2.stratum_1
   INNER JOIN
   (
     SELECT
-      rxnorm.concept_id,
-      rxnorm.concept_name AS rxnorm_concept_name,
+      rxnorm.rxnorm_ingredient_concept_id,
       rxnorm.rxnorm_ingredient_concept_name,
       atc5_to_atc3.atc5_concept_name,
       atc3_to_atc1.atc3_concept_name,
-      atc1.concept_name   AS atc1_concept_name
+      atc1.concept_name AS atc1_concept_name
     FROM
       (
         SELECT
-          c1.concept_id,
-          c1.concept_name,
           c2.concept_id   AS rxnorm_ingredient_concept_id,
           c2.concept_name AS RxNorm_ingredient_concept_name
-        FROM @vocab_database_schema.concept c1
-        INNER JOIN @vocab_database_schema.concept_ancestor ca1
-        ON c1.concept_id = ca1.descendant_concept_id
-                         AND c1.domain_id = 'Drug'
-        INNER JOIN @vocab_database_schema.concept c2
-        ON ca1.ancestor_concept_id = c2.concept_id
-                                   AND c2.domain_id = 'Drug'
+        FROM
+          @vocab_database_schema.concept c2
+        WHERE
+        c2.domain_id = 'Drug'
         AND c2.concept_class_id = 'Ingredient'
       ) rxnorm
       LEFT JOIN
@@ -104,9 +99,7 @@ FROM (SELECT *
       LEFT JOIN @vocab_database_schema.concept atc1
     ON atc3_to_atc1.atc1_concept_id = atc1.concept_id
   ) concept_hierarchy
-    ON ar1.stratum_1 = CAST(concept_hierarchy.concept_id AS VARCHAR)
+    ON ar1.stratum_1 = CAST(concept_hierarchy.rxnorm_ingredient_concept_id AS VARCHAR)
   ,
   (SELECT count_value
    FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 1) denom
-
-ORDER BY ar1.count_value DESC

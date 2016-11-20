@@ -17,10 +17,14 @@ import java.util.Date;
  * Created by mark on 10/29/16.
  */
 public class GenericRowMapper implements RowMapper<JsonNode> {
+    private final ObjectMapper mapper;
+
+    public GenericRowMapper(ObjectMapper mapper) {
+        this.mapper = mapper;
+    }
 
     @Override
     public JsonNode mapRow(ResultSet rs, int rowNum) throws SQLException {
-        ObjectMapper mapper = new ObjectMapper();
         ObjectNode objectNode = mapper.createObjectNode();
         ResultSetMetaData rsmd = rs.getMetaData();
         int columnCount = rsmd.getColumnCount();

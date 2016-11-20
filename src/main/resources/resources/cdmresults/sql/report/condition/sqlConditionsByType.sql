@@ -28,11 +28,12 @@ CASE WHEN (concept_name LIKE 'Inpatient%' OR concept_name LIKE 'Outpatient%' ) A
 WHEN (concept_name LIKE 'Inpatient%' OR concept_name LIKE 'Outpatient%' ) AND (concept_name NOT LIKE '%primary%' AND concept_name NOT LIKE '%1st position%') THEN 'Secondary diagnosis'
 ELSE '' END AS concept_group_name
 FROM @vocab_database_schema.concept
-WHERE lower(domain_id) = 'condition type'
+WHERE lower(vocabulary_id) = 'condition type'
 
 ) c2
 ON ar1.stratum_2 = cast(c2.concept_id AS VARCHAR )
 WHERE ar1.analysis_id = 405
+AND CAST(ar1.stratum_1 AS INT) = @conceptId
 GROUP BY c1.concept_id,
 c1.concept_name,
 c2.concept_group_id,

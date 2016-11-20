@@ -6,7 +6,7 @@ SELECT
   --age decile
   c2.concept_name                                                        AS "seriesName",
   --gender
-  num_stratum_2                                                          AS "xCalendarYear",
+  CAST(num_stratum_2 AS INT)                                             AS "xCalendarYear",
   -- calendar year, note, there could be blanks
   ROUND(1000 * (1.0 * num_count_value / denom_count_value),
         5)                                                               AS "yPrevalence1000Pp" --prevalence, per 1000 persons
@@ -38,5 +38,6 @@ FROM (
 ON num_stratum_1 = CAST(c1.concept_id AS VARCHAR )
 INNER JOIN @vocab_database_schema.concept c2
 ON num_stratum_3 = CAST(c2.concept_id AS VARCHAR )
+WHERE c1.concept_id = @conceptId
 ORDER BY c1.concept_id,
 num_stratum_2

@@ -11,3 +11,4 @@ INNER JOIN
 @vocab_database_schema.concept c2
 ON ar1.stratum_2  = CAST(c2.concept_id AS VARCHAR )
 WHERE ar1.analysis_id = 705
+AND CAST(ar1.stratum_1 AS INT) = @conceptId

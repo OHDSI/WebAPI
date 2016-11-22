@@ -14,3 +14,4 @@ FROM
   INNER JOIN
   @vocab_database_schema.concept c1
 ON num.stratum_1 = CAST(c1.concept_id AS VARCHAR )
+WHERE c1.concept_id = @conceptId

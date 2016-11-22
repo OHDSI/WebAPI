@@ -2,6 +2,7 @@ package org.ohdsi.webapi.report;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang.WordUtils;
 import org.apache.commons.logging.Log;
@@ -49,12 +50,9 @@ public class CDMResultsAnalysisRunner {
     private ObjectMapper mapper;
     private String sourceDialect;
 
-//        private AchillesVisualizationDataRepository visualizationDataRepository;
-
     public CDMResultsAnalysisRunner(String sourceDialect) {
 
         this.sourceDialect = sourceDialect;
-//            this.visualizationDataRepository = visualizationDataRepository;
         mapper = new ObjectMapper();
     }
 
@@ -67,23 +65,23 @@ public class CDMResultsAnalysisRunner {
         CDMDashboard dashboard = new CDMDashboard();
         boolean empty = true;
 
-        String ageAtFirstObsSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/ageatfirst.sql", null, source);
+        String ageAtFirstObsSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/observationperiod/ageatfirst.sql", null, source);
         if (ageAtFirstObsSql != null) {
             dashboard.setAgeAtFirstObservation(jdbcTemplate.query(ageAtFirstObsSql, new ConceptDistributionMapper()));
         }
 
-        String genderSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/gender.sql", null, source);
+        String genderSql = this.renderTranslateSql(BASE_SQL_PATH + "report/person/gender.sql", null, source);
         if (genderSql != null) {
             dashboard.setGender(jdbcTemplate.query(genderSql, new ConceptCountMapper()));
         }
 
 //            if (!demographicsOnly) {
-        String cumulObsSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/cumulativeduration.sql", null, source);
+        String cumulObsSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/observationperiod/cumulativeduration.sql", null, source);
         if (cumulObsSql != null) {
             dashboard.setCumulativeObservation(jdbcTemplate.query(cumulObsSql, new CumulativeObservationMapper()));
         }
 
-        String obsByMonthSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/observedbymonth.sql", null, source);
+        String obsByMonthSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/observationperiod/observedbymonth.sql", null, source);
         if (obsByMonthSql != null) {
             dashboard.setObservedByMonth(jdbcTemplate.query(obsByMonthSql, new MonthObservationMapper()));
         }
@@ -118,83 +116,29 @@ public class CDMResultsAnalysisRunner {
         CDMPersonSummary person = new CDMPersonSummary();
         boolean empty = true;
         Integer id = null;
+        ObjectMapper mapper = new ObjectMapper();
 
-        String personSummaryData = this.renderTranslateCohortSql(BASE_SQL_PATH + "/report/person/population.sql", null, source);
+        String personSummaryData = this.renderTranslateSql(BASE_SQL_PATH + "/report/person/population.sql", null, source);
         if (personSummaryData != null) {
-            person.setYearOfBirth(jdbcTemplate.query(personSummaryData, new ConceptDistributionMapper()));
+            person.setYearOfBirth(jdbcTemplate.query(personSummaryData, new CohortAttributeMapper()));
         }
 
-//            String yobStatSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/yearofbirth_stats.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
-//            if (yobStatSql != null) {
-//                person.setYearOfBirthStats(jdbcTemplate.query(yobStatSql, new CohortStatsMapper()));
-//            }
-
-        String genderSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/gender.sql", id, /*minCovariatePersonCountParam, minIntervalPersonCountParam,*/ source);
+        String genderSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/person/gender.sql", id, /*minCovariatePersonCountParam, minIntervalPersonCountParam,*/ source);
         if (genderSql != null) {
             person.setGender(jdbcTemplate.query(genderSql, new ConceptCountMapper()));
         }
 
-        String raceSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/race.sql", id, /*minCovariatePersonCountParam, minIntervalPersonCountParam,*/ source);
+        String raceSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/person/race.sql", id, /*minCovariatePersonCountParam, minIntervalPersonCountParam,*/ source);
         if (raceSql != null) {
             person.setRace(jdbcTemplate.query(raceSql, new ConceptCountMapper()));
         }
 
-        String ethnicitySql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/ethnicity.sql", id, /*minCovariatePersonCountParam, minIntervalPersonCountParam,*/ source);
+        String ethnicitySql = this.renderTranslateSql(BASE_SQL_PATH + "/report/person/ethnicity.sql", id, /*minCovariatePersonCountParam, minIntervalPersonCountParam,*/ source);
         if (ethnicitySql != null) {
             person.setEthnicity(jdbcTemplate.query(ethnicitySql, new ConceptCountMapper()));
         }
 
-//            if (CollectionUtils.isNotEmpty(person.getEthnicity())
-//                    || CollectionUtils.isNotEmpty(person.getGender())
-//                    || CollectionUtils.isNotEmpty(person.getRace())
-//                    || CollectionUtils.isNotEmpty(person.getYearOfBirth())
-//                    || CollectionUtils.isNotEmpty(person.getYearOfBirthStats())) {
-//                empty = false;
-//            }
-//
-//            if (!empty && save) {
-//                this.saveEntity(id, source.getSourceId(), key, person);
-//            }
-
         return person;
-    }
-
-    /**
-     * Passes in common params for cdm results, and performs SQL
-     * translate/render
-     */
-    public String renderTranslateCohortSql(String sqlPath, Integer conceptId, Source source) {
-        String sql = null;
-
-        String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-        String vocabularyTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
-
-        try {
-            String[] cols;
-            String[] colValues;
-            if (conceptId != null) {
-                cols = DRILLDOWN_COLUMNS;
-                colValues = new String[]{vocabularyTableQualifier, resultsTableQualifier, String.valueOf(conceptId)};
-            } else {
-                cols = STANDARD_COLUMNS;
-                colValues = new String[]{vocabularyTableQualifier, resultsTableQualifier};
-            }
-            sql = ResourceHelper.GetResourceAsString(sqlPath);
-            sql = SqlRender.renderSql(sql, cols, colValues);
-            sql = SqlTranslate.translateSql(sql, sourceDialect, source.getSourceDialect());
-        } catch (Exception e) {
-            log.error(String.format("Unable to translate sql for  %s", sql), e);
-        }
-
-        return sql;
-    }
-
-    /**
-     * Passes in common params for cdm results, and performs SQL
-     * translate/render
-     */
-    public String renderTranslateCohortSql(String sqlPath, Source source) {
-        return renderTranslateCohortSql(sqlPath, null, source);
     }
 
     public CDMDrugSummary getDrugResults(JdbcTemplate sourceJdbcTemplate, Source source, boolean b) {
@@ -202,67 +146,8 @@ public class CDMResultsAnalysisRunner {
         CDMDrugSummary cdmDrugSummary = new CDMDrugSummary();
         boolean empty = true;
 
-        String personSummaryData = this.renderTranslateCohortSql(BASE_SQL_PATH + "report/person/population.sql", null, source);
-
-
-//            if (CollectionUtils.isNotEmpty(person.getEthnicity())
-//                    || CollectionUtils.isNotEmpty(person.getGender())
-//                    || CollectionUtils.isNotEmpty(person.getRace())
-//                    || CollectionUtils.isNotEmpty(person.getYearOfBirth())
-//                    || CollectionUtils.isNotEmpty(person.getYearOfBirthStats())) {
-//                empty = false;
-//            }
-
-//            if (!empty && save) {
-//                this.saveEntity(id, source.getSourceId(), key, person);
-//            }
-
+        String personSummaryData = this.renderTranslateSql(BASE_SQL_PATH + "report/person/population.sql", null, source);
         return cdmDrugSummary;
-    }
-
-    public CDMProcedureSummary getProcedureResults(JdbcTemplate sourceJdbcTemplate, Source source, boolean b) {
-        final String key = PERSON;
-        CDMProcedureSummary cdmProcedureSummary = new CDMProcedureSummary();
-        boolean empty = true;
-
-        String personSummaryData = this.renderTranslateCohortSql(BASE_SQL_PATH + "report/person/population.sql", null, source);
-//            if (personSummaryData != null) {
-//                person.setYearOfBirth(jdbcTemplate.query(yobSql, new ConceptDistributionMapper()));
-//            }
-
-//            String yobStatSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/yearofbirth_stats.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
-//            if (yobStatSql != null) {
-//                person.setYearOfBirthStats(jdbcTemplate.query(yobStatSql, new CohortStatsMapper()));
-//            }
-//
-//            String genderSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/gender.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
-//            if (genderSql != null) {
-//                person.setGender(jdbcTemplate.query(genderSql, new ConceptCountMapper()));
-//            }
-//
-//            String raceSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/race.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
-//            if (raceSql != null) {
-//                person.setRace(jdbcTemplate.query(raceSql, new ConceptCountMapper()));
-//            }
-//
-//            String ethnicitySql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/ethnicity.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
-//            if (ethnicitySql != null) {
-//                person.setEthnicity(jdbcTemplate.query(ethnicitySql, new ConceptCountMapper()));
-//            }
-//
-//            if (CollectionUtils.isNotEmpty(person.getEthnicity())
-//                    || CollectionUtils.isNotEmpty(person.getGender())
-//                    || CollectionUtils.isNotEmpty(person.getRace())
-//                    || CollectionUtils.isNotEmpty(person.getYearOfBirth())
-//                    || CollectionUtils.isNotEmpty(person.getYearOfBirthStats())) {
-//                empty = false;
-//            }
-//
-//            if (!empty && save) {
-//                this.saveEntity(id, source.getSourceId(), key, person);
-//            }
-
-        return cdmProcedureSummary;
     }
 
     public CDMAchillesHeel getHeelResults(JdbcTemplate sourceJdbcTemplate, Source source, boolean b) {
@@ -324,16 +209,19 @@ public class CDMResultsAnalysisRunner {
         return renderTranslateSql(BASE_SQL_PATH + "/report/" + analysisType + "/" + analysisName + ".sql", conceptId, source);
     }
 
-    public List<org.ohdsi.webapi.cohortresults.HierarchicalConceptRecord> getTreemap(JdbcTemplate jdbcTemplate,
-                                                                                     String domain,
-                                                                                     Source source) {
-        List<org.ohdsi.webapi.cohortresults.HierarchicalConceptRecord> res = null;
-        String sqlPath = BASE_SQL_PATH + "/report/" + domain.toLowerCase() +"/sql" + domain + "Treemap.sql";
+    public ArrayNode getTreemap(JdbcTemplate jdbcTemplate,
+                                String domain,
+                                Source source) {
+        ObjectMapper mapper = new ObjectMapper();
+        ArrayNode arrayNode = mapper.createArrayNode();
+
+        String sqlPath = BASE_SQL_PATH + "/report/" + domain.toLowerCase() + "/treemap.sql";
         String sql = this.renderTranslateSql(sqlPath, source);
         if (sql != null) {
-            res = jdbcTemplate.query(sql, new HierarchicalConceptMapper());
+            List<JsonNode> list = jdbcTemplate.query(sql, new GenericRowMapper(mapper));
+            arrayNode.addAll(list);
         }
-        return res;
+        return arrayNode;
     }
 
     public org.ohdsi.webapi.cohortresults.CohortVisitsDrilldown getVisitsDrilldown(JdbcTemplate jdbcTemplate,
@@ -392,7 +280,7 @@ public class CDMResultsAnalysisRunner {
                     String sqlPath = fullSqlPath.substring(startIndex);
                     String sql = this.renderTranslateSql(sqlPath, conceptId, source);
                     if (sql != null) {
-                        List<JsonNode> l = jdbcTemplate.query(sql, new GenericRowMapper());
+                        List<JsonNode> l = jdbcTemplate.query(sql, new GenericRowMapper(mapper));
                         String analysisName = resource.getFilename().substring(3).replace(".sql", "");
                         String fieldName = analysisName.substring(0,1).toLowerCase() + analysisName.substring(1);
                         objectNode.putArray(fieldName).addAll(l);

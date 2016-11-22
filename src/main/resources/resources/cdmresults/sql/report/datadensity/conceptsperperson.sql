@@ -1,76 +1,82 @@
-select 'Condition occurrence' as Category,
-	ard1.min_value as min_value,
-	ard1.p10_value as p10_value,
-	ard1.p25_value as p25_value,
-	ard1.median_value as median_value,
-	ard1.p75_value as p75_value,
-	ard1.p90_value as p90_value,
-	ard1.max_value as max_value
-from @results_database_schema.ACHILLES_results_dist ard1
-where ard1.analysis_id = 403
+SELECT
+  'Condition occurrence' AS "category",
+  ard1.minValue          AS "minValue",
+  ard1.p10Value          AS "p10Value",
+  ard1.p25Value          AS "p25Value",
+  ard1.medianValue       AS "medianValue",
+  ard1.p75Value          AS "p75Value",
+  ard1.p90Value          AS "p90Value",
+  ard1.maxValue          AS "maxValue"
+FROM @results_database_schema.ACHILLES_results_dist ard1
+WHERE ard1.analysis_id = 403
 
-union
+UNION
 
-select 'Procedure occurrence' as Category,
-	ard1.min_value as min_value,
-	ard1.p10_value as p10_value,
-	ard1.p25_value as p25_value,
-	ard1.median_value as median_value,
-	ard1.p75_value as p75_value,
-	ard1.p90_value as p90_value,
-	ard1.max_value as max_value
-from @results_database_schema.ACHILLES_results_dist ard1
-where ard1.analysis_id = 603
+SELECT
+  'Procedure occurrence' AS "category",
+  ard1.minValue          AS "minValue",
+  ard1.p10Value          AS "p10Value",
+  ard1.p25Value          AS "p25Value",
+  ard1.medianValue       AS "medianValue",
+  ard1.p75Value          AS "p75Value",
+  ard1.p90Value          AS "p90Value",
+  ard1.maxValue          AS "maxValue"
+FROM @results_database_schema.ACHILLES_results_dist ard1
+WHERE ard1.analysis_id = 603
 
-union
+UNION
 
-select 'Drug exposure' as Category,
-	ard1.min_value as min_value,
-	ard1.p10_value as p10_value,
-	ard1.p25_value as p25_value,
-	ard1.median_value as median_value,
-	ard1.p75_value as p75_value,
-	ard1.p90_value as p90_value,
-	ard1.max_value as max_value
-from @results_database_schema.ACHILLES_results_dist ard1
-where ard1.analysis_id = 703
+SELECT
+  'Drug exposure'  AS "category",
+  ard1.minValue    AS "minValue",
+  ard1.p10Value    AS "p10Value",
+  ard1.p25Value    AS "p25Value",
+  ard1.medianValue AS "medianValue",
+  ard1.p75Value    AS "p75Value",
+  ard1.p90Value    AS "p90Value",
+  ard1.maxValue    AS "maxValue"
+FROM @results_database_schema.ACHILLES_results_dist ard1
+WHERE ard1.analysis_id = 703
 
-union
+UNION
 
-select 'Observation' as Category,
-	ard1.min_value as min_value,
-	ard1.p10_value as p10_value,
-	ard1.p25_value as p25_value,
-	ard1.median_value as median_value,
-	ard1.p75_value as p75_value,
-	ard1.p90_value as p90_value,
-	ard1.max_value as max_value
-from @results_database_schema.ACHILLES_results_dist ard1
-where ard1.analysis_id = 803
+SELECT
+  'Observation'    AS "category",
+  ard1.minValue    AS "minValue",
+  ard1.p10Value    AS "p10Value",
+  ard1.p25Value    AS "p25Value",
+  ard1.medianValue AS "medianValue",
+  ard1.p75Value    AS "p75Value",
+  ard1.p90Value    AS "p90Value",
+  ard1.maxValue    AS "maxValue"
+FROM @results_database_schema.ACHILLES_results_dist ard1
+WHERE ard1.analysis_id = 803
 
-union
+UNION
 
-select 'Drug era' as Category,
-	ard1.min_value as min_value,
-	ard1.p10_value as p10_value,
-	ard1.p25_value as p25_value,
-	ard1.median_value as median_value,
-	ard1.p75_value as p75_value,
-	ard1.p90_value as p90_value,
-	ard1.max_value as max_value
-from @results_database_schema.ACHILLES_results_dist ard1
-where ard1.analysis_id = 903
+SELECT
+  'Drug era'       AS "category",
+  ard1.minValue    AS "minValue",
+  ard1.p10Value    AS "p10Value",
+  ard1.p25Value    AS "p25Value",
+  ard1.medianValue AS "medianValue",
+  ard1.p75Value    AS "p75Value",
+  ard1.p90Value    AS "p90Value",
+  ard1.maxValue    AS "maxValue"
+FROM @results_database_schema.ACHILLES_results_dist ard1
+WHERE ard1.analysis_id = 903
 
-union
+UNION
 
-select 'Condition era' as Category,
-	ard1.min_value as min_value,
-	ard1.p10_value as p10_value,
-	ard1.p25_value as p25_value,
-	ard1.median_value as median_value,
-	ard1.p75_value as p75_value,
-	ard1.p90_value as p90_value,
-	ard1.max_value as max_value
-from @results_database_schema.ACHILLES_results_dist ard1
-where ard1.analysis_id = 1003
+SELECT
+  'Condition era'  AS "category",
+  ard1.minValue    AS "minValue",
+  ard1.p10Value    AS "p10Value",
+  ard1.p25Value    AS "p25Value",
+  ard1.medianValue AS "medianValue",
+  ard1.p75Value    AS "p75Value",
+  ard1.p90Value    AS "p90Value",
+  ard1.maxValue    AS "maxValue"
+FROM @results_database_schema.ACHILLES_results_dist ard1
+WHERE ard1.analysis_id = 1003
 

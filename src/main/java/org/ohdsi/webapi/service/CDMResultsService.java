@@ -10,6 +10,7 @@ import javax.ws.rs.core.MediaType;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.sql.SqlRender;
@@ -113,20 +114,8 @@ public class CDMResultsService extends AbstractDaoService {
 
         final String key = CDMResultsAnalysisRunner.DASHBOARD;
         Source source = getSourceRepository().findBySourceKey(sourceKey);
-//        AchillesVisualizationData data = /*refresh ?*/ null /* : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(id, source.getSourceId(), key)*/;
-
-        CDMDashboard dashboard = null;
-
-        if (refresh /*|| data == null*/) {
-            dashboard = queryRunner.getDashboard(getSourceJdbcTemplate(source), /*id,*/ source, /*demographicsOnly,*/ true);
-        } else {
-            try {
-//                dashboard = mapper.readValue(data.getData(), CDMDashboard.class);
-            } catch (Exception e) {
-                log.error(e);
-            }
-        }
-
+        CDMDashboard dashboard = queryRunner.getDashboard(getSourceJdbcTemplate(source), /*id,*/ source, /*demographicsOnly,*/ true);
+        log.debug(dashboard);
         return dashboard;
 
     }
@@ -140,21 +129,10 @@ public class CDMResultsService extends AbstractDaoService {
     @Path("person")
     @Produces(MediaType.APPLICATION_JSON)
     public CDMPersonSummary getPersonReport(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
-        CDMPersonSummary person = null;
+
         final String key = CDMResultsAnalysisRunner.PERSON;
         Source source = getSourceRepository().findBySourceKey(sourceKey);
-//        AchillesVisualizationData data = /* refresh ?*/ null /*: this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(source.getSourceId(), key)*/;
-
-        if (refresh /*|| data == null*/) {
-            person = this.queryRunner.getPersonResults(this.getSourceJdbcTemplate(source), source, true);
-        } else {
-            try {
-//                person = mapper.readValue(data.getData(), CDMPersonSummary.class);
-            } catch (Exception e) {
-                log.error(e);
-            }
-        }
-
+        CDMPersonSummary person = this.queryRunner.getPersonResults(this.getSourceJdbcTemplate(source), source, true);
         return person;
     }
 
@@ -167,20 +145,10 @@ public class CDMResultsService extends AbstractDaoService {
     @Path("achillesheel")
     @Produces(MediaType.APPLICATION_JSON)
     public CDMAchillesHeel getAchillesHeelReport(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
-        CDMAchillesHeel cdmAchillesHeel = null;
+
         final String key = CDMResultsAnalysisRunner.HEEL;
         Source source = getSourceRepository().findBySourceKey(sourceKey);
-//        AchillesVisualizationData data = /*refresh ?*/ null /*: this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(source.getSourceId(), key)*/;
-
-        if (refresh /*|| data == null*/) {
-            cdmAchillesHeel = this.queryRunner.getHeelResults(this.getSourceJdbcTemplate(source), source, true);
-        } else {
-            try {
-//                procedureSummary = mapper.readValue(data.getData(), CDMProcedureSummary.class);
-            } catch (Exception e) {
-                log.error(e);
-            }
-        }
+        CDMAchillesHeel cdmAchillesHeel = this.queryRunner.getHeelResults(this.getSourceJdbcTemplate(source), source, true);
 
         return cdmAchillesHeel;
     }
@@ -267,33 +235,6 @@ public class CDMResultsService extends AbstractDaoService {
     }
 
     /**
-     * Queries for condition report for the given sourceKey
-     *
-     * @return CDMConditionTree
-     */
-    @GET
-    @Path("condition_treemap")
-    @Produces(MediaType.APPLICATION_JSON)
-    public List<CDMCondition> getConditionTreeMap(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
-        List<CDMCondition> cdmConditions = null;
-        final String key = CDMResultsAnalysisRunner.CONDITION;
-        Source source = getSourceRepository().findBySourceKey(sourceKey);
-//        AchillesVisualizationData data = /*refresh ?*/ null /*: this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(source.getSourceId(), key)*/;
-
-        if (refresh /*|| data == null*/) {
-            cdmConditions = this.queryRunner.getCondition(this.getSourceJdbcTemplate(source), source, true);
-        } else {
-            try {
-//                procedureSummary = mapper.readValue(data.getData(), CDMProcedureSummary.class);
-            } catch (Exception e) {
-                log.error(e);
-            }
-        }
-
-        return cdmConditions;
-    }
-
-    /**
      * Queries for condition era report for the given sourceKey
      *
      * @return CDMConditionEra
@@ -320,40 +261,6 @@ public class CDMResultsService extends AbstractDaoService {
         return cdmConditionEras;
     }
 
-
-    @Path("drugeratreemap")
-    @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public List<DrugPrevalence> getDrugEraTreemap(@PathParam("sourceKey") String sourceKey, String[] identifiers) {
-        Source source = getSourceRepository().findBySourceKey(sourceKey);
-        String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-        String vocabularyTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
-
-        for (int i = 0; i < identifiers.length; i++) {
-            identifiers[i] = "'" + identifiers[i] + "'";
-        }
-
-        String identifierList = StringUtils.join(identifiers, ",");
-        String sql_statement = ResourceHelper.GetResourceAsString("/resources/cdmresults/sql/getDrugEraTreemap.sql");
-        sql_statement = SqlRender.renderSql(sql_statement, new String[]{"ohdsi_database_schema", "vocabulary_database_schema", "conceptList"}, new String[]{tableQualifier, vocabularyTableQualifier, identifierList});
-        sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
-
-
-        List<Map<String, Object>> rows = getSourceJdbcTemplate(source).queryForList(sql_statement);
-        List<DrugPrevalence> listOfResults = new ArrayList<DrugPrevalence>();
-        for (Map rs : rows) {
-            DrugPrevalence d = new DrugPrevalence();
-            d.conceptId = Long.valueOf(String.valueOf(rs.get("concept_id")));
-            d.conceptPath = String.valueOf(rs.get("concept_path"));
-            d.lengthOfEra = Float.valueOf(String.valueOf(rs.get("length_of_era")));
-            d.numPersons = Long.valueOf(String.valueOf(rs.get("num_persons")));
-            d.percentPersons = Float.valueOf(String.valueOf(rs.get("percent_persons")));
-            listOfResults.add(d);
-        }
-
-        return listOfResults;
-    }
 
     @Path("{conceptId}/drugeraprevalence")
     @GET
@@ -419,76 +326,19 @@ public class CDMResultsService extends AbstractDaoService {
         return listOfResults;
     }
 
-
-
-    /**
-     * Queries for visit treemap results
-     *
-     * @return List<HierarchicalConceptRecord>
-     */
-    @GET
-    @Path("/visit/")
-    @Produces(MediaType.APPLICATION_JSON)
-    public List<org.ohdsi.webapi.cohortresults.HierarchicalConceptRecord> getVisitTreemap(
-                                                           @PathParam("sourceKey") final String sourceKey) {
-        Source source = getSourceRepository().findBySourceKey(sourceKey);
-        return queryRunner.getTreemap(this.getSourceJdbcTemplate(source), "Visit", source);
-    }
-
-    /**
-     * Queries for condition treemap results
-     *
-     * @return List<HierarchicalConceptRecord>
-     */
-    @GET
-    @Path("/condition/")
-    @Produces(MediaType.APPLICATION_JSON)
-    public List<org.ohdsi.webapi.cohortresults.HierarchicalConceptRecord> getConditionTreemap(
-            @PathParam("sourceKey") final String sourceKey) {
-        Source source = getSourceRepository().findBySourceKey(sourceKey);
-        return queryRunner.getTreemap(this.getSourceJdbcTemplate(source), "Condition", source);
-    }
-
-    /**
-     * Queries for procedure treemap results
-     *
-     * @return List<HierarchicalConceptRecord>
-     */
-    @GET
-    @Path("/procedure/")
-    @Produces(MediaType.APPLICATION_JSON)
-    public List<org.ohdsi.webapi.cohortresults.HierarchicalConceptRecord> getProcedureTreemap(
-            @PathParam("sourceKey") final String sourceKey) {
-        Source source = getSourceRepository().findBySourceKey(sourceKey);
-        return queryRunner.getTreemap(this.getSourceJdbcTemplate(source), "Procedure", source);
-    }
-
-    /**
-     * Queries for drug treemap results
-     *
-     * @return List<HierarchicalConceptRecord>
-     */
-    @GET
-    @Path("/drug/")
-    @Produces(MediaType.APPLICATION_JSON)
-    public List<org.ohdsi.webapi.cohortresults.HierarchicalConceptRecord> getDrugTreemap(
-            @PathParam("sourceKey") final String sourceKey) {
-        Source source = getSourceRepository().findBySourceKey(sourceKey);
-        return queryRunner.getTreemap(this.getSourceJdbcTemplate(source), "Drug", source);
-    }
-
     /**
      * Queries for measurement treemap results
      *
      * @return List<HierarchicalConceptRecord>
      */
     @GET
-    @Path("/measurement/")
+    @Path("/{domain}/")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<org.ohdsi.webapi.cohortresults.HierarchicalConceptRecord> getMeasurementTreemap(
+    public ArrayNode getTreemap(
+            @PathParam("domain") final String domain,
             @PathParam("sourceKey") final String sourceKey) {
         Source source = getSourceRepository().findBySourceKey(sourceKey);
-        return queryRunner.getTreemap(this.getSourceJdbcTemplate(source), "Measurement", source);
+        return queryRunner.getTreemap(this.getSourceJdbcTemplate(source), domain, source);
     }
 
     @GET

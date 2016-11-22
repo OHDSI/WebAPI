@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.report.mapper;
 
-import org.ohdsi.webapi.cohortresults.CohortAttribute;
+import org.ohdsi.webapi.report.CohortAttribute;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;

@@ -1,12 +1,15 @@
 @codesetQuery
-@primaryEventsQuery
 
+with primary_events (event_id, person_id, start_date, end_date, op_start_date, op_end_date) as
+(
+@primaryEventsQuery
+)
 SELECT event_id, person_id, start_date, end_date, op_start_date, op_end_date
 INTO #qualified_events
 FROM 
 (
   select pe.event_id, pe.person_id, pe.start_date, pe.end_date, pe.op_start_date, pe.op_end_date, row_number() over (partition by pe.person_id order by pe.start_date @QualifiedEventSort) as ordinal
-  FROM #primary_events pe
+  FROM primary_events pe
   @additionalCriteriaQuery
 ) QE
 @QualifiedLimitFilter
@@ -16,6 +19,7 @@ FROM
 create table #inclusionRuleCohorts 
 (
   inclusion_rule_id bigint,
+  person_id bigint,
   event_id bigint
 )
 ;
@@ -28,7 +32,7 @@ with cteIncludedEvents(event_id, person_id, start_date, end_date, op_start_date,
   (
     select Q.event_id, Q.person_id, Q.start_date, Q.end_date, Q.op_start_date, Q.op_end_date, SUM(coalesce(POWER(cast(2 as bigint), I.inclusion_rule_id), 0)) as inclusion_rule_mask
     from #qualified_events Q
-    LEFT JOIN #inclusionRuleCohorts I on I.event_id = Q.event_id
+    LEFT JOIN #inclusionRuleCohorts I on I.person_id = Q.person_id and I.event_id = Q.event_id
     GROUP BY Q.event_id, Q.person_id, Q.start_date, Q.end_date, Q.op_start_date, Q.op_end_date
   ) MG -- matching groups
 {@ruleTotal != 0}?{
@@ -54,9 +58,9 @@ DELETE FROM @target_database_schema.@target_cohort_table where cohort_definition
 INSERT INTO @target_database_schema.@target_cohort_table (cohort_definition_id, subject_id, cohort_start_date, cohort_end_date)
 select @target_cohort_id as cohort_definition_id, F.person_id, F.start_date, F.end_date
 FROM (
-  select Q.person_id, Q.start_date, E.end_date, row_number() over (partition by Q.event_id order by E.end_date) as ordinal 
-  from #qualified_events Q
-  join #cohort_ends E on Q.event_id = E.event_id and Q.person_id = E.person_id and E.end_date >= Q.start_date
+  select I.person_id, I.start_date, E.end_date, row_number() over (partition by I.person_id, I.event_id order by E.end_date) as ordinal 
+  from #included_events I
+  join #cohort_ends E on I.event_id = E.event_id and I.person_id = E.person_id and E.end_date >= I.start_date
 ) F
 WHERE F.ordinal = 1
 ;
@@ -69,10 +73,10 @@ insert into @results_database_schema.cohort_inclusion_result (cohort_definition_
 select @target_cohort_id as cohort_definition_id, inclusion_rule_mask, count(*) as person_count
 from
 (
-  select Q.event_id, SUM(coalesce(POWER(cast(2 as bigint), I.inclusion_rule_id), 0)) as inclusion_rule_mask
+  select Q.person_id, Q.event_id, SUM(coalesce(POWER(cast(2 as bigint), I.inclusion_rule_id), 0)) as inclusion_rule_mask
   from #qualified_events Q
-  LEFT JOIN #inclusionRuleCohorts I on q.event_id = i.event_id
-  GROUP BY Q.event_id
+  LEFT JOIN #inclusionRuleCohorts I on q.person_id = i.person_id and q.event_id = i.event_id
+  GROUP BY Q.person_id, Q.event_id
 ) MG -- matching groups
 group by inclusion_rule_mask
 ;
@@ -86,7 +90,7 @@ left join
 (
   select i.inclusion_rule_id, count(i.event_id) as person_count
   from #qualified_events Q
-  JOIN #inclusionRuleCohorts i on Q.event_id = i.event_id
+  JOIN #inclusionRuleCohorts i on Q.person_id = I.person_id and Q.event_id = i.event_id
   group by i.inclusion_rule_id
 ) T on ir.rule_sequence = T.inclusion_rule_id
 CROSS JOIN (select count(*) as total_rules from @results_database_schema.cohort_inclusion where cohort_definition_id = @target_cohort_id) RuleTotal
@@ -120,9 +124,6 @@ DROP TABLE #qualified_events;
 
 TRUNCATE TABLE #included_events;
 DROP TABLE #included_events;
-
-TRUNCATE TABLE #primary_events;
-DROP TABLE #primary_events;
 
 TRUNCATE TABLE #Codesets;
 DROP TABLE #Codesets;

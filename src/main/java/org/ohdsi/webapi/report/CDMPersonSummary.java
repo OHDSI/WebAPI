@@ -1,13 +1,14 @@
 package org.ohdsi.webapi.report;
 
 import java.util.List;
+import org.ohdsi.webapi.report.CohortAttribute;
 
 /**
  * Created by taa7016 on 8/12/2016.
  */
 public class CDMPersonSummary {
 
-    private List<ConceptDistributionRecord> yearOfBirth;
+    private List<CohortAttribute> yearOfBirth;
     private List<CohortStatsRecord> yearOfBirthStats;
 
     private List<ConceptCountRecord> gender;
@@ -17,14 +18,14 @@ public class CDMPersonSummary {
     /**
      * @return the YearOfBirth
      */
-    public List<ConceptDistributionRecord> getYearOfBirth() {
+    public List<CohortAttribute> getYearOfBirth() {
         return yearOfBirth;
     }
     /**
-     * @param YearOfBirth the YearOfBirth to set
+     * @param yearOfBirth the YearOfBirth to set
      */
     public void setYearOfBirth(
-            List<ConceptDistributionRecord> yearOfBirth) {
+            List<CohortAttribute> yearOfBirth) {
         this.yearOfBirth = yearOfBirth;
     }
     /**

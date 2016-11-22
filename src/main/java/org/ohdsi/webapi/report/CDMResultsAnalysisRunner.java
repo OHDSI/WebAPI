@@ -43,7 +43,7 @@ public class CDMResultsAnalysisRunner {
 
     private static final Log log = LogFactory.getLog(CDMResultsAnalysisRunner.class);
 
-    public static final String[] STANDARD_COLUMNS = new String[]{"results_database_schema", "vocab_database_schema"};
+    public static final String[] STANDARD_COLUMNS = new String[]{"results_database_schema", "vocab_database_schema", "cdm_database_schema"};
 
     public static final String[] DRILLDOWN_COLUMNS = new String[]{"results_database_schema", "vocab_database_schema", "conceptId"};
 
@@ -295,6 +295,7 @@ public class CDMResultsAnalysisRunner {
 
         String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
         String vocabularyTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
+        String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
 
         try {
             String[] cols;
@@ -304,7 +305,7 @@ public class CDMResultsAnalysisRunner {
                 colValues = new String[]{resultsTableQualifier, vocabularyTableQualifier, String.valueOf(conceptId)};
             } else {
                 cols = STANDARD_COLUMNS;
-                colValues = new String[]{resultsTableQualifier, vocabularyTableQualifier};
+                colValues = new String[]{resultsTableQualifier, vocabularyTableQualifier, cdmTableQualifier};
             }
 
             sql = ResourceHelper.GetResourceAsString(sqlPath);

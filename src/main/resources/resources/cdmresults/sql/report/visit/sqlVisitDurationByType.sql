@@ -12,4 +12,4 @@ FROM @results_database_schema.ACHILLES_results_dist ard1
 INNER JOIN
 @vocab_database_schema.concept c1 ON ard1.stratum_1 = CAST(c1.concept_id AS VARCHAR )
 WHERE ard1.analysis_id = 211
-AND CAST(ar1.stratum_1 AS INT) = @conceptId
+AND CAST(ard1.stratum_1 AS INT) = @conceptId

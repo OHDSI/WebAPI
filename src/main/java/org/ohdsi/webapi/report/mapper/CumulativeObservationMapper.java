@@ -11,9 +11,9 @@ public class CumulativeObservationMapper implements RowMapper<CumulativeObservat
 	@Override
 	public CumulativeObservationRecord mapRow(ResultSet rs, int rowNum) throws SQLException {
 		CumulativeObservationRecord record = new CumulativeObservationRecord();
-		record.setSeriesName(rs.getString("SERIES_NAME"));
-		record.setxLengthOfObservation(rs.getInt("X_LENGTH_OF_OBSERVATION"));
-		record.setyPercentPersons(rs.getDouble("Y_PERCENT_PERSONS"));
+		record.setSeriesName(rs.getString("SERIESNAME"));
+		record.setxLengthOfObservation(rs.getInt("XLENGTHOFOBSERVATION"));
+		record.setyPercentPersons(rs.getDouble("YPERCENTPERSONS"));
 		return record;
 	}
 

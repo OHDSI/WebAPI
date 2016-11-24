@@ -70,7 +70,7 @@ public class CDMResultsAnalysisRunner {
             dashboard.setAgeAtFirstObservation(jdbcTemplate.query(ageAtFirstObsSql, new ConceptDistributionMapper()));
         }
 
-        String genderSql = this.renderTranslateSql(BASE_SQL_PATH + "report/person/gender.sql", null, source);
+        String genderSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/person/gender.sql", null, source);
         if (genderSql != null) {
             dashboard.setGender(jdbcTemplate.query(genderSql, new ConceptCountMapper()));
         }
@@ -85,18 +85,6 @@ public class CDMResultsAnalysisRunner {
         if (obsByMonthSql != null) {
             dashboard.setObservedByMonth(jdbcTemplate.query(obsByMonthSql, new MonthObservationMapper()));
         }
-//            }
-
-//            if (CollectionUtils.isNotEmpty(dashboard.getAgeAtFirstObservation())
-//                    || CollectionUtils.isNotEmpty(dashboard.getCumulativeObservation())
-//                    || CollectionUtils.isNotEmpty(dashboard.getGender())
-//                    || CollectionUtils.isNotEmpty(dashboard.getObservedByMonth())) {
-//                empty = false;
-//            }
-//
-//            if (!empty && save) {
-//                this.saveEntity(id, source.getSourceId(), key, dashboard);
-//            }
 
         return dashboard;
 

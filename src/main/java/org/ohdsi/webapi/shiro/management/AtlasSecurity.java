@@ -259,14 +259,14 @@ public class AtlasSecurity extends Security {
 
   @PostConstruct
   private void initRolesForSources() {
-     for (Source source : sourceRepository.findAll()) {
-       try {
-         this.addSourceRole(source.getSourceKey());
-       }
-       catch (Exception e) {
-         log.error(e);
-       }
-     }
+    try {
+      for (Source source : sourceRepository.findAll()) {
+          this.addSourceRole(source.getSourceKey());
+      }
+    }
+    catch (Exception e) {
+      log.error(e);
+    }
   }
 
   private Filter getCreatePermissionsOnCreateCohortDefinitionFilter() {

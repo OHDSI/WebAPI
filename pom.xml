@@ -373,6 +373,11 @@
       <type>jar</type>
     </dependency>
     <dependency>
+        <groupId>com.microsoft.sqlserver</groupId>
+        <artifactId>mssql-jdbc</artifactId>
+        <version>6.1.0.jre8</version>
+    </dependency>
+    <dependency>
       <groupId>com.opencsv</groupId>
       <artifactId>opencsv</artifactId>
       <version>3.7</version>
@@ -484,14 +489,6 @@
         <flyway.datasource.password>FLYWAY_PASS</flyway.datasource.password>
         <flyway.locations>classpath:db/migration/sqlserver</flyway.locations>
       </properties>
-      <dependencies>
-        <dependency>
-          <groupId>com.microsoft.sqlserver</groupId>
-          <artifactId>sqljdbc4</artifactId>
-          <version>4.0</version>
-          <type>jar</type>
-        </dependency>
-      </dependencies>	            
     </profile>  
     <profile>
       <id>webapi-local</id>
@@ -508,14 +505,6 @@
         <flyway.datasource.password>FLYWAY_PASS</flyway.datasource.password>
         <flyway.locations>classpath:db/migration/sqlserver</flyway.locations>
       </properties>
-      <dependencies>
-        <dependency>
-          <groupId>com.microsoft.sqlserver</groupId>
-          <artifactId>sqljdbc4</artifactId>
-          <version>4.0</version>
-          <type>jar</type>
-        </dependency>
-      </dependencies>	            
     </profile>                         
     <profile>
       <id>webapi-alpha</id>
@@ -532,14 +521,6 @@
         <flyway.datasource.password>FLYWAY_PASS</flyway.datasource.password>
         <flyway.locations>classpath:db/migration/sqlserver</flyway.locations>
       </properties>
-      <dependencies>
-        <dependency>
-          <groupId>com.microsoft.sqlserver</groupId>
-          <artifactId>sqljdbc4</artifactId>
-          <version>4.0</version>
-          <type>jar</type>
-        </dependency>
-      </dependencies>	            
     </profile>                         
   </profiles>
 </project>

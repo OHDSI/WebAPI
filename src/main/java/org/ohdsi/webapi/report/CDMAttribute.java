@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.report;
 
-public class CohortAttribute {
+public class CDMAttribute {
 	private String attributeName;
 	private String attributeValue;
 	

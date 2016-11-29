@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.report.mapper;
 
-import org.ohdsi.webapi.cohortresults.ConceptQuartileRecord;
+import org.ohdsi.webapi.report.ConceptQuartileRecord;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;

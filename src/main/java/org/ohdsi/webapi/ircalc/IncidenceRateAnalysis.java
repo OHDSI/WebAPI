@@ -149,8 +149,8 @@ public class IncidenceRateAnalysis implements Serializable {
     return executionInfoList;
   }
 
-  public IncidenceRateAnalysis setGenerationInfoList(Set<ExecutionInfo> generationInfoList) {
-    this.executionInfoList = generationInfoList;
+  public IncidenceRateAnalysis setExecutionInfoList(Set<ExecutionInfo> executionInfoList) {
+    this.executionInfoList = executionInfoList;
     return this;
   }
 }

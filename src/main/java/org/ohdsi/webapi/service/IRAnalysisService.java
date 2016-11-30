@@ -16,8 +16,11 @@
 package org.ohdsi.webapi.service;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.opencsv.CSVWriter;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -28,6 +31,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceContextType;
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -40,6 +49,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.collections4.Predicate;
@@ -47,13 +57,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ohdsi.sql.SqlTranslate;
-import org.ohdsi.webapi.TerminateJobStepExceptionHandler;
 import org.ohdsi.webapi.GenerationStatus;
+import org.ohdsi.webapi.exampleapplication.model.Widget;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.ircalc.AnalysisReport;
 import org.ohdsi.webapi.ircalc.ExecutionInfo;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysis;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisDetails;
+import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisExpression;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisRepository;
 import org.ohdsi.webapi.ircalc.PerformAnalysisTasklet;
 import org.ohdsi.webapi.job.JobExecutionResource;
@@ -68,12 +79,15 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.transaction.support.TransactionCallback;
 
 /**
  *
@@ -85,6 +99,7 @@ public class IRAnalysisService extends AbstractDaoService {
 
   private static final Log log = LogFactory.getLog(IRAnalysisService.class);
   private final static String STRATA_STATS_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/incidencerate/sql/strata_stats.sql"); 
+  
 
   @Autowired
   private IncidenceRateAnalysisRepository irAnalysisRepository;
@@ -100,7 +115,7 @@ public class IRAnalysisService extends AbstractDaoService {
 
   @Context
   ServletContext context;
-
+  
   private ExecutionInfo findExecutionInfoBySourceId(Collection<ExecutionInfo> infoList, Integer sourceId) {
     for (ExecutionInfo info : infoList) {
       if (sourceId.equals(info.getId().getSourceId())) {
@@ -511,6 +526,150 @@ public class IRAnalysisService extends AbstractDaoService {
     return copyStudy;
   }
 
+  
+  /**
+   * Exports the analysis definition and results
+   *
+   * @param id - the IR Analysis ID to export
+   * @return Response containing binary stream of zipped data
+   */
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/{id}/export")
+  @Transactional
+  public Response export(@PathParam("id") final int id) {
+
+    Response response = null;
+    HashMap<String, String> fileList = new HashMap<>();
+    HashMap<Integer, String> distTypeLookup = new HashMap<>();
+    
+    distTypeLookup.put(1, "TAR");
+    distTypeLookup.put(2, "TTO");
+    
+    try {
+      IncidenceRateAnalysis analysis = this.irAnalysisRepository.findOne(id);
+      Set<ExecutionInfo> executions = analysis.getExecutionInfoList();
+
+      fileList.put("analysisDefinition.json", analysis.getDetails().getExpression());
+
+      // squentially return reults of IR calculation.  In Spring 1.4.2, we can utlilize @Async operations to do this in parallel.
+      // store results in single CSV file
+      ArrayList<String[]> summaryLines = new ArrayList<>();
+      ArrayList<String[]> strataLines = new ArrayList<>();
+      ArrayList<String[]> distLines = new ArrayList<>();
+     
+      for (ExecutionInfo execution : executions)
+      {
+        Source source = execution.getSource();
+        String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+
+        // perform this query to CDM in an isolated transaction to avoid expensive JDBC transaction synchronization
+        DefaultTransactionDefinition requresNewTx = new DefaultTransactionDefinition();
+        requresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);        
+        TransactionStatus initStatus = this.getTransactionTemplateRequiresNew().getTransactionManager().getTransaction(requresNewTx);
+        
+        
+        // get the summary data
+        List<AnalysisReport.Summary> summaryList = getAnalysisSummaryList(id, source);
+        if (summaryLines.isEmpty())
+        {
+          summaryLines.add("db_id#targetId#outcomeId#total#timeAtRisk#cases".split("#"));
+        }
+        for (AnalysisReport.Summary summary : summaryList)
+        {
+          summaryLines.add(new String[] {source.getSourceKey(),String.valueOf(summary.targetId), String.valueOf(summary.outcomeId), String.valueOf(summary.totalPersons), String.valueOf(summary.timeAtRisk), String.valueOf(summary.cases)});
+        }
+        
+        // get the strata results
+        List<AnalysisReport.StrataStatistic> strataList = getStrataStatistics(id, source);
+        if (strataLines.isEmpty())
+        {
+          strataLines.add("db_id#targetId#outcomeId#strata_id#strata_name#total#timeAtRisk#cases".split("#"));
+        }
+        for (AnalysisReport.StrataStatistic strata : strataList)
+        {
+          strataLines.add(new String[] {source.getSourceKey(),String.valueOf(strata.targetId), String.valueOf(strata.outcomeId),String.valueOf(strata.id), String.valueOf(strata.name), String.valueOf(strata.totalPersons), String.valueOf(strata.timeAtRisk), String.valueOf(strata.cases)});
+        }        
+        
+        // get the distribution data
+        String distQuery = String.format("select '%s' as db_id, target_id, outcome_id, strata_sequence, dist_type, total, avg_value, std_dev, min_value, p10_value, p25_value, median_value, p75_value, p90_value, max_value from %s.ir_analysis_dist where analysis_id = %d", source.getSourceKey(), resultsTableQualifier, id);
+        String translatedSql = SqlTranslate.translateSql(distQuery, "sql server", source.getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
+        
+        SqlRowSet rs = this.getSourceJdbcTemplate(source).queryForRowSet(translatedSql);
+        
+        this.getTransactionTemplateRequiresNew().getTransactionManager().commit(initStatus);
+        
+        if (distLines.isEmpty())
+        {
+          distLines.add(rs.getMetaData().getColumnNames());
+        }
+        while (rs.next())
+        {
+          ArrayList<String> columns = new ArrayList<>();
+          for(int i = 1; i <= rs.getMetaData().getColumnNames().length; i++)
+          {
+            switch (rs.getMetaData().getColumnName(i)) {
+              case "dist_type": 
+                columns.add(distTypeLookup.get(rs.getInt(i)));
+                break;
+              default:
+                columns.add(rs.getString(i));
+                break;
+            }
+           }
+          distLines.add(columns.toArray(new String[0]));
+        }
+      }
+      
+      // Write report lines to CSV
+      StringWriter sw = null;
+      CSVWriter csvWriter = null;
+
+      sw = new StringWriter();
+      csvWriter = new CSVWriter(sw);
+      csvWriter.writeAll(summaryLines);
+      csvWriter.flush();
+      fileList.put("ir_summary.csv", sw.getBuffer().toString());
+      
+      sw = new StringWriter();
+      csvWriter = new CSVWriter(sw);
+      csvWriter.writeAll(strataLines);
+      csvWriter.flush();      
+      fileList.put("ir_strata.csv", sw.getBuffer().toString());
+
+      sw = new StringWriter();
+      csvWriter = new CSVWriter(sw);
+      csvWriter.writeAll(distLines);
+      csvWriter.flush();      
+      fileList.put("ir_dist.csv", sw.getBuffer().toString());
+      
+      // build zip output
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      ZipOutputStream zos = new ZipOutputStream(baos);
+
+      for(String fileName : fileList.keySet())
+      {
+        ZipEntry resultsEntry = new ZipEntry(fileName);
+        zos.putNextEntry(resultsEntry);
+        zos.write(fileList.get(fileName).getBytes());
+      }
+      
+      zos.closeEntry();
+      zos.close();
+      baos.flush();
+      baos.close();      
+      
+      response = Response
+        .ok(baos)
+        .type(MediaType.APPLICATION_OCTET_STREAM)
+        .header("Content-Disposition", String.format("attachment; filename=\"%s\"", "ir_analysis_" + id + ".zip"))
+        .build();
+    } catch (Exception ex) {
+      throw new RuntimeException(ex);
+    }
+    return response;    
+  }
+  
   /**
    * Deletes the specified cohort definition
    *

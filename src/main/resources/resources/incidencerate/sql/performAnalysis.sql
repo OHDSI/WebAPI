@@ -79,7 +79,7 @@ from cteRawData
 ;
 
 -- from here, take all the people's person_id, start_date, end_date, create an 'events table' 
-select row_number() over (order by P.person_id, P.start_date) as event_id, P.person_id, P.start_date, P.end_date, P.op_start_date, P.op_end_date
+select row_number() over (partition by P.person_id order by P.start_date) as event_id, P.person_id, P.start_date, P.end_date, P.op_start_date, P.op_end_date
 INTO #analysis_events
 FROM
 (
@@ -95,6 +95,7 @@ FROM
 create table #strataCohorts 
 (
   strata_sequence int,
+  person_id bigint,
   event_id bigint
 )
 ;
@@ -112,7 +113,7 @@ from #time_at_risk T
 JOIN (
   select E.event_id, E.person_id, E.start_date, E.end_date, SUM(coalesce(POWER(cast(2 as bigint), SC.strata_sequence), 0)) as strata_mask
   FROM #analysis_events E
-  LEFT JOIN #strataCohorts SC on SC.event_id = E.event_id
+  LEFT JOIN #strataCohorts SC on SC.person_id = E.person_id and SC.event_id = E.event_id
   group by E.event_id, E.person_id, E.start_date, E.end_date
 ) E on T.subject_id = E.person_id and T.cohort_start_date = E.start_date and T.cohort_end_date = E.end_date
 GROUP BY T.target_id, T.outcome_id, E.strata_mask
@@ -134,8 +135,8 @@ left join
 (
   select T.target_id, T.outcome_id, S.strata_sequence, count(S.event_id) as person_count, sum(1.0 * T.time_at_risk / 365.25) as time_at_risk, sum(T.is_case) as cases
   from #analysis_events E
-  JOIN #strataCohorts S on E.event_id = S.event_id
-	join #time_at_risk T on T.subject_id = E.person_id and T.cohort_start_date = E.start_date and T.cohort_end_date = E.end_date
+  JOIN #strataCohorts S on S.person_id = E.person_id and E.event_id = S.event_id
+  join #time_at_risk T on T.subject_id = E.person_id and T.cohort_start_date = E.start_date and T.cohort_end_date = E.end_date
   group by T.target_id, T.outcome_id, S.strata_sequence
 ) T on irs.strata_sequence = T.strata_sequence and T.target_id = combos.target_id and T.outcome_id = combos.outcome_id
 WHERE irs.analysis_id = @analysisId

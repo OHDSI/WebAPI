@@ -427,7 +427,6 @@ public class IRAnalysisService extends AbstractDaoService {
 
     Step irAnalysisStep = stepBuilders.get("irAnalysis.execute")
       .tasklet(analysisTasklet)
-      .exceptionHandler(new TerminateJobStepExceptionHandler())
     .build();
 
     Job executeAnalysis = jobBuilders.get("irAnalysis")

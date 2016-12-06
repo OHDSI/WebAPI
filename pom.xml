@@ -46,6 +46,7 @@
     <spring.batch.repository.isolationLevelForCreate>ISOLATION_READ_COMMITTED</spring.batch.repository.isolationLevelForCreate>
     <spring.profiles.active>default</spring.profiles.active>
 
+    <security.disabled>false</security.disabled>
     <security.token.expiration>43200</security.token.expiration>
     <security.origin>http://localhost:8080</security.origin>
     <security.ssl.port>8443</security.ssl.port>

@@ -4,8 +4,10 @@ import java.util.*;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
+import org.ohdsi.webapi.shiro.management.AtlasSecurity;
+import org.ohdsi.webapi.shiro.management.DisabledSecurity;
 import org.ohdsi.webapi.shiro.management.Security;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -16,13 +18,21 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ShiroConfiguration {
 
-  @Autowired
-  Security security;
+  @Value("${security.disabled}")
+  private boolean disabled;
 
   @Bean
-  public ShiroFilterFactoryBean shiroFilter(){
+  public Security security() {
+    if (disabled)
+      return new DisabledSecurity();
+    else
+      return new AtlasSecurity();
+  };
+
+  @Bean
+  public ShiroFilterFactoryBean shiroFilter(Security security){
     ShiroFilterFactoryBean shiroFilter = new ShiroFilterFactoryBean();
-    shiroFilter.setSecurityManager(securityManager());
+    shiroFilter.setSecurityManager(securityManager(security));
 
     shiroFilter.setFilters(security.getFilters());
     shiroFilter.setFilterChainDefinitionMap(security.getFilterChain());
@@ -31,7 +41,7 @@ public class ShiroConfiguration {
   }
 
   @Bean
-  public DefaultWebSecurityManager securityManager(){
+  public DefaultWebSecurityManager securityManager(Security security){
     final DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
 
     securityManager.setAuthenticator(security.getAuthenticator());

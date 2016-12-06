@@ -48,7 +48,6 @@ import org.pac4j.oauth.client.FacebookClient;
 import org.pac4j.oauth.client.Google2Client;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 import waffle.shiro.negotiate.NegotiateAuthenticationFilter;
 import waffle.shiro.negotiate.NegotiateAuthenticationRealm;
@@ -59,7 +58,6 @@ import waffle.shiro.negotiate.NegotiateAuthenticationStrategy;
  * @author gennadiy.anisimov
  */
 @Component
-@Primary
 public class AtlasSecurity extends Security {
 
   private final Log log = LogFactory.getLog(getClass());

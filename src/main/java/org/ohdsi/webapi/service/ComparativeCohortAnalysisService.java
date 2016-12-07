@@ -23,6 +23,7 @@ import java.util.HashMap;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -38,6 +39,7 @@ import org.ohdsi.webapi.cohortcomparison.ModelScoreDistributionValue;
 import org.ohdsi.webapi.cohortcomparison.OutcomeModel;
 import org.ohdsi.webapi.cohortcomparison.PropensityScoreModelCovariate;
 import org.ohdsi.webapi.cohortcomparison.PropensityScoreModelReport;
+import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
@@ -92,15 +94,29 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
         return getComparativeCohortAnalysisRepository().findAll();
     }
 
+   
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ComparativeCohortAnalysis saveComparativeCohortAnalysis(ComparativeCohortAnalysis comparativeCohortAnalysis) {
+    public ComparativeCohortAnalysis createComparativeCohortAnalysis(ComparativeCohortAnalysis comparativeCohortAnalysis) {
+
+      Date d = new Date();
+      comparativeCohortAnalysis.setAnalysisId(null);
+      comparativeCohortAnalysis.setCreated(d);
+      comparativeCohortAnalysis.setModified(d);
+      comparativeCohortAnalysis = this.getComparativeCohortAnalysisRepository().save(comparativeCohortAnalysis);
+      return comparativeCohortAnalysis;
+    }
+
+    @Path("/{id}")
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public ComparativeCohortAnalysis updateComparativeCohortAnalysis(@PathParam("id") final int id, ComparativeCohortAnalysis comparativeCohortAnalysis) throws Exception {
         Date d = new Date();
-        if (comparativeCohortAnalysis.getCreated() == null) {
-            comparativeCohortAnalysis.setCreated(d);
-        }
+        comparativeCohortAnalysis.setCreated(d); // temporary workaround until client sends the current created value.
         comparativeCohortAnalysis.setModified(d);
+        
         comparativeCohortAnalysis = this.getComparativeCohortAnalysisRepository().save(comparativeCohortAnalysis);
         return comparativeCohortAnalysis;
     }

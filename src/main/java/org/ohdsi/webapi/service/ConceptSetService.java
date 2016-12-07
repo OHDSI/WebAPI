@@ -15,33 +15,22 @@
  */
 package org.ohdsi.webapi.service;
 
-import com.opencsv.CSVWriter;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.StringWriter;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 import javax.transaction.Transactional;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
 import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfo;
@@ -147,7 +136,7 @@ public class ConceptSetService extends AbstractDaoService {
         return getConceptSetRepository().conceptSetExists(id, name);
     }
 
-    @POST
+    @PUT
     @Path("{id}/items")
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
@@ -217,9 +206,29 @@ public class ConceptSetService extends AbstractDaoService {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ConceptSet saveConceptSet(ConceptSet conceptSet) {
-        conceptSet = this.getConceptSetRepository().save(conceptSet);
-        return conceptSet;
+    public ConceptSet createConceptSet(ConceptSet conceptSet) {
+        ConceptSet updated = new ConceptSet();
+        return updateConceptSet(updated, conceptSet);
+    }
+
+    @Path("/{id}")
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public ConceptSet updateConceptSet(@PathParam("id") final int id, ConceptSet conceptSet) throws Exception {
+        ConceptSet updated = this.getConceptSet(id);
+        if (updated == null) {
+          throw new Exception("Concept Set does not exist.");
+        }
+
+        return updateConceptSet(updated, conceptSet);
+    }
+
+    private ConceptSet updateConceptSet(ConceptSet dst, ConceptSet src) {
+        dst.setName(src.getName());
+        
+        dst = this.getConceptSetRepository().save(dst);
+        return dst;
     }
     
     private ConceptSetExport getConceptSetForExport(int conceptSetId, SourceInfo vocabSource) {
@@ -248,9 +257,9 @@ public class ConceptSetService extends AbstractDaoService {
       return this.conceptSetGenerationInfoRepository.findAllByConceptSetId(id);
   }
   
-  @POST
+  @DELETE
   @Transactional(rollbackOn = Exception.class, dontRollbackOn = EmptyResultDataAccessException.class)
-  @Path("{id}/delete")
+  @Path("{id}")
   public void deleteConceptSet(@PathParam("id") final int id) throws Exception {
       // Remove the concept set
       try {

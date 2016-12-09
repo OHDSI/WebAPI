@@ -46,11 +46,10 @@
     <spring.batch.repository.isolationLevelForCreate>ISOLATION_READ_COMMITTED</spring.batch.repository.isolationLevelForCreate>
     <spring.profiles.active>default</spring.profiles.active>
 
-    <security.disabled>false</security.disabled>
+    <security.enabled>false</security.enabled>
     <security.token.expiration>43200</security.token.expiration>
     <security.origin>http://localhost:8080</security.origin>
-    <security.ssl.port>8443</security.ssl.port>
-    <security.ssl.enabled>true</security.ssl.enabled>
+    <security.ssl.enabled>false</security.ssl.enabled>
     <security.oauth.callback.ui>http://localhost:8080/Atlas/#/welcome</security.oauth.callback.ui>
     <security.oauth.callback.api>http://localhost:8084/WebAPI/user/oauth/callback</security.oauth.callback.api>
     <security.oauth.google.apiKey></security.oauth.google.apiKey>

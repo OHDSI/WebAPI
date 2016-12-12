@@ -71,7 +71,7 @@ public class AtlasSecurity extends Security {
   @Value("${security.token.expiration}")
   private int tokenExpirationIntervalInSeconds;
 
-  @Value("${security.ssl.port}")
+  @Value("${server.port}")
   private int sslPort;
 
   @Value("${security.ssl.enabled}")
@@ -187,7 +187,7 @@ public class AtlasSecurity extends Security {
     filters.put("sendTokenInUrl", new SendTokenInUrlFilter(this.oauthUiCallback));
     filters.put("sendTokenInHeader", new SendTokenInHeaderFilter());
     filters.put("ssl", this.getSslFilter());
-
+    
     // OAuth
     //
     Google2Client googleClient = new Google2Client(this.googleApiKey, this.googleApiSecret);

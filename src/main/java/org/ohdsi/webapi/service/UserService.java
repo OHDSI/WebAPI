@@ -141,7 +141,7 @@ public class UserService {
     return roles;
   }
 
-  @PUT
+  @POST
   @Path("role")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
@@ -156,7 +156,7 @@ public class UserService {
     return newRole;
   }
 
-  @POST
+  @PUT
   @Path("role/{roleId}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)

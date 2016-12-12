@@ -144,9 +144,8 @@ public class AtlasSecurity extends Security {
 
       // concept set
       .addRestPath("/conceptset", "skipFurtherFiltersIfNotPutOrPost, jwtAuthc, authz, createPermissionsOnCreateConceptSet") // only PUT and POST methods are protected
-      .addRestPath("/conceptset/*/items", "skipFurtherFiltersIfNotPost, jwtAuthc, authz") // only POST method is protected
-      .addRestPath("/conceptset/*", "skipFurtherFiltersIfNotPost, jwtAuthc, authz") // only POST method is protected
-      .addProtectedRestPath("/conceptset/*/delete", "deletePermissionsOnDeleteConceptSet")
+      .addRestPath("/conceptset/*/items", "skipFurtherFiltersIfNotPut, jwtAuthc, authz") // only PUT method is protected
+      .addRestPath("/conceptset/*", "skipFurtherFiltersIfNotPutOrDelete, jwtAuthc, authz, deletePermissionsOnDeleteConceptSet") // only PUT and DELETE methods are protected
 
       // cohort definition
       .addProtectedRestPath("/cohortdefinition", "createPermissionsOnCreateCohortDefinition")
@@ -183,7 +182,9 @@ public class AtlasSecurity extends Security {
     filters.put("deletePermissionsOnDeleteConceptSet", this.getDeletePermissionsOnDeleteConceptSetFilter());
     filters.put("cors", new CorsFilter());
     filters.put("skipFurtherFiltersIfNotPost", this.getSkipFurtherFiltersIfNotPostFilter());
+    filters.put("skipFurtherFiltersIfNotPut", this.getSkipFurtherFiltersIfNotPutFilter());
     filters.put("skipFurtherFiltersIfNotPutOrPost", this.getskipFurtherFiltersIfNotPutOrPostFilter());
+    filters.put("skipFurtherFiltersIfNotPutOrDelete", this.getskipFurtherFiltersIfNotPutOrDeleteFilter());
     filters.put("sendTokenInUrl", new SendTokenInUrlFilter(this.oauthUiCallback));
     filters.put("sendTokenInHeader", new SendTokenInHeaderFilter());
     filters.put("ssl", this.getSslFilter());
@@ -278,7 +279,7 @@ public class AtlasSecurity extends Security {
           return HttpMethod.GET.equalsIgnoreCase(WebUtils.toHttp(request).getMethod());
         }
         else {
-          return  HttpMethod.PUT.equalsIgnoreCase(WebUtils.toHttp(request).getMethod());
+          return  HttpMethod.POST.equalsIgnoreCase(WebUtils.toHttp(request).getMethod());
         }
       }
 
@@ -295,7 +296,7 @@ public class AtlasSecurity extends Security {
     return  new ProcessResponseContentFilter() {
       @Override
       protected boolean shouldProcess(ServletRequest request, ServletResponse response) {
-        return  HttpMethod.PUT.equalsIgnoreCase(WebUtils.toHttp(request).getMethod());
+        return  HttpMethod.POST.equalsIgnoreCase(WebUtils.toHttp(request).getMethod());
       }
 
       @Override
@@ -331,7 +332,7 @@ public class AtlasSecurity extends Security {
       @Override
       protected void postHandle(ServletRequest request, ServletResponse response) {
         HttpServletRequest httpRequest = WebUtils.toHttp(request);
-        if (!HttpMethod.POST.equalsIgnoreCase(httpRequest.getMethod())) {
+        if (!HttpMethod.DELETE.equalsIgnoreCase(httpRequest.getMethod())) {
           return;
         }
 
@@ -354,12 +355,31 @@ public class AtlasSecurity extends Security {
     };
   }
 
+  private Filter getSkipFurtherFiltersIfNotPutFilter() {
+    return new SkipFurtherFilteringFilter() {
+      @Override
+      protected boolean shouldSkip(ServletRequest request, ServletResponse response) {
+        return !HttpMethod.PUT.equalsIgnoreCase(WebUtils.toHttp(request).getMethod());
+      }
+    };
+  }
+
   private Filter getskipFurtherFiltersIfNotPutOrPostFilter() {
     return new SkipFurtherFilteringFilter() {
       @Override
       protected boolean shouldSkip(ServletRequest request, ServletResponse response) {
         String httpMethod = WebUtils.toHttp(request).getMethod();
         return !(HttpMethod.PUT.equalsIgnoreCase(httpMethod) || HttpMethod.POST.equalsIgnoreCase(httpMethod));
+      }
+    };
+  }
+
+  private Filter getskipFurtherFiltersIfNotPutOrDeleteFilter() {
+    return new SkipFurtherFilteringFilter() {
+      @Override
+      protected boolean shouldSkip(ServletRequest request, ServletResponse response) {
+        String httpMethod = WebUtils.toHttp(request).getMethod();
+        return !(HttpMethod.PUT.equalsIgnoreCase(httpMethod) || HttpMethod.DELETE.equalsIgnoreCase(httpMethod));
       }
     };
   }

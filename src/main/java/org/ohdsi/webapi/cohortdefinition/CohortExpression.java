@@ -42,4 +42,7 @@ public class CohortExpression {
   @JsonProperty("EndStrategy")
   public EndStrategy endStrategy;
   
+  @JsonProperty("CensoringCriteria")
+  public Criteria[] censoringCriteria;
+  
 }

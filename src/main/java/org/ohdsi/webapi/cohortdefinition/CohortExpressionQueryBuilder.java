@@ -43,7 +43,8 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
   private final static String VISIT_OCCURRENCE_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/visitOccurrence.sql");
   private final static String PRIMARY_CRITERIA_EVENTS_TABLE = "primary_events";
   private final static String INCLUSION_RULE_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/inclusionrule.sql");  
-
+  private final static String CENSORING_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/censoringInsert.sql");  
+  
   private final static String EVENT_TABLE_EXPRESSION_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/eventTableExpression.sql");  
   private final static String DEMOGRAPHIC_CRITERIA_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/demographicCriteria.sql");
   
@@ -219,6 +220,21 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
     return codesetQuery;
   }
  
+  private String getCensoringEventsQuery(Criteria[] censoringCriteria)
+  {
+    if (censoringCriteria == null || censoringCriteria.length == 0)
+      return "";
+    
+    ArrayList<String> criteriaQueries = new ArrayList<>();
+    for (Criteria c : censoringCriteria)    
+    {
+      String criteriaQuery = c.accept(this);
+      criteriaQueries.add(StringUtils.replace(CENSORING_QUERY_TEMPLATE, "@criteriaQuery", criteriaQuery));
+    }
+    
+    return StringUtils.join(criteriaQueries,"\n");
+  }
+  
   public String getPrimaryEventsQuery(PrimaryCriteria primaryCriteria) {
     String query = PRIMARY_EVENTS_TEMPLATE;
     
@@ -305,6 +321,9 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
       resultSql = StringUtils.replace(resultSql, "@strategyInserts", expression.endStrategy.accept(this, "#included_events"));
     else
       resultSql = StringUtils.replace(resultSql, "@strategyInserts", "");
+    
+      
+    resultSql = StringUtils.replace(resultSql, "@censoringInserts", getCensoringEventsQuery(expression.censoringCriteria));
     
     if (options != null)
     {

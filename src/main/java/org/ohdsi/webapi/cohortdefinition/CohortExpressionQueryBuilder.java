@@ -369,25 +369,33 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
       indexId++;
     }
     
-    String occurrenceCountClause = "HAVING COUNT(index_id) ";
-    
-    if (group.type.equalsIgnoreCase("ALL")) // count must match number of criteria + sub-groups in group.
-      occurrenceCountClause += "= " + indexId;
-    
-    if (group.type.equalsIgnoreCase("ANY")) // count must be > 0 for an 'ANY' criteria
-      occurrenceCountClause += "> 0"; 
-    
-    if (group.type.toUpperCase().startsWith("AT_"))
+    if (indexId > 0) // this group is not empty
     {
-      if (group.type.toUpperCase().endsWith("LEAST"))
-        occurrenceCountClause += ">= " + group.count;
-      else
-        occurrenceCountClause += "<= " + group.count;
+      query = StringUtils.replace(query, "@criteriaQueries", StringUtils.join(additionalCriteriaQueries, "\nUNION ALL\n"));
+      
+      String occurrenceCountClause = "HAVING COUNT(index_id) ";
+      if (group.type.equalsIgnoreCase("ALL")) // count must match number of criteria + sub-groups in group.
+        occurrenceCountClause += "= " + indexId;
+
+      if (group.type.equalsIgnoreCase("ANY")) // count must be > 0 for an 'ANY' criteria
+        occurrenceCountClause += "> 0"; 
+
+      if (group.type.toUpperCase().startsWith("AT_"))
+      {
+        if (group.type.toUpperCase().endsWith("LEAST"))
+          occurrenceCountClause += ">= " + group.count;
+        else
+          occurrenceCountClause += "<= " + group.count;
+      }
+      query = StringUtils.replace(query, "@occurrenceCountClause", occurrenceCountClause);
     }
-           
+    else // query group is empty so replace queries and occurence count clause with a friendly default
+    {
+      query = StringUtils.replace(query, "@criteriaQueries", "select ET.person_id, ET.event_id from @eventTable ET");
+      query = StringUtils.replace(query, "@occurrenceCountClause", "");
+    }
+
     query = StringUtils.replace(query, "@eventTable", eventTable);
-    query = StringUtils.replace(query, "@occurrenceCountClause", occurrenceCountClause);
-    query = StringUtils.replace(query, "@criteriaQueries", StringUtils.join(additionalCriteriaQueries, "\nUNION ALL\n"));
     
     return query;    
   }

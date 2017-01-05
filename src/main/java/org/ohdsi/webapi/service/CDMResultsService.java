@@ -9,20 +9,15 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.report.*;
-//import org.ohdsi.webapi.cohortresults.VisualizationData;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
-import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
@@ -33,7 +28,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class CDMResultsService extends AbstractDaoService {
 
-    private ObjectMapper mapper = new ObjectMapper();
     private CDMResultsAnalysisRunner queryRunner = null;
 
     @PostConstruct
@@ -84,7 +78,6 @@ public class CDMResultsService extends AbstractDaoService {
     @Produces(MediaType.APPLICATION_JSON)
     public CDMDashboard getDashboard(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
 
-        final String key = CDMResultsAnalysisRunner.DASHBOARD;
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         CDMDashboard dashboard = queryRunner.getDashboard(getSourceJdbcTemplate(source), /*id,*/ source, /*demographicsOnly,*/ true);
         log.debug(dashboard);
@@ -101,8 +94,6 @@ public class CDMResultsService extends AbstractDaoService {
     @Path("person")
     @Produces(MediaType.APPLICATION_JSON)
     public CDMPersonSummary getPersonReport(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
-
-        final String key = CDMResultsAnalysisRunner.PERSON;
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         CDMPersonSummary person = this.queryRunner.getPersonResults(this.getSourceJdbcTemplate(source), source);
         return person;
@@ -114,7 +105,7 @@ public class CDMResultsService extends AbstractDaoService {
      * @return CDMAchillesHeel
      */
     @GET
-    @Path("achillesheel")
+    @Path("heel")
     @Produces(MediaType.APPLICATION_JSON)
     public CDMAchillesHeel getAchillesHeelReport(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
         Source source = getSourceRepository().findBySourceKey(sourceKey);
@@ -122,32 +113,6 @@ public class CDMResultsService extends AbstractDaoService {
         return cdmAchillesHeel;
     }
 
-    /**
-     * Queries for observation period report for the given sourceKey
-     *
-     * @return CDMObservationPeriod
-     */
-    @GET
-    @Path("observationperiod")
-    @Produces(MediaType.APPLICATION_JSON)
-    public CDMObservationPeriod getObservationPeriods(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
-        CDMObservationPeriod cdmObservationPeriod = null;
-        final String key = CDMResultsAnalysisRunner.OBSERVATIONPERIOD;
-        Source source = getSourceRepository().findBySourceKey(sourceKey);
-//        AchillesVisualizationData data = /*refresh ?*/ null /*: this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(source.getSourceId(), key)*/;
-
-        if (refresh /*|| data == null*/) {
-            cdmObservationPeriod = this.queryRunner.getObservationPeriodResults(this.getSourceJdbcTemplate(source), source, true);
-        } else {
-            try {
-//                procedureSummary = mapper.readValue(data.getData(), CDMProcedureSummary.class);
-            } catch (Exception e) {
-                log.error(e);
-            }
-        }
-
-        return cdmObservationPeriod;
-    }
 
     /**
      * Queries for data density report for the given sourceKey
@@ -247,7 +212,6 @@ public class CDMResultsService extends AbstractDaoService {
     /**
      * Queries for measurement treemap results
      *
-     * @return List<HierarchicalConceptRecord>
      * @return List<ArrayNode>
      */
     @GET

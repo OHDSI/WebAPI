@@ -11,6 +11,7 @@ import javax.ws.rs.core.MediaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
@@ -38,34 +39,6 @@ public class CDMResultsService extends AbstractDaoService {
     @PostConstruct
     public void init() {
         queryRunner = new CDMResultsAnalysisRunner(this.getSourceDialect()/*, this.visualizationDataRepository*/);
-    }
-
-    @Path("{conceptId}/monthlyConditionOccurrencePrevalence")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public MonthlyPrevalence getMonthlyConditionOccurrencePrevalence(@PathParam("sourceKey") String sourceKey, @PathParam("conceptId") String conceptId) {
-        try {
-            Source source = getSourceRepository().findBySourceKey(sourceKey);
-            String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-
-            String sql_statement = ResourceHelper.GetResourceAsString("/resources/cdmresults/sql/getMonthlyConditionOccurrencePrevalence.sql");
-            sql_statement = SqlRender.renderSql(sql_statement, new String[]{"OHDSI_schema", "conceptId"}, new String[]{tableQualifier, conceptId});
-            sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
-
-            return getSourceJdbcTemplate(source).query(sql_statement, new ResultSetExtractor<MonthlyPrevalence>() {
-                @Override
-                public MonthlyPrevalence extractData(ResultSet rs) throws SQLException, DataAccessException {
-                    MonthlyPrevalence result = new MonthlyPrevalence();
-                    while (rs.next()) {
-                        result.monthKey.add(rs.getString(1));
-                        result.prevalence.add(rs.getFloat(2));
-                    }
-                    return result;
-                }
-            });
-        } catch (Exception exception) {
-            throw new RuntimeException("Error retrieving monthly condition occurrence prevalence statistics." + exception.getMessage());
-        }
     }
 
     private final RowMapper<SimpleEntry<Long, Long[]>> rowMapper = new RowMapper<SimpleEntry<Long, Long[]>>() {
@@ -150,6 +123,33 @@ public class CDMResultsService extends AbstractDaoService {
     }
 
     /**
+     * Queries for observation period report for the given sourceKey
+     *
+     * @return CDMObservationPeriod
+     */
+    @GET
+    @Path("observationperiod")
+    @Produces(MediaType.APPLICATION_JSON)
+    public CDMObservationPeriod getObservationPeriods(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+        CDMObservationPeriod cdmObservationPeriod = null;
+        final String key = CDMResultsAnalysisRunner.OBSERVATIONPERIOD;
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+//        AchillesVisualizationData data = /*refresh ?*/ null /*: this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKey(source.getSourceId(), key)*/;
+
+        if (refresh /*|| data == null*/) {
+            cdmObservationPeriod = this.queryRunner.getObservationPeriodResults(this.getSourceJdbcTemplate(source), source, true);
+        } else {
+            try {
+//                procedureSummary = mapper.readValue(data.getData(), CDMProcedureSummary.class);
+            } catch (Exception e) {
+                log.error(e);
+            }
+        }
+
+        return cdmObservationPeriod;
+    }
+
+    /**
      * Queries for data density report for the given sourceKey
      *
      * @return CDMDataDensity
@@ -166,6 +166,7 @@ public class CDMResultsService extends AbstractDaoService {
 
     /**
      * Queries for death report for the given sourceKey
+     * Queries for treemap results
      *
      * @return CDMDataDensity
      */
@@ -247,6 +248,7 @@ public class CDMResultsService extends AbstractDaoService {
      * Queries for measurement treemap results
      *
      * @return List<HierarchicalConceptRecord>
+     * @return List<ArrayNode>
      */
     @GET
     @Path("/{domain}/")
@@ -258,6 +260,11 @@ public class CDMResultsService extends AbstractDaoService {
         return queryRunner.getTreemap(this.getSourceJdbcTemplate(source), domain, source);
     }
 
+    /**
+     * Queries for drilldown results
+     *
+     * @return List<ArrayNode>
+     */
     @GET
     @Path("/{domain}/{conceptId}")
     @Produces(MediaType.APPLICATION_JSON)

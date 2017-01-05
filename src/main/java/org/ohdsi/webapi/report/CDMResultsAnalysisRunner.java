@@ -4,10 +4,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.commons.lang.WordUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.cohortresults.*;
+import org.ohdsi.webapi.cohortresults.mapper.HierarchicalConceptMapper;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.report.mapper.*;
 import org.ohdsi.webapi.source.Source;
@@ -15,6 +18,8 @@ import org.ohdsi.webapi.source.SourceDaimon;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
+import org.springframework.data.mapping.model.CamelCaseAbbreviatingFieldNamingStrategy;
+import org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.ArrayList;
@@ -38,7 +43,7 @@ public class CDMResultsAnalysisRunner {
 
     private static final Log log = LogFactory.getLog(CDMResultsAnalysisRunner.class);
 
-    public static final String[] STANDARD_COLUMNS = new String[]{"results_database_schema", "vocab_database_schema"};
+    public static final String[] STANDARD_COLUMNS = new String[]{"results_database_schema", "vocab_database_schema", "cdm_database_schema"};
 
     public static final String[] DRILLDOWN_COLUMNS = new String[]{"results_database_schema", "vocab_database_schema", "conceptId"};
 
@@ -228,7 +233,7 @@ public class CDMResultsAnalysisRunner {
                     if (sql != null) {
                         List<JsonNode> l = jdbcTemplate.query(sql, new GenericRowMapper(mapper));
                         String analysisName = resource.getFilename().substring(3).replace(".sql", "");
-                        String fieldName = analysisName.substring(0, 1).toLowerCase() + analysisName.substring(1);
+                        String fieldName = analysisName.substring(0,1).toLowerCase() + analysisName.substring(1);
                         objectNode.putArray(fieldName).addAll(l);
                     }
                 }

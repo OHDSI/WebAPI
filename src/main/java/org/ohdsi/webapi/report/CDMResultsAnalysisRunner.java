@@ -249,6 +249,7 @@ public class CDMResultsAnalysisRunner {
 
         String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
         String vocabularyTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
+        String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
 
         try {
             String[] cols;
@@ -258,7 +259,7 @@ public class CDMResultsAnalysisRunner {
                 colValues = new String[]{resultsTableQualifier, vocabularyTableQualifier, String.valueOf(conceptId)};
             } else {
                 cols = STANDARD_COLUMNS;
-                colValues = new String[]{resultsTableQualifier, vocabularyTableQualifier};
+                colValues = new String[]{resultsTableQualifier, vocabularyTableQualifier, cdmTableQualifier};
             }
 
             sql = ResourceHelper.GetResourceAsString(sqlPath);

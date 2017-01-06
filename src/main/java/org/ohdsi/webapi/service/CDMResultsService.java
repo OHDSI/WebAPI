@@ -105,7 +105,7 @@ public class CDMResultsService extends AbstractDaoService {
      * @return CDMAchillesHeel
      */
     @GET
-    @Path("heel")
+    @Path("achillesheel")
     @Produces(MediaType.APPLICATION_JSON)
     public CDMAchillesHeel getAchillesHeelReport(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
         Source source = getSourceRepository().findBySourceKey(sourceKey);

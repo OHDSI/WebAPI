@@ -99,9 +99,9 @@ public class CDMResultsAnalysisRunner {
 
         CDMPersonSummary person = new CDMPersonSummary();
 
-        String populationSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/person/population.sql", source);
-        if (populationSql != null) {
-            person.setYearOfBirth(jdbcTemplate.query(populationSql, new CDMAttributeMapper()));
+        String summarySql = this.renderTranslateSql(BASE_SQL_PATH + "/report/person/population.sql", source);
+        if (summarySql != null) {
+            person.setSummary(jdbcTemplate.query(summarySql, new CDMAttributeMapper()));
         }
 
         String genderSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/person/gender.sql", source);
@@ -117,6 +117,16 @@ public class CDMResultsAnalysisRunner {
         String ethnicitySql = this.renderTranslateSql(BASE_SQL_PATH + "/report/person/ethnicity.sql", source);
         if (ethnicitySql != null) {
             person.setEthnicity(jdbcTemplate.query(ethnicitySql, new ConceptCountMapper()));
+        }
+
+        String yearOfBirthSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/person/yearofbirth_data.sql", source);
+        if (yearOfBirthSql != null) {
+            person.setYearOfBirth(jdbcTemplate.query(yearOfBirthSql, new ConceptDistributionMapper()));
+        }
+
+        String yearOfBirthStatsSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/person/yearofbirth_stats.sql", source);
+        if (yearOfBirthStatsSql != null) {
+            person.setYearOfBirthStats(jdbcTemplate.query(yearOfBirthStatsSql, new CohortStatsMapper()));
         }
 
         return person;

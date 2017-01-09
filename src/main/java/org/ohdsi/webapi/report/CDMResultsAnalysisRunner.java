@@ -153,7 +153,7 @@ public class CDMResultsAnalysisRunner {
         }
         String totalRecordsSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/datadensity/totalrecords.sql", source);
         if (totalRecordsSql != null) {
-            cdmDataDensity.setRecordsPerPerson(jdbcTemplate.query(totalRecordsSql, new SeriesPerPersonMapper()));
+            cdmDataDensity.setTotalRecords(jdbcTemplate.query(totalRecordsSql, new SeriesPerPersonMapper()));
         }
         return cdmDataDensity;
     }

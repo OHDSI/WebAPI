@@ -57,12 +57,14 @@ public class CDMResultsAnalysisRunner {
     }
 
     public CDMDashboard getDashboard(JdbcTemplate jdbcTemplate,
-                                     Source source,
-                                     boolean save) {
+                                     Source source) {
 
-        final String key = DASHBOARD;
         CDMDashboard dashboard = new CDMDashboard();
-        boolean empty = true;
+
+        String summarySql = this.renderTranslateSql(BASE_SQL_PATH + "/report/person/population.sql", source);
+        if (summarySql != null) {
+            dashboard.setSummary(jdbcTemplate.query(summarySql, new CDMAttributeMapper()));
+        }
 
         String ageAtFirstObsSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/observationperiod/ageatfirst.sql", source);
         if (ageAtFirstObsSql != null) {
@@ -243,7 +245,7 @@ public class CDMResultsAnalysisRunner {
                     if (sql != null) {
                         List<JsonNode> l = jdbcTemplate.query(sql, new GenericRowMapper(mapper));
                         String analysisName = resource.getFilename().substring(3).replace(".sql", "");
-                        String fieldName = analysisName.substring(0,1).toLowerCase() + analysisName.substring(1);
+                        String fieldName = analysisName.substring(0, 1).toLowerCase() + analysisName.substring(1);
                         objectNode.putArray(fieldName).addAll(l);
                     }
                 }

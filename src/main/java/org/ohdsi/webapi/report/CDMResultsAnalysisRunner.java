@@ -160,8 +160,25 @@ public class CDMResultsAnalysisRunner {
         return cdmDataDensity;
     }
 
-    public CDMDeath getDeathResults(JdbcTemplate sourceJdbcTemplate, Source source) {
-        return new CDMDeath();
+    public CDMDeath getDeathResults(JdbcTemplate jdbcTemplate, Source source) {
+        CDMDeath cdmDeath = new CDMDeath();
+        String prevalenceByGenderAgeYearSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/death/sqlPrevalenceByGenderAgeYear.sql", source);
+        if (prevalenceByGenderAgeYearSql != null) {
+            cdmDeath.setPrevalenceByGenderAgeYear(jdbcTemplate.query(prevalenceByGenderAgeYearSql, new ConceptDecileMapper()));
+        }
+        String prevalenceByMonthSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/death/sqlPrevalenceByMonth.sql", source);
+        if (prevalenceByMonthSql != null) {
+            cdmDeath.setPrevalenceByMonth(jdbcTemplate.query(prevalenceByMonthSql, new PrevalanceMapper()));
+        }
+        String deathByTypeSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/death/sqlDeathByType.sql", source);
+        if (deathByTypeSql != null) {
+            cdmDeath.setDeathByType(jdbcTemplate.query(deathByTypeSql, new ConceptCountMapper()));
+        }
+        String ageAtDeathSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/death/sqlAgeAtDeath.sql", source);
+        if (ageAtDeathSql != null) {
+            cdmDeath.setAgeAtDeath(jdbcTemplate.query(ageAtDeathSql, new ConceptQuartileMapper()));
+        }
+        return cdmDeath;
     }
 
     public String renderTranslateSql(String sqlPath, Source source) {

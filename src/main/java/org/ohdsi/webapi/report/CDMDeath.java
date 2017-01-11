@@ -6,41 +6,40 @@ import java.util.List;
  * Created by taa7016 on 11/29/2016.
  */
 public class CDMDeath {
-    private List<CDMAttribute> ageAtDeath;
-    private List<CDMAttribute> deathByType;
-    private List<CDMAttribute> prevalenceByGenderAgeYear;
+    private List<ConceptQuartileRecord> ageAtDeath;
+    private List<ConceptCountRecord> deathByType;
+    private List<ConceptDecileRecord> prevalenceByGenderAgeYear;
+    private List<PrevalenceRecord> prevalenceByMonth;
 
-    public List<CDMAttribute> getPrevalenceByMonth() {
-        return prevalenceByMonth;
-    }
-
-    public void setPrevalenceByMonth(List<CDMAttribute> prevalenceByMonth) {
-        this.prevalenceByMonth = prevalenceByMonth;
-    }
-
-    private List<CDMAttribute> prevalenceByMonth;
-
-    public void setDeathByType(List<CDMAttribute> deathByType) {
+    public void setDeathByType(List<ConceptCountRecord> deathByType) {
         this.deathByType = deathByType;
     }
 
-    public List<CDMAttribute> getDeathByType() {
+    public List<ConceptCountRecord> getDeathByType() {
         return deathByType;
     }
 
-    public List<CDMAttribute> getPrevalenceByGenderAgeYear() {
+    public List<ConceptDecileRecord> getPrevalenceByGenderAgeYear() {
         return prevalenceByGenderAgeYear;
     }
 
-    public void setPrevalenceByGenderAgeYear(List<CDMAttribute> prevalenceByGenderAgeYear) {
+    public void setPrevalenceByGenderAgeYear(List<ConceptDecileRecord> prevalenceByGenderAgeYear) {
         this.prevalenceByGenderAgeYear = prevalenceByGenderAgeYear;
     }
 
-    public void setAgeAtDeath(List<CDMAttribute> ageAtDeath) {
+    public void setAgeAtDeath(List<ConceptQuartileRecord> ageAtDeath) {
         this.ageAtDeath = ageAtDeath;
     }
 
-    public List<CDMAttribute> getAgeAtDeath() {
+    public List<ConceptQuartileRecord> getAgeAtDeath() {
         return ageAtDeath;
+    }
+
+    public List<PrevalenceRecord> getPrevalenceByMonth() {
+        return prevalenceByMonth;
+    }
+
+    public void setPrevalenceByMonth(List<PrevalenceRecord> prevalenceByMonth) {
+        this.prevalenceByMonth = prevalenceByMonth;
     }
 }

@@ -167,9 +167,6 @@ public class CDMResultsAnalysisRunner {
         return renderTranslateSql(sqlPath, null, source);
     }
 
-    public String renderDrillDownSql(String analysisName, String analysisType, int conceptId, Source source) {
-        return renderTranslateSql(BASE_SQL_PATH + "/report/" + analysisType + "/" + analysisName + ".sql", conceptId, source);
-    }
 
     public ArrayNode getTreemap(JdbcTemplate jdbcTemplate,
                                 String domain,

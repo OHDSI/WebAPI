@@ -4,13 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.lang.WordUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
-import org.ohdsi.webapi.cohortresults.*;
-import org.ohdsi.webapi.cohortresults.mapper.HierarchicalConceptMapper;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.report.mapper.*;
 import org.ohdsi.webapi.source.Source;
@@ -18,28 +15,13 @@ import org.ohdsi.webapi.source.SourceDaimon;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
-import org.springframework.data.mapping.model.CamelCaseAbbreviatingFieldNamingStrategy;
-import org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class CDMResultsAnalysisRunner {
 
-    public static final String DASHBOARD = "dashboard";
-    public static final String PERSON = "person";
     public static final String BASE_SQL_PATH = "/resources/cdmresults/sql";
-    public static final String DRUG = "drug";
-    public static final String CONDITION = "condition";
-    public static final String CONDITIONERA = "conditionera";
-    public static final String OBSERVATIONPERIOD = "observationperiod";
-    public static final String HEEL = "heel";
-    public static final String PROCEDURE = "procedure";
-    public static final String DATADENSITY = "datadensity";
-    public static final String OBSERVATION = "observation";
-    public static final String VISIT = "visit";
-    public static final String VISIT_DRILLDOWN = "visit_drilldown";
 
     private static final Log log = LogFactory.getLog(CDMResultsAnalysisRunner.class);
 
@@ -202,43 +184,6 @@ public class CDMResultsAnalysisRunner {
             arrayNode.addAll(list);
         }
         return arrayNode;
-    }
-
-    public org.ohdsi.webapi.cohortresults.CohortVisitsDrilldown getVisitsDrilldown(JdbcTemplate jdbcTemplate,
-                                                                                   final int conceptId,
-                                                                                   Source source) {
-
-        org.ohdsi.webapi.cohortresults.CohortVisitsDrilldown drilldown = new org.ohdsi.webapi.cohortresults.CohortVisitsDrilldown();
-
-        List<org.ohdsi.webapi.cohortresults.ConceptQuartileRecord> ageAtFirst = null;
-        String ageAtFirstSql = this.renderDrillDownSql("sqlAgeAtFirstOccurrence", VISIT, conceptId, source);
-        if (ageAtFirstSql != null) {
-            ageAtFirst = jdbcTemplate.query(ageAtFirstSql, new org.ohdsi.webapi.cohortresults.mapper.ConceptQuartileMapper());
-        }
-        drilldown.setAgeAtFirstOccurrence(ageAtFirst);
-
-        List<org.ohdsi.webapi.cohortresults.ConceptQuartileRecord> byType = null;
-        String byTypeSql = this.renderDrillDownSql("sqlVisitDurationByType", VISIT, conceptId, source);
-        if (byTypeSql != null) {
-            byType = jdbcTemplate.query(byTypeSql, new org.ohdsi.webapi.cohortresults.mapper.ConceptQuartileMapper());
-        }
-        drilldown.setVisitDurationByType(byType);
-
-        List<org.ohdsi.webapi.cohortresults.ConceptDecileRecord> prevalenceByGenderAgeYear = null;
-        String prevalenceGenderAgeSql = this.renderDrillDownSql("sqlPrevalenceByGenderAgeYear", VISIT, conceptId, source);
-        if (prevalenceGenderAgeSql != null) {
-            prevalenceByGenderAgeYear = jdbcTemplate.query(prevalenceGenderAgeSql, new org.ohdsi.webapi.cohortresults.mapper.ConceptDecileMapper());
-        }
-        drilldown.setPrevalenceByGenderAgeYear(prevalenceByGenderAgeYear);
-
-        List<org.ohdsi.webapi.cohortresults.PrevalenceRecord> prevalenceByMonth = null;
-        String prevalanceMonthSql = this.renderDrillDownSql("sqlPrevalenceByMonth", VISIT, conceptId, source);
-        if (prevalanceMonthSql != null) {
-            prevalenceByMonth = jdbcTemplate.query(prevalanceMonthSql, new org.ohdsi.webapi.cohortresults.mapper.PrevalanceConceptMapper());
-        }
-        drilldown.setPrevalenceByMonth(prevalenceByMonth);
-
-        return drilldown;
     }
 
     public JsonNode getDrilldown(JdbcTemplate jdbcTemplate,

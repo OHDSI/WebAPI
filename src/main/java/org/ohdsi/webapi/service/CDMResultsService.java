@@ -32,7 +32,7 @@ public class CDMResultsService extends AbstractDaoService {
 
     @PostConstruct
     public void init() {
-        queryRunner = new CDMResultsAnalysisRunner(this.getSourceDialect()/*, this.visualizationDataRepository*/);
+        queryRunner = new CDMResultsAnalysisRunner(this.getSourceDialect());
     }
 
     private final RowMapper<SimpleEntry<Long, Long[]>> rowMapper = new RowMapper<SimpleEntry<Long, Long[]>>() {
@@ -69,31 +69,29 @@ public class CDMResultsService extends AbstractDaoService {
     }
 
     /**
-     * Queries for CDM dashboard for the given sourceKey
+     * Queries for dashboard report for the sourceKey
      *
      * @return CDMDashboard
      */
     @GET
     @Path("dashboard")
     @Produces(MediaType.APPLICATION_JSON)
-    public CDMDashboard getDashboard(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+    public CDMDashboard getDashboard(@PathParam("sourceKey") final String sourceKey) {
 
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         CDMDashboard dashboard = queryRunner.getDashboard(getSourceJdbcTemplate(source), source);
-        log.debug(dashboard);
         return dashboard;
-
     }
 
     /**
-     * Queries for person report results for the given sourceKey
+     * Queries for person report for the sourceKey
      *
      * @return CDMPersonSummary
      */
     @GET
     @Path("person")
     @Produces(MediaType.APPLICATION_JSON)
-    public CDMPersonSummary getPersonReport(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+    public CDMPersonSummary getPerson(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         CDMPersonSummary person = this.queryRunner.getPersonResults(this.getSourceJdbcTemplate(source), source);
         return person;

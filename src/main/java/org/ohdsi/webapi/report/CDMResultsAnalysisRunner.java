@@ -250,21 +250,18 @@ public class CDMResultsAnalysisRunner {
 
         ClassLoader cl = this.getClass().getClassLoader();
         ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(cl);
-        String pattern = BASE_SQL_PATH + "/report/" + domain.toLowerCase() + "/*.sql";
+        String pattern = BASE_SQL_PATH + "/report/" + domain.toLowerCase() + "/drilldown/*.sql";
         try {
             Resource[] resources = resolver.getResources(pattern);
             for (Resource resource : resources) {
                 String fullSqlPath = resource.getURL().getPath();
-                if (!fullSqlPath.toLowerCase().contains("tree")) {
-                    int startIndex = fullSqlPath.indexOf(BASE_SQL_PATH);
-                    String sqlPath = fullSqlPath.substring(startIndex);
-                    String sql = this.renderTranslateSql(sqlPath, conceptId, source);
-                    if (sql != null) {
-                        List<JsonNode> l = jdbcTemplate.query(sql, new GenericRowMapper(mapper));
-                        String analysisName = resource.getFilename().substring(3).replace(".sql", "");
-                        String fieldName = analysisName.substring(0, 1).toLowerCase() + analysisName.substring(1);
-                        objectNode.putArray(fieldName).addAll(l);
-                    }
+                int startIndex = fullSqlPath.indexOf(BASE_SQL_PATH);
+                String sqlPath = fullSqlPath.substring(startIndex);
+                String sql = this.renderTranslateSql(sqlPath, conceptId, source);
+                if (sql != null) {
+                    List<JsonNode> l = jdbcTemplate.query(sql, new GenericRowMapper(mapper));
+                    String analysisName = resource.getFilename().replace(".sql", "");
+                    objectNode.putArray(analysisName).addAll(l);
                 }
             }
         } catch (Exception e) {

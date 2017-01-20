@@ -21,15 +21,16 @@ import java.util.List;
 
 public class CDMResultsAnalysisRunner {
 
-    public static final String BASE_SQL_PATH = "/resources/cdmresults/sql";
+    private static final String BASE_SQL_PATH = "/resources/cdmresults/sql";
 
     private static final Log log = LogFactory.getLog(CDMResultsAnalysisRunner.class);
 
-    public static final String[] STANDARD_COLUMNS = new String[]{"results_database_schema", "vocab_database_schema", "cdm_database_schema"};
+    private static final String[] STANDARD_COLUMNS = new String[]{"results_database_schema", "vocab_database_schema", "cdm_database_schema"};
 
-    public static final String[] DRILLDOWN_COLUMNS = new String[]{"results_database_schema", "vocab_database_schema", "conceptId"};
+    private static final String[] DRILLDOWN_COLUMNS = new String[]{"results_database_schema", "vocab_database_schema", "conceptId"};
 
     private ObjectMapper mapper;
+
     private String sourceDialect;
 
     public CDMResultsAnalysisRunner(String sourceDialect) {
@@ -163,7 +164,7 @@ public class CDMResultsAnalysisRunner {
         return cdmDeath;
     }
 
-    public String renderTranslateSql(String sqlPath, Source source) {
+    private String renderTranslateSql(String sqlPath, Source source) {
         return renderTranslateSql(sqlPath, null, source);
     }
 
@@ -212,7 +213,7 @@ public class CDMResultsAnalysisRunner {
         return objectNode;
     }
 
-    public String renderTranslateSql(String sqlPath, Integer conceptId, Source source) {
+    private String renderTranslateSql(String sqlPath, Integer conceptId, Source source) {
         String sql = null;
 
         String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);

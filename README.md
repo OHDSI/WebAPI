@@ -5,7 +5,7 @@ NOTE: Check license information for individual sources on the [Web API documenta
 
 #### Getting Started
 
-New documentation can be found a tthe [Web API Installation Guide](https://github.com/OHDSI/WebAPI/wiki/WebAPI-Installation-Guide)
+New documentation can be found a the [Web API Installation Guide](http://www.ohdsi.org/web/wiki/doku.php?id=documentation:software:webapi:webapi_installation_guide)
 
 ##### Compilation
 Compiling the WebAPI project will require Maven.  Maven is a command line tool that will build the WAR for deployment to a servlet container.

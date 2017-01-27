@@ -1,4 +1,6 @@
 *application.properties
+.idea/
+*.iml
 sandbox/
 /target/
 .settings

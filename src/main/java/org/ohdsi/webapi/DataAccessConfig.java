@@ -30,23 +30,23 @@ public class DataAccessConfig {
 
     @Autowired
     private Environment env;
-
-
+  
     private Properties getJPAProperties() {
         Properties properties = new Properties();
         properties.setProperty("hibernate.default_schema", this.env.getProperty("spring.jpa.properties.hibernate.default_schema"));
+        properties.setProperty("hibernate.dialect", this.env.getProperty("spring.jpa.properties.hibernate.dialect"));
         return properties;
     }
-
+      
     @Bean
-    @Primary
+    @Primary    
     public DataSource primaryDataSource() {
-
         String driver = this.env.getRequiredProperty("datasource.driverClassName");
         String url = this.env.getRequiredProperty("datasource.url");
         String user = this.env.getRequiredProperty("datasource.username");
         String pass = this.env.getRequiredProperty("datasource.password");
         boolean autoCommit = false;
+
 
         //pooling - currently issues with (at least) oracle with use of temp tables and "on commit preserve rows" instead of "on commit delete rows";
         //http://forums.ohdsi.org/t/transaction-vs-session-scope-for-global-temp-tables-statements/333/2

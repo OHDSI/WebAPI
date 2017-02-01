@@ -261,9 +261,9 @@ public class ConceptSetService extends AbstractDaoService {
   @Transactional(rollbackOn = Exception.class, dontRollbackOn = EmptyResultDataAccessException.class)
   @Path("{id}")
   public void deleteConceptSet(@PathParam("id") final int id) throws Exception {
-      // Remove the concept set
+      // Remove any evidence
       try {
-        getConceptSetRepository().delete(id);
+        this.negativeControlRepository.deleteAllByConceptSetId(id);
       } catch (EmptyResultDataAccessException e) {
           // Ignore - there may be no data
           log.debug(e.getMessage());
@@ -271,7 +271,18 @@ public class ConceptSetService extends AbstractDaoService {
       catch (Exception e) {
           throw e;
       }
-
+      
+      // Remove any generation info
+      try {
+        this.conceptSetGenerationInfoRepository.deleteByConceptSetId(id);
+      } catch (EmptyResultDataAccessException e) {
+          // Ignore - there may be no data
+          log.debug(e.getMessage());
+      }
+      catch (Exception e) {
+          throw e;
+      }
+      
       // Remove the concept set items
       try {
         getConceptSetItemRepository().deleteByConceptSetId(id);
@@ -283,20 +294,9 @@ public class ConceptSetService extends AbstractDaoService {
           throw e;
       }
 
-      // Remove any generation info
+      // Remove the concept set
       try {
-        this.conceptSetGenerationInfoRepository.deleteByConceptSetId(id);
-      } catch (EmptyResultDataAccessException e) {
-          // Ignore - there may be no data
-          log.debug(e.getMessage());
-      }
-      catch (Exception e) {
-          throw e;
-      }
-  
-      // Remove any evidence
-      try {
-        this.negativeControlRepository.deleteAllByConceptSetId(id);
+        getConceptSetRepository().delete(id);
       } catch (EmptyResultDataAccessException e) {
           // Ignore - there may be no data
           log.debug(e.getMessage());

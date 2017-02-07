@@ -23,6 +23,9 @@ public class ObservationPeriod extends Criteria {
   @JsonProperty("PeriodEndDate")
   public DateRange periodEndDate;
   
+  @JsonProperty("UserDefinedPeriod")
+  public Period userDefinedPeriod;
+
   @JsonProperty("PeriodType")
   public Concept[] periodType;
   

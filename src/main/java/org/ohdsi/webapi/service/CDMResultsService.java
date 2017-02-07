@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
 /**
  * @author fdefalco
  */
-@Path("{sourceKey}/cdmresults/")
+@Path("/cdmresults")
 @Component
 public class CDMResultsService extends AbstractDaoService {
 
@@ -47,7 +47,7 @@ public class CDMResultsService extends AbstractDaoService {
         }
     };
 
-    @Path("conceptRecordCount")
+    @Path("{sourceKey}/conceptRecordCount")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
@@ -74,7 +74,7 @@ public class CDMResultsService extends AbstractDaoService {
      * @return CDMDashboard
      */
     @GET
-    @Path("dashboard")
+    @Path("{sourceKey}/dashboard")
     @Produces(MediaType.APPLICATION_JSON)
     public CDMDashboard getDashboard(@PathParam("sourceKey") final String sourceKey) {
 
@@ -89,7 +89,7 @@ public class CDMResultsService extends AbstractDaoService {
      * @return CDMPersonSummary
      */
     @GET
-    @Path("person")
+    @Path("{sourceKey}/person")
     @Produces(MediaType.APPLICATION_JSON)
     public CDMPersonSummary getPerson(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
         Source source = getSourceRepository().findBySourceKey(sourceKey);
@@ -103,7 +103,7 @@ public class CDMResultsService extends AbstractDaoService {
      * @return CDMAchillesHeel
      */
     @GET
-    @Path("achillesheel")
+    @Path("{sourceKey}/achillesheel")
     @Produces(MediaType.APPLICATION_JSON)
     public CDMAchillesHeel getAchillesHeelReport(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
         Source source = getSourceRepository().findBySourceKey(sourceKey);
@@ -118,7 +118,7 @@ public class CDMResultsService extends AbstractDaoService {
      * @return CDMDataDensity
      */
     @GET
-    @Path("datadensity")
+    @Path("{sourceKey}/datadensity")
     @Produces(MediaType.APPLICATION_JSON)
     public CDMDataDensity getDataDensity(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
         CDMDataDensity cdmDataDensity;
@@ -134,7 +134,7 @@ public class CDMResultsService extends AbstractDaoService {
      * @return CDMDataDensity
      */
     @GET
-    @Path("death")
+    @Path("{sourceKey}/death")
     @Produces(MediaType.APPLICATION_JSON)
     public CDMDeath getDeath(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
         CDMDeath cdmDeath;
@@ -143,7 +143,7 @@ public class CDMResultsService extends AbstractDaoService {
         return cdmDeath;
     }
 
-    @Path("{conceptId}/drugeraprevalence")
+    @Path("{sourceKey}/{conceptId}/drugeraprevalence")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public List<DrugEraPrevalence> getDrugEraPrevalenceByGenderAgeYear(@PathParam("sourceKey") String
@@ -172,7 +172,7 @@ public class CDMResultsService extends AbstractDaoService {
         return listOfResults;
     }
 
-    @Path("conditionoccurrencetreemap")
+    @Path("{sourceKey}/conditionoccurrencetreemap")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
@@ -213,7 +213,7 @@ public class CDMResultsService extends AbstractDaoService {
      * @return List<ArrayNode>
      */
     @GET
-    @Path("/{domain}/")
+    @Path("{sourceKey}/{domain}/")
     @Produces(MediaType.APPLICATION_JSON)
     public ArrayNode getTreemap(
             @PathParam("domain") final String domain,
@@ -228,7 +228,7 @@ public class CDMResultsService extends AbstractDaoService {
      * @return List<ArrayNode>
      */
     @GET
-    @Path("/{domain}/{conceptId}")
+    @Path("{sourceKey}/{domain}/{conceptId}")
     @Produces(MediaType.APPLICATION_JSON)
     public JsonNode getDrilldown(@PathParam("domain") final String domain,
                                  @PathParam("conceptId") final int conceptId,

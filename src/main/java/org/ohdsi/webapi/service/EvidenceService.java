@@ -65,7 +65,7 @@ import org.springframework.stereotype.Component;
  * @author rkboyce based on the vocabulary service written by fdefalco and an
  * initial api written by m_rasteger
  */
-@Path("{sourceKey}/evidence/")
+@Path("/evidence")
 @Component
 public class EvidenceService extends AbstractDaoService {
   @Autowired
@@ -126,7 +126,7 @@ public class EvidenceService extends AbstractDaoService {
   
   
   @GET
-  @Path("info")
+  @Path("{sourceKey}/info")
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<EvidenceInfo> getInfo(@PathParam("sourceKey") String sourceKey) {
 
@@ -165,7 +165,7 @@ public class EvidenceService extends AbstractDaoService {
    * @return
    */
   @GET
-  @Path("drug/{id}")
+  @Path("{sourceKey}/drug/{id}")
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<DrugEvidence> getDrugEvidence(@PathParam("sourceKey") String sourceKey, @PathParam("id") final Long id) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
@@ -238,7 +238,7 @@ public class EvidenceService extends AbstractDaoService {
    * @return
    */
   @GET
-  @Path("hoi/{id}")
+  @Path("{sourceKey}/hoi/{id}")
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<HoiEvidence> getHoiEvidence(@PathParam("sourceKey") String sourceKey, @PathParam("id") final Long id) {
     
@@ -300,7 +300,7 @@ public class EvidenceService extends AbstractDaoService {
    * @return
    */
   @GET
-  @Path("drughoi/{key}")
+  @Path("{sourceKey}/drughoi/{key}")
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<DrugHoiEvidence> getDrugHoiEvidence(@PathParam("sourceKey") String sourceKey, @PathParam("key") final String key) {
     String[] par = key.split("-");
@@ -361,7 +361,7 @@ public class EvidenceService extends AbstractDaoService {
    * @return
    */
   @GET
-  @Path("drugrollup/{filter}/{id}")
+  @Path("{sourceKey}/drugrollup/{filter}/{id}")
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<DrugRollUpEvidence> getDrugRollupIngredientEvidence(@PathParam("sourceKey") String sourceKey, @PathParam("id") final Long id, @PathParam("filter") final String filter) {
     
@@ -425,7 +425,7 @@ public class EvidenceService extends AbstractDaoService {
   
   
   @GET
-  @Path("{id}")
+  @Path("{sourceKey}/{id}")
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<Evidence> getEvidence(@PathParam("sourceKey") String sourceKey, @PathParam("id") final Long id) {
     
@@ -476,7 +476,7 @@ public class EvidenceService extends AbstractDaoService {
    * @return
    */
   @GET
-  @Path("evidencesummary")
+  @Path("{sourceKey}/evidencesummary")
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<EvidenceSummary> getEvidenceSummaryBySource(@PathParam("sourceKey") String sourceKey, @QueryParam("conditionID") String conditionID, @QueryParam("drugID") String drugID, @QueryParam("evidenceGroup") String evidenceGroup) {
 	  Source source = getSourceRepository().findBySourceKey(sourceKey);
@@ -512,7 +512,7 @@ public class EvidenceService extends AbstractDaoService {
    * @return
    */
   @GET
-  @Path("evidencedetails")
+  @Path("{sourceKey}/evidencedetails")
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<EvidenceDetails> getEvidenceDetails(@PathParam("sourceKey") String sourceKey, @QueryParam("conditionID") String conditionID, @QueryParam("drugID") String drugID, @QueryParam("evidenceType") String evidenceType) throws JSONException, IOException {
 	  SparqlService sparqlentity = new SparqlService();
@@ -565,7 +565,7 @@ public class EvidenceService extends AbstractDaoService {
   }
 
   @POST
-  @Path("spontaneousreports")
+  @Path("{sourceKey}/spontaneousreports")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<SpontaneousReport> getSpontaneousReports(@PathParam("sourceKey") String sourceKey, EvidenceSearch search) throws JSONException, IOException {
@@ -597,7 +597,7 @@ public class EvidenceService extends AbstractDaoService {
   }
 
   @POST
-  @Path("evidencesearch")
+  @Path("{sourceKey}/evidencesearch")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<EvidenceUniverse> evidenceSearch(@PathParam("sourceKey") String sourceKey, EvidenceSearch search) throws JSONException, IOException {
@@ -641,7 +641,7 @@ public class EvidenceService extends AbstractDaoService {
   }
   
   @POST
-  @Path("labelevidence")
+  @Path("{sourceKey}/labelevidence")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<EvidenceUniverse> labelEvidence(@PathParam("sourceKey") String sourceKey, EvidenceSearch search) throws JSONException, IOException {
@@ -679,7 +679,7 @@ public class EvidenceService extends AbstractDaoService {
  * @throws Exception
  */
   @POST
-  @Path("negativecontrols")
+  @Path("{sourceKey}/negativecontrols")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public JobExecutionResource queueNegativeControlsJob(@PathParam("sourceKey") String sourceKey, NegativeControl task) throws Exception {
@@ -720,7 +720,7 @@ public class EvidenceService extends AbstractDaoService {
 }
 
   @GET
-  @Path("negativecontrols/{conceptsetid}")
+  @Path("{sourceKey}/negativecontrols/{conceptsetid}")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<NegativeControlRecord> getNegativeControls(@PathParam("sourceKey") String sourceKey, @PathParam("conceptsetid") int conceptSetId) {

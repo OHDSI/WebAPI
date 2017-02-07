@@ -76,7 +76,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  *
  * @author cknoll1
  */
-@Path("/cohortdefinition/")
+@Path("/cohortdefinition")
 @Component
 public class CohortDefinitionService extends AbstractDaoService {
 

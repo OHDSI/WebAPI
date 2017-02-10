@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -119,6 +120,18 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
         
         comparativeCohortAnalysis = this.getComparativeCohortAnalysisRepository().save(comparativeCohortAnalysis);
         return comparativeCohortAnalysis;
+    }
+    
+    /**
+     * Deletes the specified comparative cohort analysis
+     * 
+     * @param id - the Comparative Cohort Analysis ID to delete
+     */
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}")
+    public void delete(@PathParam("id") final int id) {
+     this.getComparativeCohortAnalysisRepository().delete(id);
     }
 
     @GET

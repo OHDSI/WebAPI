@@ -199,9 +199,12 @@ SELECT
 	CASE WHEN eu_spc IS NULL THEN 0 ELSE eu_spc END eu_spc, 
 	CASE WHEN spl_adr IS NULL THEN 0 ELSE spl_adr END spl_adr, 
 	CASE WHEN aers IS NULL THEN 0 ELSE aers END aers, 
-	CASE WHEN aers_prr IS NULL THEN 0 ELSE aers_prr END aers_prr
+	CASE WHEN aers_prr IS NULL THEN 0 ELSE aers_prr END aers_prr,
+        se.in_universe
 INTO #summary
-FROM #complete_universe cu
+FROM 
+    (SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END in_universe FROM #summarize_evidence) se
+    , #complete_universe cu
 FULL OUTER JOIN CTE_SUMMARIZE s ON s.@TARGET_DOMAIN_ID_CONCEPT_ID = cu.@TARGET_DOMAIN_ID_CONCEPT_ID
 ORDER BY 
     s.@TARGET_DOMAIN_ID_CONCEPT_ID, 
@@ -227,7 +230,8 @@ select
 	, STDEV(aers) aers_stdev
 	, STDEV(aers_prr) aers_prr_stdev
 INTO #summary_stdev
-from #summary;
+FROM  #summary
+WHERE #summary.in_universe = 1;
 
 -- Compute the scaled varaiables and keep this in a temp table
 IF OBJECT_ID('tempdb..#summary_scaled', 'U') IS NOT NULL
@@ -265,7 +269,8 @@ select
 	, CASE WHEN aers_stdev = 0 THEN 0 ELSE (aers / aers_stdev) END aers_scaled 
 	, CASE WHEN aers_prr_stdev = 0 THEN 0 ELSE (aers_prr / aers_prr_stdev) END aers_prr_scaled
 INTO #summary_scaled
-FROM #summary, #summary_stdev;
+FROM #summary, #summary_stdev
+WHERE #summary.in_universe = 1;
 
 -- Apply the model
 IF OBJECT_ID('tempdb..#model_applied', 'U') IS NOT NULL

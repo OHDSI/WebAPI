@@ -9,7 +9,7 @@ package org.ohdsi.webapi.cohortdefinition;
  *
  * @author cknoll1
  */
-interface IGetCriteriaSqlDispatcher {
+public interface IGetCriteriaSqlDispatcher {
   String getCriteriaSql(ConditionEra conditionEraCriteria);
   String getCriteriaSql(ConditionOccurrence conditionOccurrenceCriteria);
   String getCriteriaSql(Death deathCriteria);

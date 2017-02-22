@@ -29,14 +29,19 @@ public class ComparativeCohortAnalysisInfo extends ComparativeCohortAnalysis imp
     private String outcomeCohortDefinition;
     private String psInclusionCaption;
     private ConceptSetExpression psInclusionConceptSet; 
+    private String psInclusionConceptSetSql;
     private String psExclusionCaption;
     private ConceptSetExpression psExclusionConceptSet;
+    private String psExclusionConceptSetSql;
     private String omInclusionCaption;
     private ConceptSetExpression omInclusionConceptSet;
+    private String omInclusionConceptSetSql;
     private String omExclusionCaption;
     private ConceptSetExpression omExclusionConceptSet;
+    private String omExclusionConceptSetSql;
     private String negativeControlCaption;
     private ConceptSetExpression negativeControlConceptSet;
+    private String negativeControlConceptSetSql;
   
   public ComparativeCohortAnalysisInfo(ComparativeCohortAnalysis analysis) {
       this.setAddExposureDaysToEnd(analysis.getAddExposureDaysToEnd());
@@ -395,5 +400,75 @@ public class ComparativeCohortAnalysisInfo extends ComparativeCohortAnalysis imp
      */
     public void setTreatmentCohortDefinition(String treatmentCohortDefinition) {
         this.treatmentCohortDefinition = treatmentCohortDefinition;
+    }
+
+    /**
+     * @return the negativeControlConceptSetSql
+     */
+    public String getNegativeControlConceptSetSql() {
+        return negativeControlConceptSetSql;
+    }
+
+    /**
+     * @return the omExclusionConceptSetSql
+     */
+    public String getOmExclusionConceptSetSql() {
+        return omExclusionConceptSetSql;
+    }
+
+    /**
+     * @return the omInclusionConceptSetSql
+     */
+    public String getOmInclusionConceptSetSql() {
+        return omInclusionConceptSetSql;
+    }
+
+    /**
+     * @return the psExclusionConceptSetSql
+     */
+    public String getPsExclusionConceptSetSql() {
+        return psExclusionConceptSetSql;
+    }
+
+    /**
+     * @return the psInclusionConceptSetSql
+     */
+    public String getPsInclusionConceptSetSql() {
+        return psInclusionConceptSetSql;
+    }
+
+    /**
+     * @param negativeControlConceptSetSql the negativeControlConceptSetSql to set
+     */
+    public void setNegativeControlConceptSetSql(String negativeControlConceptSetSql) {
+        this.negativeControlConceptSetSql = negativeControlConceptSetSql;
+    }
+
+    /**
+     * @param omExclusionConceptSetSql the omExclusionConceptSetSql to set
+     */
+    public void setOmExclusionConceptSetSql(String omExclusionConceptSetSql) {
+        this.omExclusionConceptSetSql = omExclusionConceptSetSql;
+    }
+
+    /**
+     * @param omInclusionConceptSetSql the omInclusionConceptSetSql to set
+     */
+    public void setOmInclusionConceptSetSql(String omInclusionConceptSetSql) {
+        this.omInclusionConceptSetSql = omInclusionConceptSetSql;
+    }
+
+    /**
+     * @param psExclusionConceptSetSql the psExclusionConceptSetSql to set
+     */
+    public void setPsExclusionConceptSetSql(String psExclusionConceptSetSql) {
+        this.psExclusionConceptSetSql = psExclusionConceptSetSql;
+    }
+
+    /**
+     * @param psInclusionConceptSetSql the psInclusionConceptSetSql to set
+     */
+    public void setPsInclusionConceptSetSql(String psInclusionConceptSetSql) {
+        this.psInclusionConceptSetSql = psInclusionConceptSetSql;
     }
 }

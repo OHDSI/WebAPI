@@ -186,8 +186,11 @@ WITH cte_concepts_of_interest AS
 		CASE WHEN eu_spc IS NULL THEN 0 ELSE eu_spc END eu_spc, 
 		CASE WHEN spl_adr IS NULL THEN 0 ELSE spl_adr END spl_adr, 
 		CASE WHEN aers IS NULL THEN 0 ELSE aers END aers, 
-		CASE WHEN aers_prr IS NULL THEN 0 ELSE aers_prr END aers_prr
-	FROM cte_complete_universe cu
+		CASE WHEN aers_prr IS NULL THEN 0 ELSE aers_prr END aers_prr,
+                se.in_universe
+	FROM 
+            (SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END in_universe FROM cte_summarize_evidence) se
+            , cte_complete_universe cu
 	FULL OUTER JOIN CTE_SUMMARIZE s ON s.@TARGET_DOMAIN_ID_CONCEPT_ID = cu.@TARGET_DOMAIN_ID_CONCEPT_ID
 ), cte_summary_stdev AS (
 	SELECT
@@ -204,8 +207,8 @@ WITH cte_concepts_of_interest AS
 		, STDEV(spl_adr) spl_adr_stdev
 		, STDEV(aers) aers_stdev
 		, STDEV(aers_prr) aers_prr_stdev
-
 	FROM cte_summary
+        WHERE cte_summary.in_universe = 1
 ), cte_summary_scaled AS (
 	SELECT	 
 		concept_id
@@ -240,7 +243,8 @@ WITH cte_concepts_of_interest AS
 
 	FROM
 	 cte_summary, cte_summary_stdev
-
+        WHERE
+         cte_summary.in_universe = 1
 ), cte_model_applied AS (
 	SELECT
                 @CONCEPT_SET_ID concept_set_id

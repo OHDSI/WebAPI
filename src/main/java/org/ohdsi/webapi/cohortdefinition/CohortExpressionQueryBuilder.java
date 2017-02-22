@@ -1450,7 +1450,9 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
   public String getCriteriaSql(ObservationPeriod criteria)
   {
     String query = OBSERVATION_PERIOD_TEMPLATE;
-
+    String startDateExpression = "C.observation_period_start_date";
+    String endDateExpression = "C.observation_period_end_date";
+    
     ArrayList<String> joinClauses = new ArrayList<>();
     
     if (criteria.ageAtStart != null || criteria.ageAtEnd != null) // join to PERSON
@@ -1462,6 +1464,27 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
 
     if (criteria.first != null && criteria.first == true)
       whereClauses.add("C.ordinal = 1");
+    
+    // check for user defined start/end dates
+    if (criteria.userDefinedPeriod != null)
+    {
+      Period userDefinedPeriod = criteria.userDefinedPeriod;
+      
+      if (userDefinedPeriod.startDate != null)
+      {
+        startDateExpression = String.format("CAST('%s' as Date)", userDefinedPeriod.startDate);
+        whereClauses.add(String.format("C.OBSERVATION_PERIOD_START_DATE <= %s and C.OBSERVATION_PERIOD_END_DATE >= %s", startDateExpression, startDateExpression));
+      } 
+
+      if (userDefinedPeriod.endDate != null)
+      {
+        endDateExpression = String.format("CAST('%s' as Date)", userDefinedPeriod.endDate);
+        whereClauses.add(String.format("C.OBSERVATION_PERIOD_START_DATE <= %s and C.OBSERVATION_PERIOD_END_DATE >= %s", endDateExpression, endDateExpression));
+      }
+    }
+    
+    query = StringUtils.replace(query, "@startDateExpression",startDateExpression);
+    query = StringUtils.replace(query, "@endDateExpression",endDateExpression);
     
     // periodStartDate
     if (criteria.periodStartDate != null)

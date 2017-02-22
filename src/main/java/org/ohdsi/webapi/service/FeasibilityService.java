@@ -63,6 +63,7 @@ import org.ohdsi.webapi.cohortdefinition.GenerateCohortTasklet;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
+import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.SessionUtils;
@@ -106,6 +107,9 @@ public class FeasibilityService extends AbstractDaoService {
 
   @Autowired
   private JobTemplate jobTemplate;
+
+  @Autowired
+  private Security security;
 
   @Context
   ServletContext context;
@@ -396,7 +400,7 @@ public class FeasibilityService extends AbstractDaoService {
     FeasibilityStudy newStudy = new FeasibilityStudy();
     newStudy.setName(study.name)
             .setDescription(study.description)
-            .setCreatedBy("system")
+            .setCreatedBy(security.getSubject())
             .setCreatedDate(currentTime)
             .setInclusionRules(new ArrayList<InclusionRule>(study.inclusionRules));
 
@@ -404,7 +408,7 @@ public class FeasibilityService extends AbstractDaoService {
     CohortDefinition indexRule = new CohortDefinition()
             .setName("Index Population for Study: " + newStudy.getName())
             .setDescription(study.indexDescription)
-            .setCreatedBy("system")
+            .setCreatedBy(security.getSubject())
             .setCreatedDate(currentTime)
             .setExpressionType(ExpressionType.SIMPLE_EXPRESSION);
 
@@ -419,7 +423,7 @@ public class FeasibilityService extends AbstractDaoService {
       CohortDefinition resultDef = new CohortDefinition()
               .setName("Matching Population for Study: " + newStudy.getName())
               .setDescription(newStudy.getDescription())
-              .setCreatedBy("system")
+              .setCreatedBy(security.getSubject())
               .setCreatedDate(currentTime)
               .setExpressionType(ExpressionType.SIMPLE_EXPRESSION);
 
@@ -455,12 +459,12 @@ public class FeasibilityService extends AbstractDaoService {
     FeasibilityStudy updatedStudy = this.feasibilityStudyRepository.findOne(id);
     updatedStudy.setName(study.name)
             .setDescription(study.description)
-            .setModifiedBy("system")
+            .setModifiedBy(security.getSubject())
             .setModifiedDate(currentTime)
             .setInclusionRules(study.inclusionRules);
 
     updatedStudy.getIndexRule()
-            .setModifiedBy("system")
+            .setModifiedBy(security.getSubject())
             .setModifiedDate(currentTime)
             .setName("Index Population for Study: " + updatedStudy.getName())
             .setDescription(study.indexDescription)
@@ -471,7 +475,7 @@ public class FeasibilityService extends AbstractDaoService {
       if (resultRule == null) {
         resultRule = new CohortDefinition();
         resultRule.setName("Matching Population for Study: " + updatedStudy.getName())
-                .setCreatedBy("system")
+                .setCreatedBy(security.getSubject())
                 .setCreatedDate(currentTime)
                 .setExpressionType(ExpressionType.SIMPLE_EXPRESSION);
 
@@ -481,11 +485,11 @@ public class FeasibilityService extends AbstractDaoService {
         updatedStudy.setResultRule(resultRule);
       }
 
-      resultRule.setModifiedBy("system")
+      resultRule.setModifiedBy(security.getSubject())
               .setModifiedDate(currentTime)
               .setName("Matching Population for Study: " + updatedStudy.getName())
               .setDescription(updatedStudy.getDescription())
-              .setModifiedBy("system")
+              .setModifiedBy(security.getSubject())
               .setModifiedDate(currentTime)
               .getDetails().setExpression(getMatchingCriteriaExpression(updatedStudy));
     } else {

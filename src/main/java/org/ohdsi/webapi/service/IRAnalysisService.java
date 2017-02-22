@@ -69,7 +69,6 @@ import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisRepository;
 import org.ohdsi.webapi.ircalc.PerformAnalysisTasklet;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
-import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.SessionUtils;
@@ -113,9 +112,6 @@ public class IRAnalysisService extends AbstractDaoService {
 
   @Autowired
   private JobTemplate jobTemplate;
-
-  @Autowired
-  private Security security;
 
   @Context
   ServletContext context;
@@ -344,7 +340,7 @@ public class IRAnalysisService extends AbstractDaoService {
     IncidenceRateAnalysis newAnalysis = new IncidenceRateAnalysis();
     newAnalysis.setName(analysis.name)
             .setDescription(analysis.description)
-            .setCreatedBy(security.getSubject())
+            .setCreatedBy("system")
             .setCreatedDate(currentTime);
     if (analysis.expression != null) {
       IncidenceRateAnalysisDetails details = new IncidenceRateAnalysisDetails(newAnalysis);
@@ -378,7 +374,7 @@ public class IRAnalysisService extends AbstractDaoService {
     IncidenceRateAnalysis updatedAnalysis = this.irAnalysisRepository.findOne(id);
     updatedAnalysis.setName(analysis.name)
             .setDescription(analysis.description)
-            .setModifiedBy(security.getSubject())
+            .setModifiedBy("system")
             .setModifiedDate(currentTime);
     
     if (analysis.expression != null) {

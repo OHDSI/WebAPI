@@ -54,7 +54,6 @@ import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ExportUtil;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
-import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.SessionUtils;
@@ -76,14 +75,11 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  *
  * @author cknoll1
  */
-@Path("/cohortdefinition")
+@Path("/cohortdefinition/")
 @Component
 public class CohortDefinitionService extends AbstractDaoService {
 
   private static final CohortExpressionQueryBuilder queryBuilder = new CohortExpressionQueryBuilder();
-
-  @Autowired
-  private Security security;
 
   @Autowired
   private CohortDefinitionRepository cohortDefinitionRepository;
@@ -360,7 +356,7 @@ public class CohortDefinitionService extends AbstractDaoService {
     CohortDefinition newDef = new CohortDefinition();
     newDef.setName(def.name)
             .setDescription(def.description)
-            .setCreatedBy(security.getSubject())
+            .setCreatedBy("system")
             .setCreatedDate(currentTime)
             .setExpressionType(def.expressionType);
 
@@ -410,7 +406,7 @@ public class CohortDefinitionService extends AbstractDaoService {
     currentDefinition.setName(def.name)
             .setDescription(def.description)
             .setExpressionType(def.expressionType)
-            .setModifiedBy(security.getSubject())
+            .setModifiedBy("system")
             .setModifiedDate(currentTime)
             .getDetails().setExpression(def.expression);
 

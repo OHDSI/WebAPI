@@ -9,14 +9,12 @@
   <version>1.0.0-SNAPSHOT</version>
   <name>WebAPI</name>
   <properties>
-    <webapi.version>2.0.0</webapi.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jersey.version>2.14</jersey.version>
     <!-- Spring Boot manages spring.version as well -->
     <spring.boot.version>1.2.1.RELEASE</spring.boot.version>
     <spring.batch.version>3.0.3.RELEASE</spring.batch.version>
     <flyway.version>3.1</flyway.version>
-    <waffle.version>1.7.3</waffle.version>
     <start-class>org.ohdsi.webapi.WebApi</start-class>
 
     <!-- Primary DataSource -->
@@ -45,24 +43,8 @@
 
     <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
     <spring.batch.repository.isolationLevelForCreate>ISOLATION_READ_COMMITTED</spring.batch.repository.isolationLevelForCreate>
+		
     <spring.profiles.active>default</spring.profiles.active>
-
-    <security.enabled>false</security.enabled>
-    <security.token.expiration>43200</security.token.expiration>
-    <security.origin>http://localhost</security.origin>
-    <security.ssl.enabled>false</security.ssl.enabled>
-    <security.oauth.callback.ui>http://localhost/Atlas/#/welcome</security.oauth.callback.ui>
-    <security.oauth.callback.api>http://localhost:8080/WebAPI/user/oauth/callback</security.oauth.callback.api>
-    <security.oauth.google.apiKey></security.oauth.google.apiKey>
-    <security.oauth.google.apiSecret></security.oauth.google.apiSecret>
-    <security.oauth.facebook.apiKey></security.oauth.facebook.apiKey>
-    <security.oauth.facebook.apiSecret></security.oauth.facebook.apiSecret>
-
-    <!-- EMBEDDED SERVER CONFIGURATION (ServerProperties) -->
-    <server.port>8080</server.port>
-    <server.ssl.key-store></server.ssl.key-store>
-    <server.ssl.key-store-password></server.ssl.key-store-password>
-    <server.ssl.key-password></server.ssl.key-password>
   </properties>
   <build>
     <finalName>WebAPI</finalName>
@@ -139,8 +121,8 @@
         <version>2.5.1</version>
         <inherited>true</inherited>
         <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
+          <source>1.7</source>
+          <target>1.7</target>
         </configuration>
       </plugin>
       <plugin>
@@ -340,15 +322,17 @@
       <version>${flyway.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-      <version>4.3.6</version>
-    </dependency>
-    <dependency>
-      <groupId>commons-httpclient</groupId>
-      <artifactId>commons-httpclient</artifactId>
-      <version>3.1</version>
-    </dependency>
+	<groupId>org.apache.httpcomponents</groupId>
+	<artifactId>httpclient</artifactId>
+	<version>4.3.6</version>
+</dependency>
+<dependency>
+	<groupId>commons-httpclient</groupId>
+	<artifactId>commons-httpclient</artifactId>
+	<version>3.1</version>
+</dependency>
+
+    
     <dependency>
       <groupId>org.springframework.batch</groupId>
       <artifactId>spring-batch-admin-manager</artifactId>
@@ -364,16 +348,12 @@
         </exclusion>
       </exclusions>
     </dependency>
+   
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
       <version>9.4-1201-jdbc41</version>
       <type>jar</type>
-    </dependency>
-    <dependency>
-      <groupId>com.microsoft.sqlserver</groupId>
-      <artifactId>mssql-jdbc</artifactId>
-      <version>6.1.0.jre8</version>
     </dependency>
     <dependency>
       <groupId>com.opencsv</groupId>
@@ -386,46 +366,6 @@
       <artifactId>commons-collections4</artifactId>
       <version>4.1</version>
       <type>jar</type>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.shiro</groupId>
-      <artifactId>shiro-core</artifactId>
-      <version>1.2.4</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.shiro</groupId>
-      <artifactId>shiro-web</artifactId>
-      <version>1.2.4</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.shiro</groupId>
-      <artifactId>shiro-spring</artifactId>
-      <version>1.2.4</version>
-    </dependency>
-    <dependency>
-      <groupId>com.github.dblock.waffle</groupId>
-      <artifactId>waffle-shiro</artifactId>
-      <version>1.7.4</version>
-    </dependency>
-    <dependency>
-      <groupId>com.github.dblock.waffle</groupId>
-      <artifactId>waffle-jna</artifactId>
-      <version>${waffle.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.jsonwebtoken</groupId>
-      <artifactId>jjwt</artifactId>
-      <version>0.6.0</version>
-    </dependency>
-    <dependency>
-      <groupId>io.buji</groupId>
-      <artifactId>buji-pac4j</artifactId>
-      <version>2.0.2</version>
-    </dependency>
-    <dependency>
-      <groupId>org.pac4j</groupId>
-      <artifactId>pac4j-oauth</artifactId>
-      <version>1.9.2</version>
     </dependency>
   </dependencies>
   <profiles>
@@ -444,7 +384,6 @@
         <flyway.datasource.username>user</flyway.datasource.username>
         <flyway.datasource.password>pass</flyway.datasource.password>
         <flyway.locations>classpath:db/migration/oracle</flyway.locations>
-        <hibernate.dialect>org.hibernate.dialect.Oracle10gDialect</hibernate.dialect>
       </properties>
       <dependencies>
         <dependency>
@@ -469,7 +408,6 @@
         <flyway.datasource.username>userWithWritesToOhdsiSchema</flyway.datasource.username>
         <flyway.datasource.password>PASS</flyway.datasource.password>
         <flyway.locations>classpath:db/migration/postgresql</flyway.locations>
-        <hibernate.dialect>org.hibernate.dialect.PostgreSQL9Dialect</hibernate.dialect>
       </properties>
     </profile>
     <profile>
@@ -486,8 +424,63 @@
         <flyway.datasource.username>FLYWAY_USER</flyway.datasource.username>
         <flyway.datasource.password>FLYWAY_PASS</flyway.datasource.password>
         <flyway.locations>classpath:db/migration/sqlserver</flyway.locations>
-        <hibernate.dialect>org.hibernate.dialect.SQLServer2012Dialect</hibernate.dialect>
       </properties>
-    </profile>                      
+      <dependencies>
+        <dependency>
+          <groupId>com.microsoft.sqlserver</groupId>
+          <artifactId>sqljdbc4</artifactId>
+          <version>4.0</version>
+          <type>jar</type>
+        </dependency>
+      </dependencies>	            
+    </profile>  
+    <profile>
+      <id>webapi-local</id>
+      <properties>
+        <datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</datasource.driverClassName>
+        <datasource.url>jdbc:sqlserver://server</datasource.url>
+        <datasource.username>USER</datasource.username>
+        <datasource.password>PASS</datasource.password>
+        <datasource.dialect>sql server</datasource.dialect>
+        <datasource.ohdsi.schema>OHDSI_schema</datasource.ohdsi.schema>
+        <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
+        <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
+        <flyway.datasource.username>FLYWAY_USER</flyway.datasource.username>
+        <flyway.datasource.password>FLYWAY_PASS</flyway.datasource.password>
+        <flyway.locations>classpath:db/migration/sqlserver</flyway.locations>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>com.microsoft.sqlserver</groupId>
+          <artifactId>sqljdbc4</artifactId>
+          <version>4.0</version>
+          <type>jar</type>
+        </dependency>
+      </dependencies>	            
+    </profile>                         
+    <profile>
+      <id>webapi-alpha</id>
+      <properties>
+        <datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</datasource.driverClassName>
+        <datasource.url>jdbc:sqlserver://server</datasource.url>
+        <datasource.username>USER</datasource.username>
+        <datasource.password>PASS</datasource.password>
+        <datasource.dialect>sql server</datasource.dialect>
+        <datasource.ohdsi.schema>OHDSI_schema</datasource.ohdsi.schema>
+        <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
+        <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
+        <flyway.datasource.username>FLYWAY_USER</flyway.datasource.username>
+        <flyway.datasource.password>FLYWAY_PASS</flyway.datasource.password>
+        <flyway.locations>classpath:db/migration/sqlserver</flyway.locations>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>com.microsoft.sqlserver</groupId>
+          <artifactId>sqljdbc4</artifactId>
+          <version>4.0</version>
+          <type>jar</type>
+        </dependency>
+      </dependencies>	            
+    </profile>                         
   </profiles>
 </project>

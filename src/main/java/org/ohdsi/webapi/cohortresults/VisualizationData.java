@@ -10,133 +10,133 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity(name = "VisualizationData")
-@Table(name = "heracles_visualization_data")
+@Table(name="heracles_visualization_data")
 public class VisualizationData implements Serializable {
 
-    /**
-     *
-     */
-    private static final long serialVersionUID = -567692689983359944L;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -567692689983359944L;
 
-    @Id
-    @GeneratedValue
-    @Column(name = "ID")
-    private int id;
+	@Id
+	  @GeneratedValue  
+	  @Column(name="ID")  
+	  private int id;
+	  
+	  @Column(name="COHORT_DEFINITION_ID")  
+	  private int cohortDefinitionId;
+	  
+	  @Column(name="SOURCE_ID")
+	  private int sourceId;
+	  
+	  @Column(name="VISUALIZATION_KEY")
+	  private String visualizationKey;
+	  
+	  @Column(name="DATA")
+	  private String data;
+	  
+	  @Column(name="END_TIME")
+	  private Date endTime;
+	  
+	  @Column(name="DRILLDOWN_ID")
+	  private int drilldownId;
 
-    @Column(name = "COHORT_DEFINITION_ID")
-    private int cohortDefinitionId;
+	/**
+	 * @return the id
+	 */
+	public int getId() {
+		return id;
+	}
 
-    @Column(name = "SOURCE_ID")
-    private int sourceId;
+	/**
+	 * @param id the id to set
+	 */
+	public void setId(int id) {
+		this.id = id;
+	}
 
-    @Column(name = "VISUALIZATION_KEY")
-    private String visualizationKey;
+	/**
+	 * @return the cohortDefinitionId
+	 */
+	public int getCohortDefinitionId() {
+		return cohortDefinitionId;
+	}
 
-    @Column(name = "DATA")
-    private String data;
+	/**
+	 * @param cohortDefinitionId the cohortDefinitionId to set
+	 */
+	public void setCohortDefinitionId(int cohortDefinitionId) {
+		this.cohortDefinitionId = cohortDefinitionId;
+	}
 
-    @Column(name = "END_TIME")
-    private Date endTime;
+	/**
+	 * @return the source_id
+	 */
+	public int getSourceId() {
+		return sourceId;
+	}
 
-    @Column(name = "DRILLDOWN_ID")
-    private int drilldownId;
+	/**
+	 * @param source_id the source_id to set
+	 */
+	public void setSourceId(int sourceId) {
+		this.sourceId = sourceId;
+	}
 
-    /**
-     * @return the id
-     */
-    public int getId() {
-        return id;
-    }
+	/**
+	 * @return the visualizationKey
+	 */
+	public String getVisualizationKey() {
+		return visualizationKey;
+	}
 
-    /**
-     * @param id the id to set
-     */
-    public void setId(int id) {
-        this.id = id;
-    }
+	/**
+	 * @param visualizationKey the visualizationKey to set
+	 */
+	public void setVisualizationKey(String visualizationKey) {
+		this.visualizationKey = visualizationKey;
+	}
 
-    /**
-     * @return the cohortDefinitionId
-     */
-    public int getCohortDefinitionId() {
-        return cohortDefinitionId;
-    }
+	/**
+	 * @return the data
+	 */
+	public String getData() {
+		return data;
+	}
 
-    /**
-     * @param cohortDefinitionId the cohortDefinitionId to set
-     */
-    public void setCohortDefinitionId(int cohortDefinitionId) {
-        this.cohortDefinitionId = cohortDefinitionId;
-    }
+	/**
+	 * @param data the data to set
+	 */
+	public void setData(String data) {
+		this.data = data;
+	}
 
-    /**
-     * @return the source_id
-     */
-    public int getSourceId() {
-        return sourceId;
-    }
+	/**
+	 * @return the endTime
+	 */
+	public Date getEndTime() {
+		return endTime;
+	}
 
-    /**
-     * @param source_id the source_id to set
-     */
-    public void setSourceId(int sourceId) {
-        this.sourceId = sourceId;
-    }
+	/**
+	 * @param endTime the endTime to set
+	 */
+	public void setEndTime(Date endTime) {
+		this.endTime = endTime;
+	}
 
-    /**
-     * @return the visualizationKey
-     */
-    public String getVisualizationKey() {
-        return visualizationKey;
-    }
+	/**
+	 * @return the drilldownId
+	 */
+	public int getDrilldownId() {
+		return drilldownId;
+	}
 
-    /**
-     * @param visualizationKey the visualizationKey to set
-     */
-    public void setVisualizationKey(String visualizationKey) {
-        this.visualizationKey = visualizationKey;
-    }
-
-    /**
-     * @return the data
-     */
-    public String getData() {
-        return data;
-    }
-
-    /**
-     * @param data the data to set
-     */
-    public void setData(String data) {
-        this.data = data;
-    }
-
-    /**
-     * @return the endTime
-     */
-    public Date getEndTime() {
-        return endTime;
-    }
-
-    /**
-     * @param endTime the endTime to set
-     */
-    public void setEndTime(Date endTime) {
-        this.endTime = endTime;
-    }
-
-    /**
-     * @return the drilldownId
-     */
-    public int getDrilldownId() {
-        return drilldownId;
-    }
-
-    /**
-     * @param drilldownId the drilldownId to set
-     */
-    public void setDrilldownId(int drilldownId) {
-        this.drilldownId = drilldownId;
-    }
-
+	/**
+	 * @param drilldownId the drilldownId to set
+	 */
+	public void setDrilldownId(int drilldownId) {
+		this.drilldownId = drilldownId;
+	}
+	  
 }

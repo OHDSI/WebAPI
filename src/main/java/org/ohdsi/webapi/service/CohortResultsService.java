@@ -76,7 +76,7 @@ import org.ohdsi.webapi.service.CohortDefinitionService.CohortDefinitionDTO;
  * Services related to cohort level analysis results
  *
  */
-@Path("/cohortresults")
+@Path("{sourceKey}/cohortresults/")
 @Component
 public class CohortResultsService extends AbstractDaoService {
 
@@ -107,11 +107,10 @@ public class CohortResultsService extends AbstractDaoService {
    * /resources/cohortresults/sql/ directory
    * @param analysisName Name of the analysis, currently the same name as the
    * sql file under analysisGroup
-   * @param sourceKey the source to retrieve results
    * @return List of key, value pairs
    */
   @GET
-  @Path("{sourceKey}/{id}/raw/{analysis_group}/{analysis_name}")
+  @Path("/{id}/raw/{analysis_group}/{analysis_name}")
   @Produces(MediaType.APPLICATION_JSON)
   public List<Map<String, String>> getCohortResultsRaw(@PathParam("id") final int id, @PathParam("analysis_group") final String analysisGroup,
           @PathParam("analysis_name") final String analysisName,
@@ -151,7 +150,7 @@ public class CohortResultsService extends AbstractDaoService {
   }
 
   @GET
-  @Path("{sourceKey}/{id}/export.zip")
+  @Path("/{id}/export.zip")
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
   public Response exportCohortResults(@PathParam("id") int id, @PathParam("sourceKey") String sourceKey) {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -246,7 +245,7 @@ public class CohortResultsService extends AbstractDaoService {
   }
 
   @POST
-  @Path("{id}/warmup")
+  @Path("/{id}/warmup")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public int warmUpVisualizationData(CohortAnalysisTask task) {
@@ -255,7 +254,7 @@ public class CohortResultsService extends AbstractDaoService {
   }
 
   @GET
-  @Path("{sourceKey}/{id}/completed")
+  @Path("/{id}/completed")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<String> getCompletedVisualiztion(@PathParam("id") final int id,
@@ -281,7 +280,7 @@ public class CohortResultsService extends AbstractDaoService {
    * @return CohortDashboard
    */
   @GET
-  @Path("{sourceKey}/{id}/dashboard")
+  @Path("/{id}/dashboard")
   @Produces(MediaType.APPLICATION_JSON)
   public CohortDashboard getDashboard(@PathParam("id") final int id,
           @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
@@ -320,7 +319,7 @@ public class CohortResultsService extends AbstractDaoService {
    * @return List<HierarchicalConceptRecord>
    */
   @GET
-  @Path("{sourceKey}/{id}/condition/")
+  @Path("/{id}/condition/")
   @Produces(MediaType.APPLICATION_JSON)
   public List<HierarchicalConceptRecord> getConditionTreemap(@PathParam("sourceKey") String sourceKey, @PathParam("id") final int id,
           @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
@@ -347,7 +346,7 @@ public class CohortResultsService extends AbstractDaoService {
   }
 
   @GET
-  @Path("{sourceKey}/{id}/distinctPersonCount/")
+  @Path("/{id}/distinctPersonCount/")
   @Produces(MediaType.APPLICATION_JSON)
   public Integer getRawDistinctPersonCount(@PathParam("sourceKey") String sourceKey,
           @PathParam("id") String id,
@@ -372,7 +371,7 @@ public class CohortResultsService extends AbstractDaoService {
    * @return CohortConditionDrilldown
    */
   @GET
-  @Path("{sourceKey}/{id}/condition/{conditionId}")
+  @Path("/{id}/condition/{conditionId}")
   @Produces(MediaType.APPLICATION_JSON)
   public CohortConditionDrilldown getConditionResults(@PathParam("sourceKey") String sourceKey,
           @PathParam("id") final int id,
@@ -407,7 +406,7 @@ public class CohortResultsService extends AbstractDaoService {
    * @return List<HierarchicalConceptRecord>
    */
   @GET
-  @Path("{sourceKey}/{id}/conditionera/")
+  @Path("/{id}/conditionera/")
   @Produces(MediaType.APPLICATION_JSON)
   public List<HierarchicalConceptRecord> getConditionEraTreemap(@PathParam("sourceKey") final String sourceKey,
           @PathParam("id") final int id,
@@ -436,7 +435,7 @@ public class CohortResultsService extends AbstractDaoService {
   }
 
   @GET
-  @Path("{sourceKey}/{id}/analyses")
+  @Path("/{id}/analyses")
   @Produces(MediaType.APPLICATION_JSON)
   public List<Integer> getCompletedAnalyses(@PathParam("sourceKey") String sourceKey, @PathParam("id") String id) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
@@ -456,7 +455,7 @@ public class CohortResultsService extends AbstractDaoService {
    * @return CohortConditionEraDrilldown
    */
   @GET
-  @Path("{sourceKey}/{id}/conditionera/{conditionId}")
+  @Path("/{id}/conditionera/{conditionId}")
   @Produces(MediaType.APPLICATION_JSON)
   public CohortConditionEraDrilldown getConditionEraDrilldown(@PathParam("id") final int id,
           @PathParam("conditionId") final int conditionId,
@@ -492,7 +491,7 @@ public class CohortResultsService extends AbstractDaoService {
    * @return List<HierarchicalConceptRecord>
    */
   @GET
-  @Path("{sourceKey}/{id}/drug/")
+  @Path("/{id}/drug/")
   @Produces(MediaType.APPLICATION_JSON)
   public List<HierarchicalConceptRecord> getDrugTreemap(@PathParam("id") final int id,
           @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
@@ -528,7 +527,7 @@ public class CohortResultsService extends AbstractDaoService {
    * @return CohortDrugDrilldown
    */
   @GET
-  @Path("{sourceKey}/{id}/drug/{drugId}")
+  @Path("/{id}/drug/{drugId}")
   @Produces(MediaType.APPLICATION_JSON)
   public CohortDrugDrilldown getDrugResults(@PathParam("id") final int id, @PathParam("drugId") final int drugId,
           @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
@@ -562,7 +561,7 @@ public class CohortResultsService extends AbstractDaoService {
    * @return List<HierarchicalConceptRecord>
    */
   @GET
-  @Path("{sourceKey}/{id}/drugera/")
+  @Path("/{id}/drugera/")
   @Produces(MediaType.APPLICATION_JSON)
   public List<HierarchicalConceptRecord> getDrugEraTreemap(@PathParam("id") final int id,
           @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
@@ -598,7 +597,7 @@ public class CohortResultsService extends AbstractDaoService {
    * @return CohortDrugEraDrilldown
    */
   @GET
-  @Path("{sourceKey}/{id}/drugera/{drugId}")
+  @Path("/{id}/drugera/{drugId}")
   @Produces(MediaType.APPLICATION_JSON)
   public CohortDrugEraDrilldown getDrugEraResults(@PathParam("id") final int id, @PathParam("drugId") final int drugId,
           @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
@@ -632,7 +631,7 @@ public class CohortResultsService extends AbstractDaoService {
    * @return CohortPersonSummary
    */
   @GET
-  @Path("{sourceKey}/{id}/person")
+  @Path("/{id}/person")
   @Produces(MediaType.APPLICATION_JSON)
   public CohortPersonSummary getPersonResults(@PathParam("id") final int id,
           @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
@@ -665,7 +664,7 @@ public class CohortResultsService extends AbstractDaoService {
    * @return CohortSpecificSummary
    */
   @GET
-  @Path("{sourceKey}/{id}/cohortspecific")
+  @Path("/{id}/cohortspecific")
   @Produces(MediaType.APPLICATION_JSON)
   public CohortSpecificSummary getCohortSpecificResults(@PathParam("id") final int id,
           @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
@@ -698,7 +697,7 @@ public class CohortResultsService extends AbstractDaoService {
    * @return CohortSpecificSummary
    */
   @GET
-  @Path("{sourceKey}/{id}/cohortspecifictreemap")
+  @Path("/{id}/cohortspecifictreemap")
   @Produces(MediaType.APPLICATION_JSON)
   public CohortSpecificTreemap getCohortSpecificTreemapResults(@PathParam("id") final int id,
           @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
@@ -733,7 +732,7 @@ public class CohortResultsService extends AbstractDaoService {
    * @return List<ScatterplotRecord>
    */
   @GET
-  @Path("{sourceKey}/{id}/cohortspecificprocedure/{conceptId}")
+  @Path("/{id}/cohortspecificprocedure/{conceptId}")
   @Produces(MediaType.APPLICATION_JSON)
   public List<ScatterplotRecord> getCohortProcedureDrilldown(@PathParam("id") final int id,
           @PathParam("conceptId") final int conceptId,
@@ -770,7 +769,7 @@ public class CohortResultsService extends AbstractDaoService {
    * @return List<ScatterplotRecord>
    */
   @GET
-  @Path("{sourceKey}/{id}/cohortspecificdrug/{conceptId}")
+  @Path("/{id}/cohortspecificdrug/{conceptId}")
   @Produces(MediaType.APPLICATION_JSON)
   public List<ScatterplotRecord> getCohortDrugDrilldown(@PathParam("id") final int id,
           @PathParam("conceptId") final int conceptId,
@@ -806,7 +805,7 @@ public class CohortResultsService extends AbstractDaoService {
    * @return List<ScatterplotRecord>
    */
   @GET
-  @Path("{sourceKey}/{id}/cohortspecificcondition/{conceptId}")
+  @Path("/{id}/cohortspecificcondition/{conceptId}")
   @Produces(MediaType.APPLICATION_JSON)
   public List<ScatterplotRecord> getCohortConditionDrilldown(@PathParam("id") final int id,
           @PathParam("conceptId") final int conceptId,
@@ -843,7 +842,7 @@ public class CohortResultsService extends AbstractDaoService {
    * @return List<HierarchicalConceptRecord>
    */
   @GET
-  @Path("{sourceKey}/{id}/observation")
+  @Path("/{id}/observation")
   @Produces(MediaType.APPLICATION_JSON)
   public List<HierarchicalConceptRecord> getCohortObservationResults(@PathParam("id") final int id,
           @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
@@ -879,7 +878,7 @@ public class CohortResultsService extends AbstractDaoService {
    * @return CohortObservationDrilldown
    */
   @GET
-  @Path("{sourceKey}/{id}/observation/{conceptId}")
+  @Path("/{id}/observation/{conceptId}")
   @Produces(MediaType.APPLICATION_JSON)
   public CohortObservationDrilldown getCohortObservationResultsDrilldown(@PathParam("id") final int id,
           @PathParam("conceptId") final int conceptId,
@@ -913,7 +912,7 @@ public class CohortResultsService extends AbstractDaoService {
    * @return List<HierarchicalConceptRecord>
    */
   @GET
-  @Path("{sourceKey}/{id}/measurement")
+  @Path("/{id}/measurement")
   @Produces(MediaType.APPLICATION_JSON)
   public List<HierarchicalConceptRecord> getCohortMeasurementResults(@PathParam("id") final int id,
           @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
@@ -948,7 +947,7 @@ public class CohortResultsService extends AbstractDaoService {
    * @return CohortMeasurementDrilldown
    */
   @GET
-  @Path("{sourceKey}/{id}/measurement/{conceptId}")
+  @Path("/{id}/measurement/{conceptId}")
   @Produces(MediaType.APPLICATION_JSON)
   public CohortMeasurementDrilldown getCohortMeasurementResultsDrilldown(@PathParam("id") final int id, @PathParam("conceptId") final int conceptId,
           @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
@@ -983,7 +982,7 @@ public class CohortResultsService extends AbstractDaoService {
    * @return CohortObservationPeriod
    */
   @GET
-  @Path("{sourceKey}/{id}/observationperiod")
+  @Path("/{id}/observationperiod")
   @Produces(MediaType.APPLICATION_JSON)
   public CohortObservationPeriod getCohortObservationPeriod(@PathParam("id") final int id,
           @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
@@ -1017,7 +1016,7 @@ public class CohortResultsService extends AbstractDaoService {
    * @return CohortDataDensity
    */
   @GET
-  @Path("{sourceKey}/{id}/datadensity")
+  @Path("/{id}/datadensity")
   @Produces(MediaType.APPLICATION_JSON)
   public CohortDataDensity getCohortDataDensity(@PathParam("id") final int id,
           @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
@@ -1051,7 +1050,7 @@ public class CohortResultsService extends AbstractDaoService {
    * @return List<HierarchicalConceptRecord>
    */
   @GET
-  @Path("{sourceKey}/{id}/procedure/")
+  @Path("/{id}/procedure/")
   @Produces(MediaType.APPLICATION_JSON)
   public List<HierarchicalConceptRecord> getProcedureTreemap(@PathParam("id") final int id,
           @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
@@ -1088,7 +1087,7 @@ public class CohortResultsService extends AbstractDaoService {
    * @return CohortProceduresDrillDown
    */
   @GET
-  @Path("{sourceKey}/{id}/procedure/{conceptId}")
+  @Path("/{id}/procedure/{conceptId}")
   @Produces(MediaType.APPLICATION_JSON)
   public CohortProceduresDrillDown getCohortProceduresDrilldown(@PathParam("id") final int id,
           @PathParam("conceptId") final int conceptId,
@@ -1122,7 +1121,7 @@ public class CohortResultsService extends AbstractDaoService {
    * @return List<HierarchicalConceptRecord>
    */
   @GET
-  @Path("{sourceKey}/{id}/visit/")
+  @Path("/{id}/visit/")
   @Produces(MediaType.APPLICATION_JSON)
   public List<HierarchicalConceptRecord> getVisitTreemap(@PathParam("id") final int id,
           @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
@@ -1159,7 +1158,7 @@ public class CohortResultsService extends AbstractDaoService {
    * @return CohortVisitsDrilldown
    */
   @GET
-  @Path("{sourceKey}/{id}/visit/{conceptId}")
+  @Path("/{id}/visit/{conceptId}")
   @Produces(MediaType.APPLICATION_JSON)
   public CohortVisitsDrilldown getCohortVisitsDrilldown(@PathParam("id") final int id,
           @PathParam("conceptId") final int conceptId,
@@ -1192,7 +1191,7 @@ public class CohortResultsService extends AbstractDaoService {
    *
    */
   @GET
-  @Path("{sourceKey}/{id}/summarydata")
+  @Path("/{id}/summarydata")
   @Produces(MediaType.APPLICATION_JSON)
   public CohortSummary getCohortSummaryData(@PathParam("id") final int id,
           @PathParam("sourceKey") String sourceKey) {
@@ -1232,7 +1231,7 @@ public class CohortResultsService extends AbstractDaoService {
    * @return CohortDeathData
    */
   @GET
-  @Path("{sourceKey}/{id}/death")
+  @Path("/{id}/death")
   @Produces(MediaType.APPLICATION_JSON)
   public CohortDeathData getCohortDeathData(@PathParam("id") final int id,
           @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
@@ -1264,7 +1263,7 @@ public class CohortResultsService extends AbstractDaoService {
    * @return Summary which includes analyses with complete time
    */
   @GET
-  @Path("{sourceKey}/{id}/summaryanalyses")
+  @Path("/{id}/summaryanalyses")
   @Produces(MediaType.APPLICATION_JSON)
   public CohortSummary getCohortSummaryAnalyses(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey) {
 
@@ -1289,7 +1288,7 @@ public class CohortResultsService extends AbstractDaoService {
    * @return List of all members of a generated cohort definition identifier
    */
   @GET
-  @Path("{sourceKey}/{id}/members/{min}-{max}")
+  @Path("/{id}/members/{min}-{max}")
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<CohortPerson> getCohortMembers(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey, @PathParam("min") final int min, @PathParam("max") final int max) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
@@ -1311,7 +1310,7 @@ public class CohortResultsService extends AbstractDaoService {
    * @return List of all members of a generated cohort definition identifier
    */
   @GET
-  @Path("{sourceKey}/{id}/breakdown")
+  @Path("/{id}/breakdown")
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<CohortBreakdown> getCohortBreakdown(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
@@ -1338,7 +1337,7 @@ public class CohortResultsService extends AbstractDaoService {
    * @return List of all members of a generated cohort definition identifier
    */
   @GET
-  @Path("{sourceKey}/{id}/breakdown/{gender}/{age}/{conditions}/{drugs}/{rows}")
+  @Path("/{id}/breakdown/{gender}/{age}/{conditions}/{drugs}/{rows}")
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<CohortPerson> getCohortMembers(
                                         @PathParam("id") final int id, 
@@ -1415,11 +1414,11 @@ public class CohortResultsService extends AbstractDaoService {
    * @return List of all members of a generated cohort definition identifier
    */
   @GET
-  @Path("{sourceKey}/{id}/members/count")
+  @Path("/{id}/members/count")
   @Produces(MediaType.APPLICATION_JSON)
   public Long getCohortMemberCount(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
     String sql = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/raw/getMemberCount.sql");
     sql = SqlRender.renderSql(sql, new String[]{"tableQualifier", "cohortDefinitionId"}, new String[]{
       resultsTableQualifier, String.valueOf(id)});
@@ -1438,7 +1437,7 @@ public class CohortResultsService extends AbstractDaoService {
    * cohort_defintion_id
    */
   @GET
-  @Path("{sourceKey}/{id}")
+  @Path("/{id}")
   @Produces(MediaType.APPLICATION_JSON)
   public List<CohortAnalysis> getCohortAnalysesForCohortDefinition(@PathParam("id") final int id,
           @PathParam("sourceKey") String sourceKey,
@@ -1463,7 +1462,7 @@ public class CohortResultsService extends AbstractDaoService {
   }
 
   @POST
-  @Path("{sourceKey}/exposurecohortrates")
+  @Path("exposurecohortrates")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public List<ExposureCohortResult> getExposureOutcomeCohortRates(@PathParam("sourceKey") String sourceKey, ExposureCohortSearch search) {
@@ -1496,7 +1495,7 @@ public class CohortResultsService extends AbstractDaoService {
   }
  
   @POST
-  @Path("{sourceKey}/timetoevent")
+  @Path("timetoevent")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public List<TimeToEventResult> getTimeToEventDrilldown(@PathParam("sourceKey") String sourceKey, ExposureCohortSearch search) {
@@ -1528,7 +1527,7 @@ public class CohortResultsService extends AbstractDaoService {
   }
 
   @POST
-  @Path("{sourceKey}/predictors")
+  @Path("predictors")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public List<PredictorResult> getExposureOutcomeCohortPredictors(@PathParam("sourceKey") String sourceKey, ExposureCohortSearch search) {

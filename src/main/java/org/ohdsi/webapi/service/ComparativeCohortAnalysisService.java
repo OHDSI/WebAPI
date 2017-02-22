@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -120,18 +119,6 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
         
         comparativeCohortAnalysis = this.getComparativeCohortAnalysisRepository().save(comparativeCohortAnalysis);
         return comparativeCohortAnalysis;
-    }
-    
-    /**
-     * Deletes the specified comparative cohort analysis
-     * 
-     * @param id - the Comparative Cohort Analysis ID to delete
-     */
-    @DELETE
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("/{id}")
-    public void delete(@PathParam("id") final int id) {
-     this.getComparativeCohortAnalysisRepository().delete(id);
     }
 
     @GET
@@ -358,80 +345,51 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
         ComparativeCohortAnalysis analysis = this.getComparativeCohortAnalysisRepository().findOne(id);
         ComparativeCohortAnalysisInfo info = new ComparativeCohortAnalysisInfo(analysis);
 
+        /*
+        info.setAnalysisId(analysis.getAnalysisId());
+        info.setName(analysis.getName());
+        info.setCreated(analysis.getCreated());
+        info.setModified(analysis.getModified());
+        info.setUserId(analysis.getUserId());
+        info.setComparatorId(analysis.getComparatorId());
+        info.setTreatmentId(analysis.getTreatmentId());
+        info.setOutcomeId(analysis.getOutcomeId());
+        info.setExclusionId(analysis.getExclusionId());
+        */
         if (analysis.getComparatorId() > 0) {
-            try {
-                CohortDefinitionDTO cd = cohortDefinitionService.getCohortDefinition(analysis.getComparatorId());
-                info.setComparatorCaption(cd.name);
-                info.setComparatorCohortDefinition(cd.expression);
-            } catch (Exception e) {
-                // Cohort definition no longer exists 
-                log.debug("Cohort definition id = " + info.getComparatorId() + " no longer exists");
-            }
+            CohortDefinitionDTO cd = cohortDefinitionService.getCohortDefinition(analysis.getComparatorId());
+            info.setComparatorCaption(cd.name);
+            info.setComparatorCohortDefinition(cd.expression);
         }
         if (analysis.getTreatmentId() > 0) {
-            try {
-                CohortDefinitionDTO cd = cohortDefinitionService.getCohortDefinition(analysis.getTreatmentId());
-                info.setTreatmentCaption(cd.name);
-                info.setTreatmentCohortDefinition(cd.expression);
-            } catch (Exception e) {
-                // Cohort definition no longer exists 
-                log.debug("Cohort definition id = " + info.getTreatmentId() + " no longer exists");
-            }
+            CohortDefinitionDTO cd = cohortDefinitionService.getCohortDefinition(analysis.getTreatmentId());
+            info.setTreatmentCaption(cd.name);
+            info.setTreatmentCohortDefinition(cd.expression);
         }
         if (analysis.getOutcomeId() > 0) {
-            try {
-                CohortDefinitionDTO cd = cohortDefinitionService.getCohortDefinition(analysis.getOutcomeId());
-                info.setOutcomeCaption(cd.name);
-                info.setOutcomeCohortDefinition(cd.expression);            
-            } catch (Exception e) {
-                // Cohort definition no longer exists 
-                log.debug("Cohort definition id = " + info.getOutcomeId() + " no longer exists");
-            }
+            CohortDefinitionDTO cd = cohortDefinitionService.getCohortDefinition(analysis.getOutcomeId());
+            info.setOutcomeCaption(cd.name);
+            info.setOutcomeCohortDefinition(cd.expression);            
         }
         if (analysis.getPsInclusionId() > 0) {
-            try {
-                info.setPsInclusionCaption(conceptSetService.getConceptSet(analysis.getPsInclusionId()).getName());
-                info.setPsInclusionConceptSet(conceptSetService.getConceptSetExpression(analysis.getPsInclusionId()));
-                info.setPsInclusionConceptSetSql(vocabularyService.getConceptSetExpressionSQL(info.getPsInclusionConceptSet()));                
-            } catch (Exception e) {
-                log.debug("Concept set id = " + info.getPsInclusionId() + " no longer exists");
-            }
+            info.setPsInclusionCaption(conceptSetService.getConceptSet(analysis.getPsInclusionId()).getName());
+            info.setPsInclusionConceptSet(conceptSetService.getConceptSetExpression(analysis.getPsInclusionId()));
         }
         if (analysis.getPsExclusionId() > 0) {
-            try {
-                info.setPsExclusionCaption(conceptSetService.getConceptSet(analysis.getPsExclusionId()).getName());
-                info.setPsExclusionConceptSet(conceptSetService.getConceptSetExpression(analysis.getPsExclusionId()));
-                info.setPsExclusionConceptSetSql(vocabularyService.getConceptSetExpressionSQL(info.getPsExclusionConceptSet()));                
-            } catch (Exception e) {
-                log.debug("Concept set id = " + info.getPsExclusionId() + " no longer exists");
-            }
+            info.setPsExclusionCaption(conceptSetService.getConceptSet(analysis.getPsExclusionId()).getName());
+            info.setPsExclusionConceptSet(conceptSetService.getConceptSetExpression(analysis.getPsExclusionId()));
         }
         if (analysis.getOmInclusionId() > 0) {
-            try {
-                info.setOmInclusionCaption(conceptSetService.getConceptSet(analysis.getOmInclusionId()).getName());
-                info.setOmInclusionConceptSet(conceptSetService.getConceptSetExpression(analysis.getOmInclusionId()));
-                info.setOmInclusionConceptSetSql(vocabularyService.getConceptSetExpressionSQL(info.getOmInclusionConceptSet()));                
-            } catch (Exception e) {
-                log.debug("Concept set id = " + info.getOmInclusionId() + " no longer exists");               
-            }
+            info.setOmInclusionCaption(conceptSetService.getConceptSet(analysis.getOmInclusionId()).getName());
+            info.setOmInclusionConceptSet(conceptSetService.getConceptSetExpression(analysis.getOmInclusionId()));
         }
         if (analysis.getOmExclusionId() > 0) {
-            try {
-                info.setOmExclusionCaption(conceptSetService.getConceptSet(analysis.getOmExclusionId()).getName());
-                info.setOmExclusionConceptSet(conceptSetService.getConceptSetExpression(analysis.getOmExclusionId()));
-                info.setOmExclusionConceptSetSql(vocabularyService.getConceptSetExpressionSQL(info.getOmExclusionConceptSet()));                
-            } catch (Exception e) {
-                log.debug("Concept set id = " + info.getOmExclusionId() + " no longer exists");               
-            }
+            info.setOmExclusionCaption(conceptSetService.getConceptSet(analysis.getOmExclusionId()).getName());
+            info.setOmExclusionConceptSet(conceptSetService.getConceptSetExpression(analysis.getOmExclusionId()));
         }
         if (analysis.getNegativeControlId() > 0) {
-            try {
-                info.setNegativeControlCaption(conceptSetService.getConceptSet(analysis.getNegativeControlId()).getName());
-                info.setNegativeControlConceptSet(conceptSetService.getConceptSetExpression(analysis.getNegativeControlId()));
-                info.setNegativeControlConceptSetSql(vocabularyService.getConceptSetExpressionSQL(info.getNegativeControlConceptSet()));
-            } catch (Exception e) {
-                log.debug("Concept set id = " + info.getNegativeControlId() + " no longer exists");               
-            }
+            info.setNegativeControlCaption(conceptSetService.getConceptSet(analysis.getNegativeControlId()).getName());
+            info.setNegativeControlConceptSet(conceptSetService.getConceptSetExpression(analysis.getNegativeControlId()));
         }
       
         return info;

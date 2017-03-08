@@ -26,6 +26,11 @@ public class SourceInfo {
   public String sourceName;
   public String sourceDialect;
   public String sourceKey;
+  public String groupKey;
+  public int groupPriority;
+  public int versionId;
+  public String versionDesc;
+  public int active;
   public Collection<SourceDaimon> daimons;
   
   public SourceInfo(Source s) {
@@ -33,6 +38,10 @@ public class SourceInfo {
     sourceName = s.getSourceName();
     sourceDialect = s.getSourceDialect();
     sourceKey = s.getSourceKey();
+    groupKey = s.getGroupKey();
+    groupPriority = s.getGroupPriority();
+    versionId = s.getVersionId();
+    versionDesc = s.getVersionDesc();
     daimons = s.getDaimons();
   }
 }

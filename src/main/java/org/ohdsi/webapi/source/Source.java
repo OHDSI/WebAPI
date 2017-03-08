@@ -54,6 +54,21 @@ public class Source implements Serializable {
   
   @Column(name="SOURCE_KEY")
   private String sourceKey;
+  
+  @Column(name="GROUP_KEY")
+  private String groupKey;
+  
+  @Column(name="GROUP_PRIORITY")
+  private int groupPriority;
+  
+  @Column(name="VERSION_ID")
+  private int versionId;
+  
+  @Column(name="VERSION_DESC")
+  private String versionDesc;
+  
+  @Column(name="ACTIVE")
+  private int active;
 
   
   public String getTableQualifier(DaimonType daimonType) {
@@ -117,4 +132,74 @@ public class Source implements Serializable {
   public SourceInfo getSourceInfo() {
     return new SourceInfo(this);
   }
+
+    /**
+     * @return the active
+     */
+    public int getActive() {
+        return active;
+    }
+
+    /**
+     * @return the groupKey
+     */
+    public String getGroupKey() {
+        return groupKey;
+    }
+
+    /**
+     * @return the groupPriority
+     */
+    public int getGroupPriority() {
+        return groupPriority;
+    }
+
+    /**
+     * @return the versionDesc
+     */
+    public String getVersionDesc() {
+        return versionDesc;
+    }
+
+    /**
+     * @return the versionId
+     */
+    public int getVersionId() {
+        return versionId;
+    }
+
+    /**
+     * @param active the active to set
+     */
+    public void setActive(int active) {
+        this.active = active;
+    }
+
+    /**
+     * @param groupKey the groupKey to set
+     */
+    public void setGroupKey(String groupKey) {
+        this.groupKey = groupKey;
+    }
+
+    /**
+     * @param groupPriority the groupPriority to set
+     */
+    public void setGroupPriority(int groupPriority) {
+        this.groupPriority = groupPriority;
+    }
+
+    /**
+     * @param versionDesc the versionDesc to set
+     */
+    public void setVersionDesc(String versionDesc) {
+        this.versionDesc = versionDesc;
+    }
+
+    /**
+     * @param versionId the versionId to set
+     */
+    public void setVersionId(int versionId) {
+        this.versionId = versionId;
+    }
 }

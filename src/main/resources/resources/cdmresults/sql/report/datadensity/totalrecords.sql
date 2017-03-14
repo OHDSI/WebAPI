@@ -1,5 +1,5 @@
 SELECT
-  table_name  AS "series_Name",
+  table_name  AS series_name,
   stratum_1   AS "x_Calendar_Month",
   count_value AS "y_Record_Count"
 FROM

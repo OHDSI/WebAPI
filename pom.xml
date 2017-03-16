@@ -13,8 +13,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jersey.version>2.14</jersey.version>
     <!-- Spring Boot manages spring.version as well -->
-    <spring.boot.version>1.2.1.RELEASE</spring.boot.version>
-    <spring.batch.version>3.0.3.RELEASE</spring.batch.version>
+    <spring.boot.version>1.5.2.RELEASE</spring.boot.version>
+    <spring.batch.version>3.0.7.RELEASE</spring.batch.version>
     <flyway.version>3.1</flyway.version>
     <waffle.version>1.7.3</waffle.version>
     <start-class>org.ohdsi.webapi.WebApi</start-class>
@@ -265,7 +265,7 @@
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-log4j</artifactId>
+      <artifactId>spring-boot-starter-log4j2</artifactId>
       <version>${spring.boot.version}</version>
     </dependency>
     <dependency>
@@ -305,9 +305,6 @@
       <version>3.1.0</version>
       <scope>provided</scope>
     </dependency>
-    <!-- <dependency> <groupId>org.glassfish.jersey.containers</groupId> <artifactId>jersey-container-servlet</artifactId> 
-    </dependency> <dependency> <groupId>org.glassfish.jersey.media</groupId> 
-    <artifactId>jersey-media-json-jackson</artifactId> </dependency> -->
     <dependency>
       <groupId>org.ohdsi.sql</groupId>
       <artifactId>SqlRender</artifactId>
@@ -381,6 +378,11 @@
       <version>3.7</version>
       <type>jar</type>
     </dependency>
+    <dependency>
+        <groupId>com.goldmansachs</groupId>
+        <artifactId>gs-collections</artifactId>
+        <version>7.0.3</version>
+    </dependency>    
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-collections4</artifactId>

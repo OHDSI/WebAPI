@@ -35,6 +35,7 @@ public class DataAccessConfig {
         Properties properties = new Properties();
         properties.setProperty("hibernate.default_schema", this.env.getProperty("spring.jpa.properties.hibernate.default_schema"));
         properties.setProperty("hibernate.dialect", this.env.getProperty("spring.jpa.properties.hibernate.dialect"));
+        properties.setProperty("hibernate.id.new_generator_mappings", "false");
         return properties;
     }
       

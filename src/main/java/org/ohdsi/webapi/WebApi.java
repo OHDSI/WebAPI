@@ -2,14 +2,14 @@ package org.ohdsi.webapi;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
-import org.springframework.boot.autoconfigure.velocity.VelocityAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.context.web.SpringBootServletInitializer;
+import org.springframework.boot.web.support.SpringBootServletInitializer;
+
 
 /**
  * Launch as java application or deploy as WAR (@link {@link WebApplication} will source this file).
  */
-@SpringBootApplication(exclude={HibernateJpaAutoConfiguration.class,VelocityAutoConfiguration.class})
+@SpringBootApplication(exclude={HibernateJpaAutoConfiguration.class})
 public class WebApi extends SpringBootServletInitializer {
     
     @Override

@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.service;
 
-import com.gs.collections.impl.block.factory.Comparators;
+import org.eclipse.collections.impl.block.factory.Comparators;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;

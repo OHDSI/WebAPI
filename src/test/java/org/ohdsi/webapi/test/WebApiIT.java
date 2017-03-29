@@ -8,23 +8,19 @@ import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.ohdsi.webapi.WebApi;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.IntegrationTest;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.boot.test.TestRestTemplate;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.boot.test.web.client.TestRestTemplate;
 
 /**
  *
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = WebApi.class)
-@WebAppConfiguration
-@IntegrationTest
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = WebApi.class)
 @ActiveProfiles("test")
 @Ignore//do not run this test
 public abstract class WebApiIT {
@@ -34,13 +30,13 @@ public abstract class WebApiIT {
     @Value("${baseUri}")
     private String baseUri;
     
-    private final RestTemplate restTemplate = new TestRestTemplate();
+    private final TestRestTemplate restTemplate = new TestRestTemplate();
     
     /**
      * @return the restTemplate
      */
     public RestTemplate getRestTemplate() {
-        return this.restTemplate;
+        return this.restTemplate.getRestTemplate();
     }
     
     /**

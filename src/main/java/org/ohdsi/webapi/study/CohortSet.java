@@ -14,12 +14,14 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
 
 /**
  * @author Chris Knoll <cknoll@ohdsi.org>
  */
 
 @Entity
+@Table(name="STUDY_COHORTSET")
 public class CohortSet { 
 
     @Id
@@ -34,7 +36,7 @@ public class CohortSet {
     private String description;
 
     @OneToMany(targetEntity = StudyCohort.class)
-    @JoinTable(name="COHORTSET_STUDYCOHORT_XREF",joinColumns={@JoinColumn(name="COHORT_SET_ID",referencedColumnName="ID")},inverseJoinColumns={@JoinColumn(name="COHORT_ID",referencedColumnName="ID")})
+    @JoinTable(name="STUDY_COHORTSET_XREF",joinColumns={@JoinColumn(name="COHORT_SET_ID",referencedColumnName="ID")},inverseJoinColumns={@JoinColumn(name="COHORT_ID",referencedColumnName="ID")})
     private List<StudyCohort> cohortList;
 
 

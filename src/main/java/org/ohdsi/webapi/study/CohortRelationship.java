@@ -7,34 +7,24 @@ package org.ohdsi.webapi.study;
 import java.io.Serializable;
 import javax.persistence.Basic;
 import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.ManyToOne;
+import javax.persistence.Embeddable;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
-import javax.persistence.Table;
 
 /**
  * @author Chris Knoll <cknoll@ohdsi.org>
  */
 
-@Entity
-@Table(name="STUDY_COHORT_REL")
-@IdClass(CohortRelationshipPK.class)
+@Embeddable
 public class CohortRelationship implements Serializable { 
 
     @Column(name="RELATIONSHIP_TYPE")
     @Basic
     private RelationshipType relationshipType;
 
-    @Id@OneToOne(targetEntity = StudyCohort.class)
-    private StudyCohort cohort_1;
-
-    @Id@OneToOne(targetEntity = StudyCohort.class)
-    private StudyCohort cohort_2;
-
-    @Id@ManyToOne(targetEntity = Study.class)
-    private Study study;
+    @OneToOne(optional=false,targetEntity = StudyCohort.class)
+    @JoinColumn(name="COHORT_2_ID",referencedColumnName="ID")
+    private StudyCohort target;
 
 
     public RelationshipType getRelationshipType() {
@@ -45,28 +35,12 @@ public class CohortRelationship implements Serializable {
         this.relationshipType = relationshipType;
     }
 
-    public StudyCohort getCohort_1() {
-        return this.cohort_1;
+    public StudyCohort getTarget() {
+        return this.target;
     }
 
-    public void setCohort_1(StudyCohort cohort_1) {
-        this.cohort_1 = cohort_1;
-    }
-
-    public StudyCohort getCohort_2() {
-        return this.cohort_2;
-    }
-
-    public void setCohort_2(StudyCohort cohort_2) {
-        this.cohort_2 = cohort_2;
-    }
-
-    public Study getStudy() {
-        return this.study;
-    }
-
-    public void setStudy(Study study) {
-        this.study = study;
+    public void setTarget(StudyCohort target) {
+        this.target = target;
     }
 
 

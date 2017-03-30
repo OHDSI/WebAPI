@@ -5,9 +5,7 @@
 package org.ohdsi.webapi.study;
 
 import java.util.List;
-import java.util.Set;
 import javax.persistence.Basic;
-import javax.persistence.CascadeType;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -42,24 +40,21 @@ public class Study {
     @Embedded
     private StudyConfig studyConfig;
 
-    @OneToMany(cascade={CascadeType.ALL},fetch = FetchType.LAZY,targetEntity = StudySource.class)
+    @OneToMany(fetch = FetchType.LAZY,targetEntity = StudySource.class)
     @JoinTable(name="STUDY_SOURCE_XREF",joinColumns={@JoinColumn(name="STUDY_ID",referencedColumnName="ID")},inverseJoinColumns={@JoinColumn(name="SOURCE_ID",referencedColumnName="ID")})
     private List<StudySource> sourceList = new java.util.ArrayList<StudySource>();
 
-    @OneToMany(cascade={CascadeType.ALL},fetch = FetchType.LAZY,targetEntity = StudyIR.class)
+    @OneToMany(fetch = FetchType.LAZY,targetEntity = StudyIR.class)
     @JoinTable(name="STUDY_IR_XREF",joinColumns={@JoinColumn(name="STUDY_ID",referencedColumnName="ID")},inverseJoinColumns={@JoinColumn(name="IR_ID",referencedColumnName="ID")})
     private List<StudyIR> irAnalysisList = new java.util.ArrayList<StudyIR>();
 
-    @OneToMany(cascade={CascadeType.ALL},fetch = FetchType.LAZY,targetEntity = StudyCCA.class)
+    @OneToMany(fetch = FetchType.LAZY,targetEntity = StudyCCA.class)
     @JoinTable(name="STUDY_CCA_XREF",joinColumns={@JoinColumn(name="STUDY_ID",referencedColumnName="ID")},inverseJoinColumns={@JoinColumn(name="CCA_ID",referencedColumnName="ID")})
     private List<StudyCCA> ccaList = new java.util.ArrayList<StudyCCA>();
 
-    @OneToMany(cascade={CascadeType.ALL},fetch = FetchType.LAZY,targetEntity = StudyCohort.class)
+    @OneToMany(fetch = FetchType.LAZY,targetEntity = StudyCohort.class)
     @JoinTable(name="STUDY_COHORT_XREF",joinColumns={@JoinColumn(name="STUDY_ID",referencedColumnName="ID")},inverseJoinColumns={@JoinColumn(name="COHORT_ID",referencedColumnName="ID")})
     private List<StudyCohort> cohortList = new java.util.ArrayList<StudyCohort>();
-
-    @OneToMany(cascade={CascadeType.ALL},fetch = FetchType.LAZY,targetEntity = CohortRelationship.class,mappedBy = "study")
-    private Set<CohortRelationship> cohortRelationships = new java.util.HashSet<CohortRelationship>();
 
 
     public Integer getId() {
@@ -124,14 +119,6 @@ public class Study {
 
     public void setCohortList(List<StudyCohort> cohortList) {
         this.cohortList = cohortList;
-    }
-
-    public Set<CohortRelationship> getCohortRelationships() {
-        return this.cohortRelationships;
-    }
-
-    public void setCohortRelationships(Set<CohortRelationship> cohortRelationships) {
-        this.cohortRelationships = cohortRelationships;
     }
 
 

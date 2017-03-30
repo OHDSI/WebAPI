@@ -8,6 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -32,6 +33,9 @@ public class StudyCCAPair {
     @JoinColumn(name="OUTCOME_ID",referencedColumnName="ID")
     private StudyCohort outcome;
 
+    @Id@ManyToOne(targetEntity = StudyCCA.class)
+    private StudyCCA cca;
+
 
     public StudyCohort getTarget() {
         return this.target;
@@ -55,6 +59,14 @@ public class StudyCCAPair {
 
     public void setOutcome(StudyCohort outcome) {
         this.outcome = outcome;
+    }
+
+    public StudyCCA getCca() {
+        return this.cca;
+    }
+
+    public void setCca(StudyCCA cca) {
+        this.cca = cca;
     }
 
 

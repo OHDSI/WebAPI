@@ -5,6 +5,7 @@
 package org.ohdsi.webapi.study;
 
 import java.util.List;
+import java.util.Set;
 import javax.persistence.Basic;
 import javax.persistence.CollectionTable;
 import javax.persistence.ElementCollection;
@@ -45,6 +46,10 @@ public class StudyCohort {
     @ElementCollection(fetch=FetchType.LAZY)
     @CollectionTable(name="STUDY_COHORT_CONCEPT",joinColumns={@JoinColumn(name="STUDY_COHORT_ID",referencedColumnName="ID")})
     private List<Concept> concepts;
+
+    @ElementCollection
+    @CollectionTable(name="STUDY_COHORT_REL",joinColumns={@JoinColumn(name="COHORT_1_ID",referencedColumnName="ID")})
+    private Set<CohortRelationship> cohortRelationships = new java.util.HashSet<>();
 
 
     public Integer getId() {
@@ -93,6 +98,14 @@ public class StudyCohort {
 
     public void setConcepts(List<Concept> concepts) {
         this.concepts = concepts;
+    }
+
+    public Set<CohortRelationship> getCohortRelationships() {
+        return this.cohortRelationships;
+    }
+
+    public void setCohortRelationships(Set<CohortRelationship> cohortRelationships) {
+        this.cohortRelationships = cohortRelationships;
     }
 
 

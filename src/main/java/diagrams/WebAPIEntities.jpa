@@ -1,0 +1,575 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<jpa:entity-mappings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:java="http://jcp.org/en/jsr/detail?id=270" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:jpa="http://java.sun.com/xml/ns/persistence/orm" pkg="org.ohdsi.webapi" v="3.6" rws="_14902889289462" Pws="_14902889289462" cws="_14902889289462" sm="false" xs="false" id="_14902889289461" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm orm_2_1.xsd">
+    <jpa:entity lbl-ref="_14902891667545" xre="false" compositePrimaryKeyClass="StudyPK" abs="false" class="Study" v="true" pkg="study" m="true" rootElement="_14902889289461" id="_1490289062980">
+        <jpa:ts e="true"/>
+        <jpa:hc e="true"/>
+        <jpa:eq e="true"/>
+        <jpa:ath>Chris Knoll &lt;cknoll@ohdsi.org&gt;</jpa:ath>
+        <jpa:attributes>
+            <jpa:basic optional="false" attribute-type="String" v="true" name="name" id="_14902891667545">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:basic attribute-type="String" v="true" name="description" id="_14902891853526">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:one-to-many orp="false" own="true" collection-type="java.util.List" connected-entity-id="_1490297306096" fetch="LAZY" v="true" name="sourceList" dv="new java.util.ArrayList&lt;StudySource&gt;()" id="_1490297345658372">
+                <jpa:bv/>
+                <jpa:join-table name="STUDY_SOURCE_XREF">
+                    <jpa:join-column name="STUDY_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+                    <jpa:inverse-join-column name="SOURCE_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+                </jpa:join-table>
+            </jpa:one-to-many>
+            <jpa:one-to-many orp="false" own="true" collection-type="java.util.List" connected-entity-id="_1490291254567" fetch="LAZY" v="true" name="irAnalysisList" dv="new java.util.ArrayList&lt;StudyIR&gt;()" id="_149029127770144">
+                <jpa:bv/>
+                <jpa:join-table name="STUDY_IR_XREF">
+                    <jpa:join-column name="STUDY_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true"/>
+                    <jpa:inverse-join-column name="IR_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true"/>
+                </jpa:join-table>
+            </jpa:one-to-many>
+            <jpa:one-to-many orp="false" own="true" collection-type="java.util.List" connected-entity-id="_1490298781069" fetch="LAZY" v="true" name="ccaList" dv="new java.util.ArrayList&lt;StudyCCA&gt;()" id="_149029879703158">
+                <jpa:bv/>
+                <jpa:join-table name="STUDY_CCA_XREF">
+                    <jpa:join-column name="STUDY_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+                    <jpa:inverse-join-column name="CCA_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+                </jpa:join-table>
+            </jpa:one-to-many>
+            <jpa:one-to-many orp="false" own="true" collection-type="java.util.List" connected-entity-id="_1490291803505" fetch="LAZY" v="true" name="cohortList" dv="new java.util.ArrayList&lt;StudyCohort&gt;()" id="_1490298926282107">
+                <jpa:bv/>
+                <jpa:join-table name="STUDY_COHORT_XREF">
+                    <jpa:join-column name="STUDY_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+                    <jpa:inverse-join-column name="COHORT_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+                </jpa:join-table>
+            </jpa:one-to-many>
+            <jpa:embedded connected-class-id="_1490299355659" v="true" name="studyConfig" id="_1490299381706163">
+                <jpa:bv/>
+            </jpa:embedded>
+            <jpa:id attribute-type="Integer" v="true" name="id" ui="true" id="_14902890631103">
+                <jpa:bv/>
+                <jpa:generated-value strategy="SEQUENCE" generator="STUDY_SEQ"/>
+                <jpa:sequence-generator name="STUDY_SEQ" sequence-name="STUDY_SEQ" catalog="" schema="" initial-value="1" allocation-size="1"/>
+            </jpa:id>
+        </jpa:attributes>
+        <jpa:nq e="false" name="Study.findAll">
+            <jpa:query>Select e from Study e</jpa:query>
+        </jpa:nq>
+        <jpa:nq e="false" name="Study.findByName">
+            <jpa:query>Select s from Study s where s.name=:name</jpa:query>
+        </jpa:nq>
+        <jpa:nq e="false" name="Study.findByDescription">
+            <jpa:query>Select s from Study s where s.description=:description</jpa:query>
+        </jpa:nq>
+        <jpa:el/>
+        <jpa:table name="STUDY"/>
+    </jpa:entity>
+    <jpa:entity lbl-ref="_149029125456742" xre="false" compositePrimaryKeyClass="StudyIRPK" abs="false" class="StudyIR" v="true" pkg="study" m="false" rootElement="_14902889289461" id="_1490291254567">
+        <jpa:ts e="true"/>
+        <jpa:hc e="true"/>
+        <jpa:eq e="true"/>
+        <jpa:ath>Chris Knoll &lt;cknoll@ohdsi.org&gt;</jpa:ath>
+        <jpa:attributes>
+            <jpa:basic attribute-type="String" v="true" name="params" id="_1490301251721416">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:one-to-many orp="false" own="true" collection-type="java.util.List" connected-entity-id="_1490291803505" fetch="LAZY" v="true" name="targets" id="_1490296637213338">
+                <jpa:bv/>
+                <jpa:join-table name="STUDY_IR_T">
+                    <jpa:join-column name="ANALYSIS_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+                    <jpa:inverse-join-column name="COHORT_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+                </jpa:join-table>
+            </jpa:one-to-many>
+            <jpa:one-to-many orp="false" own="true" collection-type="java.util.List" connected-entity-id="_1490291803505" fetch="LAZY" v="true" name="outcomes" id="_1490296640913339">
+                <jpa:bv/>
+                <jpa:join-table name="STUDY_IR_O">
+                    <jpa:join-column name="ANALYSIS_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+                    <jpa:inverse-join-column name="COHORT_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+                </jpa:join-table>
+            </jpa:one-to-many>
+            <jpa:id attribute-type="Integer" v="true" name="id" id="_149029125456742">
+                <jpa:bv/>
+                <jpa:generated-value strategy="SEQUENCE" generator="STUDY_IR_SEQ"/>
+                <jpa:sequence-generator name="STUDY_IR_SEQ" sequence-name="STUDY_IR_SEQ" catalog="" schema="" initial-value="1" allocation-size="1"/>
+            </jpa:id>
+        </jpa:attributes>
+        <jpa:nq e="false" name="StudyIR.findAll">
+            <jpa:query>Select e from StudyIR e</jpa:query>
+        </jpa:nq>
+        <jpa:nq e="false" name="StudyIR.findByParams">
+            <jpa:query>Select s from StudyIR s where s.params=:params</jpa:query>
+        </jpa:nq>
+        <jpa:el/>
+        <jpa:table name="STUDY_IR"/>
+    </jpa:entity>
+    <jpa:entity lbl-ref="_149029180350574" xre="false" compositePrimaryKeyClass="StudyCohortPK" abs="false" class="StudyCohort" v="true" pkg="study" m="false" rootElement="_14902889289461" id="_1490291803505">
+        <jpa:ts e="true"/>
+        <jpa:hc e="true"/>
+        <jpa:eq e="true"/>
+        <jpa:ath>Chris Knoll &lt;cknoll@ohdsi.org&gt;</jpa:ath>
+        <jpa:attributes>
+            <jpa:basic attribute-type="String" v="true" name="name" id="_1490301155203413">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:basic attribute-type="String" v="true" name="description" id="_1490301197451415">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:basic attribute-type="String" v="true" name="abbr" id="_1490301161019414">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:basic attribute-type="String" v="true" name="expression" id="_149029187093078">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:element-collection fetch="LAZY" collection-type="java.util.List" connected-class-id="_1490303852647" v="true" name="concepts" id="_1490303916758872">
+                <jpa:bv/>
+                <jpa:collection-table name="STUDY_COHORT_CONCEPT">
+                    <jpa:join-column name="STUDY_COHORT_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+                </jpa:collection-table>
+            </jpa:element-collection>
+            <jpa:element-collection collection-type="java.util.Set" connected-class-id="_1490852395927" v="true" name="cohortRelationships" dv="new java.util.HashSet&lt;&gt;()" id="_1490852409758277">
+                <jpa:bv/>
+                <jpa:collection-table name="STUDY_COHORT_REL">
+                    <jpa:join-column name="COHORT_1_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+                </jpa:collection-table>
+            </jpa:element-collection>
+            <jpa:id attribute-type="Integer" v="true" name="id" id="_149029180350574">
+                <jpa:bv/>
+                <jpa:generated-value strategy="SEQUENCE" generator="STUDY_COHORT_SEQ"/>
+                <jpa:sequence-generator name="STUDY_COHORT_SEQ" sequence-name="STUDY_COHORT_SEQ" catalog="" schema="" initial-value="1" allocation-size="1"/>
+            </jpa:id>
+        </jpa:attributes>
+        <jpa:nq e="false" name="StudyCohort.findAll">
+            <jpa:query>Select e from StudyCohort e</jpa:query>
+        </jpa:nq>
+        <jpa:nq e="false" name="StudyCohort.findByExpression">
+            <jpa:query>Select c from StudyCohort c where c.expression=:expression</jpa:query>
+        </jpa:nq>
+        <jpa:nq e="false" name="StudyCohort.findByName">
+            <jpa:query>Select c from StudyCohort c where c.name=:name</jpa:query>
+        </jpa:nq>
+        <jpa:nq e="false" name="StudyCohort.findByName">
+            <jpa:query>Select s from StudyCohort s where s.name=:name</jpa:query>
+        </jpa:nq>
+        <jpa:nq e="false" name="StudyCohort.findByAbbr">
+            <jpa:query>Select s from StudyCohort s where s.abbr=:abbr</jpa:query>
+        </jpa:nq>
+        <jpa:nq e="false" name="StudyCohort.findByDescription">
+            <jpa:query>Select s from StudyCohort s where s.description=:description</jpa:query>
+        </jpa:nq>
+        <jpa:el/>
+        <jpa:table name="STUDY_COHORT"/>
+    </jpa:entity>
+    <jpa:entity lbl-ref="_1490297306096370" xre="false" compositePrimaryKeyClass="StudySourcePK" abs="false" class="StudySource" v="true" pkg="study" m="true" rootElement="_14902889289461" id="_1490297306096">
+        <jpa:ts e="true"/>
+        <jpa:hc e="true"/>
+        <jpa:eq e="true"/>
+        <jpa:ath>Chris Knoll &lt;cknoll@ohdsi.org&gt;</jpa:ath>
+        <jpa:attributes>
+            <jpa:id attribute-type="Integer" v="true" name="id" id="_1490297306096370">
+                <jpa:bv/>
+                <jpa:generated-value/>
+            </jpa:id>
+        </jpa:attributes>
+        <jpa:nq e="false" name="StudySource.findAll">
+            <jpa:query>Select e from StudySource e</jpa:query>
+        </jpa:nq>
+        <jpa:el/>
+        <jpa:table name="STUDY_SOURCE"/>
+    </jpa:entity>
+    <jpa:entity lbl-ref="_149029878107256" xre="false" compositePrimaryKeyClass="StudyCCAPK" abs="false" class="StudyCCA" v="true" pkg="study" m="true" rootElement="_14902889289461" id="_1490298781069">
+        <jpa:ts e="true"/>
+        <jpa:hc e="true"/>
+        <jpa:eq e="true"/>
+        <jpa:ath>Chris Knoll &lt;cknoll@ohdsi.org&gt;</jpa:ath>
+        <jpa:attributes>
+            <jpa:basic attribute-type="String" v="true" name="params" id="_14906295396353973">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:one-to-many orp="false" collection-type="java.util.List" connected-entity-id="_1490300306224" connected-attribute-id="_14908456069981705" fetch="LAZY" v="true" name="pairList" dv="new java.util.ArrayList&lt;&gt;()" id="_14908456069991706">
+                <jpa:bv/>
+                <jpa:cascade>
+                    <jpa:cascade-all/>
+                </jpa:cascade>
+            </jpa:one-to-many>
+            <jpa:id attribute-type="Integer" v="true" name="id" id="_149029878107256">
+                <jpa:bv/>
+                <jpa:generated-value strategy="SEQUENCE" generator="STUDY_CCA_SEQ"/>
+                <jpa:sequence-generator name="STUDY_CCA_SEQ" sequence-name="STUDY_CCA_SEQ" catalog="" schema="" initial-value="1" allocation-size="1"/>
+            </jpa:id>
+        </jpa:attributes>
+        <jpa:nq e="false" name="StudyCCA.findAll">
+            <jpa:query>Select e from StudyCCA e</jpa:query>
+        </jpa:nq>
+        <jpa:nq e="false" name="StudyCCA.findByParams">
+            <jpa:query>Select s from StudyCCA s where s.params=:params</jpa:query>
+        </jpa:nq>
+        <jpa:el/>
+        <jpa:table name="STUDY_CCA"/>
+    </jpa:entity>
+    <jpa:entity xre="false" compositePrimaryKeyType="D" compositePrimaryKeyClass="StudyCCAPairPK" abs="false" class="StudyCCAPair" v="true" pkg="study" m="true" rootElement="_14902889289461" id="_1490300306224">
+        <jpa:ts e="true"/>
+        <jpa:hc e="true"/>
+        <jpa:eq e="true"/>
+        <jpa:ath>Chris Knoll &lt;cknoll@ohdsi.org&gt;</jpa:ath>
+        <jpa:attributes>
+            <jpa:many-to-one optional="true" primaryKey="true" connected-entity-id="_1490298781069" connected-attribute-id="_14908456069991706" v="true" name="cca" id="_14908456069981705">
+                <jpa:bv/>
+            </jpa:many-to-one>
+            <jpa:one-to-one own="true" orp="false" optional="true" primaryKey="true" connected-entity-id="_1490291803505" v="true" name="target" id="_1490300412175339">
+                <jpa:bv/>
+                <jpa:join-column name="TARGET_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+            </jpa:one-to-one>
+            <jpa:one-to-one own="true" orp="false" optional="true" primaryKey="true" connected-entity-id="_1490291803505" v="true" name="comparator" id="_1490300441549341">
+                <jpa:bv/>
+                <jpa:join-column name="COMPARATOR_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+            </jpa:one-to-one>
+            <jpa:one-to-one own="true" orp="false" optional="true" primaryKey="true" connected-entity-id="_1490291803505" v="true" name="outcome" id="_1490300426334340">
+                <jpa:bv/>
+                <jpa:join-column name="OUTCOME_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+            </jpa:one-to-one>
+        </jpa:attributes>
+        <jpa:nq e="false" name="StudyCCAPair.findAll">
+            <jpa:query>Select e from StudyCCAPair e</jpa:query>
+        </jpa:nq>
+        <jpa:nq e="false" name="StudyCCAPair.findByTarget">
+            <jpa:query>Select s from StudyCCAPair s where s.target=:target</jpa:query>
+        </jpa:nq>
+        <jpa:el/>
+        <jpa:table name="STUDY_CCA_PAIR"/>
+    </jpa:entity>
+    <jpa:entity lbl-ref="_1490303663652781" xre="false" compositePrimaryKeyClass="CohortSetPK" abs="false" class="CohortSet" v="true" pkg="study" m="true" rootElement="_14902889289461" id="_1490303663642">
+        <jpa:ts e="true"/>
+        <jpa:hc e="true"/>
+        <jpa:eq e="true"/>
+        <jpa:ath>Chris Knoll &lt;cknoll@ohdsi.org&gt;</jpa:ath>
+        <jpa:attributes>
+            <jpa:basic attribute-type="String" v="true" name="name" id="_1490303710125783">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:basic attribute-type="String" v="true" name="description" id="_1490303714486784">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:one-to-many orp="false" own="true" collection-type="java.util.List" connected-entity-id="_1490291803505" v="true" name="cohortList" id="_1490303732698785">
+                <jpa:bv/>
+                <jpa:join-table name="STUDY_COHORTSET_XREF">
+                    <jpa:join-column name="COHORT_SET_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+                    <jpa:inverse-join-column name="COHORT_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+                </jpa:join-table>
+            </jpa:one-to-many>
+            <jpa:id attribute-type="Integer" v="true" name="id" id="_1490303663652781">
+                <jpa:bv/>
+                <jpa:generated-value strategy="SEQUENCE" generator="COHORT_SET_SEQ"/>
+                <jpa:sequence-generator name="COHORT_SET_SEQ" sequence-name="COHORT_SET_SEQ" catalog="" schema="" initial-value="1" allocation-size="1"/>
+            </jpa:id>
+        </jpa:attributes>
+        <jpa:nq e="false" name="CohortSet.findAll">
+            <jpa:query>Select e from CohortSet e</jpa:query>
+        </jpa:nq>
+        <jpa:nq e="false" name="CohortSet.findByName">
+            <jpa:query>Select c from CohortSet c where c.name=:name</jpa:query>
+        </jpa:nq>
+        <jpa:nq e="false" name="CohortSet.findByDescription">
+            <jpa:query>Select c from CohortSet c where c.description=:description</jpa:query>
+        </jpa:nq>
+        <jpa:el/>
+        <jpa:table name="STUDY_COHORTSET"/>
+    </jpa:entity>
+    <jpa:entity lbl-ref="_149088425409255" xre="false" compositePrimaryKeyClass="ReportPK" abs="false" class="Report" v="true" pkg="study.report" m="false" rootElement="_14902889289461" id="_1490884254082">
+        <jpa:ts e="true"/>
+        <jpa:hc e="true"/>
+        <jpa:eq e="true"/>
+        <jpa:ath>Chris Knoll &lt;cknoll@ohdsi.org&gt;</jpa:ath>
+        <jpa:attributes>
+            <jpa:many-to-one optional="true" primaryKey="false" connected-entity-id="_1490289062980" fetch="LAZY" v="true" name="study" id="_1490886694623143">
+                <jpa:bv/>
+                <jpa:join-table name="REPORT_STUDY_XREF">
+                    <jpa:join-column name="REPORT_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+                    <jpa:inverse-join-column name="STUDY_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+                </jpa:join-table>
+            </jpa:many-to-one>
+            <jpa:element-collection fetch="LAZY" collection-type="java.util.List" connected-class-id="_1490884543436" v="true" name="covariates" id="_149088455895775">
+                <jpa:bv/>
+            </jpa:element-collection>
+            <jpa:element-collection fetch="LAZY" collection-type="java.util.List" connected-class-id="_1490884917153" v="true" name="content" id="_149088572458495">
+                <jpa:bv/>
+            </jpa:element-collection>
+            <jpa:element-collection fetch="LAZY" collection-type="java.util.List" connected-class-id="_1490885001721" v="true" name="covariteStats" id="_149088572927596">
+                <jpa:bv/>
+                <jpa:collection-table name="REPORT_STATS"/>
+            </jpa:element-collection>
+            <jpa:element-collection fetch="LAZY" collection-type="java.util.List" connected-class-id="_1490885811612" v="true" name="covariteDists" id="_1490885834451109">
+                <jpa:bv/>
+                <jpa:collection-table name="REPORT_STATS_DIST"/>
+            </jpa:element-collection>
+            <jpa:element-collection fetch="LAZY" collection-type="java.util.List" connected-class-id="_1490897741195" v="true" name="targets" id="_14908977821731529">
+                <jpa:bv/>
+                <jpa:collection-table name="REPORT_TARGET_XREF">
+                    <jpa:join-column name="REPORT_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+                </jpa:collection-table>
+            </jpa:element-collection>
+            <jpa:element-collection fetch="LAZY" collection-type="java.util.List" connected-class-id="_1490897741195" v="true" name="outcomes" id="_14908978812721531">
+                <jpa:bv/>
+                <jpa:collection-table name="REPORT_OUTCOME_XREF">
+                    <jpa:join-column name="REPORT_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+                </jpa:collection-table>
+            </jpa:element-collection>
+            <jpa:element-collection fetch="LAZY" collection-type="java.util.List" connected-class-id="_1490897969321" v="true" name="sources" id="_14908980406831535">
+                <jpa:bv/>
+                <jpa:collection-table name="REPORT_SOURCE_XREF"/>
+            </jpa:element-collection>
+            <jpa:id attribute-type="Long" v="true" name="id" id="_149088425409255">
+                <jpa:bv/>
+                <jpa:generated-value strategy="AUTO"/>
+            </jpa:id>
+        </jpa:attributes>
+        <jpa:nq e="false" name="Report.findAll">
+            <jpa:query>Select e from Report e</jpa:query>
+        </jpa:nq>
+        <jpa:el/>
+        <jpa:table name="REPORT"/>
+    </jpa:entity>
+    <jpa:embeddable abs="false" class="StudyConfig" v="true" pkg="study" m="true" rootElement="_14902889289461" id="_1490299355659">
+        <jpa:ts e="true"/>
+        <jpa:hc e="true"/>
+        <jpa:eq e="true"/>
+        <jpa:ath>Chris Knoll &lt;cknoll@ohdsi.org&gt;</jpa:ath>
+        <jpa:attributes>
+            <jpa:basic attribute-type="String" v="true" name="CohortMethodVersion" id="_1490299417333164">
+                <jpa:bv/>
+                <jpa:column name="COHORT_METHOD_VERSION" unique="false" nullable="true" insertable="true" updatable="true"/>
+            </jpa:basic>
+            <jpa:basic attribute-type="String" v="true" name="VocabularyVersion" id="_1490299427839165">
+                <jpa:bv/>
+                <jpa:column name="VOCABULARY_VERSION" unique="false" nullable="true" insertable="true" updatable="true"/>
+            </jpa:basic>
+        </jpa:attributes>
+    </jpa:embeddable>
+    <jpa:embeddable abs="false" class="Concept" v="true" pkg="study" m="true" rootElement="_14902889289461" id="_1490303852647">
+        <jpa:ts e="true"/>
+        <jpa:hc e="true"/>
+        <jpa:eq e="true"/>
+        <jpa:ath>Chris Knoll &lt;cknoll@ohdsi.org&gt;</jpa:ath>
+        <jpa:attributes>
+            <jpa:basic attribute-type="long" v="true" name="conceptId" id="_1490303877102870">
+                <jpa:bv/>
+                <jpa:column name="CONCEPT_ID" unique="false" nullable="true" insertable="true" updatable="true" precision="0"/>
+            </jpa:basic>
+            <jpa:basic attribute-type="String" v="true" name="conceptName" id="_1490303888119871">
+                <jpa:bv/>
+                <jpa:column name="CONCEPT_NAME" unique="false" nullable="true" insertable="true" updatable="true"/>
+            </jpa:basic>
+        </jpa:attributes>
+    </jpa:embeddable>
+    <jpa:embeddable abs="false" class="CohortRelationship" v="true" pkg="study" m="false" rootElement="_14902889289461" id="_1490852395927">
+        <jpa:ts e="true"/>
+        <jpa:hc e="true"/>
+        <jpa:eq e="true"/>
+        <jpa:ath>Chris Knoll &lt;cknoll@ohdsi.org&gt;</jpa:ath>
+        <jpa:attributes>
+            <jpa:basic attribute-type="org.ohdsi.webapi.study.RelationshipType" v="true" name="relationshipType" id="_1490852443814279">
+                <jpa:bv/>
+                <jpa:column name="RELATIONSHIP_TYPE" unique="false" nullable="true" insertable="true" updatable="true"/>
+            </jpa:basic>
+            <jpa:one-to-one own="true" orp="false" optional="false" primaryKey="false" connected-entity-id="_1490291803505" v="true" name="target" id="_1490852420438278">
+                <jpa:bv/>
+                <jpa:join-column name="COHORT_2_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+            </jpa:one-to-one>
+        </jpa:attributes>
+    </jpa:embeddable>
+    <jpa:embeddable abs="false" class="ReportCovariate" v="true" pkg="study.report" m="true" rootElement="_14902889289461" id="_1490884543436">
+        <jpa:ts e="true"/>
+        <jpa:hc e="true"/>
+        <jpa:eq e="true"/>
+        <jpa:ath>Chris Knoll &lt;cknoll@ohdsi.org&gt;</jpa:ath>
+        <jpa:attributes>
+            <jpa:basic attribute-type="String" v="true" name="covariateId" id="_149088456963776">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:basic attribute-type="String" v="true" name="covariateName" id="_149088457962877">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:basic attribute-type="String" v="true" name="ordinal" id="_149088461065978">
+                <jpa:bv/>
+            </jpa:basic>
+        </jpa:attributes>
+    </jpa:embeddable>
+    <jpa:embeddable abs="false" class="ReportText" v="true" pkg="study.report" m="true" rootElement="_14902889289461" id="_1490884917153">
+        <jpa:ts e="true"/>
+        <jpa:hc e="true"/>
+        <jpa:eq e="true"/>
+        <jpa:ath>Chris Knoll &lt;cknoll@ohdsi.org&gt;</jpa:ath>
+        <jpa:attributes>
+            <jpa:basic attribute-type="String" v="true" name="sectionId" id="_149088492759580">
+                <jpa:bv/>
+                <jpa:column name="SECTION_ID" unique="false" nullable="true" insertable="true" updatable="true"/>
+            </jpa:basic>
+            <jpa:basic attribute-type="String" v="true" name="content" id="_149088494261581">
+                <jpa:bv/>
+            </jpa:basic>
+        </jpa:attributes>
+    </jpa:embeddable>
+    <jpa:embeddable abs="false" class="ReportStats" v="true" pkg="study.report" m="true" rootElement="_14902889289461" id="_1490885001721">
+        <jpa:ts e="true"/>
+        <jpa:hc e="true"/>
+        <jpa:eq e="true"/>
+        <jpa:ath>Chris Knoll &lt;cknoll@ohdsi.org&gt;</jpa:ath>
+        <jpa:attributes>
+            <jpa:basic attribute-type="String" v="true" name="covariateId" id="_149088555680287">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:basic attribute-type="String" v="true" name="covariateName" id="_149088556165488">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:basic attribute-type="String" v="true" name="analysisId" id="_149088556265489">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:basic attribute-type="String" v="true" name="analysisName" id="_149088556282490">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:basic attribute-type="String" v="true" name="domainId" id="_149088556301491">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:basic attribute-type="String" v="true" name="timeWindow" id="_149088556317492">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:basic attribute-type="String" v="true" name="conceptId" id="_149088556333493">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:basic attribute-type="String" v="true" name="countValue" id="_149088543366686">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:basic attribute-type="String" v="true" name="statValue" id="_149088532698884">
+                <jpa:bv/>
+            </jpa:basic>
+        </jpa:attributes>
+    </jpa:embeddable>
+    <jpa:embeddable abs="false" class="ReportStatsDist" v="true" pkg="study.report" m="true" rootElement="_14902889289461" id="_1490885811612">
+        <jpa:ts e="true"/>
+        <jpa:hc e="true"/>
+        <jpa:eq e="true"/>
+        <jpa:ath>Chris Knoll &lt;cknoll@ohdsi.org&gt;</jpa:ath>
+        <jpa:attributes>
+            <jpa:basic attribute-type="String" v="true" name="covariateId" id="_149088582656198">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:basic attribute-type="String" v="true" name="covariateName" id="_149088582672199">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:basic attribute-type="String" v="true" name="analysisId" id="_1490885826881100">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:basic attribute-type="String" v="true" name="analysisName" id="_1490885827031101">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:basic attribute-type="String" v="true" name="domainId" id="_1490885827191102">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:basic attribute-type="String" v="true" name="timeWindow" id="_1490885827351103">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:basic attribute-type="String" v="true" name="conceptId" id="_1490885827511104">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:basic attribute-type="String" v="true" name="countValue" id="_1490885827671105">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:basic attribute-type="String" v="true" name="minValue" id="_1490885827831106">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:basic attribute-type="String" v="true" name="maxValue" id="_1490885827981107">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:basic attribute-type="String" v="true" name="avgValue" id="_1490885828121108">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:basic attribute-type="String" v="true" name="stdDevValue" id="_1490885893944110">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:basic attribute-type="String" v="true" name="medianValue" id="_1490885894104111">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:basic attribute-type="String" v="true" name="p10Value" id="_1490885894254112">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:basic attribute-type="String" v="true" name="p25Value" id="_1490885894414113">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:basic attribute-type="String" v="true" name="p75Value" id="_1490885894554114">
+                <jpa:bv/>
+            </jpa:basic>
+            <jpa:basic attribute-type="String" v="true" name="p90Value" id="_1490885894714115">
+                <jpa:bv/>
+            </jpa:basic>
+        </jpa:attributes>
+    </jpa:embeddable>
+    <jpa:embeddable abs="false" class="ReportCohort" v="true" pkg="study.report" m="true" rootElement="_14902889289461" id="_1490897741195">
+        <jpa:ts e="true"/>
+        <jpa:hc e="true"/>
+        <jpa:eq e="true"/>
+        <jpa:ath>Chris Knoll &lt;cknoll@ohdsi.org&gt;</jpa:ath>
+        <jpa:attributes>
+            <jpa:basic attribute-type="boolean" v="true" name="isActive" id="_14908977912311530">
+                <jpa:bv/>
+                <jpa:column name="IS_ACTIVE" unique="false" nullable="true" insertable="true" updatable="true"/>
+            </jpa:basic>
+            <jpa:one-to-one own="true" orp="false" optional="true" primaryKey="false" connected-entity-id="_1490291803505" v="true" name="cohort" id="_14908977652131528">
+                <jpa:bv/>
+                <jpa:join-column name="COHORT_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+            </jpa:one-to-one>
+        </jpa:attributes>
+    </jpa:embeddable>
+    <jpa:embeddable abs="false" class="ReportSource" v="true" pkg="study.report" m="false" rootElement="_14902889289461" id="_1490897969321">
+        <jpa:ts e="true"/>
+        <jpa:hc e="true"/>
+        <jpa:eq e="true"/>
+        <jpa:ath>Chris Knoll &lt;cknoll@ohdsi.org&gt;</jpa:ath>
+        <jpa:attributes>
+            <jpa:basic attribute-type="boolean" v="true" name="isActive" id="_14908980199101534">
+                <jpa:bv/>
+                <jpa:column name="IS_ACTIVE" unique="false" nullable="true" insertable="true" updatable="true"/>
+            </jpa:basic>
+            <jpa:one-to-one own="true" orp="false" optional="true" primaryKey="false" connected-entity-id="_1490297306096" v="true" name="source" id="_14908979862201533">
+                <jpa:bv/>
+                <jpa:join-column name="SOURCE_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+            </jpa:one-to-one>
+        </jpa:attributes>
+    </jpa:embeddable>
+    <jpa:converter c="org.ohdsi.sample.RelationshipTypeConverter" a="org.ohdsi.sample.RelationshipType" f="java.lang.String" au="true"/>
+    <jpa:snp loc="BEFORE_PACKAGE" e="true">/**
+ * This file was generated by the JPA Modeler
+ */</jpa:snp>
+    <jpa:c>
+        <ct>java.util.List</ct>
+        <ct>java.util.Set</ct>
+        <ct>java.util.Map</ct>
+        <ct>java.util.Collection</ct>
+    </jpa:c>
+    <jpa:wsl>
+        <jpa:ws n="Main" id="_14902889289462">
+            <i ref="_1490897969321" x="1050" y="614"/>
+            <i ref="_1490289062980" x="383" y="272"/>
+            <i ref="_1490291254567" x="536" y="496"/>
+            <i ref="_1490297306096" x="321" y="496"/>
+            <i ref="_1490300306224" x="718" y="71"/>
+            <i ref="_1490884254082" x="1293" y="341"/>
+            <i ref="_1490884543436" x="1526" y="296"/>
+            <i ref="_1490897741195" x="1051" y="379"/>
+            <i ref="_1490298781069" x="422" y="71"/>
+            <i ref="_1490299355659" x="114" y="208"/>
+            <i ref="_1490852395927" x="937" y="95"/>
+            <i ref="_1490291803505" x="688" y="208"/>
+            <i ref="_1490885001721" x="1701" y="496"/>
+            <i ref="_1490303663642" x="854" y="496"/>
+            <i ref="_1490303852647" x="490" y="208"/>
+            <i ref="_1490885811612" x="1550" y="569"/>
+            <i ref="_1490884917153" x="1740" y="355"/>
+        </jpa:ws>
+        <jpa:ws n="Report" id="_149088421645426">
+            <i ref="_1490885001721" x="178" y="265"/>
+            <i ref="_1490291803505" x="312" y="398"/>
+            <i ref="_1490289062980" x="-14" y="448"/>
+            <i ref="_1490885811612" x="600" y="80"/>
+            <i ref="_1490884917153" x="552" y="289"/>
+            <i ref="_1490297306096" x="-22" y="180"/>
+            <i ref="_1490884254082" x="251" y="104"/>
+            <i ref="_1490884543436" x="552" y="459"/>
+        </jpa:ws>
+    </jpa:wsl>
+</jpa:entity-mappings>

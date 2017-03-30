@@ -8,11 +8,10 @@ import java.util.List;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
@@ -33,9 +32,8 @@ public class StudyCCA {
     @Basic
     private String params;
 
-    @OneToMany(cascade={CascadeType.ALL},targetEntity = StudyCCAPair.class)
-    @JoinTable(name="CCA_PAIR_XREF",joinColumns={@JoinColumn(name="CCA_ID",referencedColumnName="ID")},inverseJoinColumns={@JoinColumn(name="TARGET_ID",referencedColumnName="TARGET_ID"),@JoinColumn(name="COMPARATOR_ID",referencedColumnName="COMPARATOR_ID"),@JoinColumn(name="OUTCOME_ID",referencedColumnName="OUTCOME_ID")})
-    private List<StudyCCAPair> studyCCAPairs;
+    @OneToMany(cascade={CascadeType.ALL},fetch = FetchType.LAZY,targetEntity = StudyCCAPair.class,mappedBy = "cca")
+    private List<StudyCCAPair> pairList = new java.util.ArrayList<>();
 
 
     public Integer getId() {
@@ -54,12 +52,12 @@ public class StudyCCA {
         this.params = params;
     }
 
-    public List<StudyCCAPair> getStudyCCAPairs() {
-        return this.studyCCAPairs;
+    public List<StudyCCAPair> getPairList() {
+        return this.pairList;
     }
 
-    public void setStudyCCAPairs(List<StudyCCAPair> studyCCAPairs) {
-        this.studyCCAPairs = studyCCAPairs;
+    public void setPairList(List<StudyCCAPair> pairList) {
+        this.pairList = pairList;
     }
 
 

@@ -9,13 +9,13 @@
 	</appender>
 
 	<logger name="org.ohdsi">
-		<level value="debug" />
+		<level value="error" />
 	</logger>
 	<logger name="org.springframework.orm">
-		<level value="debug" />
+		<level value="error" />
 	</logger>
 	<logger name="org.springframework.jdbc">
-		<level value="debug" />
+		<level value="error" />
 	</logger>
 	<root>
 		<level value="info" />

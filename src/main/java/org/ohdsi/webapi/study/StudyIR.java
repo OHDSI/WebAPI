@@ -7,6 +7,7 @@ package org.ohdsi.webapi.study;
 import java.util.List;
 import javax.persistence.Basic;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -32,12 +33,12 @@ public class StudyIR {
     @Basic
     private String params;
 
-    @OneToMany(targetEntity = StudyCohort.class)
-    @JoinTable(name="IRANALYSIS_T",joinColumns={@JoinColumn(name="ANALYSIS_ID",referencedColumnName="ID")},inverseJoinColumns={@JoinColumn(name="COHORT_ID",referencedColumnName="ID")})
+    @OneToMany(fetch = FetchType.LAZY,targetEntity = StudyCohort.class)
+    @JoinTable(name="STUDY_IR_T",joinColumns={@JoinColumn(name="ANALYSIS_ID",referencedColumnName="ID")},inverseJoinColumns={@JoinColumn(name="COHORT_ID",referencedColumnName="ID")})
     private List<StudyCohort> targets;
 
-    @OneToMany(targetEntity = StudyCohort.class)
-    @JoinTable(name="IRANALYSIS_O",joinColumns={@JoinColumn(name="ANALYSIS_ID",referencedColumnName="ID")},inverseJoinColumns={@JoinColumn(name="COHORT_ID",referencedColumnName="ID")})
+    @OneToMany(fetch = FetchType.LAZY,targetEntity = StudyCohort.class)
+    @JoinTable(name="STUDY_IR_O",joinColumns={@JoinColumn(name="ANALYSIS_ID",referencedColumnName="ID")},inverseJoinColumns={@JoinColumn(name="COHORT_ID",referencedColumnName="ID")})
     private List<StudyCohort> outcomes;
 
 

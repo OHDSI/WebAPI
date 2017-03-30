@@ -38,12 +38,6 @@ public abstract class AbstractDaoService {
   @Value("${datasource.dialect.source}")
   private String sourceDialect;
 
-  @Value("${source.name}")
-  private String sourceName;
-
-  @Value("${cdm.version}")
-  private String cdmVersion;
-
   @Autowired
   private JdbcTemplate jdbcTemplate;
 
@@ -125,34 +119,6 @@ public abstract class AbstractDaoService {
    */
   public void setSourceDialect(String sourceDialect) {
     this.sourceDialect = sourceDialect;
-  }
-
-  /**
-   * @return the sourceName
-   */
-  public String getSourceName() {
-    return sourceName;
-  }
-
-  /**
-   * @param sourceName the sourceName to set
-   */
-  public void setSourceName(String sourceName) {
-    this.sourceName = sourceName;
-  }
-
-  /**
-   * @return the cdmVersion
-   */
-  public String getCdmVersion() {
-    return cdmVersion;
-  }
-
-  /**
-   * @param cdmVersion the cdmVersion to set
-   */
-  public void setCdmVersion(String cdmVersion) {
-    this.cdmVersion = cdmVersion;
   }
 
   protected List<Map<String, String>> genericResultSetLoader(String sql, Source source) {

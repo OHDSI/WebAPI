@@ -15,13 +15,16 @@ public class StudyCCAPairPK implements Serializable {
 
     private Integer outcome;
 
+    private Integer cca;
+
     public StudyCCAPairPK(){
     }
 
-    public StudyCCAPairPK(Integer target,Integer comparator,Integer outcome){
+    public StudyCCAPairPK(Integer target,Integer comparator,Integer outcome,Integer cca){
         this.target=target;
         this.comparator=comparator;
         this.outcome=outcome;
+        this.cca=cca;
     }
 
 
@@ -49,6 +52,14 @@ public class StudyCCAPairPK implements Serializable {
         this.outcome = outcome;
     }
 
+   public Integer getCca() {
+        return this.cca;
+    }
+
+    public void setCca (Integer cca) {
+        this.cca = cca;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {return false;}
@@ -57,21 +68,23 @@ public class StudyCCAPairPK implements Serializable {
         if (!java.util.Objects.equals(this.getTarget(), other.getTarget())) {        return false;        }
         if (!java.util.Objects.equals(this.getComparator(), other.getComparator())) {        return false;        }
         if (!java.util.Objects.equals(this.getOutcome(), other.getOutcome())) {        return false;        }
+        if (!java.util.Objects.equals(this.getCca(), other.getCca())) {        return false;        }
         return true;
     }
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 23 * hash + (this.getTarget() != null ? this.getTarget().hashCode() : 0);
-        hash = 23 * hash + (this.getComparator() != null ? this.getComparator().hashCode() : 0);
-        hash = 23 * hash + (this.getOutcome() != null ? this.getOutcome().hashCode() : 0);
+        int hash = 3;
+        hash = 97 * hash + (this.getTarget() != null ? this.getTarget().hashCode() : 0);
+        hash = 97 * hash + (this.getComparator() != null ? this.getComparator().hashCode() : 0);
+        hash = 97 * hash + (this.getOutcome() != null ? this.getOutcome().hashCode() : 0);
+        hash = 97 * hash + (this.getCca() != null ? this.getCca().hashCode() : 0);
         return hash;
     }
 
     @Override
     public String toString() {
-        return "StudyCCAPairPK{" + " target=" + target + ", comparator=" + comparator + ", outcome=" + outcome + '}';
+        return "StudyCCAPairPK{" + " target=" + target + ", comparator=" + comparator + ", outcome=" + outcome + ", cca=" + cca + '}';
     }
 
 }

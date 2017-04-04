@@ -234,7 +234,7 @@
         <jpa:el/>
         <jpa:table name="STUDY_CCA_PAIR"/>
     </jpa:entity>
-    <jpa:entity lbl-ref="_1490303663652781" xre="false" compositePrimaryKeyClass="CohortSetPK" abs="false" class="CohortSet" v="true" pkg="study" m="true" rootElement="_14902889289461" id="_1490303663642">
+    <jpa:entity lbl-ref="_1490303663652781" xre="false" compositePrimaryKeyClass="CohortSetPK" abs="false" class="CohortSet" v="true" pkg="study" m="false" rootElement="_14902889289461" id="_1490303663642">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>
@@ -249,7 +249,7 @@
             <jpa:one-to-many orp="false" own="true" collection-type="java.util.List" connected-entity-id="_1490291803505" v="true" name="cohortList" id="_1490303732698785">
                 <jpa:bv/>
                 <jpa:join-table name="STUDY_COHORTSET_XREF">
-                    <jpa:join-column name="COHORT_SET_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+                    <jpa:join-column name="COHORTSET_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
                     <jpa:inverse-join-column name="COHORT_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
                 </jpa:join-table>
             </jpa:one-to-many>

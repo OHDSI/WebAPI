@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+  <Appenders>
+    <Console name="STDOUT" target="SYSTEM_OUT">
+      <PatternLayout pattern="%d{yyyy-MM-dd HH:mm} %c{2} - %x - %m%n"/>
+    </Console>
+  </Appenders>
+  <Loggers>
+    <logger name="org.ohdsi" level="error">
+      <AppenderRef ref="STDOUT"/>
+    </logger>
+    <logger name="org.springframework.orm" level="error">
+      <AppenderRef ref="STDOUT"/>
+    </logger>
+    <logger name="org.springframework.jdbc" level="error">
+      <AppenderRef ref="STDOUT"/>
+    </logger>      
+    <root level="info">
+      <AppenderRef ref="STDOUT"/>
+    </root>
+  </Loggers>
+</Configuration>

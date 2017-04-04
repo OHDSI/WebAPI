@@ -36,7 +36,7 @@ public class CohortSet {
     private String description;
 
     @OneToMany(targetEntity = StudyCohort.class)
-    @JoinTable(name="STUDY_COHORTSET_XREF",joinColumns={@JoinColumn(name="COHORT_SET_ID",referencedColumnName="ID")},inverseJoinColumns={@JoinColumn(name="COHORT_ID",referencedColumnName="ID")})
+    @JoinTable(name="STUDY_COHORTSET_XREF",joinColumns={@JoinColumn(name="COHORTSET_ID",referencedColumnName="ID")},inverseJoinColumns={@JoinColumn(name="COHORT_ID",referencedColumnName="ID")})
     private List<StudyCohort> cohortList;
 
 

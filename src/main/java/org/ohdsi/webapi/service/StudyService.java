@@ -33,7 +33,6 @@ import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.stereotype.Component;
-import org.springframework.jdbc.core.RowMapper;
 
 /**
  *
@@ -43,8 +42,9 @@ import org.springframework.jdbc.core.RowMapper;
 @Component
 public class StudyService extends AbstractDaoService  {
 
-  private String QUERY_CATAGORICAL_STATS  = ResourceHelper.GetResourceAsString("/resources/study/sql/queryCatagoricalStats.sql");
-  private String QUERY_CONTINUOUS_STATS  = ResourceHelper.GetResourceAsString("/resources/study/sql/queryContinuousStats.sql");
+  private final String QUERY_CATAGORICAL_STATS  = ResourceHelper.GetResourceAsString("/resources/study/sql/queryCatagoricalStats.sql");
+  private final String QUERY_CONTINUOUS_STATS  = ResourceHelper.GetResourceAsString("/resources/study/sql/queryContinuousStats.sql");
+  private final String QUERY_COHORTSETS  = ResourceHelper.GetResourceAsString("/resources/study/sql/queryCohortSets.sql");
 
   public static class StudyStatistics {
     public List<CatagoricalStat> catagorical = new ArrayList<>();
@@ -81,6 +81,13 @@ public class StudyService extends AbstractDaoService  {
     public long p75Value;
     public long p90Value;
     public long maxValue;
+  }
+  
+  public static class CohortSetListItem {
+    public int id;
+    public String name;
+    public String description;
+    public int members;
   }
   
   private List<String> buildCriteriaClauses (String searchTerm, List<String> analysisIds, List<String> timeWindows) {
@@ -202,5 +209,36 @@ public class StudyService extends AbstractDaoService  {
     result.continuous = continuousStats;
     
     return result;
+  }
+  
+  @GET
+  @Path("{studyId}/cohortset/search")
+  @Produces(MediaType.APPLICATION_JSON)
+  public List<CohortSetListItem> getCohortSets(
+          @PathParam("studyId") final int studyId,
+          @QueryParam("searchTerm") final String searchTerm
+  ) {
+    String translatedSql;
+    
+    String cohortSetQuery = SqlRender.renderSql(
+            QUERY_COHORTSETS, 
+            new String[] {"ohdsi_schema", "study_id", "search_term"},
+            new String[] {getOhdsiSchema(), Integer.toString(studyId), searchTerm}
+    );
+    
+    translatedSql = SqlTranslate.translateSql(cohortSetQuery, "sql server", this.getDialect(), SessionUtils.sessionId(), null);
+    List<CohortSetListItem> cohortSets =  this.getJdbcTemplate().query(translatedSql, (rs,rowNum) -> { 
+      CohortSetListItem mappedRow = new CohortSetListItem() {{
+        id =  rs.getInt("id");
+        name = rs.getString("name");
+        description = rs.getString("description");
+        members = rs.getInt("members");
+      }};
+      
+      return mappedRow;
+      
+    });
+    
+    return cohortSets; 
   }
 }

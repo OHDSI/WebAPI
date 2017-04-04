@@ -4,7 +4,6 @@
 
 package org.ohdsi.webapi.study;
 
-import java.io.Serializable;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
@@ -16,7 +15,7 @@ import javax.persistence.OneToOne;
  */
 
 @Embeddable
-public class CohortRelationship implements Serializable { 
+public class CohortRelationship { 
 
     @Column(name="RELATIONSHIP_TYPE")
     @Basic

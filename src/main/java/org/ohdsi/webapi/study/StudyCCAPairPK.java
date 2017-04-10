@@ -74,11 +74,11 @@ public class StudyCCAPairPK implements Serializable {
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 71 * hash + (this.getTarget() != null ? this.getTarget().hashCode() : 0);
-        hash = 71 * hash + (this.getComparator() != null ? this.getComparator().hashCode() : 0);
-        hash = 71 * hash + (this.getOutcome() != null ? this.getOutcome().hashCode() : 0);
-        hash = 71 * hash + (this.getCca() != null ? this.getCca().hashCode() : 0);
+        int hash = 7;
+        hash = 17 * hash + (this.getTarget() != null ? this.getTarget().hashCode() : 0);
+        hash = 17 * hash + (this.getComparator() != null ? this.getComparator().hashCode() : 0);
+        hash = 17 * hash + (this.getOutcome() != null ? this.getOutcome().hashCode() : 0);
+        hash = 17 * hash + (this.getCca() != null ? this.getCca().hashCode() : 0);
         return hash;
     }
 

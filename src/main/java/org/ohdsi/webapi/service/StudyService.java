@@ -18,27 +18,43 @@ package org.ohdsi.webapi.service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
+import javax.persistence.PersistenceContext;
+import javax.transaction.Transactional;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.helper.ResourceHelper;
+import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.study.Concept;
+import org.ohdsi.webapi.study.Study;
+import org.ohdsi.webapi.study.StudyCohort;
+import org.ohdsi.webapi.study.StudyRepository;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
  *
  * @author Chris Knoll <cknoll@ohdsi.org>
  */
-@Path("/study/")
+@Path("/study")
 @Component
 public class StudyService extends AbstractDaoService  {
 
@@ -46,10 +62,85 @@ public class StudyService extends AbstractDaoService  {
   private final String QUERY_CONTINUOUS_STATS  = ResourceHelper.GetResourceAsString("/resources/study/sql/queryContinuousStats.sql");
   private final String QUERY_COHORTSETS  = ResourceHelper.GetResourceAsString("/resources/study/sql/queryCohortSets.sql");
 
-  public static class StudyStatistics {
-    public List<CatagoricalStat> catagorical = new ArrayList<>();
-    public List<ContinuousStat> continuous = new ArrayList<>();
+  @Autowired
+  StudyRepository studyRepository;
+
+  @Autowired
+  private Security security;
+  
+  @PersistenceContext
+  protected EntityManager entityManager;
+  
+  public static class StudyListItem {
+    public Integer id;
+    public String name;
+    public String description;
+    
   }
+  
+  public static class StudyDTO extends StudyListItem {
+    public List<CohortDetail> cohorts;
+    public List<StudyIRDTO> irAnalysisList;
+    public List<StudyCCADTO> ccaList;
+    public List<StudySourceDTO> sources;
+    
+    public StudyDTO () {}
+  }
+  
+  public static class StudyIRDTO {
+    
+    public Integer id;
+    public String params;
+    public List<Integer> targets;
+    public List<Integer> outcomes;
+    
+    public StudyIRDTO() {
+    }
+    
+  }
+  
+  public static class CCATrio {
+    public Integer target;
+    public Integer comaprator;
+    public Integer outcome;
+    
+    public CCATrio () {}
+    
+  }
+          
+  public static class StudyCCADTO {
+    public Integer id;
+    public String params;
+    public List<CCATrio> cohortTrio;
+    
+    public StudyCCADTO() {}
+  }
+  
+  public static class StudySourceDTO {
+   public int sourceId;
+   public String name;
+   
+   public StudySourceDTO() {}
+   
+   public StudySourceDTO (int sourceId, String name) {
+     this.sourceId = sourceId;
+     this.name = name;
+   }
+  }
+    
+  public static class CohortRelationship {
+    public int target;
+    public org.ohdsi.webapi.study.RelationshipType relationshipType;
+  }
+
+  public static class CohortDetail {
+    public int cohortId;
+    public String name;
+    public String expression;
+    public List<Concept> concepts = new ArrayList<>();
+    public List<CohortRelationship> relationships = new ArrayList<>();
+  }
+  
   
   public static class CatagoricalStat {
     public long covariateId;
@@ -88,6 +179,11 @@ public class StudyService extends AbstractDaoService  {
     public String name;
     public String description;
     public int members;
+  }
+
+  public static class StudyStatistics {
+    public List<CatagoricalStat> catagorical = new ArrayList<>();
+    public List<ContinuousStat> continuous = new ArrayList<>();
   }
   
   private List<String> buildCriteriaClauses (String searchTerm, List<String> analysisIds, List<String> timeWindows) {
@@ -132,7 +228,89 @@ public class StudyService extends AbstractDaoService  {
     return clauses;
   }
   
+  public CohortDetail fromStudyCohort(StudyCohort studyCohort) {
+    CohortDetail detail = new CohortDetail();
+    detail.cohortId = studyCohort.getId();
+    detail.name = studyCohort.getName();
+    detail.relationships = studyCohort.getCohortRelationships().stream().map(r -> {
+      CohortRelationship rel = new CohortRelationship();
+      rel.target = r.getTarget().getId();
+      rel.relationshipType = r.getRelationshipType();
+      return rel;
+    }).collect(Collectors.toList());
+    detail.concepts = studyCohort.getConcepts().stream().collect(Collectors.toList());
+    return detail;
+  }
   
+  public StudyDTO fromStudy(Study studyEntity)
+  {
+    StudyDTO study = new StudyDTO();
+    HashMap<Integer, StudyService.CohortDetail> cohorts = new HashMap<>();
+    
+    // Map IRAs
+    study.irAnalysisList = studyEntity.getIrAnalysisList().stream().map(i -> {
+      StudyIRDTO ira = new StudyIRDTO();
+      ira.id = i.getId();
+      ira.params = i.getParams();
+      
+      ira.targets = i.getTargets().stream().map(t -> {
+        return t.getId();
+      }).collect(Collectors.toList());
+      
+      ira.outcomes = i.getOutcomes().stream().map(o -> {
+        return o.getId();
+      }).collect(Collectors.toList());
+
+      return ira;
+    }).collect(Collectors.toList());
+    
+    // Map CCAs
+    study.ccaList = studyEntity.getCcaList().stream().map(cca -> {
+      StudyCCADTO ccaDTO = new StudyCCADTO();
+      
+      ccaDTO.id = cca.getId();
+      ccaDTO.params = cca.getParams();
+
+      ccaDTO.cohortTrio = cca.getPairList().stream().map(trio -> {
+        CCATrio trioDTO = new CCATrio();
+        
+        trioDTO.target = trio.getTarget().getId();
+        trioDTO.comaprator = trio.getComparator().getId();
+        trioDTO.outcome = trio.getOutcome().getId();
+        return trioDTO;
+      }).collect(Collectors.toList());
+      return ccaDTO;
+    }).collect(Collectors.toList());
+
+    // Map cohorts
+    study.cohorts = studyEntity.getCohortList().stream().map(c -> {
+        return fromStudyCohort(c);
+    }).collect(Collectors.toList());
+    
+    // Map Sources
+    study.sources = studyEntity.getSourceList().stream().map (s -> {
+      return new StudySourceDTO(s.getId(), s.getName());
+    }).collect(Collectors.toList());
+    
+    
+    return study;
+  }
+  
+  
+  @GET
+  @Path("/")
+  @Produces(MediaType.APPLICATION_JSON)
+  public List<StudyListItem> getStudyList(){
+    Stream<Study> studyStream = StreamSupport.stream(studyRepository.findAll().spliterator(), true);
+    return studyStream.map(s -> {
+      StudyListItem item = new StudyListItem();
+      item.id = s.getId();
+      item.name = s.getName();
+      item.description = s.getDescription();
+      return item;
+    }).collect(Collectors.toList());
+  }
+          
   @GET
   @Path("{studyId}/results/{cohortId}/{sourceKey}")
   @Produces(MediaType.APPLICATION_JSON)
@@ -241,4 +419,23 @@ public class StudyService extends AbstractDaoService  {
     
     return cohortSets; 
   }
+
+  @GET
+  @Path("/{studyId}")
+  @Produces(MediaType.APPLICATION_JSON)
+  @Transactional
+  public StudyDTO getStudy(
+          @PathParam("studyId") final int studyId
+  ) {
+    Study studyEntity = studyRepository.findOne(studyId);
+    if (studyEntity == null) {
+      throw new WebApplicationException(Response.Status.NOT_FOUND);
+    }
+      
+    // resolve entity collections into POJO collections for JSON serialization.
+    // later we should adopt a DTO mapper when we implement services to update a Study.
+    
+    return fromStudy(studyEntity);
+  }
+
 }

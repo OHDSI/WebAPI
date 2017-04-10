@@ -5,6 +5,7 @@
 package org.ohdsi.webapi.study.report;
 
 import javax.persistence.Basic;
+import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
 /**
@@ -14,21 +15,28 @@ import javax.persistence.Embeddable;
 @Embeddable
 public class ReportCovariate { 
 
+    @Column(name="COVARIATE_ID")
     @Basic
-    private String covariateId;
+    private Long covariateId;
 
+    @Column(name="COVARIATE_NAME",columnDefinition="VARCHAR(1000)")
     @Basic
     private String covariateName;
 
+    @Column(name="COVARIATE_SECTION",columnDefinition="VARCHAR(20)")
     @Basic
-    private String ordinal;
+    private CovariateSection covariateSection;
+
+    @Column(name="ORDINAL")
+    @Basic
+    private Integer ordinal;
 
 
-    public String getCovariateId() {
+    public Long getCovariateId() {
         return this.covariateId;
     }
 
-    public void setCovariateId(String covariateId) {
+    public void setCovariateId(Long covariateId) {
         this.covariateId = covariateId;
     }
 
@@ -40,13 +48,39 @@ public class ReportCovariate {
         this.covariateName = covariateName;
     }
 
-    public String getOrdinal() {
+    public CovariateSection getCovariateSection() {
+        return this.covariateSection;
+    }
+
+    public void setCovariateSection(CovariateSection covariateSection) {
+        this.covariateSection = covariateSection;
+    }
+
+    public Integer getOrdinal() {
         return this.ordinal;
     }
 
-    public void setOrdinal(String ordinal) {
+    public void setOrdinal(Integer ordinal) {
         this.ordinal = ordinal;
     }
 
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {return false;}
+        if (!java.util.Objects.equals(getClass(), obj.getClass())) {return false;}
+        final ReportCovariate other = (ReportCovariate) obj;
+        if (!java.util.Objects.equals(this.getCovariateId(), other.getCovariateId())) {        return false;        }
+        if (!java.util.Objects.equals(this.getCovariateSection(), other.getCovariateSection())) {        return false;        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 47 * hash + (this.getCovariateId() != null ? this.getCovariateId().hashCode() : 0);
+        hash = 47 * hash + (this.getCovariateSection() != null ? this.getCovariateSection().hashCode() : 0);
+        return hash;
+    }
 
 }

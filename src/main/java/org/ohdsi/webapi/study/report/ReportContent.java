@@ -7,28 +7,31 @@ package org.ohdsi.webapi.study.report;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
+import javax.persistence.Lob;
 
 /**
  * @author Chris Knoll <cknoll@ohdsi.org>
  */
 
 @Embeddable
-public class ReportText { 
+public class ReportContent { 
 
-    @Column(name="SECTION_ID")
+    @Column(name="SECTION_ID",columnDefinition="VARCHAR(20)",updatable=false)
     @Basic
-    private String sectionId;
+    private ContentSection section;
 
+    @Column(name="CONTENT",columnDefinition="VARCHAR(MAX)")
+    @Lob
     @Basic
     private String content;
 
 
-    public String getSectionId() {
-        return this.sectionId;
+    public ContentSection getSection() {
+        return this.section;
     }
 
-    public void setSectionId(String sectionId) {
-        this.sectionId = sectionId;
+    public void setSection(ContentSection section) {
+        this.section = section;
     }
 
     public String getContent() {

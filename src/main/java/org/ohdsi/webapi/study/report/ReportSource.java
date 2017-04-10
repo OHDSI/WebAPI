@@ -18,21 +18,21 @@ import org.ohdsi.webapi.study.StudySource;
 @Embeddable
 public class ReportSource { 
 
-    @Column(name="IS_ACTIVE")
+    @Column(name="IS_ACTIVE",columnDefinition="BIT")
     @Basic
-    private boolean isActive;
+    private boolean active;
 
     @OneToOne(targetEntity = StudySource.class)
     @JoinColumn(name="SOURCE_ID",referencedColumnName="ID")
     private StudySource source;
 
 
-    public boolean isIsActive() {
-        return this.isActive;
+    public boolean isActive() {
+        return this.active;
     }
 
-    public void setIsActive(boolean isActive) {
-        this.isActive = isActive;
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     public StudySource getSource() {

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 import javax.persistence.Basic;
 import javax.persistence.CollectionTable;
+import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -15,6 +16,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
@@ -31,15 +33,20 @@ public class StudyCohort {
     @SequenceGenerator(name="STUDY_COHORT_SEQ",sequenceName="STUDY_COHORT_SEQ",allocationSize=1)
     private Integer id;
 
+    @Column(columnDefinition="VARCHAR(256)")
     @Basic
     private String name;
 
+    @Column(columnDefinition="VARCHAR(2000)")
     @Basic
     private String description;
 
+    @Column(columnDefinition="VARCHAR(10)")
     @Basic
     private String abbr;
 
+    @Column(columnDefinition="VARCHAR(MAX)")
+    @Lob
     @Basic
     private String expression;
 

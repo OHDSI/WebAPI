@@ -247,6 +247,10 @@ public class StudyService extends AbstractDaoService  {
     StudyDTO study = new StudyDTO();
     HashMap<Integer, StudyService.CohortDetail> cohorts = new HashMap<>();
     
+    study.id = studyEntity.getId();
+    study.name = studyEntity.getName();
+    study.description = studyEntity.getDescription();
+    
     // Map IRAs
     study.irAnalysisList = studyEntity.getIrAnalysisList().stream().map(i -> {
       StudyIRDTO ira = new StudyIRDTO();

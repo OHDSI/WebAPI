@@ -65,6 +65,10 @@ public class Report {
     @Temporal(TemporalType.DATE)
     private Date modifiedDate;
 
+    @Column(name="STATUS",columnDefinition="VARCHAR(20)",updatable=false)
+    @Basic
+    private ReportStatus status;
+
     @ElementCollection(fetch=FetchType.LAZY)
     @CollectionTable(name="REPORT_CONTENT",joinColumns={@JoinColumn(name="REPORT_ID",referencedColumnName="ID")})
     private List<ReportContent> content = new java.util.ArrayList<ReportContent>();
@@ -142,6 +146,14 @@ public class Report {
 
     public void setModifiedDate(Date modifiedDate) {
         this.modifiedDate = modifiedDate;
+    }
+
+    public ReportStatus getStatus() {
+        return this.status;
+    }
+
+    public void setStatus(ReportStatus status) {
+        this.status = status;
     }
 
     public List<ReportContent> getContent() {

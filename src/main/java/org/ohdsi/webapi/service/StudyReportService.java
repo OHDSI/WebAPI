@@ -15,6 +15,7 @@
  */
 package org.ohdsi.webapi.service;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -43,6 +44,7 @@ import org.ohdsi.webapi.study.report.ReportContent;
 import org.ohdsi.webapi.study.report.ReportCovariate;
 import org.ohdsi.webapi.study.report.ReportRepository;
 import org.ohdsi.webapi.study.report.ReportSource;
+import org.ohdsi.webapi.study.report.ReportStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -72,6 +74,14 @@ public class StudyReportService extends AbstractDaoService  {
     public String description;
     public Integer studyId;
     public String studyName;
+    public String createdBy;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    public Date createdDate;
+    public String modifiedBy;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    public Date modifiedDate;
+    public ReportStatus status;
+    
   }
   
   public static class ReportDTO extends ReportListItem {
@@ -117,6 +127,11 @@ public class StudyReportService extends AbstractDaoService  {
     result.description = report.getDescription();
     result.studyId = report.getStudy().getId();
     result.studyName = report.getStudy().getName();
+    result.createdBy = report.getCreatedBy();
+    result.createdDate = report.getCreatedDate();
+    result.modifiedBy = report.getModifiedBy();
+    result.modifiedDate = report.getModifiedDate();
+    result.status = report.getStatus();
     
     result.cohortPairs = report.getCohortPairs().stream().map(p -> {
       StudyService.CohortDetail target;
@@ -201,6 +216,12 @@ public class StudyReportService extends AbstractDaoService  {
       item.description = r.getDescription();
       item.studyId = r.getStudy().getId();
       item.studyName = r.getStudy().getName();
+      item.createdBy = r.getCreatedBy();
+      item.createdDate = r.getCreatedDate();
+      item.modifiedBy = r.getModifiedBy();
+      item.modifiedDate = r.getModifiedDate();
+      item.status = r.getStatus();
+    
       return item;
     }).collect(Collectors.toList());
     

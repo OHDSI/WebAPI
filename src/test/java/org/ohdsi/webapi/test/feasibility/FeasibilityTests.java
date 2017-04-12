@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.transaction.Transactional;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ohdsi.webapi.WebApi;
@@ -30,17 +29,18 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
  * @author Chris Knoll <cknoll@ohdsi.org>
  */
-@RunWith(SpringJUnit4ClassRunner.class) 
-@SpringApplicationConfiguration(classes = WebApi.class)
-@TransactionConfiguration(defaultRollback=true,transactionManager="transactionManager")
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = WebApi.class)
+@Rollback
 public class FeasibilityTests {
   
   @Autowired
@@ -114,7 +114,7 @@ public class FeasibilityTests {
   }
   
   @Test
-  @Transactional
+  @Transactional(transactionManager="transactionManager")
   public void testStudyCRUD() {
     int newStudyId = doCreate();
     doUpdate(newStudyId);

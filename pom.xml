@@ -13,8 +13,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jersey.version>2.14</jersey.version>
     <!-- Spring Boot manages spring.version as well -->
-    <spring.boot.version>1.2.1.RELEASE</spring.boot.version>
-    <spring.batch.version>3.0.3.RELEASE</spring.batch.version>
+    <spring.boot.version>1.5.2.RELEASE</spring.boot.version>
+    <spring.batch.version>3.0.7.RELEASE</spring.batch.version>
     <flyway.version>3.1</flyway.version>
     <waffle.version>1.7.3</waffle.version>
     <start-class>org.ohdsi.webapi.WebApi</start-class>
@@ -183,7 +183,7 @@
           </execution>
         </executions>
         <configuration>
-          <licence>cHJvamVjdHxvcmcub2hkc2kuV2ViQVBJfDIwMTctMDItMjZ8dHJ1ZXwtMSNNQzBDRkZCOWt6ZmJPTWlFWU82QUFOQXNTTi8wemI5SUFoVUFraUc4OFpCYnB6RHVjbXJKWDJZNyt4by9QMGM9</licence>
+           <licence>cHJvamVjdHxvcmcub2hkc2kuV2ViQVBJfDIwMjAtMDMtMzF8dHJ1ZXwtMSNNQzBDRkNNQ2R2ZEhjbDg0Z2tONVI3bHlmQ2Y4SnNkYUFoVUFoMkdtOUVFdy9RelpLVzM1V2p6a2FsdzJZV009</licence>
         </configuration>
       </plugin>
     </plugins>
@@ -265,11 +265,6 @@
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-log4j</artifactId>
-      <version>${spring.boot.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
       <version>${spring.boot.version}</version>
     </dependency>
@@ -305,9 +300,6 @@
       <version>3.1.0</version>
       <scope>provided</scope>
     </dependency>
-    <!-- <dependency> <groupId>org.glassfish.jersey.containers</groupId> <artifactId>jersey-container-servlet</artifactId> 
-    </dependency> <dependency> <groupId>org.glassfish.jersey.media</groupId> 
-    <artifactId>jersey-media-json-jackson</artifactId> </dependency> -->
     <dependency>
       <groupId>org.ohdsi.sql</groupId>
       <artifactId>SqlRender</artifactId>
@@ -380,6 +372,16 @@
       <artifactId>opencsv</artifactId>
       <version>3.7</version>
       <type>jar</type>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.collections</groupId>
+      <artifactId>eclipse-collections-api</artifactId>
+      <version>8.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.collections</groupId>
+      <artifactId>eclipse-collections</artifactId>
+      <version>8.0.0</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>

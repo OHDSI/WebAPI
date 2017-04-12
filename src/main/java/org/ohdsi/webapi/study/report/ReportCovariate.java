@@ -78,8 +78,8 @@ public class ReportCovariate {
     @Override
     public int hashCode() {
         int hash = 5;
-        hash = 41 * hash + (this.getCovariateId() != null ? this.getCovariateId().hashCode() : 0);
-        hash = 41 * hash + (this.getCovariateSection() != null ? this.getCovariateSection().hashCode() : 0);
+        hash = 71 * hash + (this.getCovariateId() != null ? this.getCovariateId().hashCode() : 0);
+        hash = 71 * hash + (this.getCovariateSection() != null ? this.getCovariateSection().hashCode() : 0);
         return hash;
     }
 

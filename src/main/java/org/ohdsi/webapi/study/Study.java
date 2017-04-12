@@ -52,6 +52,10 @@ public class Study {
     @JoinTable(name="STUDY_CCA_XREF",joinColumns={@JoinColumn(name="STUDY_ID",referencedColumnName="ID")},inverseJoinColumns={@JoinColumn(name="CCA_ID",referencedColumnName="ID")})
     private List<StudyCCA> ccaList = new java.util.ArrayList<StudyCCA>();
 
+    @OneToMany(fetch = FetchType.LAZY,targetEntity = StudySCC.class)
+    @JoinTable(name="STUDY_SCC_XREF",joinColumns={@JoinColumn(name="STUDY_ID",referencedColumnName="ID")},inverseJoinColumns={@JoinColumn(name="SCC_ID",referencedColumnName="ID")})
+    private List<StudySCC> sccList = new java.util.ArrayList<>();
+
     @OneToMany(fetch = FetchType.LAZY,targetEntity = StudyCohort.class)
     @JoinTable(name="STUDY_COHORT_XREF",joinColumns={@JoinColumn(name="STUDY_ID",referencedColumnName="ID")},inverseJoinColumns={@JoinColumn(name="COHORT_ID",referencedColumnName="ID")})
     private List<StudyCohort> cohortList = new java.util.ArrayList<StudyCohort>();
@@ -111,6 +115,14 @@ public class Study {
 
     public void setCcaList(List<StudyCCA> ccaList) {
         this.ccaList = ccaList;
+    }
+
+    public List<StudySCC> getSccList() {
+        return this.sccList;
+    }
+
+    public void setSccList(List<StudySCC> sccList) {
+        this.sccList = sccList;
     }
 
     public List<StudyCohort> getCohortList() {

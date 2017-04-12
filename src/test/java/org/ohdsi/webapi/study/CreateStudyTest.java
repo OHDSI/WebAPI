@@ -18,7 +18,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest(classes = WebApi.class)
 @Transactional
 //@Ignore
-public class StudyRepositoryTests {
+public class CreateStudyTest {
 
   @Autowired
   private StudyRepository studyRepository;
@@ -31,6 +31,9 @@ public class StudyRepositoryTests {
 
   @Autowired
   private StudyCCARepository studyCCARepository;
+
+  @Autowired
+  private StudySCCRepository studySCCRepository;
   
   @PersistenceContext
   protected EntityManager entityManager;
@@ -68,6 +71,25 @@ public class StudyRepositoryTests {
     c_cohort.setExpression("{\"someField\": \"someValue\"}");
     c_cohort = studyCohortRepository.save(c_cohort);
 
+    // create three negative controls
+    List<StudyCohort> negativeControls = new ArrayList<>();
+    StudyCohort nc;
+    
+    nc = new StudyCohort();
+    nc.setName("Study1: NC 1");
+    nc.setExpression("{\"someField\": \"someValue\"}");
+    negativeControls.add(studyCohortRepository.save(nc));
+
+    nc = new StudyCohort();
+    nc.setName("Study1: NC 2");
+    nc.setExpression("{\"someField\": \"someValue\"}");
+    negativeControls.add(studyCohortRepository.save(nc));
+    
+    nc = new StudyCohort();
+    nc.setName("Study1: NC 3");
+    nc.setExpression("{\"someField\": \"someValue\"}");
+    negativeControls.add(studyCohortRepository.save(nc));
+
     // Create IR Analysis
     
     StudyIR ira = new StudyIR();
@@ -82,18 +104,35 @@ public class StudyRepositoryTests {
     
     ira = studyIRRepository.save(ira);
     
-    // Add CCA
+    // Create CCA
     StudyCCA cca = new StudyCCA();
-    StudyCCAPair ccaPair = new StudyCCAPair();
-    ccaPair.setTarget(t_cohort);
-    ccaPair.setComparator(c_cohort);
-    ccaPair.setOutcome(o_cohort);
-    ccaPair.setCca(cca); // add ref pair -> cca
-    cca.getPairList().add(ccaPair); // add ref cca -> pair
+    StudyCCATrio ccaTrio = new StudyCCATrio();
+    ccaTrio.setTarget(t_cohort);
+    ccaTrio.setComparator(c_cohort);
+    ccaTrio.setOutcome(o_cohort);
+    ccaTrio.setCca(cca); // add ref pair -> cca
+    // associate first and second NC with this trio
+    ccaTrio.getNegativeControls().add(negativeControls.get(0));
+    ccaTrio.getNegativeControls().add(negativeControls.get(1));
+    
+    cca.getTrios().add(ccaTrio); // add ref cca -> pair
     
     cca = studyCCARepository.save(cca);
 
-
+    // Create SCC
+    StudySCC scc = new StudySCC();
+    StudySCCPair sccPair = new StudySCCPair();
+    sccPair.setTarget(t_cohort);
+    sccPair.setOutcome(o_cohort);
+    sccPair.setSsc(scc);
+    // associate second and third NC with this pair
+    sccPair.getNegativeControls().add(negativeControls.get(1));
+    sccPair.getNegativeControls().add(negativeControls.get(2));
+    
+    scc.getPairs().add(sccPair);
+    
+    scc = studySCCRepository.save(scc);
+    
     Study s = new Study();
     s.setName("Test Study");
     s.setDescription("Some Desc");
@@ -103,6 +142,8 @@ public class StudyRepositoryTests {
     s.getCohortList().add(t_cohort);
     s.getCohortList().add(c_cohort);
     s.getCohortList().add(o_cohort);
+    s.getCohortList().addAll(negativeControls);
+      
     
     // add IR
     s.getIrAnalysisList().add(ira);
@@ -110,17 +151,11 @@ public class StudyRepositoryTests {
     // add CCA
     s.getCcaList().add(cca); 
 
+    // add SCC
+    
+    s.getSccList().add(scc);
+
     s = studyRepository.save(s); 
   }
 
-  @Test
-  @Commit
-  public void deleteAllStudies() {
-    studyRepository.deleteAll();
-    studyCCARepository.deleteAll();
-    studyIRRepository.deleteAll();
-    studyCohortRepository.deleteAll();
-    
-  }  
-  
 }

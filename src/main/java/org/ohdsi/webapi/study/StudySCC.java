@@ -7,6 +7,7 @@ package org.ohdsi.webapi.study;
 import java.util.List;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -21,19 +22,20 @@ import javax.persistence.Table;
  */
 
 @Entity
-@Table(name="STUDY_CCA")
-public class StudyCCA { 
+@Table(name="STUDY_SCC")
+public class StudySCC { 
 
     @Id
-    @GeneratedValue(generator="STUDY_CCA_SEQ",strategy=GenerationType.SEQUENCE)
-    @SequenceGenerator(name="STUDY_CCA_SEQ",sequenceName="STUDY_CCA_SEQ",allocationSize=1)
+    @GeneratedValue(generator="STUDY_SCC_SEQ",strategy=GenerationType.SEQUENCE)
+    @SequenceGenerator(name="STUDY_SCC_SEQ",sequenceName="STUDY_SCC_SEQ",allocationSize=1)
     private Integer id;
 
+    @Column(columnDefinition="VARCHAR(MAX)")
     @Basic
     private String params;
 
-    @OneToMany(cascade={CascadeType.ALL},fetch = FetchType.LAZY,targetEntity = StudyCCATrio.class,mappedBy = "cca")
-    private List<StudyCCATrio> trios = new java.util.ArrayList<>();
+    @OneToMany(cascade={CascadeType.ALL},fetch = FetchType.LAZY,targetEntity = StudySCCPair.class,mappedBy = "ssc")
+    private List<StudySCCPair> pairs = new java.util.ArrayList<>();
 
 
     public Integer getId() {
@@ -52,12 +54,12 @@ public class StudyCCA {
         this.params = params;
     }
 
-    public List<StudyCCATrio> getTrios() {
-        return this.trios;
+    public List<StudySCCPair> getPairs() {
+        return this.pairs;
     }
 
-    public void setTrios(List<StudyCCATrio> trios) {
-        this.trios = trios;
+    public void setPairs(List<StudySCCPair> pairs) {
+        this.pairs = pairs;
     }
 
 

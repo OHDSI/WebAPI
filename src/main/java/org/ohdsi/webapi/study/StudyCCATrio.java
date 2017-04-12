@@ -4,11 +4,15 @@
 
 package org.ohdsi.webapi.study;
 
+import java.util.List;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -17,9 +21,9 @@ import javax.persistence.Table;
  */
 
 @Entity
-@Table(name="STUDY_CCA_PAIR")
-@IdClass(StudyCCAPairPK.class)
-public class StudyCCAPair { 
+@Table(name="STUDY_CCA_TRIO")
+@IdClass(StudyCCATrioPK.class)
+public class StudyCCATrio { 
 
     @Id@OneToOne(targetEntity = StudyCohort.class)
     @JoinColumn(name="TARGET_ID",referencedColumnName="ID")
@@ -34,7 +38,12 @@ public class StudyCCAPair {
     private StudyCohort outcome;
 
     @Id@ManyToOne(targetEntity = StudyCCA.class)
+    @JoinColumn(name="CCA_ID",referencedColumnName="ID")
     private StudyCCA cca;
+
+    @OneToMany(fetch = FetchType.LAZY,targetEntity = StudyCohort.class)
+    @JoinTable(name="STUDY_CCA_NEG_CONTROL_XREF",joinColumns={@JoinColumn(name="TARGET_ID",referencedColumnName="TARGET_ID"),@JoinColumn(name="COMPARATOR_ID",referencedColumnName="COMPARATOR_ID"),@JoinColumn(name="OUTCOME_ID",referencedColumnName="OUTCOME_ID"),@JoinColumn(name="CCA_ID",referencedColumnName="CCA_ID")},inverseJoinColumns={@JoinColumn(name="CONTROL_ID",referencedColumnName="ID")})
+    private List<StudyCohort> negativeControls = new java.util.ArrayList<>();
 
 
     public StudyCohort getTarget() {
@@ -67,6 +76,14 @@ public class StudyCCAPair {
 
     public void setCca(StudyCCA cca) {
         this.cca = cca;
+    }
+
+    public List<StudyCohort> getNegativeControls() {
+        return this.negativeControls;
+    }
+
+    public void setNegativeControls(List<StudyCohort> negativeControls) {
+        this.negativeControls = negativeControls;
     }
 
 

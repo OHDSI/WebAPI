@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<jpa:entity-mappings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:java="http://jcp.org/en/jsr/detail?id=270" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:jpa="http://java.sun.com/xml/ns/persistence/orm" pkg="org.ohdsi.webapi" v="3.6" rws="_14902889289462" Pws="_149088421645426" cws="_149088421645426" sm="false" xs="false" id="_14902889289461" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm orm_2_1.xsd">
-    <jpa:entity lbl-ref="_14902891667545" xre="false" compositePrimaryKeyClass="StudyPK" abs="false" class="Study" v="true" pkg="study" m="true" rootElement="_14902889289461" id="_1490289062980">
+<jpa:entity-mappings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:java="http://jcp.org/en/jsr/detail?id=270" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:jpa="http://java.sun.com/xml/ns/persistence/orm" pkg="org.ohdsi.webapi" v="3.6" rws="_14902889289462" Pws="_14902889289462" cws="_14902889289462" sm="false" xs="false" id="_14902889289461" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm orm_2_1.xsd">
+    <jpa:entity lbl-ref="_14902891667545" xre="false" compositePrimaryKeyClass="StudyPK" abs="false" class="Study" v="true" pkg="study" m="false" rootElement="_14902889289461" id="_1490289062980">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>
@@ -33,6 +33,13 @@
                     <jpa:inverse-join-column name="CCA_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
                 </jpa:join-table>
             </jpa:one-to-many>
+            <jpa:one-to-many orp="false" own="true" collection-type="java.util.List" connected-entity-id="_1491965776776" fetch="LAZY" v="true" name="sccList" dv="new java.util.ArrayList&lt;&gt;()" id="_14919658589172462">
+                <jpa:bv/>
+                <jpa:join-table name="STUDY_SCC_XREF">
+                    <jpa:join-column name="STUDY_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+                    <jpa:inverse-join-column name="SCC_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+                </jpa:join-table>
+            </jpa:one-to-many>
             <jpa:one-to-many orp="false" own="true" collection-type="java.util.List" connected-entity-id="_1490291803505" fetch="LAZY" v="true" name="cohortList" dv="new java.util.ArrayList&lt;StudyCohort&gt;()" id="_1490298926282107">
                 <jpa:bv/>
                 <jpa:join-table name="STUDY_COHORT_XREF">
@@ -61,7 +68,7 @@
         <jpa:el/>
         <jpa:table name="STUDY"/>
     </jpa:entity>
-    <jpa:entity lbl-ref="_149029125456742" xre="false" compositePrimaryKeyClass="StudyIRPK" abs="false" class="StudyIR" v="true" pkg="study" m="false" rootElement="_14902889289461" id="_1490291254567">
+    <jpa:entity lbl-ref="_149029125456742" xre="false" compositePrimaryKeyClass="StudyIRPK" abs="false" class="StudyIR" v="true" pkg="study" m="true" rootElement="_14902889289461" id="_1490291254567">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>
@@ -161,7 +168,7 @@
         <jpa:el/>
         <jpa:table name="STUDY_COHORT"/>
     </jpa:entity>
-    <jpa:entity lbl-ref="_1490297306096370" xre="false" compositePrimaryKeyClass="StudySourcePK" abs="false" class="StudySource" v="true" pkg="study" m="false" rootElement="_14902889289461" id="_1490297306096">
+    <jpa:entity lbl-ref="_1490297306096370" xre="false" compositePrimaryKeyClass="StudySourcePK" abs="false" class="StudySource" v="true" pkg="study" m="true" rootElement="_14902889289461" id="_1490297306096">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>
@@ -241,7 +248,7 @@
         <jpa:el/>
         <jpa:table name="STUDY_SOURCE"/>
     </jpa:entity>
-    <jpa:entity lbl-ref="_149029878107256" xre="false" compositePrimaryKeyClass="StudyCCAPK" abs="false" class="StudyCCA" v="true" pkg="study" m="true" rootElement="_14902889289461" id="_1490298781069">
+    <jpa:entity lbl-ref="_149029878107256" xre="false" compositePrimaryKeyClass="StudyCCAPK" abs="false" class="StudyCCA" v="true" pkg="study" m="false" rootElement="_14902889289461" id="_1490298781069">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>
@@ -250,7 +257,7 @@
             <jpa:basic attribute-type="String" v="true" name="params" id="_14906295396353973">
                 <jpa:bv/>
             </jpa:basic>
-            <jpa:one-to-many orp="false" collection-type="java.util.List" connected-entity-id="_1490300306224" connected-attribute-id="_14908456069981705" fetch="LAZY" v="true" name="pairList" dv="new java.util.ArrayList&lt;&gt;()" id="_14908456069991706">
+            <jpa:one-to-many orp="false" collection-type="java.util.List" connected-entity-id="_1490300306224" connected-attribute-id="_14908456069981705" fetch="LAZY" v="true" name="trios" dv="new java.util.ArrayList&lt;&gt;()" id="_14908456069991706">
                 <jpa:bv/>
                 <jpa:cascade>
                     <jpa:cascade-all/>
@@ -271,7 +278,7 @@
         <jpa:el/>
         <jpa:table name="STUDY_CCA"/>
     </jpa:entity>
-    <jpa:entity xre="false" compositePrimaryKeyType="IDCLASS" compositePrimaryKeyClass="StudyCCAPairPK" abs="false" class="StudyCCAPair" v="true" pkg="study" m="false" rootElement="_14902889289461" id="_1490300306224">
+    <jpa:entity xre="false" compositePrimaryKeyType="IDCLASS" compositePrimaryKeyClass="StudyCCATrioPK" abs="false" class="StudyCCATrio" v="true" pkg="study" m="false" rootElement="_14902889289461" id="_1490300306224">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>
@@ -279,7 +286,18 @@
         <jpa:attributes>
             <jpa:many-to-one optional="true" primaryKey="true" connected-entity-id="_1490298781069" connected-attribute-id="_14908456069991706" v="true" name="cca" id="_14908456069981705">
                 <jpa:bv/>
+                <jpa:join-column name="CCA_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
             </jpa:many-to-one>
+            <jpa:one-to-many orp="false" own="true" collection-type="java.util.List" connected-entity-id="_1490291803505" fetch="LAZY" v="true" name="negativeControls" dv="new java.util.ArrayList&lt;&gt;()" id="_14919640113321383">
+                <jpa:bv/>
+                <jpa:join-table name="STUDY_CCA_NEG_CONTROL_XREF">
+                    <jpa:join-column name="TARGET_ID" rc="TARGET_ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+                    <jpa:join-column name="COMPARATOR_ID" rc="COMPARATOR_ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+                    <jpa:join-column name="OUTCOME_ID" rc="OUTCOME_ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+                    <jpa:join-column name="CCA_ID" rc="CCA_ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+                    <jpa:inverse-join-column name="CONTROL_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+                </jpa:join-table>
+            </jpa:one-to-many>
             <jpa:one-to-one own="true" orp="false" optional="true" primaryKey="true" connected-entity-id="_1490291803505" v="true" name="target" id="_1490300412175339">
                 <jpa:bv/>
                 <jpa:join-column name="TARGET_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
@@ -293,16 +311,16 @@
                 <jpa:join-column name="OUTCOME_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
             </jpa:one-to-one>
         </jpa:attributes>
-        <jpa:nq e="false" name="StudyCCAPair.findAll">
-            <jpa:query>Select e from StudyCCAPair e</jpa:query>
+        <jpa:nq e="false" name="StudyCCATrio.findAll">
+            <jpa:query>Select e from StudyCCATrio e</jpa:query>
         </jpa:nq>
-        <jpa:nq e="false" name="StudyCCAPair.findByTarget">
-            <jpa:query>Select s from StudyCCAPair s where s.target=:target</jpa:query>
+        <jpa:nq e="false" name="StudyCCATrio.findByTarget">
+            <jpa:query>Select s from StudyCCATrio s where s.target=:target</jpa:query>
         </jpa:nq>
         <jpa:el/>
-        <jpa:table name="STUDY_CCA_PAIR"/>
+        <jpa:table name="STUDY_CCA_TRIO"/>
     </jpa:entity>
-    <jpa:entity lbl-ref="_1490303663652781" xre="false" compositePrimaryKeyClass="CohortSetPK" abs="false" class="CohortSet" v="true" pkg="study" m="false" rootElement="_14902889289461" id="_1490303663642">
+    <jpa:entity lbl-ref="_1490303663652781" xre="false" compositePrimaryKeyClass="CohortSetPK" abs="false" class="CohortSet" v="true" pkg="study" m="true" rootElement="_14902889289461" id="_1490303663642">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>
@@ -339,7 +357,7 @@
         <jpa:el/>
         <jpa:table name="STUDY_COHORTSET"/>
     </jpa:entity>
-    <jpa:entity name="StudyReport" lbl-ref="_149088425409255" xre="false" compositePrimaryKeyClass="ReportPK" abs="false" class="Report" v="true" pkg="study.report" m="false" rootElement="_14902889289461" id="_1490884254082">
+    <jpa:entity name="StudyReport" lbl-ref="_149088425409255" xre="false" compositePrimaryKeyClass="ReportPK" abs="false" class="Report" v="true" pkg="study.report" m="true" rootElement="_14902889289461" id="_1490884254082">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>
@@ -441,6 +459,71 @@
         <jpa:el/>
         <jpa:table name="REPORT"/>
     </jpa:entity>
+    <jpa:entity lbl-ref="_14919657018752454" xre="false" compositePrimaryKeyType="D" compositePrimaryKeyClass="StudySCCPairPK" abs="false" class="StudySCCPair" v="true" pkg="study" m="false" rootElement="_14902889289461" id="_1491965701625">
+        <jpa:ts e="true"/>
+        <jpa:hc e="true"/>
+        <jpa:eq e="true"/>
+        <jpa:ath>Chris Knoll &lt;cknoll@ohdsi.org&gt;</jpa:ath>
+        <jpa:attributes>
+            <jpa:many-to-one optional="true" primaryKey="true" connected-entity-id="_1491965776776" connected-attribute-id="_14919660043182468" v="true" name="ssc" id="_14919660043182467">
+                <jpa:bv/>
+                <jpa:join-column name="SCC_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+            </jpa:many-to-one>
+            <jpa:one-to-many orp="false" own="true" collection-type="java.util.List" connected-entity-id="_1490291803505" fetch="LAZY" v="true" name="negativeControls" dv="new java.util.ArrayList&lt;&gt;()" id="_14919662961172825">
+                <jpa:bv/>
+                <jpa:join-table name="STUDY_SCC_NEG_CONTROL_XREF">
+                    <jpa:join-column name="TARGET_ID" rc="TARGET_ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+                    <jpa:join-column name="OUTCOME_ID" rc="OUTCOME_ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+                    <jpa:join-column name="SCC_ID" rc="SCC_ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+                    <jpa:inverse-join-column name="CONTROL_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+                </jpa:join-table>
+            </jpa:one-to-many>
+            <jpa:one-to-one own="true" orp="false" optional="true" primaryKey="true" connected-entity-id="_1490291803505" v="true" name="target" id="_14919657332252456">
+                <jpa:bv/>
+                <jpa:join-column name="TARGET_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+            </jpa:one-to-one>
+            <jpa:one-to-one own="true" orp="false" optional="true" primaryKey="true" connected-entity-id="_1490291803505" v="true" name="outcome" id="_14919657467762457">
+                <jpa:bv/>
+                <jpa:join-column name="OUTCOME_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
+            </jpa:one-to-one>
+        </jpa:attributes>
+        <jpa:nq e="false" name="StudySCCPair.findAll">
+            <jpa:query>Select e from StudySCCPair e</jpa:query>
+        </jpa:nq>
+        <jpa:el/>
+        <jpa:table name="STUDY_SCC_PAIR"/>
+    </jpa:entity>
+    <jpa:entity lbl-ref="_14919657771462458" xre="false" compositePrimaryKeyClass="StudySCCPK" abs="false" class="StudySCC" v="true" pkg="study" m="false" rootElement="_14902889289461" id="_1491965776776">
+        <jpa:ts e="true"/>
+        <jpa:hc e="true"/>
+        <jpa:eq e="true"/>
+        <jpa:ath>Chris Knoll &lt;cknoll@ohdsi.org&gt;</jpa:ath>
+        <jpa:attributes>
+            <jpa:basic attribute-type="String" v="true" name="params" id="_14919657981362460">
+                <jpa:bv/>
+                <jpa:column unique="false" nullable="true" insertable="true" updatable="true" column-definition="VARCHAR(MAX)"/>
+            </jpa:basic>
+            <jpa:one-to-many orp="false" collection-type="java.util.List" connected-entity-id="_1491965701625" connected-attribute-id="_14919660043182467" fetch="LAZY" v="true" name="pairs" dv="new java.util.ArrayList&lt;&gt;()" id="_14919660043182468">
+                <jpa:bv/>
+                <jpa:cascade>
+                    <jpa:cascade-all/>
+                </jpa:cascade>
+            </jpa:one-to-many>
+            <jpa:id attribute-type="Integer" v="true" name="id" id="_14919657771462458">
+                <jpa:bv/>
+                <jpa:generated-value strategy="SEQUENCE" generator="STUDY_SCC_SEQ"/>
+                <jpa:sequence-generator name="STUDY_SCC_SEQ" sequence-name="STUDY_SCC_SEQ" catalog="" schema="" initial-value="1" allocation-size="1"/>
+            </jpa:id>
+        </jpa:attributes>
+        <jpa:nq e="false" name="StudySCC.findAll">
+            <jpa:query>Select e from StudySCC e</jpa:query>
+        </jpa:nq>
+        <jpa:nq e="false" name="StudySCC.findByParams">
+            <jpa:query>Select s from StudySCC s where s.params=:params</jpa:query>
+        </jpa:nq>
+        <jpa:el/>
+        <jpa:table name="STUDY_SCC"/>
+    </jpa:entity>
     <jpa:embeddable abs="false" class="StudyConfig" v="true" pkg="study" m="true" rootElement="_14902889289461" id="_1490299355659">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
@@ -473,7 +556,7 @@
             </jpa:basic>
         </jpa:attributes>
     </jpa:embeddable>
-    <jpa:embeddable abs="false" class="CohortRelationship" v="true" pkg="study" m="false" rootElement="_14902889289461" id="_1490852395927">
+    <jpa:embeddable abs="false" class="CohortRelationship" v="true" pkg="study" m="true" rootElement="_14902889289461" id="_1490852395927">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>
@@ -489,7 +572,7 @@
             </jpa:one-to-one>
         </jpa:attributes>
     </jpa:embeddable>
-    <jpa:embeddable abs="false" class="ReportCovariate" v="true" pkg="study.report" m="false" rootElement="_14902889289461" id="_1490884543436">
+    <jpa:embeddable abs="false" class="ReportCovariate" v="true" pkg="study.report" m="true" rootElement="_14902889289461" id="_1490884543436">
         <jpa:ts e="true"/>
         <jpa:hc e="true">
             <jpa:a>_149088456963776</jpa:a>
@@ -536,7 +619,7 @@
             </jpa:basic>
         </jpa:attributes>
     </jpa:embeddable>
-    <jpa:embeddable abs="false" class="ReportCohortPair" v="true" pkg="study.report" m="false" rootElement="_14902889289461" id="_1490897741195">
+    <jpa:embeddable abs="false" class="ReportCohortPair" v="true" pkg="study.report" m="true" rootElement="_14902889289461" id="_1490897741195">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>
@@ -587,26 +670,28 @@
     </jpa:c>
     <jpa:wsl>
         <jpa:ws n="Main" id="_14902889289462">
-            <i ref="_1490897969321" x="1050" y="614"/>
-            <i ref="_1490289062980" x="383" y="272"/>
-            <i ref="_1490291254567" x="536" y="496"/>
-            <i ref="_1490297306096" x="321" y="496"/>
-            <i ref="_1490300306224" x="718" y="71"/>
-            <i ref="_1490884254082" x="1293" y="341"/>
-            <i ref="_1490884543436" x="1526" y="296"/>
-            <i ref="_1490897741195" x="1051" y="379"/>
-            <i ref="_1490298781069" x="422" y="71"/>
-            <i ref="_1490299355659" x="114" y="208"/>
-            <i ref="_1490852395927" x="937" y="95"/>
-            <i ref="_1490291803505" x="688" y="208"/>
-            <i ref="_1490303663642" x="854" y="496"/>
-            <i ref="_1490303852647" x="490" y="208"/>
-            <i ref="_1490884917153" x="1740" y="355"/>
+            <i ref="_1490897969321" x="797" y="175"/>
+            <i ref="_1490289062980" x="304" y="787"/>
+            <i ref="_1490291254567" x="797" y="419"/>
+            <i ref="_1490297306096" x="32" y="993"/>
+            <i ref="_1490300306224" x="936" y="787"/>
+            <i ref="_1490884254082" x="304" y="175"/>
+            <i ref="_1491965701625" x="295" y="1231"/>
+            <i ref="_1490884543436" x="32" y="32"/>
+            <i ref="_1490897741195" x="534" y="331"/>
+            <i ref="_1490298781069" x="681" y="826"/>
+            <i ref="_1491965776776" x="60" y="1083"/>
+            <i ref="_1490299355659" x="534" y="993"/>
+            <i ref="_1490852395927" x="32" y="699"/>
+            <i ref="_1490291803505" x="304" y="419"/>
+            <i ref="_1490303663642" x="32" y="331"/>
+            <i ref="_1490303852647" x="534" y="699"/>
+            <i ref="_1490884917153" x="534" y="32"/>
         </jpa:ws>
         <jpa:ws n="Report" id="_149088421645426">
             <i ref="_1490897741195" x="798" y="154"/>
             <i ref="_1490897969321" x="32" y="532"/>
-            <i ref="_1490291803505" x="521" y="32"/>
+            <i ref="_1490291803505" x="521" y="23"/>
             <i ref="_1490289062980" x="56" y="70"/>
             <i ref="_1490884917153" x="314" y="154"/>
             <i ref="_1490297306096" x="17" y="233"/>

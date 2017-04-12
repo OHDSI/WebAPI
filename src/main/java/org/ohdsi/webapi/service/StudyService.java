@@ -82,6 +82,7 @@ public class StudyService extends AbstractDaoService  {
     public List<CohortDetail> cohorts;
     public List<StudyIRDTO> irAnalysisList;
     public List<StudyCCADTO> ccaList;
+    public List<StudySCCDTO> sccList;
     public List<StudySourceDTO> sources;
     
     public StudyDTO () {}
@@ -99,23 +100,37 @@ public class StudyService extends AbstractDaoService  {
     
   }
   
+  public static class SCCPair {
+    public Integer target;
+    public Integer outcome;
+    public List<Integer> negativeControls;
+  }
+  public static class StudySCCDTO {
+    public Integer id;
+    public String params;
+    public List<SCCPair> pairs;
+    
+    public StudySCCDTO() {}
+  }
+  
   public static class CCATrio {
     public Integer target;
     public Integer comaprator;
     public Integer outcome;
+    public List<Integer> negativeControls;
     
     public CCATrio () {}
     
   }
-          
+
   public static class StudyCCADTO {
     public Integer id;
     public String params;
-    public List<CCATrio> cohortTrio;
+    public List<CCATrio> trios;
     
     public StudyCCADTO() {}
   }
-  
+
   public static class StudySourceDTO {
    public int sourceId;
    public String name;
@@ -268,6 +283,24 @@ public class StudyService extends AbstractDaoService  {
       return ira;
     }).collect(Collectors.toList());
     
+    // Map SCCs
+    study.sccList = studyEntity.getSccList().stream().map(scc -> {
+      StudySCCDTO sccDTO = new StudySCCDTO();
+      
+      sccDTO.id = scc.getId();
+      sccDTO.params = scc.getParams();
+
+      sccDTO.pairs = scc.getPairs().stream().map(pair -> {
+        SCCPair pairDTO = new SCCPair();
+        
+        pairDTO.target = pair.getTarget().getId();
+        pairDTO.outcome = pair.getOutcome().getId();
+        pairDTO.negativeControls = pair.getNegativeControls().stream().map(StudyCohort::getId).collect(Collectors.toList());
+        return pairDTO;
+      }).collect(Collectors.toList());
+      return sccDTO;
+    }).collect(Collectors.toList());
+    
     // Map CCAs
     study.ccaList = studyEntity.getCcaList().stream().map(cca -> {
       StudyCCADTO ccaDTO = new StudyCCADTO();
@@ -275,12 +308,13 @@ public class StudyService extends AbstractDaoService  {
       ccaDTO.id = cca.getId();
       ccaDTO.params = cca.getParams();
 
-      ccaDTO.cohortTrio = cca.getPairList().stream().map(trio -> {
+      ccaDTO.trios = cca.getTrios().stream().map(trio -> {
         CCATrio trioDTO = new CCATrio();
         
         trioDTO.target = trio.getTarget().getId();
         trioDTO.comaprator = trio.getComparator().getId();
         trioDTO.outcome = trio.getOutcome().getId();
+        trioDTO.negativeControls = trio.getNegativeControls().stream().map(StudyCohort::getId).collect(Collectors.toList());
         return trioDTO;
       }).collect(Collectors.toList());
       return ccaDTO;
@@ -295,7 +329,6 @@ public class StudyService extends AbstractDaoService  {
     study.sources = studyEntity.getSourceList().stream().map (s -> {
       return new StudySourceDTO(s.getId(), s.getName());
     }).collect(Collectors.toList());
-    
     
     return study;
   }

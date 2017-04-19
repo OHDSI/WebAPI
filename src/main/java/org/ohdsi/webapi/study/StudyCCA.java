@@ -35,7 +35,6 @@ public class StudyCCA {
     @OneToMany(cascade={CascadeType.ALL},fetch = FetchType.LAZY,targetEntity = StudyCCATrio.class,mappedBy = "cca")
     private List<StudyCCATrio> trios = new java.util.ArrayList<>();
 
-
     public Integer getId() {
         return this.id;
     }
@@ -44,6 +43,7 @@ public class StudyCCA {
         this.id = id;
     }
 
+
     public String getParams() {
         return this.params;
     }
@@ -51,6 +51,7 @@ public class StudyCCA {
     public void setParams(String params) {
         this.params = params;
     }
+
 
     public List<StudyCCATrio> getTrios() {
         return this.trios;

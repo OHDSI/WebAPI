@@ -25,7 +25,6 @@ public class CohortRelationship {
     @JoinColumn(name="COHORT_2_ID",referencedColumnName="ID")
     private StudyCohort target;
 
-
     public RelationshipType getRelationshipType() {
         return this.relationshipType;
     }
@@ -33,6 +32,7 @@ public class CohortRelationship {
     public void setRelationshipType(RelationshipType relationshipType) {
         this.relationshipType = relationshipType;
     }
+
 
     public StudyCohort getTarget() {
         return this.target;

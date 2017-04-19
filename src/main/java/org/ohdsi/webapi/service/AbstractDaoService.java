@@ -28,32 +28,64 @@ import org.springframework.transaction.support.TransactionTemplate;
 public abstract class AbstractDaoService {
 
   protected final Log log = LogFactory.getLog(getClass());
-
+	
   @Value("${datasource.ohdsi.schema}")
   private String ohdsiSchema;
+  public String getOhdsiSchema() {
+      return ohdsiSchema;
+  }
 
   @Value("${datasource.dialect}")
   private String dialect;
+  public String getDialect() {
+    return dialect;
+  }
 
   @Value("${datasource.dialect.source}")
   private String sourceDialect;
+  public String getSourceDialect() {
+    return sourceDialect;
+  }
 
+  @Value("${studyresults.datasource.dialect}")
+  private String studyResultsDialect;
+	public String getStudyResultsDialect() {
+		return studyResultsDialect;
+	}
+	
+  @Value("${studyresults.datasource.schema}")
+  private String studyResultsSchema;
+	public String getStudyResultsSchema() {
+		return studyResultsSchema;
+	}
+
+	
   @Autowired
   private JdbcTemplate jdbcTemplate;
+  public JdbcTemplate getJdbcTemplate() {
+    return jdbcTemplate;
+  }
 
+	@Autowired
+	private JdbcTemplate studyResultsJdbcTemplate;
+	public JdbcTemplate getStudyResultsJdbcTemplate() {
+		return studyResultsJdbcTemplate;
+	}
+	
   @Autowired
   private SourceRepository sourceRepository;
+  public SourceRepository getSourceRepository() {
+    return sourceRepository;
+  }
 
   @Autowired 
-  ConceptSetItemRepository conceptSetItemRepository;
-
+  private ConceptSetItemRepository conceptSetItemRepository;
   public ConceptSetItemRepository getConceptSetItemRepository() {
     return conceptSetItemRepository;
   }
   
   @Autowired 
   private ConceptSetRepository conceptSetRepository;
-  
   public ConceptSetRepository getConceptSetRepository() {
     return conceptSetRepository;
   }
@@ -72,55 +104,22 @@ public abstract class AbstractDaoService {
   
   @Autowired
   private TransactionTemplate transactionTemplate;
+	public TransactionTemplate getTransactionTemplate() {
+    return transactionTemplate;
+  }
 
   @Autowired
   private TransactionTemplate transactionTemplateRequiresNew;
-
-  public SourceRepository getSourceRepository() {
-    return sourceRepository;
-  }
-  
-  /**
-   * @return the dialect
-   */
-  public String getDialect() {
-    return dialect;
+  public TransactionTemplate getTransactionTemplateRequiresNew() {
+    return transactionTemplateRequiresNew;
   }
 
-  /**
-   * @param dialect the dialect to set
-   */
-  public void setDialect(String dialect) {
-    this.dialect = dialect;
-  }
-
-  /**
-   * @return the jdbcTemplate
-   */
-  public JdbcTemplate getJdbcTemplate() {
-    return jdbcTemplate;
-  }
-
-  public JdbcTemplate getSourceJdbcTemplate(Source source) {
+	public JdbcTemplate getSourceJdbcTemplate(Source source) {
     DriverManagerDataSource dataSource = new DriverManagerDataSource(source.getSourceConnection());
     JdbcTemplate template = new JdbcTemplate(dataSource);
     return template;
   }
-
-  /**
-   * @return the sourceDialect
-   */
-  public String getSourceDialect() {
-    return sourceDialect;
-  }
-
-  /**
-   * @param sourceDialect the sourceDialect to set
-   */
-  public void setSourceDialect(String sourceDialect) {
-    this.sourceDialect = sourceDialect;
-  }
-
+	
   protected List<Map<String, String>> genericResultSetLoader(String sql, Source source) {
     List<Map<String, String>> results = null;
     try {
@@ -147,33 +146,5 @@ public abstract class AbstractDaoService {
     }
     return results;
   }
-
-  /**
-   * @return the transactionTemplate
-   */
-  public TransactionTemplate getTransactionTemplate() {
-    return transactionTemplate;
-  }
-
-  /**
-   * @return the transactionTemplateRequiresNew
-   */
-  public TransactionTemplate getTransactionTemplateRequiresNew() {
-    return transactionTemplateRequiresNew;
-  }
-
-  /**
-   * @param transactionTemplateRequiresNew the transactionTemplateRequiresNew to
-   * set
-   */
-  public void setTransactionTemplateRequiresNew(TransactionTemplate transactionTemplateRequiresNew) {
-    this.transactionTemplateRequiresNew = transactionTemplateRequiresNew;
-  }
   
-  /**
-   * @return the ohdsiSchema
-   */
-  public String getOhdsiSchema() {
-      return ohdsiSchema;
-  }
 }

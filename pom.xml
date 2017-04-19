@@ -15,7 +15,6 @@
     <!-- Spring Boot manages spring.version as well -->
     <spring.boot.version>1.5.2.RELEASE</spring.boot.version>
     <spring.batch.version>3.0.7.RELEASE</spring.batch.version>
-    <flyway.version>3.1</flyway.version>
     <waffle.version>1.7.3</waffle.version>
     <start-class>org.ohdsi.webapi.WebApi</start-class>
     <skipTests>true</skipTests>
@@ -40,8 +39,15 @@
     <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
     <flyway.validateOnMigrate>false</flyway.validateOnMigrate>
     <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>		
+		<!-- Study results datasource -->
+    <studyresults.datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</studyresults.datasource.driverClassName>
+    <studyresults.datasource.url>jdbc:sqlserver://serverName</studyresults.datasource.url>
+    <studyresults.datasource.username>user</studyresults.datasource.username>
+    <studyresults.datasource.password>password</studyresults.datasource.password>
+		<studyresults.datasource.schema>dbo</studyresults.datasource.schema>
+    <studyresults.datasource.dialect>sql server</studyresults.datasource.dialect>
 
-    <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
+		<spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
     <spring.batch.repository.isolationLevelForCreate>ISOLATION_READ_COMMITTED</spring.batch.repository.isolationLevelForCreate>
     <spring.profiles.active>default</spring.profiles.active>
 
@@ -316,7 +322,6 @@
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
-      <version>3.1.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -342,12 +347,10 @@
     <dependency>
       <groupId>org.flywaydb</groupId>
       <artifactId>flyway-core</artifactId>
-      <version>${flyway.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
-      <version>4.3.6</version>
     </dependency>
     <dependency>
       <groupId>commons-httpclient</groupId>
@@ -357,7 +360,6 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <version>9.4-1201-jdbc41</version>
       <type>jar</type>
     </dependency>
     <dependency>
@@ -426,6 +428,29 @@
       <groupId>org.pac4j</groupId>
       <artifactId>pac4j-oauth</artifactId>
       <version>1.9.2</version>
+    </dependency>
+    
+    <!-- Jasper Report Libraries -->
+    <dependency>
+      <groupId>net.sf.jasperreports</groupId>
+      <artifactId>jasperreports</artifactId>
+      <version>6.4.0</version>
+      <type>jar</type>
+    </dependency>
+    <dependency>
+      <groupId>net.sourceforge.dynamicreports</groupId>
+      <artifactId>dynamicreports-core</artifactId>
+      <version>5.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>net.sourceforge.dynamicreports</groupId>
+      <artifactId>dynamicreports-adhoc</artifactId>
+      <version>5.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>net.sourceforge.dynamicreports</groupId>
+      <artifactId>dynamicreports-googlecharts</artifactId>
+      <version>5.0.0</version>
     </dependency>
   </dependencies>
   <profiles>

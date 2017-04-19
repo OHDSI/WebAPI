@@ -8,12 +8,18 @@
         <jpa:attributes>
             <jpa:basic optional="false" attribute-type="String" v="true" name="name" id="_14902891667545">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
             </jpa:basic>
             <jpa:basic attribute-type="String" v="true" name="description" id="_14902891853526">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
             </jpa:basic>
             <jpa:one-to-many orp="false" own="true" collection-type="java.util.List" connected-entity-id="_1490297306096" fetch="LAZY" v="true" name="sourceList" dv="new java.util.ArrayList&lt;StudySource&gt;()" id="_1490297345658372">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:join-table name="STUDY_SOURCE_XREF">
                     <jpa:join-column name="STUDY_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
                     <jpa:inverse-join-column name="SOURCE_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
@@ -21,6 +27,8 @@
             </jpa:one-to-many>
             <jpa:one-to-many orp="false" own="true" collection-type="java.util.List" connected-entity-id="_1490291254567" fetch="LAZY" v="true" name="irAnalysisList" dv="new java.util.ArrayList&lt;StudyIR&gt;()" id="_149029127770144">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:join-table name="STUDY_IR_XREF">
                     <jpa:join-column name="STUDY_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true"/>
                     <jpa:inverse-join-column name="IR_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true"/>
@@ -28,6 +36,8 @@
             </jpa:one-to-many>
             <jpa:one-to-many orp="false" own="true" collection-type="java.util.List" connected-entity-id="_1490298781069" fetch="LAZY" v="true" name="ccaList" dv="new java.util.ArrayList&lt;StudyCCA&gt;()" id="_149029879703158">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:join-table name="STUDY_CCA_XREF">
                     <jpa:join-column name="STUDY_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
                     <jpa:inverse-join-column name="CCA_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
@@ -35,6 +45,8 @@
             </jpa:one-to-many>
             <jpa:one-to-many orp="false" own="true" collection-type="java.util.List" connected-entity-id="_1491965776776" fetch="LAZY" v="true" name="sccList" dv="new java.util.ArrayList&lt;&gt;()" id="_14919658589172462">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:join-table name="STUDY_SCC_XREF">
                     <jpa:join-column name="STUDY_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
                     <jpa:inverse-join-column name="SCC_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
@@ -42,6 +54,8 @@
             </jpa:one-to-many>
             <jpa:one-to-many orp="false" own="true" collection-type="java.util.List" connected-entity-id="_1490291803505" fetch="LAZY" v="true" name="cohortList" dv="new java.util.ArrayList&lt;StudyCohort&gt;()" id="_1490298926282107">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:join-table name="STUDY_COHORT_XREF">
                     <jpa:join-column name="STUDY_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
                     <jpa:inverse-join-column name="COHORT_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
@@ -49,9 +63,13 @@
             </jpa:one-to-many>
             <jpa:embedded connected-class-id="_1490299355659" v="true" name="studyConfig" id="_1490299381706163">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
             </jpa:embedded>
             <jpa:id attribute-type="Integer" v="true" name="id" ui="true" id="_14902890631103">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:generated-value strategy="SEQUENCE" generator="STUDY_SEQ"/>
                 <jpa:sequence-generator name="STUDY_SEQ" sequence-name="STUDY_SEQ" catalog="" schema="" initial-value="1" allocation-size="1"/>
             </jpa:id>
@@ -76,9 +94,13 @@
         <jpa:attributes>
             <jpa:basic attribute-type="String" v="true" name="params" id="_1490301251721416">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
             </jpa:basic>
             <jpa:one-to-many orp="false" own="true" collection-type="java.util.List" connected-entity-id="_1490291803505" fetch="LAZY" v="true" name="targets" id="_1490296637213338">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:join-table name="STUDY_IR_T">
                     <jpa:join-column name="ANALYSIS_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
                     <jpa:inverse-join-column name="COHORT_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
@@ -86,6 +108,8 @@
             </jpa:one-to-many>
             <jpa:one-to-many orp="false" own="true" collection-type="java.util.List" connected-entity-id="_1490291803505" fetch="LAZY" v="true" name="outcomes" id="_1490296640913339">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:join-table name="STUDY_IR_O">
                     <jpa:join-column name="ANALYSIS_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
                     <jpa:inverse-join-column name="COHORT_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
@@ -93,6 +117,8 @@
             </jpa:one-to-many>
             <jpa:id attribute-type="Integer" v="true" name="id" id="_149029125456742">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:generated-value strategy="SEQUENCE" generator="STUDY_IR_SEQ"/>
                 <jpa:sequence-generator name="STUDY_IR_SEQ" sequence-name="STUDY_IR_SEQ" catalog="" schema="" initial-value="1" allocation-size="1"/>
             </jpa:id>
@@ -114,35 +140,49 @@
         <jpa:attributes>
             <jpa:basic attribute-type="String" v="true" name="name" id="_1490301155203413">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:column unique="false" nullable="true" insertable="true" updatable="true" column-definition="VARCHAR(256)"/>
             </jpa:basic>
             <jpa:basic attribute-type="String" v="true" name="description" id="_1490301197451415">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:column unique="false" nullable="true" insertable="true" updatable="true" column-definition="VARCHAR(2000)"/>
             </jpa:basic>
             <jpa:basic attribute-type="String" v="true" name="abbr" id="_1490301161019414">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:column unique="false" nullable="true" insertable="true" updatable="true" column-definition="VARCHAR(10)"/>
             </jpa:basic>
             <jpa:basic attribute-type="String" v="true" name="expression" id="_149029187093078">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:column unique="false" nullable="true" insertable="true" updatable="true" column-definition="VARCHAR(MAX)" length="255"/>
                 <jpa:lob/>
             </jpa:basic>
             <jpa:element-collection fetch="LAZY" collection-type="java.util.List" connected-class-id="_1490303852647" v="true" name="concepts" id="_1490303916758872">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:collection-table name="STUDY_COHORT_CONCEPT">
                     <jpa:join-column name="STUDY_COHORT_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
                 </jpa:collection-table>
             </jpa:element-collection>
             <jpa:element-collection collection-type="java.util.Set" connected-class-id="_1490852395927" v="true" name="cohortRelationships" dv="new java.util.HashSet&lt;&gt;()" id="_1490852409758277">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:collection-table name="STUDY_COHORT_REL">
                     <jpa:join-column name="COHORT_1_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
                 </jpa:collection-table>
             </jpa:element-collection>
-            <jpa:id attribute-type="Integer" v="true" name="id" id="_149029180350574">
+            <jpa:id attribute-type="Long" v="true" name="id" id="_149029180350574">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:generated-value strategy="SEQUENCE" generator="STUDY_COHORT_SEQ"/>
                 <jpa:sequence-generator name="STUDY_COHORT_SEQ" sequence-name="STUDY_COHORT_SEQ" catalog="" schema="" initial-value="1" allocation-size="1"/>
             </jpa:id>
@@ -168,7 +208,7 @@
         <jpa:el/>
         <jpa:table name="STUDY_COHORT"/>
     </jpa:entity>
-    <jpa:entity lbl-ref="_1490297306096370" xre="false" compositePrimaryKeyClass="StudySourcePK" abs="false" class="StudySource" v="true" pkg="study" m="true" rootElement="_14902889289461" id="_1490297306096">
+    <jpa:entity lbl-ref="_1490297306096370" xre="false" compositePrimaryKeyClass="StudySourcePK" abs="false" class="StudySource" v="true" pkg="study" m="false" rootElement="_14902889289461" id="_1490297306096">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>
@@ -176,42 +216,62 @@
         <jpa:attributes>
             <jpa:basic attribute-type="String" v="true" name="name" id="_14915070724924200">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:column name="SOURCE_NAME" unique="false" nullable="true" insertable="true" updatable="true" column-definition="VARCHAR(100)"/>
             </jpa:basic>
             <jpa:basic attribute-type="String" v="true" name="key" id="_14915072177614201">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:column name="SOURCE_KEY" unique="false" nullable="true" insertable="true" updatable="true" column-definition="VARCHAR(50)"/>
             </jpa:basic>
             <jpa:basic attribute-type="String" v="true" name="groupKey" id="_14915072264264202">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:column name="GROUP_KEY" unique="false" nullable="true" insertable="true" updatable="true" column-definition="VARCHAR(50)"/>
             </jpa:basic>
             <jpa:basic attribute-type="String" v="true" name="versionId" id="_14915072571664203">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:column name="VERSION_ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="INTEGER"/>
             </jpa:basic>
             <jpa:basic attribute-type="String" v="true" name="versionName" id="_14915072662964204">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:column name="VERSION_NAME" unique="false" nullable="true" insertable="true" updatable="true" column-definition="VARCHAR(50)"/>
             </jpa:basic>
             <jpa:basic attribute-type="String" v="true" name="sourceConnection" id="_14915099473874419">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:column name="SOURCE_CONNECTION" unique="false" nullable="true" insertable="true" updatable="true" column-definition="VARCHAR(500)"/>
             </jpa:basic>
             <jpa:basic attribute-type="String" v="true" name="sourceDialect" id="_14915101295984420">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:column name="SOURCE_DIALECT" unique="false" nullable="true" insertable="true" updatable="true" column-definition="VARCHAR(50)"/>
             </jpa:basic>
             <jpa:basic attribute-type="String" v="true" name="resultsSchema" id="_14915088768024275">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:column name="RESULTS_SCHEMA" unique="false" nullable="true" insertable="true" updatable="true" column-definition="VARCHAR(100)"/>
             </jpa:basic>
             <jpa:basic attribute-type="String" v="true" name="cdmSchema" id="_14915089272374276">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:column name="CDM_SCHEMA" unique="false" nullable="true" insertable="true" updatable="true" column-definition="VARCHAR(100)"/>
             </jpa:basic>
             <jpa:id attribute-type="Integer" v="true" name="id" id="_1490297306096370">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:generated-value/>
             </jpa:id>
         </jpa:attributes>
@@ -256,15 +316,21 @@
         <jpa:attributes>
             <jpa:basic attribute-type="String" v="true" name="params" id="_14906295396353973">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
             </jpa:basic>
             <jpa:one-to-many orp="false" collection-type="java.util.List" connected-entity-id="_1490300306224" connected-attribute-id="_14908456069981705" fetch="LAZY" v="true" name="trios" dv="new java.util.ArrayList&lt;&gt;()" id="_14908456069991706">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:cascade>
                     <jpa:cascade-all/>
                 </jpa:cascade>
             </jpa:one-to-many>
             <jpa:id attribute-type="Integer" v="true" name="id" id="_149029878107256">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:generated-value strategy="SEQUENCE" generator="STUDY_CCA_SEQ"/>
                 <jpa:sequence-generator name="STUDY_CCA_SEQ" sequence-name="STUDY_CCA_SEQ" catalog="" schema="" initial-value="1" allocation-size="1"/>
             </jpa:id>
@@ -286,10 +352,14 @@
         <jpa:attributes>
             <jpa:many-to-one optional="true" primaryKey="true" connected-entity-id="_1490298781069" connected-attribute-id="_14908456069991706" v="true" name="cca" id="_14908456069981705">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:join-column name="CCA_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
             </jpa:many-to-one>
             <jpa:one-to-many orp="false" own="true" collection-type="java.util.List" connected-entity-id="_1490291803505" fetch="LAZY" v="true" name="negativeControls" dv="new java.util.ArrayList&lt;&gt;()" id="_14919640113321383">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:join-table name="STUDY_CCA_NEG_CONTROL_XREF">
                     <jpa:join-column name="TARGET_ID" rc="TARGET_ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
                     <jpa:join-column name="COMPARATOR_ID" rc="COMPARATOR_ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
@@ -300,14 +370,20 @@
             </jpa:one-to-many>
             <jpa:one-to-one own="true" orp="false" optional="true" primaryKey="true" connected-entity-id="_1490291803505" v="true" name="target" id="_1490300412175339">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:join-column name="TARGET_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
             </jpa:one-to-one>
             <jpa:one-to-one own="true" orp="false" optional="true" primaryKey="true" connected-entity-id="_1490291803505" v="true" name="comparator" id="_1490300441549341">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:join-column name="COMPARATOR_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
             </jpa:one-to-one>
             <jpa:one-to-one own="true" orp="false" optional="true" primaryKey="true" connected-entity-id="_1490291803505" v="true" name="outcome" id="_1490300426334340">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:join-column name="OUTCOME_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
             </jpa:one-to-one>
         </jpa:attributes>
@@ -328,12 +404,18 @@
         <jpa:attributes>
             <jpa:basic attribute-type="String" v="true" name="name" id="_1490303710125783">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
             </jpa:basic>
             <jpa:basic attribute-type="String" v="true" name="description" id="_1490303714486784">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
             </jpa:basic>
             <jpa:one-to-many orp="false" own="true" collection-type="java.util.List" connected-entity-id="_1490291803505" v="true" name="cohortList" id="_1490303732698785">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:join-table name="STUDY_COHORTSET_XREF">
                     <jpa:join-column name="COHORTSET_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
                     <jpa:inverse-join-column name="COHORT_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
@@ -341,6 +423,8 @@
             </jpa:one-to-many>
             <jpa:id attribute-type="Integer" v="true" name="id" id="_1490303663652781">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:generated-value strategy="SEQUENCE" generator="COHORT_SET_SEQ"/>
                 <jpa:sequence-generator name="COHORT_SET_SEQ" sequence-name="COHORT_SET_SEQ" catalog="" schema="" initial-value="1" allocation-size="1"/>
             </jpa:id>
@@ -365,36 +449,52 @@
         <jpa:attributes>
             <jpa:basic attribute-type="String" v="true" name="name" id="_14914505054012963">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:column name="NAME" unique="false" nullable="true" insertable="true" updatable="true" column-definition="VARCHAR(256)"/>
             </jpa:basic>
             <jpa:basic attribute-type="String" v="true" name="description" id="_14914505261482964">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:column name="DESCRIPTION" unique="false" nullable="true" insertable="true" updatable="true" column-definition="VARCHAR(2000)"/>
             </jpa:basic>
             <jpa:basic attribute-type="String" v="true" name="createdBy" id="_14916058011574421">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:column name="CREATED_BY" unique="false" nullable="true" insertable="true" updatable="true" column-definition="VARCHAR(100)"/>
             </jpa:basic>
             <jpa:basic attribute-type="java.util.Date" v="true" name="createdDate" id="_14916058096864422">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:temporal>DATE</jpa:temporal>
                 <jpa:column name="CREATED_DATE" unique="false" nullable="true" insertable="true" updatable="true" column-definition="DATETIME"/>
             </jpa:basic>
             <jpa:basic attribute-type="String" v="true" name="modifiedBy" id="_14916058163024423">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:column name="MODIFIED_BY" unique="false" nullable="true" insertable="true" updatable="true" column-definition="VARCHAR(100)"/>
             </jpa:basic>
             <jpa:basic attribute-type="java.util.Date" v="true" name="modifiedDate" id="_14916058223444424">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:temporal>DATE</jpa:temporal>
                 <jpa:column name="MODIFIED_DATE" unique="false" nullable="true" insertable="true" updatable="false" column-definition="DATETIME"/>
             </jpa:basic>
             <jpa:basic attribute-type="org.ohdsi.webapi.study.report.ReportStatus" v="true" name="status" id="_149185741648819">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:column name="STATUS" unique="false" nullable="true" insertable="true" updatable="false" column-definition="VARCHAR(20)"/>
             </jpa:basic>
             <jpa:many-to-one optional="true" primaryKey="false" connected-entity-id="_1490289062980" fetch="LAZY" v="true" name="study" id="_1490886694623143">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:join-table name="REPORT_STUDY_XREF">
                     <jpa:join-column name="REPORT_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
                     <jpa:inverse-join-column name="STUDY_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
@@ -402,18 +502,24 @@
             </jpa:many-to-one>
             <jpa:element-collection fetch="LAZY" collection-type="java.util.List" connected-class-id="_1490884917153" v="true" name="content" dv="new java.util.ArrayList&lt;ReportContent&gt;()" id="_149088572458495">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:collection-table name="REPORT_CONTENT">
                     <jpa:join-column name="REPORT_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
                 </jpa:collection-table>
             </jpa:element-collection>
             <jpa:element-collection fetch="LAZY" collection-type="java.util.Set" connected-class-id="_1490884543436" v="true" name="covariates" dv="new java.util.HashSet&lt;ReportCovariate&gt;()" id="_149088455895775">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:collection-table name="REPORT_COVARIATE_XREF">
                     <jpa:join-column name="REPORT_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
                 </jpa:collection-table>
             </jpa:element-collection>
             <jpa:element-collection fetch="LAZY" collection-type="java.util.List" connected-class-id="_1490897969321" v="true" name="sources" dv="new java.util.ArrayList&lt;ReportSource&gt;()" id="_14908980406831535">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:oc n="ORDINAL" nu="true" in="true" up="true" cd=""/>
                 <jpa:collection-table name="REPORT_SOURCE_XREF">
                     <jpa:join-column name="REPORT_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
@@ -421,6 +527,8 @@
             </jpa:element-collection>
             <jpa:element-collection fetch="LAZY" collection-type="java.util.List" connected-class-id="_1490897741195" v="true" name="cohortPairs" dv="new java.util.ArrayList&lt;ReportCohortPair&gt;()" id="_14914928472093651">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:oc n="ORDINAL" nu="true" in="true" up="true" cd=""/>
                 <jpa:collection-table name="REPORT_COHORTPAIR_XREF">
                     <jpa:join-column name="REPORT_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
@@ -428,6 +536,8 @@
             </jpa:element-collection>
             <jpa:id attribute-type="Integer" v="true" name="id" id="_149088425409255">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:generated-value strategy="SEQUENCE" generator="REPORT_SEQ"/>
                 <jpa:sequence-generator name="REPORT_SEQ" sequence-name="REPORT_SEQ" catalog="" schema="" initial-value="1" allocation-size="1"/>
             </jpa:id>
@@ -459,7 +569,7 @@
         <jpa:el/>
         <jpa:table name="REPORT"/>
     </jpa:entity>
-    <jpa:entity lbl-ref="_14919657018752454" xre="false" compositePrimaryKeyType="D" compositePrimaryKeyClass="StudySCCPairPK" abs="false" class="StudySCCPair" v="true" pkg="study" m="false" rootElement="_14902889289461" id="_1491965701625">
+    <jpa:entity xre="false" compositePrimaryKeyType="IDCLASS" compositePrimaryKeyClass="StudySCCPairPK" abs="false" class="StudySCCPair" v="true" pkg="study" m="false" rootElement="_14902889289461" id="_1491965701625">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>
@@ -467,10 +577,14 @@
         <jpa:attributes>
             <jpa:many-to-one optional="true" primaryKey="true" connected-entity-id="_1491965776776" connected-attribute-id="_14919660043182468" v="true" name="ssc" id="_14919660043182467">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:join-column name="SCC_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
             </jpa:many-to-one>
             <jpa:one-to-many orp="false" own="true" collection-type="java.util.List" connected-entity-id="_1490291803505" fetch="LAZY" v="true" name="negativeControls" dv="new java.util.ArrayList&lt;&gt;()" id="_14919662961172825">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:join-table name="STUDY_SCC_NEG_CONTROL_XREF">
                     <jpa:join-column name="TARGET_ID" rc="TARGET_ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
                     <jpa:join-column name="OUTCOME_ID" rc="OUTCOME_ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
@@ -480,10 +594,14 @@
             </jpa:one-to-many>
             <jpa:one-to-one own="true" orp="false" optional="true" primaryKey="true" connected-entity-id="_1490291803505" v="true" name="target" id="_14919657332252456">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:join-column name="TARGET_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
             </jpa:one-to-one>
             <jpa:one-to-one own="true" orp="false" optional="true" primaryKey="true" connected-entity-id="_1490291803505" v="true" name="outcome" id="_14919657467762457">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:join-column name="OUTCOME_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
             </jpa:one-to-one>
         </jpa:attributes>
@@ -501,16 +619,22 @@
         <jpa:attributes>
             <jpa:basic attribute-type="String" v="true" name="params" id="_14919657981362460">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:column unique="false" nullable="true" insertable="true" updatable="true" column-definition="VARCHAR(MAX)"/>
             </jpa:basic>
             <jpa:one-to-many orp="false" collection-type="java.util.List" connected-entity-id="_1491965701625" connected-attribute-id="_14919660043182467" fetch="LAZY" v="true" name="pairs" dv="new java.util.ArrayList&lt;&gt;()" id="_14919660043182468">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:cascade>
                     <jpa:cascade-all/>
                 </jpa:cascade>
             </jpa:one-to-many>
             <jpa:id attribute-type="Integer" v="true" name="id" id="_14919657771462458">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:generated-value strategy="SEQUENCE" generator="STUDY_SCC_SEQ"/>
                 <jpa:sequence-generator name="STUDY_SCC_SEQ" sequence-name="STUDY_SCC_SEQ" catalog="" schema="" initial-value="1" allocation-size="1"/>
             </jpa:id>
@@ -532,10 +656,14 @@
         <jpa:attributes>
             <jpa:basic attribute-type="String" v="true" name="CohortMethodVersion" id="_1490299417333164">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:column name="COHORT_METHOD_VERSION" unique="false" nullable="true" insertable="true" updatable="true"/>
             </jpa:basic>
             <jpa:basic attribute-type="String" v="true" name="VocabularyVersion" id="_1490299427839165">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:column name="VOCABULARY_VERSION" unique="false" nullable="true" insertable="true" updatable="true"/>
             </jpa:basic>
         </jpa:attributes>
@@ -548,10 +676,14 @@
         <jpa:attributes>
             <jpa:basic attribute-type="long" v="true" name="conceptId" id="_1490303877102870">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:column name="CONCEPT_ID" unique="false" nullable="true" insertable="true" updatable="true" precision="0"/>
             </jpa:basic>
             <jpa:basic attribute-type="String" v="true" name="conceptName" id="_1490303888119871">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:column name="CONCEPT_NAME" unique="false" nullable="true" insertable="true" updatable="true"/>
             </jpa:basic>
         </jpa:attributes>
@@ -564,15 +696,19 @@
         <jpa:attributes>
             <jpa:basic attribute-type="org.ohdsi.webapi.study.RelationshipType" v="true" name="relationshipType" id="_1490852443814279">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:column name="RELATIONSHIP_TYPE" unique="false" nullable="true" insertable="true" updatable="true"/>
             </jpa:basic>
             <jpa:one-to-one own="true" orp="false" optional="false" primaryKey="false" connected-entity-id="_1490291803505" v="true" name="target" id="_1490852420438278">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:join-column name="COHORT_2_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
             </jpa:one-to-one>
         </jpa:attributes>
     </jpa:embeddable>
-    <jpa:embeddable abs="false" class="ReportCovariate" v="true" pkg="study.report" m="true" rootElement="_14902889289461" id="_1490884543436">
+    <jpa:embeddable abs="false" class="ReportCovariate" v="true" pkg="study.report" m="false" rootElement="_14902889289461" id="_1490884543436">
         <jpa:ts e="true"/>
         <jpa:hc e="true">
             <jpa:a>_149088456963776</jpa:a>
@@ -586,18 +722,26 @@
         <jpa:attributes>
             <jpa:basic attribute-type="Long" v="true" name="covariateId" id="_149088456963776">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:column name="COVARIATE_ID" unique="false" nullable="true" insertable="true" updatable="true" precision="0"/>
             </jpa:basic>
             <jpa:basic attribute-type="String" v="true" name="covariateName" id="_149088457962877">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:column name="COVARIATE_NAME" unique="false" nullable="true" insertable="true" updatable="true" column-definition="VARCHAR(1000)"/>
             </jpa:basic>
             <jpa:basic attribute-type="org.ohdsi.webapi.study.report.CovariateSection" v="true" name="covariateSection" id="_14914230668322087">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:column name="COVARIATE_SECTION" unique="false" nullable="true" insertable="true" updatable="true" column-definition="VARCHAR(20)"/>
             </jpa:basic>
             <jpa:basic attribute-type="Integer" v="true" name="ordinal" id="_14914230834382088">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:column name="ORDINAL" unique="false" nullable="true" insertable="true" updatable="true" precision="0"/>
             </jpa:basic>
         </jpa:attributes>
@@ -610,10 +754,14 @@
         <jpa:attributes>
             <jpa:basic attribute-type="org.ohdsi.webapi.study.report.ContentSection" v="true" name="section" id="_149088492759580">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:column name="SECTION_ID" unique="false" nullable="true" insertable="true" updatable="false" column-definition="VARCHAR(20)"/>
             </jpa:basic>
             <jpa:basic attribute-type="String" v="true" name="content" id="_149088494261581">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:column name="CONTENT" unique="false" nullable="true" insertable="true" updatable="true" column-definition="VARCHAR(MAX)" length="255"/>
                 <jpa:lob/>
             </jpa:basic>
@@ -627,14 +775,20 @@
         <jpa:attributes>
             <jpa:basic attribute-type="boolean" v="true" name="active" id="_14908977912311530">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:column name="IS_ACTIVE" unique="false" nullable="true" insertable="true" updatable="true" column-definition="BIT"/>
             </jpa:basic>
             <jpa:one-to-one own="true" orp="false" optional="false" primaryKey="false" connected-entity-id="_1490291803505" fetch="LAZY" v="true" name="target" id="_14908977652131528">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:join-column name="TARGET_COHORT_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
             </jpa:one-to-one>
             <jpa:one-to-one own="true" orp="false" optional="false" primaryKey="false" connected-entity-id="_1490291803505" fetch="LAZY" v="true" name="outcome" id="_14914928300463650">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:join-column name="OUTCOME_COHORT_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
             </jpa:one-to-one>
         </jpa:attributes>
@@ -647,10 +801,14 @@
         <jpa:attributes>
             <jpa:basic attribute-type="boolean" v="true" name="active" id="_14908980199101534">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:column name="IS_ACTIVE" unique="false" nullable="true" insertable="true" updatable="true" column-definition="BIT"/>
             </jpa:basic>
             <jpa:one-to-one own="true" orp="false" optional="true" primaryKey="false" connected-entity-id="_1490297306096" v="true" name="source" id="_14908979862201533">
                 <jpa:bv/>
+                <jpa:kbv/>
+                <jpa:vbv/>
                 <jpa:join-column name="SOURCE_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
             </jpa:one-to-one>
         </jpa:attributes>
@@ -670,33 +828,83 @@
     </jpa:c>
     <jpa:wsl>
         <jpa:ws n="Main" id="_14902889289462">
-            <i ref="_1490897969321" x="797" y="175"/>
-            <i ref="_1490289062980" x="304" y="787"/>
-            <i ref="_1490291254567" x="797" y="419"/>
-            <i ref="_1490297306096" x="32" y="993"/>
-            <i ref="_1490300306224" x="936" y="787"/>
-            <i ref="_1490884254082" x="304" y="175"/>
-            <i ref="_1491965701625" x="295" y="1231"/>
-            <i ref="_1490884543436" x="32" y="32"/>
-            <i ref="_1490897741195" x="534" y="331"/>
-            <i ref="_1490298781069" x="681" y="826"/>
-            <i ref="_1491965776776" x="60" y="1083"/>
-            <i ref="_1490299355659" x="534" y="993"/>
-            <i ref="_1490852395927" x="32" y="699"/>
-            <i ref="_1490291803505" x="304" y="419"/>
-            <i ref="_1490303663642" x="32" y="331"/>
-            <i ref="_1490303852647" x="534" y="699"/>
-            <i ref="_1490884917153" x="534" y="32"/>
+            <i ref="_1490897969321" x="797" y="175">
+                <el/>
+            </i>
+            <i ref="_1490289062980" x="304" y="787">
+                <el/>
+            </i>
+            <i ref="_1490291254567" x="797" y="419">
+                <el/>
+            </i>
+            <i ref="_1490297306096" x="32" y="993">
+                <el/>
+            </i>
+            <i ref="_1490300306224" x="936" y="787">
+                <el/>
+            </i>
+            <i ref="_1490884254082" x="304" y="175">
+                <el/>
+            </i>
+            <i ref="_1491965701625" x="295" y="1231">
+                <el/>
+            </i>
+            <i ref="_1490884543436" x="32" y="32">
+                <el/>
+            </i>
+            <i ref="_1490897741195" x="534" y="331">
+                <el/>
+            </i>
+            <i ref="_1490298781069" x="681" y="826">
+                <el/>
+            </i>
+            <i ref="_1491965776776" x="60" y="1083">
+                <el/>
+            </i>
+            <i ref="_1490299355659" x="534" y="993">
+                <el/>
+            </i>
+            <i ref="_1490852395927" x="32" y="699">
+                <el/>
+            </i>
+            <i ref="_1490291803505" x="304" y="419">
+                <el/>
+            </i>
+            <i ref="_1490303663642" x="32" y="331">
+                <el/>
+            </i>
+            <i ref="_1490303852647" x="534" y="699">
+                <el/>
+            </i>
+            <i ref="_1490884917153" x="534" y="32">
+                <el/>
+            </i>
         </jpa:ws>
         <jpa:ws n="Report" id="_149088421645426">
-            <i ref="_1490897741195" x="798" y="154"/>
-            <i ref="_1490897969321" x="32" y="532"/>
-            <i ref="_1490291803505" x="521" y="23"/>
-            <i ref="_1490289062980" x="56" y="70"/>
-            <i ref="_1490884917153" x="314" y="154"/>
-            <i ref="_1490297306096" x="17" y="233"/>
-            <i ref="_1490884254082" x="521" y="276"/>
-            <i ref="_1490884543436" x="266" y="565"/>
+            <i ref="_1490897741195" x="798" y="154">
+                <el/>
+            </i>
+            <i ref="_1490897969321" x="32" y="532">
+                <el/>
+            </i>
+            <i ref="_1490291803505" x="521" y="23">
+                <el/>
+            </i>
+            <i ref="_1490289062980" x="138" y="23">
+                <el/>
+            </i>
+            <i ref="_1490884917153" x="314" y="154">
+                <el/>
+            </i>
+            <i ref="_1490297306096" x="17" y="233">
+                <el/>
+            </i>
+            <i ref="_1490884254082" x="521" y="276">
+                <el/>
+            </i>
+            <i ref="_1490884543436" x="266" y="565">
+                <el/>
+            </i>
         </jpa:ws>
     </jpa:wsl>
 </jpa:entity-mappings>

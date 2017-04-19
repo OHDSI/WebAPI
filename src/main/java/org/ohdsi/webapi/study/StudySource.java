@@ -57,7 +57,6 @@ public class StudySource {
     @Basic
     private String cdmSchema;
 
-
     public Integer getId() {
         return this.id;
     }
@@ -65,6 +64,7 @@ public class StudySource {
     public void setId(Integer id) {
         this.id = id;
     }
+
 
     public String getName() {
         return this.name;
@@ -74,6 +74,7 @@ public class StudySource {
         this.name = name;
     }
 
+
     public String getKey() {
         return this.key;
     }
@@ -81,6 +82,7 @@ public class StudySource {
     public void setKey(String key) {
         this.key = key;
     }
+
 
     public String getGroupKey() {
         return this.groupKey;
@@ -90,6 +92,7 @@ public class StudySource {
         this.groupKey = groupKey;
     }
 
+
     public String getVersionId() {
         return this.versionId;
     }
@@ -97,6 +100,7 @@ public class StudySource {
     public void setVersionId(String versionId) {
         this.versionId = versionId;
     }
+
 
     public String getVersionName() {
         return this.versionName;
@@ -106,6 +110,7 @@ public class StudySource {
         this.versionName = versionName;
     }
 
+
     public String getSourceConnection() {
         return this.sourceConnection;
     }
@@ -113,6 +118,7 @@ public class StudySource {
     public void setSourceConnection(String sourceConnection) {
         this.sourceConnection = sourceConnection;
     }
+
 
     public String getSourceDialect() {
         return this.sourceDialect;
@@ -122,6 +128,7 @@ public class StudySource {
         this.sourceDialect = sourceDialect;
     }
 
+
     public String getResultsSchema() {
         return this.resultsSchema;
     }
@@ -129,6 +136,7 @@ public class StudySource {
     public void setResultsSchema(String resultsSchema) {
         this.resultsSchema = resultsSchema;
     }
+
 
     public String getCdmSchema() {
         return this.cdmSchema;

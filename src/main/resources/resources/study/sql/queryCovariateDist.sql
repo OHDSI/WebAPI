@@ -16,8 +16,7 @@ select TOP 5000
 	sr1.p25_value, 
 	sr1.p75_value, 
 	sr1.p90_value
-from @results_database_schema.as_cohort_summary_analysis_ref ar1
-inner join @results_database_schema.as_cohort_summary_results_dist sr1 on ar1.covariate_id = sr1.covariate_id
-left join @cdm_database_schema.CONCEPT c on ar1.concept_id = c.concept_id
-where sr1.cohort_definition_id = @cohort_definition_id @criteria_clauses
+from @study_results_schema.cohort_summary_analysis_ref ar1
+inner join @study_results_schema.cohort_summary_results_dist sr1 on ar1.covariate_id = sr1.covariate_id
+where sr1.cohort_definition_id = @cohort_definition_id AND sr1.source_id = @source_id @criteria_clauses
 ORDER BY sr1.count_value DESC

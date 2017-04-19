@@ -37,7 +37,6 @@ public class StudySCC {
     @OneToMany(cascade={CascadeType.ALL},fetch = FetchType.LAZY,targetEntity = StudySCCPair.class,mappedBy = "ssc")
     private List<StudySCCPair> pairs = new java.util.ArrayList<>();
 
-
     public Integer getId() {
         return this.id;
     }
@@ -46,6 +45,7 @@ public class StudySCC {
         this.id = id;
     }
 
+
     public String getParams() {
         return this.params;
     }
@@ -53,6 +53,7 @@ public class StudySCC {
     public void setParams(String params) {
         this.params = params;
     }
+
 
     public List<StudySCCPair> getPairs() {
         return this.pairs;

@@ -6,11 +6,15 @@ import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -76,6 +80,12 @@ public class DataAccessConfig {
         return ds;
         //return new org.apache.tomcat.jdbc.pool.DataSource(pc);
     }
+		
+		@Bean(name="jdbcTemplate")
+		public JdbcTemplate jdbcTemplate(DataSource primaryDataSource)
+		{
+			return new JdbcTemplate(primaryDataSource);
+		}		
 
     @Bean
     public EntityManagerFactory entityManagerFactory() {
@@ -120,6 +130,23 @@ public class DataAccessConfig {
         transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         return transactionTemplate;
     }
+		
+		@Bean(name="studyResultsDataSource")
+		@ConfigurationProperties(prefix="studyresults.datasource")
+		public DataSource studyResultsDataSource() {
+			DataSource ds = DataSourceBuilder
+				.create()
+				.build();
+
+			return ds;
+			
+		}
+		
+		@Bean(name="studyResultsJdbcTemplate")
+		public JdbcTemplate studyResultsJdbcTemplate(@Qualifier("studyResultsDataSource") DataSource studyResultsDataSource)
+		{
+			return new JdbcTemplate(studyResultsDataSource);
+		}
   
   /*
   public String getSparqlEndpoint()

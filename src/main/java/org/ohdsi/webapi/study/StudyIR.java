@@ -41,7 +41,6 @@ public class StudyIR {
     @JoinTable(name="STUDY_IR_O",joinColumns={@JoinColumn(name="ANALYSIS_ID",referencedColumnName="ID")},inverseJoinColumns={@JoinColumn(name="COHORT_ID",referencedColumnName="ID")})
     private List<StudyCohort> outcomes;
 
-
     public Integer getId() {
         return this.id;
     }
@@ -49,6 +48,7 @@ public class StudyIR {
     public void setId(Integer id) {
         this.id = id;
     }
+
 
     public String getParams() {
         return this.params;
@@ -58,6 +58,7 @@ public class StudyIR {
         this.params = params;
     }
 
+
     public List<StudyCohort> getTargets() {
         return this.targets;
     }
@@ -65,6 +66,7 @@ public class StudyIR {
     public void setTargets(List<StudyCohort> targets) {
         this.targets = targets;
     }
+
 
     public List<StudyCohort> getOutcomes() {
         return this.outcomes;

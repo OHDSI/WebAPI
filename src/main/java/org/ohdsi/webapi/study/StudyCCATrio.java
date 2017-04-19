@@ -45,7 +45,6 @@ public class StudyCCATrio {
     @JoinTable(name="STUDY_CCA_NEG_CONTROL_XREF",joinColumns={@JoinColumn(name="TARGET_ID",referencedColumnName="TARGET_ID"),@JoinColumn(name="COMPARATOR_ID",referencedColumnName="COMPARATOR_ID"),@JoinColumn(name="OUTCOME_ID",referencedColumnName="OUTCOME_ID"),@JoinColumn(name="CCA_ID",referencedColumnName="CCA_ID")},inverseJoinColumns={@JoinColumn(name="CONTROL_ID",referencedColumnName="ID")})
     private List<StudyCohort> negativeControls = new java.util.ArrayList<>();
 
-
     public StudyCohort getTarget() {
         return this.target;
     }
@@ -53,6 +52,7 @@ public class StudyCCATrio {
     public void setTarget(StudyCohort target) {
         this.target = target;
     }
+
 
     public StudyCohort getComparator() {
         return this.comparator;
@@ -62,6 +62,7 @@ public class StudyCCATrio {
         this.comparator = comparator;
     }
 
+
     public StudyCohort getOutcome() {
         return this.outcome;
     }
@@ -70,6 +71,7 @@ public class StudyCCATrio {
         this.outcome = outcome;
     }
 
+
     public StudyCCA getCca() {
         return this.cca;
     }
@@ -77,6 +79,7 @@ public class StudyCCATrio {
     public void setCca(StudyCCA cca) {
         this.cca = cca;
     }
+
 
     public List<StudyCohort> getNegativeControls() {
         return this.negativeControls;

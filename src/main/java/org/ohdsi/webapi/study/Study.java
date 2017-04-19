@@ -60,7 +60,6 @@ public class Study {
     @JoinTable(name="STUDY_COHORT_XREF",joinColumns={@JoinColumn(name="STUDY_ID",referencedColumnName="ID")},inverseJoinColumns={@JoinColumn(name="COHORT_ID",referencedColumnName="ID")})
     private List<StudyCohort> cohortList = new java.util.ArrayList<StudyCohort>();
 
-
     public Integer getId() {
         return this.id;
     }
@@ -68,6 +67,7 @@ public class Study {
     public void setId(Integer id) {
         this.id = id;
     }
+
 
     public String getName() {
         return this.name;
@@ -77,6 +77,7 @@ public class Study {
         this.name = name;
     }
 
+
     public String getDescription() {
         return this.description;
     }
@@ -84,6 +85,7 @@ public class Study {
     public void setDescription(String description) {
         this.description = description;
     }
+
 
     public StudyConfig getStudyConfig() {
         return this.studyConfig;
@@ -93,6 +95,7 @@ public class Study {
         this.studyConfig = studyConfig;
     }
 
+
     public List<StudySource> getSourceList() {
         return this.sourceList;
     }
@@ -100,6 +103,7 @@ public class Study {
     public void setSourceList(List<StudySource> sourceList) {
         this.sourceList = sourceList;
     }
+
 
     public List<StudyIR> getIrAnalysisList() {
         return this.irAnalysisList;
@@ -109,6 +113,7 @@ public class Study {
         this.irAnalysisList = irAnalysisList;
     }
 
+
     public List<StudyCCA> getCcaList() {
         return this.ccaList;
     }
@@ -117,6 +122,7 @@ public class Study {
         this.ccaList = ccaList;
     }
 
+
     public List<StudySCC> getSccList() {
         return this.sccList;
     }
@@ -124,6 +130,7 @@ public class Study {
     public void setSccList(List<StudySCC> sccList) {
         this.sccList = sccList;
     }
+
 
     public List<StudyCohort> getCohortList() {
         return this.cohortList;

@@ -23,7 +23,6 @@ public class Concept {
     @Basic
     private String conceptName;
 
-
     public long getConceptId() {
         return this.conceptId;
     }
@@ -31,6 +30,7 @@ public class Concept {
     public void setConceptId(long conceptId) {
         this.conceptId = conceptId;
     }
+
 
     public String getConceptName() {
         return this.conceptName;

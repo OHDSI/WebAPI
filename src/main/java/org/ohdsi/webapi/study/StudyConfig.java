@@ -23,7 +23,6 @@ public class StudyConfig {
     @Basic
     private String VocabularyVersion;
 
-
     public String getCohortMethodVersion() {
         return this.CohortMethodVersion;
     }
@@ -31,6 +30,7 @@ public class StudyConfig {
     public void setCohortMethodVersion(String CohortMethodVersion) {
         this.CohortMethodVersion = CohortMethodVersion;
     }
+
 
     public String getVocabularyVersion() {
         return this.VocabularyVersion;

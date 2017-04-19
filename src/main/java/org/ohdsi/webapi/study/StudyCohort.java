@@ -31,7 +31,7 @@ public class StudyCohort {
     @Id
     @GeneratedValue(generator="STUDY_COHORT_SEQ",strategy=GenerationType.SEQUENCE)
     @SequenceGenerator(name="STUDY_COHORT_SEQ",sequenceName="STUDY_COHORT_SEQ",allocationSize=1)
-    private Integer id;
+    private Long id;
 
     @Column(columnDefinition="VARCHAR(256)")
     @Basic
@@ -58,14 +58,14 @@ public class StudyCohort {
     @CollectionTable(name="STUDY_COHORT_REL",joinColumns={@JoinColumn(name="COHORT_1_ID",referencedColumnName="ID")})
     private Set<CohortRelationship> cohortRelationships = new java.util.HashSet<>();
 
-
-    public Integer getId() {
+    public Long getId() {
         return this.id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
+
 
     public String getName() {
         return this.name;
@@ -75,6 +75,7 @@ public class StudyCohort {
         this.name = name;
     }
 
+
     public String getDescription() {
         return this.description;
     }
@@ -82,6 +83,7 @@ public class StudyCohort {
     public void setDescription(String description) {
         this.description = description;
     }
+
 
     public String getAbbr() {
         return this.abbr;
@@ -91,6 +93,7 @@ public class StudyCohort {
         this.abbr = abbr;
     }
 
+
     public String getExpression() {
         return this.expression;
     }
@@ -99,6 +102,7 @@ public class StudyCohort {
         this.expression = expression;
     }
 
+
     public List<Concept> getConcepts() {
         return this.concepts;
     }
@@ -106,6 +110,7 @@ public class StudyCohort {
     public void setConcepts(List<Concept> concepts) {
         this.concepts = concepts;
     }
+
 
     public Set<CohortRelationship> getCohortRelationships() {
         return this.cohortRelationships;

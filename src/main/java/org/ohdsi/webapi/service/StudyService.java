@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import javax.ws.rs.GET;
@@ -58,8 +57,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class StudyService extends AbstractDaoService  {
 
-  private final String QUERY_CATAGORICAL_STATS  = ResourceHelper.GetResourceAsString("/resources/study/sql/queryCatagoricalStats.sql");
-  private final String QUERY_CONTINUOUS_STATS  = ResourceHelper.GetResourceAsString("/resources/study/sql/queryContinuousStats.sql");
+  private final String QUERY_COVARIATE_STATS  = ResourceHelper.GetResourceAsString("/resources/study/sql/queryCovariateStats.sql");
+  private final String QUERY_COVARIATE_DIST  = ResourceHelper.GetResourceAsString("/resources/study/sql/queryCovariateDist.sql");
   private final String QUERY_COHORTSETS  = ResourceHelper.GetResourceAsString("/resources/study/sql/queryCohortSets.sql");
 
   @Autowired
@@ -92,8 +91,8 @@ public class StudyService extends AbstractDaoService  {
     
     public Integer id;
     public String params;
-    public List<Integer> targets;
-    public List<Integer> outcomes;
+    public List<Long> targets;
+    public List<Long> outcomes;
     
     public StudyIRDTO() {
     }
@@ -101,9 +100,9 @@ public class StudyService extends AbstractDaoService  {
   }
   
   public static class SCCPair {
-    public Integer target;
-    public Integer outcome;
-    public List<Integer> negativeControls;
+    public Long target;
+    public Long outcome;
+    public List<Long> negativeControls;
   }
   public static class StudySCCDTO {
     public Integer id;
@@ -114,10 +113,10 @@ public class StudyService extends AbstractDaoService  {
   }
   
   public static class CCATrio {
-    public Integer target;
-    public Integer comaprator;
-    public Integer outcome;
-    public List<Integer> negativeControls;
+    public Long target;
+    public Long comaprator;
+    public Long outcome;
+    public List<Long> negativeControls;
     
     public CCATrio () {}
     
@@ -144,12 +143,12 @@ public class StudyService extends AbstractDaoService  {
   }
     
   public static class CohortRelationship {
-    public int target;
+    public long target;
     public org.ohdsi.webapi.study.RelationshipType relationshipType;
   }
 
   public static class CohortDetail {
-    public int cohortId;
+    public long cohortId;
     public String name;
     public String expression;
     public List<Concept> concepts = new ArrayList<>();
@@ -157,7 +156,7 @@ public class StudyService extends AbstractDaoService  {
   }
   
   
-  public static class CatagoricalStat {
+  public static class CovariateStat {
     public long covariateId;
     public String covariateName;
     public long analysisId;
@@ -169,7 +168,7 @@ public class StudyService extends AbstractDaoService  {
     public BigDecimal statValue;
   }
 
-  public static class ContinuousStat {
+  public static class CovariateDist {
     public long covariateId;
     public String covariateName;
     public long analysisId;
@@ -197,8 +196,8 @@ public class StudyService extends AbstractDaoService  {
   }
 
   public static class StudyStatistics {
-    public List<CatagoricalStat> catagorical = new ArrayList<>();
-    public List<ContinuousStat> continuous = new ArrayList<>();
+    public List<CovariateStat> catagorical = new ArrayList<>();
+    public List<CovariateDist> continuous = new ArrayList<>();
   }
   
   private List<String> buildCriteriaClauses (String searchTerm, List<String> analysisIds, List<String> timeWindows) {
@@ -349,12 +348,12 @@ public class StudyService extends AbstractDaoService  {
   }
           
   @GET
-  @Path("{studyId}/results/{cohortId}/{sourceKey}")
+  @Path("{studyId}/results/covariates/{cohortId}/{sourceId}")
   @Produces(MediaType.APPLICATION_JSON)
   public StudyStatistics getStudyStatistics(
           @PathParam("studyId") final int studyId, 
           @PathParam("cohortId") final int cohortId, 
-          @PathParam("sourceKey") final String sourceKey,
+          @PathParam("sourceId") final int sourceId,
           @QueryParam("searchTerm") final String searchTerm,
           @QueryParam("analysisId") final List<String> analysisIds,
           @QueryParam("timeWindow") final List<String> timeWindows
@@ -362,20 +361,17 @@ public class StudyService extends AbstractDaoService  {
     StudyStatistics result = new StudyStatistics();
     String translatedSql;
     
-    Source source = this.getSourceRepository().findBySourceKey(sourceKey);
-    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-    String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
     List<String> criteriaClauses = buildCriteriaClauses(searchTerm, analysisIds, timeWindows);
     
     String catagoricalQuery = SqlRender.renderSql(
-            QUERY_CATAGORICAL_STATS, 
-            new String[] {"cdm_database_schema", "results_database_schema", "cohort_definition_id", "criteria_clauses"},
-            new String[] {cdmTableQualifier, resultsTableQualifier, Integer.toString(cohortId), criteriaClauses.isEmpty() ? "" : " AND\n" + StringUtils.join(criteriaClauses, "\n AND ")}
+            QUERY_COVARIATE_STATS, 
+            new String[] {"study_results_schema", "cohort_definition_id", "source_id", "criteria_clauses"},
+            new String[] {this.getStudyResultsSchema(), Integer.toString(cohortId), Integer.toString(sourceId), criteriaClauses.isEmpty() ? "" : " AND\n" + StringUtils.join(criteriaClauses, "\n AND ")}
     );
     
-    translatedSql = SqlTranslate.translateSql(catagoricalQuery, "sql server", source.getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
-    List<CatagoricalStat> catagoricalStats =  this.getSourceJdbcTemplate(source).query(translatedSql, (rs,rowNum) -> { 
-      CatagoricalStat mappedRow = new CatagoricalStat() {{
+    translatedSql = SqlTranslate.translateSql(catagoricalQuery, "sql server", this.getStudyResultsDialect(), SessionUtils.sessionId(), this.getStudyResultsSchema());
+    List<CovariateStat> catagoricalStats =  this.getStudyResultsJdbcTemplate().query(translatedSql, (rs,rowNum) -> { 
+      CovariateStat mappedRow = new CovariateStat() {{
         covariateId = rs.getLong("covariate_id");
         covariateName = rs.getString("covariate_name");
         analysisId = rs.getLong("analysis_id");
@@ -391,14 +387,14 @@ public class StudyService extends AbstractDaoService  {
     
     
     String continuousQuery = SqlRender.renderSql(
-            QUERY_CONTINUOUS_STATS, 
-            new String[] {"cdm_database_schema", "results_database_schema", "cohort_definition_id", "criteria_clauses"},
-            new String[] {cdmTableQualifier, resultsTableQualifier, Integer.toString(cohortId), criteriaClauses.isEmpty() ? "" : " AND\n" +StringUtils.join(criteriaClauses, "\n AND ")}
+            QUERY_COVARIATE_DIST, 
+            new String[] {"study_results_schema", "cohort_definition_id", "source_id", "criteria_clauses"},
+            new String[] {this.getStudyResultsSchema(), Integer.toString(cohortId), Integer.toString(sourceId), criteriaClauses.isEmpty() ? "" : " AND\n" +StringUtils.join(criteriaClauses, "\n AND ")}
     );
     
-    translatedSql = SqlTranslate.translateSql(continuousQuery, "sql server", source.getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
-    List<ContinuousStat> continuousStats =  this.getSourceJdbcTemplate(source).query(translatedSql, (rs,rowNum) -> { 
-      ContinuousStat mappedRow = new ContinuousStat() {{
+    translatedSql = SqlTranslate.translateSql(continuousQuery, "sql server", this.getStudyResultsDialect(), SessionUtils.sessionId(), this.getStudyResultsSchema());
+    List<CovariateDist> continuousStats =  this.getStudyResultsJdbcTemplate().query(translatedSql, (rs,rowNum) -> { 
+      CovariateDist mappedRow = new CovariateDist() {{
         covariateId = rs.getLong("covariate_id");
         covariateName = rs.getString("covariate_name");
         analysisId = rs.getLong("analysis_id");

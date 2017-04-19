@@ -17,6 +17,9 @@ public class ReportStatusConverter implements AttributeConverter<ReportStatus, S
 
   @Override
   public String convertToDatabaseColumn(ReportStatus attribute) {
+		if (attribute == null)
+			return null;
+		
     switch (attribute) {
       case DRAFT:
         return "DRAFT";
@@ -31,6 +34,9 @@ public class ReportStatusConverter implements AttributeConverter<ReportStatus, S
 
   @Override
   public ReportStatus convertToEntityAttribute(String dbData) {
+		if (dbData == null)
+			return null;
+		
     switch (dbData) {
       case "DRAFT":
         return ReportStatus.DRAFT;

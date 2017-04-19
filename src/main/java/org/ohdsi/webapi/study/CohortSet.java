@@ -39,7 +39,6 @@ public class CohortSet {
     @JoinTable(name="STUDY_COHORTSET_XREF",joinColumns={@JoinColumn(name="COHORTSET_ID",referencedColumnName="ID")},inverseJoinColumns={@JoinColumn(name="COHORT_ID",referencedColumnName="ID")})
     private List<StudyCohort> cohortList;
 
-
     public Integer getId() {
         return this.id;
     }
@@ -47,6 +46,7 @@ public class CohortSet {
     public void setId(Integer id) {
         this.id = id;
     }
+
 
     public String getName() {
         return this.name;
@@ -56,6 +56,7 @@ public class CohortSet {
         this.name = name;
     }
 
+
     public String getDescription() {
         return this.description;
     }
@@ -63,6 +64,7 @@ public class CohortSet {
     public void setDescription(String description) {
         this.description = description;
     }
+
 
     public List<StudyCohort> getCohortList() {
         return this.cohortList;

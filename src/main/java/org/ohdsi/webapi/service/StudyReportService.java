@@ -16,9 +16,11 @@
 package org.ohdsi.webapi.service;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -80,16 +82,16 @@ public class StudyReportService extends AbstractDaoService  {
     public String modifiedBy;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     public Date modifiedDate;
-    public ReportStatus status;
+    public ReportStatus status = ReportStatus.DRAFT;
     
   }
   
   public static class ReportDTO extends ReportListItem {
-    public List<StudyService.CohortDetail> cohorts;
-    public List<CohortPair> cohortPairs;
-    public Set<ReportCovariate> covariates;
-    public List<ReportContent> content;
-    public List<ReportSourceDTO> sources;
+    public List<StudyService.CohortDetail> cohorts = new ArrayList<>();
+    public List<CohortPair> cohortPairs = new ArrayList<>();
+    public Set<ReportCovariate> covariates = new HashSet<>();
+    public List<ReportContent> content = new ArrayList<>();
+    public List<ReportSourceDTO> sources = new ArrayList<>();
   }
 
   public static class CohortPair {
@@ -178,6 +180,7 @@ public class StudyReportService extends AbstractDaoService  {
       reportEntity.setModifiedBy(null);
       reportEntity.setModifiedDate(null);
       reportEntity.setStudy(entityManager.getReference(Study.class,  report.studyId));
+			reportEntity.setStatus(ReportStatus.DRAFT);
     }
     
     reportEntity.setName(report.name);

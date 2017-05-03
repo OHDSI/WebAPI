@@ -9,7 +9,7 @@ SELECT
   ard1.p90_value    AS "p90Value",
   ard1.max_value    AS "maxValue"
 FROM @results_database_schema.ACHILLES_results_dist ard1
-INNER JOIN @vocab_database_schema.concept c1 ON ard1.stratum_1 = CAST(c1.concept_id AS VARCHAR )
-INNER JOIN @vocab_database_schema.concept c2 ON ard1.stratum_2 = CAST(c2.concept_id AS VARCHAR )
+INNER JOIN @vocab_database_schema.concept c1 ON CAST(ard1.stratum_1 AS INT) = c1.concept_id
+INNER JOIN @vocab_database_schema.concept c2 ON CAST(ard1.stratum_2 AS INT) = c2.concept_id
 WHERE ard1.analysis_id = 206
 AND c1.concept_id = @conceptId

@@ -5,5 +5,5 @@ SELECT
 FROM @results_database_schema.ACHILLES_results ar1
 INNER JOIN
 @vocab_database_schema.concept c1
-ON ar1.stratum_1 = CAST(c1.concept_id AS VARCHAR )
+ON CAST(ar1.stratum_1 AS INT) = c1.concept_id
 WHERE ar1.analysis_id = 5

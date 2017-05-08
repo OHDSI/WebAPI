@@ -14,9 +14,10 @@ FROM (SELECT *
    FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 1801) ar2
     ON ar1.stratum_1 = ar2.stratum_1
   INNER JOIN
-  @results_database_schema.concept_hierarchy_measurement AS concept_hierarchy
+  @results_database_schema.concept_hierarchy AS concept_hierarchy
 ON CAST(ar1.stratum_1 AS INT) = concept_hierarchy.concept_id
-  ,
+   AND concept_hierarchy.treemap='Measurement'
+ ,
   (SELECT count_value
    FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 1) denom
 ORDER BY ar1.count_value DESC

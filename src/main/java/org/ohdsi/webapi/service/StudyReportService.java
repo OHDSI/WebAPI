@@ -192,7 +192,7 @@ public class StudyReportService extends AbstractDaoService {
 
 		public List<StudyService.CohortDetail> cohorts = new ArrayList<>();
 		public List<CohortPair> cohortPairs = new ArrayList<>();
-		public Set<ReportCovariate> covariates = new HashSet<>();
+		public List<ReportCovariate> covariates = new ArrayList<>();
 		public List<ReportContent> content = new ArrayList<>();
 		public List<ReportSourceDTO> sources = new ArrayList<>();
 	}
@@ -459,7 +459,7 @@ public class StudyReportService extends AbstractDaoService {
 			CohortPair pair = new CohortPair(target.cohortId, outcome.cohortId, p.isActive());
 			return pair;
 		}).collect(Collectors.toList());
-		result.covariates = report.getCovariates().stream().collect(Collectors.toSet());
+		result.covariates = report.getCovariates().stream().collect(Collectors.toList());
 		result.cohorts = cohorts.values().stream().collect(Collectors.toList());
 		result.content = report.getContent().stream().collect(Collectors.toList());
 		result.sources = report.getSources().stream().map(s -> {

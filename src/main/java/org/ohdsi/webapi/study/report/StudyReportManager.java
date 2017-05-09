@@ -230,35 +230,42 @@ public class StudyReportManager {
 		// separate Maps/Comparators are needed because the raw data does not have the covariate section 
 		// nor the ordering the data should appear
 		
-		// DEMOGRAPHICS
-		Map<Long, Integer> demographicCovariateLookup = report.getCovariates().stream()
-			.filter(dc -> dc.getCovariateSection() == CovariateSection.DEMOGRAPHICS)
-			.collect(Collectors.toMap(ReportCovariate::getCovariateId, rc -> rc.getOrdinal()));
+		Map<Long,Integer> demographicCovariateLookup = new HashMap<>();
+		Map<Long,Integer> conditionCovariateLookup = new HashMap<>();
+		Map<Long,Integer> drugCovariateLookup = new HashMap<>();
+		Map<Long,Integer> procedureCovariateLookup = new HashMap<>();
+		
+		IntStream.range(0, report.getCovariates().size())
+			.forEach(i -> {
+				ReportCovariate rc = report.getCovariates().get(i);
+				switch (rc.getCovariateSection())
+				{
+					case DEMOGRAPHICS:
+						demographicCovariateLookup.put(rc.getCovariateId(), i);
+						break;
+					case CONDITIONS:
+						conditionCovariateLookup.put(rc.getCovariateId(), i);
+						break;
+					case DRUGS:
+						drugCovariateLookup.put(rc.getCovariateId(), i);
+						break;
+					case PROCEDURES:
+						procedureCovariateLookup.put(rc.getCovariateId(), i);
+						break;
+				}
+			});
+		
+		// Comparators
 
 		Comparator<CovariateStat> demographicComparator = Comparator.comparing(cs -> demographicCovariateLookup.get(cs.getCovariateId()));
 		demographicComparator = demographicComparator.thenComparing(cs -> sourceLookup.get(cs.getDataSource()));
 		
-		// CONDITION
-		Map<Long, Integer> conditionCovariateLookup = report.getCovariates().stream()
-			.filter(dc -> dc.getCovariateSection() == CovariateSection.CONDITIONS)
-			.collect(Collectors.toMap(ReportCovariate::getCovariateId, rc -> rc.getOrdinal()));
-
 		Comparator<CovariateStat> conditionComparator = Comparator.comparing(cs -> conditionCovariateLookup.get(cs.getCovariateId()));
 		conditionComparator = conditionComparator.thenComparing(cs -> sourceLookup.get(cs.getDataSource()));
 		
-		// DRUG
-		Map<Long, Integer> drugCovariateLookup = report.getCovariates().stream()
-			.filter(dc -> dc.getCovariateSection() == CovariateSection.DRUGS)
-			.collect(Collectors.toMap(ReportCovariate::getCovariateId, rc -> rc.getOrdinal()));
-
 		Comparator<CovariateStat> drugComparator = Comparator.comparing(cs -> drugCovariateLookup.get(cs.getCovariateId()));
 		drugComparator = drugComparator.thenComparing(cs -> sourceLookup.get(cs.getDataSource()));
 		
-		// PROCEDURE
-		Map<Long, Integer> procedureCovariateLookup = report.getCovariates().stream()
-			.filter(dc -> dc.getCovariateSection() == CovariateSection.PROCEDURES)
-			.collect(Collectors.toMap(ReportCovariate::getCovariateId, rc -> rc.getOrdinal()));
-
 		Comparator<CovariateStat> procedureComparator = Comparator.comparing(cs -> procedureCovariateLookup.get(cs.getCovariateId()));
 		procedureComparator = procedureComparator.thenComparing(cs -> sourceLookup.get(cs.getDataSource()));
 

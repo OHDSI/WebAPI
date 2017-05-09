@@ -69,10 +69,10 @@ public class StudySCCPairPK implements Serializable {
 
 	@Override
 	public int hashCode() {
-		int hash = 3;
-		hash = 23 * hash + (this.getTarget() != null ? this.getTarget().hashCode() : 0);
-		hash = 23 * hash + (this.getOutcome() != null ? this.getOutcome().hashCode() : 0);
-		hash = 23 * hash + (this.getSsc() != null ? this.getSsc().hashCode() : 0);
+		int hash = 5;
+		hash = 19 * hash + (this.getTarget() != null ? this.getTarget().hashCode() : 0);
+		hash = 19 * hash + (this.getOutcome() != null ? this.getOutcome().hashCode() : 0);
+		hash = 19 * hash + (this.getSsc() != null ? this.getSsc().hashCode() : 0);
 		return hash;
 	}
 

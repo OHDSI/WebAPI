@@ -58,21 +58,18 @@ public class CreateReportTests {
     rcov.setCovariateId(Long.valueOf(22274101));
     rcov.setCovariateName("Condition occurrence record for the verbatim concept observed during 365d on or prior to cohort index:  22274-Neoplasm of uncertain behavior of larynx");
     rcov.setCovariateSection(CovariateSection.CONDITIONS);
-    rcov.setOrdinal(0);
     r.getCovariates().add(rcov);
     
     rcov = new ReportCovariate();
     rcov.setCovariateId(Long.valueOf(22281101));
     rcov.setCovariateName("Condition occurrence record for the verbatim concept observed during 365d on or prior to cohort index:  22281-Hb SS disease");
     rcov.setCovariateSection(CovariateSection.CONDITIONS);
-    rcov.setOrdinal(1);
     r.getCovariates().add(rcov);
     
     rcov = new ReportCovariate();
     rcov.setCovariateId(Long.valueOf(22288101));
     rcov.setCovariateName("Condition occurrence record for the verbatim concept observed during 365d on or prior to cohort index:  22288-Hereditary elliptocytosis");
     rcov.setCovariateSection(CovariateSection.CONDITIONS);
-    rcov.setOrdinal(2);
     r.getCovariates().add(rcov);
     
     // Create Content

@@ -25,10 +25,6 @@ public class ReportCovariate {
 	@Basic
 	private CovariateSection covariateSection;
 
-	@Column(name = "ORDINAL")
-	@Basic
-	private Integer ordinal;
-
 	public Long getCovariateId() {
 		return this.covariateId;
 	}
@@ -53,14 +49,6 @@ public class ReportCovariate {
 		this.covariateSection = covariateSection;
 	}
 
-	public Integer getOrdinal() {
-		return this.ordinal;
-	}
-
-	public void setOrdinal(Integer ordinal) {
-		this.ordinal = ordinal;
-	}
-
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == null) {
@@ -81,9 +69,9 @@ public class ReportCovariate {
 
 	@Override
 	public int hashCode() {
-		int hash = 3;
-		hash = 53 * hash + (this.getCovariateId() != null ? this.getCovariateId().hashCode() : 0);
-		hash = 53 * hash + (this.getCovariateSection() != null ? this.getCovariateSection().hashCode() : 0);
+		int hash = 5;
+		hash = 67 * hash + (this.getCovariateId() != null ? this.getCovariateId().hashCode() : 0);
+		hash = 67 * hash + (this.getCovariateSection() != null ? this.getCovariateSection().hashCode() : 0);
 		return hash;
 	}
 

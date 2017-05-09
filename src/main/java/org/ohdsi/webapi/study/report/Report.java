@@ -5,7 +5,6 @@ package org.ohdsi.webapi.study.report;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 import javax.persistence.Basic;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
@@ -73,9 +72,10 @@ public class Report {
 	private List<ReportContent> content = new java.util.ArrayList<ReportContent>();
 
 	@ElementCollection(fetch = FetchType.LAZY)
+	@OrderColumn(name = "ordinal", nullable = false)
 	@CollectionTable(name = "REPORT_COVARIATE_XREF", joinColumns = {
 		@JoinColumn(name = "REPORT_ID", referencedColumnName = "ID")})
-	private Set<ReportCovariate> covariates = new java.util.HashSet<ReportCovariate>();
+	private List<ReportCovariate> covariates = new java.util.ArrayList<ReportCovariate>();
 
 	@ElementCollection(fetch = FetchType.LAZY)
 	@OrderColumn(name = "ORDINAL")
@@ -167,11 +167,11 @@ public class Report {
 		this.content = content;
 	}
 
-	public Set<ReportCovariate> getCovariates() {
+	public List<ReportCovariate> getCovariates() {
 		return this.covariates;
 	}
 
-	public void setCovariates(Set<ReportCovariate> covariates) {
+	public void setCovariates(List<ReportCovariate> covariates) {
 		this.covariates = covariates;
 	}
 

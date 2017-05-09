@@ -441,7 +441,7 @@
         <jpa:el/>
         <jpa:table name="STUDY_COHORTSET"/>
     </jpa:entity>
-    <jpa:entity name="StudyReport" lbl-ref="_149088425409255" xre="false" compositePrimaryKeyClass="ReportPK" abs="false" class="Report" v="true" pkg="study.report" m="true" rootElement="_14902889289461" id="_1490884254082">
+    <jpa:entity name="StudyReport" lbl-ref="_149088425409255" xre="false" compositePrimaryKeyClass="ReportPK" abs="false" class="Report" v="true" pkg="study.report" m="false" rootElement="_14902889289461" id="_1490884254082">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>
@@ -508,10 +508,11 @@
                     <jpa:join-column name="REPORT_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
                 </jpa:collection-table>
             </jpa:element-collection>
-            <jpa:element-collection fetch="LAZY" collection-type="java.util.Set" connected-class-id="_1490884543436" v="true" name="covariates" dv="new java.util.HashSet&lt;ReportCovariate&gt;()" id="_149088455895775">
+            <jpa:element-collection fetch="LAZY" collection-type="java.util.List" connected-class-id="_1490884543436" v="true" name="covariates" dv="new java.util.ArrayList&lt;ReportCovariate&gt;()" id="_149088455895775">
                 <jpa:bv/>
                 <jpa:kbv/>
                 <jpa:vbv/>
+                <jpa:oc n="ordinal" nu="false" in="true" up="true" cd=""/>
                 <jpa:collection-table name="REPORT_COVARIATE_XREF">
                     <jpa:join-column name="REPORT_ID" rc="ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="" table=""/>
                 </jpa:collection-table>
@@ -738,12 +739,6 @@
                 <jpa:vbv/>
                 <jpa:column name="COVARIATE_SECTION" unique="false" nullable="true" insertable="true" updatable="true" column-definition="VARCHAR(20)"/>
             </jpa:basic>
-            <jpa:basic attribute-type="Integer" v="true" name="ordinal" id="_14914230834382088">
-                <jpa:bv/>
-                <jpa:kbv/>
-                <jpa:vbv/>
-                <jpa:column name="ORDINAL" unique="false" nullable="true" insertable="true" updatable="true" precision="0"/>
-            </jpa:basic>
         </jpa:attributes>
     </jpa:embeddable>
     <jpa:embeddable abs="false" class="ReportContent" v="true" pkg="study.report" m="false" rootElement="_14902889289461" id="_1490884917153">
@@ -767,7 +762,7 @@
             </jpa:basic>
         </jpa:attributes>
     </jpa:embeddable>
-    <jpa:embeddable abs="false" class="ReportCohortPair" v="true" pkg="study.report" m="true" rootElement="_14902889289461" id="_1490897741195">
+    <jpa:embeddable abs="false" class="ReportCohortPair" v="true" pkg="study.report" m="false" rootElement="_14902889289461" id="_1490897741195">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>

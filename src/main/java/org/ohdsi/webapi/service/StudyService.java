@@ -196,11 +196,11 @@ public class StudyService extends AbstractDaoService  {
   }
 
   public static class StudyStatistics {
-    public List<CovariateStat> catagorical = new ArrayList<>();
+    public List<CovariateStat> categorical = new ArrayList<>();
     public List<CovariateDist> continuous = new ArrayList<>();
   }
   
-  private List<String> buildCriteriaClauses (String searchTerm, List<String> analysisIds, List<String> timeWindows) {
+  private List<String> buildCriteriaClauses (String searchTerm, List<String> analysisIds, List<String> timeWindows, List<String> domains) {
     ArrayList<String> clauses = new ArrayList<>();
     
     if (searchTerm != null && searchTerm.length() > 0)
@@ -237,6 +237,18 @@ public class StudyService extends AbstractDaoService  {
         timeWindowClauses.add(String.format("ar1.time_window = '%s'", timeWindow));
       });
       clauses.add("(" + StringUtils.join(timeWindowClauses, " OR ") + ")" );
+    }
+    
+    if (domains != null && domains.size() > 0) {
+			ArrayList<String> domainClauses = new ArrayList<>();
+			domains.forEach((domain) -> {
+				if (domain.toLowerCase().equals("null")) {
+					domainClauses.add("ar1.domain_id is null");					
+				} else {
+					domainClauses.add(String.format("lower(ar1.domain_id) = lower('%s')", domain));					
+				}
+			});
+			clauses.add("(" + StringUtils.join(domainClauses, " OR ") + ")");
     }
     
     return clauses;
@@ -356,21 +368,22 @@ public class StudyService extends AbstractDaoService  {
           @PathParam("sourceId") final int sourceId,
           @QueryParam("searchTerm") final String searchTerm,
           @QueryParam("analysisId") final List<String> analysisIds,
-          @QueryParam("timeWindow") final List<String> timeWindows
+          @QueryParam("timeWindow") final List<String> timeWindows,
+          @QueryParam("domain") final List<String> domains
   ) {  
     StudyStatistics result = new StudyStatistics();
     String translatedSql;
     
-    List<String> criteriaClauses = buildCriteriaClauses(searchTerm, analysisIds, timeWindows);
+    List<String> criteriaClauses = buildCriteriaClauses(searchTerm, analysisIds, timeWindows, domains);
     
-    String catagoricalQuery = SqlRender.renderSql(
+    String categoricalQuery = SqlRender.renderSql(
             QUERY_COVARIATE_STATS, 
             new String[] {"study_results_schema", "cohort_definition_id", "source_id", "criteria_clauses"},
             new String[] {this.getStudyResultsSchema(), Long.toString(cohortId), Integer.toString(sourceId), criteriaClauses.isEmpty() ? "" : " AND\n" + StringUtils.join(criteriaClauses, "\n AND ")}
     );
     
-    translatedSql = SqlTranslate.translateSql(catagoricalQuery, "sql server", this.getStudyResultsDialect(), SessionUtils.sessionId(), this.getStudyResultsSchema());
-    List<CovariateStat> catagoricalStats =  this.getStudyResultsJdbcTemplate().query(translatedSql, (rs,rowNum) -> { 
+    translatedSql = SqlTranslate.translateSql(categoricalQuery, "sql server", this.getStudyResultsDialect(), SessionUtils.sessionId(), this.getStudyResultsSchema());
+    List<CovariateStat> categoricalStats =  this.getStudyResultsJdbcTemplate().query(translatedSql, (rs,rowNum) -> { 
       CovariateStat mappedRow = new CovariateStat() {{
         covariateId = rs.getLong("covariate_id");
         covariateName = rs.getString("covariate_name");
@@ -416,7 +429,7 @@ public class StudyService extends AbstractDaoService  {
       return mappedRow;
     });    
     
-    result.catagorical = catagoricalStats;
+    result.categorical = categoricalStats;
     result.continuous = continuousStats;
     
     return result;

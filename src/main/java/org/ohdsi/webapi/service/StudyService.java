@@ -205,7 +205,7 @@ public class StudyService extends AbstractDaoService  {
     
     if (searchTerm != null && searchTerm.length() > 0)
     {
-      clauses.add(String.format("lower(ar1.covariate_name) like '%s'",searchTerm));
+      clauses.add(String.format("lower(ar1.covariate_name) like '%%%s%%'",searchTerm));
     }
     
     if (analysisIds != null && analysisIds.size() > 0)

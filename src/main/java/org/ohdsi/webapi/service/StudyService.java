@@ -352,7 +352,7 @@ public class StudyService extends AbstractDaoService  {
   @Produces(MediaType.APPLICATION_JSON)
   public StudyStatistics getStudyStatistics(
           @PathParam("studyId") final int studyId, 
-          @PathParam("cohortId") final int cohortId, 
+          @PathParam("cohortId") final long cohortId, 
           @PathParam("sourceId") final int sourceId,
           @QueryParam("searchTerm") final String searchTerm,
           @QueryParam("analysisId") final List<String> analysisIds,
@@ -366,7 +366,7 @@ public class StudyService extends AbstractDaoService  {
     String catagoricalQuery = SqlRender.renderSql(
             QUERY_COVARIATE_STATS, 
             new String[] {"study_results_schema", "cohort_definition_id", "source_id", "criteria_clauses"},
-            new String[] {this.getStudyResultsSchema(), Integer.toString(cohortId), Integer.toString(sourceId), criteriaClauses.isEmpty() ? "" : " AND\n" + StringUtils.join(criteriaClauses, "\n AND ")}
+            new String[] {this.getStudyResultsSchema(), Long.toString(cohortId), Integer.toString(sourceId), criteriaClauses.isEmpty() ? "" : " AND\n" + StringUtils.join(criteriaClauses, "\n AND ")}
     );
     
     translatedSql = SqlTranslate.translateSql(catagoricalQuery, "sql server", this.getStudyResultsDialect(), SessionUtils.sessionId(), this.getStudyResultsSchema());
@@ -389,7 +389,7 @@ public class StudyService extends AbstractDaoService  {
     String continuousQuery = SqlRender.renderSql(
             QUERY_COVARIATE_DIST, 
             new String[] {"study_results_schema", "cohort_definition_id", "source_id", "criteria_clauses"},
-            new String[] {this.getStudyResultsSchema(), Integer.toString(cohortId), Integer.toString(sourceId), criteriaClauses.isEmpty() ? "" : " AND\n" +StringUtils.join(criteriaClauses, "\n AND ")}
+            new String[] {this.getStudyResultsSchema(), Long.toString(cohortId), Integer.toString(sourceId), criteriaClauses.isEmpty() ? "" : " AND\n" +StringUtils.join(criteriaClauses, "\n AND ")}
     );
     
     translatedSql = SqlTranslate.translateSql(continuousQuery, "sql server", this.getStudyResultsDialect(), SessionUtils.sessionId(), this.getStudyResultsSchema());

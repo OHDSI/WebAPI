@@ -16,12 +16,14 @@
 package org.ohdsi.webapi.study.report;
 
 import java.awt.Color;
+import java.util.Arrays;
 import static net.sf.dynamicreports.report.builder.DynamicReports.*;
 
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import net.sf.dynamicreports.jasper.builder.JasperReportBuilder;
@@ -38,13 +40,17 @@ import net.sf.dynamicreports.report.builder.style.StyleBuilder;
 import net.sf.dynamicreports.report.constant.Calculation;
 import net.sf.dynamicreports.report.constant.HorizontalTextAlignment;
 import net.sf.dynamicreports.report.constant.Markup;
+import net.sf.dynamicreports.report.constant.StretchType;
 import net.sf.dynamicreports.report.constant.VerticalTextAlignment;
 import net.sf.dynamicreports.report.definition.ReportParameters;
+import net.sf.dynamicreports.report.definition.expression.DRISimpleExpression;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.service.StudyReportService;
 import org.ohdsi.webapi.service.StudyReportService.CovariateStat;
 import org.ohdsi.webapi.study.StudyCohort;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -58,6 +64,9 @@ public class StudyReportManager {
 
 	@Autowired
 	private StudyReportService studyReportService;
+	
+	@Value("${studyresults.resourcepath}") 
+	private String resourcePath;
 
 	private StyleBuilder titleStyle;
 	private StyleBuilder subreportTitleStyle;
@@ -67,26 +76,195 @@ public class StudyReportManager {
 	private StyleBuilder columnHeaderStyle;
 	private StyleBuilder groupHeaderStyle;
 	private StyleBuilder ctColumnStyle;
+	private StyleBuilder footnoteStyle;
+	
 
 	private class OutcomeGroupExpression extends AbstractSimpleExpression<String> {
 		
-		private Map<Long, StudyCohort> cohortLookup;
-		
-		public OutcomeGroupExpression(Map<Long, StudyCohort> cohortLookup) {
-			this.cohortLookup = cohortLookup;
+		public OutcomeGroupExpression() {
 		}
 		
 		@Override
 		public String evaluate(ReportParameters reportParameters) {
-	
-			Long targetCohortId = reportParameters.getValue("targetCohortId");
-			Long outcomeCohortId = reportParameters.getValue("outcomeCohortId");
 			return String.format("%s - %s", 
-				cohortLookup.get(targetCohortId).getName(), 
-				cohortLookup.get(outcomeCohortId).getName());
+				reportParameters.getValue("targetCohortName"), 
+				reportParameters.getValue("outcomeCohortName"));
 		}
 	}
 	
+	private class CompareGroupExpression extends AbstractSimpleExpression<String> {
+		
+		public CompareGroupExpression() {
+		}
+		
+		@Override
+		public String evaluate(ReportParameters reportParameters) {
+			return String.format("%s & %s - %s", 
+				reportParameters.getValue("targetCohortName"), 
+				reportParameters.getValue("comparatorCohortName"),
+				reportParameters.getValue("outcomeCohortName"));
+		}
+	}
+	
+	private class CIExpression extends AbstractSimpleExpression<String> {
+		@Override
+		public String evaluate(ReportParameters reportParameters) {
+			java.text.DecimalFormat df = new java.text.DecimalFormat("#.00");
+			Double rr = reportParameters.getValue("relativeRisk");
+			Double lb95 = reportParameters.getValue("lb95");
+			Double ub95 = reportParameters.getValue("ub95");
+			return String.format("%s (%s - %s)", df.format(rr), df.format(lb95), df.format(ub95));
+		}   		
+	}
+	
+	public static class RelativeRiskRow {
+		private String dataSource;
+		private String targetCohortName;
+		private String comparatorCohortName;
+		private String outcomeCohortName;
+		private int atRisk;
+		private int cases;
+		private Double personTime;
+		private Double relativeRisk;
+		private Double lb95;
+		private Double ub95;
+
+		public RelativeRiskRow() {
+		}
+
+		public String getDataSource() {
+			return dataSource;
+		}
+
+		public void setDataSource(String dataSource) {
+			this.dataSource = dataSource;
+		}
+
+		public String getTargetCohortName() {
+			return targetCohortName;
+		}
+
+		public void setTargetCohortName(String targetCohortName) {
+			this.targetCohortName = targetCohortName;
+		}
+
+		public String getComparatorCohortName() {
+			return comparatorCohortName;
+		}
+
+		public void setComparatorCohortName(String comparatorCohortName) {
+			this.comparatorCohortName = comparatorCohortName;
+		}
+
+		public String getOutcomeCohortName() {
+			return outcomeCohortName;
+		}
+
+		public void setOutcomeCohortName(String outcomeCohortName) {
+			this.outcomeCohortName = outcomeCohortName;
+		}
+
+		public int getAtRisk() {
+			return atRisk;
+		}
+
+		public void setAtRisk(int atRisk) {
+			this.atRisk = atRisk;
+		}
+
+		public int getCases() {
+			return cases;
+		}
+
+		public void setCases(int cases) {
+			this.cases = cases;
+		}
+
+		public Double getPersonTime() {
+			return personTime;
+		}
+
+		public void setPersonTime(Double personTime) {
+			this.personTime = personTime;
+		}
+
+		public Double getRelativeRisk() {
+			return relativeRisk;
+		}
+
+		public void setRelativeRisk(Double relativeRisk) {
+			this.relativeRisk = relativeRisk;
+		}
+
+		public Double getLb95() {
+			return lb95;
+		}
+
+		public void setLb95(Double lb95) {
+			this.lb95 = lb95;
+		}
+
+		public Double getUb95() {
+			return ub95;
+		}
+
+		public void setUb95(Double ub95) {
+			this.ub95 = ub95;
+		}
+
+		public RelativeRiskRow dataSource(final String value) {
+			this.dataSource = value;
+			return this;
+		}
+
+		public RelativeRiskRow targetCohortName(final String value) {
+			this.targetCohortName = value;
+			return this;
+		}
+
+		public RelativeRiskRow comparatorCohortName(final String value) {
+			this.comparatorCohortName = value;
+			return this;
+		}
+
+		public RelativeRiskRow outcomeCohortName(final String value) {
+			this.outcomeCohortName = value;
+			return this;
+		}
+
+		public RelativeRiskRow atRisk(final int value) {
+			this.atRisk = value;
+			return this;
+		}
+
+		public RelativeRiskRow cases(final int value) {
+			this.cases = value;
+			return this;
+		}
+
+		public RelativeRiskRow personTime(final Double value) {
+			this.personTime = value;
+			return this;
+		}
+
+		public RelativeRiskRow relativeRisk(final Double value) {
+			this.relativeRisk = value;
+			return this;
+		}
+
+		public RelativeRiskRow lb95(final Double value) {
+			this.lb95 = value;
+			return this;
+		}
+
+		public RelativeRiskRow ub95(final Double value) {
+			this.ub95 = value;
+			return this;
+		}
+
+
+	}
+		
 	private void initStyles() {
 
 		titleStyle = stl.style().setFont(stl.fontArialBold().setFontSize(18))
@@ -125,6 +303,8 @@ public class StudyReportManager {
 			.setFont(stl.fontArial().setFontSize(10).setBold(true))
 			.setTopPadding(5);
 		
+		footnoteStyle = stl.style().setFont(stl.fontArial().setFontSize(8)).setMarkup(Markup.STYLED);
+		
 	}
 
 	public StudyReportManager() {
@@ -135,7 +315,8 @@ public class StudyReportManager {
 
 		CrosstabRowGroupBuilder<String> rowGroup = ctab.rowGroup("name", String.class)
 			.setShowTotal(false)
-			.setHeaderStyle(measureStyle);
+			.setHeaderStyle(stl.style(measureStyle).setMarkup(Markup.STYLED).setHorizontalTextAlignment(HorizontalTextAlignment.LEFT))
+			.setHeaderWidth(140);
 		
 		CrosstabColumnGroupBuilder<String> columnGroup = ctab.columnGroup("dataSource", String.class)
 			.setShowTotal(false)
@@ -157,6 +338,14 @@ public class StudyReportManager {
 		return crosstab;
 	}
 
+	private JasperReportBuilder getImageTest(String imagePath) {
+		JasperReportBuilder imgTest = report();
+		String filename = resourcePath + imagePath;
+		// add a column for an image.
+		imgTest.addSummary(cmp.image(filename).setHeight(200));
+		return imgTest;
+	}
+
 	private JasperReportBuilder getIRReport(Map<Long,StudyCohort> cohortLookup) {
 		// rendering of reports goes cohort
 		TextColumnBuilder<String> dataSourceCol = col.column("Data Source", "dataSource", type.stringType());
@@ -173,13 +362,13 @@ public class StudyReportManager {
 		ColumnTitleGroupBuilder ppGroup = grid.titleGroup("Per Protocol", casesPPCol,personTimePPCol,proportionPPCol, ratePPCol).setTitleFixedWidth(180);
 		ColumnTitleGroupBuilder ittGroup = grid.titleGroup("Intent to Treat", casesITTCol,personTimeITTCol,proportionITTCol, rateITTCol).setTitleFixedWidth(180);
 
-		CustomGroupBuilder cohortGroup = grp.group(new OutcomeGroupExpression(cohortLookup))
+		CustomGroupBuilder cohortGroup = grp.group(new OutcomeGroupExpression())
 			.keepTogether();
 		
 		JasperReportBuilder irReport = report()
 			.fields(
-				field("targetCohortId", Long.class),
-				field("outcomeCohortId", Long.class)
+				field("targetCohortName", String.class),
+				field("outcomeCohortName", String.class)
 			)
 			.columnGrid(dataSourceCol, atRiskCol, ppGroup, ittGroup)
 			.columns(dataSourceCol,atRiskCol,
@@ -196,6 +385,40 @@ public class StudyReportManager {
 		return irReport;
 	}
 	
+	private JasperReportBuilder getRelativeRiskReport(boolean isSelfControl) {
+/*
+		private String dataSource;
+		private String targetCohortName;
+		private String comparatorCohortName;
+		private String outcomeCohortName;
+		private int atRisk;
+		private int cases;
+		private Double personTime;
+		private Double relativeRisk;
+		private Double lb95;
+		private Double ub95;		
+*/		
+		// rendering of reports goes cohort
+		TextColumnBuilder<String> dataSourceCol = col.column("Data Source", "dataSource", type.stringType());
+		TextColumnBuilder<Integer> atRiskCol = col.column("At Risk", "atRisk", type.integerType()).setFixedWidth(50);
+		TextColumnBuilder<Integer> casesCol = col.column("Cases", "cases", type.integerType()).setFixedWidth(50);
+		TextColumnBuilder<Double> personTimeCol = col.column("TAR", "personTime", type.doubleType()).setPattern("#,##0.0");
+		TextColumnBuilder<Double> relativeRiskCol = col.column("RR", "relativeRisk",type.doubleType()).setFixedWidth(30).setPattern("#0.00");
+		TextColumnBuilder<String> ciCol = col.column("Confidence Interval", new CIExpression());
+
+		JasperReportBuilder ccaReport = report()
+			.fields(
+				field("lb95", Double.class),
+				field("ub95", Double.class)
+			)
+			.columns(dataSourceCol,atRiskCol, casesCol,personTimeCol, relativeRiskCol, ciCol)
+			.setColumnStyle(this.columnStyleSmall)
+			.setColumnTitleStyle(this.columnHeaderStyle)
+			.setColumnHeaderStyle(this.columnHeaderStyle)
+		;
+		return ccaReport;
+	}
+	
 	public JasperReportBuilder getMainReport(Report report) throws Exception {
 
 		// create container report to host embedded report sections
@@ -204,17 +427,20 @@ public class StudyReportManager {
 		
 		mainReport.setPageMargin(margin(40));
 
-		VerticalListBuilder contentBuilder = cmp.verticalList();
+		VerticalListBuilder contentBuilder = cmp.verticalList().setGap(10);
 
 		contentBuilder.add(cmp.text("Concatenated reports"));
-
-		/* BEGIN: Covariate reports */
 		
+		//contentBuilder.add(cmp.subreport(getImageTest("sample/calibration_plot.png")));		
+
 		contentBuilder.add(cmp.text("Cohort Characterization"));
+
+		// find active cohort pairs
+		List<ReportCohortPair> activePairs = report.getCohortPairs().stream().filter(ReportCohortPair::isActive).collect(Collectors.toList());
 
 		// create cohort lookup id->cohort
 		Map<Long, StudyCohort> cohortLookup = new HashMap<>();
-		report.getCohortPairs().forEach(p -> {
+		activePairs.forEach(p -> {
 			if (!cohortLookup.containsKey(p.getTarget().getId()))
 				cohortLookup.put(p.getTarget().getId(), p.getTarget());
 			if (!cohortLookup.containsKey(p.getOutcome().getId()))
@@ -226,6 +452,8 @@ public class StudyReportManager {
 		Map<String, Integer> sourceLookup = IntStream.range(0, activeSources.size()).boxed()
 			.collect(Collectors.toMap(i -> activeSources.get(i).getSource().getKey(), i -> i));
 
+		/* BEGIN: Covariate reports */
+		
 		// create map and comparator for each type of covariates to sort the data for crosstabs
 		// separate Maps/Comparators are needed because the raw data does not have the covariate section 
 		// nor the ordering the data should appear
@@ -271,8 +499,8 @@ public class StudyReportManager {
 
 		// Covariate Stats
 		List<CovariateStat> covariateStats = studyReportService.getReportCovariates(report);
-
-		for (ReportCohortPair cohortPair : report.getCohortPairs()) {
+		
+		for (ReportCohortPair cohortPair : activePairs) {
 			contentBuilder.add(cmp.text(String.format("<b>Cohort:</b> %s", cohortPair.getTarget().getName())).setMarkup(Markup.STYLED));
 				
 			CrosstabBuilder crosstab;
@@ -293,7 +521,7 @@ public class StudyReportManager {
 
 			subReport = report()
 				.title(cmp.text(String.format("Table %da. Demographics", tableIndex)).setMarkup(Markup.STYLED))
-				.summary(crosstab);
+				.summary(demographicStats.size() > 0 ? crosstab : cmp.text("No demographic covariates selected."));
 
 			contentBuilder.add(cmp.subreport(subReport));
 			
@@ -303,14 +531,30 @@ public class StudyReportManager {
 				.sorted(conditionComparator)
 				.collect(Collectors.toList());
 
+			FootnoteManager conditionFootnoteManager = new FootnoteManager();
+			String conditionsDefaultAnalysis = "Condition occurrence record for the verbatim concept observed during 365d on or prior to cohort index";
+			conditionStats.forEach(s -> {
+				if (!conditionsDefaultAnalysis.equals(s.getAnalysisName())) {
+					s.setName(String.format("%s<sup>%s</sup>", s.getName(), conditionFootnoteManager.getFootnoteSymbol(s.getAnalysisName())));
+				}
+			});
+			String conditionFootnotes = StringUtils.join(conditionFootnoteManager.getFootnotes().stream().map(f -> {
+				return String.format("%s: %s", f.glyph, f.footnote);
+			}).collect(Collectors.toList()),"\n");
+			
+			String footnoteText = "Note: using condition occurrence for the verbatim concept observed during 365d on or prior to cohort index";
+			footnoteText = footnoteText + ((conditionFootnotes.length() > 0) ? " unless noted below:\n" + conditionFootnotes : ".");
+			
 			crosstab = getCovariateCrossTab()
 				.setDataSource(new JRBeanCollectionDataSource(conditionStats))
 				.setDataPreSorted(true);
 
 			subReport = report()
 				.title(cmp.text(String.format("Table %db. Conditions", tableIndex)).setMarkup(Markup.STYLED))
-				.summary(crosstab);
-
+				.summary(conditionStats.size() > 0 ? cmp.verticalList(crosstab, 
+					cmp.text(footnoteText).setStyle(this.footnoteStyle)).setGap(3)
+					: cmp.text("No condition covariates selected."));
+			
 			contentBuilder.add(cmp.subreport(subReport));
 			
 			// Drugs
@@ -319,13 +563,29 @@ public class StudyReportManager {
 				.sorted(drugComparator)
 				.collect(Collectors.toList());
 
+			FootnoteManager drugFootnoteManager = new FootnoteManager();
+			String drugDefaultAnalysis = "Drug exposure record for the verbatim concept observed during 365d on or prior to cohort index";
+			drugStats.forEach(s -> {
+				if (!drugDefaultAnalysis.equals(s.getAnalysisName())) {
+					s.setName(String.format("%s<sup>%s</sup>", s.getName(), drugFootnoteManager.getFootnoteSymbol(s.getAnalysisName())));
+				}
+			});
+			String drugFootnotes = StringUtils.join(drugFootnoteManager.getFootnotes().stream().map(f -> {
+				return String.format("%s: %s", f.glyph, f.footnote);
+			}).collect(Collectors.toList()),"\n");
+			
+			String drugFootnoteText = "Note: using drug exposure record for the verbatim concept observed during 365d on or prior to cohort index";
+			drugFootnoteText = drugFootnoteText + ((drugFootnotes.length() > 0) ? " unless noted below:\n" + drugFootnotes : ".");
+			
 			crosstab = getCovariateCrossTab()
 				.setDataSource(new JRBeanCollectionDataSource(drugStats))
 				.setDataPreSorted(true);
 
 			subReport = report()
 				.title(cmp.text(String.format("Table %dc. Drugs", tableIndex)).setMarkup(Markup.STYLED))
-				.summary(crosstab);
+				.summary(drugStats.size() > 0 ? cmp.verticalList(crosstab, 
+					cmp.text(drugFootnoteText).setStyle(this.footnoteStyle)).setGap(3)
+					: cmp.text("No drug covariates selected."));
 
 			contentBuilder.add(cmp.subreport(subReport));
 			
@@ -341,7 +601,7 @@ public class StudyReportManager {
 
 			subReport = report()
 				.title(cmp.text(String.format("Table %dd. Procedures", tableIndex)).setMarkup(Markup.STYLED))
-				.summary(crosstab);
+				.summary(procedureStats.size() > 0 ? crosstab : cmp.text("No procedure covariates selected."));
 			
 			contentBuilder.add(cmp.subreport(subReport));
 			
@@ -351,12 +611,24 @@ public class StudyReportManager {
 		/* END: Covariate reports */
 
 		/* BEGIN: IR reports */
-
-		// get all outcome statistics across all databases
-		List<StudyReportService.OutcomeSummaryStat> outcomeStats = studyReportService.getReportOutcomes(report);
 		
+		// Get report
 		JasperReportBuilder irReport = getIRReport(cohortLookup);
 
+		// outcome comparator: by pair index then by datasource index
+		Comparator<StudyReportService.OutcomeSummaryStat> outcomeComparator = 
+			Comparator.comparing(oss -> {
+				ReportCohortPair targetPair = activePairs.stream().filter(p -> { 
+					return (p.getTarget().getId() == oss.getTargetCohortId() && p.getOutcome().getId() == oss.getOutcomeCohortId());
+				}).findFirst().get();
+				return activePairs.indexOf(targetPair);
+			});
+		outcomeComparator = outcomeComparator.thenComparing(oss -> sourceLookup.get(oss.getDataSource()));
+
+		// get all outcome statistics across all active databases, and sort
+		List<StudyReportService.OutcomeSummaryStat> outcomeStats = studyReportService.getReportIR(activePairs, activeSources);
+		outcomeStats.sort(outcomeComparator);
+		
 		irReport.title(cmp.text(String.format("Table %d. Outcome Summary (Target, Outcome, Source)", tableIndex)).setMarkup(Markup.STYLED))
 			.setDataSource(outcomeStats);
 		tableIndex++;
@@ -364,6 +636,71 @@ public class StudyReportManager {
 		contentBuilder.add(cmp.subreport(irReport));
 		
 		/* END: IR reports */
+		
+		/* BEGIN: Effect Estimate reports */
+		
+		// CCA Reports
+		
+		contentBuilder.add(cmp.text("Cohort Comparision Anaysis Results"));
+
+		// outcome comparator: by pair index then by datasource index
+		Comparator<StudyReportService.EffectEstimateStat> eeComparator = 
+			Comparator.comparing(ees -> {
+				ReportCohortPair targetPair = activePairs.stream().filter(p -> { 
+					return (p.getTarget().getId() == ees.getTargetCohortId() && p.getOutcome().getId() == ees.getOutcomeCohortId());
+				}).findFirst().get();
+				return activePairs.indexOf(targetPair);
+			});
+		eeComparator = eeComparator.thenComparing(ees -> sourceLookup.get(ees.getDataSource()));
+		eeComparator = eeComparator.thenComparing(ees -> ees.getComparatorCohortName());
+		
+		// get all outcome statistics across all active databases, and sort
+		List<StudyReportService.EffectEstimateStat> ccaStats = studyReportService.getReportCCA(activePairs, activeSources);
+		ccaStats.sort(eeComparator);
+
+		Function<StudyReportService.EffectEstimateStat, List<Object>> compositeKey = statRecord ->
+        Arrays.<Object>asList(statRecord.getTargetCohortName(), statRecord.getOutcomeCohortName());
+		
+		Map<Object, List<StudyReportService.EffectEstimateStat>> map =
+			ccaStats.stream().collect(Collectors.groupingBy(compositeKey, Collectors.toList()));
+
+		char subTableIndex = 'a';
+		for (ReportCohortPair p : activePairs) {
+			JasperReportBuilder rrReport = getRelativeRiskReport(false);
+			List<RelativeRiskRow> rrRows = ccaStats.stream()
+				.filter(s -> {return s.getTargetCohortId() == p.getTarget().getId() && s.getOutcomeCohortId() == p.getOutcome().getId();})
+				.map(ees -> { 
+					return new RelativeRiskRow()
+						.targetCohortName(ees.getTargetCohortName())
+						.comparatorCohortName(ees.getComparatorCohortName())
+						.outcomeCohortName(ees.getOutcomeCohortName())
+						.dataSource(ees.getDataSource())
+						.atRisk(ees.getCasesPP())
+						.personTime(ees.getPersonTimePP())
+						.relativeRisk(ees.getRelativeRiskPP())
+						.lb95(ees.getLb95PP())
+						.ub95(ees.getUb95PP());
+				})
+				.collect(Collectors.toList());
+			
+			rrReport.title(cmp.text(String.format("Table %d%s. Relative Risk Summary: %s - %s)", 
+				tableIndex, 
+				String.valueOf(subTableIndex), 
+				p.getTarget().getName(), 
+				p.getOutcome().getName())).setMarkup(Markup.STYLED))
+				.setDataSource(rrRows);
+			contentBuilder.add(cmp.subreport(rrReport));
+			subTableIndex++;
+		}
+		
+		tableIndex++;
+		
+		contentBuilder.add(cmp.subreport(irReport));
+
+		
+		
+		/* END: Effect Estimate reports */
+		
 		
 		mainReport.title(contentBuilder);
 		return mainReport;

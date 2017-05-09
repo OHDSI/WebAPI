@@ -20,9 +20,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -40,9 +38,12 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import net.sf.dynamicreports.jasper.builder.JasperReportBuilder;
 import net.sf.dynamicreports.jasper.builder.export.JasperDocxExporterBuilder;
-import net.sf.dynamicreports.jasper.builder.export.JasperHtmlExporterBuilder;
 import net.sf.dynamicreports.jasper.builder.export.JasperPdfExporterBuilder;
 import net.sf.dynamicreports.report.builder.DynamicReports;
+import net.sf.jasperreports.engine.export.HtmlExporter;
+import net.sf.jasperreports.export.SimpleExporterInput;
+import net.sf.jasperreports.export.SimpleHtmlExporterOutput;
+import net.sf.jasperreports.export.SimpleHtmlReportConfiguration;
 import org.apache.commons.lang.StringUtils;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
@@ -75,6 +76,8 @@ public class StudyReportService extends AbstractDaoService {
 
 	private final String QUERY_COVARIATE_STATS = ResourceHelper.GetResourceAsString("/resources/study/report/sql/queryCovariateStats.sql");
 	private final String QUERY_OUTCOME_STATS = ResourceHelper.GetResourceAsString("/resources/study/report/sql/queryOutcomeStats.sql");
+	private final String QUERY_CCA_STATS = ResourceHelper.GetResourceAsString("/resources/study/report/sql/queryCCAStats.sql");
+	private final String QUERY_SCCA_STATS = ResourceHelper.GetResourceAsString("/resources/study/report/sql/querySCCAStats.sql");
 
 	@Autowired
 	StudyService studyService;
@@ -233,17 +236,21 @@ public class StudyReportService extends AbstractDaoService {
 		private int cohortId;
 		private long covariateId;
 		private String name;
+		private String analysisName;
+		private String timeWindow;
 		private long count;
 		private double statValue;
 
 		public CovariateStat() {
 		}
 
-		public CovariateStat(String dataSource, int cohortId, long covariateId, String name, long count, double statValue) {
+		public CovariateStat(String dataSource, int cohortId, long covariateId, String name, String analysisName, String timeWindow, long count, double statValue) {
 			this.dataSource = dataSource;
 			this.cohortId = cohortId;
 			this.covariateId = covariateId;
 			this.name = name;
+			this.analysisName = analysisName;
+			this.timeWindow = timeWindow;
 			this.count = count;
 			this.statValue = statValue;
 		}
@@ -280,6 +287,22 @@ public class StudyReportService extends AbstractDaoService {
 			this.name = name;
 		}
 
+		public String getAnalysisName() {
+			return analysisName;
+		}
+
+		public void setAnalysisName(String analysisName) {
+			this.analysisName = analysisName;
+		}
+
+		public String getTimeWindow() {
+			return timeWindow;
+		}
+
+		public void setTimeWindow(String timeWindow) {
+			this.timeWindow = timeWindow;
+		}
+
 		public long getCount() {
 			return count;
 		}
@@ -301,7 +324,9 @@ public class StudyReportService extends AbstractDaoService {
 	public static class OutcomeSummaryStat {
 		private String dataSource;
 		private long targetCohortId;
+		private String targetCohortName;
 		private long outcomeCohortId;
+		private String outcomeCohortName;
 		private int atRiskPP;
 		private int casesPP;
 		private Double personTimePP;
@@ -312,19 +337,166 @@ public class StudyReportService extends AbstractDaoService {
 		private Double incidenceProportionITT;
 		private Double incidenceRateITT;
 
-		public OutcomeSummaryStat(String dataSource, long targetCohorId, long outcomeCohortId, int atRiskPP, int casesPP, Double personTimePP, Double incidenceProportionPP, Double incidenceRatePP, int casesITT, Double personTimeITT, Double incidenceProportionITT, Double incidenceRateITT) {
-			this.dataSource = dataSource;
-			this.targetCohortId = targetCohorId;
-			this.outcomeCohortId = outcomeCohortId;
-			this.atRiskPP = atRiskPP;
-			this.casesPP = casesPP;
-			this.personTimePP = personTimePP;
-			this.incidenceProportionPP = incidenceProportionPP;
-			this.incidenceRatePP = incidenceRatePP;
-			this.casesITT = casesITT;
-			this.personTimeITT = personTimeITT;
-			this.incidenceProportionITT = incidenceProportionITT;
-			this.incidenceRateITT = incidenceRateITT;
+		public OutcomeSummaryStat() {
+		}
+
+		public String getDataSource() {
+			return dataSource;
+		}
+
+		public long getTargetCohortId() {
+			return targetCohortId;
+		}
+
+		public String getTargetCohortName() {
+			return targetCohortName;
+		}
+
+		public long getOutcomeCohortId() {
+			return outcomeCohortId;
+		}
+
+		public String getOutcomeCohortName() {
+			return outcomeCohortName;
+		}
+
+		public int getAtRiskPP() {
+			return atRiskPP;
+		}
+
+		public int getCasesPP() {
+			return casesPP;
+		}
+
+		public Double getPersonTimePP() {
+			return personTimePP;
+		}
+
+		public Double getIncidenceProportionPP() {
+			return incidenceProportionPP;
+		}
+
+		public Double getIncidenceRatePP() {
+			return incidenceRatePP;
+		}
+
+		public int getCasesITT() {
+			return casesITT;
+		}
+
+		public Double getPersonTimeITT() {
+			return personTimeITT;
+		}
+
+		public Double getIncidenceProportionITT() {
+			return incidenceProportionITT;
+		}
+
+		public Double getIncidenceRateITT() {
+			return incidenceRateITT;
+		}
+		
+		public OutcomeSummaryStat dataSource(final String value) {
+			this.dataSource = value;
+			return this;
+		}
+
+		public OutcomeSummaryStat targetCohortId(final long value) {
+			this.targetCohortId = value;
+			return this;
+		}
+
+		public OutcomeSummaryStat targetCohortName(final String value) {
+			this.targetCohortName = value;
+			return this;
+		}
+
+		public OutcomeSummaryStat outcomeCohortId(final long value) {
+			this.outcomeCohortId = value;
+			return this;
+		}
+
+		public OutcomeSummaryStat outcomeCohortName(final String value) {
+			this.outcomeCohortName = value;
+			return this;
+		}
+
+		public OutcomeSummaryStat atRiskPP(final int value) {
+			this.atRiskPP = value;
+			return this;
+		}
+
+		public OutcomeSummaryStat casesPP(final int value) {
+			this.casesPP = value;
+			return this;
+		}
+
+		public OutcomeSummaryStat personTimePP(final Double value) {
+			this.personTimePP = value;
+			return this;
+		}
+
+		public OutcomeSummaryStat incidenceProportionPP(final Double value) {
+			this.incidenceProportionPP = value;
+			return this;
+		}
+
+		public OutcomeSummaryStat incidenceRatePP(final Double value) {
+			this.incidenceRatePP = value;
+			return this;
+		}
+
+		public OutcomeSummaryStat casesITT(final int value) {
+			this.casesITT = value;
+			return this;
+		}
+
+		public OutcomeSummaryStat personTimeITT(final Double value) {
+			this.personTimeITT = value;
+			return this;
+		}
+
+		public OutcomeSummaryStat incidenceProportionITT(final Double value) {
+			this.incidenceProportionITT = value;
+			return this;
+		}
+
+		public OutcomeSummaryStat incidenceRateITT(final Double value) {
+			this.incidenceRateITT = value;
+			return this;
+		}
+	}
+
+	public static class EffectEstimateStat {
+		private int analysisId;
+		private String dataSource;
+		private long targetCohortId;
+		private String targetCohortName;
+		private long comparatorCohortId;
+		private String comparatorCohortName;
+		private long outcomeCohortId;
+		private String outcomeCohortName;
+		private int atRisk;
+		private int casesPP;
+		private Double personTimePP;
+		private Double relativeRiskPP;
+		private Double lb95PP;
+		private Double ub95PP;
+		private int casesITT;
+		private Double personTimeITT;
+		private Double relativeRiskITT;
+		private Double lb95ITT;
+		private Double ub95ITT;
+
+		public EffectEstimateStat() {
+		}
+
+		public int getAnalysisId() {
+			return analysisId;
+		}
+
+		public void setAnalysisId(int analysisId) {
+			this.analysisId = analysisId;
 		}
 
 		public String getDataSource() {
@@ -343,6 +515,30 @@ public class StudyReportService extends AbstractDaoService {
 			this.targetCohortId = targetCohortId;
 		}
 
+		public String getTargetCohortName() {
+			return targetCohortName;
+		}
+
+		public void setTargetCohortName(String targetCohortName) {
+			this.targetCohortName = targetCohortName;
+		}
+
+		public long getComparatorCohortId() {
+			return comparatorCohortId;
+		}
+
+		public void setComparatorCohortId(long comparatorCohortId) {
+			this.comparatorCohortId = comparatorCohortId;
+		}
+
+		public String getComparatorCohortName() {
+			return comparatorCohortName;
+		}
+
+		public void setComparatorCohortName(String comparatorCohortName) {
+			this.comparatorCohortName = comparatorCohortName;
+		}
+
 		public long getOutcomeCohortId() {
 			return outcomeCohortId;
 		}
@@ -351,12 +547,20 @@ public class StudyReportService extends AbstractDaoService {
 			this.outcomeCohortId = outcomeCohortId;
 		}
 
-		public int getAtRiskPP() {
-			return atRiskPP;
+		public String getOutcomeCohortName() {
+			return outcomeCohortName;
 		}
 
-		public void setAtRiskPP(int atRiskPP) {
-			this.atRiskPP = atRiskPP;
+		public void setOutcomeCohortName(String outcomeCohortName) {
+			this.outcomeCohortName = outcomeCohortName;
+		}
+
+		public int getAtRisk() {
+			return atRisk;
+		}
+
+		public void setAtRisk(int atRisk) {
+			this.atRisk = atRisk;
 		}
 
 		public int getCasesPP() {
@@ -375,20 +579,28 @@ public class StudyReportService extends AbstractDaoService {
 			this.personTimePP = personTimePP;
 		}
 
-		public Double getIncidenceProportionPP() {
-			return incidenceProportionPP;
+		public Double getRelativeRiskPP() {
+			return relativeRiskPP;
 		}
 
-		public void setIncidenceProportionPP(Double incidenceProportionPP) {
-			this.incidenceProportionPP = incidenceProportionPP;
+		public void setRelativeRiskPP(Double relativeRiskPP) {
+			this.relativeRiskPP = relativeRiskPP;
 		}
 
-		public Double getIncidenceRatePP() {
-			return incidenceRatePP;
+		public Double getLb95PP() {
+			return lb95PP;
 		}
 
-		public void setIncidenceRatePP(Double incidenceRatePP) {
-			this.incidenceRatePP = incidenceRatePP;
+		public void setLb95PP(Double lb95PP) {
+			this.lb95PP = lb95PP;
+		}
+
+		public Double getUb95PP() {
+			return ub95PP;
+		}
+
+		public void setUb95PP(Double ub95PP) {
+			this.ub95PP = ub95PP;
 		}
 
 		public int getCasesITT() {
@@ -407,25 +619,126 @@ public class StudyReportService extends AbstractDaoService {
 			this.personTimeITT = personTimeITT;
 		}
 
-		public Double getIncidenceProportionITT() {
-			return incidenceProportionITT;
+		public Double getRelativeRiskITT() {
+			return relativeRiskITT;
 		}
 
-		public void setIncidenceProportionITT(Double incidenceProportionITT) {
-			this.incidenceProportionITT = incidenceProportionITT;
+		public void setRelativeRiskITT(Double relativeRiskITT) {
+			this.relativeRiskITT = relativeRiskITT;
 		}
 
-		public Double getIncidenceRateITT() {
-			return incidenceRateITT;
+		public Double getLb95ITT() {
+			return lb95ITT;
 		}
 
-		public void setIncidenceRateITT(Double incidenceRateITT) {
-			this.incidenceRateITT = incidenceRateITT;
+		public void setLb95ITT(Double lb95ITT) {
+			this.lb95ITT = lb95ITT;
 		}
-		
-		
+
+		public Double getUb95ITT() {
+			return ub95ITT;
+		}
+
+		public void setUb95ITT(Double ub95ITT) {
+			this.ub95ITT = ub95ITT;
+		}
+
+		public EffectEstimateStat analysisId(final int value) {
+			this.analysisId = value;
+			return this;
+		}
+
+		public EffectEstimateStat dataSource(final String value) {
+			this.dataSource = value;
+			return this;
+		}
+
+		public EffectEstimateStat targetCohortId(final long value) {
+			this.targetCohortId = value;
+			return this;
+		}
+
+		public EffectEstimateStat targetCohortName(final String value) {
+			this.targetCohortName = value;
+			return this;
+		}
+
+		public EffectEstimateStat comparatorCohortId(final long value) {
+			this.comparatorCohortId = value;
+			return this;
+		}
+
+		public EffectEstimateStat comparatorCohortName(final String value) {
+			this.comparatorCohortName = value;
+			return this;
+		}
+
+		public EffectEstimateStat outcomeCohortId(final long value) {
+			this.outcomeCohortId = value;
+			return this;
+		}
+
+		public EffectEstimateStat outcomeCohortName(final String value) {
+			this.outcomeCohortName = value;
+			return this;
+		}
+
+		public EffectEstimateStat atRisk(final int value) {
+			this.atRisk = value;
+			return this;
+		}
+
+		public EffectEstimateStat casesPP(final int value) {
+			this.casesPP = value;
+			return this;
+		}
+
+		public EffectEstimateStat personTimePP(final Double value) {
+			this.personTimePP = value;
+			return this;
+		}
+
+		public EffectEstimateStat relativeRiskPP(final Double value) {
+			this.relativeRiskPP = value;
+			return this;
+		}
+
+		public EffectEstimateStat lb95PP(final Double value) {
+			this.lb95PP = value;
+			return this;
+		}
+
+		public EffectEstimateStat ub95PP(final Double value) {
+			this.ub95PP = value;
+			return this;
+		}
+
+		public EffectEstimateStat casesITT(final int value) {
+			this.casesITT = value;
+			return this;
+		}
+
+		public EffectEstimateStat personTimeITT(final Double value) {
+			this.personTimeITT = value;
+			return this;
+		}
+
+		public EffectEstimateStat relativeRiskITT(final Double value) {
+			this.relativeRiskITT = value;
+			return this;
+		}
+
+		public EffectEstimateStat lb95ITT(final Double value) {
+			this.lb95ITT = value;
+			return this;
+		}
+
+		public EffectEstimateStat ub95ITT(final Double value) {
+			this.ub95ITT = value;
+			return this;
+		}
 	}
-
+	
 	private ReportDTO fromReport(Report report) {
 		HashMap<Long, StudyService.CohortDetail> cohorts = new HashMap<>();
 
@@ -532,15 +845,44 @@ public class StudyReportService extends AbstractDaoService {
 		return covariateQuery;
 	}
 
-	private String buildOutcomeStatQuery(List<Long> targetCohortIds, List<Long> outcomeCohortIds, List<Integer> sources) {
+	private String buildIRStatQuery(List<ReportCohortPair> cohortPairs,List<Integer> sources) {
 
-		String covariateQuery = QUERY_OUTCOME_STATS;
-		covariateQuery = StringUtils.replace(covariateQuery, "@target_id_list", StringUtils.join(targetCohortIds, ","));
-		covariateQuery = StringUtils.replace(covariateQuery, "@outcome_id_list", StringUtils.join(outcomeCohortIds, ","));
-		covariateQuery = StringUtils.replace(covariateQuery, "@source_id_list", StringUtils.join(sources, ","));
+		String irStatQuery = QUERY_OUTCOME_STATS;
+		List<String> pairClauses = cohortPairs.stream()
+			.map(p -> { return String.format("(os.target_cohort_id = %d AND os.outcome_cohort_id = %d)", p.getTarget().getId(), p.getOutcome().getId());})
+			.collect(Collectors.toList());
+			
+		irStatQuery = StringUtils.replace(irStatQuery, "@pair_clauses", StringUtils.join(pairClauses, " OR "));
+		irStatQuery = StringUtils.replace(irStatQuery, "@source_id_list", StringUtils.join(sources, ","));
 
-		return covariateQuery;
+		return irStatQuery;
 	}
+	
+	private String buildCCAStatQuery(List<ReportCohortPair> cohortPairs,List<Integer> sources) {
+
+		String ccaQuery = QUERY_CCA_STATS;
+		List<String> pairClauses = cohortPairs.stream()
+			.map(p -> { return String.format("(cca.target_cohort_id = %d AND cca.outcome_cohort_id = %d)", p.getTarget().getId(), p.getOutcome().getId());})
+			.collect(Collectors.toList());
+			
+		ccaQuery = StringUtils.replace(ccaQuery, "@pair_clauses", StringUtils.join(pairClauses, " OR "));
+		ccaQuery = StringUtils.replace(ccaQuery, "@source_id_list", StringUtils.join(sources, ","));
+
+		return ccaQuery;
+	}
+	
+	private String buildSCCAStatQuery(List<ReportCohortPair> cohortPairs,List<Integer> sources) {
+
+		String ccaQuery = QUERY_SCCA_STATS;
+		List<String> pairClauses = cohortPairs.stream()
+			.map(p -> { return String.format("(scca.target_cohort_id = %d AND scca.outcome_cohort_id = %d)", p.getTarget().getId(), p.getOutcome().getId());})
+			.collect(Collectors.toList());
+			
+		ccaQuery = StringUtils.replace(ccaQuery, "@pair_clauses", StringUtils.join(pairClauses, " OR "));
+		ccaQuery = StringUtils.replace(ccaQuery, "@source_id_list", StringUtils.join(sources, ","));
+
+		return ccaQuery;
+	}		
 	
 	public List<CovariateStat> getReportCovariates(Report report) {
 
@@ -566,6 +908,8 @@ public class StudyReportService extends AbstractDaoService {
 							row.getInt("cohort_definition_id"),
 							row.getLong("covariate_id"),
 							row.getString("covariate_name"),
+							row.getString("analysis_name"),
+							row.getString("time_window"),
 							row.getLong("count_value"),
 							row.getDouble("stat_value")
 			);
@@ -574,15 +918,12 @@ public class StudyReportService extends AbstractDaoService {
 		return covariateStats;
 	}
 	
-	public List<OutcomeSummaryStat> getReportOutcomes(Report report) {
-		// Collect list of cohort IDs
-		List<Long> targetCohorts = report.getCohortPairs().stream().map(rc -> rc.getTarget().getId()).distinct().collect(Collectors.toList());
-		List<Long> outcomeCohorts = report.getCohortPairs().stream().map(rc -> rc.getOutcome().getId()).distinct().collect(Collectors.toList());
-		
+	public List<OutcomeSummaryStat> getReportIR(List<ReportCohortPair> activePairs, List<ReportSource> activeSources) {
+
 		// Use the order of sources that are returned from the Report entity, but only include isActive()
-		List<Integer> activeSourceIds = report.getSources().stream().filter(source -> source.isActive()).map(rs -> rs.getSource().getId()).collect(Collectors.toList());
+		List<Integer> activeSourceIds = activeSources.stream().map(rs -> rs.getSource().getId()).collect(Collectors.toList());
 		
-		String outcomeQuery = buildOutcomeStatQuery(targetCohorts, outcomeCohorts, activeSourceIds);
+		String outcomeQuery = buildIRStatQuery(activePairs, activeSourceIds);
 		outcomeQuery = SqlRender.renderSql(outcomeQuery, 
 			new String[] {"study_results_schema"}, 
 			new String[] {this.getStudyResultsSchema()}
@@ -591,25 +932,97 @@ public class StudyReportService extends AbstractDaoService {
 		String translatedSql = SqlTranslate.translateSql(outcomeQuery, "sql server", this.getStudyResultsDialect(), SessionUtils.sessionId(), this.getStudyResultsSchema());
 		
 		List<OutcomeSummaryStat> outcomeStats = this.getStudyResultsJdbcTemplate().query(translatedSql, (row, rowNum) -> {
-			return new OutcomeSummaryStat(row.getString("source_key"),
-				row.getLong("target_cohort_id"),
-				row.getLong("outcome_cohort_id"),
-				row.getInt("at_risk_pp"),
-				row.getInt("cases_pp"),
-				row.getDouble("pt_pp"),
-				row.getDouble("ip_pp"),
-				row.getDouble("ir_pp"),
-				row.getInt("cases_itt"),
-				row.getDouble("pt_itt"),
-				row.getDouble("ip_itt"),
-				row.getDouble("ir_itt")
-			);
+			return new OutcomeSummaryStat()
+				.dataSource(row.getString("source_key"))
+				.targetCohortId(row.getLong("target_cohort_id"))
+				.targetCohortName(row.getString("target_cohort_name"))
+				.outcomeCohortId(row.getLong("outcome_cohort_id"))
+				.outcomeCohortName(row.getString("outcome_cohort_name"))
+				.atRiskPP(row.getInt("at_risk_pp"))
+				.casesPP(row.getInt("cases_pp"))
+				.personTimePP(row.getDouble("pt_pp"))
+				.incidenceProportionPP(row.getDouble("ip_pp"))
+				.incidenceRatePP(row.getDouble("ir_pp"))
+				.casesITT(row.getInt("cases_itt"))
+				.personTimeITT(row.getDouble("pt_itt"))
+				.incidenceProportionITT(row.getDouble("ip_itt"))
+				.incidenceRateITT(row.getDouble("ir_itt"));
 		});
 		
 		return outcomeStats;
 	}
 	
-
+	public List<EffectEstimateStat> getReportCCA(List<ReportCohortPair> activePairs, List<ReportSource> activeSources) {
+		// Use the order of sources that are returned from the Report entity, but only include isActive()
+		List<Integer> activeSourceIds = activeSources.stream().map(rs -> rs.getSource().getId()).collect(Collectors.toList());
+		
+		String ccaQuery = buildCCAStatQuery(activePairs, activeSourceIds);
+		ccaQuery = SqlRender.renderSql(ccaQuery, 
+			new String[] {"study_results_schema"}, 
+			new String[] {this.getStudyResultsSchema()}
+		);
+		
+		String translatedSql = SqlTranslate.translateSql(ccaQuery, "sql server", this.getStudyResultsDialect(), SessionUtils.sessionId(), this.getStudyResultsSchema());
+		
+		List<EffectEstimateStat> ccaStats = this.getStudyResultsJdbcTemplate().query(translatedSql, (row, rowNum) -> {
+			return new EffectEstimateStat()
+				.dataSource(row.getString("source_key"))
+				.targetCohortId(row.getLong("target_cohort_id"))
+				.targetCohortName(row.getString("target_cohort_name"))
+				.comparatorCohortId(row.getLong("compare_cohort_id"))
+				.comparatorCohortName(row.getString("compare_cohort_name"))
+				.outcomeCohortId(row.getLong("outcome_cohort_id"))
+				.outcomeCohortName(row.getString("outcome_cohort_name"))
+				.atRisk(row.getInt("at_risk"))
+				.casesPP(row.getInt("cases_pp"))
+				.personTimePP(row.getDouble("pt_pp"))
+				.casesITT(row.getInt("cases_itt"))
+				.personTimeITT(row.getDouble("pt_itt"))
+				.relativeRiskPP(row.getDouble("relative_risk_pp"))
+				.lb95PP(row.getDouble("lb_95_pp"))
+				.ub95PP(row.getDouble("ub_95_pp"))
+				.relativeRiskITT(row.getDouble("relative_risk_itt"))
+				.lb95ITT(row.getDouble("lb_95_itt"))
+				.ub95ITT(row.getDouble("ub_95_itt"));
+		});
+		return ccaStats;
+	}
+	
+	public List<EffectEstimateStat> getReportSCCA(List<ReportCohortPair> activePairs, List<ReportSource> activeSources) {
+		// Use the order of sources that are returned from the Report entity, but only include isActive()
+		List<Integer> activeSourceIds = activeSources.stream().map(rs -> rs.getSource().getId()).collect(Collectors.toList());
+		
+		String sccaQuery = buildSCCAStatQuery(activePairs, activeSourceIds);
+		sccaQuery = SqlRender.renderSql(sccaQuery, 
+			new String[] {"study_results_schema"}, 
+			new String[] {this.getStudyResultsSchema()}
+		);
+		
+		String translatedSql = SqlTranslate.translateSql(sccaQuery, "sql server", this.getStudyResultsDialect(), SessionUtils.sessionId(), this.getStudyResultsSchema());
+		
+		List<EffectEstimateStat> sccaStats = this.getStudyResultsJdbcTemplate().query(translatedSql, (row, rowNum) -> {
+			return new EffectEstimateStat()
+				.dataSource(row.getString("source_key"))
+				.targetCohortId(row.getLong("target_cohort_id"))
+				.targetCohortName(row.getString("target_cohort_name"))
+				.outcomeCohortId(row.getLong("outcome_cohort_id"))
+				.outcomeCohortName(row.getString("outcome_cohort_name"))
+				.atRisk(row.getInt("at_risk"))
+				.casesPP(row.getInt("cases_pp"))
+				.personTimePP(row.getDouble("pt_pp"))
+				.casesITT(row.getInt("cases_itt"))
+				.personTimeITT(row.getDouble("pt_itt"))
+				.relativeRiskPP(row.getDouble("relative_risk_pp"))
+				.lb95PP(row.getDouble("lb_95_pp"))
+				.ub95PP(row.getDouble("ub_95_pp"))
+				.relativeRiskITT(row.getDouble("relative_risk_itt"))
+				.lb95ITT(row.getDouble("lb_95_itt"))
+				.ub95ITT(row.getDouble("ub_95_itt"));
+		});
+		
+		return sccaStats;
+	}	
+	
 	@GET
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -729,14 +1142,21 @@ public class StudyReportService extends AbstractDaoService {
 	public Response getReportHtml(@PathParam("reportId") final int reportId) throws Exception {
 		Report report = reportRepository.findOne(reportId);
 		JasperReportBuilder jp = studyReportManager.getMainReport(report);
+		jp.setIgnorePagination(Boolean.TRUE);
 
 		// stream output to client
 		StreamingOutput output = (out) -> {
 			
-			JasperHtmlExporterBuilder exporter = DynamicReports.export.htmlExporter(out);
-			exporter.setImagesURI("/imagesPath/");
 			try {
-				jp.toHtml(exporter);
+				HtmlExporter exporter = new HtmlExporter();
+				SimpleHtmlReportConfiguration htmlConfig = new SimpleHtmlReportConfiguration();
+				htmlConfig.setEmbedImage(true);
+				htmlConfig.setZoomRatio(1.75f);
+				exporter.setConfiguration(htmlConfig);
+				
+				exporter.setExporterOutput(new SimpleHtmlExporterOutput(out));
+				exporter.setExporterInput(new SimpleExporterInput(jp.toJasperPrint()));
+				exporter.exportReport();
 			} catch (Exception ex) {
 				throw new WebApplicationException(ex, Response.Status.INTERNAL_SERVER_ERROR);
 			}

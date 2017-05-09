@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <jpa:entity-mappings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:java="http://jcp.org/en/jsr/detail?id=270" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:jpa="http://java.sun.com/xml/ns/persistence/orm" pkg="org.ohdsi.webapi" v="3.6" rws="_14902889289462" Pws="_14902889289462" cws="_14902889289462" sm="false" xs="false" id="_14902889289461" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm orm_2_1.xsd">
-    <jpa:entity lbl-ref="_14902891667545" xre="false" compositePrimaryKeyClass="StudyPK" abs="false" class="Study" v="true" pkg="study" m="false" rootElement="_14902889289461" id="_1490289062980">
+    <jpa:entity lbl-ref="_14902891667545" xre="false" compositePrimaryKeyClass="StudyPK" abs="false" class="Study" v="true" gen="false" pkg="study" m="false" rootElement="_14902889289461" id="_1490289062980">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>
@@ -86,7 +86,7 @@
         <jpa:el/>
         <jpa:table name="STUDY"/>
     </jpa:entity>
-    <jpa:entity lbl-ref="_149029125456742" xre="false" compositePrimaryKeyClass="StudyIRPK" abs="false" class="StudyIR" v="true" pkg="study" m="true" rootElement="_14902889289461" id="_1490291254567">
+    <jpa:entity lbl-ref="_149029125456742" xre="false" compositePrimaryKeyClass="StudyIRPK" abs="false" class="StudyIR" v="true" gen="false" pkg="study" m="true" rootElement="_14902889289461" id="_1490291254567">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>
@@ -132,7 +132,7 @@
         <jpa:el/>
         <jpa:table name="STUDY_IR"/>
     </jpa:entity>
-    <jpa:entity lbl-ref="_149029180350574" xre="false" compositePrimaryKeyClass="StudyCohortPK" abs="false" class="StudyCohort" v="true" pkg="study" m="true" rootElement="_14902889289461" id="_1490291803505">
+    <jpa:entity lbl-ref="_149029180350574" xre="false" compositePrimaryKeyClass="StudyCohortPK" abs="false" class="StudyCohort" v="true" gen="false" pkg="study" m="true" rootElement="_14902889289461" id="_1490291803505">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>
@@ -208,7 +208,7 @@
         <jpa:el/>
         <jpa:table name="STUDY_COHORT"/>
     </jpa:entity>
-    <jpa:entity lbl-ref="_1490297306096370" xre="false" compositePrimaryKeyClass="StudySourcePK" abs="false" class="StudySource" v="true" pkg="study" m="true" rootElement="_14902889289461" id="_1490297306096">
+    <jpa:entity lbl-ref="_1490297306096370" xre="false" compositePrimaryKeyClass="StudySourcePK" abs="false" class="StudySource" v="true" gen="false" pkg="study" m="true" rootElement="_14902889289461" id="_1490297306096">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>
@@ -308,7 +308,7 @@
         <jpa:el/>
         <jpa:table name="STUDY_SOURCE"/>
     </jpa:entity>
-    <jpa:entity lbl-ref="_149029878107256" xre="false" compositePrimaryKeyClass="StudyCCAPK" abs="false" class="StudyCCA" v="true" pkg="study" m="false" rootElement="_14902889289461" id="_1490298781069">
+    <jpa:entity lbl-ref="_149029878107256" xre="false" compositePrimaryKeyClass="StudyCCAPK" abs="false" class="StudyCCA" v="true" gen="false" pkg="study" m="false" rootElement="_14902889289461" id="_1490298781069">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>
@@ -344,7 +344,7 @@
         <jpa:el/>
         <jpa:table name="STUDY_CCA"/>
     </jpa:entity>
-    <jpa:entity xre="false" compositePrimaryKeyType="IDCLASS" compositePrimaryKeyClass="StudyCCATrioPK" abs="false" class="StudyCCATrio" v="true" pkg="study" m="false" rootElement="_14902889289461" id="_1490300306224">
+    <jpa:entity xre="false" compositePrimaryKeyType="IDCLASS" compositePrimaryKeyClass="StudyCCATrioPK" abs="false" class="StudyCCATrio" v="true" gen="false" pkg="study" m="false" rootElement="_14902889289461" id="_1490300306224">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>
@@ -396,7 +396,7 @@
         <jpa:el/>
         <jpa:table name="STUDY_CCA_TRIO"/>
     </jpa:entity>
-    <jpa:entity lbl-ref="_1490303663652781" xre="false" compositePrimaryKeyClass="CohortSetPK" abs="false" class="CohortSet" v="true" pkg="study" m="false" rootElement="_14902889289461" id="_1490303663642">
+    <jpa:entity lbl-ref="_1490303663652781" xre="false" compositePrimaryKeyClass="CohortSetPK" abs="false" class="CohortSet" v="true" gen="false" pkg="study" m="false" rootElement="_14902889289461" id="_1490303663642">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>
@@ -441,7 +441,7 @@
         <jpa:el/>
         <jpa:table name="STUDY_COHORTSET"/>
     </jpa:entity>
-    <jpa:entity name="StudyReport" lbl-ref="_149088425409255" xre="false" compositePrimaryKeyClass="ReportPK" abs="false" class="Report" v="true" pkg="study.report" m="true" rootElement="_14902889289461" id="_1490884254082">
+    <jpa:entity name="StudyReport" lbl-ref="_149088425409255" xre="false" compositePrimaryKeyClass="ReportPK" abs="false" class="Report" v="true" gen="false" pkg="study.report" m="true" rootElement="_14902889289461" id="_1490884254082">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>
@@ -570,7 +570,7 @@
         <jpa:el/>
         <jpa:table name="REPORT"/>
     </jpa:entity>
-    <jpa:entity xre="false" compositePrimaryKeyType="IDCLASS" compositePrimaryKeyClass="StudySCCPairPK" abs="false" class="StudySCCPair" v="true" pkg="study" m="true" rootElement="_14902889289461" id="_1491965701625">
+    <jpa:entity xre="false" compositePrimaryKeyType="IDCLASS" compositePrimaryKeyClass="StudySCCPairPK" abs="false" class="StudySCCPair" v="true" gen="false" pkg="study" m="true" rootElement="_14902889289461" id="_1491965701625">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>
@@ -612,7 +612,7 @@
         <jpa:el/>
         <jpa:table name="STUDY_SCC_PAIR"/>
     </jpa:entity>
-    <jpa:entity lbl-ref="_14919657771462458" xre="false" compositePrimaryKeyClass="StudySCCPK" abs="false" class="StudySCC" v="true" pkg="study" m="true" rootElement="_14902889289461" id="_1491965776776">
+    <jpa:entity lbl-ref="_14919657771462458" xre="false" compositePrimaryKeyClass="StudySCCPK" abs="false" class="StudySCC" v="true" gen="false" pkg="study" m="true" rootElement="_14902889289461" id="_1491965776776">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>
@@ -649,7 +649,7 @@
         <jpa:el/>
         <jpa:table name="STUDY_SCC"/>
     </jpa:entity>
-    <jpa:embeddable abs="false" class="StudyConfig" v="true" pkg="study" m="true" rootElement="_14902889289461" id="_1490299355659">
+    <jpa:embeddable abs="false" class="StudyConfig" v="true" gen="false" pkg="study" m="true" rootElement="_14902889289461" id="_1490299355659">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>
@@ -669,7 +669,7 @@
             </jpa:basic>
         </jpa:attributes>
     </jpa:embeddable>
-    <jpa:embeddable abs="false" class="Concept" v="true" pkg="study" m="true" rootElement="_14902889289461" id="_1490303852647">
+    <jpa:embeddable abs="false" class="Concept" v="true" gen="false" pkg="study" m="true" rootElement="_14902889289461" id="_1490303852647">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>
@@ -689,7 +689,7 @@
             </jpa:basic>
         </jpa:attributes>
     </jpa:embeddable>
-    <jpa:embeddable abs="false" class="CohortRelationship" v="true" pkg="study" m="true" rootElement="_14902889289461" id="_1490852395927">
+    <jpa:embeddable abs="false" class="CohortRelationship" v="true" gen="false" pkg="study" m="true" rootElement="_14902889289461" id="_1490852395927">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>
@@ -709,7 +709,7 @@
             </jpa:one-to-one>
         </jpa:attributes>
     </jpa:embeddable>
-    <jpa:embeddable abs="false" class="ReportCovariate" v="true" pkg="study.report" m="false" rootElement="_14902889289461" id="_1490884543436">
+    <jpa:embeddable abs="false" class="ReportCovariate" v="true" gen="false" pkg="study.report" m="false" rootElement="_14902889289461" id="_1490884543436">
         <jpa:ts e="true"/>
         <jpa:hc e="true">
             <jpa:a>_149088456963776</jpa:a>
@@ -741,7 +741,7 @@
             </jpa:basic>
         </jpa:attributes>
     </jpa:embeddable>
-    <jpa:embeddable abs="false" class="ReportContent" v="true" pkg="study.report" m="false" rootElement="_14902889289461" id="_1490884917153">
+    <jpa:embeddable abs="false" class="ReportContent" v="true" gen="false" pkg="study.report" m="false" rootElement="_14902889289461" id="_1490884917153">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>
@@ -764,8 +764,16 @@
     </jpa:embeddable>
     <jpa:embeddable abs="false" class="ReportCohortPair" v="true" pkg="study.report" m="false" rootElement="_14902889289461" id="_1490897741195">
         <jpa:ts e="true"/>
-        <jpa:hc e="true"/>
-        <jpa:eq e="true"/>
+        <jpa:hc e="true">
+            <jpa:a>_14908977912311530</jpa:a>
+            <jpa:a>_14908977652131528</jpa:a>
+            <jpa:a>_14914928300463650</jpa:a>
+        </jpa:hc>
+        <jpa:eq e="true">
+            <jpa:a>_14908977912311530</jpa:a>
+            <jpa:a>_14908977652131528</jpa:a>
+            <jpa:a>_14914928300463650</jpa:a>
+        </jpa:eq>
         <jpa:ath>Chris Knoll &lt;cknoll@ohdsi.org&gt;</jpa:ath>
         <jpa:attributes>
             <jpa:basic attribute-type="boolean" v="true" name="active" id="_14908977912311530">
@@ -788,7 +796,7 @@
             </jpa:one-to-one>
         </jpa:attributes>
     </jpa:embeddable>
-    <jpa:embeddable abs="false" class="ReportSource" v="true" pkg="study.report" m="false" rootElement="_14902889289461" id="_1490897969321">
+    <jpa:embeddable abs="false" class="ReportSource" v="true" gen="false" pkg="study.report" m="false" rootElement="_14902889289461" id="_1490897969321">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>

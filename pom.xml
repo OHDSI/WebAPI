@@ -46,6 +46,7 @@
     <studyresults.datasource.password>password</studyresults.datasource.password>
 		<studyresults.datasource.schema>dbo</studyresults.datasource.schema>
     <studyresults.datasource.dialect>sql server</studyresults.datasource.dialect>
+    <studyresults.resourcepath>[path_to_study_results]</studyresults.resourcepath>
 
 		<spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
     <spring.batch.repository.isolationLevelForCreate>ISOLATION_READ_COMMITTED</spring.batch.repository.isolationLevelForCreate>

@@ -53,4 +53,34 @@ public class ReportCohortPair {
 		this.outcome = outcome;
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null) {
+			return false;
+		}
+		if (!java.util.Objects.equals(getClass(), obj.getClass())) {
+			return false;
+		}
+		final ReportCohortPair other = (ReportCohortPair) obj;
+		if (this.isActive() != other.isActive()) {
+			return false;
+		}
+		if (!java.util.Objects.equals(this.getTarget(), other.getTarget())) {
+			return false;
+		}
+		if (!java.util.Objects.equals(this.getOutcome(), other.getOutcome())) {
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		int hash = 7;
+		hash = 79 * hash + (this.isActive() ? 1 : 0);
+		hash = 79 * hash + (this.getTarget() != null ? this.getTarget().hashCode() : 0);
+		hash = 79 * hash + (this.getOutcome() != null ? this.getOutcome().hashCode() : 0);
+		return hash;
+	}
+
 }

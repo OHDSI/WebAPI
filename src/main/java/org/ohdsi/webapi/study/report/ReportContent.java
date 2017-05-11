@@ -14,7 +14,7 @@ import javax.persistence.Lob;
 @Embeddable
 public class ReportContent {
 
-	@Column(name = "SECTION_ID", columnDefinition = "VARCHAR(20)", updatable = false)
+	@Column(name = "SECTION_ID", columnDefinition = "VARCHAR(20)")
 	@Basic
 	private ContentSection section;
 

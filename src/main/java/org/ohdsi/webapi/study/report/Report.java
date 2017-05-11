@@ -44,11 +44,11 @@ public class Report {
 	@Basic
 	private String description;
 
-	@Column(name = "CREATED_BY", columnDefinition = "VARCHAR(100)")
+	@Column(name = "CREATED_BY", columnDefinition = "VARCHAR(100)", updatable = false)
 	@Basic
 	private String createdBy;
 
-	@Column(name = "CREATED_DATE", columnDefinition = "DATETIME")
+	@Column(name = "CREATED_DATE", columnDefinition = "DATETIME", updatable = false)
 	@Basic
 	@Temporal(TemporalType.DATE)
 	private Date createdDate;
@@ -57,7 +57,7 @@ public class Report {
 	@Basic
 	private String modifiedBy;
 
-	@Column(name = "MODIFIED_DATE", columnDefinition = "DATETIME", updatable = false)
+	@Column(name = "MODIFIED_DATE", columnDefinition = "DATETIME")
 	@Basic
 	@Temporal(TemporalType.DATE)
 	private Date modifiedDate;

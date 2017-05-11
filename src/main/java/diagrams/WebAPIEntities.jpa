@@ -132,7 +132,7 @@
         <jpa:el/>
         <jpa:table name="STUDY_IR"/>
     </jpa:entity>
-    <jpa:entity lbl-ref="_149029180350574" xre="false" compositePrimaryKeyClass="StudyCohortPK" abs="false" class="StudyCohort" v="true" pkg="study" m="false" rootElement="_14902889289461" id="_1490291803505">
+    <jpa:entity lbl-ref="_149029180350574" xre="false" compositePrimaryKeyClass="StudyCohortPK" abs="false" class="StudyCohort" v="true" pkg="study" m="true" rootElement="_14902889289461" id="_1490291803505">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>
@@ -208,7 +208,7 @@
         <jpa:el/>
         <jpa:table name="STUDY_COHORT"/>
     </jpa:entity>
-    <jpa:entity lbl-ref="_1490297306096370" xre="false" compositePrimaryKeyClass="StudySourcePK" abs="false" class="StudySource" v="true" pkg="study" m="false" rootElement="_14902889289461" id="_1490297306096">
+    <jpa:entity lbl-ref="_1490297306096370" xre="false" compositePrimaryKeyClass="StudySourcePK" abs="false" class="StudySource" v="true" pkg="study" m="true" rootElement="_14902889289461" id="_1490297306096">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>
@@ -396,7 +396,7 @@
         <jpa:el/>
         <jpa:table name="STUDY_CCA_TRIO"/>
     </jpa:entity>
-    <jpa:entity lbl-ref="_1490303663652781" xre="false" compositePrimaryKeyClass="CohortSetPK" abs="false" class="CohortSet" v="true" pkg="study" m="true" rootElement="_14902889289461" id="_1490303663642">
+    <jpa:entity lbl-ref="_1490303663652781" xre="false" compositePrimaryKeyClass="CohortSetPK" abs="false" class="CohortSet" v="true" pkg="study" m="false" rootElement="_14902889289461" id="_1490303663642">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>
@@ -441,7 +441,7 @@
         <jpa:el/>
         <jpa:table name="STUDY_COHORTSET"/>
     </jpa:entity>
-    <jpa:entity name="StudyReport" lbl-ref="_149088425409255" xre="false" compositePrimaryKeyClass="ReportPK" abs="false" class="Report" v="true" pkg="study.report" m="false" rootElement="_14902889289461" id="_1490884254082">
+    <jpa:entity name="StudyReport" lbl-ref="_149088425409255" xre="false" compositePrimaryKeyClass="ReportPK" abs="false" class="Report" v="true" pkg="study.report" m="true" rootElement="_14902889289461" id="_1490884254082">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>
@@ -463,14 +463,14 @@
                 <jpa:bv/>
                 <jpa:kbv/>
                 <jpa:vbv/>
-                <jpa:column name="CREATED_BY" unique="false" nullable="true" insertable="true" updatable="true" column-definition="VARCHAR(100)"/>
+                <jpa:column name="CREATED_BY" unique="false" nullable="true" insertable="true" updatable="false" column-definition="VARCHAR(100)"/>
             </jpa:basic>
             <jpa:basic attribute-type="java.util.Date" v="true" name="createdDate" id="_14916058096864422">
                 <jpa:bv/>
                 <jpa:kbv/>
                 <jpa:vbv/>
                 <jpa:temporal>DATE</jpa:temporal>
-                <jpa:column name="CREATED_DATE" unique="false" nullable="true" insertable="true" updatable="true" column-definition="DATETIME"/>
+                <jpa:column name="CREATED_DATE" unique="false" nullable="true" insertable="true" updatable="false" column-definition="DATETIME"/>
             </jpa:basic>
             <jpa:basic attribute-type="String" v="true" name="modifiedBy" id="_14916058163024423">
                 <jpa:bv/>
@@ -483,13 +483,13 @@
                 <jpa:kbv/>
                 <jpa:vbv/>
                 <jpa:temporal>DATE</jpa:temporal>
-                <jpa:column name="MODIFIED_DATE" unique="false" nullable="true" insertable="true" updatable="false" column-definition="DATETIME"/>
+                <jpa:column name="MODIFIED_DATE" unique="false" nullable="true" insertable="true" updatable="true" column-definition="DATETIME"/>
             </jpa:basic>
             <jpa:basic attribute-type="org.ohdsi.webapi.study.report.ReportStatus" v="true" name="status" id="_149185741648819">
                 <jpa:bv/>
                 <jpa:kbv/>
                 <jpa:vbv/>
-                <jpa:column name="STATUS" unique="false" nullable="true" insertable="true" updatable="false" column-definition="VARCHAR(20)"/>
+                <jpa:column name="STATUS" unique="false" nullable="true" insertable="true" updatable="true" column-definition="VARCHAR(20)"/>
             </jpa:basic>
             <jpa:many-to-one optional="true" primaryKey="false" connected-entity-id="_1490289062980" fetch="LAZY" v="true" name="study" id="_1490886694623143">
                 <jpa:bv/>
@@ -570,7 +570,7 @@
         <jpa:el/>
         <jpa:table name="REPORT"/>
     </jpa:entity>
-    <jpa:entity xre="false" compositePrimaryKeyType="IDCLASS" compositePrimaryKeyClass="StudySCCPairPK" abs="false" class="StudySCCPair" v="true" pkg="study" m="false" rootElement="_14902889289461" id="_1491965701625">
+    <jpa:entity xre="false" compositePrimaryKeyType="IDCLASS" compositePrimaryKeyClass="StudySCCPairPK" abs="false" class="StudySCCPair" v="true" pkg="study" m="true" rootElement="_14902889289461" id="_1491965701625">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>
@@ -612,7 +612,7 @@
         <jpa:el/>
         <jpa:table name="STUDY_SCC_PAIR"/>
     </jpa:entity>
-    <jpa:entity lbl-ref="_14919657771462458" xre="false" compositePrimaryKeyClass="StudySCCPK" abs="false" class="StudySCC" v="true" pkg="study" m="false" rootElement="_14902889289461" id="_1491965776776">
+    <jpa:entity lbl-ref="_14919657771462458" xre="false" compositePrimaryKeyClass="StudySCCPK" abs="false" class="StudySCC" v="true" pkg="study" m="true" rootElement="_14902889289461" id="_1491965776776">
         <jpa:ts e="true"/>
         <jpa:hc e="true"/>
         <jpa:eq e="true"/>
@@ -751,7 +751,7 @@
                 <jpa:bv/>
                 <jpa:kbv/>
                 <jpa:vbv/>
-                <jpa:column name="SECTION_ID" unique="false" nullable="true" insertable="true" updatable="false" column-definition="VARCHAR(20)"/>
+                <jpa:column name="SECTION_ID" unique="false" nullable="true" insertable="true" updatable="true" column-definition="VARCHAR(20)"/>
             </jpa:basic>
             <jpa:basic attribute-type="String" v="true" name="content" id="_149088494261581">
                 <jpa:bv/>

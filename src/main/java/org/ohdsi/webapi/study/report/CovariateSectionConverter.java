@@ -13,7 +13,7 @@ import javax.persistence.Converter;
  * @author Chris Knoll <cknoll@ohdsi.org>
  */
 @Converter(autoApply = true)
-public class CovariatetSectionConverter implements AttributeConverter<CovariateSection, String> {
+public class CovariateSectionConverter implements AttributeConverter<CovariateSection, String> {
 
   @Override
   public String convertToDatabaseColumn(CovariateSection attribute) {

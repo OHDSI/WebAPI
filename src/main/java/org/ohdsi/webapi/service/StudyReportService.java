@@ -477,6 +477,7 @@ public class StudyReportService extends AbstractDaoService {
 			reportEntity = reportRepository.findOne(report.getId());
 			reportEntity.setModifiedDate(currentTime);
 			reportEntity.setModifiedBy(security.getSubject());
+			reportEntity.setStatus(report.getStatus());
 		} else {
 			reportEntity = new Report();
 			reportEntity.setCreatedDate(currentTime);

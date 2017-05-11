@@ -62,7 +62,7 @@ public class Report {
 	@Temporal(TemporalType.DATE)
 	private Date modifiedDate;
 
-	@Column(name = "STATUS", columnDefinition = "VARCHAR(20)", updatable = false)
+	@Column(name = "STATUS", columnDefinition = "VARCHAR(20)")
 	@Basic
 	private ReportStatus status;
 

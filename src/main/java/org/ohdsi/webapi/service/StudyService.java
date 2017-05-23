@@ -63,6 +63,8 @@ public class StudyService extends AbstractDaoService  {
   private final String QUERY_COVARIATE_DIST  = ResourceHelper.GetResourceAsString("/resources/study/sql/queryCovariateDist.sql");
   private final String QUERY_COHORTSETS  = ResourceHelper.GetResourceAsString("/resources/study/sql/queryCohortSets.sql");
   private final String QUERY_DASHBOARD  = ResourceHelper.GetResourceAsString("/resources/study/sql/queryDashboard.sql");
+  private final String QUERY_DASHBOARD_CONCEPT  = ResourceHelper.GetResourceAsString("/resources/study/sql/queryDashboardConcept.sql");
+  private final String QUERY_DASHBOARD_OUTCOMES  = ResourceHelper.GetResourceAsString("/resources/study/sql/queryDashboardOutcomes.sql");
 
   @Autowired
   StudyRepository studyRepository;
@@ -205,7 +207,13 @@ public class StudyService extends AbstractDaoService  {
     public List<CovariateStat> categorical = new ArrayList<>();
     public List<CovariateDist> continuous = new ArrayList<>();
   }
-	
+
+	public static class CohortSetOutcomeItem {
+		public long outcomeCohortId;
+		public String outcomeCohortName;
+		public long outcomeConceptId;
+	}
+
 	public static class DashboardItem {
 		public long targetCohortId;
 		public String targetCohortName;
@@ -213,14 +221,15 @@ public class StudyService extends AbstractDaoService  {
 		public String outcomeCohortName;
 		public long outcomeConceptId;
 		public String outcomeConceptName;
-		public BigDecimal ir;
-		public BigDecimal scc;
-		public BigDecimal cca;
+		public BigDecimal incidence;
+		public BigDecimal estimate;
 		public long seriousness;
+		public int onLabel;
 		public int negativeControl;
 		public int requested;
 		public int published;
 		public int labeled;
+		public int distance;
 	}
   
   private List<String> buildCriteriaClauses (String searchTerm, List<String> analysisIds, List<String> timeWindows, List<String> domains) {
@@ -488,6 +497,57 @@ public class StudyService extends AbstractDaoService  {
     
     return cohortSets; 
   }
+	
+	@GET
+  @Path("/{studyId}/cohortset/{cohortSetId}/outcomes")
+  @Produces(MediaType.APPLICATION_JSON)
+  @Transactional
+  public List<CohortSetOutcomeItem> getCohortSetOutcomes(
+          @PathParam("studyId") final int studyId,
+					@PathParam("cohortSetId") final int cohortSetId
+  ) {
+		String translatedSql;
+
+		// Retrieve the cohort set 
+    CohortSet cs = cohortSetRepository.findOne(cohortSetId);
+    if (cs == null) {
+      throw new WebApplicationException(Response.Status.NOT_FOUND);
+    }
+		
+		// Get the cohorts tied to this cohort set
+		ArrayList<String> cohortIdList = new ArrayList<String>();
+		cs.getCohortList().forEach(item -> {
+			cohortIdList.add(item.getId().toString());
+		});
+		
+		String cohortListEquality = "";
+		if (cohortIdList.size() > 1) {
+			cohortListEquality = String.format("in (%s)", StringUtils.join(cohortIdList, ","));			
+		} else if (cohortIdList.size() == 1) {
+			cohortListEquality = "= " + cohortIdList.get(0);			
+		} else {
+			throw new WebApplicationException(Response.Status.NOT_FOUND);
+		}
+      
+    String getDashboardQuery = SqlRender.renderSql(
+            QUERY_DASHBOARD_OUTCOMES, 
+            new String[] {"study_results_schema", "cohort_list_equality", "study_id"},
+            new String[] {this.getStudyResultsSchema(), cohortListEquality, Integer.toString(studyId)}
+    );
+		
+    translatedSql = SqlTranslate.translateSql(getDashboardQuery, "sql server", this.getStudyResultsDialect());
+    List<CohortSetOutcomeItem> returnVal =  this.getStudyResultsJdbcTemplate().query(translatedSql, (rs,rowNum) -> { 
+      CohortSetOutcomeItem mappedRow = new CohortSetOutcomeItem() {{
+        outcomeCohortId = rs.getLong("outcome_cohort_definition_id");
+        outcomeCohortName = rs.getString("outcome_cohort_name");
+        outcomeConceptId = rs.getLong("outcome_concept_id");
+      }};
+      return mappedRow;
+    });    
+    
+    return returnVal;
+  }
+	
 
   @GET
   @Path("/{studyId}")
@@ -507,6 +567,66 @@ public class StudyService extends AbstractDaoService  {
     return fromStudy(studyEntity);
   }
 
+	@GET
+  @Path("/{studyId}/dashboard/{cohortSetId}/explore/{conceptId}")
+  @Produces(MediaType.APPLICATION_JSON)
+  @Transactional
+  public List<DashboardItem> getDashboardByConcept(
+          @PathParam("studyId") final int studyId,
+					@PathParam("cohortSetId") final int cohortSetId,
+					@PathParam("conceptId") final int conceptId
+  ) {
+		String translatedSql;
+
+		// Retrieve the cohort set 
+    CohortSet cs = cohortSetRepository.findOne(cohortSetId);
+    if (cs == null) {
+      throw new WebApplicationException(Response.Status.NOT_FOUND);
+    }
+		
+		// Get the cohorts tied to this cohort set
+		ArrayList<String> cohortIdList = new ArrayList<String>();
+		cs.getCohortList().forEach(item -> {
+			cohortIdList.add(item.getId().toString());
+		});
+		
+		String cohortListEquality = "";
+		if (cohortIdList.size() > 1) {
+			cohortListEquality = String.format("in (%s)", StringUtils.join(cohortIdList, ","));			
+		} else if (cohortIdList.size() == 1) {
+			cohortListEquality = "= " + cohortIdList.get(0);			
+		} else {
+			throw new WebApplicationException(Response.Status.NOT_FOUND);
+		}
+      
+    String getDashboardByConceptQuery = SqlRender.renderSql(
+            QUERY_DASHBOARD_CONCEPT, 
+            new String[] {"study_results_schema", "cohort_list_equality", "study_id", "outcome_concept_id"},
+            new String[] {this.getStudyResultsSchema(), cohortListEquality, Integer.toString(studyId), Integer.toString(conceptId)}
+    );
+		
+    translatedSql = SqlTranslate.translateSql(getDashboardByConceptQuery, "sql server", this.getStudyResultsDialect());
+    List<DashboardItem> dashboard =  this.getStudyResultsJdbcTemplate().query(translatedSql, (rs,rowNum) -> { 
+      DashboardItem mappedRow = new DashboardItem() {{
+        targetCohortId = rs.getLong("target_cohort_definition_id");
+        targetCohortName = rs.getString("target_cohort_name");
+        outcomeCohortId = rs.getLong("outcome_cohort_definition_id");
+        outcomeCohortName = rs.getString("outcome_cohort_name");
+        outcomeConceptId = rs.getLong("outcome_concept_id");
+        outcomeConceptName = rs.getString("concept_name");
+        incidence = new BigDecimal(rs.getDouble("incidence")).setScale(5, RoundingMode.DOWN);
+        estimate = new BigDecimal(rs.getDouble("estimate")).setScale(5, RoundingMode.DOWN);
+        negativeControl = rs.getInt("nc");
+				onLabel = rs.getInt("on_label");
+				distance = rs.getInt("min_levels_of_separation");
+      }};
+      return mappedRow;
+    });    
+		
+    
+    return dashboard;
+  }
+	
 	@GET
   @Path("/{studyId}/dashboard/{cohortSetId}")
   @Produces(MediaType.APPLICATION_JSON)
@@ -553,9 +673,9 @@ public class StudyService extends AbstractDaoService  {
         outcomeCohortName = rs.getString("outcome_cohort_name");
         outcomeConceptId = rs.getLong("outcome_concept_id");
         outcomeConceptName = rs.getString("concept_name");
-        ir = new BigDecimal(rs.getDouble("ir")).setScale(5, RoundingMode.DOWN);
-        scc = new BigDecimal(rs.getDouble("scc")).setScale(5, RoundingMode.DOWN);
-        cca = new BigDecimal(rs.getDouble("cca")).setScale(5, RoundingMode.DOWN);
+        incidence = new BigDecimal(rs.getDouble("incidence")).setScale(5, RoundingMode.DOWN);
+        estimate = new BigDecimal(rs.getDouble("estimate")).setScale(5, RoundingMode.DOWN);
+				onLabel = rs.getInt("on_label");
         negativeControl = rs.getInt("nc");
       }};
       return mappedRow;
@@ -564,5 +684,4 @@ public class StudyService extends AbstractDaoService  {
     
     return dashboard;
   }
-
 }

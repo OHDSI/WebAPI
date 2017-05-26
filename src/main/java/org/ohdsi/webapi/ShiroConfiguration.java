@@ -12,6 +12,7 @@ import org.ohdsi.webapi.shiro.management.Security;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 
 /**
  * Created by GMalikov on 20.08.2015.
@@ -25,6 +26,7 @@ public class ShiroConfiguration {
   private boolean enabled;
 
   @Bean
+  @DependsOn("flyway")
   public Security security() {
     if (enabled) {
       log.debug("AtlasSecurity module loaded");

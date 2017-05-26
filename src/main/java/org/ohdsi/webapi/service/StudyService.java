@@ -60,10 +60,12 @@ import org.springframework.stereotype.Component;
 public class StudyService extends AbstractDaoService  {
 
   private final String QUERY_COVARIATE_STATS  = ResourceHelper.GetResourceAsString("/resources/study/sql/queryCovariateStats.sql");
+  private final String QUERY_COVARIATE_STATS_VOCAB  = ResourceHelper.GetResourceAsString("/resources/study/sql/queryCovariateStatsVocab.sql");
   private final String QUERY_COVARIATE_DIST  = ResourceHelper.GetResourceAsString("/resources/study/sql/queryCovariateDist.sql");
+  private final String QUERY_COVARIATE_DIST_VOCAB  = ResourceHelper.GetResourceAsString("/resources/study/sql/queryCovariateDistVocab.sql");
   private final String QUERY_COHORTSETS  = ResourceHelper.GetResourceAsString("/resources/study/sql/queryCohortSets.sql");
   private final String QUERY_DASHBOARD  = ResourceHelper.GetResourceAsString("/resources/study/sql/queryDashboard.sql");
-  private final String QUERY_DASHBOARD_CONCEPT  = ResourceHelper.GetResourceAsString("/resources/study/sql/queryDashboardConcept.sql");
+  private final String QUERY_DASHBOARD_VOCAB  = ResourceHelper.GetResourceAsString("/resources/study/sql/queryDashboardVocab.sql");
   private final String QUERY_DASHBOARD_OUTCOMES  = ResourceHelper.GetResourceAsString("/resources/study/sql/queryDashboardOutcomes.sql");
 
   @Autowired
@@ -174,6 +176,7 @@ public class StudyService extends AbstractDaoService  {
     public long conceptId;
     public long countValue;
     public BigDecimal statValue;
+		public long distance = 0;
   }
 
   public static class CovariateDist {
@@ -194,6 +197,7 @@ public class StudyService extends AbstractDaoService  {
     public long p75Value;
     public long p90Value;
     public long maxValue;
+		public long distance = 0;
   }
   
   public static class CohortSetListItem {
@@ -466,6 +470,79 @@ public class StudyService extends AbstractDaoService  {
     
     return result;
   }
+	
+	@GET
+  @Path("{studyId}/results/covariates/{cohortId}/{sourceId}/explore/{covariateId}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public StudyStatistics getStudyStatisticsByVocab(          
+					@PathParam("studyId") final int studyId, 
+          @PathParam("cohortId") final long cohortId, 
+          @PathParam("sourceId") final int sourceId,
+          @PathParam("covariateId") final long covariateId
+	){
+    StudyStatistics result = new StudyStatistics();
+    String translatedSql;
+    
+    String categoricalQuery = SqlRender.renderSql(
+            QUERY_COVARIATE_STATS_VOCAB, 
+            new String[] {"study_results_schema", "cohort_definition_id", "source_id", "covariate_id"},
+            new String[] {this.getStudyResultsSchema(), Long.toString(cohortId), Integer.toString(sourceId), Long.toString(covariateId)}
+    );
+    
+    translatedSql = SqlTranslate.translateSql(categoricalQuery, "sql server", this.getStudyResultsDialect(), SessionUtils.sessionId(), this.getStudyResultsSchema());
+    List<CovariateStat> categoricalStats =  this.getStudyResultsJdbcTemplate().query(translatedSql, (rs,rowNum) -> { 
+      CovariateStat mappedRow = new CovariateStat() {{
+        covariateId = rs.getLong("covariate_id");
+        covariateName = rs.getString("covariate_name");
+        analysisId = rs.getLong("analysis_id");
+        analysisName = rs.getString("analysis_name");
+        domainId = rs.getString("domain_id");
+        timeWindow = rs.getString("time_window");
+        conceptId = rs.getLong("concept_id");
+        countValue = rs.getLong("count_value");
+        statValue = new BigDecimal(rs.getDouble("stat_value")).setScale(5, RoundingMode.DOWN);
+				distance = rs.getLong("min_levels_of_separation");
+      }};
+      return mappedRow;
+    });    
+    
+    String continuousQuery = SqlRender.renderSql(
+            QUERY_COVARIATE_DIST_VOCAB, 
+            new String[] {"study_results_schema", "cohort_definition_id", "source_id", "covariate_id"},
+            new String[] {this.getStudyResultsSchema(), Long.toString(cohortId), Integer.toString(sourceId), Long.toString(covariateId)}
+    );
+    
+    translatedSql = SqlTranslate.translateSql(continuousQuery, "sql server", this.getStudyResultsDialect(), SessionUtils.sessionId(), this.getStudyResultsSchema());
+    List<CovariateDist> continuousStats =  this.getStudyResultsJdbcTemplate().query(translatedSql, (rs,rowNum) -> { 
+      CovariateDist mappedRow = new CovariateDist() {{
+        covariateId = rs.getLong("covariate_id");
+        covariateName = rs.getString("covariate_name");
+        analysisId = rs.getLong("analysis_id");
+        analysisName = rs.getString("analysis_name");
+        domainId = rs.getString("domain_id");
+        timeWindow = rs.getString("time_window");
+        conceptId = rs.getLong("concept_id");
+        countValue = rs.getLong("count_value");
+        avgValue = new BigDecimal(rs.getDouble("avg_value")).setScale(5,RoundingMode.DOWN);
+        stdevValue = new BigDecimal(rs.getDouble("stdev_value")).setScale(5,RoundingMode.DOWN);
+        minValue = rs.getLong("min_value");
+        p10Value = rs.getLong("p10_value");
+        p25Value = rs.getLong("p25_value");
+        medianValue = rs.getLong("median_value");
+        p75Value = rs.getLong("p75_value");
+        p90Value = rs.getLong("p90_value");
+        maxValue = rs.getLong("max_value");
+				distance = rs.getLong("min_levels_of_separation");
+      }};
+      return mappedRow;
+    });    
+		
+    result.categorical = categoricalStats;
+    result.continuous = continuousStats;
+    
+    return result;
+	}
+	
   
   @GET
   @Path("{studyId}/cohortset/search")
@@ -571,7 +648,7 @@ public class StudyService extends AbstractDaoService  {
   @Path("/{studyId}/dashboard/{cohortSetId}/explore/{conceptId}")
   @Produces(MediaType.APPLICATION_JSON)
   @Transactional
-  public List<DashboardItem> getDashboardByConcept(
+  public List<DashboardItem> getDashboardByVocab(
           @PathParam("studyId") final int studyId,
 					@PathParam("cohortSetId") final int cohortSetId,
 					@PathParam("conceptId") final int conceptId
@@ -599,8 +676,7 @@ public class StudyService extends AbstractDaoService  {
 			throw new WebApplicationException(Response.Status.NOT_FOUND);
 		}
       
-    String getDashboardByConceptQuery = SqlRender.renderSql(
-            QUERY_DASHBOARD_CONCEPT, 
+    String getDashboardByConceptQuery = SqlRender.renderSql(QUERY_DASHBOARD_VOCAB, 
             new String[] {"study_results_schema", "cohort_list_equality", "study_id", "outcome_concept_id"},
             new String[] {this.getStudyResultsSchema(), cohortListEquality, Integer.toString(studyId), Integer.toString(conceptId)}
     );

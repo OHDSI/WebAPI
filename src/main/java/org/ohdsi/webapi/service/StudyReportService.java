@@ -87,7 +87,7 @@ public class StudyReportService extends AbstractDaoService {
 
 	@Autowired
 	private Security security;
-	
+
 	@Autowired
 	private StudyReportManager studyReportManager = new StudyReportManager();
 
@@ -214,6 +214,16 @@ public class StudyReportService extends AbstractDaoService {
 			this.outcome = outcome;
 			this.isActive = isActive;
 		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (!(o instanceof CohortPair)) {
+				return false;
+			}
+			CohortPair c = (CohortPair) o;
+			return (this.target == c.target && this.outcome == c.outcome);
+		}
+
 	}
 
 	public static class ReportSourceDTO extends StudyService.StudySourceDTO {
@@ -320,8 +330,9 @@ public class StudyReportService extends AbstractDaoService {
 		}
 
 	}
-	
+
 	public static class OutcomeSummaryStat {
+
 		private String dataSource;
 		private long targetCohortId;
 		private String targetCohortName;
@@ -395,7 +406,7 @@ public class StudyReportService extends AbstractDaoService {
 		public Double getIncidenceRateITT() {
 			return incidenceRateITT;
 		}
-		
+
 		public OutcomeSummaryStat dataSource(final String value) {
 			this.dataSource = value;
 			return this;
@@ -468,6 +479,7 @@ public class StudyReportService extends AbstractDaoService {
 	}
 
 	public static class EffectEstimateStat {
+
 		private int analysisId;
 		private String dataSource;
 		private long targetCohortId;
@@ -738,7 +750,7 @@ public class StudyReportService extends AbstractDaoService {
 			return this;
 		}
 	}
-	
+
 	private ReportDTO fromReport(Report report) {
 		HashMap<Long, StudyService.CohortDetail> cohorts = new HashMap<>();
 
@@ -783,6 +795,10 @@ public class StudyReportService extends AbstractDaoService {
 	}
 
 	private ReportDTO save(ReportDTO report) {
+		return save(report, ReportStatus.DRAFT);
+	}
+	
+	private ReportDTO save(ReportDTO report, ReportStatus status) {
 		Date currentTime = Calendar.getInstance().getTime();
 		Report reportEntity;
 
@@ -790,7 +806,7 @@ public class StudyReportService extends AbstractDaoService {
 			reportEntity = reportRepository.findOne(report.getId());
 			reportEntity.setModifiedDate(currentTime);
 			reportEntity.setModifiedBy(security.getSubject());
-			reportEntity.setStatus(report.getStatus());
+			reportEntity.setStatus(status);
 		} else {
 			reportEntity = new Report();
 			reportEntity.setCreatedDate(currentTime);
@@ -832,7 +848,6 @@ public class StudyReportService extends AbstractDaoService {
 
 	private String buildCovariateStatQuery(List<Long> cohorts, List<Integer> sources, List<Long> covariateIds) {
 
-		
 		String covaraiteIdList = StringUtils.join(covariateIds, ",");
 		String cohortIdList = StringUtils.join(cohorts, ",");
 		String sourceIdList = StringUtils.join(sources, ",");
@@ -845,92 +860,98 @@ public class StudyReportService extends AbstractDaoService {
 		return covariateQuery;
 	}
 
-	private String buildIRStatQuery(List<ReportCohortPair> cohortPairs,List<Integer> sources) {
+	private String buildIRStatQuery(List<ReportCohortPair> cohortPairs, List<Integer> sources) {
 
 		String irStatQuery = QUERY_OUTCOME_STATS;
 		List<String> pairClauses = cohortPairs.stream()
-			.map(p -> { return String.format("(os.target_cohort_id = %d AND os.outcome_cohort_id = %d)", p.getTarget().getId(), p.getOutcome().getId());})
+			.map(p -> {
+				return String.format("(os.target_cohort_id = %d AND os.outcome_cohort_id = %d)", p.getTarget().getId(), p.getOutcome().getId());
+			})
 			.collect(Collectors.toList());
-			
+
 		irStatQuery = StringUtils.replace(irStatQuery, "@pair_clauses", StringUtils.join(pairClauses, " OR "));
 		irStatQuery = StringUtils.replace(irStatQuery, "@source_id_list", StringUtils.join(sources, ","));
 
 		return irStatQuery;
 	}
-	
-	private String buildCCAStatQuery(List<ReportCohortPair> cohortPairs,List<Integer> sources) {
+
+	private String buildCCAStatQuery(List<ReportCohortPair> cohortPairs, List<Integer> sources) {
 
 		String ccaQuery = QUERY_CCA_STATS;
 		List<String> pairClauses = cohortPairs.stream()
-			.map(p -> { return String.format("(cca.target_cohort_id = %d AND cca.outcome_cohort_id = %d)", p.getTarget().getId(), p.getOutcome().getId());})
+			.map(p -> {
+				return String.format("(cca.target_cohort_id = %d AND cca.outcome_cohort_id = %d)", p.getTarget().getId(), p.getOutcome().getId());
+			})
 			.collect(Collectors.toList());
-			
+
 		ccaQuery = StringUtils.replace(ccaQuery, "@pair_clauses", StringUtils.join(pairClauses, " OR "));
 		ccaQuery = StringUtils.replace(ccaQuery, "@source_id_list", StringUtils.join(sources, ","));
 
 		return ccaQuery;
 	}
-	
-	private String buildSCCAStatQuery(List<ReportCohortPair> cohortPairs,List<Integer> sources) {
+
+	private String buildSCCAStatQuery(List<ReportCohortPair> cohortPairs, List<Integer> sources) {
 
 		String ccaQuery = QUERY_SCCA_STATS;
 		List<String> pairClauses = cohortPairs.stream()
-			.map(p -> { return String.format("(scca.target_cohort_id = %d AND scca.outcome_cohort_id = %d)", p.getTarget().getId(), p.getOutcome().getId());})
+			.map(p -> {
+				return String.format("(scca.target_cohort_id = %d AND scca.outcome_cohort_id = %d)", p.getTarget().getId(), p.getOutcome().getId());
+			})
 			.collect(Collectors.toList());
-			
+
 		ccaQuery = StringUtils.replace(ccaQuery, "@pair_clauses", StringUtils.join(pairClauses, " OR "));
 		ccaQuery = StringUtils.replace(ccaQuery, "@source_id_list", StringUtils.join(sources, ","));
 
 		return ccaQuery;
-	}		
-	
+	}
+
 	public List<CovariateStat> getReportCovariates(Report report) {
 
 		// Collect list of covariateIds
 		List<Long> covariateIds = report.getCovariates().stream().map(ReportCovariate::getCovariateId).collect(Collectors.toList());
-		
+
 		// Collect list of cohort IDs
 		List<Long> cohorts = report.getCohortPairs().stream().map(rc -> rc.getTarget().getId()).distinct().collect(Collectors.toList());
-		
+
 		// Use the order of sources that are returned from the Report entity, but only include isActive()
 		List<Integer> activeSourceIds = report.getSources().stream().filter(source -> source.isActive()).map(rs -> rs.getSource().getId()).collect(Collectors.toList());
 
 		// Get covaraite stats from each active datasource
 		String covariateQuery = buildCovariateStatQuery(cohorts, activeSourceIds, covariateIds);
-		covariateQuery = SqlRender.renderSql(covariateQuery, 
-			new String[] {"study_results_schema"}, 
-			new String[] {this.getStudyResultsSchema()}
+		covariateQuery = SqlRender.renderSql(covariateQuery,
+			new String[]{"study_results_schema"},
+			new String[]{this.getStudyResultsSchema()}
 		);
-		
+
 		String translatedSql = SqlTranslate.translateSql(covariateQuery, "sql server", this.getStudyResultsDialect(), SessionUtils.sessionId(), this.getStudyResultsSchema());
 		List<CovariateStat> covariateStats = this.getStudyResultsJdbcTemplate().query(translatedSql, (row, rowNum) -> {
 			return new CovariateStat(row.getString("source_key"),
-							row.getInt("cohort_definition_id"),
-							row.getLong("covariate_id"),
-							row.getString("covariate_name"),
-							row.getString("analysis_name"),
-							row.getString("time_window"),
-							row.getLong("count_value"),
-							row.getDouble("stat_value")
+				row.getInt("cohort_definition_id"),
+				row.getLong("covariate_id"),
+				row.getString("covariate_name"),
+				row.getString("analysis_name"),
+				row.getString("time_window"),
+				row.getLong("count_value"),
+				row.getDouble("stat_value")
 			);
 		});
 
 		return covariateStats;
 	}
-	
+
 	public List<OutcomeSummaryStat> getReportIR(List<ReportCohortPair> activePairs, List<ReportSource> activeSources) {
 
 		// Use the order of sources that are returned from the Report entity, but only include isActive()
 		List<Integer> activeSourceIds = activeSources.stream().map(rs -> rs.getSource().getId()).collect(Collectors.toList());
-		
+
 		String outcomeQuery = buildIRStatQuery(activePairs, activeSourceIds);
-		outcomeQuery = SqlRender.renderSql(outcomeQuery, 
-			new String[] {"study_results_schema"}, 
-			new String[] {this.getStudyResultsSchema()}
+		outcomeQuery = SqlRender.renderSql(outcomeQuery,
+			new String[]{"study_results_schema"},
+			new String[]{this.getStudyResultsSchema()}
 		);
-		
+
 		String translatedSql = SqlTranslate.translateSql(outcomeQuery, "sql server", this.getStudyResultsDialect(), SessionUtils.sessionId(), this.getStudyResultsSchema());
-		
+
 		List<OutcomeSummaryStat> outcomeStats = this.getStudyResultsJdbcTemplate().query(translatedSql, (row, rowNum) -> {
 			return new OutcomeSummaryStat()
 				.dataSource(row.getString("source_key"))
@@ -948,22 +969,22 @@ public class StudyReportService extends AbstractDaoService {
 				.incidenceProportionITT(row.getDouble("ip_itt"))
 				.incidenceRateITT(row.getDouble("ir_itt"));
 		});
-		
+
 		return outcomeStats;
 	}
-	
+
 	public List<EffectEstimateStat> getReportCCA(List<ReportCohortPair> activePairs, List<ReportSource> activeSources) {
 		// Use the order of sources that are returned from the Report entity, but only include isActive()
 		List<Integer> activeSourceIds = activeSources.stream().map(rs -> rs.getSource().getId()).collect(Collectors.toList());
-		
+
 		String ccaQuery = buildCCAStatQuery(activePairs, activeSourceIds);
-		ccaQuery = SqlRender.renderSql(ccaQuery, 
-			new String[] {"study_results_schema"}, 
-			new String[] {this.getStudyResultsSchema()}
+		ccaQuery = SqlRender.renderSql(ccaQuery,
+			new String[]{"study_results_schema"},
+			new String[]{this.getStudyResultsSchema()}
 		);
-		
+
 		String translatedSql = SqlTranslate.translateSql(ccaQuery, "sql server", this.getStudyResultsDialect(), SessionUtils.sessionId(), this.getStudyResultsSchema());
-		
+
 		List<EffectEstimateStat> ccaStats = this.getStudyResultsJdbcTemplate().query(translatedSql, (row, rowNum) -> {
 			return new EffectEstimateStat()
 				.dataSource(row.getString("source_key"))
@@ -987,19 +1008,19 @@ public class StudyReportService extends AbstractDaoService {
 		});
 		return ccaStats;
 	}
-	
+
 	public List<EffectEstimateStat> getReportSCCA(List<ReportCohortPair> activePairs, List<ReportSource> activeSources) {
 		// Use the order of sources that are returned from the Report entity, but only include isActive()
 		List<Integer> activeSourceIds = activeSources.stream().map(rs -> rs.getSource().getId()).collect(Collectors.toList());
-		
+
 		String sccaQuery = buildSCCAStatQuery(activePairs, activeSourceIds);
-		sccaQuery = SqlRender.renderSql(sccaQuery, 
-			new String[] {"study_results_schema"}, 
-			new String[] {this.getStudyResultsSchema()}
+		sccaQuery = SqlRender.renderSql(sccaQuery,
+			new String[]{"study_results_schema"},
+			new String[]{this.getStudyResultsSchema()}
 		);
-		
+
 		String translatedSql = SqlTranslate.translateSql(sccaQuery, "sql server", this.getStudyResultsDialect(), SessionUtils.sessionId(), this.getStudyResultsSchema());
-		
+
 		List<EffectEstimateStat> sccaStats = this.getStudyResultsJdbcTemplate().query(translatedSql, (row, rowNum) -> {
 			return new EffectEstimateStat()
 				.dataSource(row.getString("source_key"))
@@ -1019,10 +1040,10 @@ public class StudyReportService extends AbstractDaoService {
 				.lb95ITT(row.getDouble("lb_95_itt"))
 				.ub95ITT(row.getDouble("ub_95_itt"));
 		});
-		
+
 		return sccaStats;
-	}	
-	
+	}
+
 	@GET
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -1072,12 +1093,30 @@ public class StudyReportService extends AbstractDaoService {
 		return save(report);
 	}
 
+	@PUT
+	@Path("/{reportId}/publish")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Transactional
+	public ReportDTO publishReport(ReportDTO report) {
+		return save(report, ReportStatus.PUBLISHED);
+	}
+
+	@PUT
+	@Path("/{reportId}/delete")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Transactional
+	public ReportDTO deleteReport(ReportDTO report) {
+		return save(report, ReportStatus.DELETED);
+	}
+
 	@GET
 	@Path("/{reportId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Transactional
 	public ReportDTO getReport(
-					@PathParam("reportId") final int reportId
+		@PathParam("reportId") final int reportId
 	) {
 		Report report = reportRepository.findOne(reportId);
 		return fromReport(report);
@@ -1100,10 +1139,10 @@ public class StudyReportService extends AbstractDaoService {
 		};
 
 		Response response = Response
-						.ok(output)
-						.type("application/pdf")
-						.header("Content-disposition", "inline; filename=reportList.pdf")
-						.build();
+			.ok(output)
+			.type("application/pdf")
+			.header("Content-disposition", "inline; filename=reportList.pdf")
+			.build();
 
 		return response;
 	}
@@ -1118,7 +1157,7 @@ public class StudyReportService extends AbstractDaoService {
 		// stream output to client
 		StreamingOutput output = (out) -> {
 			JasperDocxExporterBuilder exporter = DynamicReports.export.docxExporter(out);
-			
+
 			exporter.setFramesAsNestedTables(false);
 			try {
 				jp.toDocx(exporter);
@@ -1128,14 +1167,14 @@ public class StudyReportService extends AbstractDaoService {
 		};
 
 		Response response = Response
-						.ok(output)
-						.type("application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-						.header("Content-disposition", "inline; filename=reportList.docx")
-						.build();
+			.ok(output)
+			.type("application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+			.header("Content-disposition", "inline; filename=reportList.docx")
+			.build();
 
 		return response;
 	}
-	
+
 	@GET
 	@Transactional
 	@Path("/{reportId}.html")
@@ -1146,14 +1185,14 @@ public class StudyReportService extends AbstractDaoService {
 
 		// stream output to client
 		StreamingOutput output = (out) -> {
-			
+
 			try {
 				HtmlExporter exporter = new HtmlExporter();
 				SimpleHtmlReportConfiguration htmlConfig = new SimpleHtmlReportConfiguration();
 				htmlConfig.setEmbedImage(true);
 				htmlConfig.setZoomRatio(1.75f);
 				exporter.setConfiguration(htmlConfig);
-				
+
 				exporter.setExporterOutput(new SimpleHtmlExporterOutput(out));
 				exporter.setExporterInput(new SimpleExporterInput(jp.toJasperPrint()));
 				exporter.exportReport();
@@ -1163,11 +1202,11 @@ public class StudyReportService extends AbstractDaoService {
 		};
 
 		Response response = Response
-						.ok(output)
-						.type("text/html;charset=UTF-8")
-						.build();
+			.ok(output)
+			.type("text/html;charset=UTF-8")
+			.build();
 
 		return response;
 	}
-	
+
 }

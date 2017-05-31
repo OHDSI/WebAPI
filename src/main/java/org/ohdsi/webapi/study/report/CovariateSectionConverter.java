@@ -15,35 +15,35 @@ import javax.persistence.Converter;
 @Converter(autoApply = true)
 public class CovariateSectionConverter implements AttributeConverter<CovariateSection, String> {
 
-  @Override
-  public String convertToDatabaseColumn(CovariateSection attribute) {
-    switch (attribute) {
-      case DEMOGRAPHICS:
-        return "DEMOGRAPHICS";
-      case CONDITIONS:
-        return "CONDITIONS";
-      case DRUGS:
-        return "DRUGS";
-      case PROCEDURES:
-        return "PROCEDURES";
-      default:
-        throw new IllegalArgumentException("Unknown" + attribute);
-    }
-  }
+	@Override
+	public String convertToDatabaseColumn(CovariateSection attribute) {
+		switch (attribute) {
+			case DEMOGRAPHICS:
+				return "DEMOGRAPHICS";
+			case CONDITIONS:
+				return "CONDITIONS";
+			case DRUGS:
+				return "DRUGS";
+			case PROCEDURES:
+				return "PROCEDURES";
+			default:
+				throw new IllegalArgumentException("Unknown" + attribute);
+		}
+	}
 
-  @Override
-  public CovariateSection convertToEntityAttribute(String dbData) {
-    switch (dbData) {
-      case "DEMOGRAPHICS":
-        return CovariateSection.DEMOGRAPHICS;
-      case "CONDITIONS":
-        return CovariateSection.CONDITIONS;
-      case "DRUGS":
-        return CovariateSection.DRUGS;
-      case "PROCEDURES":
-        return CovariateSection.PROCEDURES;
-      default:
-        throw new IllegalArgumentException("Unknown" + dbData);
-    }
-  }
+	@Override
+	public CovariateSection convertToEntityAttribute(String dbData) {
+		switch (dbData) {
+			case "DEMOGRAPHICS":
+				return CovariateSection.DEMOGRAPHICS;
+			case "CONDITIONS":
+				return CovariateSection.CONDITIONS;
+			case "DRUGS":
+				return CovariateSection.DRUGS;
+			case "PROCEDURES":
+				return CovariateSection.PROCEDURES;
+			default:
+				throw new IllegalArgumentException("Unknown" + dbData);
+		}
+	}
 }

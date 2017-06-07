@@ -52,6 +52,7 @@ import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.study.Study;
 import org.ohdsi.webapi.study.StudyCohort;
 import org.ohdsi.webapi.study.StudySource;
+import org.ohdsi.webapi.study.report.CovariateSection;
 import org.ohdsi.webapi.study.report.Report;
 import org.ohdsi.webapi.study.report.ReportCohortPair;
 import org.ohdsi.webapi.study.report.ReportContent;
@@ -74,7 +75,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class StudyReportService extends AbstractDaoService {
 
-	private final String QUERY_COVARIATE_STATS = ResourceHelper.GetResourceAsString("/resources/study/report/sql/queryCovariateStats.sql");
+	private final String QUERY_COVARIATE_PREVALENCE_STATS = ResourceHelper.GetResourceAsString("/resources/study/report/sql/queryCovariatePrevalenceStats.sql");
+	private final String QUERY_COVARIATE_DISTRIBUTION_STATS = ResourceHelper.GetResourceAsString("/resources/study/report/sql/queryCovariateDistributionStats.sql");
 	private final String QUERY_OUTCOME_STATS = ResourceHelper.GetResourceAsString("/resources/study/report/sql/queryOutcomeStats.sql");
 	private final String QUERY_CCA_STATS = ResourceHelper.GetResourceAsString("/resources/study/report/sql/queryCCAStats.sql");
 	private final String QUERY_SCCA_STATS = ResourceHelper.GetResourceAsString("/resources/study/report/sql/querySCCAStats.sql");
@@ -240,7 +242,7 @@ public class StudyReportService extends AbstractDaoService {
 		}
 	}
 
-	public static class CovariateStat {
+	public static class PrevalenceStat {
 
 		private String dataSource;
 		private int cohortId;
@@ -251,10 +253,10 @@ public class StudyReportService extends AbstractDaoService {
 		private long count;
 		private double statValue;
 
-		public CovariateStat() {
+		public PrevalenceStat() {
 		}
 
-		public CovariateStat(String dataSource, int cohortId, long covariateId, String name, String analysisName, String timeWindow, long count, double statValue) {
+		public PrevalenceStat(String dataSource, int cohortId, long covariateId, String name, String analysisName, String timeWindow, long count, double statValue) {
 			this.dataSource = dataSource;
 			this.cohortId = cohortId;
 			this.covariateId = covariateId;
@@ -331,6 +333,248 @@ public class StudyReportService extends AbstractDaoService {
 
 	}
 
+	public static class DistributionStat {
+		private String dataSource;
+		private int cohortId;
+		private String cohortName;
+		private long covariateId;
+		private String covariateName;
+		private String analysisName;
+		private String timeWindow;
+		private long count;
+		private double avg;
+		private double stdev;
+		private double min;
+		private double p10;
+		private double p25;
+		private double median;
+		private double p75;
+		private double p90;
+		private double max;
+
+		public String getDataSource() {
+			return dataSource;
+		}
+
+		public void setDataSource(String dataSource) {
+			this.dataSource = dataSource;
+		}
+
+		public int getCohortId() {
+			return cohortId;
+		}
+
+		public void setCohortId(int cohortId) {
+			this.cohortId = cohortId;
+		}
+
+		public String getCohortName() {
+			return cohortName;
+		}
+
+		public void setCohortName(String cohortName) {
+			this.cohortName = cohortName;
+		}
+
+		public long getCovariateId() {
+			return covariateId;
+		}
+
+		public void setCovariateId(long covariateId) {
+			this.covariateId = covariateId;
+		}
+
+		public String getCovariateName() {
+			return covariateName;
+		}
+
+		public void setCovariateName(String covariateName) {
+			this.covariateName = covariateName;
+		}
+
+		public String getAnalysisName() {
+			return analysisName;
+		}
+
+		public void setAnalysisName(String analysisName) {
+			this.analysisName = analysisName;
+		}
+
+		public String getTimeWindow() {
+			return timeWindow;
+		}
+
+		public void setTimeWindow(String timeWindow) {
+			this.timeWindow = timeWindow;
+		}
+
+		public long getCount() {
+			return count;
+		}
+
+		public void setCount(long count) {
+			this.count = count;
+		}
+
+		public double getAvg() {
+			return avg;
+		}
+
+		public void setAvg(double avg) {
+			this.avg = avg;
+		}
+
+		public double getStdev() {
+			return stdev;
+		}
+
+		public void setStdev(double stdev) {
+			this.stdev = stdev;
+		}
+
+		public double getMin() {
+			return min;
+		}
+
+		public void setMin(double min) {
+			this.min = min;
+		}
+
+		public double getP10() {
+			return p10;
+		}
+
+		public void setP10(double p10) {
+			this.p10 = p10;
+		}
+
+		public double getP25() {
+			return p25;
+		}
+
+		public void setP25(double p25) {
+			this.p25 = p25;
+		}
+
+		public double getMedian() {
+			return median;
+		}
+
+		public void setMedian(double median) {
+			this.median = median;
+		}
+
+		public double getP75() {
+			return p75;
+		}
+
+		public void setP75(double p75) {
+			this.p75 = p75;
+		}
+
+		public double getP90() {
+			return p90;
+		}
+
+		public void setP90(double p90) {
+			this.p90 = p90;
+		}
+
+		public double getMax() {
+			return max;
+		}
+
+		public void setMax(double max) {
+			this.max = max;
+		}
+
+		public DistributionStat dataSource(final String value) {
+			this.dataSource = value;
+			return this;
+		}
+
+		public DistributionStat cohortId(final int value) {
+			this.cohortId = value;
+			return this;
+		}
+
+		public DistributionStat cohortName(final String value) {
+			this.cohortName = value;
+			return this;
+		}
+
+		public DistributionStat covariateId(final long value) {
+			this.covariateId = value;
+			return this;
+		}
+
+		public DistributionStat covariateName(final String value) {
+			this.covariateName = value;
+			return this;
+		}
+
+		public DistributionStat analysisName(final String value) {
+			this.analysisName = value;
+			return this;
+		}
+
+		public DistributionStat timeWindow(final String value) {
+			this.timeWindow = value;
+			return this;
+		}
+
+		public DistributionStat count(final long value) {
+			this.count = value;
+			return this;
+		}
+
+		public DistributionStat avg(final double value) {
+			this.avg = value;
+			return this;
+		}
+
+		public DistributionStat stdev(final double value) {
+			this.stdev = value;
+			return this;
+		}
+
+		public DistributionStat min(final double value) {
+			this.min = value;
+			return this;
+		}
+
+		public DistributionStat p10(final double value) {
+			this.p10 = value;
+			return this;
+		}
+
+		public DistributionStat p25(final double value) {
+			this.p25 = value;
+			return this;
+		}
+
+		public DistributionStat median(final double value) {
+			this.median = value;
+			return this;
+		}
+
+		public DistributionStat p75(final double value) {
+			this.p75 = value;
+			return this;
+		}
+
+		public DistributionStat p90(final double value) {
+			this.p90 = value;
+			return this;
+		}
+
+		public DistributionStat max(final double value) {
+			this.max = value;
+			return this;
+		}
+	
+	}
+	
 	public static class OutcomeSummaryStat {
 
 		private String dataSource;
@@ -846,19 +1090,33 @@ public class StudyReportService extends AbstractDaoService {
 		return template;
 	}
 
-	private String buildCovariateStatQuery(List<Long> cohorts, List<Integer> sources, List<Long> covariateIds) {
+	private String buildCovariatePrevalenceQuery(List<Long> cohorts, List<Integer> sources, List<Long> covariateIds) {
 
 		String covaraiteIdList = StringUtils.join(covariateIds, ",");
 		String cohortIdList = StringUtils.join(cohorts, ",");
 		String sourceIdList = StringUtils.join(sources, ",");
 
-		String covariateQuery = QUERY_COVARIATE_STATS;
+		String covariateQuery = QUERY_COVARIATE_PREVALENCE_STATS;
 		covariateQuery = StringUtils.replace(covariateQuery, "@covariate_id_list", covaraiteIdList);
 		covariateQuery = StringUtils.replace(covariateQuery, "@cohort_id_list", cohortIdList);
 		covariateQuery = StringUtils.replace(covariateQuery, "@source_id_list", sourceIdList);
 
 		return covariateQuery;
 	}
+	
+	private String buildCovariateDistributionQuery(List<Long> cohorts, List<Integer> sources, List<Long> covariateIds) {
+
+		String covaraiteIdList = StringUtils.join(covariateIds, ",");
+		String cohortIdList = StringUtils.join(cohorts, ",");
+		String sourceIdList = StringUtils.join(sources, ",");
+
+		String covariateQuery = QUERY_COVARIATE_DISTRIBUTION_STATS;
+		covariateQuery = StringUtils.replace(covariateQuery, "@covariate_id_list", covaraiteIdList);
+		covariateQuery = StringUtils.replace(covariateQuery, "@cohort_id_list", cohortIdList);
+		covariateQuery = StringUtils.replace(covariateQuery, "@source_id_list", sourceIdList);
+
+		return covariateQuery;
+	}	
 
 	private String buildIRStatQuery(List<ReportCohortPair> cohortPairs, List<Integer> sources) {
 
@@ -905,10 +1163,11 @@ public class StudyReportService extends AbstractDaoService {
 		return ccaQuery;
 	}
 
-	public List<CovariateStat> getReportCovariates(Report report) {
+	public List<PrevalenceStat> getReportCovariatePrevalence(Report report) {
 
 		// Collect list of covariateIds
-		List<Long> covariateIds = report.getCovariates().stream().map(ReportCovariate::getCovariateId).collect(Collectors.toList());
+		List<Long> covariateIds = report.getCovariates().stream().filter(c -> c.getCovariateSection() != CovariateSection.DISTRIBUTIONS)
+			.map(ReportCovariate::getCovariateId).collect(Collectors.toList());
 
 		// Collect list of cohort IDs
 		List<Long> cohorts = report.getCohortPairs().stream().map(rc -> rc.getTarget().getId()).distinct().collect(Collectors.toList());
@@ -917,15 +1176,15 @@ public class StudyReportService extends AbstractDaoService {
 		List<Integer> activeSourceIds = report.getSources().stream().filter(source -> source.isActive()).map(rs -> rs.getSource().getId()).collect(Collectors.toList());
 
 		// Get covaraite stats from each active datasource
-		String covariateQuery = buildCovariateStatQuery(cohorts, activeSourceIds, covariateIds);
+		String covariateQuery = buildCovariatePrevalenceQuery(cohorts, activeSourceIds, covariateIds);
 		covariateQuery = SqlRender.renderSql(covariateQuery,
 			new String[]{"study_results_schema"},
 			new String[]{this.getStudyResultsSchema()}
 		);
 
 		String translatedSql = SqlTranslate.translateSql(covariateQuery, "sql server", this.getStudyResultsDialect(), SessionUtils.sessionId(), this.getStudyResultsSchema());
-		List<CovariateStat> covariateStats = this.getStudyResultsJdbcTemplate().query(translatedSql, (row, rowNum) -> {
-			return new CovariateStat(row.getString("source_key"),
+		List<PrevalenceStat> covariateStats = this.getStudyResultsJdbcTemplate().query(translatedSql, (row, rowNum) -> {
+			return new PrevalenceStat(row.getString("source_key"),
 				row.getInt("cohort_definition_id"),
 				row.getLong("covariate_id"),
 				row.getString("covariate_name"),
@@ -939,6 +1198,51 @@ public class StudyReportService extends AbstractDaoService {
 		return covariateStats;
 	}
 
+	public List<DistributionStat> getReportCovariateDistStats(Report report) {
+
+		// Collect list of covariateIds
+		List<Long> covariateIds = report.getCovariates().stream().filter(c -> c.getCovariateSection() == CovariateSection.DISTRIBUTIONS)
+			.map(ReportCovariate::getCovariateId).collect(Collectors.toList());
+
+		// Collect list of cohort IDs
+		List<Long> cohorts = report.getCohortPairs().stream().map(rc -> rc.getTarget().getId()).distinct().collect(Collectors.toList());
+
+		// Use the order of sources that are returned from the Report entity, but only include isActive()
+		List<Integer> activeSourceIds = report.getSources().stream().filter(source -> source.isActive()).map(rs -> rs.getSource().getId()).collect(Collectors.toList());
+
+		// Get covaraite stats from each active datasource
+		String covariateQuery = buildCovariateDistributionQuery(cohorts, activeSourceIds, covariateIds);
+		covariateQuery = SqlRender.renderSql(covariateQuery,
+			new String[]{"study_results_schema"},
+			new String[]{this.getStudyResultsSchema()}
+		);
+
+		String translatedSql = SqlTranslate.translateSql(covariateQuery, "sql server", this.getStudyResultsDialect(), SessionUtils.sessionId(), this.getStudyResultsSchema());
+		List<DistributionStat> covariateStats = this.getStudyResultsJdbcTemplate().query(translatedSql, (row, rowNum) -> {
+			return new DistributionStat()
+				.dataSource(row.getString("source_key"))
+				.cohortId(row.getInt("cohort_definition_id"))
+				.cohortName(row.getString("cohort_definition_name"))
+				.covariateId(row.getLong("covariate_id"))
+				.covariateName(row.getString("covariate_name"))
+				.analysisName(row.getString("analysis_name"))
+				.timeWindow(row.getString("time_window"))
+				.count(Float.valueOf(row.getFloat("count_value")).longValue())
+				.avg(row.getDouble("avg_value"))
+				.stdev(row.getDouble("stdev_value"))
+				.min(row.getDouble("min_value"))
+				.p10(row.getDouble("p10_value"))
+				.p25(row.getDouble("p25_value"))
+				.median(row.getDouble("median_value"))
+				.p75(row.getDouble("p75_value"))
+				.p90(row.getDouble("p90_value"))
+				.max(row.getDouble("max_value"));
+		});
+
+		return covariateStats;
+	}
+
+	
 	public List<OutcomeSummaryStat> getReportIR(List<ReportCohortPair> activePairs, List<ReportSource> activeSources) {
 
 		// Use the order of sources that are returned from the Report entity, but only include isActive()

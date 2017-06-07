@@ -47,7 +47,8 @@ import net.sf.dynamicreports.report.definition.ReportParameters;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.service.StudyReportService;
-import org.ohdsi.webapi.service.StudyReportService.CovariateStat;
+import org.ohdsi.webapi.service.StudyReportService.PrevalenceStat;
+import org.ohdsi.webapi.service.StudyReportService.DistributionStat;
 import org.ohdsi.webapi.study.StudyCohort;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -476,6 +477,31 @@ public class StudyReportManager {
 		return crosstab;
 	}
 
+	private JasperReportBuilder getCovariateDistReport() {
+		
+		// rendering of reports goes cohort
+		TextColumnBuilder<String> dataSourceCol = col.column("Data Source", "dataSource", type.stringType());
+		//TextColumnBuilder<String> covariateCol = col.column("Covariate", "covariateName", type.stringType());
+		TextColumnBuilder<Long> countCol = col.column("N", "count", type.longType());
+		TextColumnBuilder<Double> avgCol = col.column("AVG", "avg", type.doubleType());
+		TextColumnBuilder<Double> stdevCol = col.column("STDEV", "stdev", type.doubleType());
+		TextColumnBuilder<Double> minCol = col.column("MIN", "min", type.doubleType());
+		TextColumnBuilder<Double> p10Col = col.column("P10", "p10", type.doubleType());
+		TextColumnBuilder<Double> p25Col = col.column("P25", "p25", type.doubleType());
+		TextColumnBuilder<Double> medianCol = col.column("Median", "median", type.doubleType());
+		TextColumnBuilder<Double> p75Col = col.column("P75", "p75", type.doubleType());
+		TextColumnBuilder<Double> p90Col = col.column("P90", "p90", type.doubleType());
+		TextColumnBuilder<Double> maxCol = col.column("MAX", "max", type.doubleType());
+
+		JasperReportBuilder distReport = report()
+			.columns(dataSourceCol, countCol, avgCol, stdevCol, minCol, p10Col, p25Col, medianCol, p75Col, p90Col, maxCol)
+			.groupBy(grp.group("covariateName", String.class))
+			.setColumnStyle(this.columnStyleSmall)
+			.setColumnTitleStyle(this.columnHeaderStyle)
+			.setGroupStyle(this.groupHeaderStyle);
+		return distReport;		
+	}
+	
 	private JasperReportBuilder getIRReport() {
 		// rendering of reports goes cohort
 		TextColumnBuilder<String> dataSourceCol = col.column("Data Source", "dataSource", type.stringType());
@@ -608,6 +634,8 @@ public class StudyReportManager {
 		Map<Long,Integer> conditionCovariateLookup = new HashMap<>();
 		Map<Long,Integer> drugCovariateLookup = new HashMap<>();
 		Map<Long,Integer> procedureCovariateLookup = new HashMap<>();
+		Map<Long,Integer> measureCovariateLookup = new HashMap<>();
+		Map<Long, Integer> distCovariateLookup = new HashMap<>();
 		
 		IntStream.range(0, report.getCovariates().size())
 			.forEach(i -> {
@@ -626,29 +654,46 @@ public class StudyReportManager {
 					case PROCEDURES:
 						procedureCovariateLookup.put(rc.getCovariateId(), i);
 						break;
+					case MEASUREMENTS:
+						measureCovariateLookup.put(rc.getCovariateId(), i);
+						break;
+					case DISTRIBUTIONS:
+						distCovariateLookup.put(rc.getCovariateId(), i);
+						break;
 				}
 			});
 		
 		// Comparators
 
-		Comparator<CovariateStat> demographicComparator = Comparator.comparing(cs -> demographicCovariateLookup.get(cs.getCovariateId()));
+		Comparator<PrevalenceStat> demographicComparator = Comparator.comparing(cs -> demographicCovariateLookup.get(cs.getCovariateId()));
 		demographicComparator = demographicComparator.thenComparing(cs -> sourceLookup.get(cs.getDataSource()));
 		
-		Comparator<CovariateStat> conditionComparator = Comparator.comparing(cs -> conditionCovariateLookup.get(cs.getCovariateId()));
+		Comparator<PrevalenceStat> conditionComparator = Comparator.comparing(cs -> conditionCovariateLookup.get(cs.getCovariateId()));
 		conditionComparator = conditionComparator.thenComparing(cs -> sourceLookup.get(cs.getDataSource()));
 		
-		Comparator<CovariateStat> drugComparator = Comparator.comparing(cs -> drugCovariateLookup.get(cs.getCovariateId()));
+		Comparator<PrevalenceStat> drugComparator = Comparator.comparing(cs -> drugCovariateLookup.get(cs.getCovariateId()));
 		drugComparator = drugComparator.thenComparing(cs -> sourceLookup.get(cs.getDataSource()));
 		
-		Comparator<CovariateStat> procedureComparator = Comparator.comparing(cs -> procedureCovariateLookup.get(cs.getCovariateId()));
+		Comparator<PrevalenceStat> procedureComparator = Comparator.comparing(cs -> procedureCovariateLookup.get(cs.getCovariateId()));
 		procedureComparator = procedureComparator.thenComparing(cs -> sourceLookup.get(cs.getDataSource()));
 
-		// Covariate Stats
-		List<CovariateStat> covariateStats = studyReportService.getReportCovariates(report);
+		Comparator<PrevalenceStat> measureComparator = Comparator.comparing(cs -> measureCovariateLookup.get(cs.getCovariateId()));
+		measureComparator = measureComparator.thenComparing(cs -> sourceLookup.get(cs.getDataSource()));
+		
+		Comparator<DistributionStat> distComparator = Comparator.comparing(cs -> distCovariateLookup.get(cs.getCovariateId()));
+		distComparator = distComparator.thenComparing(cs -> sourceLookup.get(cs.getDataSource()));
+		
+		List<PrevalenceStat> prevalenceStats = studyReportService.getReportCovariatePrevalence(report);
+		
+		// we don't split the distribution stats into separate lists, so we can sort thie list once after fetch
+		List<DistributionStat> distributionStats = studyReportService.getReportCovariateDistStats(report);
+		distributionStats.sort(distComparator);
 		
 		for (ReportCohortPair cohortPair : activePairs) {
 			contentBuilder.add(cmp.text(String.format("<b>Cohort:</b> %s", cohortPair.getTarget().getName())).setStyle(this.headingStyle));
 				
+			// Prevalence Stats
+
 			CrosstabBuilder crosstab;
 			JasperReportBuilder subReport;
 
@@ -656,7 +701,7 @@ public class StudyReportManager {
 			// which must be sorted by the covariate ordinal, then by datasource ordinal
 			
 			// DEMOGRAPHICS
-			List<CovariateStat> demographicStats = covariateStats.stream()
+			List<PrevalenceStat> demographicStats = prevalenceStats.stream()
 				.filter(cs -> demographicCovariateLookup.containsKey(cs.getCovariateId()) && cs.getCohortId() == cohortPair.getTarget().getId())
 				.sorted(demographicComparator)
 				.collect(Collectors.toList());
@@ -672,7 +717,7 @@ public class StudyReportManager {
 			contentBuilder.add(cmp.subreport(subReport));
 			
 			// Conditions
-			List<CovariateStat> conditionStats = covariateStats.stream()
+			List<PrevalenceStat> conditionStats = prevalenceStats.stream()
 				.filter(cs -> conditionCovariateLookup.containsKey(cs.getCovariateId()) && cs.getCohortId() == cohortPair.getTarget().getId())
 				.sorted(conditionComparator)
 				.collect(Collectors.toList());
@@ -704,7 +749,7 @@ public class StudyReportManager {
 			contentBuilder.add(cmp.subreport(subReport));
 			
 			// Drugs
-			List<CovariateStat> drugStats = covariateStats.stream()
+			List<PrevalenceStat> drugStats = prevalenceStats.stream()
 				.filter(cs -> drugCovariateLookup.containsKey(cs.getCovariateId()) && cs.getCohortId() == cohortPair.getTarget().getId())
 				.sorted(drugComparator)
 				.collect(Collectors.toList());
@@ -736,10 +781,24 @@ public class StudyReportManager {
 			contentBuilder.add(cmp.subreport(subReport));
 			
 			// Procedures
-			List<CovariateStat> procedureStats = covariateStats.stream()
+			List<PrevalenceStat> procedureStats = prevalenceStats.stream()
 				.filter(cs -> procedureCovariateLookup.containsKey(cs.getCovariateId()) && cs.getCohortId() == cohortPair.getTarget().getId())
 				.sorted(procedureComparator)
 				.collect(Collectors.toList());
+
+			FootnoteManager procedureFootnoteManager = new FootnoteManager();
+			String procedureDefaultAnalysis = "Procedure occurrence record for the verbatim concept observed during 365d on or prior to cohort index";
+			procedureStats.forEach(s -> {
+				if (!procedureDefaultAnalysis.equals(s.getAnalysisName())) {
+					s.setName(String.format("%s<sup>%s</sup>", s.getName(), procedureFootnoteManager.getFootnoteSymbol(s.getAnalysisName())));
+				}
+			});
+			String procedureFootnotes = StringUtils.join(procedureFootnoteManager.getFootnotes().stream().map(f -> {
+				return String.format("%s: %s", f.glyph, f.footnote);
+			}).collect(Collectors.toList()),"\n");
+			
+			String procedureFootnoteText = "Note: using procedure occurrence record for the verbatim concept observed during 365d on or prior to cohort index";
+			procedureFootnoteText = procedureFootnoteText + ((procedureFootnotes.length() > 0) ? " unless noted below:\n" + procedureFootnotes : ".");
 
 			crosstab = getCovariateCrossTab()
 				.setDataSource(new JRBeanCollectionDataSource(procedureStats))
@@ -747,9 +806,54 @@ public class StudyReportManager {
 
 			subReport = report()
 				.title(cmp.text(String.format("Table %dd. Procedures", tableIndex)).setStyle(this.headingStyle))
-				.summary(procedureStats.size() > 0 ? crosstab : cmp.text("No procedure covariates selected.").setStyle(this.subHeadingStyle));
+				.summary(procedureStats.size() > 0 ? cmp.verticalList(crosstab, 
+					cmp.text(procedureFootnoteText).setStyle(this.footnoteStyle)).setGap(3)
+					: cmp.text("No procedure covariates selected.").setStyle(this.subHeadingStyle));
 			
 			contentBuilder.add(cmp.subreport(subReport));
+
+			// Measurements
+			List<PrevalenceStat> measureStats = prevalenceStats.stream()
+				.filter(cs -> measureCovariateLookup.containsKey(cs.getCovariateId()) && cs.getCohortId() == cohortPair.getTarget().getId())
+				.sorted(measureComparator)
+				.collect(Collectors.toList());
+
+			FootnoteManager measurementFootnoteManager = new FootnoteManager();
+			String measurementDefaultAnalysis = "Measurement record for the verbatim concept observed during 365d on or prior to cohort index";
+			measureStats.forEach(s -> {
+				if (!measurementDefaultAnalysis.equals(s.getAnalysisName())) {
+					s.setName(String.format("%s<sup>%s</sup>", s.getName(), measurementFootnoteManager.getFootnoteSymbol(s.getAnalysisName())));
+				}
+			});
+			String measurementFootnotes = StringUtils.join(measurementFootnoteManager.getFootnotes().stream().map(f -> {
+				return String.format("%s: %s", f.glyph, f.footnote);
+			}).collect(Collectors.toList()),"\n");
+			
+			String measurementFootnoteText = "Note: using measurement record for the verbatim concept observed during 365d on or prior to cohort index";
+			measurementFootnoteText = measurementFootnoteText + ((measurementFootnotes.length() > 0) ? " unless noted below:\n" + measurementFootnotes : ".");
+			
+			crosstab = getCovariateCrossTab()
+				.setDataSource(new JRBeanCollectionDataSource(measureStats))
+				.setDataPreSorted(true);
+
+			subReport = report()
+				.title(cmp.text(String.format("Table %de. Measurements", tableIndex)).setStyle(this.headingStyle))
+				.summary(measureStats.size() > 0 ? cmp.verticalList(crosstab, 
+					cmp.text(measurementFootnoteText).setStyle(this.footnoteStyle)).setGap(3)
+					: cmp.text("No measurement covariates selected.").setStyle(this.subHeadingStyle));
+
+			contentBuilder.add(cmp.subreport(subReport));
+
+			// Distribution Stats
+			List<DistributionStat> cohortDistStats = distributionStats.stream()
+				.filter(cs -> cs.getCohortId() == cohortPair.getTarget().getId())
+				.collect(Collectors.toList());
+			
+			JasperReportBuilder distReport = getCovariateDistReport()
+				.title(cmp.text(String.format("Table %df. Covariate Distribution", tableIndex)).setStyle(this.headingStyle))
+				.setDataSource(cohortDistStats);
+			
+			contentBuilder.add(cmp.subreport(distReport));
 			
 			tableIndex++;
 			

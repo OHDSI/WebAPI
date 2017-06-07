@@ -326,6 +326,10 @@ public class StudyService extends AbstractDaoService {
 	}
 
 	public StudyDTO fromStudy(Study studyEntity) {
+		return fromStudy(studyEntity, true, true, true, true, true);
+	}
+	
+	public StudyDTO fromStudy(Study studyEntity, boolean mapIRA, boolean mapSCC, boolean mapCCA, boolean mapCohorts, boolean mapSources) {
 		StudyDTO study = new StudyDTO();
 		HashMap<Integer, StudyService.CohortDetail> cohorts = new HashMap<>();
 
@@ -334,68 +338,77 @@ public class StudyService extends AbstractDaoService {
 		study.description = studyEntity.getDescription();
 
 		// Map IRAs
-		study.irAnalysisList = studyEntity.getIrAnalysisList().stream().map(i -> {
-			StudyIRDTO ira = new StudyIRDTO();
-			ira.id = i.getId();
-			ira.params = i.getParams();
+		if (mapIRA) {
+			study.irAnalysisList = studyEntity.getIrAnalysisList().stream().map(i -> {
+				StudyIRDTO ira = new StudyIRDTO();
+				ira.id = i.getId();
+				ira.params = i.getParams();
 
-			ira.targets = i.getTargets().stream().map(t -> {
-				return t.getId();
-			}).collect(Collectors.toList());
+				ira.targets = i.getTargets().stream().map(t -> {
+					return t.getId();
+				}).collect(Collectors.toList());
 
-			ira.outcomes = i.getOutcomes().stream().map(o -> {
-				return o.getId();
-			}).collect(Collectors.toList());
+				ira.outcomes = i.getOutcomes().stream().map(o -> {
+					return o.getId();
+				}).collect(Collectors.toList());
 
-			return ira;
-		}).collect(Collectors.toList());
+				return ira;
+			}).collect(Collectors.toList());			
+		}
 
 		// Map SCCs
-		study.sccList = studyEntity.getSccList().stream().map(scc -> {
-			StudySCCDTO sccDTO = new StudySCCDTO();
+		if (mapSCC) {
+			study.sccList = studyEntity.getSccList().stream().map(scc -> {
+				StudySCCDTO sccDTO = new StudySCCDTO();
 
-			sccDTO.id = scc.getId();
-			sccDTO.params = scc.getParams();
+				sccDTO.id = scc.getId();
+				sccDTO.params = scc.getParams();
 
-			sccDTO.pairs = scc.getPairs().stream().map(pair -> {
-				SCCPair pairDTO = new SCCPair();
+				sccDTO.pairs = scc.getPairs().stream().map(pair -> {
+					SCCPair pairDTO = new SCCPair();
 
-				pairDTO.target = pair.getTarget().getId();
-				pairDTO.outcome = pair.getOutcome().getId();
-				pairDTO.negativeControls = pair.getNegativeControls().stream().map(StudyCohort::getId).collect(Collectors.toList());
-				return pairDTO;
-			}).collect(Collectors.toList());
-			return sccDTO;
-		}).collect(Collectors.toList());
+					pairDTO.target = pair.getTarget().getId();
+					pairDTO.outcome = pair.getOutcome().getId();
+					pairDTO.negativeControls = pair.getNegativeControls().stream().map(StudyCohort::getId).collect(Collectors.toList());
+					return pairDTO;
+				}).collect(Collectors.toList());
+				return sccDTO;
+			}).collect(Collectors.toList());			
+		}
 
 		// Map CCAs
-		study.ccaList = studyEntity.getCcaList().stream().map(cca -> {
-			StudyCCADTO ccaDTO = new StudyCCADTO();
+		if (mapCCA) {
+			study.ccaList = studyEntity.getCcaList().stream().map(cca -> {
+				StudyCCADTO ccaDTO = new StudyCCADTO();
 
-			ccaDTO.id = cca.getId();
-			ccaDTO.params = cca.getParams();
+				ccaDTO.id = cca.getId();
+				ccaDTO.params = cca.getParams();
 
-			ccaDTO.trios = cca.getTrios().stream().map(trio -> {
-				CCATrio trioDTO = new CCATrio();
+				ccaDTO.trios = cca.getTrios().stream().map(trio -> {
+					CCATrio trioDTO = new CCATrio();
 
-				trioDTO.target = trio.getTarget().getId();
-				trioDTO.comaprator = trio.getComparator().getId();
-				trioDTO.outcome = trio.getOutcome().getId();
-				trioDTO.negativeControls = trio.getNegativeControls().stream().map(StudyCohort::getId).collect(Collectors.toList());
-				return trioDTO;
-			}).collect(Collectors.toList());
-			return ccaDTO;
-		}).collect(Collectors.toList());
+					trioDTO.target = trio.getTarget().getId();
+					trioDTO.comaprator = trio.getComparator().getId();
+					trioDTO.outcome = trio.getOutcome().getId();
+					trioDTO.negativeControls = trio.getNegativeControls().stream().map(StudyCohort::getId).collect(Collectors.toList());
+					return trioDTO;
+				}).collect(Collectors.toList());
+				return ccaDTO;
+			}).collect(Collectors.toList());			
+		}
 
 		// Map cohorts
-		study.cohorts = studyEntity.getCohortList().stream().map(c -> {
-			return fromStudyCohort(c);
-		}).collect(Collectors.toList());
-
+		if (mapCohorts) {
+			study.cohorts = studyEntity.getCohortList().stream().map(c -> {
+				return fromStudyCohort(c);
+			}).collect(Collectors.toList());
+		}
 		// Map Sources
-		study.sources = studyEntity.getSourceList().stream().map(s -> {
-			return new StudySourceDTO(s.getId(), s.getName());
-		}).collect(Collectors.toList());
+		if (mapSources) {
+			study.sources = studyEntity.getSourceList().stream().map(s -> {
+				return new StudySourceDTO(s.getId(), s.getName());
+			}).collect(Collectors.toList());			
+		}
 
 		return study;
 	}
@@ -669,6 +682,22 @@ public class StudyService extends AbstractDaoService {
 		// resolve entity collections into POJO collections for JSON serialization.
 		// later we should adopt a DTO mapper when we implement services to update a Study.
 		return fromStudy(studyEntity);
+	}
+	@GET
+	@Path("/{studyId}/datasources")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Transactional
+	public StudyDTO getStudyDataSources(
+		@PathParam("studyId") final int studyId
+	) {
+		Study studyEntity = studyRepository.findOne(studyId);
+		if (studyEntity == null) {
+			throw new WebApplicationException(Response.Status.NOT_FOUND);
+		}
+
+		// resolve entity collections into POJO collections for JSON serialization.
+		// later we should adopt a DTO mapper when we implement services to update a Study.
+		return fromStudy(studyEntity, false, false, false, false, true);
 	}
 
 	@GET

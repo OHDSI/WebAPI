@@ -24,6 +24,10 @@ public class CovariateSectionConverter implements AttributeConverter<CovariateSe
 				return "CONDITIONS";
 			case DRUGS:
 				return "DRUGS";
+			case MEASUREMENTS:
+				return "MEASUREMENTS";
+			case OBSERVATIONS:
+				return "OBSERVATIONS";
 			case PROCEDURES:
 				return "PROCEDURES";
 			default:
@@ -40,6 +44,10 @@ public class CovariateSectionConverter implements AttributeConverter<CovariateSe
 				return CovariateSection.CONDITIONS;
 			case "DRUGS":
 				return CovariateSection.DRUGS;
+			case "MEASUREMENTS":
+				return CovariateSection.MEASUREMENTS;
+			case "OBSERVATIONS":
+				return CovariateSection.OBSERVATIONS;
 			case "PROCEDURES":
 				return CovariateSection.PROCEDURES;
 			default:

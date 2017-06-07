@@ -519,9 +519,9 @@ public class StudyService extends AbstractDaoService {
 	}
 	
 	@GET
-	@Path("{studyId}/results/covariates/{cohortId}/{sourceId}/explore/{covariateId}")
+	@Path("{studyId}/results/prevalence/{cohortId}/{sourceId}/explore/{covariateId}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public StudyStatistics getStudyStatisticsByVocab(
+	public List<PrevalenceStat> getStudyPrevalenceStatsByVocab(
 		@PathParam("studyId") final int studyId,
 		@PathParam("cohortId") final long cohortId,
 		@PathParam("sourceId") final int sourceId,
@@ -537,7 +537,7 @@ public class StudyService extends AbstractDaoService {
 		);
 
 		translatedSql = SqlTranslate.translateSql(categoricalQuery, "sql server", this.getStudyResultsDialect(), SessionUtils.sessionId(), this.getStudyResultsSchema());
-		List<PrevalenceStat> categoricalStats = this.getStudyResultsJdbcTemplate().query(translatedSql, (rs, rowNum) -> {
+		List<PrevalenceStat> prevalenceStats = this.getStudyResultsJdbcTemplate().query(translatedSql, (rs, rowNum) -> {
 			PrevalenceStat mappedRow = new PrevalenceStat() {
 				{
 					covariateId = rs.getLong("covariate_id");
@@ -555,43 +555,7 @@ public class StudyService extends AbstractDaoService {
 			return mappedRow;
 		});
 
-		String continuousQuery = SqlRender.renderSql(
-			QUERY_COVARIATE_DIST_VOCAB,
-			new String[]{"study_results_schema", "cohort_definition_id", "source_id", "covariate_id"},
-			new String[]{this.getStudyResultsSchema(), Long.toString(cohortId), Integer.toString(sourceId), Long.toString(covariateId)}
-		);
-
-		translatedSql = SqlTranslate.translateSql(continuousQuery, "sql server", this.getStudyResultsDialect(), SessionUtils.sessionId(), this.getStudyResultsSchema());
-		List<DistributionStat> continuousStats = this.getStudyResultsJdbcTemplate().query(translatedSql, (rs, rowNum) -> {
-			DistributionStat mappedRow = new DistributionStat() {
-				{
-					covariateId = rs.getLong("covariate_id");
-					covariateName = rs.getString("covariate_name");
-					analysisId = rs.getLong("analysis_id");
-					analysisName = rs.getString("analysis_name");
-					domainId = rs.getString("domain_id");
-					timeWindow = rs.getString("time_window");
-					conceptId = rs.getLong("concept_id");
-					countValue = rs.getLong("count_value");
-					avgValue = new BigDecimal(rs.getDouble("avg_value")).setScale(5, RoundingMode.DOWN);
-					stdevValue = new BigDecimal(rs.getDouble("stdev_value")).setScale(5, RoundingMode.DOWN);
-					minValue = rs.getLong("min_value");
-					p10Value = rs.getLong("p10_value");
-					p25Value = rs.getLong("p25_value");
-					medianValue = rs.getLong("median_value");
-					p75Value = rs.getLong("p75_value");
-					p90Value = rs.getLong("p90_value");
-					maxValue = rs.getLong("max_value");
-					distance = rs.getLong("min_levels_of_separation");
-				}
-			};
-			return mappedRow;
-		});
-
-		result.categorical = categoricalStats;
-		result.continuous = continuousStats;
-
-		return result;
+		return prevalenceStats;
 	}
 
 	@GET

@@ -30,6 +30,8 @@ public class CovariateSectionConverter implements AttributeConverter<CovariateSe
 				return "OBSERVATIONS";
 			case PROCEDURES:
 				return "PROCEDURES";
+			case DISTRIBUTIONS:
+				return "DISTRIBUTIONS";
 			default:
 				throw new IllegalArgumentException("Unknown" + attribute);
 		}
@@ -50,6 +52,8 @@ public class CovariateSectionConverter implements AttributeConverter<CovariateSe
 				return CovariateSection.OBSERVATIONS;
 			case "PROCEDURES":
 				return CovariateSection.PROCEDURES;
+			case "DISTRIBUTIONS":
+				return CovariateSection.DISTRIBUTIONS;
 			default:
 				throw new IllegalArgumentException("Unknown" + dbData);
 		}

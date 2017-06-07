@@ -181,7 +181,7 @@ public class StudyService extends AbstractDaoService {
 		public List<CohortRelationship> relationships = new ArrayList<>();
 	}
 
-	public static class CovariateStat {
+	public static class PrevalenceStat {
 
 		public long covariateId;
 		public String covariateName;
@@ -195,7 +195,7 @@ public class StudyService extends AbstractDaoService {
 		public long distance = 0;
 	}
 
-	public static class CovariateDist {
+	public static class DistributionStat {
 
 		public long covariateId;
 		public String covariateName;
@@ -227,8 +227,8 @@ public class StudyService extends AbstractDaoService {
 
 	public static class StudyStatistics {
 
-		public List<CovariateStat> categorical = new ArrayList<>();
-		public List<CovariateDist> continuous = new ArrayList<>();
+		public List<PrevalenceStat> categorical = new ArrayList<>();
+		public List<DistributionStat> continuous = new ArrayList<>();
 	}
 
 	public static class CohortSetOutcomeItem {
@@ -428,9 +428,9 @@ public class StudyService extends AbstractDaoService {
 	}
 
 	@GET
-	@Path("{studyId}/results/covariates/{cohortId}/{sourceId}")
+	@Path("{studyId}/results/prevalence/{cohortId}/{sourceId}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public StudyStatistics getStudyStatistics(
+	public List<PrevalenceStat> getStudyPrevalenceStats(
 		@PathParam("studyId") final int studyId,
 		@PathParam("cohortId") final long cohortId,
 		@PathParam("sourceId") final int sourceId,
@@ -439,9 +439,7 @@ public class StudyService extends AbstractDaoService {
 		@QueryParam("timeWindow") final List<String> timeWindows,
 		@QueryParam("domain") final List<String> domains
 	) {
-		StudyStatistics result = new StudyStatistics();
 		String translatedSql;
-
 		List<String> criteriaClauses = buildCriteriaClauses(searchTerm, analysisIds, timeWindows, domains);
 
 		String categoricalQuery = SqlRender.renderSql(
@@ -451,8 +449,8 @@ public class StudyService extends AbstractDaoService {
 		);
 
 		translatedSql = SqlTranslate.translateSql(categoricalQuery, "sql server", this.getStudyResultsDialect(), SessionUtils.sessionId(), this.getStudyResultsSchema());
-		List<CovariateStat> categoricalStats = this.getStudyResultsJdbcTemplate().query(translatedSql, (rs, rowNum) -> {
-			CovariateStat mappedRow = new CovariateStat() {
+		List<PrevalenceStat> prevalenceStats = this.getStudyResultsJdbcTemplate().query(translatedSql, (rs, rowNum) -> {
+			PrevalenceStat mappedRow = new PrevalenceStat() {
 				{
 					covariateId = rs.getLong("covariate_id");
 					covariateName = rs.getString("covariate_name");
@@ -468,15 +466,33 @@ public class StudyService extends AbstractDaoService {
 			return mappedRow;
 		});
 
+		return prevalenceStats;
+	}
+
+	@GET
+	@Path("{studyId}/results/distributions/{cohortId}/{sourceId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<DistributionStat> getStudyDistributionStats(
+		@PathParam("studyId") final int studyId,
+		@PathParam("cohortId") final long cohortId,
+		@PathParam("sourceId") final int sourceId,
+		@QueryParam("searchTerm") final String searchTerm,
+		@QueryParam("analysisId") final List<String> analysisIds,
+		@QueryParam("timeWindow") final List<String> timeWindows,
+		@QueryParam("domain") final List<String> domains
+	) {
+
+		List<String> criteriaClauses = buildCriteriaClauses(searchTerm, analysisIds, timeWindows, domains);
+
 		String continuousQuery = SqlRender.renderSql(
 			QUERY_COVARIATE_DIST,
 			new String[]{"study_results_schema", "cohort_definition_id", "source_id", "criteria_clauses"},
 			new String[]{this.getStudyResultsSchema(), Long.toString(cohortId), Integer.toString(sourceId), criteriaClauses.isEmpty() ? "" : " AND\n" + StringUtils.join(criteriaClauses, "\n AND ")}
 		);
 
-		translatedSql = SqlTranslate.translateSql(continuousQuery, "sql server", this.getStudyResultsDialect(), SessionUtils.sessionId(), this.getStudyResultsSchema());
-		List<CovariateDist> continuousStats = this.getStudyResultsJdbcTemplate().query(translatedSql, (rs, rowNum) -> {
-			CovariateDist mappedRow = new CovariateDist() {
+		String translatedSql = SqlTranslate.translateSql(continuousQuery, "sql server", this.getStudyResultsDialect(), SessionUtils.sessionId(), this.getStudyResultsSchema());
+		List<DistributionStat> distStats = this.getStudyResultsJdbcTemplate().query(translatedSql, (rs, rowNum) -> {
+			DistributionStat mappedRow = new DistributionStat() {
 				{
 					covariateId = rs.getLong("covariate_id");
 					covariateName = rs.getString("covariate_name");
@@ -499,13 +515,9 @@ public class StudyService extends AbstractDaoService {
 			};
 			return mappedRow;
 		});
-
-		result.categorical = categoricalStats;
-		result.continuous = continuousStats;
-
-		return result;
+		return distStats;
 	}
-
+	
 	@GET
 	@Path("{studyId}/results/covariates/{cohortId}/{sourceId}/explore/{covariateId}")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -525,8 +537,8 @@ public class StudyService extends AbstractDaoService {
 		);
 
 		translatedSql = SqlTranslate.translateSql(categoricalQuery, "sql server", this.getStudyResultsDialect(), SessionUtils.sessionId(), this.getStudyResultsSchema());
-		List<CovariateStat> categoricalStats = this.getStudyResultsJdbcTemplate().query(translatedSql, (rs, rowNum) -> {
-			CovariateStat mappedRow = new CovariateStat() {
+		List<PrevalenceStat> categoricalStats = this.getStudyResultsJdbcTemplate().query(translatedSql, (rs, rowNum) -> {
+			PrevalenceStat mappedRow = new PrevalenceStat() {
 				{
 					covariateId = rs.getLong("covariate_id");
 					covariateName = rs.getString("covariate_name");
@@ -550,8 +562,8 @@ public class StudyService extends AbstractDaoService {
 		);
 
 		translatedSql = SqlTranslate.translateSql(continuousQuery, "sql server", this.getStudyResultsDialect(), SessionUtils.sessionId(), this.getStudyResultsSchema());
-		List<CovariateDist> continuousStats = this.getStudyResultsJdbcTemplate().query(translatedSql, (rs, rowNum) -> {
-			CovariateDist mappedRow = new CovariateDist() {
+		List<DistributionStat> continuousStats = this.getStudyResultsJdbcTemplate().query(translatedSql, (rs, rowNum) -> {
+			DistributionStat mappedRow = new DistributionStat() {
 				{
 					covariateId = rs.getLong("covariate_id");
 					covariateName = rs.getString("covariate_name");

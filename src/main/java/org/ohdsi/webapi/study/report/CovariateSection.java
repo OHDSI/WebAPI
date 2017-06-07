@@ -10,12 +10,13 @@ package org.ohdsi.webapi.study.report;
  * @author Chris Knoll <cknoll@ohdsi.org>
  */
 public enum CovariateSection {
-  DEMOGRAPHICS (1, "Indication"),
-  CONDITIONS (2, "Condition"),
-  DRUGS (3, "Drugs"),
+  DEMOGRAPHICS(1, "Indication"),
+  CONDITIONS(2, "Condition"),
+  DRUGS(3, "Drugs"),
   PROCEDURES(4, "Procedures"),
 	MEASUREMENTS(5, "Measurements"),
-	OBSERVATIONS(6, "Observations");
+	OBSERVATIONS(6, "Observations"),
+	DISTRIBUTIONS(7, "Distributions");
   
   private final int id;
   private final String name;

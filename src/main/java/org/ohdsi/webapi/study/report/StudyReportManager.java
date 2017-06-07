@@ -21,6 +21,7 @@ import static net.sf.dynamicreports.report.builder.DynamicReports.*;
 
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -36,8 +37,6 @@ import net.sf.dynamicreports.report.builder.crosstab.CrosstabColumnGroupBuilder;
 import net.sf.dynamicreports.report.builder.crosstab.CrosstabMeasureBuilder;
 import net.sf.dynamicreports.report.builder.crosstab.CrosstabRowGroupBuilder;
 import net.sf.dynamicreports.report.builder.grid.ColumnTitleGroupBuilder;
-import net.sf.dynamicreports.report.builder.group.CustomGroupBuilder;
-import net.sf.dynamicreports.report.builder.style.BorderBuilder;
 import net.sf.dynamicreports.report.builder.style.StyleBuilder;
 import net.sf.dynamicreports.report.constant.Calculation;
 import net.sf.dynamicreports.report.constant.HorizontalTextAlignment;
@@ -70,13 +69,18 @@ public class StudyReportManager {
 	private String resourcePath;
 
 	private StyleBuilder titleStyle;
-	private StyleBuilder subreportTitleStyle;
-	private StyleBuilder measureStyle;
-	private StyleBuilder columnStyle;
-	private StyleBuilder columnStyleSmall;
+	private StyleBuilder subTitleStyle;
+	private StyleBuilder headingStyle;
+	private StyleBuilder subHeadingStyle;
+	
 	private StyleBuilder columnHeaderStyle;
 	private StyleBuilder groupHeaderStyle;
-	private StyleBuilder ctColumnStyle;
+	private StyleBuilder columnStyle;
+	private StyleBuilder columnBorderlessStyle;
+	private StyleBuilder columnStyleSmall;
+	private StyleBuilder crosstabCellStyle;
+	private StyleBuilder crosstabRowStyle;
+
 	private StyleBuilder footnoteStyle;
 	
 
@@ -125,7 +129,94 @@ public class StudyReportManager {
 			return String.format("%s/%s", resourcePath, "sample/calibration_plot.png");
 		}   		
 	}
+	
+	public static class OutcomeGroupBy {
+		public String targetCohortName;
+		public String outcomeCohortName;
+
+		public OutcomeGroupBy(String targetCohortName, String outcomeCohortName) {
+			this.targetCohortName = targetCohortName;
+			this.outcomeCohortName = outcomeCohortName;
+		}
+
+		@Override
+		public int hashCode() {
+			int hash = 7;
+			hash = 53 * hash + Objects.hashCode(this.targetCohortName);
+			hash = 53 * hash + Objects.hashCode(this.outcomeCohortName);
+			return hash;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj == null) {
+				return false;
+			}
+			if (getClass() != obj.getClass()) {
+				return false;
+			}
+			final OutcomeGroupBy other = (OutcomeGroupBy) obj;
+			if (!Objects.equals(this.targetCohortName, other.targetCohortName)) {
+				return false;
+			}
+			if (!Objects.equals(this.outcomeCohortName, other.outcomeCohortName)) {
+				return false;
+			}
+			return true;
+		}
 		
+		
+	}
+		
+	
+	private static class RelativeRiskGroupBy {
+		public String targetCohortName;
+		public String comparatorCohortName;
+		public String outcomeCohortName;
+
+		public RelativeRiskGroupBy(String targetCohortName, String comparatorCohortName, String outcomeCohortName) {
+			this.targetCohortName = targetCohortName;
+			this.comparatorCohortName = comparatorCohortName;
+			this.outcomeCohortName = outcomeCohortName;
+		}
+
+		@Override
+		public int hashCode() {
+			int hash = 3;
+			hash = 59 * hash + Objects.hashCode(this.targetCohortName);
+			hash = 59 * hash + Objects.hashCode(this.comparatorCohortName);
+			hash = 59 * hash + Objects.hashCode(this.outcomeCohortName);
+			return hash;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj == null) {
+				return false;
+			}
+			if (getClass() != obj.getClass()) {
+				return false;
+			}
+			final RelativeRiskGroupBy other = (RelativeRiskGroupBy) obj;
+			if (!Objects.equals(this.targetCohortName, other.targetCohortName)) {
+				return false;
+			}
+			if (!Objects.equals(this.comparatorCohortName, other.comparatorCohortName)) {
+				return false;
+			}
+			if (!Objects.equals(this.outcomeCohortName, other.outcomeCohortName)) {
+				return false;
+			}
+			return true;
+		}
+	}
+	
 	public static class RelativeRiskRow {
 		private String dataSource;
 		private Long targetCohortId;
@@ -317,43 +408,40 @@ public class StudyReportManager {
 	
 	private void initStyles() {
 
-		titleStyle = stl.style().setFont(stl.fontArialBold().setFontSize(18))
-			.setHorizontalTextAlignment(HorizontalTextAlignment.CENTER);
-
-		subreportTitleStyle = stl.style().setFont(stl.fontArialBold().setFontSize(12));
-
-		measureStyle = stl.style().setHorizontalTextAlignment(HorizontalTextAlignment.RIGHT)
-			.setVerticalTextAlignment(VerticalTextAlignment.TOP)
-			.setFont(stl.fontArial().setFontSize(10))
-			.setBorder(stl.pen1Point())
-			.setLeftIndent(5)
-			.setRightIndent(5);
-
-		columnHeaderStyle = stl.style().setHorizontalTextAlignment(HorizontalTextAlignment.CENTER)
-			.setVerticalTextAlignment(VerticalTextAlignment.MIDDLE)
-			.setFont(stl.fontArial().setFontSize(10))
-			.setBorder(stl.pen1Point())
-			.setBackgroundColor(Color.LIGHT_GRAY);
+		StyleBuilder rootStyle = stl.style(1).setName("default").setFont(stl.fontArial()).setFontSize(10).setPadding(2).setMarkup(Markup.STYLED);
 		
-		columnStyle = stl.style().setHorizontalTextAlignment(HorizontalTextAlignment.RIGHT)
+		titleStyle = stl.style(rootStyle).setName("title").setBold(Boolean.TRUE).setFontSize(14);
+		subTitleStyle = stl.style(titleStyle).setName("subTitle").setFontSize(12);
+
+		headingStyle = stl.style(rootStyle).setName("heading").setFontSize(12);
+		subHeadingStyle = stl.style(headingStyle).setName("subHeading").setFontSize(9).setPadding(stl.padding().setTop(0).setBottom(0));
+		
+		columnStyle = stl.style(rootStyle).setName("column").setHorizontalTextAlignment(HorizontalTextAlignment.RIGHT)
 			.setVerticalTextAlignment(VerticalTextAlignment.MIDDLE)
-			.setFont(stl.fontArial().setFontSize(10))
 			.setBorder(stl.pen1Point());
 
-		columnStyleSmall = stl.style().setHorizontalTextAlignment(HorizontalTextAlignment.RIGHT)
-			.setVerticalTextAlignment(VerticalTextAlignment.MIDDLE)
-			.setFont(stl.fontArial().setFontSize(8))
-			.setBorder(stl.pen1Point())
-			.setPadding(3);
-		
-		ctColumnStyle = stl.style(columnHeaderStyle);
+		columnStyleSmall = stl.style(columnStyle).setName("columnSmall")
+			.setFont(stl.fontArial().setFontSize(8));
 
-		groupHeaderStyle = stl.style().setHorizontalTextAlignment(HorizontalTextAlignment.LEFT)
+		columnBorderlessStyle = stl.style(columnStyleSmall).setName("columnBorderless").setBorder(stl.pen(0.0f, LineStyle.SOLID));
+
+		columnHeaderStyle = stl.style(columnStyle).setName("columnHeader").setHorizontalTextAlignment(HorizontalTextAlignment.CENTER)
 			.setVerticalTextAlignment(VerticalTextAlignment.MIDDLE)
-			.setFont(stl.fontArial().setFontSize(10).setBold(true))
+			.setBackgroundColor(Color.LIGHT_GRAY);
+
+		groupHeaderStyle = stl.style(rootStyle).setHorizontalTextAlignment(HorizontalTextAlignment.LEFT)
+			.setVerticalTextAlignment(VerticalTextAlignment.MIDDLE)
+			.setBold(true)
 			.setTopPadding(5);
 		
-		footnoteStyle = stl.style().setFont(stl.fontArial().setFontSize(8)).setMarkup(Markup.STYLED);
+		crosstabCellStyle = stl.style(columnStyle).setName("ctCell")
+			.setVerticalTextAlignment(VerticalTextAlignment.TOP)
+			.setLeftIndent(4)
+			.setRightIndent(4);
+		
+		crosstabRowStyle = stl.style(crosstabCellStyle).setName("ctRow").setMarkup(Markup.STYLED).setHorizontalTextAlignment(HorizontalTextAlignment.LEFT);
+
+		footnoteStyle = stl.style(rootStyle).setName("footnote").setFontSize(8).setMarkup(Markup.STYLED);
 		
 	}
 
@@ -365,56 +453,48 @@ public class StudyReportManager {
 
 		CrosstabRowGroupBuilder<String> rowGroup = ctab.rowGroup("name", String.class)
 			.setShowTotal(false)
-			.setHeaderStyle(stl.style(measureStyle).setMarkup(Markup.STYLED).setHorizontalTextAlignment(HorizontalTextAlignment.LEFT))
+			.setHeaderStyle(crosstabRowStyle)
 			.setHeaderWidth(140);
 		
 		CrosstabColumnGroupBuilder<String> columnGroup = ctab.columnGroup("dataSource", String.class)
 			.setShowTotal(false)
-			.setHeaderStyle(ctColumnStyle);
+			.setHeaderStyle(columnHeaderStyle);
 
 		CrosstabMeasureBuilder<Double> statValueMeasure = ctab.measure("%", "statValue", Double.class, Calculation.NOTHING);
+		statValueMeasure.setPattern("#0.00%");
 		CrosstabMeasureBuilder<Long> countMeasure = ctab.measure("N", "count", Long.class, Calculation.NOTHING);
+		countMeasure.setPattern("#,###");
 		
-		statValueMeasure.setStyle(measureStyle).setPattern("#0.00%");
-		countMeasure.setStyle(measureStyle);
+		statValueMeasure.setStyle(crosstabCellStyle);
+		countMeasure.setStyle(crosstabCellStyle);
 		
 		CrosstabBuilder crosstab = ctab.crosstab()
 			.rowGroups(rowGroup)
 			.columnGroups(columnGroup)
 			.measures(countMeasure, statValueMeasure)
-			//.setStyle(stl.style().setBorder(stl.pen1Point()).setLeftIndent(5).setRightIndent(5))
 			.setCellWidth(120);
-
 		return crosstab;
 	}
 
-	private JasperReportBuilder getImageTest(String imagePath) {
-		JasperReportBuilder imgTest = report();
-		String filename = resourcePath + imagePath;
-		// add a column for an image.
-		imgTest.addSummary(cmp.image(filename).setHeight(200));
-		return imgTest;
-	}
-
-	private JasperReportBuilder getIRReport(Map<Long,StudyCohort> cohortLookup) {
+	private JasperReportBuilder getIRReport() {
 		// rendering of reports goes cohort
 		TextColumnBuilder<String> dataSourceCol = col.column("Data Source", "dataSource", type.stringType());
-		TextColumnBuilder<Integer> atRiskCol = col.column("At Risk", "atRiskPP", type.integerType()).setFixedWidth(50);
+		TextColumnBuilder<Integer> atRiskCol = col.column("At Risk", "atRiskPP", type.integerType()).setFixedWidth(125);
 		TextColumnBuilder<Integer> casesPPCol = col.column("Cases", "casesPP", type.integerType()).setFixedWidth(50);
-		TextColumnBuilder<Double> personTimePPCol = col.column("TAR", "personTimePP", type.doubleType()).setPattern("#,##0.0");
-		TextColumnBuilder<Double> proportionPPCol = col.column("IP", "incidenceProportionPP", type.doubleType()).setFixedWidth(30).setPattern("#0.00");
-		TextColumnBuilder<Double> ratePPCol = col.column("IR", "incidenceRatePP",type.doubleType()).setFixedWidth(30).setPattern("#0.00");
+		// TextColumnBuilder<Double> personTimePPCol = col.column("TAR", "personTimePP", type.doubleType()).setPattern("#,##0.0");
+		TextColumnBuilder<Double> proportionPPCol = col.column("IP", "incidenceProportionPP", type.doubleType()).setFixedWidth(50).setPattern("#0.00");
+		//TextColumnBuilder<Double> ratePPCol = col.column("IR", "incidenceRatePP",type.doubleType()).setFixedWidth(30).setPattern("#0.00");
 		TextColumnBuilder<Integer> casesITTCol = col.column("Cases", "casesITT", type.integerType()).setFixedWidth(50);
-		TextColumnBuilder<Double> personTimeITTCol = col.column("TAR", "personTimeITT", type.doubleType()).setPattern("#,##0.0");
-		TextColumnBuilder<Double> proportionITTCol = col.column("IP", "incidenceProportionITT", type.doubleType()).setFixedWidth(30).setPattern("#0.00");
-		TextColumnBuilder<Double> rateITTCol = col.column("IR", "incidenceRateITT",type.doubleType()).setFixedWidth(30).setPattern("#0.00");
+		//TextColumnBuilder<Double> personTimeITTCol = col.column("TAR", "personTimeITT", type.doubleType()).setPattern("#,##0.0");
+		TextColumnBuilder<Double> proportionITTCol = col.column("IP", "incidenceProportionITT", type.doubleType()).setFixedWidth(50).setPattern("#0.00");
+		//TextColumnBuilder<Double> rateITTCol = col.column("IR", "incidenceRateITT",type.doubleType()).setFixedWidth(30).setPattern("#0.00");
 		
-		ColumnTitleGroupBuilder ppGroup = grid.titleGroup("Per Protocol", casesPPCol,personTimePPCol,proportionPPCol, ratePPCol).setTitleFixedWidth(180);
-		ColumnTitleGroupBuilder ittGroup = grid.titleGroup("Intent to Treat", casesITTCol,personTimeITTCol,proportionITTCol, rateITTCol).setTitleFixedWidth(180);
+//		ColumnTitleGroupBuilder ppGroup = grid.titleGroup("Per Protocol", casesPPCol,personTimePPCol,proportionPPCol, ratePPCol).setTitleFixedWidth(180);
+//		ColumnTitleGroupBuilder ittGroup = grid.titleGroup("Intent to Treat", casesITTCol,personTimeITTCol,proportionITTCol, rateITTCol).setTitleFixedWidth(180);
 
-		CustomGroupBuilder cohortGroup = grp.group(new OutcomeGroupExpression())
-			.keepTogether();
-		
+		ColumnTitleGroupBuilder ppGroup = grid.titleGroup("Per Protocol", casesPPCol,proportionPPCol).setTitleFixedWidth(100);
+		ColumnTitleGroupBuilder ittGroup = grid.titleGroup("Intent to Treat", casesITTCol,proportionITTCol).setTitleFixedWidth(100);
+
 		JasperReportBuilder irReport = report()
 			.fields(
 				field("targetCohortName", String.class),
@@ -422,20 +502,19 @@ public class StudyReportManager {
 			)
 			.columnGrid(dataSourceCol, atRiskCol, ppGroup, ittGroup)
 			.columns(dataSourceCol,atRiskCol,
-				casesPPCol,personTimePPCol,proportionPPCol, ratePPCol,
-				casesITTCol,personTimeITTCol,proportionITTCol, rateITTCol
+//				casesPPCol,personTimePPCol,proportionPPCol, ratePPCol,
+//				casesITTCol,personTimeITTCol,proportionITTCol, rateITTCol
+				casesPPCol,proportionPPCol, 
+				casesITTCol,proportionITTCol
 			)
-			.groupBy(cohortGroup)
 			.setColumnStyle(this.columnStyleSmall)
 			.setColumnTitleStyle(this.columnHeaderStyle)
-			.setColumnHeaderStyle(this.columnHeaderStyle)
-			.setGroupStyle(this.groupHeaderStyle)
-//			.setGroupTitleStyle(this.groupHeaderStyle)
-			;
+			.setGroupStyle(this.groupHeaderStyle);
+		
 		return irReport;
 	}
 	
-	private JasperReportBuilder getRelativeRiskReport(boolean isSelfControl) {
+	private JasperReportBuilder getRelativeRiskReport() {
 
 		// rendering of reports goes cohort
 		TextColumnBuilder<String> dataSourceCol = col.column("Data Source", "dataSource", type.stringType());
@@ -448,18 +527,13 @@ public class StudyReportManager {
 		JasperReportBuilder ccaReport = report()
 			.fields(
 				field("lb95", Double.class),
-				field("ub95", Double.class),
-				field("comparatorCohortName", String.class)
+				field("ub95", Double.class)
 			)
 			.columns(dataSourceCol,atRiskCol, casesCol,personTimeCol, relativeRiskCol, ciCol)
 			.setColumnStyle(this.columnStyleSmall)
 			.setColumnTitleStyle(this.columnHeaderStyle)
-			.setColumnHeaderStyle(this.columnHeaderStyle)
 		;
-		
-		if (!isSelfControl) {
-			ccaReport.groupBy(grp.group("comparatorCohortName", String.class).keepTogether());
-		}
+
 		return ccaReport;
 	}
 	
@@ -471,19 +545,28 @@ public class StudyReportManager {
 
 		TextColumnBuilder<String> dataSourceCol = col.column("Data Source", "dataSource", type.stringType());
 		JasperReportBuilder ccaDiagnosticsReport = report()
-			.fields(
-				field("comparatorCohortName", String.class)
-			)
 			.columns(dataSourceCol,
-				col.componentColumn("Preference Score", cmp.centerVertical(psImage)),
-				col.componentColumn("Covariate Balance", cmp.centerVertical(cbImage)),
-				col.componentColumn("Calibration", cmp.centerVertical(calibrationImage)))
-			.setColumnStyle(stl.style(this.columnStyleSmall).setBorder(stl.pen(0.0f, LineStyle.SOLID)))
-			.setColumnTitleStyle(this.columnHeaderStyle)
-			.setColumnHeaderStyle(this.columnHeaderStyle)
-			.groupBy(grp.group("comparatorCohortName", String.class).keepTogether());
+				col.componentColumn("Preference Score", psImage).setStyle(columnBorderlessStyle),
+				col.componentColumn("Covariate Balance", cbImage).setStyle(columnBorderlessStyle),
+				col.componentColumn("Calibration", calibrationImage).setStyle(columnBorderlessStyle))
+			.setColumnStyle(this.columnBorderlessStyle)
+			.setColumnTitleStyle(this.columnHeaderStyle);
 		
 		return ccaDiagnosticsReport;
+	}
+	
+	private JasperReportBuilder getSCCADiagnosticsReport() {
+
+		ImageBuilder calibrationImage = cmp.image(new CalibrationImageExpression());
+
+		TextColumnBuilder<String> dataSourceCol = col.column("Data Source", "dataSource", type.stringType());
+		JasperReportBuilder sccaDiagnosticsReport = report()
+			.columns(dataSourceCol,
+				col.componentColumn("Calibration", calibrationImage).setStyle(columnBorderlessStyle))
+			.setColumnStyle(this.columnBorderlessStyle)
+			.setColumnTitleStyle(this.columnHeaderStyle);
+		
+		return sccaDiagnosticsReport;
 	}
 	
 	public JasperReportBuilder getMainReport(Report report) throws Exception {
@@ -496,11 +579,7 @@ public class StudyReportManager {
 
 		VerticalListBuilder contentBuilder = cmp.verticalList().setGap(10);
 
-		contentBuilder.add(cmp.text("Concatenated reports"));
-		
-		//contentBuilder.add(cmp.subreport(getImageTest("sample/calibration_plot.png")));		
-
-		contentBuilder.add(cmp.text("Cohort Characterization"));
+		contentBuilder.add(cmp.text(String.format("I. Cohort Characterization")).setStyle(this.headingStyle));
 
 		// find active cohort pairs
 		List<ReportCohortPair> activePairs = report.getCohortPairs().stream().filter(ReportCohortPair::isActive).collect(Collectors.toList());
@@ -568,7 +647,7 @@ public class StudyReportManager {
 		List<CovariateStat> covariateStats = studyReportService.getReportCovariates(report);
 		
 		for (ReportCohortPair cohortPair : activePairs) {
-			contentBuilder.add(cmp.text(String.format("<b>Cohort:</b> %s", cohortPair.getTarget().getName())).setMarkup(Markup.STYLED));
+			contentBuilder.add(cmp.text(String.format("<b>Cohort:</b> %s", cohortPair.getTarget().getName())).setStyle(this.headingStyle));
 				
 			CrosstabBuilder crosstab;
 			JasperReportBuilder subReport;
@@ -587,8 +666,8 @@ public class StudyReportManager {
 				.setDataPreSorted(true);
 
 			subReport = report()
-				.title(cmp.text(String.format("Table %da. Demographics", tableIndex)).setMarkup(Markup.STYLED))
-				.summary(demographicStats.size() > 0 ? crosstab : cmp.text("No demographic covariates selected."));
+				.title(cmp.text(String.format("Table %da. Demographics", tableIndex)).setStyle(this.headingStyle))
+				.summary(demographicStats.size() > 0 ? crosstab : cmp.text("No demographic covariates selected.").setStyle(this.subHeadingStyle));
 
 			contentBuilder.add(cmp.subreport(subReport));
 			
@@ -617,10 +696,10 @@ public class StudyReportManager {
 				.setDataPreSorted(true);
 
 			subReport = report()
-				.title(cmp.text(String.format("Table %db. Conditions", tableIndex)).setMarkup(Markup.STYLED))
+				.title(cmp.text(String.format("Table %db. Conditions", tableIndex)).setStyle(this.headingStyle))
 				.summary(conditionStats.size() > 0 ? cmp.verticalList(crosstab, 
 					cmp.text(footnoteText).setStyle(this.footnoteStyle)).setGap(3)
-					: cmp.text("No condition covariates selected."));
+					: cmp.text("No condition covariates selected.").setStyle(this.subHeadingStyle));
 			
 			contentBuilder.add(cmp.subreport(subReport));
 			
@@ -649,10 +728,10 @@ public class StudyReportManager {
 				.setDataPreSorted(true);
 
 			subReport = report()
-				.title(cmp.text(String.format("Table %dc. Drugs", tableIndex)).setMarkup(Markup.STYLED))
+				.title(cmp.text(String.format("Table %dc. Drugs", tableIndex)).setStyle(this.headingStyle))
 				.summary(drugStats.size() > 0 ? cmp.verticalList(crosstab, 
 					cmp.text(drugFootnoteText).setStyle(this.footnoteStyle)).setGap(3)
-					: cmp.text("No drug covariates selected."));
+					: cmp.text("No drug covariates selected.").setStyle(this.subHeadingStyle));
 
 			contentBuilder.add(cmp.subreport(subReport));
 			
@@ -667,8 +746,8 @@ public class StudyReportManager {
 				.setDataPreSorted(true);
 
 			subReport = report()
-				.title(cmp.text(String.format("Table %dd. Procedures", tableIndex)).setMarkup(Markup.STYLED))
-				.summary(procedureStats.size() > 0 ? crosstab : cmp.text("No procedure covariates selected."));
+				.title(cmp.text(String.format("Table %dd. Procedures", tableIndex)).setStyle(this.headingStyle))
+				.summary(procedureStats.size() > 0 ? crosstab : cmp.text("No procedure covariates selected.").setStyle(this.subHeadingStyle));
 			
 			contentBuilder.add(cmp.subreport(subReport));
 			
@@ -679,9 +758,8 @@ public class StudyReportManager {
 
 		/* BEGIN: IR reports */
 		
-		// Get report
-		JasperReportBuilder irReport = getIRReport(cohortLookup);
-
+		contentBuilder.add(cmp.text(String.format("II. Outcome Summary Results")).setStyle(this.headingStyle));
+		
 		// outcome comparator: by pair index then by datasource index
 		Comparator<StudyReportService.OutcomeSummaryStat> outcomeComparator = 
 			Comparator.comparing(oss -> {
@@ -695,18 +773,33 @@ public class StudyReportManager {
 		// get all outcome statistics across all active databases, and sort
 		List<StudyReportService.OutcomeSummaryStat> outcomeStats = studyReportService.getReportIR(activePairs, activeSources);
 		outcomeStats.sort(outcomeComparator);
-		
-		irReport.title(cmp.text(String.format("Table %d. Outcome Summary (Target, Outcome, Source)", tableIndex)).setMarkup(Markup.STYLED))
-			.setDataSource(outcomeStats);
+
+		// group outcome stats by OutcomeGroupBy
+		Map<OutcomeGroupBy, List<StudyReportService.OutcomeSummaryStat>> outcomeGroups = outcomeStats.stream()
+			.collect(Collectors.groupingBy(r -> new OutcomeGroupBy(r.getTargetCohortName(), r.getOutcomeCohortName()),LinkedHashMap::new, Collectors.toList()));
+
+		char outcomeSubTableIndex = 'a';
+		for (OutcomeGroupBy key : outcomeGroups.keySet()) {
+			// Get report
+			JasperReportBuilder irReport = getIRReport();
+			irReport.title(cmp.verticalList(
+				cmp.text(String.format("Table %d%s. Outcome Summary", tableIndex, outcomeSubTableIndex)).setStyle(headingStyle),
+				cmp.text(String.format("<b>Target:</b> %s", key.targetCohortName)).setStyle(subHeadingStyle),
+				cmp.text(String.format("<b>0utcome:</b> %s", key.outcomeCohortName)).setStyle(subHeadingStyle)
+			).setGap(0))
+				.setDataSource(outcomeGroups.get(key));
+			
+			contentBuilder.add(cmp.subreport(irReport));
+			outcomeSubTableIndex++;
+		}
 		tableIndex++;
-		
-		contentBuilder.add(cmp.subreport(irReport));
 		
 		/* END: IR reports */
 		
 		/* BEGIN: Effect Estimate reports */
 
 		// effect estimate comparator: by pair index then by datasource index
+		// find the ReportCohortPair's index based on the ees record's targetCohortId, OutcomeCohortId, and use that index value as the sort value.
 		Comparator<StudyReportService.EffectEstimateStat> eeComparator = 
 			Comparator.comparing(ees -> {
 				ReportCohortPair targetPair = activePairs.stream().filter(p -> { 
@@ -714,12 +807,14 @@ public class StudyReportManager {
 				}).findFirst().get();
 				return activePairs.indexOf(targetPair);
 			});
+		// then use the datasource index as the next comparator
 		eeComparator = eeComparator.thenComparing(ees -> sourceLookup.get(ees.getDataSource()));
+		// finally order by comparator name
 		eeComparator = eeComparator.thenComparing(ees -> ees.getComparatorCohortName());
 		
 		// CCA Reports
 		 
-		contentBuilder.add(cmp.text("Cohort Comparision Anaysis Results"));
+		contentBuilder.add(cmp.text("III. Cohort Comparision Anaylsis Results").setStyle(this.headingStyle));
 
 		// get all outcome statistics across all active databases, and sort
 		List<StudyReportService.EffectEstimateStat> ccaStats = studyReportService.getReportCCA(activePairs, activeSources);
@@ -728,6 +823,7 @@ public class StudyReportManager {
 		List<RelativeRiskRow> ccaPPRows = new ArrayList<>();
 		List<RelativeRiskRow> ccaITTRows = new ArrayList<>();
 		
+		// split out ccaStats by PP and ITT rows
 		ccaStats.forEach(ees -> {
 			ccaPPRows.add(new RelativeRiskRow()
 				.targetCohortId(ees.getTargetCohortId())
@@ -760,70 +856,88 @@ public class StudyReportManager {
 			);
 		});
 		
+		// per protocol relative risk stats, gruoped by RelativeRiskGroupBy
+		Map<RelativeRiskGroupBy, List<RelativeRiskRow>> ppGroups = ccaPPRows.stream()
+			.collect(Collectors.groupingBy(r -> new RelativeRiskGroupBy(r.targetCohortName, r.comparatorCohortName, r.outcomeCohortName),LinkedHashMap::new, Collectors.toList()));
+
 		char ccaSubTableIndex = 'a';
-		for (ReportCohortPair p : activePairs) {
-			JasperReportBuilder rrReport = getRelativeRiskReport(false);
-			List<RelativeRiskRow> rrRows = ccaPPRows.stream()
-				.filter(s -> {return Objects.equals(s.getTargetCohortId(), p.getTarget().getId()) && Objects.equals(s.getOutcomeCohortId(), p.getOutcome().getId());})
-				.collect(Collectors.toList());
-			
-			rrReport.title(cmp.text(String.format("Table %d%s. Per Protocol Relative Risk Summary: %s - %s)", 
-				tableIndex, 
-				String.valueOf(ccaSubTableIndex), 
-				p.getTarget().getName(), 
-				p.getOutcome().getName())).setMarkup(Markup.STYLED))
-				.setDataSource(rrRows);
-			contentBuilder.add(cmp.subreport(rrReport));
-			ccaSubTableIndex++;
-		}
-		tableIndex++;
 		
-		ccaSubTableIndex = 'a';
-		for (ReportCohortPair p : activePairs) {
-			JasperReportBuilder rrReport = getRelativeRiskReport(false);
-			List<RelativeRiskRow> rrRows = ccaITTRows.stream()
-				.filter(s -> {return Objects.equals(s.getTargetCohortId(), p.getTarget().getId()) && Objects.equals(s.getOutcomeCohortId(), p.getOutcome().getId());})
-				.collect(Collectors.toList());
-			
-			rrReport.title(cmp.text(String.format("Table %d%s. Intent To Treat Relative Risk Summary: %s - %s)", 
-				tableIndex, 
-				String.valueOf(ccaSubTableIndex), 
-				p.getTarget().getName(), 
-				p.getOutcome().getName())).setMarkup(Markup.STYLED))
-				.setDataSource(rrRows);
+		for (RelativeRiskGroupBy key : ppGroups.keySet()) {
+			JasperReportBuilder rrReport = getRelativeRiskReport();
+			rrReport.title(cmp.verticalList(
+				cmp.text(String.format("Table %d%s. Relative Risk Summary", tableIndex, ccaSubTableIndex)).setStyle(headingStyle),
+				cmp.text(String.format("<b>Target:</b> %s", key.targetCohortName)).setStyle(subHeadingStyle),
+				cmp.text(String.format("<b>Comparator:</b> %s", key.comparatorCohortName)).setStyle(subHeadingStyle),
+				cmp.text(String.format("<b>0utcome:</b> %s", key.outcomeCohortName)).setStyle(subHeadingStyle),
+				cmp.text("<b>Time at Risk:</b> Per Protocol").setStyle(subHeadingStyle)
+			).setGap(0))
+				.setDataSource(ppGroups.get(key));
 			contentBuilder.add(cmp.subreport(rrReport));
-			ccaSubTableIndex++;
+			ccaSubTableIndex++;			
+		}
+		
+		// intent to treat relative risk stats, grouped by RelativeRiskGroupBy
+		Map<RelativeRiskGroupBy, List<RelativeRiskRow>> ittGroups = ccaITTRows.stream()
+			.collect(Collectors.groupingBy(r -> new RelativeRiskGroupBy(r.targetCohortName, r.comparatorCohortName, r.outcomeCohortName),LinkedHashMap::new, Collectors.toList()));
+
+		for (RelativeRiskGroupBy key : ittGroups.keySet()) {
+			JasperReportBuilder rrReport = getRelativeRiskReport();
+			rrReport.title(cmp.verticalList(
+				cmp.text(String.format("Table %d%s. Relative Risk Summary", tableIndex, ccaSubTableIndex)).setStyle(headingStyle),
+				cmp.text(String.format("<b>Target:</b> %s", key.targetCohortName)).setStyle(subHeadingStyle),
+				cmp.text(String.format("<b>Comparator:</b> %s", key.comparatorCohortName)).setStyle(subHeadingStyle),
+				cmp.text(String.format("<b>0utcome:</b> %s", key.outcomeCohortName)).setStyle(subHeadingStyle),
+				cmp.text("<b>Time at Risk:</b> Intent to Treat").setStyle(subHeadingStyle)
+			).setGap(0))
+				.setDataSource(ittGroups.get(key));
+			contentBuilder.add(cmp.subreport(rrReport));
+			ccaSubTableIndex++;			
 		}		
-		tableIndex++;
 		
+		tableIndex++;
+
 		// CCA Diagnostic reports
+
+		// For the diagnostics report, we **assume** that every relative risk statistic has the corresponding diagnostic results generated.
+		// Therefore, we use the same relative risk rows (and groups) to genrate the diagnostic reports, just resolving the row to an image
+		
+		contentBuilder.add(cmp.text("IV. Cohort Comparision Diagnostics").setStyle(this.headingStyle));
+
 		char ccaDiagSubTableIndex = 'a';
-		for (ReportCohortPair p : activePairs) {
+		
+		for (RelativeRiskGroupBy key : ppGroups.keySet()) {
 			JasperReportBuilder ccaDiag = getCCADiagnosticsReport();
-			List<RelativeRiskRow> rrRows = ccaPPRows.stream()
-				.filter(s -> {return Objects.equals(s.getTargetCohortId(), p.getTarget().getId()) && Objects.equals(s.getOutcomeCohortId(), p.getOutcome().getId());})
-				.collect(Collectors.toList());
-			
-			ccaDiag.title(cmp.text(String.format("Table %d%s. Per Protocol Diagnostics: %s - %s)", 
-				tableIndex, 
-				String.valueOf(ccaDiagSubTableIndex), 
-				p.getTarget().getName(), 
-				p.getOutcome().getName())).setMarkup(Markup.STYLED))
-				.setDataSource(rrRows);
+			ccaDiag.title(cmp.verticalList(
+				cmp.text(String.format("Table %d%s. Risk Estimation Diagnostics", tableIndex, ccaDiagSubTableIndex)).setStyle(headingStyle),
+				cmp.text(String.format("<b>Target:</b> %s", key.targetCohortName)).setStyle(subHeadingStyle),
+				cmp.text(String.format("<b>Comparator:</b> %s", key.comparatorCohortName)).setStyle(subHeadingStyle),
+				cmp.text(String.format("<b>0utcome:</b> %s", key.outcomeCohortName)).setStyle(subHeadingStyle),
+				cmp.text("<b>Time at Risk:</b> Per Protocol").setStyle(subHeadingStyle)
+			).setGap(0))
+				.setDataSource(ppGroups.get(key));
 			contentBuilder.add(cmp.subreport(ccaDiag));
-			ccaDiagSubTableIndex++;
+			ccaDiagSubTableIndex++;			
 		}
+		
+		for (RelativeRiskGroupBy key : ittGroups.keySet()) {
+			JasperReportBuilder ccaDiag = getCCADiagnosticsReport();
+			ccaDiag.title(cmp.verticalList(
+				cmp.text(String.format("Table %d%s. Risk Estimation Diagnostics", tableIndex, ccaDiagSubTableIndex)).setStyle(headingStyle),
+				cmp.text(String.format("<b>Target:</b> %s", key.targetCohortName)).setStyle(subHeadingStyle),
+				cmp.text(String.format("<b>Comparator:</b> %s", key.comparatorCohortName)).setStyle(subHeadingStyle),
+				cmp.text(String.format("<b>0utcome:</b> %s", key.outcomeCohortName)).setStyle(subHeadingStyle),
+				cmp.text("<b>Time at Risk:</b> Intent to Treat").setStyle(subHeadingStyle)
+			).setGap(0))
+				.setDataSource(ittGroups.get(key));
+			contentBuilder.add(cmp.subreport(ccaDiag));
+			ccaDiagSubTableIndex++;			
+		}
+		
 		tableIndex++;
-		
-		
-		
-		
-		contentBuilder.add(cmp.text("Cohort Comparision Diagnostics"));
-		
 		
 		// SCCA Reports
 		
-		contentBuilder.add(cmp.text("Self Control Cohort Anaysis Results"));
+		contentBuilder.add(cmp.text("V. Self-Control Cohort Analysis Results").setStyle(this.headingStyle));
 
 		// get all outcome statistics across all active databases, and sort
 		List<StudyReportService.EffectEstimateStat> sccaStats = studyReportService.getReportSCCA(activePairs, activeSources);
@@ -860,44 +974,83 @@ public class StudyReportManager {
 			);
 		});
 		
+		
+		// per protocol relative risk stats, gruoped by RelativeRiskGroupBy
+		Map<RelativeRiskGroupBy, List<RelativeRiskRow>> sccaPpGroups = sccaPPRows.stream()
+			.collect(Collectors.groupingBy(r -> new RelativeRiskGroupBy(r.targetCohortName, r.comparatorCohortName, r.outcomeCohortName),LinkedHashMap::new, Collectors.toList()));
+
 		char sccaSubTableIndex = 'a';
-		for (ReportCohortPair p : activePairs) {
-			JasperReportBuilder rrReport = getRelativeRiskReport(true);
-			List<RelativeRiskRow> rrRows = sccaPPRows.stream()
-				.filter(s -> {return Objects.equals(s.getTargetCohortId(), p.getTarget().getId()) && Objects.equals(s.getOutcomeCohortId(), p.getOutcome().getId());})
-				.collect(Collectors.toList());
-			
-			rrReport.title(cmp.text(String.format("Table %d%s. Per Protocol Relative Risk Summary: %s - %s)", 
-				tableIndex, 
-				String.valueOf(sccaSubTableIndex), 
-				p.getTarget().getName(), 
-				p.getOutcome().getName())).setMarkup(Markup.STYLED))
-				.setDataSource(rrRows);
+
+		for (RelativeRiskGroupBy key : sccaPpGroups.keySet()) {
+			JasperReportBuilder rrReport = getRelativeRiskReport();
+			rrReport.title(cmp.verticalList(
+				cmp.text(String.format("Table %d%s. Relative Risk Summary", tableIndex, sccaSubTableIndex)).setStyle(headingStyle),
+				cmp.text(String.format("<b>Target:</b> %s", key.targetCohortName)).setStyle(subHeadingStyle),
+				cmp.text(String.format("<b>0utcome:</b> %s", key.outcomeCohortName)).setStyle(subHeadingStyle),
+				cmp.text("<b>Time at Risk:</b> Per Protocol").setStyle(subHeadingStyle)
+			).setGap(0))
+				.setDataSource(sccaPpGroups.get(key));
 			contentBuilder.add(cmp.subreport(rrReport));
-			sccaSubTableIndex++;
+			sccaSubTableIndex++;			
 		}
-		tableIndex++;
 		
-		sccaSubTableIndex = 'a';
-		for (ReportCohortPair p : activePairs) {
-			JasperReportBuilder rrReport = getRelativeRiskReport(true);
-			List<RelativeRiskRow> rrRows = sccaITTRows.stream()
-				.filter(s -> {return Objects.equals(s.getTargetCohortId(), p.getTarget().getId()) && Objects.equals(s.getOutcomeCohortId(), p.getOutcome().getId());})
-				.collect(Collectors.toList());
-			
-			rrReport.title(cmp.text(String.format("Table %d%s. Intent To Treat Relative Risk Summary: %s - %s)", 
-				tableIndex, 
-				String.valueOf(sccaSubTableIndex), 
-				p.getTarget().getName(), 
-				p.getOutcome().getName())).setMarkup(Markup.STYLED))
-				.setDataSource(rrRows);
+		// intent to treat relative risk stats, grouped by RelativeRiskGroupBy
+		Map<RelativeRiskGroupBy, List<RelativeRiskRow>> sccaIttGroups = ccaITTRows.stream()
+			.collect(Collectors.groupingBy(r -> new RelativeRiskGroupBy(r.targetCohortName, r.comparatorCohortName, r.outcomeCohortName),LinkedHashMap::new, Collectors.toList()));
+
+		for (RelativeRiskGroupBy key : sccaIttGroups.keySet()) {
+			JasperReportBuilder rrReport = getRelativeRiskReport();
+			rrReport.title(cmp.verticalList(
+				cmp.text(String.format("Table %d%s. Relative Risk Summary", tableIndex, sccaSubTableIndex)).setStyle(headingStyle),
+				cmp.text(String.format("<b>Target:</b> %s", key.targetCohortName)).setStyle(subHeadingStyle),
+				cmp.text(String.format("<b>0utcome:</b> %s", key.outcomeCohortName)).setStyle(subHeadingStyle),
+				cmp.text("<b>Time at Risk:</b> Intent to Treat").setStyle(subHeadingStyle)
+			).setGap(0))
+				.setDataSource(sccaIttGroups.get(key));
 			contentBuilder.add(cmp.subreport(rrReport));
-			sccaSubTableIndex++;
+			sccaSubTableIndex++;			
 		}		
+		
 		tableIndex++;
+
+		// CCA Diagnostic reports
+
+		// For the diagnostics report, we **assume** that every relative risk statistic has the corresponding diagnostic results generated.
+		// Therefore, we use the same relative risk rows (and groups) to genrate the diagnostic reports, just resolving the row to an image
 		
+		contentBuilder.add(cmp.text("IV. Cohort Comparision Diagnostics").setStyle(this.headingStyle));
+
+		char sccaDiagSubTableIndex = 'a';
+		
+		for (RelativeRiskGroupBy key : sccaPpGroups.keySet()) {
+			JasperReportBuilder sccaDiag = getSCCADiagnosticsReport();
+			sccaDiag.title(cmp.verticalList(
+				cmp.text(String.format("Table %d%s. Risk Estimation Diagnostics", tableIndex, sccaDiagSubTableIndex)).setStyle(headingStyle),
+				cmp.text(String.format("<b>Target:</b> %s", key.targetCohortName)).setStyle(subHeadingStyle),
+				cmp.text(String.format("<b>0utcome:</b> %s", key.outcomeCohortName)).setStyle(subHeadingStyle),
+				cmp.text("<b>Time at Risk:</b> Per Protocol").setStyle(subHeadingStyle)
+			).setGap(0))
+				.setDataSource(sccaPpGroups.get(key));
+			contentBuilder.add(cmp.subreport(sccaDiag));
+			sccaDiagSubTableIndex++;			
+		}
+		
+		for (RelativeRiskGroupBy key : sccaIttGroups.keySet()) {
+			JasperReportBuilder sccaDiag = getSCCADiagnosticsReport();
+			sccaDiag.title(cmp.verticalList(
+				cmp.text(String.format("Table %d%s. Risk Estimation Diagnostics", tableIndex, sccaDiagSubTableIndex)).setStyle(headingStyle),
+				cmp.text(String.format("<b>Target:</b> %s", key.targetCohortName)).setStyle(subHeadingStyle),
+				cmp.text(String.format("<b>0utcome:</b> %s", key.outcomeCohortName)).setStyle(subHeadingStyle),
+				cmp.text("<b>Time at Risk:</b> Intent to Treat").setStyle(subHeadingStyle)
+			).setGap(0))
+				.setDataSource(sccaIttGroups.get(key));
+			contentBuilder.add(cmp.subreport(sccaDiag));
+			sccaDiagSubTableIndex++;			
+		}
+		
+		tableIndex++;
+
 		/* END: Effect Estimate reports */
-		
 		
 		mainReport.title(contentBuilder);
 		return mainReport;

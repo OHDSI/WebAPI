@@ -26,7 +26,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import static javax.ws.rs.HttpMethod.DELETE;
 import javax.ws.rs.PUT;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -1277,7 +1279,7 @@ public class StudyReportService extends AbstractDaoService {
 		return outcomeStats;
 	}
 
-	public List<EffectEstimateStat> getReportCCA(List<ReportCohortPair> activePairs, List<ReportSource> activeSources) {
+	public List<EffectEstimateStat> getReportCca(List<ReportCohortPair> activePairs, List<ReportSource> activeSources) {
 		// Use the order of sources that are returned from the Report entity, but only include isActive()
 		List<Integer> activeSourceIds = activeSources.stream().map(rs -> rs.getSource().getId()).collect(Collectors.toList());
 
@@ -1313,7 +1315,7 @@ public class StudyReportService extends AbstractDaoService {
 		return ccaStats;
 	}
 
-	public List<EffectEstimateStat> getReportSCCA(List<ReportCohortPair> activePairs, List<ReportSource> activeSources) {
+	public List<EffectEstimateStat> getReportScca(List<ReportCohortPair> activePairs, List<ReportSource> activeSources) {
 		// Use the order of sources that are returned from the Report entity, but only include isActive()
 		List<Integer> activeSourceIds = activeSources.stream().map(rs -> rs.getSource().getId()).collect(Collectors.toList());
 
@@ -1415,6 +1417,19 @@ public class StudyReportService extends AbstractDaoService {
 		return save(report, ReportStatus.DELETED);
 	}
 
+	@DELETE
+	@Path("/{reportId}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Transactional
+	public void deleteReport(@PathParam("reportId") final int reportId) {
+		Date currentTime = Calendar.getInstance().getTime();	
+		Report reportEntity = reportRepository.findOne(reportId);
+		reportEntity.setModifiedDate(currentTime);
+		reportEntity.setModifiedBy(security.getSubject());
+		reportEntity.setStatus(ReportStatus.DELETED);
+		reportRepository.save(reportEntity);
+	}
+
 	@GET
 	@Path("/{reportId}")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -1513,4 +1528,33 @@ public class StudyReportService extends AbstractDaoService {
 		return response;
 	}
 
+	@GET
+	@Transactional
+	@Path("/{reportId}/outcomesummary/")
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<OutcomeSummaryStat> getOutcomeResults(@PathParam("reportId") final int reportId)
+	{
+		Report report = reportRepository.findOne(reportId);
+		return getReportIR(report.getCohortPairs(), report.getSources());
+	}
+	
+	@GET
+	@Transactional
+	@Path("/{reportId}/cca/")
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<EffectEstimateStat> getCcaResults(@PathParam("reportId") final int reportId)
+	{
+		Report report = reportRepository.findOne(reportId);
+		return getReportCca(report.getCohortPairs(), report.getSources());
+	}
+	
+	@GET
+	@Transactional
+	@Path("/{reportId}/scca/")
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<EffectEstimateStat> getSccaResults(@PathParam("reportId") final int reportId)
+	{
+		Report report = reportRepository.findOne(reportId);
+		return getReportScca(report.getCohortPairs(), report.getSources());
+	}	
 }

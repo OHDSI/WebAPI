@@ -918,10 +918,10 @@ public class StudyReportManager {
 		
 		// CCA Reports
 		 
-		contentBuilder.add(cmp.text("III. Cohort Comparision Anaylsis Results").setStyle(this.headingStyle));
+		contentBuilder.add(cmp.text("III. Cohort Comparison Analysis Results").setStyle(this.headingStyle));
 
 		// get all outcome statistics across all active databases, and sort
-		List<StudyReportService.EffectEstimateStat> ccaStats = studyReportService.getReportCCA(activePairs, activeSources);
+		List<StudyReportService.EffectEstimateStat> ccaStats = studyReportService.getReportCca(activePairs, activeSources);
 		ccaStats.sort(eeComparator);
 		
 		List<RelativeRiskRow> ccaPPRows = new ArrayList<>();
@@ -1044,7 +1044,7 @@ public class StudyReportManager {
 		contentBuilder.add(cmp.text("V. Self-Control Cohort Analysis Results").setStyle(this.headingStyle));
 
 		// get all outcome statistics across all active databases, and sort
-		List<StudyReportService.EffectEstimateStat> sccaStats = studyReportService.getReportSCCA(activePairs, activeSources);
+		List<StudyReportService.EffectEstimateStat> sccaStats = studyReportService.getReportScca(activePairs, activeSources);
 		sccaStats.sort(eeComparator);
 
 		List<RelativeRiskRow> sccaPPRows = new ArrayList<>();

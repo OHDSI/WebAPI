@@ -1270,13 +1270,13 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
     // rangeLowRatio
     if (criteria.rangeLowRatio != null)
     {
-      whereClauses.add(buildNumericRangeClause("(C.value_as_number / C.range_low)",criteria.rangeLowRatio,".4f"));
+      whereClauses.add(buildNumericRangeClause("(C.value_as_number / NULLIF(C.range_low, 0))",criteria.rangeLowRatio,".4f"));
     }
 
     // rangeHighRatio
     if (criteria.rangeHighRatio != null)
     {
-      whereClauses.add(buildNumericRangeClause("(C.value_as_number / C.range_high)",criteria.rangeHighRatio,".4f"));
+      whereClauses.add(buildNumericRangeClause("(C.value_as_number / NULLIF(C.range_high, 0))",criteria.rangeHighRatio,".4f"));
     }
     
     // abnormal

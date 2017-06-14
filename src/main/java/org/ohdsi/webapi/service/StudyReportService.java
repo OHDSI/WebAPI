@@ -28,7 +28,6 @@ import javax.transaction.Transactional;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
-import static javax.ws.rs.HttpMethod.DELETE;
 import javax.ws.rs.PUT;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -65,6 +64,8 @@ import org.ohdsi.webapi.study.report.ReportStatus;
 import org.ohdsi.webapi.study.report.StudyReportManager;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.stereotype.Component;
@@ -76,7 +77,6 @@ import org.springframework.stereotype.Component;
 @Path("/report")
 @Component
 public class StudyReportService extends AbstractDaoService {
-
 	private final String QUERY_COVARIATE_PREVALENCE_STATS = ResourceHelper.GetResourceAsString("/resources/study/report/sql/queryCovariatePrevalenceStats.sql");
 	private final String QUERY_COVARIATE_DISTRIBUTION_STATS = ResourceHelper.GetResourceAsString("/resources/study/report/sql/queryCovariateDistributionStats.sql");
 	private final String QUERY_OUTCOME_STATS = ResourceHelper.GetResourceAsString("/resources/study/report/sql/queryOutcomeStats.sql");
@@ -1395,6 +1395,7 @@ public class StudyReportService extends AbstractDaoService {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Transactional
+	@CacheEvict(cacheNames = {"report.outcomeSummary","report.cca","report.scca"}, key="#report.id")
 	public ReportDTO saveReport(ReportDTO report) {
 		return save(report);
 	}
@@ -1404,6 +1405,7 @@ public class StudyReportService extends AbstractDaoService {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Transactional
+	@CacheEvict(cacheNames = {"report.outcomeSummary","report.cca","report.scca"}, key="#report.id")
 	public ReportDTO publishReport(ReportDTO report) {
 		return save(report, ReportStatus.PUBLISHED);
 	}
@@ -1532,6 +1534,7 @@ public class StudyReportService extends AbstractDaoService {
 	@Transactional
 	@Path("/{reportId}/outcomesummary/")
 	@Produces(MediaType.APPLICATION_JSON)
+	@Cacheable("report.outcomeSummary")
 	public List<OutcomeSummaryStat> getOutcomeResults(@PathParam("reportId") final int reportId)
 	{
 		Report report = reportRepository.findOne(reportId);
@@ -1542,6 +1545,7 @@ public class StudyReportService extends AbstractDaoService {
 	@Transactional
 	@Path("/{reportId}/cca/")
 	@Produces(MediaType.APPLICATION_JSON)
+	@Cacheable("report.cca")
 	public List<EffectEstimateStat> getCcaResults(@PathParam("reportId") final int reportId)
 	{
 		Report report = reportRepository.findOne(reportId);
@@ -1551,6 +1555,7 @@ public class StudyReportService extends AbstractDaoService {
 	@GET
 	@Transactional
 	@Path("/{reportId}/scca/")
+	@Cacheable("report.scca")
 	@Produces(MediaType.APPLICATION_JSON)
 	public List<EffectEstimateStat> getSccaResults(@PathParam("reportId") final int reportId)
 	{

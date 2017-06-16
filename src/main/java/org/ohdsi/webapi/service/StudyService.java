@@ -253,7 +253,6 @@ public class StudyService extends AbstractDaoService {
 		public int negativeControl;
 		public int requested;
 		public int published;
-		public int labeled;
 		public int distance;
 	}
 

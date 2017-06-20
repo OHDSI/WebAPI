@@ -246,8 +246,9 @@ public class StudyReportService extends AbstractDaoService {
 
 	public static class PrevalenceStat {
 
+		private int dataSourceId;
 		private String dataSource;
-		private int cohortId;
+		private long cohortId;
 		private long covariateId;
 		private String name;
 		private String analysisName;
@@ -258,17 +259,14 @@ public class StudyReportService extends AbstractDaoService {
 		public PrevalenceStat() {
 		}
 
-		public PrevalenceStat(String dataSource, int cohortId, long covariateId, String name, String analysisName, String timeWindow, long count, double statValue) {
-			this.dataSource = dataSource;
-			this.cohortId = cohortId;
-			this.covariateId = covariateId;
-			this.name = name;
-			this.analysisName = analysisName;
-			this.timeWindow = timeWindow;
-			this.count = count;
-			this.statValue = statValue;
+		public int getDataSourceId() {
+			return dataSourceId;
 		}
 
+		public void setDataSourceId(int dataSourceId) {
+			this.dataSourceId = dataSourceId;
+		}
+		
 		public String getDataSource() {
 			return dataSource;
 		}
@@ -277,11 +275,11 @@ public class StudyReportService extends AbstractDaoService {
 			this.dataSource = dataSource;
 		}
 
-		public int getCohortId() {
+		public long getCohortId() {
 			return cohortId;
 		}
 
-		public void setCohortId(int cohortId) {
+		public void setCohortId(long cohortId) {
 			this.cohortId = cohortId;
 		}
 
@@ -333,11 +331,58 @@ public class StudyReportService extends AbstractDaoService {
 			this.statValue = statValue;
 		}
 
+		public PrevalenceStat dataSourceId(final int value) {
+			this.dataSourceId = value;
+			return this;
+		}
+
+		public PrevalenceStat dataSource(final String value) {
+			this.dataSource = value;
+			return this;
+		}
+
+		public PrevalenceStat cohortId(final long value) {
+			this.cohortId = value;
+			return this;
+		}
+
+		public PrevalenceStat covariateId(final long value) {
+			this.covariateId = value;
+			return this;
+		}
+
+		public PrevalenceStat name(final String value) {
+			this.name = value;
+			return this;
+		}
+
+		public PrevalenceStat analysisName(final String value) {
+			this.analysisName = value;
+			return this;
+		}
+
+		public PrevalenceStat timeWindow(final String value) {
+			this.timeWindow = value;
+			return this;
+		}
+
+		public PrevalenceStat count(final long value) {
+			this.count = value;
+			return this;
+		}
+
+		public PrevalenceStat statValue(final double value) {
+			this.statValue = value;
+			return this;
+		}
+
+		
 	}
 
 	public static class DistributionStat {
+		private int dataSourceId;
 		private String dataSource;
-		private int cohortId;
+		private long cohortId;
 		private String cohortName;
 		private long covariateId;
 		private String covariateName;
@@ -354,6 +399,14 @@ public class StudyReportService extends AbstractDaoService {
 		private double p90;
 		private double max;
 
+		public int getDataSourceId() {
+			return dataSourceId;
+		}
+
+		public void setDataSourceId(int dataSourceId) {
+			this.dataSourceId = dataSourceId;
+		}
+
 		public String getDataSource() {
 			return dataSource;
 		}
@@ -362,11 +415,11 @@ public class StudyReportService extends AbstractDaoService {
 			this.dataSource = dataSource;
 		}
 
-		public int getCohortId() {
+		public long getCohortId() {
 			return cohortId;
 		}
 
-		public void setCohortId(int cohortId) {
+		public void setCohortId(long cohortId) {
 			this.cohortId = cohortId;
 		}
 
@@ -490,12 +543,17 @@ public class StudyReportService extends AbstractDaoService {
 			this.max = max;
 		}
 
+		public DistributionStat dataSourceId(final int value) {
+			this.dataSourceId = value;
+			return this;
+		}
+
 		public DistributionStat dataSource(final String value) {
 			this.dataSource = value;
 			return this;
 		}
 
-		public DistributionStat cohortId(final int value) {
+		public DistributionStat cohortId(final long value) {
 			this.cohortId = value;
 			return this;
 		}
@@ -574,11 +632,13 @@ public class StudyReportService extends AbstractDaoService {
 			this.max = value;
 			return this;
 		}
-	
+
+
 	}
 	
 	public static class OutcomeSummaryStat {
 
+		private int dataSourceId;
 		private String dataSource;
 		private long targetCohortId;
 		private String targetCohortName;
@@ -595,6 +655,14 @@ public class StudyReportService extends AbstractDaoService {
 		private Double incidenceRateITT;
 
 		public OutcomeSummaryStat() {
+		}
+
+		public int getDataSourceId() {
+			return dataSourceId;
+		}
+
+		public void setDataSourceId(int dataSourceId) {
+			this.dataSourceId = dataSourceId;
 		}
 
 		public String getDataSource() {
@@ -651,6 +719,12 @@ public class StudyReportService extends AbstractDaoService {
 
 		public Double getIncidenceRateITT() {
 			return incidenceRateITT;
+		}
+
+		
+		public OutcomeSummaryStat dataSourceId(final int value) {
+			this.dataSourceId = value;
+			return this;
 		}
 
 		public OutcomeSummaryStat dataSource(final String value) {
@@ -725,8 +799,8 @@ public class StudyReportService extends AbstractDaoService {
 	}
 
 	public static class EffectEstimateStat {
-
 		private int analysisId;
+		private int dataSourceId;
 		private String dataSource;
 		private long targetCohortId;
 		private String targetCohortName;
@@ -734,17 +808,26 @@ public class StudyReportService extends AbstractDaoService {
 		private String comparatorCohortName;
 		private long outcomeCohortId;
 		private String outcomeCohortName;
-		private int atRisk;
-		private int casesPP;
-		private Double personTimePP;
+		private Integer atRiskTargetPP;
+		private Integer casesTargetPP;
+		private Double personTimeTargetPP;
+		private Integer atRiskComparatorPP;
+		private Integer casesComparatorPP;
+		private Double personTimeComparatorPP;
 		private Double relativeRiskPP;
 		private Double lb95PP;
 		private Double ub95PP;
-		private int casesITT;
-		private Double personTimeITT;
+		private Double pValuePP;
+		private Integer atRiskTargetITT;
+		private Integer casesTargetITT;
+		private Double personTimeTargetITT;
+		private Integer atRiskComparatorITT;
+		private Integer casesComparatorITT;
+		private Double personTimeComparatorITT;
 		private Double relativeRiskITT;
 		private Double lb95ITT;
 		private Double ub95ITT;
+		private Double pValueITT;
 
 		public EffectEstimateStat() {
 		}
@@ -757,6 +840,14 @@ public class StudyReportService extends AbstractDaoService {
 			this.analysisId = analysisId;
 		}
 
+		public int getDataSourceId() {
+			return dataSourceId;
+		}
+
+		public void setDataSourceId(int dataSourceId) {
+			this.dataSourceId = dataSourceId;
+		}
+		
 		public String getDataSource() {
 			return dataSource;
 		}
@@ -813,28 +904,52 @@ public class StudyReportService extends AbstractDaoService {
 			this.outcomeCohortName = outcomeCohortName;
 		}
 
-		public int getAtRisk() {
-			return atRisk;
+		public Integer getAtRiskTargetPP() {
+			return atRiskTargetPP;
 		}
 
-		public void setAtRisk(int atRisk) {
-			this.atRisk = atRisk;
+		public void setAtRiskTargetPP(Integer atRiskTargetPP) {
+			this.atRiskTargetPP = atRiskTargetPP;
 		}
 
-		public int getCasesPP() {
-			return casesPP;
+		public Integer getCasesTargetPP() {
+			return casesTargetPP;
 		}
 
-		public void setCasesPP(int casesPP) {
-			this.casesPP = casesPP;
+		public void setCasesTargetPP(Integer casesTargetPP) {
+			this.casesTargetPP = casesTargetPP;
 		}
 
-		public Double getPersonTimePP() {
-			return personTimePP;
+		public Double getPersonTimeTargetPP() {
+			return personTimeTargetPP;
 		}
 
-		public void setPersonTimePP(Double personTimePP) {
-			this.personTimePP = personTimePP;
+		public void setPersonTimeTargetPP(Double personTimeTargetPP) {
+			this.personTimeTargetPP = personTimeTargetPP;
+		}
+
+		public Integer getAtRiskComparatorPP() {
+			return atRiskComparatorPP;
+		}
+
+		public void setAtRiskComparatorPP(Integer atRiskComparatorPP) {
+			this.atRiskComparatorPP = atRiskComparatorPP;
+		}
+
+		public Integer getCasesComparatorPP() {
+			return casesComparatorPP;
+		}
+
+		public void setCasesComparatorPP(Integer casesComparatorPP) {
+			this.casesComparatorPP = casesComparatorPP;
+		}
+
+		public Double getPersonTimeComparatorPP() {
+			return personTimeComparatorPP;
+		}
+
+		public void setPersonTimeComparatorPP(Double personTimeComparatorPP) {
+			this.personTimeComparatorPP = personTimeComparatorPP;
 		}
 
 		public Double getRelativeRiskPP() {
@@ -861,20 +976,60 @@ public class StudyReportService extends AbstractDaoService {
 			this.ub95PP = ub95PP;
 		}
 
-		public int getCasesITT() {
-			return casesITT;
+		public Double getpValuePP() {
+			return pValuePP;
 		}
 
-		public void setCasesITT(int casesITT) {
-			this.casesITT = casesITT;
+		public void setpValuePP(Double pValuePP) {
+			this.pValuePP = pValuePP;
 		}
 
-		public Double getPersonTimeITT() {
-			return personTimeITT;
+		public Integer getAtRiskTargetITT() {
+			return atRiskTargetITT;
 		}
 
-		public void setPersonTimeITT(Double personTimeITT) {
-			this.personTimeITT = personTimeITT;
+		public void setAtRiskTargetITT(Integer atRiskTargetITT) {
+			this.atRiskTargetITT = atRiskTargetITT;
+		}
+
+		public Integer getCasesTargetITT() {
+			return casesTargetITT;
+		}
+
+		public void setCasesTargetITT(Integer casesTargetITT) {
+			this.casesTargetITT = casesTargetITT;
+		}
+
+		public Double getPersonTimeTargetITT() {
+			return personTimeTargetITT;
+		}
+
+		public void setPersonTimeTargetITT(Double personTimeTargetITT) {
+			this.personTimeTargetITT = personTimeTargetITT;
+		}
+
+		public Integer getAtRiskComparatorITT() {
+			return atRiskComparatorITT;
+		}
+
+		public void setAtRiskComparatorITT(Integer atRiskComparatorITT) {
+			this.atRiskComparatorITT = atRiskComparatorITT;
+		}
+
+		public Integer getCasesComparatorITT() {
+			return casesComparatorITT;
+		}
+
+		public void setCasesComparatorITT(Integer casesComparatorITT) {
+			this.casesComparatorITT = casesComparatorITT;
+		}
+
+		public Double getPersonTimeComparatorITT() {
+			return personTimeComparatorITT;
+		}
+
+		public void setPersonTimeComparatorITT(Double personTimeComparatorITT) {
+			this.personTimeComparatorITT = personTimeComparatorITT;
 		}
 
 		public Double getRelativeRiskITT() {
@@ -901,8 +1056,21 @@ public class StudyReportService extends AbstractDaoService {
 			this.ub95ITT = ub95ITT;
 		}
 
+		public Double getpValueITT() {
+			return pValueITT;
+		}
+
+		public void setpValueITT(Double pValueITT) {
+			this.pValueITT = pValueITT;
+		}
+
 		public EffectEstimateStat analysisId(final int value) {
 			this.analysisId = value;
+			return this;
+		}
+
+		public EffectEstimateStat dataSourceId(final int value) {
+			this.dataSourceId = value;
 			return this;
 		}
 
@@ -941,18 +1109,33 @@ public class StudyReportService extends AbstractDaoService {
 			return this;
 		}
 
-		public EffectEstimateStat atRisk(final int value) {
-			this.atRisk = value;
+		public EffectEstimateStat atRiskTargetPP(final Integer value) {
+			this.atRiskTargetPP = value;
 			return this;
 		}
 
-		public EffectEstimateStat casesPP(final int value) {
-			this.casesPP = value;
+		public EffectEstimateStat casesTargetPP(final Integer value) {
+			this.casesTargetPP = value;
 			return this;
 		}
 
-		public EffectEstimateStat personTimePP(final Double value) {
-			this.personTimePP = value;
+		public EffectEstimateStat personTimeTargetPP(final Double value) {
+			this.personTimeTargetPP = value;
+			return this;
+		}
+
+		public EffectEstimateStat atRiskComparatorPP(final Integer value) {
+			this.atRiskComparatorPP = value;
+			return this;
+		}
+
+		public EffectEstimateStat casesComparatorPP(final Integer value) {
+			this.casesComparatorPP = value;
+			return this;
+		}
+
+		public EffectEstimateStat personTimeComparatorPP(final Double value) {
+			this.personTimeComparatorPP = value;
 			return this;
 		}
 
@@ -971,13 +1154,38 @@ public class StudyReportService extends AbstractDaoService {
 			return this;
 		}
 
-		public EffectEstimateStat casesITT(final int value) {
-			this.casesITT = value;
+		public EffectEstimateStat pValuePP(final Double value) {
+			this.pValuePP = value;
 			return this;
 		}
 
-		public EffectEstimateStat personTimeITT(final Double value) {
-			this.personTimeITT = value;
+		public EffectEstimateStat atRiskTargetITT(final Integer value) {
+			this.atRiskTargetITT = value;
+			return this;
+		}
+
+		public EffectEstimateStat casesTargetITT(final Integer value) {
+			this.casesTargetITT = value;
+			return this;
+		}
+
+		public EffectEstimateStat personTimeTargetITT(final Double value) {
+			this.personTimeTargetITT = value;
+			return this;
+		}
+
+		public EffectEstimateStat atRiskComparatorITT(final Integer value) {
+			this.atRiskComparatorITT = value;
+			return this;
+		}
+
+		public EffectEstimateStat casesComparatorITT(final Integer value) {
+			this.casesComparatorITT = value;
+			return this;
+		}
+
+		public EffectEstimateStat personTimeComparatorITT(final Double value) {
+			this.personTimeComparatorITT = value;
 			return this;
 		}
 
@@ -993,6 +1201,11 @@ public class StudyReportService extends AbstractDaoService {
 
 		public EffectEstimateStat ub95ITT(final Double value) {
 			this.ub95ITT = value;
+			return this;
+		}
+
+		public EffectEstimateStat pValueITT(final Double value) {
+			this.pValueITT = value;
 			return this;
 		}
 	}
@@ -1186,15 +1399,16 @@ public class StudyReportService extends AbstractDaoService {
 
 		String translatedSql = SqlTranslate.translateSql(covariateQuery, "sql server", this.getStudyResultsDialect(), SessionUtils.sessionId(), this.getStudyResultsSchema());
 		List<PrevalenceStat> covariateStats = this.getStudyResultsJdbcTemplate().query(translatedSql, (row, rowNum) -> {
-			return new PrevalenceStat(row.getString("source_key"),
-				row.getInt("cohort_definition_id"),
-				row.getLong("covariate_id"),
-				row.getString("covariate_name"),
-				row.getString("analysis_name"),
-				row.getString("time_window"),
-				row.getLong("count_value"),
-				row.getDouble("stat_value")
-			);
+			return new PrevalenceStat()
+				.dataSourceId(row.getInt("source_id"))
+				.dataSource(row.getString("source_key"))
+				.cohortId(row.getLong("cohort_definition_id"))
+				.covariateId(row.getLong("covariate_id"))
+				.name(row.getString("covariate_name"))
+				.analysisName(row.getString("analysis_name"))
+				.timeWindow(row.getString("time_window"))
+				.count(row.getLong("count_value"))
+				.statValue(row.getDouble("stat_value"));
 		});
 
 		return covariateStats;
@@ -1222,8 +1436,9 @@ public class StudyReportService extends AbstractDaoService {
 		String translatedSql = SqlTranslate.translateSql(covariateQuery, "sql server", this.getStudyResultsDialect(), SessionUtils.sessionId(), this.getStudyResultsSchema());
 		List<DistributionStat> covariateStats = this.getStudyResultsJdbcTemplate().query(translatedSql, (row, rowNum) -> {
 			return new DistributionStat()
+				.dataSourceId(row.getInt("source_id"))
 				.dataSource(row.getString("source_key"))
-				.cohortId(row.getInt("cohort_definition_id"))
+				.cohortId(row.getLong("cohort_definition_id"))
 				.cohortName(row.getString("cohort_definition_name"))
 				.covariateId(row.getLong("covariate_id"))
 				.covariateName(row.getString("covariate_name"))
@@ -1260,6 +1475,7 @@ public class StudyReportService extends AbstractDaoService {
 
 		List<OutcomeSummaryStat> outcomeStats = this.getStudyResultsJdbcTemplate().query(translatedSql, (row, rowNum) -> {
 			return new OutcomeSummaryStat()
+				.dataSourceId(row.getInt("source_id"))
 				.dataSource(row.getString("source_key"))
 				.targetCohortId(row.getLong("target_cohort_id"))
 				.targetCohortName(row.getString("target_cohort_name"))
@@ -1293,6 +1509,7 @@ public class StudyReportService extends AbstractDaoService {
 
 		List<EffectEstimateStat> ccaStats = this.getStudyResultsJdbcTemplate().query(translatedSql, (row, rowNum) -> {
 			return new EffectEstimateStat()
+				.dataSourceId(row.getInt("source_id"))
 				.dataSource(row.getString("source_key"))
 				.targetCohortId(row.getLong("target_cohort_id"))
 				.targetCohortName(row.getString("target_cohort_name"))
@@ -1300,17 +1517,26 @@ public class StudyReportService extends AbstractDaoService {
 				.comparatorCohortName(row.getString("compare_cohort_name"))
 				.outcomeCohortId(row.getLong("outcome_cohort_id"))
 				.outcomeCohortName(row.getString("outcome_cohort_name"))
-				.atRisk(row.getInt("at_risk"))
-				.casesPP(row.getInt("cases_pp"))
-				.personTimePP(row.getDouble("pt_pp"))
-				.casesITT(row.getInt("cases_itt"))
-				.personTimeITT(row.getDouble("pt_itt"))
+				.atRiskTargetPP(row.getInt("t_at_risk_pp"))
+				.casesTargetPP(row.getInt("t_cases_pp"))
+				.personTimeTargetPP(row.getDouble("t_pt_pp"))
+				.atRiskComparatorPP(row.getInt("c_at_risk_pp"))
+				.casesComparatorPP(row.getInt("c_cases_pp"))
+				.personTimeComparatorPP(row.getDouble("c_pt_pp"))
 				.relativeRiskPP(row.getDouble("relative_risk_pp"))
 				.lb95PP(row.getDouble("lb_95_pp"))
 				.ub95PP(row.getDouble("ub_95_pp"))
+				.pValuePP(row.getDouble("pc_value_pp"))
+				.atRiskTargetITT(row.getInt("t_at_risk_itt"))
+				.casesTargetITT(row.getInt("t_cases_itt"))
+				.personTimeTargetITT(row.getDouble("t_pt_itt"))
+				.atRiskComparatorITT(row.getInt("c_at_risk_itt"))
+				.casesComparatorITT(row.getInt("c_cases_itt"))
+				.personTimeComparatorITT(row.getDouble("c_pt_itt"))
 				.relativeRiskITT(row.getDouble("relative_risk_itt"))
 				.lb95ITT(row.getDouble("lb_95_itt"))
-				.ub95ITT(row.getDouble("ub_95_itt"));
+				.ub95ITT(row.getDouble("ub_95_itt"))
+				.pValueITT(row.getDouble("pc_value_itt"));
 		});
 		return ccaStats;
 	}
@@ -1329,22 +1555,22 @@ public class StudyReportService extends AbstractDaoService {
 
 		List<EffectEstimateStat> sccaStats = this.getStudyResultsJdbcTemplate().query(translatedSql, (row, rowNum) -> {
 			return new EffectEstimateStat()
+				.dataSourceId(row.getInt("source_id"))
 				.dataSource(row.getString("source_key"))
 				.targetCohortId(row.getLong("target_cohort_id"))
 				.targetCohortName(row.getString("target_cohort_name"))
 				.outcomeCohortId(row.getLong("outcome_cohort_id"))
 				.outcomeCohortName(row.getString("outcome_cohort_name"))
-				.atRisk(row.getInt("at_risk"))
-				.casesPP(row.getInt("cases_pp"))
-				.personTimePP(row.getDouble("pt_pp"))
-				.casesITT(row.getInt("cases_itt"))
-				.personTimeITT(row.getDouble("pt_itt"))
-				.relativeRiskPP(row.getDouble("relative_risk_pp"))
-				.lb95PP(row.getDouble("lb_95_pp"))
-				.ub95PP(row.getDouble("ub_95_pp"))
-				.relativeRiskITT(row.getDouble("relative_risk_itt"))
-				.lb95ITT(row.getDouble("lb_95_itt"))
-				.ub95ITT(row.getDouble("ub_95_itt"));
+				.atRiskTargetPP(row.getInt("t_at_risk"))
+				.casesTargetPP(row.getInt("t_cases"))
+				.personTimeTargetPP(row.getDouble("t_pt"))
+				.atRiskComparatorPP(row.getInt("c_at_risk"))
+				.casesComparatorPP(row.getInt("c_cases"))
+				.personTimeComparatorPP(row.getDouble("c_pt"))
+				.relativeRiskPP(row.getDouble("relative_risk"))
+				.lb95PP(row.getDouble("lb_95"))
+				.ub95PP(row.getDouble("ub_95"))
+				.pValuePP(row.getDouble("pc_value"));
 		});
 
 		return sccaStats;

@@ -1,4 +1,5 @@
-select s.source_key,
+select s.source_id,
+	s.source_key,
 	sr1.cohort_definition_id,
   ar1.covariate_id,
 	case when c.concept_id = 0 then ar1.covariate_name else c.concept_name end as covariate_name,

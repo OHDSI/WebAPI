@@ -1,4 +1,5 @@
-select s.source_key,
+select s.source_id,
+	s.source_key,
 	sr1.cohort_definition_id,
 	cd.cohort_definition_name,
   ar1.covariate_id,

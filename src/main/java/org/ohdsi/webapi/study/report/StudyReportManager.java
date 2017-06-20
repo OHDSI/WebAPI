@@ -226,12 +226,16 @@ public class StudyReportManager {
 		private String comparatorCohortName;
 		private Long outcomeCohortId;
 		private String outcomeCohortName;
-		private int atRisk;
-		private int cases;
-		private Double personTime;
+		private int atRiskTarget;
+		private int casesTarget;
+		private Double personTimeTarget;
+		private int atRiskComparator;
+		private int casesComparator;
+		private Double personTimeComparator;
 		private Double relativeRisk;
 		private Double lb95;
 		private Double ub95;
+		private Double pValue;
 
 		public RelativeRiskRow() {
 		}
@@ -292,30 +296,55 @@ public class StudyReportManager {
 			this.outcomeCohortName = outcomeCohortName;
 		}
 
-		public int getAtRisk() {
-			return atRisk;
+		public int getAtRiskTarget() {
+			return atRiskTarget;
 		}
 
-		public void setAtRisk(int atRisk) {
-			this.atRisk = atRisk;
+		public void setAtRiskTarget(int atRiskTarget) {
+			this.atRiskTarget = atRiskTarget;
 		}
 
-		public int getCases() {
-			return cases;
+		public int getCasesTarget() {
+			return casesTarget;
 		}
 
-		public void setCases(int cases) {
-			this.cases = cases;
+		public void setCasesTarget(int casesTarget) {
+			this.casesTarget = casesTarget;
 		}
 
-		public Double getPersonTime() {
-			return personTime;
+		public Double getPersonTimeTarget() {
+			return personTimeTarget;
 		}
 
-		public void setPersonTime(Double personTime) {
-			this.personTime = personTime;
+		public void setPersonTimeTarget(Double personTimeTarget) {
+			this.personTimeTarget = personTimeTarget;
 		}
 
+		public int getAtRiskComparator() {
+			return atRiskComparator;
+		}
+
+		public void setAtRiskComparator(int atRiskComparator) {
+			this.atRiskComparator = atRiskComparator;
+		}
+
+		public int getCasesComparator() {
+			return casesComparator;
+		}
+
+		public void setCasesComparator(int casesComparator) {
+			this.casesComparator = casesComparator;
+		}
+
+		public Double getPersonTimeComparator() {
+			return personTimeComparator;
+		}
+
+		public void setPersonTimeComparator(Double personTimeComparator) {
+			this.personTimeComparator = personTimeComparator;
+		}
+
+		
 		public Double getRelativeRisk() {
 			return relativeRisk;
 		}
@@ -340,6 +369,14 @@ public class StudyReportManager {
 			this.ub95 = ub95;
 		}
 
+		public Double getpValue() {
+			return pValue;
+		}
+
+		public void setpValue(Double pValue) {
+			this.pValue = pValue;
+		}
+		
 		public RelativeRiskRow dataSource(final String value) {
 			this.dataSource = value;
 			return this;
@@ -375,18 +412,33 @@ public class StudyReportManager {
 			return this;
 		}
 
-		public RelativeRiskRow atRisk(final int value) {
-			this.atRisk = value;
+		public RelativeRiskRow atRiskTarget(final int value) {
+			this.atRiskTarget = value;
 			return this;
 		}
 
-		public RelativeRiskRow cases(final int value) {
-			this.cases = value;
+		public RelativeRiskRow casesTarget(final int value) {
+			this.casesTarget = value;
 			return this;
 		}
 
-		public RelativeRiskRow personTime(final Double value) {
-			this.personTime = value;
+		public RelativeRiskRow personTimeTarget(final Double value) {
+			this.personTimeTarget = value;
+			return this;
+		}
+
+		public RelativeRiskRow atRiskComparator(final int value) {
+			this.atRiskComparator = value;
+			return this;
+		}
+
+		public RelativeRiskRow casesComparator(final int value) {
+			this.casesComparator = value;
+			return this;
+		}
+
+		public RelativeRiskRow personTimeComparator(final Double value) {
+			this.personTimeComparator = value;
 			return this;
 		}
 
@@ -402,6 +454,11 @@ public class StudyReportManager {
 
 		public RelativeRiskRow ub95(final Double value) {
 			this.ub95 = value;
+			return this;
+		}
+
+		public RelativeRiskRow pValue(final Double value) {
+			this.pValue = value;
 			return this;
 		}
 		
@@ -544,18 +601,25 @@ public class StudyReportManager {
 
 		// rendering of reports goes cohort
 		TextColumnBuilder<String> dataSourceCol = col.column("Data Source", "dataSource", type.stringType());
-		TextColumnBuilder<Integer> atRiskCol = col.column("At Risk", "atRisk", type.integerType()).setFixedWidth(50);
-		TextColumnBuilder<Integer> casesCol = col.column("Cases", "cases", type.integerType()).setFixedWidth(50);
-		TextColumnBuilder<Double> personTimeCol = col.column("TAR", "personTime", type.doubleType()).setPattern("#,##0.0").setFixedWidth(75);
-		TextColumnBuilder<Double> relativeRiskCol = col.column("RR", "relativeRisk",type.doubleType()).setFixedWidth(35).setPattern("#0.00");
-		TextColumnBuilder<String> ciCol = col.column("95% CI", new CIExpression()).setFixedWidth(75);
+		TextColumnBuilder<Integer> atRiskTCol = col.column("At Risk", "atRiskTarget", type.integerType()).setFixedWidth(50);
+		TextColumnBuilder<Integer> casesTCol = col.column("Cases", "casesTarget", type.integerType()).setFixedWidth(50);
+		TextColumnBuilder<Double> personTimeTCol = col.column("TAR", "personTimeTarget", type.doubleType()).setPattern("#,##0.0").setFixedWidth(75);
+		TextColumnBuilder<Integer> atRiskCCol = col.column("At Risk", "atRiskTarget", type.integerType()).setFixedWidth(50);
+		TextColumnBuilder<Integer> casesCCol = col.column("Cases", "casesTarget", type.integerType()).setFixedWidth(50);
+		TextColumnBuilder<Double> personTimeCCol = col.column("TAR", "personTimeTarget", type.doubleType()).setPattern("#,##0.0").setFixedWidth(75);
+		TextColumnBuilder<String> ciCol = col.column("RR (95% CI)", new CIExpression()).setFixedWidth(75);
+		
+		ColumnTitleGroupBuilder tGroup = grid.titleGroup("Target", atRiskTCol,casesTCol, personTimeTCol).setTitleFixedWidth(175);
+		ColumnTitleGroupBuilder cGroup = grid.titleGroup("Comparator", atRiskCCol,casesCCol, personTimeCCol).setTitleFixedWidth(175);
 		
 		JasperReportBuilder ccaReport = report()
 			.fields(
+				field("relativeRisk", Double.class),
 				field("lb95", Double.class),
 				field("ub95", Double.class)
 			)
-			.columns(dataSourceCol,atRiskCol, casesCol,personTimeCol, relativeRiskCol, ciCol)
+			.columnGrid(dataSourceCol, tGroup, cGroup, ciCol)
+			.columns(dataSourceCol,atRiskTCol, casesTCol, personTimeTCol,atRiskCCol, casesCCol, personTimeCCol,ciCol)
 			.setColumnStyle(this.columnStyleSmall)
 			.setColumnTitleStyle(this.columnHeaderStyle)
 		;
@@ -621,8 +685,8 @@ public class StudyReportManager {
 		
 		// get active datasources and create a lookup to resolve source key to order
 		List<ReportSource> activeSources = report.getSources().stream().filter(s -> s.isActive()).collect(Collectors.toList());
-		Map<String, Integer> sourceLookup = IntStream.range(0, activeSources.size()).boxed()
-			.collect(Collectors.toMap(i -> activeSources.get(i).getSource().getKey(), i -> i));
+		Map<Integer, Integer> sourceLookup = IntStream.range(0, activeSources.size()).boxed()
+			.collect(Collectors.toMap(i -> activeSources.get(i).getSource().getId(), i -> i));
 
 		/* BEGIN: Covariate reports */
 		
@@ -666,22 +730,22 @@ public class StudyReportManager {
 		// Comparators
 
 		Comparator<PrevalenceStat> demographicComparator = Comparator.comparing(cs -> demographicCovariateLookup.get(cs.getCovariateId()));
-		demographicComparator = demographicComparator.thenComparing(cs -> sourceLookup.get(cs.getDataSource()));
+		demographicComparator = demographicComparator.thenComparing(cs -> sourceLookup.get(cs.getDataSourceId()));
 		
 		Comparator<PrevalenceStat> conditionComparator = Comparator.comparing(cs -> conditionCovariateLookup.get(cs.getCovariateId()));
-		conditionComparator = conditionComparator.thenComparing(cs -> sourceLookup.get(cs.getDataSource()));
+		conditionComparator = conditionComparator.thenComparing(cs -> sourceLookup.get(cs.getDataSourceId()));
 		
 		Comparator<PrevalenceStat> drugComparator = Comparator.comparing(cs -> drugCovariateLookup.get(cs.getCovariateId()));
-		drugComparator = drugComparator.thenComparing(cs -> sourceLookup.get(cs.getDataSource()));
+		drugComparator = drugComparator.thenComparing(cs -> sourceLookup.get(cs.getDataSourceId()));
 		
 		Comparator<PrevalenceStat> procedureComparator = Comparator.comparing(cs -> procedureCovariateLookup.get(cs.getCovariateId()));
-		procedureComparator = procedureComparator.thenComparing(cs -> sourceLookup.get(cs.getDataSource()));
+		procedureComparator = procedureComparator.thenComparing(cs -> sourceLookup.get(cs.getDataSourceId()));
 
 		Comparator<PrevalenceStat> measureComparator = Comparator.comparing(cs -> measureCovariateLookup.get(cs.getCovariateId()));
-		measureComparator = measureComparator.thenComparing(cs -> sourceLookup.get(cs.getDataSource()));
+		measureComparator = measureComparator.thenComparing(cs -> sourceLookup.get(cs.getDataSourceId()));
 		
 		Comparator<DistributionStat> distComparator = Comparator.comparing(cs -> distCovariateLookup.get(cs.getCovariateId()));
-		distComparator = distComparator.thenComparing(cs -> sourceLookup.get(cs.getDataSource()));
+		distComparator = distComparator.thenComparing(cs -> sourceLookup.get(cs.getDataSourceId()));
 		
 		List<PrevalenceStat> prevalenceStats = studyReportService.getReportCovariatePrevalence(report);
 		
@@ -872,7 +936,7 @@ public class StudyReportManager {
 				}).findFirst().get();
 				return activePairs.indexOf(targetPair);
 			});
-		outcomeComparator = outcomeComparator.thenComparing(oss -> sourceLookup.get(oss.getDataSource()));
+		outcomeComparator = outcomeComparator.thenComparing(oss -> sourceLookup.get(oss.getDataSourceId()));
 
 		// get all outcome statistics across all active databases, and sort
 		List<StudyReportService.OutcomeSummaryStat> outcomeStats = studyReportService.getReportIR(activePairs, activeSources);
@@ -912,7 +976,7 @@ public class StudyReportManager {
 				return activePairs.indexOf(targetPair);
 			});
 		// then use the datasource index as the next comparator
-		eeComparator = eeComparator.thenComparing(ees -> sourceLookup.get(ees.getDataSource()));
+		eeComparator = eeComparator.thenComparing(ees -> sourceLookup.get(ees.getDataSourceId()));
 		// finally order by comparator name
 		eeComparator = eeComparator.thenComparing(ees -> ees.getComparatorCohortName());
 		
@@ -937,11 +1001,16 @@ public class StudyReportManager {
 				.outcomeCohortId(ees.getOutcomeCohortId())
 				.outcomeCohortName(ees.getOutcomeCohortName())
 				.dataSource(ees.getDataSource())
-				.atRisk(ees.getCasesPP())
-				.personTime(ees.getPersonTimePP())
+				.atRiskTarget(ees.getAtRiskTargetPP())
+				.personTimeTarget(ees.getPersonTimeTargetPP())
+				.casesTarget(ees.getCasesTargetPP())
+				.atRiskComparator(ees.getAtRiskTargetPP())
+				.personTimeComparator(ees.getPersonTimeTargetPP())
+				.casesComparator(ees.getCasesTargetPP())
 				.relativeRisk(ees.getRelativeRiskPP())
 				.lb95(ees.getLb95PP())
 				.ub95(ees.getUb95PP())
+				.pValue(ees.getpValuePP())
 			);
 			
 			ccaITTRows.add(new RelativeRiskRow()
@@ -952,11 +1021,16 @@ public class StudyReportManager {
 				.outcomeCohortId(ees.getOutcomeCohortId())
 				.outcomeCohortName(ees.getOutcomeCohortName())
 				.dataSource(ees.getDataSource())
-				.atRisk(ees.getCasesITT())
-				.personTime(ees.getPersonTimeITT())
+				.atRiskTarget(ees.getAtRiskTargetITT())
+				.personTimeTarget(ees.getPersonTimeTargetITT())
+				.casesTarget(ees.getCasesTargetITT())
+				.atRiskComparator(ees.getAtRiskTargetITT())
+				.personTimeComparator(ees.getPersonTimeTargetITT())
+				.casesComparator(ees.getCasesTargetITT())
 				.relativeRisk(ees.getRelativeRiskITT())
 				.lb95(ees.getLb95ITT())
 				.ub95(ees.getUb95ITT())
+				.pValue(ees.getpValueITT())
 			);
 		});
 		
@@ -1048,34 +1122,26 @@ public class StudyReportManager {
 		sccaStats.sort(eeComparator);
 
 		List<RelativeRiskRow> sccaPPRows = new ArrayList<>();
-		List<RelativeRiskRow> sccaITTRows = new ArrayList<>();
 		
-		ccaStats.forEach(ees -> {
+		sccaStats.forEach(ees -> {
 			sccaPPRows.add(new RelativeRiskRow()
 				.targetCohortId(ees.getTargetCohortId())
 				.targetCohortName(ees.getTargetCohortName())
 				.outcomeCohortId(ees.getOutcomeCohortId())
 				.outcomeCohortName(ees.getOutcomeCohortName())
 				.dataSource(ees.getDataSource())
-				.atRisk(ees.getCasesPP())
-				.personTime(ees.getPersonTimePP())
+				.atRiskTarget(ees.getAtRiskTargetPP())
+				.personTimeTarget(ees.getPersonTimeTargetPP())
+				.casesTarget(ees.getCasesTargetPP())
+				.atRiskComparator(ees.getAtRiskTargetPP())
+				.personTimeComparator(ees.getPersonTimeTargetPP())
+				.casesComparator(ees.getCasesTargetPP())
 				.relativeRisk(ees.getRelativeRiskPP())
 				.lb95(ees.getLb95PP())
 				.ub95(ees.getUb95PP())
+				.pValue(ees.getpValuePP())
 			);
 			
-			sccaITTRows.add(new RelativeRiskRow()
-				.targetCohortId(ees.getTargetCohortId())
-				.targetCohortName(ees.getTargetCohortName())
-				.outcomeCohortId(ees.getOutcomeCohortId())
-				.outcomeCohortName(ees.getOutcomeCohortName())
-				.dataSource(ees.getDataSource())
-				.atRisk(ees.getCasesITT())
-				.personTime(ees.getPersonTimeITT())
-				.relativeRisk(ees.getRelativeRiskITT())
-				.lb95(ees.getLb95ITT())
-				.ub95(ees.getUb95ITT())
-			);
 		});
 		
 		
@@ -1098,31 +1164,14 @@ public class StudyReportManager {
 			sccaSubTableIndex++;			
 		}
 		
-		// intent to treat relative risk stats, grouped by RelativeRiskGroupBy
-		Map<RelativeRiskGroupBy, List<RelativeRiskRow>> sccaIttGroups = ccaITTRows.stream()
-			.collect(Collectors.groupingBy(r -> new RelativeRiskGroupBy(r.targetCohortName, r.comparatorCohortName, r.outcomeCohortName),LinkedHashMap::new, Collectors.toList()));
-
-		for (RelativeRiskGroupBy key : sccaIttGroups.keySet()) {
-			JasperReportBuilder rrReport = getRelativeRiskReport();
-			rrReport.title(cmp.verticalList(
-				cmp.text(String.format("Table %d%s. Relative Risk Summary", tableIndex, sccaSubTableIndex)).setStyle(headingStyle),
-				cmp.text(String.format("<b>Target:</b> %s", key.targetCohortName)).setStyle(subHeadingStyle),
-				cmp.text(String.format("<b>0utcome:</b> %s", key.outcomeCohortName)).setStyle(subHeadingStyle),
-				cmp.text("<b>Time at Risk:</b> Intent to Treat").setStyle(subHeadingStyle)
-			).setGap(0))
-				.setDataSource(sccaIttGroups.get(key));
-			contentBuilder.add(cmp.subreport(rrReport));
-			sccaSubTableIndex++;			
-		}		
-		
 		tableIndex++;
 
-		// CCA Diagnostic reports
+		// SCCA Diagnostic reports
 
 		// For the diagnostics report, we **assume** that every relative risk statistic has the corresponding diagnostic results generated.
 		// Therefore, we use the same relative risk rows (and groups) to genrate the diagnostic reports, just resolving the row to an image
 		
-		contentBuilder.add(cmp.text("IV. Cohort Comparision Diagnostics").setStyle(this.headingStyle));
+		contentBuilder.add(cmp.text("IV. Self-Control Cohort Analysis Diagnostics").setStyle(this.headingStyle));
 
 		char sccaDiagSubTableIndex = 'a';
 		
@@ -1138,20 +1187,7 @@ public class StudyReportManager {
 			contentBuilder.add(cmp.subreport(sccaDiag));
 			sccaDiagSubTableIndex++;			
 		}
-		
-		for (RelativeRiskGroupBy key : sccaIttGroups.keySet()) {
-			JasperReportBuilder sccaDiag = getSCCADiagnosticsReport();
-			sccaDiag.title(cmp.verticalList(
-				cmp.text(String.format("Table %d%s. Risk Estimation Diagnostics", tableIndex, sccaDiagSubTableIndex)).setStyle(headingStyle),
-				cmp.text(String.format("<b>Target:</b> %s", key.targetCohortName)).setStyle(subHeadingStyle),
-				cmp.text(String.format("<b>0utcome:</b> %s", key.outcomeCohortName)).setStyle(subHeadingStyle),
-				cmp.text("<b>Time at Risk:</b> Intent to Treat").setStyle(subHeadingStyle)
-			).setGap(0))
-				.setDataSource(sccaIttGroups.get(key));
-			contentBuilder.add(cmp.subreport(sccaDiag));
-			sccaDiagSubTableIndex++;			
-		}
-		
+
 		tableIndex++;
 
 		/* END: Effect Estimate reports */

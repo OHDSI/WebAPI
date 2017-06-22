@@ -50,6 +50,7 @@ import org.ohdsi.webapi.study.StudyRepository;
 import org.ohdsi.webapi.study.report.ReportCohortPair;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 /**
@@ -60,14 +61,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class StudyService extends AbstractDaoService {
 
-	private final String QUERY_COVARIATE_STATS = ResourceHelper.GetResourceAsString("/resources/study/sql/queryCovariateStats.sql");
-	private final String QUERY_COVARIATE_STATS_VOCAB = ResourceHelper.GetResourceAsString("/resources/study/sql/queryCovariateStatsVocab.sql");
+	private final String QUERY_COHORTSETS = ResourceHelper.GetResourceAsString("/resources/study/sql/queryCohortSets.sql");
 	private final String QUERY_COVARIATE_DIST = ResourceHelper.GetResourceAsString("/resources/study/sql/queryCovariateDist.sql");
 	private final String QUERY_COVARIATE_DIST_VOCAB = ResourceHelper.GetResourceAsString("/resources/study/sql/queryCovariateDistVocab.sql");
-	private final String QUERY_COHORTSETS = ResourceHelper.GetResourceAsString("/resources/study/sql/queryCohortSets.sql");
+	private final String QUERY_COVARIATE = ResourceHelper.GetResourceAsString("/resources/study/sql/queryCovariate.sql");
+	private final String QUERY_COVARIATE_STATS = ResourceHelper.GetResourceAsString("/resources/study/sql/queryCovariateStats.sql");
+	private final String QUERY_COVARIATE_STATS_VOCAB = ResourceHelper.GetResourceAsString("/resources/study/sql/queryCovariateStatsVocab.sql");
 	private final String QUERY_DASHBOARD = ResourceHelper.GetResourceAsString("/resources/study/sql/queryDashboard.sql");
-	private final String QUERY_DASHBOARD_VOCAB = ResourceHelper.GetResourceAsString("/resources/study/sql/queryDashboardVocab.sql");
 	private final String QUERY_DASHBOARD_OUTCOMES = ResourceHelper.GetResourceAsString("/resources/study/sql/queryDashboardOutcomes.sql");
+	private final String QUERY_DASHBOARD_VOCAB = ResourceHelper.GetResourceAsString("/resources/study/sql/queryDashboardVocab.sql");
 
 	@Autowired
 	StudyRepository studyRepository;
@@ -255,6 +257,20 @@ public class StudyService extends AbstractDaoService {
 		public int published;
 		public int distance;
 	}
+	
+	public static class CohortSetPrevalanceStat {
+		public String sourceName;
+		public String cohortName;
+		public long covariateId;
+		public String covariateName;
+		public long analysisId;
+		public String analysisName;
+		public String domainId;
+		public String timeWindow;
+		public long conceptId;
+		public long countValue;
+		public BigDecimal statValue;
+	}
 
 	private List<String> buildCriteriaClauses(String searchTerm, List<String> analysisIds, List<String> timeWindows, List<String> domains) {
 		ArrayList<String> clauses = new ArrayList<>();
@@ -427,6 +443,68 @@ public class StudyService extends AbstractDaoService {
 	}
 
 	@GET
+	@Path("{studyId}/{cohortSetId}/covariate/{covariateId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Transactional	
+	@Cacheable("report.covariate")
+	public List<CohortSetPrevalanceStat> getCohortSetPrevalanceStat(
+		@PathParam("studyId") final int studyId,
+		@PathParam("cohortSetId") final int cohortSetId,
+		@PathParam("covariateId") final long covariateId 
+	) {
+		String translatedSql;
+
+		// Retrieve the cohort set 
+		CohortSet cs = cohortSetRepository.findOne(cohortSetId);
+		if (cs == null) {
+			throw new WebApplicationException(Response.Status.NOT_FOUND);
+		}
+
+		// Get the cohorts tied to this cohort set
+		ArrayList<String> cohortIdList = new ArrayList<String>();
+		cs.getCohortList().forEach(item -> {
+			cohortIdList.add(item.getId().toString());
+		});
+
+		String cohortListEquality = "";
+		if (cohortIdList.size() > 1) {
+			cohortListEquality = String.format("in (%s)", StringUtils.join(cohortIdList, ","));
+		} else if (cohortIdList.size() == 1) {
+			cohortListEquality = "= " + cohortIdList.get(0);
+		} else {
+			throw new WebApplicationException(Response.Status.NOT_FOUND);
+		}
+
+		String getPersonCountQuery = SqlRender.renderSql(QUERY_COVARIATE,
+			new String[]{"study_results_schema", "cohort_list_equality", "covariate_id"},
+			new String[]{this.getStudyResultsSchema(), cohortListEquality, Long.toString(covariateId)}
+		);
+
+		translatedSql = SqlTranslate.translateSql(getPersonCountQuery, "sql server", this.getStudyResultsDialect());
+		List<CohortSetPrevalanceStat> returnVal = this.getStudyResultsJdbcTemplate().query(translatedSql, (rs, rowNum) -> {
+			CohortSetPrevalanceStat mappedRow = new CohortSetPrevalanceStat() {
+				{
+					sourceName = rs.getString("source_name");
+					cohortName = rs.getString("short_name");
+					covariateId = rs.getLong("covariate_id");
+					covariateName = rs.getString("covariate_name");
+					analysisId = rs.getLong("analysis_id");
+					analysisName = rs.getString("analysis_name");
+					domainId = rs.getString("domain_id");
+					timeWindow = rs.getString("time_window");
+					conceptId = rs.getLong("concept_id");
+					countValue = rs.getLong("count_value");
+					statValue = new BigDecimal(rs.getDouble("stat_value")).setScale(5, RoundingMode.DOWN);
+				}
+			};
+			return mappedRow;
+		});
+
+		return returnVal;
+	}
+
+
+	@GET
 	@Path("{studyId}/results/prevalence/{cohortId}/{sourceId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public List<PrevalenceStat> getStudyPrevalenceStats(
@@ -589,6 +667,28 @@ public class StudyService extends AbstractDaoService {
 
 		return cohortSets;
 	}
+	@GET
+	@Path("{studyId}/cohortset/{cohortSetId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Transactional
+	public CohortSetListItem getCohortSetById(
+		@PathParam("studyId") final int studyId,
+		@PathParam("cohortSetId") final int cohortSetId
+	) {
+		// Retrieve the cohort set 
+		CohortSet cs = cohortSetRepository.findOne(cohortSetId);
+		if (cs == null) {
+			throw new WebApplicationException(Response.Status.NOT_FOUND);
+		}
+		
+		CohortSetListItem i = new CohortSetListItem();
+		i.description = cs.getDescription();
+		i.id = cs.getId();
+		i.name = cs.getName();
+		i.members = cs.getCohortList().size();
+
+		return i;
+	}
 
 	@GET
 	@Path("/{studyId}/cohortset/{cohortSetId}/outcomes")
@@ -679,6 +779,7 @@ public class StudyService extends AbstractDaoService {
 	@Path("/{studyId}/dashboard/{cohortSetId}/explore/{conceptId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Transactional
+	@Cacheable("report.dashboard.vocab")
 	public List<DashboardItem> getDashboardByVocab(
 		@PathParam("studyId") final int studyId,
 		@PathParam("cohortSetId") final int cohortSetId,
@@ -747,6 +848,7 @@ public class StudyService extends AbstractDaoService {
 	@Path("/{studyId}/dashboard/{cohortSetId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Transactional
+	@Cacheable("report.dashboard")
 	public List<DashboardItem> getDashboard(
 		@PathParam("studyId") final int studyId,
 		@PathParam("cohortSetId") final int cohortSetId

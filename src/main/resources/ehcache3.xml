@@ -16,5 +16,8 @@
 	<cache alias="report.outcomeSummary" uses-template="default"/>
 	<cache alias="report.cca" uses-template="default"/>
 	<cache alias="report.scca" uses-template="default"/>
+	<cache alias="report.covariate" uses-template="default"/>
+	<cache alias="report.dashboard" uses-template="default"/>
+	<cache alias="report.dashboard.vocab" uses-template="default"/>
 	
 </config>

@@ -253,8 +253,8 @@ public class StudyReportService extends AbstractDaoService {
 		private String name;
 		private String analysisName;
 		private String timeWindow;
-		private long count;
-		private double statValue;
+		private Long count;
+		private Double statValue;
 
 		public PrevalenceStat() {
 		}
@@ -315,19 +315,19 @@ public class StudyReportService extends AbstractDaoService {
 			this.timeWindow = timeWindow;
 		}
 
-		public long getCount() {
+		public Long getCount() {
 			return count;
 		}
 
-		public void setCount(long count) {
+		public void setCount(Long count) {
 			this.count = count;
 		}
 
-		public double getStatValue() {
+		public Double getStatValue() {
 			return statValue;
 		}
 
-		public void setStatValue(double statValue) {
+		public void setStatValue(Double statValue) {
 			this.statValue = statValue;
 		}
 
@@ -366,12 +366,12 @@ public class StudyReportService extends AbstractDaoService {
 			return this;
 		}
 
-		public PrevalenceStat count(final long value) {
+		public PrevalenceStat count(final Long value) {
 			this.count = value;
 			return this;
 		}
 
-		public PrevalenceStat statValue(final double value) {
+		public PrevalenceStat statValue(final Double value) {
 			this.statValue = value;
 			return this;
 		}
@@ -801,7 +801,8 @@ public class StudyReportService extends AbstractDaoService {
 	public static class EffectEstimateStat {
 		private int analysisId;
 		private int dataSourceId;
-		private String dataSource;
+		private String dataSourceName;
+		private String dataSourceKey;
 		private long targetCohortId;
 		private String targetCohortName;
 		private long comparatorCohortId;
@@ -848,12 +849,20 @@ public class StudyReportService extends AbstractDaoService {
 			this.dataSourceId = dataSourceId;
 		}
 		
-		public String getDataSource() {
-			return dataSource;
+		public String getDataSourceName() {
+			return dataSourceName;
 		}
 
-		public void setDataSource(String dataSource) {
-			this.dataSource = dataSource;
+		public void setDataSourceName(String dataSourceName) {
+			this.dataSourceName = dataSourceName;
+		}
+
+		public String getDataSourceKey() {
+			return dataSourceKey;
+		}
+
+		public void setDataSourceKey(String dataSourceKey) {
+			this.dataSourceKey = dataSourceKey;
 		}
 
 		public long getTargetCohortId() {
@@ -1074,8 +1083,13 @@ public class StudyReportService extends AbstractDaoService {
 			return this;
 		}
 
-		public EffectEstimateStat dataSource(final String value) {
-			this.dataSource = value;
+		public EffectEstimateStat dataSourceName(final String value) {
+			this.dataSourceName = value;
+			return this;
+		}
+
+		public EffectEstimateStat dataSourceKey(final String value) {
+			this.dataSourceKey = value;
 			return this;
 		}
 
@@ -1401,14 +1415,14 @@ public class StudyReportService extends AbstractDaoService {
 		List<PrevalenceStat> covariateStats = this.getStudyResultsJdbcTemplate().query(translatedSql, (row, rowNum) -> {
 			return new PrevalenceStat()
 				.dataSourceId(row.getInt("source_id"))
-				.dataSource(row.getString("source_key"))
+				.dataSource(row.getString("source_name"))
 				.cohortId(row.getLong("cohort_definition_id"))
 				.covariateId(row.getLong("covariate_id"))
 				.name(row.getString("covariate_name"))
 				.analysisName(row.getString("analysis_name"))
 				.timeWindow(row.getString("time_window"))
-				.count(row.getLong("count_value"))
-				.statValue(row.getDouble("stat_value"));
+				.count(row.getString("count_value") != null ? row.getLong("count_value") : null)
+				.statValue(row.getString("stat_value") != null ? row.getDouble("stat_value") : null);
 		});
 
 		return covariateStats;
@@ -1437,7 +1451,7 @@ public class StudyReportService extends AbstractDaoService {
 		List<DistributionStat> covariateStats = this.getStudyResultsJdbcTemplate().query(translatedSql, (row, rowNum) -> {
 			return new DistributionStat()
 				.dataSourceId(row.getInt("source_id"))
-				.dataSource(row.getString("source_key"))
+				.dataSource(row.getString("source_name"))
 				.cohortId(row.getLong("cohort_definition_id"))
 				.cohortName(row.getString("cohort_definition_name"))
 				.covariateId(row.getLong("covariate_id"))
@@ -1476,7 +1490,7 @@ public class StudyReportService extends AbstractDaoService {
 		List<OutcomeSummaryStat> outcomeStats = this.getStudyResultsJdbcTemplate().query(translatedSql, (row, rowNum) -> {
 			return new OutcomeSummaryStat()
 				.dataSourceId(row.getInt("source_id"))
-				.dataSource(row.getString("source_key"))
+				.dataSource(row.getString("source_name"))
 				.targetCohortId(row.getLong("target_cohort_id"))
 				.targetCohortName(row.getString("target_cohort_name"))
 				.outcomeCohortId(row.getLong("outcome_cohort_id"))
@@ -1510,7 +1524,8 @@ public class StudyReportService extends AbstractDaoService {
 		List<EffectEstimateStat> ccaStats = this.getStudyResultsJdbcTemplate().query(translatedSql, (row, rowNum) -> {
 			return new EffectEstimateStat()
 				.dataSourceId(row.getInt("source_id"))
-				.dataSource(row.getString("source_key"))
+				.dataSourceName(row.getString("source_name"))
+				.dataSourceKey(row.getString("source_key"))
 				.targetCohortId(row.getLong("target_cohort_id"))
 				.targetCohortName(row.getString("target_cohort_name"))
 				.comparatorCohortId(row.getLong("compare_cohort_id"))
@@ -1556,7 +1571,8 @@ public class StudyReportService extends AbstractDaoService {
 		List<EffectEstimateStat> sccaStats = this.getStudyResultsJdbcTemplate().query(translatedSql, (row, rowNum) -> {
 			return new EffectEstimateStat()
 				.dataSourceId(row.getInt("source_id"))
-				.dataSource(row.getString("source_key"))
+				.dataSourceName(row.getString("source_name"))
+				.dataSourceKey(row.getString("source_key"))
 				.targetCohortId(row.getLong("target_cohort_id"))
 				.targetCohortName(row.getString("target_cohort_name"))
 				.outcomeCohortId(row.getLong("outcome_cohort_id"))

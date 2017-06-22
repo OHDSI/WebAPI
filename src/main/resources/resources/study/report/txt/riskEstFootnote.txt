@@ -1,0 +1,1 @@
+<b>TAR:</b>  Time at Risk (years), <b>RR:</b> Relative Risk, <b>CI:</b> Confidence Interval

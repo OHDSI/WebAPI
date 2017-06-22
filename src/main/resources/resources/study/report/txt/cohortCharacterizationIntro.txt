@@ -1,0 +1,1 @@
+A <b>cohort characterization</b> is a descriptive summary of selected baseline covariate of a particular cohort, such as age, conditions, drug exposure, procedures, and measurements.

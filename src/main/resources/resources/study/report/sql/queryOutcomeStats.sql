@@ -1,5 +1,6 @@
 SELECT s.source_id,
 	s.source_key, 
+	s.source_name,
 	os.target_cohort_id, 
 	coalesce(td.short_name, td.cohort_definition_name) as target_cohort_name,
 	os.outcome_cohort_id, 

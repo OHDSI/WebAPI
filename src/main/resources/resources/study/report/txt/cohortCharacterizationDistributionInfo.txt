@@ -1,0 +1,1 @@
+Baseline covariates that are continuous variables, such as age and number of records, are summarized by selected statistics from the probability distribution, including mean, median, standard deviation, and interquartile range.

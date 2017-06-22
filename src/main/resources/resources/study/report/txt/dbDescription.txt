@@ -1,0 +1,11 @@
+<b>Optum’s  ClinformaticsTM Data Mart – Socio-Economic Status (Optum SES)</b>
+Optum Clinformatics Extended DataMart is an administrative health claims database for members with private health insurance, who are fully insured in commercial plans or in administrative services only (ASOs) and Medicare.  It includes data captured from administrative claims processed from inpatient and outpatient medical services and outpatient pharmacy prescription dispensings, as well as results for outpatient lab tests processed by large national lab vendors who participate in data exchange with Optum.  Optum SES provides socio-economic status for members with both medical and pharmacy coverage.  
+
+<b>Truven Health MarketScan® Commercial Claims and Encounters Database (Truven CCAE)</b>
+Truven Health MarketScan® Commercial Claims and Encounters Database (CCAE) represent data from individuals enrolled in United States employer-sponsored insurance health plans.  The data includes health insurance claims (e.g. inpatient, outpatient, and outpatient pharmacy) as well as enrollment data from large employers and health plans who provide private healthcare coverage to employees, their spouses, and dependents. This administrative claims database includes a variety of fee-for-service, preferred provider organizations, and capitated health plans.    
+
+<b>Truven Health MarketScan® Multi-State Medicaid Database (Truven MDCD)</b>
+Truven Health MarketScan® Multi-State Medicaid Database (MDCD) health insurance claims for Medicaid enrollees from multiple states across inpatient, outpatient, and outpatient pharmacy as well as ethnicity and Medicare eligibility.  Members maintain their same identifier even if they leave the system for a brief period however the dataset lacks lab data.  
+
+<b>Truven Health MarketScan® Medicare Supplemental and Coordination of Benefits Database (Truven MDCR)</b>
+Truven Health MarketScan® Medicare Supplemental and Coordination of Benefits Database (MDCR) represents health services of retirees in the United States with primary or Medicare supplemental coverage through privately insured fee-for-service, point-of-service, or capitated health plans.  These data include health insurance claims (e.g. inpatient, outpatient, and outpatient pharmacy).

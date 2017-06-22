@@ -2,6 +2,7 @@ SELECT
 	scca.analysis_id,
 	s.source_id,
 	s.source_key, 
+	s.source_name,
 	scca.target_cohort_id, 
 	coalesce(td.short_name, td.cohort_definition_name) as target_cohort_name,
 	scca.outcome_cohort_id,

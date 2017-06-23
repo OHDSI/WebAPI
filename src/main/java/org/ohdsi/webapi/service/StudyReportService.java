@@ -1398,6 +1398,9 @@ public class StudyReportService extends AbstractDaoService {
 		List<Long> covariateIds = report.getCovariates().stream().filter(c -> c.getCovariateSection() != CovariateSection.DISTRIBUTIONS)
 			.map(ReportCovariate::getCovariateId).collect(Collectors.toList());
 
+		if (covariateIds.isEmpty())
+			return new ArrayList<>();
+		
 		// Collect list of cohort IDs
 		List<Long> cohorts = report.getCohortPairs().stream().map(rc -> rc.getTarget().getId()).distinct().collect(Collectors.toList());
 
@@ -1434,6 +1437,9 @@ public class StudyReportService extends AbstractDaoService {
 		List<Long> covariateIds = report.getCovariates().stream().filter(c -> c.getCovariateSection() == CovariateSection.DISTRIBUTIONS)
 			.map(ReportCovariate::getCovariateId).collect(Collectors.toList());
 
+		if (covariateIds.isEmpty())
+			return new ArrayList<>();
+		
 		// Collect list of cohort IDs
 		List<Long> cohorts = report.getCohortPairs().stream().map(rc -> rc.getTarget().getId()).distinct().collect(Collectors.toList());
 

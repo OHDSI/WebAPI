@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import net.sf.dynamicreports.jasper.builder.JasperReportBuilder;
 import net.sf.dynamicreports.report.base.expression.AbstractSimpleExpression;
+import net.sf.dynamicreports.report.builder.column.ComponentColumnBuilder;
 import net.sf.dynamicreports.report.builder.column.TextColumnBuilder;
 import net.sf.dynamicreports.report.builder.component.ImageBuilder;
 import net.sf.dynamicreports.report.builder.component.VerticalListBuilder;
@@ -78,6 +79,7 @@ public class StudyReportManager {
 	private final String CONTENT_COHORT_CHARACTERIZATION_DIST = ResourceHelper.GetResourceAsString("/resources/study/report/txt/cohortCharacterizationDistributionInfo.txt");
 	private final String CONTENT_COHORT_CHARACTERIZATION_DIST_FOOTNOTE = ResourceHelper.GetResourceAsString("/resources/study/report/txt/cohortCharacterizationDistributionFootnote.txt");
 	private final String CONTENT_OUTCOME_SUMMARY_INTRO = ResourceHelper.GetResourceAsString("/resources/study/report/txt/outcomeSummaryIntro.txt");
+	private final String CONTENT_OUTCOME_SUMMARY_FOOTNOTE = ResourceHelper.GetResourceAsString("/resources/study/report/txt/outcomeSummaryFootnote.txt");
 	private final String CONTENT_SCC_INTRO = ResourceHelper.GetResourceAsString("/resources/study/report/txt/sccIntro.txt");
 	private final String CONTENT_RISK_EST_FOOTNOTE = ResourceHelper.GetResourceAsString("/resources/study/report/txt/riskEstFootnote.txt");	
 	private final String CONTENT_SCC_DIAG_INTRO = ResourceHelper.GetResourceAsString("/resources/study/report/txt/sccDiagIntro.txt");
@@ -484,16 +486,15 @@ public class StudyReportManager {
 		
 	}
 	
-	public static class DiagnosticRow {
+	public static class CalibrationDiagnosticRow {
 		private String dataSourceName;
 		private String dataSourceKey;
 		private Long targetCohortId;
 		private String targetCohortName;
 		private Long comparatorCohortId;
 		private String comparatorCohortName;
-		private String callibrationPath;
-		private String preferenceScorePath;
-		private String covariateBalancePath;
+		private String calibrationPathPP;
+		private String calibrationPathITT;
 
 		public String getDataSourceName() {
 			return dataSourceName;
@@ -510,7 +511,7 @@ public class StudyReportManager {
 		public void setDataSourceKey(String dataSourceKey) {
 			this.dataSourceKey = dataSourceKey;
 		}
-		
+
 		public Long getTargetCohortId() {
 			return targetCohortId;
 		}
@@ -543,20 +544,137 @@ public class StudyReportManager {
 			this.comparatorCohortName = comparatorCohortName;
 		}
 
-		public String getCallibrationPath() {
-			return callibrationPath;
+		public String getCalibrationPathPP() {
+			return calibrationPathPP;
 		}
 
-		public void setCallibrationPath(String callibrationPath) {
-			this.callibrationPath = callibrationPath;
+		public void setCalibrationPathPP(String calibrationPathPP) {
+			this.calibrationPathPP = calibrationPathPP;
 		}
 
-		public String getPreferenceScorePath() {
-			return preferenceScorePath;
+		public String getCalibrationPathITT() {
+			return calibrationPathITT;
 		}
 
-		public void setPreferenceScorePath(String preferenceScorePath) {
-			this.preferenceScorePath = preferenceScorePath;
+		public void setCalibrationPathITT(String calibrationPathITT) {
+			this.calibrationPathITT = calibrationPathITT;
+		}
+
+		public CalibrationDiagnosticRow dataSourceName(final String value) {
+			this.dataSourceName = value;
+			return this;
+		}
+
+		public CalibrationDiagnosticRow dataSourceKey(final String value) {
+			this.dataSourceKey = value;
+			return this;
+		}
+
+		public CalibrationDiagnosticRow targetCohortId(final Long value) {
+			this.targetCohortId = value;
+			return this;
+		}
+
+		public CalibrationDiagnosticRow targetCohortName(final String value) {
+			this.targetCohortName = value;
+			return this;
+		}
+
+		public CalibrationDiagnosticRow comparatorCohortId(final Long value) {
+			this.comparatorCohortId = value;
+			return this;
+		}
+
+		public CalibrationDiagnosticRow comparatorCohortName(final String value) {
+			this.comparatorCohortName = value;
+			return this;
+		}
+
+		public CalibrationDiagnosticRow calibrationPathPP(final String value) {
+			this.calibrationPathPP = value;
+			return this;
+		}
+
+		public CalibrationDiagnosticRow calibrationPathITT(final String value) {
+			this.calibrationPathITT = value;
+			return this;
+		}
+		
+	}
+	
+	public static class CohortComparisonDiagnosticRow {
+		private String dataSourceName;
+		private String dataSourceKey;
+		private Long targetCohortId;
+		private String targetCohortName;
+		private Long comparatorCohortId;
+		private String comparatorCohortName;
+		private String preferenceScoreBeforePath;
+		private String preferenceScoreAfterPath;
+		private String covariateBalancePath;
+
+		public String getDataSourceName() {
+			return dataSourceName;
+		}
+
+		public void setDataSourceName(String dataSourceName) {
+			this.dataSourceName = dataSourceName;
+		}
+
+		public String getDataSourceKey() {
+			return dataSourceKey;
+		}
+
+		public void setDataSourceKey(String dataSourceKey) {
+			this.dataSourceKey = dataSourceKey;
+		}
+
+		public Long getTargetCohortId() {
+			return targetCohortId;
+		}
+
+		public void setTargetCohortId(Long targetCohortId) {
+			this.targetCohortId = targetCohortId;
+		}
+
+		public String getTargetCohortName() {
+			return targetCohortName;
+		}
+
+		public void setTargetCohortName(String targetCohortName) {
+			this.targetCohortName = targetCohortName;
+		}
+
+		public Long getComparatorCohortId() {
+			return comparatorCohortId;
+		}
+
+		public void setComparatorCohortId(Long comparatorCohortId) {
+			this.comparatorCohortId = comparatorCohortId;
+		}
+
+		public String getComparatorCohortName() {
+			return comparatorCohortName;
+		}
+
+		public void setComparatorCohortName(String comparatorCohortName) {
+			this.comparatorCohortName = comparatorCohortName;
+		}
+
+		public String getPreferenceScoreBeforePath() {
+			return preferenceScoreBeforePath;
+		}
+
+		public void setPreferenceScoreBeforePath(String preferenceScoreBeforePath) {
+			this.preferenceScoreBeforePath = preferenceScoreBeforePath;
+		}
+
+		public String getPreferenceScoreAfterPath() {
+			return preferenceScoreAfterPath;
+		}
+
+		public void setPreferenceScoreAfterPath(String preferenceScoreAfterPath) {
+			this.preferenceScoreAfterPath = preferenceScoreAfterPath;
 		}
 
 		public String getCovariateBalancePath() {
@@ -567,47 +685,47 @@ public class StudyReportManager {
 			this.covariateBalancePath = covariateBalancePath;
 		}
 
-		public DiagnosticRow dataSourceName(final String value) {
+		public CohortComparisonDiagnosticRow dataSourceName(final String value) {
 			this.dataSourceName = value;
 			return this;
 		}
 
-		public DiagnosticRow dataSourceKey(final String value) {
+		public CohortComparisonDiagnosticRow dataSourceKey(final String value) {
 			this.dataSourceKey = value;
 			return this;
 		}
 
-		public DiagnosticRow targetCohortId(final Long value) {
+		public CohortComparisonDiagnosticRow targetCohortId(final Long value) {
 			this.targetCohortId = value;
 			return this;
 		}
 
-		public DiagnosticRow targetCohortName(final String value) {
+		public CohortComparisonDiagnosticRow targetCohortName(final String value) {
 			this.targetCohortName = value;
 			return this;
 		}
 
-		public DiagnosticRow comparatorCohortId(final Long value) {
+		public CohortComparisonDiagnosticRow comparatorCohortId(final Long value) {
 			this.comparatorCohortId = value;
 			return this;
 		}
 
-		public DiagnosticRow comparatorCohortName(final String value) {
+		public CohortComparisonDiagnosticRow comparatorCohortName(final String value) {
 			this.comparatorCohortName = value;
 			return this;
 		}
 
-		public DiagnosticRow callibrationPath(final String value) {
-			this.callibrationPath = value;
+		public CohortComparisonDiagnosticRow preferenceScoreBeforePath(final String value) {
+			this.preferenceScoreBeforePath = value;
 			return this;
 		}
 
-		public DiagnosticRow preferenceScorePath(final String value) {
-			this.preferenceScorePath = value;
+		public CohortComparisonDiagnosticRow preferenceScoreAfterPath(final String value) {
+			this.preferenceScoreAfterPath = value;
 			return this;
 		}
 
-		public DiagnosticRow covariateBalancePath(final String value) {
+		public CohortComparisonDiagnosticRow covariateBalancePath(final String value) {
 			this.covariateBalancePath = value;
 			return this;
 		}
@@ -761,6 +879,7 @@ public class StudyReportManager {
 		TextColumnBuilder<Integer> casesCCol = col.column("Cases", "casesTarget", type.integerType());
 		TextColumnBuilder<Double> personTimeCCol = col.column("TAR", "personTimeTarget", type.doubleType()).setPattern("#,##0.0").setFixedWidth(50);
 		TextColumnBuilder<String> ciCol = col.column("RR (95% CI)", new CIExpression()).setFixedWidth(75);
+		TextColumnBuilder<Double> pValueCol = col.column("p-value", "pValue", type.doubleType()).setPattern("#0.0000").setFixedWidth(50);
 		
 		ColumnTitleGroupBuilder tGroup = grid.titleGroup("Target", atRiskTCol,casesTCol, personTimeTCol).setTitleFixedWidth(150);
 		ColumnTitleGroupBuilder cGroup = grid.titleGroup("Comparator", atRiskCCol,casesCCol, personTimeCCol).setTitleFixedWidth(150);
@@ -771,8 +890,8 @@ public class StudyReportManager {
 				field("lb95", Double.class),
 				field("ub95", Double.class)
 			)
-			.columnGrid(dataSourceCol, tGroup, cGroup, ciCol)
-			.columns(dataSourceCol,atRiskTCol, casesTCol, personTimeTCol,atRiskCCol, casesCCol, personTimeCCol,ciCol)
+			.columnGrid(dataSourceCol, tGroup, cGroup, ciCol, pValueCol)
+			.columns(dataSourceCol,atRiskTCol, casesTCol, personTimeTCol,atRiskCCol, casesCCol, personTimeCCol,ciCol, pValueCol)
 			.setColumnStyle(this.columnStyleSmall)
 			.setColumnTitleStyle(this.columnHeaderStyle)
 		;
@@ -780,36 +899,63 @@ public class StudyReportManager {
 		return ccaReport;
 	}
 	
-	private JasperReportBuilder getCCADiagnosticsReport() {
-		ImageBuilder psImage = cmp.image(new ImagePathExpression("preferenceScorePath"));
+	private JasperReportBuilder getComparisonDiagnosticsReport() {
 		ImageBuilder cbImage = cmp.image(new ImagePathExpression("covariateBalancePath"));
-		ImageBuilder calibrationImage = cmp.image(new ImagePathExpression("callibrationPath"));
-
+		ImageBuilder psBeforeImage = cmp.image(new ImagePathExpression("preferenceScoreBeforePath"));
+		ImageBuilder psAfterImage = cmp.image(new ImagePathExpression("preferenceScoreAfterPath"));
+		
 		TextColumnBuilder<String> dataSourceCol = col.column("Data Source", "dataSourceName", type.stringType());
+		ComponentColumnBuilder cbCol = col.componentColumn("Covariate Balance", cbImage).setStyle(columnBorderlessStyle);
+		ComponentColumnBuilder psBeforeCol = col.componentColumn("Before Matching", psBeforeImage).setStyle(columnBorderlessStyle);
+		ComponentColumnBuilder psAfterCol = col.componentColumn("After Matching", psAfterImage).setStyle(columnBorderlessStyle);
+		
+		ColumnTitleGroupBuilder psGroup = grid.titleGroup("Preference Score", psBeforeCol,psAfterCol).setTitleFixedWidth(300);
+
 		JasperReportBuilder ccaDiagnosticsReport = report()
 			.fields(
-				field("preferenceScorePath", String.class),
 				field("covariateBalancePath", String.class),
-				field("callibrationPath", String.class)
+				field("preferenceScoreBeforePath", String.class),
+				field("preferenceScoreAfterPath", String.class)
 			)
-			.columns(dataSourceCol,
-				col.componentColumn("Preference Score", psImage).setStyle(columnBorderlessStyle),
-				col.componentColumn("Covariate Balance", cbImage).setStyle(columnBorderlessStyle),
-				col.componentColumn("Calibration", calibrationImage).setStyle(columnBorderlessStyle))
+			.columnGrid(dataSourceCol, cbCol, psGroup)
+			.columns(dataSourceCol, cbCol, psBeforeCol, psAfterCol)
 			.setColumnStyle(this.columnBorderlessStyle)
 			.setColumnTitleStyle(this.columnHeaderStyle);
 		
 		return ccaDiagnosticsReport;
 	}
 	
+	private JasperReportBuilder getCCACalibrationDiagnosticsReport() {
+		ImageBuilder calibrationPPImage = cmp.image(new ImagePathExpression("calibrationPathPP"));
+		ImageBuilder calibrationITTImage = cmp.image(new ImagePathExpression("calibrationPathITT"));
+		
+		TextColumnBuilder<String> dataSourceCol = col.column("Data Source", "dataSourceName", type.stringType());
+		ComponentColumnBuilder ppCol = col.componentColumn("Per Protocol", calibrationPPImage).setStyle(columnBorderlessStyle);
+		ComponentColumnBuilder ittCol = col.componentColumn("Intent To Treat", calibrationITTImage).setStyle(columnBorderlessStyle);
+		
+		ColumnTitleGroupBuilder tarGroup = grid.titleGroup("Time at Risk", ppCol,ittCol).setTitleFixedWidth(300);
+
+		JasperReportBuilder ccaCalibrationReport = report()
+			.fields(
+				field("calibrationPathPP", String.class),
+				field("calibrationPathITT", String.class)
+			)
+			.columnGrid(dataSourceCol, tarGroup)
+			.columns(dataSourceCol, ppCol, ittCol)
+			.setColumnStyle(this.columnBorderlessStyle)
+			.setColumnTitleStyle(this.columnHeaderStyle);
+		
+		return ccaCalibrationReport;
+	}
+	
 	private JasperReportBuilder getSCCADiagnosticsReport() {
 
-		ImageBuilder calibrationImage = cmp.image(new ImagePathExpression("callibrationPath"));
+		ImageBuilder calibrationImage = cmp.image(new ImagePathExpression("calibrationPathPP"));
 
 		TextColumnBuilder<String> dataSourceCol = col.column("Data Source", "dataSourceName", type.stringType());
 		JasperReportBuilder sccaDiagnosticsReport = report()
 			.fields(
-				field("callibrationPath", String.class)
+				field("calibrationPathPP", String.class)
 			)
 			.columns(dataSourceCol,
 				col.componentColumn("Calibration", calibrationImage).setStyle(columnBorderlessStyle))
@@ -1127,6 +1273,7 @@ public class StudyReportManager {
 				cmp.text(String.format("<b>Target:</b> %s", key.targetCohortName)).setStyle(subHeadingStyle),
 				cmp.text(String.format("<b>0utcome:</b> %s", key.outcomeCohortName)).setStyle(subHeadingStyle)
 			).setGap(0))
+				.columnFooter(cmp.text(CONTENT_OUTCOME_SUMMARY_FOOTNOTE).setStyle(this.footnoteStyle))
 				.setDataSource(outcomeGroups.get(key));
 			
 			contentBuilder.add(cmp.subreport(irReport));
@@ -1258,8 +1405,8 @@ public class StudyReportManager {
 		// create all diagnostic rows, and then group them
 
 		// split out ccaStats by PP and ITT rows
-		List<DiagnosticRow> ccaDiagnosticPPRows = new ArrayList<>();
-		List<DiagnosticRow> ccaDiagnosticITTRows = new ArrayList<>();
+		List<CohortComparisonDiagnosticRow> ccaComparisonDiagRows = new ArrayList<>();
+		List<CalibrationDiagnosticRow> ccaCalibrationDiagRows = new ArrayList<>();
 		
 		// diagnostics are not at the outcome level, so we need to ignore any 'seen' outcome
 		ConcurrentHashMap<Object, Boolean> seen = new ConcurrentHashMap<>();
@@ -1271,7 +1418,7 @@ public class StudyReportManager {
 			}
 			seen.put(key,Boolean.TRUE);
 			
-			ccaDiagnosticPPRows.add(new DiagnosticRow()
+			ccaComparisonDiagRows.add(new CohortComparisonDiagnosticRow()
 				.dataSourceName(ees.getDataSourceName())
 				.dataSourceKey(ees.getDataSourceKey())
 				.targetCohortId(ees.getTargetCohortId())
@@ -1282,86 +1429,74 @@ public class StudyReportManager {
 					this.resourcePath, 
 					ees.getDataSourceKey(), 
 					ees.getTargetCohortId(),
-					String.format("CCA_covariate_balance_%s_%d_%d_PP.png", ees.getDataSourceKey(), ees.getTargetCohortId(), ees.getComparatorCohortId())))
-				.preferenceScorePath(String.format("%s/%s/%d/%s", 
+					String.format("cca_covariate_balance_%s_%d_%d_pp.png", ees.getDataSourceKey(), ees.getTargetCohortId(), ees.getComparatorCohortId())))
+				.preferenceScoreBeforePath(String.format("%s/%s/%d/%s", 
 					this.resourcePath, 
 					ees.getDataSourceKey(), 
 					ees.getTargetCohortId(),
-					String.format("CCA_preference_score_%s_%d_%d_PP.png", ees.getDataSourceKey(), ees.getTargetCohortId(), ees.getComparatorCohortId())))
-				.callibrationPath(String.format("%s/%s/%d/%s", 
+					String.format("cca_preference_score_before_%s_%d_%d_pp.png", ees.getDataSourceKey(), ees.getTargetCohortId(), ees.getComparatorCohortId())))
+				.preferenceScoreAfterPath(String.format("%s/%s/%d/%s", 
 					this.resourcePath, 
 					ees.getDataSourceKey(), 
 					ees.getTargetCohortId(),
-					ees.getComparatorCohortId(),
-					String.format("CCA_calibration_%s_%d_%d_PP.png", ees.getDataSourceKey(), ees.getTargetCohortId(), ees.getComparatorCohortId())))
+					String.format("CCA_preference_score_after_%s_%d_%d_pp.png", ees.getDataSourceKey(), ees.getTargetCohortId(), ees.getComparatorCohortId())))
 			);
-			
-			ccaDiagnosticITTRows.add(new DiagnosticRow()
+
+			ccaCalibrationDiagRows.add(new CalibrationDiagnosticRow()
 				.dataSourceName(ees.getDataSourceName())
 				.dataSourceKey(ees.getDataSourceKey())
 				.targetCohortId(ees.getTargetCohortId())
 				.targetCohortName(ees.getTargetCohortName())
 				.comparatorCohortId(ees.getComparatorCohortId())
 				.comparatorCohortName(ees.getComparatorCohortName())
-				.covariateBalancePath(String.format("%s/%s/%d/%s", 
+				.calibrationPathPP(String.format("%s/%s/%d/%s", 
 					this.resourcePath, 
 					ees.getDataSourceKey(), 
 					ees.getTargetCohortId(),
-					ees.getComparatorCohortId(),
-					String.format("CCA_covariate_balance_%s_%d_%d_ITT.png", ees.getDataSourceKey(), ees.getTargetCohortId(), ees.getComparatorCohortId())))
-				.preferenceScorePath(String.format("%s/%s/%d/%s", 
+					String.format("CCA_calibration_%s_%d_%d_PP.png", ees.getDataSourceKey(), ees.getTargetCohortId(), ees.getComparatorCohortId())))
+				.calibrationPathITT(String.format("%s/%s/%d/%s", 
 					this.resourcePath, 
 					ees.getDataSourceKey(), 
 					ees.getTargetCohortId(),
-					ees.getComparatorCohortId(),
-					String.format("CCA_preference_score_%s_%d_%d_ITT.png", ees.getDataSourceKey(), ees.getTargetCohortId(), ees.getComparatorCohortId())))
-				.callibrationPath(String.format("%s/%s/%d/%s", 
-					this.resourcePath, 
-					ees.getDataSourceKey(), 
-					ees.getTargetCohortId(),
-					ees.getComparatorCohortId(),
 					String.format("CCA_calibration_%s_%d_%d_ITT.png", ees.getDataSourceKey(), ees.getTargetCohortId(), ees.getComparatorCohortId())))
 			);
 		});
 		
-		contentBuilder.add(cmp.text("V. Cohort Comparision Diagnostics").setStyle(this.headingStyle));
+		contentBuilder.add(cmp.text("V. Comparative Cohort Analysis Diagnostics").setStyle(this.headingStyle));
 
-		// per protocol relative risk stats, grouped by RelativeRiskGroupBy
-		Map<RelativeRiskGroupBy, List<DiagnosticRow>> ccaDiagnosticPPGroups = ccaDiagnosticPPRows.stream()
+		// group comparison rows by T-C
+		Map<RelativeRiskGroupBy, List<CohortComparisonDiagnosticRow>> ccaComparisonDiagGroups = ccaComparisonDiagRows.stream()
 			.collect(Collectors.groupingBy(r -> new RelativeRiskGroupBy(r.targetCohortName, r.comparatorCohortName, null),LinkedHashMap::new, Collectors.toList()));
-		
+
+		// group calibration rows by T-C
+		Map<RelativeRiskGroupBy, List<CalibrationDiagnosticRow>> ccaCalibrationDiagGroups = ccaCalibrationDiagRows.stream()
+			.collect(Collectors.groupingBy(r -> new RelativeRiskGroupBy(r.targetCohortName, r.comparatorCohortName, null),LinkedHashMap::new, Collectors.toList()));
+
 		char ccaDiagSubTableIndex = 'a';
 		
-		for (RelativeRiskGroupBy key : ccaDiagnosticPPGroups.keySet()) {
-			JasperReportBuilder ccaDiag = getCCADiagnosticsReport();
-			ccaDiag.title(cmp.verticalList(
-				cmp.text(String.format("Table %d%s. Risk Estimation Diagnostics", tableIndex, ccaDiagSubTableIndex)).setStyle(headingStyle),
+		for (RelativeRiskGroupBy key : ccaComparisonDiagGroups.keySet()) {
+			JasperReportBuilder ccaComparisonDiagReport = getComparisonDiagnosticsReport();
+			ccaComparisonDiagReport.title(cmp.verticalList(
+				cmp.text(String.format("Table %d%s. Cohort Comparison Diagnostics", tableIndex, ccaDiagSubTableIndex)).setStyle(headingStyle),
 				cmp.text(String.format("<b>Target:</b> %s", key.targetCohortName)).setStyle(subHeadingStyle),
-				cmp.text(String.format("<b>Comparator:</b> %s", key.comparatorCohortName)).setStyle(subHeadingStyle),
-				cmp.text("<b>Time at Risk:</b> Per Protocol").setStyle(subHeadingStyle)
+				cmp.text(String.format("<b>Comparator:</b> %s", key.comparatorCohortName)).setStyle(subHeadingStyle)
 			).setGap(0))
-				.setDataSource(ccaDiagnosticPPGroups.get(key));
-			contentBuilder.add(cmp.subreport(ccaDiag));
+				.setDataSource(ccaComparisonDiagGroups.get(key));
+			contentBuilder.add(cmp.subreport(ccaComparisonDiagReport));
 			ccaDiagSubTableIndex++;			
+
+			JasperReportBuilder ccaCalibrationReport = getCCACalibrationDiagnosticsReport();
+			ccaCalibrationReport.title(cmp.verticalList(
+				cmp.text(String.format("Table %d%s. CCA Calibration Diagnostics", tableIndex, ccaDiagSubTableIndex)).setStyle(headingStyle),
+				cmp.text(String.format("<b>Target:</b> %s", key.targetCohortName)).setStyle(subHeadingStyle),
+				cmp.text(String.format("<b>Comparator:</b> %s", key.comparatorCohortName)).setStyle(subHeadingStyle)
+			).setGap(0))
+				.setDataSource(ccaCalibrationDiagGroups.get(key));
+			contentBuilder.add(cmp.subreport(ccaCalibrationReport));
+			ccaDiagSubTableIndex++;			
+			
 		}
 
-		// per protocol relative risk stats, grouped by RelativeRiskGroupBy
-		Map<RelativeRiskGroupBy, List<DiagnosticRow>> ccaDiagnosticITTGroups = ccaDiagnosticITTRows.stream()
-			.collect(Collectors.groupingBy(r -> new RelativeRiskGroupBy(r.targetCohortName, r.comparatorCohortName, null),LinkedHashMap::new, Collectors.toList()));
-			
-		for (RelativeRiskGroupBy key : ccaDiagnosticITTGroups.keySet()) {
-			JasperReportBuilder ccaDiag = getCCADiagnosticsReport();
-			ccaDiag.title(cmp.verticalList(
-				cmp.text(String.format("Table %d%s. Risk Estimation Diagnostics", tableIndex, ccaDiagSubTableIndex)).setStyle(headingStyle),
-				cmp.text(String.format("<b>Target:</b> %s", key.targetCohortName)).setStyle(subHeadingStyle),
-				cmp.text(String.format("<b>Comparator:</b> %s", key.comparatorCohortName)).setStyle(subHeadingStyle),
-				cmp.text("<b>Time at Risk:</b> Intent to Treat").setStyle(subHeadingStyle)
-			).setGap(0))
-				.setDataSource(ccaDiagnosticITTGroups.get(key));
-			contentBuilder.add(cmp.subreport(ccaDiag));
-			ccaDiagSubTableIndex++;			
-		}
-		
 		tableIndex++;
 		
 		// SCCA Reports
@@ -1426,7 +1561,7 @@ public class StudyReportManager {
 		// create all diagnostic rows, and then group them
 
 		// split out ccaStats by PP and ITT rows
-		List<DiagnosticRow> sccaDiagnosticPPRows = new ArrayList<>();
+		List<CalibrationDiagnosticRow> sccaCalibrationDiagRows = new ArrayList<>();
 		
 		// diagnostics are not at the outcome level, so we need to ignore any 'seen' outcome
 		
@@ -1440,12 +1575,12 @@ public class StudyReportManager {
 			}
 			seen.put(key,Boolean.TRUE);
 
-			sccaDiagnosticPPRows.add(new DiagnosticRow()
+			sccaCalibrationDiagRows.add(new CalibrationDiagnosticRow()
 				.dataSourceName(ees.getDataSourceName())
 				.dataSourceKey(ees.getDataSourceKey())
 				.targetCohortId(ees.getTargetCohortId())
 				.targetCohortName(ees.getTargetCohortName())
-				.callibrationPath(String.format("%s/%s/%d/%s", 
+				.calibrationPathPP(String.format("%s/%s/%d/%s", 
 					resourcePath, 
 					ees.getDataSourceKey(), 
 					ees.getTargetCohortId(),
@@ -1454,8 +1589,8 @@ public class StudyReportManager {
 		});
 		
 		// per protocol relative risk stats, grouped by RelativeRiskGroupBy
-		Map<RelativeRiskGroupBy, List<DiagnosticRow>> sccaDiagnosticPPGroups = sccaDiagnosticPPRows.stream()
-			.collect(Collectors.groupingBy(r -> new RelativeRiskGroupBy(r.targetCohortName, r.comparatorCohortName, null),LinkedHashMap::new, Collectors.toList()));
+		Map<RelativeRiskGroupBy, List<CalibrationDiagnosticRow>> sccaCalibrationDiagGroups = sccaCalibrationDiagRows.stream()
+			.collect(Collectors.groupingBy(r -> new RelativeRiskGroupBy(r.targetCohortName, null, null),LinkedHashMap::new, Collectors.toList()));
 		
 		contentBuilder.add(cmp.verticalList(
 			cmp.text("VII. Self-Control Cohort Analysis Diagnostics").setStyle(this.headingStyle),
@@ -1464,14 +1599,14 @@ public class StudyReportManager {
 		
 		char sccaDiagSubTableIndex = 'a';
 		
-		for (RelativeRiskGroupBy key : sccaDiagnosticPPGroups.keySet()) {
+		for (RelativeRiskGroupBy key : sccaCalibrationDiagGroups.keySet()) {
 			JasperReportBuilder sccaDiag = getSCCADiagnosticsReport();
 			sccaDiag.title(cmp.verticalList(
-				cmp.text(String.format("Table %d%s. Risk Estimation Diagnostics", tableIndex, sccaDiagSubTableIndex)).setStyle(headingStyle),
+				cmp.text(String.format("Table %d%s. Self-Control Analysis Calibration Diagnostics", tableIndex, sccaDiagSubTableIndex)).setStyle(headingStyle),
 				cmp.text(String.format("<b>Target:</b> %s", key.targetCohortName)).setStyle(subHeadingStyle),
 				cmp.text("<b>Time at Risk:</b> Per Protocol").setStyle(subHeadingStyle)
 			).setGap(0))
-				.setDataSource(sccaDiagnosticPPGroups.get(key));
+				.setDataSource(sccaCalibrationDiagGroups.get(key));
 			contentBuilder.add(cmp.subreport(sccaDiag));
 			sccaDiagSubTableIndex++;			
 		}

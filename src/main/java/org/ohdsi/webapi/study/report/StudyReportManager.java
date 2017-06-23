@@ -875,9 +875,9 @@ public class StudyReportManager {
 		TextColumnBuilder<Integer> atRiskTCol = col.column("Persons", "atRiskTarget", type.integerType()).setFixedWidth(50);
 		TextColumnBuilder<Integer> casesTCol = col.column("Cases", "casesTarget", type.integerType());
 		TextColumnBuilder<Double> personTimeTCol = col.column("TAR", "personTimeTarget", type.doubleType()).setPattern("#,##0.0").setFixedWidth(50);
-		TextColumnBuilder<Integer> atRiskCCol = col.column("Persons", "atRiskTarget", type.integerType()).setFixedWidth(50);
-		TextColumnBuilder<Integer> casesCCol = col.column("Cases", "casesTarget", type.integerType());
-		TextColumnBuilder<Double> personTimeCCol = col.column("TAR", "personTimeTarget", type.doubleType()).setPattern("#,##0.0").setFixedWidth(50);
+		TextColumnBuilder<Integer> atRiskCCol = col.column("Persons", "atRiskComparator", type.integerType()).setFixedWidth(50);
+		TextColumnBuilder<Integer> casesCCol = col.column("Cases", "casesComparator", type.integerType());
+		TextColumnBuilder<Double> personTimeCCol = col.column("TAR", "personTimeComparator", type.doubleType()).setPattern("#,##0.0").setFixedWidth(50);
 		TextColumnBuilder<String> ciCol = col.column("RR (95% CI)", new CIExpression()).setFixedWidth(75);
 		TextColumnBuilder<Double> pValueCol = col.column("p-value", "pValue", type.doubleType()).setPattern("#0.0000").setFixedWidth(50);
 		
@@ -1305,196 +1305,204 @@ public class StudyReportManager {
 
 		// get all outcome statistics across all active databases, and sort
 		List<StudyReportService.EffectEstimateStat> ccaStats = studyReportService.getReportCca(activePairs, activeSources);
-		ccaStats.sort(eeComparator);
-		
-		List<RelativeRiskRow> ccaPPRows = new ArrayList<>();
-		List<RelativeRiskRow> ccaITTRows = new ArrayList<>();
-		
-		// split out ccaStats by PP and ITT rows
-		ccaStats.forEach(ees -> {
-			ccaPPRows.add(new RelativeRiskRow()
-				.targetCohortId(ees.getTargetCohortId())
-				.targetCohortName(ees.getTargetCohortName())
-				.comparatorCohortId(ees.getComparatorCohortId())
-				.comparatorCohortName(ees.getComparatorCohortName())
-				.outcomeCohortId(ees.getOutcomeCohortId())
-				.outcomeCohortName(ees.getOutcomeCohortName())
-				.dataSourceName(ees.getDataSourceName())
-				.dataSourceKey(ees.getDataSourceKey())
-				.atRiskTarget(ees.getAtRiskTargetPP())
-				.personTimeTarget(ees.getPersonTimeTargetPP())
-				.casesTarget(ees.getCasesTargetPP())
-				.atRiskComparator(ees.getAtRiskComparatorPP())
-				.personTimeComparator(ees.getPersonTimeComparatorPP())
-				.casesComparator(ees.getCasesComparatorPP())
-				.relativeRisk(ees.getRelativeRiskPP())
-				.lb95(ees.getLb95PP())
-				.ub95(ees.getUb95PP())
-				.pValue(ees.getpValuePP())
-			);
-			
-			ccaITTRows.add(new RelativeRiskRow()
-				.targetCohortId(ees.getTargetCohortId())
-				.targetCohortName(ees.getTargetCohortName())
-				.comparatorCohortId(ees.getComparatorCohortId())
-				.comparatorCohortName(ees.getComparatorCohortName())
-				.outcomeCohortId(ees.getOutcomeCohortId())
-				.outcomeCohortName(ees.getOutcomeCohortName())
-				.dataSourceName(ees.getDataSourceName())
-				.dataSourceKey(ees.getDataSourceKey())
-				.atRiskTarget(ees.getAtRiskTargetITT())
-				.personTimeTarget(ees.getPersonTimeTargetITT())
-				.casesTarget(ees.getCasesTargetITT())
-				.atRiskComparator(ees.getAtRiskComparatorITT())
-				.personTimeComparator(ees.getPersonTimeComparatorITT())
-				.casesComparator(ees.getCasesComparatorITT())
-				.relativeRisk(ees.getRelativeRiskITT())
-				.lb95(ees.getLb95ITT())
-				.ub95(ees.getUb95ITT())
-				.pValue(ees.getpValueITT())
-			);
-		});
-		
-		// per protocol relative risk stats, gruoped by RelativeRiskGroupBy
-		Map<RelativeRiskGroupBy, List<RelativeRiskRow>> ppGroups = ccaPPRows.stream()
-			.collect(Collectors.groupingBy(r -> new RelativeRiskGroupBy(r.targetCohortName, r.comparatorCohortName, r.outcomeCohortName),LinkedHashMap::new, Collectors.toList()));
+		if (!ccaStats.isEmpty())
+		{
+			ccaStats.sort(eeComparator);
 
-		char ccaSubTableIndex = 'a';
-		
-		for (RelativeRiskGroupBy key : ppGroups.keySet()) {
-			JasperReportBuilder rrReport = getRelativeRiskReport();
-			rrReport.title(cmp.verticalList(
-				cmp.text(String.format("Table %d%s. Relative Risk Summary", tableIndex, ccaSubTableIndex)).setStyle(headingStyle),
-				cmp.text(String.format("<b>Target:</b> %s", key.targetCohortName)).setStyle(subHeadingStyle),
-				cmp.text(String.format("<b>Comparator:</b> %s", key.comparatorCohortName)).setStyle(subHeadingStyle),
-				cmp.text(String.format("<b>0utcome:</b> %s", key.outcomeCohortName)).setStyle(subHeadingStyle),
-				cmp.text("<b>Time at Risk:</b> Per Protocol").setStyle(subHeadingStyle)
-			).setGap(0))
-				.columnFooter(cmp.text(CONTENT_RISK_EST_FOOTNOTE).setStyle(this.footnoteStyle))
-				.setDataSource(ppGroups.get(key));
-			contentBuilder.add(cmp.subreport(rrReport));
-			ccaSubTableIndex++;			
+			List<RelativeRiskRow> ccaPPRows = new ArrayList<>();
+			List<RelativeRiskRow> ccaITTRows = new ArrayList<>();
+
+			// split out ccaStats by PP and ITT rows
+			ccaStats.forEach(ees -> {
+				ccaPPRows.add(new RelativeRiskRow()
+					.targetCohortId(ees.getTargetCohortId())
+					.targetCohortName(ees.getTargetCohortName())
+					.comparatorCohortId(ees.getComparatorCohortId())
+					.comparatorCohortName(ees.getComparatorCohortName())
+					.outcomeCohortId(ees.getOutcomeCohortId())
+					.outcomeCohortName(ees.getOutcomeCohortName())
+					.dataSourceName(ees.getDataSourceName())
+					.dataSourceKey(ees.getDataSourceKey())
+					.atRiskTarget(ees.getAtRiskTargetPP())
+					.personTimeTarget(ees.getPersonTimeTargetPP())
+					.casesTarget(ees.getCasesTargetPP())
+					.atRiskComparator(ees.getAtRiskComparatorPP())
+					.personTimeComparator(ees.getPersonTimeComparatorPP())
+					.casesComparator(ees.getCasesComparatorPP())
+					.relativeRisk(ees.getRelativeRiskPP())
+					.lb95(ees.getLb95PP())
+					.ub95(ees.getUb95PP())
+					.pValue(ees.getpValuePP())
+				);
+
+				ccaITTRows.add(new RelativeRiskRow()
+					.targetCohortId(ees.getTargetCohortId())
+					.targetCohortName(ees.getTargetCohortName())
+					.comparatorCohortId(ees.getComparatorCohortId())
+					.comparatorCohortName(ees.getComparatorCohortName())
+					.outcomeCohortId(ees.getOutcomeCohortId())
+					.outcomeCohortName(ees.getOutcomeCohortName())
+					.dataSourceName(ees.getDataSourceName())
+					.dataSourceKey(ees.getDataSourceKey())
+					.atRiskTarget(ees.getAtRiskTargetITT())
+					.personTimeTarget(ees.getPersonTimeTargetITT())
+					.casesTarget(ees.getCasesTargetITT())
+					.atRiskComparator(ees.getAtRiskComparatorITT())
+					.personTimeComparator(ees.getPersonTimeComparatorITT())
+					.casesComparator(ees.getCasesComparatorITT())
+					.relativeRisk(ees.getRelativeRiskITT())
+					.lb95(ees.getLb95ITT())
+					.ub95(ees.getUb95ITT())
+					.pValue(ees.getpValueITT())
+				);
+			});
+
+			// per protocol relative risk stats, gruoped by RelativeRiskGroupBy
+			Map<RelativeRiskGroupBy, List<RelativeRiskRow>> ppGroups = ccaPPRows.stream()
+				.collect(Collectors.groupingBy(r -> new RelativeRiskGroupBy(r.targetCohortName, r.comparatorCohortName, r.outcomeCohortName), LinkedHashMap::new, Collectors.toList()));
+
+			char ccaSubTableIndex = 'a';
+
+			for (RelativeRiskGroupBy key : ppGroups.keySet()) {
+				JasperReportBuilder rrReport = getRelativeRiskReport();
+				rrReport.title(cmp.verticalList(
+					cmp.text(String.format("Table %d%s. Relative Risk Summary", tableIndex, ccaSubTableIndex)).setStyle(headingStyle),
+					cmp.text(String.format("<b>Target:</b> %s", key.targetCohortName)).setStyle(subHeadingStyle),
+					cmp.text(String.format("<b>Comparator:</b> %s", key.comparatorCohortName)).setStyle(subHeadingStyle),
+					cmp.text(String.format("<b>0utcome:</b> %s", key.outcomeCohortName)).setStyle(subHeadingStyle),
+					cmp.text("<b>Time at Risk:</b> Per Protocol").setStyle(subHeadingStyle)
+				).setGap(0))
+					.columnFooter(cmp.text(CONTENT_RISK_EST_FOOTNOTE).setStyle(this.footnoteStyle))
+					.setDataSource(ppGroups.get(key));
+				contentBuilder.add(cmp.subreport(rrReport));
+				ccaSubTableIndex++;
+			}
+
+			// intent to treat relative risk stats, grouped by RelativeRiskGroupBy
+			Map<RelativeRiskGroupBy, List<RelativeRiskRow>> ittGroups = ccaITTRows.stream()
+				.collect(Collectors.groupingBy(r -> new RelativeRiskGroupBy(r.targetCohortName, r.comparatorCohortName, r.outcomeCohortName), LinkedHashMap::new, Collectors.toList()));
+
+			for (RelativeRiskGroupBy key : ittGroups.keySet()) {
+				JasperReportBuilder rrReport = getRelativeRiskReport();
+				rrReport.title(cmp.verticalList(
+					cmp.text(String.format("Table %d%s. Relative Risk Summary", tableIndex, ccaSubTableIndex)).setStyle(headingStyle),
+					cmp.text(String.format("<b>Target:</b> %s", key.targetCohortName)).setStyle(subHeadingStyle),
+					cmp.text(String.format("<b>Comparator:</b> %s", key.comparatorCohortName)).setStyle(subHeadingStyle),
+					cmp.text(String.format("<b>0utcome:</b> %s", key.outcomeCohortName)).setStyle(subHeadingStyle),
+					cmp.text("<b>Time at Risk:</b> Intent to Treat").setStyle(subHeadingStyle)
+				).setGap(0))
+					.columnFooter(cmp.text(CONTENT_RISK_EST_FOOTNOTE).setStyle(this.footnoteStyle))
+					.setDataSource(ittGroups.get(key));
+				contentBuilder.add(cmp.subreport(rrReport));
+				ccaSubTableIndex++;
+			}
+
+			tableIndex++;
+		} else {
+			contentBuilder.add(cmp.text("No Cohort Comparison Analysis results found.").setStyle(this.subHeadingStyle));
 		}
 		
-		// intent to treat relative risk stats, grouped by RelativeRiskGroupBy
-		Map<RelativeRiskGroupBy, List<RelativeRiskRow>> ittGroups = ccaITTRows.stream()
-			.collect(Collectors.groupingBy(r -> new RelativeRiskGroupBy(r.targetCohortName, r.comparatorCohortName, r.outcomeCohortName),LinkedHashMap::new, Collectors.toList()));
-
-		for (RelativeRiskGroupBy key : ittGroups.keySet()) {
-			JasperReportBuilder rrReport = getRelativeRiskReport();
-			rrReport.title(cmp.verticalList(
-				cmp.text(String.format("Table %d%s. Relative Risk Summary", tableIndex, ccaSubTableIndex)).setStyle(headingStyle),
-				cmp.text(String.format("<b>Target:</b> %s", key.targetCohortName)).setStyle(subHeadingStyle),
-				cmp.text(String.format("<b>Comparator:</b> %s", key.comparatorCohortName)).setStyle(subHeadingStyle),
-				cmp.text(String.format("<b>0utcome:</b> %s", key.outcomeCohortName)).setStyle(subHeadingStyle),
-				cmp.text("<b>Time at Risk:</b> Intent to Treat").setStyle(subHeadingStyle)
-			).setGap(0))
-				.columnFooter(cmp.text(CONTENT_RISK_EST_FOOTNOTE).setStyle(this.footnoteStyle))
-				.setDataSource(ittGroups.get(key));
-			contentBuilder.add(cmp.subreport(rrReport));
-			ccaSubTableIndex++;			
-		}		
-		
-		tableIndex++;
-
 		// CCA Diagnostic reports
 
-		// For the diagnostics report, we get the unique t-c pairs from the relative risk results
-		// and create the diagnositcs groups to render into tables.
-				
-		// create all diagnostic rows, and then group them
-
-		// split out ccaStats by PP and ITT rows
-		List<CohortComparisonDiagnosticRow> ccaComparisonDiagRows = new ArrayList<>();
-		List<CalibrationDiagnosticRow> ccaCalibrationDiagRows = new ArrayList<>();
-		
-		// diagnostics are not at the outcome level, so we need to ignore any 'seen' outcome
-		ConcurrentHashMap<Object, Boolean> seen = new ConcurrentHashMap<>();
-		ccaStats.forEach(ees -> {
-
-			Object key = Arrays.<Object>asList(ees.getTargetCohortId(), ees.getComparatorCohortId(), ees.getDataSourceId());
-			if (seen.containsKey(key)) {
-				return;
-			}
-			seen.put(key,Boolean.TRUE);
-			
-			ccaComparisonDiagRows.add(new CohortComparisonDiagnosticRow()
-				.dataSourceName(ees.getDataSourceName())
-				.dataSourceKey(ees.getDataSourceKey())
-				.targetCohortId(ees.getTargetCohortId())
-				.targetCohortName(ees.getTargetCohortName())
-				.comparatorCohortId(ees.getComparatorCohortId())
-				.comparatorCohortName(ees.getComparatorCohortName())
-				.covariateBalancePath(String.format("%s/%s/%d/%s", 
-					this.resourcePath, 
-					ees.getDataSourceKey(), 
-					ees.getTargetCohortId(),
-					String.format("cca_covariate_balance_%s_%d_%d_pp.png", ees.getDataSourceKey(), ees.getTargetCohortId(), ees.getComparatorCohortId())))
-				.preferenceScoreBeforePath(String.format("%s/%s/%d/%s", 
-					this.resourcePath, 
-					ees.getDataSourceKey(), 
-					ees.getTargetCohortId(),
-					String.format("cca_preference_score_before_%s_%d_%d_pp.png", ees.getDataSourceKey(), ees.getTargetCohortId(), ees.getComparatorCohortId())))
-				.preferenceScoreAfterPath(String.format("%s/%s/%d/%s", 
-					this.resourcePath, 
-					ees.getDataSourceKey(), 
-					ees.getTargetCohortId(),
-					String.format("CCA_preference_score_after_%s_%d_%d_pp.png", ees.getDataSourceKey(), ees.getTargetCohortId(), ees.getComparatorCohortId())))
-			);
-
-			ccaCalibrationDiagRows.add(new CalibrationDiagnosticRow()
-				.dataSourceName(ees.getDataSourceName())
-				.dataSourceKey(ees.getDataSourceKey())
-				.targetCohortId(ees.getTargetCohortId())
-				.targetCohortName(ees.getTargetCohortName())
-				.comparatorCohortId(ees.getComparatorCohortId())
-				.comparatorCohortName(ees.getComparatorCohortName())
-				.calibrationPathPP(String.format("%s/%s/%d/%s", 
-					this.resourcePath, 
-					ees.getDataSourceKey(), 
-					ees.getTargetCohortId(),
-					String.format("CCA_calibration_%s_%d_%d_PP.png", ees.getDataSourceKey(), ees.getTargetCohortId(), ees.getComparatorCohortId())))
-				.calibrationPathITT(String.format("%s/%s/%d/%s", 
-					this.resourcePath, 
-					ees.getDataSourceKey(), 
-					ees.getTargetCohortId(),
-					String.format("CCA_calibration_%s_%d_%d_ITT.png", ees.getDataSourceKey(), ees.getTargetCohortId(), ees.getComparatorCohortId())))
-			);
-		});
-		
 		contentBuilder.add(cmp.text("V. Comparative Cohort Analysis Diagnostics").setStyle(this.headingStyle));
-
-		// group comparison rows by T-C
-		Map<RelativeRiskGroupBy, List<CohortComparisonDiagnosticRow>> ccaComparisonDiagGroups = ccaComparisonDiagRows.stream()
-			.collect(Collectors.groupingBy(r -> new RelativeRiskGroupBy(r.targetCohortName, r.comparatorCohortName, null),LinkedHashMap::new, Collectors.toList()));
-
-		// group calibration rows by T-C
-		Map<RelativeRiskGroupBy, List<CalibrationDiagnosticRow>> ccaCalibrationDiagGroups = ccaCalibrationDiagRows.stream()
-			.collect(Collectors.groupingBy(r -> new RelativeRiskGroupBy(r.targetCohortName, r.comparatorCohortName, null),LinkedHashMap::new, Collectors.toList()));
-
-		char ccaDiagSubTableIndex = 'a';
 		
-		for (RelativeRiskGroupBy key : ccaComparisonDiagGroups.keySet()) {
-			JasperReportBuilder ccaComparisonDiagReport = getComparisonDiagnosticsReport();
-			ccaComparisonDiagReport.title(cmp.verticalList(
-				cmp.text(String.format("Table %d%s. Cohort Comparison Diagnostics", tableIndex, ccaDiagSubTableIndex)).setStyle(headingStyle),
-				cmp.text(String.format("<b>Target:</b> %s", key.targetCohortName)).setStyle(subHeadingStyle),
-				cmp.text(String.format("<b>Comparator:</b> %s", key.comparatorCohortName)).setStyle(subHeadingStyle)
-			).setGap(0))
-				.setDataSource(ccaComparisonDiagGroups.get(key));
-			contentBuilder.add(cmp.subreport(ccaComparisonDiagReport));
-			ccaDiagSubTableIndex++;			
-
-			JasperReportBuilder ccaCalibrationReport = getCCACalibrationDiagnosticsReport();
-			ccaCalibrationReport.title(cmp.verticalList(
-				cmp.text(String.format("Table %d%s. CCA Calibration Diagnostics", tableIndex, ccaDiagSubTableIndex)).setStyle(headingStyle),
-				cmp.text(String.format("<b>Target:</b> %s", key.targetCohortName)).setStyle(subHeadingStyle),
-				cmp.text(String.format("<b>Comparator:</b> %s", key.comparatorCohortName)).setStyle(subHeadingStyle)
-			).setGap(0))
-				.setDataSource(ccaCalibrationDiagGroups.get(key));
-			contentBuilder.add(cmp.subreport(ccaCalibrationReport));
-			ccaDiagSubTableIndex++;			
+		if (!ccaStats.isEmpty()) {
 			
+			// For the diagnostics report, we get the unique t-c pairs from the relative risk results
+			// and create the diagnositcs groups to render into tables.
+			// create all diagnostic rows, and then group them
+			// split out ccaStats by PP and ITT rows
+			List<CohortComparisonDiagnosticRow> ccaComparisonDiagRows = new ArrayList<>();
+			List<CalibrationDiagnosticRow> ccaCalibrationDiagRows = new ArrayList<>();
+
+			// diagnostics are not at the outcome level, so we need to ignore any 'seen' outcome
+			ConcurrentHashMap<Object, Boolean> seen = new ConcurrentHashMap<>();
+			ccaStats.forEach(ees -> {
+
+				Object key = Arrays.<Object>asList(ees.getTargetCohortId(), ees.getComparatorCohortId(), ees.getDataSourceId());
+				if (seen.containsKey(key)) {
+					return;
+				}
+				seen.put(key, Boolean.TRUE);
+
+				ccaComparisonDiagRows.add(new CohortComparisonDiagnosticRow()
+					.dataSourceName(ees.getDataSourceName())
+					.dataSourceKey(ees.getDataSourceKey())
+					.targetCohortId(ees.getTargetCohortId())
+					.targetCohortName(ees.getTargetCohortName())
+					.comparatorCohortId(ees.getComparatorCohortId())
+					.comparatorCohortName(ees.getComparatorCohortName())
+					.covariateBalancePath(String.format("%s/%s/%d/%s",
+						this.resourcePath,
+						ees.getDataSourceKey(),
+						ees.getTargetCohortId(),
+						String.format("cca_covariate_balance_%s_%d_%d_pp.png", ees.getDataSourceKey(), ees.getTargetCohortId(), ees.getComparatorCohortId())))
+					.preferenceScoreBeforePath(String.format("%s/%s/%d/%s",
+						this.resourcePath,
+						ees.getDataSourceKey(),
+						ees.getTargetCohortId(),
+						String.format("cca_preference_score_before_%s_%d_%d_pp.png", ees.getDataSourceKey(), ees.getTargetCohortId(), ees.getComparatorCohortId())))
+					.preferenceScoreAfterPath(String.format("%s/%s/%d/%s",
+						this.resourcePath,
+						ees.getDataSourceKey(),
+						ees.getTargetCohortId(),
+						String.format("CCA_preference_score_after_%s_%d_%d_pp.png", ees.getDataSourceKey(), ees.getTargetCohortId(), ees.getComparatorCohortId())))
+				);
+
+				ccaCalibrationDiagRows.add(new CalibrationDiagnosticRow()
+					.dataSourceName(ees.getDataSourceName())
+					.dataSourceKey(ees.getDataSourceKey())
+					.targetCohortId(ees.getTargetCohortId())
+					.targetCohortName(ees.getTargetCohortName())
+					.comparatorCohortId(ees.getComparatorCohortId())
+					.comparatorCohortName(ees.getComparatorCohortName())
+					.calibrationPathPP(String.format("%s/%s/%d/%s",
+						this.resourcePath,
+						ees.getDataSourceKey(),
+						ees.getTargetCohortId(),
+						String.format("CCA_calibration_%s_%d_%d_PP.png", ees.getDataSourceKey(), ees.getTargetCohortId(), ees.getComparatorCohortId())))
+					.calibrationPathITT(String.format("%s/%s/%d/%s",
+						this.resourcePath,
+						ees.getDataSourceKey(),
+						ees.getTargetCohortId(),
+						String.format("CCA_calibration_%s_%d_%d_ITT.png", ees.getDataSourceKey(), ees.getTargetCohortId(), ees.getComparatorCohortId())))
+				);
+			});
+
+			// group comparison rows by T-C
+			Map<RelativeRiskGroupBy, List<CohortComparisonDiagnosticRow>> ccaComparisonDiagGroups = ccaComparisonDiagRows.stream()
+				.collect(Collectors.groupingBy(r -> new RelativeRiskGroupBy(r.targetCohortName, r.comparatorCohortName, null), LinkedHashMap::new, Collectors.toList()));
+
+			// group calibration rows by T-C
+			Map<RelativeRiskGroupBy, List<CalibrationDiagnosticRow>> ccaCalibrationDiagGroups = ccaCalibrationDiagRows.stream()
+				.collect(Collectors.groupingBy(r -> new RelativeRiskGroupBy(r.targetCohortName, r.comparatorCohortName, null), LinkedHashMap::new, Collectors.toList()));
+
+			char ccaDiagSubTableIndex = 'a';
+
+			for (RelativeRiskGroupBy key : ccaComparisonDiagGroups.keySet()) {
+				JasperReportBuilder ccaComparisonDiagReport = getComparisonDiagnosticsReport();
+				ccaComparisonDiagReport.title(cmp.verticalList(
+					cmp.text(String.format("Table %d%s. Cohort Comparison Diagnostics", tableIndex, ccaDiagSubTableIndex)).setStyle(headingStyle),
+					cmp.text(String.format("<b>Target:</b> %s", key.targetCohortName)).setStyle(subHeadingStyle),
+					cmp.text(String.format("<b>Comparator:</b> %s", key.comparatorCohortName)).setStyle(subHeadingStyle)
+				).setGap(0))
+					.setDataSource(ccaComparisonDiagGroups.get(key));
+				contentBuilder.add(cmp.subreport(ccaComparisonDiagReport));
+				ccaDiagSubTableIndex++;
+
+				JasperReportBuilder ccaCalibrationReport = getCCACalibrationDiagnosticsReport();
+				ccaCalibrationReport.title(cmp.verticalList(
+					cmp.text(String.format("Table %d%s. CCA Calibration Diagnostics", tableIndex, ccaDiagSubTableIndex)).setStyle(headingStyle),
+					cmp.text(String.format("<b>Target:</b> %s", key.targetCohortName)).setStyle(subHeadingStyle),
+					cmp.text(String.format("<b>Comparator:</b> %s", key.comparatorCohortName)).setStyle(subHeadingStyle)
+				).setGap(0))
+					.setDataSource(ccaCalibrationDiagGroups.get(key));
+				contentBuilder.add(cmp.subreport(ccaCalibrationReport));
+				ccaDiagSubTableIndex++;
+
+			}
+		} else {
+			contentBuilder.add(cmp.text("No Cohort Comparison Analysis results found.  Diagnostics are not available.").setStyle(this.subHeadingStyle));
 		}
 
 		tableIndex++;
@@ -1564,9 +1572,7 @@ public class StudyReportManager {
 		List<CalibrationDiagnosticRow> sccaCalibrationDiagRows = new ArrayList<>();
 		
 		// diagnostics are not at the outcome level, so we need to ignore any 'seen' outcome
-		
-		seen.clear(); // reuse 'seen' hashmap
-		
+		ConcurrentHashMap<Object, Boolean> seen = new ConcurrentHashMap<>();
 		sccaStats.forEach(ees -> {		
 
 			Object key = Arrays.<Object>asList(ees.getTargetCohortId(),ees.getDataSourceId());

@@ -20,5 +20,5 @@ from cteAllSources a
 join @study_results_schema.cohort_summary_analysis_ref ar1 on a.covariate_id = ar1.covariate_id
 JOIN @study_results_schema.source s on s.source_id = a.source_id
 left JOIN @study_results_schema.concept c on ar1.concept_id = c.concept_id
-left join @study_results_schema.cohort_summary_results sr1 on ar1.covariate_id = sr1.covariate_id and sr1.cohort_definition_id = a.cohort_definition_id
+left join @study_results_schema.cohort_summary_results sr1 on ar1.covariate_id = sr1.covariate_id and sr1.cohort_definition_id = a.cohort_definition_id and sr1.source_id = a.source_id
 

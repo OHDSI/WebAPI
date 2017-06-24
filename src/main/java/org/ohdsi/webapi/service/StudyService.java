@@ -62,6 +62,7 @@ import org.springframework.stereotype.Component;
 public class StudyService extends AbstractDaoService {
 
 	private final String QUERY_COHORTSETS = ResourceHelper.GetResourceAsString("/resources/study/sql/queryCohortSets.sql");
+	private final String QUERY_COHORT_DEFINITION = ResourceHelper.GetResourceAsString("/resources/study/sql/queryCohortDefinition.sql");
 	private final String QUERY_COVARIATE_DIST = ResourceHelper.GetResourceAsString("/resources/study/sql/queryCovariateDist.sql");
 	private final String QUERY_COVARIATE_DIST_VOCAB = ResourceHelper.GetResourceAsString("/resources/study/sql/queryCovariateDistVocab.sql");
 	private final String QUERY_COVARIATE = ResourceHelper.GetResourceAsString("/resources/study/sql/queryCovariate.sql");
@@ -259,8 +260,12 @@ public class StudyService extends AbstractDaoService {
 	}
 	
 	public static class CohortSetPrevalanceStat {
+		public int sourceId;
+		public String sourceKey;
 		public String sourceName;
+		public long cohortId;
 		public String cohortName;
+		public String cohortShortName;
 		public long covariateId;
 		public String covariateName;
 		public long analysisId;
@@ -270,6 +275,12 @@ public class StudyService extends AbstractDaoService {
 		public long conceptId;
 		public long countValue;
 		public BigDecimal statValue;
+	}
+	
+	public static class CohortDefinition {
+		public long cohortId;
+		public String cohortName;
+		public String cohortShortName;
 	}
 
 	private List<String> buildCriteriaClauses(String searchTerm, List<String> analysisIds, List<String> timeWindows, List<String> domains) {
@@ -484,8 +495,12 @@ public class StudyService extends AbstractDaoService {
 		List<CohortSetPrevalanceStat> returnVal = this.getStudyResultsJdbcTemplate().query(translatedSql, (rs, rowNum) -> {
 			CohortSetPrevalanceStat mappedRow = new CohortSetPrevalanceStat() {
 				{
+					sourceId = rs.getInt("source_id");
+					sourceKey = rs.getString("source_key");
 					sourceName = rs.getString("source_name");
-					cohortName = rs.getString("short_name");
+					cohortId = rs.getLong("cohort_definition_id");
+					cohortName = rs.getString("cohort_definition_name");
+					cohortShortName = rs.getString("short_name");
 					covariateId = rs.getLong("covariate_id");
 					covariateName = rs.getString("covariate_name");
 					analysisId = rs.getLong("analysis_id");
@@ -667,6 +682,38 @@ public class StudyService extends AbstractDaoService {
 
 		return cohortSets;
 	}
+	
+	@GET
+	@Path("{studyId}/cohort/{cohortId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Transactional
+	public CohortDefinition getCohortById(
+		@PathParam("studyId") final int studyId,
+		@PathParam("cohortId") final long cohortId)
+	{
+		String translatedSql;
+
+		String getCohortDefinitionQuery = SqlRender.renderSql(QUERY_COHORT_DEFINITION,
+			new String[]{"study_results_schema", "cohort_definition_id"},
+			new String[]{this.getStudyResultsSchema(), Long.toString(cohortId)}
+		);
+
+		translatedSql = SqlTranslate.translateSql(getCohortDefinitionQuery, "sql server", this.getStudyResultsDialect());
+		List<CohortDefinition> returnVal = this.getStudyResultsJdbcTemplate().query(translatedSql, (rs, rowNum) -> {
+			CohortDefinition mappedRow = new CohortDefinition() {
+				{
+					cohortId = rs.getLong("cohort_definition_id");
+					cohortName = rs.getString("cohort_definition_name");
+					cohortShortName = rs.getString("short_name");
+				}
+			};
+			return mappedRow;
+		});
+
+		return returnVal.get(0);
+		
+	}	
+	
 	@GET
 	@Path("{studyId}/cohortset/{cohortSetId}")
 	@Produces(MediaType.APPLICATION_JSON)

@@ -8,7 +8,11 @@ select
   ar1.concept_id,
   sr1.count_value, 
   sr1.stat_value,
+  s1.source_id,
 	s1.source_name,
+  s1.source_key,
+  cd1.cohort_definition_id,
+  cd1.cohort_definition_name,
   cd1.short_name
 from @study_results_schema.cohort_summary_analysis_ref ar1
 join @study_results_schema.cohort_summary_results sr1 

@@ -8,6 +8,7 @@ select
   ar1.concept_id,
   sr1.count_value, 
   sr1.stat_value,
+  sr1.z_score,
   s1.source_id,
 	s1.source_name,
   s1.source_key,

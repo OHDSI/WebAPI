@@ -15,7 +15,8 @@ select TOP 5000
 	sr1.p10_value, 
 	sr1.p25_value, 
 	sr1.p75_value, 
-	sr1.p90_value
+	sr1.p90_value,
+  sr1.z_score
 from @study_results_schema.cohort_summary_analysis_ref ar1
 inner join @study_results_schema.cohort_summary_results_dist sr1 on ar1.covariate_id = sr1.covariate_id
 where sr1.cohort_definition_id = @cohort_definition_id AND sr1.source_id = @source_id @criteria_clauses

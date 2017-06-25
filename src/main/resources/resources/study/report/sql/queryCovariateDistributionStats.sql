@@ -16,7 +16,8 @@ select s.source_id,
 	sr1.p10_value, 
 	sr1.p25_value, 
 	sr1.p75_value, 
-	sr1.p90_value
+	sr1.p90_value,
+  sr1.z_score
 from @study_results_schema.cohort_summary_analysis_ref ar1
 join @study_results_schema.cohort_summary_results_dist sr1 on ar1.covariate_id = sr1.covariate_id
 JOIN @study_results_schema.source s on s.source_id = sr1.source_id

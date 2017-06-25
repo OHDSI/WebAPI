@@ -15,7 +15,8 @@ select a.source_id,
 	ar1.analysis_name,
 	ar1.time_window,
   sr1.count_value, 
-  sr1.stat_value
+  sr1.stat_value,
+  sr1.z_score
 from cteAllSources a
 join @study_results_schema.cohort_summary_analysis_ref ar1 on a.covariate_id = ar1.covariate_id
 JOIN @study_results_schema.source s on s.source_id = a.source_id

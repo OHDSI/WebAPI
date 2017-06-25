@@ -1,9 +1,9 @@
 WITH main_table AS (
     SELECT
             d.target_cohort_definition_id
-            , t.cohort_definition_name target_cohort_name
+            , t.short_name target_cohort_name
             , d.outcome_cohort_definition_id
-            , o.cohort_definition_name outcome_cohort_name
+            , o.short_name outcome_cohort_name
             , d.outcome_concept_id
             , c.concept_name 
             , d.incidence

@@ -16,7 +16,8 @@ WITH main_table AS (
 	sr1.p10_value, 
 	sr1.p25_value, 
 	sr1.p75_value, 
-	sr1.p90_value
+	sr1.p90_value,
+  sr1.z_score
     FROM @study_results_schema.cohort_summary_analysis_ref ar1
     INNER JOIN @study_results_schema.cohort_summary_results_dist sr1 on ar1.covariate_id = sr1.covariate_id
     INNER JOIN (select analysis_id from @study_results_schema.cohort_summary_analysis_ref where covariate_id = @covariate_id) a1 ON ar1.analysis_id = a1.analysis_id

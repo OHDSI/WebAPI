@@ -10,6 +10,7 @@ WITH main_table AS (
         , c1.concept_name
         , sr1.count_value
         , sr1.stat_value
+				, sr1.z_score
     FROM @study_results_schema.cohort_summary_results sr1 
     INNER JOIN @study_results_schema.cohort_summary_analysis_ref ar1 ON sr1.covariate_id = ar1.covariate_id
     INNER JOIN (select analysis_id from @study_results_schema.cohort_summary_analysis_ref where covariate_id = @covariate_id) a1 ON ar1.analysis_id = a1.analysis_id

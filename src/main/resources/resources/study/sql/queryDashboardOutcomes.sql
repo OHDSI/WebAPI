@@ -1,6 +1,6 @@
 SELECT DISTINCT
 	d.outcome_cohort_definition_id
-	, o.cohort_definition_name outcome_cohort_name
+	, o.short_name outcome_cohort_name
 	, d.outcome_concept_id
 FROM @study_results_schema.dashboard d
 INNER JOIN @study_results_schema.cohort_definition o ON d.outcome_cohort_definition_id = o.cohort_definition_id

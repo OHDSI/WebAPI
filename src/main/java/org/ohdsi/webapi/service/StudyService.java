@@ -195,6 +195,7 @@ public class StudyService extends AbstractDaoService {
 		public long conceptId;
 		public long countValue;
 		public BigDecimal statValue;
+		public BigDecimal zScore;
 		public long distance = 0;
 	}
 
@@ -217,6 +218,7 @@ public class StudyService extends AbstractDaoService {
 		public long p75Value;
 		public long p90Value;
 		public long maxValue;
+		public BigDecimal zScore;
 		public long distance = 0;
 	}
 
@@ -553,6 +555,7 @@ public class StudyService extends AbstractDaoService {
 					conceptId = rs.getLong("concept_id");
 					countValue = rs.getLong("count_value");
 					statValue = new BigDecimal(rs.getDouble("stat_value")).setScale(5, RoundingMode.DOWN);
+					zScore = new BigDecimal(rs.getDouble("z_score")).setScale(5, RoundingMode.DOWN);
 				}
 			};
 			return mappedRow;
@@ -603,6 +606,7 @@ public class StudyService extends AbstractDaoService {
 					p75Value = rs.getLong("p75_value");
 					p90Value = rs.getLong("p90_value");
 					maxValue = rs.getLong("max_value");
+					zScore = new BigDecimal(rs.getDouble("z_score")).setScale(5, RoundingMode.DOWN);
 				}
 			};
 			return mappedRow;
@@ -641,6 +645,7 @@ public class StudyService extends AbstractDaoService {
 					conceptId = rs.getLong("concept_id");
 					countValue = rs.getLong("count_value");
 					statValue = new BigDecimal(rs.getDouble("stat_value")).setScale(5, RoundingMode.DOWN);
+					zScore = new BigDecimal(rs.getDouble("z_score")).setScale(5, RoundingMode.DOWN);
 					distance = rs.getLong("min_levels_of_separation");
 				}
 			};

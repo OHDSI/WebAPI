@@ -50,7 +50,9 @@ import org.ohdsi.webapi.study.StudyRepository;
 import org.ohdsi.webapi.study.report.ReportCohortPair;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Component;
 
 /**
@@ -962,6 +964,16 @@ public class StudyService extends AbstractDaoService {
 		});
 
 		return dashboard;
+	}
+
+	@GET
+	@Path("/{studyId}/dashboard/clear")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Transactional
+	@Caching(evict = { @CacheEvict(cacheNames="report.dashboard", allEntries = true), @CacheEvict(cacheNames="report.dashboard.vocab") })
+	public String clearDashboardCache()
+	{
+		return "Dashboard cache cleared.";
 	}
 
 	private List<CohortPair> getPublishedPairs() {

@@ -1,4 +1,4 @@
-select TOP 5000
+select
 	ar1.covariate_id,
 	ar1.covariate_name, 
 	ar1.analysis_id,

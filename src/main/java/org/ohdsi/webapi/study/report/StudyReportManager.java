@@ -1510,7 +1510,7 @@ public class StudyReportManager {
 		// SCCA Reports
 		
 		contentBuilder.add(cmp.verticalList(
-			cmp.text("VI. Self-Control Cohort Analysis Results").setStyle(this.headingStyle),
+			cmp.text("VI. Self-Controlled Cohort Analysis Results").setStyle(this.headingStyle),
 			cmp.text(CONTENT_SCC_INTRO).setStyle(this.contentStyle))
 		);
 		
@@ -1599,7 +1599,7 @@ public class StudyReportManager {
 			.collect(Collectors.groupingBy(r -> new RelativeRiskGroupBy(r.targetCohortName, null, null),LinkedHashMap::new, Collectors.toList()));
 		
 		contentBuilder.add(cmp.verticalList(
-			cmp.text("VII. Self-Control Cohort Analysis Diagnostics").setStyle(this.headingStyle),
+			cmp.text("VII. Self-Controlled Cohort Analysis Diagnostics").setStyle(this.headingStyle),
 			cmp.text(CONTENT_SCC_DIAG_INTRO).setStyle(this.contentStyle))
 		);
 		
@@ -1608,7 +1608,7 @@ public class StudyReportManager {
 		for (RelativeRiskGroupBy key : sccaCalibrationDiagGroups.keySet()) {
 			JasperReportBuilder sccaDiag = getSCCADiagnosticsReport();
 			sccaDiag.title(cmp.verticalList(
-				cmp.text(String.format("Table %d%s. Self-Control Analysis Calibration Diagnostics", tableIndex, sccaDiagSubTableIndex)).setStyle(headingStyle),
+				cmp.text(String.format("Table %d%s. Self-Controlled Analysis Calibration Diagnostics", tableIndex, sccaDiagSubTableIndex)).setStyle(headingStyle),
 				cmp.text(String.format("<b>Target:</b> %s", key.targetCohortName)).setStyle(subHeadingStyle),
 				cmp.text("<b>Time at Risk:</b> Per Protocol").setStyle(subHeadingStyle)
 			).setGap(0))

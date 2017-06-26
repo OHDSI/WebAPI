@@ -1,1 +1,1 @@
-<b>TAR:</b>  Time at Risk (years), <b>RR:</b> Relative Risk, <b>CI:</b> Confidence Interval
+<b>TAR:</b>  Time at Risk (years), <b>RR:</b> Relative Risk, <b>CI:</b> Confidence Interval, <b><i>p</i>-value</b> is computed using empirical calibration, based on systematic error estimated from the negative controls

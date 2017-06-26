@@ -35,7 +35,6 @@ import net.sf.dynamicreports.report.builder.column.ComponentColumnBuilder;
 import net.sf.dynamicreports.report.builder.column.TextColumnBuilder;
 import net.sf.dynamicreports.report.builder.component.ImageBuilder;
 import net.sf.dynamicreports.report.builder.component.MultiPageListBuilder;
-import net.sf.dynamicreports.report.builder.component.VerticalListBuilder;
 import net.sf.dynamicreports.report.builder.crosstab.CrosstabBuilder;
 import net.sf.dynamicreports.report.builder.crosstab.CrosstabColumnGroupBuilder;
 import net.sf.dynamicreports.report.builder.crosstab.CrosstabMeasureBuilder;
@@ -46,7 +45,6 @@ import net.sf.dynamicreports.report.constant.Calculation;
 import net.sf.dynamicreports.report.constant.HorizontalTextAlignment;
 import net.sf.dynamicreports.report.constant.LineStyle;
 import net.sf.dynamicreports.report.constant.Markup;
-import net.sf.dynamicreports.report.constant.SplitType;
 import net.sf.dynamicreports.report.constant.VerticalTextAlignment;
 import net.sf.dynamicreports.report.definition.ReportParameters;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
@@ -127,7 +125,7 @@ public class StudyReportManager {
 			
 			Double lb95 = reportParameters.getValue("lb95");
 			Double ub95 = reportParameters.getValue("ub95");
-			java.text.DecimalFormat df = new java.text.DecimalFormat("#.00");
+			java.text.DecimalFormat df = new java.text.DecimalFormat("#0.00");
 
 			return String.format("%s (%s - %s)", df.format(rr), df.format(lb95), df.format(ub95));
 		}   		
@@ -857,7 +855,7 @@ public class StudyReportManager {
 	private JasperReportBuilder getIRReport() {
 		// rendering of reports goes cohort
 		TextColumnBuilder<String> dataSourceCol = col.column("Data Source", "dataSource", type.stringType());
-		TextColumnBuilder<Integer> atRiskCol = col.column("At Risk", "atRiskPP", type.integerType()).setFixedWidth(125);
+		TextColumnBuilder<Integer> atRiskCol = col.column("Persons", "atRiskPP", type.integerType()).setFixedWidth(125);
 		TextColumnBuilder<Integer> casesPPCol = col.column("Cases", "casesPP", type.integerType()).setFixedWidth(50);
 		// TextColumnBuilder<Double> personTimePPCol = col.column("TAR", "personTimePP", type.doubleType()).setPattern("#,##0.0");
 		TextColumnBuilder<Double> proportionPPCol = col.column("IP", "incidenceProportionPP", type.doubleType()).setFixedWidth(50).setPattern("#0.00");
@@ -898,13 +896,13 @@ public class StudyReportManager {
 		TextColumnBuilder<String> dataSourceCol = col.column("Data Source", "dataSourceName", type.stringType());
 		TextColumnBuilder<Integer> atRiskTCol = col.column("Persons", "atRiskTarget", type.integerType()).setFixedWidth(50);
 		TextColumnBuilder<Integer> casesTCol = col.column("Cases", "casesTarget", type.integerType());
-		TextColumnBuilder<Double> personTimeTCol = col.column("TAR", "personTimeTarget", type.doubleType()).setPattern("#,##0.0").setFixedWidth(50);
+		TextColumnBuilder<Double> personTimeTCol = col.column("TAR", "personTimeTarget", type.doubleType()).setPattern("#,##0").setFixedWidth(50);
 		TextColumnBuilder<Integer> atRiskCCol = col.column("Persons", "atRiskComparator", type.integerType()).setFixedWidth(50);
 		TextColumnBuilder<Integer> casesCCol = col.column("Cases", "casesComparator", type.integerType());
-		TextColumnBuilder<Double> personTimeCCol = col.column("TAR", "personTimeComparator", type.doubleType()).setPattern("#,##0.0").setFixedWidth(50);
+		TextColumnBuilder<Double> personTimeCCol = col.column("TAR", "personTimeComparator", type.doubleType()).setPattern("#,##0").setFixedWidth(50);
 		TextColumnBuilder<String> ciCol = col.column("RR (95% CI)", new CIExpression()).setFixedWidth(75);
-		TextColumnBuilder<Double> pValueRawCol = col.column("raw", "pValueRaw", type.doubleType()).setPattern("#0.0000").setFixedWidth(30);
-		TextColumnBuilder<Double> pValueCol = col.column("adj", "pValue", type.doubleType()).setPattern("#0.0000").setFixedWidth(30);
+		TextColumnBuilder<Double> pValueRawCol = col.column("raw", "pValueRaw", type.doubleType()).setPattern("#0.00").setFixedWidth(30);
+		TextColumnBuilder<Double> pValueCol = col.column("adj", "pValue", type.doubleType()).setPattern("#0.00").setFixedWidth(30);
 				
 		ColumnTitleGroupBuilder tGroup = grid.titleGroup("Target", atRiskTCol,casesTCol, personTimeTCol).setTitleFixedWidth(135);
 		ColumnTitleGroupBuilder cGroup = grid.titleGroup("Comparator", atRiskCCol,casesCCol, personTimeCCol).setTitleFixedWidth(135);

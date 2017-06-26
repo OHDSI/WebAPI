@@ -18,6 +18,7 @@ SELECT
 	cca.relative_risk_pp,
 	cca.lb_95_pp,
 	cca.ub_95_pp,
+	cca.p_value_pp,
 	cca.pc_value_pp,
 	cca.t_at_risk_itt,
 	cca.t_pt_itt,
@@ -28,6 +29,7 @@ SELECT
 	cca.relative_risk_itt,
 	cca.lb_95_itt,
 	cca.ub_95_itt,
+	cca.p_value_itt,
 	cca.pc_value_itt
 FROM @study_results_schema.cca_results cca
 JOIN @study_results_schema.source s on s.source_id = cca.source_id

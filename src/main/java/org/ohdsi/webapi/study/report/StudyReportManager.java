@@ -34,6 +34,7 @@ import net.sf.dynamicreports.report.base.expression.AbstractSimpleExpression;
 import net.sf.dynamicreports.report.builder.column.ComponentColumnBuilder;
 import net.sf.dynamicreports.report.builder.column.TextColumnBuilder;
 import net.sf.dynamicreports.report.builder.component.ImageBuilder;
+import net.sf.dynamicreports.report.builder.component.MultiPageListBuilder;
 import net.sf.dynamicreports.report.builder.component.VerticalListBuilder;
 import net.sf.dynamicreports.report.builder.crosstab.CrosstabBuilder;
 import net.sf.dynamicreports.report.builder.crosstab.CrosstabColumnGroupBuilder;
@@ -91,6 +92,7 @@ public class StudyReportManager {
 	private StyleBuilder subHeadingStyle;
 	
 	private StyleBuilder columnHeaderStyle;
+	private StyleBuilder columnHeaderStyleSmall;
 	private StyleBuilder groupHeaderStyle;
 	private StyleBuilder columnStyle;
 	private StyleBuilder columnBorderlessStyle;
@@ -119,10 +121,14 @@ public class StudyReportManager {
 	private class CIExpression extends AbstractSimpleExpression<String> {
 		@Override
 		public String evaluate(ReportParameters reportParameters) {
-			java.text.DecimalFormat df = new java.text.DecimalFormat("#.00");
 			Double rr = reportParameters.getValue("relativeRisk");
+			
+			if (rr == null) return "";
+			
 			Double lb95 = reportParameters.getValue("lb95");
 			Double ub95 = reportParameters.getValue("ub95");
+			java.text.DecimalFormat df = new java.text.DecimalFormat("#.00");
+
 			return String.format("%s (%s - %s)", df.format(rr), df.format(lb95), df.format(ub95));
 		}   		
 	}
@@ -244,7 +250,9 @@ public class StudyReportManager {
 		private Double relativeRisk;
 		private Double lb95;
 		private Double ub95;
+		private Double pValueRaw;
 		private Double pValue;
+
 
 		public RelativeRiskRow() {
 		}
@@ -361,7 +369,6 @@ public class StudyReportManager {
 			this.personTimeComparator = personTimeComparator;
 		}
 
-		
 		public Double getRelativeRisk() {
 			return relativeRisk;
 		}
@@ -386,6 +393,14 @@ public class StudyReportManager {
 			this.ub95 = ub95;
 		}
 
+		public Double getpValueRaw() {
+			return pValueRaw;
+		}
+
+		public void setpValueRaw(Double pValueRaw) {
+			this.pValueRaw = pValueRaw;
+		}
+		
 		public Double getpValue() {
 			return pValue;
 		}
@@ -476,6 +491,12 @@ public class StudyReportManager {
 
 		public RelativeRiskRow ub95(final Double value) {
 			this.ub95 = value;
+			return this;
+		}
+
+		
+		public RelativeRiskRow pValueRaw(final Double value) {
+			this.pValueRaw = value;
 			return this;
 		}
 
@@ -756,6 +777,9 @@ public class StudyReportManager {
 			.setVerticalTextAlignment(VerticalTextAlignment.MIDDLE)
 			.setBackgroundColor(Color.LIGHT_GRAY);
 
+		columnHeaderStyleSmall = stl.style(columnHeaderStyle).setName("columnHeaderSmall")
+			.setFontSize(8);
+		
 		groupHeaderStyle = stl.style(rootStyle).setHorizontalTextAlignment(HorizontalTextAlignment.LEFT)
 			.setVerticalTextAlignment(VerticalTextAlignment.MIDDLE)
 			.setBold(true)
@@ -879,10 +903,12 @@ public class StudyReportManager {
 		TextColumnBuilder<Integer> casesCCol = col.column("Cases", "casesComparator", type.integerType());
 		TextColumnBuilder<Double> personTimeCCol = col.column("TAR", "personTimeComparator", type.doubleType()).setPattern("#,##0.0").setFixedWidth(50);
 		TextColumnBuilder<String> ciCol = col.column("RR (95% CI)", new CIExpression()).setFixedWidth(75);
-		TextColumnBuilder<Double> pValueCol = col.column("p-value", "pValue", type.doubleType()).setPattern("#0.0000").setFixedWidth(50);
-		
-		ColumnTitleGroupBuilder tGroup = grid.titleGroup("Target", atRiskTCol,casesTCol, personTimeTCol).setTitleFixedWidth(150);
-		ColumnTitleGroupBuilder cGroup = grid.titleGroup("Comparator", atRiskCCol,casesCCol, personTimeCCol).setTitleFixedWidth(150);
+		TextColumnBuilder<Double> pValueRawCol = col.column("raw", "pValueRaw", type.doubleType()).setPattern("#0.0000").setFixedWidth(30);
+		TextColumnBuilder<Double> pValueCol = col.column("adj", "pValue", type.doubleType()).setPattern("#0.0000").setFixedWidth(30);
+				
+		ColumnTitleGroupBuilder tGroup = grid.titleGroup("Target", atRiskTCol,casesTCol, personTimeTCol).setTitleFixedWidth(135);
+		ColumnTitleGroupBuilder cGroup = grid.titleGroup("Comparator", atRiskCCol,casesCCol, personTimeCCol).setTitleFixedWidth(135);
+		ColumnTitleGroupBuilder pGroup = grid.titleGroup("<i>p</i>-value", pValueRawCol, pValueCol).setTitleFixedWidth(60);
 		
 		JasperReportBuilder ccaReport = report()
 			.fields(
@@ -890,10 +916,10 @@ public class StudyReportManager {
 				field("lb95", Double.class),
 				field("ub95", Double.class)
 			)
-			.columnGrid(dataSourceCol, tGroup, cGroup, ciCol, pValueCol)
-			.columns(dataSourceCol,atRiskTCol, casesTCol, personTimeTCol,atRiskCCol, casesCCol, personTimeCCol,ciCol, pValueCol)
+			.columnGrid(dataSourceCol, tGroup, cGroup, ciCol, pGroup)
+			.columns(dataSourceCol,atRiskTCol, casesTCol, personTimeTCol,atRiskCCol, casesCCol, personTimeCCol,ciCol, pValueRawCol, pValueCol)
 			.setColumnStyle(this.columnStyleSmall)
-			.setColumnTitleStyle(this.columnHeaderStyle)
+			.setColumnTitleStyle(this.columnHeaderStyleSmall)
 		;
 
 		return ccaReport;
@@ -971,13 +997,14 @@ public class StudyReportManager {
 		JasperReportBuilder mainReport = report();
 		int tableIndex = 1;
 		
-		mainReport.setPageMargin(margin(40));
+		mainReport.setPageMargin(margin(20));
 
-		VerticalListBuilder contentBuilder = cmp.verticalList().setGap(10);
+		MultiPageListBuilder contentBuilder = cmp.multiPageList();
 
 		contentBuilder.add(cmp.text("I. Database Descriptions").setStyle(this.headingStyle));
 		contentBuilder.add(cmp.text(CONTENT_DB_DESCRIPTION).setStyle(this.contentStyle));
-
+		contentBuilder.add(cmp.verticalGap(20));
+		
 		contentBuilder.add(cmp.verticalList(
 			cmp.text(String.format("II. Cohort Characterization")).setStyle(this.headingStyle),
 			cmp.text(CONTENT_COHORT_CHARACTERIZATION_INTRO).setStyle(this.contentStyle)));
@@ -1090,6 +1117,7 @@ public class StudyReportManager {
 				.summary(demographicStats.size() > 0 ? crosstab : cmp.text("No demographic covariates selected.").setStyle(this.subHeadingStyle));
 
 			contentBuilder.add(cmp.subreport(subReport));
+			contentBuilder.add(cmp.verticalGap(10));
 			
 			// Conditions
 			List<PrevalenceStat> conditionStats = prevalenceStats.stream()
@@ -1122,6 +1150,7 @@ public class StudyReportManager {
 					: cmp.text("No condition covariates selected.").setStyle(this.subHeadingStyle));
 			
 			contentBuilder.add(cmp.subreport(subReport));
+			contentBuilder.add(cmp.verticalGap(10));
 			
 			// Drugs
 			List<PrevalenceStat> drugStats = prevalenceStats.stream()
@@ -1154,6 +1183,7 @@ public class StudyReportManager {
 					: cmp.text("No drug covariates selected.").setStyle(this.subHeadingStyle));
 
 			contentBuilder.add(cmp.subreport(subReport));
+			contentBuilder.add(cmp.verticalGap(10));
 			
 			// Procedures
 			List<PrevalenceStat> procedureStats = prevalenceStats.stream()
@@ -1186,6 +1216,7 @@ public class StudyReportManager {
 					: cmp.text("No procedure covariates selected.").setStyle(this.subHeadingStyle));
 			
 			contentBuilder.add(cmp.subreport(subReport));
+			contentBuilder.add(cmp.verticalGap(10));
 
 			// Measurements
 			List<PrevalenceStat> measureStats = prevalenceStats.stream()
@@ -1218,6 +1249,7 @@ public class StudyReportManager {
 					: cmp.text("No measurement covariates selected.").setStyle(this.subHeadingStyle));
 
 			contentBuilder.add(cmp.subreport(subReport));
+			contentBuilder.add(cmp.verticalGap(10));
 
 			// Distribution Stats
 			List<DistributionStat> cohortDistStats = distributionStats.stream()
@@ -1233,6 +1265,7 @@ public class StudyReportManager {
 				.setDataSource(cohortDistStats);
 			
 			contentBuilder.add(cmp.subreport(distReport));
+			contentBuilder.add(cmp.verticalGap(10));
 			
 			tableIndex++;
 			
@@ -1271,7 +1304,7 @@ public class StudyReportManager {
 			irReport.title(cmp.verticalList(
 				cmp.text(String.format("Table %d%s. Outcome Summary", tableIndex, outcomeSubTableIndex)).setStyle(headingStyle),
 				cmp.text(String.format("<b>Target:</b> %s", key.targetCohortName)).setStyle(subHeadingStyle),
-				cmp.text(String.format("<b>0utcome:</b> %s", key.outcomeCohortName)).setStyle(subHeadingStyle)
+				cmp.text(String.format("<b>Outcome:</b> %s", key.outcomeCohortName)).setStyle(subHeadingStyle)
 			).setGap(0))
 				.columnFooter(cmp.text(CONTENT_OUTCOME_SUMMARY_FOOTNOTE).setStyle(this.footnoteStyle))
 				.setDataSource(outcomeGroups.get(key));
@@ -1332,6 +1365,7 @@ public class StudyReportManager {
 					.relativeRisk(ees.getRelativeRiskPP())
 					.lb95(ees.getLb95PP())
 					.ub95(ees.getUb95PP())
+					.pValueRaw(ees.getpValueRawPP())
 					.pValue(ees.getpValuePP())
 				);
 
@@ -1353,6 +1387,7 @@ public class StudyReportManager {
 					.relativeRisk(ees.getRelativeRiskITT())
 					.lb95(ees.getLb95ITT())
 					.ub95(ees.getUb95ITT())
+					.pValueRaw(ees.getpValueRawITT())
 					.pValue(ees.getpValueITT())
 				);
 			});
@@ -1369,10 +1404,10 @@ public class StudyReportManager {
 					cmp.text(String.format("Table %d%s. Relative Risk Summary", tableIndex, ccaSubTableIndex)).setStyle(headingStyle),
 					cmp.text(String.format("<b>Target:</b> %s", key.targetCohortName)).setStyle(subHeadingStyle),
 					cmp.text(String.format("<b>Comparator:</b> %s", key.comparatorCohortName)).setStyle(subHeadingStyle),
-					cmp.text(String.format("<b>0utcome:</b> %s", key.outcomeCohortName)).setStyle(subHeadingStyle),
+					cmp.text(String.format("<b>Outcome:</b> %s", key.outcomeCohortName)).setStyle(subHeadingStyle),
 					cmp.text("<b>Time at Risk:</b> Per Protocol").setStyle(subHeadingStyle)
 				).setGap(0))
-					.columnFooter(cmp.text(CONTENT_RISK_EST_FOOTNOTE).setStyle(this.footnoteStyle))
+					.columnFooter(cmp.text(CONTENT_RISK_EST_FOOTNOTE).setStyle(this.footnoteStyle).setFixedRows(2))
 					.setDataSource(ppGroups.get(key));
 				contentBuilder.add(cmp.subreport(rrReport));
 				ccaSubTableIndex++;
@@ -1388,7 +1423,7 @@ public class StudyReportManager {
 					cmp.text(String.format("Table %d%s. Relative Risk Summary", tableIndex, ccaSubTableIndex)).setStyle(headingStyle),
 					cmp.text(String.format("<b>Target:</b> %s", key.targetCohortName)).setStyle(subHeadingStyle),
 					cmp.text(String.format("<b>Comparator:</b> %s", key.comparatorCohortName)).setStyle(subHeadingStyle),
-					cmp.text(String.format("<b>0utcome:</b> %s", key.outcomeCohortName)).setStyle(subHeadingStyle),
+					cmp.text(String.format("<b>Outcome:</b> %s", key.outcomeCohortName)).setStyle(subHeadingStyle),
 					cmp.text("<b>Time at Risk:</b> Intent to Treat").setStyle(subHeadingStyle)
 				).setGap(0))
 					.columnFooter(cmp.text(CONTENT_RISK_EST_FOOTNOTE).setStyle(this.footnoteStyle))
@@ -1537,6 +1572,7 @@ public class StudyReportManager {
 				.relativeRisk(ees.getRelativeRiskPP())
 				.lb95(ees.getLb95PP())
 				.ub95(ees.getUb95PP())
+				.pValueRaw(ees.getpValueRawPP())
 				.pValue(ees.getpValuePP())
 			);
 			
@@ -1553,7 +1589,7 @@ public class StudyReportManager {
 			rrReport.title(cmp.verticalList(
 				cmp.text(String.format("Table %d%s. Relative Risk Summary", tableIndex, sccaSubTableIndex)).setStyle(headingStyle),
 				cmp.text(String.format("<b>Target:</b> %s", key.targetCohortName)).setStyle(subHeadingStyle),
-				cmp.text(String.format("<b>0utcome:</b> %s", key.outcomeCohortName)).setStyle(subHeadingStyle),
+				cmp.text(String.format("<b>Outcome:</b> %s", key.outcomeCohortName)).setStyle(subHeadingStyle),
 				cmp.text("<b>Time at Risk:</b> Per Protocol").setStyle(subHeadingStyle)
 			).setGap(0))
 				.columnFooter(cmp.text(CONTENT_RISK_EST_FOOTNOTE).setStyle(this.footnoteStyle))
@@ -1621,7 +1657,7 @@ public class StudyReportManager {
 
 		/* END: Effect Estimate reports */
 		
-		mainReport.title(contentBuilder);
+		mainReport.summary(contentBuilder);
 		return mainReport;
 	}
 }

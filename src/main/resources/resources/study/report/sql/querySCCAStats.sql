@@ -16,6 +16,7 @@ SELECT
 	scca.relative_risk,
 	scca.lb_95,
 	scca.ub_95,
+	p_value,
 	pc_value
 FROM @study_results_schema.scca_results scca
 JOIN @study_results_schema.source s on s.source_id = scca.source_id

@@ -819,6 +819,7 @@ public class StudyReportService extends AbstractDaoService {
 		private Double lb95PP;
 		private Double ub95PP;
 		private Double pValuePP;
+		private Double pValueRawPP;
 		private Integer atRiskTargetITT;
 		private Integer casesTargetITT;
 		private Double personTimeTargetITT;
@@ -829,6 +830,7 @@ public class StudyReportService extends AbstractDaoService {
 		private Double lb95ITT;
 		private Double ub95ITT;
 		private Double pValueITT;
+		private Double pValueRawITT;
 
 		public EffectEstimateStat() {
 		}
@@ -848,7 +850,7 @@ public class StudyReportService extends AbstractDaoService {
 		public void setDataSourceId(int dataSourceId) {
 			this.dataSourceId = dataSourceId;
 		}
-		
+
 		public String getDataSourceName() {
 			return dataSourceName;
 		}
@@ -993,6 +995,14 @@ public class StudyReportService extends AbstractDaoService {
 			this.pValuePP = pValuePP;
 		}
 
+		public Double getpValueRawPP() {
+			return pValueRawPP;
+		}
+
+		public void setpValueRawPP(Double pValueRawPP) {
+			this.pValueRawPP = pValueRawPP;
+		}
+
 		public Integer getAtRiskTargetITT() {
 			return atRiskTargetITT;
 		}
@@ -1071,6 +1081,14 @@ public class StudyReportService extends AbstractDaoService {
 
 		public void setpValueITT(Double pValueITT) {
 			this.pValueITT = pValueITT;
+		}
+
+		public Double getpValueRawITT() {
+			return pValueRawITT;
+		}
+
+		public void setpValueRawITT(Double pValueRawITT) {
+			this.pValueRawITT = pValueRawITT;
 		}
 
 		public EffectEstimateStat analysisId(final int value) {
@@ -1173,6 +1191,11 @@ public class StudyReportService extends AbstractDaoService {
 			return this;
 		}
 
+		public EffectEstimateStat pValueRawPP(final Double value) {
+			this.pValueRawPP = value;
+			return this;
+		}
+
 		public EffectEstimateStat atRiskTargetITT(final Integer value) {
 			this.atRiskTargetITT = value;
 			return this;
@@ -1222,6 +1245,13 @@ public class StudyReportService extends AbstractDaoService {
 			this.pValueITT = value;
 			return this;
 		}
+
+		public EffectEstimateStat pValueRawITT(final Double value) {
+			this.pValueRawITT = value;
+			return this;
+		}
+
+		
 	}
 
 	private ReportDTO fromReport(Report report) {
@@ -1544,20 +1574,22 @@ public class StudyReportService extends AbstractDaoService {
 				.atRiskComparatorPP(row.getInt("c_at_risk_pp"))
 				.casesComparatorPP(row.getInt("c_cases_pp"))
 				.personTimeComparatorPP(row.getDouble("c_pt_pp"))
-				.relativeRiskPP(row.getDouble("relative_risk_pp"))
-				.lb95PP(row.getDouble("lb_95_pp"))
-				.ub95PP(row.getDouble("ub_95_pp"))
-				.pValuePP(row.getDouble("pc_value_pp"))
+				.relativeRiskPP(row.getString("relative_risk_pp") != null ? row.getDouble("relative_risk_pp") : null)
+				.lb95PP(row.getString("lb_95_pp") != null ? row.getDouble("lb_95_pp") : null)
+				.ub95PP(row.getString("ub_95_pp") != null ? row.getDouble("ub_95_pp") : null)
+				.pValuePP(row.getString("pc_value_pp") != null ? row.getDouble("pc_value_pp") : null)
+				.pValueRawPP(row.getString("p_value_pp") != null ? row.getDouble("p_value_pp") : null)
 				.atRiskTargetITT(row.getInt("t_at_risk_itt"))
 				.casesTargetITT(row.getInt("t_cases_itt"))
 				.personTimeTargetITT(row.getDouble("t_pt_itt"))
 				.atRiskComparatorITT(row.getInt("c_at_risk_itt"))
 				.casesComparatorITT(row.getInt("c_cases_itt"))
 				.personTimeComparatorITT(row.getDouble("c_pt_itt"))
-				.relativeRiskITT(row.getDouble("relative_risk_itt"))
-				.lb95ITT(row.getDouble("lb_95_itt"))
-				.ub95ITT(row.getDouble("ub_95_itt"))
-				.pValueITT(row.getDouble("pc_value_itt"));
+				.relativeRiskITT(row.getString("relative_risk_itt") != null ? row.getDouble("relative_risk_itt") : null)
+				.lb95ITT(row.getString("lb_95_itt") != null ? row.getDouble("lb_95_itt") : null)
+				.ub95ITT(row.getString("ub_95_itt") != null ? row.getDouble("ub_95_itt") : null)
+				.pValueITT(row.getString("pc_value_itt") != null ? row.getDouble("pc_value_itt") : null)
+				.pValueRawITT(row.getString("p_value_itt") != null ? row.getDouble("p_value_itt") : null);
 		});
 		return ccaStats;
 	}
@@ -1589,10 +1621,11 @@ public class StudyReportService extends AbstractDaoService {
 				.atRiskComparatorPP(row.getInt("c_at_risk"))
 				.casesComparatorPP(row.getInt("c_cases"))
 				.personTimeComparatorPP(row.getDouble("c_pt"))
-				.relativeRiskPP(row.getDouble("relative_risk"))
-				.lb95PP(row.getDouble("lb_95"))
-				.ub95PP(row.getDouble("ub_95"))
-				.pValuePP(row.getDouble("pc_value"));
+				.relativeRiskPP(row.getString("relative_risk") != null ? row.getDouble("relative_risk") : null)
+				.lb95PP(row.getString("lb_95") != null ? row.getDouble("lb_95") : null)
+				.ub95PP(row.getString("ub_95") != null ? row.getDouble("ub_95") : null)
+				.pValueRawPP(row.getString("p_value") != null ? row.getDouble("p_value") : null)
+				.pValuePP(row.getString("pc_value") != null ? row.getDouble("pc_value") : null);
 		});
 
 		return sccaStats;

@@ -127,7 +127,7 @@ public class StudyReportManager {
 			Double ub95 = reportParameters.getValue("ub95");
 			java.text.DecimalFormat df = new java.text.DecimalFormat("#0.00");
 
-			return String.format("%s (%s - %s)", df.format(rr), df.format(lb95), df.format(ub95));
+			return String.format("%s (%s - %s)", rr != null ? df.format(rr) : "NULL!", lb95 != null ? df.format(lb95) : "NULL!", ub95 != null ? df.format(ub95) : "NULL!");
 		}   		
 	}
 
@@ -999,14 +999,6 @@ public class StudyReportManager {
 
 		MultiPageListBuilder contentBuilder = cmp.multiPageList();
 
-		contentBuilder.add(cmp.text("I. Database Descriptions").setStyle(this.headingStyle));
-		contentBuilder.add(cmp.text(CONTENT_DB_DESCRIPTION).setStyle(this.contentStyle));
-		contentBuilder.add(cmp.verticalGap(20));
-		
-		contentBuilder.add(cmp.verticalList(
-			cmp.text(String.format("II. Cohort Characterization")).setStyle(this.headingStyle),
-			cmp.text(CONTENT_COHORT_CHARACTERIZATION_INTRO).setStyle(this.contentStyle)));
-
 		// find active cohort pairs
 		List<ReportCohortPair> activePairs = report.getCohortPairs().stream().filter(ReportCohortPair::isActive).collect(Collectors.toList());
 
@@ -1023,6 +1015,20 @@ public class StudyReportManager {
 		List<ReportSource> activeSources = report.getSources().stream().filter(s -> s.isActive()).collect(Collectors.toList());
 		Map<Integer, Integer> sourceLookup = IntStream.range(0, activeSources.size()).boxed()
 			.collect(Collectors.toMap(i -> activeSources.get(i).getSource().getId(), i -> i));
+
+		if (activePairs.isEmpty())
+		{
+			contentBuilder.add(cmp.text("No cohort pairs have been selected in this report.").setStyle(this.headingStyle));
+			mainReport.summary(contentBuilder);
+			return mainReport;
+		}
+		contentBuilder.add(cmp.text("I. Database Descriptions").setStyle(this.headingStyle));
+		contentBuilder.add(cmp.text(CONTENT_DB_DESCRIPTION).setStyle(this.contentStyle));
+		contentBuilder.add(cmp.verticalGap(20));
+		
+		contentBuilder.add(cmp.verticalList(
+			cmp.text(String.format("II. Cohort Characterization")).setStyle(this.headingStyle),
+			cmp.text(CONTENT_COHORT_CHARACTERIZATION_INTRO).setStyle(this.contentStyle)));
 
 		/* BEGIN: Covariate reports */
 		
@@ -1089,7 +1095,14 @@ public class StudyReportManager {
 		List<DistributionStat> distributionStats = studyReportService.getReportCovariateDistStats(report);
 		distributionStats.sort(distComparator);
 		
+		ConcurrentHashMap<Object, Boolean> seenTargets = new ConcurrentHashMap<>();		
 		for (ReportCohortPair cohortPair : activePairs) {
+			
+			if (seenTargets.containsKey(cohortPair.getTarget().getId())) {
+				continue; // skip seen targets
+			}
+			seenTargets.put(cohortPair.getTarget().getId(), Boolean.TRUE);
+			
 			contentBuilder.add(cmp.text(String.format("<b>Cohort:</b> %s", cohortPair.getTarget().getName())).setStyle(this.headingStyle));
 				
 			// Prevalence Stats
@@ -1424,7 +1437,7 @@ public class StudyReportManager {
 					cmp.text(String.format("<b>Outcome:</b> %s", key.outcomeCohortName)).setStyle(subHeadingStyle),
 					cmp.text("<b>Time at Risk:</b> Intent to Treat").setStyle(subHeadingStyle)
 				).setGap(0))
-					.columnFooter(cmp.text(CONTENT_RISK_EST_FOOTNOTE).setStyle(this.footnoteStyle))
+					.columnFooter(cmp.text(CONTENT_RISK_EST_FOOTNOTE).setStyle(this.footnoteStyle).setFixedRows(2))
 					.setDataSource(ittGroups.get(key));
 				contentBuilder.add(cmp.subreport(rrReport));
 				ccaSubTableIndex++;
@@ -1590,7 +1603,7 @@ public class StudyReportManager {
 				cmp.text(String.format("<b>Outcome:</b> %s", key.outcomeCohortName)).setStyle(subHeadingStyle),
 				cmp.text("<b>Time at Risk:</b> Per Protocol").setStyle(subHeadingStyle)
 			).setGap(0))
-				.columnFooter(cmp.text(CONTENT_RISK_EST_FOOTNOTE).setStyle(this.footnoteStyle))
+				.columnFooter(cmp.text(CONTENT_RISK_EST_FOOTNOTE).setStyle(this.footnoteStyle).setFixedRows(2))
 				.setDataSource(sccaPpGroups.get(key));
 			contentBuilder.add(cmp.subreport(rrReport));
 			sccaSubTableIndex++;			

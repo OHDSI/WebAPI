@@ -1137,7 +1137,7 @@ public class StudyReportManager {
 				.collect(Collectors.toList());
 
 			FootnoteManager conditionFootnoteManager = new FootnoteManager();
-			String conditionsDefaultAnalysis = "Condition occurrence record for the verbatim concept observed during 365d on or prior to cohort index";
+			String conditionsDefaultAnalysis = "Condition occurrence record for the concept or any its descendants observed during 365d on or prior to cohort index";
 			conditionStats.forEach(s -> {
 				if (!conditionsDefaultAnalysis.equals(s.getAnalysisName())) {
 					s.setName(String.format("%s<sup>%s</sup>", s.getName(), conditionFootnoteManager.getFootnoteSymbol(s.getAnalysisName())));
@@ -1147,7 +1147,7 @@ public class StudyReportManager {
 				return String.format("%s: %s", f.glyph, f.footnote);
 			}).collect(Collectors.toList()),"\n");
 			
-			String footnoteText = "Note: using condition occurrence for the verbatim concept observed during 365d on or prior to cohort index";
+			String footnoteText = "Note: using condition occurrence record for the concept or any its descendants observed during 365d on or prior to cohort index";
 			footnoteText = footnoteText + ((conditionFootnotes.length() > 0) ? " unless noted below:\n" + conditionFootnotes : ".");
 			
 			crosstab = getCovariateCrossTab()
@@ -1170,7 +1170,7 @@ public class StudyReportManager {
 				.collect(Collectors.toList());
 
 			FootnoteManager drugFootnoteManager = new FootnoteManager();
-			String drugDefaultAnalysis = "Drug exposure record for the verbatim concept observed during 365d on or prior to cohort index";
+			String drugDefaultAnalysis = "Drug exposure record for the concept or any its descendants observed during 365d on or prior to cohort index";
 			drugStats.forEach(s -> {
 				if (!drugDefaultAnalysis.equals(s.getAnalysisName())) {
 					s.setName(String.format("%s<sup>%s</sup>", s.getName(), drugFootnoteManager.getFootnoteSymbol(s.getAnalysisName())));
@@ -1180,7 +1180,7 @@ public class StudyReportManager {
 				return String.format("%s: %s", f.glyph, f.footnote);
 			}).collect(Collectors.toList()),"\n");
 			
-			String drugFootnoteText = "Note: using drug exposure record for the verbatim concept observed during 365d on or prior to cohort index";
+			String drugFootnoteText = "Note: using drug exposure record for the concept or any its descendants observed during 365d on or prior to cohort index";
 			drugFootnoteText = drugFootnoteText + ((drugFootnotes.length() > 0) ? " unless noted below:\n" + drugFootnotes : ".");
 			
 			crosstab = getCovariateCrossTab()
@@ -1203,7 +1203,7 @@ public class StudyReportManager {
 				.collect(Collectors.toList());
 
 			FootnoteManager procedureFootnoteManager = new FootnoteManager();
-			String procedureDefaultAnalysis = "Procedure occurrence record for the verbatim concept observed during 365d on or prior to cohort index";
+			String procedureDefaultAnalysis = "Procedure occurrence record for the concept or any its descendants observed during 365d on or prior to cohort index";
 			procedureStats.forEach(s -> {
 				if (!procedureDefaultAnalysis.equals(s.getAnalysisName())) {
 					s.setName(String.format("%s<sup>%s</sup>", s.getName(), procedureFootnoteManager.getFootnoteSymbol(s.getAnalysisName())));
@@ -1213,7 +1213,7 @@ public class StudyReportManager {
 				return String.format("%s: %s", f.glyph, f.footnote);
 			}).collect(Collectors.toList()),"\n");
 			
-			String procedureFootnoteText = "Note: using procedure occurrence record for the verbatim concept observed during 365d on or prior to cohort index";
+			String procedureFootnoteText = "Note: using procedure occurrence record for the concept or any its descendants observed during 365d on or prior to cohort index";
 			procedureFootnoteText = procedureFootnoteText + ((procedureFootnotes.length() > 0) ? " unless noted below:\n" + procedureFootnotes : ".");
 
 			crosstab = getCovariateCrossTab()
@@ -1576,10 +1576,10 @@ public class StudyReportManager {
 				.dataSourceKey(ees.getDataSourceKey())
 				.atRiskTarget(ees.getAtRiskTargetPP())
 				.personTimeTarget(ees.getPersonTimeTargetPP())
-				.casesTarget(ees.getCasesComparatorPP())
+				.casesTarget(ees.getCasesTargetPP())
 				.atRiskComparator(ees.getAtRiskComparatorPP())
 				.personTimeComparator(ees.getPersonTimeComparatorPP())
-				.casesComparator(ees.getCasesTargetPP())
+				.casesComparator(ees.getCasesComparatorPP())
 				.relativeRisk(ees.getRelativeRiskPP())
 				.lb95(ees.getLb95PP())
 				.ub95(ees.getUb95PP())

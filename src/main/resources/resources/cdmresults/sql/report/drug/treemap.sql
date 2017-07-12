@@ -1,10 +1,11 @@
 SELECT
   concept_hierarchy.concept_id                        AS "conceptId",
-  isnull(concept_hierarchy.atc1_concept_name, 'NA') + '||' +
-  isnull(concept_hierarchy.atc3_concept_name, 'NA') + '||' +
-  isnull(concept_hierarchy.atc5_concept_name, 'NA') + '||' +
-  isnull(concept_hierarchy.rxnorm_ingredient_concept_name, 'NA') + '||' +
-  concept_hierarchy.rxnorm_concept_name               AS "conceptPath",
+  CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(
+    isnull(concept_hierarchy.atc1_concept_name, 'NA'), '||'),
+    isnull(concept_hierarchy.atc3_concept_name, 'NA')), '||'),
+    isnull(concept_hierarchy.atc5_concept_name, 'NA')), '||'),
+    isnull(concept_hierarchy.rxnorm_ingredient_concept_name, 'NA')), '||'),
+    concept_hierarchy.rxnorm_concept_name)            AS "conceptPath",
   ar1.count_value                                     AS "numPersons",
   round(1.0 * ar1.count_value / denom.count_value, 5) AS "percentPersons",
   round(1.0 * ar2.count_value / ar1.count_value, 5)   AS "recordsPerPerson"

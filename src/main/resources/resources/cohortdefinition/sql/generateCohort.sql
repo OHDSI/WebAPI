@@ -75,7 +75,7 @@ insert into @results_database_schema.cohort_inclusion_result (cohort_definition_
 select @target_cohort_id as cohort_definition_id, inclusion_rule_mask, count(*) as person_count
 from
 (
-  select Q.person_id, Q.event_id, SUM(coalesce(POWER(cast(2 as bigint), I.inclusion_rule_id), 0)) as inclusion_rule_mask
+  select Q.person_id, Q.event_id, CAST(SUM(coalesce(POWER(cast(2 as bigint), I.inclusion_rule_id), 0)) AS bigint) as inclusion_rule_mask
   from #qualified_events Q
   LEFT JOIN #inclusionRuleCohorts I on q.person_id = i.person_id and q.event_id = i.event_id
   GROUP BY Q.person_id, Q.event_id
@@ -104,14 +104,14 @@ WHERE ir.cohort_definition_id = @target_cohort_id
 -- calculate totals
 delete from @results_database_schema.cohort_summary_stats where cohort_definition_id = @target_cohort_id;
 insert into @results_database_schema.cohort_summary_stats (cohort_definition_id, base_count, final_count)
-select @target_cohort_id as cohort_definition_id, 
-(select count(event_id) as total from #qualified_events) as person_count,
-coalesce((
-  select sr.person_count 
+select @target_cohort_id as cohort_definition_id, PC.total as person_count, coalesce(FC.total, 0) as final_count
+FROM
+(select count(event_id) as total from #qualified_events) PC,
+(select sr.person_count as total
   from @results_database_schema.cohort_inclusion_result sr
   CROSS JOIN (select count(*) as total_rules from @results_database_schema.cohort_inclusion where cohort_definition_id = @target_cohort_id) RuleTotal
   where cohort_definition_id = @target_cohort_id and sr.inclusion_rule_mask = POWER(cast(2 as bigint),RuleTotal.total_rules)-1
-),0) as final_count
+) FC
 ;
 }
 

@@ -107,7 +107,7 @@ insert into @results_database_schema.cohort_summary_stats (cohort_definition_id,
 select @target_cohort_id as cohort_definition_id, PC.total as person_count, coalesce(FC.total, 0) as final_count
 FROM
 (select count(event_id) as total from #qualified_events) PC,
-(select sr.person_count as total
+(select sum(sr.person_count) as total
   from @results_database_schema.cohort_inclusion_result sr
   CROSS JOIN (select count(*) as total_rules from @results_database_schema.cohort_inclusion where cohort_definition_id = @target_cohort_id) RuleTotal
   where cohort_definition_id = @target_cohort_id and sr.inclusion_rule_mask = POWER(cast(2 as bigint),RuleTotal.total_rules)-1

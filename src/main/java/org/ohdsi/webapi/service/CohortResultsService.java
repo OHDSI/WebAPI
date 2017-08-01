@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -44,12 +45,16 @@ import org.ohdsi.webapi.cohortresults.CohortResultsAnalysisRunner;
 import org.ohdsi.webapi.cohortresults.CohortSpecificSummary;
 import org.ohdsi.webapi.cohortresults.CohortSpecificTreemap;
 import org.ohdsi.webapi.cohortresults.CohortVisitsDrilldown;
+import org.ohdsi.webapi.cohortresults.DataCompletenessAttr;
+import org.ohdsi.webapi.cohortresults.EntropyAttr;
 import org.ohdsi.webapi.cohortresults.HierarchicalConceptRecord;
 import org.ohdsi.webapi.cohortresults.ScatterplotRecord;
 import org.ohdsi.webapi.cohortresults.VisualizationData;
 import org.ohdsi.webapi.cohortresults.VisualizationDataRepository;
+import org.ohdsi.webapi.cohortresults.mapper.AnalysisResultsMapper;
 import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.model.results.Analysis;
+import org.ohdsi.webapi.model.results.AnalysisResults;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.SessionUtils;
@@ -1595,7 +1600,130 @@ public class CohortResultsService extends AbstractDaoService {
 
       return attrs;
   }
+  
+  public List<AnalysisResults> getCohortAnalysesForDataCompleteness(@PathParam("id") final int id,
+          @PathParam("sourceKey") String sourceKey) {
 
+    String sql = null;
+    sql = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/datacompleteness/getCohortDataCompleteness.sql");
+
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+
+    sql = SqlRender.renderSql(sql, new String[]{"tableQualifier", "cohortDefinitionId"},
+            new String[]{resultsTableQualifier, String.valueOf(id)});
+    sql = SqlTranslate.translateSql(sql, getSourceDialect(), source.getSourceDialect());
+
+
+    AnalysisResultsMapper arm = new AnalysisResultsMapper();
+    
+    return getSourceJdbcTemplate(source).query(sql, arm);
+  }
+
+  @GET
+  @Path("{sourceKey}/{id}/datacompleteness")
+  @Produces(MediaType.APPLICATION_JSON)
+  public List<DataCompletenessAttr> getDataCompleteness(@PathParam("id") final int id,
+          @PathParam("sourceKey") String sourceKey) {
+      List<AnalysisResults> arl = this.getCohortAnalysesForDataCompleteness(id, sourceKey);
+      
+      List<DataCompletenessAttr> dcal = new ArrayList<DataCompletenessAttr>();
+      
+      Map<Integer, AnalysisResults> resultMap = new HashMap<Integer, AnalysisResults>();
+
+      for(AnalysisResults ar : arl){
+          resultMap.put(ar.getAnalysisId(), ar);
+      }
+      
+      DataCompletenessAttr aca = new DataCompletenessAttr();
+      aca.setCovariance("0~10");
+      aca.setGenderP(Float.parseFloat(resultMap.get(2001).getStratum1()));
+      aca.setRaceP(Float.parseFloat(resultMap.get(2011).getStratum1()));
+      aca.setEthP(Float.parseFloat(resultMap.get(2021).getStratum1()));
+      dcal.add(aca);
+      
+      aca = new DataCompletenessAttr();
+      aca.setCovariance("10~20");
+      aca.setGenderP(Float.parseFloat(resultMap.get(2002).getStratum1()));
+      aca.setRaceP(Float.parseFloat(resultMap.get(2012).getStratum1()));
+      aca.setEthP(Float.parseFloat(resultMap.get(2022).getStratum1()));
+      dcal.add(aca);
+      
+      aca = new DataCompletenessAttr();
+      aca.setCovariance("20~30");
+      aca.setGenderP(Float.parseFloat(resultMap.get(2003).getStratum1()));
+      aca.setRaceP(Float.parseFloat(resultMap.get(2013).getStratum1()));
+      aca.setEthP(Float.parseFloat(resultMap.get(2023).getStratum1()));
+      dcal.add(aca);
+      
+      aca = new DataCompletenessAttr();
+      aca.setCovariance("30~40");
+      aca.setGenderP(Float.parseFloat(resultMap.get(2004).getStratum1()));
+      aca.setRaceP(Float.parseFloat(resultMap.get(2014).getStratum1()));
+      aca.setEthP(Float.parseFloat(resultMap.get(2024).getStratum1()));
+      dcal.add(aca);
+
+      aca = new DataCompletenessAttr();
+      aca.setCovariance("40~50");
+      aca.setGenderP(Float.parseFloat(resultMap.get(2005).getStratum1()));
+      aca.setRaceP(Float.parseFloat(resultMap.get(2015).getStratum1()));
+      aca.setEthP(Float.parseFloat(resultMap.get(2025).getStratum1()));
+      dcal.add(aca);
+
+      aca = new DataCompletenessAttr();
+      aca.setCovariance("50~60");
+      aca.setGenderP(Float.parseFloat(resultMap.get(2006).getStratum1()));
+      aca.setRaceP(Float.parseFloat(resultMap.get(2016).getStratum1()));
+      aca.setEthP(Float.parseFloat(resultMap.get(2026).getStratum1()));
+      dcal.add(aca);
+
+      aca = new DataCompletenessAttr();
+      aca.setCovariance("60+");
+      aca.setGenderP(Float.parseFloat(resultMap.get(2007).getStratum1()));
+      aca.setRaceP(Float.parseFloat(resultMap.get(2017).getStratum1()));
+      aca.setEthP(Float.parseFloat(resultMap.get(2027).getStratum1()));
+      dcal.add(aca);
+
+      return dcal;
+  }
+
+    public List<AnalysisResults> getCohortAnalysesEntropy(final int id, String sourceKey) {
+        
+        String sql = null;
+        sql = ResourceHelper
+                .GetResourceAsString("/resources/cohortresults/sql/entropy/getEntropy.sql");
+        
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+        String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+        
+        sql = SqlRender.renderSql(sql, new String[] { "tableQualifier", "cohortDefinitionId" },
+            new String[] { resultsTableQualifier, String.valueOf(id) });
+        sql = SqlTranslate.translateSql(sql, getSourceDialect(), source.getSourceDialect());
+        
+        AnalysisResultsMapper arm = new AnalysisResultsMapper();
+        
+        return getSourceJdbcTemplate(source).query(sql, arm);
+    }
+
+    @GET
+    @Path("{sourceKey}/{id}/entropy")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<EntropyAttr> getEntropy(@PathParam("id") final int id,
+            @PathParam("sourceKey") String sourceKey) {
+        List<AnalysisResults> arl = this.getCohortAnalysesEntropy(id, sourceKey);
+        
+        List<EntropyAttr> el = new ArrayList<EntropyAttr>();
+        
+        for(AnalysisResults ar : arl){
+            EntropyAttr ea = new EntropyAttr();
+            ea.setDate(ar.getStratum1());
+            ea.setEntropy(Float.parseFloat(ar.getStratum2()));
+            el.add(ea);
+        }
+        
+        return el;
+    }
+    
    private String JoinArray(final String[] array) {
     String result = "";
 

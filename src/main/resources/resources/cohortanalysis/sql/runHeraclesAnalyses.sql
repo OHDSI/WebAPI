@@ -6527,7 +6527,9 @@ INSERT INTO @results_schema.HERACLES_results (cohort_definition_id,
 				from 
 				(select * from @CDM_schema.OBSERVATION observ
 					join #HERACLES_cohort co
-					on co.SUBJECT_ID = observ.PERSON_ID) all_observ
+					on co.SUBJECT_ID = observ.PERSON_ID
+					and observ.observation_date >= co.cohort_start_date
+					and observ.observation_date <= co.cohort_end_date) all_observ
 					order by obs_date, value_as_string) value_day_cnt 
 					order by obs_date, value_as_string) with_sum
 				) allProb

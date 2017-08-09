@@ -6522,7 +6522,10 @@ INSERT INTO @results_schema.HERACLES_results (cohort_definition_id,
 			from 
 			(
 				select all_observ.value_as_string, observation_date as obs_date, COUNT(*) 
-				OVER (PARTITION BY all_observ.value_as_string, trunc(all_observ.observation_date))
+				OVER (PARTITION BY all_observ.value_as_string,
+				DATEFROMPARTS(YEAR(all_observ.observation_date),MONTH(all_observ.observation_date),DAY(all_observ.observation_date))
+				--trunc(all_observ.observation_date)
+				)
 				as cnt
 				from 
 				(select * from @CDM_schema.OBSERVATION observ
@@ -6530,11 +6533,10 @@ INSERT INTO @results_schema.HERACLES_results (cohort_definition_id,
 					on co.SUBJECT_ID = observ.PERSON_ID
 					and observ.observation_date >= co.cohort_start_date
 					and observ.observation_date <= co.cohort_end_date) all_observ
-					order by obs_date, value_as_string) value_day_cnt 
-					order by obs_date, value_as_string) with_sum
+					) value_day_cnt 
+					) with_sum
 				) allProb
 		group by obs_date
-		order by obs_date
 ) entropyT;
 --}
 

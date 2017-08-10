@@ -6508,7 +6508,7 @@ INSERT INTO @results_schema.HERACLES_results (cohort_definition_id,
 		  cast(round(entropyT.entropy, 3) as varchar(max))
      FROM
 (select
-	YEAR(obs_date) + '-' + RIGHT('0' + RTRIM(MONTH(obs_date)), 2) + '-' + RIGHT('0' + RTRIM(day(obs_date)), 2) as d,
+	DATEFROMPARTS(YEAR(obs_date),MONTH(obs_date),DAY(obs_date)) d,
 --	cast(obs_date as varchar(10)) d, 
 	sum(probTimesLog) entropy from
 	(select obs_date, value_as_string, (1.0 * cnt) / (1.0 * total_per_day) prob, 
@@ -6521,7 +6521,7 @@ INSERT INTO @results_schema.HERACLES_results (cohort_definition_id,
 			as total_per_day
 			from 
 			(
-				select all_observ.value_as_string, observation_date as obs_date, COUNT(*) 
+				select all_observ.value_as_string, observation_date as obs_date, COUNT_BIG(*) 
 				OVER (PARTITION BY all_observ.value_as_string,
 				DATEFROMPARTS(YEAR(all_observ.observation_date),MONTH(all_observ.observation_date),DAY(all_observ.observation_date))
 				--trunc(all_observ.observation_date)

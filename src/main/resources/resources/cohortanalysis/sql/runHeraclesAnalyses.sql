@@ -6508,7 +6508,7 @@ INSERT INTO @results_schema.HERACLES_results (cohort_definition_id,
 		  cast(round(entropyT.entropy, 3) as varchar(max))
      FROM
 (select
-	DATEFROMPARTS(YEAR(obs_date),MONTH(obs_date),DAY(obs_date)) d,
+	CAST(YEAR(obs_date) as varchar(4)) + '-' + RIGHT('0' + RTRIM(MONTH(obs_date)), 2) + '-' + RIGHT('0' + RTRIM(day(obs_date)), 2) as d,
 --	cast(obs_date as varchar(10)) d, 
 	sum(probTimesLog) entropy from
 	(select obs_date, value_as_string, (1.0 * cnt) / (1.0 * total_per_day) prob, 

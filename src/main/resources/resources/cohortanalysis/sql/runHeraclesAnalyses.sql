@@ -70,7 +70,10 @@
 --cohort: '1700,1701'
 --cohort-specific analyses: '1800,1801,1802,1803,1804,1805,1806,1807,1808,1809,1810,1811,1812,1813,1814,1815,1816,1817,1818,1819,1820,1821,1830,1831,1840,1841,1850,1851,1860,1861,1870,1871'
 --measurement: 1300,1301,1302,1303,1304,1305,1306,1307,1308,1309,1310,1311,1312,1313,1314,1315,1316,1317,1318,1319,1320
-
+--data completeness: gender:    2001, 2002, 2003, 2004, 2005, 2006, 2007
+--data completeness: race:      2011, 2012, 2013, 2014, 2015, 2016, 2017
+--data completeness: ethnicity: 2021, 2022, 2023, 2024, 2025, 2026, 2027
+--entropy: 2031
 
 delete from @results_schema.HERACLES_results where cohort_definition_id IN (@cohort_definition_id) and analysis_id IN (@list_of_analysis_ids);
 delete from @results_schema.HERACLES_results_dist where cohort_definition_id IN (@cohort_definition_id) and analysis_id IN (@list_of_analysis_ids);
@@ -5729,6 +5732,819 @@ group by c1.cohort_definition_id,
 ;
 --}	
 
+--{2001 IN (@list_of_analysis_ids)}?{
+-- 2001	Count and percentage of gender data completeness for age less than 10
+insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
+select @cohort_definition_id as cohort_definition_id, 2001 as analysis_id, round(innerT.valid_percentage, 2), 
+innerT.all_data_count, innerT.valid_data_count
+from 
+(select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
+	CASE
+       WHEN all_data.all_data_count = 0 THEN -999  
+       ELSE valid_data.valid_data_count * 100/all_data.all_data_count 
+	END as valid_percentage
+from 
+(SELECT count(distinct co.subject_id) as valid_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -10, getdate()))
+                    --EXTRACT (
+                    --   YEAR FROM TRUNC (SYSDATE, 'yyyy') - INTERVAL '10' YEAR)
+       LEFT JOIN @CDM_schema.CONCEPT c ON p.GENDER_CONCEPT_ID = c.CONCEPT_ID
+ WHERE    
+ p.gender_concept_id IS NOT NULL
+ and (lower(c.CONCEPT_NAME) = 'female'
+ or lower(c.CONCEPT_NAME) = 'male' )) valid_data,
+(SELECT count(distinct co.subject_id) as all_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -10, getdate()))
+                    --EXTRACT (
+                    --   YEAR FROM TRUNC (SYSDATE, 'yyyy') - INTERVAL '10' YEAR)
+ ) all_data) innerT;
+--}
+
+--{2002 IN (@list_of_analysis_ids)}?{
+-- 2002	Count and percentage of gender data completeness for age between 10~20
+insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
+select @cohort_definition_id as cohort_definition_id, 2002 as analysis_id, round(innerT.valid_percentage, 2), 
+innerT.all_data_count, innerT.valid_data_count
+from 
+(select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
+	CASE
+       WHEN all_data.all_data_count = 0 THEN -999  
+       ELSE valid_data.valid_data_count * 100/all_data.all_data_count 
+	END as valid_percentage
+from 
+(SELECT count(distinct co.subject_id) as valid_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -20, getdate()))
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -10, getdate()))
+       LEFT JOIN @CDM_schema.CONCEPT c ON p.GENDER_CONCEPT_ID = c.CONCEPT_ID
+ WHERE    
+ p.gender_concept_id IS NOT NULL
+ and (lower(c.CONCEPT_NAME) = 'female'
+ or lower(c.CONCEPT_NAME) = 'male' )) valid_data,
+(SELECT count(distinct co.subject_id) as all_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -20, getdate()))
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -10, getdate()))
+ ) all_data) innerT;
+--}
+
+--{2003 IN (@list_of_analysis_ids)}?{
+-- 2003	Count and percentage of gender data completeness for age between 20~30
+insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
+select @cohort_definition_id as cohort_definition_id, 2003 as analysis_id, round(innerT.valid_percentage, 2), 
+innerT.all_data_count, innerT.valid_data_count
+from 
+(select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
+	CASE
+       WHEN all_data.all_data_count = 0 THEN -999  
+       ELSE valid_data.valid_data_count * 100/all_data.all_data_count 
+	END as valid_percentage
+from 
+(SELECT count(distinct co.subject_id) as valid_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -30, getdate()))
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -20, getdate()))
+       LEFT JOIN @CDM_schema.CONCEPT c ON p.GENDER_CONCEPT_ID = c.CONCEPT_ID
+ WHERE    
+ p.gender_concept_id IS NOT NULL
+ and (lower(c.CONCEPT_NAME) = 'female'
+ or lower(c.CONCEPT_NAME) = 'male' )) valid_data,
+(SELECT count(distinct co.subject_id) as all_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -30, getdate()))
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -20, getdate()))
+ ) all_data) innerT;
+--}
+
+--{2004 IN (@list_of_analysis_ids)}?{
+-- 2004	Count and percentage of gender data completeness for age between 30~40
+insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
+select @cohort_definition_id as cohort_definition_id, 2004 as analysis_id, round(innerT.valid_percentage, 2), 
+innerT.all_data_count, innerT.valid_data_count
+from 
+(select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
+	CASE
+       WHEN all_data.all_data_count = 0 THEN -999  
+       ELSE valid_data.valid_data_count * 100/all_data.all_data_count 
+	END as valid_percentage
+from 
+(SELECT count(distinct co.subject_id) as valid_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -40, getdate()))
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -30, getdate()))
+       LEFT JOIN @CDM_schema.CONCEPT c ON p.GENDER_CONCEPT_ID = c.CONCEPT_ID
+ WHERE    
+ p.gender_concept_id IS NOT NULL
+ and (lower(c.CONCEPT_NAME) = 'female'
+ or lower(c.CONCEPT_NAME) = 'male' )) valid_data,
+(SELECT count(distinct co.subject_id) as all_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -40, getdate()))
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -30, getdate()))
+ ) all_data) innerT;
+--}
+
+--{2005 IN (@list_of_analysis_ids)}?{
+-- 2005	Count and percentage of gender data completeness for age between 40~50
+insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
+select @cohort_definition_id as cohort_definition_id, 2005 as analysis_id, round(innerT.valid_percentage, 2), 
+innerT.all_data_count, innerT.valid_data_count
+from 
+(select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
+	CASE
+       WHEN all_data.all_data_count = 0 THEN -999  
+       ELSE valid_data.valid_data_count * 100/all_data.all_data_count 
+	END as valid_percentage
+from 
+(SELECT count(distinct co.subject_id) as valid_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -50, getdate()))
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -40, getdate()))
+       LEFT JOIN @CDM_schema.CONCEPT c ON p.GENDER_CONCEPT_ID = c.CONCEPT_ID
+ WHERE    
+ p.gender_concept_id IS NOT NULL
+ and (lower(c.CONCEPT_NAME) = 'female'
+ or lower(c.CONCEPT_NAME) = 'male' )) valid_data,
+(SELECT count(distinct co.subject_id) as all_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -50, getdate()))
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -40, getdate()))
+ ) all_data) innerT;
+--}
+
+--{2006 IN (@list_of_analysis_ids)}?{
+-- 2006	Count and percentage of gender data completeness for age between 50~60
+insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
+select @cohort_definition_id as cohort_definition_id, 2006 as analysis_id, round(innerT.valid_percentage, 2), 
+innerT.all_data_count, innerT.valid_data_count
+from 
+(select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
+	CASE
+       WHEN all_data.all_data_count = 0 THEN -999  
+       ELSE valid_data.valid_data_count * 100/all_data.all_data_count 
+	END as valid_percentage
+from 
+(SELECT count(distinct co.subject_id) as valid_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -60, getdate()))
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -50, getdate()))
+       LEFT JOIN @CDM_schema.CONCEPT c ON p.GENDER_CONCEPT_ID = c.CONCEPT_ID
+ WHERE    
+ p.gender_concept_id IS NOT NULL
+ and (lower(c.CONCEPT_NAME) = 'female'
+ or lower(c.CONCEPT_NAME) = 'male' )) valid_data,
+(SELECT count(distinct co.subject_id) as all_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -60, getdate()))
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -50, getdate()))
+ ) all_data) innerT;
+--}
+
+--{2007 IN (@list_of_analysis_ids)}?{
+-- 2007	Count and percentage of gender data completeness for age between 60+
+insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
+select @cohort_definition_id as cohort_definition_id, 2007 as analysis_id, round(innerT.valid_percentage, 2), 
+innerT.all_data_count, innerT.valid_data_count
+from 
+(select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
+	CASE
+       WHEN all_data.all_data_count = 0 THEN -999  
+       ELSE valid_data.valid_data_count * 100/all_data.all_data_count 
+	END as valid_percentage
+from 
+(SELECT count(distinct co.subject_id) as valid_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -60, getdate()))
+       LEFT JOIN @CDM_schema.CONCEPT c ON p.GENDER_CONCEPT_ID = c.CONCEPT_ID
+ WHERE    
+ p.gender_concept_id IS NOT NULL
+ and (lower(c.CONCEPT_NAME) = 'female'
+ or lower(c.CONCEPT_NAME) = 'male' )) valid_data,
+(SELECT count(distinct co.subject_id) as all_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -60, getdate()))
+ ) all_data) innerT;
+--}
+
+--{2011 IN (@list_of_analysis_ids)}?{
+-- 2011	Count and percentage of race data completeness for age less than 10
+insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
+select @cohort_definition_id as cohort_definition_id, 2011 as analysis_id, round(innerT.valid_percentage, 2), 
+innerT.all_data_count, innerT.valid_data_count
+from 
+(select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
+	CASE
+       WHEN all_data.all_data_count = 0 THEN -999  
+       ELSE valid_data.valid_data_count * 100/all_data.all_data_count 
+	END as valid_percentage
+from 
+(SELECT count(distinct co.subject_id) as valid_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -10, getdate()))
+       LEFT JOIN @CDM_schema.CONCEPT c ON p.RACE_CONCEPT_ID = c.CONCEPT_ID
+ WHERE    
+ p.RACE_CONCEPT_ID IS NOT NULL
+ and (lower(c.CONCEPT_NAME) not like 'other%'
+	and lower(c.CONCEPT_NAME) not like 'non%'
+	and lower(c.CONCEPT_NAME) not like '%not %'
+	and lower(c.CONCEPT_NAME) not like 'unknown'
+ )) valid_data,
+(SELECT count(distinct co.subject_id) as all_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -10, getdate()))
+ ) all_data) innerT;
+--}
+
+--{2012 IN (@list_of_analysis_ids)}?{
+-- 2012	Count and percentage of race data completeness for age between 10~20
+insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
+select @cohort_definition_id as cohort_definition_id, 2012 as analysis_id, round(innerT.valid_percentage, 2), 
+innerT.all_data_count, innerT.valid_data_count
+from 
+(select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
+	CASE
+       WHEN all_data.all_data_count = 0 THEN -999  
+       ELSE valid_data.valid_data_count * 100/all_data.all_data_count 
+	END as valid_percentage
+from 
+(SELECT count(distinct co.subject_id) as valid_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -20, getdate()))
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -10, getdate()))
+       LEFT JOIN @CDM_schema.CONCEPT c ON p.RACE_CONCEPT_ID = c.CONCEPT_ID
+ WHERE    
+ p.RACE_CONCEPT_ID IS NOT NULL
+ and (lower(c.CONCEPT_NAME) not like 'other%'
+	and lower(c.CONCEPT_NAME) not like 'non%'
+	and lower(c.CONCEPT_NAME) not like '%not %'
+	and lower(c.CONCEPT_NAME) not like 'unknown'
+ )) valid_data,
+(SELECT count(distinct co.subject_id) as all_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -20, getdate()))
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -10, getdate()))
+ ) all_data) innerT;
+--}
+
+--{2013 IN (@list_of_analysis_ids)}?{
+-- 2013	Count and percentage of race data completeness for age between 20~30
+insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
+select @cohort_definition_id as cohort_definition_id, 2013 as analysis_id, round(innerT.valid_percentage, 2), 
+innerT.all_data_count, innerT.valid_data_count
+from 
+(select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
+	CASE
+       WHEN all_data.all_data_count = 0 THEN -999  
+       ELSE valid_data.valid_data_count * 100/all_data.all_data_count 
+	END as valid_percentage
+from 
+(SELECT count(distinct co.subject_id) as valid_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -30, getdate()))
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -20, getdate()))
+       LEFT JOIN @CDM_schema.CONCEPT c ON p.RACE_CONCEPT_ID = c.CONCEPT_ID
+ WHERE    
+ p.RACE_CONCEPT_ID IS NOT NULL
+ and (lower(c.CONCEPT_NAME) not like 'other%'
+	and lower(c.CONCEPT_NAME) not like 'non%'
+	and lower(c.CONCEPT_NAME) not like '%not %'
+	and lower(c.CONCEPT_NAME) not like 'unknown'
+ )) valid_data,
+(SELECT count(distinct co.subject_id) as all_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -30, getdate()))
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -20, getdate()))
+ ) all_data) innerT;
+--}
+
+--{2014 IN (@list_of_analysis_ids)}?{
+-- 2014	Count and percentage of race data completeness for age between 30~40
+insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
+select @cohort_definition_id as cohort_definition_id, 2014 as analysis_id, round(innerT.valid_percentage, 2), 
+innerT.all_data_count, innerT.valid_data_count
+from 
+(select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
+	CASE
+       WHEN all_data.all_data_count = 0 THEN -999  
+       ELSE valid_data.valid_data_count * 100/all_data.all_data_count 
+	END as valid_percentage
+from 
+(SELECT count(distinct co.subject_id) as valid_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -40, getdate()))
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -30, getdate()))
+       LEFT JOIN @CDM_schema.CONCEPT c ON p.RACE_CONCEPT_ID = c.CONCEPT_ID
+ WHERE    
+ p.RACE_CONCEPT_ID IS NOT NULL
+ and (lower(c.CONCEPT_NAME) not like 'other%'
+	and lower(c.CONCEPT_NAME) not like 'non%'
+	and lower(c.CONCEPT_NAME) not like '%not %'
+	and lower(c.CONCEPT_NAME) not like 'unknown'
+ )) valid_data,
+(SELECT count(distinct co.subject_id) as all_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -40, getdate()))
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -30, getdate()))
+ ) all_data) innerT;
+--}
+
+--{2015 IN (@list_of_analysis_ids)}?{
+-- 2015	Count and percentage of race data completeness for age between 40~50
+insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
+select @cohort_definition_id as cohort_definition_id, 2015 as analysis_id, round(innerT.valid_percentage, 2), 
+innerT.all_data_count, innerT.valid_data_count
+from 
+(select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
+	CASE
+       WHEN all_data.all_data_count = 0 THEN -999  
+       ELSE valid_data.valid_data_count * 100/all_data.all_data_count 
+	END as valid_percentage
+from 
+(SELECT count(distinct co.subject_id) as valid_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -50, getdate()))
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -40, getdate()))
+       LEFT JOIN @CDM_schema.CONCEPT c ON p.RACE_CONCEPT_ID = c.CONCEPT_ID
+ WHERE    
+ p.RACE_CONCEPT_ID IS NOT NULL
+ and (lower(c.CONCEPT_NAME) not like 'other%'
+	and lower(c.CONCEPT_NAME) not like 'non%'
+	and lower(c.CONCEPT_NAME) not like '%not %'
+	and lower(c.CONCEPT_NAME) not like 'unknown'
+ )) valid_data,
+(SELECT count(distinct co.subject_id) as all_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -50, getdate()))
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -40, getdate()))
+ ) all_data) innerT;
+--}
+
+--{2016 IN (@list_of_analysis_ids)}?{
+-- 2016	Count and percentage of race data completeness for age between 50~60
+insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
+select @cohort_definition_id as cohort_definition_id, 2016 as analysis_id, round(innerT.valid_percentage, 2), 
+innerT.all_data_count, innerT.valid_data_count
+from 
+(select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
+	CASE
+       WHEN all_data.all_data_count = 0 THEN -999  
+       ELSE valid_data.valid_data_count * 100/all_data.all_data_count 
+	END as valid_percentage
+from 
+(SELECT count(distinct co.subject_id) as valid_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -60, getdate()))
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -50, getdate()))
+       LEFT JOIN @CDM_schema.CONCEPT c ON p.RACE_CONCEPT_ID = c.CONCEPT_ID
+ WHERE    
+ p.RACE_CONCEPT_ID IS NOT NULL
+ and (lower(c.CONCEPT_NAME) not like 'other%'
+	and lower(c.CONCEPT_NAME) not like 'non%'
+	and lower(c.CONCEPT_NAME) not like '%not %'
+	and lower(c.CONCEPT_NAME) not like 'unknown'
+ )) valid_data,
+(SELECT count(distinct co.subject_id) as all_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -60, getdate()))
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -50, getdate()))
+ ) all_data) innerT;
+--}
+
+--{2017 IN (@list_of_analysis_ids)}?{
+-- 2017	Count and percentage of race data completeness for age between 60+
+insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
+select @cohort_definition_id as cohort_definition_id, 2017 as analysis_id, round(innerT.valid_percentage, 2), 
+innerT.all_data_count, innerT.valid_data_count
+from 
+(select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
+	CASE
+       WHEN all_data.all_data_count = 0 THEN -999  
+       ELSE valid_data.valid_data_count * 100/all_data.all_data_count 
+	END as valid_percentage
+from 
+(SELECT count(distinct co.subject_id) as valid_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -60, getdate()))
+       LEFT JOIN @CDM_schema.CONCEPT c ON p.RACE_CONCEPT_ID = c.CONCEPT_ID
+ WHERE    
+ p.RACE_CONCEPT_ID IS NOT NULL
+ and (lower(c.CONCEPT_NAME) not like 'other%'
+	and lower(c.CONCEPT_NAME) not like 'non%'
+	and lower(c.CONCEPT_NAME) not like '%not %'
+	and lower(c.CONCEPT_NAME) not like 'unknown'
+ )) valid_data,
+(SELECT count(distinct co.subject_id) as all_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -60, getdate()))
+ ) all_data) innerT;
+--}
+
+--{2021 IN (@list_of_analysis_ids)}?{
+-- 2021	Count and percentage of ethnicity data completeness for age less than 10
+insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
+select @cohort_definition_id as cohort_definition_id, 2021 as analysis_id, round(innerT.valid_percentage, 2), 
+innerT.all_data_count, innerT.valid_data_count
+from 
+(select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
+	CASE
+       WHEN all_data.all_data_count = 0 THEN -999  
+       ELSE valid_data.valid_data_count * 100/all_data.all_data_count 
+	END as valid_percentage
+from 
+(SELECT count(distinct co.subject_id) as valid_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -10, getdate()))
+       LEFT JOIN @CDM_schema.CONCEPT c ON p.ETHNICITY_CONCEPT_ID = c.CONCEPT_ID
+ WHERE    
+ p.ETHNICITY_CONCEPT_ID IS NOT NULL
+ and (
+ 	lower(c.CONCEPT_NAME) not like '%unknown%'
+ )) valid_data,
+(SELECT count(distinct co.subject_id) as all_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -10, getdate()))
+ ) all_data) innerT;
+--}
+
+--{2022 IN (@list_of_analysis_ids)}?{
+-- 2022	Count and percentage of ethnicity data completeness for age between 10~20
+insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
+select @cohort_definition_id as cohort_definition_id, 2022 as analysis_id, round(innerT.valid_percentage, 2), 
+innerT.all_data_count, innerT.valid_data_count
+from 
+(select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
+	CASE
+       WHEN all_data.all_data_count = 0 THEN -999  
+       ELSE valid_data.valid_data_count * 100/all_data.all_data_count 
+	END as valid_percentage
+from 
+(SELECT count(distinct co.subject_id) as valid_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -20, getdate()))
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -10, getdate()))
+       LEFT JOIN @CDM_schema.CONCEPT c ON p.ETHNICITY_CONCEPT_ID = c.CONCEPT_ID
+ WHERE    
+ p.ETHNICITY_CONCEPT_ID IS NOT NULL
+ and (
+ 	lower(c.CONCEPT_NAME) not like '%unknown%'
+ )) valid_data,
+(SELECT count(distinct co.subject_id) as all_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -20, getdate()))
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -10, getdate()))
+ ) all_data) innerT;
+--}
+
+--{2023 IN (@list_of_analysis_ids)}?{
+-- 2023	Count and percentage of ethnicity data completeness for age between 20~30
+insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
+select @cohort_definition_id as cohort_definition_id, 2023 as analysis_id, round(innerT.valid_percentage, 2), 
+innerT.all_data_count, innerT.valid_data_count
+from 
+(select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
+	CASE
+       WHEN all_data.all_data_count = 0 THEN -999  
+       ELSE valid_data.valid_data_count * 100/all_data.all_data_count 
+	END as valid_percentage
+from 
+(SELECT count(distinct co.subject_id) as valid_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -30, getdate()))
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -20, getdate()))
+       LEFT JOIN @CDM_schema.CONCEPT c ON p.ETHNICITY_CONCEPT_ID = c.CONCEPT_ID
+ WHERE    
+ p.ETHNICITY_CONCEPT_ID IS NOT NULL
+ and (
+ 	lower(c.CONCEPT_NAME) not like '%unknown%'
+ )) valid_data,
+(SELECT count(distinct co.subject_id) as all_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -30, getdate()))
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -20, getdate()))
+ ) all_data) innerT;
+--}
+
+--{2024 IN (@list_of_analysis_ids)}?{
+-- 2024	Count and percentage of ethnicity data completeness for age between 30~40
+insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
+select @cohort_definition_id as cohort_definition_id, 2024 as analysis_id, round(innerT.valid_percentage, 2), 
+innerT.all_data_count, innerT.valid_data_count
+from 
+(select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
+	CASE
+       WHEN all_data.all_data_count = 0 THEN -999  
+       ELSE valid_data.valid_data_count * 100/all_data.all_data_count 
+	END as valid_percentage
+from 
+(SELECT count(distinct co.subject_id) as valid_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -40, getdate()))
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -30, getdate()))
+       LEFT JOIN @CDM_schema.CONCEPT c ON p.ETHNICITY_CONCEPT_ID = c.CONCEPT_ID
+ WHERE    
+ p.ETHNICITY_CONCEPT_ID IS NOT NULL
+ and (
+ 	lower(c.CONCEPT_NAME) not like '%unknown%'
+ )) valid_data,
+(SELECT count(distinct co.subject_id) as all_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -40, getdate()))
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -30, getdate()))
+ ) all_data) innerT;
+--}
+
+--{2025 IN (@list_of_analysis_ids)}?{
+-- 2025	Count and percentage of ethnicity data completeness for age between 40~50
+insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
+select @cohort_definition_id as cohort_definition_id, 2025 as analysis_id, round(innerT.valid_percentage, 2), 
+innerT.all_data_count, innerT.valid_data_count
+from 
+(select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
+	CASE
+       WHEN all_data.all_data_count = 0 THEN -999  
+       ELSE valid_data.valid_data_count * 100/all_data.all_data_count 
+	END as valid_percentage
+from 
+(SELECT count(distinct co.subject_id) as valid_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -50, getdate()))
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -40, getdate()))
+       LEFT JOIN @CDM_schema.CONCEPT c ON p.ETHNICITY_CONCEPT_ID = c.CONCEPT_ID
+ WHERE    
+ p.ETHNICITY_CONCEPT_ID IS NOT NULL
+ and (
+ 	lower(c.CONCEPT_NAME) not like '%unknown%'
+ )) valid_data,
+(SELECT count(distinct co.subject_id) as all_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -50, getdate()))
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -40, getdate()))
+ ) all_data) innerT;
+--}
+
+--{2026 IN (@list_of_analysis_ids)}?{
+-- 2026	Count and percentage of ethnicity data completeness for age between 50~60
+insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
+select @cohort_definition_id as cohort_definition_id, 2026 as analysis_id, round(innerT.valid_percentage, 2), 
+innerT.all_data_count, innerT.valid_data_count
+from 
+(select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
+	CASE
+       WHEN all_data.all_data_count = 0 THEN -999  
+       ELSE valid_data.valid_data_count * 100/all_data.all_data_count 
+	END as valid_percentage
+from 
+(SELECT count(distinct co.subject_id) as valid_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -60, getdate()))
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -50, getdate()))
+       LEFT JOIN @CDM_schema.CONCEPT c ON p.ETHNICITY_CONCEPT_ID = c.CONCEPT_ID
+ WHERE    
+ p.ETHNICITY_CONCEPT_ID IS NOT NULL
+ and (
+ 	lower(c.CONCEPT_NAME) not like '%unknown%'
+ )) valid_data,
+(SELECT count(distinct co.subject_id) as all_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH >
+             				year(DATEADD(year, -60, getdate()))
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -50, getdate()))
+ ) all_data) innerT;
+--}
+
+--{2027 IN (@list_of_analysis_ids)}?{
+-- 2027	Count and percentage of ethnicity data completeness for age 60+
+insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
+select @cohort_definition_id as cohort_definition_id, 2027 as analysis_id, round(innerT.valid_percentage, 2), 
+innerT.all_data_count, innerT.valid_data_count
+from 
+(select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
+	CASE
+       WHEN all_data.all_data_count = 0 THEN -999  
+       ELSE valid_data.valid_data_count * 100/all_data.all_data_count 
+	END as valid_percentage
+from 
+(SELECT count(distinct co.subject_id) as valid_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -60, getdate()))
+       LEFT JOIN @CDM_schema.CONCEPT c ON p.ETHNICITY_CONCEPT_ID = c.CONCEPT_ID
+ WHERE    
+ p.ETHNICITY_CONCEPT_ID IS NOT NULL
+ and (
+ 	lower(c.CONCEPT_NAME) not like '%unknown%'
+ )) valid_data,
+(SELECT count(distinct co.subject_id) as all_data_count
+  FROM #HERACLES_cohort co
+       JOIN @CDM_schema.person p
+          ON     co.SUBJECT_ID = p.PERSON_ID
+             AND p.YEAR_OF_BIRTH <=
+             				year(DATEADD(year, -60, getdate()))
+ ) all_data) innerT;
+--}
+
+--{2031 IN (@list_of_analysis_ids)}?{
+-- 2031	entropy 
+INSERT INTO @results_schema.HERACLES_results (cohort_definition_id,
+                              analysis_id,
+                              stratum_1,
+                              stratum_2)
+    SELECT @cohort_definition_id AS cohort_definition_id,
+          2031 AS analysis_id,
+          entropyT.d,
+		  cast(round(entropyT.entropy, 3) as varchar(max))
+     FROM
+(select
+	obs_date as d,
+--	CAST(YEAR(obs_date) as varchar(4)) + '-' + RIGHT('0' + RTRIM(MONTH(obs_date)), 2) + '-' + RIGHT('0' + RTRIM(day(obs_date)), 2) as d,
+--	cast(obs_date as varchar(10)) d, 
+	sum(probTimesLog) entropy from
+	(select obs_date, value_as_string, (1.0 * cnt) / (1.0 * total_per_day) prob, 
+--		(-1.0) * (((1.0 * cnt) / (1.0 * total_per_day))* log(2, (1.0 * cnt) / (1.0 * total_per_day))) probTimesLog,
+		(-1.0) * (((1.0 * cnt) / (1.0 * total_per_day)) * (log((1.0 * cnt) / (1.0 * total_per_day))/log(2))) probTimesLog,
+		cnt, total_per_day
+		from
+		(select obs_date, value_as_string, cnt, sum(cnt)   
+			over (partition by obs_date)
+			as total_per_day
+			from 
+			(
+				select all_observ.value_as_string,
+				CAST(YEAR(all_observ.observation_date) as varchar(4)) + '-' + RIGHT('0' + RTRIM(MONTH(all_observ.observation_date)), 2) + '-' + RIGHT('0' + RTRIM(day(all_observ.observation_date)), 2) as obs_date,
+				--observation_date as obs_date, 
+				COUNT_BIG(*) 
+				OVER (PARTITION BY all_observ.value_as_string,
+--				DATEFROMPARTS(YEAR(all_observ.observation_date),MONTH(all_observ.observation_date),DAY(all_observ.observation_date))
+				CAST(YEAR(all_observ.observation_date) as varchar(4)) + '-' + RIGHT('0' + RTRIM(MONTH(all_observ.observation_date)), 2) + '-' + RIGHT('0' + RTRIM(day(all_observ.observation_date)), 2)
+				--trunc(all_observ.observation_date)
+				)
+				as cnt
+				from 
+				(select * from @CDM_schema.OBSERVATION observ
+					join #HERACLES_cohort co
+					on co.SUBJECT_ID = observ.PERSON_ID
+					and observ.observation_date >= co.cohort_start_date
+					and observ.observation_date <= co.cohort_end_date) all_observ
+					) value_day_cnt 
+					) with_sum
+				) allProb
+		group by obs_date
+) entropyT;
+--}
+
 TRUNCATE TABLE #HERACLES_cohort;
 DROP TABLE #HERACLES_cohort;
 
@@ -6439,4 +7255,3 @@ WHERE ord1.analysis_id IN (717)
 	
 
 --}
-

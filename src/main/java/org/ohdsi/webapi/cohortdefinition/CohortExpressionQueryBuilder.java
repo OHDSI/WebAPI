@@ -51,6 +51,8 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
   // Strategy templates
   private final static String DATE_OFFSET_STRATEGY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/dateOffsetStrategy.sql");
   private final static String CUSTOM_ERA_STRATEGY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/customEraStrategy.sql");
+  private final static String EVENT_END_DATE_STRATEGY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/eventEndDateStrategy.sql");
+
   
   public static class BuildExpressionQueryOptions {
     @JsonProperty("cohortId")  
@@ -1843,6 +1845,27 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
     return "start_date";
   }
   
+  private String getDateFieldForEventEndDateStrategy (EventEndDateStrategy.DateField dateField) {
+	switch (dateField) {
+	  case EventMaxEndDate:
+		return "max(end_date) as end_date";
+	  case EventEndDate:
+		return "end_date"
+	}
+	return "max(end_date) as end_date";
+  }
+  
+  private String getGroupByForEventEndDateStrategy (EventEndDateStrategy.DateField dateField) {
+	switch (dateField) {
+	  case EventMaxEndDate:
+		return "group by event_id, person_id";
+	  case EventEndDate:
+		return "";
+	}
+	return "group by event_id, person_id";
+  }
+ 
+  
   @Override
   public String getStrategySql(DateOffsetStrategy strat, String eventTable) 
   {
@@ -1874,7 +1897,18 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
     return insertSql;    
   }
   
-  
+  @Override
+  public String getStrategySql(EventEndDateStrategy strat, String eventTable)
+  {
+	String insertSql = "-- Event End Date Strategy\nINSERT INTO #cohort_ends (event_id, person_id, end_date)\n@eventEndDateStrategySql";
+	
+	String strategySql = StringUtils.replace(EVENT_END_DATE_STRATEGY_TEMPLATE, "@dateField",getDateFieldForEventEndDateStrategy(strat.dateField));
+	strategySql = StriingUtils.replace(strategySql, "@groupBy",getGroupByForEventEndDateStrategy(strat.dateField));
+	
+	insertSql = StringUtils.replace(insertSql, "@eventEndDateStrategySql", strategySql);
+	
+	return insertSql;
+  }
 // </editor-fold>
   
 }

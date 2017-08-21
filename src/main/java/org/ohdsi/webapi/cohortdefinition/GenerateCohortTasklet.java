@@ -15,6 +15,9 @@
  */
 package org.ohdsi.webapi.cohortdefinition;
 
+import org.ohdsi.circe.cohortdefinition.CohortExpression;
+import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
+import org.ohdsi.circe.cohortdefinition.InclusionRule;
 import org.ohdsi.webapi.GenerationStatus;
 import java.util.Calendar;
 import java.util.Date;

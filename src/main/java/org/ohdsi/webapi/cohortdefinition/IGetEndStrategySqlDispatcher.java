@@ -22,5 +22,4 @@ package org.ohdsi.webapi.cohortdefinition;
 interface IGetEndStrategySqlDispatcher {
   public String getStrategySql(DateOffsetStrategy strategy, String eventTable);
   public String getStrategySql(CustomEraStrategy strategy, String eventTable);
-  public String getStrategySql(EventEndDateStrategy strategy, String eventTable);
 }

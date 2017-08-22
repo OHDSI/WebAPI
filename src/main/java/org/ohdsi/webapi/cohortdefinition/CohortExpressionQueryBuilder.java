@@ -51,8 +51,8 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
   // Strategy templates
   private final static String DATE_OFFSET_STRATEGY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/dateOffsetStrategy.sql");
   private final static String CUSTOM_ERA_STRATEGY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/customEraStrategy.sql");
-  private final static String EVENT_END_DATE_STRATEGY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/eventEndDateStrategy.sql");
-
+  
+  private final static String ERA_CONSTRUCTOR_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/eraConstructor.sql");
   
   public static class BuildExpressionQueryOptions {
     @JsonProperty("cohortId")  
@@ -268,6 +268,14 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
     return query;
   }
   
+  public String getEraConstructorQuery(EraConstructor eraConstructor) {
+	String query = ERA_CONSTRUCTOR_TEMPLATE;
+	
+	query = StringUtils.replace(query, "@eraGroup", "person_id");
+	query = StringUtils.replace(query, "@eraconstructorpad", Integer.toString(0));
+	return query;
+  }
+  
   public String buildExpressionQuery(CohortExpression expression, BuildExpressionQueryOptions options) {
     String resultSql = COHORT_QUERY_TEMPLATE;
 
@@ -327,6 +335,11 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
       
     resultSql = StringUtils.replace(resultSql, "@censoringInserts", getCensoringEventsQuery(expression.censoringCriteria));
     
+	resultSql = StringUtils.replace(resultSql, "@eraConstructor", getEraConstructorQuery(expression.eraConstructor));
+	
+	// table from which to records are read and inserted into the db
+	resultSql = StringUtils.replace(resultSql, "@output_table", "#era_constructor_output");
+	
     if (options != null)
     {
       // replease query parameters with tokens
@@ -1845,26 +1858,6 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
     return "start_date";
   }
   
-  private String getDateFieldForEventEndDateStrategy (EventEndDateStrategy.DateField dateField) {
-	switch (dateField) {
-	  case EventMaxEndDate:
-		return "max(end_date) as end_date";
-	  case EventEndDate:
-		return "end_date"
-	}
-	return "max(end_date) as end_date";
-  }
-  
-  private String getGroupByForEventEndDateStrategy (EventEndDateStrategy.DateField dateField) {
-	switch (dateField) {
-	  case EventMaxEndDate:
-		return "group by event_id, person_id";
-	  case EventEndDate:
-		return "";
-	}
-	return "group by event_id, person_id";
-  }
- 
   
   @Override
   public String getStrategySql(DateOffsetStrategy strat, String eventTable) 
@@ -1896,19 +1889,7 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
     
     return insertSql;    
   }
-  
-  @Override
-  public String getStrategySql(EventEndDateStrategy strat, String eventTable)
-  {
-	String insertSql = "-- Event End Date Strategy\nINSERT INTO #cohort_ends (event_id, person_id, end_date)\n@eventEndDateStrategySql";
-	
-	String strategySql = StringUtils.replace(EVENT_END_DATE_STRATEGY_TEMPLATE, "@dateField",getDateFieldForEventEndDateStrategy(strat.dateField));
-	strategySql = StriingUtils.replace(strategySql, "@groupBy",getGroupByForEventEndDateStrategy(strat.dateField));
-	
-	insertSql = StringUtils.replace(insertSql, "@eventEndDateStrategySql", strategySql);
-	
-	return insertSql;
-  }
+
 // </editor-fold>
   
 }

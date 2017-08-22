@@ -26,8 +26,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.WRAPPER_OBJECT)
 @JsonSubTypes({
   @JsonSubTypes.Type(value = DateOffsetStrategy.class, name = "DateOffset"),
-  @JsonSubTypes.Type(value = CustomEraStrategy.class, name = "CustomEra"),
-  @JsonSubTypes.Type(value = EventEndDateStrategy.class, name = "EventEndDate")
+  @JsonSubTypes.Type(value = CustomEraStrategy.class, name = "CustomEra")
 })
 public abstract class EndStrategy {
   public abstract String accept(IGetEndStrategySqlDispatcher dispatcher, String eventTable);

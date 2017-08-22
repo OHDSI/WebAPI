@@ -1,11 +1,12 @@
 SELECT 
 	c1.concept_id								AS "conceptId",
 	c1.concept_name								AS "conceptName",
-	ROUND(CAST(num.stratum_2 AS DECIMAL), 2)	AS "yNumPersons",
-	num.count_value								AS "xCount"
+	CAST(ROUND((100.0*num.count_value / denom.count_value), 0) AS INT) AS "yNumPersons",
+	num.stratum_2								AS "xCount"
 FROM 
-	(SELECT stratum_1, stratum_2, count_value 
+	(SELECT count_value FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 1) denom,
+	(SELECT CAST(stratum_1 AS INT) stratum_1, CAST(stratum_2 AS INT) stratum_2, count_value 
 		FROM @results_database_schema.ACHILLES_results 
 		WHERE analysis_id = 1891) num
-	INNER JOIN @vocab_database_schema.concept c1 ON CAST(num.stratum_1 AS INT) = c1.concept_id
+	INNER JOIN @vocab_database_schema.concept c1 ON num.stratum_1 = c1.concept_id
 WHERE c1.concept_id = @conceptId

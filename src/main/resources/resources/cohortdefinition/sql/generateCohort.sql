@@ -63,8 +63,8 @@ with era_constructor_input (person_id, start_date, end_date) as
 	select F.person_id, F.start_date, F.end_date
 	FROM (
 	  select I.event_id, I.person_id, I.start_date, E.end_date, row_number() over (partition by I.person_id, I.event_id order by E.end_date) as ordinal 
-	  from included_events I
-	  join cohort_ends E on I.event_id = E.event_id and I.person_id = E.person_id and E.end_date >= I.start_date
+	  from #included_events I
+	  join #cohort_ends E on I.event_id = E.event_id and I.person_id = E.person_id and E.end_date >= I.start_date
 	) F
 	WHERE F.ordinal = 1
 )

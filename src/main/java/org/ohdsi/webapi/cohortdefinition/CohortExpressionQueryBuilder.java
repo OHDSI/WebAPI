@@ -268,7 +268,7 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
     return query;
   }
   
-  public String getEraConstructorQuery(EraConstructor eraConstructor) {
+  public String getEraConstructorQuery(EraConstructorSettings eraConstructorSettings) {
 	String query = ERA_CONSTRUCTOR_TEMPLATE;
 	
 	query = StringUtils.replace(query, "@eraGroup", "person_id");
@@ -335,10 +335,10 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
       
     resultSql = StringUtils.replace(resultSql, "@censoringInserts", getCensoringEventsQuery(expression.censoringCriteria));
     
-	resultSql = StringUtils.replace(resultSql, "@eraConstructor", getEraConstructorQuery(expression.eraConstructor));
+    resultSql = StringUtils.replace(resultSql, "@eraConstructor", getEraConstructorQuery(expression.eraConstructorSettings));
 	
 	// table from which to records are read and inserted into the db
-	resultSql = StringUtils.replace(resultSql, "@output_table", "#era_constructor_output");
+    resultSql = StringUtils.replace(resultSql, "@output_table", "#era_constructor_output");
 	
     if (options != null)
     {

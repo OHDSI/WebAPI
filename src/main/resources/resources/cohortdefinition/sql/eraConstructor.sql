@@ -70,5 +70,5 @@ from
 		cteEnds as b
 	on a.groupid = b.groupid
 	group by @eraGroup, end_date
-)
+) q
 ;

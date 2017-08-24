@@ -3,7 +3,7 @@ package org.ohdsi.webapi.cohortdefinition;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class EraConstructorSettings {
+public class CollapseSettings {
 	
 	@JsonProperty("ConstructorCollapseType")
 	public CollapseType constructor = new CollapseType();

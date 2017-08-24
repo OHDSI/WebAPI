@@ -269,6 +269,7 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
   }
   
   public String getCollapseConstructorQuery(CollapseSettings collapseSettings) {
+	// default constructor is era constructor. as more collapse strategies are introduced, the query template and parameters need to be changed to match.
 	String query = ERA_CONSTRUCTOR_TEMPLATE;
 	
 	query = StringUtils.replace(query, "@eraGroup", "person_id");

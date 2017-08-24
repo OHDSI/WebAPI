@@ -52,6 +52,8 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
   private final static String DATE_OFFSET_STRATEGY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/dateOffsetStrategy.sql");
   private final static String CUSTOM_ERA_STRATEGY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/customEraStrategy.sql");
   
+  private final static String ERA_CONSTRUCTOR_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/eraConstructor.sql");
+  
   public static class BuildExpressionQueryOptions {
     @JsonProperty("cohortId")  
     public Integer cohortId;
@@ -266,6 +268,15 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
     return query;
   }
   
+  public String getCollapseConstructorQuery(CollapseSettings collapseSettings) {
+	// default constructor is era constructor. as more collapse strategies are introduced, the query template and parameters need to be changed to match.
+	String query = ERA_CONSTRUCTOR_TEMPLATE;
+	
+	query = StringUtils.replace(query, "@eraGroup", "person_id");
+	query = StringUtils.replace(query, "@eraconstructorpad", Integer.toString(0));
+	return query;
+  }
+  
   public String buildExpressionQuery(CohortExpression expression, BuildExpressionQueryOptions options) {
     String resultSql = COHORT_QUERY_TEMPLATE;
 
@@ -325,6 +336,11 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
       
     resultSql = StringUtils.replace(resultSql, "@censoringInserts", getCensoringEventsQuery(expression.censoringCriteria));
     
+    resultSql = StringUtils.replace(resultSql, "@collapseConstructor", getCollapseConstructorQuery(expression.collapseSettings));
+	
+	// table from which to records are read and inserted into the db
+    resultSql = StringUtils.replace(resultSql, "@output_table", "#collapse_constructor_output");
+	
     if (options != null)
     {
       // replease query parameters with tokens
@@ -1843,6 +1859,7 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
     return "start_date";
   }
   
+  
   @Override
   public String getStrategySql(DateOffsetStrategy strat, String eventTable) 
   {
@@ -1873,8 +1890,7 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
     
     return insertSql;    
   }
-  
-  
+
 // </editor-fold>
   
 }

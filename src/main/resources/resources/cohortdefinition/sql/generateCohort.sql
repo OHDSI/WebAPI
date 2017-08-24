@@ -56,17 +56,35 @@ from #included_events;
 
 @censoringInserts
 
-DELETE FROM @target_database_schema.@target_cohort_table where cohort_definition_id = @target_cohort_id;
-INSERT INTO @target_database_schema.@target_cohort_table (cohort_definition_id, subject_id, cohort_start_date, cohort_end_date)
-select @target_cohort_id as cohort_definition_id, F.person_id, F.start_date, F.end_date
-FROM (
-  select I.person_id, I.start_date, E.end_date, row_number() over (partition by I.person_id, I.event_id order by E.end_date) as ordinal 
-  from #included_events I
-  join #cohort_ends E on I.event_id = E.event_id and I.person_id = E.person_id and E.end_date >= I.start_date
-) F
-WHERE F.ordinal = 1
+
+
+with collapse_constructor_input (person_id, start_date, end_date) as
+(
+	select F.person_id, F.start_date, F.end_date
+	FROM (
+	  select I.event_id, I.person_id, I.start_date, E.end_date, row_number() over (partition by I.person_id, I.event_id order by E.end_date) as ordinal 
+	  from #included_events I
+	  join #cohort_ends E on I.event_id = E.event_id and I.person_id = E.person_id and E.end_date >= I.start_date
+	) F
+	WHERE F.ordinal = 1
+)
+select person_id, start_date, end_date
+into #collapse_constructor_input
+from collapse_constructor_input
 ;
 
+@collapseConstructor
+
+-- None
+-- select person_id, start_date, max(end_date)
+-- select distinct person_id, start_date, end_date
+
+
+DELETE FROM @target_database_schema.@target_cohort_table where cohort_definition_id = @target_cohort_id;
+INSERT INTO @target_database_schema.@target_cohort_table (cohort_definition_id, subject_id, cohort_start_date, cohort_end_date)
+select @target_cohort_id as cohort_definition_id, person_id, start_date, end_date
+FROM @output_table CO --@output: change depending on what is selected for collapse construction
+;
 
 {@generateStats != 0}?{
 -- calculte matching group counts
@@ -114,6 +132,12 @@ FROM
 ) FC
 ;
 }
+
+TRUNCATE TABLE #collapse_constructor_input;
+DROP TABLE #collapse_constructor_input;
+
+TRUNCATE TABLE #collapse_constructor_output;
+DROP TABLE #collapse_constructor_output;
 
 TRUNCATE TABLE #cohort_ends;
 DROP TABLE #cohort_ends;

@@ -14,7 +14,7 @@ cteEndDates (groupid, end_date) AS -- the magic
 (	
 	SELECT
 		groupid
-		, DATEADD(day,@eraconstructorpad,end_date) as end_date
+		, DATEADD(day,-1 * @eraconstructorpad,end_date) as end_date
 	FROM
 	(
 		SELECT

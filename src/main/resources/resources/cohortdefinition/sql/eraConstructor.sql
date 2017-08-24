@@ -6,7 +6,7 @@ WITH cteSource (@eraGroup, start_date, end_date, groupid) AS
 		, start_date
 		, end_date
 		, dense_rank() over(order by @eraGroup) as groupid
-	FROM #era_constructor_input as so
+	FROM #collapse_constructor_input as so
 )
 ,
 --------------------------------------------------------------------------------------------------------------
@@ -60,7 +60,7 @@ cteEnds (groupid, start_date, end_date) AS
 		, c.start_date
 )
 select @eraGroup, start_date, end_date
-into #era_constructor_output
+into #collapse_constructor_output
 from
 (
 	select distinct @eraGroup , min(b.start_date) as start_date, b.end_date

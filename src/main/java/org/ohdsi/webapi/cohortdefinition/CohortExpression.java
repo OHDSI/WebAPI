@@ -45,6 +45,6 @@ public class CohortExpression {
   @JsonProperty("CensoringCriteria")
   public Criteria[] censoringCriteria;
   
-  @JsonProperty("EraConstructorSettings")
-  public EraConstructorSettings eraConstructorSettings;
+  @JsonProperty("CollapseSettings")
+  public CollapseSettings collapseSettings;
 }

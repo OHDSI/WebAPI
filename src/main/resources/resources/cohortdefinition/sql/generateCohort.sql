@@ -58,7 +58,7 @@ from #included_events;
 
 
 
-with era_constructor_input (person_id, start_date, end_date) as
+with collapse_constructor_input (person_id, start_date, end_date) as
 (
 	select F.person_id, F.start_date, F.end_date
 	FROM (
@@ -69,11 +69,11 @@ with era_constructor_input (person_id, start_date, end_date) as
 	WHERE F.ordinal = 1
 )
 select person_id, start_date, end_date
-into #era_constructor_input
-from era_constructor_input
+into #collapse_constructor_input
+from collapse_constructor_input
 ;
 
-@eraConstructor
+@collapseConstructor
 
 -- None
 -- select person_id, start_date, max(end_date)
@@ -83,7 +83,7 @@ from era_constructor_input
 DELETE FROM @target_database_schema.@target_cohort_table where cohort_definition_id = @target_cohort_id;
 INSERT INTO @target_database_schema.@target_cohort_table (cohort_definition_id, subject_id, cohort_start_date, cohort_end_date)
 select @target_cohort_id as cohort_definition_id, person_id, start_date, end_date
-FROM @output_table CO --@output: change depending on what is selected for era construction
+FROM @output_table CO --@output: change depending on what is selected for collapse construction
 ;
 
 {@generateStats != 0}?{
@@ -133,11 +133,11 @@ FROM
 ;
 }
 
-TRUNCATE TABLE #era_constructor_input;
-DROP TABLE #era_constructor_input;
+TRUNCATE TABLE #collapse_constructor_input;
+DROP TABLE #collapse_constructor_input;
 
-TRUNCATE TABLE #era_constructor_output;
-DROP TABLE #era_constructor_output;
+TRUNCATE TABLE #collapse_constructor_output;
+DROP TABLE #collapse_constructor_output;
 
 TRUNCATE TABLE #cohort_ends;
 DROP TABLE #cohort_ends;

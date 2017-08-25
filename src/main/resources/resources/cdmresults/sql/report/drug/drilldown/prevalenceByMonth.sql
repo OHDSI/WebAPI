@@ -1,8 +1,8 @@
 SELECT
-  c1.concept_id                                                AS "conceptId",
-  c1.concept_name                                              AS "conceptName",
-  num.stratum_2                                                AS "xCalendarMonth",
-  round(1000 * (1.0 * num.count_value / denom.count_value), 5) AS "yPrevalence1000Pp"
+  c1.concept_id                                                AS conceptId,
+  c1.concept_name                                              AS conceptName,
+  num.stratum_2                                                AS xCalendarMonth,
+  round(1000 * (1.0 * num.count_value / denom.count_value), 5) AS yPrevalence1000Pp
 FROM
   (SELECT *
    FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 702) num

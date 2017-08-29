@@ -5,7 +5,7 @@
  */
 package org.ohdsi.webapi.conceptset;
 
-import org.ohdsi.webapi.vocabulary.ConceptSetExpression;
+import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 
 /**
  *

@@ -429,6 +429,11 @@
       <artifactId>pac4j-oauth</artifactId>
       <version>1.9.2</version>
     </dependency>
+    <dependency>
+      <groupId>org.ohdsi</groupId>
+      <artifactId>circe</artifactId>
+      <version>1.1.1</version>
+    </dependency>
   </dependencies>
   <profiles>
     <profile>

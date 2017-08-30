@@ -14,7 +14,7 @@
     <jersey.version>2.14</jersey.version>
     <!-- Spring Boot manages spring.version as well -->
     <spring.boot.version>1.5.2.RELEASE</spring.boot.version>
-    <spring.batch.version>3.0.7.RELEASE</spring.batch.version>
+    <spring.batch.version>3.0.8.RELEASE</spring.batch.version>
     <flyway.version>3.1</flyway.version>
     <waffle.version>1.7.3</waffle.version>
     <start-class>org.ohdsi.webapi.WebApi</start-class>
@@ -227,6 +227,10 @@
         <enabled>false</enabled>
       </snapshots>
     </repository>
+    <repository>
+      <id>redshift</id>
+      <url>http://redshift-maven-repository.s3-website-us-east-1.amazonaws.com/release</url>
+    </repository>
   </repositories>
 
   <pluginRepositories>
@@ -246,6 +250,11 @@
         <version>${spring.boot.version}</version>
         <type>pom</type>
         <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.amazon.redshift</groupId>
+        <artifactId>redshift-jdbc4-no-awssdk</artifactId>
+        <version>1.2.8.1005</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -433,6 +442,20 @@
       <groupId>org.ohdsi</groupId>
       <artifactId>circe</artifactId>
       <version>1.2.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+      <version>20170516</version>
+    </dependency>
+    <dependency>
+      <groupId>org.ohdsi</groupId>
+      <artifactId>featureExtraction</artifactId>
+      <version>2.0.0-BETA</version>
+    </dependency>
+    <dependency>
+      <groupId>com.amazon.redshift</groupId>
+      <artifactId>redshift-jdbc4-no-awssdk</artifactId>
     </dependency>
   </dependencies>
   <profiles>

@@ -15,6 +15,9 @@
  */
 package org.ohdsi.webapi.cohortdefinition;
 
+import org.ohdsi.circe.cohortdefinition.CohortExpression;
+import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
+import org.ohdsi.circe.cohortdefinition.InclusionRule;
 import org.ohdsi.webapi.GenerationStatus;
 import java.util.Calendar;
 import java.util.Date;
@@ -90,9 +93,10 @@ public class GenerateCohortTasklet implements Tasklet {
       options.targetTable = jobParams.get("target_database_schema").toString() + "." + jobParams.get("target_table").toString();
       options.resultSchema = jobParams.get("results_database_schema").toString();
       options.generateStats = Boolean.valueOf(jobParams.get("generate_stats").toString());
-      
-      String deleteSql = String.format("DELETE FROM %s.cohort_inclusion WHERE cohort_definition_id = %d", options.resultSchema, options.cohortId);
-      this.jdbcTemplate.update(deleteSql);
+
+      String deleteSql = String.format("DELETE FROM %s.cohort_inclusion WHERE cohort_definition_id = %d;", options.resultSchema, options.cohortId);
+      deleteSql = SqlTranslate.translateSql(deleteSql,"sql server", jobParams.get("target_dialect").toString(), sessionId, null);
+      this.jdbcTemplate.batchUpdate(deleteSql.split(";")); // use batch update since SQL translation may produce multiple statements
 
       String insertSql = StringUtils.replace("INSERT INTO @results_schema.cohort_inclusion (cohort_definition_id, rule_sequence, name, description) VALUES (?,?,?,?)", "@results_schema", options.resultSchema);
       insertSql = SqlTranslate.translateSql(insertSql,"sql server", jobParams.get("target_dialect").toString(), sessionId, null);

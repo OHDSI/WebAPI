@@ -1,12 +1,13 @@
 SELECT
-  concept_hierarchy.rxnorm_ingredient_concept_id                 AS "conceptId",
-  isnull(concept_hierarchy.atc1_concept_name, 'NA') + '||' +
-  isnull(concept_hierarchy.atc3_concept_name, 'NA') + '||' +
-  isnull(concept_hierarchy.atc5_concept_name, 'NA') + '||' +
-  isnull(concept_hierarchy.rxnorm_ingredient_concept_name, '||') AS "conceptPath",
-  ar1.count_value                                                AS "numPersons",
-  1.0 * ar1.count_value / denom.count_value                      AS "percentPersons",
-  ar2.avg_value                                                  AS "lengthOfEra"
+  concept_hierarchy.rxnorm_ingredient_concept_id                 AS conceptId,
+  CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(
+    isnull(concept_hierarchy.atc1_concept_name, 'NA'), '||'),
+    isnull(concept_hierarchy.atc3_concept_name, 'NA')), '||'),
+    isnull(concept_hierarchy.atc5_concept_name, 'NA')), '||'),
+    isnull(concept_hierarchy.rxnorm_ingredient_concept_name, '||')) AS conceptPath,
+  ar1.count_value                                                AS numPersons,
+  1.0 * ar1.count_value / denom.count_value                      AS percentPersons,
+  ar2.avg_value                                                  AS lengthOfEra
 FROM (SELECT *
       FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 900) ar1
   INNER JOIN

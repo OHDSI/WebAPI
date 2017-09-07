@@ -1,4 +1,6 @@
 /*
+ * Copyright 2017 fdefalco.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -11,21 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ohdsi.webapi.vocabulary;
+package org.ohdsi.webapi.cdmresults;
 
+import java.util.HashMap;
 /**
- *
- * A Class that encapsulates the elements of a Concept Set Expression.
+ * @author fdefalco
  */
-public class ConceptSetExpression {
-  public static class ConceptSetItem
-  {
-    public Concept concept;
-    public boolean isExcluded;
-    public boolean includeDescendants;
-    public boolean includeMapped;
-  }
-
-  public ConceptSetItem[] items;
-  
+public class CDMResultsCache {
+    public boolean warm;
+    public HashMap<Long,Long[]> cache;
+    
+    public CDMResultsCache() {
+        warm = false;
+        cache = new HashMap<>();
+    }
+    
 }

@@ -20,10 +20,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
-import org.ohdsi.webapi.cohortdefinition.CohortExpressionQueryBuilder;
-import org.ohdsi.webapi.cohortdefinition.CriteriaGroup;
-import org.ohdsi.webapi.helper.ResourceHelper;
-import org.ohdsi.webapi.vocabulary.ConceptSetExpressionQueryBuilder;
+import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
+import org.ohdsi.circe.cohortdefinition.CriteriaGroup;
+import org.ohdsi.circe.helper.ResourceHelper;
+import org.ohdsi.circe.vocabulary.ConceptSetExpressionQueryBuilder;
 
 /**
  *

@@ -1,12 +1,13 @@
 SELECT
-  concept_hierarchy.concept_id                               AS "conceptId",
-  isNull(concept_hierarchy.level4_concept_name, 'NA')
-  + '||' + isNull(concept_hierarchy.level3_concept_name, 'NA')
-  + '||' + isNull(concept_hierarchy.level2_concept_name, 'NA')
-  + '||' + isNull(concept_hierarchy.proc_concept_name, 'NA') AS "conceptPath",
-  ar1.count_value                                            AS "numPersons",
-  1.0 * ar1.count_value / denom.count_value                  AS "percentPersons",
-  1.0 * ar2.count_value / ar1.count_value                    AS "recordsPerPerson"
+  concept_hierarchy.concept_id                               AS conceptId,
+  CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(
+    isNull(concept_hierarchy.level4_concept_name, 'NA'), '||'),
+    isNull(concept_hierarchy.level3_concept_name, 'NA')), '||'),
+    isNull(concept_hierarchy.level2_concept_name, 'NA')), '||'),
+    isNull(concept_hierarchy.proc_concept_name, 'NA'))       AS conceptPath,
+  ar1.count_value                                            AS numPersons,
+  1.0 * ar1.count_value / denom.count_value                  AS percentPersons,
+  1.0 * ar2.count_value / ar1.count_value                    AS recordsPerPerson
 FROM (SELECT *
       FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 600) ar1
   INNER JOIN
@@ -25,7 +26,7 @@ FROM (SELECT *
       (
         SELECT
           c1.concept_id,
-          v1.vocabulary_name + ' ' + c1.concept_code + ': ' + c1.concept_name AS proc_concept_name
+          CONCAT(CONCAT(CONCAT(CONCAT(v1.vocabulary_name, ' '), c1.concept_code), ': '), c1.concept_name) AS proc_concept_name
         FROM @vocab_database_schema.concept c1
         INNER JOIN @vocab_database_schema.vocabulary v1
         ON c1.vocabulary_id = v1.vocabulary_id

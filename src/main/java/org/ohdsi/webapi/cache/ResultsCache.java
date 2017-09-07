@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Observational Health Data Sciences and Informatics [OHDSI.org].
+ * Copyright 2017 fdefalco.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ohdsi.webapi.cohortdefinition;
+package org.ohdsi.webapi.cache;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.HashMap;
+import org.ohdsi.webapi.cdmresults.CDMResultsCache;
 
 /**
  *
- * @author Chris Knoll <cknoll@ohdsi.org>
+ * @author fdefalco
  */
-public class Period {
-  @JsonProperty("StartDate")
-  public String startDate;
-
-  @JsonProperty("EndDate")
-  public String endDate;
+public class ResultsCache {
+    private static HashMap<String,CDMResultsCache> sourceCaches;
+    
+    public HashMap<String,CDMResultsCache> getCaches() {
+        if (sourceCaches == null) {
+            sourceCaches = new HashMap<>();
+        }
+        
+        return sourceCaches;
+    }
+    
+    public CDMResultsCache getCache(String sourceKey) {
+        return this.getCaches().get(sourceKey);
+    }
 }

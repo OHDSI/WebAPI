@@ -496,30 +496,5 @@
         <hibernate.dialect>org.hibernate.dialect.SQLServer2012Dialect</hibernate.dialect>
       </properties>
     </profile>
-    <profile>
-      <id>webapi-bigquery</id>
-      <properties>
-        <datasource.driverClassName>net.starschema.clouddb.jdbc.BQDriver</datasource.driverClassName>
-        <datasource.url>jdbc:BQDriver:server-name/default-dataset?withServiceAccount=true&amp;transformQuery=false</datasource.url>
-        <datasource.username>USER</datasource.username>
-        <datasource.password>PASS</datasource.password>
-        <datasource.dialect>bigquery</datasource.dialect>
-        <datasource.ohdsi.schema>OHDSI_schema</datasource.ohdsi.schema>
-        <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
-        <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
-        <flyway.datasource.username>FLYWAY_USER</flyway.datasource.username>
-        <flyway.datasource.password>FLYWAY_PASS</flyway.datasource.password>
-        <flyway.locations>classpath:db/migration/postgres</flyway.locations>
-        <hibernate.dialect>org.hibernate.dialect.PostgreSQL9Dialect</hibernate.dialect>
-      </properties>
-      <dependencies>
-        <dependency>
-          <groupId>bqjdbc</groupId>
-          <artifactId>bqjdbc</artifactId>
-          <version>1.0</version>
-          <!-- If you have it local and not in a repository <systemPath></systemPath> -->
-        </dependency>
-      </dependencies>
-    </profile>
   </profiles>
 </project>

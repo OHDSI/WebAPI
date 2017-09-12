@@ -24,6 +24,7 @@ public class VocabularyServiceIT extends WebApiIT {
     public void concept() {
         log.info("Testing concept endpoint");
         final ResponseEntity<String> entity = getRestTemplate().getForEntity(this.endpointConcept, String.class);
+        assertOK(entity);
     }
     
     @Test

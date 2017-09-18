@@ -15,7 +15,7 @@
  */
 package org.ohdsi.webapi.ircalc;
 
-import org.ohdsi.webapi.cohortdefinition.CriteriaGroup;
+import org.ohdsi.circe.cohortdefinition.CriteriaGroup;
 
 /**
  *

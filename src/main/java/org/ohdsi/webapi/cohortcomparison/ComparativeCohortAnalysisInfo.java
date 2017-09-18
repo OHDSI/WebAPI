@@ -15,7 +15,7 @@
 package org.ohdsi.webapi.cohortcomparison;
 
 import java.io.Serializable;
-import org.ohdsi.webapi.vocabulary.ConceptSetExpression;
+import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 
 /**
  * @author Frank DeFalco <fdefalco@ohdsi.org>

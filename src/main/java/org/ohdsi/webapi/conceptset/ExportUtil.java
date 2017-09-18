@@ -22,8 +22,8 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import org.ohdsi.webapi.vocabulary.Concept;
-import org.ohdsi.webapi.vocabulary.ConceptSetExpression;
+import org.ohdsi.circe.vocabulary.Concept;
+import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 
 /**
  *

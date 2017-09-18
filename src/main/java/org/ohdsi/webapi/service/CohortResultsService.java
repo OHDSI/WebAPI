@@ -22,6 +22,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysis;
@@ -52,7 +53,6 @@ import org.ohdsi.webapi.cohortresults.ScatterplotRecord;
 import org.ohdsi.webapi.cohortresults.VisualizationData;
 import org.ohdsi.webapi.cohortresults.VisualizationDataRepository;
 import org.ohdsi.webapi.cohortresults.mapper.AnalysisResultsMapper;
-import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.model.results.Analysis;
 import org.ohdsi.webapi.model.results.AnalysisResults;
 import org.ohdsi.webapi.source.Source;

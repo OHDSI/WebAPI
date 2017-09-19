@@ -73,7 +73,7 @@
 --data completeness: gender:    2001, 2002, 2003, 2004, 2005, 2006, 2007
 --data completeness: race:      2011, 2012, 2013, 2014, 2015, 2016, 2017
 --data completeness: ethnicity: 2021, 2022, 2023, 2024, 2025, 2026, 2027
---entropy: 2031
+--entropy: 2031, 2032
 
 delete from @results_schema.HERACLES_results where cohort_definition_id IN (@cohort_definition_id) and analysis_id IN (@list_of_analysis_ids);
 delete from @results_schema.HERACLES_results_dist where cohort_definition_id IN (@cohort_definition_id) and analysis_id IN (@list_of_analysis_ids);
@@ -6522,7 +6522,7 @@ INSERT INTO @results_schema.HERACLES_results (cohort_definition_id,
 			as total_per_day
 			from 
 			(
-				select all_observ.value_as_string,
+			  select distinct all_observ.value_as_string,
 				CAST(YEAR(all_observ.observation_date) as varchar(4)) + '-' + RIGHT('0' + RTRIM(MONTH(all_observ.observation_date)), 2) + '-' + RIGHT('0' + RTRIM(day(all_observ.observation_date)), 2) as obs_date,
 				--observation_date as obs_date, 
 				COUNT_BIG(*) 
@@ -6542,6 +6542,83 @@ INSERT INTO @results_schema.HERACLES_results (cohort_definition_id,
 					) with_sum
 				) allProb
 		group by obs_date
+) entropyT;
+--}
+
+--{2032 IN (@list_of_analysis_ids)}?{
+-- 2032	care_site based entropy 
+INSERT INTO @results_schema.HERACLES_results (cohort_definition_id,
+                              analysis_id,
+                              stratum_1,
+                              stratum_2,
+							  stratum_3,
+							  stratum_4)
+    SELECT @cohort_definition_id AS cohort_definition_id,
+          2032 AS analysis_id,
+		  entropyT.care_site_id,
+		  entropyT.site_source_value,
+          entropyT.d,
+		  cast(round(entropyT.entropy, 3) as varchar(max))
+     FROM
+(
+  SELECT care_site_id     AS care_site_id,
+         site_source_value AS site_source_value,
+         obs_date         AS d,
+         SUM (probTimesLog) entropy
+    FROM (SELECT care_site_id,
+                 site_source_value,
+                 obs_date,
+                 value_as_string,
+                 (1.0 * cnt) / (1.0 * total_per_day) prob,
+                 (-1.0) * (((1.0 * cnt) / (1.0 * total_per_day)) * (log((1.0 * cnt) / (1.0 * total_per_day))/log(2))) probTimesLog,
+                 cnt,
+                 total_per_day
+            FROM (SELECT care_site_id,
+                         site_source_value,
+                         obs_date,
+                         value_as_string,
+                         cnt,
+                         SUM (cnt) OVER (PARTITION BY care_site_id, obs_date)
+                            AS total_per_day
+                    FROM (SELECT DISTINCT
+                                 all_observ.CARE_SITE_ID  AS care_site_id,
+                                 all_observ.site_source_value
+                                    AS site_source_value,
+                                 all_observ.value_as_string AS value_as_string,
+                                 CAST(YEAR(all_observ.observation_date) as varchar(4)) + '-' + RIGHT('0' + RTRIM(MONTH(all_observ.observation_date)), 2) + '-' + RIGHT('0' + RTRIM(day(all_observ.observation_date)), 2) as obs_date,
+                                 COUNT_BIG(*)
+                                 OVER (
+                                    PARTITION BY all_observ.care_site_id,
+                                                 all_observ.value_as_string,
+                                                 CAST(YEAR(all_observ.observation_date) as varchar(4)) + '-' + RIGHT('0' + RTRIM(MONTH(all_observ.observation_date)), 2) + '-' + RIGHT('0' + RTRIM(day(all_observ.observation_date)), 2))
+                                    AS cnt
+                            FROM (SELECT CASE
+                                            WHEN caresite.CARE_SITE_ID IS NULL
+                                            THEN
+                                               -1
+                                            ELSE
+                                               caresite.CARE_SITE_ID
+                                         END
+                                            AS care_site_id,
+                                         caresite.CARE_SITE_SOURCE_VALUE
+                                            AS site_source_value,
+                                         observ.*
+                                    FROM @CDM_schema.OBSERVATION observ
+                                         JOIN #HERACLES_cohort co
+                                            ON     co.SUBJECT_ID =
+                                                      observ.PERSON_ID
+                                               AND observ.observation_date >=
+                                                      co.cohort_start_date
+                                               AND observ.observation_date <=
+                                                      co.cohort_end_date
+                                         LEFT JOIN @CDM_schema.PROVIDER provider
+                                            ON provider.PROVIDER_ID =
+                                                  observ.PROVIDER_ID
+                                         LEFT JOIN @CDM_schema.CARE_SITE caresite
+                                            ON caresite.CARE_SITE_ID =
+                                                  provider.CARE_SITE_ID)
+                                 all_observ) value_day_cnt) with_sum) allProb
+GROUP BY care_site_id, site_source_value, obs_date
 ) entropyT;
 --}
 

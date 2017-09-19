@@ -1687,37 +1687,66 @@ public class CohortResultsService extends AbstractDaoService {
       return dcal;
   }
 
-    public List<AnalysisResults> getCohortAnalysesEntropy(final int id, String sourceKey) {
+    public List<AnalysisResults> getCohortAnalysesEntropy(final int id, String sourceKey, int entroppAnalysisId) {
         
         String sql = null;
-        sql = ResourceHelper
-                .GetResourceAsString("/resources/cohortresults/sql/entropy/getEntropy.sql");
+        sql = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/entropy/getEntropy.sql");
         
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
         
-        sql = SqlRender.renderSql(sql, new String[] { "tableQualifier", "cohortDefinitionId" },
-            new String[] { resultsTableQualifier, String.valueOf(id) });
+        sql = SqlRender.renderSql(sql, new String[] { "tableQualifier", "cohortDefinitionId", "entroppAnalysisId" },
+            new String[] { resultsTableQualifier, String.valueOf(id), String.valueOf(entroppAnalysisId) });
         sql = SqlTranslate.translateSql(sql, getSourceDialect(), source.getSourceDialect());
         
         AnalysisResultsMapper arm = new AnalysisResultsMapper();
         
         return getSourceJdbcTemplate(source).query(sql, arm);
     }
-
+    
     @GET
     @Path("{sourceKey}/{id}/entropy")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<EntropyAttr> getEntropy(@PathParam("id") final int id,
-            @PathParam("sourceKey") String sourceKey) {
-        List<AnalysisResults> arl = this.getCohortAnalysesEntropy(id, sourceKey);
+    public List<EntropyAttr> getEntropy(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey) {
+        List<AnalysisResults> arl = this.getCohortAnalysesEntropy(id, sourceKey, 2031);
         
         List<EntropyAttr> el = new ArrayList<EntropyAttr>();
         
-        for(AnalysisResults ar : arl){
+        for (AnalysisResults ar : arl) {
             EntropyAttr ea = new EntropyAttr();
             ea.setDate(ar.getStratum1());
             ea.setEntropy(Float.parseFloat(ar.getStratum2()));
+            el.add(ea);
+        }
+        
+        return el;
+    }
+    
+    @GET
+    @Path("{sourceKey}/{id}/allentropy")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<EntropyAttr> getAllEntropy(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey) {
+        List<AnalysisResults> arl = this.getCohortAnalysesEntropy(id, sourceKey, 2031);
+        
+        List<EntropyAttr> el = new ArrayList<EntropyAttr>();
+        
+        for (AnalysisResults ar : arl) {
+            EntropyAttr ea = new EntropyAttr();
+            ea.setDate(ar.getStratum1());
+            ea.setEntropy(Float.parseFloat(ar.getStratum2()));
+            ea.setInsitution("All sites");
+            el.add(ea);
+        }
+        
+        arl = this.getCohortAnalysesEntropy(id, sourceKey, 2032);
+        
+        for (AnalysisResults ar : arl) {
+            EntropyAttr ea = new EntropyAttr();
+            String careSite = ar.getStratum2() != null && !ar.getStratum2().trim().equals("")
+                    ? ar.getStratum1() + ":" + ar.getStratum2().trim() : ar.getStratum1();
+            ea.setInsitution(careSite);
+            ea.setDate(ar.getStratum3());
+            ea.setEntropy(Float.parseFloat(ar.getStratum4()));
             el.add(ea);
         }
         

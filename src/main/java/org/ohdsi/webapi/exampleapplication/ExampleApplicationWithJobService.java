@@ -1,5 +1,7 @@
 package org.ohdsi.webapi.exampleapplication;
 
+import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -170,7 +172,7 @@ public class ExampleApplicationWithJobService extends AbstractDaoService {
             });
             return ret;
         } catch (final TransactionException e) {
-            log.error(e.getMessage(), e);
+            log.error(whitelist(e));
             throw e;
         }
         

@@ -15,6 +15,8 @@
  */
 package org.ohdsi.webapi.service;
 
+import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.CSVWriter;
@@ -72,6 +74,7 @@ import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
@@ -172,13 +175,12 @@ public class IRAnalysisService extends AbstractDaoService {
   };
 
   private List<AnalysisReport.Summary> getAnalysisSummaryList(int id, Source source) {
-
-    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-
-    String summaryQuery = String.format("select target_id, outcome_id, sum(person_count) as person_count, sum(time_at_risk) as time_at_risk, sum(cases) as cases from %s.ir_analysis_result where analysis_id = %d GROUP BY target_id, outcome_id", resultsTableQualifier, id);
-    String translatedSql = SqlTranslate.translateSql(summaryQuery, "sql server", source.getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
-    List<AnalysisReport.Summary> summaryList = this.getSourceJdbcTemplate(source).query(translatedSql, summaryMapper);
-    return summaryList;
+    String tqName = "tableQualifier";
+    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    String sql = "select target_id, outcome_id, sum(person_count) as person_count, sum(time_at_risk) as time_at_risk," +
+      " sum(cases) as cases from @tableQualifier.ir_analysis_result where analysis_id = @id GROUP BY target_id, outcome_id";
+    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, tqName, tqValue, "id", whitelist(id));
+    return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), summaryMapper);
   }
 
   private final RowMapper<AnalysisReport.StrataStatistic> strataRuleStatisticMapper = new RowMapper<AnalysisReport.StrataStatistic>() {
@@ -201,11 +203,8 @@ public class IRAnalysisService extends AbstractDaoService {
 
   private List<AnalysisReport.StrataStatistic> getStrataStatistics(int id, Source source) {
     String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-    String statisticsQuery = STRATA_STATS_QUERY_TEMPLATE;
-    statisticsQuery = statisticsQuery.replace("@results_database_schema", resultsTableQualifier);
-    statisticsQuery = statisticsQuery.replace("@analysis_id", String.valueOf(id));
-    String translatedSql = SqlTranslate.translateSql(statisticsQuery, "sql server", source.getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
-    return this.getSourceJdbcTemplate(source).query(translatedSql, strataRuleStatisticMapper);
+    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, STRATA_STATS_QUERY_TEMPLATE, "results_database_schema", resultsTableQualifier, "analysis_id", whitelist(id));
+    return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), strataRuleStatisticMapper);
   }
 
   private int countSetBits(long n) {
@@ -236,12 +235,14 @@ public class IRAnalysisService extends AbstractDaoService {
 
   private String getStrataTreemapData(int analysisId, int targetId, int outcomeId, int inclusionRuleCount, Source source) {
     String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-    String analysisResultsQuery = String.format("select strata_mask, person_count, time_at_risk, cases from %s.ir_analysis_result where analysis_id = %d and target_id = %d and outcome_id = %d",
-            resultsTableQualifier, analysisId, targetId, outcomeId);
-    String translatedSql = SqlTranslate.translateSql(analysisResultsQuery, "sql server", source.getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
 
+    String query = "select strata_mask, person_count, time_at_risk, cases from @resultsTableQualifier.ir_analysis_result where analysis_id = @analysis_id and target_id = @target_id and outcome_id = @outcome_id";
+    Object[] paramValues = {analysisId, targetId, outcomeId};
+    String[] params = {"analysisId", "targetId", "outcomeId"};
+    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, query, "resultsTableQualifier", resultsTableQualifier, params, paramValues, SessionUtils.sessionId());
     // [0] is the inclusion rule bitmask, [1] is the count of the match
-    List<StratifyReportItem> items = this.getSourceJdbcTemplate(source).query(translatedSql, stratifyResultsMapper);
+    List<StratifyReportItem> items = getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), stratifyResultsMapper);
+
     Map<Integer, List<StratifyReportItem>> groups = new HashMap<>();
     for (StratifyReportItem item : items) {
       int bitsSet = countSetBits(item.bits);

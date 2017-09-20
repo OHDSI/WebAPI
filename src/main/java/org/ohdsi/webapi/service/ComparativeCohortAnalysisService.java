@@ -14,6 +14,8 @@
  */
 package org.ohdsi.webapi.service;
 
+import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -29,10 +31,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
-import org.ohdsi.sql.SqlRender;
-import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortcomparison.AttritionResult;
 import org.ohdsi.webapi.cohortcomparison.BalanceResult;
 import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysis;
@@ -42,13 +41,13 @@ import org.ohdsi.webapi.cohortcomparison.ModelScoreDistributionValue;
 import org.ohdsi.webapi.cohortcomparison.OutcomeModel;
 import org.ohdsi.webapi.cohortcomparison.PropensityScoreModelCovariate;
 import org.ohdsi.webapi.cohortcomparison.PropensityScoreModelReport;
-import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.rsb.RSBTasklet;
 import org.ohdsi.webapi.service.CohortDefinitionService.CohortDefinitionDTO;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -539,13 +538,10 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
     public Collection<AttritionResult> getAttritionResults(@PathParam("eid") int executionId) {
         ComparativeCohortAnalysisExecution ccae = getComparativeCohortAnalysisExecution(executionId);
         Source source = getSourceRepository().findBySourceId(ccae.getSourceId());
+        String sqlPath="/resources/cohortcomparison/sql/attrition.sql";
         String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-
-        String sqlAttrition = ResourceHelper.GetResourceAsString("/resources/cohortcomparison/sql/attrition.sql");
-        sqlAttrition = SqlRender.renderSql(sqlAttrition, new String[]{"resultsTableQualifier", "executionId"}, new String[]{
-            tableQualifier, Integer.toString(executionId)});
-        sqlAttrition = SqlTranslate.translateSql(sqlAttrition, "sql server", source.getSourceDialect());
-        return getSourceJdbcTemplate(source).query(sqlAttrition, attritionMapper);
+        PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sqlPath, "resultsTableQualifier", tableQualifier,"executionId", whitelist(executionId));
+        return getSourceJdbcTemplate(source).query(psr.getSql(),psr.getSetter(), attritionMapper);
     }
     
     @GET
@@ -554,13 +550,10 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
     public Collection<BalanceResult> getBalanceResults(@PathParam("eid") int executionId) {
         ComparativeCohortAnalysisExecution ccae = getComparativeCohortAnalysisExecution(executionId);
         Source source = getSourceRepository().findBySourceId(ccae.getSourceId());
+        String sqlPath="/resources/cohortcomparison/sql/balance.sql";
         String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-
-        String sqlBalance = ResourceHelper.GetResourceAsString("/resources/cohortcomparison/sql/balance.sql");
-        sqlBalance = SqlRender.renderSql(sqlBalance, new String[]{"resultsTableQualifier", "executionId"}, new String[]{
-            tableQualifier, Integer.toString(executionId)});
-        sqlBalance = SqlTranslate.translateSql(sqlBalance, "sql server", source.getSourceDialect());
-        return getSourceJdbcTemplate(source).query(sqlBalance, balanceMapper);
+        PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sqlPath, "resultsTableQualifier", tableQualifier,"executionId", whitelist(executionId));
+        return getSourceJdbcTemplate(source).query(psr.getSql(),psr.getSetter(), balanceMapper);
     }    
 
     @GET
@@ -569,15 +562,13 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
     public Collection<OutcomeModel> getOutcomeModel(@PathParam("eid") int executionId) {
         ComparativeCohortAnalysisExecution ccae = getComparativeCohortAnalysisExecution(executionId);
         Source source = getSourceRepository().findBySourceId(ccae.getSourceId());
+        String sqlPath="/resources/cohortcomparison/sql/outcome_model.sql";
         String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 
-        String sqlDist = ResourceHelper.GetResourceAsString("/resources/cohortcomparison/sql/outcome_model.sql");
-        sqlDist = SqlRender.renderSql(sqlDist, new String[]{"resultsTableQualifier", "executionId"}, new String[]{
-            tableQualifier, Integer.toString(executionId)});
-        sqlDist = SqlTranslate.translateSql(sqlDist, "sql server", source.getSourceDialect());
-        return getSourceJdbcTemplate(source).query(sqlDist, outcomeModelMapper);
+        PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sqlPath, "resultsTableQualifier", tableQualifier,"executionId", whitelist(executionId));
+        return getSourceJdbcTemplate(source).query(psr.getSql(),psr.getSetter(), outcomeModelMapper);
     }
-    
+
     @GET
     @Path("execution/{eid}/psmodelpropscore")
     @Produces(MediaType.APPLICATION_JSON)
@@ -585,12 +576,10 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
         ComparativeCohortAnalysisExecution ccae = getComparativeCohortAnalysisExecution(executionId);
         Source source = getSourceRepository().findBySourceId(ccae.getSourceId());
         String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-
-        String sqlDist = ResourceHelper.GetResourceAsString("/resources/cohortcomparison/sql/psmodel_prop_score.sql");
-        sqlDist = SqlRender.renderSql(sqlDist, new String[]{"resultsTableQualifier", "executionId"}, new String[]{
-            tableQualifier, Integer.toString(executionId)});
-        sqlDist = SqlTranslate.translateSql(sqlDist, "sql server", source.getSourceDialect());
-        return getSourceJdbcTemplate(source).query(sqlDist, ScoreDistributionMapper);
+        String sqlPath="/resources/cohortcomparison/sql/psmodel_prop_score.sql";
+        PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sqlPath, "resultsTableQualifier",
+          tableQualifier,"executionId", whitelist(executionId));
+        return getSourceJdbcTemplate(source).query(psr.getSql(),psr.getSetter(), ScoreDistributionMapper);
     }
     
     @GET
@@ -599,13 +588,11 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
     public Collection<ModelScoreDistributionValue> getPsModelPrefScore(@PathParam("eid") int executionId) {
         ComparativeCohortAnalysisExecution ccae = getComparativeCohortAnalysisExecution(executionId);
         Source source = getSourceRepository().findBySourceId(ccae.getSourceId());
+        String sqlPath="/resources/cohortcomparison/sql/psmodel_pref_score.sql";
         String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 
-        String sqlDist = ResourceHelper.GetResourceAsString("/resources/cohortcomparison/sql/psmodel_pref_score.sql");
-        sqlDist = SqlRender.renderSql(sqlDist, new String[]{"resultsTableQualifier", "executionId"}, new String[]{
-            tableQualifier, Integer.toString(executionId)});
-        sqlDist = SqlTranslate.translateSql(sqlDist, "sql server", source.getSourceDialect());
-        return getSourceJdbcTemplate(source).query(sqlDist, ScoreDistributionMapper);
+        PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sqlPath, "resultsTableQualifier", tableQualifier,"executionId", whitelist(executionId));
+        return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), ScoreDistributionMapper);
     }    
 
     @GET
@@ -615,12 +602,10 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
         ComparativeCohortAnalysisExecution ccae = getComparativeCohortAnalysisExecution(executionId);
         Source source = getSourceRepository().findBySourceId(ccae.getSourceId());
         String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-
-        String sqlDist = ResourceHelper.GetResourceAsString("/resources/cohortcomparison/sql/pop_prop_score.sql");
-        sqlDist = SqlRender.renderSql(sqlDist, new String[]{"resultsTableQualifier", "executionId"}, new String[]{
-            tableQualifier, Integer.toString(executionId)});
-        sqlDist = SqlTranslate.translateSql(sqlDist, "sql server", source.getSourceDialect());
-        return getSourceJdbcTemplate(source).query(sqlDist, ScoreDistributionMapper);
+        String sqlPath="/resources/cohortcomparison/sql/pop_prop_score.sql";
+        PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sqlPath, "resultsTableQualifier",
+          tableQualifier,"executionId", whitelist(executionId));
+        return getSourceJdbcTemplate(source).query(psr.getSql(),psr.getSetter(), ScoreDistributionMapper);
     }
 
     @GET
@@ -630,20 +615,15 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
         ComparativeCohortAnalysisExecution ccae = getComparativeCohortAnalysisExecution(executionId);
 
         Source source = getSourceRepository().findBySourceId(ccae.getSourceId());
+        String sqlPath = "/resources/cohortcomparison/sql/auc.sql";
         String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-
-        String sqlAuc = ResourceHelper.GetResourceAsString("/resources/cohortcomparison/sql/auc.sql");
-        sqlAuc = SqlRender.renderSql(sqlAuc, new String[]{"resultsTableQualifier", "executionId"}, new String[]{
-            tableQualifier, Integer.toString(executionId)});
-        sqlAuc = SqlTranslate.translateSql(sqlAuc, "sql server", source.getSourceDialect());
+        PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sqlPath, "resultsTableQualifier", tableQualifier,"executionId", whitelist(executionId));
         // TODO - why was object mapper throwing an error for the single value we are trying to retrieve
-        Float auc = getSourceJdbcTemplate(source).query(sqlAuc, aucMapper).get(0);
+        Float auc = getSourceJdbcTemplate(source).queryForObject(psr.getSql(),psr.getOrderedParams(), aucMapper);
 
-        String sqlPsmodel = ResourceHelper.GetResourceAsString("/resources/cohortcomparison/sql/psmodel.sql");
-        sqlPsmodel = SqlRender.renderSql(sqlPsmodel, new String[]{"resultsTableQualifier", "executionId"}, new String[]{
-            tableQualifier, Integer.toString(executionId)});
-        sqlPsmodel = SqlTranslate.translateSql(sqlPsmodel, "sql server", source.getSourceDialect());
-        ArrayList<PropensityScoreModelCovariate> covariates = (ArrayList<PropensityScoreModelCovariate>) getSourceJdbcTemplate(source).query(sqlPsmodel, covariateMapper);
+        sqlPath ="/resources/cohortcomparison/sql/psmodel.sql";
+        psr = new PreparedStatementRenderer(source, sqlPath, "resultsTableQualifier", tableQualifier,"executionId", whitelist(executionId));
+        ArrayList<PropensityScoreModelCovariate> covariates = (ArrayList<PropensityScoreModelCovariate>) getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), covariateMapper);
 
         PropensityScoreModelReport psmr = new PropensityScoreModelReport();
         psmr.setAuc(auc);

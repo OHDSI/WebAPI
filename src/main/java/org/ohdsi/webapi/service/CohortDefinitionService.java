@@ -5,6 +5,8 @@
  */
 package org.ohdsi.webapi.service;
 
+import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
@@ -59,6 +61,7 @@ import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.springframework.batch.core.Job;
@@ -157,7 +160,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 
   private CohortGenerationInfo findBySourceId(Set<CohortGenerationInfo> infoList, Integer sourceId) {
     for (CohortGenerationInfo info : infoList) {
-      if (info.getId().getSourceId() == sourceId) {
+      if (info.getId().getSourceId().equals(sourceId)) {
         return info;
       }
     }
@@ -166,22 +169,24 @@ public class CohortDefinitionService extends AbstractDaoService {
   
   private InclusionRuleReport.Summary getInclusionRuleReportSummary(int id, Source source) {
 
-    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-
-    String summaryQuery = String.format("select base_count, final_count from %s.cohort_summary_stats where cohort_definition_id = %d", resultsTableQualifier, id);
-    String translatedSql = SqlTranslate.translateSql(summaryQuery, "sql server", source.getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
-    List<InclusionRuleReport.Summary> summaryList = this.getSourceJdbcTemplate(source).query(translatedSql, summaryMapper);
-    if (summaryList.size() > 0)
-      return summaryList.get(0);
-    
-    return null;
+    String sql = "select base_count, final_count from @tableQualifier.cohort_summary_stats where cohort_definition_id = @id";
+    String tqName = "tableQualifier";
+    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, tqName, tqValue, "id", whitelist(id), SessionUtils.sessionId());
+    List<InclusionRuleReport.Summary> result = getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), summaryMapper);
+    return result.isEmpty()? new InclusionRuleReport.Summary() : result.get(0);
   }
-  
+
   private List<InclusionRuleReport.InclusionRuleStatistic> getInclusionRuleStatistics(int id, Source source) {
-    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-    String statisticsQuery = String.format("select i.rule_sequence, i.name, s.person_count, s.gain_count, s.person_total from %s.cohort_inclusion i join %s.cohort_inclusion_stats s on i.cohort_definition_id = s.cohort_definition_id and i.rule_sequence = s.rule_sequence where i.cohort_definition_id = %d ORDER BY i.rule_sequence", resultsTableQualifier, resultsTableQualifier, id);
-    String translatedSql = SqlTranslate.translateSql(statisticsQuery, "sql server", source.getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
-    return this.getSourceJdbcTemplate(source).query(translatedSql, inclusionRuleStatisticMapper);
+
+    String sql = "select i.rule_sequence, i.name, s.person_count, s.gain_count, s.person_total"
+        + " from @tableQualifier.cohort_inclusion i join @tableQualifier.cohort_inclusion_stats s on i.cohort_definition_id = s.cohort_definition_id"
+        + " and i.rule_sequence = s.rule_sequence"
+        + " where i.cohort_definition_id = @id ORDER BY i.rule_sequence";
+    String tqName = "tableQualifier";
+    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, tqName, tqValue, "id", whitelist(id), SessionUtils.sessionId());
+    return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), inclusionRuleStatisticMapper);
   }
   
   private int countSetBits(long n) {
@@ -198,13 +203,14 @@ public class CohortDefinitionService extends AbstractDaoService {
   }  
   
   private String getInclusionRuleTreemapData(int id, int inclusionRuleCount, Source source) {
-    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-    String smulationResultsQuery = String.format("select inclusion_rule_mask, person_count from %s.cohort_inclusion_result where cohort_definition_id = %d",
-            resultsTableQualifier, id);
-    String translatedSql = SqlTranslate.translateSql(smulationResultsQuery, "sql server", source.getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
+
+    String sql = "select inclusion_rule_mask, person_count from @tableQualifier.cohort_inclusion_result where cohort_definition_id = @id";
+    String tqName = "tableQualifier";
+    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, tqName, tqValue, "id", id, SessionUtils.sessionId());
 
     // [0] is the inclusion rule bitmask, [1] is the count of the match
-    List<Long[]> items = this.getSourceJdbcTemplate(source).query(translatedSql, inclusionRuleResultItemMapper);
+    List<Long[]> items = this.getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), inclusionRuleResultItemMapper);
     Map<Integer, List<Long[]>> groups = new HashMap<>();
     for (Long[] item : items) {
       int bitsSet = countSetBits(item[0]);
@@ -596,9 +602,9 @@ public class CohortDefinitionService extends AbstractDaoService {
 
     Source source = this.getSourceRepository().findBySourceKey(sourceKey);
 
-    InclusionRuleReport.Summary summary = getInclusionRuleReportSummary(id, source);
-    List<InclusionRuleReport.InclusionRuleStatistic> inclusionRuleStats = getInclusionRuleStatistics(id, source);
-    String treemapData = getInclusionRuleTreemapData(id, inclusionRuleStats.size(), source);
+    InclusionRuleReport.Summary summary = getInclusionRuleReportSummary(whitelist(id), source);
+    List<InclusionRuleReport.InclusionRuleStatistic> inclusionRuleStats = getInclusionRuleStatistics(whitelist(id), source);
+    String treemapData = getInclusionRuleTreemapData(whitelist(id), inclusionRuleStats.size(), source);
 
     InclusionRuleReport report = new InclusionRuleReport();
     report.summary = summary;

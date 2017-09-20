@@ -18,14 +18,7 @@ with breakdown (subject_id, cohort_start_date, cohort_end_date, gender,age,condi
 			left join (
 				select person_id,
 					round(count(*), cast(- floor(log10(abs(count(*) + 0.01))) as int)) drugs
-				from @tableQualifier.drug_exposure de
-				group by person_id
-			) drugs on c.subject_id = drugs.person_id
-			join @tableQualifier.person p on c.subject_id = p.person_id
-			join @tableQualifier.concept gc on p.gender_concept_id = gc.concept_id
-			where cohort_definition_id = @cohortDefinitionId
-		) cohort_people		
-    /*whereclause*/
+
 )
 select * 
 from (
@@ -33,4 +26,4 @@ from (
 		subject_id, cohort_start_date, cohort_end_date
 	from breakdown
 ) withrows
-where row_limit <= @rows/@groups
+where row_limit <=  cast(@rows as int) / cast(@groups as int)

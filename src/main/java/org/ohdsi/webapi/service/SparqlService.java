@@ -1,5 +1,7 @@
 package org.ohdsi.webapi.service;
 
+import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,6 +23,8 @@ import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.util.URIUtil;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
@@ -42,12 +46,12 @@ import org.springframework.stereotype.Component;
 @Path("evidence/")
 @Component
 public class SparqlService {
-	
+
+	private static final Log log = LogFactory.getLog(SparqlService.class);
+
 	@Autowired
-	  private Environment env;
-	
-	
-	
+	private Environment env;
+
 	@GET
 	  @Path("")
 	  @Produces(MediaType.APPLICATION_JSON)
@@ -87,7 +91,7 @@ public class SparqlService {
 			uriQuery = URIUtil.encodeQuery(query);
 		} catch (URIException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error(whitelist(e));
 		}
 		uriQuery = uriQuery + "&format=application%2Fsparql-results%2Bjson";
 	    List<RdfInfo> infoOnSources = new ArrayList<RdfInfo>();
@@ -188,10 +192,9 @@ public class SparqlService {
 
 	        }
 	    } catch (Exception e) {
-	    	e.printStackTrace();
+				log.error(whitelist(e));
 	    }
 	    JSONObject jsonObj = new JSONObject(stringBuilder.toString());
-	    JSONArray lineItems = jsonObj.getJSONObject("results").getJSONArray("bindings");
-	    return lineItems;
+	    return jsonObj.getJSONObject("results").getJSONArray("bindings");
 	}
 }

@@ -61,7 +61,7 @@ public class CohortGenerationInfoId implements Serializable {
   public boolean equals(Object o) {
     return ((o instanceof CohortGenerationInfoId) 
             && cohortDefinitionId.equals(((CohortGenerationInfoId) o).getCohortDefinitionId()) 
-            && sourceId == ((CohortGenerationInfoId) o).getSourceId());
+            && sourceId.equals(((CohortGenerationInfoId) o).getSourceId()));
   }
   
   public int hashCode() {

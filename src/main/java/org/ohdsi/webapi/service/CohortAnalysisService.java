@@ -1,5 +1,7 @@
 package org.ohdsi.webapi.service;
 
+import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -32,6 +34,7 @@ import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.model.results.Analysis;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -52,9 +55,6 @@ public class CohortAnalysisService extends AbstractDaoService {
 
 	@Autowired
 	private CohortDefinitionService definitionService;
-
-	@Autowired
-	private CohortResultsService resultsService;
 	
 	@Autowired
 	private VisualizationDataRepository visualizationDataRepository;
@@ -101,12 +101,11 @@ public class CohortAnalysisService extends AbstractDaoService {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	public List<Analysis> getCohortAnalyses() {
-          String sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/getCohortAnalyses.sql");
-
-          sql = SqlRender.renderSql(sql, new String[]{"ohdsi_database_schema"},
-                  new String[]{this.getOhdsiSchema()});
-          sql = SqlTranslate.translateSql(sql, getSourceDialect(), getDialect());
-          return getJdbcTemplate().query(sql, this.analysisMapper);
+		String sqlPath = "/resources/cohortanalysis/sql/getCohortAnalyses.sql";
+		String search = "ohdsi_database_schema";
+		String replace = getOhdsiSchema();
+		PreparedStatementRenderer psr = new PreparedStatementRenderer(null, sqlPath, search, replace);
+		return getJdbcTemplate().query(psr.getSql(), psr.getSetter(), this.analysisMapper);
 	}
 
     /**
@@ -114,18 +113,16 @@ public class CohortAnalysisService extends AbstractDaoService {
      * 
      * @return List of all cohort analyses and their statuses for the given cohort_defintion_id
      */
-    @GET
-    @Path("/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public List<CohortAnalysis> getCohortAnalysesForCohortDefinition(@PathParam("id") final int id) {
-        String sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/getCohortAnalysesForCohort.sql");
-        
-        sql = SqlRender.renderSql(sql, new String[] { "ohdsi_database_schema", "cohortDefinitionId" },
-            new String[] { this.getOhdsiSchema(), String.valueOf(id) });
-        sql = SqlTranslate.translateSql(sql, getSourceDialect(), getDialect(), SessionUtils.sessionId(), getOhdsiSchema());
-        
-        return getJdbcTemplate().query(sql, this.cohortAnalysisMapper);
-    }
+	@GET
+	@Path("/{id}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<CohortAnalysis> getCohortAnalysesForCohortDefinition(@PathParam("id") final int id) {
+        String sqlPath = "/resources/cohortanalysis/sql/getCohortAnalysesForCohort.sql";
+        String tqName = "ohdsi_database_schema";
+        String tqValue = getOhdsiSchema();
+        PreparedStatementRenderer psr = new PreparedStatementRenderer(null, sqlPath, tqName, tqValue, "cohortDefinitionId", whitelist(id), SessionUtils.sessionId());
+        return getJdbcTemplate().query(psr.getSql(), psr.getSetter(), this.cohortAnalysisMapper);
+	}
 
     /**
      * Returns the summary for the cohort
@@ -142,7 +139,7 @@ public class CohortAnalysisService extends AbstractDaoService {
 
         CohortSummary summary = new CohortSummary();
         try {
-            summary.setCohortDefinition(this.definitionService.getCohortDefinition(id));
+            summary.setCohortDefinition(this.definitionService.getCohortDefinition(whitelist(id)));
             summary.setAnalyses(this.getCohortAnalysesForCohortDefinition(id));
         } catch (Exception e) {
             log.error("unable to get cohort summary", e);
@@ -196,7 +193,7 @@ public class CohortAnalysisService extends AbstractDaoService {
 				analysisIds, conditionIds, drugIds, procedureIds, observationIds, measurementIds,
 				String.valueOf(task.isCohortPeriodOnly()), String.valueOf(task.getSource().getSourceId())};
 		sql = SqlRender.renderSql(sql, params, values);
-		sql = SqlTranslate.translateSql(sql, "sql server", task.getSource().getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
+		sql = SqlTranslate.translateSql(sql, task.getSource().getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
 
 		return sql;
 	}

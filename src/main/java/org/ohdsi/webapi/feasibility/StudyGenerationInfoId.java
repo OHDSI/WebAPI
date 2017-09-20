@@ -61,7 +61,7 @@ public class StudyGenerationInfoId implements Serializable {
   public boolean equals(Object o) {
     return ((o instanceof StudyGenerationInfoId) 
             && studyId.equals(((StudyGenerationInfoId) o).getStudyId()) 
-            && sourceId == ((StudyGenerationInfoId) o).getSourceId());
+            && sourceId.equals(((StudyGenerationInfoId) o).getSourceId()));
   }
   
   public int hashCode() {

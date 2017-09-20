@@ -15,6 +15,8 @@
  */
 package org.ohdsi.webapi.ircalc;
 
+import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Calendar;
 import java.util.Collection;
@@ -27,6 +29,8 @@ import org.apache.commons.logging.LogFactory;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.GenerationStatus;
+import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
@@ -77,7 +81,7 @@ public class PerformAnalysisTasklet implements Tasklet {
     
     Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
     Integer analysisId = Integer.valueOf(jobParams.get("analysis_id").toString());
-    int[] result = null;
+    int[] result;
     try {
       String sessionId = SessionUtils.sessionId();
       IncidenceRateAnalysis analysis = this.incidenceRateAnalysisRepository.findOne(analysisId);
@@ -87,16 +91,22 @@ public class PerformAnalysisTasklet implements Tasklet {
       options.cdmSchema = jobParams.get("cdm_database_schema").toString();
       options.resultsSchema = jobParams.get("results_database_schema").toString();
 
-      String deleteSql = String.format("DELETE FROM %s.ir_strata WHERE analysis_id = %d", options.resultsSchema, analysisId);
-      this.jdbcTemplate.update(deleteSql);
+      String delete = "DELETE FROM @tableQualifier.ir_strata WHERE analysis_id = @analysis_id";
+      PreparedStatementRenderer psr = new PreparedStatementRenderer(null, delete, "tableQualifier",
+        options.resultsSchema, "analysis_id", analysisId);
+      jdbcTemplate.update(psr.getSql(), psr.getSetter());
 
-      String insertSql = StringUtils.replace("INSERT INTO @results_schema.ir_strata (analysis_id, strata_sequence, name, description) VALUES (?,?,?,?)", "@results_schema", options.resultsSchema);
-      insertSql = SqlTranslate.translateSql(insertSql,"sql server", jobParams.get("target_dialect").toString(), sessionId, null);
+      String insert = "INSERT INTO @results_schema.ir_strata (analysis_id, strata_sequence, name, description) VALUES (@analysis_id,@strata_sequence,@name,@description)";
+
+      String [] params = {"analysis_id", "strata_sequence", "name", "description"};
       List<StratifyRule> strataRules = expression.strata;
       for (int i = 0; i< strataRules.size(); i++)
       {
         StratifyRule r = strataRules.get(i);
-        this.jdbcTemplate.update(insertSql, new Object[] { analysisId, i, r.name, r.description});
+        psr = new PreparedStatementRenderer(null, insert, "results_schema",
+          options.resultsSchema, params, new Object[] { analysisId, i, r.name, r.description});
+        psr.setTargetDialect(jobParams.get("target_dialect").toString());
+        jdbcTemplate.update(psr.getSql(), psr.getSetter());
       }
       
       String expressionSql = analysisQueryBuilder.buildAnalysisQuery(analysis, options);

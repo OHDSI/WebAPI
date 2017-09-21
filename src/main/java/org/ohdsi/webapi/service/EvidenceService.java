@@ -586,8 +586,11 @@ public class EvidenceService extends AbstractDaoService {
     String tqName = "tableQualifier";
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Evidence);
     String[] names = new String[]{"conditionConceptList", "ingredientConceptList"};
-    Object[] values = new Object[]{search.conditionConceptList, search.ingredientConceptList};
-    return new PreparedStatementRenderer(source, sqlPath, tqName, tqValue, names, values);
+    List<Integer> conditionConceptArray =  Arrays.stream(search.conditionConceptList).map(NumberUtils::toInt).collect(Collectors.toList());
+    List<Integer> ingredientConceptArray =  Arrays.stream(search.ingredientConceptList).map(NumberUtils::toInt).collect(Collectors.toList());
+    Object[] variableValues = new Object[]{conditionConceptArray.<Integer>toArray(), ingredientConceptArray.<Integer>toArray()};
+
+    return new PreparedStatementRenderer(source, sqlPath, tqName, tqValue, names, variableValues);
   }
 
   @POST

@@ -11,6 +11,7 @@ import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SecurityUtils;
+import org.springframework.util.StringUtils;
 
 public abstract class AbstractServiceTest {
 
@@ -29,8 +30,8 @@ public abstract class AbstractServiceTest {
 
   public static void assertSqlEquals(String expectedPath, PreparedStatementRenderer psr) throws IOException {
 
-    String expectedSql = SecurityUtils.cleanWhiteSpace(ResourceHelper.GetResourceAsString(expectedPath)).toLowerCase();
-    assertEquals(expectedSql, SecurityUtils.cleanWhiteSpace(psr.getSql()).toLowerCase());
+    String expectedSql = StringUtils.trimAllWhitespace(ResourceHelper.GetResourceAsString(expectedPath)).toLowerCase();
+    assertEquals(expectedSql, StringUtils.trimAllWhitespace(psr.getSql()).toLowerCase());
   }
 
   public Source getSource() {

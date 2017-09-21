@@ -31,9 +31,4 @@ public class SecurityUtils {
         }
 
     }
-
-    public static String cleanWhiteSpace(String resourceAsString) {
-
-        return StringUtils.trimAllWhitespace(resourceAsString);
-    }
 }

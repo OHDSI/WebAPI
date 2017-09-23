@@ -14,12 +14,17 @@
  */
 package org.ohdsi.webapi.service;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -35,18 +40,25 @@ import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortcomparison.AttritionResult;
 import org.ohdsi.webapi.cohortcomparison.BalanceResult;
+import org.ohdsi.webapi.cohortcomparison.CohortInfo;
 import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysis;
+import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisDefinition;
 import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisExecution;
 import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisInfo;
+import org.ohdsi.webapi.cohortcomparison.ConceptSetInfo;
 import org.ohdsi.webapi.cohortcomparison.ModelScoreDistributionValue;
+import org.ohdsi.webapi.cohortcomparison.OutcomeDefinition;
 import org.ohdsi.webapi.cohortcomparison.OutcomeModel;
 import org.ohdsi.webapi.cohortcomparison.PropensityScoreModelCovariate;
 import org.ohdsi.webapi.cohortcomparison.PropensityScoreModelReport;
+import org.ohdsi.webapi.cohortcomparison.TargetComparatorDefinition;
+import org.ohdsi.webapi.cohortdefinition.ExpressionType;
 import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.rsb.RSBTasklet;
 import org.ohdsi.webapi.service.CohortDefinitionService.CohortDefinitionDTO;
+import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.springframework.batch.core.Job;
@@ -68,6 +80,9 @@ import org.springframework.stereotype.Component;
 @Path("/comparativecohortanalysis/")
 public class ComparativeCohortAnalysisService extends AbstractDaoService {
 
+		@Autowired
+		private Security security;
+
     @Autowired
     private CohortDefinitionService cohortDefinitionService;
 
@@ -88,11 +103,38 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
 
     @Autowired
     private Environment env;
+		
+		@PersistenceContext
+		protected EntityManager entityManager;
+		
+		public static class ComparativeCohortAnalysisListItem 
+		{
+			public Integer analysisId;
+			public String name;
+			public String createdBy;
+			@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd, HH:mm")
+			public Date createdDate;
+			public String modifiedBy;
+			@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd, HH:mm")
+			public Date modifiedDate;
+		}
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Iterable<ComparativeCohortAnalysis> getComparativeCohortAnalyses() {
-        return getComparativeCohortAnalysisRepository().findAll();
+    public Iterable<ComparativeCohortAnalysisListItem> getComparativeCohortAnalyses() {
+			ArrayList<ComparativeCohortAnalysisService.ComparativeCohortAnalysisListItem> result = new ArrayList<>();
+			List<Object[]> defs = entityManager.createQuery("SELECT cd.id, cd.name, cd.createdBy, cd.createdDate, cd.modifiedBy, cd.modifiedDate FROM ComparativeCohortAnalysis cd").getResultList();
+			for (Object[] d : defs) {
+				ComparativeCohortAnalysisService.ComparativeCohortAnalysisListItem item = new ComparativeCohortAnalysisService.ComparativeCohortAnalysisListItem();
+				item.analysisId = (Integer)d[0];
+				item.name = (String)d[1];
+				item.createdBy = (String)d[2];
+				item.createdDate = (Date)d[3];
+				item.modifiedBy = (String)d[4];
+				item.modifiedDate = (Date)d[5];
+				result.add(item);
+			}
+			return result;
     }
 
    
@@ -100,13 +142,34 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public ComparativeCohortAnalysis createComparativeCohortAnalysis(ComparativeCohortAnalysis comparativeCohortAnalysis) {
-
       Date d = new Date();
-      comparativeCohortAnalysis.setAnalysisId(null);
-      comparativeCohortAnalysis.setCreated(d);
-      comparativeCohortAnalysis.setModified(d);
-      comparativeCohortAnalysis = this.getComparativeCohortAnalysisRepository().save(comparativeCohortAnalysis);
-      return comparativeCohortAnalysis;
+			ComparativeCohortAnalysis newCCA = new ComparativeCohortAnalysis();
+			
+			newCCA.setAnalysisId(null);
+			newCCA.setName(comparativeCohortAnalysis.getName());
+			newCCA.setCreatedDate(d);
+			newCCA.setCreatedBy(security.getSubject());
+			
+			// Set the analysis array
+			for(ComparativeCohortAnalysisDefinition def : comparativeCohortAnalysis.getAnalysisList()) {
+				def.setComparativeCohortAnalysis(newCCA);
+			}
+			newCCA.setAnalysisList(comparativeCohortAnalysis.getAnalysisList());
+			// Set the outcome array
+			for(OutcomeDefinition def : comparativeCohortAnalysis.getOutcomeList()) {
+				def.setComparativeCohortAnalysis(newCCA);
+			}
+			newCCA.setOutcomeList(comparativeCohortAnalysis.getOutcomeList());
+			
+			// Set the tc array
+			for(TargetComparatorDefinition def : comparativeCohortAnalysis.getTargetComparatorList()){
+				def.setComparativeCohortAnalysis(newCCA);
+			}
+			newCCA.setTargetComparatorList(comparativeCohortAnalysis.getTargetComparatorList());
+
+			// Save
+			newCCA = this.getComparativeCohortAnalysisRepository().save(newCCA);
+			return this.getComparativeCohortAnalysis(newCCA.getAnalysisId());
     }
 
     @Path("/{id}")
@@ -115,11 +178,24 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
     @Produces(MediaType.APPLICATION_JSON)
     public ComparativeCohortAnalysis updateComparativeCohortAnalysis(@PathParam("id") final int id, ComparativeCohortAnalysis comparativeCohortAnalysis) throws Exception {
         Date d = new Date();
-        comparativeCohortAnalysis.setCreated(d); // temporary workaround until client sends the current created value.
-        comparativeCohortAnalysis.setModified(d);
-        
+				ComparativeCohortAnalysis cca = this.getComparativeCohortAnalysis(id);
+				comparativeCohortAnalysis.setCreatedDate(cca.getCreatedDate());
+				comparativeCohortAnalysis.setCreatedBy(cca.getCreatedBy());
+				comparativeCohortAnalysis.setModifiedBy(security.getSubject());
+        comparativeCohortAnalysis.setModifiedDate(d);
+				
+				for(ComparativeCohortAnalysisDefinition def : comparativeCohortAnalysis.getAnalysisList()) {
+					def.setComparativeCohortAnalysis(comparativeCohortAnalysis);
+				}
+				for(OutcomeDefinition def : comparativeCohortAnalysis.getOutcomeList()) {
+					def.setComparativeCohortAnalysis(comparativeCohortAnalysis);
+				}
+				for(TargetComparatorDefinition def : comparativeCohortAnalysis.getTargetComparatorList()){
+					def.setComparativeCohortAnalysis(comparativeCohortAnalysis);
+				}
+				
         comparativeCohortAnalysis = this.getComparativeCohortAnalysisRepository().save(comparativeCohortAnalysis);
-        return comparativeCohortAnalysis;
+        return this.getComparativeCohortAnalysis(id);
     }
     
     /**
@@ -133,7 +209,112 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
     public void delete(@PathParam("id") final int id) {
      this.getComparativeCohortAnalysisRepository().delete(id);
     }
+		
+    @GET
+    @Path("{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ComparativeCohortAnalysisInfo getComparativeCohortAnalysis(@PathParam("id") int id) {
+        ComparativeCohortAnalysis analysis = this.getComparativeCohortAnalysisRepository().findOne(id);
+	      ComparativeCohortAnalysisInfo info = new ComparativeCohortAnalysisInfo(analysis);
+				
+				HashMap<Integer, CohortInfo> cohortList = new HashMap<Integer, CohortInfo>();
+				HashMap<Integer, ConceptSetInfo> conceptSetList = new HashMap<Integer, ConceptSetInfo>();
+				// Iterate over the targetComparatorList to retrieve the 
+				// details for each cohort and concept set
+				for(TargetComparatorDefinition tc : info.getTargetComparatorList()) {
+					if (tc.getTargetId() > 0 && !cohortList.containsKey(tc.getTargetId())) {
+						CohortInfo ci = getCohortInfo(tc.getTargetId());
+						info.cohortInfo.add(ci);
+						cohortList.put(tc.getTargetId(), ci);
+					}
+					if (tc.getComparatorId() > 0 && !cohortList.containsKey(tc.getComparatorId())) {
+						CohortInfo ci = getCohortInfo(tc.getComparatorId());
+						info.cohortInfo.add(ci);
+						cohortList.put(tc.getComparatorId(), ci);
+					}
+					if (tc.getPsInclusionId() > 0 && !conceptSetList.containsKey(tc.getPsInclusionId())) {
+						ConceptSetInfo csi = getConceptSetInfo(tc.getPsInclusionId());
+						info.conceptSetInfo.add(csi);
+						conceptSetList.put(tc.getPsInclusionId(), csi);
+					}
+					if (tc.getPsExclusionId() > 0 && !conceptSetList.containsKey(tc.getPsExclusionId())) {
+						ConceptSetInfo csi = getConceptSetInfo(tc.getPsExclusionId());
+						info.conceptSetInfo.add(csi);
+						conceptSetList.put(tc.getPsExclusionId(), csi);
+					}
+				}
+				
+				// Iterate over the outcomes to retrieve the cohort info
+				for(OutcomeDefinition od : info.getOutcomeList()) {
+					if (od.getOutcomeId() > 0 && !cohortList.containsKey(od.getOutcomeId())){ 
+						CohortInfo ci = getCohortInfo(od.getOutcomeId());
+						info.cohortInfo.add(ci);
+						cohortList.put(od.getOutcomeId(), ci);
+					}
+				}
+				
+				// Iterate over the analysis settings and retrieve any cohort
+				// and concept set information
+				for(ComparativeCohortAnalysisDefinition ccad : info.getAnalysisList()) {
+					if (ccad.getOmInclusionId() > 0 && !conceptSetList.containsKey(ccad.getOmInclusionId())){
+						ConceptSetInfo csi = getConceptSetInfo(ccad.getOmInclusionId());
+						info.conceptSetInfo.add(csi);
+						conceptSetList.put(ccad.getOmInclusionId(), csi);
+					}
+					if (ccad.getOmExclusionId() > 0 && !conceptSetList.containsKey(ccad.getOmExclusionId())){
+						ConceptSetInfo csi = getConceptSetInfo(ccad.getOmExclusionId());
+						info.conceptSetInfo.add(csi);
+						conceptSetList.put(ccad.getOmExclusionId(), csi);
+					}
+					if (ccad.getNegativeControlId() > 0 && !conceptSetList.containsKey(ccad.getNegativeControlId())){
+						ConceptSetInfo csi = getConceptSetInfo(ccad.getNegativeControlId());
+						info.conceptSetInfo.add(csi);
+						conceptSetList.put(ccad.getNegativeControlId(), csi);
+					}
+				}
 
+        return info;
+    }
+		
+		@GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("{id}/executions")
+    public Iterable<ComparativeCohortAnalysisExecution> getComparativeCohortAnalysisExecutions(@PathParam("id") int comparativeCohortAnalysisId) {
+        return getComparativeCohortAnalysisExecutionRepository().findAllByAnalysisId(comparativeCohortAnalysisId);
+    }
+	
+		
+		private CohortInfo getCohortInfo(int id) {
+			CohortInfo ci = null;
+
+			try {
+				CohortDefinitionDTO cd = cohortDefinitionService.getCohortDefinition(id);
+					ci = new CohortInfo();
+					ci.id = cd.id;
+					ci.name = cd.name;
+					ci.expression = cd.expression;
+			} catch (Exception e) {
+					// Cohort definition no longer exists 
+					log.debug("Cohort definition id = " + id + " no longer exists");
+			}
+			return ci;
+		}
+		
+		private ConceptSetInfo getConceptSetInfo(int id) {
+			ConceptSetInfo csi = null;
+			try {
+				csi = new ConceptSetInfo();
+				csi.id = id;
+				csi.name = conceptSetService.getConceptSet(id).getName();
+				csi.expression = conceptSetService.getConceptSetExpression(id);
+				csi.sql = vocabularyService.getConceptSetExpressionSQL(csi.expression);
+			} catch (Exception e) {
+					log.debug("Concept set id = " + id + " no longer exists");
+			}
+			return csi;
+		}
+
+		/*
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/model")
@@ -141,12 +322,13 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
         ComparativeCohortAnalysis cca = new ComparativeCohortAnalysis();
         return cca;
     }
-    
+    */
     /**
      * @param id - the comparative cohort analysis identifier
      * @param sourceKey - the source database to run this execution against
      * @return job resource information
      */
+		/*
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/execute/{sourceKey}")
@@ -349,99 +531,6 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
                 .build();
         JobExecutionResource jer = jobTemplate.launch(executeRSBJob, jobParameters);
         return jer;
-    }
-
-    @GET
-    @Path("{id}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public ComparativeCohortAnalysisInfo getComparativeCohortAnalysis(@PathParam("id") int id) {
-        ComparativeCohortAnalysis analysis = this.getComparativeCohortAnalysisRepository().findOne(id);
-        ComparativeCohortAnalysisInfo info = new ComparativeCohortAnalysisInfo(analysis);
-
-        if (analysis.getComparatorId() > 0) {
-            try {
-                CohortDefinitionDTO cd = cohortDefinitionService.getCohortDefinition(analysis.getComparatorId());
-                info.setComparatorCaption(cd.name);
-                info.setComparatorCohortDefinition(cd.expression);
-            } catch (Exception e) {
-                // Cohort definition no longer exists 
-                log.debug("Cohort definition id = " + info.getComparatorId() + " no longer exists");
-            }
-        }
-        if (analysis.getTreatmentId() > 0) {
-            try {
-                CohortDefinitionDTO cd = cohortDefinitionService.getCohortDefinition(analysis.getTreatmentId());
-                info.setTreatmentCaption(cd.name);
-                info.setTreatmentCohortDefinition(cd.expression);
-            } catch (Exception e) {
-                // Cohort definition no longer exists 
-                log.debug("Cohort definition id = " + info.getTreatmentId() + " no longer exists");
-            }
-        }
-        if (analysis.getOutcomeId() > 0) {
-            try {
-                CohortDefinitionDTO cd = cohortDefinitionService.getCohortDefinition(analysis.getOutcomeId());
-                info.setOutcomeCaption(cd.name);
-                info.setOutcomeCohortDefinition(cd.expression);            
-            } catch (Exception e) {
-                // Cohort definition no longer exists 
-                log.debug("Cohort definition id = " + info.getOutcomeId() + " no longer exists");
-            }
-        }
-        if (analysis.getPsInclusionId() > 0) {
-            try {
-                info.setPsInclusionCaption(conceptSetService.getConceptSet(analysis.getPsInclusionId()).getName());
-                info.setPsInclusionConceptSet(conceptSetService.getConceptSetExpression(analysis.getPsInclusionId()));
-                info.setPsInclusionConceptSetSql(vocabularyService.getConceptSetExpressionSQL(info.getPsInclusionConceptSet()));                
-            } catch (Exception e) {
-                log.debug("Concept set id = " + info.getPsInclusionId() + " no longer exists");
-            }
-        }
-        if (analysis.getPsExclusionId() > 0) {
-            try {
-                info.setPsExclusionCaption(conceptSetService.getConceptSet(analysis.getPsExclusionId()).getName());
-                info.setPsExclusionConceptSet(conceptSetService.getConceptSetExpression(analysis.getPsExclusionId()));
-                info.setPsExclusionConceptSetSql(vocabularyService.getConceptSetExpressionSQL(info.getPsExclusionConceptSet()));                
-            } catch (Exception e) {
-                log.debug("Concept set id = " + info.getPsExclusionId() + " no longer exists");
-            }
-        }
-        if (analysis.getOmInclusionId() > 0) {
-            try {
-                info.setOmInclusionCaption(conceptSetService.getConceptSet(analysis.getOmInclusionId()).getName());
-                info.setOmInclusionConceptSet(conceptSetService.getConceptSetExpression(analysis.getOmInclusionId()));
-                info.setOmInclusionConceptSetSql(vocabularyService.getConceptSetExpressionSQL(info.getOmInclusionConceptSet()));                
-            } catch (Exception e) {
-                log.debug("Concept set id = " + info.getOmInclusionId() + " no longer exists");               
-            }
-        }
-        if (analysis.getOmExclusionId() > 0) {
-            try {
-                info.setOmExclusionCaption(conceptSetService.getConceptSet(analysis.getOmExclusionId()).getName());
-                info.setOmExclusionConceptSet(conceptSetService.getConceptSetExpression(analysis.getOmExclusionId()));
-                info.setOmExclusionConceptSetSql(vocabularyService.getConceptSetExpressionSQL(info.getOmExclusionConceptSet()));                
-            } catch (Exception e) {
-                log.debug("Concept set id = " + info.getOmExclusionId() + " no longer exists");               
-            }
-        }
-        if (analysis.getNegativeControlId() > 0) {
-            try {
-                info.setNegativeControlCaption(conceptSetService.getConceptSet(analysis.getNegativeControlId()).getName());
-                info.setNegativeControlConceptSet(conceptSetService.getConceptSetExpression(analysis.getNegativeControlId()));
-                info.setNegativeControlConceptSetSql(vocabularyService.getConceptSetExpressionSQL(info.getNegativeControlConceptSet()));
-            } catch (Exception e) {
-                log.debug("Concept set id = " + info.getNegativeControlId() + " no longer exists");               
-            }
-        }
-      
-        return info;
-    }
-
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("{id}/executions")
-    public Iterable<ComparativeCohortAnalysisExecution> getComparativeCohortAnalysisExecutions(@PathParam("id") int comparativeCohortAnalysisId) {
-        return getComparativeCohortAnalysisExecutionRepository().findAllByAnalysisId(comparativeCohortAnalysisId);
     }
 
     @GET
@@ -650,4 +739,5 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
         psmr.setCovariates(covariates);
         return psmr;
     }
+*/
 }

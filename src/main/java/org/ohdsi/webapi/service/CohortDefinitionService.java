@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 
 import javax.servlet.ServletContext;
 import javax.transaction.Transactional;
@@ -34,6 +35,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
@@ -68,6 +70,7 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionDefinition;
@@ -346,6 +349,29 @@ public class CohortDefinitionService extends AbstractDaoService {
     }
     return result;
   }
+	
+	@GET
+	@Path("/search")
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<CohortDefinitionListItem> getCohortDefinitionList(@QueryParam("searchTerm") final String searchTerm) {
+    ArrayList<CohortDefinitionListItem> result = new ArrayList<>();
+		javax.persistence.Query query = entityManager.createQuery("SELECT cd.id, cd.name, cd.description, cd.expressionType, cd.createdBy, cd.createdDate, cd.modifiedBy, cd.modifiedDate FROM CohortDefinition cd WHERE lower(cd.name) LIKE lower(:searchTerm)");
+		query.setParameter("searchTerm", "%" + searchTerm + "%");
+    List<Object[]> defs = query.getResultList();
+    for (Object[] d : defs) {
+      CohortDefinitionListItem item = new CohortDefinitionListItem();
+      item.id = (Integer)d[0];
+      item.name = (String)d[1];
+      item.description = (String)d[2];
+      item.expressionType = (ExpressionType)d[3];
+      item.createdBy = (String)d[4];
+      item.createdDate = (Date)d[5];
+      item.modifiedBy = (String)d[6];
+      item.modifiedDate = (Date)d[7];
+      result.add(item);
+    }
+    return result;
+	}
 
   /**
    * Creates the cohort definition

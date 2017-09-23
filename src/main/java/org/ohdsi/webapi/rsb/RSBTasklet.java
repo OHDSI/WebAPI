@@ -33,7 +33,6 @@ import org.springframework.batch.repeat.RepeatStatus;
  */
 
 public class RSBTasklet implements Tasklet {
-
   private HashMap parameters;
   private String functionName;
   private String rServiceHost;
@@ -78,6 +77,8 @@ public class RSBTasklet implements Tasklet {
 
   @Override
   public RepeatStatus execute(final StepContribution contribution, final ChunkContext chunkContext) throws Exception {  
+		return RepeatStatus.FINISHED;
+		/*
     String rsbEndpoint = rServiceHost + "rsb/api/rest/jobs";
     
     Client client = ClientBuilder.newClient();
@@ -132,6 +133,6 @@ public class RSBTasklet implements Tasklet {
       ResultResponse resultResponse = jobStatusResponse.readEntity(ResultResponse.class);
       return RepeatStatus.FINISHED;
     }
-        
+     */   
   }
 };

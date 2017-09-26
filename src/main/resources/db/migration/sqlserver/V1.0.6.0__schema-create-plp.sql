@@ -1,11 +1,3 @@
-IF (EXISTS (SELECT * 
-            FROM INFORMATION_SCHEMA.TABLES 
-            WHERE TABLE_SCHEMA = '${ohdsiSchema}' 
-            AND  TABLE_NAME = 'plp'))
-BEGIN
-    DROP TABLE [${ohdsiSchema}].[plp]
-END
-
 CREATE TABLE [${ohdsiSchema}].[plp]
 (
   plp_id [int] IDENTITY(1,1) NOT NULL,

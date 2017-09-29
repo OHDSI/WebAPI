@@ -29,6 +29,7 @@ import javax.persistence.Table;
 @Table(name = "cca_execution")
 public class ComparativeCohortAnalysisExecution implements Serializable {
     
+/*
     public ComparativeCohortAnalysisExecution() {
         
     }
@@ -36,7 +37,7 @@ public class ComparativeCohortAnalysisExecution implements Serializable {
     public ComparativeCohortAnalysisExecution(ComparativeCohortAnalysis cca) {
         this.addExposureDaysToEnd = cca.getAddExposureDaysToEnd();
         this.analysisId = cca.getAnalysisId();
-        this.comparatorId = cca.getComparatorId();
+        //this.comparatorId = cca.getComparatorId();
         this.delCovariatesSmallCount = cca.getDelCovariatesSmallCount();
         this.minimumDaysAtRisk = cca.getMinimumDaysAtRisk();
         this.minimumWashoutPeriod = cca.getMinimumWashoutPeriod();
@@ -126,8 +127,8 @@ public class ComparativeCohortAnalysisExecution implements Serializable {
         this.psDrugExposure30d = cca.getPsDrugExposure30d();
         this.psDrugExposure365d = cca.getPsDrugExposure365d();
         this.psDrugGroup = cca.getPsDrugGroup();
-        this.psExclusionId = cca.getPsExclusionId();
-        this.psInclusionId = cca.getPsInclusionId();
+        //this.psExclusionId = cca.getPsExclusionId();
+        //this.psInclusionId = cca.getPsInclusionId();
         this.psInteractionMonth = cca.getPsInteractionMonth();
         this.psInteractionYear = cca.getPsInteractionYear();
         this.psMatch = cca.getPsMatch();
@@ -154,13 +155,14 @@ public class ComparativeCohortAnalysisExecution implements Serializable {
         this.psStratNumStrata = cca.getPsStratNumStrata();
         this.psTrim = cca.getPsTrim();
         this.psTrimFraction = cca.getPsTrimFraction();        
-        this.outcomeId = cca.getOutcomeId();
-        this.treatmentId = cca.getTreatmentId();
+        //this.outcomeId = cca.getOutcomeId();
+        //this.treatmentId = cca.getTreatmentId();
         this.rmPriorOutcomes = cca.getRmPriorOutcomes();
         this.rmSubjectsInBothCohorts = cca.getRmSubjectsInBothCohorts();
         this.timeAtRiskEnd = cca.getTimeAtRiskEnd();
         this.timeAtRiskStart = cca.getTimeAtRiskStart();
     }
+*/
     
     public enum status {
         PENDING, STARTED, RUNNING, COMPLETED, FAILED

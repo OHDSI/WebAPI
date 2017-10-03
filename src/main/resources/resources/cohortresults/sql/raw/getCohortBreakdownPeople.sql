@@ -14,19 +14,19 @@ with breakdown (subject_id, cohort_start_date, cohort_end_date, gender,age,condi
 					cast(- floor(log10(abs(count(*) + 0.01))) as int)) conditions
 			from @tableQualifier.condition_occurrence co
 			group by person_id
-			) as conditions
+			) conditions
 		on c.subject_id = conditions.person_id
 		join
 			(select person_id,
 					round(count(*), cast(- floor(log10(abs(count(*) + 0.01))) as int)) drugs
 			from @tableQualifier.drug_exposure de
 			group by person_id
-			) as drugs
+			) drugs
 		on c.subject_id = drugs.person_id
 		join @tableQualifier.person p on c.subject_id = p.person_id
 		join @tableQualifier.concept gc on p.gender_concept_id = gc.concept_id
 		where cohort_definition_id = @cohortDefinitionId
-		) as cohort_people		
+		) cohort_people		
     /*whereclause*/
 )
 select * from

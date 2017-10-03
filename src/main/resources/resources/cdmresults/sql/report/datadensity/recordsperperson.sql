@@ -1,5 +1,5 @@
 SELECT
-  t1.table_name                                      AS series_Name,
+  t1.table_name                                      AS series_name,
   t1.stratum_1                                       AS x_Calendar_Month,
   round(1.0 * t1.count_value / denom.count_value, 5) AS y_Record_Count
 FROM

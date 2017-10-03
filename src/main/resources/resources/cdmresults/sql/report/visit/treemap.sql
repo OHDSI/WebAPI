@@ -9,6 +9,7 @@ FROM (SELECT *
   INNER JOIN
   (SELECT *
    FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 201) ar2 ON ar1.stratum_1 = ar2.stratum_1
-  INNER JOIN @vocab_database_schema.concept c1 ON ar1.stratum_1 = CAST(c1.concept_id AS VARCHAR ),
+  INNER JOIN @vocab_database_schema.concept c1
+ON CAST(ar1.stratum_1 AS INT) = c1.concept_id,
 ( SELECT count_value FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 1) denom
 

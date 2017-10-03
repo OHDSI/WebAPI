@@ -11,12 +11,19 @@ import javax.ws.rs.core.MediaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.apache.commons.lang3.StringUtils;
+import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.cache.ResultsCache;
+import org.ohdsi.webapi.cdmresults.CDMResultsCache;
+import org.ohdsi.webapi.cdmresults.CDMResultsCacheTasklet;
 import org.ohdsi.webapi.report.*;
-import org.ohdsi.webapi.helper.ResourceHelper;
+import org.ohdsi.webapi.job.JobExecutionResource;
+import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -29,6 +36,9 @@ import org.springframework.stereotype.Component;
 public class CDMResultsService extends AbstractDaoService {
 
     private CDMResultsAnalysisRunner queryRunner = null;
+
+    @Autowired
+    private JobTemplate jobTemplate;
 
     @PostConstruct
     public void init() {
@@ -52,11 +62,26 @@ public class CDMResultsService extends AbstractDaoService {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public List<SimpleEntry<Long, Long[]>> getConceptRecordCount(@PathParam("sourceKey") String sourceKey, String[] identifiers) {
+        ResultsCache resultsCache = new ResultsCache();
+        CDMResultsCache sourceCache = resultsCache.getCache(sourceKey);
+        if (sourceCache != null && sourceCache.warm) {
+            ArrayList<SimpleEntry<Long, Long[]>> listFromCache = new ArrayList<>();
+            for (String identifier : identifiers) {
+                Long id = Long.parseLong(identifier);
+                Long[] counts = sourceCache.cache.get(id);
+                SimpleEntry<Long, Long[]> se = new SimpleEntry<>(id, counts);
+                listFromCache.add(se);
+            }
+            return listFromCache;
+        }
+
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         String resultTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
         String vocabularyTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
 
-        for (int i = 0; i < identifiers.length; i++) {
+        for (int i = 0;
+                i < identifiers.length;
+                i++) {
             identifiers[i] = "'" + identifiers[i] + "'";
         }
 
@@ -65,7 +90,8 @@ public class CDMResultsService extends AbstractDaoService {
         sql_statement = SqlRender.renderSql(sql_statement, new String[]{"resultTableQualifier", "vocabularyTableQualifier", "conceptIdentifiers"}, new String[]{resultTableQualifier, vocabularyTableQualifier, identifierList});
         sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
 
-        return getSourceJdbcTemplate(source).query(sql_statement, rowMapper);
+        return getSourceJdbcTemplate(source)
+                .query(sql_statement, rowMapper);
     }
 
     /**
@@ -76,7 +102,8 @@ public class CDMResultsService extends AbstractDaoService {
     @GET
     @Path("{sourceKey}/dashboard")
     @Produces(MediaType.APPLICATION_JSON)
-    public CDMDashboard getDashboard(@PathParam("sourceKey") final String sourceKey) {
+    public CDMDashboard getDashboard(@PathParam("sourceKey")
+            final String sourceKey) {
 
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         CDMDashboard dashboard = queryRunner.getDashboard(getSourceJdbcTemplate(source), source);
@@ -91,10 +118,29 @@ public class CDMResultsService extends AbstractDaoService {
     @GET
     @Path("{sourceKey}/person")
     @Produces(MediaType.APPLICATION_JSON)
-    public CDMPersonSummary getPerson(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+    public CDMPersonSummary getPerson(@PathParam("sourceKey")
+            final String sourceKey, @DefaultValue("false")
+            @QueryParam("refresh") boolean refresh) {
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         CDMPersonSummary person = this.queryRunner.getPersonResults(this.getSourceJdbcTemplate(source), source);
         return person;
+    }
+
+    @GET
+    @Path("{sourceKey}/warmCache")
+    @Produces(MediaType.APPLICATION_JSON)
+    public JobExecutionResource warmCache(@PathParam("sourceKey") final String sourceKey) {
+        ResultsCache resultsCache = new ResultsCache();
+        CDMResultsCache cache = resultsCache.getCache(sourceKey);
+        if (cache != null) {
+            return new JobExecutionResource();
+        }
+
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+        CDMResultsCacheTasklet tasklet = new CDMResultsCacheTasklet(this.getSourceJdbcTemplate(source), source);
+        JobParametersBuilder builder = new JobParametersBuilder();
+        builder.addString("jobName", "warming " + sourceKey + " cache ");
+        return this.jobTemplate.launchTasklet("warmCache", "warmCacheStep", tasklet, builder.toJobParameters());
     }
 
     /**
@@ -105,12 +151,13 @@ public class CDMResultsService extends AbstractDaoService {
     @GET
     @Path("{sourceKey}/achillesheel")
     @Produces(MediaType.APPLICATION_JSON)
-    public CDMAchillesHeel getAchillesHeelReport(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+    public CDMAchillesHeel getAchillesHeelReport(@PathParam("sourceKey")
+            final String sourceKey, @DefaultValue("false")
+            @QueryParam("refresh") boolean refresh) {
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         CDMAchillesHeel cdmAchillesHeel = this.queryRunner.getHeelResults(this.getSourceJdbcTemplate(source), source);
         return cdmAchillesHeel;
     }
-
 
     /**
      * Queries for data density report for the given sourceKey
@@ -120,7 +167,9 @@ public class CDMResultsService extends AbstractDaoService {
     @GET
     @Path("{sourceKey}/datadensity")
     @Produces(MediaType.APPLICATION_JSON)
-    public CDMDataDensity getDataDensity(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+    public CDMDataDensity getDataDensity(@PathParam("sourceKey")
+            final String sourceKey, @DefaultValue("false")
+            @QueryParam("refresh") boolean refresh) {
         CDMDataDensity cdmDataDensity;
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         cdmDataDensity = this.queryRunner.getDataDensityResults(this.getSourceJdbcTemplate(source), source);
@@ -128,15 +177,17 @@ public class CDMResultsService extends AbstractDaoService {
     }
 
     /**
-     * Queries for death report for the given sourceKey
-     * Queries for treemap results
+     * Queries for death report for the given sourceKey Queries for treemap
+     * results
      *
      * @return CDMDataDensity
      */
     @GET
     @Path("{sourceKey}/death")
     @Produces(MediaType.APPLICATION_JSON)
-    public CDMDeath getDeath(@PathParam("sourceKey") final String sourceKey, @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+    public CDMDeath getDeath(@PathParam("sourceKey")
+            final String sourceKey, @DefaultValue("false")
+            @QueryParam("refresh") boolean refresh) {
         CDMDeath cdmDeath;
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         cdmDeath = this.queryRunner.getDeathResults(this.getSourceJdbcTemplate(source), source);
@@ -146,8 +197,7 @@ public class CDMResultsService extends AbstractDaoService {
     @Path("{sourceKey}/{conceptId}/drugeraprevalence")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<DrugEraPrevalence> getDrugEraPrevalenceByGenderAgeYear(@PathParam("sourceKey") String
-                                                                               sourceKey, @PathParam("conceptId") String conceptId) {
+    public List<DrugEraPrevalence> getDrugEraPrevalenceByGenderAgeYear(@PathParam("sourceKey") String sourceKey, @PathParam("conceptId") String conceptId) {
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
         String vocabularyTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
@@ -155,7 +205,6 @@ public class CDMResultsService extends AbstractDaoService {
         String sql_statement = ResourceHelper.GetResourceAsString("/resources/cdmresults/sql/getDrugEraPrevalenceByGenderAgeYear.sql");
         sql_statement = SqlRender.renderSql(sql_statement, new String[]{"ohdsi_database_schema", "vocabulary_database_schema", "conceptId"}, new String[]{tableQualifier, vocabularyTableQualifier, conceptId});
         sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
-
 
         List<Map<String, Object>> rows = getSourceJdbcTemplate(source).queryForList(sql_statement);
         List<DrugEraPrevalence> listOfResults = new ArrayList<DrugEraPrevalence>();
@@ -176,8 +225,7 @@ public class CDMResultsService extends AbstractDaoService {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public List<ConditionOccurrenceTreemapNode> getConditionOccurrenceTreemap(@PathParam("sourceKey") String
-                                                                                      sourceKey, String[] identifiers) {
+    public List<ConditionOccurrenceTreemapNode> getConditionOccurrenceTreemap(@PathParam("sourceKey") String sourceKey, String[] identifiers) {
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
         String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
@@ -190,7 +238,6 @@ public class CDMResultsService extends AbstractDaoService {
         String sql_statement = ResourceHelper.GetResourceAsString("/resources/cdmresults/sql/getConditionOccurrenceTreemap.sql");
         sql_statement = SqlRender.renderSql(sql_statement, new String[]{"ohdsi_database_schema", "cdm_database_schema", "conceptIdList"}, new String[]{tableQualifier, cdmTableQualifier, identifierList});
         sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
-
 
         List<Map<String, Object>> rows = getSourceJdbcTemplate(source).queryForList(sql_statement);
         List<ConditionOccurrenceTreemapNode> listOfResults = new ArrayList<ConditionOccurrenceTreemapNode>();
@@ -216,8 +263,10 @@ public class CDMResultsService extends AbstractDaoService {
     @Path("{sourceKey}/{domain}/")
     @Produces(MediaType.APPLICATION_JSON)
     public ArrayNode getTreemap(
-            @PathParam("domain") final String domain,
-            @PathParam("sourceKey") final String sourceKey) {
+            @PathParam("domain")
+            final String domain,
+            @PathParam("sourceKey")
+            final String sourceKey) {
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         return queryRunner.getTreemap(this.getSourceJdbcTemplate(source), domain, source);
     }
@@ -230,13 +279,15 @@ public class CDMResultsService extends AbstractDaoService {
     @GET
     @Path("{sourceKey}/{domain}/{conceptId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public JsonNode getDrilldown(@PathParam("domain") final String domain,
-                                 @PathParam("conceptId") final int conceptId,
-                                 @PathParam("sourceKey") final String sourceKey) {
+    public JsonNode getDrilldown(@PathParam("domain")
+            final String domain,
+            @PathParam("conceptId")
+            final int conceptId,
+            @PathParam("sourceKey")
+            final String sourceKey) {
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         JdbcTemplate jdbcTemplate = this.getSourceJdbcTemplate(source);
         return queryRunner.getDrilldown(jdbcTemplate, domain, conceptId, source);
     }
 
 }
-

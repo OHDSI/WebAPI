@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 import javax.servlet.ServletContext;
 import javax.transaction.Transactional;
@@ -39,13 +41,13 @@ import org.ohdsi.sql.SqlTranslate;
 import javax.ws.rs.core.Response;
 import org.ohdsi.sql.SqlRender;
 
+import org.ohdsi.circe.cohortdefinition.CohortExpression;
+import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
+import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
-import org.ohdsi.webapi.cohortdefinition.CohortExpression;
-import org.ohdsi.webapi.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfo;
-import org.ohdsi.webapi.cohortdefinition.ConceptSet;
 import org.ohdsi.webapi.cohortdefinition.ExpressionType;
 import org.ohdsi.webapi.cohortdefinition.GenerateCohortTasklet;
 import org.ohdsi.webapi.GenerationStatus;
@@ -103,6 +105,9 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Autowired
   private JobTemplate jobTemplate;
 
+	@PersistenceContext
+	protected EntityManager entityManager;
+	
   private final RowMapper<InclusionRuleReport.Summary> summaryMapper = new RowMapper<InclusionRuleReport.Summary>() {
     @Override
     public InclusionRuleReport.Summary mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -326,17 +331,17 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   public List<CohortDefinitionListItem> getCohortDefinitionList() {
     ArrayList<CohortDefinitionListItem> result = new ArrayList<>();
-    Iterable<CohortDefinition> defs = this.cohortDefinitionRepository.list();
-    for (CohortDefinition d : defs) {
+    List<Object[]> defs = entityManager.createQuery("SELECT cd.id, cd.name, cd.description, cd.expressionType, cd.createdBy, cd.createdDate, cd.modifiedBy, cd.modifiedDate FROM CohortDefinition cd").getResultList();
+    for (Object[] d : defs) {
       CohortDefinitionListItem item = new CohortDefinitionListItem();
-      item.id = d.getId();
-      item.name = d.getName();
-      item.description = d.getDescription();
-      item.expressionType = d.getExpressionType();
-      item.createdBy = d.getCreatedBy();
-      item.createdDate = d.getCreatedDate();
-      item.modifiedBy = d.getModifiedBy();
-      item.modifiedDate = d.getModifiedDate();
+      item.id = (Integer)d[0];
+      item.name = (String)d[1];
+      item.description = (String)d[2];
+      item.expressionType = (ExpressionType)d[3];
+      item.createdBy = (String)d[4];
+      item.createdDate = (Date)d[5];
+      item.modifiedBy = (String)d[6];
+      item.modifiedDate = (Date)d[7];
       result.add(item);
     }
     return result;

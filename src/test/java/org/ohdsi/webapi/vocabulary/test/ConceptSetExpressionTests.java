@@ -17,9 +17,9 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Assert;
-import org.ohdsi.webapi.vocabulary.Concept;
-import org.ohdsi.webapi.vocabulary.ConceptSetExpression;
-import org.ohdsi.webapi.vocabulary.ConceptSetExpressionQueryBuilder;
+import org.ohdsi.circe.vocabulary.Concept;
+import org.ohdsi.circe.vocabulary.ConceptSetExpression;
+import org.ohdsi.circe.vocabulary.ConceptSetExpressionQueryBuilder;
 
 /**
  *

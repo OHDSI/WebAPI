@@ -14,7 +14,6 @@ import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfo;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationType;
-import org.ohdsi.webapi.helper.ResourceHelper;
 import org.ohdsi.webapi.service.EvidenceService;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;

@@ -1,7 +1,7 @@
 SELECT
   t1.table_name                                      AS series_name,
-  t1.stratum_1                                       AS "x_Calendar_Month",
-  round(1.0 * t1.count_value / denom.count_value, 5) AS "y_Record_Count"
+  t1.stratum_1                                       AS x_Calendar_Month,
+  round(1.0 * t1.count_value / denom.count_value, 5) AS y_Record_Count
 FROM
   (
     SELECT
@@ -61,4 +61,4 @@ FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 111
 INNER JOIN
 ( SELECT * FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 117) denom
 ON t1.stratum_1 = denom.stratum_1
-ORDER BY SERIES_NAME, CAST(t1.stratum_1 AS INT )
+ORDER BY series_Name, CAST(t1.stratum_1 AS INT)

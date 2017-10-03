@@ -1,11 +1,11 @@
 SELECT
-  concept_hierarchy.concept_id                        AS "conceptId",
+  concept_hierarchy.concept_id                        AS conceptId,
   isNull(concept_hierarchy.level4_concept_name, 'NA') + '||' + isNull(concept_hierarchy.level3_concept_name, 'NA') + '||' +
   isNull(concept_hierarchy.level2_concept_name, 'NA') + '||' + isNull(concept_hierarchy.level2_concept_name, 'NA') + '||' +
-  isNull(concept_hierarchy.concept_name, 'NA') AS "conceptPath",
-  ar1.count_value                                     AS "numPersons",
-  round(1.0 * ar1.count_value / denom.count_value, 5) AS "percentPersons",
-  round(1.0 * ar2.count_value / ar1.count_value, 5)   AS "recordsPerPerson"
+  isNull(concept_hierarchy.concept_name, 'NA') AS conceptPath,
+  ar1.count_value                                     AS numPersons,
+  round(1.0 * ar1.count_value / denom.count_value, 5) AS percentPersons,
+  round(1.0 * ar2.count_value / ar1.count_value, 5)   AS recordsPerPerson
 FROM (SELECT *
       FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 400) ar1
   INNER JOIN

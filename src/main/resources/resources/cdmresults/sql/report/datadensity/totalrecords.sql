@@ -1,7 +1,7 @@
 SELECT
   table_name  AS series_name,
-  stratum_1   AS "x_Calendar_Month",
-  count_value AS "y_Record_Count"
+  stratum_1   AS x_Calendar_Month,
+  count_value AS y_Record_Count
 FROM
   (
     SELECT
@@ -58,4 +58,4 @@ SELECT
   count_value
 FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 111
 ) t1
-ORDER BY SERIES_NAME, CAST(stratum_1 AS INT )
+ORDER BY series_Name, CAST(stratum_1 AS INT)

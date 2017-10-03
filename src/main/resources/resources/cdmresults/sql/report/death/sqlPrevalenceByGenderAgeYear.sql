@@ -1,12 +1,12 @@
 SELECT
   cast(cast(num.stratum_3 AS INT) * 10 AS VARCHAR) + '-' +
-  cast((cast(num.stratum_3 AS INT) + 1) * 10 - 1 AS VARCHAR)   AS "trellis_Name",
+  cast((cast(num.stratum_3 AS INT) + 1) * 10 - 1 AS VARCHAR)   AS trellis_Name,
   --age decile
-  c2.concept_name                                              AS "series_Name",
+  c2.concept_name                                              AS series_Name,
   --gender
-  num.stratum_1                                                AS "x_Calendar_Year",
+  num.stratum_1                                                AS x_Calendar_Year,
   -- calendar year, note, there could be blanks
-  ROUND(1000 * (1.0 * num.count_value / denom.count_value), 5) AS "y_Prevalence_1000Pp" --prevalence, per 1000 persons
+  ROUND(1000 * (1.0 * num.count_value / denom.count_value), 5) AS y_Prevalence_1000Pp --prevalence, per 1000 persons
 FROM
   (SELECT *
    FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 504) num

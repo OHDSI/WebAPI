@@ -11,5 +11,5 @@ FROM
     ON num.stratum_2 = denom.stratum_1
   INNER JOIN
   @vocab_database_schema.concept c1
-ON num.stratum_1 = CAST(c1.concept_id AS VARCHAR )
+ON CAST(num.stratum_1 AS INT) = c1.concept_id
 WHERE c1.concept_id = @conceptId

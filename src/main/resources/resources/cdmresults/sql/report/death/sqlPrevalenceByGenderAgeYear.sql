@@ -17,6 +17,6 @@ FROM
        AND num.stratum_2 = denom.stratum_2 --gender
        AND num.stratum_3 = denom.stratum_3
   --age decile
-  INNER JOIN @vocab_database_schema.concept c2 ON num.stratum_2 = CAST(c2.concept_id AS VARCHAR )
+  INNER JOIN @vocab_database_schema.concept c2 ON CAST(num.stratum_2 AS INT) = c2.concept_id
 WHERE c2.concept_id IN (8507, 8532)
 

@@ -21,7 +21,6 @@ WITH main_table AS (
 	from @cdm_results_schema.cohort_features_dist f
 	join @cdm_results_schema.cohort_features_ref fr on fr.covariate_id = f.covariate_id and fr.cohort_definition_id = f.cohort_definition_id
 	JOIN @cdm_results_schema.cohort_features_analysis_ref ar on ar.analysis_id = fr.analysis_id and ar.cohort_definition_id = fr.cohort_definition_id
-	JOIN (select analysis_id from @cdm_results_schema.cohort_features_ref where cohort_definition_id = @cohort_definition_id and covariate_id = @covariate_id) a on a.analysis_id = fr.analysis_id
 	LEFT JOIN @cdm_database_schema.concept c on c.concept_id = fr.concept_id
 	where f.cohort_definition_id = @cohort_definition_id 
 ),

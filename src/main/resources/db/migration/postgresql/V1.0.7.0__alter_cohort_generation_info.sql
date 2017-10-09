@@ -1,11 +1,11 @@
 ALTER TABLE ${ohdsiSchema}.cohort_generation_info
-	ADD include_features bit,
-		fail_message varchar(2000),
-		person_count bigint,
-		record_count bigint
+	ADD COLUMN include_features boolean,
+	ADD COLUMN fail_message varchar(2000),
+	ADD COLUMN person_count bigint,
+	ADD COLUMN record_count bigint
 ;
 
-UPDATE ${ohdsiSchema}.cohort_generation_info set include_features = 0
+UPDATE ${ohdsiSchema}.cohort_generation_info set include_features = 'f'
 ;
 
 ALTER TABLE ${ohdsiSchema}.cohort_generation_info

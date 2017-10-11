@@ -1,12 +1,12 @@
 SELECT
-  concept_hierarchy.concept_id                 AS conceptId,
+  concept_hierarchy.concept_id                 AS concept_id,
   isnull(concept_hierarchy.level3_concept_name, 'NA') + '||' +
   isnull(concept_hierarchy.level2_concept_name, 'NA') + '||' +
   isnull(concept_hierarchy.level1_concept_name, 'NA') + '||' +
-  isnull(concept_hierarchy.concept_name, '||') AS conceptPath,
-  ar1.count_value                                                AS numPersons,
-  1.0 * ar1.count_value / denom.count_value                      AS percentPersons,
-  ar2.avg_value                                                  AS lengthOfEra
+  isnull(concept_hierarchy.concept_name, '||') AS concept_path,
+  ar1.count_value                                                AS num_persons,
+  1.0 * ar1.count_value / denom.count_value                      AS percent_persons,
+  ar2.avg_value                                                  AS length_of_era
 FROM (SELECT *
       FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 900) ar1
   INNER JOIN

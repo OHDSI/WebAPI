@@ -41,6 +41,7 @@ import org.springframework.transaction.TransactionException;
 
 import org.json.JSONObject;
 import org.ohdsi.featureExtraction.FeatureExtraction;
+import org.ohdsi.sql.SqlSplit;
 
 /**
  *
@@ -144,9 +145,9 @@ public class GenerateCohortFeaturesTasklet implements Tasklet
         JSONObject jsonObject = new JSONObject(sqlJson);
 
         String sql = getSql(options, jsonObject);
-        sql = SqlTranslate.translateSql(sql, jobParams.get("target_dialect").toString(), sessionId, null);
-        
-        this.jdbcTemplate.batchUpdate(sql);
+        String translatedSql = SqlTranslate.translateSql(sql, jobParams.get("target_dialect").toString(), sessionId, null);
+        String[] sqlStatements = SqlSplit.splitSql(translatedSql);
+        this.jdbcTemplate.batchUpdate(sqlStatements);
       } 
       catch (Exception e) 
       {

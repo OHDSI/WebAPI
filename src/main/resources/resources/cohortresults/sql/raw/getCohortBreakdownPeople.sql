@@ -26,11 +26,11 @@ with breakdown (subject_id, cohort_start_date, cohort_end_date, gender,age,condi
 		join @tableQualifier.person p on c.subject_id = p.person_id
 		join @tableQualifier.concept gc on p.gender_concept_id = gc.concept_id
 		where cohort_definition_id = @cohortDefinitionId
-		) cohort_people		
-    /*whereclause*/
+		) cohort_people
+    @whereclause
 )
 select * from
-(select row_number() over (partition by @wherecols order by (select 1)) row_limit,
+(select row_number() over (@partition by @wherecols order by (select 1)) row_limit,
         subject_id, cohort_start_date, cohort_end_date
  from breakdown
 ) withrows

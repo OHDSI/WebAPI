@@ -104,8 +104,7 @@ public class JobServiceIT extends WebApiIT {
     }
     
     private void assertJobExecution(final JobExecutionResource execution) {
-        Assert.state(execution != null);
-        Assert.state(execution.getExecutionId() != null);
-        Assert.state(execution.getJobInstanceResource().getInstanceId() != null);
+        Assert.state(execution != null && execution.getExecutionId() != null
+                && execution.getJobInstanceResource().getInstanceId() != null);
     }
 }

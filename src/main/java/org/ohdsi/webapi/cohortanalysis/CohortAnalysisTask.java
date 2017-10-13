@@ -2,10 +2,17 @@ package org.ohdsi.webapi.cohortanalysis;
 
 import java.util.List;
 
+import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.ohdsi.webapi.source.Source;
 
 public class CohortAnalysisTask {
+
+	private static final Log log = LogFactory.getLog(CohortAnalysisTasklet.class);
 
 	private String jobName;
 
@@ -101,7 +108,7 @@ public class CohortAnalysisTask {
 	}
 
 	/**
-	 * @param cohortDefinitionId the cohortDefinitionId to set
+	 * @param cohortDefinitionIds the cohortDefinitionIds to set
 	 */
 	public void setCohortDefinitionIds(List<String> cohortDefinitionIds) {
 		this.cohortDefinitionIds = cohortDefinitionIds;
@@ -115,7 +122,7 @@ public class CohortAnalysisTask {
 	}
 
 	/**
-	 * @param analysisId the analysisId to set
+	 * @param analysisIds the analysisIds to set
 	 */
 	public void setAnalysisIds(List<String> analysisIds) {
 		this.analysisIds = analysisIds;
@@ -230,11 +237,12 @@ public class CohortAnalysisTask {
 
 	@Override
 	public String toString() {
-		try {
 			ObjectMapper mapper = new ObjectMapper();
-			return mapper.writeValueAsString(this);
-		} catch (Exception e) {}
-
+			try {
+				return mapper.writeValueAsString(this);
+			} catch (Exception e) {
+				log.error(whitelist(e));
+			}
 		return super.toString();
 
 	}

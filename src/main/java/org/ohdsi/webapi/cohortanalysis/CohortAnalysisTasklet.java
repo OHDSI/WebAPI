@@ -1,5 +1,7 @@
 package org.ohdsi.webapi.cohortanalysis;
 
+import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ohdsi.sql.SqlSplit;
@@ -10,6 +12,7 @@ import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
@@ -66,11 +69,11 @@ public class CohortAnalysisTasklet implements Tasklet {
             log.debug("warm up visualizations");
             final int count = this.analysisRunner.warmupData(jdbcTemplate, task);
             log.debug("warmed up " + count + " visualizations");
-        } catch (final TransactionException e) {
-            log.error(e.getMessage(), e);
+        } catch (final TransactionException | DataAccessException e) {
+            log.error(whitelist(e));
             throw e;//FAIL job status
         }
         return RepeatStatus.FINISHED;
     }
     
-};
+}

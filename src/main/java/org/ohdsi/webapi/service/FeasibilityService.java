@@ -15,6 +15,8 @@
  */
 package org.ohdsi.webapi.service;
 
+import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -66,6 +68,7 @@ import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
@@ -174,15 +177,11 @@ public class FeasibilityService extends AbstractDaoService {
 
   private FeasibilityReport.Summary getSimulationSummary(int id, Source source) {
 
-    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-
-    String summaryQuery = String.format("select person_count, match_count from %s.feas_study_index_stats where study_id = %d", resultsTableQualifier, id);
-    String translatedSql = SqlTranslate.translateSql(summaryQuery, "sql server", source.getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
-    List<FeasibilityReport.Summary> summaryList = this.getSourceJdbcTemplate(source).query(translatedSql, summaryMapper);
-    if (summaryList.size() > 0)
-      return summaryList.get(0);
-    
-    return null;
+    String sql = "select person_count, match_count from @tableQualifier.feas_study_index_stats where study_id = @id";
+    String tqName = "tableQualifier";
+    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, tqName, tqValue, "id", whitelist(id), SessionUtils.sessionId());
+    return getSourceJdbcTemplate(source).queryForObject(psr.getSql(), psr.getOrderedParams(), summaryMapper);
   }
 
   private final RowMapper<FeasibilityReport.InclusionRuleStatistic> inclusionRuleStatisticMapper = new RowMapper<FeasibilityReport.InclusionRuleStatistic>() {
@@ -256,10 +255,12 @@ public class FeasibilityService extends AbstractDaoService {
   }
 
   private List<FeasibilityReport.InclusionRuleStatistic> getSimulationInclusionRuleStatistics(int id, Source source) {
-    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-    String statisticsQuery = String.format("select rule_sequence, name, person_count, gain_count, person_total from %s.feas_study_inclusion_stats where study_id = %d ORDER BY rule_sequence", resultsTableQualifier, id);
-    String translatedSql = SqlTranslate.translateSql(statisticsQuery, "sql server", source.getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
-    return this.getSourceJdbcTemplate(source).query(translatedSql, inclusionRuleStatisticMapper);
+
+    String sql = "select rule_sequence, name, person_count, gain_count, person_total from @tableQualifier.feas_study_inclusion_stats where study_id = @id ORDER BY rule_sequence";
+    String tqName = "tableQualifier";
+    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, tqName, tqValue, "id", id, SessionUtils.sessionId());
+    return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), inclusionRuleStatisticMapper);
   }
 
   private int countSetBits(long n) {
@@ -287,13 +288,14 @@ public class FeasibilityService extends AbstractDaoService {
   };
 
   private String getInclusionRuleTreemapData(int id, int inclusionRuleCount, Source source) {
-    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-    String smulationResultsQuery = String.format("select inclusion_rule_mask, person_count from %s.feas_study_result where study_id = %d",
-            resultsTableQualifier, id);
-    String translatedSql = SqlTranslate.translateSql(smulationResultsQuery, "sql server", source.getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
+
+    String sql = "select inclusion_rule_mask, person_count from @tableQualifier.feas_study_result where study_id = @id";
+    String tqName = "tableQualifier";
+    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, tqName, tqValue, "id", id, SessionUtils.sessionId());
 
     // [0] is the inclusion rule bitmask, [1] is the count of the match
-    List<Long[]> items = this.getSourceJdbcTemplate(source).query(translatedSql, simulationResultItemMapper);
+    List<Long[]> items = this.getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), simulationResultItemMapper);
     Map<Integer, List<Long[]>> groups = new HashMap<>();
     for (Long[] item : items) {
       int bitsSet = countSetBits(item[0]);
@@ -621,9 +623,9 @@ public class FeasibilityService extends AbstractDaoService {
 
     Source source = this.getSourceRepository().findBySourceKey(sourceKey);
 
-    FeasibilityReport.Summary summary = getSimulationSummary(id, source);
-    List<FeasibilityReport.InclusionRuleStatistic> inclusionRuleStats = getSimulationInclusionRuleStatistics(id, source);
-    String treemapData = getInclusionRuleTreemapData(id, inclusionRuleStats.size(), source);
+    FeasibilityReport.Summary summary = getSimulationSummary(whitelist(id), source);
+    List<FeasibilityReport.InclusionRuleStatistic> inclusionRuleStats = getSimulationInclusionRuleStatistics(whitelist(id), source);
+    String treemapData = getInclusionRuleTreemapData(whitelist(id), inclusionRuleStats.size(), source);
 
     FeasibilityReport report = new FeasibilityReport();
     report.summary = summary;
@@ -648,8 +650,7 @@ public class FeasibilityService extends AbstractDaoService {
     sourceStudy.id = null; // clear the ID
     sourceStudy.name = "COPY OF: " + sourceStudy.name;
 
-    FeasibilityStudyDTO copyStudy = createStudy(sourceStudy);
-    return copyStudy;
+    return createStudy(sourceStudy);
   }
 
   /**

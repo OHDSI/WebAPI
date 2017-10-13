@@ -31,6 +31,7 @@ public class GenericRowMapper implements RowMapper<JsonNode> {
         for (int index = 1; index <= columnCount; index++) {
             String column = JdbcUtils.lookupColumnName(rsmd, index);
             Object value = rs.getObject(column);
+            column = this.snakeCaseToCamelCase(column);
             if (value == null) {
                 objectNode.putNull(column);
             } else if (value instanceof Integer) {
@@ -58,5 +59,12 @@ public class GenericRowMapper implements RowMapper<JsonNode> {
             }
         }
         return objectNode;
+    }
+		
+    protected String snakeCaseToCamelCase(String str) {
+        char[] delimeters = new char[] { '_' };
+        str = WordUtils.capitalizeFully(str.toLowerCase(), delimeters)
+            .replace("_", "");
+        return Character.toLowerCase(str.charAt(0)) + str.substring(1);
     }
 }

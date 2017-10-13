@@ -1300,9 +1300,9 @@ public class CohortResultsAnalysisRunner {
 		return res;
 	}
 
-	protected PreparedStatementRenderer prepareDrillDownCohortSql(String analysisName, String analysisType, Integer id, Integer conceptId,
-																																final Integer minCovariatePersonCountParam, final Integer minIntervalPersonCountParam,
-																																Source source) {
+	protected PreparedStatementRenderer prepareDrillDownCohortSql(
+			String analysisName, String analysisType, Integer id, Integer conceptId,
+			final Integer minCovariatePersonCountParam, final Integer minIntervalPersonCountParam, Source source) {
 
 		String sqlPath = BASE_SQL_PATH + "/" + analysisType + "/byConcept/" + analysisName + ".sql";
 		return prepareCohortSql(sqlPath, id, conceptId, minCovariatePersonCountParam,
@@ -1310,9 +1310,9 @@ public class CohortResultsAnalysisRunner {
 
 	}
 
-	protected PreparedStatementRenderer prepareCohortSql(String sqlPath, Integer id,
-																											 Integer conceptId, final Integer minCovariatePersonCountParam,
-																											 final Integer minIntervalPersonCountParam, Source source
+	protected PreparedStatementRenderer prepareCohortSql(
+			String sqlPath, Integer id,Integer conceptId, final Integer minCovariatePersonCountParam,
+			final Integer minIntervalPersonCountParam, Source source
 	) {
 
 		String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);

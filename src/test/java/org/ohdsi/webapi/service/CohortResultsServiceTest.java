@@ -128,18 +128,4 @@ public class CohortResultsServiceTest extends AbstractServiceTest {
     assertEquals(drugs, psr.getOrderedParamsList().get(4));
   }
 
-  @Test
-  public void testWhereClauseReplacement() {
-
-    String base = "select * from sometable /*whereclause*/";
-
-    String whereClause = "where columnA=@columnA";
-
-    String expected = "select * from sometable where columnA=@columnA";
-
-    String actual = base.replaceAll(Pattern.quote("/*whereclause*/"), whereClause);
-    assertEquals(expected, actual);
-
-  }
-
 }

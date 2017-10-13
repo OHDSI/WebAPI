@@ -116,7 +116,7 @@ public class GenerateCohortTasklet implements Tasklet {
       
       String expressionSql = expressionQueryBuilder.buildExpressionQuery(expression, options);
       expressionSql = SqlRender.renderSql(expressionSql, null, null);
-      String translatedSql = SqlTranslate.translateSql(expressionSql, "sql server", jobParams.get("target_dialect").toString(), sessionId, null);
+      String translatedSql = SqlTranslate.translateSql(expressionSql, jobParams.get("target_dialect").toString(), sessionId, null);
       String[] sqlStatements = SqlSplit.splitSql(translatedSql);
       result = GenerateCohortTasklet.this.jdbcTemplate.batchUpdate(sqlStatements);
 

@@ -598,7 +598,7 @@ public class IRAnalysisService extends AbstractDaoService {
         
         // get the distribution data
         String distQuery = String.format("select '%s' as db_id, target_id, outcome_id, strata_sequence, dist_type, total, avg_value, std_dev, min_value, p10_value, p25_value, median_value, p75_value, p90_value, max_value from %s.ir_analysis_dist where analysis_id = %d", source.getSourceKey(), resultsTableQualifier, id);
-        String translatedSql = SqlTranslate.translateSql(distQuery, "sql server", source.getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
+        String translatedSql = SqlTranslate.translateSql(distQuery, source.getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
         
         SqlRowSet rs = this.getSourceJdbcTemplate(source).queryForRowSet(translatedSql);
         

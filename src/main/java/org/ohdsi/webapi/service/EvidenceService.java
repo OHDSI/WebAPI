@@ -176,7 +176,7 @@ public class EvidenceService extends AbstractDaoService {
 
     sql_statement = SqlRender.renderSql(sql_statement, new String[]{"id", "OHDSI_schema"},
       new String[]{String.valueOf(id), tqValue});
-    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
+    sql_statement = SqlTranslate.translateSql(sql_statement, source.getSourceDialect());
 
     final List<DrugEvidence> drugEvidences = new ArrayList<>();
     List<Map<String, Object>> rows = getSourceJdbcTemplate(source).queryForList(sql_statement);
@@ -243,7 +243,7 @@ public class EvidenceService extends AbstractDaoService {
     String sql_statement = ResourceHelper.GetResourceAsString("/resources/evidence/sql/getHoiEvidence.sql");
     sql_statement = SqlRender.renderSql(sql_statement, new String[]{"id", "OHDSI_schema"},
             new String[]{String.valueOf(id), tableQualifier});
-    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect()); 
+    sql_statement = SqlTranslate.translateSql(sql_statement, source.getSourceDialect());
 
     final List<HoiEvidence> hoiEvidences = new ArrayList<HoiEvidence>();
 
@@ -742,7 +742,7 @@ public class EvidenceService extends AbstractDaoService {
     String[] params = new String[]{"tableQualifier", "CONCEPT_IDS", "CONCEPT_SET_ID", "CONCEPT_SET_NAME", "CONCEPT_DOMAIN_ID", "TARGET_DOMAIN_ID", "SOURCE_ID"};
     String[] values = new String[]{tableQualifier, conceptIds, String.valueOf(task.getConceptSetId()), task.getConceptSetName(), task.getConceptDomainId().toUpperCase(), task.getTargetDomainId().toUpperCase(), String.valueOf(task.getSource().getSourceId())};
     sql = SqlRender.renderSql(sql, params, values);
-    sql = SqlTranslate.translateSql(sql, "sql server", task.getSource().getSourceDialect());
+    sql = SqlTranslate.translateSql(sql, task.getSource().getSourceDialect());
 
     return sql;
 }
@@ -750,7 +750,7 @@ public class EvidenceService extends AbstractDaoService {
   public static String getNegativeControlDeleteStatementSql(NegativeControl task){
     String sql = ResourceHelper.GetResourceAsString("/resources/evidence/sql/deleteNegativeControls.sql");
     sql = SqlRender.renderSql(sql, new String[] { "ohdsiSchema" },  new String[] { task.getOhdsiSchema() });
-    sql = SqlTranslate.translateSql(sql, "sql server", task.getSourceDialect());
+    sql = SqlTranslate.translateSql(sql, task.getSourceDialect());
 
     return sql;
 }
@@ -758,7 +758,7 @@ public class EvidenceService extends AbstractDaoService {
   public static String getNegativeControlInsertStatementSql(NegativeControl task){
     String sql = ResourceHelper.GetResourceAsString("/resources/evidence/sql/insertNegativeControls.sql");
     sql = SqlRender.renderSql(sql, new String[] { "ohdsiSchema" },  new String[] { task.getOhdsiSchema() });
-    sql = SqlTranslate.translateSql(sql, "sql server", task.getSourceDialect());
+    sql = SqlTranslate.translateSql(sql, task.getSourceDialect());
 
     return sql;
 }

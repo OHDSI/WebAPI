@@ -193,7 +193,7 @@ public class CohortAnalysisService extends AbstractDaoService {
 				analysisIds, conditionIds, drugIds, procedureIds, observationIds, measurementIds,
 				String.valueOf(task.isCohortPeriodOnly()), String.valueOf(task.getSource().getSourceId())};
 		sql = SqlRender.renderSql(sql, params, values);
-		sql = SqlTranslate.translateSql(sql, "sql server", task.getSource().getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
+		sql = SqlTranslate.translateSql(sql, task.getSource().getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
 
 		return sql;
 	}

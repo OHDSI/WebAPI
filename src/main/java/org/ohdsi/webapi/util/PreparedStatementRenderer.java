@@ -78,7 +78,7 @@ public class PreparedStatementRenderer {
     buildPreparedStatementSetter();
     sql = PreparedSqlRender.fixPreparedStatementSql(sql, paramValueMap);
     String targetDialect = source != null ? source.getSourceDialect() : this.targetDialect;
-    sql = SqlTranslate.translateSql(sql, "sql server", targetDialect, sessionId, null);
+    sql = SqlTranslate.translateSql(sql, targetDialect, sessionId, null);
   }
 
   public PreparedStatementRenderer(Source source, String sqlResource, String[] searchRegexes, String[] replacementStrings, String sessionId) {

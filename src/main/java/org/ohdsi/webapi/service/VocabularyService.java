@@ -878,7 +878,7 @@ public class VocabularyService extends AbstractDaoService {
     // Insert the queries into the overall comparison script
     sql_statement = SqlRender.renderSql(sql_statement, new String[]{"cs1_expression", "cs2_expression"}, new String[]{cs1Query, cs2Query});
     sql_statement = SqlRender.renderSql(sql_statement, new String[]{"cdm_database_schema"}, new String[]{tableQualifier});
-    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
+    sql_statement = SqlTranslate.translateSql(sql_statement, source.getSourceDialect());
     
     // Execute the query
     Collection<ConceptSetComparison> returnVal = getSourceJdbcTemplate(source).query(sql_statement, new RowMapper<ConceptSetComparison>() {
@@ -954,7 +954,7 @@ public class VocabularyService extends AbstractDaoService {
     String descendantConceptsList = this.JoinArray(descendantConcepts.toArray(new String[descendantConcepts.size()]));
     
     sql_statement = SqlRender.renderSql(sql_statement, new String[]{"allConcepts", "descendantConcepts", "cdm_database_schema"}, new String[]{allConceptsList, descendantConceptsList, tableQualifier});
-    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
+    sql_statement = SqlTranslate.translateSql(sql_statement, source.getSourceDialect());
 
     // Execute the query to obtain a result set that contains the
     // most optimized version of the concept set. Then, using these results,

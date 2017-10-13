@@ -94,7 +94,7 @@ public class PerformFeasibilityTasklet implements Tasklet {
 
   private void prepareTempTables(FeasibilityStudy study, String dialect, String sessionId) {
 
-    String translatedSql = SqlTranslate.translateSql(CREATE_TEMP_TABLES_TEMPLATE, "sql server", dialect, sessionId, null);
+    String translatedSql = SqlTranslate.translateSql(CREATE_TEMP_TABLES_TEMPLATE, dialect, sessionId, null);
     String[] sqlStatements = SqlSplit.splitSql(translatedSql);
     this.jdbcTemplate.batchUpdate(sqlStatements);
     String insSql = "INSERT INTO #inclusionRules (study_id, sequence, name) VALUES (@studyId,@iteration,@ruleName)";
@@ -110,7 +110,7 @@ public class PerformFeasibilityTasklet implements Tasklet {
 
   private void cleanupTempTables(String dialect, String sessionId) {
 
-    String translatedSql = SqlTranslate.translateSql(DROP_TEMP_TABLES_TEMPLATE, "sql server", dialect, sessionId, null);
+    String translatedSql = SqlTranslate.translateSql(DROP_TEMP_TABLES_TEMPLATE, dialect, sessionId, null);
     String[] sqlStatements = SqlSplit.splitSql(translatedSql);
     this.jdbcTemplate.batchUpdate(sqlStatements);
   }
@@ -129,13 +129,13 @@ public class PerformFeasibilityTasklet implements Tasklet {
       if (study.getResultRule() != null) {
         prepareTempTables(study, jobParams.get("target_dialect").toString(), sessionId);
         String expressionSql = studyQueryBuilder.buildSimulateQuery(study, options);
-        String translatedSql = SqlTranslate.translateSql(expressionSql, "sql server", jobParams.get("target_dialect").toString(), sessionId, null);
+        String translatedSql = SqlTranslate.translateSql(expressionSql, jobParams.get("target_dialect").toString(), sessionId, null);
         String[] sqlStatements = SqlSplit.splitSql(translatedSql);
         result = PerformFeasibilityTasklet.this.jdbcTemplate.batchUpdate(sqlStatements);
         cleanupTempTables(jobParams.get("target_dialect").toString(), sessionId);
       } else {
         String expressionSql = studyQueryBuilder.buildNullQuery(study, options);
-        String translatedSql = SqlTranslate.translateSql(expressionSql, "sql server", jobParams.get("target_dialect").toString(), sessionId, null);
+        String translatedSql = SqlTranslate.translateSql(expressionSql, jobParams.get("target_dialect").toString(), sessionId, null);
         String[] sqlStatements = SqlSplit.splitSql(translatedSql);
         result = PerformFeasibilityTasklet.this.jdbcTemplate.batchUpdate(sqlStatements);
       }

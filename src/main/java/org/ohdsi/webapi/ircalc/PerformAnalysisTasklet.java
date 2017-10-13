@@ -110,7 +110,7 @@ public class PerformAnalysisTasklet implements Tasklet {
       }
       
       String expressionSql = analysisQueryBuilder.buildAnalysisQuery(analysis, options);
-      String translatedSql = SqlTranslate.translateSql(expressionSql, "sql server", jobParams.get("target_dialect").toString(), sessionId, null);
+      String translatedSql = SqlTranslate.translateSql(expressionSql, jobParams.get("target_dialect").toString(), sessionId, null);
       String[] sqlStatements = SqlSplit.splitSql(translatedSql);
       result = PerformAnalysisTasklet.this.jdbcTemplate.batchUpdate(sqlStatements);
     } catch (Exception e) {

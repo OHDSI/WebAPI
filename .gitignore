@@ -1,5 +1,6 @@
 *application.properties
 .idea/
+.metadata/
 *.iml
 sandbox/
 /target/

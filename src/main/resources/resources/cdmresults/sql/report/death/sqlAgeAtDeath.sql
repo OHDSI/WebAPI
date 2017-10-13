@@ -9,5 +9,5 @@ SELECT
   ard1.max_value    AS max_Value
 FROM @results_database_schema.ACHILLES_results_dist ard1
 INNER JOIN
-@vocab_database_schema.concept c2 ON ard1.stratum_1 = CAST(c2.concept_id AS VARCHAR )
+@vocab_database_schema.concept c2 ON CAST(ard1.stratum_1 AS INT) = c2.concept_id
 WHERE ard1.analysis_id = 506

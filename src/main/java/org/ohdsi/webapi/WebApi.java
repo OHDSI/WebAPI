@@ -1,6 +1,7 @@
 package org.ohdsi.webapi;
 
 import javax.annotation.PostConstruct;
+import org.apache.catalina.webresources.TomcatURLStreamHandlerFactory;
 import org.ohdsi.webapi.service.CDMResultsService;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.source.SourceDaimon;
@@ -22,10 +23,13 @@ public class WebApi extends SpringBootServletInitializer {
     protected SpringApplicationBuilder configure(final SpringApplicationBuilder application) {
         return application.sources(WebApi.class);
     }
-
-    public static void main(final String[] args) throws Exception {
+   
+    public static void main(final String[] args) throws Exception 
+    {
+        TomcatURLStreamHandlerFactory.disable();
         new SpringApplicationBuilder(WebApi.class).run(args);
     }
+
 
     @Autowired
     private CDMResultsService resultsService;

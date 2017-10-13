@@ -15,14 +15,9 @@
  */
 package org.ohdsi.webapi.cohortdefinition;
 
-import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
-
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.InclusionRule;
-import org.ohdsi.webapi.GenerationStatus;
-import java.util.Calendar;
-import java.util.Date;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -42,12 +37,9 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.lang.StringUtils;
 import org.ohdsi.sql.SqlRender;
-import org.springframework.transaction.TransactionException;
 
 /**
  *
@@ -127,60 +119,15 @@ public class GenerateCohortTasklet implements Tasklet {
     return result;
   }
 
-  private CohortGenerationInfo findBySourceId(Collection<CohortGenerationInfo> infoList, Integer sourceId)
-  {
-    for (CohortGenerationInfo info : infoList) {
-      if (info.getId().getSourceId().equals(sourceId))
-        return info;
-    }
-    return null;
-  }
   @Override
   public RepeatStatus execute(final StepContribution contribution, final ChunkContext chunkContext) throws Exception {
-    Date startTime = Calendar.getInstance().getTime();
-    Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
-    Integer defId = Integer.valueOf(jobParams.get("cohort_definition_id").toString());
-    Integer sourceId = Integer.valueOf(jobParams.get("source_id").toString());
-    boolean isValid = false;
-    
-    DefaultTransactionDefinition initTx = new DefaultTransactionDefinition();
-    initTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-    TransactionStatus initStatus = this.transactionTemplate.getTransactionManager().getTransaction(initTx);
-    CohortDefinition df = this.cohortDefinitionRepository.findOne(defId);
-    CohortGenerationInfo info = findBySourceId(df.getGenerationInfoList(), sourceId);
-    info.setIsValid(isValid);
-    info.setStartTime(startTime);
-    info.setStatus(GenerationStatus.RUNNING);    
-    df = this.cohortDefinitionRepository.save(df);
-    this.transactionTemplate.getTransactionManager().commit(initStatus);
    
-    try {
-      final int[] ret = this.transactionTemplate.execute(new TransactionCallback<int[]>() {
-
-        @Override
-        public int[] doInTransaction(final TransactionStatus status) {
-          return doTask(chunkContext);
-        }
-      });
-      log.debug("Update count: " + ret.length);
-      isValid = true;
-    } catch (final TransactionException e) {
-      log.error(whitelist(e));
-      throw e;//FAIL job status
-    }
-    finally {
-      DefaultTransactionDefinition completeTx = new DefaultTransactionDefinition();
-      completeTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-      TransactionStatus completeStatus = this.transactionTemplate.getTransactionManager().getTransaction(completeTx);      
-      df = this.cohortDefinitionRepository.findOne(defId);
-      info = findBySourceId(df.getGenerationInfoList(), sourceId);
-      Date endTime = Calendar.getInstance().getTime();
-      info.setExecutionDuration((int) (endTime.getTime() - startTime.getTime()));
-      info.setIsValid(isValid);
-      info.setStatus(GenerationStatus.COMPLETE);
-      this.cohortDefinitionRepository.save(df);
-      this.transactionTemplate.getTransactionManager().commit(completeStatus);
-    }
+		final int[] ret = this.transactionTemplate.execute(new TransactionCallback<int[]>() {
+			@Override
+			public int[] doInTransaction(final TransactionStatus status) {
+				return doTask(chunkContext);
+			}
+		});
 
     return RepeatStatus.FINISHED;
   }

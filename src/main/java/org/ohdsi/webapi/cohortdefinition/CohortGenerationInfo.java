@@ -64,6 +64,18 @@ public class CohortGenerationInfo implements Serializable {
   
   @Column(name="is_valid")
   private boolean isValid;
+	
+  @Column(name="include_features", nullable = true)
+  private boolean includeFeatures = false;
+	
+  @Column(name="fail_message")
+  private String failMessage;
+	
+  @Column(name="person_count")
+  private Long personCount;
+	
+  @Column(name="record_count")
+  private Long recordCount;
 
   public CohortGenerationInfoId getId() {
     return id;
@@ -104,4 +116,41 @@ public class CohortGenerationInfo implements Serializable {
     this.isValid = isValid;
     return this;
   }
+
+	public boolean isIncludeFeatures() {
+		return includeFeatures;
+	}
+
+	public CohortGenerationInfo setIncludeFeatures(boolean includeFeatures) {
+		this.includeFeatures = includeFeatures;
+		return this;
+	}
+
+	public String getFailMessage() {
+		return failMessage;
+	}
+
+	public CohortGenerationInfo setFailMessage(String failMessage) {
+		this.failMessage = failMessage;
+		return this;
+	}
+
+	public Long getPersonCount() {
+		return personCount;
+	}
+
+	public CohortGenerationInfo setPersonCount(Long personCount) {
+		this.personCount = personCount;
+		return this;
+	}
+
+	public Long getRecordCount() {
+		return recordCount;
+	}
+
+	public CohortGenerationInfo setRecordCount(Long recordCount) {
+		this.recordCount = recordCount;
+		return this;
+	}
+	
 }

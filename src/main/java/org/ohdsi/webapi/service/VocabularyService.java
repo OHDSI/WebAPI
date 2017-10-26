@@ -833,16 +833,8 @@ public class VocabularyService extends AbstractDaoService {
 
     return concepts.values();
   }
-
-  protected PreparedStatementRenderer prepareGetDescendantConceptsByList(String[] conceptList, Source source) {
-    String sqlPath = "/resources/vocabulary/sql/getDescendantConceptsMultipleConcepts.sql";
-    String tqName = "CDM_schema";
-    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
-    List<Integer> conceptArray = Arrays.stream(conceptList).map(NumberUtils::toInt).collect(Collectors.toList());
-    return new PreparedStatementRenderer( source, sqlPath, tqName, tqValue, "id", conceptArray.toArray());
-  }
-
-  @Path("{sourceKey}/conceptlist/descendants")
+  
+  @Path("conceptlist/descendants")
   @POST
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
@@ -853,7 +845,15 @@ public class VocabularyService extends AbstractDaoService {
       throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."), Response.Status.SERVICE_UNAVAILABLE); // http 503      
 
     return getDescendantConceptsByList(defaultSourceKey, conceptList);
-  }  
+  }    
+
+  protected PreparedStatementRenderer prepareGetDescendantConceptsByList(String[] conceptList, Source source) {
+    String sqlPath = "/resources/vocabulary/sql/getDescendantConceptsMultipleConcepts.sql";
+    String tqName = "CDM_schema";
+    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
+    List<Integer> conceptArray = Arrays.stream(conceptList).map(NumberUtils::toInt).collect(Collectors.toList());
+    return new PreparedStatementRenderer( source, sqlPath, tqName, tqValue, "id", conceptArray.toArray());
+  }
 
   @Path("{sourceKey}/compare")
   @POST

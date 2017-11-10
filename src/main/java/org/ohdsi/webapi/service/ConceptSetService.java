@@ -130,9 +130,9 @@ public class ConceptSetService extends AbstractDaoService {
     }
 
     @GET
-    @Path("{id}/{name}/exists")
+    @Path("{id}/exists")
     @Produces(MediaType.APPLICATION_JSON)
-    public Collection<ConceptSet> getConceptSetExists(@PathParam("id") final int id, @PathParam("name") String name) {
+    public Collection<ConceptSet> getConceptSetExists(@PathParam("id") final int id, @QueryParam("name") String name) {
         return getConceptSetRepository().conceptSetExists(id, name);
     }
 

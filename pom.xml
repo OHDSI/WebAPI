@@ -9,7 +9,7 @@
   <version>1.0.0-SNAPSHOT</version>
   <name>WebAPI</name>
   <properties>
-    <webapi.version>2.2.0</webapi.version>
+    <webapi.version>2.2.1</webapi.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jersey.version>2.14</jersey.version>
     <!-- Spring Boot manages spring.version as well -->
@@ -312,7 +312,7 @@
     <dependency>
       <groupId>org.ohdsi.sql</groupId>
       <artifactId>SqlRender</artifactId>
-      <version>1.4.3</version>
+      <version>1.4.6</version>
     </dependency>
     <dependency>
       <groupId>commons-dbutils</groupId>
@@ -441,7 +441,7 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>circe</artifactId>
-      <version>1.2.1</version>
+      <version>1.2.2</version>
     </dependency>
     <dependency>
       <groupId>org.json</groupId>

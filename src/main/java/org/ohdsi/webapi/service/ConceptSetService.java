@@ -25,6 +25,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -130,9 +131,18 @@ public class ConceptSetService extends AbstractDaoService {
     }
 
     @GET
-    @Path("{id}/exists")
+    @Path("{id}/{name}/exists")
     @Produces(MediaType.APPLICATION_JSON)
-    public Collection<ConceptSet> getConceptSetExists(@PathParam("id") final int id, @QueryParam("name") String name) {
+    public Response getConceptSetExistsDeprecated(@PathParam("id") final int id, @PathParam("name") String name) {
+        String warningMessage = "This method will be deprecated in the next release. Instead, please use the new REST endpoint: conceptset/exists?id={id}&name={name}";
+        Collection<ConceptSet> cs = getConceptSetRepository().conceptSetExists(id, name);
+        return Response.ok(cs).header("Warning: 299", warningMessage).build();
+    }
+		
+    @GET
+    @Path("/exists")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Collection<ConceptSet> getConceptSetExists(@QueryParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
         return getConceptSetRepository().conceptSetExists(id, name);
     }
 

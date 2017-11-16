@@ -19,7 +19,7 @@ public class PreparedSqlRender {
 
     for (Map.Entry<String, Object> entry : paramValueMap.entrySet()) {
       Object value = entry.getValue();
-      if (value instanceof String || value instanceof Integer || value instanceof Long) {
+      if (value instanceof String || value instanceof Integer || value instanceof Long || value == null) {
         sql = sql.replace("'%@" + entry.getKey() + "%'", "?");
         sql = sql.replace("'@" + entry.getKey() + "'", "?");
         sql = sql.replace("@" + entry.getKey(), "?");
@@ -54,7 +54,7 @@ public class PreparedSqlRender {
 
   private static void addToList(List<Object> result, Object value) {
 
-    if (value instanceof String || value instanceof Integer || value instanceof Long) {
+    if (value instanceof String || value instanceof Integer || value instanceof Long || value == null) {
       result.add(value);
     } else if (value instanceof String[]) {
       result.addAll(Arrays.asList((String[]) value));

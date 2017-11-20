@@ -2,6 +2,7 @@ package org.ohdsi.webapi.service;
 
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
+import com.microsoft.sqlserver.jdbc.SQLServerDriver;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -47,6 +48,7 @@ import org.ohdsi.webapi.vocabulary.RelatedConceptSearch;
 import org.ohdsi.webapi.vocabulary.Vocabulary;
 import org.ohdsi.webapi.vocabulary.VocabularyInfo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
@@ -62,7 +64,10 @@ public class VocabularyService extends AbstractDaoService {
   private static Hashtable<String, VocabularyInfo> vocabularyInfoCache = null;
 
   @Autowired
-  private SourceService sourceService;  
+  private SourceService sourceService;
+
+  @Value("${datasource.driverClassName}")
+  private String driver;
   
   private final RowMapper<Concept> rowMapper = new RowMapper<Concept>() {
     @Override
@@ -109,13 +114,19 @@ public class VocabularyService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<Concept> executeIdentifierLookup(@PathParam("sourceKey") String sourceKey, long[] identifiers) {
+    Collection<Concept> concepts = new ArrayList<>();
     if (identifiers.length == 0) {
-      return new ArrayList<>();
+      return concepts;
+    }
+    else if (driver.equals(SQLServerDriver.class.getCanonicalName()) || identifiers.length > 2000){
+      concepts = executeIdentifierLookup(sourceKey, Arrays.copyOfRange(identifiers, 2000, identifiers.length));
+      identifiers = Arrays.copyOfRange(identifiers, 0, 2000);
     }
     
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     PreparedStatementRenderer psr = prepareExecuteIdentifierLookup(identifiers, source);
-    return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), this.rowMapper);
+    return concepts.addAll(getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), this.rowMapper))
+            ? concepts : new ArrayList<>();
   }
 
   protected PreparedStatementRenderer prepareExecuteIdentifierLookup(long[] identifiers, Source source) {

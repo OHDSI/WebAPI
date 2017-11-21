@@ -144,7 +144,7 @@ public class CohortResultsService extends AbstractDaoService {
                         : minCovariatePersonCountParam,
                 minIntervalPersonCountParam == null ? MIN_INTERVAL_PERSON_COUNT
                         : minIntervalPersonCountParam});
-      sql = SqlTranslate.translateSql(sql, getSourceDialect(), source.getSourceDialect());
+      sql = SqlTranslate.translateSql(sql, source.getSourceDialect());
     } catch (Exception e) {
       log.error(String.format("Unable to translate sql for analysis %s", analysisName), e);
     }
@@ -174,7 +174,7 @@ public class CohortResultsService extends AbstractDaoService {
       sql = ResourceHelper.GetResourceAsString(BASE_SQL_PATH + "/raw/getAllResults.sql");
       sql = SqlRender.renderSql(sql, new String[]{"tableQualifier", "cohortDefinitionId"},
               new String[]{resultsTableQualifier, String.valueOf(id)});
-      sql = SqlTranslate.translateSql(sql, getSourceDialect(), source.getSourceDialect());
+      sql = SqlTranslate.translateSql(sql, source.getSourceDialect());
 
       getSourceJdbcTemplate(source).query(sql, new RowMapper<Void>() {
         @Override
@@ -202,7 +202,7 @@ public class CohortResultsService extends AbstractDaoService {
       sql = ResourceHelper.GetResourceAsString(BASE_SQL_PATH + "/raw/getAllResultDistributions.sql");
       sql = SqlRender.renderSql(sql, new String[]{"tableQualifier", "cohortDefinitionId"},
               new String[]{resultsTableQualifier, String.valueOf(id)});
-      sql = SqlTranslate.translateSql(sql, getSourceDialect(), source.getSourceDialect());
+      sql = SqlTranslate.translateSql(sql, source.getSourceDialect());
 
       getSourceJdbcTemplate(source).query(sql, new RowMapper<Void>() {
         @Override
@@ -363,7 +363,7 @@ public class CohortResultsService extends AbstractDaoService {
 
     String sql = ResourceHelper.GetResourceAsString(BASE_SQL_PATH + "/raw/getTotalDistinctPeople.sql");
     sql = SqlRender.renderSql(sql, new String[]{"tableQualifier", "id"}, new String[]{tableQualifier, id});
-    sql = SqlTranslate.translateSql(sql, "sql server", source.getSourceDialect());
+    sql = SqlTranslate.translateSql(sql, source.getSourceDialect());
     Integer result = getSourceJdbcTemplate(source).queryForObject(sql, Integer.class);
 
     return result;
@@ -449,7 +449,7 @@ public class CohortResultsService extends AbstractDaoService {
     String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
     String sql = ResourceHelper.GetResourceAsString(BASE_SQL_PATH + "/raw/getCompletedAnalyses.sql");
     sql = SqlRender.renderSql(sql, new String[]{"tableQualifier", "id"}, new String[]{tableQualifier, id});
-    sql = SqlTranslate.translateSql(sql, "sql server", source.getSourceDialect());
+    sql = SqlTranslate.translateSql(sql, source.getSourceDialect());
     return getSourceJdbcTemplate(source).queryForList(sql, Integer.class);
   }
 
@@ -1303,7 +1303,7 @@ public class CohortResultsService extends AbstractDaoService {
     String sql = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/raw/getMembers.sql");
     sql = SqlRender.renderSql(sql, new String[]{"tableQualifier", "cohortDefinitionId","min","max"}, new String[]{
       resultsTableQualifier, String.valueOf(id), String.valueOf(min), String.valueOf(max)});
-    sql = SqlTranslate.translateSql(sql, getSourceDialect(), source.getSourceDialect(), SessionUtils.sessionId(),
+    sql = SqlTranslate.translateSql(sql, source.getSourceDialect(), SessionUtils.sessionId(),
             resultsTableQualifier);
 
     return getSourceJdbcTemplate(source).query(sql, this.cohortMemberMapper);
@@ -1326,7 +1326,7 @@ public class CohortResultsService extends AbstractDaoService {
     String sql = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/raw/getCohortBreakdown.sql");
     sql = SqlRender.renderSql(sql, new String[]{"tableQualifier","resultsTableQualifier", "cohortDefinitionId"}, new String[]{
       cdmTableQualifier, resultsTableQualifier, String.valueOf(id)});
-    sql = SqlTranslate.translateSql(sql, getSourceDialect(), source.getSourceDialect(), SessionUtils.sessionId(),
+    sql = SqlTranslate.translateSql(sql, source.getSourceDialect(), SessionUtils.sessionId(),
             resultsTableQualifier);
 
     return getSourceJdbcTemplate(source).query(sql, this.cohortBreakdownMapper);
@@ -1406,7 +1406,7 @@ public class CohortResultsService extends AbstractDaoService {
                 String.valueOf(rows),
                 String.valueOf(wherecolsStr),
                 String.valueOf(groups)});
-    sql = SqlTranslate.translateSql(sql, getSourceDialect(), source.getSourceDialect(), SessionUtils.sessionId(),
+    sql = SqlTranslate.translateSql(sql, source.getSourceDialect(), SessionUtils.sessionId(),
             resultsTableQualifier);
 
     return getSourceJdbcTemplate(source).query(sql, this.cohortMemberMapper);
@@ -1429,7 +1429,7 @@ public class CohortResultsService extends AbstractDaoService {
     String sql = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/raw/getMemberCount.sql");
     sql = SqlRender.renderSql(sql, new String[]{"tableQualifier", "cohortDefinitionId"}, new String[]{
       resultsTableQualifier, String.valueOf(id)});
-    sql = SqlTranslate.translateSql(sql, getSourceDialect(), source.getSourceDialect(), SessionUtils.sessionId(),
+    sql = SqlTranslate.translateSql(sql, source.getSourceDialect(), SessionUtils.sessionId(),
             resultsTableQualifier);
 
     return getSourceJdbcTemplate(source).queryForObject(sql, Long.class);
@@ -1462,7 +1462,7 @@ public class CohortResultsService extends AbstractDaoService {
 
     sql = SqlRender.renderSql(sql, new String[]{"ohdsi_database_schema", "cohortDefinitionId"}, new String[]{
       resultsTableQualifier, String.valueOf(id)});
-    sql = SqlTranslate.translateSql(sql, getSourceDialect(), source.getSourceDialect(), SessionUtils.sessionId(),
+    sql = SqlTranslate.translateSql(sql, source.getSourceDialect(), SessionUtils.sessionId(),
             resultsTableQualifier);
 
     return getSourceJdbcTemplate(source).query(sql, this.cohortAnalysisMapper);
@@ -1481,7 +1481,7 @@ public class CohortResultsService extends AbstractDaoService {
 
     sql_statement = SqlRender.renderSql(sql_statement, new String[]{"exposure_cohort_definition_id","outcome_cohort_definition_id","ohdsi_database_schema"},
               new String[]{exposureCohortList, outcomeCohortList, resultsTableQualifier});
-    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", dbsource.getSourceDialect());
+    sql_statement = SqlTranslate.translateSql(sql_statement, dbsource.getSourceDialect());
 	  
     final List<ExposureCohortResult> results = new ArrayList<ExposureCohortResult>();
     List<Map<String, Object>> rows = getSourceJdbcTemplate(dbsource).queryForList(sql_statement);
@@ -1514,7 +1514,7 @@ public class CohortResultsService extends AbstractDaoService {
 
     sql_statement = SqlRender.renderSql(sql_statement, new String[]{"exposure_cohort_definition_id","outcome_cohort_definition_id","ohdsi_database_schema"},
               new String[]{exposureCohortList, outcomeCohortList, resultsTableQualifier});
-    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", dbsource.getSourceDialect());
+    sql_statement = SqlTranslate.translateSql(sql_statement, dbsource.getSourceDialect());
 	  
     final List<TimeToEventResult> results = new ArrayList<TimeToEventResult>();
     List<Map<String, Object>> rows = getSourceJdbcTemplate(dbsource).queryForList(sql_statement);
@@ -1548,7 +1548,7 @@ public class CohortResultsService extends AbstractDaoService {
 
     sql_statement = SqlRender.renderSql(sql_statement, new String[]{"exposure_cohort_definition_id","outcome_cohort_definition_id","minCellCount","ohdsi_database_schema", "cdm_schema"},
               new String[]{exposureCohortList, outcomeCohortList, minCellCount, resultsTableQualifier, cdmTableQualifier});
-    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", dbsource.getSourceDialect());
+    sql_statement = SqlTranslate.translateSql(sql_statement, dbsource.getSourceDialect());
 	  
     final List<PredictorResult> results = new ArrayList<PredictorResult>();
     List<Map<String, Object>> rows = getSourceJdbcTemplate(dbsource).queryForList(sql_statement);
@@ -1612,7 +1612,7 @@ public class CohortResultsService extends AbstractDaoService {
 
     sql = SqlRender.renderSql(sql, new String[]{"tableQualifier", "cohortDefinitionId"},
             new String[]{resultsTableQualifier, String.valueOf(id)});
-    sql = SqlTranslate.translateSql(sql, getSourceDialect(), source.getSourceDialect());
+    sql = SqlTranslate.translateSql(sql, source.getSourceDialect());
 
 
     AnalysisResultsMapper arm = new AnalysisResultsMapper();
@@ -1697,7 +1697,7 @@ public class CohortResultsService extends AbstractDaoService {
         
         sql = SqlRender.renderSql(sql, new String[] { "tableQualifier", "cohortDefinitionId", "entroppAnalysisId" },
             new String[] { resultsTableQualifier, String.valueOf(id), String.valueOf(entroppAnalysisId) });
-        sql = SqlTranslate.translateSql(sql, getSourceDialect(), source.getSourceDialect());
+        sql = SqlTranslate.translateSql(sql, source.getSourceDialect());
         
         AnalysisResultsMapper arm = new AnalysisResultsMapper();
         

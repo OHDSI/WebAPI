@@ -30,12 +30,12 @@ with breakdown (subject_id, cohort_start_date, cohort_end_date, gender,age,condi
     where 1=1
     and gender in(?)
     and age in(?)
-    and conditions in(?)
-    and drugs in(?)
+    and conditions in(?,?,?)
+    and drugs in(?,?)
 )
 select * from
 (select row_number() over (partition by gender,age,conditions,drugs order by (select 1)) row_limit,
         subject_id, cohort_start_date, cohort_end_date
  from breakdown
 ) withrows
-where row_limit <= ?/?
+where row_limit <= cast(? as int) /  cast(? as int)

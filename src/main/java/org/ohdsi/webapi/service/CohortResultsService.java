@@ -5,6 +5,7 @@ import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -24,6 +26,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
@@ -1445,7 +1448,14 @@ public class CohortResultsService extends AbstractDaoService {
     }
 
     String[] names = new String[]{"cohortDefinitionId", "gender", "age", "conditions", "drugs", "rows", "groups"};
-    Object[] values = new Object[]{id, gender, age, conditions, drugs, rows, groups};
+
+    String[] genderArray= gender.replaceAll("'", "").split(",");
+    String[] ageArray= age.replaceAll("'", "").split(",");
+
+    List<Integer> conditionIds =  Arrays.stream(conditions.split(",")).map(NumberUtils::toInt).collect(Collectors.toList());
+    List<Integer> drugIds =  Arrays.stream(drugs.split(",")).map(NumberUtils::toInt).collect(Collectors.toList());
+
+    Object[] values = new Object[]{id, genderArray, ageArray, conditionIds.toArray(), drugIds.toArray(), rows, groups};
     return new PreparedStatementRenderer(source, path, searchFor, replaceWith, names, values);
   }
   

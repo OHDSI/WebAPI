@@ -8,6 +8,6 @@ sandbox/
 .classpath
 .project
 /nb-configuration.xml
-/nbactions-*.xml
+/nbactions*.xml
 *~
 .DS_Store

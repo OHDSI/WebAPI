@@ -81,6 +81,7 @@ public class JobConfig {
     public SearchableJobExecutionDao searchableJobExecutionDao(DataSource dataSource) {
         JdbcSearchableJobExecutionDao dao = new JdbcSearchableJobExecutionDao();
         dao.setDataSource(dataSource);
+        dao.setTablePrefix(JobConfig.this.tablePrefix); 
         return dao;
     }
     
@@ -88,6 +89,7 @@ public class JobConfig {
     public SearchableJobInstanceDao searchableJobInstanceDao(JdbcTemplate jdbcTemplate) {
         JdbcSearchableJobInstanceDao dao = new JdbcSearchableJobInstanceDao();
         dao.setJdbcTemplate(jdbcTemplate);//no setDataSource as in SearchableJobExecutionDao
+        dao.setTablePrefix(JobConfig.this.tablePrefix); 
         return dao;
     }
     
@@ -164,6 +166,7 @@ public class JobConfig {
                     
                     final JobExplorerFactoryBean jobExplorerFactoryBean = new JobExplorerFactoryBean();
                     jobExplorerFactoryBean.setDataSource(this.dataSource);
+                    jobExplorerFactoryBean.setTablePrefix(JobConfig.this.tablePrefix);
                     jobExplorerFactoryBean.afterPropertiesSet();
                     this.jobExplorer = jobExplorerFactoryBean.getObject();
                 }

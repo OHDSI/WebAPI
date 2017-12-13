@@ -6509,11 +6509,8 @@ INSERT INTO @results_schema.HERACLES_results (cohort_definition_id,
      FROM
 (select
 	obs_date as d,
---	CAST(YEAR(obs_date) as varchar(4)) + '-' + RIGHT('0' + RTRIM(MONTH(obs_date)), 2) + '-' + RIGHT('0' + RTRIM(day(obs_date)), 2) as d,
---	cast(obs_date as varchar(10)) d, 
 	sum(probTimesLog) entropy from
 	(select obs_date, value_as_string, (1.0 * cnt) / (1.0 * total_per_day) prob, 
---		(-1.0) * (((1.0 * cnt) / (1.0 * total_per_day))* log(2, (1.0 * cnt) / (1.0 * total_per_day))) probTimesLog,
 		(-1.0) * (((1.0 * cnt) / (1.0 * total_per_day)) * (log((1.0 * cnt) / (1.0 * total_per_day))/log(2))) probTimesLog,
 		cnt, total_per_day
 		from
@@ -6523,13 +6520,10 @@ INSERT INTO @results_schema.HERACLES_results (cohort_definition_id,
 			from 
 			(
 			  select distinct all_observ.value_as_string,
-				CAST(YEAR(all_observ.observation_date) as varchar(4)) + '-' + RIGHT('0' + RTRIM(MONTH(all_observ.observation_date)), 2) + '-' + RIGHT('0' + RTRIM(day(all_observ.observation_date)), 2) as obs_date,
-				--observation_date as obs_date, 
-				COUNT_BIG(*) 
+				CAST(YEAR(all_observ.observation_date) as varchar(4)) + '-' + RIGHT('0' + RTRIM(CAST(MONTH(all_observ.observation_date) as varchar(2))), 2) + '-' + RIGHT('0' + RTRIM(CAST(day(all_observ.observation_date) as varchar(2))), 2) as obs_date,
+				COUNT_BIG(*)
 				OVER (PARTITION BY all_observ.value_as_string,
---				DATEFROMPARTS(YEAR(all_observ.observation_date),MONTH(all_observ.observation_date),DAY(all_observ.observation_date))
-				CAST(YEAR(all_observ.observation_date) as varchar(4)) + '-' + RIGHT('0' + RTRIM(MONTH(all_observ.observation_date)), 2) + '-' + RIGHT('0' + RTRIM(day(all_observ.observation_date)), 2)
-				--trunc(all_observ.observation_date)
+				CAST(YEAR(all_observ.observation_date) as varchar(4)) + '-' + RIGHT('0' + RTRIM(CAST(MONTH(all_observ.observation_date) as varchar(2))), 2) + '-' + RIGHT('0' + RTRIM(CAST(day(all_observ.observation_date) as varchar(2))), 2)
 				)
 				as cnt
 				from 
@@ -6585,12 +6579,12 @@ INSERT INTO @results_schema.HERACLES_results (cohort_definition_id,
                                  all_observ.site_source_value
                                     AS site_source_value,
                                  all_observ.value_as_string AS value_as_string,
-                                 CAST(YEAR(all_observ.observation_date) as varchar(4)) + '-' + RIGHT('0' + RTRIM(MONTH(all_observ.observation_date)), 2) + '-' + RIGHT('0' + RTRIM(day(all_observ.observation_date)), 2) as obs_date,
+                                 CAST(YEAR(all_observ.observation_date) as varchar(4)) + '-' + RIGHT('0' + RTRIM(CAST(MONTH(all_observ.observation_date) as varchar(2))), 2) + '-' + RIGHT('0' + RTRIM(CAST(day(all_observ.observation_date) as varchar(2))), 2) as obs_date,
                                  COUNT_BIG(*)
                                  OVER (
                                     PARTITION BY all_observ.care_site_id,
                                                  all_observ.value_as_string,
-                                                 CAST(YEAR(all_observ.observation_date) as varchar(4)) + '-' + RIGHT('0' + RTRIM(MONTH(all_observ.observation_date)), 2) + '-' + RIGHT('0' + RTRIM(day(all_observ.observation_date)), 2))
+                                                 CAST(YEAR(all_observ.observation_date) as varchar(4)) + '-' + RIGHT('0' + RTRIM(CAST(MONTH(all_observ.observation_date) as varchar(2))), 2) + '-' + RIGHT('0' + RTRIM(CAST(day(all_observ.observation_date) as varchar(2))), 2))
                                     AS cnt
                             FROM (SELECT CASE
                                             WHEN caresite.CARE_SITE_ID IS NULL

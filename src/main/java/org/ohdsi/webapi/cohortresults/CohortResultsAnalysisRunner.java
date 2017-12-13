@@ -1353,7 +1353,7 @@ public class CohortResultsAnalysisRunner {
 
 			sql = ResourceHelper.GetResourceAsString(sqlPath);
 			sql = SqlRender.renderSql(sql, cols, colValues);
-			sql = SqlTranslate.translateSql(sql, sourceDialect, source.getSourceDialect());
+			sql = SqlTranslate.translateSql(sql, source.getSourceDialect());
 		} catch (Exception e) {
 			log.error(String.format("Unable to translate sql for  %s", sql), e);
 		}

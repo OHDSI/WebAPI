@@ -500,10 +500,6 @@
         <datasource.dialect>oracle</datasource.dialect>
         <datasource.ohdsi.schema>OHDSI</datasource.ohdsi.schema>
         <!--<datasource.validationQuery>SELECT 1 FROM DUAL</datasource.validationQuery>-->
-        <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
-        <flyway.datasource.url>jdbc:oracle:thin:@127.0.0.1:152/ohdsi</flyway.datasource.url>
-        <flyway.datasource.username>user</flyway.datasource.username>
-        <flyway.datasource.password>pass</flyway.datasource.password>
         <flyway.locations>classpath:db/migration/oracle</flyway.locations>
         <hibernate.dialect>org.hibernate.dialect.Oracle10gDialect</hibernate.dialect>
       </properties>
@@ -525,18 +521,9 @@
         <datasource.password>PASS</datasource.password>
         <datasource.dialect>postgresql</datasource.dialect>
         <datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>
-        <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
-        <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
-        <flyway.datasource.username>userWithWritesToOhdsiSchema</flyway.datasource.username>
-        <flyway.datasource.password>PASS</flyway.datasource.password>
         <flyway.locations>classpath:db/migration/postgresql</flyway.locations>
         <hibernate.dialect>org.hibernate.dialect.PostgreSQL9Dialect</hibernate.dialect>
-        <security.db.datasource.driverClassName>${datasource.driverClassName}</security.db.datasource.driverClassName>
-        <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
-        <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
-        <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
-        <security.db.datasource.schema>${datasource.ohdsi.schema}</security.db.datasource.schema>
-        <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.user where \
+        <security.db.datasource.authenticationQuery>select password from ${datasource.ohdsi.schema}.user where \
               login = ?</security.db.datasource.authenticationQuery>
       </properties>
     </profile>
@@ -549,10 +536,6 @@
         <datasource.password>PASS</datasource.password>
         <datasource.dialect>sql server</datasource.dialect>
         <datasource.ohdsi.schema>OHDSI_schema</datasource.ohdsi.schema>
-        <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
-        <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
-        <flyway.datasource.username>FLYWAY_USER</flyway.datasource.username>
-        <flyway.datasource.password>FLYWAY_PASS</flyway.datasource.password>
         <flyway.locations>classpath:db/migration/sqlserver</flyway.locations>
         <hibernate.dialect>org.hibernate.dialect.SQLServer2012Dialect</hibernate.dialect>
       </properties>
@@ -560,15 +543,21 @@
     <profile>
         <id>develop</id>
         <properties>
-            <datasource.url>jdbc:postgresql://localhost:5432/ohdsi</datasource.url>
-            <datasource.ohdsi.schema>webapi</datasource.ohdsi.schema>
+            <packaging.excludes></packaging.excludes>
+            <security.enabled>true</security.enabled>
+            <security.cors.enabled>true</security.cors.enabled>
+            <datasource.jndi-name>java:/comp/env/jdbc/webapi</datasource.jndi-name>
+            <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
+            <datasource.url>jdbc:postgresql://localhost:5432/webapi</datasource.url>
             <datasource.username>ohdsi</datasource.username>
             <datasource.password>ohdsi</datasource.password>
-            <flyway.datasource.url>jdbc:postgresql://localhost:5432/ohdsi</flyway.datasource.url>
-            <flyway.datasource.username>ohdsi</flyway.datasource.username>
-            <flyway.datasource.password>ohdsi</flyway.datasource.password>
-            <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.users where \
-            email = ?</security.db.datasource.authenticationQuery>
+            <datasource.dialect>postgresql</datasource.dialect>
+            <datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>
+            <hibernate.dialect>org.hibernate.dialect.PostgreSQL9Dialect</hibernate.dialect>
+            <flyway.locations>classpath:db/migration/postgresql</flyway.locations>
+            <use.single.connect.datasource.for.testing>true</use.single.connect.datasource.for.testing>
+            <security.db.datasource.authenticationQuery>select password from ${datasource.ohdsi.schema}.user where \
+                login = ?</security.db.datasource.authenticationQuery>
         </properties>
     </profile>
   </profiles>

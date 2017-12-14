@@ -22,6 +22,9 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.sql.Connection;
+import java.util.Properties;
+
 /**
  *
  */
@@ -108,7 +111,17 @@ public abstract class AbstractDaoService {
   }
 
   public JdbcTemplate getSourceJdbcTemplate(Source source) {
-    DriverManagerDataSource dataSource = new DriverManagerDataSource(source.getSourceConnection());
+    DriverManagerDataSource dataSource = new DriverManagerDataSource(source.getSourceConnection()){
+      @Override
+      protected Connection getConnectionFromDriverManager(String url, Properties props) throws SQLException {
+
+        Connection c = super.getConnectionFromDriverManager(url, props);
+        if (url.startsWith("jdbc:redshift")) {
+          c.setAutoCommit(false);
+        }
+        return c;
+      }
+    };
     JdbcTemplate template = new JdbcTemplate(dataSource);
     return template;
   }

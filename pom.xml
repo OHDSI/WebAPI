@@ -57,6 +57,22 @@
     <security.oauth.google.apiSecret></security.oauth.google.apiSecret>
     <security.oauth.facebook.apiKey></security.oauth.facebook.apiKey>
     <security.oauth.facebook.apiSecret></security.oauth.facebook.apiSecret>
+    <security.oid.clientId></security.oid.clientId>
+    <security.oid.apiSecret></security.oid.apiSecret>
+    <security.oid.url></security.oid.url>
+    <security.oid.redirectUrl>http://localhost/index.html#/welcome/</security.oid.redirectUrl>
+    <security.kerberos.spn></security.kerberos.spn>
+    <security.kerberos.keytabPath></security.kerberos.keytabPath>
+    <security.kerberos.spn></security.kerberos.spn>
+    <security.kerberos.keytabPath></security.kerberos.keytabPath>
+    <security.ldap.dn>cn={0},dc=example,dc=org</security.ldap.dn>
+    <security.ldap.url>ldap://localhost:389</security.ldap.url>
+    <security.ad.url>ldap://localhost:389</security.ad.url>
+    <security.ad.searchBase>CN=Users,DC=example,DC=org</security.ad.searchBase>
+    <security.ad.principalSuffix>@example.org</security.ad.principalSuffix>
+    <security.ad.system.username></security.ad.system.username>
+    <security.ad.system.password></security.ad.system.password>
+    <security.db.datasource.schema>public</security.db.datasource.schema>
 
     <!-- EMBEDDED SERVER CONFIGURATION (ServerProperties) -->
     <server.port>8080</server.port>
@@ -439,6 +455,11 @@
       <version>1.9.2</version>
     </dependency>
     <dependency>
+      <groupId>org.pac4j</groupId>
+      <artifactId>pac4j-oidc</artifactId>
+      <version>1.9.2</version>
+    </dependency>
+    <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>circe</artifactId>
       <version>1.3.0</version>
@@ -456,6 +477,11 @@
     <dependency>
       <groupId>com.amazon.redshift</groupId>
       <artifactId>redshift-jdbc4-no-awssdk</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-crypto</artifactId>
+      <version>4.2.3.RELEASE</version>
     </dependency>
   </dependencies>
   <profiles>
@@ -500,6 +526,13 @@
         <flyway.datasource.password>PASS</flyway.datasource.password>
         <flyway.locations>classpath:db/migration/postgresql</flyway.locations>
         <hibernate.dialect>org.hibernate.dialect.PostgreSQL9Dialect</hibernate.dialect>
+        <security.db.datasource.driverClassName>${datasource.driverClassName}</security.db.datasource.driverClassName>
+        <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
+        <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
+        <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
+        <security.db.datasource.schema>${datasource.ohdsi.schema}</security.db.datasource.schema>
+        <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.user where \
+              login = ?</security.db.datasource.authenticationQuery>
       </properties>
     </profile>
     <profile>
@@ -518,6 +551,20 @@
         <flyway.locations>classpath:db/migration/sqlserver</flyway.locations>
         <hibernate.dialect>org.hibernate.dialect.SQLServer2012Dialect</hibernate.dialect>
       </properties>
+    </profile>
+    <profile>
+        <id>develop</id>
+        <properties>
+            <datasource.url>jdbc:postgresql://localhost:5432/ohdsi</datasource.url>
+            <datasource.ohdsi.schema>webapi</datasource.ohdsi.schema>
+            <datasource.username>ohdsi</datasource.username>
+            <datasource.password>ohdsi</datasource.password>
+            <flyway.datasource.url>jdbc:postgresql://localhost:5432/ohdsi</flyway.datasource.url>
+            <flyway.datasource.username>ohdsi</flyway.datasource.username>
+            <flyway.datasource.password>ohdsi</flyway.datasource.password>
+            <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.users where \
+            email = ?</security.db.datasource.authenticationQuery>
+        </properties>
     </profile>
   </profiles>
 </project>

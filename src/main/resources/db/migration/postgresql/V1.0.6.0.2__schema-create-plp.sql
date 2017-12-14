@@ -1,4 +1,4 @@
-CREATE TABLE ${ohdsiSchema}.plp
+CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.plp
 (
   plp_id integer NOT NULL,
   name character varying(255),

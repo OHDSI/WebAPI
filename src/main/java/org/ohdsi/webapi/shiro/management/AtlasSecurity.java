@@ -101,6 +101,9 @@ public class AtlasSecurity extends Security {
   private final Map<String, String> cohortdefinitionCreatorPermissionTemplates = new LinkedHashMap<>();
   private final Map<String, String> conceptsetCreatorPermissionTemplates = new LinkedHashMap<>();
   private final Map<String, String> sourcePermissionTemplates = new LinkedHashMap<>();
+  private final Map<String, String> incidenceRatePermissionTemplates = new LinkedHashMap<>();
+  private final Map<String, String> estimationPermissionTemplates = new LinkedHashMap<>();
+  private final Map<String, String> plpPermissionTemplate = new LinkedHashMap<>();
 
   public AtlasSecurity() {
     this.defaultRoles.add("public");
@@ -114,6 +117,23 @@ public class AtlasSecurity extends Security {
 
     this.sourcePermissionTemplates.put("cohortdefinition:*:report:%s:get", "Get Inclusion Rule Report for Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("cohortdefinition:*:generate:%s:get", "Generate Cohort on Source with SourceKey = %s");
+
+    this.incidenceRatePermissionTemplates.put("ir:%s:get", "Read Incidence Rate with ID=%s");
+    this.incidenceRatePermissionTemplates.put("ir:%s:info:get", "Read Incidence Rate info with ID=%s");
+    this.incidenceRatePermissionTemplates.put("ir:%s:report:*:get", "Report Incidence Rate with ID=%s");
+    this.incidenceRatePermissionTemplates.put("ir:%s:copy:get", "Copy Incidence Rate with ID=%s");
+    this.incidenceRatePermissionTemplates.put("ir:%s:export:get", "Export Incidence Rate with ID=%s");
+    this.incidenceRatePermissionTemplates.put("ir:%s:put", "Edit Incidence Rate with ID=%s");
+    this.incidenceRatePermissionTemplates.put("ir:%s:delete", "Delete Incidence Rate with ID=%s");
+    this.incidenceRatePermissionTemplates.put("ir:%s:info:*:delete", "Delete Incidence Rate info with ID=%s");
+
+    this.estimationPermissionTemplates.put("comparativecohortanalysis:%s:put", "Edit Estimation with ID=%s");
+    this.estimationPermissionTemplates.put("comparativecohortanalysis:%s:delete", "Delete Estimation with ID=%s");
+
+    this.plpPermissionTemplate.put("plp:%s:put", "Edit Population Level Prediction with ID=%s");
+    this.plpPermissionTemplate.put("plp:%s:delete", "Delete Population Level Prediction with ID=%s");
+    this.plpPermissionTemplate.put("plp:%s:get", "Read Population Level Prediction with ID=%s");
+    this.plpPermissionTemplate.put("plp:%s:copy:get", "Copy Population Level Prediction with ID=%s");
   }
 
   @Override
@@ -143,9 +163,23 @@ public class AtlasSecurity extends Security {
       .addProtectedRestPath("/permission/**")
 
       // concept set
-      .addRestPath("/conceptset", "skipFurtherFiltersIfNotPutOrPost, jwtAuthc, authz, createPermissionsOnCreateConceptSet") // only PUT and POST methods are protected
-      .addRestPath("/conceptset/*/items", "skipFurtherFiltersIfNotPut, jwtAuthc, authz") // only PUT method is protected
-      .addRestPath("/conceptset/*", "skipFurtherFiltersIfNotPutOrDelete, jwtAuthc, authz, deletePermissionsOnDeleteConceptSet") // only PUT and DELETE methods are protected
+      .addProtectedRestPath("/conceptset", "jwtAuthc, authz, createPermissionsOnCreateConceptSet")
+      .addProtectedRestPath("/conceptset/*/items", "jwtAuthc, authz")
+      .addProtectedRestPath("/conceptset/*", "jwtAuthc, authz, deletePermissionsOnDeleteConceptSet")
+
+      // incidence rates
+      .addProtectedRestPath("/ir", "jwtAuthc, authz, createPermissionsOnCreateIR")
+      .addProtectedRestPath("/ir/*/copy", "createPermissionsOnCopyIR")
+      .addProtectedRestPath("/ir/*", "jwtAuthc, authz")
+
+      // comparative cohort analysis (estimation)
+      .addProtectedRestPath("/comparativecohortanalysis", "createPermissionsOnCreateEstimation")
+      .addProtectedRestPath("/comparativecohortanalysis/*", "deletePermissionsOnDeleteEstimation")
+
+      // population level prediction
+      .addProtectedRestPath("/plp", "createPermissionsOnCreatePlp")
+      .addProtectedRestPath("/plp/*/copy", "createPermissionsOnCopyPlp")
+      .addProtectedRestPath("/plp/*", "deletePermissionsOnDeletePlp")
 
       // cohort definition
       .addProtectedRestPath("/cohortdefinition", "createPermissionsOnCreateCohortDefinition")
@@ -157,6 +191,37 @@ public class AtlasSecurity extends Security {
       .addProtectedRestPath("/cohortdefinition/*/report/*")
       .addProtectedRestPath("/*/cohortresults/*/breakdown")
       .addProtectedRestPath("/job/execution")
+      .addProtectedRestPath("/job")
+
+      // configuration
+      .addProtectedRestPath("/source/refresh")
+      .addProtectedRestPath("/source/priorityVocabulary")
+
+      // cohort analysis
+      .addProtectedRestPath("/cohortanalysis")
+      .addProtectedRestPath("/cohortanalysis/*")
+
+      // cohort results
+      .addProtectedRestPath("/cohortresults/*")
+
+      // evidence
+      .addProtectedRestPath("/evidence/*")
+
+      // execution service
+      .addProtectedRestPath("/execution_service/*")
+
+      // feasibility
+      .addProtectedRestPath("/feasibility")
+      .addProtectedRestPath("/feasibility/*")
+
+      // featureextraction
+      .addProtectedRestPath("/featureextraction/*")
+
+      // vocabulary services
+      .addProtectedRestPath("/vocabulary/*")
+
+      // data sources
+      .addProtectedRestPath("/cdmresults/*")
 
       // not protected resources - all the rest
       .addRestPath("/**")
@@ -180,6 +245,13 @@ public class AtlasSecurity extends Security {
     filters.put("createPermissionsOnCreateConceptSet", this.getCreatePermissionsOnCreateConceptSetFilter());
     filters.put("deletePermissionsOnDeleteCohortDefinition", this.getDeletePermissionsOnDeleteCohortDefinitionFilter());
     filters.put("deletePermissionsOnDeleteConceptSet", this.getDeletePermissionsOnDeleteConceptSetFilter());
+    filters.put("deletePermissionsOnDeleteEstimation", this.getDeletePermissionsOnDeleteFilter(estimationPermissionTemplates));
+    filters.put("deletePermissionsOnDeletePlp", this.getDeletePermissionsOnDeleteFilter(plpPermissionTemplate));
+    filters.put("createPermissionsOnCreateIR", this.getCreatePermissionsOnCreateIncidenceRateFilter());
+    filters.put("createPermissionsOnCopyIR", this.getCreatePermissionsOnCopyIncidenceRateFilter());
+    filters.put("createPermissionsOnCreateEstimation", this.getCreatePermissionsOnCreateFilter(estimationPermissionTemplates, "analysisId"));
+    filters.put("createPermissionsOnCreatePlp", this.getCreatePermissionsOnCreateFilter(plpPermissionTemplate, "analysisId"));
+    filters.put("createPermissionsOnCopyPlp", this.getCreatePermissionsOnCopyFilter(plpPermissionTemplate, ".*plp/.*/copy", "analysisId"));
     filters.put("cors", new CorsFilter());
     filters.put("skipFurtherFiltersIfNotPost", this.getSkipFurtherFiltersIfNotPostFilter());
     filters.put("skipFurtherFiltersIfNotPut", this.getSkipFurtherFiltersIfNotPutFilter());
@@ -292,6 +364,74 @@ public class AtlasSecurity extends Security {
     };
   }
 
+  private Filter getCreatePermissionsOnCreateIncidenceRateFilter() {
+    return  new ProcessResponseContentFilter() {
+      @Override
+      protected boolean shouldProcess(ServletRequest request, ServletResponse response) {
+
+        return HttpMethod.POST.equalsIgnoreCase(WebUtils.toHttp(request).getMethod());
+      }
+
+      @Override
+      protected void doProcessResponseContent(String content) throws Exception {
+        String id = this.parseJsonField(content, "id");
+        RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
+        authorizer.addPermissionsFromTemplate(currentUserPersonalRole, incidenceRatePermissionTemplates, id);
+      }
+    };
+  }
+
+  private Filter getCreatePermissionsOnCreateFilter(Map<String, String> template, String idField) {
+    return new ProcessResponseContentFilter() {
+      @Override
+      protected boolean shouldProcess(ServletRequest request, ServletResponse response) {
+
+        return HttpMethod.POST.equalsIgnoreCase(WebUtils.toHttp(request).getMethod());
+      }
+
+      @Override
+      protected void doProcessResponseContent(String content) throws Exception {
+        String id = this.parseJsonField(content, idField);
+        RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
+        authorizer.addPermissionsFromTemplate(currentUserPersonalRole, template, id);
+      }
+    };
+  }
+
+  private Filter getCreatePermissionsOnCopyIncidenceRateFilter() {
+    return new ProcessResponseContentFilter() {
+      @Override
+      protected boolean shouldProcess(ServletRequest request, ServletResponse response) {
+
+        return WebUtils.toHttp(request).getRequestURI().matches(".*ir/.*/copy");
+      }
+
+      @Override
+      protected void doProcessResponseContent(String content) throws Exception {
+        String id = this.parseJsonField(content, "id");
+        RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
+        authorizer.addPermissionsFromTemplate(currentUserPersonalRole, incidenceRatePermissionTemplates, id);
+      }
+    };
+  }
+
+  private Filter getCreatePermissionsOnCopyFilter(Map<String, String> template, String pathRegex, String idField) {
+    return new ProcessResponseContentFilter() {
+      @Override
+      protected boolean shouldProcess(ServletRequest request, ServletResponse response) {
+
+        return WebUtils.toHttp(request).getRequestURI().matches(pathRegex);
+      }
+
+      @Override
+      protected void doProcessResponseContent(String content) throws Exception {
+        String id = this.parseJsonField(content, idField);
+        RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
+        authorizer.addPermissionsFromTemplate(currentUserPersonalRole, template, id);
+      }
+    };
+  }
+
   private Filter getCreatePermissionsOnCreateConceptSetFilter() {
     return  new ProcessResponseContentFilter() {
       @Override
@@ -304,6 +444,26 @@ public class AtlasSecurity extends Security {
         String id = this.parseJsonField(content, "id");
         RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
         authorizer.addPermissionsFromTemplate(currentUserPersonalRole, conceptsetCreatorPermissionTemplates, id);
+      }
+    };
+  }
+
+  private Filter getDeletePermissionsOnDeleteFilter(Map<String, String> template) {
+    return new AdviceFilter() {
+      @Override
+      protected void postHandle(ServletRequest request, ServletResponse response) throws Exception {
+
+        HttpServletRequest httpRequest = WebUtils.toHttp(request);
+        if (!HttpMethod.DELETE.equalsIgnoreCase(httpRequest.getMethod())) {
+          return;
+        }
+
+        String id = httpRequest.getPathInfo()
+                .replaceAll("^/+", "")
+                .replaceAll("/+$", "")
+                .split("/")
+                [1];
+        authorizer.removePermissionsFromTemplate(template, id);
       }
     };
   }
@@ -323,6 +483,25 @@ public class AtlasSecurity extends Security {
                 .split("/")
                 [1];
         authorizer.removePermissionsFromTemplate(cohortdefinitionCreatorPermissionTemplates, id);
+      }
+    };
+  }
+
+  private Filter getDeletePermissionsOnDeleteIRFilter() {
+    return new AdviceFilter() {
+      @Override
+      protected void postHandle(ServletRequest request, ServletResponse response) throws Exception {
+
+        HttpServletRequest httpRequest = WebUtils.toHttp(request);
+        if (!HttpMethod.DELETE.equalsIgnoreCase(httpRequest.getMethod())){
+          return;
+        }
+        String id = httpRequest.getPathInfo()
+                .replaceAll("^/+", "")
+                .replaceAll("/+$", "")
+                .split("/")
+                [1];
+        authorizer.removePermissionsFromTemplate(incidenceRatePermissionTemplates, id);
       }
     };
   }

@@ -231,8 +231,13 @@ public class VocabularyService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<Concept> executeMappedLookup(@PathParam("sourceKey") String sourceKey, long[] identifiers) {
+    Collection<Concept> concepts = new ArrayList<>();
     if (identifiers.length == 0) {
-      return new ArrayList<>();
+      return concepts;
+    }
+    else if (driver.equals(SQLServerDriver.class.getCanonicalName()) || identifiers.length > 600){
+      concepts = executeMappedLookup(sourceKey, Arrays.copyOfRange(identifiers, 600, identifiers.length));
+      identifiers = Arrays.copyOfRange(identifiers, 0, 600);
     }
 
     Source source = getSourceRepository().findBySourceKey(sourceKey);

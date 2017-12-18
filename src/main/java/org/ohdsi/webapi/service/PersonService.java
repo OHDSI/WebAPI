@@ -116,24 +116,24 @@ public class PersonService extends AbstractDaoService {
   protected PreparedStatementRenderer prepareObservationPeriodsSql(String personId, Source source) {
 
     String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
-    return new PreparedStatementRenderer(source, "/resources/person/sql/getObservationPeriods.sql", "tableQualifier", resultsTableQualifier, "personId", Integer.valueOf(personId));
+    return new PreparedStatementRenderer(source, "/resources/person/sql/getObservationPeriods.sql", "tableQualifier", resultsTableQualifier, "personId", Long.valueOf(personId));
   }
 
   protected PreparedStatementRenderer prepareGetCohortsSql(String personId, Source source) {
 
     String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-    return new PreparedStatementRenderer(source, "/resources/person/sql/getCohorts.sql", "tableQualifier", resultsTableQualifier, "subjectId", Integer.valueOf(personId));
+    return new PreparedStatementRenderer(source, "/resources/person/sql/getCohorts.sql", "tableQualifier", resultsTableQualifier, "subjectId", Long.valueOf(personId));
   }
 
   protected PreparedStatementRenderer preparePersonInfoSql(String personId, Source source) {
 
     String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
-    return new PreparedStatementRenderer(source, "/resources/person/sql/personInfo.sql", "tableQualifier", tableQualifier, "personId", Integer.valueOf(personId));
+    return new PreparedStatementRenderer(source, "/resources/person/sql/personInfo.sql", "tableQualifier", tableQualifier, "personId", Long.valueOf(personId));
   }
 
   protected PreparedStatementRenderer prepareGetPersonProfile(String personId, Source source) {
 
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
-    return new PreparedStatementRenderer(source, "/resources/person/sql/getRecords.sql", "tableQualifier", tqValue, "personId", Integer.valueOf(personId));
+    return new PreparedStatementRenderer(source, "/resources/person/sql/getRecords.sql", "tableQualifier", tqValue, "personId", Long.valueOf(personId));
   }
 }

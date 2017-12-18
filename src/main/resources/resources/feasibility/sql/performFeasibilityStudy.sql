@@ -7,6 +7,7 @@ create table #inclusionRuleCohorts
   event_id bigint
 )
 ;
+
 @inclusionCohortInserts
 
 -- the matching group with all bits set ( POWER(2,# of inclusion rules) - 1 = inclusion_rule_mask

@@ -1773,9 +1773,6 @@ public class CohortResultsService extends AbstractDaoService {
         return el;
     }
     
-   private String JoinArray(final String[] array) {
-    String result = "";
-
   protected PreparedStatementRenderer prepareGetExposureOutcomeCohortPredictors(
     ExposureCohortSearch search, Source source) {
 

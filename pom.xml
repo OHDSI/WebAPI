@@ -63,8 +63,6 @@
     <security.oid.redirectUrl>http://localhost/index.html#/welcome/</security.oid.redirectUrl>
     <security.kerberos.spn></security.kerberos.spn>
     <security.kerberos.keytabPath></security.kerberos.keytabPath>
-    <security.kerberos.spn></security.kerberos.spn>
-    <security.kerberos.keytabPath></security.kerberos.keytabPath>
     <security.ldap.dn>cn={0},dc=example,dc=org</security.ldap.dn>
     <security.ldap.url>ldap://localhost:389</security.ldap.url>
     <security.ad.url>ldap://localhost:389</security.ad.url>

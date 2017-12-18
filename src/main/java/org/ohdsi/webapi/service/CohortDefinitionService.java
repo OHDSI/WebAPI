@@ -36,6 +36,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
@@ -53,7 +54,9 @@ import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfo;
 import org.ohdsi.webapi.cohortdefinition.ExpressionType;
 import org.ohdsi.webapi.cohortdefinition.GenerateCohortTasklet;
 import org.ohdsi.webapi.GenerationStatus;
+import org.ohdsi.webapi.cohortdefinition.GenerationJobExecutionListener;
 import org.ohdsi.webapi.cohortdefinition.InclusionRuleReport;
+import org.ohdsi.webapi.cohortfeatures.GenerateCohortFeaturesTasklet;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ExportUtil;
 import org.ohdsi.webapi.job.JobExecutionResource;
@@ -70,6 +73,8 @@ import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -438,7 +443,7 @@ public class CohortDefinitionService extends AbstractDaoService {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/{id}/generate/{sourceKey}")
-  public JobExecutionResource generateCohort(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey) {
+  public JobExecutionResource generateCohort(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey, @QueryParam("includeFeatures") final String includeFeatures) {
 
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);    
@@ -457,6 +462,8 @@ public class CohortDefinitionService extends AbstractDaoService {
     info.setStatus(GenerationStatus.PENDING)
       .setStartTime(Calendar.getInstance().getTime());
 
+		info.setIncludeFeatures(includeFeatures != null);
+		
     this.cohortDefinitionRepository.save(currentDefinition);
     this.getTransactionTemplate().getTransactionManager().commit(initStatus);
 
@@ -481,9 +488,22 @@ public class CohortDefinitionService extends AbstractDaoService {
       .tasklet(generateTasklet)
     .build();
 
-    Job generateCohortJob = jobBuilders.get("generateCohort")
-      .start(generateCohortStep)
-      .build();
+		SimpleJobBuilder generateJobBuilder = jobBuilders.get("generateCohort")
+			.listener(new GenerationJobExecutionListener(cohortDefinitionRepository, this.getTransactionTemplateRequiresNew(), this.getSourceJdbcTemplate(source)))
+			.start(generateCohortStep);
+
+		if (includeFeatures != null) {
+			GenerateCohortFeaturesTasklet generateCohortFeaturesTasklet = 
+						new GenerateCohortFeaturesTasklet(getSourceJdbcTemplate(source), getTransactionTemplate());
+
+			Step generateCohortFeaturesStep = stepBuilders.get("cohortFeatures.generateFeatures")
+					.tasklet(generateCohortFeaturesTasklet)
+					.build();
+	
+			generateJobBuilder.next(generateCohortFeaturesStep);			
+		}
+		
+		Job generateCohortJob = generateJobBuilder.build();
 
     JobExecutionResource jobExec = this.jobTemplate.launch(generateCohortJob, jobParameters);
     return jobExec;

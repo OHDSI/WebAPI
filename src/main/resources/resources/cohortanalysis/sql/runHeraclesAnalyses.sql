@@ -7733,10 +7733,6 @@ insert into @results_schema.heracles_results_dist (cohort_definition_id, analysi
  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
                 cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
                 cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from     #heracles_results_dist_1306  union all }
---{ 1314  IN (@list_of_analysis_ids)}?{
- select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-                cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
-                cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from     #heracles_results_dist_1314  union all }
 --{ 1315  IN (@list_of_analysis_ids)}?{
  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
                 cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 

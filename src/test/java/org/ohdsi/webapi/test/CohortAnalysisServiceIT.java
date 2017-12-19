@@ -13,8 +13,8 @@
 package org.ohdsi.webapi.test;
 
 import java.util.Arrays;
-
 import org.junit.Test;
+import org.ohdsi.webapi.util.SecurityUtils;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTask;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,7 +31,7 @@ public class CohortAnalysisServiceIT extends WebApiIT {
     private String endpointCohortAnalysis;
     
     @Test //may not want to always run analyses. TODO inject criteria from properties
-    public void createAnalysis() throws Exception {
+    public void createAnalysis() {
         CohortAnalysisTask task = new CohortAnalysisTask();
         //set attributes
         task.setAnalysisIds(Arrays.asList("0"));
@@ -39,9 +39,8 @@ public class CohortAnalysisServiceIT extends WebApiIT {
         final ResponseEntity<JobExecutionResource> postEntity = getRestTemplate().postForEntity(this.endpointCohortAnalysis,
             task, JobExecutionResource.class);//TODO 409 or other errors prevent deserialization...
         assertOk(postEntity);
-        Thread.sleep(10000);
-        final JobExecutionResource postExecution = postEntity.getBody();
-        
+        SecurityUtils.sleep(10000);
+        postEntity.getBody();
     }
     
     private void assertOk(final ResponseEntity<?> entity) {

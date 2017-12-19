@@ -33,4 +33,4 @@ from (
 		subject_id, cohort_start_date, cohort_end_date
 	from breakdown
 ) withrows
-where row_limit <= @rows/@groups
+where row_limit <=  cast(@rows as int) / cast(@groups as int)

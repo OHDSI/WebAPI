@@ -15,6 +15,7 @@ import org.ohdsi.webapi.conceptset.ConceptSetItemRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetRepository;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
+import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -155,10 +156,10 @@ public abstract class AbstractDaoService {
     this.cdmVersion = cdmVersion;
   }
 
-  protected List<Map<String, String>> genericResultSetLoader(String sql, Source source) {
+  protected List<Map<String, String>> genericResultSetLoader(PreparedStatementRenderer psr, Source source) {
     List<Map<String, String>> results = null;
     try {
-      results = getSourceJdbcTemplate(source).query(sql, new RowMapper<Map<String, String>>() {
+      results = getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), new RowMapper<Map<String, String>>() {
 
         @Override
         public Map<String, String> mapRow(ResultSet rs, int rowNum)

@@ -15,7 +15,11 @@
  */
 package org.ohdsi.webapi.feasibility;
 
+import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.ohdsi.webapi.feasibility.FeasibilityStudyQueryBuilder.BuildExpressionQueryOptions;
 
 /**
@@ -23,6 +27,8 @@ import org.ohdsi.webapi.feasibility.FeasibilityStudyQueryBuilder.BuildExpression
  * @author Chris Knoll <cknoll@ohdsi.org>
  */
 public class PerformFeasibilityTask {
+
+  private static final Log log = LogFactory.getLog(PerformFeasibilityTask.class);
 
   //TODO: Define task-specific paramters
   private BuildExpressionQueryOptions options;
@@ -67,7 +73,7 @@ public class PerformFeasibilityTask {
       ObjectMapper mapper = new ObjectMapper();
       return mapper.writeValueAsString(this);
     } catch (Exception e) {
-      // ignored, let parent resolve...
+    	log.error(whitelist(e));
     }
     return super.toString();
   }

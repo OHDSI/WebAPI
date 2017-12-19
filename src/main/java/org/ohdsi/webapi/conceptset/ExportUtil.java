@@ -62,7 +62,7 @@ public class ExportUtil {
         }
       }
       csvWriter.writeAll(allLines);
-      csvWriter.flush();
+      csvWriter.close();
 
       ZipEntry resultsEntry = new ZipEntry("conceptSetExpression.csv");
       zos.putNextEntry(resultsEntry);
@@ -89,7 +89,7 @@ public class ExportUtil {
         }
       }
       csvWriter.writeAll(allLines);
-      csvWriter.flush();
+      csvWriter.close();
 
       resultsEntry = new ZipEntry("includedConcepts.csv");
       zos.putNextEntry(resultsEntry);
@@ -116,7 +116,7 @@ public class ExportUtil {
         }
       }
       csvWriter.writeAll(allLines);
-      csvWriter.flush();
+      csvWriter.close();
 
       resultsEntry = new ZipEntry("mappedConcepts.csv");
       zos.putNextEntry(resultsEntry);

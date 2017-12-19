@@ -15,6 +15,8 @@
  */
 package org.ohdsi.webapi.cohortdefinition;
 
+import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
+
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.InclusionRule;
@@ -23,6 +25,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
@@ -65,7 +68,7 @@ public class GenerateCohortTasklet implements Tasklet {
   }
 
   private int[] doTask(ChunkContext chunkContext) {
-    int[] result = null;
+    int[] result;
     
     Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
     Integer defId = Integer.valueOf(jobParams.get("cohort_definition_id").toString());
@@ -89,17 +92,21 @@ public class GenerateCohortTasklet implements Tasklet {
       options.resultSchema = jobParams.get("results_database_schema").toString();
       options.generateStats = Boolean.valueOf(jobParams.get("generate_stats").toString());
 
-      String deleteSql = String.format("DELETE FROM %s.cohort_inclusion WHERE cohort_definition_id = %d;", options.resultSchema, options.cohortId);
-      deleteSql = SqlTranslate.translateSql(deleteSql, jobParams.get("target_dialect").toString(), sessionId, null);
-      this.jdbcTemplate.batchUpdate(deleteSql.split(";")); // use batch update since SQL translation may produce multiple statements
+      String deleteSql = "DELETE FROM @tableQualifier.cohort_inclusion WHERE cohort_definition_id = @cohortDefinitionId";
+      PreparedStatementRenderer psr = new PreparedStatementRenderer(null, deleteSql, "tableQualifier",
+        options.resultSchema, "cohortDefinitionId", options.cohortId);
+      jdbcTemplate.update(psr.getSql(), psr.getSetter());
 
-      String insertSql = StringUtils.replace("INSERT INTO @results_schema.cohort_inclusion (cohort_definition_id, rule_sequence, name, description) VALUES (?,?,?,?)", "@results_schema", options.resultSchema);
-      insertSql = SqlTranslate.translateSql(insertSql, jobParams.get("target_dialect").toString(), sessionId, null);
+      String insertSql = "INSERT INTO @results_schema.cohort_inclusion (cohort_definition_id, rule_sequence, name, description) VALUES (@cohortId,@iteration,@ruleName,@ruleDescription)";
+      String tqName = "results_schema";
+      String tqValue = options.resultSchema;
+      String[] names = new String[]{"cohortId", "iteration", "ruleName", "ruleDescription"};
       List<InclusionRule> inclusionRules = expression.inclusionRules;
-      for (int i = 0; i< inclusionRules.size(); i++)
-      {
+      for (int i = 0; i < inclusionRules.size(); i++) {
         InclusionRule r = inclusionRules.get(i);
-        this.jdbcTemplate.update(insertSql, new Object[] { options.cohortId, i, r.name, r.description});
+        Object[] values = new Object[]{options.cohortId, i, r.name, r.description};
+        psr = new PreparedStatementRenderer(null, insertSql, tqName, tqValue, names, values, sessionId);
+        jdbcTemplate.update(psr.getSql(), psr.getSetter());
       }
       
       String expressionSql = expressionQueryBuilder.buildExpressionQuery(expression, options);

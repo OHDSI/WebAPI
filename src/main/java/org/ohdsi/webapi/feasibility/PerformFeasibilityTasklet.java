@@ -15,6 +15,8 @@
  */
 package org.ohdsi.webapi.feasibility;
 
+import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
+
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -30,6 +32,7 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfo;
 import org.ohdsi.webapi.GenerationStatus;
+import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
@@ -74,7 +77,7 @@ public class PerformFeasibilityTasklet implements Tasklet {
   private StudyGenerationInfo findStudyGenerationInfoBySourceId(Collection<StudyGenerationInfo> infoList, Integer sourceId)
   {
     for (StudyGenerationInfo info : infoList) {
-      if (info.getId().getSourceId()== sourceId)
+      if (info.getId().getSourceId().equals(sourceId))
         return info;
     }
     return null;
@@ -83,30 +86,31 @@ public class PerformFeasibilityTasklet implements Tasklet {
   private CohortGenerationInfo findCohortGenerationInfoBySourceId(Collection<CohortGenerationInfo> infoList, Integer sourceId)
   {
     for (CohortGenerationInfo info : infoList) {
-      if (info.getId().getSourceId()== sourceId)
+      if (info.getId().getSourceId().equals(sourceId))
         return info;
     }
     return null;
   }
-  
-  private void prepareTempTables(FeasibilityStudy study, String dialect, String sessionId)
-  {
-      String translatedSql = SqlTranslate.translateSql(CREATE_TEMP_TABLES_TEMPLATE, "sql server", dialect, sessionId, null);
-      String[] sqlStatements = SqlSplit.splitSql(translatedSql);
-      this.jdbcTemplate.batchUpdate(sqlStatements);
-      
-      String insertSql = SqlTranslate.translateSql("INSERT INTO #inclusionRules (study_id, sequence, name) VALUES (?,?,?)","sql server", dialect, sessionId, null);
-      List<InclusionRule> inclusionRules = study.getInclusionRules();
-      for (int i = 0; i< inclusionRules.size(); i++)
-      {
-        InclusionRule r = inclusionRules.get(i);
-        this.jdbcTemplate.update(insertSql, new Object[] { study.getId(), i, r.getName()});
-      }
+
+  private void prepareTempTables(FeasibilityStudy study, String dialect, String sessionId) {
+
+    String translatedSql = SqlTranslate.translateSql(CREATE_TEMP_TABLES_TEMPLATE, dialect, sessionId, null);
+    String[] sqlStatements = SqlSplit.splitSql(translatedSql);
+    this.jdbcTemplate.batchUpdate(sqlStatements);
+    String insSql = "INSERT INTO #inclusionRules (study_id, sequence, name) VALUES (@studyId,@iteration,@ruleName)";
+    String[] names = new String[]{"studyId", "iteration", "ruleName"};
+    List<InclusionRule> inclusionRules = study.getInclusionRules();
+    for (int i = 0; i < inclusionRules.size(); i++) {
+      InclusionRule r = inclusionRules.get(i);
+      Object[] values = new Object[]{study.getId(), i, r.getName()};
+      PreparedStatementRenderer psr = new PreparedStatementRenderer(null, insSql, null, (String) null, names, values, sessionId);
+      jdbcTemplate.update(psr.getSql(), psr.getSetter());
+    }
   }
-  
-  private void cleanupTempTables(String dialect, String sessionId)
-  {
-    String translatedSql = SqlTranslate.translateSql(DROP_TEMP_TABLES_TEMPLATE, "sql server", dialect, sessionId, null);
+
+  private void cleanupTempTables(String dialect, String sessionId) {
+
+    String translatedSql = SqlTranslate.translateSql(DROP_TEMP_TABLES_TEMPLATE, dialect, sessionId, null);
     String[] sqlStatements = SqlSplit.splitSql(translatedSql);
     this.jdbcTemplate.batchUpdate(sqlStatements);
   }
@@ -114,7 +118,7 @@ public class PerformFeasibilityTasklet implements Tasklet {
   private int[] doTask(ChunkContext chunkContext) {
     Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
     Integer studyId = Integer.valueOf(jobParams.get("study_id").toString());
-    int[] result = null;
+    int[] result;
     try {
       String sessionId = SessionUtils.sessionId();
       FeasibilityStudy study = this.feasibilityStudyRepository.findOne(studyId);
@@ -125,14 +129,13 @@ public class PerformFeasibilityTasklet implements Tasklet {
       if (study.getResultRule() != null) {
         prepareTempTables(study, jobParams.get("target_dialect").toString(), sessionId);
         String expressionSql = studyQueryBuilder.buildSimulateQuery(study, options);
-        String translatedSql = SqlTranslate.translateSql(expressionSql, "sql server", jobParams.get("target_dialect").toString(), sessionId, null);
+        String translatedSql = SqlTranslate.translateSql(expressionSql, jobParams.get("target_dialect").toString(), sessionId, null);
         String[] sqlStatements = SqlSplit.splitSql(translatedSql);
         result = PerformFeasibilityTasklet.this.jdbcTemplate.batchUpdate(sqlStatements);
         cleanupTempTables(jobParams.get("target_dialect").toString(), sessionId);
-      }
-      else {
+      } else {
         String expressionSql = studyQueryBuilder.buildNullQuery(study, options);
-        String translatedSql = SqlTranslate.translateSql(expressionSql, "sql server", jobParams.get("target_dialect").toString(), sessionId, null);
+        String translatedSql = SqlTranslate.translateSql(expressionSql, jobParams.get("target_dialect").toString(), sessionId, null);
         String[] sqlStatements = SqlSplit.splitSql(translatedSql);
         result = PerformFeasibilityTasklet.this.jdbcTemplate.batchUpdate(sqlStatements);
       }
@@ -157,8 +160,7 @@ public class PerformFeasibilityTasklet implements Tasklet {
     FeasibilityStudy study = this.feasibilityStudyRepository.findOne(studyId);
     
     CohortDefinition resultDef = study.getResultRule();
-    if (resultDef != null)
-    {
+    if (resultDef != null) {
       CohortGenerationInfo resultInfo = findCohortGenerationInfoBySourceId(resultDef.getGenerationInfoList(), sourceId);
       resultInfo.setIsValid(false)
               .setStatus(GenerationStatus.RUNNING)
@@ -185,7 +187,7 @@ public class PerformFeasibilityTasklet implements Tasklet {
       isValid = true;
     } catch (final TransactionException e) {
       isValid = false;
-      log.error(e.getMessage(), e);
+      log.error(whitelist(e));
       throw e;//FAIL job status
     }
     finally {
@@ -196,7 +198,6 @@ public class PerformFeasibilityTasklet implements Tasklet {
       if (resultDef != null)
       {
         CohortGenerationInfo resultInfo = findCohortGenerationInfoBySourceId(resultDef.getGenerationInfoList(), sourceId);
-        resultInfo = findCohortGenerationInfoBySourceId(resultDef.getGenerationInfoList(), sourceId);
         resultInfo.setIsValid(isValid);
         resultInfo.setExecutionDuration(new Integer((int)(endTime.getTime() - startTime.getTime())));
         resultInfo.setStatus(GenerationStatus.COMPLETE);

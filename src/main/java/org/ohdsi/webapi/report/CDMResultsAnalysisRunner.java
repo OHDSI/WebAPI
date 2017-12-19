@@ -12,6 +12,7 @@ import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.report.mapper.*;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -25,9 +26,10 @@ public class CDMResultsAnalysisRunner {
 
     private static final Log log = LogFactory.getLog(CDMResultsAnalysisRunner.class);
 
-    private static final String[] STANDARD_COLUMNS = new String[]{"results_database_schema", "vocab_database_schema", "cdm_database_schema"};
+    private static final String[] STANDARD_TABLE = new String[]{"results_database_schema", "vocab_database_schema", "cdm_database_schema"};
 
-    private static final String[] DRILLDOWN_COLUMNS = new String[]{"results_database_schema", "vocab_database_schema", "conceptId"};
+    private static final String[] DRILLDOWN_COLUMNS = new String[]{"conceptId"};
+    private static final String[] DRILLDOWN_TABLE = new String[]{"results_database_schema", "vocab_database_schema"};
 
     private ObjectMapper mapper;
 
@@ -44,29 +46,29 @@ public class CDMResultsAnalysisRunner {
 
         CDMDashboard dashboard = new CDMDashboard();
 
-        String summarySql = this.renderTranslateSql(BASE_SQL_PATH + "/report/person/population.sql", source);
+        PreparedStatementRenderer summarySql = this.renderTranslateSql(BASE_SQL_PATH + "/report/person/population.sql", source);
         if (summarySql != null) {
-            dashboard.setSummary(jdbcTemplate.query(summarySql, new CDMAttributeMapper()));
+            dashboard.setSummary(jdbcTemplate.query(summarySql.getSql(), summarySql.getSetter(), new CDMAttributeMapper()));
         }
 
-        String ageAtFirstObsSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/observationperiod/ageatfirst.sql", source);
+        PreparedStatementRenderer ageAtFirstObsSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/observationperiod/ageatfirst.sql", source);
         if (ageAtFirstObsSql != null) {
-            dashboard.setAgeAtFirstObservation(jdbcTemplate.query(ageAtFirstObsSql, new ConceptDistributionMapper()));
+            dashboard.setAgeAtFirstObservation(jdbcTemplate.query(ageAtFirstObsSql.getSql(), ageAtFirstObsSql.getSetter(), new ConceptDistributionMapper()));
         }
 
-        String genderSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/person/gender.sql", source);
+        PreparedStatementRenderer genderSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/person/gender.sql", source);
         if (genderSql != null) {
-            dashboard.setGender(jdbcTemplate.query(genderSql, new ConceptCountMapper()));
+            dashboard.setGender(jdbcTemplate.query(genderSql.getSql(), genderSql.getSetter(), new ConceptCountMapper()));
         }
 
-        String cumulObsSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/observationperiod/cumulativeduration.sql", source);
+        PreparedStatementRenderer cumulObsSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/observationperiod/cumulativeduration.sql", source);
         if (cumulObsSql != null) {
-            dashboard.setCumulativeObservation(jdbcTemplate.query(cumulObsSql, new CumulativeObservationMapper()));
+            dashboard.setCumulativeObservation(jdbcTemplate.query(cumulObsSql.getSql(), cumulObsSql.getSetter(), new CumulativeObservationMapper()));
         }
 
-        String obsByMonthSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/observationperiod/observedbymonth.sql", source);
+        PreparedStatementRenderer obsByMonthSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/observationperiod/observedbymonth.sql", source);
         if (obsByMonthSql != null) {
-            dashboard.setObservedByMonth(jdbcTemplate.query(obsByMonthSql, new MonthObservationMapper()));
+            dashboard.setObservedByMonth(jdbcTemplate.query(obsByMonthSql.getSql(), obsByMonthSql.getSetter(), new MonthObservationMapper()));
         }
 
         return dashboard;
@@ -84,34 +86,34 @@ public class CDMResultsAnalysisRunner {
 
         CDMPersonSummary person = new CDMPersonSummary();
 
-        String summarySql = this.renderTranslateSql(BASE_SQL_PATH + "/report/person/population.sql", source);
+        PreparedStatementRenderer summarySql = this.renderTranslateSql(BASE_SQL_PATH + "/report/person/population.sql", source);
         if (summarySql != null) {
-            person.setSummary(jdbcTemplate.query(summarySql, new CDMAttributeMapper()));
+            person.setSummary(jdbcTemplate.query(summarySql.getSql(), summarySql.getSetter(), new CDMAttributeMapper()));
         }
 
-        String genderSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/person/gender.sql", source);
+        PreparedStatementRenderer genderSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/person/gender.sql", source);
         if (genderSql != null) {
-            person.setGender(jdbcTemplate.query(genderSql, new ConceptCountMapper()));
+            person.setGender(jdbcTemplate.query(genderSql.getSql(), genderSql.getSetter(), new ConceptCountMapper()));
         }
 
-        String raceSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/person/race.sql", source);
+        PreparedStatementRenderer raceSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/person/race.sql", source);
         if (raceSql != null) {
-            person.setRace(jdbcTemplate.query(raceSql, new ConceptCountMapper()));
+            person.setRace(jdbcTemplate.query(raceSql.getSql(), raceSql.getSetter(), new ConceptCountMapper()));
         }
 
-        String ethnicitySql = this.renderTranslateSql(BASE_SQL_PATH + "/report/person/ethnicity.sql", source);
+        PreparedStatementRenderer ethnicitySql = this.renderTranslateSql(BASE_SQL_PATH + "/report/person/ethnicity.sql", source);
         if (ethnicitySql != null) {
-            person.setEthnicity(jdbcTemplate.query(ethnicitySql, new ConceptCountMapper()));
+            person.setEthnicity(jdbcTemplate.query(ethnicitySql.getSql(), ethnicitySql.getSetter(), new ConceptCountMapper()));
         }
 
-        String yearOfBirthSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/person/yearofbirth_data.sql", source);
+        PreparedStatementRenderer yearOfBirthSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/person/yearofbirth_data.sql", source);
         if (yearOfBirthSql != null) {
-            person.setYearOfBirth(jdbcTemplate.query(yearOfBirthSql, new ConceptDistributionMapper()));
+            person.setYearOfBirth(jdbcTemplate.query(yearOfBirthSql.getSql(), yearOfBirthSql.getSetter(), new ConceptDistributionMapper()));
         }
 
-        String yearOfBirthStatsSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/person/yearofbirth_stats.sql", source);
+        PreparedStatementRenderer yearOfBirthStatsSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/person/yearofbirth_stats.sql", source);
         if (yearOfBirthStatsSql != null) {
-            person.setYearOfBirthStats(jdbcTemplate.query(yearOfBirthStatsSql, new CohortStatsMapper()));
+            person.setYearOfBirthStats(jdbcTemplate.query(yearOfBirthStatsSql.getSql(), yearOfBirthStatsSql.getSetter(), new CohortStatsMapper()));
         }
 
         return person;
@@ -119,54 +121,55 @@ public class CDMResultsAnalysisRunner {
 
     public CDMAchillesHeel getHeelResults(JdbcTemplate jdbcTemplate, Source source) {
         CDMAchillesHeel heel = new CDMAchillesHeel();
-        String achillesSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/achillesheel/sqlAchillesHeel.sql", source);
+        PreparedStatementRenderer achillesSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/achillesheel/sqlAchillesHeel.sql", source);
         if (achillesSql != null) {
-            heel.setMessages(jdbcTemplate.query(achillesSql, new CDMAttributeMapper()));
+            heel.setMessages(jdbcTemplate.query(achillesSql.getSql(), achillesSql.getSetter(), new CDMAttributeMapper()));
         }
         return heel;
     }
 
     public CDMDataDensity getDataDensityResults(JdbcTemplate jdbcTemplate, Source source) {
         CDMDataDensity cdmDataDensity = new CDMDataDensity();
-        String conceptsPerPersonSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/datadensity/conceptsperperson.sql", source);
+        PreparedStatementRenderer conceptsPerPersonSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/datadensity/conceptsperperson.sql", source);
         if (conceptsPerPersonSql != null) {
-            cdmDataDensity.setConceptsPerPerson(jdbcTemplate.query(conceptsPerPersonSql, new ConceptQuartileMapper()));
+            cdmDataDensity.setConceptsPerPerson(jdbcTemplate.query(conceptsPerPersonSql.getSql(), conceptsPerPersonSql.getSetter(), new ConceptQuartileMapper()));
         }
-        String recordsPerPersonSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/datadensity/recordsperperson.sql", source);
+        PreparedStatementRenderer recordsPerPersonSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/datadensity/recordsperperson.sql", source);
         if (recordsPerPersonSql != null) {
-            cdmDataDensity.setRecordsPerPerson(jdbcTemplate.query(recordsPerPersonSql, new SeriesPerPersonMapper()));
+            cdmDataDensity.setRecordsPerPerson(jdbcTemplate.query(recordsPerPersonSql.getSql(), recordsPerPersonSql.getSetter(), new SeriesPerPersonMapper()));
         }
-        String totalRecordsSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/datadensity/totalrecords.sql", source);
+        PreparedStatementRenderer totalRecordsSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/datadensity/totalrecords.sql", source);
         if (totalRecordsSql != null) {
-            cdmDataDensity.setTotalRecords(jdbcTemplate.query(totalRecordsSql, new SeriesPerPersonMapper()));
+            cdmDataDensity.setTotalRecords(jdbcTemplate.query(totalRecordsSql.getSql(), totalRecordsSql.getSetter(), new SeriesPerPersonMapper()));
         }
         return cdmDataDensity;
     }
 
     public CDMDeath getDeathResults(JdbcTemplate jdbcTemplate, Source source) {
         CDMDeath cdmDeath = new CDMDeath();
-        String prevalenceByGenderAgeYearSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/death/sqlPrevalenceByGenderAgeYear.sql", source);
+        PreparedStatementRenderer prevalenceByGenderAgeYearSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/death/sqlPrevalenceByGenderAgeYear.sql", source);
         if (prevalenceByGenderAgeYearSql != null) {
-            cdmDeath.setPrevalenceByGenderAgeYear(jdbcTemplate.query(prevalenceByGenderAgeYearSql, new ConceptDecileMapper()));
+            cdmDeath.setPrevalenceByGenderAgeYear(jdbcTemplate.query(prevalenceByGenderAgeYearSql.getSql(), prevalenceByGenderAgeYearSql.getSetter(), new ConceptDecileMapper()));
         }
-        String prevalenceByMonthSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/death/sqlPrevalenceByMonth.sql", source);
+        PreparedStatementRenderer prevalenceByMonthSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/death/sqlPrevalenceByMonth.sql", source);
         if (prevalenceByMonthSql != null) {
-            cdmDeath.setPrevalenceByMonth(jdbcTemplate.query(prevalenceByMonthSql, new PrevalanceMapper()));
+            cdmDeath.setPrevalenceByMonth(jdbcTemplate.query(prevalenceByMonthSql.getSql(), prevalenceByMonthSql.getSetter(), new PrevalanceMapper()));
         }
-        String deathByTypeSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/death/sqlDeathByType.sql", source);
+        PreparedStatementRenderer deathByTypeSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/death/sqlDeathByType.sql", source);
         if (deathByTypeSql != null) {
-            cdmDeath.setDeathByType(jdbcTemplate.query(deathByTypeSql, new ConceptCountMapper()));
+            cdmDeath.setDeathByType(jdbcTemplate.query(deathByTypeSql.getSql(), deathByTypeSql.getSetter(), new ConceptCountMapper()));
         }
-        String ageAtDeathSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/death/sqlAgeAtDeath.sql", source);
+        PreparedStatementRenderer ageAtDeathSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/death/sqlAgeAtDeath.sql", source);
         if (ageAtDeathSql != null) {
-            cdmDeath.setAgeAtDeath(jdbcTemplate.query(ageAtDeathSql, new ConceptQuartileMapper()));
+            cdmDeath.setAgeAtDeath(jdbcTemplate.query(ageAtDeathSql.getSql(), ageAtDeathSql.getSetter(), new ConceptQuartileMapper()));
         }
         return cdmDeath;
     }
 
-    private String renderTranslateSql(String sqlPath, Source source) {
+    private PreparedStatementRenderer renderTranslateSql(String sqlPath, Source source) {
         return renderTranslateSql(sqlPath, null, source);
-    }
+  }
+
 
 
     public ArrayNode getTreemap(JdbcTemplate jdbcTemplate,
@@ -176,9 +179,9 @@ public class CDMResultsAnalysisRunner {
         ArrayNode arrayNode = mapper.createArrayNode();
 
         String sqlPath = BASE_SQL_PATH + "/report/" + domain.toLowerCase() + "/treemap.sql";
-        String sql = this.renderTranslateSql(sqlPath, source);
+        PreparedStatementRenderer sql = this.renderTranslateSql(sqlPath, source);
         if (sql != null) {
-            List<JsonNode> list = jdbcTemplate.query(sql, new GenericRowMapper(mapper));
+            List<JsonNode> list = jdbcTemplate.query(sql.getSql(), sql.getSetter(), new GenericRowMapper(mapper));
             arrayNode.addAll(list);
         }
         return arrayNode;
@@ -200,9 +203,9 @@ public class CDMResultsAnalysisRunner {
                 String fullSqlPath = resource.getURL().getPath();
                 int startIndex = fullSqlPath.indexOf(BASE_SQL_PATH);
                 String sqlPath = fullSqlPath.substring(startIndex);
-                String sql = this.renderTranslateSql(sqlPath, conceptId, source);
+                PreparedStatementRenderer sql = this.renderTranslateSql(sqlPath, conceptId, source);
                 if (sql != null) {
-                    List<JsonNode> l = jdbcTemplate.query(sql, new GenericRowMapper(mapper));
+                    List<JsonNode> l = jdbcTemplate.query(sql.getSql(), sql.getSetter(), new GenericRowMapper(mapper));
                     String analysisName = resource.getFilename().replace(".sql", "");
                     objectNode.putArray(analysisName).addAll(l);
                 }
@@ -213,31 +216,23 @@ public class CDMResultsAnalysisRunner {
         return objectNode;
     }
 
-    private String renderTranslateSql(String sqlPath, Integer conceptId, Source source) {
-        String sql = null;
+    private PreparedStatementRenderer renderTranslateSql(String sqlPath, Integer conceptId, Source source) {
 
         String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
         String vocabularyTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
         String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
 
-        try {
-            String[] cols;
-            String[] colValues;
-            if (conceptId != null) {
-                cols = DRILLDOWN_COLUMNS;
-                colValues = new String[]{resultsTableQualifier, vocabularyTableQualifier, String.valueOf(conceptId)};
-            } else {
-                cols = STANDARD_COLUMNS;
-                colValues = new String[]{resultsTableQualifier, vocabularyTableQualifier, cdmTableQualifier};
-            }
+        PreparedStatementRenderer psr;
+        String[] tableQualifierValues;
 
-            sql = ResourceHelper.GetResourceAsString(sqlPath);
-            sql = SqlRender.renderSql(sql, cols, colValues);
-            sql = SqlTranslate.translateSql(sql, sourceDialect, source.getSourceDialect());
-        } catch (Exception e) {
-            log.error(String.format("Unable to translate sql for  %s", sql), e);
+        if (conceptId != null) {
+            tableQualifierValues = new String[]{resultsTableQualifier, vocabularyTableQualifier};
+            psr = new PreparedStatementRenderer(source, sqlPath, DRILLDOWN_TABLE, tableQualifierValues, DRILLDOWN_COLUMNS,  new Integer[]{conceptId});
+        } else {
+            tableQualifierValues = new String[]{resultsTableQualifier, vocabularyTableQualifier, cdmTableQualifier};
+            psr = new PreparedStatementRenderer(source, sqlPath, STANDARD_TABLE, tableQualifierValues, (String) null, null);
         }
-
-        return sql;
+        psr.setTargetDialect(source.getSourceDialect());
+        return psr;
     }
 }

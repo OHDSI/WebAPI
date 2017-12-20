@@ -7387,10 +7387,6 @@ from
   select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
   cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
   from  #results_902 union all }
-  --{ 903  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
-  from  #results_903 union all }
   --{ 908  IN (@list_of_analysis_ids)}?{
   select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
   cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value

@@ -33,30 +33,7 @@ import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysis;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTask;
 import org.ohdsi.webapi.cohortanalysis.CohortSummary;
-import org.ohdsi.webapi.cohortresults.CohortAttribute;
-import org.ohdsi.webapi.cohortresults.CohortBreakdown;
-import org.ohdsi.webapi.cohortresults.CohortConditionDrilldown;
-import org.ohdsi.webapi.cohortresults.CohortConditionEraDrilldown;
-import org.ohdsi.webapi.cohortresults.CohortDashboard;
-import org.ohdsi.webapi.cohortresults.CohortDataDensity;
-import org.ohdsi.webapi.cohortresults.CohortDeathData;
-import org.ohdsi.webapi.cohortresults.CohortDrugDrilldown;
-import org.ohdsi.webapi.cohortresults.CohortDrugEraDrilldown;
-import org.ohdsi.webapi.cohortresults.CohortMeasurementDrilldown;
-import org.ohdsi.webapi.cohortresults.CohortObservationDrilldown;
-import org.ohdsi.webapi.cohortresults.CohortObservationPeriod;
-import org.ohdsi.webapi.cohortresults.CohortPersonSummary;
-import org.ohdsi.webapi.cohortresults.CohortProceduresDrillDown;
-import org.ohdsi.webapi.cohortresults.CohortResultsAnalysisRunner;
-import org.ohdsi.webapi.cohortresults.CohortSpecificSummary;
-import org.ohdsi.webapi.cohortresults.CohortSpecificTreemap;
-import org.ohdsi.webapi.cohortresults.CohortVisitsDrilldown;
-import org.ohdsi.webapi.cohortresults.DataCompletenessAttr;
-import org.ohdsi.webapi.cohortresults.EntropyAttr;
-import org.ohdsi.webapi.cohortresults.HierarchicalConceptRecord;
-import org.ohdsi.webapi.cohortresults.ScatterplotRecord;
-import org.ohdsi.webapi.cohortresults.VisualizationData;
-import org.ohdsi.webapi.cohortresults.VisualizationDataRepository;
+import org.ohdsi.webapi.cohortresults.*;
 import org.ohdsi.webapi.cohortresults.mapper.AnalysisResultsMapper;
 import org.ohdsi.webapi.model.results.Analysis;
 import org.ohdsi.webapi.model.results.AnalysisResults;
@@ -77,10 +54,7 @@ import java.sql.ResultSetMetaData;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.ws.rs.core.Response;
-import org.ohdsi.webapi.cohortresults.ExposureCohortResult;
-import org.ohdsi.webapi.cohortresults.ExposureCohortSearch;
-import org.ohdsi.webapi.cohortresults.PredictorResult;
-import org.ohdsi.webapi.cohortresults.TimeToEventResult;
+
 import org.ohdsi.webapi.person.CohortPerson;
 import org.ohdsi.webapi.service.CohortDefinitionService.CohortDefinitionDTO;
 
@@ -283,6 +257,22 @@ public class CohortResultsService extends AbstractDaoService {
     }
     return completed;
   }
+
+  /**
+   * Tornado Plot Report
+	 * @param id cohortDefinitionId
+	 *
+   */
+  @GET
+	@Path("{sourceKey}/{id}/tornado")
+	@Produces(MediaType.APPLICATION_JSON)
+	public TornadoReport getTornadoReport(@PathParam("sourceKey") final String sourceKey, @PathParam("id") final int cohortDefinitionId) {
+		Source source = getSourceRepository().findBySourceKey(sourceKey);
+		TornadoReport tornadoReport = new TornadoReport();
+		tornadoReport.tornadoRecords = queryRunner.getTornadoRecords(getSourceJdbcTemplate(source), cohortDefinitionId, source);
+		tornadoReport.profileSamples = queryRunner.getProfileSampleRecords(getSourceJdbcTemplate(source), cohortDefinitionId, source);
+		return tornadoReport;
+	}
 
   /**
    * Queries for cohort analysis dashboard for the given cohort definition id

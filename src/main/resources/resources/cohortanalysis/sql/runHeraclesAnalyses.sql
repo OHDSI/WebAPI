@@ -31,8 +31,7 @@
 
 --'2000002372'  1 large cohort
 --'2000003550,2000004386'     2 10k sized cohorts
-
-{DEFAULT @list_of_analysis_ids = '0,1,2,3,4,5,6,7,8,9,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,200,201,202,203,204,205,206,207,208,209,210,211,220,400,401,402,403,404,405,406,407,408,409,410,411,412,413,414,415,416,417,418,419,420,500,501,502,503,504,505,506,509,510,511,512,513,514,515,600,601,602,603,604,605,606,607,608,609,610,611,612,613,614,615,616,617,618,619,620,700,701,702,703,704,705,706,707,708,709,710,711,712,713,714,715,716,717,717,718,719,720,800,801,802,803,804,805,806,807,808,809,810,811,812,813,814,815,819,820,900,901,902,903,904,905,906,907,908,909,910,911,912,913,914,915,916,917,918,919,920,1000,1001,1002,1003,1004,1005,1006,1007,1008,1009,1010,1011,1012,1013,1014,1015,1016,1017,1018,1019,1020,1100,1101,1102,1103,1200,1201,1202,1203,1700,1701,1800,1801,1802,1803,1804,1805,1806,1807,1808,1809,1810,1811,1812,1813,1814,1815,1816,1817,1818,1819,1820,1821,1830,1831,1840,1841,1850,1851,1860,1861,1870,1871,1300,1301,1302,1303,1304,1305,1306,1307,1308,1309,1310,1311,1312,1313,1314,1315,1316,1317,1318,1319,1320,3000,3001'}
+{DEFAULT @list_of_analysis_ids = '0,1,2,3,4,5,6,7,8,9,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,200,201,202,203,204,205,206,207,208,209,210,211,220,400,401,402,403,404,405,406,407,408,409,410,411,412,413,414,415,416,417,418,419,420,500,501,502,503,504,505,506,509,510,511,512,513,514,515,600,601,602,603,604,605,606,607,608,609,610,611,612,613,614,615,616,617,618,619,620,700,701,702,703,704,705,706,707,708,709,710,711,712,713,714,715,716,717,718,719,720,800,801,802,803,804,805,806,807,808,809,810,811,812,813,814,815,819,820,900,901,902,903,904,905,906,907,908,909,910,911,912,913,914,915,916,917,918,919,920,1000,1001,1002,1003,1004,1005,1006,1007,1008,1009,1010,1011,1012,1013,1014,1015,1016,1017,1018,1019,1020,1100,1101,1102,1103,1200,1201,1202,1203,1700,1701,1800,1801,1802,1803,1804,1805,1806,1807,1808,1809,1810,1811,1812,1813,1814,1815,1816,1817,1818,1819,1820,1821,1830,1831,1840,1841,1850,1851,1860,1861,1870,1871,1300,1301,1302,1303,1304,1305,1306,1307,1308,1309,1310,1311,1312,1313,1314,1315,1316,1317,1318,1319,1320,2001,2002,2003,2004,2005,2006,2007,2011,2012,2013,2014,2015,2016,2017,2021,2022,2023,2024,2025,2026,2027,2031,2032,3000,3001'}
 --list_of_analysis_ids = @list_of_analysis_ids
 
 
@@ -46,7 +45,6 @@
 --observation_concept_ids = @observation_concept_ids
 {DEFAULT @measurement_concept_ids = ''}   --list of measurement concepts to be used throughout
 --measurement_concept_ids = @measurement_concept_ids
-
 
 --all: '0,1,2,3,4,5,6,7,8,9,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,200,201,202,203,204,205,206,207,208,209,210,211,220,400,401,402,403,404,405,406,407,408,409,410,411,412,413,414,415,416,417,418,419,420,500,501,502,503,504,505,506,509,510,511,512,513,514,515,600,601,602,603,604,605,606,607,608,609,610,611,612,613,614,615,616,617,618,619,620,700,701,702,703,704,705,706,707,708,709,710,711,712,713,714,715,716,717,717,718,719,720,800,801,802,803,804,805,806,807,808,809,810,811,812,813,814,815,816,817,818,819,820,900,901,902,903,904,905,906,907,908,909,910,911,912,913,914,915,916,917,918,919,920,1000,1001,1002,1003,1004,1005,1006,1007,1008,1009,1010,1011,1012,1013,1014,1015,1016,1017,1018,1019,1020,1100,1101,1102,1103,1200,1201,1202,1203,1700,1701,1800,1801,1802,1803,1804,1805,1806,1807,1808,1809,1810,1811,1812,1813,1814,1815,1816,1817,1818,1819,1820,1821,1830,1831,1840,1841,1850,1851,1860,1861,1870,1871,3000,3001'
 --person: '0,1,2,3,4,5,6,7,8,9'
@@ -102,8 +100,8 @@ group by c1.cohort_definition_id;
 
 --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, count_value)
 select c1.cohort_definition_id, 0 as analysis_id, '@source_name' as stratum_1, '' as stratum_2, 
-NULL as min_value, NULL as max_value, NULL as avg_value, NULL as stdev_value, NULL as median_value, 
-NULL as p10_value, NULL as p25_value, NULL as p75_value, NULL as p90_value,
+0 as min_value, 0 as max_value, 0 as avg_value, 0 as stdev_value, 0 as median_value,
+0 as p10_value, 0 as p25_value, 0 as p75_value, 0 as p90_value,
 COUNT_BIG(distinct person_id) as count_value
 into #results_dist_0
 from @CDM_schema.PERSON p1
@@ -122,14 +120,14 @@ group by c1.cohort_definition_id;
 select c.cohort_definition_id, 
 3000 as analysis_id,  
 p.gender_concept_id as stratum_1, 
-(year(c.cohort_start_date) - p.year_of_birth) / 10 * 10 as stratum_2, 
+(cast(year(c.cohort_start_date) - p.year_of_birth as int)) / 10 * 10 as stratum_2,
 '' as stratum_3, '' as stratum_4,
 count_big(*) as count_value
 into #results_3000
 from #HERACLES_cohort c 
 join @CDM_schema.PERSON p
 on p.person_id = c.subject_id
-group by c.cohort_definition_id, p.gender_concept_id, (year(c.cohort_start_date) - p.year_of_birth) / 10 * 10
+group by c.cohort_definition_id, p.gender_concept_id, (cast(year(c.cohort_start_date) - p.year_of_birth as int)) / 10 * 10
 ;
 --}
 
@@ -137,18 +135,19 @@ group by c.cohort_definition_id, p.gender_concept_id, (year(c.cohort_start_date)
 --{3001 IN (@list_of_analysis_ids)}?{
 -- 3001     Number of persons by gender
 --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3, stratum_4)
+--@smallcellcount + 9 as count_value to prevent row removal during small cell count
 select cohort_definition_id,analysis_id,
-cast(row_index as varchar) as stratum_1, person_id as stratum_2, age_group as stratum_3, gender_concept_id as stratum_4, '' as count_value
+cast(row_index as varchar) as stratum_1, person_id as stratum_2, age_group as stratum_3, gender_concept_id as stratum_4, (@smallcellcount + 9) as count_value
 into #results_3001
 from (
 select c.cohort_definition_id,
 3001 as analysis_id,
 row_number() over (
-partition by (year(c.cohort_start_date) - p.year_of_birth) / 10 * 10, p.gender_concept_id 
+partition by (cast(year(c.cohort_start_date) - p.year_of_birth as int)) / 10 * 10, p.gender_concept_id
 order by p.person_id
 ) as row_index, 
 p.person_id,
-(year(c.cohort_start_date) - p.year_of_birth) / 10 * 10 as age_group, 
+(cast(year(c.cohort_start_date) - p.year_of_birth as int)) / 10 * 10 as age_group,
 p.gender_concept_id
 from #HERACLES_cohort c
 join @CDM_schema.PERSON p 
@@ -158,11 +157,7 @@ where row_index <= 5
 ;
 --}
 
-
-
-
 --HERACLES Analyses on PERSON table
-
 
 --{1 IN (@list_of_analysis_ids)}?{
 -- 1       Number of persons
@@ -175,7 +170,6 @@ inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_e
 on p1.person_id = c1.subject_id
 group by c1.cohort_definition_id;
 --}
-
 
 --{2 IN (@list_of_analysis_ids)}?{
 -- 2       Number of persons by gender
@@ -190,8 +184,6 @@ on p1.person_id = c1.subject_id
 group by c1.cohort_definition_id, GENDER_CONCEPT_ID
 ;
 --}
-
-
 
 --{3 IN (@list_of_analysis_ids)}?{
 -- 3       Number of persons by year of birth
@@ -222,8 +214,6 @@ group by c1.cohort_definition_id, RACE_CONCEPT_ID
 ;
 --}
 
-
-
 --{5 IN (@list_of_analysis_ids)}?{
 -- 5       Number of persons by ethnicity
 --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
@@ -237,10 +227,6 @@ on p1.person_id = c1.subject_id
 group by c1.cohort_definition_id, ETHNICITY_CONCEPT_ID
 ;
 --}
-
-
-
-
 
 --{7 IN (@list_of_analysis_ids)}?{
 -- 7       Number of persons with invalid provider_id
@@ -260,8 +246,6 @@ group by c1.cohort_definition_id
 ;
 --}
 
-
-
 --{8 IN (@list_of_analysis_ids)}?{
 -- 8       Number of persons with invalid location_id
 --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
@@ -278,9 +262,7 @@ where p1.location_id is not null
 and l1.location_id is null
 group by c1.cohort_definition_id
 ;
-
 --}
-
 
 --{9 IN (@list_of_analysis_ids)}?{
 -- 9       Number of persons with invalid care_site_id
@@ -300,16 +282,8 @@ group by c1.cohort_definition_id
 ;
 --}
 
-
-
-
-
-
-
-----/********************************************
-
+--/********************************************
 --HERACLES Analyses on OBSERVATION_PERIOD table
-
 --*********************************************/
 
 --{101 IN (@list_of_analysis_ids)}?{
@@ -328,8 +302,6 @@ group by c1.cohort_definition_id, year(op1.index_date) - p1.YEAR_OF_BIRTH
 ;
 --}
 
-
-
 --{102 IN (@list_of_analysis_ids)}?{
 -- 102   Number of persons by gender by age, with age at first observation period
 --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
@@ -345,7 +317,6 @@ on p1.PERSON_ID = op1.PERSON_ID
 group by c1.cohort_definition_id, p1.gender_concept_id, year(op1.index_date) - p1.YEAR_OF_BIRTH
 ;
 --}
-
 
 --{103 IN (@list_of_analysis_ids)}?{
 -- 103   Distribution of age at first observation period
@@ -377,12 +348,8 @@ from
   ) t1
   group by cohort_definition_id
   ;
-  
   --}
-  
-  
-  
-  
+
   --{104 IN (@list_of_analysis_ids)}?{
   -- 104   Distribution of age at first observation period by gender
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
@@ -6128,7 +6095,7 @@ from
   -- 2001                Count and percentage of gender data completeness for age less than 10
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2001 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, '' as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2001
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -6165,7 +6132,7 @@ from
   -- 2002                Count and percentage of gender data completeness for age between 10~20
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2002 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, '' as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2002
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -6202,7 +6169,7 @@ from
   -- 2003                Count and percentage of gender data completeness for age between 20~30
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2003 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, '' as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2003
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -6239,7 +6206,7 @@ from
   -- 2004                Count and percentage of gender data completeness for age between 30~40
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2004 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, '' as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2004
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -6276,7 +6243,7 @@ from
   -- 2005                Count and percentage of gender data completeness for age between 40~50
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2005 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, '' as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2005
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -6313,7 +6280,7 @@ from
   -- 2006                Count and percentage of gender data completeness for age between 50~60
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2006 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, '' as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2006
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -6350,7 +6317,7 @@ from
   -- 2007                Count and percentage of gender data completeness for age between 60+
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2007 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, '' as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2007
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -6383,7 +6350,7 @@ from
   -- 2011                Count and percentage of race data completeness for age less than 10
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2011 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, '' as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2011
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -6419,7 +6386,7 @@ from
   -- 2012                Count and percentage of race data completeness for age between 10~20
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2012 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, '' as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2012
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -6459,7 +6426,7 @@ from
   -- 2013                Count and percentage of race data completeness for age between 20~30
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2013 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, '' as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2013
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -6499,7 +6466,7 @@ from
   -- 2014                Count and percentage of race data completeness for age between 30~40
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2014 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, '' as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2014
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -6539,7 +6506,7 @@ from
   -- 2015                Count and percentage of race data completeness for age between 40~50
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2015 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, '' as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2015
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -6579,7 +6546,7 @@ from
   -- 2016                Count and percentage of race data completeness for age between 50~60
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2016 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, '' as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2016
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -6619,7 +6586,7 @@ from
   -- 2017                Count and percentage of race data completeness for age between 60+
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2017 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, '' as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2017
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -6655,7 +6622,7 @@ from
   -- 2021                Count and percentage of ethnicity data completeness for age less than 10
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2021 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, '' as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2021
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -6689,7 +6656,7 @@ from
   -- 2022                Count and percentage of ethnicity data completeness for age between 10~20
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2022 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, '' as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2022
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -6727,7 +6694,7 @@ from
   -- 2023                Count and percentage of ethnicity data completeness for age between 20~30
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2023 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, '' as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2023
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -6765,7 +6732,7 @@ from
   -- 2024                Count and percentage of ethnicity data completeness for age between 30~40
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2024 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, '' as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2024
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -6803,7 +6770,7 @@ from
   -- 2025                Count and percentage of ethnicity data completeness for age between 40~50
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2025 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, '' as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2025
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -6841,7 +6808,7 @@ from
   -- 2026                Count and percentage of ethnicity data completeness for age between 50~60
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2026 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, '' as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2026
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -6879,7 +6846,7 @@ from
   -- 2027                Count and percentage of ethnicity data completeness for age 60+
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2027 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, '' as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2027
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -6919,7 +6886,7 @@ from
   2031 AS analysis_id,
   entropyT.d as stratum_1,
   cast(round(entropyT.entropy, 3) as varchar(max)) as stratum_2,
-  '' as stratum_3, '' as stratum_4, '' as count_value
+  '' as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2031
   FROM
   (select
@@ -6974,7 +6941,7 @@ from
   entropyT.site_source_value as stratum_2,
   entropyT.d as stratum_3,
   cast(round(entropyT.entropy, 3) as varchar(max)) as stratum_4,
-  '' as count_value
+  (@smallcellcount + 9) as count_value
   into #results_2032
   FROM
   (
@@ -7683,7 +7650,8 @@ from
   select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
   cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
   from  #results_2032 union all } 
-  select -1,'','','','','',cast(null as bigint);
+  select -1, -1, '', '', '', '', -1;
+  -- this final select handles the union all in the case of whatever conditional query runs last
   
   insert into @results_schema.heracles_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value) 
   --{ 0  IN (@list_of_analysis_ids)}?{
@@ -7874,14 +7842,14 @@ from
   select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
   cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_1813 union all } 
-  select -1,'','','','','','','','','','','','','';
-  
+  select -1, -1, '', '', -1, -1, -1, -1, -1, -1, -1, -1, -1, -1;
+  -- this final select handles the union all in the case of whatever conditional query runs last
   
   TRUNCATE TABLE #HERACLES_cohort;
   DROP TABLE #HERACLES_cohort;
   
-  delete from @results_schema.HERACLES_results where count_value <= @smallcellcount;
-  delete from @results_schema.HERACLES_results_dist where count_value <= @smallcellcount;
+  delete from @results_schema.HERACLES_results where count_value <= @smallcellcount and cohort_definition_id in (@cohort_definition_id);
+  delete from @results_schema.HERACLES_results_dist where count_value <= @smallcellcount and cohort_definition_id in (@cohort_definition_id);
   
   -- cleanup dummy rows
   delete from @results_schema.HERACLES_results where cohort_definition_id = -1;

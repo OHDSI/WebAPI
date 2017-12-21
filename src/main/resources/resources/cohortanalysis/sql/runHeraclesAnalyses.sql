@@ -1788,7 +1788,7 @@ from
   floor((year(death_date) - p1.year_of_birth)/10) as stratum_3, 
   '' as stratum_4,
   COUNT_BIG(distinct p1.PERSON_ID) as count_value
-  into #results_503
+  into #results_504
   from @CDM_schema.PERSON p1
   inner join
   @CDM_schema.death d1
@@ -1813,7 +1813,7 @@ from
   death_type_concept_id as stratum_1,
   '' as stratum_2, '' as stratum_3, '' as stratum_4,
   COUNT_BIG(PERSON_ID) as count_value
-  into #results_504
+  into #results_505
   from
   @CDM_schema.death d1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
@@ -7227,14 +7227,14 @@ from
   select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
   cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
   from  #results_502 union all }
-  --{ 503  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
-  from  #results_503 union all }
   --{ 504  IN (@list_of_analysis_ids)}?{
   select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
   cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
   from  #results_504 union all }
+  --{ 505  IN (@list_of_analysis_ids)}?{
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
+  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  from  #results_505 union all }
   --{ 509  IN (@list_of_analysis_ids)}?{
   select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
   cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value

@@ -6,35 +6,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.ws.rs.PathParam;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ohdsi.circe.helper.ResourceHelper;
-import org.ohdsi.sql.SqlRender;
-import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTask;
-import org.ohdsi.webapi.cohortresults.mapper.CohortAttributeMapper;
-import org.ohdsi.webapi.cohortresults.mapper.CohortStatsMapper;
-import org.ohdsi.webapi.cohortresults.mapper.ConceptConditionCountMapper;
-import org.ohdsi.webapi.cohortresults.mapper.ConceptCountMapper;
-import org.ohdsi.webapi.cohortresults.mapper.ConceptDecileCountsMapper;
-import org.ohdsi.webapi.cohortresults.mapper.ConceptDecileMapper;
-import org.ohdsi.webapi.cohortresults.mapper.ConceptDistributionMapper;
-import org.ohdsi.webapi.cohortresults.mapper.ConceptObservationCountMapper;
-import org.ohdsi.webapi.cohortresults.mapper.ConceptQuartileMapper;
-import org.ohdsi.webapi.cohortresults.mapper.CumulativeObservationMapper;
-import org.ohdsi.webapi.cohortresults.mapper.HierarchicalConceptEraMapper;
-import org.ohdsi.webapi.cohortresults.mapper.HierarchicalConceptMapper;
-import org.ohdsi.webapi.cohortresults.mapper.HierarchicalConceptPrevalenceMapper;
-import org.ohdsi.webapi.cohortresults.mapper.MonthObservationMapper;
-import org.ohdsi.webapi.cohortresults.mapper.ObservationPeriodMapper;
-import org.ohdsi.webapi.cohortresults.mapper.PrevalanceConceptMapper;
-import org.ohdsi.webapi.cohortresults.mapper.PrevalanceConceptNameMapper;
-import org.ohdsi.webapi.cohortresults.mapper.PrevalanceMapper;
-import org.ohdsi.webapi.cohortresults.mapper.ScatterplotMapper;
-import org.ohdsi.webapi.cohortresults.mapper.SeriesPerPersonMapper;
+import org.ohdsi.webapi.cohortresults.mapper.*;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
@@ -99,6 +75,34 @@ public class CohortResultsAnalysisRunner {
 		this.visualizationDataRepository = visualizationDataRepository;
 
 		mapper = new ObjectMapper();
+	}
+
+	public List<TornadoRecord> getTornadoRecords(JdbcTemplate jdbcTemplate, final int id, Source source) {
+		final String sqlPath = BASE_SQL_PATH + "/tornado/getTornadoData.sql";
+		String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+
+		String[] search = new String[]{"tableQualifier"};
+		String[] replace = new String[]{resultsTableQualifier};
+
+		String[] cols = new String[]{"cohortDefinitionId"};
+		Object[] colValues = new Object[]{id};
+
+		final PreparedStatementRenderer psr =  new PreparedStatementRenderer(source, sqlPath, search, replace, cols, colValues);
+		return jdbcTemplate.query(psr.getSql(), psr.getSetter(), new TornadoMapper());
+	}
+
+	public List<ProfileSampleRecord> getProfileSampleRecords(JdbcTemplate jdbcTemplate, final int id, Source source) {
+		final String sqlPath = BASE_SQL_PATH + "/tornado/getProfileSamples.sql";
+		String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+
+		String[] search = new String[]{"tableQualifier"};
+		String[] replace = new String[]{resultsTableQualifier};
+
+		String[] cols = new String[]{"cohortDefinitionId"};
+		Object[] colValues = new Object[]{id};
+
+		final PreparedStatementRenderer psr =  new PreparedStatementRenderer(source, sqlPath, search, replace, cols, colValues);
+		return jdbcTemplate.query(psr.getSql(), psr.getSetter(), new ProfileSampleMapper());
 	}
 
 	public List<ScatterplotRecord> getCohortConditionDrilldown(JdbcTemplate jdbcTemplate,

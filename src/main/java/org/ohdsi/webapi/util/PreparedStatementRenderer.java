@@ -25,7 +25,7 @@ public class PreparedStatementRenderer {
   private String sql;
   private String sourceDialect = "sql server";
   private List<Object> orderedParamsList;
-  private String targetDialect = "sql server";;
+  private String targetDialect = "sql server";
 
   public List<Object> getOrderedParamsList() {
 

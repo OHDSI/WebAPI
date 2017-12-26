@@ -1716,12 +1716,19 @@ public class CohortResultsService extends AbstractDaoService {
 
     public List<AnalysisResults> getCohortAnalysesEntropy(final int id, String sourceKey, int entroppAnalysisId) {
 
-      String sql = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/entropy/getEntropy.sql");
-      Source source = getSourceRepository().findBySourceKey(sourceKey);
-      String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-      PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, "tableQualifier",
-        resultsTableQualifier, "cohortDefinitionId", id);
-      return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), new AnalysisResultsMapper());
+        String sql = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/entropy/getEntropy.sql");
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+        String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+        
+        String[] searchStringNames = new String[] { "tableQualifier" };
+        String[] replacementNames = new String[] { resultsTableQualifier };
+        
+        String[] variableNames = new String[] { "cohortDefinitionId", "entroppAnalysisId" };
+        Object[] variableValues = new Object[] { id, entroppAnalysisId };
+        
+        PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, searchStringNames, replacementNames,
+                variableNames, variableValues);
+        return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), new AnalysisResultsMapper());
     }
     
     @GET

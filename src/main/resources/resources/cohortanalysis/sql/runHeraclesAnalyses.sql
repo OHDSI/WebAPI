@@ -321,149 +321,213 @@ group by c1.cohort_definition_id, p1.gender_concept_id, year(op1.index_date) - p
 --{103 IN (@list_of_analysis_ids)}?{
 -- 103   Distribution of age at first observation period
 --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select cohort_definition_id, 
-103 as analysis_id,
-'' as stratum_1, '' as stratum_2,
-COUNT_BIG(count_value) as count_value,
-min(count_value) as min_value,
-max(count_value) as max_value,
-avg(1.0*count_value) as avg_value,
-stdev(count_value) as stdev_value,
-max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-into #results_dist_103
-from
+
+select c1.cohort_definition_id,
+	c1.subject_id,
+	year(op1.index_date) - p1.YEAR_OF_BIRTH as count_value
+INTO #raw_103
+from @CDM_schema.PERSON p1
+inner join #HERACLES_cohort c1 on p1.person_id = c1.subject_id
+inner join (
+	select person_id, MIN(observation_period_start_date) as index_date 
+	from @CDM_schema.OBSERVATION_PERIOD 
+	group by PERSON_ID) op1 on p1.PERSON_ID = op1.PERSON_ID
+;
+
+WITH cteRawData (cohort_definition_id, count_value) as
 (
-  select c1.cohort_definition_id,
-  year(op1.index_date) - p1.YEAR_OF_BIRTH as count_value,
-  1.0*(row_number() over (partition by c1.cohort_definition_id order by year(op1.index_date) - p1.YEAR_OF_BIRTH))/(COUNT_BIG(year(op1.index_date) - p1.YEAR_OF_BIRTH) over (partition by c1.cohort_definition_id)+1) as p1
-  from @CDM_schema.PERSON p1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on p1.person_id = c1.subject_id
-  inner join (select person_id, MIN(observation_period_start_date) as index_date from @CDM_schema.OBSERVATION_PERIOD group by PERSON_ID) op1
-  on p1.PERSON_ID = op1.PERSON_ID
-  ) t1
+	select cohort_definition_id, count_value FROM #raw_103
+), 
+overallStats (cohort_definition_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
   group by cohort_definition_id
-  ;
+),
+valueStats (cohort_definition_id, count_value, total, accumulated) as
+(
+	select cohort_definition_id, 
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, count_value
+	) D
+)
+select o.cohort_definition_id,
+	103 as analysis_id,
+	'' as stratum_1, 
+	'' as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_103
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id
+GROUP BY o.cohort_definition_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_103;
+DROP TABLE #raw_103;
   --}
 
   --{104 IN (@list_of_analysis_ids)}?{
   -- 104   Distribution of age at first observation period by gender
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+
+select c1.cohort_definition_id,
+	c1.subject_id,
+	p1.gender_concept_id,
+	year(op1.index_date) - p1.YEAR_OF_BIRTH as count_value
+INTO #raw_104
+from @CDM_schema.PERSON p1
+inner join #HERACLES_cohort c1 on p1.person_id = c1.subject_id
+inner join (
+	select person_id, MIN(observation_period_start_date) as index_date 
+	from @CDM_schema.OBSERVATION_PERIOD 
+	group by PERSON_ID) op1 on p1.PERSON_ID = op1.PERSON_ID
+;
+
+WITH cteRawData (cohort_definition_id, stratum_1, count_value) as
+(
+	select cohort_definition_id, gender_concept_id, count_value FROM #raw_104
+), 
+overallStats (cohort_definition_id, stratum_1, avg_value, stdev_value, min_value, max_value, total) as
+(
   select cohort_definition_id, 
-  104 as analysis_id,
-  gender_concept_id as stratum_1, '' as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_104
-  from
-  (
-  select c1.cohort_definition_id,
-  p1.gender_concept_id,
-  year(op1.index_date) - p1.YEAR_OF_BIRTH as count_value,
-  1.0*(row_number() over (partition by p1.gender_concept_id, c1.cohort_definition_id order by year(op1.index_date) - p1.YEAR_OF_BIRTH))/(COUNT_BIG(year(op1.index_date) - p1.YEAR_OF_BIRTH) over (partition by p1.gender_concept_id, c1.cohort_definition_id)+1) as p1
-  from @CDM_schema.PERSON p1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on p1.person_id = c1.subject_id
-  inner join (select person_id, MIN(observation_period_start_date) as index_date from @CDM_schema.OBSERVATION_PERIOD group by PERSON_ID) op1
-  on p1.PERSON_ID = op1.PERSON_ID
-  ) t1
-  group by cohort_definition_id, gender_concept_id
-  ;
-  --}
-  
-  
-  
-  
-  --{105 IN (@list_of_analysis_ids)}?{
-  -- 105   Length of observation (days) of first observation period
-  --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  105 as analysis_id,
-  '' as stratum_1, '' as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_105
-  from
-  (
-  select c1.cohort_definition_id,
-  DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date) as count_value,
-  1.0*(row_number() over (partition by c1.cohort_definition_id order by DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)))/(COUNT_BIG(DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)) over (partition by c1.cohort_definition_id)+1) as p1
-  from @CDM_schema.PERSON p1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on p1.person_id = c1.subject_id
-  inner join 
-  (select person_id, 
-  OBSERVATION_PERIOD_START_DATE, 
-  OBSERVATION_PERIOD_END_DATE, 
-  ROW_NUMBER() over (PARTITION by person_id order by observation_period_start_date asc) as rn1
-  from @CDM_schema.OBSERVATION_PERIOD
-  ) op1
-  on p1.PERSON_ID = op1.PERSON_ID
-  where op1.rn1 = 1
-  ) t1
-  group by cohort_definition_id
-  ;
+    stratum_1,
+		avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
+  group by cohort_definition_id, stratum_1
+),
+valueStats (cohort_definition_id, stratum_1, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id, stratum_1 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, count_value
+	) D
+)
+select o.cohort_definition_id,
+	104 as analysis_id,
+	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
+	'' as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_104
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1
+GROUP BY o.cohort_definition_id, o.stratum_1, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_104;
+DROP TABLE #raw_104;
+
   --}
   
   
   --{106 IN (@list_of_analysis_ids)}?{
   -- 106   Length of observation (days) of first observation period by gender
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  106 as analysis_id,
-  gender_concept_id as stratum_1, '' as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_106
-  from
-  (
-  select c1.cohort_definition_id,
-  p1.gender_concept_id,
-  DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date) as count_value,
-  1.0*(row_number() over (partition by p1.gender_concept_id, c1.cohort_definition_id order by DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)))/(COUNT_BIG(DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)) over (partition by p1.gender_concept_id, c1.cohort_definition_id)+1) as p1
-  from @CDM_schema.PERSON p1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on p1.person_id = c1.subject_id
-  inner join 
-  (select person_id, 
-  OBSERVATION_PERIOD_START_DATE, 
-  OBSERVATION_PERIOD_END_DATE, 
-  ROW_NUMBER() over (PARTITION by person_id order by observation_period_start_date asc) as rn1
+select c1.cohort_definition_id,
+	c1.subject_id,
+	p1.gender_concept_id,
+	DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date) as count_value
+INTO #raw_106
+from @CDM_schema.PERSON p1
+inner join #HERACLES_cohort c1 on p1.person_id = c1.subject_id
+inner join (
+	select person_id, 
+		OBSERVATION_PERIOD_START_DATE, 
+		OBSERVATION_PERIOD_END_DATE, 
+	  ROW_NUMBER() over (PARTITION by person_id order by observation_period_start_date asc) as rn1
   from @CDM_schema.OBSERVATION_PERIOD
-  ) op1
-  on p1.PERSON_ID = op1.PERSON_ID
-  where op1.rn1 = 1
-  ) t1
-  group by cohort_definition_id, gender_concept_id
-  ;
+) op1 on p1.PERSON_ID = op1.PERSON_ID
+where op1.rn1 = 1
+;
+
+WITH cteRawData (cohort_definition_id, stratum_1, count_value) as
+(
+	select cohort_definition_id, gender_concept_id, count_value FROM #raw_106
+), 
+overallStats (cohort_definition_id, stratum_1, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    stratum_1,
+		avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
+  group by cohort_definition_id, stratum_1
+),
+valueStats (cohort_definition_id, stratum_1, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id, stratum_1 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, count_value
+	) D
+)
+select o.cohort_definition_id,
+	106 as analysis_id,
+	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
+	'' as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_106
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1
+GROUP BY o.cohort_definition_id, o.stratum_1, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_106;
+DROP TABLE #raw_106;
   --}
   
   
@@ -471,47 +535,77 @@ from
   --{107 IN (@list_of_analysis_ids)}?{
   -- 107   Length of observation (days) of first observation period by age decile
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  107 as analysis_id,
-  age_decile as stratum_1, '' as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_107
-  from
-  (
-  select c1.cohort_definition_id,
+-- stratum_1 (in this case, gender concept_id)
+
+select c1.cohort_definition_id,
   floor((year(op1.OBSERVATION_PERIOD_START_DATE) - p1.YEAR_OF_BIRTH)/10) as age_decile,
-  DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date) as count_value,
-  1.0*(row_number() over (partition by floor((year(op1.OBSERVATION_PERIOD_START_DATE) - p1.YEAR_OF_BIRTH)/10), c1.cohort_definition_id order by DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)))/(COUNT_BIG(DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)) over (partition by floor((year(op1.OBSERVATION_PERIOD_START_DATE) - p1.YEAR_OF_BIRTH)/10), c1.cohort_definition_id)+1) as p1
-  from @CDM_schema.PERSON p1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on p1.person_id = c1.subject_id
-  inner join 
-  (select person_id, 
-  OBSERVATION_PERIOD_START_DATE, 
-  OBSERVATION_PERIOD_END_DATE, 
-  ROW_NUMBER() over (PARTITION by person_id order by observation_period_start_date asc) as rn1
+  DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date) as count_value
+INTO #raw_107
+from @CDM_schema.PERSON p1
+inner join #HERACLES_cohort c1 on p1.person_id = c1.subject_id
+inner join (
+	select person_id, 
+		OBSERVATION_PERIOD_START_DATE, 
+		OBSERVATION_PERIOD_END_DATE, 
+	  ROW_NUMBER() over (PARTITION by person_id order by observation_period_start_date asc) as rn1
   from @CDM_schema.OBSERVATION_PERIOD
-  ) op1
-  on p1.PERSON_ID = op1.PERSON_ID
-  where op1.rn1 = 1
-  ) t1
-  group by cohort_definition_id, age_decile
-  ;
+) op1 on p1.PERSON_ID = op1.PERSON_ID
+where op1.rn1 = 1
+;
+
+WITH cteRawData (cohort_definition_id, stratum_1, count_value) as
+(
+	select cohort_definition_id, age_decile, count_value FROM #raw_107
+), 
+overallStats (cohort_definition_id, stratum_1, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    stratum_1,
+		avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
+  group by cohort_definition_id, stratum_1
+),
+valueStats (cohort_definition_id, stratum_1, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id, stratum_1 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, count_value
+	) D
+)
+select o.cohort_definition_id,
+	107 as analysis_id,
+	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
+	'' as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_107
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1
+GROUP BY o.cohort_definition_id, o.stratum_1, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_107;
+DROP TABLE #raw_107;
+
   --}
-  
-  
-  
-  
-  
   
   --{108 IN (@list_of_analysis_ids)}?{
   -- 108   Number of persons by length of observation period, in 30d increments
@@ -537,9 +631,6 @@ from
   group by c1.cohort_definition_id, floor(DATEDIFF(dd, op1.observation_period_start_date, op1.observation_period_end_date)/30)
   ;
   --}
-  
-  
-  
   
   --{109 IN (@list_of_analysis_ids)}?{
   -- 109   Number of persons with continuous observation in each year
@@ -861,7 +952,7 @@ from
   @CDM_schema.visit_occurrence vo1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on vo1.person_id = c1.subject_id
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   WHERE vo1.visit_start_date>=c1.cohort_start_date and vo1.visit_end_date<=c1.cohort_end_date
   --} 
   group by c1.cohort_definition_id,
@@ -892,7 +983,7 @@ from
   @CDM_schema.visit_occurrence vo1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on vo1.person_id = c1.subject_id
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   WHERE vo1.visit_start_date>=c1.cohort_start_date and vo1.visit_end_date<=c1.cohort_end_date
   --}  
   group by c1.cohort_definition_id,
@@ -926,7 +1017,7 @@ from
   @CDM_schema.visit_occurrence vo1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on vo1.person_id = c1.subject_id
-  --{@cohort_period_only == 'TRUE'}?{  
+  --{@cohort_period_only == 'true'}?{  
   WHERE vo1.visit_start_date>=c1.cohort_start_date and vo1.visit_end_date<=c1.cohort_end_date
   --}  
   group by c1.cohort_definition_id,
@@ -945,49 +1036,75 @@ from
   --{203 IN (@list_of_analysis_ids)}?{
   -- 203   Number of distinct visit occurrence concepts per person
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  203 as analysis_id,
-  '' as stratum_1, '' as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_203
-  from
-  (
-  select cohort_definition_id,
-  num_visits as count_value,
-  1.0*(row_number() over (partition by cohort_definition_id order by num_visits))/(COUNT_BIG(num_visits) over (partition by cohort_definition_id)+1) as p1
-  from
-  (
-  select c1.cohort_definition_id, vo1.person_id, 
-  --{@CDM_version == '4'}?{
-  COUNT_BIG(distinct vo1.place_of_service_concept_id) as num_visits
-  --}
-  --{@CDM_version == '5'}?{
-  COUNT_BIG(distinct vo1.visit_concept_id) as num_visits
-  --}
-  from
-  @CDM_schema.visit_occurrence vo1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on vo1.person_id = c1.subject_id
-  --{@cohort_period_only == 'TRUE'}?{  
-  WHERE vo1.visit_start_date>=c1.cohort_start_date and vo1.visit_end_date<=c1.cohort_end_date
-  --}
-  group by c1.cohort_definition_id, vo1.person_id
-  ) t0
-  ) t1
+
+select distinct c1.cohort_definition_id,
+	c1.subject_id,
+--{@CDM_version == '4'}?{
+	COUNT_BIG(distinct vo1.place_of_service_concept_id) as count_value
+--}
+--{@CDM_version == '5'}?{
+	COUNT_BIG(distinct vo1.visit_concept_id) as count_value
+--}
+INTO #raw_203
+from @CDM_schema.visit_occurrence vo1
+{@cohort_period_only == 'true'} ? 
+{join #HERACLES_cohort c1 on vo1.person_id = c1.subject_id
+WHERE vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_end_date <= c1.cohort_end_date} :
+{join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1 on vo1.person_id = c1.subject_id} 
+group by c1.cohort_definition_id, c1.subject_id
+;
+
+WITH cteRawData (cohort_definition_id, count_value) as
+(
+	select cohort_definition_id, count_value FROM #raw_203
+), 
+overallStats (cohort_definition_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
   group by cohort_definition_id
-  ;
+),
+valueStats (cohort_definition_id, count_value, total, accumulated) as
+(
+	select cohort_definition_id, 
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, count_value
+	) D
+)
+select o.cohort_definition_id,
+	203 as analysis_id,
+	'' as stratum_1, 
+	'' as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_203
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id
+GROUP BY o.cohort_definition_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_203;
+DROP TABLE #raw_203;
+
   --}
-  
-  
   
   --{204 IN (@list_of_analysis_ids)}?{
   -- 204   Number of persons with at least one visit occurrence, by visit_concept_id by calendar year by gender by age decile
@@ -1011,7 +1128,7 @@ from
   inner join
   @CDM_schema.visit_occurrence vo1
   on p1.person_id = vo1.person_id
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   WHERE vo1.visit_start_date>=c1.cohort_start_date and vo1.visit_end_date<=c1.cohort_end_date
   --}
   group by c1.cohort_definition_id,
@@ -1027,72 +1144,84 @@ from
   ;
   --}
   
-  
-  
-  
-  
   --{206 IN (@list_of_analysis_ids)}?{
   -- 206   Distribution of age by visit_concept_id
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  206 as analysis_id,
-  {@CDM_version == '4'}?{ place_of_service_CONCEPT_ID } {@CDM_version == '5'}?{ visit_CONCEPT_ID } as stratum_1,
-  gender_concept_id as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_206
-  from
-  (
-  select c1.cohort_definition_id,
-  --{@CDM_version == '4'}?{
-  vo1.place_of_service_CONCEPT_ID,
-  --}
-  --{@CDM_version == '5'}?{
-  vo1.visit_CONCEPT_ID,
-  --}
-  p1.gender_concept_id,
-  vo1.visit_start_year - p1.year_of_birth as count_value,
-  1.0*(row_number() over (partition by c1.cohort_definition_id, {@CDM_version == '4'}?{ vo1.place_of_service_CONCEPT_ID } {@CDM_version == '5'}?{ vo1.visit_CONCEPT_ID }, p1.gender_concept_id order by vo1.visit_start_year - p1.year_of_birth))/(COUNT_BIG(vo1.visit_start_year - p1.year_of_birth) over (partition by c1.cohort_definition_id, {@CDM_version == '4'}?{ vo1.place_of_service_CONCEPT_ID } {@CDM_version == '5'}?{ vo1.visit_CONCEPT_ID }, p1.gender_concept_id)+1) as p1
+
+select vo1.cohort_definition_id,
+	vo1.subject_id,
+  vo1.visit_concept_id stratum_1,
+  p1.gender_concept_id stratum_2,
+  vo1.visit_start_year - p1.year_of_birth as count_value
+INTO #raw_206
   from @CDM_schema.PERSON p1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on p1.person_id = c1.subject_id
-  inner join
-  (select vo0.person_id, 
-  --{@CDM_version == '4'}?{
-  vo0.place_of_service_CONCEPT_ID,
-  --}
-  --{@CDM_version == '5'}?{
-  vo0.visit_CONCEPT_ID,
-  --} 
-  min(year(vo0.visit_start_date)) as visit_start_year
-  from @CDM_schema.visit_occurrence vo0
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on vo0.person_id = c1.subject_id
-  --{@cohort_period_only == 'TRUE'}?{  
-  WHERE vo0.visit_start_date>=c1.cohort_start_date and vo0.visit_end_date<=c1.cohort_end_date
-  --}
-  group by person_id, 
-  --{@CDM_version == '4'}?{
-  vo0.place_of_service_CONCEPT_ID
-  --}
-  --{@CDM_version == '5'}?{
-  vo0.visit_CONCEPT_ID
-  --}place_of_service_concept_id
-  ) vo1
-  on p1.person_id = vo1.person_id
-  ) t1
-  group by cohort_definition_id, 
-  {@CDM_version == '4'}?{ place_of_service_CONCEPT_ID } {@CDM_version == '5'}?{ visit_CONCEPT_ID }, 
-  gender_concept_id
-  ;
+  inner join (
+		select c1.cohort_definition_id, c1.subject_id,
+			{@CDM_version == '4'} ? {vo0.place_of_service_CONCEPT_ID visit_concept_id,} : {{@CDM_version == '5'}?{vo0.visit_CONCEPT_ID visit_concept_id,}} 
+			min(year(vo0.visit_start_date)) as visit_start_year
+		from @CDM_schema.visit_occurrence vo0
+{@cohort_period_only == 'true'} ? {
+		inner join #HERACLES_cohort c1 on vo0.person_id = c1.subject_id
+		WHERE vo0.visit_start_date>=c1.cohort_start_date and vo0.visit_end_date<=c1.cohort_end_date } 
+: {		inner join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1 on vo0.person_id = c1.subject_id}
+ 		group by c1.cohort_definition_id, c1.subject_id, 
+		{@CDM_version == '4'} ? {vo0.place_of_service_CONCEPT_ID} : {{@CDM_version == '5'} ? {vo0.visit_CONCEPT_ID}}
+  ) vo1 on p1.person_id = vo1.subject_id
+;
+
+WITH cteRawData (cohort_definition_id, stratum_1, stratum_2, count_value) as
+(
+	select cohort_definition_id, stratum_1, stratum_2, count_value FROM #raw_206
+), 
+overallStats (cohort_definition_id, stratum_1, stratum_2, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    stratum_1,
+	stratum_2,
+	avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
+  group by cohort_definition_id, stratum_1, stratum_2
+),
+valueStats (cohort_definition_id, stratum_1, stratum_2, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id, stratum_1, stratum_2 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, stratum_2, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, stratum_2, count_value
+	) D
+)
+select o.cohort_definition_id,
+	206 as analysis_id,
+	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
+	CAST(o.stratum_2 as VARCHAR) as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_206
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1 and s.stratum_2 = o.stratum_2
+GROUP BY o.cohort_definition_id, o.stratum_1, o.stratum_2, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_206;
+DROP TABLE #raw_206;
   --}
   
   
@@ -1179,57 +1308,74 @@ from
   --{211 IN (@list_of_analysis_ids)}?{
   -- 211   Distribution of length of stay by visit_concept_id
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  211 as analysis_id,
-  --{@CDM_version == '4'}?{
-  place_of_service_CONCEPT_ID
-  --}
-  --{@CDM_version == '5'}?{
-  visit_CONCEPT_ID
-  --}
-  as stratum_1, '' as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_211
-  from
-  (
-  select c1.cohort_definition_id,
-  --{@CDM_version == '4'}?{
-  vo1.place_of_service_CONCEPT_ID,
-  --}
-  --{@CDM_version == '5'}?{
-  vo1.visit_CONCEPT_ID,
-  --}
-  datediff(dd,visit_start_date,visit_end_date) as count_value,
-  1.0*(row_number() over (partition by c1.cohort_definition_id, {@CDM_version == '4'}?{ vo1.place_of_service_CONCEPT_ID } {@CDM_version == '5'}?{ vo1.visit_CONCEPT_ID } order by datediff(dd,visit_start_date,visit_end_date)))/(COUNT_BIG(datediff(dd,visit_start_date,visit_end_date)) over (partition by c1.cohort_definition_id, {@CDM_version == '4'}?{ vo1.place_of_service_CONCEPT_ID } {@CDM_version == '5'}?{ vo1.visit_CONCEPT_ID })+1) as p1
-  from @CDM_schema.visit_occurrence vo1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on vo1.person_id = c1.subject_id
-  --{@cohort_period_only == 'TRUE'}?{
-  WHERE vo1.visit_start_date>=c1.cohort_start_date and vo1.visit_end_date<=c1.cohort_end_date
-  --}  
-  ) t1
-  group by cohort_definition_id, 
-  --{@CDM_version == '4'}?{
-  place_of_service_CONCEPT_ID
-  --}
-  --{@CDM_version == '5'}?{
-  visit_CONCEPT_ID
-  --}
-  ;
-  --}
-  
-  
-  
-  
+select distinct c1.cohort_definition_id,
+	c1.subject_id,
+  vo1.visit_occurrence_id,
+  {@CDM_version == '4'}?{vo1.place_of_service_CONCEPT_ID visit_concept_id,} : 
+	{{@CDM_version == '5'}?{vo1.visit_CONCEPT_ID visit_concept_id,}}
+  datediff(dd,visit_start_date,visit_end_date) as count_value
+INTO #raw_211
+from @CDM_schema.visit_occurrence vo1
+{@cohort_period_only == 'true'} ? {
+join #HERACLES_cohort c1 on vo1.person_id = c1.subject_id
+WHERE vo1.visit_start_date>=c1.cohort_start_date and vo1.visit_end_date<=c1.cohort_end_date
+} : {
+join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1 on vo1.person_id = c1.subject_id
+};
+
+WITH cteRawData (cohort_definition_id, stratum_1, count_value) as
+(
+	select cohort_definition_id, visit_concept_id, count_value FROM #raw_211
+), 
+overallStats (cohort_definition_id, stratum_1, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    stratum_1,
+		avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
+  group by cohort_definition_id, stratum_1
+),
+valueStats (cohort_definition_id, stratum_1, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id, stratum_1 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, count_value
+	) D
+)
+select o.cohort_definition_id,
+	211 as analysis_id,
+	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
+	'' as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_211
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1
+GROUP BY o.cohort_definition_id, o.stratum_1, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_211;
+DROP TABLE #raw_211;
+
+ --}
   
   --{220 IN (@list_of_analysis_ids)}?{
   -- 220   Number of visit occurrence records by condition occurrence start month
@@ -1244,7 +1390,7 @@ from
   @CDM_schema.visit_occurrence vo1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on vo1.person_id = c1.subject_id
-  --{@cohort_period_only == 'TRUE'}?{  
+  --{@cohort_period_only == 'true'}?{  
   WHERE vo1.visit_start_date>=c1.cohort_start_date and vo1.visit_end_date<=c1.cohort_end_date
   --}  
   group by c1.cohort_definition_id, YEAR(visit_start_date)*100 + month(visit_start_date)
@@ -1275,12 +1421,12 @@ from
   @CDM_schema.condition_occurrence co1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on co1.person_id = c1.subject_id
-  --{@condition_concept_ids != '' | @cohort_period_only == 'TRUE'}?{
+  --{@condition_concept_ids != '' | @cohort_period_only == 'true'}?{
   WHERE
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   co1.condition_start_date>=c1.cohort_start_date and co1.condition_end_date<=c1.cohort_end_date
   --}
-  --{@condition_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+  --{@condition_concept_ids != '' & @cohort_period_only == 'true'}?{
   AND
   --}
   --{@condition_concept_ids != ''}?{
@@ -1306,12 +1452,12 @@ from
   @CDM_schema.condition_occurrence co1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on co1.person_id = c1.subject_id
-  --{@condition_concept_ids != '' | @cohort_period_only == 'TRUE'}?{
+  --{@condition_concept_ids != '' | @cohort_period_only == 'true'}?{
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   co1.condition_start_date>=c1.cohort_start_date and co1.condition_end_date<=c1.cohort_end_date
   --}
-  --{@condition_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+  --{@condition_concept_ids != '' & @cohort_period_only == 'true'}?{
   AND
   --}
   --{@condition_concept_ids != ''}?{
@@ -1339,12 +1485,12 @@ from
   @CDM_schema.condition_occurrence co1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on co1.person_id = c1.subject_id
-  --{@condition_concept_ids != '' | @cohort_period_only == 'TRUE'}?{  
+  --{@condition_concept_ids != '' | @cohort_period_only == 'true'}?{  
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   co1.condition_start_date>=c1.cohort_start_date and co1.condition_end_date<=c1.cohort_end_date
   --}
-  --{@condition_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+  --{@condition_concept_ids != '' & @cohort_period_only == 'true'}?{
   AND
   --}
   --{@condition_concept_ids != ''}?{
@@ -1359,57 +1505,75 @@ from
   
   
   
-  --{403 IN (@list_of_analysis_ids)}?{
+{403 IN (@list_of_analysis_ids)} ? {
   -- 403   Number of distinct condition occurrence concepts per person
-  --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  403 as analysis_id,
-  '' as stratum_1, '' as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_403
-  from
-  (
+  --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value,
+
+select c1.cohort_definition_id, c1.subject_id, COUNT_BIG(distinct co1.condition_concept_id) as count_value
+INTO #raw_403
+from @CDM_schema.condition_occurrence co1
+{@cohort_period_only == 'true'} ?
+{join #HERACLES_cohort c1} : {join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1} on co1.person_id = c1.subject_id
+WHERE 1=1 
+{@cohort_period_only == 'true'} ? {	AND co1.condition_start_date>=c1.cohort_start_date and co1.condition_end_date<=c1.cohort_end_date }
+{@condition_concept_ids != ''} ? { AND co1.condition_concept_id in (@condition_concept_ids)}  
+group by c1.cohort_definition_id, c1.subject_id;
+
+
+WITH cteRawData (cohort_definition_id, count_value) as
+(
+	select cohort_definition_id, count_value FROM #raw_403
+), 
+overallStats (cohort_definition_id, avg_value, stdev_value, min_value, max_value, total) as
+(
   select cohort_definition_id, 
-  num_conditions as count_value,
-  1.0*(row_number() over (partition by cohort_definition_id order by num_conditions))/(COUNT_BIG(num_conditions) over (partition by cohort_definition_id)+1) as p1
-  from
-  (
-  select c1.cohort_definition_id, co1.person_id, COUNT_BIG(distinct co1.condition_concept_id) as num_conditions
-  from
-  @CDM_schema.condition_occurrence co1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on co1.person_id = c1.subject_id
-  --{@condition_concept_ids != '' | @cohort_period_only == 'TRUE'}?{  
-  WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
-  co1.condition_start_date>=c1.cohort_start_date and co1.condition_end_date<=c1.cohort_end_date
-  --}
-  --{@condition_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
-  AND
-  --}
-  --{@condition_concept_ids != ''}?{
-  co1.condition_concept_id in (@condition_concept_ids)
-  --}  
-  --}
-  group by c1.cohort_definition_id, co1.person_id
-  ) t0
-  ) t1
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
   group by cohort_definition_id
-  ;
-  --}
+),
+valueStats (cohort_definition_id, count_value, total, accumulated) as
+(
+	select cohort_definition_id, 
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, count_value
+	) D
+)
+select o.cohort_definition_id,
+	403 as analysis_id,
+	'' as stratum_1, 
+	'' as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_403
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id
+GROUP BY o.cohort_definition_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_403;
+DROP TABLE #raw_403;
+
+}
   
   
-  
-  --{404 IN (@list_of_analysis_ids)}?{
+{404 IN (@list_of_analysis_ids)}?{
   -- 404   Number of persons with at least one condition occurrence, by condition_concept_id by calendar year by gender by age decile
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, count_value)
   select c1.cohort_definition_id,
@@ -1426,12 +1590,12 @@ from
   inner join
   @CDM_schema.condition_occurrence co1
   on p1.person_id = co1.person_id
-  --{@condition_concept_ids != '' | @cohort_period_only == 'TRUE'}?{ 
+  --{@condition_concept_ids != '' | @cohort_period_only == 'true'}?{ 
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   co1.condition_start_date>=c1.cohort_start_date and co1.condition_end_date<=c1.cohort_end_date
   --}
-  --{@condition_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+  --{@condition_concept_ids != '' & @cohort_period_only == 'true'}?{
   AND
   --}
   --{@condition_concept_ids != ''}?{
@@ -1460,12 +1624,12 @@ from
   @CDM_schema.condition_occurrence co1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on co1.person_id = c1.subject_id
-  --{@condition_concept_ids != '' | @cohort_period_only == 'TRUE'}?{  
+  --{@condition_concept_ids != '' | @cohort_period_only == 'true'}?{  
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   co1.condition_start_date>=c1.cohort_start_date and co1.condition_end_date<=c1.cohort_end_date
   --}
-  --{@condition_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+  --{@condition_concept_ids != '' & @cohort_period_only == 'true'}?{
   AND
   --}
   --{@condition_concept_ids != ''}?{
@@ -1476,65 +1640,85 @@ from
   co1.condition_CONCEPT_ID,       
   co1.condition_type_concept_id
   ;
-  --}
+ }
   
-  
-  
-  --{406 IN (@list_of_analysis_ids)}?{
+{406 IN (@list_of_analysis_ids)}?{
   -- 406   Distribution of age by condition_concept_id
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  406 as analysis_id,
-  condition_concept_id as stratum_1,
-  gender_concept_id as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_406
-  from
-  (
-  select c1.cohort_definition_id,
+
+select co1.cohort_definition_id,
+	co1.subject_id,
   co1.condition_concept_id,
   p1.gender_concept_id,
-  co1.condition_start_year - p1.year_of_birth as count_value,
-  1.0*(row_number() over (partition by c1.cohort_definition_id, co1.condition_concept_id, p1.gender_concept_id order by co1.condition_start_year - p1.year_of_birth))/(COUNT_BIG(co1.condition_start_year - p1.year_of_birth) over (partition by c1.cohort_definition_id, co1.condition_concept_id, p1.gender_concept_id)+1) as p1
-  from @CDM_schema.PERSON p1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on p1.person_id = c1.subject_id
-  inner join
-  (select person_id, condition_concept_id, min(year(condition_start_date)) as condition_start_year
+  co1.condition_start_year - p1.year_of_birth as count_value
+INTO #raw_406
+from @CDM_schema.PERSON p1
+join (
+	select c1.cohort_definition_id, c1.subject_id, co0.condition_concept_id, min(year(condition_start_date)) as condition_start_year
   from @CDM_schema.condition_occurrence co0
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on co0.person_id = c1.subject_id
-  --{@condition_concept_ids != '' | @cohort_period_only == 'TRUE'}?{
-  WHERE 
-  --{@condition_concept_ids != ''}?{
-  condition_concept_id in (@condition_concept_ids)
-  --}
-  --{@condition_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
-  AND
-  --}
-  --{@cohort_period_only == 'TRUE'}?{
-  co0.condition_start_date>=c1.cohort_start_date and co0.condition_end_date<=c1.cohort_end_date
-  --}
-  --}
-  group by person_id, condition_concept_id
-  ) co1
-  on p1.person_id = co1.person_id
-  ) t1
-  group by cohort_definition_id, condition_concept_id, gender_concept_id
-  ;
-  --}
-  
-  
-  
+	{@cohort_period_only == 'true'} ?
+{join #HERACLES_cohort c1} : {join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1} on co0.person_id = c1.subject_id
+	where 1=1 
+		{@cohort_period_only == 'true'} ? {AND co0.condition_start_date>=c1.cohort_start_date and co0.condition_end_date<=c1.cohort_end_date }
+		{@condition_concept_ids != ''} ? {AND co0.condition_concept_id in (@condition_concept_ids)}  
+	group by c1.cohort_definition_id, c1.subject_id, co0.condition_concept_id
+) co1 on co1.subject_id = p1.person_id
+;
+
+WITH cteRawData (cohort_definition_id, stratum_1, stratum_2, count_value) as
+(
+	select cohort_definition_id, condition_concept_id, gender_concept_id, count_value FROM #raw_406
+), 
+overallStats (cohort_definition_id, stratum_1, stratum_2, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    stratum_1,
+		stratum_2,
+		avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
+  group by cohort_definition_id, stratum_1, stratum_2
+),
+valueStats (cohort_definition_id, stratum_1, stratum_2, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id, stratum_1, stratum_2 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, stratum_2, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, stratum_2, count_value
+	) D
+)
+select o.cohort_definition_id,
+	406 as analysis_id,
+	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
+	CAST(o.stratum_2 as VARCHAR) as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_406
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1 and s.stratum_2 = o.stratum_2
+GROUP BY o.cohort_definition_id, o.stratum_1, o.stratum_2, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_406;
+DROP TABLE #raw_406;
+}
   
   
   --{409 IN (@list_of_analysis_ids)}?{
@@ -1650,12 +1834,12 @@ from
   @CDM_schema.condition_occurrence co1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on co1.person_id = c1.subject_id
-  --{@condition_concept_ids != '' | @cohort_period_only == 'TRUE'}?{  
+  --{@condition_concept_ids != '' | @cohort_period_only == 'true'}?{  
   WHERE
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   co1.condition_start_date>=c1.cohort_start_date and co1.condition_end_date<=c1.cohort_end_date
   --}
-  --{@condition_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+  --{@condition_concept_ids != '' & @cohort_period_only == 'true'}?{
   AND
   --}
   --{@condition_concept_ids != ''}?{
@@ -1690,7 +1874,7 @@ from
   @CDM_schema.death d1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on d1.person_id = c1.subject_id
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   WHERE d1.death_date>=c1.cohort_start_date and d1.death_date<=c1.cohort_end_date
   --}
   group by c1.cohort_definition_id,
@@ -1712,7 +1896,7 @@ from
   @CDM_schema.death d1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on d1.person_id = c1.subject_id
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   WHERE d1.death_date>=c1.cohort_start_date and d1.death_date<=c1.cohort_end_date
   --}
   group by c1.cohort_definition_id, 
@@ -1735,7 +1919,7 @@ from
   @CDM_schema.death d1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on d1.person_id = c1.subject_id
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   WHERE d1.death_date>=c1.cohort_start_date and d1.death_date<=c1.cohort_end_date
   --}
   group by c1.cohort_definition_id,
@@ -1762,7 +1946,7 @@ from
   on p1.person_id = d1.person_id
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on d1.person_id = c1.subject_id
-  --{@cohort_period_only == 'TRUE'}?{  
+  --{@cohort_period_only == 'true'}?{  
   WHERE d1.death_date>=c1.cohort_start_date and d1.death_date<=c1.cohort_end_date
   --}
   group by c1.cohort_definition_id,
@@ -1785,7 +1969,7 @@ from
   @CDM_schema.death d1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on d1.person_id = c1.subject_id
-  --{@cohort_period_only == 'TRUE'}?{  
+  --{@cohort_period_only == 'true'}?{  
   WHERE d1.death_date>=c1.cohort_start_date and d1.death_date<=c1.cohort_end_date
   --}  
   group by c1.cohort_definition_id,
@@ -1795,47 +1979,78 @@ from
   
   
   
-  --{506 IN (@list_of_analysis_ids)}?{
-  -- 506   Distribution of age by condition_concept_id
+{506 IN (@list_of_analysis_ids)}?{
+  -- 506   Distribution of age at death by gender
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  506 as analysis_id,
-  gender_concept_id as stratum_1, '' as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_506
-  from
-  (
-  select c1.cohort_definition_id,
+
+select d1.cohort_definition_id,
   p1.gender_concept_id,
-  d1.death_year - p1.year_of_birth as count_value,
-  1.0*(row_number() over (partition by c1.cohort_definition_id, p1.gender_concept_id order by d1.death_year - p1.year_of_birth))/(COUNT_BIG(d1.death_year - p1.year_of_birth) over (partition by c1.cohort_definition_id, p1.gender_concept_id)+1) as p1
-  from @CDM_schema.PERSON p1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on p1.person_id = c1.subject_id
-  inner join
-  (select person_id, min(year(death_date)) as death_year
-  from @CDM_schema.death d0
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on d0.person_id = c1.subject_id
-  --{@cohort_period_only == 'TRUE'}?{  
-  WHERE d0.death_date>=c1.cohort_start_date and d0.death_date<=c1.cohort_end_date
-  --}
-  group by person_id
-  ) d1
-  on p1.person_id = d1.person_id
-  ) t1
-  group by cohort_definition_id, gender_concept_id
-  ;
-  --}
+  d1.death_year - p1.year_of_birth as count_value
+INTO #raw_506
+from @CDM_schema.PERSON p1
+join (
+	select c1.cohort_definition_id, c1.subject_id, min(year(d0.death_date)) death_year
+	from @CDM_schema.death d0
+	{@cohort_period_only == 'true'}?{join #HERACLES_cohort c1} : {join (select distinct subject_id, cohort_definition_id from #HERACLES_cohort) c1}
+		on d0.person_id = c1.subject_id
+	{@cohort_period_only == 'true'}?{WHERE d0.death_date>=c1.cohort_start_date and d0.death_date<=c1.cohort_end_date}
+  group by c1.cohort_definition_id, c1.subject_id
+) d1 on p1.person_id = d1.subject_id
+;
+
+WITH cteRawData (cohort_definition_id, stratum_1, count_value) as
+(
+	select cohort_definition_id, gender_concept_id, count_value FROM #raw_506
+), 
+overallStats (cohort_definition_id, stratum_1, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    stratum_1,
+		avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
+  group by cohort_definition_id, stratum_1
+),
+valueStats (cohort_definition_id, stratum_1, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id, stratum_1 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, count_value
+	) D
+)
+select o.cohort_definition_id,
+	506 as analysis_id,
+	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
+	'' as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_506
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1
+GROUP BY o.cohort_definition_id, o.stratum_1, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_506;
+DROP TABLE #raw_506;
+
+}
   
   
   
@@ -1881,220 +2096,372 @@ from
   --}
   
   
-  --{511 IN (@list_of_analysis_ids)}?{
+{511 IN (@list_of_analysis_ids)}?{
   -- 511   Distribution of time from death to last condition
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  511 as analysis_id,
-  '' as stratum_1, '' as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_511
-  from
-  (
-  select c1.cohort_definition_id,
-  datediff(dd,d1.death_date, t0.max_date) as count_value,
-  1.0*(row_number() over (partition by c1.cohort_definition_id order by datediff(dd,d1.death_date, t0.max_date)))/(COUNT_BIG(datediff(dd,d1.death_date, t0.max_date)) over (partition by c1.cohort_definition_id)+1) as p1
-  from @CDM_schema.death d1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on d1.person_id = c1.subject_id
-  inner join
-  (
-  select person_id, max(condition_start_date) as max_date
-  from @CDM_schema.condition_occurrence co1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on co1.person_id = c1.subject_id
-  group by person_id
-  ) t0
-  on d1.person_id = t0.person_id
-  --{@cohort_period_only == 'TRUE'}?{  
-  WHERE d1.death_date>=c1.cohort_start_date and d1.death_date<=c1.cohort_end_date
-  --}
-  ) t1
+
+select c1.cohort_definition_id,
+	c1.subject_id,
+	datediff(dd,d1.death_date, t0.max_date) as count_value
+INTO #raw_511
+from @CDM_schema.death d1
+{@cohort_period_only == 'true'}?{join #HERACLES_cohort c1} : {join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1 }
+	on d1.person_id = c1.subject_id
+join
+(
+	select c1.cohort_definition_id, c1.subject_id, max(condition_start_date) as max_date
+	from @CDM_schema.condition_occurrence co1
+	join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1 on co1.person_id = c1.subject_id
+	group by c1.cohort_definition_id, c1.subject_id
+) t0
+on d1.person_id = t0.subject_id and c1.cohort_definition_id = t0.cohort_definition_id
+{@cohort_period_only == 'true'}?{WHERE d1.death_date>=c1.cohort_start_date and d1.death_date<=c1.cohort_end_date}
+;
+
+WITH cteRawData (cohort_definition_id, count_value) as
+(
+	select cohort_definition_id, count_value FROM #raw_511
+), 
+overallStats (cohort_definition_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
   group by cohort_definition_id
-  ;
-  --}
+),
+valueStats (cohort_definition_id, count_value, total, accumulated) as
+(
+	select cohort_definition_id, 
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, count_value
+	) D
+)
+select o.cohort_definition_id,
+	511 as analysis_id,
+	'' as stratum_1, 
+	'' as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_511
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id
+GROUP BY o.cohort_definition_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_511;
+DROP TABLE #raw_511;
+
+}
   
-  
-  --{512 IN (@list_of_analysis_ids)}?{
+{512 IN (@list_of_analysis_ids)}?{
   -- 512   Distribution of time from death to last drug
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  512 as analysis_id,
-  '' as stratum_1, '' as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_512
-  from
-  (
-  select c1.cohort_definition_id,
-  datediff(dd,d1.death_date, t0.max_date) as count_value,
-  1.0*(row_number() over (order by c1.cohort_definition_id, datediff(dd,d1.death_date, t0.max_date)))/(COUNT_BIG(datediff(dd,d1.death_date, t0.max_date)) over (partition by c1.cohort_definition_id)+1) as p1
-  from @CDM_schema.death d1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on d1.person_id = c1.subject_id
-  inner join
-  (
-  select person_id, max(drug_exposure_start_date) as max_date
+
+select c1.cohort_definition_id,
+	c1.subject_id,
+	datediff(dd,d1.death_date, t0.max_date) as count_value
+INTO #raw_512
+from @CDM_schema.death d1
+{@cohort_period_only == 'true'}?{join #HERACLES_cohort c1} : {join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1 }
+	on d1.person_id = c1.subject_id
+join
+(
+  select c1.cohort_definition_id, c1.subject_id, max(drug_exposure_start_date) as max_date
   from @CDM_schema.drug_exposure de1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on de1.person_id = c1.subject_id
-  group by person_id
-  ) t0
-  on d1.person_id = t0.person_id
-  --{@cohort_period_only == 'TRUE'}?{  
-  WHERE d1.death_date>=c1.cohort_start_date and d1.death_date<=c1.cohort_end_date
-  --}
-  ) t1
+  join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1 on de1.person_id = c1.subject_id
+  group by c1.cohort_definition_id, c1.subject_id
+) t0 on d1.person_id = t0.subject_id and c1.cohort_definition_id = t0.cohort_definition_id
+{@cohort_period_only == 'true'}?{WHERE d1.death_date>=c1.cohort_start_date and d1.death_date<=c1.cohort_end_date}
+;
+
+WITH cteRawData (cohort_definition_id, count_value) as
+(
+	select cohort_definition_id, count_value FROM #raw_512
+), 
+overallStats (cohort_definition_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
   group by cohort_definition_id
-  ;
-  --}
+),
+valueStats (cohort_definition_id, count_value, total, accumulated) as
+(
+	select cohort_definition_id, 
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, count_value
+	) D
+)
+select o.cohort_definition_id,
+	512 as analysis_id,
+	'' as stratum_1, 
+	'' as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_512
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id
+GROUP BY o.cohort_definition_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_512;
+DROP TABLE #raw_512;
+}
   
-  
-  --{513 IN (@list_of_analysis_ids)}?{
+{513 IN (@list_of_analysis_ids)}?{
   -- 513   Distribution of time from death to last visit
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  513 as analysis_id,
-  '' as stratum_1, '' as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_513
-  from
-  (
-  select c1.cohort_definition_id,
-  datediff(dd,d1.death_date, t0.max_date) as count_value,
-  1.0*(row_number() over (partition by cohort_definition_id order by datediff(dd,d1.death_date, t0.max_date)))/(COUNT_BIG(datediff(dd,d1.death_date, t0.max_date)) over (partition by cohort_definition_id)+1) as p1
-  from @CDM_schema.death d1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on d1.person_id = c1.subject_id
-  inner join
-  (
-  select person_id, max(visit_start_date) as max_date
+
+select c1.cohort_definition_id,
+	c1.subject_id,
+	datediff(dd,d1.death_date, t0.max_date) as count_value
+INTO #raw_513
+from @CDM_schema.death d1
+{@cohort_period_only == 'true'}?{join #HERACLES_cohort c1} : {join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1 }
+	on d1.person_id = c1.subject_id
+join
+(
+  select c1.cohort_definition_id, c1.subject_id, max(visit_start_date) as max_date
   from @CDM_schema.visit_occurrence vo1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on vo1.person_id = c1.subject_id
-  group by person_id
-  ) t0
-  on d1.person_id = t0.person_id
-  --{@cohort_period_only == 'TRUE'}?{  
-  WHERE d1.death_date>=c1.cohort_start_date and d1.death_date<=c1.cohort_end_date
-  --}
-  ) t1
+  join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1 on vo1.person_id = c1.subject_id
+  group by c1.cohort_definition_id, c1.subject_id
+) t0 on d1.person_id = t0.subject_id and c1.cohort_definition_id = t0.cohort_definition_id
+{@cohort_period_only == 'true'}?{WHERE d1.death_date>=c1.cohort_start_date and d1.death_date<=c1.cohort_end_date}
+;
+
+WITH cteRawData (cohort_definition_id, count_value) as
+(
+	select cohort_definition_id, count_value FROM #raw_513
+), 
+overallStats (cohort_definition_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
   group by cohort_definition_id
-  ;
-  --}
+),
+valueStats (cohort_definition_id, count_value, total, accumulated) as
+(
+	select cohort_definition_id, 
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, count_value
+	) D
+)
+select o.cohort_definition_id,
+	513 as analysis_id,
+	'' as stratum_1, 
+	'' as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_513
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id
+GROUP BY o.cohort_definition_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_513;
+DROP TABLE #raw_513;
+
+}
   
-  
-  --{514 IN (@list_of_analysis_ids)}?{
+ 
+{514 IN (@list_of_analysis_ids)}?{
   -- 514   Distribution of time from death to last procedure
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  514 as analysis_id,
-  '' as stratum_1, '' as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_514
-  from
-  (
-  select c1.cohort_definition_id,
-  datediff(dd,d1.death_date, t0.max_date) as count_value,
-  1.0*(row_number() over (partition by c1.cohort_definition_id order by datediff(dd,d1.death_date, t0.max_date)))/(COUNT_BIG(datediff(dd,d1.death_date, t0.max_date)) over (partition by cohort_definition_id)+1) as p1
-  from @CDM_schema.death d1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on d1.person_id = c1.subject_id
-  inner join
-  (
-  select person_id, max(procedure_date) as max_date
+
+select c1.cohort_definition_id,
+	c1.subject_id,
+	datediff(dd,d1.death_date, t0.max_date) as count_value
+INTO #raw_514
+from @CDM_schema.death d1
+{@cohort_period_only == 'true'}?{join #HERACLES_cohort c1} : {join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1 }
+	on d1.person_id = c1.subject_id
+join
+(
+  select c1.cohort_definition_id, c1.subject_id, max(procedure_date) as max_date
   from @CDM_schema.procedure_occurrence po1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on po1.person_id = c1.subject_id
-  group by person_id
-  ) t0
-  on d1.person_id = t0.person_id
-  --{@cohort_period_only == 'TRUE'}?{  
-  WHERE d1.death_date>=c1.cohort_start_date and d1.death_date<=c1.cohort_end_date
-  --}
-  ) t1
+  join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1 on po1.person_id = c1.subject_id
+  group by c1.cohort_definition_id, c1.subject_id
+) t0 on d1.person_id = t0.subject_id and c1.cohort_definition_id = t0.cohort_definition_id
+{@cohort_period_only == 'true'}?{WHERE d1.death_date>=c1.cohort_start_date and d1.death_date<=c1.cohort_end_date}
+;
+
+WITH cteRawData (cohort_definition_id, count_value) as
+(
+	select cohort_definition_id, count_value FROM #raw_514
+), 
+overallStats (cohort_definition_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
   group by cohort_definition_id
-  ;
-  --}
+),
+valueStats (cohort_definition_id, count_value, total, accumulated) as
+(
+	select cohort_definition_id, 
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, count_value
+	) D
+)
+select o.cohort_definition_id,
+	514 as analysis_id,
+	'' as stratum_1, 
+	'' as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_514
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id
+GROUP BY o.cohort_definition_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_514;
+DROP TABLE #raw_514;
+
+}
   
   
-  --{515 IN (@list_of_analysis_ids)}?{
+{515 IN (@list_of_analysis_ids)}?{
   -- 515   Distribution of time from death to last observation
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  515 as analysis_id,
-  '' as stratum_1, '' as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_515
-  from
-  (
-  select c1.cohort_definition_id,
-  datediff(dd,d1.death_date, t0.max_date) as count_value,
-  1.0*(row_number() over (partition by cohort_definition_id order by datediff(dd,d1.death_date, t0.max_date)))/(COUNT_BIG(datediff(dd,d1.death_date, t0.max_date)) over (partition by cohort_definition_id)+1) as p1
-  from @CDM_schema.death d1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on d1.person_id = c1.subject_id
-  inner join
-  (
-  select person_id, max(observation_date) as max_date
+
+select c1.cohort_definition_id,
+	c1.subject_id,
+	datediff(dd,d1.death_date, t0.max_date) as count_value
+INTO #raw_515
+from @CDM_schema.death d1
+{@cohort_period_only == 'true'}?{join #HERACLES_cohort c1} : {join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1 }
+	on d1.person_id = c1.subject_id
+join
+(
+  select c1.cohort_definition_id, c1.subject_id, max(observation_date) as max_date
   from @CDM_schema.observation o1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on o1.person_id = c1.subject_id
-  group by person_id
-  ) t0
-  on d1.person_id = t0.person_id
-  --{@cohort_period_only == 'TRUE'}?{  
-  WHERE d1.death_date>=c1.cohort_start_date and d1.death_date<=c1.cohort_end_date
-  --}
-  ) t1
+  join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1 on o1.person_id = c1.subject_id
+  group by c1.cohort_definition_id, c1.subject_id
+) t0 on d1.person_id = t0.subject_id and c1.cohort_definition_id = t0.cohort_definition_id
+{@cohort_period_only == 'true'}?{WHERE d1.death_date>=c1.cohort_start_date and d1.death_date<=c1.cohort_end_date}
+;
+
+WITH cteRawData (cohort_definition_id, count_value) as
+(
+	select cohort_definition_id, count_value FROM #raw_515
+), 
+overallStats (cohort_definition_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
   group by cohort_definition_id
-  ;
-  --}
-  
+),
+valueStats (cohort_definition_id, count_value, total, accumulated) as
+(
+	select cohort_definition_id, 
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, count_value
+	) D
+)
+select o.cohort_definition_id,
+	515 as analysis_id,
+	'' as stratum_1, 
+	'' as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_515
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id
+GROUP BY o.cohort_definition_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_515;
+DROP TABLE #raw_515;
+
+}
   
   
   --/********************************************
@@ -2118,12 +2485,12 @@ from
   @CDM_schema.procedure_occurrence po1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on po1.person_id = c1.subject_id
-  --{@procedure_concept_ids != '' | @cohort_period_only == 'TRUE'}?{
+  --{@procedure_concept_ids != '' | @cohort_period_only == 'true'}?{
   WHERE
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   po1.procedure_date>=c1.cohort_start_date and po1.procedure_date<=c1.cohort_end_date
   --}
-  --{@procedure_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+  --{@procedure_concept_ids != '' & @cohort_period_only == 'true'}?{
   AND
   --}
   --{@procedure_concept_ids != ''}?{
@@ -2149,12 +2516,12 @@ from
   @CDM_schema.procedure_occurrence po1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on po1.person_id = c1.subject_id
-  --{@procedure_concept_ids != '' | @cohort_period_only == 'TRUE'}?{
+  --{@procedure_concept_ids != '' | @cohort_period_only == 'true'}?{
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   po1.procedure_date>=c1.cohort_start_date and po1.procedure_date<=c1.cohort_end_date
   --}
-  --{@procedure_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+  --{@procedure_concept_ids != '' & @cohort_period_only == 'true'}?{
   AND
   --}
   --{@procedure_concept_ids != ''}?{
@@ -2182,12 +2549,12 @@ from
   @CDM_schema.procedure_occurrence po1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on po1.person_id = c1.subject_id
-  --{@procedure_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+  --{@procedure_concept_ids != '' | @cohort_period_only == 'true'}?{    
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   po1.procedure_date>=c1.cohort_start_date and po1.procedure_date<=c1.cohort_end_date
   --}
-  --{@procedure_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+  --{@procedure_concept_ids != '' & @cohort_period_only == 'true'}?{
   AND
   --}
   --{@procedure_concept_ids != ''}?{
@@ -2202,57 +2569,73 @@ from
   
   
   
-  --{603 IN (@list_of_analysis_ids)}?{
+{603 IN (@list_of_analysis_ids)}?{
   -- 603   Number of distinct procedure occurrence concepts per person
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  603 as analysis_id,
-  '' as stratum_1, '' as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_603
-  from
-  (
-  select cohort_definition_id,
-  num_procedures as count_value,
-  1.0*(row_number() over (partition by cohort_definition_id order by num_procedures))/(COUNT_BIG(num_procedures) over (partition by cohort_definition_id)+1) as p1
-  from
-  (
-  select c1.cohort_definition_id, po1.person_id, COUNT_BIG(distinct po1.procedure_concept_id) as num_procedures
-  from
-  @CDM_schema.procedure_occurrence po1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on po1.person_id = c1.subject_id
-  --{@procedure_concept_ids != '' | @cohort_period_only == 'TRUE'}?{     
-  WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
-  po1.procedure_date>=c1.cohort_start_date and po1.procedure_date<=c1.cohort_end_date
-  --}
-  --{@procedure_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
-  AND
-  --}
-  --{@procedure_concept_ids != ''}?{
-  po1.procedure_concept_id in (@procedure_concept_ids)
-  --}
-  --}
-  group by c1.cohort_definition_id, po1.person_id
-  ) t0
-  ) t1
+
+select c1.cohort_definition_id, c1.subject_id, COUNT_BIG(distinct po1.procedure_concept_id) as count_value
+INTO #raw_603
+from @CDM_schema.procedure_occurrence po1
+{@cohort_period_only == 'true'} ?
+{join #HERACLES_cohort c1} : {join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1} on po1.person_id = c1.subject_id
+where 1=1 
+{@cohort_period_only == 'true'} ? {	AND po1.procedure_date>=c1.cohort_start_date and po1.procedure_date<=c1.cohort_end_date }
+{@procedure_concept_ids != ''} ? { AND po1.procedure_concept_id in (@procedure_concept_ids)}  
+group by c1.cohort_definition_id, c1.subject_id;
+
+WITH cteRawData (cohort_definition_id, count_value) as
+(
+	select cohort_definition_id, count_value FROM #raw_603
+), 
+overallStats (cohort_definition_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
   group by cohort_definition_id
-  ;
-  --}
+),
+valueStats (cohort_definition_id, count_value, total, accumulated) as
+(
+	select cohort_definition_id, 
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, count_value
+	) D
+)
+select o.cohort_definition_id,
+	603 as analysis_id,
+	'' as stratum_1, 
+	'' as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_603
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id
+GROUP BY o.cohort_definition_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_603;
+DROP TABLE #raw_603;
+}
   
   
-  
-  --{604 IN (@list_of_analysis_ids)}?{
+{604 IN (@list_of_analysis_ids)}?{
   -- 604   Number of persons with at least one procedure occurrence, by procedure_concept_id by calendar year by gender by age decile
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, count_value)
   select c1.cohort_definition_id,
@@ -2269,12 +2652,12 @@ from
   inner join
   @CDM_schema.procedure_occurrence po1
   on p1.person_id = po1.person_id
-  --{@procedure_concept_ids != '' | @cohort_period_only == 'TRUE'}?{
+  --{@procedure_concept_ids != '' | @cohort_period_only == 'true'}?{
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   po1.procedure_date>=c1.cohort_start_date and po1.procedure_date<=c1.cohort_end_date
   --}
-  --{@procedure_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+  --{@procedure_concept_ids != '' & @cohort_period_only == 'true'}?{
   AND
   --}
   --{@procedure_concept_ids != ''}?{
@@ -2287,9 +2670,9 @@ from
   p1.gender_concept_id,
   floor((year(procedure_date) - p1.year_of_birth)/10)
   ;
-  --}
+  }
   
-  --{605 IN (@list_of_analysis_ids)}?{
+{605 IN (@list_of_analysis_ids)}?{
   -- 605   Number of procedure occurrence records, by procedure_concept_id by procedure_type_concept_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
   select c1.cohort_definition_id,
@@ -2303,12 +2686,12 @@ from
   @CDM_schema.procedure_occurrence po1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on po1.person_id = c1.subject_id
-  --{@procedure_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+  --{@procedure_concept_ids != '' | @cohort_period_only == 'true'}?{    
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   po1.procedure_date>=c1.cohort_start_date and po1.procedure_date<=c1.cohort_end_date
   --}
-  --{@procedure_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+  --{@procedure_concept_ids != '' & @cohort_period_only == 'true'}?{
   AND
   --}
   --{@procedure_concept_ids != ''}?{
@@ -2319,70 +2702,88 @@ from
   po1.procedure_CONCEPT_ID,     
   po1.procedure_type_concept_id
   ;
-  --}
+}
   
   
-  
-  --{606 IN (@list_of_analysis_ids)}?{
+{606 IN (@list_of_analysis_ids)}?{
   -- 606   Distribution of age by procedure_concept_id
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  606 as analysis_id,
-  procedure_concept_id as stratum_1,
-  gender_concept_id as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_606
-  from
-  (
-  select c1.cohort_definition_id,
+
+select po1.cohort_definition_id,
+	po1.subject_id,
   po1.procedure_concept_id,
   p1.gender_concept_id,
-  po1.procedure_start_year - p1.year_of_birth as count_value,
-  1.0*(row_number() over (partition by c1.cohort_definition_id, po1.procedure_concept_id, p1.gender_concept_id order by po1.procedure_start_year - p1.year_of_birth))/(COUNT_BIG(po1.procedure_start_year - p1.year_of_birth) over (partition by c1.cohort_definition_id, po1.procedure_concept_id, p1.gender_concept_id)+1) as p1
-  from @CDM_schema.PERSON p1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on p1.person_id = c1.subject_id
-  inner join
-  (select person_id, procedure_concept_id, min(year(procedure_date)) as procedure_start_year
+  po1.procedure_start_year - p1.year_of_birth as count_value
+INTO #raw_606
+from @CDM_schema.PERSON p1
+join (
+	select c1.cohort_definition_id, c1.subject_id, po0.procedure_concept_id, min(year(po0.procedure_date)) as procedure_start_year
   from @CDM_schema.procedure_occurrence po0
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on po0.person_id = c1.subject_id
-  --{@procedure_concept_ids != '' | @cohort_period_only == 'TRUE'}?{ 
-  WHERE 
-  --{@procedure_concept_ids != ''}?{
-  po0.procedure_concept_id in (@procedure_concept_ids)
-  --}
-  --{@procedure_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
-  AND
-  --}
-  --{@cohort_period_only == 'TRUE'}?{
-  po0.procedure_date>=c1.cohort_start_date and po0.procedure_date<=c1.cohort_end_date
-  --}
-  --}
-  group by person_id, procedure_concept_id
-  ) po1
-  on p1.person_id = po1.person_id
-  ) t1
-  group by cohort_definition_id, procedure_concept_id, gender_concept_id
-  ;
-  --}
+	{@cohort_period_only == 'true'} ?
+{	join #HERACLES_cohort c1} : {	join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1} on po0.person_id = c1.subject_id
+	where 1=1 
+		{@cohort_period_only == 'true'} ? {AND po0.procedure_date>=c1.cohort_start_date and po0.procedure_date<=c1.cohort_end_date }
+		{@procedure_concept_ids != ''} ? {AND po0.procedure_concept_id in (@procedure_concept_ids)}  
+	group by c1.cohort_definition_id, c1.subject_id, po0.procedure_concept_id
+) po1 on po1.subject_id = p1.person_id
+;
+
+WITH cteRawData (cohort_definition_id, stratum_1, stratum_2, count_value) as
+(
+	select cohort_definition_id, procedure_concept_id, gender_concept_id, count_value FROM #raw_606
+), 
+overallStats (cohort_definition_id, stratum_1, stratum_2, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    stratum_1,
+		stratum_2,
+		avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
+  group by cohort_definition_id, stratum_1, stratum_2
+),
+valueStats (cohort_definition_id, stratum_1, stratum_2, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id, stratum_1, stratum_2 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, stratum_2, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, stratum_2, count_value
+	) D
+)
+select o.cohort_definition_id,
+	606 as analysis_id,
+	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
+	CAST(o.stratum_2 as VARCHAR) as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_606
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1 and s.stratum_2 = o.stratum_2
+GROUP BY o.cohort_definition_id, o.stratum_1, o.stratum_2, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_606;
+DROP TABLE #raw_606;
+}
   
-  
-  
-  
-  
-  
-  
-  --{609 IN (@list_of_analysis_ids)}?{
+{609 IN (@list_of_analysis_ids)}?{
   -- 609   Number of procedure occurrence records with invalid person_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
@@ -2399,10 +2800,10 @@ from
   where p1.person_id is null
   group by c1.cohort_definition_id
   ;
-  --}
+}
   
   
-  --{610 IN (@list_of_analysis_ids)}?{
+{610 IN (@list_of_analysis_ids)}?{
   -- 610   Number of procedure occurrence records outside valid observation period
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
@@ -2421,11 +2822,9 @@ from
   where op1.person_id is null
   group by c1.cohort_definition_id
   ;
-  --}
+}
   
-  
-  
-  --{612 IN (@list_of_analysis_ids)}?{
+{612 IN (@list_of_analysis_ids)}?{
   -- 612   Number of procedure occurrence records with invalid provider_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
@@ -2443,9 +2842,9 @@ from
   and p1.provider_id is null
   group by c1.cohort_definition_id
   ;
-  --}
+}
   
-  --{613 IN (@list_of_analysis_ids)}?{
+{613 IN (@list_of_analysis_ids)}?{
   -- 613   Number of procedure occurrence records with invalid visit_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
@@ -2463,10 +2862,10 @@ from
   and vo1.visit_occurrence_id is null
   group by c1.cohort_definition_id
   ;
-  --}
+}
   
   
-  --{620 IN (@list_of_analysis_ids)}?{
+{620 IN (@list_of_analysis_ids)}?{
   -- 620   Number of procedure occurrence records by condition occurrence start month
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
   select c1.cohort_definition_id, 
@@ -2479,12 +2878,12 @@ from
   @CDM_schema.procedure_occurrence po1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on po1.person_id = c1.subject_id
-  --{@procedure_concept_ids != '' | @cohort_period_only == 'TRUE'}?{
+  --{@procedure_concept_ids != '' | @cohort_period_only == 'true'}?{
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   po1.procedure_date>=c1.cohort_start_date and po1.procedure_date<=c1.cohort_end_date
   --}
-  --{@procedure_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+  --{@procedure_concept_ids != '' & @cohort_period_only == 'true'}?{
   AND
   --}
   --{@procedure_concept_ids != ''}?{
@@ -2494,7 +2893,7 @@ from
   group by c1.cohort_definition_id,
   YEAR(procedure_date)*100 + month(procedure_date)
   ;
-  --}
+}
   
   
   --/********************************************
@@ -2506,7 +2905,7 @@ from
   
   
   
-  --{700 IN (@list_of_analysis_ids)}?{
+{700 IN (@list_of_analysis_ids)}?{
   -- 700                Number of persons with at least one drug occurrence, by drug_concept_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
   select c1.cohort_definition_id, 
@@ -2519,12 +2918,12 @@ from
   @CDM_schema.drug_exposure de1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on de1.person_id = c1.subject_id
-  --{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{
+  --{@drug_concept_ids != '' | @cohort_period_only == 'true'}?{
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   de1.drug_exposure_start_date>=c1.cohort_start_date and de1.drug_exposure_start_date<=c1.cohort_end_date
   --}
-  --{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+  --{@drug_concept_ids != '' & @cohort_period_only == 'true'}?{
   AND
   --}
   --{@drug_concept_ids != ''}?{
@@ -2534,10 +2933,9 @@ from
   group by c1.cohort_definition_id,
   de1.drug_CONCEPT_ID
   ;
-  --}
+}
   
-  
-  --{701 IN (@list_of_analysis_ids)}?{
+{701 IN (@list_of_analysis_ids)}?{
   -- 701   Number of drug occurrence records, by drug_concept_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
   select c1.cohort_definition_id, 
@@ -2550,12 +2948,12 @@ from
   @CDM_schema.drug_exposure de1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on de1.person_id = c1.subject_id
-  --{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{
+  --{@drug_concept_ids != '' | @cohort_period_only == 'true'}?{
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   de1.drug_exposure_start_date>=c1.cohort_start_date and de1.drug_exposure_start_date<=c1.cohort_end_date
   --}
-  --{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+  --{@drug_concept_ids != '' & @cohort_period_only == 'true'}?{
   AND
   --}
   --{@drug_concept_ids != ''}?{
@@ -2565,11 +2963,11 @@ from
   group by c1.cohort_definition_id,
   de1.drug_CONCEPT_ID
   ;
-  --}
+}
   
   
   
-  --{702 IN (@list_of_analysis_ids)}?{
+{702 IN (@list_of_analysis_ids)}?{
   -- 702   Number of persons by drug occurrence start month, by drug_concept_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
   select c1.cohort_definition_id,
@@ -2583,12 +2981,12 @@ from
   @CDM_schema.drug_exposure de1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on de1.person_id = c1.subject_id
-  --{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+  --{@drug_concept_ids != '' | @cohort_period_only == 'true'}?{    
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   de1.drug_exposure_start_date>=c1.cohort_start_date and de1.drug_exposure_start_date<=c1.cohort_end_date
   --}
-  --{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+  --{@drug_concept_ids != '' & @cohort_period_only == 'true'}?{
   AND
   --}
   --{@drug_concept_ids != ''}?{
@@ -2599,61 +2997,75 @@ from
   de1.drug_concept_id, 
   YEAR(drug_exposure_start_date)*100 + month(drug_exposure_start_date)
   ;
-  --}
+}
   
   
-  
-  --{703 IN (@list_of_analysis_ids)}?{
+{703 IN (@list_of_analysis_ids)}?{
   -- 703   Number of distinct drug exposure concepts per person
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  703 as analysis_id,
-  '' as stratum_1, '' as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_703
-  from
-  (
-  select cohort_definition_id, num_drugs as count_value,
-  1.0*(row_number() over (partition by cohort_definition_id order by num_drugs))/(COUNT_BIG(num_drugs) over (partition by cohort_definition_id)+1) as p1
-  from
-  (
-  select c1.cohort_definition_id, de1.person_id, COUNT_BIG(distinct de1.drug_concept_id) as num_drugs
-  from
-  @CDM_schema.drug_exposure de1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on de1.person_id = c1.subject_id
-  --{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
-  WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
-  de1.drug_exposure_start_date>=c1.cohort_start_date and de1.drug_exposure_start_date<=c1.cohort_end_date
-  --}
-  --{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
-  AND
-  --}
-  --{@drug_concept_ids != ''}?{
-  de1.drug_concept_id in (@drug_concept_ids)
-  --} 
-  --}
-  group by c1.cohort_definition_id, de1.person_id
-  ) t0
-  ) t1
-  
+
+select c1.cohort_definition_id, c1.subject_id, COUNT_BIG(distinct de1.drug_concept_id) as count_value
+INTO #raw_703
+FROM @CDM_schema.drug_exposure de1
+{@cohort_period_only == 'true'} ?
+{join #HERACLES_cohort c1} : {join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1} on de1.person_id = c1.subject_id
+where 1=1 
+{@cohort_period_only == 'true'} ? {	AND de1.drug_exposure_start_date>=c1.cohort_start_date and de1.drug_exposure_start_date<=c1.cohort_end_date }
+{@drug_concept_ids != ''} ? { AND de1.drug_concept_id in (@drug_concept_ids)}  
+group by c1.cohort_definition_id, c1.subject_id;
+
+WITH cteRawData (cohort_definition_id, count_value) as
+(
+	select cohort_definition_id, count_value FROM #raw_703
+), 
+overallStats (cohort_definition_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
   group by cohort_definition_id
-  ;
-  --}
+),
+valueStats (cohort_definition_id, count_value, total, accumulated) as
+(
+	select cohort_definition_id, 
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, count_value
+	) D
+)
+select o.cohort_definition_id,
+	703 as analysis_id,
+	'' as stratum_1, 
+	'' as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_703
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id
+GROUP BY o.cohort_definition_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_703;
+DROP TABLE #raw_703;
+}
   
-  
-  
-  --{704 IN (@list_of_analysis_ids)}?{
+{704 IN (@list_of_analysis_ids)}?{
   -- 704   Number of persons with at least one drug occurrence, by drug_concept_id by calendar year by gender by age decile
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, count_value)
   select c1.cohort_definition_id,
@@ -2670,12 +3082,12 @@ from
   inner join
   @CDM_schema.drug_exposure de1
   on p1.person_id = de1.person_id
-  --{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{ 
+  --{@drug_concept_ids != '' | @cohort_period_only == 'true'}?{ 
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   de1.drug_exposure_start_date>=c1.cohort_start_date and de1.drug_exposure_start_date<=c1.cohort_end_date
   --}
-  --{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+  --{@drug_concept_ids != '' & @cohort_period_only == 'true'}?{
   AND
   --}
   --{@drug_concept_ids != ''}?{
@@ -2688,9 +3100,9 @@ from
   p1.gender_concept_id,
   floor((year(drug_exposure_start_date) - p1.year_of_birth)/10)
   ;
-  --}
+  }
   
-  --{705 IN (@list_of_analysis_ids)}?{
+  {705 IN (@list_of_analysis_ids)}?{
   -- 705   Number of drug occurrence records, by drug_concept_id by drug_type_concept_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
   select c1.cohort_definition_id,
@@ -2704,12 +3116,12 @@ from
   @CDM_schema.drug_exposure de1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on de1.person_id = c1.subject_id
-  --{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+  --{@drug_concept_ids != '' | @cohort_period_only == 'true'}?{    
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   de1.drug_exposure_start_date>=c1.cohort_start_date and de1.drug_exposure_start_date<=c1.cohort_end_date
   --}
-  --{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+  --{@drug_concept_ids != '' & @cohort_period_only == 'true'}?{
   AND
   --}
   --{@drug_concept_ids != ''}?{
@@ -2720,67 +3132,90 @@ from
   de1.drug_CONCEPT_ID, 
   de1.drug_type_concept_id
   ;
-  --}
+  }
   
   
   
-  --{706 IN (@list_of_analysis_ids)}?{
+{706 IN (@list_of_analysis_ids)}?{
   -- 706   Distribution of age by drug_concept_id
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  706 as analysis_id,
-  drug_concept_id as stratum_1,
-  gender_concept_id as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_706
-  from
-  (
-  select c1.cohort_definition_id,
+
+select de1.cohort_definition_id,
+	de1.subject_id,
   de1.drug_concept_id,
   p1.gender_concept_id,
-  de1.drug_start_year - p1.year_of_birth as count_value,
-  1.0*(row_number() over (partition by c1.cohort_definition_id, de1.drug_concept_id, p1.gender_concept_id order by de1.drug_start_year - p1.year_of_birth))/(COUNT_BIG(de1.drug_start_year - p1.year_of_birth) over (partition by c1.cohort_definition_id, de1.drug_concept_id, p1.gender_concept_id)+1) as p1
-  from @CDM_schema.PERSON p1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on p1.person_id = c1.subject_id
-  inner join
-  (select person_id, drug_concept_id, min(year(drug_exposure_start_date)) as drug_start_year
+  de1.drug_start_year - p1.year_of_birth as count_value
+INTO #raw_706
+from @CDM_schema.PERSON p1
+join (
+	select c1.cohort_definition_id, c1.subject_id, de0.drug_concept_id, min(year(de0.drug_exposure_start_date)) as drug_start_year
   from @CDM_schema.drug_exposure de0
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on de0.person_id = c1.subject_id
-  --{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{     
-  WHERE
-  --{@drug_concept_ids != ''}?{
-  de0.drug_concept_id in (@drug_concept_ids)
-  --}
-  --{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
-  AND
-  --}
-  --{@cohort_period_only == 'TRUE'}?{
-  de0.drug_exposure_start_date>=c1.cohort_start_date and de0.drug_exposure_start_date<=c1.cohort_end_date
-  --}
-  --}
-  group by person_id, drug_concept_id
-  ) de1
-  on p1.person_id = de1.person_id
-  ) t1
-  group by cohort_definition_id, drug_concept_id, gender_concept_id
-  ;
-  --}
+	{@cohort_period_only == 'true'} ?
+{join #HERACLES_cohort c1} : {join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1} on de0.person_id = c1.subject_id
+	where 1=1 
+		{@cohort_period_only == 'true'} ? {AND de0.drug_exposure_start_date>=c1.cohort_start_date and de0.drug_exposure_start_date<=c1.cohort_end_date }
+		{@drug_concept_ids != ''} ? {AND de0.drug_concept_id in (@drug_concept_ids)}  
+	group by c1.cohort_definition_id, c1.subject_id, de0.drug_concept_id
+) de1 on de1.subject_id = p1.person_id
+;
+
+WITH cteRawData (cohort_definition_id, stratum_1, stratum_2, count_value) as
+(
+	select cohort_definition_id, drug_concept_id, gender_concept_id, count_value FROM #raw_706
+), 
+overallStats (cohort_definition_id, stratum_1, stratum_2, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    stratum_1,
+		stratum_2,
+		avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
+  group by cohort_definition_id, stratum_1, stratum_2
+),
+valueStats (cohort_definition_id, stratum_1, stratum_2, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id, stratum_1, stratum_2 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, stratum_2, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, stratum_2, count_value
+	) D
+)
+select o.cohort_definition_id,
+	706 as analysis_id,
+	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
+	CAST(o.stratum_2 as VARCHAR) as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_706
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1 and s.stratum_2 = o.stratum_2
+GROUP BY o.cohort_definition_id, o.stratum_1, o.stratum_2, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_706;
+DROP TABLE #raw_706;
+}
   
   
-  
-  
-  --{709 IN (@list_of_analysis_ids)}?{
+{709 IN (@list_of_analysis_ids)}?{
   -- 709   Number of drug exposure records with invalid person_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
@@ -2797,10 +3232,10 @@ from
   where p1.person_id is null
   group by c1.cohort_definition_id
   ;
-  --}
+}
   
   
-  --{710 IN (@list_of_analysis_ids)}?{
+{710 IN (@list_of_analysis_ids)}?{
   -- 710   Number of drug exposure records outside valid observation period
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
@@ -2819,10 +3254,10 @@ from
   where op1.person_id is null
   group by c1.cohort_definition_id
   ;
-  --}
+}
   
   
-  --{711 IN (@list_of_analysis_ids)}?{
+{711 IN (@list_of_analysis_ids)}?{
   -- 711   Number of drug exposure records with end date < start date
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
@@ -2837,10 +3272,10 @@ from
   where de1.drug_exposure_end_date < de1.drug_exposure_start_date
   group by c1.cohort_definition_id
   ;
-  --}
+}
   
   
-  --{712 IN (@list_of_analysis_ids)}?{
+{712 IN (@list_of_analysis_ids)}?{
   -- 712   Number of drug exposure records with invalid provider_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
@@ -2858,9 +3293,9 @@ from
   and p1.provider_id is null
   group by c1.cohort_definition_id
   ;
-  --}
+}
   
-  --{713 IN (@list_of_analysis_ids)}?{
+{713 IN (@list_of_analysis_ids)}?{
   -- 713   Number of drug exposure records with invalid visit_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
@@ -2878,147 +3313,220 @@ from
   and vo1.visit_occurrence_id is null
   group by cohort_definition_id
   ;
-  --}
+}
   
-  
-  
-  --{715 IN (@list_of_analysis_ids)}?{
+{715 IN (@list_of_analysis_ids)}?{
   -- 715   Distribution of days_supply by drug_concept_id
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  715 as analysis_id,
-  drug_concept_id as stratum_1, '' as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_715
-  from
-  (
-  select c1.cohort_definition_id, drug_concept_id,
-  days_supply as count_value,
-  1.0*(row_number() over (partition by c1.cohort_definition_id, drug_concept_id order by days_supply))/(COUNT_BIG(days_supply) over (partition by c1.cohort_definition_id, drug_concept_id)+1) as p1
-  from @CDM_schema.drug_exposure de1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on de1.person_id = c1.subject_id
-  --{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{     
-  WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
-  de1.drug_exposure_start_date>=c1.cohort_start_date and de1.drug_exposure_start_date<=c1.cohort_end_date
-  --}
-  --{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
-  AND
-  --}
-  --{@drug_concept_ids != ''}?{
-  de1.drug_concept_id in (@drug_concept_ids)
-  --} 
-  --}
-  ) t1
-  group by cohort_definition_id, drug_concept_id
-  ;
-  --}
+
+select c1.cohort_definition_id, c1.subject_id, de1.drug_concept_id, de1.days_supply as count_value
+INTO #raw_715
+FROM @CDM_schema.drug_exposure de1
+{@cohort_period_only == 'true'} ?
+{join #HERACLES_cohort c1} : {join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1} on de1.person_id = c1.subject_id
+where 1=1 
+{@cohort_period_only == 'true'} ? {	AND de1.drug_exposure_start_date>=c1.cohort_start_date and de1.drug_exposure_start_date<=c1.cohort_end_date }
+{@drug_concept_ids != ''} ? { AND de1.drug_concept_id in (@drug_concept_ids)}  
+;
+
+
+WITH cteRawData (cohort_definition_id, stratum_1, count_value) as
+(
+	select cohort_definition_id, drug_concept_id, count_value FROM #raw_715
+), 
+overallStats (cohort_definition_id, stratum_1, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    stratum_1,
+		avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
+  group by cohort_definition_id, stratum_1
+),
+valueStats (cohort_definition_id, stratum_1, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id, stratum_1 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, count_value
+	) D
+)
+select o.cohort_definition_id,
+	715 as analysis_id,
+	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
+	'' as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_715
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1
+GROUP BY o.cohort_definition_id, o.stratum_1, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_715;
+DROP TABLE #raw_715;
+
+}
   
   
   
-  --{716 IN (@list_of_analysis_ids)}?{
+{716 IN (@list_of_analysis_ids)}?{
   -- 716   Distribution of refills by drug_concept_id
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+
+select c1.cohort_definition_id, c1.subject_id, de1.drug_concept_id, de1.refills as count_value
+INTO #raw_716
+FROM @CDM_schema.drug_exposure de1
+{@cohort_period_only == 'true'} ?
+{join #HERACLES_cohort c1} : {join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1} on de1.person_id = c1.subject_id
+where 1=1 
+{@cohort_period_only == 'true'} ? {	AND de1.drug_exposure_start_date>=c1.cohort_start_date and de1.drug_exposure_start_date<=c1.cohort_end_date }
+{@drug_concept_ids != ''} ? { AND de1.drug_concept_id in (@drug_concept_ids)}  
+;
+
+
+WITH cteRawData (cohort_definition_id, stratum_1, count_value) as
+(
+	select cohort_definition_id, drug_concept_id, count_value FROM #raw_716
+), 
+overallStats (cohort_definition_id, stratum_1, avg_value, stdev_value, min_value, max_value, total) as
+(
   select cohort_definition_id, 
-  716 as analysis_id,
-  drug_concept_id as stratum_1, '' as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_716
-  from
-  (
-  select c1.cohort_definition_id,
-  drug_concept_id,
-  refills as count_value,
-  1.0*(row_number() over (partition by c1.cohort_definition_id, drug_concept_id order by refills))/(COUNT_BIG(refills) over (partition by c1.cohort_definition_id, drug_concept_id)+1) as p1
-  from @CDM_schema.drug_exposure de1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on de1.person_id = c1.subject_id
-  --{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{     
-  WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
-  de1.drug_exposure_start_date>=c1.cohort_start_date and de1.drug_exposure_start_date<=c1.cohort_end_date
-  --}
-  --{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
-  AND
-  --}
-  --{@drug_concept_ids != ''}?{
-  de1.drug_concept_id in (@drug_concept_ids)
-  --} 
-  --} 
-  ) t1
-  group by cohort_definition_id, 
-  drug_concept_id
-  ;
-  --}
+    stratum_1,
+		avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
+  group by cohort_definition_id, stratum_1
+),
+valueStats (cohort_definition_id, stratum_1, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id, stratum_1 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, count_value
+	) D
+)
+select o.cohort_definition_id,
+	716 as analysis_id,
+	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
+	'' as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_716
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1
+GROUP BY o.cohort_definition_id, o.stratum_1, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_716;
+DROP TABLE #raw_716;
+
+}
   
   
-  
-  
-  
-  --{717 IN (@list_of_analysis_ids)}?{
+{717 IN (@list_of_analysis_ids)}?{
   -- 717   Distribution of quantity by drug_concept_id
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  717 as analysis_id,
-  drug_concept_id as stratum_1, '' as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_717
-  from
-  (
-  select c1.cohort_definition_id, 
-  drug_concept_id,
-  quantity as count_value,
-  1.0*(row_number() over (partition by c1.cohort_definition_id, drug_concept_id order by quantity))/(COUNT_BIG(quantity) over (partition by cohort_definition_id, drug_concept_id)+1) as p1
-  from @CDM_schema.drug_exposure de1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on de1.person_id = c1.subject_id
-  --{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
-  WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
-  de1.drug_exposure_start_date>=c1.cohort_start_date and de1.drug_exposure_start_date<=c1.cohort_end_date
-  --}
-  --{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
-  AND
-  --}
-  --{@drug_concept_ids != ''}?{
-  de1.drug_concept_id in (@drug_concept_ids)
-  --} 
-  --}
-  ) t1
-  group by cohort_definition_id, drug_concept_id
-  ;
-  --}
+
+select c1.cohort_definition_id, c1.subject_id, de1.drug_concept_id, de1.quantity as count_value
+INTO #raw_717
+FROM @CDM_schema.drug_exposure de1
+{@cohort_period_only == 'true'} ?
+{join #HERACLES_cohort c1} : {join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1} on de1.person_id = c1.subject_id
+where 1=1 
+{@cohort_period_only == 'true'} ? {	AND de1.drug_exposure_start_date>=c1.cohort_start_date and de1.drug_exposure_start_date<=c1.cohort_end_date }
+{@drug_concept_ids != ''} ? { AND de1.drug_concept_id in (@drug_concept_ids)}  
+;
+
+
+WITH cteRawData (cohort_definition_id, stratum_1, count_value) as
+(
+	select cohort_definition_id, drug_concept_id, count_value FROM #raw_717
+), 
+overallStats (cohort_definition_id, stratum_1, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    stratum_1,
+		avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
+  group by cohort_definition_id, stratum_1
+),
+valueStats (cohort_definition_id, stratum_1, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id, stratum_1 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, count_value
+	) D
+)
+select o.cohort_definition_id,
+	717 as analysis_id,
+	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
+	'' as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_717
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1
+GROUP BY o.cohort_definition_id, o.stratum_1, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_717;
+DROP TABLE #raw_717;
+
+}
   
   
-  --{720 IN (@list_of_analysis_ids)}?{
+{720 IN (@list_of_analysis_ids)}?{
   -- 720   Number of drug exposure records by drug start month
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
   select c1.cohort_definition_id, 
@@ -3031,12 +3539,12 @@ from
   @CDM_schema.drug_exposure de1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on de1.person_id = c1.subject_id
-  --{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+  --{@drug_concept_ids != '' | @cohort_period_only == 'true'}?{    
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   de1.drug_exposure_start_date>=c1.cohort_start_date and de1.drug_exposure_start_date<=c1.cohort_end_date
   --}
-  --{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+  --{@drug_concept_ids != '' & @cohort_period_only == 'true'}?{
   AND
   --}
   --{@drug_concept_ids != ''}?{
@@ -3046,7 +3554,7 @@ from
   group by c1.cohort_definition_id,
   YEAR(drug_exposure_start_date)*100 + month(drug_exposure_start_date)
   ;
-  --}
+}
   
   --/********************************************
   
@@ -3069,12 +3577,12 @@ from
   @CDM_schema.observation o1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on o1.person_id = c1.subject_id
-  --{@observation_concept_ids != '' | @cohort_period_only == 'TRUE'}?{
+  --{@observation_concept_ids != '' | @cohort_period_only == 'true'}?{
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   o1.observation_date>=c1.cohort_start_date and o1.observation_date<=c1.cohort_end_date
   --}
-  --{@observation_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+  --{@observation_concept_ids != '' & @cohort_period_only == 'true'}?{
   AND
   --}
   --{@observation_concept_ids != ''}?{
@@ -3100,12 +3608,12 @@ from
   @CDM_schema.observation o1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on o1.person_id = c1.subject_id
-  --{@observation_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+  --{@observation_concept_ids != '' | @cohort_period_only == 'true'}?{    
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   o1.observation_date>=c1.cohort_start_date and o1.observation_date<=c1.cohort_end_date
   --}
-  --{@observation_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+  --{@observation_concept_ids != '' & @cohort_period_only == 'true'}?{
   AND
   --}
   --{@observation_concept_ids != ''}?{
@@ -3133,12 +3641,12 @@ from
   @CDM_schema.observation o1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on o1.person_id = c1.subject_id
-  --{@observation_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+  --{@observation_concept_ids != '' | @cohort_period_only == 'true'}?{    
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   o1.observation_date>=c1.cohort_start_date and o1.observation_date<=c1.cohort_end_date
   --}
-  --{@observation_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+  --{@observation_concept_ids != '' & @cohort_period_only == 'true'}?{
   AND
   --}
   --{@observation_concept_ids != ''}?{
@@ -3153,57 +3661,73 @@ from
   
   
   
-  --{803 IN (@list_of_analysis_ids)}?{
+{803 IN (@list_of_analysis_ids)}?{
   -- 803   Number of distinct observation occurrence concepts per person
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  803 as analysis_id,
-  '' as stratum_1, '' as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_803
-  from
-  (
-  select cohort_definition_id,
-  num_observations as count_value,
-  1.0*(row_number() over (partition by cohort_definition_id order by num_observations))/(COUNT_BIG(num_observations) over (partition by cohort_definition_id)+1) as p1
-  from
-  (
-  select c1.cohort_definition_id, o1.person_id, COUNT_BIG(distinct o1.observation_concept_id) as num_observations
-  from
-  @CDM_schema.observation o1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on o1.person_id = c1.subject_id
-  --{@observation_concept_ids != '' | @cohort_period_only == 'TRUE'}?{     
-  WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
-  o1.observation_date>=c1.cohort_start_date and o1.observation_date<=c1.cohort_end_date
-  --}
-  --{@observation_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
-  AND
-  --}
-  --{@observation_concept_ids != ''}?{
-  o1.observation_concept_id in (@observation_concept_ids)
-  --} 
-  --} 
-  group by c1.cohort_definition_id, o1.person_id
-  ) t0
-  ) t1
+
+select c1.cohort_definition_id, c1.subject_id, COUNT_BIG(distinct o1.observation_concept_id) as count_value
+INTO #raw_803
+from @CDM_schema.observation o1
+{@cohort_period_only == 'true'} ?
+{join #HERACLES_cohort c1} : {join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1} on o1.person_id = c1.subject_id
+WHERE 1=1 
+{@cohort_period_only == 'true'} ? {	AND o1.observation_date>=c1.cohort_start_date and o1.observation_date<=c1.cohort_end_date }
+{@observation_concept_ids != ''} ? { AND o1.observation_concept_id in (@observation_concept_ids)}
+group by c1.cohort_definition_id, c1.subject_id;
+
+WITH cteRawData (cohort_definition_id, count_value) as
+(
+	select cohort_definition_id, count_value FROM #raw_803
+), 
+overallStats (cohort_definition_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
   group by cohort_definition_id
-  ;
-  --}
+),
+valueStats (cohort_definition_id, count_value, total, accumulated) as
+(
+	select cohort_definition_id, 
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, count_value
+	) D
+)
+select o.cohort_definition_id,
+	803 as analysis_id,
+	'' as stratum_1, 
+	'' as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_803
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id
+GROUP BY o.cohort_definition_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_803;
+DROP TABLE #raw_803;
+
+}
   
-  
-  
-  --{804 IN (@list_of_analysis_ids)}?{
+{804 IN (@list_of_analysis_ids)}?{
   -- 804   Number of persons with at least one observation occurrence, by observation_concept_id by calendar year by gender by age decile
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, count_value)
   select c1.cohort_definition_id,
@@ -3220,12 +3744,12 @@ from
   inner join
   @CDM_schema.observation o1
   on p1.person_id = o1.person_id
-  --{@observation_concept_ids != '' | @cohort_period_only == 'TRUE'}?{ 
+  --{@observation_concept_ids != '' | @cohort_period_only == 'true'}?{ 
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   o1.observation_date>=c1.cohort_start_date and o1.observation_date<=c1.cohort_end_date
   --}
-  --{@observation_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+  --{@observation_concept_ids != '' & @cohort_period_only == 'true'}?{
   AND
   --}
   --{@observation_concept_ids != ''}?{
@@ -3238,9 +3762,9 @@ from
   p1.gender_concept_id,
   floor((year(observation_date) - p1.year_of_birth)/10)
   ;
-  --}
+}
   
-  --{805 IN (@list_of_analysis_ids)}?{
+{805 IN (@list_of_analysis_ids)}?{
   -- 805   Number of observation occurrence records, by observation_concept_id by observation_type_concept_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
   select c1.cohort_definition_id,
@@ -3254,12 +3778,12 @@ from
   @CDM_schema.observation o1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on o1.person_id = c1.subject_id
-  --{@observation_concept_ids != '' | @cohort_period_only == 'TRUE'}?{     
+  --{@observation_concept_ids != '' | @cohort_period_only == 'true'}?{     
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   o1.observation_date>=c1.cohort_start_date and o1.observation_date<=c1.cohort_end_date
   --}
-  --{@observation_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+  --{@observation_concept_ids != '' & @cohort_period_only == 'true'}?{
   AND
   --}
   --{@observation_concept_ids != ''}?{
@@ -3270,64 +3794,88 @@ from
   o1.observation_CONCEPT_ID,    
   o1.observation_type_concept_id
   ;
-  --}
+}
   
-  
-  
-  --{806 IN (@list_of_analysis_ids)}?{
+{806 IN (@list_of_analysis_ids)}?{
   -- 806   Distribution of age by observation_concept_id
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  806 as analysis_id,
-  observation_concept_id as stratum_1,
-  gender_concept_id as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_806
-  from
-  (
-  select c1.cohort_definition_id,
-  o1.observation_concept_id,
+
+select o2.cohort_definition_id,
+	o2.subject_id,
+  o2.observation_concept_id,
   p1.gender_concept_id,
-  o1.observation_start_year - p1.year_of_birth as count_value,
-  1.0*(row_number() over (partition by c1.cohort_definition_id, o1.observation_concept_id, p1.gender_concept_id order by o1.observation_start_year - p1.year_of_birth))/(COUNT_BIG(o1.observation_start_year - p1.year_of_birth) over (partition by c1.cohort_definition_id, o1.observation_concept_id, p1.gender_concept_id)+1) as p1
-  from @CDM_schema.PERSON p1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on p1.person_id = c1.subject_id
-  inner join
-  (select person_id, observation_concept_id, min(year(observation_date)) as observation_start_year
+  o2.observation_start_year - p1.year_of_birth as count_value
+INTO #raw_806
+from @CDM_schema.PERSON p1
+join (
+	select c1.cohort_definition_id, c1.subject_id, o1.observation_concept_id, min(year(o1.observation_date)) as observation_start_year
   from @CDM_schema.observation o1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on o1.person_id = c1.subject_id
-  --{@observation_concept_ids != '' | @cohort_period_only == 'TRUE'}?{ 
-  WHERE
-  --{@observation_concept_ids != ''}?{
-  o1.observation_concept_id in (@observation_concept_ids)
-  --}
-  --{@observation_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
-  AND
-  --}
-  --{@cohort_period_only == 'TRUE'}?{
-  o1.observation_date>=c1.cohort_start_date and o1.observation_date<=c1.cohort_end_date
-  --}
-  --}
-  group by person_id, observation_concept_id
-  ) o1
-  on p1.person_id = o1.person_id
-  ) t1
-  group by cohort_definition_id, observation_concept_id, gender_concept_id
-  ;
-  --}
+	{@cohort_period_only == 'true'} ?
+{join #HERACLES_cohort c1} : {join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1} on o1.person_id = c1.subject_id
+	where 1=1 
+		{@cohort_period_only == 'true'} ? {AND o1.observation_date>=c1.cohort_start_date and o1.observation_date<=c1.cohort_end_date }
+		{@observation_concept_ids != ''} ? {AND o1.observation_concept_id in (@observation_concept_ids)}  
+	group by c1.cohort_definition_id, c1.subject_id, o1.observation_concept_id
+) o2 on o2.subject_id = p1.person_id
+;
+
+WITH cteRawData (cohort_definition_id, stratum_1, stratum_2, count_value) as
+(
+	select cohort_definition_id, observation_concept_id, gender_concept_id, count_value FROM #raw_806
+), 
+overallStats (cohort_definition_id, stratum_1, stratum_2, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    stratum_1,
+		stratum_2,
+		avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
+  group by cohort_definition_id, stratum_1, stratum_2
+),
+valueStats (cohort_definition_id, stratum_1, stratum_2, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id, stratum_1, stratum_2 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, stratum_2, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, stratum_2, count_value
+	) D
+)
+select o.cohort_definition_id,
+	806 as analysis_id,
+	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
+	CAST(o.stratum_2 as VARCHAR) as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_806
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1 and s.stratum_2 = o.stratum_2
+GROUP BY o.cohort_definition_id, o.stratum_1, o.stratum_2, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_806;
+DROP TABLE #raw_806;
+
+}
   
-  --{807 IN (@list_of_analysis_ids)}?{
+{807 IN (@list_of_analysis_ids)}?{
   -- 807   Number of observation occurrence records, by observation_concept_id and unit_concept_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
   select c1.cohort_definition_id,
@@ -3341,12 +3889,12 @@ from
   @CDM_schema.observation o1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on o1.person_id = c1.subject_id
-  --{@observation_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+  --{@observation_concept_ids != '' | @cohort_period_only == 'true'}?{    
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   o1.observation_date>=c1.cohort_start_date and o1.observation_date<=c1.cohort_end_date
   --}
-  --{@observation_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+  --{@observation_concept_ids != '' & @cohort_period_only == 'true'}?{
   AND
   --}
   --{@observation_concept_ids != ''}?{
@@ -3357,13 +3905,9 @@ from
   o1.observation_CONCEPT_ID,
   o1.unit_concept_id
   ;
-  --}
+}
   
-  
-  
-  
-  
-  --{809 IN (@list_of_analysis_ids)}?{
+{809 IN (@list_of_analysis_ids)}?{
   -- 809   Number of observation records with invalid person_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
@@ -3380,10 +3924,9 @@ from
   where p1.person_id is null
   group by c1.cohort_definition_id
   ;
-  --}
+}
   
-  
-  --{810 IN (@list_of_analysis_ids)}?{
+{810 IN (@list_of_analysis_ids)}?{
   -- 810   Number of observation records outside valid observation period
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
@@ -3402,11 +3945,9 @@ from
   where op1.person_id is null
   group by c1.cohort_definition_id
   ;
-  --}
+}
   
-  
-  
-  --{812 IN (@list_of_analysis_ids)}?{
+{812 IN (@list_of_analysis_ids)}?{
   -- 812   Number of observation records with invalid provider_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
@@ -3424,9 +3965,9 @@ from
   and p1.provider_id is null
   group by c1.cohort_definition_id
   ;
-  --}
+}
   
-  --{813 IN (@list_of_analysis_ids)}?{
+{813 IN (@list_of_analysis_ids)}?{
   -- 813   Number of observation records with invalid visit_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
@@ -3444,10 +3985,9 @@ from
   and vo1.visit_occurrence_id is null
   group by c1.cohort_definition_id
   ;
-  --}
+}
   
-  
-  --{814 IN (@list_of_analysis_ids)}?{
+{814 IN (@list_of_analysis_ids)}?{
   -- 814   Number of observation records with no value (numeric, string, or concept)
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
@@ -3464,180 +4004,87 @@ from
   and o1.value_as_concept_id is null
   group by c1.cohort_definition_id
   ;
-  --}
+}
   
   
-  --{815 IN (@list_of_analysis_ids)}?{
+{815 IN (@list_of_analysis_ids)}?{
   -- 815   Distribution of numeric values, by observation_concept_id and unit_concept_id
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  815 as analysis_id,
-  observation_concept_id as stratum_1,
-  unit_concept_id as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_815
-  from
-  (
-  select cohort_definition_id,
-  observation_concept_id, unit_concept_id,
-  value_as_number as count_value,
-  1.0*(row_number() over (partition by cohort_definition_id, observation_concept_id, unit_concept_id order by value_as_number))/(COUNT_BIG(value_as_number) over (partition by cohort_definition_id, observation_concept_id, unit_concept_id)+1) as p1
-  from @CDM_schema.observation o1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on o1.person_id = c1.subject_id
-  where o1.unit_concept_id is not null
-  and o1.value_as_number is not null
-  --{@observation_concept_ids != ''}?{
-  and o1.observation_concept_id in (@observation_concept_ids)
-  --}
-  --{@cohort_period_only == 'TRUE'}?{
-  AND o1.observation_date>=c1.cohort_start_date and o1.observation_date<=c1.cohort_end_date
-  --}
-  ) t1
-  group by cohort_definition_id, observation_concept_id, unit_concept_id
-  ;
-  --}
+
+select cohort_definition_id,
+	subject_id,
+  observation_concept_id, 
+	unit_concept_id,
+  value_as_number as count_value
+INTO #raw_815
+from @CDM_schema.observation o1 
+{@cohort_period_only == 'true'} ? {join #HERACLES_cohort c1} : {join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1} 
+	on o1.person_id = c1.subject_id
+where value_as_number is not null and unit_concept_id is not null
+	{@cohort_period_only == 'true'} ? {AND o1.observation_date>=c1.cohort_start_date and o1.observation_date<=c1.cohort_end_date }
+	{@observation_concept_ids != ''} ? {AND o1.observation_concept_id in (@observation_concept_ids)}
+;
+
+WITH cteRawData (cohort_definition_id, stratum_1, stratum_2, count_value) as
+(
+	select cohort_definition_id, observation_concept_id, unit_concept_id, count_value FROM #raw_815
+), 
+overallStats (cohort_definition_id, stratum_1, stratum_2, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    stratum_1,
+	stratum_2,
+	avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
+  group by cohort_definition_id, stratum_1, stratum_2
+),
+valueStats (cohort_definition_id, stratum_1, stratum_2, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id, stratum_1, stratum_2 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, stratum_2, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, stratum_2, count_value
+	) D
+)
+select o.cohort_definition_id,
+	815 as analysis_id,
+	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
+	CAST(o.stratum_2 as VARCHAR) as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_815
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1 and s.stratum_2 = o.stratum_2
+GROUP BY o.cohort_definition_id, o.stratum_1, o.stratum_2, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_815;
+DROP TABLE #raw_815;
+
+}
   
-  
-  --{@CDM_version == '4'}?{  
-  --{816 IN (@list_of_analysis_ids)}?{
-  -- 816                Distribution of low range, by observation_concept_id and unit_concept_id
-  --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  816 as analysis_id,
-  observation_concept_id as stratum_1,
-  unit_concept_id as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_816
-  from
-  (
-  select cohort_definition_id, observation_concept_id, unit_concept_id,
-  range_low as count_value,
-  1.0*(row_number() over (partition by cohort_definition_id, observation_concept_id, unit_concept_id order by range_low))/(COUNT_BIG(range_low) over (partition by cohort_definition_id, observation_concept_id, unit_concept_id)+1) as p1
-  from @CDM_schema.observation o1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on o1.person_id = c1.subject_id
-  where o1.unit_concept_id is not null
-  and o1.value_as_number is not null
-  and o1.range_low is not null
-  and o1.range_high is not null
-  --{@observation_concept_ids != ''}?{
-  and o1.observation_concept_id in (@observation_concept_ids)
-  --}
-  --{@cohort_period_only == 'TRUE'}?{
-  AND o1.observation_date>=c1.cohort_start_date and o1.observation_date<=c1.cohort_end_date
-  --}
-  ) t1
-  group by cohort_definition_id, observation_concept_id, unit_concept_id
-  ;
-  --}
-  
-  
-  --{817 IN (@list_of_analysis_ids)}?{
-  -- 817                Distribution of high range, by observation_concept_id and unit_concept_id
-  --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  817 as analysis_id,
-  observation_concept_id as stratum_1,
-  unit_concept_id as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_817
-  from
-  (
-  select cohort_definition_id, observation_concept_id, unit_concept_id,
-  range_high as count_value,
-  1.0*(row_number() over (partition by cohort_definition_id, observation_concept_id, unit_concept_id order by range_high))/(COUNT_BIG(range_high) over (partition by cohort_definition_id, observation_concept_id, unit_concept_id)+1) as p1
-  from @CDM_schema.observation o1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on o1.person_id = c1.subject_id
-  where o1.unit_concept_id is not null
-  and o1.value_as_number is not null
-  and o1.range_low is not null
-  and o1.range_high is not null
-  --{@observation_concept_ids != ''}?{
-  and o1.observation_concept_id in (@observation_concept_ids)
-  --}
-  --{@cohort_period_only == 'TRUE'}?{
-  AND o1.observation_date>=c1.cohort_start_date and o1.observation_date<=c1.cohort_end_date
-  --}
-  ) t1
-  group by cohort_definition_id, observation_concept_id, unit_concept_id
-  ;
-  --}
-  
-  
-  
-  --{818 IN (@list_of_analysis_ids)}?{
-  -- 818                Number of observation records below/within/above normal range, by observation_concept_id and unit_concept_id
-  --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3, count_value)
-  select cohort_definition_id,
-  818 as analysis_id,  
-  observation_concept_id as stratum_1,
-  unit_concept_id as stratum_2,
-  case when o1.value_as_number < o1.range_low then 'Below Range Low'
-  when o1.value_as_number >= o1.range_low and o1.value_as_number <= o1.range_high then 'Within Range'
-  when o1.value_as_number > o1.range_high then 'Above Range High'
-  else 'Other' end as stratum_3,
-  '' as stratum_4,
-  COUNT_BIG(o1.PERSON_ID) as count_value
-  into #results_818
-  from
-  @CDM_schema.observation o1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on o1.person_id = c1.subject_id
-  where o1.value_as_number is not null
-  and o1.unit_concept_id is not null
-  and o1.range_low is not null
-  and o1.range_high is not null
-  --{@observation_concept_ids != ''}?{
-  and o1.observation_concept_id in (@observation_concept_ids)
-  --}  
-  --{@cohort_period_only == 'TRUE'}?{
-  AND o1.observation_date>=c1.cohort_start_date and o1.observation_date<=c1.cohort_end_date
-  --}
-  group by cohort_definition_id, 
-  observation_concept_id,
-  unit_concept_id,
-  case when o1.value_as_number < o1.range_low then 'Below Range Low'
-  when o1.value_as_number >= o1.range_low and o1.value_as_number <= o1.range_high then 'Within Range'
-  when o1.value_as_number > o1.range_high then 'Above Range High'
-  else 'Other' end
-  ;
-  --}
-  
-  --} --end of if in CDMv5
-  
-  
-  --{820 IN (@list_of_analysis_ids)}?{
+{820 IN (@list_of_analysis_ids)}?{
   -- 820   Number of observation records by condition occurrence start month
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
+
   select c1.cohort_definition_id, 
   820 as analysis_id,   
   YEAR(observation_date)*100 + month(observation_date) as stratum_1, 
@@ -3648,12 +4095,12 @@ from
   @CDM_schema.observation o1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on o1.person_id = c1.subject_id
-  --{@observation_concept_ids != '' | @cohort_period_only == 'TRUE'}?{     
+  --{@observation_concept_ids != '' | @cohort_period_only == 'true'}?{     
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   o1.observation_date>=c1.cohort_start_date and o1.observation_date<=c1.cohort_end_date
   --}
-  --{@observation_concept_ids != '' & @cohort_period_only == 'TRUE'}?{
+  --{@observation_concept_ids != '' & @cohort_period_only == 'true'}?{
   AND
   --}
   --{@observation_concept_ids != ''}?{
@@ -3663,10 +4110,7 @@ from
   group by c1.cohort_definition_id,
   YEAR(observation_date)*100 + month(observation_date)
   ;
-  --}
-  
-  
-  
+}
   
   --/********************************************
   
@@ -3675,7 +4119,7 @@ from
   --*********************************************/
   
   
-  --{900 IN (@list_of_analysis_ids)}?{
+{900 IN (@list_of_analysis_ids)}?{
   -- 900                Number of persons with at least one drug occurrence, by drug_concept_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
   select c1.cohort_definition_id, 
@@ -3688,12 +4132,12 @@ from
   @CDM_schema.drug_era de1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on de1.person_id = c1.subject_id
-  --{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+  --{@drug_concept_ids != '' | @cohort_period_only == 'true'}?{    
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   de1.drug_era_start_date>=c1.cohort_start_date and de1.drug_era_end_date<=c1.cohort_end_date
   --}
-  --{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
+  --{@drug_concept_ids != '' & @cohort_period_only == 'true'}?{ 
   AND
   --}
   --{@drug_concept_ids != ''}?{
@@ -3703,10 +4147,10 @@ from
   group by c1.cohort_definition_id, 
   de1.drug_CONCEPT_ID
   ;
-  --}
+}
   
   
-  --{901 IN (@list_of_analysis_ids)}?{
+{901 IN (@list_of_analysis_ids)}?{
   -- 901   Number of drug occurrence records, by drug_concept_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
   select c1.cohort_definition_id, 
@@ -3719,12 +4163,12 @@ from
   @CDM_schema.drug_era de1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on de1.person_id = c1.subject_id
-  --{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{     
+  --{@drug_concept_ids != '' | @cohort_period_only == 'true'}?{     
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   de1.drug_era_start_date>=c1.cohort_start_date and de1.drug_era_end_date<=c1.cohort_end_date
   --}
-  --{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
+  --{@drug_concept_ids != '' & @cohort_period_only == 'true'}?{ 
   AND
   --}
   --{@drug_concept_ids != ''}?{
@@ -3734,11 +4178,10 @@ from
   group by c1.cohort_definition_id,
   de1.drug_CONCEPT_ID
   ;
-  --}
+}
   
   
-  
-  --{902 IN (@list_of_analysis_ids)}?{
+{902 IN (@list_of_analysis_ids)}?{
   -- 902   Number of persons by drug occurrence start month, by drug_concept_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
   select cohort_definition_id,
@@ -3752,12 +4195,12 @@ from
   @CDM_schema.drug_era de1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on de1.person_id = c1.subject_id
-  --{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{     
+  --{@drug_concept_ids != '' | @cohort_period_only == 'true'}?{     
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   de1.drug_era_start_date>=c1.cohort_start_date and de1.drug_era_end_date<=c1.cohort_end_date
   --}
-  --{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{  
+  --{@drug_concept_ids != '' & @cohort_period_only == 'true'}?{  
   AND
   --}
   --{@drug_concept_ids != ''}?{
@@ -3768,61 +4211,77 @@ from
   de1.drug_concept_id, 
   YEAR(drug_era_start_date)*100 + month(drug_era_start_date)
   ;
-  --}
+}
   
   
-  
-  --{903 IN (@list_of_analysis_ids)}?{
+{903 IN (@list_of_analysis_ids)}?{
   -- 903   Number of distinct drug era concepts per person
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  903 as analysis_id,
-  '' as stratum_1, '' as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_903
-  from
-  (
-  select cohort_definition_id,
-  num_drugs as count_value,
-  1.0*(row_number() over (partition by cohort_definition_id order by num_drugs))/(COUNT_BIG(num_drugs) over (partition by cohort_definition_id)+1) as p1
-  from
-  (
-  select c1.cohort_definition_id, de1.person_id, COUNT_BIG(distinct de1.drug_concept_id) as num_drugs
-  from
-  @CDM_schema.drug_era de1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on de1.person_id = c1.subject_id
-  --{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{     
-  WHERE     
-  --{@cohort_period_only == 'TRUE'}?{
-  de1.drug_era_start_date>=c1.cohort_start_date and de1.drug_era_end_date<=c1.cohort_end_date
-  --}
-  --{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{  
-  AND
-  --}
-  --{@drug_concept_ids != ''}?{
-  de1.drug_concept_id in (@drug_concept_ids)
-  --}   
-  --} 
-  group by c1.cohort_definition_id, de1.person_id
-  ) t0
-  ) t1
+
+select c1.cohort_definition_id, c1.subject_id, COUNT_BIG(distinct de1.drug_concept_id) as count_value
+INTO #raw_903
+FROM @CDM_schema.drug_era de1
+{@cohort_period_only == 'true'} ?
+{join #HERACLES_cohort c1} : {join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1} on de1.person_id = c1.subject_id
+where 1=1 
+{@cohort_period_only == 'true'} ? {	AND de1.drug_exposure_start_date>=c1.cohort_start_date and de1.drug_exposure_start_date<=c1.cohort_end_date }
+{@drug_concept_ids != ''} ? { AND de1.drug_concept_id in (@drug_concept_ids)}  
+group by c1.cohort_definition_id, c1.subject_id;
+
+WITH cteRawData (cohort_definition_id, count_value) as
+(
+	select cohort_definition_id, count_value FROM #raw_903
+), 
+overallStats (cohort_definition_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
   group by cohort_definition_id
-  ;
-  --}
+),
+valueStats (cohort_definition_id, count_value, total, accumulated) as
+(
+	select cohort_definition_id, 
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, count_value
+	) D
+)
+select o.cohort_definition_id,
+	903 as analysis_id,
+	'' as stratum_1, 
+	'' as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_903
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id
+GROUP BY o.cohort_definition_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_903;
+DROP TABLE #raw_903;
+
+}
   
   
-  
-  --{904 IN (@list_of_analysis_ids)}?{
+{904 IN (@list_of_analysis_ids)}?{
   -- 904   Number of persons with at least one drug occurrence, by drug_concept_id by calendar year by gender by age decile
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, count_value)
   select c1.cohort_definition_id,
@@ -3839,12 +4298,12 @@ from
   inner join
   @CDM_schema.drug_era de1
   on p1.person_id = de1.person_id
-  --{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{ 
+  --{@drug_concept_ids != '' | @cohort_period_only == 'true'}?{ 
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   de1.drug_era_start_date>=c1.cohort_start_date and de1.drug_era_end_date<=c1.cohort_end_date
   --}
-  --{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{  
+  --{@drug_concept_ids != '' & @cohort_period_only == 'true'}?{  
   AND
   --}
   --{@drug_concept_ids != ''}?{
@@ -3857,115 +4316,160 @@ from
   p1.gender_concept_id,
   floor((year(drug_era_start_date) - p1.year_of_birth)/10)
   ;
-  --}
+}
   
   
-  
-  
-  --{906 IN (@list_of_analysis_ids)}?{
+{906 IN (@list_of_analysis_ids)}?{
   -- 906   Distribution of age by drug_concept_id
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  906 as analysis_id,
-  drug_concept_id as stratum_1,
-  gender_concept_id as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_906
-  from
-  (
-  select c1.cohort_definition_id,
+
+select de1.cohort_definition_id,
+	de1.subject_id,
   de1.drug_concept_id,
   p1.gender_concept_id,
-  de1.drug_start_year - p1.year_of_birth as count_value,
-  1.0*(row_number() over (partition by c1.cohort_definition_id, de1.drug_concept_id, p1.gender_concept_id order by de1.drug_start_year - p1.year_of_birth))/(COUNT_BIG(de1.drug_start_year - p1.year_of_birth) over (partition by c1.cohort_definition_id, de1.drug_concept_id, p1.gender_concept_id)+1) as p1
-  from @CDM_schema.PERSON p1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on p1.person_id = c1.subject_id
-  inner join
-  (select person_id, drug_concept_id, min(year(drug_era_start_date)) as drug_start_year
+  de1.drug_start_year - p1.year_of_birth as count_value
+INTO #raw_906
+from @CDM_schema.PERSON p1
+join (
+	select c1.cohort_definition_id, c1.subject_id, de0.drug_concept_id, min(year(de0.drug_era_start_date)) as drug_start_year
   from @CDM_schema.drug_era de0
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on de0.person_id = c1.subject_id
-  --{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{     
-  WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
-  de0.drug_era_start_date>=c1.cohort_start_date and de0.drug_era_end_date<=c1.cohort_end_date
-  --}
-  --{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{  
-  AND
-  --}
-  --{@drug_concept_ids != ''}?{
-  de0.drug_concept_id in (@drug_concept_ids)
-  --}
-  --}
-  group by person_id, drug_concept_id
-  ) de1
-  on p1.person_id = de1.person_id
-  ) t1
-  group by cohort_definition_id, drug_concept_id, gender_concept_id
-  ;
-  --}
+	{@cohort_period_only == 'true'} ?
+{join #HERACLES_cohort c1} : {join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1} on de0.person_id = c1.subject_id
+	where 1=1 
+		{@cohort_period_only == 'true'} ? {AND de0.drug_era_start_date>=c1.cohort_start_date and de0.drug_era_start_date<=c1.cohort_end_date }
+		{@drug_concept_ids != ''} ? {AND de0.drug_concept_id in (@drug_concept_ids)}  
+	group by c1.cohort_definition_id, c1.subject_id, de0.drug_concept_id
+) de1 on de1.subject_id = p1.person_id
+;
+
+WITH cteRawData (cohort_definition_id, stratum_1, stratum_2, count_value) as
+(
+	select cohort_definition_id, drug_concept_id, gender_concept_id, count_value FROM #raw_906
+), 
+overallStats (cohort_definition_id, stratum_1, stratum_2, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    stratum_1,
+		stratum_2,
+		avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
+  group by cohort_definition_id, stratum_1, stratum_2
+),
+valueStats (cohort_definition_id, stratum_1, stratum_2, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id, stratum_1, stratum_2 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, stratum_2, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, stratum_2, count_value
+	) D
+)
+select o.cohort_definition_id,
+	906 as analysis_id,
+	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
+	CAST(o.stratum_2 as VARCHAR) as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_906
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1 and s.stratum_2 = o.stratum_2
+GROUP BY o.cohort_definition_id, o.stratum_1, o.stratum_2, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_906;
+DROP TABLE #raw_906;
+
+}
   
   
-  
-  
-  
-  --{907 IN (@list_of_analysis_ids)}?{
+{907 IN (@list_of_analysis_ids)}?{
   -- 907   Distribution of drug era length, by drug_concept_id
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  907 as analysis_id,
-  drug_concept_id as stratum_1, '' as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_907
-  from
-  (
-  select cohort_definition_id,
-  drug_concept_id,
-  datediff(dd,drug_era_start_date, drug_era_end_date) as count_value,
-  1.0*(row_number() over (partition by cohort_definition_id, drug_concept_id order by datediff(dd,drug_era_start_date, drug_era_end_date)))/(COUNT_BIG(datediff(dd,drug_era_start_date, drug_era_end_date)) over (partition by cohort_definition_id, drug_concept_id)+1) as p1
-  from  @CDM_schema.drug_era de1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on de1.person_id = c1.subject_id
-  --{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
-  WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
-  de1.drug_era_start_date>=c1.cohort_start_date and de1.drug_era_end_date<=c1.cohort_end_date
-  --}
-  --{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{  
-  AND
-  --}
-  --{@drug_concept_ids != ''}?{
-  de1.drug_concept_id in (@drug_concept_ids)
-  --}
-  --}
-  ) t1
-  group by cohort_definition_id, 
-  drug_concept_id
-  ;
-  --}
+
+select c1.cohort_definition_id, c1.subject_id, de1.drug_concept_id, datediff(dd,de1.drug_era_start_date, de1.drug_era_end_date) as count_value
+INTO #raw_907
+FROM @CDM_schema.drug_era de1
+{@cohort_period_only == 'true'} ?
+{join #HERACLES_cohort c1} : {join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1} on de1.person_id = c1.subject_id
+where 1=1 
+{@cohort_period_only == 'true'} ? {	AND de1.drug_era_start_date>=c1.cohort_start_date and de1.drug_era_start_date<=c1.cohort_end_date }
+{@drug_concept_ids != ''} ? { AND de1.drug_concept_id in (@drug_concept_ids)}  
+;
+
+
+WITH cteRawData (cohort_definition_id, stratum_1, count_value) as
+(
+	select cohort_definition_id, drug_concept_id, count_value FROM #raw_907
+), 
+overallStats (cohort_definition_id, stratum_1, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    stratum_1,
+		avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
+  group by cohort_definition_id, stratum_1
+),
+valueStats (cohort_definition_id, stratum_1, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id, stratum_1 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, count_value
+	) D
+)
+select o.cohort_definition_id,
+	907 as analysis_id,
+	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
+	'' as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_907
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1
+GROUP BY o.cohort_definition_id, o.stratum_1, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_907;
+DROP TABLE #raw_907;
+
+}
   
   
-  
-  --{908 IN (@list_of_analysis_ids)}?{
+{908 IN (@list_of_analysis_ids)}?{
   -- 908   Number of drug eras with invalid person
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
@@ -3982,10 +4486,10 @@ from
   where p1.person_id is null
   group by c1.cohort_definition_id
   ;
-  --}
+}
   
   
-  --{909 IN (@list_of_analysis_ids)}?{
+{909 IN (@list_of_analysis_ids)}?{
   -- 909   Number of drug eras outside valid observation period
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
@@ -4004,10 +4508,10 @@ from
   where op1.person_id is null
   group by c1.cohort_definition_id
   ;
-  --}
+}
   
   
-  --{910 IN (@list_of_analysis_ids)}?{
+{910 IN (@list_of_analysis_ids)}?{
   -- 910   Number of drug eras with end date < start date
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
@@ -4022,11 +4526,10 @@ from
   where de1.drug_era_end_date < de1.drug_era_start_date
   group by c1.cohort_definition_id
   ;
-  --}
+}
   
   
-  
-  --{920 IN (@list_of_analysis_ids)}?{
+{920 IN (@list_of_analysis_ids)}?{
   -- 920   Number of drug era records by drug era start month
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
   select c1.cohort_definition_id, 
@@ -4039,12 +4542,12 @@ from
   @CDM_schema.drug_era de1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on de1.person_id = c1.subject_id
-  --{@drug_concept_ids != '' | @cohort_period_only == 'TRUE'}?{     
+  --{@drug_concept_ids != '' | @cohort_period_only == 'true'}?{     
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   de1.drug_era_start_date>=c1.cohort_start_date and de1.drug_era_end_date<=c1.cohort_end_date
   --}
-  --{@drug_concept_ids != '' & @cohort_period_only == 'TRUE'}?{  
+  --{@drug_concept_ids != '' & @cohort_period_only == 'true'}?{  
   AND
   --}
   --{@drug_concept_ids != ''}?{
@@ -4054,10 +4557,7 @@ from
   group by c1.cohort_definition_id,
   YEAR(drug_era_start_date)*100 + month(drug_era_start_date)
   ;
-  --}
-  
-  
-  
+}
   
   
   --/********************************************
@@ -4080,12 +4580,12 @@ from
   @CDM_schema.condition_era ce1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on ce1.person_id = c1.subject_id
-  --{@condition_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+  --{@condition_concept_ids != '' | @cohort_period_only == 'true'}?{    
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   ce1.condition_era_start_date>=c1.cohort_start_date and ce1.condition_era_end_date<=c1.cohort_end_date
   --}
-  --{@condition_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
+  --{@condition_concept_ids != '' & @cohort_period_only == 'true'}?{ 
   AND
   --}
   --{@condition_concept_ids != ''}?{
@@ -4111,12 +4611,12 @@ from
   @CDM_schema.condition_era ce1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on ce1.person_id = c1.subject_id
-  --{@condition_concept_ids != '' | @cohort_period_only == 'TRUE'}?{     
+  --{@condition_concept_ids != '' | @cohort_period_only == 'true'}?{     
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   ce1.condition_era_start_date>=c1.cohort_start_date and ce1.condition_era_end_date<=c1.cohort_end_date
   --}
-  --{@condition_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
+  --{@condition_concept_ids != '' & @cohort_period_only == 'true'}?{ 
   AND
   --}
   --{@condition_concept_ids != ''}?{
@@ -4144,12 +4644,12 @@ from
   @CDM_schema.condition_era ce1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on ce1.person_id = c1.subject_id
-  --{@condition_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+  --{@condition_concept_ids != '' | @cohort_period_only == 'true'}?{    
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   ce1.condition_era_start_date>=c1.cohort_start_date and ce1.condition_era_end_date<=c1.cohort_end_date
   --}
-  --{@condition_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
+  --{@condition_concept_ids != '' & @cohort_period_only == 'true'}?{ 
   AND
   --}
   --{@condition_concept_ids != ''}?{
@@ -4164,56 +4664,74 @@ from
   
   
   
-  --{1003 IN (@list_of_analysis_ids)}?{
+{1003 IN (@list_of_analysis_ids)}?{
   -- 1003                Number of distinct condition era concepts per person
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  1003 as analysis_id,
-  '' as stratum_1, '' as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_1003
-  from
-  (
-  select cohort_definition_id, num_conditions as count_value,
-  1.0*(row_number() over (partition by cohort_definition_id order by num_conditions))/(COUNT_BIG(num_conditions) over (partition by cohort_definition_id)+1) as p1
-  from
-  (
-  select c1.cohort_definition_id, ce1.person_id, COUNT_BIG(distinct ce1.condition_concept_id) as num_conditions
-  from
-  @CDM_schema.condition_era ce1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on ce1.person_id = c1.subject_id
-  --{@condition_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
-  WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
-  ce1.condition_era_start_date>=c1.cohort_start_date and ce1.condition_era_end_date<=c1.cohort_end_date
-  --}
-  --{@condition_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
-  AND
-  --}
-  --{@condition_concept_ids != ''}?{
-  ce1.condition_concept_id in (@condition_concept_ids)
-  --}   
-  --} 
-  group by c1.cohort_definition_id, ce1.person_id
-  ) t0
-  ) t1
+
+select c1.cohort_definition_id, c1.subject_id, COUNT_BIG(distinct ce1.condition_concept_id) as count_value
+INTO #raw_1003
+from @CDM_schema.condition_era ce1
+{@cohort_period_only == 'true'} ?
+{join #HERACLES_cohort c1} : {join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1} on ce1.person_id = c1.subject_id
+WHERE 1=1 
+{@cohort_period_only == 'true'} ? {	AND ce1.condition_era_start_date>=c1.cohort_start_date and ce1.condition_era_end_date<=c1.cohort_end_date }
+{@condition_concept_ids != ''} ? { AND ce1.condition_concept_id in (@condition_concept_ids)}  
+group by c1.cohort_definition_id, c1.subject_id;
+
+
+WITH cteRawData (cohort_definition_id, count_value) as
+(
+	select cohort_definition_id, count_value FROM #raw_1003
+), 
+overallStats (cohort_definition_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
   group by cohort_definition_id
-  ;
-  --}
+),
+valueStats (cohort_definition_id, count_value, total, accumulated) as
+(
+	select cohort_definition_id, 
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, count_value
+	) D
+)
+select o.cohort_definition_id,
+	1003 as analysis_id,
+	'' as stratum_1, 
+	'' as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_1003
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id
+GROUP BY o.cohort_definition_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_1003;
+DROP TABLE #raw_1003;
+
+}
   
-  
-  
-  --{1004 IN (@list_of_analysis_ids)}?{
+{1004 IN (@list_of_analysis_ids)}?{
   -- 1004                Number of persons with at least one condition occurrence, by condition_concept_id by calendar year by gender by age decile
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, count_value)
   select c1.cohort_definition_id,
@@ -4230,12 +4748,12 @@ from
   inner join
   @CDM_schema.condition_era ce1
   on p1.person_id = ce1.person_id
-  --{@condition_concept_ids != '' | @cohort_period_only == 'TRUE'}?{  
+  --{@condition_concept_ids != '' | @cohort_period_only == 'true'}?{  
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   ce1.condition_era_start_date>=c1.cohort_start_date and ce1.condition_era_end_date<=c1.cohort_end_date
   --}
-  --{@condition_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
+  --{@condition_concept_ids != '' & @cohort_period_only == 'true'}?{ 
   AND
   --}
   --{@condition_concept_ids != ''}?{
@@ -4248,115 +4766,161 @@ from
   p1.gender_concept_id,
   floor((year(condition_era_start_date) - p1.year_of_birth)/10)
   ;
-  --}
+}
   
   
-  
-  
-  --{1006 IN (@list_of_analysis_ids)}?{
+{1006 IN (@list_of_analysis_ids)}?{
   -- 1006                Distribution of age by condition_concept_id
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  1006 as analysis_id,
-  condition_concept_id as stratum_1,
-  gender_concept_id as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_1006
-  from
-  (
-  select c1.cohort_definition_id,
-  ce1.condition_concept_id,
+
+select co1.cohort_definition_id,
+	co1.subject_id,
+  co1.condition_concept_id,
   p1.gender_concept_id,
-  ce1.condition_start_year - p1.year_of_birth as count_value,
-  1.0*(row_number() over (partition by c1.cohort_definition_id, ce1.condition_concept_id, p1.gender_concept_id order by ce1.condition_start_year - p1.year_of_birth))/(COUNT_BIG(ce1.condition_start_year - p1.year_of_birth) over (partition by c1.cohort_definition_id, ce1.condition_concept_id, p1.gender_concept_id)+1) as p1
-  from @CDM_schema.PERSON p1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on p1.person_id = c1.subject_id
-  inner join
-  (select person_id, condition_concept_id, min(year(condition_era_start_date)) as condition_start_year
+  co1.condition_start_year - p1.year_of_birth as count_value
+INTO #raw_1006
+from @CDM_schema.PERSON p1
+join (
+	select c1.cohort_definition_id, c1.subject_id, ce0.condition_concept_id, min(year(ce0.condition_era_start_date)) as condition_start_year
   from @CDM_schema.condition_era ce0
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on ce0.person_id = c1.subject_id
-  --{@condition_concept_ids != '' | @cohort_period_only == 'TRUE'}?{      
-  WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
-  ce0.condition_era_start_date>=c1.cohort_start_date and ce0.condition_era_end_date<=c1.cohort_end_date
-  --}
-  --{@condition_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
-  AND
-  --}
-  --{@condition_concept_ids != ''}?{
-  ce0.condition_concept_id in (@condition_concept_ids)
-  --}
-  --}
-  group by person_id, condition_concept_id
-  ) ce1
-  on p1.person_id = ce1.person_id
-  ) t1
-  group by cohort_definition_id, condition_concept_id, gender_concept_id
-  ;
-  --}
+	{@cohort_period_only == 'true'} ?
+{join #HERACLES_cohort c1} : {join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1} on ce0.person_id = c1.subject_id
+	where 1=1 
+		{@cohort_period_only == 'true'} ? {AND ce0.condition_era_start_date>=c1.cohort_start_date and ce0.condition_era_end_date<=c1.cohort_end_date }
+		{@condition_concept_ids != ''} ? {AND ce0.condition_concept_id in (@condition_concept_ids)}  
+	group by c1.cohort_definition_id, c1.subject_id, ce0.condition_concept_id
+) co1 on co1.subject_id = p1.person_id
+;
+
+WITH cteRawData (cohort_definition_id, stratum_1, stratum_2, count_value) as
+(
+	select cohort_definition_id, condition_concept_id, gender_concept_id, count_value FROM #raw_1006
+), 
+overallStats (cohort_definition_id, stratum_1, stratum_2, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    stratum_1,
+		stratum_2,
+		avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
+  group by cohort_definition_id, stratum_1, stratum_2
+),
+valueStats (cohort_definition_id, stratum_1, stratum_2, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id, stratum_1, stratum_2 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, stratum_2, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, stratum_2, count_value
+	) D
+)
+select o.cohort_definition_id,
+	1006 as analysis_id,
+	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
+	CAST(o.stratum_2 as VARCHAR) as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_1006
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1 and s.stratum_2 = o.stratum_2
+GROUP BY o.cohort_definition_id, o.stratum_1, o.stratum_2, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_1006;
+DROP TABLE #raw_1006;
+
+
+}
   
   
-  
-  
-  
-  --{1007 IN (@list_of_analysis_ids)}?{
+{1007 IN (@list_of_analysis_ids)}?{
   -- 1007                Distribution of condition era length, by condition_concept_id
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  1007 as analysis_id,
-  condition_concept_id as stratum_1, '' as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_1007
-  from
-  (
-  select c1.cohort_definition_id,
-  condition_concept_id,
-  datediff(dd,condition_era_start_date, condition_era_end_date) as count_value,
-  1.0*(row_number() over (partition by c1.cohort_definition_id, condition_concept_id order by datediff(dd,condition_era_start_date, condition_era_end_date)))/(COUNT_BIG(datediff(dd,condition_era_start_date, condition_era_end_date)) over (partition by c1.cohort_definition_id, condition_concept_id)+1) as p1
-  from  @CDM_schema.condition_era ce1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on ce1.person_id = c1.subject_id
-  --{@condition_concept_ids != '' | @cohort_period_only == 'TRUE'}?{  
-  WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
-  ce1.condition_era_start_date>=c1.cohort_start_date and ce1.condition_era_end_date<=c1.cohort_end_date
-  --}
-  --{@condition_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
-  AND
-  --}
-  --{@condition_concept_ids != ''}?{
-  ce1.condition_concept_id in (@condition_concept_ids)
-  --}
-  --}
-  ) t1
-  group by cohort_definition_id,
-  condition_concept_id
-  ;
-  --}
+
+
+select c1.cohort_definition_id, c1.subject_id, ce1.condition_concept_id, datediff(dd,ce1.condition_era_start_date, ce1.condition_era_end_date) as count_value
+INTO #raw_1007
+FROM @CDM_schema.condition_era ce1
+{@cohort_period_only == 'true'} ?
+{join #HERACLES_cohort c1} : {join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1} on ce1.person_id = c1.subject_id
+where 1=1 
+{@cohort_period_only == 'true'} ? {	AND ce1.condition_era_start_date>=c1.cohort_start_date and ce1.condition_era_end_date<=c1.cohort_end_date }
+{@condition_concept_ids != ''} ? {AND ce1.condition_concept_id in (@condition_concept_ids)}  
+;
+
+
+WITH cteRawData (cohort_definition_id, stratum_1, count_value) as
+(
+	select cohort_definition_id, condition_concept_id, count_value FROM #raw_1007
+), 
+overallStats (cohort_definition_id, stratum_1, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    stratum_1,
+		avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
+  group by cohort_definition_id, stratum_1
+),
+valueStats (cohort_definition_id, stratum_1, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id, stratum_1 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, count_value
+	) D
+)
+select o.cohort_definition_id,
+	1007 as analysis_id,
+	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
+	'' as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_1007
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1
+GROUP BY o.cohort_definition_id, o.stratum_1, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_1007;
+DROP TABLE #raw_1007;
+
+}
   
-  
-  
-  --{1008 IN (@list_of_analysis_ids)}?{
+{1008 IN (@list_of_analysis_ids)}?{
   -- 1008                Number of condition eras with invalid person
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
@@ -4373,10 +4937,10 @@ from
   where p1.person_id is null
   group by c1.cohort_definition_id
   ;
-  --}
+}
   
   
-  --{1009 IN (@list_of_analysis_ids)}?{
+{1009 IN (@list_of_analysis_ids)}?{
   -- 1009                Number of condition eras outside valid observation period
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
@@ -4395,10 +4959,10 @@ from
   where op1.person_id is null
   group by c1.cohort_definition_id
   ;
-  --}
+}
   
   
-  --{1010 IN (@list_of_analysis_ids)}?{
+{1010 IN (@list_of_analysis_ids)}?{
   -- 1010                Number of condition eras with end date < start date
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
@@ -4413,10 +4977,10 @@ from
   where ce1.condition_era_end_date < ce1.condition_era_start_date
   group by c1.cohort_definition_id
   ;
-  --}
+}
   
   
-  --{1020 IN (@list_of_analysis_ids)}?{
+{1020 IN (@list_of_analysis_ids)}?{
   -- 1020                Number of drug era records by drug era start month
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
   select c1.cohort_definition_id, 
@@ -4429,12 +4993,12 @@ from
   @CDM_schema.condition_era ce1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on ce1.person_id = c1.subject_id
-  --{@condition_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+  --{@condition_concept_ids != '' | @cohort_period_only == 'true'}?{    
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   ce1.condition_era_start_date>=c1.cohort_start_date and ce1.condition_era_end_date<=c1.cohort_end_date
   --}
-  --{@condition_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
+  --{@condition_concept_ids != '' & @cohort_period_only == 'true'}?{ 
   AND
   --}
   --{@condition_concept_ids != ''}?{
@@ -4444,10 +5008,7 @@ from
   group by c1.cohort_definition_id,
   YEAR(condition_era_start_date)*100 + month(condition_era_start_date)
   ;
-  --}
-  
-  
-  
+}
   
   --/********************************************
   
@@ -4554,9 +5115,7 @@ from
   
   *********************************************/
   
-  
-  
-  --{1300 IN (@list_of_analysis_ids)}?{
+{1300 IN (@list_of_analysis_ids)}?{
   -- 1300              Number of persons with at least one measurement occurrence, by measurement_concept_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
   select c1.cohort_definition_id, 
@@ -4569,12 +5128,12 @@ from
   @CDM_schema.measurement o1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on o1.person_id = c1.subject_id
-  --{@measurement_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+  --{@measurement_concept_ids != '' | @cohort_period_only == 'true'}?{    
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   o1.measurement_date>=c1.cohort_start_date and o1.measurement_date<=c1.cohort_end_date
   --}
-  --{@measurement_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
+  --{@measurement_concept_ids != '' & @cohort_period_only == 'true'}?{ 
   AND
   --}
   --{@measurement_concept_ids != ''}?{
@@ -4584,10 +5143,10 @@ from
   group by c1.cohort_definition_id,
   o1.measurement_CONCEPT_ID
   ;
-  --}
+}
   
   
-  --{1301 IN (@list_of_analysis_ids)}?{
+{1301 IN (@list_of_analysis_ids)}?{
   -- 1301                Number of measurement occurrence records, by measurement_concept_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
   select c1.cohort_definition_id, 
@@ -4600,12 +5159,12 @@ from
   @CDM_schema.measurement o1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on o1.person_id = c1.subject_id
-  --{@measurement_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+  --{@measurement_concept_ids != '' | @cohort_period_only == 'true'}?{    
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   o1.measurement_date>=c1.cohort_start_date and o1.measurement_date<=c1.cohort_end_date
   --}
-  --{@measurement_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
+  --{@measurement_concept_ids != '' & @cohort_period_only == 'true'}?{ 
   AND
   --}
   --{@measurement_concept_ids != ''}?{
@@ -4615,11 +5174,10 @@ from
   group by c1.cohort_definition_id,
   o1.measurement_CONCEPT_ID
   ;
-  --}
+}
   
   
-  
-  --{1302 IN (@list_of_analysis_ids)}?{
+{1302 IN (@list_of_analysis_ids)}?{
   -- 1302                Number of persons by measurement occurrence start month, by measurement_concept_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
   select c1.cohort_definition_id,
@@ -4633,12 +5191,12 @@ from
   @CDM_schema.measurement o1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on o1.person_id = c1.subject_id
-  --{@measurement_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+  --{@measurement_concept_ids != '' | @cohort_period_only == 'true'}?{    
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   o1.measurement_date>=c1.cohort_start_date and o1.measurement_date<=c1.cohort_end_date
   --}
-  --{@measurement_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
+  --{@measurement_concept_ids != '' & @cohort_period_only == 'true'}?{ 
   AND
   --}
   --{@measurement_concept_ids != ''}?{
@@ -4649,61 +5207,77 @@ from
   o1.measurement_concept_id, 
   YEAR(measurement_date)*100 + month(measurement_date)
   ;
-  --}
+}
   
   
   
-  --{1303 IN (@list_of_analysis_ids)}?{
+{1303 IN (@list_of_analysis_ids)}?{
   -- 1303                Number of distinct measurement occurrence concepts per person
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  1303 as analysis_id,
-  '' as stratum_1, '' as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_1303
-  from
-  (
-  select cohort_definition_id,
-  num_measurements as count_value,
-  1.0*(row_number() over (partition by cohort_definition_id order by num_measurements))/(COUNT_BIG(num_measurements) over (partition by cohort_definition_id)+1) as p1
-  from
-  (
-  select c1.cohort_definition_id, o1.person_id, COUNT_BIG(distinct o1.measurement_concept_id) as num_measurements
-  from
-  @CDM_schema.measurement o1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on o1.person_id = c1.subject_id
-  --{@measurement_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
-  WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
-  o1.measurement_date>=c1.cohort_start_date and o1.measurement_date<=c1.cohort_end_date
-  --}
-  --{@measurement_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
-  AND
-  --}
-  --{@measurement_concept_ids != ''}?{
-  o1.measurement_concept_id in (@measurement_concept_ids)
-  --}
-  --}    
-  group by c1.cohort_definition_id, o1.person_id
-  ) t0
-  ) t1
+
+select c1.cohort_definition_id, c1.subject_id, COUNT_BIG(distinct m1.measurement_concept_id) as count_value
+INTO #raw_1303
+FROM @CDM_schema.measurement m1
+{@cohort_period_only == 'true'} ?
+{join #HERACLES_cohort c1} : {join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1} on m1.person_id = c1.subject_id
+where 1=1 
+{@cohort_period_only == 'true'} ? {	AND m1.measurement_date>=c1.cohort_start_date and m1.measurement_date<=c1.cohort_end_date }
+{@measurement_concept_ids != ''} ? { AND m1.measurement_concept_id in (@measurement_concept_ids)}  
+group by c1.cohort_definition_id, c1.subject_id;
+
+WITH cteRawData (cohort_definition_id, count_value) as
+(
+	select cohort_definition_id, count_value FROM #raw_1303
+), 
+overallStats (cohort_definition_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
   group by cohort_definition_id
-  ;
-  --}
-  
-  
-  
-  --{1304 IN (@list_of_analysis_ids)}?{
+),
+valueStats (cohort_definition_id, count_value, total, accumulated) as
+(
+	select cohort_definition_id, 
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, count_value
+	) D
+)
+select o.cohort_definition_id,
+	1303 as analysis_id,
+	'' as stratum_1, 
+	'' as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_1303
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id
+GROUP BY o.cohort_definition_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_1303;
+DROP TABLE #raw_1303;
+
+}
+
+{1304 IN (@list_of_analysis_ids)}?{
   -- 1304                Number of persons with at least one measurement occurrence, by measurement_concept_id by calendar year by gender by age decile
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, count_value)
   select c1.cohort_definition_id,
@@ -4720,12 +5294,12 @@ from
   inner join
   @CDM_schema.measurement o1
   on p1.person_id = o1.person_id
-  --{@measurement_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+  --{@measurement_concept_ids != '' | @cohort_period_only == 'true'}?{    
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   o1.measurement_date>=c1.cohort_start_date and o1.measurement_date<=c1.cohort_end_date
   --}
-  --{@measurement_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
+  --{@measurement_concept_ids != '' & @cohort_period_only == 'true'}?{ 
   AND
   --}
   --{@measurement_concept_ids != ''}?{
@@ -4738,9 +5312,9 @@ from
   p1.gender_concept_id,
   floor((year(measurement_date) - p1.year_of_birth)/10)
   ;
-  --}
+}
   
-  --{1305 IN (@list_of_analysis_ids)}?{
+{1305 IN (@list_of_analysis_ids)}?{
   -- 1305                Number of measurement occurrence records, by measurement_concept_id by measurement_type_concept_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
   select c1.cohort_definition_id,
@@ -4754,12 +5328,12 @@ from
   @CDM_schema.measurement o1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on o1.person_id = c1.subject_id
-  --{@measurement_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+  --{@measurement_concept_ids != '' | @cohort_period_only == 'true'}?{    
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   o1.measurement_date>=c1.cohort_start_date and o1.measurement_date<=c1.cohort_end_date
   --}
-  --{@measurement_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
+  --{@measurement_concept_ids != '' & @cohort_period_only == 'true'}?{ 
   AND
   --}
   --{@measurement_concept_ids != ''}?{
@@ -4770,64 +5344,90 @@ from
   o1.measurement_CONCEPT_ID, 
   o1.measurement_type_concept_id
   ;
-  --}
+  }
   
   
   
-  --{1306 IN (@list_of_analysis_ids)}?{
+{1306 IN (@list_of_analysis_ids)}?{
   -- 1306                Distribution of age by measurement_concept_id
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  1306 as analysis_id,
-  measurement_concept_id as stratum_1,
-  gender_concept_id as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_1306
-  from
-  (
-  select c1.cohort_definition_id,
-  o1.measurement_concept_id,
+
+select m1.cohort_definition_id,
+	m1.subject_id,
+  m1.measurement_concept_id,
   p1.gender_concept_id,
-  o1.measurement_start_year - p1.year_of_birth as count_value,
-  1.0*(row_number() over (partition by c1.cohort_definition_id, o1.measurement_concept_id, p1.gender_concept_id order by o1.measurement_start_year - p1.year_of_birth))/(COUNT_BIG(o1.measurement_start_year - p1.year_of_birth) over (partition by c1.cohort_definition_id, o1.measurement_concept_id, p1.gender_concept_id)+1) as p1
-  from @CDM_schema.PERSON p1
-  inner join (select subject_id, cohort_definition_id from #HERACLES_cohort) c1
-  on p1.person_id = c1.subject_id
-  inner join
-  (select person_id, measurement_concept_id, min(year(measurement_date)) as measurement_start_year
-  from @CDM_schema.measurement o1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on o1.person_id = c1.subject_id
-  --{@measurement_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
-  WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
-  o1.measurement_date>=c1.cohort_start_date and o1.measurement_date<=c1.cohort_end_date
-  --}
-  --{@measurement_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
-  AND
-  --}
-  --{@measurement_concept_ids != ''}?{
-  o1.measurement_concept_id in (@measurement_concept_ids)
-  --}
-  --}
-  group by person_id, measurement_concept_id
-  ) o1
-  on p1.person_id = o1.person_id
-  ) t1
-  group by cohort_definition_id, measurement_concept_id, gender_concept_id
-  ;
-  --}
+  m1.measurement_start_year - p1.year_of_birth as count_value
+INTO #raw_1306
+from @CDM_schema.PERSON p1
+join (
+	select c1.cohort_definition_id, c1.subject_id, m1.measurement_concept_id, min(year(m1.measurement_date)) as measurement_start_year
+  from @CDM_schema.measurement m1
+	{@cohort_period_only == 'true'} ?
+{join #HERACLES_cohort c1} : {join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1} on m1.person_id = c1.subject_id
+	where 1=1 
+		{@cohort_period_only == 'true'} ? {AND m1.measurement_date>=c1.cohort_start_date and m1.measurement_date<=c1.cohort_end_date }
+		{@measurement_concept_ids != ''} ? {AND m1.measurement_concept_id in (@measurement_concept_ids)}  
+	group by c1.cohort_definition_id, c1.subject_id, m1.measurement_concept_id
+) m1 on m1.subject_id = p1.person_id
+;
+
+WITH cteRawData (cohort_definition_id, stratum_1, stratum_2, count_value) as
+(
+	select cohort_definition_id, measurement_concept_id, gender_concept_id, count_value FROM #raw_1306
+), 
+overallStats (cohort_definition_id, stratum_1, stratum_2, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    stratum_1,
+		stratum_2,
+		avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
+  group by cohort_definition_id, stratum_1, stratum_2
+),
+valueStats (cohort_definition_id, stratum_1, stratum_2, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id, stratum_1, stratum_2 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, stratum_2, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, stratum_2, count_value
+	) D
+)
+select o.cohort_definition_id,
+	1306 as analysis_id,
+	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
+	CAST(o.stratum_2 as VARCHAR) as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_1306
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1 and s.stratum_2 = o.stratum_2
+GROUP BY o.cohort_definition_id, o.stratum_1, o.stratum_2, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_1306;
+DROP TABLE #raw_1306;
+
+}
   
-  --{1307 IN (@list_of_analysis_ids)}?{
+{1307 IN (@list_of_analysis_ids)}?{
   -- 1307                Number of measurement occurrence records, by measurement_concept_id and unit_concept_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
   select c1.cohort_definition_id,
@@ -4841,12 +5441,12 @@ from
   @CDM_schema.measurement o1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on o1.person_id = c1.subject_id
-  --{@measurement_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+  --{@measurement_concept_ids != '' | @cohort_period_only == 'true'}?{    
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   o1.measurement_date>=c1.cohort_start_date and o1.measurement_date<=c1.cohort_end_date
   --}
-  --{@measurement_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
+  --{@measurement_concept_ids != '' & @cohort_period_only == 'true'}?{ 
   AND
   --}
   --{@measurement_concept_ids != ''}?{
@@ -4857,13 +5457,10 @@ from
   o1.measurement_CONCEPT_ID,
   o1.unit_concept_id
   ;
-  --}
+}
   
   
-  
-  
-  
-  --{1309 IN (@list_of_analysis_ids)}?{
+{1309 IN (@list_of_analysis_ids)}?{
   -- 1309                Number of measurement records with invalid person_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
@@ -4880,10 +5477,10 @@ from
   where p1.person_id is null
   group by c1.cohort_definition_id
   ;
-  --}
+}
   
   
-  --{1310 IN (@list_of_analysis_ids)}?{
+{1310 IN (@list_of_analysis_ids)}?{
   -- 1310                Number of measurement records outside valid observation period
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
@@ -4902,11 +5499,10 @@ from
   where op1.person_id is null
   group by c1.cohort_definition_id
   ;
-  --}
+}
   
   
-  
-  --{1312 IN (@list_of_analysis_ids)}?{
+{1312 IN (@list_of_analysis_ids)}?{
   -- 1312                Number of measurement records with invalid provider_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
@@ -4924,9 +5520,9 @@ from
   and p1.provider_id is null
   group by c1.cohort_definition_id
   ;
-  --}
+}
   
-  --{1313 IN (@list_of_analysis_ids)}?{
+{1313 IN (@list_of_analysis_ids)}?{
   -- 1313                Number of measurement records with invalid visit_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
@@ -4944,10 +5540,9 @@ from
   and vo1.visit_occurrence_id is null
   group by c1.cohort_definition_id
   ;
-  --}
+}
   
-  
-  --{1314 IN (@list_of_analysis_ids)}?{
+{1314 IN (@list_of_analysis_ids)}?{
   -- 1314                Number of measurement records with no value (numeric, string, or concept)
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
@@ -4963,135 +5558,233 @@ from
   and o1.value_as_concept_id is null
   group by c1.cohort_definition_id
   ;
-  --}
+}
   
-  
-  --{1315 IN (@list_of_analysis_ids)}?{
+ 
+{1315 IN (@list_of_analysis_ids)}?{
   -- 1315                Distribution of numeric values, by measurement_concept_id and unit_concept_id
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  1315 as analysis_id,
-  measurement_concept_id as stratum_1,
-  unit_concept_id as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_1315
-  from
-  (
-  select cohort_definition_id,
-  measurement_concept_id, unit_concept_id,
-  value_as_number as count_value,
-  1.0*(row_number() over (partition by cohort_definition_id, measurement_concept_id, unit_concept_id order by value_as_number))/(COUNT_BIG(value_as_number) over (partition by cohort_definition_id, measurement_concept_id, unit_concept_id)+1) as p1
-  from @CDM_schema.measurement o1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on o1.person_id = c1.subject_id
-  where o1.unit_concept_id is not null
-  and o1.value_as_number is not null
-  --{@observation_concept_ids != ''}?{
-  and o1.measurement_concept_id in (@observation_concept_ids)
-  --}
-  --{@cohort_period_only == 'TRUE'}?{
-  and o1.measurement_date>=c1.cohort_start_date and o1.measurement_date<=c1.cohort_end_date
-  --}
-  ) t1
-  group by cohort_definition_id, measurement_concept_id, unit_concept_id
-  ;
-  --}
+
+select c1.cohort_definition_id,
+	c1.subject_id,
+	m1.measurement_concept_id, 
+	m1.unit_concept_id,
+	m1.value_as_number as count_value
+INTO #raw_1315
+from @CDM_schema.measurement m1
+{@cohort_period_only == 'true'} ? {join #HERACLES_cohort c1} : {join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1} 
+	on m1.person_id = c1.subject_id
+where m1.value_as_number is not null and m1.unit_concept_id is not null
+	{@cohort_period_only == 'true'} ? {AND m1.measurement_date>=c1.cohort_start_date and m1.measurement_date<=c1.cohort_end_date }
+	{@measurement_concept_ids != ''} ? {AND m1.measurement_concept_id in (@measurement_concept_ids)}
+;
+
+WITH cteRawData (cohort_definition_id, stratum_1, stratum_2, count_value) as
+(
+	select cohort_definition_id, measurement_concept_id, unit_concept_id, count_value FROM #raw_1315
+), 
+overallStats (cohort_definition_id, stratum_1, stratum_2, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    stratum_1,
+	stratum_2,
+	avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
+  group by cohort_definition_id, stratum_1, stratum_2
+),
+valueStats (cohort_definition_id, stratum_1, stratum_2, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id, stratum_1, stratum_2 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, stratum_2, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, stratum_2, count_value
+	) D
+)
+select o.cohort_definition_id,
+	1315 as analysis_id,
+	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
+	CAST(o.stratum_2 as VARCHAR) as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_1315
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1 and s.stratum_2 = o.stratum_2
+GROUP BY o.cohort_definition_id, o.stratum_1, o.stratum_2, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_1315;
+DROP TABLE #raw_1315;
+
+}
   
-  --{1316 IN (@list_of_analysis_ids)}?{
+{1316 IN (@list_of_analysis_ids)}?{
   -- 1316                Distribution of low range, by measurement_concept_id and unit_concept_id
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  1316 as analysis_id,
-  measurement_concept_id as stratum_1,
-  unit_concept_id as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_1316
-  from
-  (
-  select cohort_definition_id, measurement_concept_id, unit_concept_id,
-  range_low as count_value,
-  1.0*(row_number() over (partition by cohort_definition_id, measurement_concept_id, unit_concept_id order by range_low))/(COUNT_BIG(range_low) over (partition by cohort_definition_id, measurement_concept_id, unit_concept_id)+1) as p1
-  from @CDM_schema.measurement o1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on o1.person_id = c1.subject_id
-  where o1.unit_concept_id is not null
-  and o1.value_as_number is not null
-  and o1.range_low is not null
-  and o1.range_high is not null
-  --{@observation_concept_ids != ''}?{
-  and o1.measurement_concept_id in (@observation_concept_ids)
-  --}
-  --{@cohort_period_only == 'TRUE'}?{
-  and o1.measurement_date>=c1.cohort_start_date and o1.measurement_date<=c1.cohort_end_date
-  --}
-  ) t1
-  group by cohort_definition_id, measurement_concept_id, unit_concept_id
-  ;
-  --}
+
+select c1.cohort_definition_id,
+	c1.subject_id,
+	m1.measurement_concept_id, 
+	m1.unit_concept_id,
+	m1.range_low as count_value
+INTO #raw_1316
+from @CDM_schema.measurement m1
+{@cohort_period_only == 'true'} ? {join #HERACLES_cohort c1} : {join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1} 
+	on m1.person_id = c1.subject_id
+where m1.value_as_number is not null and m1.unit_concept_id is not null
+	{@cohort_period_only == 'true'} ? {AND m1.measurement_date>=c1.cohort_start_date and m1.measurement_date<=c1.cohort_end_date }
+	{@measurement_concept_ids != ''} ? {AND m1.measurement_concept_id in (@measurement_concept_ids)}
+;
+
+WITH cteRawData (cohort_definition_id, stratum_1, stratum_2, count_value) as
+(
+	select cohort_definition_id, measurement_concept_id, unit_concept_id, count_value FROM #raw_1316
+), 
+overallStats (cohort_definition_id, stratum_1, stratum_2, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    stratum_1,
+	stratum_2,
+	avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
+  group by cohort_definition_id, stratum_1, stratum_2
+),
+valueStats (cohort_definition_id, stratum_1, stratum_2, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id, stratum_1, stratum_2 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, stratum_2, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, stratum_2, count_value
+	) D
+)
+select o.cohort_definition_id,
+	1316 as analysis_id,
+	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
+	CAST(o.stratum_2 as VARCHAR) as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_1316
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1 and s.stratum_2 = o.stratum_2
+GROUP BY o.cohort_definition_id, o.stratum_1, o.stratum_2, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_1316;
+DROP TABLE #raw_1316;
+
+}
   
   
-  --{1317 IN (@list_of_analysis_ids)}?{
+{1317 IN (@list_of_analysis_ids)}?{
   -- 1317                Distribution of high range, by measurement_concept_id and unit_concept_id
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  1317 as analysis_id,
-  measurement_concept_id as stratum_1,
-  unit_concept_id as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_1317
-  from
-  (
-  select cohort_definition_id, measurement_concept_id, unit_concept_id,
-  range_high as count_value,
-  1.0*(row_number() over (partition by cohort_definition_id, measurement_concept_id, unit_concept_id order by range_high))/(COUNT_BIG(range_high) over (partition by cohort_definition_id, measurement_concept_id, unit_concept_id)+1) as p1
-  from @CDM_schema.measurement o1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on o1.person_id = c1.subject_id
-  where o1.unit_concept_id is not null
-  and o1.value_as_number is not null
-  and o1.range_low is not null
-  and o1.range_high is not null
-  --{@observation_concept_ids != ''}?{
-  and o1.measurement_concept_id in (@observation_concept_ids)
-  --}
-  --{@cohort_period_only == 'TRUE'}?{
-  and o1.measurement_date>=c1.cohort_start_date and o1.measurement_date<=c1.cohort_end_date
-  --}
-  ) t1
-  group by cohort_definition_id, measurement_concept_id, unit_concept_id
-  ;
-  --}
+
+select c1.cohort_definition_id,
+	c1.subject_id,
+	m1.measurement_concept_id, 
+	m1.unit_concept_id,
+	m1.range_high as count_value
+INTO #raw_1317
+from @CDM_schema.measurement m1
+{@cohort_period_only == 'true'} ? {join #HERACLES_cohort c1} : {join (select distinct cohort_definition_id, subject_id from #HERACLES_cohort) c1} 
+	on m1.person_id = c1.subject_id
+where m1.value_as_number is not null and m1.unit_concept_id is not null
+	{@cohort_period_only == 'true'} ? {AND m1.measurement_date>=c1.cohort_start_date and m1.measurement_date<=c1.cohort_end_date }
+	{@measurement_concept_ids != ''} ? {AND m1.measurement_concept_id in (@measurement_concept_ids)}
+;
+
+WITH cteRawData (cohort_definition_id, stratum_1, stratum_2, count_value) as
+(
+	select cohort_definition_id, measurement_concept_id, unit_concept_id, count_value FROM #raw_1317
+), 
+overallStats (cohort_definition_id, stratum_1, stratum_2, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    stratum_1,
+	stratum_2,
+	avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
+  group by cohort_definition_id, stratum_1, stratum_2
+),
+valueStats (cohort_definition_id, stratum_1, stratum_2, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id, stratum_1, stratum_2 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, stratum_2, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, stratum_2, count_value
+	) D
+)
+select o.cohort_definition_id,
+	1317 as analysis_id,
+	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
+	CAST(o.stratum_2 as VARCHAR) as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_1317
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1 and s.stratum_2 = o.stratum_2
+GROUP BY o.cohort_definition_id, o.stratum_1, o.stratum_2, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_1317;
+DROP TABLE #raw_1317;
+
+}
   
-  
-  
-  --{1318 IN (@list_of_analysis_ids)}?{
+{1318 IN (@list_of_analysis_ids)}?{
   -- 1318                Number of measurement records below/within/above normal range, by measurement_concept_id and unit_concept_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3, count_value)
   select cohort_definition_id,
@@ -5116,7 +5809,7 @@ from
   --{@observation_concept_ids != ''}?{
   and o1.measurement_concept_id in (@observation_concept_ids)
   --}
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   and o1.measurement_date>=c1.cohort_start_date and o1.measurement_date<=c1.cohort_end_date
   --}
   group by cohort_definition_id, 
@@ -5127,9 +5820,9 @@ from
   when o1.value_as_number > o1.range_high then 'Above Range High'
   else 'Other' end
   ;
-  --}
+}
   
-  --{1320 IN (@list_of_analysis_ids)}?{
+{1320 IN (@list_of_analysis_ids)}?{
   -- 1320                Number of measurement records by condition occurrence start month
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
   select c1.cohort_definition_id, 
@@ -5142,12 +5835,12 @@ from
   @CDM_schema.measurement o1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on o1.person_id = c1.subject_id
-  --{@measurement_concept_ids != '' | @cohort_period_only == 'TRUE'}?{    
+  --{@measurement_concept_ids != '' | @cohort_period_only == 'true'}?{    
   WHERE 
-  --{@cohort_period_only == 'TRUE'}?{
+  --{@cohort_period_only == 'true'}?{
   o1.measurement_date>=c1.cohort_start_date and o1.measurement_date<=c1.cohort_end_date
   --}
-  --{@measurement_concept_ids != '' & @cohort_period_only == 'TRUE'}?{ 
+  --{@measurement_concept_ids != '' & @cohort_period_only == 'true'}?{ 
   AND
   --}
   --{@measurement_concept_ids != ''}?{
@@ -5157,10 +5850,7 @@ from
   group by c1.cohort_definition_id,
   YEAR(measurement_date)*100 + month(measurement_date)
   ;
-  --}
-  
-  
-  
+}
   
   
   --/********************************************
@@ -5236,100 +5926,205 @@ from
   --{1801 IN (@list_of_analysis_ids)}?{
   -- 1801                Distribution of age at cohort start
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+
+select c1.cohort_definition_id,
+	c1.subject_id,
+	year(c1.cohort_start_date) - p1.YEAR_OF_BIRTH as count_value
+INTO #raw_1801
+from @CDM_schema.PERSON p1
+inner join #HERACLES_cohort c1 on p1.person_id = c1.subject_id
+;
+
+WITH cteRawData (cohort_definition_id, count_value) as
+(
+	select cohort_definition_id, count_value FROM #raw_1801
+), 
+overallStats (cohort_definition_id, avg_value, stdev_value, min_value, max_value, total) as
+(
   select cohort_definition_id, 
-  1801 as analysis_id,
-  '' as stratum_1, '' as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_1801
-  from
-  (
-  select c1.cohort_definition_id,
-  year(c1.cohort_start_date) - p1.YEAR_OF_BIRTH as count_value,
-  1.0*(row_number() over (partition by c1.cohort_definition_id order by year(c1.cohort_start_date) - p1.YEAR_OF_BIRTH))/(COUNT_BIG(year(c1.cohort_start_date) - p1.YEAR_OF_BIRTH) over (partition by c1.cohort_definition_id)+1) as p1
-  from @CDM_schema.PERSON p1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date from #HERACLES_cohort) c1
-  on p1.person_id = c1.subject_id
-  ) t1
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
   group by cohort_definition_id
-  ;
+),
+valueStats (cohort_definition_id, count_value, total, accumulated) as
+(
+	select cohort_definition_id, 
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, count_value
+	) D
+)
+select o.cohort_definition_id,
+	1801 as analysis_id,
+	'' as stratum_1, 
+	'' as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_1801
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id
+GROUP BY o.cohort_definition_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_1801;
+DROP TABLE #raw_1801;
+
+}
   
-  --}
   
-  
-  --{1802 IN (@list_of_analysis_ids)}?{
+{1802 IN (@list_of_analysis_ids)}?{
   -- 1802                Distribution of age at cohort start by gender
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+
+select c1.cohort_definition_id,
+	c1.subject_id,
+	p1.gender_concept_id,
+	year(c1.cohort_start_date) - p1.YEAR_OF_BIRTH as count_value
+INTO #raw_1802
+from @CDM_schema.PERSON p1
+inner join #HERACLES_cohort c1 on p1.person_id = c1.subject_id
+;
+
+WITH cteRawData (cohort_definition_id, stratum_1, count_value) as
+(
+	select cohort_definition_id, gender_concept_id, count_value FROM #raw_1802
+), 
+overallStats (cohort_definition_id, stratum_1, avg_value, stdev_value, min_value, max_value, total) as
+(
   select cohort_definition_id, 
-  1802 as analysis_id,
-  gender_concept_id as stratum_1, '' as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_1802
-  from
-  (
-  select c1.cohort_definition_id,
-  p1.gender_concept_id,
-  year(c1.cohort_start_date) - p1.YEAR_OF_BIRTH as count_value,
-  1.0*(row_number() over (partition by p1.gender_concept_id, c1.cohort_definition_id order by year(c1.cohort_start_date) - p1.YEAR_OF_BIRTH))/(COUNT_BIG(year(c1.cohort_start_date) - p1.YEAR_OF_BIRTH) over (partition by p1.gender_concept_id, c1.cohort_definition_id)+1) as p1
-  from @CDM_schema.PERSON p1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date from #HERACLES_cohort) c1
-  on p1.person_id = c1.subject_id
-  ) t1
-  group by cohort_definition_id, gender_concept_id
-  ;
-  --}       
+    stratum_1,
+		avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
+  group by cohort_definition_id, stratum_1
+),
+valueStats (cohort_definition_id, stratum_1, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id, stratum_1 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, count_value
+	) D
+)
+select o.cohort_definition_id,
+	1802 as analysis_id,
+	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
+	'' as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_1802
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1
+GROUP BY o.cohort_definition_id, o.stratum_1, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_1802;
+DROP TABLE #raw_1802;
+
+}       
   
   
-  --{1803 IN (@list_of_analysis_ids)}?{
+{1803 IN (@list_of_analysis_ids)}?{
   -- 1803                Distribution of age at cohort start by cohort start year
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id, 
-  1803 as analysis_id,
-  cohort_year as stratum_1, '' as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_1803
-  from
-  (
-  select c1.cohort_definition_id,
+
+select c1.cohort_definition_id,
+	c1.subject_id,
   year(c1.cohort_start_date) as cohort_year,
-  year(c1.cohort_start_date) - p1.YEAR_OF_BIRTH as count_value,
-  1.0*(row_number() over (partition by year(c1.cohort_start_date), c1.cohort_definition_id order by year(c1.cohort_start_date) - p1.YEAR_OF_BIRTH))/(COUNT_BIG(year(c1.cohort_start_date) - p1.YEAR_OF_BIRTH) over (partition by year(c1.cohort_start_date), c1.cohort_definition_id)+1) as p1
-  from @CDM_schema.PERSON p1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date from #HERACLES_cohort) c1
-  on p1.person_id = c1.subject_id
-  ) t1
-  group by cohort_definition_id, cohort_year
-  ;
-  --}       
+  year(c1.cohort_start_date) - p1.YEAR_OF_BIRTH as count_value
+INTO #raw_1803
+from @CDM_schema.PERSON p1
+inner join #HERACLES_cohort c1 on p1.person_id = c1.subject_id
+;
+
+WITH cteRawData (cohort_definition_id, stratum_1, count_value) as
+(
+	select cohort_definition_id, cohort_year, count_value FROM #raw_1803
+), 
+overallStats (cohort_definition_id, stratum_1, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    stratum_1,
+		avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
+  group by cohort_definition_id, stratum_1
+),
+valueStats (cohort_definition_id, stratum_1, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id, stratum_1 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, count_value
+	) D
+)
+select o.cohort_definition_id,
+	1803 as analysis_id,
+	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
+	'' as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_1803
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1
+GROUP BY o.cohort_definition_id, o.stratum_1, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_1803;
+DROP TABLE #raw_1803;
+
+}       
   
   
-  --{1804 IN (@list_of_analysis_ids)}?{
+{1804 IN (@list_of_analysis_ids)}?{
   -- 1804                Number of persons by duration from cohort start to cohort end, in 30d increments
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
   select c1.cohort_definition_id, 
@@ -5343,10 +6138,10 @@ from
   on p1.person_id = c1.subject_id
   group by c1.cohort_definition_id, floor(DATEDIFF(dd, c1.cohort_start_date, c1.cohort_end_date)/30)
   ;
-  --}           
+}           
   
   
-  --{1805 IN (@list_of_analysis_ids)}?{
+{1805 IN (@list_of_analysis_ids)}?{
   -- 1805                Number of persons by duration from observation start to cohort start, in 30d increments
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
   select c1.cohort_definition_id, 
@@ -5364,9 +6159,9 @@ from
   and c1.cohort_start_date <= op1.observation_period_end_date
   group by c1.cohort_definition_id, floor(DATEDIFF(dd, op1.observation_period_start_date, c1.cohort_start_date)/30)
   ;
-  --}           
+}           
   
-  --{1806 IN (@list_of_analysis_ids)}?{       
+{1806 IN (@list_of_analysis_ids)}?{       
   -- 1806                Number of persons by duration from cohort start to observation end, in 30d increments
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
   select c1.cohort_definition_id, 
@@ -5384,9 +6179,9 @@ from
   and c1.cohort_start_date <= op1.observation_period_end_date
   group by c1.cohort_definition_id, floor(DATEDIFF(dd, c1.cohort_start_date, op1.observation_period_end_date)/30)
   ;
-  --}           
+}           
   
-  --{1807 IN (@list_of_analysis_ids)}?{
+{1807 IN (@list_of_analysis_ids)}?{
   -- 1807                Number of persons by duration from cohort end to observation end, in 30d increments
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
   select c1.cohort_definition_id, 
@@ -5404,211 +6199,413 @@ from
   and c1.cohort_start_date <= op1.observation_period_end_date
   group by c1.cohort_definition_id, floor(DATEDIFF(dd, c1.cohort_end_date, op1.observation_period_end_date)/30)
   ;
-  --}           
+}           
   
   
-  --{1808 IN (@list_of_analysis_ids)}?{
+{1808 IN (@list_of_analysis_ids)}?{
   -- 1808                Distribution of duration (days) from cohort start to cohort end
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  1808 as analysis_id,
-  '' as stratum_1, '' as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_1808
-  from
-  (
-  select c1.cohort_definition_id,
-  DATEDIFF(dd,c1.cohort_start_date, c1.cohort_end_date) as count_value,
-  1.0*(row_number() over (partition by c1.cohort_definition_id order by DATEDIFF(dd,c1.cohort_start_date, c1.cohort_end_date)))/(COUNT_BIG(DATEDIFF(dd,c1.cohort_start_date, c1.cohort_end_date)) over (partition by c1.cohort_definition_id)+1) as p1
-  from @CDM_schema.PERSON p1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on p1.person_id = c1.subject_id
-  ) t1
+
+select c1.cohort_definition_id,
+	c1.subject_id,
+	DATEDIFF(dd,c1.cohort_start_date, c1.cohort_end_date) as count_value
+INTO #raw_1808
+from @CDM_schema.PERSON p1
+inner join #HERACLES_cohort c1 on p1.person_id = c1.subject_id
+;
+
+WITH cteRawData (cohort_definition_id, count_value) as
+(
+	select cohort_definition_id, count_value FROM #raw_1808
+), 
+overallStats (cohort_definition_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
   group by cohort_definition_id
-  ;
-  --}
+),
+valueStats (cohort_definition_id, count_value, total, accumulated) as
+(
+	select cohort_definition_id, 
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, count_value
+	) D
+)
+select o.cohort_definition_id,
+	1808 as analysis_id,
+	'' as stratum_1, 
+	'' as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_1808
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id
+GROUP BY o.cohort_definition_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_1808;
+DROP TABLE #raw_1808;
+
+}
   
   
-  --{1809 IN (@list_of_analysis_ids)}?{
+{1809 IN (@list_of_analysis_ids)}?{
   -- 1809                Distribution of duration (days) from cohort start to cohort end, by gender
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  1809 as analysis_id,
-  gender_concept_id as stratum_1, '' as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_1809
-  from
-  (
-  select c1.cohort_definition_id,
-  p1.gender_concept_id,
-  DATEDIFF(dd,c1.cohort_start_date, c1.cohort_end_date) as count_value,
-  1.0*(row_number() over (partition by c1.cohort_definition_id, p1.gender_concept_id order by DATEDIFF(dd,c1.cohort_start_date, c1.cohort_end_date)))/(COUNT_BIG(DATEDIFF(dd,c1.cohort_start_date, c1.cohort_end_date)) over (partition by c1.cohort_definition_id, p1.gender_concept_id)+1) as p1
-  from @CDM_schema.PERSON p1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on p1.person_id = c1.subject_id
-  ) t1
-  group by cohort_definition_id,
-  gender_concept_id
-  ;
-  --}
+
+select c1.cohort_definition_id,
+	c1.subject_id,
+	p1.gender_concept_id,
+	DATEDIFF(dd,c1.cohort_start_date, c1.cohort_end_date) as count_value
+INTO #raw_1809
+from @CDM_schema.PERSON p1
+inner join #HERACLES_cohort c1 on p1.person_id = c1.subject_id
+;
+
+WITH cteRawData (cohort_definition_id, stratum_1, count_value) as
+(
+	select cohort_definition_id, gender_concept_id, count_value FROM #raw_1809
+), 
+overallStats (cohort_definition_id, stratum_1, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    stratum_1,
+		avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
+  group by cohort_definition_id, stratum_1
+),
+valueStats (cohort_definition_id, stratum_1, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id, stratum_1 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, count_value
+	) D
+)
+select o.cohort_definition_id,
+	1809 as analysis_id,
+	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
+	'' as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_1809
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1
+GROUP BY o.cohort_definition_id, o.stratum_1, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_1809;
+DROP TABLE #raw_1809;
+
+}
   
   
-  --{1810 IN (@list_of_analysis_ids)}?{
+{1810 IN (@list_of_analysis_ids)}?{
   -- 1810                Distribution of duration (days) from cohort start to cohort end, by age decile
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  1810 as analysis_id,
-  age_decile as stratum_1, '' as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_1810
-  from
-  (
-  select c1.cohort_definition_id,
-  floor((year(c1.cohort_start_date) - p1.YEAR_OF_BIRTH)/10) as age_decile,
-  DATEDIFF(dd,c1.cohort_start_date, c1.cohort_end_date) as count_value,
-  1.0*(row_number() over (partition by c1.cohort_definition_id, floor((year(c1.cohort_start_date) - p1.YEAR_OF_BIRTH)/10) order by DATEDIFF(dd,c1.cohort_start_date, c1.cohort_end_date)))/(COUNT_BIG(DATEDIFF(dd,c1.cohort_start_date, c1.cohort_end_date)) over (partition by c1.cohort_definition_id, floor((year(c1.cohort_start_date) - p1.YEAR_OF_BIRTH)/10))+1) as p1
-  from @CDM_schema.PERSON p1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on p1.person_id = c1.subject_id
-  ) t1
-  group by cohort_definition_id,
-  age_decile
-  ;
-  --}
+
+select c1.cohort_definition_id,
+	c1.subject_id,
+	floor((year(c1.cohort_start_date) - p1.YEAR_OF_BIRTH)/10) as age_decile,
+	DATEDIFF(dd,c1.cohort_start_date, c1.cohort_end_date) as count_value
+INTO #raw_1810
+from @CDM_schema.PERSON p1
+inner join #HERACLES_cohort c1 on p1.person_id = c1.subject_id
+;
+
+WITH cteRawData (cohort_definition_id, stratum_1, count_value) as
+(
+	select cohort_definition_id, age_decile, count_value FROM #raw_1810
+), 
+overallStats (cohort_definition_id, stratum_1, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    stratum_1,
+		avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
+  group by cohort_definition_id, stratum_1
+),
+valueStats (cohort_definition_id, stratum_1, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id, stratum_1 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, count_value
+	) D
+)
+select o.cohort_definition_id,
+	1810 as analysis_id,
+	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
+	'' as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_1810
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1
+GROUP BY o.cohort_definition_id, o.stratum_1, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_1810;
+DROP TABLE #raw_1810;
+
+}
   
-  --{1811 IN (@list_of_analysis_ids)}?{
+{1811 IN (@list_of_analysis_ids)}?{
   -- 1811                Distribution of duration (days) from observation start to cohort start
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  1811 as analysis_id,
-  '' as stratum_1, '' as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_1811
-  from
-  (
-  select c1.cohort_definition_id,
-  DATEDIFF(dd,op1.observation_period_start_date, c1.cohort_start_date) as count_value,
-  1.0*(row_number() over (partition by c1.cohort_definition_id order by DATEDIFF(dd,op1.observation_period_start_date, c1.cohort_start_date)))/(COUNT_BIG(DATEDIFF(dd,op1.observation_period_start_date, c1.cohort_start_date)) over (partition by c1.cohort_definition_id)+1) as p1
-  from @CDM_schema.PERSON p1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on p1.person_id = c1.subject_id
-  inner join @CDM_schema.observation_period op1
-  on p1.person_id = op1.person_id
-  where c1.cohort_start_date >= op1.observation_period_start_date
-  and c1.cohort_start_date <= op1.observation_period_end_date
-  ) t1
+
+select c1.cohort_definition_id,
+	c1.subject_id,
+	DATEDIFF(dd,op1.observation_period_start_date, c1.cohort_start_date) as count_value
+INTO #raw_1811
+from @CDM_schema.PERSON p1
+inner join #HERACLES_cohort c1 on p1.person_id = c1.subject_id
+inner join @CDM_schema.observation_period op1 on p1.person_id = op1.person_id
+where c1.cohort_start_date >= op1.observation_period_start_date
+	and c1.cohort_start_date <= op1.observation_period_end_date
+;
+
+WITH cteRawData (cohort_definition_id, count_value) as
+(
+	select cohort_definition_id, count_value FROM #raw_1811
+), 
+overallStats (cohort_definition_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
   group by cohort_definition_id
-  ;
-  --}
+),
+valueStats (cohort_definition_id, count_value, total, accumulated) as
+(
+	select cohort_definition_id, 
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, count_value
+	) D
+)
+select o.cohort_definition_id,
+	1811 as analysis_id,
+	'' as stratum_1, 
+	'' as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_1811
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id
+GROUP BY o.cohort_definition_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_1811;
+DROP TABLE #raw_1811;
+
+}
   
   
-  --{1812 IN (@list_of_analysis_ids)}?{
+{1812 IN (@list_of_analysis_ids)}?{
   -- 1812                Distribution of duration (days) from cohort start to observation end
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  1812 as analysis_id,
-  '' as stratum_1, '' as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_1812
-  from
-  (
-  select c1.cohort_definition_id,
-  DATEDIFF(dd,c1.cohort_start_date, op1.observation_period_end_date) as count_value,
-  1.0*(row_number() over (partition by c1.cohort_definition_id order by DATEDIFF(dd,c1.cohort_start_date, op1.observation_period_end_date)))/(COUNT_BIG(DATEDIFF(dd,c1.cohort_start_date, op1.observation_period_end_date)) over (partition by c1.cohort_definition_id)+1) as p1
-  from @CDM_schema.PERSON p1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on p1.person_id = c1.subject_id
-  inner join @CDM_schema.observation_period op1
-  on p1.person_id = op1.person_id
-  where c1.cohort_start_date >= op1.observation_period_start_date
-  and c1.cohort_start_date <= op1.observation_period_end_date
-  ) t1
+
+select c1.cohort_definition_id,
+	c1.subject_id,
+	DATEDIFF(dd, c1.cohort_start_date, op1.observation_period_end_date) as count_value
+INTO #raw_1812
+from @CDM_schema.PERSON p1
+inner join #HERACLES_cohort c1 on p1.person_id = c1.subject_id
+inner join @CDM_schema.observation_period op1 on p1.person_id = op1.person_id
+where c1.cohort_start_date >= op1.observation_period_start_date
+	and c1.cohort_start_date <= op1.observation_period_end_date
+;
+
+WITH cteRawData (cohort_definition_id, count_value) as
+(
+	select cohort_definition_id, count_value FROM #raw_1812
+), 
+overallStats (cohort_definition_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
   group by cohort_definition_id
-  ;
-  --}
+),
+valueStats (cohort_definition_id, count_value, total, accumulated) as
+(
+	select cohort_definition_id, 
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, count_value
+	) D
+)
+select o.cohort_definition_id,
+	1812 as analysis_id,
+	'' as stratum_1, 
+	'' as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_1812
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id
+GROUP BY o.cohort_definition_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_1812;
+DROP TABLE #raw_1812;
+
+}
   
   
-  --{1813 IN (@list_of_analysis_ids)}?{
+{1813 IN (@list_of_analysis_ids)}?{
   -- 1813                Distribution of duration (days) from cohort end to observation end
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-  select cohort_definition_id,
-  1813 as analysis_id,
-  '' as stratum_1, '' as stratum_2,
-  COUNT_BIG(count_value) as count_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  avg(1.0*count_value) as avg_value,
-  stdev(count_value) as stdev_value,
-  max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-  max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-  max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-  max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-  max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-  into #results_dist_1813
-  from
-  (
-  select c1.cohort_definition_id,
-  DATEDIFF(dd,c1.cohort_end_date, op1.observation_period_end_date) as count_value,
-  1.0*(row_number() over (partition by c1.cohort_definition_id order by DATEDIFF(dd,c1.cohort_end_date, op1.observation_period_end_date)))/(COUNT_BIG(DATEDIFF(dd,c1.cohort_end_date, op1.observation_period_end_date)) over (partition by c1.cohort_definition_id)+1) as p1
-  from @CDM_schema.PERSON p1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
-  on p1.person_id = c1.subject_id
-  inner join @CDM_schema.observation_period op1
-  on p1.person_id = op1.person_id
-  where c1.cohort_start_date >= op1.observation_period_start_date
-  and c1.cohort_start_date <= op1.observation_period_end_date
-  ) t1
+
+select c1.cohort_definition_id,
+	c1.subject_id,
+	DATEDIFF(dd, c1.cohort_end_date, op1.observation_period_end_date) as count_value
+INTO #raw_1813
+from @CDM_schema.PERSON p1
+inner join #HERACLES_cohort c1 on p1.person_id = c1.subject_id
+inner join @CDM_schema.observation_period op1 on p1.person_id = op1.person_id
+where c1.cohort_start_date >= op1.observation_period_start_date
+	and c1.cohort_start_date <= op1.observation_period_end_date
+;
+
+WITH cteRawData (cohort_definition_id, count_value) as
+(
+	select cohort_definition_id, count_value FROM #raw_1813
+), 
+overallStats (cohort_definition_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select cohort_definition_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from cteRawData
   group by cohort_definition_id
-  ;
-  --}
+),
+valueStats (cohort_definition_id, count_value, total, accumulated) as
+(
+	select cohort_definition_id, 
+		count_value, 
+		total, 
+		SUM(total) over (partition by cohort_definition_id order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, count_value
+	) D
+)
+select o.cohort_definition_id,
+	1813 as analysis_id,
+	'' as stratum_1, 
+	'' as stratum_2,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_1813
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id
+GROUP BY o.cohort_definition_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_1813;
+DROP TABLE #raw_1813;
+
+}
   
-  
-  --{1814 IN (@list_of_analysis_ids)}?{
+{1814 IN (@list_of_analysis_ids)}?{
   -- 1814                Number of persons by cohort start year by gender by age decile
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3, count_value)
   select c1.cohort_definition_id,
@@ -5627,10 +6624,10 @@ from
   p1.gender_concept_id,
   floor((YEAR(c1.cohort_start_date) - p1.year_of_birth)/10)
   ;
-  --}
+}
   
   
-  --{1815 IN (@list_of_analysis_ids)}?{
+{1815 IN (@list_of_analysis_ids)}?{
   -- 1815                Number of persons by cohort start month
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
   select c1.cohort_definition_id,
@@ -5645,10 +6642,10 @@ from
   group by c1.cohort_definition_id,
   YEAR(c1.cohort_start_date)*100 + month(c1.cohort_start_date)
   ;
-  --}
+}
   
   
-  --{1816 IN (@list_of_analysis_ids)}?{
+{1816 IN (@list_of_analysis_ids)}?{
   -- 1816                Number of persons by number of cohort periods
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
   select cohort_definition_id, 
@@ -5665,10 +6662,10 @@ from
   group by c1.cohort_definition_id, p1.person_id) nc1
   group by cohort_definition_id, num_periods
   ;
-  --}
+}
   
   
-  --{1820 IN (@list_of_analysis_ids)}?{
+{1820 IN (@list_of_analysis_ids)}?{
   -- 1820                Number of persons by duration from cohort start to first occurrence of condition occurrence, by condition_concept_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
   select c1.cohort_definition_id, 
@@ -5703,10 +6700,10 @@ from
   when c1.cohort_start_date > co1.first_date then floor(DATEDIFF(dd, c1.cohort_start_date, co1.first_date)/30)-1
   end
   ;
-  --}         
+}         
   
   
-  --{1821 IN (@list_of_analysis_ids)}?{
+{1821 IN (@list_of_analysis_ids)}?{
   -- 1821                Number of events by duration from cohort start to all occurrences of condition occurrence, by condition_concept_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
   select c1.cohort_definition_id, 
@@ -5735,11 +6732,11 @@ from
   when c1.cohort_start_date > co1.condition_start_date then floor(DATEDIFF(dd, c1.cohort_start_date, co1.condition_start_date)/30)-1
   end
   ;
-  --}           
+}           
   
   
   
-  --{1830 IN (@list_of_analysis_ids)}?{
+{1830 IN (@list_of_analysis_ids)}?{
   -- 1830                Number of persons by duration from cohort start to first occurrence of procedure occurrence, by procedure_concept_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
   select c1.cohort_definition_id, 
@@ -5774,10 +6771,10 @@ from
   when c1.cohort_start_date > po1.first_date then floor(DATEDIFF(dd, c1.cohort_start_date, po1.first_date)/30)-1
   end
   ;
-  --}         
+}         
   
   
-  --{1831 IN (@list_of_analysis_ids)}?{
+{1831 IN (@list_of_analysis_ids)}?{
   -- 1831                Number of events by duration from cohort start to all occurrences of procedure occurrence, by procedure_concept_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
   select c1.cohort_definition_id, 
@@ -5806,11 +6803,11 @@ from
   when c1.cohort_start_date > po1.procedure_date then floor(DATEDIFF(dd, c1.cohort_start_date, po1.procedure_date)/30)-1
   end
   ;
-  --}                           
+}                           
   
   
   
-  --{1840 IN (@list_of_analysis_ids)}?{
+{1840 IN (@list_of_analysis_ids)}?{
   -- 1840                Number of persons by duration from cohort start to first occurrence of drug_exposure, by drug_concept_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
   select c1.cohort_definition_id, 
@@ -5845,10 +6842,10 @@ from
   when c1.cohort_start_date > de1.first_date then floor(DATEDIFF(dd, c1.cohort_start_date, de1.first_date)/30)-1
   end
   ;
-  --}         
+}         
   
   
-  --{1841 IN (@list_of_analysis_ids)}?{
+{1841 IN (@list_of_analysis_ids)}?{
   -- 1841                Number of events by duration from cohort start to all occurrences of drug_exposure, by drug_concept_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
   select c1.cohort_definition_id, 
@@ -5877,10 +6874,10 @@ from
   when c1.cohort_start_date > de1.drug_exposure_start_date then floor(DATEDIFF(dd, c1.cohort_start_date, de1.drug_exposure_start_date)/30)-1
   end
   ;
-  --}                           
+}                           
   
   
-  --{1850 IN (@list_of_analysis_ids)}?{
+{1850 IN (@list_of_analysis_ids)}?{
   -- 1850                Number of persons by duration from cohort start to first occurrence of observation, by observation_concept_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
   select c1.cohort_definition_id, 
@@ -5915,10 +6912,10 @@ from
   when c1.cohort_start_date > o1.first_date then floor(DATEDIFF(dd, c1.cohort_start_date, o1.first_date)/30)-1
   end
   ;
-  --}         
+}         
   
   
-  --{1851 IN (@list_of_analysis_ids)}?{
+{1851 IN (@list_of_analysis_ids)}?{
   -- 1851                Number of events by duration from cohort start to all occurrences of observation, by observation_concept_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
   select c1.cohort_definition_id, 
@@ -5947,11 +6944,11 @@ from
   when c1.cohort_start_date > o1.observation_date then floor(DATEDIFF(dd, c1.cohort_start_date, o1.observation_date)/30)-1
   end
   ;
-  --}
+}
   
   
   
-  --{1860 IN (@list_of_analysis_ids)}?{
+{1860 IN (@list_of_analysis_ids)}?{
   -- 1860                Number of persons by duration from cohort start to first occurrence of condition era, by condition_concept_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
   select c1.cohort_definition_id, 
@@ -5986,10 +6983,10 @@ from
   when c1.cohort_start_date > ce1.first_date then floor(DATEDIFF(dd, c1.cohort_start_date, ce1.first_date)/30)-1
   end
   ;
-  --}         
+}         
   
   
-  --{1861 IN (@list_of_analysis_ids)}?{
+{1861 IN (@list_of_analysis_ids)}?{
   -- 1861                Number of events by duration from cohort start to all occurrences of condition era, by condition_concept_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
   select c1.cohort_definition_id, 
@@ -6018,11 +7015,11 @@ from
   when c1.cohort_start_date > ce1.condition_era_start_date then floor(DATEDIFF(dd, c1.cohort_start_date, ce1.condition_era_start_date)/30)-1
   end
   ;
-  --}           
+}           
   
   
   
-  --{1870 IN (@list_of_analysis_ids)}?{
+{1870 IN (@list_of_analysis_ids)}?{
   -- 1870                Number of persons by duration from cohort start to first occurrence of drug era, by drug_concept_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
   select c1.cohort_definition_id, 
@@ -6057,10 +7054,10 @@ from
   when c1.cohort_start_date > de1.first_date then floor(DATEDIFF(dd, c1.cohort_start_date, de1.first_date)/30)-1
   end
   ;
-  --}         
+}         
   
   
-  --{1871 IN (@list_of_analysis_ids)}?{
+{1871 IN (@list_of_analysis_ids)}?{
   -- 1871                Number of events by duration from cohort start to all occurrences of drug era, by drug_concept_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
   select c1.cohort_definition_id, 
@@ -6089,7 +7086,7 @@ from
   when c1.cohort_start_date > de1.drug_era_start_date then floor(DATEDIFF(dd, c1.cohort_start_date, de1.drug_era_start_date)/30)-1
   end
   ;
-  --}           
+}           
   
   --{2001 IN (@list_of_analysis_ids)}?{
   -- 2001                Count and percentage of gender data completeness for age less than 10

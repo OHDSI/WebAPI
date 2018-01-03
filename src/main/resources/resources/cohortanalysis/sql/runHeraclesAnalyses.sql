@@ -641,8 +641,8 @@ DROP TABLE #raw_107;
   
   SELECT DISTINCT 
   YEAR(observation_period_start_date) AS obs_year,
-  CAST(CAST(YEAR(observation_period_start_date) AS VARCHAR(4)) +  '01' + '01' AS DATE) AS obs_year_start,      
-  CAST(CAST(YEAR(observation_period_start_date) AS VARCHAR(4)) +  '12' + '31' AS DATE) AS obs_year_end
+	DATEFROMPARTS(YEAR(observation_period_start_date),1,1) as obs_year_start,
+	DATEFROMPARTS(YEAR(observation_period_start_date),12,31) as obs_year_end
   INTO
   #temp_dates_1
   from @CDM_schema.PERSON p1
@@ -690,8 +690,8 @@ DROP TABLE #raw_107;
   
   SELECT DISTINCT 
   YEAR(observation_period_start_date)*100 + MONTH(observation_period_start_date) AS obs_month,
-  CAST(CAST(YEAR(observation_period_start_date) AS VARCHAR(4)) +  RIGHT('0' + CAST(MONTH(OBSERVATION_PERIOD_START_DATE) AS VARCHAR(2)), 2) + '01' AS DATE) AS obs_month_start,  
-  DATEADD(dd,-1,DATEADD(mm,1,CAST(CAST(YEAR(observation_period_start_date) AS VARCHAR(4)) +  RIGHT('0' + CAST(MONTH(OBSERVATION_PERIOD_START_DATE) AS VARCHAR(2)), 2) + '01' AS DATE))) AS obs_month_end
+  DATEFROMPARTS(YEAR(observation_period_start_date), MONTH(OBSERVATION_PERIOD_START_DATE), 1) AS obs_month_start,  
+  DATEADD(dd,-1,DATEADD(mm,1,DATEFROMPARTS(YEAR(observation_period_start_date), MONTH(OBSERVATION_PERIOD_START_DATE), 1))) AS obs_month_end
   INTO
   #temp_dates_2
   FROM @CDM_schema.PERSON p1
@@ -7888,8 +7888,6 @@ DROP TABLE #raw_1813;
   FROM
   (select
   obs_date as d,
-  --        CAST(YEAR(obs_date) as varchar(4)) + '-' + RIGHT('0' + RTRIM(MONTH(obs_date)), 2) + '-' + RIGHT('0' + RTRIM(day(obs_date)), 2) as d,
-  --        cast(obs_date as varchar(10)) d, 
   sum(probTimesLog) entropy from
   (select obs_date, value_as_string, (1.0 * cnt) / (1.0 * total_per_day) prob, 
   --                      (-1.0) * (((1.0 * cnt) / (1.0 * total_per_day))* log(2, (1.0 * cnt) / (1.0 * total_per_day))) probTimesLog,
@@ -7901,16 +7899,12 @@ DROP TABLE #raw_1813;
   as total_per_day
   from 
   (
-  select distinct all_observ.value_as_string,
-  CAST(YEAR(all_observ.observation_date) as varchar(4)) + '-' + RIGHT('0' + RTRIM(MONTH(all_observ.observation_date)), 2) + '-' + RIGHT('0' + RTRIM(day(all_observ.observation_date)), 2) as obs_date,
-  --observation_date as obs_date, 
-  COUNT_BIG(*) 
-  OVER (PARTITION BY all_observ.value_as_string,
-  --                                           DATEFROMPARTS(YEAR(all_observ.observation_date),MONTH(all_observ.observation_date),DAY(all_observ.observation_date))
-  CAST(YEAR(all_observ.observation_date) as varchar(4)) + '-' + RIGHT('0' + RTRIM(MONTH(all_observ.observation_date)), 2) + '-' + RIGHT('0' + RTRIM(day(all_observ.observation_date)), 2)
-  --trunc(all_observ.observation_date)
-  )
-  as cnt
+  select distinct 
+		all_observ.value_as_string,
+		DATEFROMPARTS(YEAR(all_observ.observation_date),MONTH(all_observ.observation_date),DAY(all_observ.observation_date)) as obs_date,
+		COUNT_BIG(*) OVER (
+				PARTITION BY all_observ.value_as_string, DATEFROMPARTS(YEAR(all_observ.observation_date),MONTH(all_observ.observation_date),DAY(all_observ.observation_date))
+		)	as cnt
   from 
   (select * from @CDM_schema.OBSERVATION observ
   join #HERACLES_cohort co
@@ -7966,12 +7960,10 @@ DROP TABLE #raw_1813;
   all_observ.site_source_value
   AS site_source_value,
   all_observ.value_as_string AS value_as_string,
-  CAST(YEAR(all_observ.observation_date) as varchar(4)) + '-' + RIGHT('0' + RTRIM(MONTH(all_observ.observation_date)), 2) + '-' + RIGHT('0' + RTRIM(day(all_observ.observation_date)), 2) as obs_date,
-  COUNT_BIG(*)
-  OVER (
-  PARTITION BY all_observ.care_site_id,
-  all_observ.value_as_string,
-  CAST(YEAR(all_observ.observation_date) as varchar(4)) + '-' + RIGHT('0' + RTRIM(MONTH(all_observ.observation_date)), 2) + '-' + RIGHT('0' + RTRIM(day(all_observ.observation_date)), 2))
+	DATEFROMPARTS(YEAR(all_observ.observation_date),MONTH(all_observ.observation_date),DAY(all_observ.observation_date)) as obs_date,
+  COUNT_BIG(*) OVER (
+		PARTITION BY all_observ.care_site_id, all_observ.value_as_string, DATEFROMPARTS(YEAR(all_observ.observation_date),MONTH(all_observ.observation_date),DAY(all_observ.observation_date))
+	)
   AS cnt
   FROM (SELECT CASE
   WHEN caresite.CARE_SITE_ID IS NULL

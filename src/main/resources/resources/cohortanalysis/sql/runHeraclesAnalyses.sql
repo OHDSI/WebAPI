@@ -90,7 +90,7 @@ where cohort_definition_id in (@cohort_definition_id)
 --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
 select c1.cohort_definition_id, 
 0 as analysis_id, 
-'@source_name' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4, 
+'@source_name' as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4, 
 COUNT_BIG(distinct person_id) as count_value
 into #results_0
 from @CDM_schema.PERSON p1
@@ -99,7 +99,7 @@ on p1.person_id = c1.subject_id
 group by c1.cohort_definition_id;
 
 --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, count_value)
-select c1.cohort_definition_id, 0 as analysis_id, '@source_name' as stratum_1, '' as stratum_2, 
+select c1.cohort_definition_id, 0 as analysis_id, '@source_name' as stratum_1, cast( '' as varchar(1) ) as stratum_2, 
 0 as min_value, 0 as max_value, 0 as avg_value, 0 as stdev_value, 0 as median_value,
 0 as p10_value, 0 as p25_value, 0 as p75_value, 0 as p90_value,
 COUNT_BIG(distinct person_id) as count_value
@@ -121,7 +121,7 @@ select c.cohort_definition_id,
 3000 as analysis_id,  
 p.gender_concept_id as stratum_1, 
 (cast(year(c.cohort_start_date) - p.year_of_birth as int)) / 10 * 10 as stratum_2,
-'' as stratum_3, '' as stratum_4,
+cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
 count_big(*) as count_value
 into #results_3000
 from #HERACLES_cohort c 
@@ -162,7 +162,7 @@ where row_index <= 5
 --{1 IN (@list_of_analysis_ids)}?{
 -- 1       Number of persons
 --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
-select c1.cohort_definition_id, 1 as analysis_id,  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+select c1.cohort_definition_id, 1 as analysis_id,  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
 COUNT_BIG(distinct person_id) as count_value
 into #results_1
 from @CDM_schema.PERSON p1
@@ -175,7 +175,7 @@ group by c1.cohort_definition_id;
 -- 2       Number of persons by gender
 --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
 select c1.cohort_definition_id, 2 as analysis_id,  gender_concept_id as stratum_1, 
-'' as stratum_2, '' as stratum_3, '' as stratum_4,
+cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
 COUNT_BIG(distinct person_id) as count_value
 into #results_2
 from @CDM_schema.PERSON p1
@@ -189,7 +189,7 @@ group by c1.cohort_definition_id, GENDER_CONCEPT_ID
 -- 3       Number of persons by year of birth
 --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
 select c1.cohort_definition_id, 3 as analysis_id,  year_of_birth as stratum_1, 
-'' as stratum_2, '' as stratum_3, '' as stratum_4,
+cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
 COUNT_BIG(distinct person_id) as count_value
 into #results_3
 from @CDM_schema.PERSON p1
@@ -204,7 +204,7 @@ group by c1.cohort_definition_id, YEAR_OF_BIRTH
 -- 4       Number of persons by race
 --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
 select c1.cohort_definition_id, 4 as analysis_id,  RACE_CONCEPT_ID as stratum_1, 
-'' as stratum_2, '' as stratum_3, '' as stratum_4,
+cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
 COUNT_BIG(distinct person_id) as count_value
 into #results_4
 from @CDM_schema.PERSON p1
@@ -218,7 +218,7 @@ group by c1.cohort_definition_id, RACE_CONCEPT_ID
 -- 5       Number of persons by ethnicity
 --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
 select c1.cohort_definition_id, 5 as analysis_id,  ETHNICITY_CONCEPT_ID as stratum_1, 
-'' as stratum_2, '' as stratum_3, '' as stratum_4,
+cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
 COUNT_BIG(distinct person_id) as count_value
 into #results_5
 from @CDM_schema.PERSON p1
@@ -232,7 +232,7 @@ group by c1.cohort_definition_id, ETHNICITY_CONCEPT_ID
 -- 7       Number of persons with invalid provider_id
 --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
 select c1.cohort_definition_id, 7 as analysis_id,  
-'' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
 COUNT_BIG(p1.person_id) as count_value
 into #results_7
 from @CDM_schema.PERSON p1
@@ -250,7 +250,7 @@ group by c1.cohort_definition_id
 -- 8       Number of persons with invalid location_id
 --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
 select c1.cohort_definition_id, 8 as analysis_id,  
-'' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
 COUNT_BIG(p1.person_id) as count_value
 into #results_8
 from @CDM_schema.PERSON p1
@@ -268,7 +268,7 @@ group by c1.cohort_definition_id
 -- 9       Number of persons with invalid care_site_id
 --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
 select c1.cohort_definition_id, 9 as analysis_id,  
-'' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
 COUNT_BIG(p1.person_id) as count_value
 into #results_9
 from @CDM_schema.PERSON p1
@@ -290,7 +290,7 @@ group by c1.cohort_definition_id
 -- 101                Number of persons by age, with age at first observation period
 --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
 select c1.cohort_definition_id, 101 as analysis_id,   year(op1.index_date) - p1.YEAR_OF_BIRTH as stratum_1, 
-'' as stratum_2, '' as stratum_3, '' as stratum_4,
+cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
 COUNT_BIG(p1.person_id) as count_value
 into #results_101
 from @CDM_schema.PERSON p1
@@ -306,7 +306,7 @@ group by c1.cohort_definition_id, year(op1.index_date) - p1.YEAR_OF_BIRTH
 -- 102   Number of persons by gender by age, with age at first observation period
 --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value)
 select c1.cohort_definition_id, 102 as analysis_id,  p1.gender_concept_id as stratum_1, year(op1.index_date) - p1.YEAR_OF_BIRTH as stratum_2, 
-'' as stratum_3, '' as stratum_4,
+cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
 COUNT_BIG(p1.person_id) as count_value
 into #results_102
 from @CDM_schema.PERSON p1
@@ -363,8 +363,8 @@ valueStats (cohort_definition_id, count_value, total, accumulated) as
 )
 select o.cohort_definition_id,
 	103 as analysis_id,
-	'' as stratum_1, 
-	'' as stratum_2,
+	cast( '' as varchar(1) ) as stratum_1, 
+	cast( '' as varchar(1) ) as stratum_2,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -434,7 +434,7 @@ valueStats (cohort_definition_id, stratum_1, count_value, total, accumulated) as
 select o.cohort_definition_id,
 	104 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
-	'' as stratum_2,
+	cast( '' as varchar(1) ) as stratum_2,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -509,7 +509,7 @@ valueStats (cohort_definition_id, stratum_1, count_value, total, accumulated) as
 select o.cohort_definition_id,
 	106 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
-	'' as stratum_2,
+	cast( '' as varchar(1) ) as stratum_2,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -585,7 +585,7 @@ valueStats (cohort_definition_id, stratum_1, count_value, total, accumulated) as
 select o.cohort_definition_id,
 	107 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
-	'' as stratum_2,
+	cast( '' as varchar(1) ) as stratum_2,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -613,7 +613,7 @@ DROP TABLE #raw_107;
   select c1.cohort_definition_id, 
   108 as analysis_id,  
   floor(DATEDIFF(dd, op1.observation_period_start_date, op1.observation_period_end_date)/30) as stratum_1, 
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct p1.person_id) as count_value
   into #results_108
   from @CDM_schema.PERSON p1
@@ -657,7 +657,7 @@ DROP TABLE #raw_107;
   select c1.cohort_definition_id, 
   109 AS analysis_id,  
   obs_year AS stratum_1, 
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(DISTINCT p1.person_id) AS count_value
   into #results_109
   FROM @CDM_schema.PERSON p1
@@ -707,7 +707,7 @@ DROP TABLE #raw_107;
   select c1.cohort_definition_id, 
   110 AS analysis_id, 
   obs_month AS stratum_1,
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(DISTINCT p1.person_id) AS count_value
   into #results_110
   FROM @CDM_schema.PERSON p1
@@ -738,7 +738,7 @@ DROP TABLE #raw_107;
   select c1.cohort_definition_id, 
   111 as analysis_id, 
   YEAR(observation_period_start_date)*100 + month(OBSERVATION_PERIOD_START_DATE) as stratum_1, 
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct op1.PERSON_ID) as count_value
   into #results_111
   from @CDM_schema.PERSON p1
@@ -759,7 +759,7 @@ DROP TABLE #raw_107;
   select c1.cohort_definition_id, 
   112 as analysis_id,  
   YEAR(observation_period_end_date)*100 + month(observation_period_end_date) as stratum_1, 
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct op1.PERSON_ID) as count_value
   into #results_112
   from @CDM_schema.PERSON p1
@@ -779,7 +779,7 @@ DROP TABLE #raw_107;
   select cohort_definition_id, 
   113 as analysis_id,  
   op1.num_periods as stratum_1, 
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct op1.PERSON_ID) as count_value
   into #results_113
   from
@@ -797,7 +797,7 @@ DROP TABLE #raw_107;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select cohort_definition_id,
   114 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct p1.PERSON_ID) as count_value
   into #results_114
   from
@@ -818,7 +818,7 @@ DROP TABLE #raw_107;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
   115 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(op1.PERSON_ID) as count_value
   into #results_115
   from @CDM_schema.PERSON p1
@@ -859,7 +859,7 @@ DROP TABLE #raw_107;
   t1.obs_year as stratum_1, 
   p1.gender_concept_id as stratum_2,
   floor((t1.obs_year - p1.year_of_birth)/10) as stratum_3,
-  '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct p1.PERSON_ID) as count_value
   into #results_116
   FROM @CDM_schema.PERSON p1
@@ -907,7 +907,7 @@ DROP TABLE #raw_107;
   select c1.cohort_definition_id, 
   117 as analysis_id,  
   t1.obs_month as stratum_1,
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct op1.PERSON_ID) as count_value
   into #results_117
   FROM @CDM_schema.PERSON p1
@@ -945,7 +945,7 @@ DROP TABLE #raw_107;
   --{@CDM_version == '5'}?{
   vo1.visit_CONCEPT_ID as stratum_1,
   --}
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct vo1.PERSON_ID) as count_value
   into #results_200
   from
@@ -976,7 +976,7 @@ DROP TABLE #raw_107;
   --{@CDM_version == '5'}?{
   vo1.visit_CONCEPT_ID as stratum_1,
   --}
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(vo1.PERSON_ID) as count_value
   into #results_201
   from
@@ -1010,7 +1010,7 @@ DROP TABLE #raw_107;
   vo1.visit_CONCEPT_ID as stratum_1,
   --}
   YEAR(visit_start_date)*100 + month(visit_start_date) as stratum_2, 
-  '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct PERSON_ID) as count_value
   into #results_202
   from
@@ -1083,8 +1083,8 @@ valueStats (cohort_definition_id, count_value, total, accumulated) as
 )
 select o.cohort_definition_id,
 	203 as analysis_id,
-	'' as stratum_1, 
-	'' as stratum_2,
+	cast( '' as varchar(1) ) as stratum_1, 
+	cast( '' as varchar(1) ) as stratum_2,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -1230,7 +1230,7 @@ DROP TABLE #raw_206;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
   207 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(vo1.PERSON_ID) as count_value
   into #results_207
   from
@@ -1250,7 +1250,7 @@ DROP TABLE #raw_206;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select cohort_definition_id,
   208 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(vo1.PERSON_ID) as count_value
   into #results_208
   from
@@ -1272,7 +1272,7 @@ DROP TABLE #raw_206;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
   209 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(vo1.PERSON_ID) as count_value
   into #results_209
   from
@@ -1289,7 +1289,7 @@ DROP TABLE #raw_206;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
   210 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(vo1.PERSON_ID) as count_value
   into #results_210
   from
@@ -1355,7 +1355,7 @@ valueStats (cohort_definition_id, stratum_1, count_value, total, accumulated) as
 select o.cohort_definition_id,
 	211 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
-	'' as stratum_2,
+	cast( '' as varchar(1) ) as stratum_2,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -1383,7 +1383,7 @@ DROP TABLE #raw_211;
   select c1.cohort_definition_id, 
   220 as analysis_id,   
   YEAR(visit_start_date)*100 + month(visit_start_date) as stratum_1, 
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(PERSON_ID) as count_value
   into #results_220
   from
@@ -1414,7 +1414,7 @@ DROP TABLE #raw_211;
   select c1.cohort_definition_id, 
   400 as analysis_id, 
   co1.condition_CONCEPT_ID as stratum_1,
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct co1.PERSON_ID) as count_value
   into #results_400
   from
@@ -1445,7 +1445,7 @@ DROP TABLE #raw_211;
   select c1.cohort_definition_id, 
   401 as analysis_id, 
   co1.condition_CONCEPT_ID as stratum_1,
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(co1.PERSON_ID) as count_value
   into #results_401
   from
@@ -1478,7 +1478,7 @@ DROP TABLE #raw_211;
   402 as analysis_id,   
   co1.condition_concept_id as stratum_1,
   YEAR(condition_start_date)*100 + month(condition_start_date) as stratum_2, 
-  '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct PERSON_ID) as count_value
   into #results_402
   from
@@ -1549,8 +1549,8 @@ valueStats (cohort_definition_id, count_value, total, accumulated) as
 )
 select o.cohort_definition_id,
 	403 as analysis_id,
-	'' as stratum_1, 
-	'' as stratum_2,
+	cast( '' as varchar(1) ) as stratum_1, 
+	cast( '' as varchar(1) ) as stratum_2,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -1617,7 +1617,7 @@ DROP TABLE #raw_403;
   405 as analysis_id, 
   co1.condition_CONCEPT_ID as stratum_1,
   co1.condition_type_concept_id as stratum_2,
-  '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(co1.PERSON_ID) as count_value
   into #results_405
   from
@@ -1726,7 +1726,7 @@ DROP TABLE #raw_406;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id, 
   409 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(co1.PERSON_ID) as count_value
   into #results_409
   from
@@ -1746,7 +1746,7 @@ DROP TABLE #raw_406;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
   410 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(co1.PERSON_ID) as count_value
   into #results_410
   from
@@ -1768,7 +1768,7 @@ DROP TABLE #raw_406;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
   411 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(co1.PERSON_ID) as count_value
   into #results_411
   from
@@ -1786,7 +1786,7 @@ DROP TABLE #raw_406;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
   412 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(co1.PERSON_ID) as count_value
   into #results_412
   from
@@ -1806,7 +1806,7 @@ DROP TABLE #raw_406;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
   413 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(co1.PERSON_ID) as count_value
   into #results_413
   from
@@ -1827,7 +1827,7 @@ DROP TABLE #raw_406;
   select c1.cohort_definition_id, 
   420 as analysis_id,   
   YEAR(condition_start_date)*100 + month(condition_start_date) as stratum_1, 
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(PERSON_ID) as count_value
   into #results_420
   from
@@ -1867,7 +1867,7 @@ DROP TABLE #raw_406;
   select c1.cohort_definition_id, 
   500 as analysis_id, 
   {@CDM_version == '4'}?{ d1.cause_of_death_concept_id } {@CDM_version == '5'}?{ d1.cause_CONCEPT_ID }    as stratum_1,
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct d1.PERSON_ID) as count_value
   into #results_500
   from
@@ -1889,7 +1889,7 @@ DROP TABLE #raw_406;
   select c1.cohort_definition_id, 
   501 as analysis_id, 
   {@CDM_version == '4'}?{ d1.cause_of_death_concept_id } {@CDM_version == '5'}?{ d1.cause_CONCEPT_ID }  as stratum_1,
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(d1.PERSON_ID) as count_value
   into #results_501
   from
@@ -1912,7 +1912,7 @@ DROP TABLE #raw_406;
   select c1.cohort_definition_id, 
   502 as analysis_id,   
   YEAR(death_date)*100 + month(death_date) as stratum_1, 
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct PERSON_ID) as count_value
   into #results_502
   from
@@ -1937,7 +1937,7 @@ DROP TABLE #raw_406;
   YEAR(death_date) as stratum_1,
   p1.gender_concept_id as stratum_2,
   floor((year(death_date) - p1.year_of_birth)/10) as stratum_3, 
-  '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct p1.PERSON_ID) as count_value
   into #results_504
   from @CDM_schema.PERSON p1
@@ -1962,7 +1962,7 @@ DROP TABLE #raw_406;
   select c1.cohort_definition_id, 
   505 as analysis_id, 
   death_type_concept_id as stratum_1,
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(PERSON_ID) as count_value
   into #results_505
   from
@@ -2030,7 +2030,7 @@ valueStats (cohort_definition_id, stratum_1, count_value, total, accumulated) as
 select o.cohort_definition_id,
 	506 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
-	'' as stratum_2,
+	cast( '' as varchar(1) ) as stratum_2,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -2058,7 +2058,7 @@ DROP TABLE #raw_506;
   -- 509   Number of death records with invalid person_id
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id, 509 as analysis_id, 
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(d1.PERSON_ID) as count_value
   into #results_509
   from
@@ -2079,7 +2079,7 @@ DROP TABLE #raw_506;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
   510 as analysis_id, 
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(d1.PERSON_ID) as count_value
   into #results_510
   from
@@ -2147,8 +2147,8 @@ valueStats (cohort_definition_id, count_value, total, accumulated) as
 )
 select o.cohort_definition_id,
 	511 as analysis_id,
-	'' as stratum_1, 
-	'' as stratum_2,
+	cast( '' as varchar(1) ) as stratum_1, 
+	cast( '' as varchar(1) ) as stratum_2,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -2220,8 +2220,8 @@ valueStats (cohort_definition_id, count_value, total, accumulated) as
 )
 select o.cohort_definition_id,
 	512 as analysis_id,
-	'' as stratum_1, 
-	'' as stratum_2,
+	cast( '' as varchar(1) ) as stratum_1, 
+	cast( '' as varchar(1) ) as stratum_2,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -2292,8 +2292,8 @@ valueStats (cohort_definition_id, count_value, total, accumulated) as
 )
 select o.cohort_definition_id,
 	513 as analysis_id,
-	'' as stratum_1, 
-	'' as stratum_2,
+	cast( '' as varchar(1) ) as stratum_1, 
+	cast( '' as varchar(1) ) as stratum_2,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -2366,8 +2366,8 @@ valueStats (cohort_definition_id, count_value, total, accumulated) as
 )
 select o.cohort_definition_id,
 	514 as analysis_id,
-	'' as stratum_1, 
-	'' as stratum_2,
+	cast( '' as varchar(1) ) as stratum_1, 
+	cast( '' as varchar(1) ) as stratum_2,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -2440,8 +2440,8 @@ valueStats (cohort_definition_id, count_value, total, accumulated) as
 )
 select o.cohort_definition_id,
 	515 as analysis_id,
-	'' as stratum_1, 
-	'' as stratum_2,
+	cast( '' as varchar(1) ) as stratum_1, 
+	cast( '' as varchar(1) ) as stratum_2,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -2478,7 +2478,7 @@ DROP TABLE #raw_515;
   select c1.cohort_definition_id, 
   600 as analysis_id, 
   po1.procedure_CONCEPT_ID as stratum_1,
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct po1.PERSON_ID) as count_value
   into #results_600
   from
@@ -2509,7 +2509,7 @@ DROP TABLE #raw_515;
   select c1.cohort_definition_id, 
   601 as analysis_id, 
   po1.procedure_CONCEPT_ID as stratum_1,
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(po1.PERSON_ID) as count_value
   into #results_601
   from
@@ -2542,7 +2542,7 @@ DROP TABLE #raw_515;
   602 as analysis_id,   
   po1.procedure_concept_id as stratum_1,
   YEAR(procedure_date)*100 + month(procedure_date) as stratum_2, 
-  '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct PERSON_ID) as count_value
   into #results_602
   from
@@ -2612,8 +2612,8 @@ valueStats (cohort_definition_id, count_value, total, accumulated) as
 )
 select o.cohort_definition_id,
 	603 as analysis_id,
-	'' as stratum_1, 
-	'' as stratum_2,
+	cast( '' as varchar(1) ) as stratum_1, 
+	cast( '' as varchar(1) ) as stratum_2,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -2679,7 +2679,7 @@ DROP TABLE #raw_603;
   605 as analysis_id, 
   po1.procedure_CONCEPT_ID as stratum_1,
   po1.procedure_type_concept_id as stratum_2,
-  '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(po1.PERSON_ID) as count_value
   into #results_605
   from
@@ -2788,7 +2788,7 @@ DROP TABLE #raw_606;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
   609 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(po1.PERSON_ID) as count_value
   into #results_609
   from
@@ -2808,7 +2808,7 @@ DROP TABLE #raw_606;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
   610 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(po1.PERSON_ID) as count_value
   into #results_610
   from
@@ -2829,7 +2829,7 @@ DROP TABLE #raw_606;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
   612 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(po1.PERSON_ID) as count_value
   into #results_612
   from
@@ -2849,7 +2849,7 @@ DROP TABLE #raw_606;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
   613 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(po1.PERSON_ID) as count_value
   into #results_613
   from
@@ -2871,7 +2871,7 @@ DROP TABLE #raw_606;
   select c1.cohort_definition_id, 
   620 as analysis_id,   
   YEAR(procedure_date)*100 + month(procedure_date) as stratum_1, 
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(PERSON_ID) as count_value
   into #results_620
   from
@@ -2911,7 +2911,7 @@ DROP TABLE #raw_606;
   select c1.cohort_definition_id, 
   700 as analysis_id, 
   de1.drug_CONCEPT_ID as stratum_1,
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct de1.PERSON_ID) as count_value
   into #results_700
   from
@@ -2941,7 +2941,7 @@ DROP TABLE #raw_606;
   select c1.cohort_definition_id, 
   701 as analysis_id, 
   de1.drug_CONCEPT_ID as stratum_1,
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(de1.PERSON_ID) as count_value
   into #results_701
   from
@@ -2974,7 +2974,7 @@ DROP TABLE #raw_606;
   702 as analysis_id,   
   de1.drug_concept_id as stratum_1,
   YEAR(drug_exposure_start_date)*100 + month(drug_exposure_start_date) as stratum_2, 
-  '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct PERSON_ID) as count_value
   into #results_702
   from
@@ -3043,8 +3043,8 @@ valueStats (cohort_definition_id, count_value, total, accumulated) as
 )
 select o.cohort_definition_id,
 	703 as analysis_id,
-	'' as stratum_1, 
-	'' as stratum_2,
+	cast( '' as varchar(1) ) as stratum_1, 
+	cast( '' as varchar(1) ) as stratum_2,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -3109,7 +3109,7 @@ DROP TABLE #raw_703;
   705 as analysis_id, 
   de1.drug_CONCEPT_ID as stratum_1,
   de1.drug_type_concept_id as stratum_2,
-  '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(de1.PERSON_ID) as count_value
   into #results_705
   from
@@ -3220,7 +3220,7 @@ DROP TABLE #raw_706;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
   709 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(de1.PERSON_ID) as count_value
   into #results_709
   from
@@ -3240,7 +3240,7 @@ DROP TABLE #raw_706;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
   710 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(de1.PERSON_ID) as count_value
   into #results_710
   from
@@ -3262,7 +3262,7 @@ DROP TABLE #raw_706;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
   711 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(de1.PERSON_ID) as count_value
   into #results_711
   from
@@ -3280,7 +3280,7 @@ DROP TABLE #raw_706;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
   712 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(de1.PERSON_ID) as count_value
   into #results_712
   from
@@ -3300,7 +3300,7 @@ DROP TABLE #raw_706;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
   713 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(de1.PERSON_ID) as count_value
   into #results_713
   from
@@ -3362,7 +3362,7 @@ valueStats (cohort_definition_id, stratum_1, count_value, total, accumulated) as
 select o.cohort_definition_id,
 	715 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
-	'' as stratum_2,
+	cast( '' as varchar(1) ) as stratum_2,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -3433,7 +3433,7 @@ valueStats (cohort_definition_id, stratum_1, count_value, total, accumulated) as
 select o.cohort_definition_id,
 	716 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
-	'' as stratum_2,
+	cast( '' as varchar(1) ) as stratum_2,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -3503,7 +3503,7 @@ valueStats (cohort_definition_id, stratum_1, count_value, total, accumulated) as
 select o.cohort_definition_id,
 	717 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
-	'' as stratum_2,
+	cast( '' as varchar(1) ) as stratum_2,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -3532,7 +3532,7 @@ DROP TABLE #raw_717;
   select c1.cohort_definition_id, 
   720 as analysis_id,   
   YEAR(drug_exposure_start_date)*100 + month(drug_exposure_start_date) as stratum_1, 
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(PERSON_ID) as count_value
   into #results_720
   from
@@ -3570,7 +3570,7 @@ DROP TABLE #raw_717;
   select c1.cohort_definition_id, 
   800 as analysis_id, 
   o1.observation_CONCEPT_ID as stratum_1,
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct o1.PERSON_ID) as count_value
   into #results_800
   from
@@ -3601,7 +3601,7 @@ DROP TABLE #raw_717;
   select c1.cohort_definition_id, 
   801 as analysis_id, 
   o1.observation_CONCEPT_ID as stratum_1,
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(o1.PERSON_ID) as count_value
   into #results_801
   from
@@ -3634,7 +3634,7 @@ DROP TABLE #raw_717;
   802 as analysis_id,   
   o1.observation_concept_id as stratum_1,
   YEAR(observation_date)*100 + month(observation_date) as stratum_2, 
-  '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct PERSON_ID) as count_value
   into #results_802
   from
@@ -3704,8 +3704,8 @@ valueStats (cohort_definition_id, count_value, total, accumulated) as
 )
 select o.cohort_definition_id,
 	803 as analysis_id,
-	'' as stratum_1, 
-	'' as stratum_2,
+	cast( '' as varchar(1) ) as stratum_1, 
+	cast( '' as varchar(1) ) as stratum_2,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -3771,7 +3771,7 @@ DROP TABLE #raw_803;
   805 as analysis_id, 
   o1.observation_CONCEPT_ID as stratum_1,
   o1.observation_type_concept_id as stratum_2,
-  '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(o1.PERSON_ID) as count_value
   into #results_805
   from
@@ -3882,7 +3882,7 @@ DROP TABLE #raw_806;
   807 as analysis_id, 
   o1.observation_CONCEPT_ID as stratum_1,
   o1.unit_concept_id as stratum_2,
-  '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(o1.PERSON_ID) as count_value
   into #results_807
   from
@@ -3912,7 +3912,7 @@ DROP TABLE #raw_806;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
   809 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(o1.PERSON_ID) as count_value
   into #results_809
   from
@@ -3931,7 +3931,7 @@ DROP TABLE #raw_806;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
   810 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(o1.PERSON_ID) as count_value
   into #results_810
   from
@@ -3952,7 +3952,7 @@ DROP TABLE #raw_806;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
   812 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(o1.PERSON_ID) as count_value
   into #results_812
   from
@@ -3972,7 +3972,7 @@ DROP TABLE #raw_806;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
   813 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(o1.PERSON_ID) as count_value
   into #results_813
   from
@@ -3992,7 +3992,7 @@ DROP TABLE #raw_806;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
   814 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(o1.PERSON_ID) as count_value
   into #results_814
   from
@@ -4088,7 +4088,7 @@ DROP TABLE #raw_815;
   select c1.cohort_definition_id, 
   820 as analysis_id,   
   YEAR(observation_date)*100 + month(observation_date) as stratum_1, 
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(PERSON_ID) as count_value
   into #results_820
   from
@@ -4125,7 +4125,7 @@ DROP TABLE #raw_815;
   select c1.cohort_definition_id, 
   900 as analysis_id, 
   de1.drug_CONCEPT_ID as stratum_1,
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct de1.PERSON_ID) as count_value
   into #results_900
   from
@@ -4156,7 +4156,7 @@ DROP TABLE #raw_815;
   select c1.cohort_definition_id, 
   901 as analysis_id, 
   de1.drug_CONCEPT_ID as stratum_1,
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(de1.PERSON_ID) as count_value
   into #results_901
   from
@@ -4188,7 +4188,7 @@ DROP TABLE #raw_815;
   902 as analysis_id,   
   de1.drug_concept_id as stratum_1,
   YEAR(drug_era_start_date)*100 + month(drug_era_start_date) as stratum_2, 
-  '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct PERSON_ID) as count_value
   into #results_902
   from
@@ -4257,8 +4257,8 @@ valueStats (cohort_definition_id, count_value, total, accumulated) as
 )
 select o.cohort_definition_id,
 	903 as analysis_id,
-	'' as stratum_1, 
-	'' as stratum_2,
+	cast( '' as varchar(1) ) as stratum_1, 
+	cast( '' as varchar(1) ) as stratum_2,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -4446,7 +4446,7 @@ valueStats (cohort_definition_id, stratum_1, count_value, total, accumulated) as
 select o.cohort_definition_id,
 	907 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
-	'' as stratum_2,
+	cast( '' as varchar(1) ) as stratum_2,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -4474,7 +4474,7 @@ DROP TABLE #raw_907;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
   908 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(de1.PERSON_ID) as count_value
   into #results_908
   from
@@ -4494,7 +4494,7 @@ DROP TABLE #raw_907;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
   909 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(de1.PERSON_ID) as count_value
   into #results_909
   from
@@ -4516,7 +4516,7 @@ DROP TABLE #raw_907;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
   910 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(de1.PERSON_ID) as count_value
   into #results_910
   from
@@ -4535,7 +4535,7 @@ DROP TABLE #raw_907;
   select c1.cohort_definition_id, 
   920 as analysis_id,   
   YEAR(drug_era_start_date)*100 + month(drug_era_start_date) as stratum_1, 
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(PERSON_ID) as count_value
   into #results_920
   from
@@ -4573,7 +4573,7 @@ DROP TABLE #raw_907;
   select c1.cohort_definition_id, 
   1000 as analysis_id, 
   ce1.condition_CONCEPT_ID as stratum_1,
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct ce1.PERSON_ID) as count_value
   into #results_1000
   from
@@ -4604,7 +4604,7 @@ DROP TABLE #raw_907;
   select c1.cohort_definition_id, 
   1001 as analysis_id, 
   ce1.condition_CONCEPT_ID as stratum_1,
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(ce1.PERSON_ID) as count_value
   into #results_1001
   from
@@ -4637,7 +4637,7 @@ DROP TABLE #raw_907;
   1002 as analysis_id,   
   ce1.condition_concept_id as stratum_1,
   YEAR(condition_era_start_date)*100 + month(condition_era_start_date) as stratum_2, 
-  '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct PERSON_ID) as count_value
   into #results_1002
   from
@@ -4708,8 +4708,8 @@ valueStats (cohort_definition_id, count_value, total, accumulated) as
 )
 select o.cohort_definition_id,
 	1003 as analysis_id,
-	'' as stratum_1, 
-	'' as stratum_2,
+	cast( '' as varchar(1) ) as stratum_1, 
+	cast( '' as varchar(1) ) as stratum_2,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -4898,7 +4898,7 @@ valueStats (cohort_definition_id, stratum_1, count_value, total, accumulated) as
 select o.cohort_definition_id,
 	1007 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
-	'' as stratum_2,
+	cast( '' as varchar(1) ) as stratum_2,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -4925,7 +4925,7 @@ DROP TABLE #raw_1007;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
   1008 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(ce1.PERSON_ID) as count_value
   into #results_1008
   from
@@ -4945,7 +4945,7 @@ DROP TABLE #raw_1007;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
   1009 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(ce1.PERSON_ID) as count_value
   into #results_1009
   from
@@ -4967,7 +4967,7 @@ DROP TABLE #raw_1007;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
   1010 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(ce1.PERSON_ID) as count_value
   into #results_1010
   from
@@ -4986,7 +4986,7 @@ DROP TABLE #raw_1007;
   select c1.cohort_definition_id, 
   1020 as analysis_id,   
   YEAR(condition_era_start_date)*100 + month(condition_era_start_date) as stratum_1, 
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(PERSON_ID) as count_value
   into #results_1020
   from
@@ -5022,7 +5022,7 @@ DROP TABLE #raw_1007;
   select c1.cohort_definition_id, 
   1100 as analysis_id,  
   left(l1.zip,3) as stratum_1, 
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct person_id) as count_value
   into #results_1100
   from @CDM_schema.PERSON p1
@@ -5043,7 +5043,7 @@ DROP TABLE #raw_1007;
   select c1.cohort_definition_id, 
   1101 as analysis_id,  
   l1.state as stratum_1, 
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct person_id) as count_value
   into #results_1101
   from @CDM_schema.PERSON p1
@@ -5073,7 +5073,7 @@ DROP TABLE #raw_1007;
   select c1.cohort_definition_id, 
   1200 as analysis_id,  
   cs1.place_of_service_concept_id as stratum_1, 
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(person_id) as count_value
   into #results_1200
   from @CDM_schema.PERSON p1
@@ -5094,7 +5094,7 @@ DROP TABLE #raw_1007;
   select c1.cohort_definition_id, 
   1201 as analysis_id,  
   cs1.place_of_service_concept_id as stratum_1, 
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(visit_occurrence_id) as count_value
   into #results_1201
   from @CDM_schema.visit_occurrence vo1
@@ -5121,7 +5121,7 @@ DROP TABLE #raw_1007;
   select c1.cohort_definition_id, 
   1300 as analysis_id, 
   o1.measurement_CONCEPT_ID as stratum_1,
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct o1.PERSON_ID) as count_value
   into #results_1300
   from
@@ -5152,7 +5152,7 @@ DROP TABLE #raw_1007;
   select c1.cohort_definition_id, 
   1301 as analysis_id, 
   o1.measurement_CONCEPT_ID as stratum_1,
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(o1.PERSON_ID) as count_value
   into #results_1301
   from
@@ -5184,7 +5184,7 @@ DROP TABLE #raw_1007;
   1302 as analysis_id,   
   o1.measurement_concept_id as stratum_1,
   YEAR(measurement_date)*100 + month(measurement_date) as stratum_2, 
-  '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct PERSON_ID) as count_value
   into #results_1302
   from
@@ -5254,8 +5254,8 @@ valueStats (cohort_definition_id, count_value, total, accumulated) as
 )
 select o.cohort_definition_id,
 	1303 as analysis_id,
-	'' as stratum_1, 
-	'' as stratum_2,
+	cast( '' as varchar(1) ) as stratum_1, 
+	cast( '' as varchar(1) ) as stratum_2,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -5321,7 +5321,7 @@ DROP TABLE #raw_1303;
   1305 as analysis_id, 
   o1.measurement_CONCEPT_ID as stratum_1,
   o1.measurement_type_concept_id as stratum_2,
-  '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(o1.PERSON_ID) as count_value
   into #results_1305
   from
@@ -5434,7 +5434,7 @@ DROP TABLE #raw_1306;
   1307 as analysis_id, 
   o1.measurement_CONCEPT_ID as stratum_1,
   o1.unit_concept_id as stratum_2,
-  '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(o1.PERSON_ID) as count_value
   into #results_1307
   from
@@ -5465,7 +5465,7 @@ DROP TABLE #raw_1306;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
   1309 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(o1.PERSON_ID) as count_value
   into #results_1309
   from
@@ -5485,7 +5485,7 @@ DROP TABLE #raw_1306;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
   1310 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(o1.PERSON_ID) as count_value
   into #results_1310
   from
@@ -5507,7 +5507,7 @@ DROP TABLE #raw_1306;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
   1312 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(o1.PERSON_ID) as count_value
   into #results_1312
   from
@@ -5527,7 +5527,7 @@ DROP TABLE #raw_1306;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
   1313 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(o1.PERSON_ID) as count_value
   into #results_1313
   from
@@ -5547,7 +5547,7 @@ DROP TABLE #raw_1306;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c1.cohort_definition_id,
   1314 as analysis_id,  
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(o1.PERSON_ID) as count_value
   into #results_1314
   from
@@ -5795,7 +5795,7 @@ DROP TABLE #raw_1317;
   when o1.value_as_number >= o1.range_low and o1.value_as_number <= o1.range_high then 'Within Range'
   when o1.value_as_number > o1.range_high then 'Above Range High'
   else 'Other' end as stratum_3,
-  '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(o1.PERSON_ID) as count_value
   into #results_1318
   from
@@ -5828,7 +5828,7 @@ DROP TABLE #raw_1317;
   select c1.cohort_definition_id, 
   1320 as analysis_id,   
   YEAR(measurement_date)*100 + month(measurement_date) as stratum_1, 
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(PERSON_ID) as count_value
   into #results_1320
   from
@@ -5865,7 +5865,7 @@ DROP TABLE #raw_1317;
   select c2.cohort_definition_id, 
   1700 as analysis_id, 
   c1.cohort_definition_id as stratum_1, 
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(c1.subject_ID) as count_value
   into #results_1700
   from
@@ -5883,7 +5883,7 @@ DROP TABLE #raw_1317;
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, count_value)
   select c2.cohort_definition_id,
   1701 as analysis_id, 
-  '' as stratum_1, '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_1, cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(c1.subject_ID) as count_value
   into #results_1701
   from    
@@ -5911,7 +5911,7 @@ DROP TABLE #raw_1317;
   select c1.cohort_definition_id, 
   1800 as analysis_id, 
   year(c1.cohort_start_date) - p1.YEAR_OF_BIRTH as stratum_1, 
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(p1.person_id) as count_value
   into #results_1800
   from @CDM_schema.PERSON p1
@@ -5964,8 +5964,8 @@ valueStats (cohort_definition_id, count_value, total, accumulated) as
 )
 select o.cohort_definition_id,
 	1801 as analysis_id,
-	'' as stratum_1, 
-	'' as stratum_2,
+	cast( '' as varchar(1) ) as stratum_1, 
+	cast( '' as varchar(1) ) as stratum_2,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -6033,7 +6033,7 @@ valueStats (cohort_definition_id, stratum_1, count_value, total, accumulated) as
 select o.cohort_definition_id,
 	1802 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
-	'' as stratum_2,
+	cast( '' as varchar(1) ) as stratum_2,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -6101,7 +6101,7 @@ valueStats (cohort_definition_id, stratum_1, count_value, total, accumulated) as
 select o.cohort_definition_id,
 	1803 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
-	'' as stratum_2,
+	cast( '' as varchar(1) ) as stratum_2,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -6130,7 +6130,7 @@ DROP TABLE #raw_1803;
   select c1.cohort_definition_id, 
   1804 as analysis_id,  
   floor(DATEDIFF(dd, c1.cohort_start_date, c1.cohort_end_date)/30) as stratum_1, 
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct p1.person_id) as count_value
   into #results_1804
   from @CDM_schema.PERSON p1
@@ -6147,7 +6147,7 @@ DROP TABLE #raw_1803;
   select c1.cohort_definition_id, 
   1805 as analysis_id,  
   floor(DATEDIFF(dd, op1.observation_period_start_date, c1.cohort_start_date)/30) as stratum_1, 
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct p1.person_id) as count_value
   into #results_1805
   from @CDM_schema.PERSON p1
@@ -6167,7 +6167,7 @@ DROP TABLE #raw_1803;
   select c1.cohort_definition_id, 
   1806 as analysis_id,  
   floor(DATEDIFF(dd, c1.cohort_start_date, op1.observation_period_end_date)/30) as stratum_1, 
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct p1.person_id) as count_value
   into #results_1806
   from @CDM_schema.PERSON p1
@@ -6187,7 +6187,7 @@ DROP TABLE #raw_1803;
   select c1.cohort_definition_id, 
   1807 as analysis_id,  
   floor(DATEDIFF(dd, c1.cohort_end_date, op1.observation_period_end_date)/30) as stratum_1, 
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct p1.person_id) as count_value
   into #results_1807
   from @CDM_schema.PERSON p1
@@ -6243,8 +6243,8 @@ valueStats (cohort_definition_id, count_value, total, accumulated) as
 )
 select o.cohort_definition_id,
 	1808 as analysis_id,
-	'' as stratum_1, 
-	'' as stratum_2,
+	cast( '' as varchar(1) ) as stratum_1, 
+	cast( '' as varchar(1) ) as stratum_2,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -6312,7 +6312,7 @@ valueStats (cohort_definition_id, stratum_1, count_value, total, accumulated) as
 select o.cohort_definition_id,
 	1809 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
-	'' as stratum_2,
+	cast( '' as varchar(1) ) as stratum_2,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -6380,7 +6380,7 @@ valueStats (cohort_definition_id, stratum_1, count_value, total, accumulated) as
 select o.cohort_definition_id,
 	1810 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
-	'' as stratum_2,
+	cast( '' as varchar(1) ) as stratum_2,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -6446,8 +6446,8 @@ valueStats (cohort_definition_id, count_value, total, accumulated) as
 )
 select o.cohort_definition_id,
 	1811 as analysis_id,
-	'' as stratum_1, 
-	'' as stratum_2,
+	cast( '' as varchar(1) ) as stratum_1, 
+	cast( '' as varchar(1) ) as stratum_2,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -6514,8 +6514,8 @@ valueStats (cohort_definition_id, count_value, total, accumulated) as
 )
 select o.cohort_definition_id,
 	1812 as analysis_id,
-	'' as stratum_1, 
-	'' as stratum_2,
+	cast( '' as varchar(1) ) as stratum_1, 
+	cast( '' as varchar(1) ) as stratum_2,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -6582,8 +6582,8 @@ valueStats (cohort_definition_id, count_value, total, accumulated) as
 )
 select o.cohort_definition_id,
 	1813 as analysis_id,
-	'' as stratum_1, 
-	'' as stratum_2,
+	cast( '' as varchar(1) ) as stratum_1, 
+	cast( '' as varchar(1) ) as stratum_2,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -6613,7 +6613,7 @@ DROP TABLE #raw_1813;
   YEAR(c1.cohort_start_date) as stratum_1,
   p1.gender_concept_id as stratum_2,
   floor((year(c1.cohort_start_date) - p1.year_of_birth)/10) as stratum_3, 
-  '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct p1.PERSON_ID) as count_value
   into #results_1814
   from @CDM_schema.PERSON p1
@@ -6633,7 +6633,7 @@ DROP TABLE #raw_1813;
   select c1.cohort_definition_id,
   1815 as analysis_id,   
   YEAR(c1.cohort_start_date)*100 + month(c1.cohort_start_date) as stratum_1, 
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct p1.person_id) as count_value
   into #results_1815
   from @CDM_schema.PERSON p1
@@ -6651,7 +6651,7 @@ DROP TABLE #raw_1813;
   select cohort_definition_id, 
   1816 as analysis_id,  
   num_periods as stratum_1, 
-  '' as stratum_2, '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct person_id) as count_value
   into #results_1816
   from
@@ -6675,7 +6675,7 @@ DROP TABLE #raw_1813;
   when c1.cohort_start_date < co1.first_date then floor(DATEDIFF(dd, c1.cohort_start_date, co1.first_date)/30)+1
   when c1.cohort_start_date > co1.first_date then floor(DATEDIFF(dd, c1.cohort_start_date, co1.first_date)/30)-1
   end as stratum_2, 
-  '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct p1.person_id) as count_value
   into #results_1820
   from @CDM_schema.PERSON p1
@@ -6713,7 +6713,7 @@ DROP TABLE #raw_1813;
   when c1.cohort_start_date < co1.condition_start_date then floor(DATEDIFF(dd, c1.cohort_start_date, co1.condition_start_date)/30)+1
   when c1.cohort_start_date > co1.condition_start_date then floor(DATEDIFF(dd, c1.cohort_start_date, co1.condition_start_date)/30)-1
   end as stratum_2, 
-  '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct p1.person_id) as count_value
   into #results_1821
   from @CDM_schema.PERSON p1
@@ -6746,7 +6746,7 @@ DROP TABLE #raw_1813;
   when c1.cohort_start_date < po1.first_date then floor(DATEDIFF(dd, c1.cohort_start_date, po1.first_date)/30)+1
   when c1.cohort_start_date > po1.first_date then floor(DATEDIFF(dd, c1.cohort_start_date, po1.first_date)/30)-1
   end as stratum_2, 
-  '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct p1.person_id) as count_value
   into #results_1830
   from @CDM_schema.PERSON p1
@@ -6784,7 +6784,7 @@ DROP TABLE #raw_1813;
   when c1.cohort_start_date < po1.procedure_date then floor(DATEDIFF(dd, c1.cohort_start_date, po1.procedure_date)/30)+1
   when c1.cohort_start_date > po1.procedure_date then floor(DATEDIFF(dd, c1.cohort_start_date, po1.procedure_date)/30)-1
   end as stratum_2, 
-  '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct p1.person_id) as count_value
   into #results_1831
   from @CDM_schema.PERSON p1
@@ -6817,7 +6817,7 @@ DROP TABLE #raw_1813;
   when c1.cohort_start_date < de1.first_date then floor(DATEDIFF(dd, c1.cohort_start_date, de1.first_date)/30)+1
   when c1.cohort_start_date > de1.first_date then floor(DATEDIFF(dd, c1.cohort_start_date, de1.first_date)/30)-1
   end as stratum_2, 
-  '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct p1.person_id) as count_value
   into #results_1840
   from @CDM_schema.PERSON p1
@@ -6855,7 +6855,7 @@ DROP TABLE #raw_1813;
   when c1.cohort_start_date < de1.drug_exposure_start_date then floor(DATEDIFF(dd, c1.cohort_start_date, de1.drug_exposure_start_date)/30)+1
   when c1.cohort_start_date > de1.drug_exposure_start_date then floor(DATEDIFF(dd, c1.cohort_start_date, de1.drug_exposure_start_date)/30)-1
   end as stratum_2, 
-  '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct p1.person_id) as count_value
   into #results_1841
   from @CDM_schema.PERSON p1
@@ -6887,7 +6887,7 @@ DROP TABLE #raw_1813;
   when c1.cohort_start_date < o1.first_date then floor(DATEDIFF(dd, c1.cohort_start_date, o1.first_date)/30)+1
   when c1.cohort_start_date > o1.first_date then floor(DATEDIFF(dd, c1.cohort_start_date, o1.first_date)/30)-1
   end as stratum_2, 
-  '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct p1.person_id) as count_value
   into #results_1850
   from @CDM_schema.PERSON p1
@@ -6925,7 +6925,7 @@ DROP TABLE #raw_1813;
   when c1.cohort_start_date < o1.observation_date then floor(DATEDIFF(dd, c1.cohort_start_date, o1.observation_date)/30)+1
   when c1.cohort_start_date > o1.observation_date then floor(DATEDIFF(dd, c1.cohort_start_date, o1.observation_date)/30)-1
   end as stratum_2, 
-  '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct p1.person_id) as count_value
   into #results_1851
   from @CDM_schema.PERSON p1
@@ -6958,7 +6958,7 @@ DROP TABLE #raw_1813;
   when c1.cohort_start_date < ce1.first_date then floor(DATEDIFF(dd, c1.cohort_start_date, ce1.first_date)/30)+1
   when c1.cohort_start_date > ce1.first_date then floor(DATEDIFF(dd, c1.cohort_start_date, ce1.first_date)/30)-1
   end as stratum_2, 
-  '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct p1.person_id) as count_value
   into #results_1860
   from @CDM_schema.PERSON p1
@@ -6996,7 +6996,7 @@ DROP TABLE #raw_1813;
   when c1.cohort_start_date < ce1.condition_era_start_date then floor(DATEDIFF(dd, c1.cohort_start_date, ce1.condition_era_start_date)/30)+1
   when c1.cohort_start_date > ce1.condition_era_start_date then floor(DATEDIFF(dd, c1.cohort_start_date, ce1.condition_era_start_date)/30)-1
   end as stratum_2, 
-  '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct p1.person_id) as count_value
   into #results_1861
   from @CDM_schema.PERSON p1
@@ -7029,7 +7029,7 @@ DROP TABLE #raw_1813;
   when c1.cohort_start_date < de1.first_date then floor(DATEDIFF(dd, c1.cohort_start_date, de1.first_date)/30)+1
   when c1.cohort_start_date > de1.first_date then floor(DATEDIFF(dd, c1.cohort_start_date, de1.first_date)/30)-1
   end as stratum_2, 
-  '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct p1.person_id) as count_value
   into #results_1870
   from @CDM_schema.PERSON p1
@@ -7067,7 +7067,7 @@ DROP TABLE #raw_1813;
   when c1.cohort_start_date < de1.drug_era_start_date then floor(DATEDIFF(dd, c1.cohort_start_date, de1.drug_era_start_date)/30)+1
   when c1.cohort_start_date > de1.drug_era_start_date then floor(DATEDIFF(dd, c1.cohort_start_date, de1.drug_era_start_date)/30)-1
   end as stratum_2, 
-  '' as stratum_3, '' as stratum_4,
+  cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
   COUNT_BIG(distinct p1.person_id) as count_value
   into #results_1871
   from @CDM_schema.PERSON p1
@@ -7092,7 +7092,7 @@ DROP TABLE #raw_1813;
   -- 2001                Count and percentage of gender data completeness for age less than 10
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2001 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, cast( '' as varchar(1) ) as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2001
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -7129,7 +7129,7 @@ DROP TABLE #raw_1813;
   -- 2002                Count and percentage of gender data completeness for age between 10~20
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2002 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, cast( '' as varchar(1) ) as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2002
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -7166,7 +7166,7 @@ DROP TABLE #raw_1813;
   -- 2003                Count and percentage of gender data completeness for age between 20~30
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2003 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, cast( '' as varchar(1) ) as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2003
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -7203,7 +7203,7 @@ DROP TABLE #raw_1813;
   -- 2004                Count and percentage of gender data completeness for age between 30~40
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2004 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, cast( '' as varchar(1) ) as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2004
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -7240,7 +7240,7 @@ DROP TABLE #raw_1813;
   -- 2005                Count and percentage of gender data completeness for age between 40~50
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2005 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, cast( '' as varchar(1) ) as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2005
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -7277,7 +7277,7 @@ DROP TABLE #raw_1813;
   -- 2006                Count and percentage of gender data completeness for age between 50~60
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2006 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, cast( '' as varchar(1) ) as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2006
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -7314,7 +7314,7 @@ DROP TABLE #raw_1813;
   -- 2007                Count and percentage of gender data completeness for age between 60+
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2007 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, cast( '' as varchar(1) ) as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2007
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -7347,7 +7347,7 @@ DROP TABLE #raw_1813;
   -- 2011                Count and percentage of race data completeness for age less than 10
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2011 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, cast( '' as varchar(1) ) as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2011
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -7383,7 +7383,7 @@ DROP TABLE #raw_1813;
   -- 2012                Count and percentage of race data completeness for age between 10~20
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2012 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, cast( '' as varchar(1) ) as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2012
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -7423,7 +7423,7 @@ DROP TABLE #raw_1813;
   -- 2013                Count and percentage of race data completeness for age between 20~30
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2013 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, cast( '' as varchar(1) ) as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2013
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -7463,7 +7463,7 @@ DROP TABLE #raw_1813;
   -- 2014                Count and percentage of race data completeness for age between 30~40
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2014 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, cast( '' as varchar(1) ) as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2014
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -7503,7 +7503,7 @@ DROP TABLE #raw_1813;
   -- 2015                Count and percentage of race data completeness for age between 40~50
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2015 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, cast( '' as varchar(1) ) as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2015
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -7543,7 +7543,7 @@ DROP TABLE #raw_1813;
   -- 2016                Count and percentage of race data completeness for age between 50~60
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2016 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, cast( '' as varchar(1) ) as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2016
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -7583,7 +7583,7 @@ DROP TABLE #raw_1813;
   -- 2017                Count and percentage of race data completeness for age between 60+
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2017 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, cast( '' as varchar(1) ) as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2017
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -7619,7 +7619,7 @@ DROP TABLE #raw_1813;
   -- 2021                Count and percentage of ethnicity data completeness for age less than 10
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2021 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, cast( '' as varchar(1) ) as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2021
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -7653,7 +7653,7 @@ DROP TABLE #raw_1813;
   -- 2022                Count and percentage of ethnicity data completeness for age between 10~20
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2022 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, cast( '' as varchar(1) ) as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2022
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -7691,7 +7691,7 @@ DROP TABLE #raw_1813;
   -- 2023                Count and percentage of ethnicity data completeness for age between 20~30
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2023 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, cast( '' as varchar(1) ) as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2023
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -7729,7 +7729,7 @@ DROP TABLE #raw_1813;
   -- 2024                Count and percentage of ethnicity data completeness for age between 30~40
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2024 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, cast( '' as varchar(1) ) as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2024
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -7767,7 +7767,7 @@ DROP TABLE #raw_1813;
   -- 2025                Count and percentage of ethnicity data completeness for age between 40~50
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2025 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, cast( '' as varchar(1) ) as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2025
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -7805,7 +7805,7 @@ DROP TABLE #raw_1813;
   -- 2026                Count and percentage of ethnicity data completeness for age between 50~60
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2026 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, cast( '' as varchar(1) ) as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2026
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -7843,7 +7843,7 @@ DROP TABLE #raw_1813;
   -- 2027                Count and percentage of ethnicity data completeness for age 60+
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
   select @cohort_definition_id as cohort_definition_id, 2027 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1, 
-  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
+  innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, cast( '' as varchar(1) ) as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2027
   from 
   (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count, 
@@ -7883,7 +7883,7 @@ DROP TABLE #raw_1813;
   2031 AS analysis_id,
   entropyT.d as stratum_1,
   cast(round(entropyT.entropy, 3) as varchar(max)) as stratum_2,
-  '' as stratum_3, '' as stratum_4, (@smallcellcount + 9) as count_value
+  cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2031
   FROM
   (select

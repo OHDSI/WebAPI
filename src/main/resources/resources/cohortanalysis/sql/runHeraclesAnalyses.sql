@@ -7882,7 +7882,7 @@ DROP TABLE #raw_1813;
   SELECT @cohort_definition_id AS cohort_definition_id,
   2031 AS analysis_id,
   entropyT.d as stratum_1,
-  cast(round(entropyT.entropy, 3) as varchar(max)) as stratum_2,
+  cast(round(entropyT.entropy, 3) as varchar(20)) as stratum_2,
   cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4, (@smallcellcount + 9) as count_value
   into #results_2031
   FROM
@@ -7931,7 +7931,7 @@ DROP TABLE #raw_1813;
   entropyT.care_site_id as stratum_1,
   entropyT.site_source_value as stratum_2,
   entropyT.d as stratum_3,
-  cast(round(entropyT.entropy, 3) as varchar(max)) as stratum_4,
+  cast(round(entropyT.entropy, 3) as varchar(20)) as stratum_4,
   (@smallcellcount + 9) as count_value
   into #results_2032
   FROM

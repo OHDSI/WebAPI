@@ -38,6 +38,7 @@ import org.ohdsi.webapi.conceptset.ConceptSetOptimizationResult;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
+import org.ohdsi.webapi.util.PreparedSqlRender;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.vocabulary.ConceptRelationship;
 import org.ohdsi.webapi.vocabulary.ConceptSearch;
@@ -114,20 +115,28 @@ public class VocabularyService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<Concept> executeIdentifierLookup(@PathParam("sourceKey") String sourceKey, long[] identifiers) {
-    Collection<Concept> concepts = new ArrayList<>();
+		Source source = getSourceRepository().findBySourceKey(sourceKey);
+		return executeIdentifierLookup(source, identifiers);
+  }
+	
+	protected Collection<Concept> executeIdentifierLookup(Source source, long[] identifiers) {
+   Collection<Concept> concepts = new ArrayList<>();
     if (identifiers.length == 0) {
       return concepts;
     }
-    else if (driver.equals(SQLServerDriver.class.getCanonicalName()) || identifiers.length > 2000){
-      concepts = executeIdentifierLookup(sourceKey, Arrays.copyOfRange(identifiers, 2000, identifiers.length));
-      identifiers = Arrays.copyOfRange(identifiers, 0, 2000);
+		
+		// Determine if we need to chunk up ther request based on the parameter
+		// limit of the source RDBMS
+		int parameterLimit = PreparedSqlRender.getParameterLimit(source);
+    if (parameterLimit > 0 && identifiers.length > parameterLimit){
+      executeIdentifierLookup(source, Arrays.copyOfRange(identifiers, parameterLimit, identifiers.length));
+      identifiers = Arrays.copyOfRange(identifiers, 0, parameterLimit);
     }
-    
-    Source source = getSourceRepository().findBySourceKey(sourceKey);
+		
     PreparedStatementRenderer psr = prepareExecuteIdentifierLookup(identifiers, source);
     return concepts.addAll(getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), this.rowMapper))
             ? concepts : new ArrayList<>();
-  }
+	}
 
   protected PreparedStatementRenderer prepareExecuteIdentifierLookup(long[] identifiers, Source source) {
 
@@ -231,20 +240,30 @@ public class VocabularyService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<Concept> executeMappedLookup(@PathParam("sourceKey") String sourceKey, long[] identifiers) {
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+		return executeMappedLookup(source, identifiers);
+  }
+	
+	protected Collection<Concept> executeMappedLookup(Source source, long[] identifiers) {
     Collection<Concept> concepts = new ArrayList<>();
     if (identifiers.length == 0) {
       return concepts;
     }
-    else if (driver.equals(SQLServerDriver.class.getCanonicalName()) || identifiers.length > 600){
-      concepts = executeMappedLookup(sourceKey, Arrays.copyOfRange(identifiers, 600, identifiers.length));
-      identifiers = Arrays.copyOfRange(identifiers, 0, 600);
-    }
-
-    Source source = getSourceRepository().findBySourceKey(sourceKey);
+		
+		// Determine if we need to chunk up the request based on the parameter
+		// limit of the source RDBMS
+		int parameterLimit = PreparedSqlRender.getParameterLimit(source);
+		// Next take into account the fact that the identifiers are used in 3
+		// places in the query so the parameter limit will need to be divided
+		parameterLimit = Math.floorDiv(parameterLimit, 3);
+		if (parameterLimit > 0 && identifiers.length > parameterLimit) {
+			executeMappedLookup(source, Arrays.copyOfRange(identifiers, parameterLimit, identifiers.length));
+      identifiers = Arrays.copyOfRange(identifiers, 0, parameterLimit);
+		}
     PreparedStatementRenderer psr = prepareExecuteMappedLookup(
         identifiers, source);
     return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), this.rowMapper);
-  }
+	}
 
   protected PreparedStatementRenderer prepareExecuteMappedLookup(long[] identifiers, Source source) {
 

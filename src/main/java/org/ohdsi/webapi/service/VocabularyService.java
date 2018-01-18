@@ -123,19 +123,19 @@ public class VocabularyService extends AbstractDaoService {
    Collection<Concept> concepts = new ArrayList<>();
     if (identifiers.length == 0) {
       return concepts;
-    }
-		
-		// Determine if we need to chunk up ther request based on the parameter
-		// limit of the source RDBMS
-		int parameterLimit = PreparedSqlRender.getParameterLimit(source);
-    if (parameterLimit > 0 && identifiers.length > parameterLimit){
-      executeIdentifierLookup(source, Arrays.copyOfRange(identifiers, parameterLimit, identifiers.length));
-      identifiers = Arrays.copyOfRange(identifiers, 0, parameterLimit);
-    }
-		
-    PreparedStatementRenderer psr = prepareExecuteIdentifierLookup(identifiers, source);
-    return concepts.addAll(getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), this.rowMapper))
-            ? concepts : new ArrayList<>();
+    } else {
+			// Determine if we need to chunk up ther request based on the parameter
+			// limit of the source RDBMS
+			int parameterLimit = PreparedSqlRender.getParameterLimit(source);
+			if (parameterLimit > 0 && identifiers.length > parameterLimit){
+				concepts = executeIdentifierLookup(source, Arrays.copyOfRange(identifiers, parameterLimit, identifiers.length));
+				identifiers = Arrays.copyOfRange(identifiers, 0, parameterLimit);
+			}
+
+			PreparedStatementRenderer psr = prepareExecuteIdentifierLookup(identifiers, source);
+			return concepts.addAll(getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), this.rowMapper))
+							? concepts : new ArrayList<>();
+		}
 	}
 
   protected PreparedStatementRenderer prepareExecuteIdentifierLookup(long[] identifiers, Source source) {
@@ -248,21 +248,21 @@ public class VocabularyService extends AbstractDaoService {
     Collection<Concept> concepts = new ArrayList<>();
     if (identifiers.length == 0) {
       return concepts;
-    }
-		
-		// Determine if we need to chunk up the request based on the parameter
-		// limit of the source RDBMS
-		int parameterLimit = PreparedSqlRender.getParameterLimit(source);
-		// Next take into account the fact that the identifiers are used in 3
-		// places in the query so the parameter limit will need to be divided
-		parameterLimit = Math.floorDiv(parameterLimit, 3);
-		if (parameterLimit > 0 && identifiers.length > parameterLimit) {
-			executeMappedLookup(source, Arrays.copyOfRange(identifiers, parameterLimit, identifiers.length));
-      identifiers = Arrays.copyOfRange(identifiers, 0, parameterLimit);
+    } else {
+			// Determine if we need to chunk up the request based on the parameter
+			// limit of the source RDBMS
+			int parameterLimit = PreparedSqlRender.getParameterLimit(source);
+			// Next take into account the fact that the identifiers are used in 3
+			// places in the query so the parameter limit will need to be divided
+			parameterLimit = Math.floorDiv(parameterLimit, 3);
+			if (parameterLimit > 0 && identifiers.length > parameterLimit) {
+				concepts = executeMappedLookup(source, Arrays.copyOfRange(identifiers, parameterLimit, identifiers.length));
+				identifiers = Arrays.copyOfRange(identifiers, 0, parameterLimit);
+			}
+			PreparedStatementRenderer psr = prepareExecuteMappedLookup(identifiers, source);
+			return concepts.addAll(getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), this.rowMapper))
+							? concepts : new ArrayList<>();				
 		}
-    PreparedStatementRenderer psr = prepareExecuteMappedLookup(
-        identifiers, source);
-    return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), this.rowMapper);
 	}
 
   protected PreparedStatementRenderer prepareExecuteMappedLookup(long[] identifiers, Source source) {

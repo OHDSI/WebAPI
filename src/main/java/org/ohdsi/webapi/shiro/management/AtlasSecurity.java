@@ -158,6 +158,7 @@ public class AtlasSecurity extends Security {
       .addProtectedRestPath("/*/cohortresults/*/breakdown")
       .addProtectedRestPath("/job/execution")
 
+       .addProtectedRestPath("/source/*/daimons/*/set-priority")
       // not protected resources - all the rest
       .addRestPath("/**")
 

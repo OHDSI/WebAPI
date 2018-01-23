@@ -62,7 +62,7 @@ public class SourceDaimon implements Serializable {
   private String tableQualifier;  
   
   @Column(name="PRIORITY")
-  private String priority;
+  private Integer priority;
 
   public int getSourceDaimonId() {
     return sourceDaimonId;
@@ -96,11 +96,11 @@ public class SourceDaimon implements Serializable {
     this.tableQualifier = tableQualifier;
   }
 
-  public String getPriority() {
+  public Integer getPriority() {
     return priority;
   }
 
-  public void setPriority(String priority) {
+  public void setPriority(Integer priority) {
     this.priority = priority;
   }
   

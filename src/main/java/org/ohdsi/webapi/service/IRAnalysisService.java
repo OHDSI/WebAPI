@@ -238,7 +238,7 @@ public class IRAnalysisService extends AbstractDaoService {
 
     String query = "select strata_mask, person_count, time_at_risk, cases from @resultsTableQualifier.ir_analysis_result where analysis_id = @analysis_id and target_id = @target_id and outcome_id = @outcome_id";
     Object[] paramValues = {analysisId, targetId, outcomeId};
-    String[] params = {"analysisId", "targetId", "outcomeId"};
+    String[] params = {"analysis_id", "target_id", "outcome_id"};
     PreparedStatementRenderer psr = new PreparedStatementRenderer(source, query, "resultsTableQualifier", resultsTableQualifier, params, paramValues, SessionUtils.sessionId());
     // [0] is the inclusion rule bitmask, [1] is the count of the match
     List<StratifyReportItem> items = getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), stratifyResultsMapper);

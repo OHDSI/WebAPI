@@ -310,7 +310,7 @@ public class AtlasSecurity extends Security {
   }
 
   private ActiveDirectoryRealm activeDirectoryRealm() {
-    ActiveDirectoryRealm realm = new ActiveDirectoryRealm();
+    ActiveDirectoryRealm realm = new ADRealm();
     realm.setUrl(adUrl);
     realm.setSearchBase(adSearchBase);
     realm.setPrincipalSuffix(adPrincipalSuffix);

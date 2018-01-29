@@ -1,7 +1,8 @@
-select ROWCOUNT() OVER (ORDER BY tmp.analysis_id) as rn , *
+SELECT
+  ROW_NUMBER() OVER (ORDER BY tmp.analysis_id) AS rn,
+  *
 FROM ( select *
         from @tableQualifier.heracles_results_dist
         where cohort_definition_id = @cohortDefinitionId ) tmp
-Where rn <= 100;
-
-
+ORDER BY tmp.analysis_id
+LIMIT 100;

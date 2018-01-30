@@ -25,7 +25,7 @@ with breakdown (subject_id, cohort_start_date, cohort_end_date, gender,age,condi
 			join @tableQualifier.concept gc on p.gender_concept_id = gc.concept_id
 			where cohort_definition_id = @cohortDefinitionId
 		) cohort_people		
-    /*whereclause*/
+    @whereclause
 )
 select * 
 from (

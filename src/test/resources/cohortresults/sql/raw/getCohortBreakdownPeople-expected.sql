@@ -5,10 +5,10 @@ with breakdown (subject_id, cohort_start_date, cohort_end_date, gender,age,condi
 				gc.concept_name as gender,
 				cast(floor((year(cohort_start_date) - year_of_birth) / 10) * 10 as varchar(5)) + '-' +
 					cast(floor((year(cohort_start_date) - year_of_birth) / 10 + 1) * 10 - 1 as varchar(5)) as age,
-				conditions.conditions,
-				drugs.drugs
+				coalesce(conditions.conditions, 0) as conditions,
+				coalesce(drugs.drugs, 0) as drugs
 		from result_schema.cohort c
-		join
+		left join
 			(select person_id,
 					round(count(*),
 					cast(- floor(log10(abs(count(*) + 0.01))) as int)) conditions
@@ -16,7 +16,7 @@ with breakdown (subject_id, cohort_start_date, cohort_end_date, gender,age,condi
 			group by person_id
 			) conditions
 		on c.subject_id = conditions.person_id
-		join
+		left join
 			(select person_id,
 					round(count(*), cast(- floor(log10(abs(count(*) + 0.01))) as int)) drugs
 			from cdm_schema.drug_exposure de

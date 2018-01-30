@@ -41,7 +41,7 @@ public class PersonServiceTest extends AbstractServiceTest {
     Assert.assertEquals(qmarkCount, psr.getOrderedParamsList().size());
     /// make sure that all of the parameters are equivalent to personId value
     for (Object param : psr.getOrderedParamsList()) {
-      Assert.assertEquals(param, 5555);
+      Assert.assertEquals(param, 5555L);
     }
   }
 }

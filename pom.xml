@@ -72,10 +72,10 @@
     <security.ad.system.password></security.ad.system.password>
 
     <security.db.datasource.schema>public</security.db.datasource.schema>
-    <security.db.datasource.url>jdbc:postgresql://localhost:5432/sec_db</security.db.datasource.url>
-    <security.db.datasource.driverClassName>org.postgresql.Driver</security.db.datasource.driverClassName>
-    <security.db.datasource.username>user</security.db.datasource.username>
-    <security.db.datasource.password>password</security.db.datasource.password>
+    <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
+    <security.db.datasource.driverClassName>${datasource.driverClassName}</security.db.datasource.driverClassName>
+    <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
+    <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
 
     <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.users where email = ?</security.db.datasource.authenticationQuery>
     <use.single.connect.datasource.for.testing>true</use.single.connect.datasource.for.testing>
@@ -518,6 +518,12 @@
         <!--<datasource.validationQuery>SELECT 1 FROM DUAL</datasource.validationQuery>-->
         <flyway.locations>classpath:db/migration/oracle</flyway.locations>
         <hibernate.dialect>org.hibernate.dialect.Oracle10gDialect</hibernate.dialect>
+        <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
+        <security.db.datasource.driverClassName>${datasource.driverClassName}</security.db.datasource.driverClassName>
+        <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
+        <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
+        <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.user where \
+          login = ?</security.db.datasource.authenticationQuery>
       </properties>
       <dependencies>
         <dependency>
@@ -542,6 +548,10 @@
         <flyway.locations>classpath:db/migration/postgresql</flyway.locations>
         <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
         <hibernate.dialect>org.hibernate.dialect.PostgreSQL9Dialect</hibernate.dialect>
+        <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
+        <security.db.datasource.driverClassName>${datasource.driverClassName}</security.db.datasource.driverClassName>
+        <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
+        <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
         <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.user where \
               login = ?</security.db.datasource.authenticationQuery>
       </properties>
@@ -560,6 +570,12 @@
         <flyway.locations>classpath:db/migration/sqlserver</flyway.locations>
         <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
         <hibernate.dialect>org.hibernate.dialect.SQLServer2012Dialect</hibernate.dialect>
+        <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
+        <security.db.datasource.driverClassName>${datasource.driverClassName}</security.db.datasource.driverClassName>
+        <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
+        <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
+        <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.user where \
+          login = ?</security.db.datasource.authenticationQuery>
       </properties>
     </profile>
     <profile>
@@ -570,11 +586,11 @@
             <security.cors.enabled>true</security.cors.enabled>
             <datasource.jndi-name>java:/comp/env/jdbc/webapi</datasource.jndi-name>
             <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
-            <datasource.url>jdbc:postgresql://localhost:5432/webapi</datasource.url>
+            <datasource.url>jdbc:postgresql://localhost:5433/webapi_rr</datasource.url>
             <datasource.username>ohdsi</datasource.username>
             <datasource.password>ohdsi</datasource.password>
             <datasource.dialect>postgresql</datasource.dialect>
-            <datasource.ohdsi.schema>public</datasource.ohdsi.schema>
+            <datasource.ohdsi.schema>rr</datasource.ohdsi.schema>
             <hibernate.dialect>org.hibernate.dialect.PostgreSQL9Dialect</hibernate.dialect>
             <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
             <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
@@ -585,6 +601,10 @@
             <flyway.datasource.username>ohdsi</flyway.datasource.username>
             <flyway.datasource.password>ohdsi</flyway.datasource.password>
             <use.single.connect.datasource.for.testing>true</use.single.connect.datasource.for.testing>
+            <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
+            <security.db.datasource.driverClassName>${datasource.driverClassName}</security.db.datasource.driverClassName>
+            <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
+            <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
             <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.user where \
                 login = ?</security.db.datasource.authenticationQuery>
 

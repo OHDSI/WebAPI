@@ -111,17 +111,8 @@ public abstract class AbstractDaoService {
   }
 
   public JdbcTemplate getSourceJdbcTemplate(Source source) {
-    DriverManagerDataSource dataSource = new DriverManagerDataSource(source.getSourceConnection()){
-      @Override
-      protected Connection getConnectionFromDriverManager(String url, Properties props) throws SQLException {
 
-        Connection c = super.getConnectionFromDriverManager(url, props);
-        if (url.startsWith("jdbc:redshift")) {
-          c.setAutoCommit(false);
-        }
-        return c;
-      }
-    };
+    DriverManagerDataSource dataSource = new DriverManagerDataSource(source.getSourceConnection());
     JdbcTemplate template = new JdbcTemplate(dataSource);
     return template;
   }

@@ -1,0 +1,1 @@
+DELETE FROM ${ohdsiSchema}.sec_role_permission WHERE role_id = 2 AND permission_id BETWEEN 34 AND 44;

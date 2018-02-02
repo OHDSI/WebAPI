@@ -59,7 +59,8 @@ import waffle.shiro.negotiate.NegotiateAuthenticationStrategy;
  */
 @Component
 public class AtlasSecurity extends Security {
-
+  public static final String TOKEN_ATTRIBUTE = "TOKEN";
+  public static final String PERMISSIONS_ATTRIBUTE = "PERMISSIONS";
   private final Log log = LogFactory.getLog(getClass());
   
   @Autowired

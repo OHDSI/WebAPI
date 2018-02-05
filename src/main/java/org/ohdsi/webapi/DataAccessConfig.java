@@ -119,6 +119,14 @@ public class DataAccessConfig {
         transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         return transactionTemplate;
     }
+		
+    @Bean
+    public TransactionTemplate transactionTemplateNoTransaction(PlatformTransactionManager transactionManager) {
+        TransactionTemplate transactionTemplate = new TransactionTemplate();
+        transactionTemplate.setTransactionManager(transactionManager);
+        transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_NOT_SUPPORTED);
+        return transactionTemplate;
+    }		
   
   /*
   public String getSparqlEndpoint()

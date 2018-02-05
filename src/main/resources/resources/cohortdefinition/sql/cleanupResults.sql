@@ -1,0 +1,15 @@
+delete from @results_database_schema.cohort where cohort_definition_id = @cohort_definition_id;
+delete from @results_database_schema.cohort_features where cohort_definition_id = @cohort_definition_id;
+delete from @results_database_schema.cohort_features_analysis_ref where cohort_definition_id = @cohort_definition_id;
+delete from @results_database_schema.cohort_features_dist where cohort_definition_id = @cohort_definition_id;
+delete from @results_database_schema.cohort_features_ref where cohort_definition_id = @cohort_definition_id;
+delete from @results_database_schema.cohort_inclusion where cohort_definition_id = @cohort_definition_id;
+delete from @results_database_schema.cohort_inclusion_result where cohort_definition_id = @cohort_definition_id;
+delete from @results_database_schema.cohort_inclusion_stats where cohort_definition_id = @cohort_definition_id;
+delete from @results_database_schema.cohort_summary_stats where cohort_definition_id = @cohort_definition_id;
+delete from @results_database_schema.heracles_heel_results where cohort_definition_id = @cohort_definition_id;
+delete from @results_database_schema.heracles_results where cohort_definition_id = @cohort_definition_id;
+delete from @results_database_schema.heracles_results_dist where cohort_definition_id = @cohort_definition_id;
+delete from @results_database_schema.ir_analysis_dist where target_id = @cohort_definition_id or outcome_id = @cohort_definition_id;
+delete from @results_database_schema.ir_analysis_result where target_id = @cohort_definition_id or outcome_id = @cohort_definition_id;
+delete from @results_database_schema.ir_analysis_dist where target_id = @cohort_definition_id or outcome_id = @cohort_definition_id;

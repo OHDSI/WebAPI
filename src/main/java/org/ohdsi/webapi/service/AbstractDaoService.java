@@ -83,6 +83,9 @@ public abstract class AbstractDaoService {
   @Autowired
   private TransactionTemplate transactionTemplateRequiresNew;
 
+	@Autowired
+  private TransactionTemplate transactionTemplateNoTransaction;
+
   public SourceRepository getSourceRepository() {
     return sourceRepository;
   }
@@ -197,13 +200,13 @@ public abstract class AbstractDaoService {
     return transactionTemplateRequiresNew;
   }
 
-  /**
-   * @param transactionTemplateRequiresNew the transactionTemplateRequiresNew to
-   * set
+	/**
+   * @return the transactionTemplateNoTransaction
    */
-  public void setTransactionTemplateRequiresNew(TransactionTemplate transactionTemplateRequiresNew) {
-    this.transactionTemplateRequiresNew = transactionTemplateRequiresNew;
+  public TransactionTemplate getTransactionTemplateNoTransaction() {
+    return transactionTemplateNoTransaction;
   }
+	
   
   /**
    * @return the ohdsiSchema

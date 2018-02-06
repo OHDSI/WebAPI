@@ -16,7 +16,6 @@ import org.springframework.stereotype.Component;
  *
  * @author gennadiy.anisimov
  */
-@Component
 public class DisabledSecurity extends Security {
 
   @Override

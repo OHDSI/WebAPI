@@ -8,10 +8,10 @@ import org.springframework.data.repository.CrudRepository;
  */
 public interface RoleRepository extends CrudRepository<RoleEntity, Long> {
 
-  public RoleEntity findById(Long id);
+  RoleEntity findById(Long id);
   
-  public RoleEntity findByName(String name);
+  RoleEntity findByName(String name);
 
   @Query("SELECT CASE WHEN COUNT(r) > 0 THEN true ELSE false END FROM RoleEntity r WHERE r.name = ?1")
-  public boolean existsByName(String roleName);
+  boolean existsByName(String roleName);
 }

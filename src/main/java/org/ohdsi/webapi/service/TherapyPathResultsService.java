@@ -15,7 +15,9 @@ package org.ohdsi.webapi.service;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -23,6 +25,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
@@ -31,6 +34,7 @@ import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.therapy.TherapyPathReport;
 import org.ohdsi.webapi.therapy.TherapyPathVector;
 import org.ohdsi.webapi.therapy.TherapySummary;
+import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
@@ -52,12 +56,8 @@ public class TherapyPathResultsService extends AbstractDaoService {
     try {
 
       Source source = getSourceRepository().findBySourceKey(sourceKey);
-      String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-
-      String sql_statement = ResourceHelper.GetResourceAsString("/resources/therapypathresults/sql/getTherapyPathReports.sql");
-      sql_statement = SqlRender.renderSql(sql_statement, new String[]{"OHDSI_schema"}, new String[]{tableQualifier});
-      sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
-      return getSourceJdbcTemplate(source).query(sql_statement, new RowMapper<TherapyPathReport>() {
+      PreparedStatementRenderer psr = prepareGetReports(source);
+      return getSourceJdbcTemplate(source).query(psr.getSql(),psr.getSetter(), new RowMapper<TherapyPathReport>() {
         @Override
         public TherapyPathReport mapRow(final ResultSet rs, final int arg1) throws SQLException {
           final TherapyPathReport report = new TherapyPathReport();
@@ -79,6 +79,14 @@ public class TherapyPathResultsService extends AbstractDaoService {
     }
   }
 
+  protected PreparedStatementRenderer prepareGetReports(Source source) {
+
+    String resourcePath="/resources/therapypathresults/sql/getTherapyPathReports.sql";
+    String tqName="OHDSI_schema";
+    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    return new PreparedStatementRenderer(source, resourcePath, tqName, tqValue);
+  }
+
   @Path("report/{id}")
   @GET
   @Produces(MediaType.APPLICATION_JSON)
@@ -86,12 +94,8 @@ public class TherapyPathResultsService extends AbstractDaoService {
     try {
       
       Source source = getSourceRepository().findBySourceKey(sourceKey);
-      String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-      
-      String sql_statement = ResourceHelper.GetResourceAsString("/resources/therapypathresults/sql/getTherapyPathVectors.sql");
-      sql_statement = SqlRender.renderSql(sql_statement, new String[]{"id"}, new String[]{id});
-      sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
-      return getSourceJdbcTemplate(source).query(sql_statement, new RowMapper<TherapyPathVector>() {
+      PreparedStatementRenderer psr = prepareGetTherapyVectors(id, source);
+      return getSourceJdbcTemplate(source).query(psr.getSql(),psr.getSetter(), new RowMapper<TherapyPathVector>() {
         @Override
         public TherapyPathVector mapRow(final ResultSet rs, final int arg1) throws SQLException {
           final TherapyPathVector vector = new TherapyPathVector();
@@ -105,29 +109,20 @@ public class TherapyPathResultsService extends AbstractDaoService {
     }
   }
 
+  protected PreparedStatementRenderer prepareGetTherapyVectors(String id,	Source source) {
+    String sqlPath="/resources/therapypathresults/sql/getTherapyPathVectors.sql";
+    return new PreparedStatementRenderer(source, sqlPath, null, (String) null, "id", Integer.valueOf(id));
+  }
+
   @Path("summary")
   @POST
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public List<TherapySummary> getSummaries(@PathParam("sourceKey") String sourceKey, String[] identifiers) {
     try {
-      String sql_statement = ResourceHelper.GetResourceAsString("/resources/therapypathresults/sql/getTherapySummaries.sql");
-
       Source source = getSourceRepository().findBySourceKey(sourceKey);
-      String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);      
-      
-      String identifiersList = "";
-      for (String identifier : identifiers) {
-        if (identifiersList.length() > 0) {
-          identifiersList += ", ";
-        }
-
-        identifiersList += identifier;
-      }
-
-      sql_statement = SqlRender.renderSql(sql_statement, new String[]{"identifiersList"}, new String[]{identifiersList});
-      sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
-      return getSourceJdbcTemplate(source).query(sql_statement, new RowMapper<TherapySummary>() {
+      PreparedStatementRenderer psr = prepareGetSummaries(identifiers, source);
+      return getSourceJdbcTemplate(source).query(psr.getSql(),psr.getSetter(), new RowMapper<TherapySummary>() {
         @Override
         public TherapySummary mapRow(final ResultSet rs, final int arg1) throws SQLException {
           final TherapySummary summary = new TherapySummary();
@@ -143,5 +138,11 @@ public class TherapyPathResultsService extends AbstractDaoService {
     } catch (Exception exception) {
       throw new RuntimeException("Error getting therapy path summary - " + exception.getMessage());
     }
+  }
+  protected PreparedStatementRenderer prepareGetSummaries(String[] identifiers, Source source) {
+
+    String sqlPath = "/resources/therapypathresults/sql/getTherapySummaries.sql";
+    List<Integer> values =  Arrays.stream(identifiers).map(NumberUtils::toInt).collect(Collectors.toList());
+    return new PreparedStatementRenderer(source, sqlPath, null, (String) null, "identifiersList", values.toArray());
   }
 }

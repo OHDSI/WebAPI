@@ -43,7 +43,7 @@ public class SqlRenderService {
             if ((sourceStatement.targetDialect == null) || ("sql server".equals(sourceStatement.targetDialect))) {
                 translated.targetSQL = renderedSQL;
             } else {
-                translated.targetSQL = SqlTranslate.translateSql(renderedSQL, "sql server", sourceStatement.targetDialect);
+                translated.targetSQL = SqlTranslate.translateSql(renderedSQL, sourceStatement.targetDialect);
             }
 
         } catch (Exception exception) {

@@ -22,6 +22,7 @@ import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -76,22 +77,33 @@ public class CDMResultsService extends AbstractDaoService {
         }
 
         Source source = getSourceRepository().findBySourceKey(sourceKey);
-        String resultTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-        String vocabularyTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
 
         for (int i = 0;
                 i < identifiers.length;
                 i++) {
             identifiers[i] = "'" + identifiers[i] + "'";
         }
+        PreparedStatementRenderer psr = prepareGetConceptRecordCount(identifiers, source);
+        return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), rowMapper);
+    }
 
-        String identifierList = StringUtils.join(identifiers, ",");
-        String sql_statement = ResourceHelper.GetResourceAsString("/resources/cdmresults/sql/getConceptRecordCount.sql");
-        sql_statement = SqlRender.renderSql(sql_statement, new String[]{"resultTableQualifier", "vocabularyTableQualifier", "conceptIdentifiers"}, new String[]{resultTableQualifier, vocabularyTableQualifier, identifierList});
-        sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
+    protected PreparedStatementRenderer prepareGetConceptRecordCount(String[] identifiers, Source source) {
 
-        return getSourceJdbcTemplate(source)
-                .query(sql_statement, rowMapper);
+        String sqlPath = "/resources/cdmresults/sql/getConceptRecordCount.sql";
+
+        String resultTableQualifierName = "resultTableQualifier";
+        String vocabularyTableQualifierName = "vocabularyTableQualifier";
+        String resultTableQualifierValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+        String vocabularyTableQualifierValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
+
+        String[] tableQualifierNames = {resultTableQualifierName, vocabularyTableQualifierName};
+        String[] tableQualifierValues = {resultTableQualifierValue, vocabularyTableQualifierValue};
+
+        Object[] results = new Object[identifiers.length];
+        for (int i = 0; i < identifiers.length; i++) {
+            results[i] = Integer.parseInt(identifiers[i]);
+        }
+        return new PreparedStatementRenderer(source, sqlPath, tableQualifierNames, tableQualifierValues, "conceptIdentifiers", results);
     }
 
     /**
@@ -199,26 +211,28 @@ public class CDMResultsService extends AbstractDaoService {
     @Produces(MediaType.APPLICATION_JSON)
     public List<DrugEraPrevalence> getDrugEraPrevalenceByGenderAgeYear(@PathParam("sourceKey") String sourceKey, @PathParam("conceptId") String conceptId) {
         Source source = getSourceRepository().findBySourceKey(sourceKey);
+        PreparedStatementRenderer psr = prepareGetDrugEraPrevalenceByGenderAgeYear(conceptId, source);
+
+        return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), (rs, rowNum) -> {
+
+            DrugEraPrevalence d = new DrugEraPrevalence();
+            d.conceptId = rs.getLong("concept_id");
+            d.trellisName = rs.getString("trellis_name");
+            d.seriesName = rs.getString("series_name");
+            d.xCalendarYear = rs.getLong("x_calendar_year");
+            d.yPrevalence1000Pp =rs.getFloat("y_prevalence_1000pp");
+            return d;
+        });
+    }
+
+    protected PreparedStatementRenderer prepareGetDrugEraPrevalenceByGenderAgeYear(String conceptId, Source source) {
+
+        String path = "/resources/cdmresults/sql/getDrugEraPrevalenceByGenderAgeYear.sql";
         String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
         String vocabularyTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
-
-        String sql_statement = ResourceHelper.GetResourceAsString("/resources/cdmresults/sql/getDrugEraPrevalenceByGenderAgeYear.sql");
-        sql_statement = SqlRender.renderSql(sql_statement, new String[]{"ohdsi_database_schema", "vocabulary_database_schema", "conceptId"}, new String[]{tableQualifier, vocabularyTableQualifier, conceptId});
-        sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
-
-        List<Map<String, Object>> rows = getSourceJdbcTemplate(source).queryForList(sql_statement);
-        List<DrugEraPrevalence> listOfResults = new ArrayList<DrugEraPrevalence>();
-        for (Map rs : rows) {
-            DrugEraPrevalence d = new DrugEraPrevalence();
-            d.conceptId = Long.valueOf(String.valueOf(rs.get("concept_id")));
-            d.trellisName = String.valueOf(rs.get("trellis_name"));
-            d.seriesName = String.valueOf(rs.get("series_name"));
-            d.xCalendarYear = Long.valueOf(String.valueOf(rs.get("x_calendar_year")));
-            d.yPrevalence1000Pp = Float.valueOf(String.valueOf(rs.get("y_prevalence_1000pp")));
-            listOfResults.add(d);
-        }
-
-        return listOfResults;
+        String[] search = new String[]{"ohdsi_database_schema", "vocabulary_database_schema"};
+        String[] replace = new String[]{tableQualifier, vocabularyTableQualifier};
+        return new PreparedStatementRenderer(source, path, search, replace, "conceptId", Integer.parseInt(conceptId));
     }
 
     @Path("{sourceKey}/conditionoccurrencetreemap")
@@ -227,31 +241,36 @@ public class CDMResultsService extends AbstractDaoService {
     @Consumes(MediaType.APPLICATION_JSON)
     public List<ConditionOccurrenceTreemapNode> getConditionOccurrenceTreemap(@PathParam("sourceKey") String sourceKey, String[] identifiers) {
         Source source = getSourceRepository().findBySourceKey(sourceKey);
-        String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-        String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+        PreparedStatementRenderer psr = prepareGetConditionOccurrenceTreemap(identifiers, source);
+        return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(),new RowMapper<ConditionOccurrenceTreemapNode>() {
+            @Override
+            public ConditionOccurrenceTreemapNode mapRow(ResultSet rs, int rowNum) throws SQLException {
+                ConditionOccurrenceTreemapNode c = new ConditionOccurrenceTreemapNode();
+                c.conceptId = rs.getLong("concept_id");
+                c.conceptPath = rs.getString("concept_path");
+                c.numPersons = rs.getLong("num_persons");
+                c.percentPersons = rs.getFloat("percent_persons");
+                c.recordsPerPerson = rs.getFloat("records_per_person");
+                return c;
+            }
+        });
+    }
 
+    protected PreparedStatementRenderer prepareGetConditionOccurrenceTreemap(String[] identifiers, Source source) {
+
+        String sqlPath = "/resources/cdmresults/sql/getConditionOccurrenceTreemap.sql";
+        String resultsName = "ohdsi_database_schema";
+        String resultsValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+        String cdmName = "cdm_database_schema";
+        String cdmValue = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+        String[] search = new String[]{resultsName, cdmName};
+        String[] replace = new String[]{resultsValue, cdmValue};
+        String[] names = new String[]{"conceptIdList"};
+        Object[] results = new Object[identifiers.length];
         for (int i = 0; i < identifiers.length; i++) {
-            identifiers[i] = "'" + identifiers[i] + "'";
+            results[i] = Integer.parseInt(identifiers[i]);
         }
-
-        String identifierList = StringUtils.join(identifiers, ",");
-        String sql_statement = ResourceHelper.GetResourceAsString("/resources/cdmresults/sql/getConditionOccurrenceTreemap.sql");
-        sql_statement = SqlRender.renderSql(sql_statement, new String[]{"ohdsi_database_schema", "cdm_database_schema", "conceptIdList"}, new String[]{tableQualifier, cdmTableQualifier, identifierList});
-        sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
-
-        List<Map<String, Object>> rows = getSourceJdbcTemplate(source).queryForList(sql_statement);
-        List<ConditionOccurrenceTreemapNode> listOfResults = new ArrayList<ConditionOccurrenceTreemapNode>();
-        for (Map rs : rows) {
-            ConditionOccurrenceTreemapNode c = new ConditionOccurrenceTreemapNode();
-            c.conceptId = Long.valueOf(String.valueOf(rs.get("concept_id")));
-            c.conceptPath = String.valueOf(rs.get("concept_path"));
-            c.numPersons = Long.valueOf(String.valueOf(rs.get("num_persons")));
-            c.percentPersons = Float.valueOf(String.valueOf(rs.get("percent_persons")));
-            c.recordsPerPerson = Float.valueOf(String.valueOf(rs.get("records_per_person")));
-            listOfResults.add(c);
-        }
-
-        return listOfResults;
+        return new PreparedStatementRenderer(source, sqlPath, search, replace, names, new Object[]{results});
     }
 
     /**

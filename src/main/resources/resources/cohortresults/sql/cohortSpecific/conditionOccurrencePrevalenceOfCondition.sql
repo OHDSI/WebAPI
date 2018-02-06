@@ -116,7 +116,7 @@ inner join
 		 on hlgt_to_soc.soc_concept_id = soc.concept_id
 
 	) concept_hierarchy
-	on hr1.concept_id = concept_hierarchy.concept_id
+	on cast(hr1.concept_id as integer) = concept_hierarchy.concept_id
 ,
 (select count_value
 from @ohdsi_database_schema.heracles_results

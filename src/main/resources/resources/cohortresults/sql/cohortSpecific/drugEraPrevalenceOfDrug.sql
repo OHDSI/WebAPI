@@ -110,7 +110,7 @@ inner join
 		left join @cdm_database_schema.concept atc1
 		 on atc3_to_atc1.atc1_concept_id = atc1.concept_id
 	) concept_hierarchy
-	on hr1.concept_id = concept_hierarchy.concept_id
+	on cast(hr1.concept_id as integer) = concept_hierarchy.concept_id
 ,
 (select count_value
 from @ohdsi_database_schema.heracles_results

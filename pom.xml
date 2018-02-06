@@ -457,6 +457,10 @@
       <groupId>com.amazon.redshift</groupId>
       <artifactId>redshift-jdbc4-no-awssdk</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+    </dependency>
   </dependencies>
   <profiles>
     <profile>

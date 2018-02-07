@@ -254,7 +254,7 @@
       <dependency>
         <groupId>com.amazon.redshift</groupId>
         <artifactId>redshift-jdbc4-no-awssdk</artifactId>
-        <version>1.2.8.1005</version>
+        <version>1.2.10.1009</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

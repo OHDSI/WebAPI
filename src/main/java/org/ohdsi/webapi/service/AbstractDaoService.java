@@ -23,6 +23,9 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.sql.Connection;
+import java.util.Properties;
+
 /**
  *
  */
@@ -112,6 +115,7 @@ public abstract class AbstractDaoService {
   }
 
   public JdbcTemplate getSourceJdbcTemplate(Source source) {
+
     DriverManagerDataSource dataSource = new DriverManagerDataSource(source.getSourceConnection());
     JdbcTemplate template = new JdbcTemplate(dataSource);
     return template;

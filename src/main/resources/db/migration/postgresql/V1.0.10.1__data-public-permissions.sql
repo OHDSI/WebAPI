@@ -1,1 +1,0 @@
-DELETE FROM ${ohdsiSchema}.sec_role_permission WHERE role_id = 1;

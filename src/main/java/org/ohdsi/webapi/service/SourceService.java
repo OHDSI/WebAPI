@@ -17,6 +17,9 @@ import org.ohdsi.webapi.source.SourceDaimonRepository;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 @Path("/source/")
@@ -45,6 +48,9 @@ public class SourceService extends AbstractDaoService {
 
   @Autowired
   private SourceDaimonRepository sourceDaimonRepository;
+
+  @Value("${security.enabled}")
+  private boolean securityEnabled;
 
   private static Collection<SourceInfo> cachedSources = null;
   
@@ -104,11 +110,14 @@ public class SourceService extends AbstractDaoService {
   @Path("{sourceKey}/daimons/{daimonType}/set-priority")
   @POST
   @Produces(MediaType.APPLICATION_JSON)
-  public void updateSource(
+  public ResponseEntity updateSource(
           @PathParam("sourceKey") final String sourceKey,
           @PathParam("daimonType") final String daimonTypeName
   ) {
 
+    if (!securityEnabled){
+      return new ResponseEntity("Priority setting is available only in secured mode of application", HttpStatus.UNAUTHORIZED);
+    }
     SourceDaimon.DaimonType daimonType = SourceDaimon.DaimonType.valueOf(daimonTypeName);
     List<SourceDaimon> daimonList = sourceDaimonRepository.findByDaimonType(daimonType);
     daimonList.forEach(daimon -> {
@@ -117,5 +126,6 @@ public class SourceService extends AbstractDaoService {
       sourceDaimonRepository.save(daimon);
     });
     cachedSources = null;
+    return new ResponseEntity(HttpStatus.OK);
   }
 }

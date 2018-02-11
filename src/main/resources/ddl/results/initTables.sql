@@ -1,71 +1,4 @@
-IF OBJECT_ID('@results_schema.cohort', 'U') IS NULL
-CREATE TABLE @results_schema.cohort
-(
-	COHORT_DEFINITION_ID int NOT NULL,
-	SUBJECT_ID bigint NOT NULL,
-	cohort_start_date date NOT NULL,
-	cohort_end_date date NOT NULL
-);
-
-IF OBJECT_ID('@results_schema.heracles_analysis', 'U') IS NULL
-CREATE TABLE @results_schema.heracles_analysis
-(
-	analysis_id int,
-	analysis_name varchar(255),
-	stratum_1_name varchar(255),
-	stratum_2_name varchar(255),
-	stratum_3_name varchar(255),
-	stratum_4_name varchar(255),
-	stratum_5_name varchar(255),
-	analysis_type varchar(255)
-);
-
-IF OBJECT_ID('@results_schema.heracles_results', 'U') IS NULL
-create table @results_schema.heracles_results
-(
-	cohort_definition_id int,
-	analysis_id int,
-	stratum_1 varchar(255),
-	stratum_2 varchar(255),
-	stratum_3 varchar(255),
-	stratum_4 varchar(255),
-	stratum_5 varchar(255),
-	count_value bigint,
-	last_update_time datetime 
-          CONSTRAINT DF_HERACLES_results_last_update DEFAULT GETDATE()
-);
-
-IF OBJECT_ID('@results_schema.heracles_results_dist', 'U') IS NULL
-create table @results_schema.heracles_results_dist
-(
-	cohort_definition_id int,
-	analysis_id int,
-	stratum_1 varchar(255),
-	stratum_2 varchar(255),
-	stratum_3 varchar(255),
-	stratum_4 varchar(255),
-	stratum_5 varchar(255),
-	count_value bigint,
-	min_value float,
-	max_value float,
-	avg_value float,
-	stdev_value float,
-	median_value float,
-	p10_value float,
-	p25_value float,
-	p75_value float,
-	p90_value float,
-	last_update_time datetime
-          CONSTRAINT DF_heracles_results_dist_last_update DEFAULT GETDATE()
-);
-
-IF OBJECT_ID('@results_schema.HERACLES_HEEL_results', 'U') IS NULL
-CREATE TABLE @results_schema.HERACLES_HEEL_results 
-( 
-  cohort_definition_id int, 
-  analysis_id INT, 
-  HERACLES_HEEL_warning VARCHAR(255) 
-);
+-- init heracles_analysis
 
 TRUNCATE TABLE @results_schema.heracles_analysis;
 
@@ -255,3 +188,4 @@ insert into @results_schema.heracles_analysis (ANALYSIS_ID,ANALYSIS_NAME,STRATUM
 insert into @results_schema.heracles_analysis (ANALYSIS_ID,ANALYSIS_NAME,STRATUM_1_NAME,STRATUM_2_NAME,STRATUM_3_NAME,STRATUM_4_NAME,STRATUM_5_NAME,ANALYSIS_TYPE) values (1317,'Distribution of high range, by measurement_concept_id and unit_concept_id',null,null,null,null,null,'MEASUREMENT');
 insert into @results_schema.heracles_analysis (ANALYSIS_ID,ANALYSIS_NAME,STRATUM_1_NAME,STRATUM_2_NAME,STRATUM_3_NAME,STRATUM_4_NAME,STRATUM_5_NAME,ANALYSIS_TYPE) values (1318,'Number of measurement records below/within/above normal range, by measurement_concept_id and unit_concept_id',null,null,null,null,null,'MEASUREMENT');
 insert into @results_schema.heracles_analysis (ANALYSIS_ID,ANALYSIS_NAME,STRATUM_1_NAME,STRATUM_2_NAME,STRATUM_3_NAME,STRATUM_4_NAME,STRATUM_5_NAME,ANALYSIS_TYPE) values (1320,'Number of measurement records  by measurement start month','calendar month',null,null,null,null,'MEASUREMENT');
+

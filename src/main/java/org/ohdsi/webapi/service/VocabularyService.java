@@ -171,7 +171,7 @@ public class VocabularyService extends AbstractDaoService {
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
     ConceptSetExpressionQueryBuilder builder = new ConceptSetExpressionQueryBuilder();
     String query = builder.buildExpressionQuery(conceptSetExpression);
-    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, query, "cdm_database_schema", tqValue);
+    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, query, "vocabulary_database_schema", tqValue);
     String sqlPath = "/resources/vocabulary/sql/lookupIdentifiers.sql";
     String[] searches = new String[]{"identifiers", "CDM_schema"};
     String[] replacements = new String[]{psr.getSql(), tqValue};
@@ -297,7 +297,7 @@ public class VocabularyService extends AbstractDaoService {
 
     ConceptSetExpressionQueryBuilder builder = new ConceptSetExpressionQueryBuilder();
     String query = builder.buildExpressionQuery(conceptSetExpression);
-    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, query, "cdm_database_schema", tableQualifier);
+    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, query, "vocabulary_database_schema", tableQualifier);
     String sqlPath = "/resources/vocabulary/sql/getMappedSourcecodes.sql";
     String[] search = new String[]{"identifiers", "CDM_schema"};
     String[] replace = new String[]{psr.getSql(), tableQualifier};
@@ -570,7 +570,7 @@ public class VocabularyService extends AbstractDaoService {
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<Long> resolveConceptSetExpression(@PathParam("sourceKey") String sourceKey, ConceptSetExpression conceptSetExpression) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    String tqName = "cdm_database_schema";
+    String tqName = "vocabulary_database_schema";
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
     ConceptSetExpressionQueryBuilder builder = new ConceptSetExpressionQueryBuilder();
     String query = builder.buildExpressionQuery(conceptSetExpression);

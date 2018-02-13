@@ -57,13 +57,19 @@ public class Source implements Serializable {
 
   
   public String getTableQualifier(DaimonType daimonType) {
+		String result = getTableQualifierOrNull(daimonType);
+		if (result == null)
+			throw new RuntimeException("DaimonType (" + daimonType + ") not found in Source");
+		return result;
+  }
+	
+	  public String getTableQualifierOrNull(DaimonType daimonType) {
     for (SourceDaimon sourceDaimon : this.getDaimons()) {
       if (sourceDaimon.getDaimonType() == daimonType) {
         return sourceDaimon.getTableQualifier();
       } 
     }
-    
-    throw new RuntimeException("DaimonType (" + daimonType + ") not found in Source");
+		return null;
   }
   
   public String getSourceKey() {

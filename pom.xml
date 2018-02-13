@@ -254,7 +254,7 @@
       <dependency>
         <groupId>com.amazon.redshift</groupId>
         <artifactId>redshift-jdbc4-no-awssdk</artifactId>
-        <version>1.2.8.1005</version>
+        <version>1.2.10.1009</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -312,7 +312,7 @@
     <dependency>
       <groupId>org.ohdsi.sql</groupId>
       <artifactId>SqlRender</artifactId>
-      <version>1.4.6</version>
+      <version>1.4.8-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>commons-dbutils</groupId>
@@ -441,7 +441,7 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>circe</artifactId>
-      <version>1.3.0</version>
+      <version>1.3.2</version>
     </dependency>
     <dependency>
       <groupId>org.json</groupId>

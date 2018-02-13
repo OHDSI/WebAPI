@@ -22,28 +22,19 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import org.ohdsi.circe.helper.ResourceHelper;
-import org.ohdsi.sql.SqlRender;
-import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.person.ObservationPeriod;
 import org.ohdsi.webapi.person.PersonRecord;
 import org.ohdsi.webapi.person.CohortPerson;
 import org.ohdsi.webapi.person.PersonProfile;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
 @Path("{sourceKey}/person/")
 @Component
 public class PersonService extends AbstractDaoService {
-
-  @Autowired 
-  private VocabularyService vocabService;
-  
-  @Autowired
-  private ConceptSetService conceptSetService;
   
   @Path("{personId}")
   @GET
@@ -53,17 +44,11 @@ public class PersonService extends AbstractDaoService {
     final PersonProfile profile = new PersonProfile();
     
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
-    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-
-    String sql_statement = ResourceHelper.GetResourceAsString("/resources/person/sql/personInfo.sql");
-    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"personId", "tableQualifier"}, new String[]{personId, tableQualifier});
-    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
-    
     profile.gender = "not found";
     profile.yearOfBirth = 0;
-    
-    getSourceJdbcTemplate(source).query(sql_statement, new RowMapper<Void>() {
+
+    PreparedStatementRenderer psrPersonInfo = preparePersonInfoSql(personId, source);
+    getSourceJdbcTemplate(source).query(psrPersonInfo.getSql(), psrPersonInfo.getSetter(), new RowMapper<Void>() {
       @Override
       public Void mapRow(ResultSet resultSet, int arg1) throws SQLException {
         profile.yearOfBirth = resultSet.getInt("year_of_birth");
@@ -76,11 +61,8 @@ public class PersonService extends AbstractDaoService {
     }
 
     // get observation periods
-    String sqlObservationPeriods = ResourceHelper.GetResourceAsString("/resources/person/sql/getObservationPeriods.sql");
-    sqlObservationPeriods = SqlRender.renderSql(sqlObservationPeriods, new String[]{"personId", "tableQualifier"}, new String[]{personId, tableQualifier});
-    sqlObservationPeriods = SqlTranslate.translateSql(sqlObservationPeriods, "sql server", source.getSourceDialect());    
-    
-    getSourceJdbcTemplate(source).query(sqlObservationPeriods, new RowMapper<Void>() {
+    PreparedStatementRenderer psrObservationPeriods = prepareObservationPeriodsSql(personId, source);
+    getSourceJdbcTemplate(source).query(psrObservationPeriods.getSql(), psrObservationPeriods.getSetter(), new RowMapper<Void>() {
       @Override
       public Void mapRow(ResultSet resultSet, int arg1) throws SQLException {
         ObservationPeriod op = new ObservationPeriod();
@@ -93,14 +75,11 @@ public class PersonService extends AbstractDaoService {
         profile.observationPeriods.add(op);
         return null;
       }
-    });    
-    
+    });
     // get simplified records
-    sql_statement = ResourceHelper.GetResourceAsString("/resources/person/sql/getRecords.sql");
-    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"personId", "tableQualifier"}, new String[]{personId, tableQualifier});
-    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
+    PreparedStatementRenderer psrPersonProfile = prepareGetPersonProfile(personId, source);
+    getSourceJdbcTemplate(source).query(psrPersonProfile.getSql(), psrPersonProfile.getSetter(), new RowMapper<Void>() {
 
-    getSourceJdbcTemplate(source).query(sql_statement, new RowMapper<Void>() {
       @Override
       public Void mapRow(ResultSet resultSet, int arg1) throws SQLException {
         PersonRecord item = new PersonRecord();
@@ -116,11 +95,8 @@ public class PersonService extends AbstractDaoService {
       }
     });
 
-    sql_statement = ResourceHelper.GetResourceAsString("/resources/person/sql/getCohorts.sql");
-    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"subjectId", "tableQualifier"}, new String[]{personId, resultsTableQualifier});
-    sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
-
-    getSourceJdbcTemplate(source).query(sql_statement, new RowMapper<Void>() {
+    PreparedStatementRenderer psrGetCohorts = prepareGetCohortsSql(personId, source);
+    getSourceJdbcTemplate(source).query(psrGetCohorts.getSql(), psrGetCohorts.getSetter(), new RowMapper<Void>() {
       @Override
       public Void mapRow(ResultSet resultSet, int arg1) throws SQLException {
         CohortPerson item = new CohortPerson();
@@ -135,5 +111,29 @@ public class PersonService extends AbstractDaoService {
     });
     
     return profile;
+  }
+
+  protected PreparedStatementRenderer prepareObservationPeriodsSql(String personId, Source source) {
+
+    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+    return new PreparedStatementRenderer(source, "/resources/person/sql/getObservationPeriods.sql", "tableQualifier", resultsTableQualifier, "personId", Long.valueOf(personId));
+  }
+
+  protected PreparedStatementRenderer prepareGetCohortsSql(String personId, Source source) {
+
+    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    return new PreparedStatementRenderer(source, "/resources/person/sql/getCohorts.sql", "tableQualifier", resultsTableQualifier, "subjectId", Long.valueOf(personId));
+  }
+
+  protected PreparedStatementRenderer preparePersonInfoSql(String personId, Source source) {
+
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+    return new PreparedStatementRenderer(source, "/resources/person/sql/personInfo.sql", "tableQualifier", tableQualifier, "personId", Long.valueOf(personId));
+  }
+
+  protected PreparedStatementRenderer prepareGetPersonProfile(String personId, Source source) {
+
+    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+    return new PreparedStatementRenderer(source, "/resources/person/sql/getRecords.sql", "tableQualifier", tqValue, "personId", Long.valueOf(personId));
   }
 }

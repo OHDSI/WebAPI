@@ -21,6 +21,7 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.ohdsi.webapi.util.SecurityUtils;
 import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisExecution;
 import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisExecutionRepository;
 import org.springframework.batch.core.StepContribution;
@@ -77,7 +78,7 @@ public class RSBTasklet implements Tasklet {
   }
 
   @Override
-  public RepeatStatus execute(final StepContribution contribution, final ChunkContext chunkContext) throws Exception {  
+  public RepeatStatus execute(final StepContribution contribution, final ChunkContext chunkContext) {
     String rsbEndpoint = rServiceHost + "rsb/api/rest/jobs";
     
     Client client = ClientBuilder.newClient();
@@ -115,7 +116,7 @@ public class RSBTasklet implements Tasklet {
         jobCompleted = true;
       } else {
         // repeat polling delay
-        Thread.sleep(5000);
+        SecurityUtils.sleep(5000);
       }
     }
     
@@ -132,6 +133,5 @@ public class RSBTasklet implements Tasklet {
       ResultResponse resultResponse = jobStatusResponse.readEntity(ResultResponse.class);
       return RepeatStatus.FINISHED;
     }
-        
   }
-};
+}

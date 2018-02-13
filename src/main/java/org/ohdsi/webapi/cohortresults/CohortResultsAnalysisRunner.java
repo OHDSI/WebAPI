@@ -1,40 +1,19 @@
 package org.ohdsi.webapi.cohortresults;
 
+import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.ws.rs.PathParam;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ohdsi.circe.helper.ResourceHelper;
-import org.ohdsi.sql.SqlRender;
-import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTask;
-import org.ohdsi.webapi.cohortresults.mapper.CohortAttributeMapper;
-import org.ohdsi.webapi.cohortresults.mapper.CohortStatsMapper;
-import org.ohdsi.webapi.cohortresults.mapper.ConceptConditionCountMapper;
-import org.ohdsi.webapi.cohortresults.mapper.ConceptCountMapper;
-import org.ohdsi.webapi.cohortresults.mapper.ConceptDecileCountsMapper;
-import org.ohdsi.webapi.cohortresults.mapper.ConceptDecileMapper;
-import org.ohdsi.webapi.cohortresults.mapper.ConceptDistributionMapper;
-import org.ohdsi.webapi.cohortresults.mapper.ConceptObservationCountMapper;
-import org.ohdsi.webapi.cohortresults.mapper.ConceptQuartileMapper;
-import org.ohdsi.webapi.cohortresults.mapper.CumulativeObservationMapper;
-import org.ohdsi.webapi.cohortresults.mapper.HierarchicalConceptEraMapper;
-import org.ohdsi.webapi.cohortresults.mapper.HierarchicalConceptMapper;
-import org.ohdsi.webapi.cohortresults.mapper.HierarchicalConceptPrevalenceMapper;
-import org.ohdsi.webapi.cohortresults.mapper.MonthObservationMapper;
-import org.ohdsi.webapi.cohortresults.mapper.ObservationPeriodMapper;
-import org.ohdsi.webapi.cohortresults.mapper.PrevalanceConceptMapper;
-import org.ohdsi.webapi.cohortresults.mapper.PrevalanceConceptNameMapper;
-import org.ohdsi.webapi.cohortresults.mapper.PrevalanceMapper;
-import org.ohdsi.webapi.cohortresults.mapper.ScatterplotMapper;
-import org.ohdsi.webapi.cohortresults.mapper.SeriesPerPersonMapper;
+import org.ohdsi.webapi.cohortresults.mapper.*;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -84,8 +63,8 @@ public class CohortResultsAnalysisRunner {
 		"ohdsi_database_schema", "cohortDefinitionId",
 		"minCovariatePersonCount", "minIntervalPersonCount", "conceptId"};
 
-	public static final String MIN_COVARIATE_PERSON_COUNT = "10";
-	public static final String MIN_INTERVAL_PERSON_COUNT = "10";
+	public static final Integer MIN_COVARIATE_PERSON_COUNT = 10;
+	public static final Integer MIN_INTERVAL_PERSON_COUNT = 10;
 
 	private ObjectMapper mapper;
 	private String sourceDialect;
@@ -98,21 +77,49 @@ public class CohortResultsAnalysisRunner {
 		mapper = new ObjectMapper();
 	}
 
+	public List<TornadoRecord> getTornadoRecords(JdbcTemplate jdbcTemplate, final int id, Source source) {
+		final String sqlPath = BASE_SQL_PATH + "/tornado/getTornadoData.sql";
+		String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+
+		String[] search = new String[]{"tableQualifier"};
+		String[] replace = new String[]{resultsTableQualifier};
+
+		String[] cols = new String[]{"cohortDefinitionId"};
+		Object[] colValues = new Object[]{id};
+
+		final PreparedStatementRenderer psr =  new PreparedStatementRenderer(source, sqlPath, search, replace, cols, colValues);
+		return jdbcTemplate.query(psr.getSql(), psr.getSetter(), new TornadoMapper());
+	}
+
+	public List<ProfileSampleRecord> getProfileSampleRecords(JdbcTemplate jdbcTemplate, final int id, Source source) {
+		final String sqlPath = BASE_SQL_PATH + "/tornado/getProfileSamples.sql";
+		String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+
+		String[] search = new String[]{"tableQualifier"};
+		String[] replace = new String[]{resultsTableQualifier};
+
+		String[] cols = new String[]{"cohortDefinitionId"};
+		Object[] colValues = new Object[]{id};
+
+		final PreparedStatementRenderer psr =  new PreparedStatementRenderer(source, sqlPath, search, replace, cols, colValues);
+		return jdbcTemplate.query(psr.getSql(), psr.getSetter(), new ProfileSampleMapper());
+	}
+
 	public List<ScatterplotRecord> getCohortConditionDrilldown(JdbcTemplate jdbcTemplate,
 			final int id, 
 			final int conceptId,
-			final String minCovariatePersonCountParam,
-			final String minIntervalPersonCountParam,
+			final Integer minCovariatePersonCountParam,
+			final Integer minIntervalPersonCountParam,
 			Source source, 
 			boolean save) {
 
 		final String key = COHORT_SPECIFIC_CONDITION_DRILLDOWN;
-		List<ScatterplotRecord> records = new ArrayList<ScatterplotRecord>();
+		List<ScatterplotRecord> records = new ArrayList<>();
 
-		final String sql = this.renderDrillDownCohortSql("firstConditionRelativeToIndex", "cohortSpecific", id,
+		final PreparedStatementRenderer psr = prepareDrillDownCohortSql("firstConditionRelativeToIndex", "cohortSpecific", id,
 				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
-		if (sql != null) {
-			records = jdbcTemplate.query(sql, new ScatterplotMapper());
+		if (psr != null) {
+			records = jdbcTemplate.query(psr.getSql(), psr.getSetter(), new ScatterplotMapper());
 			if (save) {
 				this.saveEntityDrilldown(id, source.getSourceId(), key, conceptId, records);
 			}
@@ -123,8 +130,8 @@ public class CohortResultsAnalysisRunner {
 
 	public CohortDataDensity getCohortDataDensity(JdbcTemplate jdbcTemplate,
 			final int id,
-			final String minCovariatePersonCountParam,
-			final String minIntervalPersonCountParam,
+			final Integer minCovariatePersonCountParam,
+			final Integer minIntervalPersonCountParam,
 			Source source,
 			boolean save) {
 
@@ -132,20 +139,20 @@ public class CohortResultsAnalysisRunner {
 		final String key = DATA_DENSITY;
 		boolean empty = true;
 
-		String recordsPerPersonSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/datadensity/recordsperperson.sql", id,
+		PreparedStatementRenderer recordsPerPersonSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/datadensity/recordsperperson.sql", id,
 				minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (recordsPerPersonSql != null) {
-			data.setRecordsPerPerson(jdbcTemplate.query(recordsPerPersonSql, new SeriesPerPersonMapper()));
+			data.setRecordsPerPerson(jdbcTemplate.query(recordsPerPersonSql.getSql(), recordsPerPersonSql.getSetter(), new SeriesPerPersonMapper()));
 		}
-		String totalRecordsSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/datadensity/totalrecords.sql", id,
+		PreparedStatementRenderer totalRecordsSql = renderTranslateCohortSql(BASE_SQL_PATH + "/datadensity/totalrecords.sql", id,
 				minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (totalRecordsSql != null) {
-			data.setTotalRecords(jdbcTemplate.query(totalRecordsSql, new SeriesPerPersonMapper()));
+			data.setTotalRecords(jdbcTemplate.query(totalRecordsSql.getSql(), totalRecordsSql.getSetter(), new SeriesPerPersonMapper()));
 		}
-		String conceptsPerPersonSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/datadensity/conceptsperperson.sql", id,
+		PreparedStatementRenderer conceptsPerPersonSql = renderTranslateCohortSql(BASE_SQL_PATH + "/datadensity/conceptsperperson.sql", id,
 				minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (conceptsPerPersonSql != null) {
-			data.setConceptsPerPerson(jdbcTemplate.query(conceptsPerPersonSql, new ConceptQuartileMapper()));
+			data.setConceptsPerPerson(jdbcTemplate.query(conceptsPerPersonSql.getSql(), conceptsPerPersonSql.getSetter(), new ConceptQuartileMapper()));
 		}
 		
 		if (CollectionUtils.isNotEmpty(data.getRecordsPerPerson())
@@ -155,7 +162,7 @@ public class CohortResultsAnalysisRunner {
 		}
 
 		if (!empty && save) {
-			this.saveEntity(id, source.getSourceId(), key, data);
+			saveEntity(id, source.getSourceId(), key, data);
 		}
 
 		return data;
@@ -163,8 +170,8 @@ public class CohortResultsAnalysisRunner {
 
 	public CohortDeathData getCohortDeathData(JdbcTemplate jdbcTemplate,
 			final int id,
-			final String minCovariatePersonCountParam,
-			final String minIntervalPersonCountParam,
+			final Integer minCovariatePersonCountParam,
+			final Integer minIntervalPersonCountParam,
 			Source source,
 			boolean save) {
 		CohortDeathData data = new CohortDeathData();
@@ -172,34 +179,34 @@ public class CohortResultsAnalysisRunner {
 		boolean empty = true;
 
 		List<ConceptQuartileRecord> age = null;
-		String ageSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/death/sqlAgeAtDeath.sql", id,
+		PreparedStatementRenderer ageSql = renderTranslateCohortSql(BASE_SQL_PATH + "/death/sqlAgeAtDeath.sql", id,
 				minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (ageSql != null) {
-			age = jdbcTemplate.query(ageSql, new ConceptQuartileMapper());
+			age = jdbcTemplate.query(ageSql.getSql(), ageSql.getSetter(), new ConceptQuartileMapper());
 		}
 		data.setAgetAtDeath(age);
 
 		List<ConceptCountRecord> byType = null;
-		String byTypeSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/death/sqlDeathByType.sql", id,
+		PreparedStatementRenderer byTypeSql = renderTranslateCohortSql(BASE_SQL_PATH + "/death/sqlDeathByType.sql", id,
 				minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (byTypeSql != null) {
-			byType = jdbcTemplate.query(byTypeSql, new ConceptCountMapper());
+			byType = jdbcTemplate.query(byTypeSql.getSql(), byTypeSql.getSetter(), new ConceptCountMapper());
 		}
 		data.setDeathByType(byType);
 
 		List<ConceptDecileRecord> prevalenceByGenderAgeYear = null;
-		String prevalenceGenderAgeSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/death/sqlPrevalenceByGenderAgeYear.sql", id,
+		PreparedStatementRenderer prevalenceGenderAgeSql = renderTranslateCohortSql(BASE_SQL_PATH + "/death/sqlPrevalenceByGenderAgeYear.sql", id,
 				minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (prevalenceGenderAgeSql != null) {
-			prevalenceByGenderAgeYear = jdbcTemplate.query(prevalenceGenderAgeSql, new ConceptDecileCountsMapper());
+			prevalenceByGenderAgeYear = jdbcTemplate.query(prevalenceGenderAgeSql.getSql(), prevalenceGenderAgeSql.getSetter(), new ConceptDecileCountsMapper());
 		}
 		data.setPrevalenceByGenderAgeYear(prevalenceByGenderAgeYear);
 
 		List<PrevalenceRecord> prevalenceByMonth = null;
-		String prevalanceMonthSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/death/sqlPrevalenceByMonth.sql", id,
+		PreparedStatementRenderer prevalanceMonthSql = renderTranslateCohortSql(BASE_SQL_PATH + "/death/sqlPrevalenceByMonth.sql", id,
 				minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (prevalanceMonthSql != null) {
-			prevalenceByMonth = jdbcTemplate.query(prevalanceMonthSql, new PrevalanceConceptMapper());
+			prevalenceByMonth = jdbcTemplate.query(prevalanceMonthSql.getSql(), prevalanceMonthSql.getSetter(), new PrevalanceConceptMapper());
 		}
 		data.setPrevalenceByMonth(prevalenceByMonth);
 
@@ -219,20 +226,20 @@ public class CohortResultsAnalysisRunner {
 	public List<ScatterplotRecord> getCohortDrugDrilldown(JdbcTemplate jdbcTemplate,
 			final int id, 
 			final int conceptId,
-			final String minCovariatePersonCountParam,
-			final String minIntervalPersonCountParam,
+			final Integer minCovariatePersonCountParam,
+			final Integer minIntervalPersonCountParam,
 			Source source,
 			boolean save) {
 
-		List<ScatterplotRecord> records = new ArrayList<ScatterplotRecord>();
+		List<ScatterplotRecord> records = new ArrayList<>();
 		final String key = COHORT_SPECIFIC_DRUG_DRILLDOWN;
 
-		final String sql = this.renderDrillDownCohortSql("drugOccursRelativeToIndex", "cohortSpecific", id,
+		final PreparedStatementRenderer sql = prepareDrillDownCohortSql("drugOccursRelativeToIndex", "cohortSpecific", id,
 				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (sql != null) {
-			records = jdbcTemplate.query(sql, new ScatterplotMapper());
+			records = jdbcTemplate.query(sql.getSql(), sql.getSetter(), new ScatterplotMapper());
 			if (save) {
-				this.saveEntityDrilldown(id, source.getSourceId(), key, conceptId, records);
+				saveEntityDrilldown(id, source.getSourceId(), key, conceptId, records);
 			}
 		}
 
@@ -241,19 +248,19 @@ public class CohortResultsAnalysisRunner {
 
 	public List<HierarchicalConceptRecord> getCohortMeasurementResults(JdbcTemplate jdbcTemplate,
 			final int id,
-			final String minCovariatePersonCountParam,
-			final String minIntervalPersonCountParam,
+			final Integer minCovariatePersonCountParam,
+			final Integer minIntervalPersonCountParam,
 			Source source,
 			boolean save) {
 		List<HierarchicalConceptRecord> res = null;
 		final String key = MEASUREMENT;
 
-		String sql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/measurement/sqlMeasurementTreemap.sql",
+		PreparedStatementRenderer sql = renderTranslateCohortSql(BASE_SQL_PATH + "/measurement/sqlMeasurementTreemap.sql",
 				id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (sql != null) {
-			res = jdbcTemplate.query(sql, new HierarchicalConceptMapper());
+			res = jdbcTemplate.query(sql.getSql(), sql.getSetter(), new HierarchicalConceptMapper());
 			if (save) {
-				this.saveEntity(id, source.getSourceId(), key, res);
+				saveEntity(id, source.getSourceId(), key, res);
 			}
 		}
 		return res;
@@ -262,67 +269,67 @@ public class CohortResultsAnalysisRunner {
 	public CohortMeasurementDrilldown getCohortMeasurementResultsDrilldown(JdbcTemplate jdbcTemplate,
 			final int id, 
 			final int conceptId,
-			final String minCovariatePersonCountParam,
-			final String minIntervalPersonCountParam,
+			final Integer minCovariatePersonCountParam,
+			final Integer minIntervalPersonCountParam,
 			Source source,
 			boolean save) {
 		CohortMeasurementDrilldown drilldown = new CohortMeasurementDrilldown();
 		final String key = MEASUREMENT_DRILLDOWN;
 		boolean empty = true;
 
-		String ageAtFirstOccurrenceSql = this.renderDrillDownCohortSql("sqlAgeAtFirstOccurrence", MEASUREMENT, id,
+		PreparedStatementRenderer ageAtFirstOccurrenceSql = prepareDrillDownCohortSql("sqlAgeAtFirstOccurrence", MEASUREMENT, id,
 				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (ageAtFirstOccurrenceSql != null) {
-			drilldown.setAgeAtFirstOccurrence(jdbcTemplate.query(ageAtFirstOccurrenceSql, new ConceptQuartileMapper()));
+			drilldown.setAgeAtFirstOccurrence(jdbcTemplate.query(ageAtFirstOccurrenceSql.getSql(), ageAtFirstOccurrenceSql.getSetter(), new ConceptQuartileMapper()));
 		}
 
-		String sqlLowerLimitDistribution = this.renderDrillDownCohortSql("sqlLowerLimitDistribution", MEASUREMENT, id,
+		PreparedStatementRenderer sqlLowerLimitDistribution = prepareDrillDownCohortSql("sqlLowerLimitDistribution", MEASUREMENT, id,
 				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (sqlLowerLimitDistribution != null) {
-			drilldown.setLowerLimitDistribution(jdbcTemplate.query(sqlLowerLimitDistribution, new ConceptQuartileMapper()));
+			drilldown.setLowerLimitDistribution(jdbcTemplate.query(sqlLowerLimitDistribution.getSql(), sqlLowerLimitDistribution.getSetter(), new ConceptQuartileMapper()));
 		}
 
-		String sqlMeasurementValueDistribution = this.renderDrillDownCohortSql("sqlMeasurementValueDistribution", MEASUREMENT, id,
+		PreparedStatementRenderer sqlMeasurementValueDistribution = prepareDrillDownCohortSql("sqlMeasurementValueDistribution", MEASUREMENT, id,
 				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (sqlMeasurementValueDistribution != null) {
-			drilldown.setMeasurementValueDistribution(jdbcTemplate.query(sqlMeasurementValueDistribution, new ConceptQuartileMapper()));
+			drilldown.setMeasurementValueDistribution(jdbcTemplate.query(sqlMeasurementValueDistribution.getSql(), sqlMeasurementValueDistribution.getSetter(), new ConceptQuartileMapper()));
 		}
 
-		String sqlUpperLimitDistribution = this.renderDrillDownCohortSql("sqlUpperLimitDistribution", MEASUREMENT, id,
+		PreparedStatementRenderer sqlUpperLimitDistribution = prepareDrillDownCohortSql("sqlUpperLimitDistribution", MEASUREMENT, id,
 				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (sqlUpperLimitDistribution != null) {
-			drilldown.setUpperLimitDistribution(jdbcTemplate.query(sqlUpperLimitDistribution, new ConceptQuartileMapper()));
+			drilldown.setUpperLimitDistribution(jdbcTemplate.query(sqlUpperLimitDistribution.getSql(), sqlUpperLimitDistribution.getSetter(), new ConceptQuartileMapper()));
 		}
 
-		String sqlMeasurementsByType = this.renderDrillDownCohortSql("sqlMeasurementsByType", MEASUREMENT, id,
+		PreparedStatementRenderer sqlMeasurementsByType = prepareDrillDownCohortSql("sqlMeasurementsByType", MEASUREMENT, id,
 				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (sqlMeasurementsByType != null) {
-			drilldown.setMeasurementsByType(jdbcTemplate.query(sqlMeasurementsByType, new ConceptObservationCountMapper()));
+			drilldown.setMeasurementsByType(jdbcTemplate.query(sqlMeasurementsByType.getSql(), sqlMeasurementsByType.getSetter(), new ConceptObservationCountMapper()));
 		}
 
-		String sqlRecordsByUnit = this.renderDrillDownCohortSql("sqlRecordsByUnit", MEASUREMENT, id,
+		PreparedStatementRenderer sqlRecordsByUnit = prepareDrillDownCohortSql("sqlRecordsByUnit", MEASUREMENT, id,
 				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (sqlRecordsByUnit != null) {
-			drilldown.setRecordsByUnit(jdbcTemplate.query(sqlRecordsByUnit, new ConceptObservationCountMapper()));
+			drilldown.setRecordsByUnit(jdbcTemplate.query(sqlRecordsByUnit.getSql(), sqlRecordsByUnit.getSetter(), new ConceptObservationCountMapper()));
 		}
 
-		String sqlValuesRelativeToNorm = this.renderDrillDownCohortSql("sqlValuesRelativeToNorm", MEASUREMENT, id,
+		PreparedStatementRenderer sqlValuesRelativeToNorm = prepareDrillDownCohortSql("sqlValuesRelativeToNorm", MEASUREMENT, id,
 				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (sqlValuesRelativeToNorm != null) {
-			drilldown.setValuesRelativeToNorm(jdbcTemplate.query(sqlValuesRelativeToNorm, new ConceptObservationCountMapper()));
+			drilldown.setValuesRelativeToNorm(jdbcTemplate.query(sqlValuesRelativeToNorm.getSql(), sqlValuesRelativeToNorm.getSetter(), new ConceptObservationCountMapper()));
 		}
 
-		String sqlPrevalenceByGenderAgeYear = this.renderDrillDownCohortSql("sqlPrevalenceByGenderAgeYear", MEASUREMENT, id,
+		PreparedStatementRenderer sqlPrevalenceByGenderAgeYear = prepareDrillDownCohortSql("sqlPrevalenceByGenderAgeYear", MEASUREMENT, id,
 				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (sqlPrevalenceByGenderAgeYear != null) {
-			drilldown.setPrevalenceByGenderAgeYear(jdbcTemplate.query(sqlPrevalenceByGenderAgeYear, new ConceptDecileMapper()));
+			drilldown.setPrevalenceByGenderAgeYear(jdbcTemplate.query(sqlPrevalenceByGenderAgeYear.getSql(), sqlPrevalenceByGenderAgeYear.getSetter(), new ConceptDecileMapper()));
 		}
 
 		List<PrevalenceRecord> prevalenceByMonth = null;
-		String prevalanceMonthSql = this.renderDrillDownCohortSql("sqlPrevalenceByMonth", MEASUREMENT, id,
+		PreparedStatementRenderer prevalanceMonthSql = prepareDrillDownCohortSql("sqlPrevalenceByMonth", MEASUREMENT, id,
 				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (prevalanceMonthSql != null) {
-			prevalenceByMonth = jdbcTemplate.query(prevalanceMonthSql, new PrevalanceConceptNameMapper());
+			prevalenceByMonth = jdbcTemplate.query(prevalanceMonthSql.getSql(), prevalanceMonthSql.getSetter(), new PrevalanceConceptNameMapper());
 		}
 		drilldown.setPrevalenceByMonth(prevalenceByMonth);
 
@@ -347,76 +354,76 @@ public class CohortResultsAnalysisRunner {
 
 	public CohortObservationPeriod getCohortObservationPeriod(final JdbcTemplate jdbcTemplate,
 			final int id,
-			final String minCovariatePersonCountParam,
-			final String minIntervalPersonCountParam,
+			final Integer minCovariatePersonCountParam,
+			final Integer minIntervalPersonCountParam,
 			Source source,
 			boolean save) {
 		CohortObservationPeriod obsPeriod = new CohortObservationPeriod();
 		final String key = OBSERVATION_PERIOD;
 		boolean empty = true;
 
-		String ageAtFirstSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/ageatfirst.sql",
+		PreparedStatementRenderer ageAtFirstSql = renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/ageatfirst.sql",
 				id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (ageAtFirstSql != null) {
-			obsPeriod.setAgeAtFirst(jdbcTemplate.query(ageAtFirstSql, new ConceptDistributionMapper()));
+			obsPeriod.setAgeAtFirst(jdbcTemplate.query(ageAtFirstSql.getSql(), ageAtFirstSql.getSetter(), new ConceptDistributionMapper()));
 		}
 
-		String obsLengthSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/observationlength_data.sql",
+		PreparedStatementRenderer obsLengthSql = renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/observationlength_data.sql",
 				id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (obsLengthSql != null) {
-			obsPeriod.setObservationLength(jdbcTemplate.query(obsLengthSql, new ConceptDistributionMapper()));
+			obsPeriod.setObservationLength(jdbcTemplate.query(obsLengthSql.getSql(), obsLengthSql.getSetter(), new ConceptDistributionMapper()));
 		}
 
-		String obsLengthStatsSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/observationlength_stats.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
+		PreparedStatementRenderer obsLengthStatsSql = renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/observationlength_stats.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (obsLengthStatsSql != null) {
-			obsPeriod.setObservationLengthStats(jdbcTemplate.query(obsLengthStatsSql, new CohortStatsMapper()));
+			obsPeriod.setObservationLengthStats(jdbcTemplate.query(obsLengthStatsSql.getSql(), obsLengthStatsSql.getSetter(), new CohortStatsMapper()));
 		}
 
-		String obsYearStatsSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/observedbyyear_stats.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
+		PreparedStatementRenderer obsYearStatsSql = renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/observedbyyear_stats.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (obsYearStatsSql != null) {
-			obsPeriod.setPersonsWithContinuousObservationsByYearStats(jdbcTemplate.query(obsYearStatsSql, new CohortStatsMapper()));
+			obsPeriod.setPersonsWithContinuousObservationsByYearStats(jdbcTemplate.query(obsYearStatsSql.getSql(), obsYearStatsSql.getSetter(), new CohortStatsMapper()));
 		}
 
-		String personsWithContObsSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/observedbyyear_data.sql",
+		PreparedStatementRenderer personsWithContObsSql = renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/observedbyyear_data.sql",
 				id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (personsWithContObsSql != null) {
-			obsPeriod.setPersonsWithContinuousObservationsByYear(jdbcTemplate.query(personsWithContObsSql, new ConceptDistributionMapper()));
+			obsPeriod.setPersonsWithContinuousObservationsByYear(jdbcTemplate.query(personsWithContObsSql.getSql(), personsWithContObsSql.getSetter(), new ConceptDistributionMapper()));
 		}
 
-		String ageByGenderSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/agebygender.sql",
+		PreparedStatementRenderer ageByGenderSql = renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/agebygender.sql",
 				id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (ageByGenderSql != null) {
-			obsPeriod.setAgeByGender(jdbcTemplate.query(ageByGenderSql, new ConceptQuartileMapper()));
+			obsPeriod.setAgeByGender(jdbcTemplate.query(ageByGenderSql.getSql(), ageByGenderSql.getSetter(), new ConceptQuartileMapper()));
 		}
 
-		String durationByGenderSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/observationlengthbygender.sql",
+		PreparedStatementRenderer durationByGenderSql = renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/observationlengthbygender.sql",
 				id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (durationByGenderSql != null) {
-			obsPeriod.setDurationByGender(jdbcTemplate.query(durationByGenderSql, new ConceptQuartileMapper()));
+			obsPeriod.setDurationByGender(jdbcTemplate.query(durationByGenderSql.getSql(), durationByGenderSql.getSetter(), new ConceptQuartileMapper()));
 		}
 
-		String durationByAgeSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/observationlengthbyage.sql",
+		PreparedStatementRenderer durationByAgeSql = renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/observationlengthbyage.sql",
 				id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (durationByAgeSql != null) {
-			obsPeriod.setDurationByAgeDecile(jdbcTemplate.query(durationByAgeSql, new ConceptQuartileMapper()));
+			obsPeriod.setDurationByAgeDecile(jdbcTemplate.query(durationByAgeSql.getSql(), durationByAgeSql.getSetter(), new ConceptQuartileMapper()));
 		}
 
-		String cumulObsSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/cumulativeduration.sql", id,
+		PreparedStatementRenderer cumulObsSql = renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/cumulativeduration.sql", id,
 				minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (cumulObsSql != null) {
-			obsPeriod.setCumulativeObservation(jdbcTemplate.query(cumulObsSql, new CumulativeObservationMapper()));
+			obsPeriod.setCumulativeObservation(jdbcTemplate.query(cumulObsSql.getSql(), cumulObsSql.getSetter(), new CumulativeObservationMapper()));
 		}
 
-		String obsByMonthSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/observedbymonth.sql", id,
+		PreparedStatementRenderer obsByMonthSql = renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/observedbymonth.sql", id,
 				minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (obsByMonthSql != null) {
-			obsPeriod.setObservedByMonth(jdbcTemplate.query(obsByMonthSql, new MonthObservationMapper()));
+			obsPeriod.setObservedByMonth(jdbcTemplate.query(obsByMonthSql.getSql(), obsByMonthSql.getSetter(), new MonthObservationMapper()));
 		}
 
-		String obsPeriodsPerPersonSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/periodsperperson.sql", id, minCovariatePersonCountParam,
+		PreparedStatementRenderer obsPeriodsPerPersonSql = renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/periodsperperson.sql", id, minCovariatePersonCountParam,
 				minIntervalPersonCountParam, source);
 		if (obsPeriodsPerPersonSql != null) {
-			obsPeriod.setObservationPeriodsPerPerson(jdbcTemplate.query(obsPeriodsPerPersonSql, new ConceptCountMapper()));
+			obsPeriod.setObservationPeriodsPerPerson(jdbcTemplate.query(obsPeriodsPerPersonSql.getSql(), obsPeriodsPerPersonSql.getSetter(), new ConceptCountMapper()));
 		}
 		
 		if (CollectionUtils.isNotEmpty(obsPeriod.getAgeAtFirst())
@@ -442,20 +449,20 @@ public class CohortResultsAnalysisRunner {
 
 	public List<HierarchicalConceptRecord> getCohortObservationResults(JdbcTemplate jdbcTemplate,
 			final int id,
-			final String minCovariatePersonCountParam,
-			final String minIntervalPersonCountParam,
+			final Integer minCovariatePersonCountParam,
+			final Integer minIntervalPersonCountParam,
 			Source source,
 			boolean save) {
 
 		List<HierarchicalConceptRecord> res = null;
 
 		final String key = OBSERVATION;
-		String sql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observation/sqlObservationTreemap.sql",
+		PreparedStatementRenderer sql = renderTranslateCohortSql(BASE_SQL_PATH + "/observation/sqlObservationTreemap.sql",
 				id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (sql != null) {
-			res = jdbcTemplate.query(sql, new HierarchicalConceptMapper());
+			res = jdbcTemplate.query(sql.getSql(), sql.getSetter(), new HierarchicalConceptMapper());
 			if (save) {
-				this.saveEntity(id, source.getSourceId(), key, res);
+				saveEntity(id, source.getSourceId(), key, res);
 			}
 		}
 
@@ -465,49 +472,49 @@ public class CohortResultsAnalysisRunner {
 	public CohortObservationDrilldown getCohortObservationResultsDrilldown(JdbcTemplate jdbcTemplate,
 			final int id, 
 			final int conceptId,
-			final String minCovariatePersonCountParam,
-			final String minIntervalPersonCountParam,
+			final Integer minCovariatePersonCountParam,
+			final Integer minIntervalPersonCountParam,
 			Source source,
 			boolean save) {
 		CohortObservationDrilldown drilldown = new CohortObservationDrilldown();
 		final String key = OBSERVATION_DRILLDOWN;
 		boolean empty = true;
 
-		String ageAtFirstOccurrenceSql = this.renderDrillDownCohortSql("sqlAgeAtFirstOccurrence", OBSERVATION, id,
+		PreparedStatementRenderer ageAtFirstOccurrenceSql = prepareDrillDownCohortSql("sqlAgeAtFirstOccurrence", OBSERVATION, id,
 				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (ageAtFirstOccurrenceSql != null) {
-			drilldown.setAgeAtFirstOccurrence(jdbcTemplate.query(ageAtFirstOccurrenceSql, new ConceptQuartileMapper()));
+			drilldown.setAgeAtFirstOccurrence(jdbcTemplate.query(ageAtFirstOccurrenceSql.getSql(), ageAtFirstOccurrenceSql.getSetter(), new ConceptQuartileMapper()));
 		}
 
-		String sqlObservationValueDistribution = this.renderDrillDownCohortSql("sqlObservationValueDistribution", OBSERVATION, id,
+		PreparedStatementRenderer sqlObservationValueDistribution = prepareDrillDownCohortSql("sqlObservationValueDistribution", OBSERVATION, id,
 				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (sqlObservationValueDistribution != null) {
-			drilldown.setObservationValueDistribution(jdbcTemplate.query(sqlObservationValueDistribution, new ConceptQuartileMapper()));
+			drilldown.setObservationValueDistribution(jdbcTemplate.query(sqlObservationValueDistribution.getSql(), sqlObservationValueDistribution.getSetter(), new ConceptQuartileMapper()));
 		}
 
-		String sqlObservationsByType = this.renderDrillDownCohortSql("sqlObservationsByType", OBSERVATION, id,
+		PreparedStatementRenderer sqlObservationsByType = prepareDrillDownCohortSql("sqlObservationsByType", OBSERVATION, id,
 				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (sqlObservationsByType != null) {
-			drilldown.setObservationsByType(jdbcTemplate.query(sqlObservationsByType, new ConceptObservationCountMapper()));
+			drilldown.setObservationsByType(jdbcTemplate.query(sqlObservationsByType.getSql(), sqlObservationsByType.getSetter(), new ConceptObservationCountMapper()));
 		}
 
-		String sqlRecordsByUnit = this.renderDrillDownCohortSql("sqlRecordsByUnit", OBSERVATION, id,
+		PreparedStatementRenderer sqlRecordsByUnit = prepareDrillDownCohortSql("sqlRecordsByUnit", OBSERVATION, id,
 				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (sqlRecordsByUnit != null) {
-			drilldown.setRecordsByUnit(jdbcTemplate.query(sqlRecordsByUnit, new ConceptObservationCountMapper()));
+			drilldown.setRecordsByUnit(jdbcTemplate.query(sqlRecordsByUnit.getSql(), sqlRecordsByUnit.getSetter(), new ConceptObservationCountMapper()));
 		}
 
-		String sqlPrevalenceByGenderAgeYear = this.renderDrillDownCohortSql("sqlPrevalenceByGenderAgeYear", OBSERVATION, id,
+		PreparedStatementRenderer sqlPrevalenceByGenderAgeYear = prepareDrillDownCohortSql("sqlPrevalenceByGenderAgeYear", OBSERVATION, id,
 				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (sqlPrevalenceByGenderAgeYear != null) {
-			drilldown.setPrevalenceByGenderAgeYear(jdbcTemplate.query(sqlPrevalenceByGenderAgeYear, new ConceptDecileMapper()));
+			drilldown.setPrevalenceByGenderAgeYear(jdbcTemplate.query(sqlPrevalenceByGenderAgeYear.getSql(), sqlPrevalenceByGenderAgeYear.getSetter(), new ConceptDecileMapper()));
 		}
 
 		List<PrevalenceRecord> prevalenceByMonth = null;
-		String prevalanceMonthSql = this.renderDrillDownCohortSql("sqlPrevalenceByMonth", OBSERVATION, id,
+		PreparedStatementRenderer prevalanceMonthSql = prepareDrillDownCohortSql("sqlPrevalenceByMonth", OBSERVATION, id,
 				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (prevalanceMonthSql != null) {
-			prevalenceByMonth = jdbcTemplate.query(prevalanceMonthSql, new PrevalanceConceptNameMapper());
+			prevalenceByMonth = jdbcTemplate.query(prevalanceMonthSql.getSql(), prevalanceMonthSql.getSetter(), new PrevalanceConceptNameMapper());
 		}
 		drilldown.setPrevalenceByMonth(prevalenceByMonth);
 		
@@ -533,20 +540,20 @@ public class CohortResultsAnalysisRunner {
 	public List<ScatterplotRecord> getCohortProcedureDrilldown(JdbcTemplate jdbcTemplate,
 			final int id, 
 			final int conceptId,
-			final String minCovariatePersonCountParam,
-			final String minIntervalPersonCountParam,
+			final Integer minCovariatePersonCountParam,
+			final Integer minIntervalPersonCountParam,
 			Source source,
 			boolean save) {
 
-		List<ScatterplotRecord> records = new ArrayList<ScatterplotRecord>();
+		List<ScatterplotRecord> records = new ArrayList<>();
 		final String key = COHORT_SPECIFIC_PROCEDURE_DRILLDOWN;
 
-		final String sql = this.renderDrillDownCohortSql("procedureOccursRelativeToIndex", "cohortSpecific", id,
+		final PreparedStatementRenderer sql = prepareDrillDownCohortSql("procedureOccursRelativeToIndex", "cohortSpecific", id,
 				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (sql != null) {
-			records = jdbcTemplate.query(sql, new ScatterplotMapper());
+			records = jdbcTemplate.query(sql.getSql(), sql.getSetter(), new ScatterplotMapper());
 			if (save) {
-				this.saveEntityDrilldown(id, source.getSourceId(), key, conceptId, records);
+				saveEntityDrilldown(id, source.getSourceId(), key, conceptId, records);
 			}
 		}
 		return records;
@@ -555,8 +562,8 @@ public class CohortResultsAnalysisRunner {
 	public CohortProceduresDrillDown getCohortProceduresDrilldown(JdbcTemplate jdbcTemplate,
 			final int id,
 			final int conceptId,
-			final String minCovariatePersonCountParam,
-			final String minIntervalPersonCountParam,
+			final Integer minCovariatePersonCountParam,
+			final Integer minIntervalPersonCountParam,
 			Source source,
 			boolean save) {
 		CohortProceduresDrillDown drilldown = new CohortProceduresDrillDown();
@@ -564,34 +571,34 @@ public class CohortResultsAnalysisRunner {
 		boolean empty = true;
 		
 		List<ConceptQuartileRecord> ageAtFirst = null;
-		String ageAtFirstSql = this.renderDrillDownCohortSql("sqlAgeAtFirstOccurrence", PROCEDURE, id,
+		PreparedStatementRenderer ageAtFirstSql = prepareDrillDownCohortSql("sqlAgeAtFirstOccurrence", PROCEDURE, id,
 				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (ageAtFirstSql != null) {
-			ageAtFirst = jdbcTemplate.query(ageAtFirstSql, new ConceptQuartileMapper());
+			ageAtFirst = jdbcTemplate.query(ageAtFirstSql.getSql(), ageAtFirstSql.getSetter(), new ConceptQuartileMapper());
 		}
 		drilldown.setAgeAtFirstOccurrence(ageAtFirst);
 
 		List<ConceptCountRecord> byType = null;
-		String byTypeSql = this.renderDrillDownCohortSql("sqlProceduresByType", PROCEDURE, id,
+		PreparedStatementRenderer byTypeSql = prepareDrillDownCohortSql("sqlProceduresByType", PROCEDURE, id,
 				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (byTypeSql != null) {
-			byType = jdbcTemplate.query(byTypeSql, new ConceptCountMapper());
+			byType = jdbcTemplate.query(byTypeSql.getSql(), byTypeSql.getSetter(), new ConceptCountMapper());
 		}
 		drilldown.setProceduresByType(byType);
 
 		List<ConceptDecileRecord> prevalenceByGenderAgeYear = null;
-		String prevalenceGenderAgeSql = this.renderDrillDownCohortSql("sqlPrevalenceByGenderAgeYear", PROCEDURE, id,
+		PreparedStatementRenderer prevalenceGenderAgeSql = prepareDrillDownCohortSql("sqlPrevalenceByGenderAgeYear", PROCEDURE, id,
 				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (prevalenceGenderAgeSql != null) {
-			prevalenceByGenderAgeYear = jdbcTemplate.query(prevalenceGenderAgeSql, new ConceptDecileMapper());
+			prevalenceByGenderAgeYear = jdbcTemplate.query(prevalenceGenderAgeSql.getSql(), prevalenceGenderAgeSql.getSetter(), new ConceptDecileMapper());
 		}
 		drilldown.setPrevalenceByGenderAgeYear(prevalenceByGenderAgeYear);
 
 		List<PrevalenceRecord> prevalenceByMonth = null;
-		String prevalanceMonthSql = this.renderDrillDownCohortSql("sqlPrevalenceByMonth", PROCEDURE, id,
+		PreparedStatementRenderer prevalanceMonthSql = prepareDrillDownCohortSql("sqlPrevalenceByMonth", PROCEDURE, id,
 				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (prevalanceMonthSql != null) {
-			prevalenceByMonth = jdbcTemplate.query(prevalanceMonthSql, new PrevalanceConceptMapper());
+			prevalenceByMonth = jdbcTemplate.query(prevalanceMonthSql.getSql(), prevalanceMonthSql.getSetter(), new PrevalanceConceptMapper());
 		}
 		drilldown.setPrevalenceByMonth(prevalenceByMonth);
 		
@@ -603,7 +610,7 @@ public class CohortResultsAnalysisRunner {
 		}
 
 		if (!empty && save) {
-			this.saveEntityDrilldown(id, source.getSourceId(), key, conceptId, drilldown);
+			saveEntityDrilldown(id, source.getSourceId(), key, conceptId, drilldown);
 		}
 
 		return drilldown;
@@ -611,8 +618,8 @@ public class CohortResultsAnalysisRunner {
 
 	public CohortSpecificSummary getCohortSpecificSummary(JdbcTemplate jdbcTemplate,
 			final int id,
-			final String minCovariatePersonCountParam,
-			final String minIntervalPersonCountParam, 
+			final Integer minCovariatePersonCountParam,
+			final Integer minIntervalPersonCountParam,
 			Source source, 
 			boolean save) {
 		final String key = COHORT_SPECIFIC;
@@ -620,54 +627,54 @@ public class CohortResultsAnalysisRunner {
 		boolean empty = true;
 		
 		// 1805, 1806
-		String personsByDurationSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/observationPeriodTimeRelativeToIndex.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
+		PreparedStatementRenderer personsByDurationSql = renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/observationPeriodTimeRelativeToIndex.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (personsByDurationSql != null) {
-			summary.setPersonsByDurationFromStartToEnd(jdbcTemplate.query(personsByDurationSql, new ObservationPeriodMapper()));
+			summary.setPersonsByDurationFromStartToEnd(jdbcTemplate.query(personsByDurationSql.getSql(), personsByDurationSql.getSetter(), new ObservationPeriodMapper()));
 		}
 
 		// 1815
-		String monthPrevalenceSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/prevalenceByMonth.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
+		PreparedStatementRenderer monthPrevalenceSql = renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/prevalenceByMonth.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (monthPrevalenceSql != null) {
-			summary.setPrevalenceByMonth(jdbcTemplate.query(monthPrevalenceSql, new PrevalanceMapper()));
+			summary.setPrevalenceByMonth(jdbcTemplate.query(monthPrevalenceSql.getSql(), monthPrevalenceSql.getSetter(), new PrevalanceMapper()));
 		}
 
 		// 1814
 		List<ConceptDecileRecord> prevalenceByGenderAgeYear = null;
-		String prevalenceGenderAgeSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/prevalenceByYearGenderSex.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
+		PreparedStatementRenderer prevalenceGenderAgeSql = renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/prevalenceByYearGenderSex.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (prevalenceGenderAgeSql != null) {
-			prevalenceByGenderAgeYear = jdbcTemplate.query(prevalenceGenderAgeSql, new ConceptDecileCountsMapper());
+			prevalenceByGenderAgeYear = jdbcTemplate.query(prevalenceGenderAgeSql.getSql(), prevalenceGenderAgeSql.getSetter(), new ConceptDecileCountsMapper());
 		}
 		summary.setNumPersonsByCohortStartByGenderByAge(prevalenceByGenderAgeYear);
 
 		// 1801
 		List<ConceptQuartileRecord> ageAtIndex = null;
-		String ageAtIndexSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/ageAtIndexDistribution.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
+		PreparedStatementRenderer ageAtIndexSql = renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/ageAtIndexDistribution.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (ageAtIndexSql != null) {
-			ageAtIndex = jdbcTemplate.query(ageAtIndexSql, new ConceptQuartileMapper());
+			ageAtIndex = jdbcTemplate.query(ageAtIndexSql.getSql(), ageAtIndexSql.getSetter(), new ConceptQuartileMapper());
 		}
 		summary.setAgeAtIndexDistribution(ageAtIndex);
 
 		// 1803
 		List<ConceptQuartileRecord> distributionAgeCohortStartByCohortStartYear = null;
-		String distributionAgeCohortStartByCohortStartYearSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/distributionOfAgeAtCohortStartByCohortStartYear.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
+		PreparedStatementRenderer distributionAgeCohortStartByCohortStartYearSql = renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/distributionOfAgeAtCohortStartByCohortStartYear.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (ageAtIndexSql != null) {
-			distributionAgeCohortStartByCohortStartYear = jdbcTemplate.query(distributionAgeCohortStartByCohortStartYearSql, new ConceptQuartileMapper());
+			distributionAgeCohortStartByCohortStartYear = jdbcTemplate.query(distributionAgeCohortStartByCohortStartYearSql.getSql(), distributionAgeCohortStartByCohortStartYearSql.getSetter(), new ConceptQuartileMapper());
 		}
 		summary.setDistributionAgeCohortStartByCohortStartYear(distributionAgeCohortStartByCohortStartYear);
 
 		// 1802
 		List<ConceptQuartileRecord> distributionAgeCohortStartByGender = null;
-		String distributionAgeCohortStartByGenderSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/distributionOfAgeAtCohortStartByGender.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
+		PreparedStatementRenderer distributionAgeCohortStartByGenderSql = renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/distributionOfAgeAtCohortStartByGender.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (ageAtIndexSql != null) {
-			distributionAgeCohortStartByGender = jdbcTemplate.query(distributionAgeCohortStartByGenderSql, new ConceptQuartileMapper());
+			distributionAgeCohortStartByGender = jdbcTemplate.query(distributionAgeCohortStartByGenderSql.getSql(), distributionAgeCohortStartByGenderSql.getSetter(), new ConceptQuartileMapper());
 		}
 		summary.setDistributionAgeCohortStartByGender(distributionAgeCohortStartByGender);
 
 		// 1804
-		String personsInCohortFromCohortStartToEndSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/personsInCohortFromCohortStartToEnd.sql", id,
+		PreparedStatementRenderer personsInCohortFromCohortStartToEndSql = renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/personsInCohortFromCohortStartToEnd.sql", id,
 				minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (personsInCohortFromCohortStartToEndSql != null) {
-			summary.setPersonsInCohortFromCohortStartToEnd(jdbcTemplate.query(personsInCohortFromCohortStartToEndSql, new MonthObservationMapper()));
+			summary.setPersonsInCohortFromCohortStartToEnd(jdbcTemplate.query(personsInCohortFromCohortStartToEndSql.getSql(), personsInCohortFromCohortStartToEndSql.getSetter(), new MonthObservationMapper()));
 		}
 		
 		if (CollectionUtils.isNotEmpty(summary.getAgeAtIndexDistribution())
@@ -688,8 +695,8 @@ public class CohortResultsAnalysisRunner {
 	}
 
 	public CohortSpecificTreemap getCohortSpecificTreemapResults(JdbcTemplate jdbcTemplate, final int id,
-			final String minCovariatePersonCountParam,
-			final String minIntervalPersonCountParam, Source source,
+			final Integer minCovariatePersonCountParam,
+			final Integer minIntervalPersonCountParam, Source source,
 			boolean save) {
 
 		final String key = COHORT_SPECIFIC_TREEMAP;
@@ -697,21 +704,21 @@ public class CohortResultsAnalysisRunner {
 		boolean empty = true;
 		
 		// 1820
-		String conditionOccurrencePrevalenceSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/conditionOccurrencePrevalenceOfCondition.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
+		PreparedStatementRenderer conditionOccurrencePrevalenceSql = renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/conditionOccurrencePrevalenceOfCondition.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (conditionOccurrencePrevalenceSql != null) {
-			summary.setConditionOccurrencePrevalence(jdbcTemplate.query(conditionOccurrencePrevalenceSql, new HierarchicalConceptPrevalenceMapper()));
+			summary.setConditionOccurrencePrevalence(jdbcTemplate.query(conditionOccurrencePrevalenceSql.getSql(), conditionOccurrencePrevalenceSql.getSetter(), new HierarchicalConceptPrevalenceMapper()));
 		}
 
 		// 1830
-		String procedureOccurrencePrevalenceSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/procedureOccurrencePrevalenceOfDrug.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
+		PreparedStatementRenderer procedureOccurrencePrevalenceSql = renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/procedureOccurrencePrevalenceOfDrug.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (procedureOccurrencePrevalenceSql != null) {
-			summary.setProcedureOccurrencePrevalence(jdbcTemplate.query(procedureOccurrencePrevalenceSql, new HierarchicalConceptPrevalenceMapper()));
+			summary.setProcedureOccurrencePrevalence(jdbcTemplate.query(procedureOccurrencePrevalenceSql.getSql(), procedureOccurrencePrevalenceSql.getSetter(), new HierarchicalConceptPrevalenceMapper()));
 		}
 
 		// 1870
-		String drugEraPrevalenceSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/drugEraPrevalenceOfDrug.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
+		PreparedStatementRenderer drugEraPrevalenceSql = renderTranslateCohortSql(BASE_SQL_PATH + "/cohortSpecific/drugEraPrevalenceOfDrug.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (drugEraPrevalenceSql != null) {
-			summary.setDrugEraPrevalence(jdbcTemplate.query(drugEraPrevalenceSql, new HierarchicalConceptPrevalenceMapper()));
+			summary.setDrugEraPrevalence(jdbcTemplate.query(drugEraPrevalenceSql.getSql(), drugEraPrevalenceSql.getSetter(), new HierarchicalConceptPrevalenceMapper()));
 		}
 		
 		if (CollectionUtils.isNotEmpty(summary.getConditionOccurrencePrevalence())
@@ -730,8 +737,8 @@ public class CohortResultsAnalysisRunner {
 	public CohortVisitsDrilldown getCohortVisitsDrilldown(JdbcTemplate jdbcTemplate,
 			final int id,
 			final int conceptId,
-			final String minCovariatePersonCountParam,
-			final String minIntervalPersonCountParam,
+			final Integer minCovariatePersonCountParam,
+			final Integer minIntervalPersonCountParam,
 			Source source,
 			boolean save) {
 		
@@ -740,34 +747,34 @@ public class CohortResultsAnalysisRunner {
 		boolean empty = true;
 
 		List<ConceptQuartileRecord> ageAtFirst = null;
-		String ageAtFirstSql = this.renderDrillDownCohortSql("sqlAgeAtFirstOccurrence", VISIT, id,
+		PreparedStatementRenderer ageAtFirstSql = prepareDrillDownCohortSql("sqlAgeAtFirstOccurrence", VISIT, id,
 				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (ageAtFirstSql != null) {
-			ageAtFirst = jdbcTemplate.query(ageAtFirstSql, new ConceptQuartileMapper());
+			ageAtFirst = jdbcTemplate.query(ageAtFirstSql.getSql(), ageAtFirstSql.getSetter(), new ConceptQuartileMapper());
 		}
 		drilldown.setAgeAtFirstOccurrence(ageAtFirst);
 
 		List<ConceptQuartileRecord> byType = null;
-		String byTypeSql = this.renderDrillDownCohortSql("sqlVisitDurationByType", VISIT, id,
+		PreparedStatementRenderer byTypeSql = prepareDrillDownCohortSql("sqlVisitDurationByType", VISIT, id,
 				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (byTypeSql != null) {
-			byType = jdbcTemplate.query(byTypeSql, new ConceptQuartileMapper());
+			byType = jdbcTemplate.query(byTypeSql.getSql(), byTypeSql.getSetter(), new ConceptQuartileMapper());
 		}
 		drilldown.setVisitDurationByType(byType);
 
 		List<ConceptDecileRecord> prevalenceByGenderAgeYear = null;
-		String prevalenceGenderAgeSql = this.renderDrillDownCohortSql("sqlPrevalenceByGenderAgeYear", VISIT, id,
+		PreparedStatementRenderer prevalenceGenderAgeSql = prepareDrillDownCohortSql("sqlPrevalenceByGenderAgeYear", VISIT, id,
 				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (prevalenceGenderAgeSql != null) {
-			prevalenceByGenderAgeYear = jdbcTemplate.query(prevalenceGenderAgeSql, new ConceptDecileMapper());
+			prevalenceByGenderAgeYear = jdbcTemplate.query(prevalenceGenderAgeSql.getSql(), prevalenceGenderAgeSql.getSetter(), new ConceptDecileMapper());
 		}
 		drilldown.setPrevalenceByGenderAgeYear(prevalenceByGenderAgeYear);
 
 		List<PrevalenceRecord> prevalenceByMonth = null;
-		String prevalanceMonthSql = this.renderDrillDownCohortSql("sqlPrevalenceByMonth", VISIT, id,
+		PreparedStatementRenderer prevalanceMonthSql = prepareDrillDownCohortSql("sqlPrevalenceByMonth", VISIT, id,
 				conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (prevalanceMonthSql != null) {
-			prevalenceByMonth = jdbcTemplate.query(prevalanceMonthSql, new PrevalanceConceptMapper());
+			prevalenceByMonth = jdbcTemplate.query(prevalanceMonthSql.getSql(), prevalanceMonthSql.getSetter(), new PrevalanceConceptMapper());
 		}
 		drilldown.setPrevalenceByMonth(prevalenceByMonth);
 		
@@ -786,10 +793,10 @@ public class CohortResultsAnalysisRunner {
 	}
 
 	public CohortConditionEraDrilldown getConditionEraDrilldown(JdbcTemplate jdbcTemplate,
-			final int id, 
-			@PathParam("conditionId") final int conditionId,
-			final String minCovariatePersonCountParam,
-			final String minIntervalPersonCountParam,
+			final int id,
+			final int conditionId,
+			final Integer minCovariatePersonCountParam,
+			final Integer minIntervalPersonCountParam,
 			Source source, boolean save) {
 
 		final String key = CONDITION_ERA_DRILLDOWN;
@@ -798,37 +805,37 @@ public class CohortResultsAnalysisRunner {
 		
 		// age at first diagnosis
 		List<ConceptQuartileRecord> ageAtFirst = null;
-		String ageAtFirstSql = this.renderDrillDownCohortSql("sqlAgeAtFirstDiagnosis", "conditionera", id,
+		PreparedStatementRenderer ageAtFirstSql = prepareDrillDownCohortSql("sqlAgeAtFirstDiagnosis", "conditionera", id,
 				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (ageAtFirstSql != null) {
-			ageAtFirst = jdbcTemplate.query(ageAtFirstSql, new ConceptQuartileMapper());
+			ageAtFirst = jdbcTemplate.query(ageAtFirstSql.getSql(), ageAtFirstSql.getSetter(), new ConceptQuartileMapper());
 		}
 		drilldown.setAgeAtFirstDiagnosis(ageAtFirst);
 
 		// length of era
 		List<ConceptQuartileRecord> lengthOfEra = null;
-		String lengthOfEraSql = this.renderDrillDownCohortSql("sqlLengthOfEra", "conditionera", id,
+		PreparedStatementRenderer lengthOfEraSql = prepareDrillDownCohortSql("sqlLengthOfEra", "conditionera", id,
 				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (lengthOfEraSql != null) {
-			lengthOfEra = jdbcTemplate.query(lengthOfEraSql, new ConceptQuartileMapper());
+			lengthOfEra = jdbcTemplate.query(lengthOfEraSql.getSql(), lengthOfEraSql.getSetter(), new ConceptQuartileMapper());
 		}
 		drilldown.setLengthOfEra(lengthOfEra);
 
 		// prevalence by gender age year
 		List<ConceptDecileRecord> prevalenceByGenderAgeYear = null;
-		String prevalenceByGenderAgeYearSql = this.renderDrillDownCohortSql("sqlPrevalenceByGenderAgeYear", "conditionera", id,
+		PreparedStatementRenderer prevalenceByGenderAgeYearSql = prepareDrillDownCohortSql("sqlPrevalenceByGenderAgeYear", "conditionera", id,
 				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (prevalenceByGenderAgeYearSql != null) {
-			prevalenceByGenderAgeYear = jdbcTemplate.query(prevalenceByGenderAgeYearSql, new ConceptDecileMapper());
+			prevalenceByGenderAgeYear = jdbcTemplate.query(prevalenceByGenderAgeYearSql.getSql(), prevalenceByGenderAgeYearSql.getSetter(), new ConceptDecileMapper());
 		}
 		drilldown.setPrevalenceByGenderAgeYear(prevalenceByGenderAgeYear);
 
 		// prevalence by month
 		List<PrevalenceRecord> prevalenceByMonth = null;
-		String prevalenceByMonthSql = this.renderDrillDownCohortSql("sqlPrevalenceByMonth", "conditionera", id,
+		PreparedStatementRenderer prevalenceByMonthSql = prepareDrillDownCohortSql("sqlPrevalenceByMonth", "conditionera", id,
 				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (prevalenceByMonthSql != null) {
-			prevalenceByMonth = jdbcTemplate.query(prevalenceByMonthSql, new PrevalanceConceptMapper());
+			prevalenceByMonth = jdbcTemplate.query(prevalenceByMonthSql.getSql(), prevalenceByMonthSql.getSetter(), new PrevalanceConceptMapper());
 		}
 		drilldown.setPrevalenceByMonth(prevalenceByMonth);
 		
@@ -848,19 +855,19 @@ public class CohortResultsAnalysisRunner {
 
 	public List<HierarchicalConceptRecord> getConditionEraTreemap(JdbcTemplate jdbcTemplate,
 			final int id,
-			final String minCovariatePersonCountParam,
-			final String minIntervalPersonCountParam,
+			final Integer minCovariatePersonCountParam,
+			final Integer minIntervalPersonCountParam,
 			Source source, boolean save) {
 
 		final String key = CONDITION_ERA;
 		List<HierarchicalConceptRecord> res = null;
 
-		String sql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/conditionera/sqlConditionEraTreemap.sql",
+		PreparedStatementRenderer sql = renderTranslateCohortSql(BASE_SQL_PATH + "/conditionera/sqlConditionEraTreemap.sql",
 				id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (sql != null) {
-			res = jdbcTemplate.query(sql, new HierarchicalConceptEraMapper());
+			res = jdbcTemplate.query(sql.getSql(), sql.getSetter(), new HierarchicalConceptEraMapper());
 			if (save) {
-				this.saveEntity(id, source.getSourceId(), key, res);
+				saveEntity(id, source.getSourceId(), key, res);
 			}
 		}
 
@@ -870,8 +877,8 @@ public class CohortResultsAnalysisRunner {
 	public CohortConditionDrilldown getConditionResults(JdbcTemplate jdbcTemplate,
 			final int id, 
 			final int conditionId,
-			final String minCovariatePersonCountParam,
-			final String minIntervalPersonCountParam,
+			final Integer minCovariatePersonCountParam,
+			final Integer minIntervalPersonCountParam,
 			Source source,
 			boolean save) {
 		
@@ -880,34 +887,34 @@ public class CohortResultsAnalysisRunner {
 		boolean empty = true;
 
 		List<ConceptQuartileRecord> ageAtFirstDiagnosis = null;
-		String ageAtFirstSql = this.renderDrillDownCohortSql("sqlAgeAtFirstDiagnosis", CONDITION, id,
+		PreparedStatementRenderer ageAtFirstSql = prepareDrillDownCohortSql("sqlAgeAtFirstDiagnosis", CONDITION, id,
 				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (ageAtFirstSql != null) {
-			ageAtFirstDiagnosis = jdbcTemplate.query(ageAtFirstSql, new ConceptQuartileMapper());
+			ageAtFirstDiagnosis = jdbcTemplate.query(ageAtFirstSql.getSql(), ageAtFirstSql.getSetter(), new ConceptQuartileMapper());
 		}
 		drilldown.setAgeAtFirstDiagnosis(ageAtFirstDiagnosis);
 
 		List<ConceptCountRecord> conditionsByType = null;
-		String conditionsSql = this.renderDrillDownCohortSql("sqlConditionsByType", CONDITION, id,
+		PreparedStatementRenderer conditionsSql = prepareDrillDownCohortSql("sqlConditionsByType", CONDITION, id,
 				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (conditionsSql != null) {
-			conditionsByType = jdbcTemplate.query(conditionsSql, new ConceptConditionCountMapper());
+			conditionsByType = jdbcTemplate.query(conditionsSql.getSql(), conditionsSql.getSetter(), new ConceptConditionCountMapper());
 		}
 		drilldown.setConditionsByType(conditionsByType);
 
 		List<ConceptDecileRecord> prevalenceByGenderAgeYear = null;
-		String prevalenceGenderAgeSql = this.renderDrillDownCohortSql("sqlPrevalenceByGenderAgeYear", CONDITION, id,
+		PreparedStatementRenderer prevalenceGenderAgeSql = prepareDrillDownCohortSql("sqlPrevalenceByGenderAgeYear", CONDITION, id,
 				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (prevalenceGenderAgeSql != null) {
-			prevalenceByGenderAgeYear = jdbcTemplate.query(prevalenceGenderAgeSql, new ConceptDecileMapper());
+			prevalenceByGenderAgeYear = jdbcTemplate.query(prevalenceGenderAgeSql.getSql(), prevalenceGenderAgeSql.getSetter(), new ConceptDecileMapper());
 		}
 		drilldown.setPrevalenceByGenderAgeYear(prevalenceByGenderAgeYear);
 
 		List<PrevalenceRecord> prevalenceByMonth = null;
-		String prevalanceMonthSql = this.renderDrillDownCohortSql("sqlPrevalenceByMonth", CONDITION, id,
+		PreparedStatementRenderer prevalanceMonthSql = prepareDrillDownCohortSql("sqlPrevalenceByMonth", CONDITION, id,
 				conditionId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (prevalanceMonthSql != null) {
-			prevalenceByMonth = jdbcTemplate.query(prevalanceMonthSql, new PrevalanceConceptMapper());
+			prevalenceByMonth = jdbcTemplate.query(prevalanceMonthSql.getSql(), prevalanceMonthSql.getSetter(), new PrevalanceConceptMapper());
 		}
 		drilldown.setPrevalenceByMonth(prevalenceByMonth);
 
@@ -925,19 +932,19 @@ public class CohortResultsAnalysisRunner {
 	}
 
 	public List<HierarchicalConceptRecord> getConditionTreemap(JdbcTemplate jdbcTemplate, final int id,
-			final String minCovariatePersonCountParam,
-			final String minIntervalPersonCountParam,
+			final Integer minCovariatePersonCountParam,
+			final Integer minIntervalPersonCountParam,
 			Source source, boolean save) {
 
 		final String key = CONDITION;
 		List<HierarchicalConceptRecord> res = null;
 
-		String sql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/condition/sqlConditionTreemap.sql",
+		PreparedStatementRenderer sql = renderTranslateCohortSql(BASE_SQL_PATH + "/condition/sqlConditionTreemap.sql",
 				id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (sql != null) {
-			res = jdbcTemplate.query(sql, new HierarchicalConceptMapper());
+			res = jdbcTemplate.query(sql.getSql(), sql.getSetter(), new HierarchicalConceptMapper());
 			if (save) {
-				this.saveEntity(id, source.getSourceId(), key, res);
+				saveEntity(id, source.getSourceId(), key, res);
 			}
 		}
 
@@ -946,37 +953,37 @@ public class CohortResultsAnalysisRunner {
 
 	public CohortDashboard getDashboard(JdbcTemplate jdbcTemplate, 
 			int id, Source source,
-			String minCovariatePersonCountParam, String minIntervalPersonCountParam, 
+			Integer minCovariatePersonCountParam, Integer minIntervalPersonCountParam,
 			boolean demographicsOnly,
 			boolean save) {
 		
 		final String key = DASHBOARD;
 		CohortDashboard dashboard = new CohortDashboard();
 		boolean empty = true;
-		
-		String ageAtFirstObsSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/ageatfirst.sql", id,
+
+		PreparedStatementRenderer ageAtFirstObsSql = renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/ageatfirst.sql", id,
 				minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (ageAtFirstObsSql != null) {
-			dashboard.setAgeAtFirstObservation(jdbcTemplate.query(ageAtFirstObsSql, new ConceptDistributionMapper()));
+			dashboard.setAgeAtFirstObservation(jdbcTemplate.query(ageAtFirstObsSql.getSql(), ageAtFirstObsSql.getSetter(), new ConceptDistributionMapper()));
 		}
 
-		String genderSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/gender.sql", id, minCovariatePersonCountParam,
+		PreparedStatementRenderer genderSql = renderTranslateCohortSql(BASE_SQL_PATH + "/person/gender.sql", id, minCovariatePersonCountParam,
 				minIntervalPersonCountParam, source);
 		if (genderSql != null) {
-			dashboard.setGender(jdbcTemplate.query(genderSql, new ConceptCountMapper()));
+			dashboard.setGender(jdbcTemplate.query(genderSql.getSql(), genderSql.getSetter(), new ConceptCountMapper()));
 		}
 
 		if (!demographicsOnly) {
-			String cumulObsSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/cumulativeduration.sql", id,
+			PreparedStatementRenderer cumulObsSql = renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/cumulativeduration.sql", id,
 					minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 			if (cumulObsSql != null) {
-				dashboard.setCumulativeObservation(jdbcTemplate.query(cumulObsSql, new CumulativeObservationMapper()));
+				dashboard.setCumulativeObservation(jdbcTemplate.query(cumulObsSql.getSql(), cumulObsSql.getSetter(), new CumulativeObservationMapper()));
 			}
 
-			String obsByMonthSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/observedbymonth.sql", id,
+			PreparedStatementRenderer obsByMonthSql = renderTranslateCohortSql(BASE_SQL_PATH + "/observationperiod/observedbymonth.sql", id,
 					minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 			if (obsByMonthSql != null) {
-				dashboard.setObservedByMonth(jdbcTemplate.query(obsByMonthSql, new MonthObservationMapper()));
+				dashboard.setObservedByMonth(jdbcTemplate.query(obsByMonthSql.getSql(), obsByMonthSql.getSetter(), new MonthObservationMapper()));
 			}
 		}
 		
@@ -998,8 +1005,8 @@ public class CohortResultsAnalysisRunner {
 	public CohortDrugEraDrilldown getDrugEraResults(JdbcTemplate jdbcTemplate,
 			final int id,
 			final int drugId,
-			final String minCovariatePersonCountParam,
-			final String minIntervalPersonCountParam,
+			final Integer minCovariatePersonCountParam,
+			final Integer minIntervalPersonCountParam,
 			Source source,
 			boolean save) {
 		
@@ -1009,37 +1016,37 @@ public class CohortResultsAnalysisRunner {
 
 		// age at first exposure
 		List<ConceptQuartileRecord> ageAtFirstExposure = null;
-		String ageAtFirstExposureSql = this.renderDrillDownCohortSql("sqlAgeAtFirstExposure", "drugera", id,
+		PreparedStatementRenderer ageAtFirstExposureSql = prepareDrillDownCohortSql("sqlAgeAtFirstExposure", "drugera", id,
 				drugId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (ageAtFirstExposureSql != null) {
-			ageAtFirstExposure = jdbcTemplate.query(ageAtFirstExposureSql, new ConceptQuartileMapper());
+			ageAtFirstExposure = jdbcTemplate.query(ageAtFirstExposureSql.getSql(), ageAtFirstExposureSql.getSetter(), new ConceptQuartileMapper());
 		}
 		drilldown.setAgeAtFirstExposure(ageAtFirstExposure);
 
 		// length of era
 		List<ConceptQuartileRecord> lengthOfEra = null;
-		String lengthOfEraSql = this.renderDrillDownCohortSql("sqlLengthOfEra", "drugera", id,
+		PreparedStatementRenderer lengthOfEraSql = prepareDrillDownCohortSql("sqlLengthOfEra", "drugera", id,
 				drugId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (lengthOfEraSql != null) {
-			lengthOfEra = jdbcTemplate.query(lengthOfEraSql, new ConceptQuartileMapper());
+			lengthOfEra = jdbcTemplate.query(lengthOfEraSql.getSql(), lengthOfEraSql.getSetter(), new ConceptQuartileMapper());
 		}
 		drilldown.setLengthOfEra(lengthOfEra);
 
 		// prevalence by gender age year
 		List<ConceptDecileRecord> prevalenceByGenderAgeYear = null;
-		String prevalenceByGenderAgeYearSql = this.renderDrillDownCohortSql("sqlPrevalenceByGenderAgeYear", "drugera", id,
+		PreparedStatementRenderer prevalenceByGenderAgeYearSql = prepareDrillDownCohortSql("sqlPrevalenceByGenderAgeYear", "drugera", id,
 				drugId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (prevalenceByGenderAgeYearSql != null) {
-			prevalenceByGenderAgeYear = jdbcTemplate.query(prevalenceByGenderAgeYearSql, new ConceptDecileMapper());
+			prevalenceByGenderAgeYear = jdbcTemplate.query(prevalenceByGenderAgeYearSql.getSql(), prevalenceByGenderAgeYearSql.getSetter(), new ConceptDecileMapper());
 		}
 		drilldown.setPrevalenceByGenderAgeYear(prevalenceByGenderAgeYear);
 
 		// prevalence by month
 		List<PrevalenceRecord> prevalenceByMonth = null;
-		String prevalenceByMonthSql = this.renderDrillDownCohortSql("sqlPrevalenceByMonth", "drugera", id,
+		PreparedStatementRenderer prevalenceByMonthSql = prepareDrillDownCohortSql("sqlPrevalenceByMonth", "drugera", id,
 				drugId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (prevalenceByMonthSql != null) {
-			prevalenceByMonth = jdbcTemplate.query(prevalenceByMonthSql, new PrevalanceConceptMapper());
+			prevalenceByMonth = jdbcTemplate.query(prevalenceByMonthSql.getSql(), prevalenceByMonthSql.getSetter(), new PrevalanceConceptMapper());
 		}
 		drilldown.setPrevalenceByMonth(prevalenceByMonth);
 
@@ -1060,20 +1067,20 @@ public class CohortResultsAnalysisRunner {
 
 	public List<HierarchicalConceptRecord> getDrugEraTreemap(JdbcTemplate jdbcTemplate,
 			final int id,
-			final String minCovariatePersonCountParam,
-			final String minIntervalPersonCountParam,
+			final Integer minCovariatePersonCountParam,
+			final Integer minIntervalPersonCountParam,
 			Source source,
 			boolean save) {
 
 		List<HierarchicalConceptRecord> res = null;
 		final String key = DRUG_ERA;
 
-		String sql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/drugera/sqlDrugEraTreemap.sql",
+		PreparedStatementRenderer sql = renderTranslateCohortSql(BASE_SQL_PATH + "/drugera/sqlDrugEraTreemap.sql",
 				id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (sql != null) {
-			res = jdbcTemplate.query(sql, new HierarchicalConceptEraMapper());
+			res = jdbcTemplate.query(sql.getSql(), sql.getSetter(), new HierarchicalConceptEraMapper());
 			if (save) {
-				this.saveEntity(id, source.getSourceId(), key, res);
+				saveEntity(id, source.getSourceId(), key, res);
 			}
 		}
 
@@ -1083,8 +1090,8 @@ public class CohortResultsAnalysisRunner {
 	public CohortDrugDrilldown getDrugResults(JdbcTemplate jdbcTemplate, 
 			final int id, 
 			final int drugId,
-			final String minCovariatePersonCountParam,
-			final String minIntervalPersonCountParam,
+			final Integer minCovariatePersonCountParam,
+			final Integer minIntervalPersonCountParam,
 			Source source,
 			boolean save) {
 
@@ -1092,47 +1099,47 @@ public class CohortResultsAnalysisRunner {
 		CohortDrugDrilldown drilldown = new CohortDrugDrilldown();
 		boolean empty = true;
 
-		String ageAtFirstExposureSql = this.renderDrillDownCohortSql("sqlAgeAtFirstExposure", DRUG, id,
+		PreparedStatementRenderer ageAtFirstExposureSql = prepareDrillDownCohortSql("sqlAgeAtFirstExposure", DRUG, id,
 				drugId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (ageAtFirstExposureSql != null) {
-			drilldown.setAgeAtFirstExposure(jdbcTemplate.query(ageAtFirstExposureSql, new ConceptQuartileMapper()));
+			drilldown.setAgeAtFirstExposure(jdbcTemplate.query(ageAtFirstExposureSql.getSql(), ageAtFirstExposureSql.getSetter(), new ConceptQuartileMapper()));
 		}
 
-		String daysSupplySql = this.renderDrillDownCohortSql("sqlDaysSupplyDistribution", DRUG, id,
+		PreparedStatementRenderer daysSupplySql = prepareDrillDownCohortSql("sqlDaysSupplyDistribution", DRUG, id,
 				drugId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (daysSupplySql != null) {
-			drilldown.setDaysSupplyDistribution(jdbcTemplate.query(daysSupplySql, new ConceptQuartileMapper()));
+			drilldown.setDaysSupplyDistribution(jdbcTemplate.query(daysSupplySql.getSql(), daysSupplySql.getSetter(), new ConceptQuartileMapper()));
 		}
 
-		String drugsByTypeSql = this.renderDrillDownCohortSql("sqlDrugsByType", DRUG, id,
+		PreparedStatementRenderer drugsByTypeSql = prepareDrillDownCohortSql("sqlDrugsByType", DRUG, id,
 				drugId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (drugsByTypeSql != null) {
-			drilldown.setDrugsByType(jdbcTemplate.query(drugsByTypeSql, new ConceptCountMapper()));
+			drilldown.setDrugsByType(jdbcTemplate.query(drugsByTypeSql.getSql(), drugsByTypeSql.getSetter(), new ConceptCountMapper()));
 		}
 
-		String prevalenceByGenderAgeYearSql = this.renderDrillDownCohortSql("sqlPrevalenceByGenderAgeYear", DRUG, id,
+		PreparedStatementRenderer prevalenceByGenderAgeYearSql = prepareDrillDownCohortSql("sqlPrevalenceByGenderAgeYear", DRUG, id,
 				drugId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (prevalenceByGenderAgeYearSql != null) {
-			drilldown.setPrevalenceByGenderAgeYear(jdbcTemplate.query(prevalenceByGenderAgeYearSql,
+			drilldown.setPrevalenceByGenderAgeYear(jdbcTemplate.query(prevalenceByGenderAgeYearSql.getSql(), prevalenceByGenderAgeYearSql.getSetter(),
 					new ConceptDecileMapper()));
 		}
 
-		String prevalenceByMonthSql = this.renderDrillDownCohortSql("sqlPrevalenceByMonth", DRUG, id,
+		PreparedStatementRenderer prevalenceByMonthSql = prepareDrillDownCohortSql("sqlPrevalenceByMonth", DRUG, id,
 				drugId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (prevalenceByMonthSql != null) {
-			drilldown.setPrevalenceByMonth(jdbcTemplate.query(prevalenceByMonthSql, new PrevalanceConceptMapper()));
+			drilldown.setPrevalenceByMonth(jdbcTemplate.query(prevalenceByMonthSql.getSql(), prevalenceByMonthSql.getSetter(), new PrevalanceConceptMapper()));
 		}
 
-		String quantityDistributionSql = this.renderDrillDownCohortSql("sqlQuantityDistribution", DRUG, id,
+		PreparedStatementRenderer quantityDistributionSql = prepareDrillDownCohortSql("sqlQuantityDistribution", DRUG, id,
 				drugId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (quantityDistributionSql != null) {
-			drilldown.setQuantityDistribution(jdbcTemplate.query(quantityDistributionSql, new ConceptQuartileMapper()));
+			drilldown.setQuantityDistribution(jdbcTemplate.query(quantityDistributionSql.getSql(), quantityDistributionSql.getSetter(), new ConceptQuartileMapper()));
 		}
 
-		String refillsDistributionSql = this.renderDrillDownCohortSql("sqlRefillsDistribution", DRUG, id,
+		PreparedStatementRenderer refillsDistributionSql = prepareDrillDownCohortSql("sqlRefillsDistribution", DRUG, id,
 				drugId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (refillsDistributionSql != null) {
-			drilldown.setRefillsDistribution(jdbcTemplate.query(refillsDistributionSql, new ConceptQuartileMapper()));
+			drilldown.setRefillsDistribution(jdbcTemplate.query(refillsDistributionSql.getSql(), refillsDistributionSql.getSetter(), new ConceptQuartileMapper()));
 		}
 		
 		if (CollectionUtils.isNotEmpty(drilldown.getAgeAtFirstExposure())
@@ -1146,7 +1153,7 @@ public class CohortResultsAnalysisRunner {
 		}
 
 		if (!empty && save) {
-			this.saveEntityDrilldown(id, source.getSourceId(), key, drugId, drilldown);
+			saveEntityDrilldown(id, source.getSourceId(), key, drugId, drilldown);
 		}
 
 		return drilldown;
@@ -1155,20 +1162,20 @@ public class CohortResultsAnalysisRunner {
 
 	public List<HierarchicalConceptRecord> getDrugTreemap(JdbcTemplate jdbcTemplate,
 			final int id,
-			final String minCovariatePersonCountParam,
-			final String minIntervalPersonCountParam,
+			final Integer minCovariatePersonCountParam,
+			final Integer minIntervalPersonCountParam,
 			Source source, boolean save) {
 
 
 		final String key = DRUG;
 		List<HierarchicalConceptRecord> res = null;
 
-		String sql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/drug/sqlDrugTreemap.sql",
+		PreparedStatementRenderer sql = renderTranslateCohortSql(BASE_SQL_PATH + "/drug/sqlDrugTreemap.sql",
 				id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (sql != null) {
-			res = jdbcTemplate.query(sql, new HierarchicalConceptMapper());
+			res = jdbcTemplate.query(sql.getSql(), sql.getSetter(), new HierarchicalConceptMapper());
 			if (save) {
-				this.saveEntity(id, source.getSourceId(), key, res);
+				saveEntity(id, source.getSourceId(), key, res);
 			}
 		}
 
@@ -1180,15 +1187,15 @@ public class CohortResultsAnalysisRunner {
 			final int id, 
 			Source source,
 			boolean save) {
-		List<CohortAttribute> attrs = new ArrayList<CohortAttribute>();
+		List<CohortAttribute> attrs = new ArrayList<>();
 		final String key = HERACLES_HEEL;
 
-		String sql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/heraclesHeel/sqlHeraclesHeel.sql", id, null, null, source);
+		PreparedStatementRenderer sql = renderTranslateCohortSql(BASE_SQL_PATH + "/heraclesHeel/sqlHeraclesHeel.sql", id, null, null, source);
 		if (sql != null) {
-			attrs = jdbcTemplate.query(sql, new CohortAttributeMapper());
+			attrs = jdbcTemplate.query(sql.getSql(), sql.getSetter(), new CohortAttributeMapper());
 		}
 		if (save) {
-			this.saveEntity(id, source.getSourceId(), key, attrs);
+			saveEntity(id, source.getSourceId(), key, attrs);
 		}
 
 		return attrs;
@@ -1203,38 +1210,38 @@ public class CohortResultsAnalysisRunner {
 	 */
 	public CohortPersonSummary getPersonResults(JdbcTemplate jdbcTemplate,
 			final int id,
-			final String minCovariatePersonCountParam,
-			final String minIntervalPersonCountParam,
+			final Integer minCovariatePersonCountParam,
+			final Integer minIntervalPersonCountParam,
 			final Source source,
 			boolean save) {
 		
 		final String key = PERSON;
 		CohortPersonSummary person = new CohortPersonSummary();
 		boolean empty = true;
-		
-		String yobSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/yearofbirth_data.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
+
+		PreparedStatementRenderer yobSql = renderTranslateCohortSql(BASE_SQL_PATH + "/person/yearofbirth_data.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (yobSql != null) {
-			person.setYearOfBirth(jdbcTemplate.query(yobSql, new ConceptDistributionMapper()));
+			person.setYearOfBirth(jdbcTemplate.query(yobSql.getSql(), yobSql.getSetter(), new ConceptDistributionMapper()));
 		}
 
-		String yobStatSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/yearofbirth_stats.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
+		PreparedStatementRenderer yobStatSql = renderTranslateCohortSql(BASE_SQL_PATH + "/person/yearofbirth_stats.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (yobStatSql != null) {
-			person.setYearOfBirthStats(jdbcTemplate.query(yobStatSql, new CohortStatsMapper()));
+			person.setYearOfBirthStats(jdbcTemplate.query(yobStatSql.getSql(), yobStatSql.getSetter(), new CohortStatsMapper()));
 		}
 
-		String genderSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/gender.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
+		PreparedStatementRenderer genderSql = renderTranslateCohortSql(BASE_SQL_PATH + "/person/gender.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (genderSql != null) {
-			person.setGender(jdbcTemplate.query(genderSql, new ConceptCountMapper()));
+			person.setGender(jdbcTemplate.query(genderSql.getSql(), genderSql.getSetter(), new ConceptCountMapper()));
 		}
 
-		String raceSql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/race.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
+		PreparedStatementRenderer raceSql = renderTranslateCohortSql(BASE_SQL_PATH + "/person/race.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (raceSql != null) {
-			person.setRace(jdbcTemplate.query(raceSql, new ConceptCountMapper()));
+			person.setRace(jdbcTemplate.query(raceSql.getSql(), raceSql.getSetter(), new ConceptCountMapper()));
 		}
 
-		String ethnicitySql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/person/ethnicity.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
+		PreparedStatementRenderer ethnicitySql = renderTranslateCohortSql(BASE_SQL_PATH + "/person/ethnicity.sql", id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (ethnicitySql != null) {
-			person.setEthnicity(jdbcTemplate.query(ethnicitySql, new ConceptCountMapper()));
+			person.setEthnicity(jdbcTemplate.query(ethnicitySql.getSql(), ethnicitySql.getSetter(), new ConceptCountMapper()));
 		}
 		
 		if (CollectionUtils.isNotEmpty(person.getEthnicity())
@@ -1255,20 +1262,20 @@ public class CohortResultsAnalysisRunner {
 
 	public List<HierarchicalConceptRecord> getProcedureTreemap(JdbcTemplate jdbcTemplate,
 			final int id,
-			final String minCovariatePersonCountParam,
-			final String minIntervalPersonCountParam,
+			final Integer minCovariatePersonCountParam,
+			final Integer minIntervalPersonCountParam,
 			Source source,
 			boolean save) {
 
 		List<HierarchicalConceptRecord> res = null;
 		final String key = PROCEDURE;
 
-		String sql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/procedure/sqlProcedureTreemap.sql",
+		PreparedStatementRenderer sql = renderTranslateCohortSql(BASE_SQL_PATH + "/procedure/sqlProcedureTreemap.sql",
 				id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (sql != null) {
-			res = jdbcTemplate.query(sql, new HierarchicalConceptMapper());
+			res = jdbcTemplate.query(sql.getSql(), sql.getSetter(), new HierarchicalConceptMapper());
 			if (save) {
-				this.saveEntity(id, source.getSourceId(), key, res);
+				saveEntity(id, source.getSourceId(), key, res);
 			}
 		}
 
@@ -1277,109 +1284,90 @@ public class CohortResultsAnalysisRunner {
 
 	public List<HierarchicalConceptRecord> getVisitTreemap(JdbcTemplate jdbcTemplate,
 			final int id,
-			final String minCovariatePersonCountParam,
-			final String minIntervalPersonCountParam,
+			final Integer minCovariatePersonCountParam,
+			final Integer minIntervalPersonCountParam,
 			Source source,
 			boolean save) {
 
 		List<HierarchicalConceptRecord> res = null;
 		final String key = VISIT;
 
-		String sql = this.renderTranslateCohortSql(BASE_SQL_PATH + "/visit/sqlVisitTreemap.sql",
+		PreparedStatementRenderer sql = renderTranslateCohortSql(BASE_SQL_PATH + "/visit/sqlVisitTreemap.sql",
 				id, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 		if (sql != null) {
-			res = jdbcTemplate.query(sql, new HierarchicalConceptMapper());
+			res = jdbcTemplate.query(sql.getSql(), sql.getSetter(), new HierarchicalConceptMapper());
 			if (save) {
-				this.saveEntity(id, source.getSourceId(), key, res);
+				saveEntity(id, source.getSourceId(), key, res);
 			}
 		}
 
 		return res;
 	}
 
-	// HELPER methods
-	/**
-	 * Renders and Translates drilldown SQL by concept
-	 *
-	 * @param analysisName
-	 * @param analysisType
-	 * @param id
-	 * @param conceptId
-	 * @param minCovariatePersonCountParam
-	 * @param minIntervalPersonCountParam
-	 * @return
-	 */
-	
-	public String renderDrillDownCohortSql(String analysisName, String analysisType, int id, int conceptId,
-			final String minCovariatePersonCountParam, final String minIntervalPersonCountParam, Source source) {
-		return renderTranslateCohortSql(BASE_SQL_PATH + "/" + analysisType + "/byConcept/" + analysisName + ".sql",
-				id, conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
+	protected PreparedStatementRenderer prepareDrillDownCohortSql(
+			String analysisName, String analysisType, Integer id, Integer conceptId,
+			final Integer minCovariatePersonCountParam, final Integer minIntervalPersonCountParam, Source source) {
+
+		String sqlPath = BASE_SQL_PATH + "/" + analysisType + "/byConcept/" + analysisName + ".sql";
+		return prepareCohortSql(sqlPath, id, conceptId, minCovariatePersonCountParam,
+			minIntervalPersonCountParam, source);
+
 	}
 
-
-	/**
-	 * Passes in common params for cohort results, and performs SQL
-	 * translate/render
-	 */
-	public String renderTranslateCohortSql(String sqlPath, Integer id, Integer conceptId,
-			final String minCovariatePersonCountParam, final String minIntervalPersonCountParam,
-			Source source) {
-		String sql = null;
+	protected PreparedStatementRenderer prepareCohortSql(
+			String sqlPath, Integer id,Integer conceptId, final Integer minCovariatePersonCountParam,
+			final Integer minIntervalPersonCountParam, Source source
+	) {
 
 		String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 		String vocabularyTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
 
-		try {
-			String[] cols;
-			String[] colValues;
-			if (conceptId != null) {
-				cols = DRILLDOWN_COLUMNS;
-				colValues = new String[]{vocabularyTableQualifier,
-						resultsTableQualifier, String.valueOf(id),
-						minCovariatePersonCountParam == null ? MIN_COVARIATE_PERSON_COUNT
-								: minCovariatePersonCountParam,
-								minIntervalPersonCountParam == null ? MIN_INTERVAL_PERSON_COUNT
-										: minIntervalPersonCountParam,
-										String.valueOf(conceptId)};
-			} else {
-				cols = STANDARD_COLUMNS;
-				colValues = new String[]{vocabularyTableQualifier,
-						resultsTableQualifier, String.valueOf(id),
-						minCovariatePersonCountParam == null ? MIN_COVARIATE_PERSON_COUNT
-								: minCovariatePersonCountParam,
-								minIntervalPersonCountParam == null ? MIN_INTERVAL_PERSON_COUNT
-										: minIntervalPersonCountParam};
-			}
+		String[] search = new String[]{"cdm_database_schema", "ohdsi_database_schema"};
+		String[] replace = new String[]{vocabularyTableQualifier, resultsTableQualifier};
 
-			sql = ResourceHelper.GetResourceAsString(sqlPath);
-			sql = SqlRender.renderSql(sql, cols, colValues);
-			sql = SqlTranslate.translateSql(sql, source.getSourceDialect());
-		} catch (Exception e) {
-			log.error(String.format("Unable to translate sql for  %s", sql), e);
+		String[] cols;
+		Object[] colValues;
+		if (conceptId != null) {
+			cols = new String[]{"cohortDefinitionId", "minCovariatePersonCount", "minIntervalPersonCount", "conceptId"};
+
+			colValues = new Integer[]{id,
+					minCovariatePersonCountParam == null ? MIN_COVARIATE_PERSON_COUNT
+							: minCovariatePersonCountParam,
+					minIntervalPersonCountParam == null ? MIN_INTERVAL_PERSON_COUNT
+							: minIntervalPersonCountParam,
+					conceptId};
+		} else {
+			cols = new String[]{"cohortDefinitionId", "minCovariatePersonCount", "minIntervalPersonCount"};
+
+			colValues = new Integer[]{id,
+					minCovariatePersonCountParam == null ? MIN_COVARIATE_PERSON_COUNT
+							: minCovariatePersonCountParam,
+					minIntervalPersonCountParam == null ? MIN_INTERVAL_PERSON_COUNT
+							: minIntervalPersonCountParam};
 		}
 
-		return sql;
+		return new PreparedStatementRenderer(source, sqlPath, search, replace, cols, colValues);
 	}
 
 	/**
 	 * Passes in common params for cohort results, and performs SQL
 	 * translate/render
 	 */
-	public String renderTranslateCohortSql(String sqlPath, Integer id,
-			final String minCovariatePersonCountParam, final String minIntervalPersonCountParam, Source source) {
-		return renderTranslateCohortSql(sqlPath, id, null, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
+	public PreparedStatementRenderer renderTranslateCohortSql(String sqlPath, Integer id,
+			final Integer minCovariatePersonCountParam, final Integer minIntervalPersonCountParam, Source source) {
+		return prepareCohortSql(sqlPath, id, null, minCovariatePersonCountParam, minIntervalPersonCountParam, source);
 	}
 
 	private void saveEntity(int cohortDefinitionId, int sourceId, String visualizationKey, Object dataObject) {
 		if (dataObject == null) {
-			log.error(String.format("cannot store null entity %s",  visualizationKey));
+			log.error(String.format("cannot store null entity %s", visualizationKey));
 			return;
 		}
 		
 		if (dataObject instanceof List) {
 			List<?> listObject = (List<?>) dataObject;
 			if (listObject.size() == 0) {
-				log.debug(String.format("no need to store empty list for %s",  visualizationKey));
+				log.debug(String.format("no need to store empty list for %s", visualizationKey));
 				return;
 			}
 		}
@@ -1415,13 +1403,13 @@ public class CohortResultsAnalysisRunner {
 
 			this.visualizationDataRepository.save(entity);
 		} catch (Exception e) {
-			log.error(e);
+			log.error(whitelist(e));
 		}
 	}
 
 	private void saveEntityDrilldown(int cohortDefinitionId, int sourceId, String visualizationKey, int drilldownId, Object dataObject) {
 		if (dataObject == null) {
-			log.error(String.format("cannot store null entity %s",  visualizationKey));
+			log.error(String.format("cannot store null entity %s", visualizationKey));
 			return;
 		}
 		
@@ -1438,7 +1426,7 @@ public class CohortResultsAnalysisRunner {
 			this.visualizationDataRepository
 				.deleteByCohortDefinitionIdAndSourceIdAndVisualizationKeyAndDrilldownId(cohortDefinitionId, sourceId, visualizationKey, drilldownId);
 		} catch (Exception e) {
-			log.error(e);
+			log.error(whitelist(e));
 		}
 		
 		// save entity
@@ -1455,7 +1443,7 @@ public class CohortResultsAnalysisRunner {
 
 			this.visualizationDataRepository.save(entity);
 		} catch (Exception e) {
-			log.error(e);
+			log.error(whitelist(e));
 		}
 	}
 

@@ -8,10 +8,6 @@ sandbox/
 .classpath
 .project
 /nb-configuration.xml
-/nbactions.xml
-/nbactions-webapi-local.xml
-/nbactions-webapi-mssql.xml
-/nbactions-webapi-postgresql.xml
-/nbactions-webapi-oracle.xml
-/nbactions-debug*
+/nbactions*.xml
 *~
+.DS_Store

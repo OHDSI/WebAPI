@@ -28,14 +28,14 @@ FROM   (SELECT cohort_definition_id,
                                                   from
                                                   (
                                                   select row_number() over (order by analysis_id) as stratum_1, 0 as count_value
-                                                  from heracles_results
+                                                  from @ohdsi_database_schema.heracles_results
                                                   where analysis_id = 1805
                                                   and cohort_definition_id = @cohortDefinitionId
 
                                                   union
 
                                                   select cast(stratum_1 as integer) as stratum_1, count_value
-                                                  from heracles_results
+                                                  from @ohdsi_database_schema.heracles_results
                                                   where analysis_id = 1805
                                                   and cohort_definition_id = @cohortDefinitionId
                                                   ) t1
@@ -113,14 +113,14 @@ FROM   (SELECT cohort_definition_id,
                                                   from
                                                   (
                                                   select row_number() over (order by analysis_id) as stratum_1, 0 as count_value
-                                                  from heracles_results
+                                                  from @ohdsi_database_schema.heracles_results
                                                   where analysis_id = 1805
                                                   and cohort_definition_id = @cohortDefinitionId
 
                                                   union
 
                                                   select cast(stratum_1 as integer) as stratum_1, count_value
-                                                  from heracles_results
+                                                  from @ohdsi_database_schema.heracles_results
                                                   where analysis_id = 1805
                                                   and cohort_definition_id = @cohortDefinitionId
                                                   ) t1

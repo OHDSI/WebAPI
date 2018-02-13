@@ -1,8 +1,11 @@
 package org.ohdsi.webapi.service;
 
+import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -22,43 +26,23 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysis;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTask;
 import org.ohdsi.webapi.cohortanalysis.CohortSummary;
-import org.ohdsi.webapi.cohortresults.CohortAttribute;
-import org.ohdsi.webapi.cohortresults.CohortBreakdown;
-import org.ohdsi.webapi.cohortresults.CohortConditionDrilldown;
-import org.ohdsi.webapi.cohortresults.CohortConditionEraDrilldown;
-import org.ohdsi.webapi.cohortresults.CohortDashboard;
-import org.ohdsi.webapi.cohortresults.CohortDataDensity;
-import org.ohdsi.webapi.cohortresults.CohortDeathData;
-import org.ohdsi.webapi.cohortresults.CohortDrugDrilldown;
-import org.ohdsi.webapi.cohortresults.CohortDrugEraDrilldown;
-import org.ohdsi.webapi.cohortresults.CohortMeasurementDrilldown;
-import org.ohdsi.webapi.cohortresults.CohortObservationDrilldown;
-import org.ohdsi.webapi.cohortresults.CohortObservationPeriod;
-import org.ohdsi.webapi.cohortresults.CohortPersonSummary;
-import org.ohdsi.webapi.cohortresults.CohortProceduresDrillDown;
-import org.ohdsi.webapi.cohortresults.CohortResultsAnalysisRunner;
-import org.ohdsi.webapi.cohortresults.CohortSpecificSummary;
-import org.ohdsi.webapi.cohortresults.CohortSpecificTreemap;
-import org.ohdsi.webapi.cohortresults.CohortVisitsDrilldown;
-import org.ohdsi.webapi.cohortresults.DataCompletenessAttr;
-import org.ohdsi.webapi.cohortresults.EntropyAttr;
-import org.ohdsi.webapi.cohortresults.HierarchicalConceptRecord;
-import org.ohdsi.webapi.cohortresults.ScatterplotRecord;
-import org.ohdsi.webapi.cohortresults.VisualizationData;
-import org.ohdsi.webapi.cohortresults.VisualizationDataRepository;
+import org.ohdsi.webapi.cohortresults.*;
 import org.ohdsi.webapi.cohortresults.mapper.AnalysisResultsMapper;
 import org.ohdsi.webapi.model.results.Analysis;
 import org.ohdsi.webapi.model.results.AnalysisResults;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
@@ -70,10 +54,7 @@ import java.sql.ResultSetMetaData;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.ws.rs.core.Response;
-import org.ohdsi.webapi.cohortresults.ExposureCohortResult;
-import org.ohdsi.webapi.cohortresults.ExposureCohortSearch;
-import org.ohdsi.webapi.cohortresults.PredictorResult;
-import org.ohdsi.webapi.cohortresults.TimeToEventResult;
+
 import org.ohdsi.webapi.person.CohortPerson;
 import org.ohdsi.webapi.service.CohortDefinitionService.CohortDefinitionDTO;
 
@@ -121,39 +102,43 @@ public class CohortResultsService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   public List<Map<String, String>> getCohortResultsRaw(@PathParam("id") final int id, @PathParam("analysis_group") final String analysisGroup,
           @PathParam("analysis_name") final String analysisName,
-          @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
-          @QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
+          @QueryParam("min_covariate_person_count") final Integer minCovariatePersonCountParam,
+          @QueryParam("min_interval_person_count") final Integer minIntervalPersonCountParam,
           @PathParam("sourceKey") String sourceKey) {
-    List<Map<String, String>> results = null;
+    List<Map<String, String>> results;
+    String sqlPath = BASE_SQL_PATH + "/" + analysisGroup + "/" + analysisName + ".sql";
 
-    String sql = null;
     Source source = getSourceRepository().findBySourceKey(sourceKey);
+    try {
+      PreparedStatementRenderer psr = prepareGetCohortResultsRaw(id, minCovariatePersonCountParam,
+        minIntervalPersonCountParam, sqlPath, source);
+      return genericResultSetLoader(psr, source);
+    } catch (Exception e) {
+      log.error(String.format("Unable to translate sql for analysis %s", analysisName), e);
+      return null;
+    }
+  }
+
+  protected PreparedStatementRenderer prepareGetCohortResultsRaw(final int id,
+                                                                 final Integer minCovariatePersonCountParam,
+                                                                 final Integer minIntervalPersonCountParam, String sqlPath,
+                                                                 Source source) {
+
+    String resourcePath = sqlPath;
     String vocabularyTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
     String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 
-    try {
 
-      sql = ResourceHelper.GetResourceAsString(BASE_SQL_PATH + "/" + analysisGroup + "/" + analysisName + ".sql");
+    String[] searchStringNames = new String[]{"cdm_database_schema", "ohdsi_database_schema"};
+    String[] replacementNames = new String[]{vocabularyTableQualifier, resultsTableQualifier};
 
-      sql = SqlRender.renderSql(sql, new String[]{"cdm_database_schema",
-        "ohdsi_database_schema", "cohortDefinitionId",
-        "minCovariatePersonCount", "minIntervalPersonCount"},
-              new String[]{vocabularyTableQualifier,
-                resultsTableQualifier, String.valueOf(id),
-                minCovariatePersonCountParam == null ? MIN_COVARIATE_PERSON_COUNT
-                        : minCovariatePersonCountParam,
-                minIntervalPersonCountParam == null ? MIN_INTERVAL_PERSON_COUNT
-                        : minIntervalPersonCountParam});
-      sql = SqlTranslate.translateSql(sql, source.getSourceDialect());
-    } catch (Exception e) {
-      log.error(String.format("Unable to translate sql for analysis %s", analysisName), e);
-    }
 
-    if (sql != null) {
-      results = genericResultSetLoader(sql, source);
-    }
+    String[] variableNames = new String[]{"cohortDefinitionId", "minCovariatePersonCount", "minIntervalPersonCount"};
+    Object[] variableValues = new Object[]
+        {id, (minCovariatePersonCountParam == null ? MIN_COVARIATE_PERSON_COUNT : minCovariatePersonCountParam),
+            (minIntervalPersonCountParam == null ? MIN_INTERVAL_PERSON_COUNT : minIntervalPersonCountParam)};
 
-    return results;
+    return new PreparedStatementRenderer(source, resourcePath, searchStringNames, replacementNames, variableNames, variableValues);
   }
 
   @GET
@@ -165,20 +150,19 @@ public class CohortResultsService extends AbstractDaoService {
 
     try {
       Source source = getSourceRepository().findBySourceKey(sourceKey);
-      String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-      String sql = null;
+      String sqlPath = BASE_SQL_PATH + "/raw/getAllResults.sql";
+      String tqName = "tableQualifier";
+      String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+      PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sqlPath, tqName, tqValue, "cohortDefinitionId", whitelist(id));
+
       final StringBuilder resultData = new StringBuilder();
       final StringBuilder resultDistributionData = new StringBuilder();
 
       // results export
-      sql = ResourceHelper.GetResourceAsString(BASE_SQL_PATH + "/raw/getAllResults.sql");
-      sql = SqlRender.renderSql(sql, new String[]{"tableQualifier", "cohortDefinitionId"},
-              new String[]{resultsTableQualifier, String.valueOf(id)});
-      sql = SqlTranslate.translateSql(sql, source.getSourceDialect());
-
-      getSourceJdbcTemplate(source).query(sql, new RowMapper<Void>() {
+      getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), new RowMapper<Void>() {
         @Override
         public Void mapRow(ResultSet rs, int arg1) throws SQLException {
+
           ResultSetMetaData metaData = rs.getMetaData();
           int colCount = metaData.getColumnCount();
           for (int i = 1; i <= colCount; i++) {
@@ -199,12 +183,9 @@ public class CohortResultsService extends AbstractDaoService {
       zos.closeEntry();
 
       // result distribution export
-      sql = ResourceHelper.GetResourceAsString(BASE_SQL_PATH + "/raw/getAllResultDistributions.sql");
-      sql = SqlRender.renderSql(sql, new String[]{"tableQualifier", "cohortDefinitionId"},
-              new String[]{resultsTableQualifier, String.valueOf(id)});
-      sql = SqlTranslate.translateSql(sql, source.getSourceDialect());
-
-      getSourceJdbcTemplate(source).query(sql, new RowMapper<Void>() {
+      sqlPath = BASE_SQL_PATH + "/raw/getAllResultDistributions.sql";
+      psr = new PreparedStatementRenderer(source, sqlPath, tqName, tqValue, "cohortDefinitionId", whitelist(id));
+      getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), new RowMapper<Void>() {
         @Override
         public Void mapRow(ResultSet rs, int arg1) throws SQLException {
           ResultSetMetaData metaData = rs.getMetaData();
@@ -268,7 +249,7 @@ public class CohortResultsService extends AbstractDaoService {
           @PathParam("sourceKey") final String sourceKey) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     List<VisualizationData> vizData = this.visualizationDataRepository.findByCohortDefinitionIdAndSourceId(id, source.getSourceId());
-    Set<String> completed = new HashSet<String>();
+    Set<String> completed = new HashSet<>();
     if (CollectionUtils.isNotEmpty(vizData)) {
       for (VisualizationData viz : vizData) {
         completed.add(viz.getVisualizationKey());
@@ -276,6 +257,22 @@ public class CohortResultsService extends AbstractDaoService {
     }
     return completed;
   }
+
+  /**
+   * Tornado Plot Report
+	 * @param id cohortDefinitionId
+	 *
+   */
+  @GET
+	@Path("{sourceKey}/{id}/tornado")
+	@Produces(MediaType.APPLICATION_JSON)
+	public TornadoReport getTornadoReport(@PathParam("sourceKey") final String sourceKey, @PathParam("id") final int cohortDefinitionId) {
+		Source source = getSourceRepository().findBySourceKey(sourceKey);
+		TornadoReport tornadoReport = new TornadoReport();
+		tornadoReport.tornadoRecords = queryRunner.getTornadoRecords(getSourceJdbcTemplate(source), cohortDefinitionId, source);
+		tornadoReport.profileSamples = queryRunner.getProfileSampleRecords(getSourceJdbcTemplate(source), cohortDefinitionId, source);
+		return tornadoReport;
+	}
 
   /**
    * Queries for cohort analysis dashboard for the given cohort definition id
@@ -290,8 +287,8 @@ public class CohortResultsService extends AbstractDaoService {
   @Path("{sourceKey}/{id}/dashboard")
   @Produces(MediaType.APPLICATION_JSON)
   public CohortDashboard getDashboard(@PathParam("id") final int id,
-          @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
-          @QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
+          @QueryParam("min_covariate_person_count") final Integer minCovariatePersonCountParam,
+          @QueryParam("min_interval_person_count") final Integer minIntervalPersonCountParam,
           @QueryParam("demographics_only") final boolean demographicsOnly,
           @PathParam("sourceKey") final String sourceKey,
           @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
@@ -310,7 +307,7 @@ public class CohortResultsService extends AbstractDaoService {
       try {
         dashboard = mapper.readValue(data.getData(), CohortDashboard.class);
       } catch (Exception e) {
-        log.error(e);
+        log.error(whitelist(e));
       }
     }
 
@@ -329,8 +326,8 @@ public class CohortResultsService extends AbstractDaoService {
   @Path("{sourceKey}/{id}/condition/")
   @Produces(MediaType.APPLICATION_JSON)
   public List<HierarchicalConceptRecord> getConditionTreemap(@PathParam("sourceKey") String sourceKey, @PathParam("id") final int id,
-          @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
-          @QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
+          @QueryParam("min_covariate_person_count") final Integer minCovariatePersonCountParam,
+          @QueryParam("min_interval_person_count") final Integer minIntervalPersonCountParam,
           @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
 
     Source source = getSourceRepository().findBySourceKey(sourceKey);
@@ -345,7 +342,7 @@ public class CohortResultsService extends AbstractDaoService {
         res = mapper.readValue(data.getData(), new TypeReference<List<HierarchicalConceptRecord>>() {
         });
       } catch (Exception e) {
-        log.error(e);
+        log.error(whitelist(e));
       }
     }
 
@@ -359,14 +356,26 @@ public class CohortResultsService extends AbstractDaoService {
           @PathParam("id") String id,
           @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    PreparedStatementRenderer psr = prepareGetRawDistinctPersonCount(id, source);
+    Integer result = getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), new ResultSetExtractor<Integer>() {
+      @Override
+      public Integer extractData(ResultSet rs) throws SQLException {
 
-    String sql = ResourceHelper.GetResourceAsString(BASE_SQL_PATH + "/raw/getTotalDistinctPeople.sql");
-    sql = SqlRender.renderSql(sql, new String[]{"tableQualifier", "id"}, new String[]{tableQualifier, id});
-    sql = SqlTranslate.translateSql(sql, source.getSourceDialect());
-    Integer result = getSourceJdbcTemplate(source).queryForObject(sql, Integer.class);
-
+        while (rs.next()) {
+          return rs.getInt(1);
+        }
+        return null;
+      }
+    });
     return result;
+  }
+
+  protected PreparedStatementRenderer prepareGetRawDistinctPersonCount(String id, Source source) {
+
+    String sqlPath = BASE_SQL_PATH + "/raw/getTotalDistinctPeople.sql";
+    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    String tqName = "tableQualifier";
+    return new PreparedStatementRenderer(source, sqlPath, tqName, tqValue, "id", Integer.valueOf(id));
   }
 
   /**
@@ -383,8 +392,8 @@ public class CohortResultsService extends AbstractDaoService {
   public CohortConditionDrilldown getConditionResults(@PathParam("sourceKey") String sourceKey,
           @PathParam("id") final int id,
           @PathParam("conditionId") final int conditionId,
-          @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
-          @QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
+          @QueryParam("min_covariate_person_count") final Integer minCovariatePersonCountParam,
+          @QueryParam("min_interval_person_count") final Integer minIntervalPersonCountParam,
           @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
     CohortConditionDrilldown drilldown = null;
     final String key = CohortResultsAnalysisRunner.CONDITION_DRILLDOWN;
@@ -397,7 +406,7 @@ public class CohortResultsService extends AbstractDaoService {
       try {
         drilldown = mapper.readValue(data.getData(), CohortConditionDrilldown.class);
       } catch (Exception e) {
-        log.error(e);
+        log.error(whitelist(e));
       }
     }
 
@@ -417,8 +426,8 @@ public class CohortResultsService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   public List<HierarchicalConceptRecord> getConditionEraTreemap(@PathParam("sourceKey") final String sourceKey,
           @PathParam("id") final int id,
-          @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
-          @QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
+          @QueryParam("min_covariate_person_count") final Integer minCovariatePersonCountParam,
+          @QueryParam("min_interval_person_count") final Integer minIntervalPersonCountParam,
           @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
 
     Source source = getSourceRepository().findBySourceKey(sourceKey);
@@ -434,7 +443,7 @@ public class CohortResultsService extends AbstractDaoService {
         res = mapper.readValue(data.getData(), new TypeReference<List<HierarchicalConceptRecord>>() {
         });
       } catch (Exception e) {
-        log.error(e);
+        log.error(whitelist(e));
       }
     }
 
@@ -446,11 +455,25 @@ public class CohortResultsService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   public List<Integer> getCompletedAnalyses(@PathParam("sourceKey") String sourceKey, @PathParam("id") String id) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-    String sql = ResourceHelper.GetResourceAsString(BASE_SQL_PATH + "/raw/getCompletedAnalyses.sql");
-    sql = SqlRender.renderSql(sql, new String[]{"tableQualifier", "id"}, new String[]{tableQualifier, id});
-    sql = SqlTranslate.translateSql(sql, source.getSourceDialect());
-    return getSourceJdbcTemplate(source).queryForList(sql, Integer.class);
+    PreparedStatementRenderer psr = prepareGetCompletedAnalysis(id, source);
+    final String sql = psr.getSql();
+    return getSourceJdbcTemplate(source).query(sql, psr.getSetter(), new RowMapper<Integer>() {
+          @Override
+          public Integer mapRow(ResultSet resultSet, int arg1) throws SQLException {
+
+            return resultSet.getInt(1);
+          }
+        }
+    );
+  }
+
+  protected PreparedStatementRenderer prepareGetCompletedAnalysis(String id, Source source) {
+
+    String sqlPath = BASE_SQL_PATH + "/raw/getCompletedAnalyses.sql";
+    String tqName = "tableQualifier";
+    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sqlPath, tqName, tqValue, "id", Integer.valueOf(id));
+    return psr;
   }
 
   /**
@@ -465,11 +488,12 @@ public class CohortResultsService extends AbstractDaoService {
   @Path("{sourceKey}/{id}/conditionera/{conditionId}")
   @Produces(MediaType.APPLICATION_JSON)
   public CohortConditionEraDrilldown getConditionEraDrilldown(@PathParam("id") final int id,
-          @PathParam("conditionId") final int conditionId,
-          @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
-          @QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
-          @PathParam("sourceKey") final String sourceKey,
-          @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+                                                              @PathParam("conditionId") final int conditionId,
+                                                              @QueryParam("min_covariate_person_count") final Integer minCovariatePersonCountParam,
+                                                              @QueryParam("min_interval_person_count") final Integer minIntervalPersonCountParam,
+                                                              @PathParam("sourceKey") final String sourceKey,
+                                                              @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
+
     CohortConditionEraDrilldown drilldown = null;
     final String key = CohortResultsAnalysisRunner.CONDITION_ERA_DRILLDOWN;
     Source source = getSourceRepository().findBySourceKey(sourceKey);
@@ -482,7 +506,7 @@ public class CohortResultsService extends AbstractDaoService {
       try {
         drilldown = mapper.readValue(data.getData(), CohortConditionEraDrilldown.class);
       } catch (Exception e) {
-        log.error(e);
+        log.error(whitelist(e));
       }
     }
 
@@ -501,8 +525,8 @@ public class CohortResultsService extends AbstractDaoService {
   @Path("{sourceKey}/{id}/drug/")
   @Produces(MediaType.APPLICATION_JSON)
   public List<HierarchicalConceptRecord> getDrugTreemap(@PathParam("id") final int id,
-          @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
-          @QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
+          @QueryParam("min_covariate_person_count") final Integer minCovariatePersonCountParam,
+          @QueryParam("min_interval_person_count") final Integer minIntervalPersonCountParam,
           @PathParam("sourceKey") final String sourceKey,
           @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
 
@@ -518,7 +542,7 @@ public class CohortResultsService extends AbstractDaoService {
         res = mapper.readValue(data.getData(), new TypeReference<List<HierarchicalConceptRecord>>() {
         });
       } catch (Exception e) {
-        log.error(e);
+        log.error(whitelist(e));
       }
     }
 
@@ -537,8 +561,8 @@ public class CohortResultsService extends AbstractDaoService {
   @Path("{sourceKey}/{id}/drug/{drugId}")
   @Produces(MediaType.APPLICATION_JSON)
   public CohortDrugDrilldown getDrugResults(@PathParam("id") final int id, @PathParam("drugId") final int drugId,
-          @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
-          @QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
+          @QueryParam("min_covariate_person_count") final Integer minCovariatePersonCountParam,
+          @QueryParam("min_interval_person_count") final Integer minIntervalPersonCountParam,
           @PathParam("sourceKey") final String sourceKey,
           @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
     CohortDrugDrilldown drilldown = null;
@@ -552,7 +576,7 @@ public class CohortResultsService extends AbstractDaoService {
       try {
         drilldown = mapper.readValue(data.getData(), CohortDrugDrilldown.class);
       } catch (Exception e) {
-        log.error(e);
+        log.error(whitelist(e));
       }
     }
 
@@ -571,8 +595,8 @@ public class CohortResultsService extends AbstractDaoService {
   @Path("{sourceKey}/{id}/drugera/")
   @Produces(MediaType.APPLICATION_JSON)
   public List<HierarchicalConceptRecord> getDrugEraTreemap(@PathParam("id") final int id,
-          @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
-          @QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
+          @QueryParam("min_covariate_person_count") final Integer minCovariatePersonCountParam,
+          @QueryParam("min_interval_person_count") final Integer minIntervalPersonCountParam,
           @PathParam("sourceKey") final String sourceKey,
           @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
 
@@ -588,7 +612,7 @@ public class CohortResultsService extends AbstractDaoService {
         res = mapper.readValue(data.getData(), new TypeReference<List<HierarchicalConceptRecord>>() {
         });
       } catch (Exception e) {
-        log.error(e);
+        log.error(whitelist(e));
       }
     }
 
@@ -607,8 +631,8 @@ public class CohortResultsService extends AbstractDaoService {
   @Path("{sourceKey}/{id}/drugera/{drugId}")
   @Produces(MediaType.APPLICATION_JSON)
   public CohortDrugEraDrilldown getDrugEraResults(@PathParam("id") final int id, @PathParam("drugId") final int drugId,
-          @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
-          @QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
+          @QueryParam("min_covariate_person_count") final Integer minCovariatePersonCountParam,
+          @QueryParam("min_interval_person_count") final Integer minIntervalPersonCountParam,
           @PathParam("sourceKey") final String sourceKey,
           @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
     CohortDrugEraDrilldown drilldown = null;
@@ -622,7 +646,7 @@ public class CohortResultsService extends AbstractDaoService {
       try {
         drilldown = mapper.readValue(data.getData(), CohortDrugEraDrilldown.class);
       } catch (Exception e) {
-        log.error(e);
+        log.error(whitelist(e));
       }
     }
 
@@ -641,8 +665,8 @@ public class CohortResultsService extends AbstractDaoService {
   @Path("{sourceKey}/{id}/person")
   @Produces(MediaType.APPLICATION_JSON)
   public CohortPersonSummary getPersonResults(@PathParam("id") final int id,
-          @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
-          @QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
+          @QueryParam("min_covariate_person_count") final Integer minCovariatePersonCountParam,
+          @QueryParam("min_interval_person_count") final Integer minIntervalPersonCountParam,
           @PathParam("sourceKey") final String sourceKey,
           @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
     CohortPersonSummary person = null;
@@ -656,7 +680,7 @@ public class CohortResultsService extends AbstractDaoService {
       try {
         person = mapper.readValue(data.getData(), CohortPersonSummary.class);
       } catch (Exception e) {
-        log.error(e);
+        log.error(whitelist(e));
       }
     }
 
@@ -674,8 +698,8 @@ public class CohortResultsService extends AbstractDaoService {
   @Path("{sourceKey}/{id}/cohortspecific")
   @Produces(MediaType.APPLICATION_JSON)
   public CohortSpecificSummary getCohortSpecificResults(@PathParam("id") final int id,
-          @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
-          @QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
+          @QueryParam("min_covariate_person_count") final Integer minCovariatePersonCountParam,
+          @QueryParam("min_interval_person_count") final Integer minIntervalPersonCountParam,
           @PathParam("sourceKey") final String sourceKey,
           @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
     CohortSpecificSummary summary = null;
@@ -689,7 +713,7 @@ public class CohortResultsService extends AbstractDaoService {
       try {
         summary = mapper.readValue(data.getData(), CohortSpecificSummary.class);
       } catch (Exception e) {
-        log.error(e);
+        log.error(whitelist(e));
       }
     }
 
@@ -707,8 +731,8 @@ public class CohortResultsService extends AbstractDaoService {
   @Path("{sourceKey}/{id}/cohortspecifictreemap")
   @Produces(MediaType.APPLICATION_JSON)
   public CohortSpecificTreemap getCohortSpecificTreemapResults(@PathParam("id") final int id,
-          @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
-          @QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
+          @QueryParam("min_covariate_person_count") final Integer minCovariatePersonCountParam,
+          @QueryParam("min_interval_person_count") final Integer minIntervalPersonCountParam,
           @PathParam("sourceKey") final String sourceKey,
           @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
 
@@ -723,7 +747,7 @@ public class CohortResultsService extends AbstractDaoService {
       try {
         summary = mapper.readValue(data.getData(), CohortSpecificTreemap.class);
       } catch (Exception e) {
-        log.error(e);
+        log.error(whitelist(e));
       }
     }
 
@@ -743,15 +767,16 @@ public class CohortResultsService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   public List<ScatterplotRecord> getCohortProcedureDrilldown(@PathParam("id") final int id,
           @PathParam("conceptId") final int conceptId,
-          @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
-          @QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
+          @QueryParam("min_covariate_person_count") final Integer minCovariatePersonCountParam,
+          @QueryParam("min_interval_person_count") final Integer minIntervalPersonCountParam,
           @PathParam("sourceKey") final String sourceKey,
           @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
 
-    List<ScatterplotRecord> records = new ArrayList<ScatterplotRecord>();
+    List<ScatterplotRecord> records = new ArrayList<>();
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     final String key = CohortResultsAnalysisRunner.COHORT_SPECIFIC_PROCEDURE_DRILLDOWN;
-    VisualizationData data = refresh ? null : this.visualizationDataRepository.findByCohortDefinitionIdAndSourceIdAndVisualizationKeyAndDrilldownId(id, source.getSourceId(), key, conceptId);
+    VisualizationData data = refresh ? null : visualizationDataRepository
+      .findByCohortDefinitionIdAndSourceIdAndVisualizationKeyAndDrilldownId(id, source.getSourceId(), key, conceptId);
 
     if (refresh || data == null) {
       records = this.queryRunner.getCohortProcedureDrilldown(this.getSourceJdbcTemplate(source), id, conceptId, minCovariatePersonCountParam, minIntervalPersonCountParam, source, true);
@@ -760,7 +785,7 @@ public class CohortResultsService extends AbstractDaoService {
         records = mapper.readValue(data.getData(), new TypeReference<List<ScatterplotRecord>>() {
         });
       } catch (Exception e) {
-        log.error(e);
+        log.error(whitelist(e));
       }
     }
 
@@ -780,8 +805,8 @@ public class CohortResultsService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   public List<ScatterplotRecord> getCohortDrugDrilldown(@PathParam("id") final int id,
           @PathParam("conceptId") final int conceptId,
-          @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
-          @QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
+          @QueryParam("min_covariate_person_count") final Integer minCovariatePersonCountParam,
+          @QueryParam("min_interval_person_count") final Integer minIntervalPersonCountParam,
           @PathParam("sourceKey") final String sourceKey,
           @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
 
@@ -797,7 +822,7 @@ public class CohortResultsService extends AbstractDaoService {
         records = mapper.readValue(data.getData(), new TypeReference<List<ScatterplotRecord>>() {
         });
       } catch (Exception e) {
-        log.error(e);
+        log.error(whitelist(e));
       }
     }
     return records;
@@ -816,8 +841,8 @@ public class CohortResultsService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   public List<ScatterplotRecord> getCohortConditionDrilldown(@PathParam("id") final int id,
           @PathParam("conceptId") final int conceptId,
-          @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
-          @QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
+          @QueryParam("min_covariate_person_count") final Integer minCovariatePersonCountParam,
+          @QueryParam("min_interval_person_count") final Integer minIntervalPersonCountParam,
           @PathParam("sourceKey") final String sourceKey,
           @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
 
@@ -835,7 +860,7 @@ public class CohortResultsService extends AbstractDaoService {
         records = mapper.readValue(data.getData(), new TypeReference<List<ScatterplotRecord>>() {
         });
       } catch (Exception e) {
-        log.error(e);
+        log.error(whitelist(e));
       }
     }
 
@@ -852,8 +877,8 @@ public class CohortResultsService extends AbstractDaoService {
   @Path("{sourceKey}/{id}/observation")
   @Produces(MediaType.APPLICATION_JSON)
   public List<HierarchicalConceptRecord> getCohortObservationResults(@PathParam("id") final int id,
-          @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
-          @QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
+          @QueryParam("min_covariate_person_count") final Integer minCovariatePersonCountParam,
+          @QueryParam("min_interval_person_count") final Integer minIntervalPersonCountParam,
           @PathParam("sourceKey") final String sourceKey,
           @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
     List<HierarchicalConceptRecord> res = null;
@@ -869,7 +894,7 @@ public class CohortResultsService extends AbstractDaoService {
         res = mapper.readValue(data.getData(), new TypeReference<List<HierarchicalConceptRecord>>() {
         });
       } catch (Exception e) {
-        log.error(e);
+        log.error(whitelist(e));
       }
     }
 
@@ -889,8 +914,8 @@ public class CohortResultsService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   public CohortObservationDrilldown getCohortObservationResultsDrilldown(@PathParam("id") final int id,
           @PathParam("conceptId") final int conceptId,
-          @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
-          @QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
+          @QueryParam("min_covariate_person_count") final Integer minCovariatePersonCountParam,
+          @QueryParam("min_interval_person_count") final Integer minIntervalPersonCountParam,
           @PathParam("sourceKey") final String sourceKey,
           @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
     CohortObservationDrilldown drilldown = new CohortObservationDrilldown();
@@ -904,7 +929,7 @@ public class CohortResultsService extends AbstractDaoService {
       try {
         drilldown = mapper.readValue(data.getData(), CohortObservationDrilldown.class);
       } catch (Exception e) {
-        log.error(e);
+        log.error(whitelist(e));
       }
     }
 
@@ -922,8 +947,8 @@ public class CohortResultsService extends AbstractDaoService {
   @Path("{sourceKey}/{id}/measurement")
   @Produces(MediaType.APPLICATION_JSON)
   public List<HierarchicalConceptRecord> getCohortMeasurementResults(@PathParam("id") final int id,
-          @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
-          @QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
+          @QueryParam("min_covariate_person_count") final Integer minCovariatePersonCountParam,
+          @QueryParam("min_interval_person_count") final Integer minIntervalPersonCountParam,
           @PathParam("sourceKey") final String sourceKey,
           @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
     List<HierarchicalConceptRecord> res = null;
@@ -938,7 +963,7 @@ public class CohortResultsService extends AbstractDaoService {
         res = mapper.readValue(data.getData(), new TypeReference<List<HierarchicalConceptRecord>>() {
         });
       } catch (Exception e) {
-        log.error(e);
+        log.error(whitelist(e));
       }
     }
 
@@ -957,8 +982,8 @@ public class CohortResultsService extends AbstractDaoService {
   @Path("{sourceKey}/{id}/measurement/{conceptId}")
   @Produces(MediaType.APPLICATION_JSON)
   public CohortMeasurementDrilldown getCohortMeasurementResultsDrilldown(@PathParam("id") final int id, @PathParam("conceptId") final int conceptId,
-          @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
-          @QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
+          @QueryParam("min_covariate_person_count") final Integer minCovariatePersonCountParam,
+          @QueryParam("min_interval_person_count") final Integer minIntervalPersonCountParam,
           @PathParam("sourceKey") final String sourceKey,
           @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
     CohortMeasurementDrilldown drilldown = new CohortMeasurementDrilldown();
@@ -972,7 +997,7 @@ public class CohortResultsService extends AbstractDaoService {
       try {
         drilldown = mapper.readValue(data.getData(), CohortMeasurementDrilldown.class);
       } catch (Exception e) {
-        log.error(e);
+        log.error(whitelist(e));
       }
     }
 
@@ -992,8 +1017,8 @@ public class CohortResultsService extends AbstractDaoService {
   @Path("{sourceKey}/{id}/observationperiod")
   @Produces(MediaType.APPLICATION_JSON)
   public CohortObservationPeriod getCohortObservationPeriod(@PathParam("id") final int id,
-          @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
-          @QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
+          @QueryParam("min_covariate_person_count") final Integer minCovariatePersonCountParam,
+          @QueryParam("min_interval_person_count") final Integer minIntervalPersonCountParam,
           @PathParam("sourceKey") final String sourceKey,
           @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
     CohortObservationPeriod obsPeriod = new CohortObservationPeriod();
@@ -1007,7 +1032,7 @@ public class CohortResultsService extends AbstractDaoService {
       try {
         obsPeriod = mapper.readValue(data.getData(), CohortObservationPeriod.class);
       } catch (Exception e) {
-        log.error(e);
+        log.error(whitelist(e));
       }
     }
 
@@ -1026,8 +1051,8 @@ public class CohortResultsService extends AbstractDaoService {
   @Path("{sourceKey}/{id}/datadensity")
   @Produces(MediaType.APPLICATION_JSON)
   public CohortDataDensity getCohortDataDensity(@PathParam("id") final int id,
-          @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
-          @QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
+          @QueryParam("min_covariate_person_count") final Integer minCovariatePersonCountParam,
+          @QueryParam("min_interval_person_count") final Integer minIntervalPersonCountParam,
           @PathParam("sourceKey") final String sourceKey,
           @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
 
@@ -1042,7 +1067,7 @@ public class CohortResultsService extends AbstractDaoService {
       try {
         data = mapper.readValue(vizData.getData(), CohortDataDensity.class);
       } catch (Exception e) {
-        log.error(e);
+        log.error(whitelist(e));
       }
     }
 
@@ -1060,8 +1085,8 @@ public class CohortResultsService extends AbstractDaoService {
   @Path("{sourceKey}/{id}/procedure/")
   @Produces(MediaType.APPLICATION_JSON)
   public List<HierarchicalConceptRecord> getProcedureTreemap(@PathParam("id") final int id,
-          @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
-          @QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
+          @QueryParam("min_covariate_person_count") final Integer minCovariatePersonCountParam,
+          @QueryParam("min_interval_person_count") final Integer minIntervalPersonCountParam,
           @PathParam("sourceKey") final String sourceKey,
           @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
 
@@ -1077,7 +1102,7 @@ public class CohortResultsService extends AbstractDaoService {
         res = mapper.readValue(data.getData(), new TypeReference<List<HierarchicalConceptRecord>>() {
         });
       } catch (Exception e) {
-        log.error(e);
+        log.error(whitelist(e));
       }
     }
 
@@ -1098,8 +1123,8 @@ public class CohortResultsService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   public CohortProceduresDrillDown getCohortProceduresDrilldown(@PathParam("id") final int id,
           @PathParam("conceptId") final int conceptId,
-          @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
-          @QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
+          @QueryParam("min_covariate_person_count") final Integer minCovariatePersonCountParam,
+          @QueryParam("min_interval_person_count") final Integer minIntervalPersonCountParam,
           @PathParam("sourceKey") final String sourceKey,
           @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
     CohortProceduresDrillDown drilldown = new CohortProceduresDrillDown();
@@ -1113,7 +1138,7 @@ public class CohortResultsService extends AbstractDaoService {
       try {
         drilldown = mapper.readValue(data.getData(), CohortProceduresDrillDown.class);
       } catch (Exception e) {
-        log.error(e);
+        log.error(whitelist(e));
       }
     }
 
@@ -1131,8 +1156,8 @@ public class CohortResultsService extends AbstractDaoService {
   @Path("{sourceKey}/{id}/visit/")
   @Produces(MediaType.APPLICATION_JSON)
   public List<HierarchicalConceptRecord> getVisitTreemap(@PathParam("id") final int id,
-          @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
-          @QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
+          @QueryParam("min_covariate_person_count") final Integer minCovariatePersonCountParam,
+          @QueryParam("min_interval_person_count") final Integer minIntervalPersonCountParam,
           @PathParam("sourceKey") final String sourceKey,
           @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
 
@@ -1148,7 +1173,7 @@ public class CohortResultsService extends AbstractDaoService {
         res = mapper.readValue(data.getData(), new TypeReference<List<HierarchicalConceptRecord>>() {
         });
       } catch (Exception e) {
-        log.error(e);
+        log.error(whitelist(e));
       }
     }
 
@@ -1169,8 +1194,8 @@ public class CohortResultsService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   public CohortVisitsDrilldown getCohortVisitsDrilldown(@PathParam("id") final int id,
           @PathParam("conceptId") final int conceptId,
-          @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
-          @QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
+          @QueryParam("min_covariate_person_count") final Integer minCovariatePersonCountParam,
+          @QueryParam("min_interval_person_count") final Integer minIntervalPersonCountParam,
           @PathParam("sourceKey") final String sourceKey,
           @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
     CohortVisitsDrilldown drilldown = new CohortVisitsDrilldown();
@@ -1184,7 +1209,7 @@ public class CohortResultsService extends AbstractDaoService {
       try {
         drilldown = mapper.readValue(data.getData(), CohortVisitsDrilldown.class);
       } catch (Exception e) {
-        log.error(e);
+        log.error(whitelist(e));
       }
     }
     return drilldown;
@@ -1223,7 +1248,7 @@ public class CohortResultsService extends AbstractDaoService {
         summary.setAgeDistribution(dashboard.getAgeAtFirstObservation());
       }
     } catch (Exception e) {
-      log.error(e);
+      log.error(whitelist(e));
     }
 
     return summary;
@@ -1241,8 +1266,8 @@ public class CohortResultsService extends AbstractDaoService {
   @Path("{sourceKey}/{id}/death")
   @Produces(MediaType.APPLICATION_JSON)
   public CohortDeathData getCohortDeathData(@PathParam("id") final int id,
-          @QueryParam("min_covariate_person_count") final String minCovariatePersonCountParam,
-          @QueryParam("min_interval_person_count") final String minIntervalPersonCountParam,
+          @QueryParam("min_covariate_person_count") final Integer minCovariatePersonCountParam,
+          @QueryParam("min_interval_person_count") final Integer minIntervalPersonCountParam,
           @PathParam("sourceKey") final String sourceKey,
           @DefaultValue("false") @QueryParam("refresh") boolean refresh) {
     CohortDeathData data = new CohortDeathData();
@@ -1256,7 +1281,7 @@ public class CohortResultsService extends AbstractDaoService {
       try {
         data = mapper.readValue(vizData.getData(), CohortDeathData.class);
       } catch (Exception e) {
-        log.error(e);
+        log.error(whitelist(e));
       }
     }
 
@@ -1276,7 +1301,7 @@ public class CohortResultsService extends AbstractDaoService {
 
     CohortSummary summary = new CohortSummary();
     try {
-      summary.setAnalyses(getCohortAnalysesForCohortDefinition(id, sourceKey, true));
+      summary.setAnalyses(getCohortAnalysesForCohortDefinition(whitelist(id), sourceKey, true));
     } catch (Exception e) {
       log.error("unable to get cohort summary", e);
     }
@@ -1299,14 +1324,13 @@ public class CohortResultsService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<CohortPerson> getCohortMembers(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey, @PathParam("min") final int min, @PathParam("max") final int max) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
-    String sql = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/raw/getMembers.sql");
-    sql = SqlRender.renderSql(sql, new String[]{"tableQualifier", "cohortDefinitionId","min","max"}, new String[]{
-      resultsTableQualifier, String.valueOf(id), String.valueOf(min), String.valueOf(max)});
-    sql = SqlTranslate.translateSql(sql, source.getSourceDialect(), SessionUtils.sessionId(),
-            resultsTableQualifier);
-
-    return getSourceJdbcTemplate(source).query(sql, this.cohortMemberMapper);
+    String sqlPath = "/resources/cohortresults/sql/raw/getMembers.sql";
+    String tqName = "tableQualifier";
+    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+    String[] names = new String[]{"cohortDefinitionId", "min", "max"};
+    Object[] values = new Object[]{whitelist(id), whitelist(min), whitelist(max)};
+    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sqlPath, tqName, tqValue, names, values, SessionUtils.sessionId());
+    return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), cohortMemberMapper);
   }
 
   /**
@@ -1321,15 +1345,15 @@ public class CohortResultsService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<CohortBreakdown> getCohortBreakdown(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-    String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
-    String sql = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/raw/getCohortBreakdown.sql");
-    sql = SqlRender.renderSql(sql, new String[]{"tableQualifier","resultsTableQualifier", "cohortDefinitionId"}, new String[]{
-      cdmTableQualifier, resultsTableQualifier, String.valueOf(id)});
-    sql = SqlTranslate.translateSql(sql, source.getSourceDialect(), SessionUtils.sessionId(),
-            resultsTableQualifier);
-
-    return getSourceJdbcTemplate(source).query(sql, this.cohortBreakdownMapper);
+    String sqlPath = "/resources/cohortresults/sql/raw/getCohortBreakdown.sql";
+    String resultsTqName = "resultsTableQualifier";
+    String resultsTqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    String cdmTqName = "tableQualifier";
+    String cdmTqValue = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+    String[] tqNames = new String[]{resultsTqName, cdmTqName};
+    String[] tqValues = new String[]{resultsTqValue, cdmTqValue};
+    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sqlPath, tqNames, tqValues, "cohortDefinitionId", id);
+    return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), cohortBreakdownMapper);
   }
   /**
    * Returns the person identifiers of all members of a cohort breakdown from above
@@ -1354,6 +1378,19 @@ public class CohortResultsService extends AbstractDaoService {
                                         @PathParam("conditions") String conditions, 
                                         @PathParam("drugs") String drugs,
                                         @PathParam("rows") final int rows) {
+
+
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    PreparedStatementRenderer psr = prepareGetCohortMembers(id, gender,
+        age, conditions, drugs, rows, source);
+    return getSourceJdbcTemplate(source).query(psr.getSql(),psr.getSetter(), cohortMemberMapper);
+  }
+
+
+  protected PreparedStatementRenderer prepareGetCohortMembers(final int id,
+                                                              String gender, String age, String conditions, String drugs,
+                                                              final int rows, Source source) {
+    String path =   "/resources/cohortresults/sql/raw/getCohortBreakdownPeople.sql";
     List<String> params = new ArrayList<>();
     List<String> wherecols = new ArrayList<>();
     int groups = 1;
@@ -1372,44 +1409,44 @@ public class CohortResultsService extends AbstractDaoService {
         wherecols.add("conditions");
         groups = groups * conditions.split(",").length;
     }
-    if (drugs.length() > 0 && !drugs.equals("''")) {
-        params.add(" drugs in (@drugs) ");
-        wherecols.add("drugs");
-        groups = groups * drugs.split(",").length;
+    if (drugs.length() > 0 && !"''".equals(drugs)) {
+      params.add(" drugs in (@drugs) ");
+      wherecols.add("drugs");
+      groups = groups * drugs.split(",").length;
     }
     String clause = " where 1=1\n";
-    for (String param: params) {
-        clause += (" and " + param + "\n");
+    for (String param : params) {
+      clause += (" and " + param + "\n");
     }
-    Source source = getSourceRepository().findBySourceKey(sourceKey);
+
     String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
     String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
-    
-    String sql = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/raw/getCohortBreakdownPeople.sql");
-    sql = sql.replace("/*whereclause*/", clause);
-    String wherecolsStr = "";
-    if (wherecols.isEmpty()) {
-        sql = sql.replace("partition by", "");
-    } else {
-        wherecolsStr += wherecols.get(0);
-        for (int i=1; i < wherecols.size(); i++) {
-            wherecolsStr += (',' + wherecols.get(i));
-        }
-    }
-    sql = SqlRender.renderSql(sql, 
-            new String[]{"tableQualifier", "resultsTableQualifier", "cohortDefinitionId","gender", "age", "conditions", "drugs", "rows","wherecols","groups"}, 
-            new String[]{cdmTableQualifier, resultsTableQualifier, String.valueOf(id), 
-                String.valueOf(gender), 
-                String.valueOf(age), 
-                String.valueOf(conditions), 
-                String.valueOf(drugs), 
-                String.valueOf(rows),
-                String.valueOf(wherecolsStr),
-                String.valueOf(groups)});
-    sql = SqlTranslate.translateSql(sql, source.getSourceDialect(), SessionUtils.sessionId(),
-            resultsTableQualifier);
 
-    return getSourceJdbcTemplate(source).query(sql, this.cohortMemberMapper);
+    String wherecolsStr = "";
+    if (!wherecols.isEmpty()) {
+      wherecolsStr += wherecols.get(0);
+      for (int i = 1; i < wherecols.size(); i++) {
+        wherecolsStr += (',' + wherecols.get(i));
+      }
+    }
+    String[] searchFor = new String[]{"tableQualifier", "resultsTableQualifier", "whereclause", "wherecols", "partition by"};
+    String[] replaceWith = new String[]{cdmTableQualifier, resultsTableQualifier, clause, wherecolsStr, "partition by"};
+
+    if (wherecols.isEmpty()) {
+      searchFor = new String[]{"tableQualifier", "resultsTableQualifier", "whereclause", "wherecols", "partition by"};
+      replaceWith = new String[]{cdmTableQualifier, resultsTableQualifier, clause, wherecolsStr, ""};
+    }
+
+    String[] names = new String[]{"cohortDefinitionId", "gender", "age", "conditions", "drugs", "rows", "groups"};
+
+    String[] genderArray= gender.replaceAll("'", "").split(",");
+    String[] ageArray= age.replaceAll("'", "").split(",");
+
+    List<Integer> conditionIds =  Arrays.stream(conditions.split(",")).map(NumberUtils::toInt).collect(Collectors.toList());
+    List<Integer> drugIds =  Arrays.stream(drugs.split(",")).map(NumberUtils::toInt).collect(Collectors.toList());
+
+    Object[] values = new Object[]{id, genderArray, ageArray, conditionIds.toArray(), drugIds.toArray(), rows, groups};
+    return new PreparedStatementRenderer(source, path, searchFor, replaceWith, names, values);
   }
   
   /**
@@ -1425,14 +1462,11 @@ public class CohortResultsService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   public Long getCohortMemberCount(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-    String sql = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/raw/getMemberCount.sql");
-    sql = SqlRender.renderSql(sql, new String[]{"tableQualifier", "cohortDefinitionId"}, new String[]{
-      resultsTableQualifier, String.valueOf(id)});
-    sql = SqlTranslate.translateSql(sql, source.getSourceDialect(), SessionUtils.sessionId(),
-            resultsTableQualifier);
-
-    return getSourceJdbcTemplate(source).queryForObject(sql, Long.class);
+    String sqlPath = "/resources/cohortresults/sql/raw/getMemberCount.sql";
+    String tqName = "tableQualifier";
+    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sqlPath, tqName, tqValue, "cohortDefinitionId", whitelist(id), SessionUtils.sessionId());
+    return getSourceJdbcTemplate(source).queryForObject(psr.getSql(), psr.getOrderedParams(), Long.class);
   }
 
   /**
@@ -1450,22 +1484,19 @@ public class CohortResultsService extends AbstractDaoService {
           @PathParam("sourceKey") String sourceKey,
           @DefaultValue("true") @QueryParam("fullDetail") boolean retrieveFullDetail) {
 
-    String sql = null;
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String sql;
+
     if (retrieveFullDetail) {
       sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/getCohortAnalysesForCohortFull.sql");
     } else {
       sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/getCohortAnalysesForCohort.sql");
     }
+    String tqName = "ohdsi_database_schema";
+    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, tqName, tqValue, "cohortDefinitionId", whitelist(id));
 
-    Source source = getSourceRepository().findBySourceKey(sourceKey);
-    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-
-    sql = SqlRender.renderSql(sql, new String[]{"ohdsi_database_schema", "cohortDefinitionId"}, new String[]{
-      resultsTableQualifier, String.valueOf(id)});
-    sql = SqlTranslate.translateSql(sql, source.getSourceDialect(), SessionUtils.sessionId(),
-            resultsTableQualifier);
-
-    return getSourceJdbcTemplate(source).query(sql, this.cohortAnalysisMapper);
+    return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), cohortAnalysisMapper);
   }
 
   @POST
@@ -1473,32 +1504,35 @@ public class CohortResultsService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public List<ExposureCohortResult> getExposureOutcomeCohortRates(@PathParam("sourceKey") String sourceKey, ExposureCohortSearch search) {
-    Source dbsource = getSourceRepository().findBySourceKey(sourceKey);
-    String resultsTableQualifier = dbsource.getTableQualifier(SourceDaimon.DaimonType.Results);
-    String sql_statement = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/cohortSpecific/getExposureOutcomeCohortRates.sql");          
-    String exposureCohortList = this.JoinArray(search.exposureCohortList);
-    String outcomeCohortList = this.JoinArray(search.outcomeCohortList);
 
-    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"exposure_cohort_definition_id","outcome_cohort_definition_id","ohdsi_database_schema"},
-              new String[]{exposureCohortList, outcomeCohortList, resultsTableQualifier});
-    sql_statement = SqlTranslate.translateSql(sql_statement, dbsource.getSourceDialect());
-	  
-    final List<ExposureCohortResult> results = new ArrayList<ExposureCohortResult>();
-    List<Map<String, Object>> rows = getSourceJdbcTemplate(dbsource).queryForList(sql_statement);
-    for (Map rs : rows) {	
-        ExposureCohortResult e = new ExposureCohortResult();
-        e.exposureCohortDefinitionId = String.valueOf(rs.get("exposure_cohort_definition_id"));
-        e.incidenceRate1000py = Float.valueOf(String.valueOf(rs.get("incidence_rate_1000py")));
-        e.numPersonsExposed = Long.valueOf(String.valueOf(rs.get("num_persons_exposed")));
-        e.numPersonsWithOutcomePostExposure = Long.valueOf(String.valueOf(rs.get("num_persons_w_outcome_post_exposure")));
-        e.numPersonsWithOutcomePreExposure = Long.valueOf(String.valueOf(rs.get("num_persons_w_outcome_pre_exposure")));
-        e.outcomeCohortDefinitionId = String.valueOf(rs.get("outcome_cohort_definition_id"));
-        e.timeAtRisk = Float.valueOf(String.valueOf(rs.get("time_at_risk")));
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    PreparedStatementRenderer psr = prepareGetExposureOutcomeCohortRates(search, source);
 
-        results.add(e);
-      }
-          
-    return results;
+    return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), (rs, rowNum) -> {
+
+      ExposureCohortResult e = new ExposureCohortResult();
+      e.exposureCohortDefinitionId = rs.getString("exposure_cohort_definition_id");
+      e.incidenceRate1000py = rs.getFloat("incidence_rate_1000py");
+      e.numPersonsExposed = rs.getLong("num_persons_exposed");
+      e.numPersonsWithOutcomePostExposure = rs.getLong("num_persons_w_outcome_post_exposure");
+      e.numPersonsWithOutcomePreExposure = rs.getLong("num_persons_w_outcome_pre_exposure");
+      e.outcomeCohortDefinitionId = rs.getString("outcome_cohort_definition_id");
+      e.timeAtRisk = rs.getFloat("time_at_risk");
+      return e;
+    });
+
+  }
+
+  protected PreparedStatementRenderer prepareGetExposureOutcomeCohortRates(
+      ExposureCohortSearch search, Source source) {
+
+    String path = "/resources/cohortresults/sql/cohortSpecific/getExposureOutcomeCohortRates.sql";
+    String tqName = "ohdsi_database_schema";
+    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    String[] names = new String[]{"exposure_cohort_definition_id", "outcome_cohort_definition_id"};
+    Object[] values = new Object[]{search.exposureCohortList, search.outcomeCohortList};
+    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, path, tqName, tqValue, names, values);
+    return psr;
   }
  
   @POST
@@ -1506,31 +1540,33 @@ public class CohortResultsService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public List<TimeToEventResult> getTimeToEventDrilldown(@PathParam("sourceKey") String sourceKey, ExposureCohortSearch search) {
-    Source dbsource = getSourceRepository().findBySourceKey(sourceKey);
-    String resultsTableQualifier = dbsource.getTableQualifier(SourceDaimon.DaimonType.Results);
-    String sql_statement = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/cohortSpecific/getTimeToEventDrilldown.sql");          
-    String exposureCohortList = this.JoinArray(search.exposureCohortList);
-    String outcomeCohortList = this.JoinArray(search.outcomeCohortList);
 
-    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"exposure_cohort_definition_id","outcome_cohort_definition_id","ohdsi_database_schema"},
-              new String[]{exposureCohortList, outcomeCohortList, resultsTableQualifier});
-    sql_statement = SqlTranslate.translateSql(sql_statement, dbsource.getSourceDialect());
-	  
-    final List<TimeToEventResult> results = new ArrayList<TimeToEventResult>();
-    List<Map<String, Object>> rows = getSourceJdbcTemplate(dbsource).queryForList(sql_statement);
-    for (Map rs : rows) {	
-        TimeToEventResult e = new TimeToEventResult();
-        e.countValue = Long.valueOf(String.valueOf(rs.get("count_value")));
-        e.duration = Long.valueOf(String.valueOf(rs.get("duration")));
-        e.exposureCohortDefinitionId = String.valueOf(rs.get("exposure_cohort_definition_id"));
-        e.outcomeCohortDefinitionId = String.valueOf(rs.get("outcome_cohort_definition_id"));
-        e.pctPersons = Double.valueOf(String.valueOf(rs.get("pct_persons")));
-        e.recordType = String.valueOf(rs.get("record_type"));
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    PreparedStatementRenderer psr = prepareGetTimeToEventDrilldown(search, source);
 
-        results.add(e);
-      }
-          
-    return results;
+    return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), (rs, rowNum) -> {
+
+      TimeToEventResult e = new TimeToEventResult();
+      e.countValue = rs.getLong("count_value");
+      e.duration = rs.getLong("duration");
+      e.exposureCohortDefinitionId = rs.getString("exposure_cohort_definition_id");
+      e.outcomeCohortDefinitionId = rs.getString("outcome_cohort_definition_id");
+      e.pctPersons = rs.getDouble("pct_persons");
+      e.recordType = rs.getString("record_type");
+      return e;
+    });
+
+  }
+
+  protected PreparedStatementRenderer prepareGetTimeToEventDrilldown(
+      ExposureCohortSearch search, Source source) {
+
+    String path = "/resources/cohortresults/sql/cohortSpecific/getTimeToEventDrilldown.sql";
+    String tqName = "ohdsi_database_schema";
+    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    String[] names = new String[]{"exposure_cohort_definition_id", "outcome_cohort_definition_id"};
+    Object[] values = new Object[]{search.exposureCohortList, search.outcomeCohortList};
+    return new PreparedStatementRenderer(source, path, tqName, tqValue, names, values);
   }
 
   @POST
@@ -1538,36 +1574,24 @@ public class CohortResultsService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public List<PredictorResult> getExposureOutcomeCohortPredictors(@PathParam("sourceKey") String sourceKey, ExposureCohortSearch search) {
-    Source dbsource = getSourceRepository().findBySourceKey(sourceKey);
-    String resultsTableQualifier = dbsource.getTableQualifier(SourceDaimon.DaimonType.Results);
-    String cdmTableQualifier = dbsource.getTableQualifier(SourceDaimon.DaimonType.CDM);
-    String sql_statement = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/cohortSpecific/getExposureOutcomePredictors.sql");          
-    String exposureCohortList = this.JoinArray(search.exposureCohortList);
-    String outcomeCohortList = this.JoinArray(search.outcomeCohortList);
-    String minCellCount = String.valueOf(search.minCellCount);
 
-    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"exposure_cohort_definition_id","outcome_cohort_definition_id","minCellCount","ohdsi_database_schema", "cdm_schema"},
-              new String[]{exposureCohortList, outcomeCohortList, minCellCount, resultsTableQualifier, cdmTableQualifier});
-    sql_statement = SqlTranslate.translateSql(sql_statement, dbsource.getSourceDialect());
-	  
-    final List<PredictorResult> results = new ArrayList<PredictorResult>();
-    List<Map<String, Object>> rows = getSourceJdbcTemplate(dbsource).queryForList(sql_statement);
-    for (Map rs : rows) {	
-        PredictorResult e = new PredictorResult();
-        e.absStdDiff = String.valueOf(rs.get("abs_std_diff"));
-        e.conceptId = String.valueOf(rs.get("concept_id"));
-        e.conceptName = String.valueOf(rs.get("concept_name"));
-        e.conceptWithOutcome = String.valueOf(rs.get("concept_w_outcome"));
-        e.domainId = String.valueOf(rs.get("domain_id"));
-        e.pctOutcomeWithConcept = String.valueOf(rs.get("pct_outcome_w_concept"));
-        e.pctNoOutcomeWithConcept = String.valueOf(rs.get("pct_nooutcome_w_concept"));
-        e.exposureCohortDefinitionId = String.valueOf(rs.get("exposure_cohort_definition_id"));
-        e.outcomeCohortDefinitionId = String.valueOf(rs.get("outcome_cohort_definition_id"));
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    PreparedStatementRenderer psr = prepareGetExposureOutcomeCohortPredictors(search, source);
 
-        results.add(e);
-      }
-          
-    return results;
+    return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), (rs, rowNum) -> {
+
+      PredictorResult e = new PredictorResult();
+      e.absStdDiff = rs.getString("abs_std_diff");
+      e.conceptId = rs.getString("concept_id");
+      e.conceptName = rs.getString("concept_name");
+      e.conceptWithOutcome = rs.getString("concept_w_outcome");
+      e.domainId = rs.getString("domain_id");
+      e.pctOutcomeWithConcept = rs.getString("pct_outcome_w_concept");
+      e.pctNoOutcomeWithConcept = rs.getString("pct_nooutcome_w_concept");
+      e.exposureCohortDefinitionId = rs.getString("exposure_cohort_definition_id");
+      e.outcomeCohortDefinitionId = rs.getString("outcome_cohort_definition_id");
+      return e;
+    });
   }
 
   /**
@@ -1601,23 +1625,16 @@ public class CohortResultsService extends AbstractDaoService {
       return attrs;
   }
   
-  public List<AnalysisResults> getCohortAnalysesForDataCompleteness(@PathParam("id") final int id,
-          @PathParam("sourceKey") String sourceKey) {
-
-    String sql = null;
-    sql = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/datacompleteness/getCohortDataCompleteness.sql");
+  public List<AnalysisResults> getCohortAnalysesForDataCompleteness(final int id, String sourceKey) {
 
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    String sql = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/datacompleteness/getCohortDataCompleteness.sql");
 
-    sql = SqlRender.renderSql(sql, new String[]{"tableQualifier", "cohortDefinitionId"},
-            new String[]{resultsTableQualifier, String.valueOf(id)});
-    sql = SqlTranslate.translateSql(sql, source.getSourceDialect());
+    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, "tableQualifier",
+      resultsTableQualifier, "cohortDefinitionId", id);
 
-
-    AnalysisResultsMapper arm = new AnalysisResultsMapper();
-    
-    return getSourceJdbcTemplate(source).query(sql, arm);
+    return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), new AnalysisResultsMapper());
   }
 
   @GET
@@ -1627,9 +1644,9 @@ public class CohortResultsService extends AbstractDaoService {
           @PathParam("sourceKey") String sourceKey) {
       List<AnalysisResults> arl = this.getCohortAnalysesForDataCompleteness(id, sourceKey);
       
-      List<DataCompletenessAttr> dcal = new ArrayList<DataCompletenessAttr>();
+      List<DataCompletenessAttr> dcal = new ArrayList<>();
       
-      Map<Integer, AnalysisResults> resultMap = new HashMap<Integer, AnalysisResults>();
+      Map<Integer, AnalysisResults> resultMap = new HashMap<>();
 
       for(AnalysisResults ar : arl){
           resultMap.put(ar.getAnalysisId(), ar);
@@ -1688,20 +1705,20 @@ public class CohortResultsService extends AbstractDaoService {
   }
 
     public List<AnalysisResults> getCohortAnalysesEntropy(final int id, String sourceKey, int entroppAnalysisId) {
-        
-        String sql = null;
-        sql = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/entropy/getEntropy.sql");
-        
+
+        String sql = ResourceHelper.GetResourceAsString("/resources/cohortresults/sql/entropy/getEntropy.sql");
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
         
-        sql = SqlRender.renderSql(sql, new String[] { "tableQualifier", "cohortDefinitionId", "entroppAnalysisId" },
-            new String[] { resultsTableQualifier, String.valueOf(id), String.valueOf(entroppAnalysisId) });
-        sql = SqlTranslate.translateSql(sql, source.getSourceDialect());
+        String[] searchStringNames = new String[] { "tableQualifier" };
+        String[] replacementNames = new String[] { resultsTableQualifier };
         
-        AnalysisResultsMapper arm = new AnalysisResultsMapper();
+        String[] variableNames = new String[] { "cohortDefinitionId", "entroppAnalysisId" };
+        Object[] variableValues = new Object[] { id, entroppAnalysisId };
         
-        return getSourceJdbcTemplate(source).query(sql, arm);
+        PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, searchStringNames, replacementNames,
+                variableNames, variableValues);
+        return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), new AnalysisResultsMapper());
     }
     
     @GET
@@ -1710,7 +1727,7 @@ public class CohortResultsService extends AbstractDaoService {
     public List<EntropyAttr> getEntropy(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey) {
         List<AnalysisResults> arl = this.getCohortAnalysesEntropy(id, sourceKey, 2031);
         
-        List<EntropyAttr> el = new ArrayList<EntropyAttr>();
+        List<EntropyAttr> el = new ArrayList<>();
         
         for (AnalysisResults ar : arl) {
             EntropyAttr ea = new EntropyAttr();
@@ -1753,20 +1770,23 @@ public class CohortResultsService extends AbstractDaoService {
         return el;
     }
     
-   private String JoinArray(final String[] array) {
-    String result = "";
+  protected PreparedStatementRenderer prepareGetExposureOutcomeCohortPredictors(
+    ExposureCohortSearch search, Source source) {
 
-    for (int i = 0; i < array.length; i++) {
-      if (i > 0) {
-        result += ",";
-      }
 
-      result += "'" + array[i] + "'";
-    }
+    String path = "/resources/cohortresults/sql/cohortSpecific/getExposureOutcomePredictors.sql";
+    String resultsQualName = "ohdsi_database_schema";
+    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    String cdmQualName = "cdm_schema";
+    String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+    String[] searchFor = new String[]{resultsQualName, cdmQualName};
+    String[] replace = new String[]{resultsTableQualifier, cdmTableQualifier};
+    String[] names = new String[]{"exposure_cohort_definition_id", "outcome_cohort_definition_id", "minCellCount"};
+    Object[] values = new Object[]{search.exposureCohortList, search.outcomeCohortList, search.minCellCount};
 
-    return result;
+    return new PreparedStatementRenderer(source, path, searchFor, replace, names, values);
   }
-    
+
   private final RowMapper<CohortPerson> cohortMemberMapper = new RowMapper<CohortPerson>() {
     @Override
     public CohortPerson mapRow(final ResultSet rs, final int rowNum) throws SQLException {
@@ -1796,7 +1816,7 @@ public class CohortResultsService extends AbstractDaoService {
     @Override
     public CohortAnalysis mapRow(final ResultSet rs, final int rowNum) throws SQLException {
       final CohortAnalysis cohortAnalysis = new CohortAnalysis();
-      mapAnalysis(cohortAnalysis, rs, rowNum);
+      mapAnalysis(cohortAnalysis, rs);
       cohortAnalysis.setAnalysisComplete(rs.getInt(CohortAnalysis.ANALYSIS_COMPLETE) == 1);
       cohortAnalysis.setCohortDefinitionId(rs.getInt(CohortAnalysis.COHORT_DEFINITION_ID));
       cohortAnalysis.setLastUpdateTime(rs.getTimestamp(CohortAnalysis.LAST_UPDATE_TIME));
@@ -1804,7 +1824,8 @@ public class CohortResultsService extends AbstractDaoService {
     }
   };
 
-  private void mapAnalysis(final Analysis analysis, final ResultSet rs, final int rowNum) throws SQLException {
+  private void mapAnalysis(final Analysis analysis, final ResultSet rs) throws SQLException {
+
     analysis.setAnalysisId(rs.getInt(Analysis.ANALYSIS_ID));
     analysis.setAnalysisName(rs.getString(Analysis.ANALYSIS_NAME));
     analysis.setStratum1Name(rs.getString(Analysis.STRATUM_1_NAME));

@@ -1,5 +1,7 @@
 package org.ohdsi.webapi.job;
 
+import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
+
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -49,16 +51,16 @@ public class JobTemplate {
               log.debug("JobExecution queued: " + exec);
           }
         } catch (final JobExecutionAlreadyRunningException e) {
-            throw new WebApplicationException(Response.status(Status.CONFLICT).entity(e.getMessage()).build());
+            throw new WebApplicationException(Response.status(Status.CONFLICT).entity(whitelist(e)).build());
         } catch (final Exception e) {
-            throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build());
+            throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity(whitelist(e)).build());
         }
         return JobUtils.toJobExecutionResource(exec);
     }
     
     public JobExecutionResource launchTasklet(final String jobName, final String stepName, final Tasklet tasklet,
                                               JobParameters jobParameters) throws WebApplicationException {
-        JobExecution exec = null;
+        JobExecution exec;
         try {
             //TODO Consider JobParametersIncrementer
             jobParameters = new JobParametersBuilder(jobParameters).addLong("time", System.currentTimeMillis())
@@ -68,11 +70,11 @@ public class JobTemplate {
             final Job job = this.jobBuilders.get(jobName).start(step).build();
             exec = this.jobLauncher.run(job, jobParameters);
         } catch (final JobExecutionAlreadyRunningException e) {
-            throw new WebApplicationException(Response.status(Status.CONFLICT).entity(e.getMessage()).build());
+            throw new WebApplicationException(Response.status(Status.CONFLICT).entity(whitelist(e.getMessage())).build());
         } catch (final JobInstanceAlreadyCompleteException e) {
-            throw new WebApplicationException(Response.status(Status.CONFLICT).entity(e.getMessage()).build());
+            throw new WebApplicationException(Response.status(Status.CONFLICT).entity(whitelist(e.getMessage())).build());
         } catch (final Exception e) {
-            throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build());
+            throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity(whitelist(e.getMessage())).build());
         }
         return JobUtils.toJobExecutionResource(exec);
     }

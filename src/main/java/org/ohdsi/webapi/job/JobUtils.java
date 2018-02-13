@@ -59,10 +59,9 @@ public final class JobUtils {
      */
     public static List<JobExecutionResource> toJobExecutionResource(final ResultSet rs) throws SQLException {
         //TODO order by executionId
-        List<JobExecutionResource> jobs = new ArrayList<JobExecutionResource>();
+        List<JobExecutionResource> jobs = new ArrayList<>();
         JobExecutionResource jobexec = null;
-        JobParametersBuilder jpb = null;
-        Map<String, Object> map = null;
+        Map<String, Object> map = new HashMap<>();
         while (rs.next()) {
             Long id = rs.getLong(1);
             if (jobexec != null) {//possible continuation
@@ -94,15 +93,23 @@ public final class JobUtils {
             //parameters starts at 12
             ParameterType type = ParameterType.valueOf(rs.getString(13));
             JobParameter value = null;
-            
-            if (type == ParameterType.STRING) {
-                value = new JobParameter(rs.getString(14), rs.getString(18).equalsIgnoreCase("Y"));
-            } else if (type == ParameterType.LONG) {
-                value = new JobParameter(rs.getLong(16), rs.getString(18).equalsIgnoreCase("Y"));
-            } else if (type == ParameterType.DOUBLE) {
-                value = new JobParameter(rs.getDouble(17), rs.getString(18).equalsIgnoreCase("Y"));
-            } else if (type == ParameterType.DATE) {
-                value = new JobParameter(rs.getTimestamp(15), rs.getString(18).equalsIgnoreCase("Y"));
+            switch (type) {
+                case STRING: {
+                    value = new JobParameter(rs.getString(14), rs.getString(18).equalsIgnoreCase("Y"));
+                    break;
+                }
+                case LONG: {
+                    value = new JobParameter(rs.getLong(16), rs.getString(18).equalsIgnoreCase("Y"));
+                    break;
+                }
+                case DOUBLE: {
+                    value = new JobParameter(rs.getDouble(17), rs.getString(18).equalsIgnoreCase("Y"));
+                    break;
+                }
+                case DATE: {
+                    value = new JobParameter(rs.getTimestamp(15), rs.getString(18).equalsIgnoreCase("Y"));
+                    break;
+                }
             }
             
             // No need to assert that value is not null because it's an enum

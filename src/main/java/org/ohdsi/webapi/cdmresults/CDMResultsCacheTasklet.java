@@ -24,6 +24,8 @@ import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cache.ResultsCache;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.util.PreparedStatementRenderer;
+import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
@@ -52,10 +54,13 @@ public class CDMResultsCacheTasklet implements Tasklet {
         String vocabularyTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
 
         String sql_statement = ResourceHelper.GetResourceAsString("/resources/cdmresults/sql/loadConceptRecordCountCache.sql");
-        sql_statement = SqlRender.renderSql(sql_statement, new String[]{"resultTableQualifier", "vocabularyTableQualifier"}, new String[]{resultTableQualifier, vocabularyTableQualifier});
-        sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", source.getSourceDialect());
+        String[] tables = {"resultTableQualifier", "vocabularyTableQualifier"};
+        String[] tableValues = {resultTableQualifier, vocabularyTableQualifier};
 
-        return jdbcTemplate.query(sql_statement, new ResultSetExtractor<HashMap<Long,Long[]>>() {
+        PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql_statement, tables, tableValues,
+          SessionUtils.sessionId());
+
+        return jdbcTemplate.query(psr.getSql(), psr.getSetter(), new ResultSetExtractor<HashMap<Long,Long[]>>() {
             @Override
             public HashMap<Long,Long[]> extractData(ResultSet rs) throws SQLException, DataAccessException {
                 HashMap<Long, Long[]> newCache = new HashMap<>();

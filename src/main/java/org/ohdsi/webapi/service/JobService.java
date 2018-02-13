@@ -13,12 +13,10 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
-import org.ohdsi.circe.helper.ResourceHelper;
-import org.ohdsi.sql.SqlRender;
-import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobInstanceResource;
 import org.ohdsi.webapi.job.JobUtils;
+import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.batch.admin.service.SearchableJobExecutionDao;
 import org.springframework.batch.admin.service.SearchableJobInstanceDao;
 import org.springframework.batch.core.JobExecution;
@@ -137,28 +135,25 @@ public class JobService extends AbstractDaoService {
     List<JobExecutionResource> resources = null;
 
     if (comprehensivePage) {
-      String sql_statement = ResourceHelper.GetResourceAsString("/resources/job/sql/jobExecutions.sql");
-      sql_statement = SqlRender.renderSql(sql_statement, new String[]{"ohdsi_schema"},
-              new String[]{this.getOhdsiSchema()});
-      sql_statement = SqlTranslate.translateSql(sql_statement, "sql server", getDialect());
-      log.debug("Translated sql:" + sql_statement);
-
-      resources = getJdbcTemplate().query(sql_statement, new ResultSetExtractor<List<JobExecutionResource>>() {
-
+      String sqlPath = "/resources/job/sql/jobExecutions.sql";
+      String tqName = "ohdsi_schema";
+      String tqValue = getOhdsiSchema();
+      PreparedStatementRenderer psr = new PreparedStatementRenderer(null, sqlPath, tqName, tqValue);
+      resources = getJdbcTemplate().query(psr.getSql(), psr.getSetter(), new ResultSetExtractor<List<JobExecutionResource>>() {
         @Override
         public List<JobExecutionResource> extractData(ResultSet rs) throws SQLException, DataAccessException {
+
           return JobUtils.toJobExecutionResource(rs);
         }
       });
-
-      return new PageImpl<JobExecutionResource>(resources, new PageRequest(0, pageSize), resources.size());
+      return new PageImpl<>(resources, new PageRequest(0, pageSize), resources.size());
     } else {
-      resources = new ArrayList<JobExecutionResource>();
+      resources = new ArrayList<>();
       for (final JobExecution jobExecution : (jobName == null ? this.jobExecutionDao.getJobExecutions(pageIndex,
               pageSize) : this.jobExecutionDao.getJobExecutions(jobName, pageIndex, pageSize))) {
         resources.add(JobUtils.toJobExecutionResource(jobExecution));
       }
-      return new PageImpl<JobExecutionResource>(resources, new PageRequest(pageIndex, pageSize),
+      return new PageImpl<>(resources, new PageRequest(pageIndex, pageSize),
               this.jobExecutionDao.countJobExecutions());
     }
 

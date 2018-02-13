@@ -18,10 +18,7 @@ public class PatientLevelPredictionListItem {
     public String name;
     public String modelType;
     public String createdBy;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd, HH:mm")
     public Date createdDate;
     public String modifiedBy;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd, HH:mm")
     public Date modifiedDate;
-  }
-
+}

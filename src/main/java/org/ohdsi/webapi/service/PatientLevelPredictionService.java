@@ -61,7 +61,7 @@ public class PatientLevelPredictionService extends AbstractDaoService {
 	@Produces(MediaType.APPLICATION_JSON)
 	public List<PatientLevelPredictionListItem> getAnalysisList() {
 		ArrayList<PatientLevelPredictionListItem> result = new ArrayList<>();
-		List<Object[]> defs = entityManager.createQuery("SELECT plp.analysisId, plp.name, plp.modelType, plp.createdBy, plp.created, plp.modifiedBy, plp.modified FROM PatientLevelPredictionAnalysis plp").getResultList();
+		List<Object[]> defs = entityManager.createQuery("SELECT plp.analysisId, plp.name, plp.modelType, plp.createdBy, plp.createdDate, plp.modifiedBy, plp.modifiedDate FROM PatientLevelPredictionAnalysis plp").getResultList();
 		for (Object[] d : defs) {
 			PatientLevelPredictionListItem item = new PatientLevelPredictionListItem();
 			item.analysisId = (Integer) d[0];
@@ -96,7 +96,7 @@ public class PatientLevelPredictionService extends AbstractDaoService {
 		Date currentTime = Calendar.getInstance().getTime();
 
 		plpa.setCreatedBy(security.getSubject());
-		plpa.setCreated(currentTime);
+		plpa.setCreatedDate(currentTime);
 
 		PatientLevelPredictionAnalysis plpaWithId = this.patientLevelPredictionAnalysisRepository.save(plpa);
 
@@ -112,9 +112,9 @@ public class PatientLevelPredictionService extends AbstractDaoService {
 		Date currentTime = Calendar.getInstance().getTime();
 
 		plpa.setModifiedBy(security.getSubject());
-		plpa.setModified(currentTime);
+		plpa.setModifiedDate(currentTime);
 		// Prevent any updates to protected fields like created/createdBy
-		plpa.setCreated(plpaFromDB.getCreated());
+		plpa.setCreatedDate(plpaFromDB.getCreatedDate());
 		plpa.setCreatedBy(plpaFromDB.getCreatedBy());
 
 		PatientLevelPredictionAnalysis updatedPlpa = this.patientLevelPredictionAnalysisRepository.save(plpa);

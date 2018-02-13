@@ -6,12 +6,15 @@
 package org.ohdsi.webapi.prediction;
 
 import java.util.Date;
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
+import org.ohdsi.webapi.model.CommonEntity;
 
 /**
  *
@@ -19,7 +22,11 @@ import org.ohdsi.circe.vocabulary.ConceptSetExpression;
  */
 @Entity(name = "PatientLevelPredictionAnalysis")
 @Table(name = "plp")
-public class PatientLevelPredictionAnalysis {
+@AttributeOverrides({
+        @AttributeOverride(name = "createdDate", column = @Column(name = "created")),
+        @AttributeOverride(name = "modifiedDate", column = @Column(name = "modified"))
+})
+public class PatientLevelPredictionAnalysis extends CommonEntity {
 	
     @Id
     @GeneratedValue
@@ -299,18 +306,6 @@ public class PatientLevelPredictionAnalysis {
     @Column(name = "del_covariates_small_count")
     private int delCovariatesSmallCount;
 		
-    @Column(name = "created")
-    private Date created;
-
-    @Column(name = "modified")
-    private Date modified;
-
-    @Column(name = "created_by")
-    private String createdBy = "anonymous";
-		
-    @Column(name = "modified_by")
-    private String modifiedBy;
-
     public Integer getAnalysisId() {
         return analysisId;
     }
@@ -341,22 +336,6 @@ public class PatientLevelPredictionAnalysis {
 
     public void setOutcomeId(Integer outcomeId) {
         this.outcomeId = outcomeId;
-    }
-
-    public Date getCreated() {
-        return created;
-    }
-
-    public void setCreated(Date created) {
-        this.created = created;
-    }
-
-    public Date getModified() {
-        return modified;
-    }
-
-    public void setModified(Date modified) {
-        this.modified = modified;
     }
 
     public String getModelType() {
@@ -406,28 +385,6 @@ public class PatientLevelPredictionAnalysis {
     public void setDelCovariatesSmallCount(int delCovariatesSmallCount) {
         this.delCovariatesSmallCount = delCovariatesSmallCount;
     }
-
-    public String getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-    }
-
-	/**
-	 * @return the modifiedBy
-	 */
-	public String getModifiedBy() {
-		return modifiedBy;
-	}
-
-	/**
-	 * @param modifiedBy the modifiedByUserId to set
-	 */
-	public void setModifiedBy(String modifiedBy) {
-		this.modifiedBy = modifiedBy;
-	}
 
 	/**
 	 * @return the addExposureDaysToEnd

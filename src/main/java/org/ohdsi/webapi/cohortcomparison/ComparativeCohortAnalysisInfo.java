@@ -47,12 +47,12 @@ public class ComparativeCohortAnalysisInfo extends ComparativeCohortAnalysis imp
       this.setAddExposureDaysToEnd(analysis.getAddExposureDaysToEnd());
       this.setAnalysisId(analysis.getAnalysisId());
       this.setComparatorId(analysis.getComparatorId());
-      this.setCreated(analysis.getCreated());
+      this.setCreatedDate(analysis.getCreatedDate());
       this.setDelCovariatesSmallCount(analysis.getDelCovariatesSmallCount());
       this.setMinimumDaysAtRisk(analysis.getMinimumDaysAtRisk());
       this.setMinimumWashoutPeriod(analysis.getMinimumWashoutPeriod());
       this.setModelType(analysis.getModelType());
-      this.setModified(analysis.getModified());
+      this.setModifiedDate(analysis.getModifiedDate());
       this.setName(analysis.getName());
       this.setNegativeControlId(analysis.getNegativeControlId());
       this.setOmConceptCounts(analysis.getOmConceptCounts());

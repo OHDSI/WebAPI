@@ -18,9 +18,9 @@ package org.ohdsi.webapi.cdmresults;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.ohdsi.circe.helper.ResourceHelper;
-import org.ohdsi.sql.SqlRender;
-import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cache.ResultsCache;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
@@ -42,6 +42,7 @@ public class CDMResultsCacheTasklet implements Tasklet {
     private final JdbcTemplate jdbcTemplate;
     private final Source source;
     private final CDMResultsCache cdmResultsCache;
+	private static final Log log = LogFactory.getLog(CDMResultsCacheTasklet.class);
 
     public CDMResultsCacheTasklet(final JdbcTemplate t, final Source s) {
         jdbcTemplate = t;
@@ -60,20 +61,27 @@ public class CDMResultsCacheTasklet implements Tasklet {
         PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql_statement, tables, tableValues,
           SessionUtils.sessionId());
 
-        return jdbcTemplate.query(psr.getSql(), psr.getSetter(), new ResultSetExtractor<HashMap<Long,Long[]>>() {
-            @Override
-            public HashMap<Long,Long[]> extractData(ResultSet rs) throws SQLException, DataAccessException {
-                HashMap<Long, Long[]> newCache = new HashMap<>();
-                while (rs.next()) {
-                    long id = rs.getLong("concept_id");
-                    long record_count = rs.getLong("record_count");
-                    long descendant_record_count = rs.getLong("descendant_record_count");
+				HashMap<Long, Long[]> newCache = new HashMap<>();
+				try {
+					jdbcTemplate.query(psr.getSql(), psr.getSetter(), new ResultSetExtractor<HashMap<Long,Long[]>>() {
+							@Override
+							public HashMap<Long,Long[]> extractData(ResultSet rs) throws SQLException, DataAccessException {
+									while (rs.next()) {
+											long id = rs.getLong("concept_id");
+											long record_count = rs.getLong("record_count");
+											long descendant_record_count = rs.getLong("descendant_record_count");
 
-                    newCache.put(id, new Long[] { record_count, descendant_record_count });
-                }
-                return newCache;
-            }
-        });        
+											newCache.put(id, new Long[] { record_count, descendant_record_count });
+									}
+									return newCache;
+							}
+					});
+				} catch (Exception e) {
+					log.error("Failed to warm cache for " + source.getSourceKey() + ". Exception: " + e.getLocalizedMessage());
+					throw e;
+				} finally {
+					return newCache;
+				}
     }
 
     @Override

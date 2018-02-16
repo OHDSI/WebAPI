@@ -26,10 +26,12 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 /**
@@ -43,7 +45,8 @@ public class IncidenceRateAnalysis implements Serializable {
   private static final long serialVersionUID = 1L;
   
   @Id
-  @GeneratedValue
+  @SequenceGenerator(name = "ir_analysis_seq", sequenceName = "ir_analysis_sequence", allocationSize = 1)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ir_analysis_seq")
   @Column(name="id")
   @Access(AccessType.PROPERTY) 
   private Integer id; 

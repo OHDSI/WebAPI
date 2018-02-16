@@ -9,6 +9,8 @@ import org.apache.shiro.web.util.WebUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
+
 /**
  *
  * @author gennadiy.anisimov
@@ -18,10 +20,15 @@ public class CorsFilter extends AdviceFilter{
 
   @Value("${security.origin}")
   private String origin;
+  @Value("${security.cors.enabled}")
+  private Boolean corsEnabled;
 
   @Override
   protected boolean preHandle(ServletRequest request, ServletResponse response) throws Exception {
 
+    if (Objects.isNull(corsEnabled) || !corsEnabled) {
+      return true;
+    }
     // check if it's CORS request
     //
     HttpServletRequest httpRequest = WebUtils.toHttp(request);

@@ -43,24 +43,6 @@ public class UserEntity implements Serializable{
       this.login = login;
   }
 
-  @Column(name = "PASSWORD")
-  public String getPassword() {
-      return password;
-  }
-
-  public void setPassword(String password) {
-      this.password = password;
-  }
-
-  @Column(name = "SALT")
-  public String getSalt() {
-      return salt;
-  }
-
-  public void setSalt(String salt) {
-      this.salt = salt;
-  }
-
   @Column(name = "NAME")
   public String getName() {
       return name;

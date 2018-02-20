@@ -11,7 +11,9 @@ import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 /**
@@ -23,7 +25,8 @@ import javax.persistence.Table;
 public class NegativeControlRecord implements Serializable {
 
     @Id
-    @GeneratedValue  
+    @SequenceGenerator(name = "concept_set_negative_controls_seq", sequenceName = "negative_controls_sequence", allocationSize = 1)
+    @GeneratedValue(generator = "concept_set_negative_controls_seq", strategy = GenerationType.SEQUENCE)
     @Access(AccessType.PROPERTY) 
     @Column(name = "id")
     private int id;

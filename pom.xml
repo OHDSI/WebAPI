@@ -83,8 +83,8 @@
     <security.cors.enabled>true</security.cors.enabled>
     
     <spring.datasource.hikari.connection-test-query>SELECT 1</spring.datasource.hikari.connection-test-query>
-		<spring.datasource.hikari.maximum-pool-size>5</spring.datasource.hikari.maximum-pool-size>
-		<spring.datasource.hikari.minimum-idle>1</spring.datasource.hikari.minimum-idle>
+    <spring.datasource.hikari.maximum-pool-size>5</spring.datasource.hikari.maximum-pool-size>
+    <spring.datasource.hikari.minimum-idle>1</spring.datasource.hikari.minimum-idle>
 
     <!-- EMBEDDED SERVER CONFIGURATION (ServerProperties) -->
     <server.port>8080</server.port>

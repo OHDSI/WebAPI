@@ -63,7 +63,6 @@ public class AuthDataSource {
         config.setJdbcUrl(url);
         config.setUsername(username);
         config.setPassword(password);
-        config.setSchema(schema);
         config.setConnectionTestQuery(testQuery);
         config.setMaximumPoolSize(maxPoolSize);
         config.setMinimumIdle(minPoolIdle);

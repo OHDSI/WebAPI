@@ -27,7 +27,7 @@ public class PatientLevelPredictionAnalysisInfo extends PatientLevelPredictionAn
 		public PatientLevelPredictionAnalysisInfo(PatientLevelPredictionAnalysis analysis) {
 			this.setAddExposureDaysToEnd(analysis.getAddExposureDaysToEnd());
 			this.setAnalysisId(analysis.getAnalysisId());
-			this.setCreated(analysis.getCreated());
+			this.setCreatedDate(analysis.getCreatedDate());
 			this.setCreatedBy(analysis.getCreatedBy());
 			this.setCvConceptCounts(analysis.getCvConceptCounts());
 			this.setCvConditionEra(analysis.getCvConditionEra());
@@ -106,7 +106,7 @@ public class PatientLevelPredictionAnalysisInfo extends PatientLevelPredictionAn
 			this.setMoVarImp(analysis.getMoVarImp());
 			this.setMoVariance(analysis.getMoVariance());
 			this.setModelType(analysis.getModelType());
-			this.setModified(analysis.getModified());
+			this.setModifiedDate(analysis.getModifiedDate());
 			this.setModifiedBy(analysis.getModifiedBy());
 			this.setName(analysis.getName());
 			this.setOutcomeId(analysis.getOutcomeId());

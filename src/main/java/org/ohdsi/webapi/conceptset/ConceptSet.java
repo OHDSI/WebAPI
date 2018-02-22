@@ -25,6 +25,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import org.ohdsi.webapi.model.CommonEntity;
 
 /**
  *
@@ -32,7 +33,7 @@ import javax.persistence.Table;
  */
 @Entity(name = "ConceptSet")
 @Table(name="concept_set")
-public class ConceptSet implements Serializable {
+public class ConceptSet extends CommonEntity implements Serializable {
   
   @Id
   @GeneratedValue  

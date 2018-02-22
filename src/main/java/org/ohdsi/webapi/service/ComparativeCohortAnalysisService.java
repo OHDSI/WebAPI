@@ -45,6 +45,7 @@ import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.rsb.RSBTasklet;
 import org.ohdsi.webapi.service.CohortDefinitionService.CohortDefinitionDTO;
+import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
@@ -88,6 +89,9 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
     @Autowired
     private Environment env;
 
+    @Autowired
+    private Security security;
+
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Iterable<ComparativeCohortAnalysis> getComparativeCohortAnalyses() {
@@ -102,8 +106,11 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
 
       Date d = new Date();
       comparativeCohortAnalysis.setAnalysisId(null);
-      comparativeCohortAnalysis.setCreated(d);
-      comparativeCohortAnalysis.setModified(d);
+      comparativeCohortAnalysis.setCreatedDate(d);
+      comparativeCohortAnalysis.setModifiedDate(d);
+      String author = security.getSubject();
+      comparativeCohortAnalysis.setCreatedBy(author);
+      comparativeCohortAnalysis.setModifiedBy(author);
       comparativeCohortAnalysis = this.getComparativeCohortAnalysisRepository().save(comparativeCohortAnalysis);
       return comparativeCohortAnalysis;
     }
@@ -114,8 +121,9 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
     @Produces(MediaType.APPLICATION_JSON)
     public ComparativeCohortAnalysis updateComparativeCohortAnalysis(@PathParam("id") final int id, ComparativeCohortAnalysis comparativeCohortAnalysis) throws Exception {
         Date d = new Date();
-        comparativeCohortAnalysis.setCreated(d); // temporary workaround until client sends the current created value.
-        comparativeCohortAnalysis.setModified(d);
+//        comparativeCohortAnalysis.setCreatedDate(d); // temporary workaround until client sends the current created value.
+        comparativeCohortAnalysis.setModifiedDate(d);
+        comparativeCohortAnalysis.setModifiedBy(security.getSubject());
         
         comparativeCohortAnalysis = this.getComparativeCohortAnalysisRepository().save(comparativeCohortAnalysis);
         return comparativeCohortAnalysis;

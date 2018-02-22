@@ -18,6 +18,7 @@ package org.ohdsi.webapi.service;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import javax.transaction.Transactional;
 import javax.ws.rs.Consumes;
@@ -41,6 +42,7 @@ import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetItem;
 import org.ohdsi.webapi.conceptset.ExportUtil;
 import org.ohdsi.webapi.evidence.NegativeControlRepository;
+import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -65,6 +67,9 @@ public class ConceptSetService extends AbstractDaoService {
 
     @Autowired
     private SourceService sourceService;
+
+    @Autowired
+    private Security security;
 
     @Path("{id}")
     @GET
@@ -218,6 +223,8 @@ public class ConceptSetService extends AbstractDaoService {
     @Produces(MediaType.APPLICATION_JSON)
     public ConceptSet createConceptSet(ConceptSet conceptSet) {
         ConceptSet updated = new ConceptSet();
+        updated.setCreatedBy(security.getSubject());
+        updated.setCreatedDate(new Date());
         return updateConceptSet(updated, conceptSet);
     }
 
@@ -236,6 +243,8 @@ public class ConceptSetService extends AbstractDaoService {
 
     private ConceptSet updateConceptSet(ConceptSet dst, ConceptSet src) {
         dst.setName(src.getName());
+        dst.setModifiedDate(new Date());
+        dst.setModifiedBy(security.getSubject());
         
         dst = this.getConceptSetRepository().save(dst);
         return dst;

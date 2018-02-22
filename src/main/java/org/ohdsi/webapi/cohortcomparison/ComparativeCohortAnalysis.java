@@ -16,18 +16,25 @@ package org.ohdsi.webapi.cohortcomparison;
 
 import java.io.Serializable;
 import java.util.Date;
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import org.ohdsi.webapi.model.CommonEntity;
 
 /**
  * @author Frank DeFalco <fdefalco@ohdsi.org>
  */
 @Entity(name = "ComparativeCohortAnalysis")
 @Table(name = "cca")
-public class ComparativeCohortAnalysis implements Serializable {
+@AttributeOverrides({
+        @AttributeOverride(name = "createdDate", column = @Column(name = "created")),
+        @AttributeOverride(name = "modifiedDate", column = @Column(name = "modified"))
+})
+public class ComparativeCohortAnalysis extends CommonEntity implements Serializable {
 
     @Id
     @GeneratedValue
@@ -45,12 +52,6 @@ public class ComparativeCohortAnalysis implements Serializable {
 
     @Column(name = "outcome_id")
     private Integer outcomeId;
-
-    @Column(name = "created")
-    private Date created;
-
-    @Column(name = "modified")
-    private Date modified;
 
     @Column(name = "model_type")
     private String modelType;
@@ -465,22 +466,6 @@ public class ComparativeCohortAnalysis implements Serializable {
 
     public void setOutcomeId(Integer outcomeId) {
         this.outcomeId = outcomeId;
-    }
-
-    public Date getCreated() {
-        return created;
-    }
-
-    public void setCreated(Date created) {
-        this.created = created;
-    }
-
-    public Date getModified() {
-        return modified;
-    }
-
-    public void setModified(Date modified) {
-        this.modified = modified;
     }
 
     public String getModelType() {

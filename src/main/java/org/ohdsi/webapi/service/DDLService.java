@@ -37,44 +37,75 @@ import org.springframework.stereotype.Component;
 @Component
 public class DDLService {
 
-    private static final Collection<String> COMMON_COHORT_RESULT_FILE_PATHS = Arrays.asList(
-            "/db/cohort_results/cohort_feasiblity.sql",
-            "/db/cohort_results/cohort_features_results.sql",
-            "/db/cohort_results/ir_analysis.sql",
-            "/db/cohort_results/createHeraclesTables.sql");
+	private static final Collection<String> RESULT_DDL_FILE_PATHS = Arrays.asList(
+		"/ddl/results/cohort.sql",
+		"/ddl/results/cohort_features.sql",
+		"/ddl/results/cohort_features_analysis_ref.sql",
+		"/ddl/results/cohort_features_dist.sql",
+		"/ddl/results/cohort_features_ref.sql",
+		"/ddl/results/cohort_inclusion.sql",
+		"/ddl/results/cohort_inclusion_result.sql",
+		"/ddl/results/cohort_inclusion_stats.sql",
+		"/ddl/results/cohort_summary_stats.sql",
+		"/ddl/results/feas_study_inclusion_stats.sql",
+		"/ddl/results/feas_study_index_stats.sql",
+		"/ddl/results/feas_study_result.sql",
+		"/ddl/results/heracles_analysis.sql",
+		"/ddl/results/heracles_heel_results.sql",
+		"/ddl/results/heracles_results.sql",
+		"/ddl/results/heracles_results_dist.sql",
+		"/ddl/results/ir_analysis_dist.sql",
+		"/ddl/results/ir_analysis_result.sql",
+		"/ddl/results/ir_analysis_strata_stats.sql",
+		"/ddl/results/ir_strata.sql"
+	);
 
-    private static final String INDEXES_COHORT_RESULT_FILE_PATHS = "/db/cohort_results/heracles_indexes.sql";
-    private static final Collection<String> DBMS_NO_INDEXES = Arrays.asList("redshift", "impala", "netezza");
+	public static final Collection<String> RESULT_INIT_FILE_PATHS = Arrays.asList(
+		"/ddl/results/init_heracles_analysis.sql"
+	);
 
-    @GET
-    @Path("results")
-    @Produces("text/plain")
-    public String generateResultSQL(@QueryParam("dialect") String dialect, @DefaultValue("results") @QueryParam("schema") String schema) {
+	private static final Collection<String> RESULT_INDEX_FILE_PATHS = Arrays.asList(
+		"/ddl/results/create_index.sql"
+	);
 
-        StringBuilder sqlBuilder = new StringBuilder();
-        for (String fileName : COMMON_COHORT_RESULT_FILE_PATHS){
-            sqlBuilder.append("\n").append(ResourceHelper.GetResourceAsString(fileName));
-        }
-        if (dialect == null || DBMS_NO_INDEXES.stream().noneMatch(dbms -> dbms.equals(dialect.toLowerCase()))) {
-            sqlBuilder.append("\n").append(ResourceHelper.GetResourceAsString(INDEXES_COHORT_RESULT_FILE_PATHS));
-        }
-        String result = sqlBuilder.toString();
-        if(dialect != null){
-           result = translateSqlFile(result, dialect, schema);
-        }
-        return result.replaceAll(";", ";\n");
-    }
+	private static final Collection<String> DBMS_NO_INDEXES = Arrays.asList("redshift", "impala", "netezza");
 
-    private String translateSqlFile(String sql, String dialect, String schema) {
+	@GET
+	@Path("results")
+	@Produces("text/plain")
+	public String generateResultSQL(@QueryParam("dialect") String dialect, @DefaultValue("results") @QueryParam("schema") String schema) {
 
-        SourceStatement statement = new SourceStatement();
-        statement.targetDialect = dialect.toLowerCase();
-        statement.sql = sql;
-        HashMap<String, String> parameters = new HashMap<>();
-        parameters.put("results_schema", schema);
-        statement.parameters = parameters;
-        TranslatedStatement translatedStatement = translateSQL(statement);
-        return translatedStatement.targetSQL;
-    }
+		StringBuilder sqlBuilder = new StringBuilder();
+		for (String fileName : RESULT_DDL_FILE_PATHS) {
+			sqlBuilder.append("\n").append(ResourceHelper.GetResourceAsString(fileName));
+		}
+
+		for (String fileName : RESULT_INIT_FILE_PATHS) {
+			sqlBuilder.append("\n").append(ResourceHelper.GetResourceAsString(fileName));
+		}
+
+		if (dialect == null || DBMS_NO_INDEXES.stream().noneMatch(dbms -> dbms.equals(dialect.toLowerCase()))) {
+			for (String fileName : RESULT_INDEX_FILE_PATHS) {
+				sqlBuilder.append("\n").append(ResourceHelper.GetResourceAsString(fileName));
+			}
+		}
+		String result = sqlBuilder.toString();
+		if (dialect != null) {
+			result = translateSqlFile(result, dialect, schema);
+		}
+		return result.replaceAll(";", ";\n");
+	}
+
+	private String translateSqlFile(String sql, String dialect, String schema) {
+
+		SourceStatement statement = new SourceStatement();
+		statement.targetDialect = dialect.toLowerCase();
+		statement.sql = sql;
+		HashMap<String, String> parameters = new HashMap<>();
+		parameters.put("results_schema", schema);
+		statement.parameters = parameters;
+		TranslatedStatement translatedStatement = translateSQL(statement);
+		return translatedStatement.targetSQL;
+	}
 
 }

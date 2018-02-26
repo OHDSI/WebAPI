@@ -1,5 +1,8 @@
 package org.ohdsi.webapi.shiro;
 
+import static org.ohdsi.webapi.shiro.management.AtlasSecurity.PERMISSIONS_ATTRIBUTE;
+import static org.ohdsi.webapi.shiro.management.AtlasSecurity.TOKEN_ATTRIBUTE;
+
 import io.buji.pac4j.subject.Pac4jPrincipal;
 import java.security.Principal;
 import java.util.Calendar;
@@ -9,6 +12,7 @@ import java.util.Set;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.PrincipalCollection;
@@ -70,11 +74,12 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
       this.authorizer.registerUser(login, defaultRoles);
 
       Date expiration = this.getExpirationDate(this.tokenExpirationIntervalInSeconds);
-      Collection<String> permissions = this.authorizer.getAuthorizationInfo(login).getStringPermissions();
-      jwt = TokenManager.createJsonWebToken(login, expiration, permissions);
+      jwt = TokenManager.createJsonWebToken(login, expiration);
     }
 
-    request.setAttribute("TOKEN", jwt);
+    request.setAttribute(TOKEN_ATTRIBUTE, jwt);
+    Collection<String> permissions = this.authorizer.getAuthorizationInfo(login).getStringPermissions();
+    request.setAttribute(PERMISSIONS_ATTRIBUTE, StringUtils.join(permissions, "|"));
     return true;
   }
 

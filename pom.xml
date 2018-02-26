@@ -598,5 +598,43 @@
           login = ?</security.db.datasource.authenticationQuery>
       </properties>
     </profile>
+    <profile>
+      <id>webapi-netezza</id>
+      <properties>
+        <netezza.enabled>true</netezza.enabled>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>org.netezza</groupId>
+          <artifactId>nzjdbc</artifactId>
+          <version>1.0</version>
+        </dependency>
+      </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-install-plugin</artifactId>
+            <version>2.5.2</version>
+            <executions>
+              <execution>
+                <id>netezza-jdbc</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                  <groupId>org.netezza</groupId>
+                  <artifactId>nzjdbc</artifactId>
+                  <version>1.0</version>
+                  <packaging>jar</packaging>
+                  <file>${basedir}/src/main/extras/netezza/nzjdbc.jar</file>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 </project>

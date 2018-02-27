@@ -28,6 +28,7 @@ import org.ohdsi.webapi.executionengine.repository.AnalysisExecutionRepository;
 import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
+import org.ohdsi.webapi.shiro.PermissionManager;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -69,6 +70,9 @@ public class ScriptExecutionController {
 
     @Autowired
     private AnalysisExecutionRepository analysisExecutionRepository;
+    
+    @Autowired
+    private PermissionManager permissionManager;
 
     @Path("run_script")
     @POST
@@ -81,7 +85,7 @@ public class ScriptExecutionController {
         JobParametersBuilder parametersBuilder = new JobParametersBuilder();
         parametersBuilder.addString("jobName", "Generate estimation (" + dto.sourceKey + ")");
         final JobParameters jobParameters = parametersBuilder.toJobParameters();
-        RunExecutionEngineTasklet runExecutionEngineTasklet = new RunExecutionEngineTasklet(scriptExecutionService, dto);
+        RunExecutionEngineTasklet runExecutionEngineTasklet = new RunExecutionEngineTasklet(scriptExecutionService, dto, permissionManager.getCurrentUser().getId());
         ExecutionEngineCallbackTasklet callbackTasklet = new ExecutionEngineCallbackTasklet(analysisExecutionRepository);
 
         Step runExecutionStep = stepBuilderFactory.get("executionEngine.start")

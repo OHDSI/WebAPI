@@ -27,6 +27,10 @@ import org.apache.commons.lang3.text.StrSubstitutor;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.Authenticator;
+import org.apache.shiro.authz.AuthorizationInfo;
+import org.apache.shiro.subject.Subject;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
@@ -44,6 +48,9 @@ import org.ohdsi.webapi.executionengine.repository.OutputFileRepository;
 import org.ohdsi.webapi.executionengine.util.StringGenerationUtil;
 import org.ohdsi.webapi.prediction.PatientLevelPredictionAnalysis;
 import org.ohdsi.webapi.prediction.PatientLevelPredictionAnalysisRepository;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.shiro.PermissionManager;
+import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceRepository;
@@ -93,6 +100,10 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     private AnalysisExecutionRepository analysisExecutionRepository;
     @Autowired
     private PatientLevelPredictionAnalysisRepository patientLevelPredictionAnalysisRepository;
+    @Autowired
+    private Security security;
+    @Autowired
+    private PermissionManager permissionManager;
 
     private List<AnalysisExecution.Status> INVALIDATE_STATUSES = new ArrayList<>();
 
@@ -105,14 +116,14 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     }
 
     @Override
-    public Long runScript(ExecutionRequestDTO dto) throws Exception {
+    public Long runScript(ExecutionRequestDTO dto, Long userId) throws Exception {
 
         Source source = sourceRepository.findBySourceKey(dto.sourceKey);
         final String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
         final String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
         final String password = StringGenerationUtil.generateRandomString();
 
-        AnalysisExecution execution = makeAnalysisExecution(dto, source, password);
+        AnalysisExecution execution = makeAnalysisExecution(dto, source, password, userId);
 
         String name = getAnalysisName(dto);
 
@@ -181,7 +192,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         return analysisRequestDTO;
     }
 
-    private AnalysisExecution makeAnalysisExecution(ExecutionRequestDTO dto, Source source, String password) {
+    private AnalysisExecution makeAnalysisExecution(ExecutionRequestDTO dto, Source source, String password, Long userId) {
 
         AnalysisExecution execution = new AnalysisExecution();
         execution.setAnalysisId(dto.cohortId);
@@ -190,7 +201,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         execution.setSourceId(source.getSourceId());
         execution.setExecuted(new Date());
         execution.setExecutionStatus(AnalysisExecution.Status.STARTED);
-        execution.setUserId(0); //Looks strange
+        execution.setUserId(userId); 
         execution.setUpdatePassword(password);
         analysisExecutionRepository.save(execution);
         return execution;
@@ -267,8 +278,6 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
                 .replace("exposure_table", "cohort")
                 .replace("outcome_table", "cohort")
                 .replace("cohort_table", "cohort")
-//                .replace("exposureTable <- \"exposure_table\"", "")
-//                .replace("outcomeTable <- \"outcome_table\"", "")
 
                 .replace("cdmVersion <- \"5\"",
                         "cdmVersion <- \"" + requestDTO.cdmVersion + "\"")
@@ -290,7 +299,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         } else {
             temp = temp.replace( "port = 5432,", "");
         }
-        //uncommenting package installation
+        
         return temp
                 .replace("true", "TRUE")
                 .replace("false", "FALSE");

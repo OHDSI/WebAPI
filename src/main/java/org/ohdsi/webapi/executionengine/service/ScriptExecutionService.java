@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 @Service
 public interface ScriptExecutionService {
 
-    Long runScript(ExecutionRequestDTO dto) throws Exception;
+    Long runScript(ExecutionRequestDTO dto, Long user) throws Exception;
 
     String getExecutionStatus(Long executionId);
 

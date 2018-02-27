@@ -53,6 +53,7 @@ public class JerseyConfig extends ResourceConfig implements InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
         packages(this.rootPackage);
+        // spring boot runner cannot work without these lines
         register(ActivityService.class);
         register(CDMResultsService.class);
         register(CohortAnalysisService.class);

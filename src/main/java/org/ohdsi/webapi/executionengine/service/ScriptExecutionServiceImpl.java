@@ -34,7 +34,6 @@ import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
 import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysis;
 import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisExecutionRepository;
 import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisRepository;
-import org.ohdsi.webapi.commonentity.CommonEntityService;
 import org.ohdsi.webapi.executionengine.dto.ExecutionRequestDTO;
 import org.ohdsi.webapi.executionengine.entity.AnalysisExecution;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
@@ -90,8 +89,6 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     private ComparativeCohortAnalysisRepository comparativeCohortAnalysisRepository;
     @Autowired
     private JobExplorer jobExplorer;
-    @Autowired
-    private CommonEntityService commonEntityService;
     @Autowired
     private AnalysisExecutionRepository analysisExecutionRepository;
     @Autowired

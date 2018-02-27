@@ -22,7 +22,6 @@ import org.glassfish.jersey.media.multipart.BodyPartEntity;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisExecutionRepository;
-import org.ohdsi.webapi.commonentity.CommonEntityService;
 import org.ohdsi.webapi.executionengine.entity.AnalysisExecution;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFile;
 import org.ohdsi.webapi.executionengine.exception.ScriptCallbackException;
@@ -44,19 +43,15 @@ public class ScriptExecutionCallbackController {
 
     private final OutputFileRepository outputFileRepository;
 
-    private final CommonEntityService commonEntityService;
-
     @Autowired
     public ScriptExecutionCallbackController(ComparativeCohortAnalysisExecutionRepository
                                                      comparativeCohortAnalysisExecutionRepository,
                                              AnalysisExecutionRepository analysisExecutionRepository,
-                                             OutputFileRepository outputFileRepository,
-                                             CommonEntityService commonEntityService) {
+                                             OutputFileRepository outputFileRepository) {
 
         this.comparativeCohortAnalysisExecutionRepository = comparativeCohortAnalysisExecutionRepository;
         this.analysisExecutionRepository = analysisExecutionRepository;
         this.outputFileRepository = outputFileRepository;
-        this.commonEntityService = commonEntityService;
     }
 
     @Path(value = "submission/{id}/status_update/{password}")

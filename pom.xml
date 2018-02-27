@@ -91,6 +91,10 @@
     <server.ssl.key-store></server.ssl.key-store>
     <server.ssl.key-store-password></server.ssl.key-store-password>
     <server.ssl.key-password></server.ssl.key-password>
+    <arachne.version>1.12.0-SNAPSHOT</arachne.version>
+    <jersey-media-multipart.version>2.25.1</jersey-media-multipart.version>
+    <execution.invalidation.maxage>4</execution.invalidation.maxage>
+    <execution.invalidation.period>10000</execution.invalidation.period>
   </properties>
   <build>
     <finalName>WebAPI</finalName>
@@ -509,6 +513,16 @@
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.odysseusinc.arachne</groupId>
+      <artifactId>execution-engine-commons</artifactId>
+      <version>${arachne.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jersey.media</groupId>
+      <artifactId>jersey-media-multipart</artifactId>
+      <version>${jersey-media-multipart.version}</version>
+    </dependency>
   </dependencies>
   <profiles>
     <profile>
@@ -568,8 +582,14 @@
         <security.db.datasource.driverClassName>${datasource.driverClassName}</security.db.datasource.driverClassName>
         <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
         <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
-        <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.user where \
-              login = ?</security.db.datasource.authenticationQuery>
+        <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.users_data where \
+              email = ?</security.db.datasource.authenticationQuery>
+        <executionengine.url>https://localhost:8888/api/v1/analyze</executionengine.url>
+        <executionengine.token>Basic YWRtaW5Ab2R5c3NldXNpbmMuY29tOnBhc3N3b3Jk</executionengine.token>
+        <executionengine.update_status_callback>http://localhost:8080/WebAPI\
+          /execution_service_callbacks/submission/{id}/status_update/{password}</executionengine.update_status_callback>
+        <executionengine.result_callback>http://localhost:8080/WebAPI\
+          /execution_service_callbacks/submission/{id}/result/{password}</executionengine.result_callback>
       </properties>
     </profile>
     <profile>

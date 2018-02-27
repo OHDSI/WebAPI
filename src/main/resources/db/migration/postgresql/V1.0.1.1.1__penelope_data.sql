@@ -5,7 +5,7 @@ INSERT INTO COHORT_STUDY (cohort_study_id, cohort_definition_id, study_type, stu
 INSERT INTO COHORT_STUDY (cohort_study_id, cohort_definition_id, study_type, study_name, study_URL) VALUES (4, 293, 1, 'Drug Utilization in Childre', 'http://www.ohdsi.org/web/wiki/doku.php?id=research:drugs_in_peds');
 INSERT INTO COHORT_STUDY (cohort_study_id, cohort_definition_id, study_type, study_name, study_URL) VALUES (5, 293, 2, 'Population-level estimation of comparative risks of Celecoxib versus non-selective NSAIDs', 'http://www.ohdsi.org/web/wiki/doku.php?id=research:celecoxib_vs_nsnsaids');
 INSERT INTO COHORT_STUDY (cohort_study_id, cohort_definition_id, study_type, study_name, study_URL) VALUES (6, 293, 3, 'Predicting outcomes for new users of celecoxib', 'http://www.ohdsi.org/web/wiki/doku.php?id=research:celecoxib_prediction_models');
-
+set DATESTYLE to 'MDY';
 /* CONCEPT_OF_INTEREST */
 INSERT INTO CONCEPT_OF_INTEREST (id, concept_id, concept_of_interest_id) VALUES (1, 4329847, 4185932)
 ;

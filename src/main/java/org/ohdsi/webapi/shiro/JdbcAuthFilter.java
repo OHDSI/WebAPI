@@ -18,8 +18,10 @@
  */
 package org.ohdsi.webapi.shiro;
 
+import java.io.IOException;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.authc.LockedAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.web.filter.authc.AuthenticatingFilter;
 import org.apache.shiro.web.util.WebUtils;
@@ -27,8 +29,12 @@ import org.apache.shiro.web.util.WebUtils;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class JdbcAuthFilter extends AuthenticatingFilter {
+public class JdbcAuthFilter extends AuthenticatingPropagationFilter {
+
+    private static final Logger log = LoggerFactory.getLogger(JdbcAuthFilter.class);
 
     @Override
     protected AuthenticationToken createToken(ServletRequest servletRequest, ServletResponse servletResponse) throws Exception {
@@ -48,18 +54,9 @@ public class JdbcAuthFilter extends AuthenticatingFilter {
         boolean loggedIn = false;
 
         if (servletRequest.getParameter("login") != null) {
-            try {
-                loggedIn = executeLogin(servletRequest, servletResponse);
-            } catch(AuthenticationException ae) {
-                loggedIn = false;
-            }
+            loggedIn = executeLogin(servletRequest, servletResponse);
         }
-
-        if (!loggedIn) {
-            HttpServletResponse httpResponse = WebUtils.toHttp(servletResponse);
-            httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        }
-
         return loggedIn;
     }
+
 }

@@ -43,7 +43,9 @@ public class IRAnalysisQueryBuilder {
 
     @JsonProperty("resultsSchema")  
     public String resultsSchema;
-    
+		
+    @JsonProperty("vocabularySchema")  
+    public String vocabularySchema;
   } 
 
   private String getStrataQuery(CriteriaGroup strataCriteria)
@@ -142,6 +144,7 @@ public class IRAnalysisQueryBuilder {
       // replease query parameters with tokens
       resultSql = StringUtils.replace(resultSql, "@cdm_database_schema", options.cdmSchema);
       resultSql = StringUtils.replace(resultSql, "@results_database_schema", options.resultsSchema);
+      resultSql = StringUtils.replace(resultSql, "@vocabulary_database_schema", options.vocabularySchema);
     }
     
     resultSql = StringUtils.replace(resultSql, "@analysisId", analyisis.getId().toString());

@@ -90,6 +90,7 @@ public class PerformAnalysisTasklet implements Tasklet {
       IRAnalysisQueryBuilder.BuildExpressionQueryOptions options = new IRAnalysisQueryBuilder.BuildExpressionQueryOptions();
       options.cdmSchema = jobParams.get("cdm_database_schema").toString();
       options.resultsSchema = jobParams.get("results_database_schema").toString();
+      options.vocabularySchema = jobParams.get("vocabulary_database_schema").toString();
 
       String delete = "DELETE FROM @tableQualifier.ir_strata WHERE analysis_id = @analysis_id";
       PreparedStatementRenderer psr = new PreparedStatementRenderer(null, delete, "tableQualifier",

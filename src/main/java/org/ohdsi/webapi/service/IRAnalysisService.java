@@ -408,12 +408,11 @@ public class IRAnalysisService extends AbstractDaoService {
     Source source = this.getSourceRepository().findBySourceKey(sourceKey);
     String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
     String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
-    String vocabularyTableQualifier = cdmTableQualifier;
+    String vocabularyTableQualifier = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
 		
-    try {
-        vocabularyTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
-    } catch (Exception e) {
-        // No vocabulary table qualifier found - use the CDM as a default
+		// No vocabulary table qualifier found - use the CDM as a default
+    if (vocabularyTableQualifier == null) {
+      vocabularyTableQualifier = cdmTableQualifier;
     }
 
     DefaultTransactionDefinition requresNewTx = new DefaultTransactionDefinition();

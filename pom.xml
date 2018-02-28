@@ -9,7 +9,7 @@
   <version>1.0.0-SNAPSHOT</version>
   <name>WebAPI</name>
   <properties>
-    <webapi.version>2.2.1</webapi.version>
+    <webapi.version>2.3.0</webapi.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jersey.version>2.14</jersey.version>
     <!-- Spring Boot manages spring.version as well -->
@@ -81,7 +81,11 @@
     <use.single.connect.datasource.for.testing>true</use.single.connect.datasource.for.testing>
 
     <security.cors.enabled>true</security.cors.enabled>
-    
+    <security.maxLoginAttempts>3</security.maxLoginAttempts>
+    <security.duration.initial>10</security.duration.initial>
+    <security.duration.increment>10</security.duration.increment>
+
+
     <spring.datasource.hikari.connection-test-query>SELECT 1</spring.datasource.hikari.connection-test-query>
     <spring.datasource.hikari.maximum-pool-size>5</spring.datasource.hikari.maximum-pool-size>
     <spring.datasource.hikari.minimum-idle>1</spring.datasource.hikari.minimum-idle>
@@ -340,7 +344,7 @@
     <dependency>
       <groupId>org.ohdsi.sql</groupId>
       <artifactId>SqlRender</artifactId>
-      <version>1.4.8-SNAPSHOT</version>
+      <version>1.4.8</version>
     </dependency>
     <dependency>
       <groupId>commons-dbutils</groupId>
@@ -597,6 +601,44 @@
         <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.user where \
           login = ?</security.db.datasource.authenticationQuery>
       </properties>
+    </profile>
+    <profile>
+      <id>webapi-netezza</id>
+      <properties>
+        <netezza.enabled>true</netezza.enabled>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>org.netezza</groupId>
+          <artifactId>nzjdbc</artifactId>
+          <version>1.0</version>
+        </dependency>
+      </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-install-plugin</artifactId>
+            <version>2.5.2</version>
+            <executions>
+              <execution>
+                <id>netezza-jdbc</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                  <groupId>org.netezza</groupId>
+                  <artifactId>nzjdbc</artifactId>
+                  <version>1.0</version>
+                  <packaging>jar</packaging>
+                  <file>${basedir}/src/main/extras/netezza/nzjdbc.jar</file>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 </project>

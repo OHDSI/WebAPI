@@ -34,6 +34,10 @@ import org.ohdsi.webapi.OidcConfCreator;
 import org.ohdsi.webapi.shiro.*;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.filters.KerberosAuthFilter;
+import org.ohdsi.webapi.shiro.lockout.DefaultLockoutPolicy;
+import org.ohdsi.webapi.shiro.lockout.ExponentLockoutStrategy;
+import org.ohdsi.webapi.shiro.lockout.LockoutPolicy;
+import org.ohdsi.webapi.shiro.lockout.LockoutStrategy;
 import org.ohdsi.webapi.shiro.realms.KerberosAuthRealm;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
@@ -56,6 +60,7 @@ import waffle.shiro.negotiate.NegotiateAuthenticationStrategy;
  */
 public class AtlasSecurity extends Security {
   public static final String TOKEN_ATTRIBUTE = "TOKEN";
+  public static final String AUTH_FILTER_ATTRIBUTE = "AuthenticatingFilter";
   public static final String PERMISSIONS_ATTRIBUTE = "PERMISSIONS";
   private final Log log = LogFactory.getLog(getClass());
 

@@ -10,6 +10,9 @@ import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
 import org.apache.shiro.realm.Realm;
 import org.ohdsi.webapi.shiro.CorsFilter;
 import org.ohdsi.webapi.shiro.HideResourceFilter;
+import org.ohdsi.webapi.shiro.lockout.LockoutPolicy;
+import org.ohdsi.webapi.shiro.lockout.NoLockoutPolicy;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 /**
@@ -50,4 +53,5 @@ public class DisabledSecurity extends Security {
   public String getSubject() {
     return "anonymous";
   }
+
 }

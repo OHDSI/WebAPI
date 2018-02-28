@@ -58,7 +58,7 @@ public class CorsFilter extends AdviceFilter{
 
     // continue processing request
     //
-    httpResponse.setHeader("Access-Control-Expose-Headers", "Bearer");
+    httpResponse.setHeader("Access-Control-Expose-Headers", "Bearer,x-auth-error");
     return true;
   }
 }

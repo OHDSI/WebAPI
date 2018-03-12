@@ -22,4 +22,4 @@ SELECT
     , c.vocabulary_id
     , c.concept_class_id
 FROM conceptSetAnalysis a 
-INNER JOIN @cdm_database_schema.concept c ON a.concept_id = c.concept_id
+INNER JOIN @vocabulary_database_schema.concept c ON a.concept_id = c.concept_id

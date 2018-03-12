@@ -899,7 +899,7 @@ public class VocabularyService extends AbstractDaoService {
           throw new Exception("You must specify two concept set expressions in order to use this method.");
       }
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
+    String vocabSchema = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
     
     // Get the comparison script
     String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/compareConceptSets.sql");
@@ -912,7 +912,7 @@ public class VocabularyService extends AbstractDaoService {
 
     // Insert the queries into the overall comparison script
     sql_statement = SqlRender.renderSql(sql_statement, new String[]{"cs1_expression", "cs2_expression"}, new String[]{cs1Query, cs2Query});
-    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"cdm_database_schema"}, new String[]{tableQualifier});
+    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"vocabulary_database_schema"}, new String[]{vocabSchema});
     sql_statement = SqlTranslate.translateSql(sql_statement, source.getSourceDialect());
     
     // Execute the query

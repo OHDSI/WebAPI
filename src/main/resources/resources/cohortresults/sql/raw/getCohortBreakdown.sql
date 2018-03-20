@@ -2,8 +2,8 @@ select count(distinct subject_id) as people,
 			gender, age, conditions, drugs
 from (
 	select c.*, gc.concept_name as gender,
-		cast(floor((year(cohort_start_date) - year_of_birth) / 10) * 10 as varchar(5)) + '-' +
-		cast(floor((year(cohort_start_date) - year_of_birth) / 10 + 1) * 10 - 1 as varchar(5)) as age,
+		CONCAT(cast(floor((year(cohort_start_date) - year_of_birth) / 10) * 10 as varchar(5)), '-' ,
+		cast(floor((year(cohort_start_date) - year_of_birth) / 10 + 1) * 10 - 1 as varchar(5))) as age,
 		coalesce(conditions.conditions, 0) as conditions,
 		coalesce(drugs.drugs, 0) as drugs
 	from @resultsTableQualifier.cohort c
@@ -18,7 +18,7 @@ from (
 		select person_id,
 			round(count(*),
 			cast(- floor(log10(abs(count(*) + 0.01))) as int)) drugs
-		from @tableQualifier.drug_exposure de 
+		from @tableQualifier.drug_exposure de
 		group by person_id
 	) drugs on c.subject_id = drugs.person_id
 	join @tableQualifier.person p on c.subject_id = p.person_id

@@ -65,7 +65,9 @@ public class GenerateCohortFeaturesTasklet implements Tasklet
     private String getSql(CohortExpressionQueryBuilder.BuildExpressionQueryOptions options, 
             JSONObject jsonObject)
     {
-        String insertStr = "insert into @resultsDatabaseSchema.%1$s \r\n %2$s;";
+        String insertStr = "insert into @resultsDatabaseSchema.%1$s \r\n" +
+                "with t1 as (SELECT COUNT(*) count_value FROM @cohort_table {@cohort_definition_id != -1} ? {WHERE cohort_definition_id = @cohort_definition_id}) \r\n" +
+                "%2$s;";
         String cohortWrapper = "select %1$d as %2$s from (%3$s) W";
         StringJoiner joiner = new StringJoiner("\r\n ---- \r\n");
         joiner.add(jsonObject.getString("sqlConstruction"));
@@ -75,10 +77,10 @@ public class GenerateCohortFeaturesTasklet implements Tasklet
         joiner.add(String.format(insertStr, 
                 "cohort_features", 
                 String.format(cohortWrapper, options.cohortId, columns, 
-                        StringUtils.stripEnd(jsonObject.getString("sqlQueryFeatures"), ";"))));
+                        StringUtils.stripEnd(jsonObject.getString("sqlQueryFeatures"), ";")) + ", t1"));
 
-        columns = "cohort_definition_id, covariate_id, count_value, min_value, max_value, average_value, "
-                        + "standard_deviation, median_value, p10_value, p25_value, p75_value, p90_value";
+        columns = "cohort_definition_id, covariate_id, count_value, min_value, max_value, CAST(average_value AS FLOAT), "
+                        + "CAST(standard_deviation AS FLOAT), median_value, p10_value, p25_value, p75_value, p90_value";
         joiner.add(String.format(insertStr, 
                 "cohort_features_dist", 
                 String.format(cohortWrapper, options.cohortId, columns, 
@@ -90,7 +92,7 @@ public class GenerateCohortFeaturesTasklet implements Tasklet
                 String.format(cohortWrapper, options.cohortId, columns, 
                         StringUtils.stripEnd(jsonObject.getString("sqlQueryFeatureRef"), ";"))));
 
-        columns = "cohort_definition_id, analysis_id, analysis_name, domain_id, start_day, end_day, is_binary, missing_means_zero";
+        columns = "cohort_definition_id, CAST(analysis_id AS INT), analysis_name, domain_id, start_day, end_day, CAST(is_binary AS CHAR(1)), CAST(missing_means_zero AS CHAR(1))";
         joiner.add(String.format(insertStr, 
                 "cohort_features_analysis_ref", 
                 String.format(cohortWrapper, options.cohortId, columns, 
@@ -99,8 +101,8 @@ public class GenerateCohortFeaturesTasklet implements Tasklet
         joiner.add(jsonObject.getString("sqlCleanup"));
 
         return SqlRender.renderSql(joiner.toString(), 
-                new String[]{"resultsDatabaseSchema"}, 
-                new String[]{options.resultSchema});
+                new String[]{"resultsDatabaseSchema", "cohort_table", "cohort_definition_id"},
+                new String[]{options.resultSchema, options.resultSchema + ".cohort", Integer.toString(options.cohortId)});
     }
     
     private int[] doTask(ChunkContext chunkContext)

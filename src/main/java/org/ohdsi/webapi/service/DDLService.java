@@ -20,9 +20,13 @@ package org.ohdsi.webapi.service;
 
 import static org.ohdsi.webapi.service.SqlRenderService.translateSQL;
 
+import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.DBMSType;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;

@@ -1,11 +1,10 @@
 package org.ohdsi.webapi;
 
-import java.sql.DriverManager;
 import java.util.Properties;
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -30,7 +29,7 @@ public class DataAccessConfig {
 
     @Autowired
     private Environment env;
-  
+
     private Properties getJPAProperties() {
         Properties properties = new Properties();
         properties.setProperty("hibernate.default_schema", this.env.getProperty("spring.jpa.properties.hibernate.default_schema"));
@@ -38,32 +37,37 @@ public class DataAccessConfig {
         properties.setProperty("hibernate.id.new_generator_mappings", "false");
         return properties;
     }
-      
+
     @Bean
-    @Primary    
+    @Primary
     public DataSource primaryDataSource() {
         String driver = this.env.getRequiredProperty("datasource.driverClassName");
         String url = this.env.getRequiredProperty("datasource.url");
         String user = this.env.getRequiredProperty("datasource.username");
         String pass = this.env.getRequiredProperty("datasource.password");
+        String schema = this.env.getProperty("datasource.ohdsi.schema");
+
         boolean autoCommit = false;
 
 
         //pooling - currently issues with (at least) oracle with use of temp tables and "on commit preserve rows" instead of "on commit delete rows";
         //http://forums.ohdsi.org/t/transaction-vs-session-scope-for-global-temp-tables-statements/333/2
         /*final PoolConfiguration pc = new org.apache.tomcat.jdbc.pool.PoolProperties();
-     pc.setDriverClassName(driver);
-     pc.setUrl(url);
-     pc.setUsername(user);
-     pc.setPassword(pass);
-     pc.setDefaultAutoCommit(autoCommit);*/
+        pc.setDriverClassName(driver);
+        pc.setUrl(url);
+        pc.setUsername(user);
+        pc.setPassword(pass);
+        pc.setDefaultAutoCommit(autoCommit);*/
+
         //non-pooling
         DriverManagerDataSource ds = new DriverManagerDataSource(url, user, pass);
         ds.setDriverClassName(driver);
+        ds.setSchema(schema);
         //note autocommit defaults vary across vendors. use provided @Autowired TransactionTemplate
 
         String[] supportedDrivers;
         supportedDrivers = new String[]{"org.postgresql.Driver", "com.microsoft.sqlserver.jdbc.SQLServerDriver", "oracle.jdbc.driver.OracleDriver", "com.amazon.redshift.jdbc.Driver", "com.cloudera.impala.jdbc4.Driver", "net.starschema.clouddb.jdbc.BQDriver", "org.netezza.Driver"};
+
         for (String driverName : supportedDrivers) {
             try {
                 Class.forName(driverName);
@@ -119,14 +123,14 @@ public class DataAccessConfig {
         transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         return transactionTemplate;
     }
-		
+
     @Bean
     public TransactionTemplate transactionTemplateNoTransaction(PlatformTransactionManager transactionManager) {
         TransactionTemplate transactionTemplate = new TransactionTemplate();
         transactionTemplate.setTransactionManager(transactionManager);
         transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_NOT_SUPPORTED);
         return transactionTemplate;
-    }		
+    }
   
   /*
   public String getSparqlEndpoint()

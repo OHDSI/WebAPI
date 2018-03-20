@@ -39,5 +39,3 @@ ON CAST(num_stratum_1 AS INT) = c1.concept_id
 INNER JOIN @vocab_database_schema.concept c2
 ON CAST(num_stratum_3 AS INT) = c2.concept_id
 WHERE c1.concept_id = @conceptId
-
-

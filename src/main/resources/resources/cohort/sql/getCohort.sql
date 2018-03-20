@@ -1,0 +1,1 @@
+SELECT * FROM @result_schema.cohort WHERE cohort_definition_id = @cohortDefinitionId;

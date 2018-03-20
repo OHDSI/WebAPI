@@ -3,8 +3,13 @@ package org.ohdsi.webapi.service;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 import com.microsoft.sqlserver.jdbc.SQLServerDriver;
+import org.ohdsi.circe.helper.ResourceHelper;
+import org.ohdsi.circe.vocabulary.Concept;
+import org.ohdsi.circe.vocabulary.ConceptSetExpression;
+import org.ohdsi.circe.vocabulary.ConceptSetExpressionQueryBuilder;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -23,12 +28,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
 import org.apache.commons.lang3.math.NumberUtils;
-import org.ohdsi.circe.helper.ResourceHelper;
-import org.ohdsi.circe.vocabulary.Concept;
-import org.ohdsi.circe.vocabulary.ConceptSetExpression;
-import org.ohdsi.circe.vocabulary.ConceptSetExpressionQueryBuilder;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.activity.Activity.ActivityType;
@@ -70,20 +70,18 @@ public class VocabularyService extends AbstractDaoService {
   @Value("${datasource.driverClassName}")
   private String driver;
   
-  private final RowMapper<Concept> rowMapper = new RowMapper<Concept>() {
-    @Override
-    public Concept mapRow(final ResultSet resultSet, final int arg1) throws SQLException {
-      final Concept concept = new Concept();
-      concept.conceptId = resultSet.getLong("CONCEPT_ID");
-      concept.conceptCode = resultSet.getString("CONCEPT_CODE");
-      concept.conceptName = resultSet.getString("CONCEPT_NAME");
-      concept.standardConcept = resultSet.getString("STANDARD_CONCEPT");
-      concept.invalidReason = resultSet.getString("INVALID_REASON");
-      concept.conceptClassId = resultSet.getString("CONCEPT_CLASS_ID");
-      concept.vocabularyId = resultSet.getString("VOCABULARY_ID");
-      concept.domainId = resultSet.getString("DOMAIN_ID");
-      return concept;
-    }
+  private final RowMapper<Concept> rowMapper = (resultSet, arg1) -> {
+
+    final Concept concept = new Concept();
+    concept.conceptId = resultSet.getLong("CONCEPT_ID");
+    concept.conceptCode = resultSet.getString("CONCEPT_CODE");
+    concept.conceptName = resultSet.getString("CONCEPT_NAME");
+    concept.standardConcept = resultSet.getString("STANDARD_CONCEPT");
+    concept.invalidReason = resultSet.getString("INVALID_REASON");
+    concept.conceptClassId = resultSet.getString("CONCEPT_CLASS_ID");
+    concept.vocabularyId = resultSet.getString("VOCABULARY_ID");
+    concept.domainId = resultSet.getString("DOMAIN_ID");
+    return concept;
   };
 
   private String getDefaultVocabularySourceKey()
@@ -118,7 +116,7 @@ public class VocabularyService extends AbstractDaoService {
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		return executeIdentifierLookup(source, identifiers);
   }
-	
+
 	protected Collection<Concept> executeIdentifierLookup(Source source, long[] identifiers) {
    Collection<Concept> concepts = new ArrayList<>();
     if (identifiers.length == 0) {
@@ -165,20 +163,20 @@ public class VocabularyService extends AbstractDaoService {
 
     return executeIdentifierLookup(defaultSourceKey, identifiers);   
   }  
-  
+
   public Collection<Concept> executeIncludedConceptLookup(String sourceKey, ConceptSetExpression conceptSetExpression) {
+
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
     ConceptSetExpressionQueryBuilder builder = new ConceptSetExpressionQueryBuilder();
     String query = builder.buildExpressionQuery(conceptSetExpression);
     PreparedStatementRenderer psr = new PreparedStatementRenderer(source, query, "vocabulary_database_schema", tqValue);
     String sqlPath = "/resources/vocabulary/sql/lookupIdentifiers.sql";
-    String[] searches = new String[]{"identifiers", "CDM_schema"};
-    String[] replacements = new String[]{psr.getSql(), tqValue};
+    String[] searches = new String[]{"identifiers", "CDM_schema", "vocabulary_database_schema"};
+    String[] replacements = new String[]{psr.getSql(), tqValue, tqValue};
     psr = new PreparedStatementRenderer(source, sqlPath, searches, replacements, (String[]) null, null);
     return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), this.rowMapper);
   }
-  
 
   /**
    * @summary Lookup source codes in the specified vocabulary
@@ -192,10 +190,10 @@ public class VocabularyService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<Concept> executeSourcecodeLookup(@PathParam("sourceKey") String sourceKey, String[] sourcecodes) {
+
     if (sourcecodes.length == 0) {
       return new ArrayList<>();
     }
-
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     PreparedStatementRenderer psr = prepareExecuteSourcecodeLookup(sourcecodes, source);
     return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), this.rowMapper);
@@ -223,7 +221,7 @@ public class VocabularyService extends AbstractDaoService {
     String defaultSourceKey = getDefaultVocabularySourceKey();
     
     if (defaultSourceKey == null)
-      throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."), Response.Status.SERVICE_UNAVAILABLE); // http 503      
+      throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."), Response.Status.SERVICE_UNAVAILABLE); // http 503
 
     return executeSourcecodeLookup(defaultSourceKey, sourcecodes);
   }
@@ -243,7 +241,7 @@ public class VocabularyService extends AbstractDaoService {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
 		return executeMappedLookup(source, identifiers);
   }
-	
+
 	protected Collection<Concept> executeMappedLookup(Source source, long[] identifiers) {
     Collection<Concept> concepts = new ArrayList<>();
     if (identifiers.length == 0) {
@@ -261,7 +259,7 @@ public class VocabularyService extends AbstractDaoService {
 			}
 			PreparedStatementRenderer psr = prepareExecuteMappedLookup(identifiers, source);
 			return concepts.addAll(getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), this.rowMapper))
-							? concepts : new ArrayList<>();				
+							? concepts : new ArrayList<>();
 		}
 	}
 
@@ -290,7 +288,7 @@ public class VocabularyService extends AbstractDaoService {
 
     return executeMappedLookup(defaultSourceKey, identifiers);
   }
-  
+
   public Collection<Concept> executeMappedLookup(String sourceKey, ConceptSetExpression conceptSetExpression) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
@@ -299,8 +297,8 @@ public class VocabularyService extends AbstractDaoService {
     String query = builder.buildExpressionQuery(conceptSetExpression);
     PreparedStatementRenderer psr = new PreparedStatementRenderer(source, query, "vocabulary_database_schema", tableQualifier);
     String sqlPath = "/resources/vocabulary/sql/getMappedSourcecodes.sql";
-    String[] search = new String[]{"identifiers", "CDM_schema"};
-    String[] replace = new String[]{psr.getSql(), tableQualifier};
+    String[] search = new String[]{"identifiers", "CDM_schema", "vocabulary_database_schema"};
+    String[] replace = new String[]{psr.getSql(), tableQualifier, tableQualifier};
     psr = new PreparedStatementRenderer(source, sqlPath, search, replace, (String[]) null, null);
     return getSourceJdbcTemplate(source).query(psr.getSql(), this.rowMapper);
   }
@@ -310,8 +308,8 @@ public class VocabularyService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<Concept> executeSearch(@PathParam("sourceKey") String sourceKey, ConceptSearch search) {
-    Tracker.trackActivity(ActivityType.Search, search.query);
 
+    Tracker.trackActivity(ActivityType.Search, search.query);
     Source source = getSourceRepository().findBySourceKey(sourceKey);
 
     PreparedStatementRenderer psr = prepareExecuteSearch(search, source);
@@ -408,6 +406,7 @@ public class VocabularyService extends AbstractDaoService {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<Concept> executeSearch(@PathParam("sourceKey") String sourceKey, @PathParam("query") String query) {
+
     Tracker.trackActivity(ActivityType.Search, query);
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     PreparedStatementRenderer psr = prepareExecuteSearchWithQuery(query, source);
@@ -450,6 +449,7 @@ public class VocabularyService extends AbstractDaoService {
   @Path("{sourceKey}/concept/{id}")
   @Produces(MediaType.APPLICATION_JSON)
   public Concept getConcept(@PathParam("sourceKey") final String sourceKey, @PathParam("id") final long id) {
+
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String sqlPath = "/resources/vocabulary/sql/getConcept.sql";
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
@@ -490,6 +490,7 @@ public class VocabularyService extends AbstractDaoService {
   @Path("{sourceKey}/concept/{id}/related")
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<RelatedConcept> getRelatedConcepts(@PathParam("sourceKey") String sourceKey, @PathParam("id") final Long id) {
+
     final Map<Long, RelatedConcept> concepts = new HashMap<>();
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String sqlPath = "/resources/vocabulary/sql/getRelatedConcepts.sql";
@@ -516,7 +517,8 @@ public class VocabularyService extends AbstractDaoService {
     String defaultSourceKey = getDefaultVocabularySourceKey();
     
     if (defaultSourceKey == null)
-      throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."), Response.Status.SERVICE_UNAVAILABLE); // http 503      
+      throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."),
+        Response.Status.SERVICE_UNAVAILABLE); // http 503
 
     return getRelatedConcepts(defaultSourceKey, id);
   }
@@ -526,15 +528,15 @@ public class VocabularyService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<RelatedConcept> getCommonAncestors(@PathParam("sourceKey") String sourceKey, Object[] identifiers) {
+
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     PreparedStatementRenderer psr = prepareGetCommonAncestors(identifiers, source);
     final Map<Long, RelatedConcept> concepts = new HashMap<>();
     getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), (RowMapper<Void>) (resultSet, arg1) -> {
 
-        addRelationships(concepts, resultSet);
-        return null;
-      }
-    );
+      addRelationships(concepts, resultSet);
+      return null;
+    });
 
     return concepts.values();
   }
@@ -547,8 +549,8 @@ public class VocabularyService extends AbstractDaoService {
 
 
     return new PreparedStatementRenderer(source, sqlPath, tqName, tqValue,
-      new String[]{"conceptIdentifierList", "conceptIdentifierListLength"},
-      new Object[]{identifiers, identifiers.length});
+        new String[]{"conceptIdentifierList", "conceptIdentifierListLength"},
+        new Object[]{identifiers, identifiers.length});
   }
 
   @POST
@@ -559,7 +561,8 @@ public class VocabularyService extends AbstractDaoService {
     String defaultSourceKey = getDefaultVocabularySourceKey();
     
     if (defaultSourceKey == null)
-      throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."), Response.Status.SERVICE_UNAVAILABLE); // http 503      
+      throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."),
+        Response.Status.SERVICE_UNAVAILABLE); // http 503
 
     return getCommonAncestors(defaultSourceKey, identifiers);
   }
@@ -569,16 +572,18 @@ public class VocabularyService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<Long> resolveConceptSetExpression(@PathParam("sourceKey") String sourceKey, ConceptSetExpression conceptSetExpression) {
+
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String tqName = "vocabulary_database_schema";
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
     ConceptSetExpressionQueryBuilder builder = new ConceptSetExpressionQueryBuilder();
     String query = builder.buildExpressionQuery(conceptSetExpression);
-    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, query, tqName, tqValue);
+    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, query, tqName, tqValue, new String[0], new Object[0]);
     final ArrayList<Long> identifiers = new ArrayList<>();
     getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), new RowCallbackHandler() {
       @Override
       public void processRow(ResultSet rs) throws SQLException {
+
         identifiers.add(rs.getLong("CONCEPT_ID"));
       }
     });
@@ -604,16 +609,16 @@ public class VocabularyService extends AbstractDaoService {
   @Produces(MediaType.TEXT_PLAIN)
   @Consumes(MediaType.APPLICATION_JSON)
   public String getConceptSetExpressionSQL(ConceptSetExpression conceptSetExpression) {
+
     ConceptSetExpressionQueryBuilder builder = new ConceptSetExpressionQueryBuilder();
-    String query = builder.buildExpressionQuery(conceptSetExpression);
-    
-    return query;
+    return  builder.buildExpressionQuery(conceptSetExpression);
   }
-  
+
   @GET
   @Path("{sourceKey}/concept/{id}/descendants")
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<RelatedConcept> getDescendantConcepts(@PathParam("sourceKey") String sourceKey, @PathParam("id") final Long id) {
+
     final Map<Long, RelatedConcept> concepts = new HashMap<>();
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String sqlPath = "/resources/vocabulary/sql/getDescendantConcepts.sql";
@@ -622,6 +627,7 @@ public class VocabularyService extends AbstractDaoService {
     getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), new RowMapper<Void>() {
       @Override
       public Void mapRow(ResultSet resultSet, int arg1) throws SQLException {
+
         addRelationships(concepts, resultSet);
         return null;
       }
@@ -646,6 +652,7 @@ public class VocabularyService extends AbstractDaoService {
   @Path("{sourceKey}/domains")
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<Domain> getDomains(@PathParam("sourceKey") String sourceKey) {
+
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
     String sqlPath = "/resources/vocabulary/sql/getDomains.sql";
@@ -654,6 +661,7 @@ public class VocabularyService extends AbstractDaoService {
 
       @Override
       public Domain mapRow(final ResultSet resultSet, final int arg1) throws SQLException {
+
         final Domain domain = new Domain();
         domain.domainId = resultSet.getString("DOMAIN_ID");
         domain.domainName = resultSet.getString("DOMAIN_NAME");
@@ -679,6 +687,7 @@ public class VocabularyService extends AbstractDaoService {
   @Path("{sourceKey}/vocabularies")
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<Vocabulary> getVocabularies(@PathParam("sourceKey") String sourceKey) {
+
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String sqlPath = "/resources/vocabulary/sql/getVocabularies.sql";
     String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
@@ -687,6 +696,7 @@ public class VocabularyService extends AbstractDaoService {
 
       @Override
       public Vocabulary mapRow(final ResultSet resultSet, final int arg1) throws SQLException {
+
         final Vocabulary vocabulary = new Vocabulary();
         vocabulary.vocabularyId = resultSet.getString("VOCABULARY_ID");
         vocabulary.vocabularyName = resultSet.getString("VOCABULARY_NAME");
@@ -711,6 +721,7 @@ public class VocabularyService extends AbstractDaoService {
   }  
 
   private void addRelationships(final Map<Long, RelatedConcept> concepts, final ResultSet resultSet) throws SQLException {
+
     final Long concept_id = resultSet.getLong("CONCEPT_ID");
     if (!concepts.containsKey(concept_id)) {
       final RelatedConcept concept = new RelatedConcept();
@@ -737,11 +748,11 @@ public class VocabularyService extends AbstractDaoService {
     }
   }
 
-  //TODO
   @GET
   @Path("{sourceKey}/info")
   @Produces(MediaType.APPLICATION_JSON)
   public VocabularyInfo getInfo(@PathParam("sourceKey") String sourceKey) {
+
     if (vocabularyInfoCache == null) {
       vocabularyInfoCache = new Hashtable<>();
     }
@@ -756,22 +767,24 @@ public class VocabularyService extends AbstractDaoService {
       vocabularyInfoCache.put(sourceKey, getSourceJdbcTemplate(source).queryForObject(psr.getSql(), psr.getOrderedParams(), new RowMapper<VocabularyInfo>() {
         @Override
         public VocabularyInfo mapRow(final ResultSet resultSet, final int arg1) throws SQLException {
+
           info.version = resultSet.getString("VOCABULARY_VERSION");
           return info;
         }
       }));
     }
-    
+
     return vocabularyInfoCache.get(sourceKey);
   }
-  
+
   @POST
   @Path("{sourceKey}/descendantofancestor")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<Concept> getDescendantOfAncestorConcepts(@PathParam("sourceKey") String sourceKey, DescendentOfAncestorSearch search) {
+
     Tracker.trackActivity(ActivityType.Search, "getDescendantOfAncestorConcepts");
-    
+
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     PreparedStatementRenderer psr = prepareGetDescendantOfAncestorConcepts(search, source);
     return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), this.rowMapper);
@@ -806,8 +819,8 @@ public class VocabularyService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<Concept> getRelatedConcepts(@PathParam("sourceKey") String sourceKey, RelatedConceptSearch search) {
+
     Tracker.trackActivity(ActivityType.Search, "getRelatedConcepts");
-    
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     PreparedStatementRenderer psr = prepareGetRelatedConcepts(search, source);
     return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), this.rowMapper);
@@ -828,6 +841,7 @@ public class VocabularyService extends AbstractDaoService {
       }
       filtersSql += "CONCEPT_CLASS_ID IN (@conceptClassId)";
     }
+
     String[] searchStrings = {"CDM_schema", "filters"};
     String[] replacementStrings = {tableQualifier, filtersSql};
 
@@ -855,12 +869,14 @@ public class VocabularyService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<RelatedConcept> getDescendantConceptsByList(@PathParam("sourceKey") String sourceKey, String[] conceptList) {
+
     final Map<Long, RelatedConcept> concepts = new HashMap<>();
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     PreparedStatementRenderer psr = prepareGetDescendantConceptsByList(conceptList, source);
     getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), new RowMapper<Void>() {
       @Override
       public Void mapRow(ResultSet resultSet, int arg1) throws SQLException {
+
         addRelationships(concepts, resultSet);
         return null;
       }
@@ -868,7 +884,15 @@ public class VocabularyService extends AbstractDaoService {
 
     return concepts.values();
   }
-  
+
+  protected PreparedStatementRenderer prepareGetDescendantConceptsByList(String[] conceptList, Source source) {
+    String sqlPath = "/resources/vocabulary/sql/getDescendantConceptsMultipleConcepts.sql";
+    String tqName = "CDM_schema";
+    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
+    List<Integer> conceptArray =  Arrays.stream(conceptList).map(NumberUtils::toInt).collect(Collectors.toList());
+    return new PreparedStatementRenderer( source, sqlPath, tqName, tqValue, "id", conceptArray.toArray());
+  }
+
   @Path("conceptlist/descendants")
   @POST
   @Produces(MediaType.APPLICATION_JSON)
@@ -880,14 +904,6 @@ public class VocabularyService extends AbstractDaoService {
       throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."), Response.Status.SERVICE_UNAVAILABLE); // http 503      
 
     return getDescendantConceptsByList(defaultSourceKey, conceptList);
-  }    
-
-  protected PreparedStatementRenderer prepareGetDescendantConceptsByList(String[] conceptList, Source source) {
-    String sqlPath = "/resources/vocabulary/sql/getDescendantConceptsMultipleConcepts.sql";
-    String tqName = "CDM_schema";
-    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
-    List<Integer> conceptArray = Arrays.stream(conceptList).map(NumberUtils::toInt).collect(Collectors.toList());
-    return new PreparedStatementRenderer( source, sqlPath, tqName, tqValue, "id", conceptArray.toArray());
   }
 
   @Path("{sourceKey}/compare")
@@ -899,7 +915,7 @@ public class VocabularyService extends AbstractDaoService {
           throw new Exception("You must specify two concept set expressions in order to use this method.");
       }
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    String vocabSchema = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
     
     // Get the comparison script
     String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/compareConceptSets.sql");
@@ -912,9 +928,9 @@ public class VocabularyService extends AbstractDaoService {
 
     // Insert the queries into the overall comparison script
     sql_statement = SqlRender.renderSql(sql_statement, new String[]{"cs1_expression", "cs2_expression"}, new String[]{cs1Query, cs2Query});
-    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"vocabulary_database_schema"}, new String[]{vocabSchema});
+    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"cdm_database_schema", "vocabulary_database_schema"}, new String[]{tableQualifier,tableQualifier});
     sql_statement = SqlTranslate.translateSql(sql_statement, source.getSourceDialect());
-    
+
     // Execute the query
     Collection<ConceptSetComparison> returnVal = getSourceJdbcTemplate(source).query(sql_statement, new RowMapper<ConceptSetComparison>() {
       @Override
@@ -961,7 +977,7 @@ public class VocabularyService extends AbstractDaoService {
     
     // Get the optimization script
     String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/optimizeConceptSet.sql");
-    
+
     // Find all of the concepts that should be considered for optimization
     // Create a hashtable to hold all of the contents of the ConceptSetExpression
     // for use later
@@ -987,7 +1003,7 @@ public class VocabularyService extends AbstractDaoService {
     
     String allConceptsList = this.JoinArray(includedConcepts.toArray(new String[includedConcepts.size()]));
     String descendantConceptsList = this.JoinArray(descendantConcepts.toArray(new String[descendantConcepts.size()]));
-    
+
     sql_statement = SqlRender.renderSql(sql_statement, new String[]{"allConcepts", "descendantConcepts", "cdm_database_schema"}, new String[]{allConceptsList, descendantConceptsList, tableQualifier});
     sql_statement = SqlTranslate.translateSql(sql_statement, source.getSourceDialect());
 
@@ -1020,7 +1036,7 @@ public class VocabularyService extends AbstractDaoService {
     
     return returnVal;
   }
-  
+
   @Path("optimize")
   @POST
   @Produces(MediaType.APPLICATION_JSON)
@@ -1033,7 +1049,7 @@ public class VocabularyService extends AbstractDaoService {
 
     return optimizeConceptSet(defaultSourceKey, conceptSetExpression);
   }
-  
+
   private String JoinArray(final long[] array) {
     String result = "";
 
@@ -1047,7 +1063,7 @@ public class VocabularyService extends AbstractDaoService {
 
     return result;
   }
-  
+
   private String JoinArray(final String[] array) {
     String result = "";
 
@@ -1061,10 +1077,10 @@ public class VocabularyService extends AbstractDaoService {
 
     return result;
   }
-  
+
   private String JoinArrayList(final ArrayList<String> array){
       String result = "";
-    
+
       for (int i = 0; i < array.size(); i++) {
         if (i > 0) {
           result += " AND ";

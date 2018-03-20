@@ -15,14 +15,17 @@
  */
 package org.ohdsi.webapi.cohortdefinition;
 
-import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.InclusionRule;
-
+import java.util.List;
+import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
@@ -62,12 +65,14 @@ public class GenerateCohortTasklet implements Tasklet {
           final JdbcTemplate jdbcTemplate, 
           final TransactionTemplate transactionTemplate,
           final CohortDefinitionRepository cohortDefinitionRepository) {
+
     this.jdbcTemplate = jdbcTemplate;
     this.transactionTemplate = transactionTemplate;
     this.cohortDefinitionRepository = cohortDefinitionRepository;
   }
 
   private int[] doTask(ChunkContext chunkContext) {
+
     int[] result;
     
     Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
@@ -93,13 +98,15 @@ public class GenerateCohortTasklet implements Tasklet {
       if (jobParams.get("vocabulary_database_schema") != null)
 				options.vocabularySchema = jobParams.get("vocabulary_database_schema").toString();
       options.generateStats = Boolean.valueOf(jobParams.get("generate_stats").toString());
+      String targetDialect = jobParams.get("target_dialect").toString();
 
-      String deleteSql = "DELETE FROM @tableQualifier.cohort_inclusion WHERE cohort_definition_id = @cohortDefinitionId";
-      PreparedStatementRenderer psr = new PreparedStatementRenderer(null, deleteSql, "tableQualifier",
-        options.resultSchema, "cohortDefinitionId", options.cohortId);
-      jdbcTemplate.update(psr.getSql(), psr.getSetter());
+      String sql = "DELETE FROM @tableQualifier.cohort_inclusion WHERE cohort_definition_id = @cohortDefinitionId;";
+      PreparedStatementRenderer psr = new PreparedStatementRenderer(null, sql, "tableQualifier",
+          options.resultSchema, "cohortDefinitionId", options.cohortId);
+      sql = SqlTranslate.translateSql(psr.getSql(), targetDialect);
+      jdbcTemplate.update(sql, psr.getSetter());
 
-      String insertSql = "INSERT INTO @results_schema.cohort_inclusion (cohort_definition_id, rule_sequence, name, description) VALUES (@cohortId,@iteration,@ruleName,@ruleDescription)";
+      String insertSql = "INSERT INTO @results_schema.cohort_inclusion (cohort_definition_id, rule_sequence, name, description) VALUES (@cohortId,@iteration,CAST(@ruleName AS VARCHAR(255)),CAST(@ruleDescription AS VARCHAR(1000)));";
       String tqName = "results_schema";
       String tqValue = options.resultSchema;
       String[] names = new String[]{"cohortId", "iteration", "ruleName", "ruleDescription"};
@@ -113,7 +120,8 @@ public class GenerateCohortTasklet implements Tasklet {
       
       String expressionSql = expressionQueryBuilder.buildExpressionQuery(expression, options);
       expressionSql = SqlRender.renderSql(expressionSql, null, null);
-      String translatedSql = SqlTranslate.translateSql(expressionSql, jobParams.get("target_dialect").toString(), sessionId, null);
+      String translatedSql = SqlTranslate.translateSql(expressionSql, targetDialect, sessionId, null);
+
       String[] sqlStatements = SqlSplit.splitSql(translatedSql);
       result = GenerateCohortTasklet.this.jdbcTemplate.batchUpdate(sqlStatements);
 
@@ -125,14 +133,14 @@ public class GenerateCohortTasklet implements Tasklet {
   }
 
   @Override
-  public RepeatStatus execute(final StepContribution contribution, final ChunkContext chunkContext) throws Exception {
-   
-		final int[] ret = this.transactionTemplate.execute(new TransactionCallback<int[]>() {
-			@Override
-			public int[] doInTransaction(final TransactionStatus status) {
-				return doTask(chunkContext);
-			}
-		});
+  public RepeatStatus execute(final StepContribution contribution, final ChunkContext chunkContext) {
+
+    final int[] ret = this.transactionTemplate.execute(new TransactionCallback<int[]>() {
+      @Override
+      public int[] doInTransaction(final TransactionStatus status) {
+        return doTask(chunkContext);
+      }
+    });
 
     return RepeatStatus.FINISHED;
   }

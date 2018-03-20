@@ -17,6 +17,7 @@ package org.ohdsi.webapi.feasibility;
 
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -72,7 +73,7 @@ public class PerformFeasibilityTask {
     try {
       ObjectMapper mapper = new ObjectMapper();
       return mapper.writeValueAsString(this);
-    } catch (Exception e) {
+    } catch (JsonProcessingException e) {
     	log.error(whitelist(e));
     }
     return super.toString();

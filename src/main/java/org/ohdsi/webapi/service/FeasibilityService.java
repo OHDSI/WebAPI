@@ -31,10 +31,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -48,21 +46,20 @@ import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CriteriaGroup;
-import org.ohdsi.sql.SqlTranslate;
-import org.ohdsi.webapi.feasibility.InclusionRule;
-import org.ohdsi.webapi.feasibility.FeasibilityStudy;
-import org.ohdsi.webapi.feasibility.PerformFeasibilityTasklet;
-import org.ohdsi.webapi.feasibility.StudyGenerationInfo;
-import org.ohdsi.webapi.feasibility.FeasibilityReport;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
+import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.TerminateJobStepExceptionHandler;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfo;
 import org.ohdsi.webapi.cohortdefinition.ExpressionType;
-import org.ohdsi.webapi.feasibility.FeasibilityStudyRepository;
 import org.ohdsi.webapi.cohortdefinition.GenerateCohortTasklet;
-import org.ohdsi.webapi.GenerationStatus;
+import org.ohdsi.webapi.feasibility.FeasibilityReport;
+import org.ohdsi.webapi.feasibility.FeasibilityStudy;
+import org.ohdsi.webapi.feasibility.FeasibilityStudyRepository;
+import org.ohdsi.webapi.feasibility.InclusionRule;
+import org.ohdsi.webapi.feasibility.PerformFeasibilityTasklet;
+import org.ohdsi.webapi.feasibility.StudyGenerationInfo;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.shiro.management.Security;
@@ -118,8 +115,9 @@ public class FeasibilityService extends AbstractDaoService {
   ServletContext context;
 
   private StudyGenerationInfo findStudyGenerationInfoBySourceId(Collection<StudyGenerationInfo> infoList, Integer sourceId) {
+
     for (StudyGenerationInfo info : infoList) {
-      if (info.getId().getSourceId() == sourceId) {
+      if (info.getId().getSourceId().equals(sourceId)) {
         return info;
       }
     }
@@ -127,8 +125,9 @@ public class FeasibilityService extends AbstractDaoService {
   }
 
   private CohortGenerationInfo findCohortGenerationInfoBySourceId(Collection<CohortGenerationInfo> infoList, Integer sourceId) {
+
     for (CohortGenerationInfo info : infoList) {
-      if (info.getId().getSourceId() == sourceId) {
+      if (info.getId().getSourceId().equals(sourceId)) {
         return info;
       }
     }
@@ -161,10 +160,11 @@ public class FeasibilityService extends AbstractDaoService {
     public StudyGenerationInfo generationInfo;
     public FeasibilityReport.Summary summary;
   }
-  
+
   private final RowMapper<FeasibilityReport.Summary> summaryMapper = new RowMapper<FeasibilityReport.Summary>() {
     @Override
     public FeasibilityReport.Summary mapRow(ResultSet rs, int rowNum) throws SQLException {
+
       FeasibilityReport.Summary summary = new FeasibilityReport.Summary();
       summary.totalPersons = rs.getLong("person_count");
       summary.matchingPersons = rs.getLong("match_count");
@@ -188,6 +188,7 @@ public class FeasibilityService extends AbstractDaoService {
 
     @Override
     public FeasibilityReport.InclusionRuleStatistic mapRow(ResultSet rs, int rowNum) throws SQLException {
+
       FeasibilityReport.InclusionRuleStatistic statistic = new FeasibilityReport.InclusionRuleStatistic();
       statistic.id = rs.getInt("rule_sequence");
       statistic.name = rs.getString("name");
@@ -264,6 +265,7 @@ public class FeasibilityService extends AbstractDaoService {
   }
 
   private int countSetBits(long n) {
+
     int count = 0;
     while (n > 0) {
       n &= (n - 1);
@@ -273,6 +275,7 @@ public class FeasibilityService extends AbstractDaoService {
   }
 
   private String formatBitMask(Long n, int size) {
+
     return StringUtils.reverse(StringUtils.leftPad(Long.toBinaryString(n), size, "0"));
   }
 
@@ -280,6 +283,7 @@ public class FeasibilityService extends AbstractDaoService {
 
     @Override
     public Long[] mapRow(ResultSet rs, int rowNum) throws SQLException {
+
       Long[] resultItem = new Long[2];
       resultItem[0] = rs.getLong("inclusion_rule_mask");
       resultItem[1] = rs.getLong("person_count");
@@ -339,6 +343,7 @@ public class FeasibilityService extends AbstractDaoService {
   }
 
   public FeasibilityStudyDTO feasibilityStudyToDTO(FeasibilityStudy study) {
+
     FeasibilityStudyDTO pDTO = new FeasibilityStudyDTO();
     pDTO.id = study.getId();
     pDTO.name = study.getName();
@@ -365,6 +370,7 @@ public class FeasibilityService extends AbstractDaoService {
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
   public List<FeasibilityService.FeasibilityStudyListItem> getFeasibilityStudyList() {
+
     ArrayList<FeasibilityService.FeasibilityStudyListItem> result = new ArrayList<>();
     Iterable<FeasibilityStudy> studies = this.feasibilityStudyRepository.findAll();
     for (FeasibilityStudy p : studies) {
@@ -395,6 +401,7 @@ public class FeasibilityService extends AbstractDaoService {
   @Consumes(MediaType.APPLICATION_JSON)
   @Transactional
   public FeasibilityService.FeasibilityStudyDTO createStudy(FeasibilityService.FeasibilityStudyDTO study) {
+
     Date currentTime = Calendar.getInstance().getTime();
 
     //create definition in 2 saves, first to get the generated ID for the new cohort definition (the index rule)
@@ -416,7 +423,7 @@ public class FeasibilityService extends AbstractDaoService {
 
     CohortDefinitionDetails indexDetails = new CohortDefinitionDetails();
     indexDetails.setCohortDefinition(indexRule)
-            .setExpression(study.indexRule);
+        .setExpression(study.indexRule);
     indexRule.setDetails(indexDetails);
     newStudy.setIndexRule(indexRule);
 
@@ -431,7 +438,7 @@ public class FeasibilityService extends AbstractDaoService {
 
       CohortDefinitionDetails resultDetails = new CohortDefinitionDetails();
       resultDetails.setCohortDefinition(resultDef)
-              .setExpression(getMatchingCriteriaExpression(newStudy));
+          .setExpression(getMatchingCriteriaExpression(newStudy));
       resultDef.setDetails(resultDetails);
       newStudy.setResultRule(resultDef);
     }
@@ -447,6 +454,7 @@ public class FeasibilityService extends AbstractDaoService {
   @Consumes(MediaType.APPLICATION_JSON)
   @Transactional(readOnly = true)
   public FeasibilityService.FeasibilityStudyDTO getStudy(@PathParam("id") final int id) {
+
     FeasibilityStudy s = this.feasibilityStudyRepository.findOneWithDetail(id);
     return feasibilityStudyToDTO(s);
   }
@@ -456,6 +464,7 @@ public class FeasibilityService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Transactional
   public FeasibilityService.FeasibilityStudyDTO saveStudy(@PathParam("id") final int id, FeasibilityStudyDTO study) {
+
     Date currentTime = Calendar.getInstance().getTime();
 
     FeasibilityStudy updatedStudy = this.feasibilityStudyRepository.findOne(id);
@@ -487,7 +496,7 @@ public class FeasibilityService extends AbstractDaoService {
         updatedStudy.setResultRule(resultRule);
       }
 
-      resultRule.setModifiedBy(security.getSubject())
+      resultRule
               .setModifiedDate(currentTime)
               .setName("Matching Population for Study: " + updatedStudy.getName())
               .setDescription(updatedStudy.getDescription())
@@ -510,11 +519,13 @@ public class FeasibilityService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public JobExecutionResource performStudy(@PathParam("study_id") final int study_id, @PathParam("sourceKey") final String sourceKey) {
+
     Date startTime = Calendar.getInstance().getTime();
 
     Source source = this.getSourceRepository().findBySourceKey(sourceKey);
     String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
     String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+    String vocabularyTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
 
     DefaultTransactionDefinition requresNewTx = new DefaultTransactionDefinition();
     requresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -534,8 +545,7 @@ public class FeasibilityService extends AbstractDaoService {
             .setExecutionDuration(null);
     this.cohortDefinitionRepository.save(indexRule);
 
-    if (study.getResultRule() != null)
-    {
+    if (study.getResultRule() != null) {
       CohortDefinition resultRule = this.cohortDefinitionRepository.findOne(study.getResultRule().getId());
       CohortGenerationInfo resultInfo = findCohortGenerationInfoBySourceId(resultRule.getGenerationInfoList(), source.getSourceId());
       if (resultInfo == null) {
@@ -564,6 +574,7 @@ public class FeasibilityService extends AbstractDaoService {
     JobParametersBuilder builder = new JobParametersBuilder();
     builder.addString("jobName", "performing feasibility study on " + indexRule.getName() + " : " + source.getSourceName() + " (" + source.getSourceKey() + ")");
     builder.addString("cdm_database_schema", cdmTableQualifier);
+    builder.addString("vocabulary_schema", vocabularyTableQualifier);
     builder.addString("results_database_schema", resultsTableQualifier);
     builder.addString("target_database_schema", resultsTableQualifier);
     builder.addString("target_dialect", source.getSourceDialect());
@@ -603,6 +614,7 @@ public class FeasibilityService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Transactional(readOnly = true)
   public List<StudyInfoDTO> getSimulationInfo(@PathParam("id") final int id) {
+
     FeasibilityStudy study = this.feasibilityStudyRepository.findOne(id);
 
     List<StudyInfoDTO> result = new ArrayList<>();
@@ -646,6 +658,7 @@ public class FeasibilityService extends AbstractDaoService {
   @Path("/{id}/copy")
   @javax.transaction.Transactional
   public FeasibilityStudyDTO copy(@PathParam("id") final int id) {
+
     FeasibilityStudyDTO sourceStudy = getStudy(id);
     sourceStudy.id = null; // clear the ID
     sourceStudy.name = "COPY OF: " + sourceStudy.name;
@@ -662,9 +675,10 @@ public class FeasibilityService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/{id}")
   public void delete(@PathParam("id") final int id) {
+
     feasibilityStudyRepository.delete(id);
   }
-  
+
   /**
    * Deletes the specified cohort definition
    *
@@ -673,20 +687,20 @@ public class FeasibilityService extends AbstractDaoService {
   @DELETE
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/{id}/info/{sourceKey}")
-  @Transactional    
+  @Transactional
   public void deleteInfo(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey) {
+
     FeasibilityStudy study = feasibilityStudyRepository.findOne(id);
     StudyGenerationInfo itemToRemove = null;
-    for (StudyGenerationInfo info : study.getStudyGenerationInfoList())
-    {
+    for (StudyGenerationInfo info : study.getStudyGenerationInfoList()) {
       if (info.getSource().getSourceKey().equals(sourceKey))
         itemToRemove = info;
     }
-    
+
     if (itemToRemove != null)
       study.getStudyGenerationInfoList().remove(itemToRemove);
-    
+
     feasibilityStudyRepository.save(study);
   }
-  
+
 }

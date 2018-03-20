@@ -556,6 +556,7 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
     @Path("execution/{eid}/balance")
     @Produces(MediaType.APPLICATION_JSON)
     public Collection<BalanceResult> getBalanceResults(@PathParam("eid") int executionId) {
+        executionId=whitelist(executionId);
         ComparativeCohortAnalysisExecution ccae = getComparativeCohortAnalysisExecution(executionId);
         Source source = getSourceRepository().findBySourceId(ccae.getSourceId());
         String sqlPath="/resources/cohortcomparison/sql/balance.sql";
@@ -568,6 +569,9 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
     @Path("execution/{eid}/om")
     @Produces(MediaType.APPLICATION_JSON)
     public Collection<OutcomeModel> getOutcomeModel(@PathParam("eid") int executionId) {
+
+        executionId=whitelist(executionId);
+
         ComparativeCohortAnalysisExecution ccae = getComparativeCohortAnalysisExecution(executionId);
         Source source = getSourceRepository().findBySourceId(ccae.getSourceId());
         String sqlPath="/resources/cohortcomparison/sql/outcome_model.sql";
@@ -584,6 +588,7 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
         ComparativeCohortAnalysisExecution ccae = getComparativeCohortAnalysisExecution(executionId);
         Source source = getSourceRepository().findBySourceId(ccae.getSourceId());
         String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+
         String sqlPath="/resources/cohortcomparison/sql/psmodel_prop_score.sql";
         PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sqlPath, "resultsTableQualifier",
           tableQualifier,"executionId", whitelist(executionId));
@@ -594,6 +599,9 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
     @Path("execution/{eid}/psmodelprefscore")
     @Produces(MediaType.APPLICATION_JSON)
     public Collection<ModelScoreDistributionValue> getPsModelPrefScore(@PathParam("eid") int executionId) {
+
+    	  executionId=whitelist(executionId);
+
         ComparativeCohortAnalysisExecution ccae = getComparativeCohortAnalysisExecution(executionId);
         Source source = getSourceRepository().findBySourceId(ccae.getSourceId());
         String sqlPath="/resources/cohortcomparison/sql/psmodel_pref_score.sql";
@@ -601,7 +609,8 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
 
         PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sqlPath, "resultsTableQualifier", tableQualifier,"executionId", whitelist(executionId));
         return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), ScoreDistributionMapper);
-    }    
+    }
+
 
     @GET
     @Path("execution/{eid}/poppropdist")
@@ -620,6 +629,7 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
     @Path("execution/{eid}/psmodel")
     @Produces(MediaType.APPLICATION_JSON)
     public PropensityScoreModelReport getPropensityScoreModelReport(@PathParam("eid") int executionId) {
+    	executionId=whitelist(executionId);
         ComparativeCohortAnalysisExecution ccae = getComparativeCohortAnalysisExecution(executionId);
 
         Source source = getSourceRepository().findBySourceId(ccae.getSourceId());

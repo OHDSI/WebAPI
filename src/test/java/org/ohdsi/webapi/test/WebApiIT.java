@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -24,37 +25,41 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 @ActiveProfiles("test")
 @Ignore//do not run this test
 public abstract class WebApiIT {
-    
-    protected final Log log = LogFactory.getLog(getClass());
-    
-    @Value("${baseUri}")
-    private String baseUri;
-    
-    private final TestRestTemplate restTemplate = new TestRestTemplate();
-    
-    /**
-     * @return the restTemplate
-     */
-    public RestTemplate getRestTemplate() {
-        return this.restTemplate.getRestTemplate();
-    }
-    
-    /**
-     * @return the baseUri
-     */
-    public String getBaseUri() {
-        return this.baseUri;
-    }
-    
-    /**
-     * @param baseUri the baseUri to set
-     */
-    public void setBaseUri(final String baseUri) {
-        this.baseUri = baseUri;
-    }
-    
-    public void assertOK(ResponseEntity entity){
-        assertEquals(HttpStatus.OK, entity.getStatusCode());
-        log.debug("Body:" + entity.getBody());
-    }
+
+  protected final Log log = LogFactory.getLog(getClass());
+
+  @Value("${baseUri}")
+  private String baseUri;
+
+  private final TestRestTemplate restTemplate = new TestRestTemplate();
+
+  /**
+   * @return the restTemplate
+   */
+  public RestTemplate getRestTemplate() {
+
+    return this.restTemplate.getRestTemplate();
+  }
+
+  /**
+   * @return the baseUri
+   */
+  public String getBaseUri() {
+
+    return this.baseUri;
+  }
+
+  /**
+   * @param baseUri the baseUri to set
+   */
+  public void setBaseUri(final String baseUri) {
+
+    this.baseUri = baseUri;
+  }
+
+  public void assertOK(ResponseEntity entity) {
+
+    assertEquals(HttpStatus.OK, entity.getStatusCode());
+    log.debug("Body:" + whitelist("" + entity.getBody()));
+  }
 }

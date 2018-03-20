@@ -1,0 +1,2 @@
+[core]
+    whitespace = -trailing-space,-indent-with-non-tab,-tab-in-indent

@@ -61,7 +61,8 @@ public class DDLService {
 	);
 
 	public static final Collection<String> RESULT_INIT_FILE_PATHS = Arrays.asList(
-		"/ddl/results/init_heracles_analysis.sql"
+		"/ddl/results/init_heracles_analysis.sql",
+		"/ddl/results/init_heracles_periods.sql"
 	);
 
 	private static final Collection<String> RESULT_INDEX_FILE_PATHS = Arrays.asList(

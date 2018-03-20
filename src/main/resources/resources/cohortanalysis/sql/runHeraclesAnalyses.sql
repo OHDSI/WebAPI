@@ -1457,9 +1457,8 @@ DROP TABLE #raw_211;
 
  --}
   
-  --{220 IN (@list_of_analysis_ids)}?{
+{220 IN (@list_of_analysis_ids)}?{
   -- 220   Number of visit occurrence records by condition occurrence start month
-  --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
   select c1.cohort_definition_id, 
   220 as analysis_id,   
   YEAR(visit_start_date)*100 + month(visit_start_date) as stratum_1, 
@@ -1470,17 +1469,225 @@ DROP TABLE #raw_211;
   @CDM_schema.visit_occurrence vo1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on vo1.person_id = c1.subject_id
-  --{@cohort_period_only == 'true'}?{  
+  {@cohort_period_only == 'true'}?{  
   WHERE vo1.visit_start_date>=c1.cohort_start_date and vo1.visit_end_date<=c1.cohort_end_date
-  --}  
+  }  
   group by c1.cohort_definition_id, YEAR(visit_start_date)*100 + month(visit_start_date)
   ;
-  --}
-  
-  
-  
-  
-  
+}
+
+{230 IN (@list_of_analysis_ids)}?{
+	-- 230 Number of subjects with visits in the 365d prior to cohort start date
+	select c1.cohort_definition_id,
+		230 as analysis_id,
+		visit_concept_id as stratum_1,
+		cast( '' as varchar(1) ) as stratum_2, cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
+		COUNT(distinct c1.subject_id) as count_value
+	into #results_230
+	from #HERACLES_cohort c1
+	inner join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
+		and visit_start_date >= dateadd(d, -365, cohort_start_date) and visit_start_date < cohort_start_date
+	group by c1.cohort_definition_id, visit_concept_id
+}
+
+{231 IN (@list_of_analysis_ids)}?{
+	-- 231 distribution of number of visit occurrences per subject by visit_concept_id in 365d prior to cohort start date
+	select c1.cohort_definition_id,
+		c1.subject_id, 
+		vo1.visit_concept_id,
+		count(distinct visit_occurrence_id) as count_value
+	INTO #raw_231
+	from #HERACLES_cohort c1
+	inner join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
+		and visit_start_date >= dateadd(d, -365, cohort_start_date) and visit_start_date < cohort_start_date
+	group by c1.cohort_definition_id, c1.subject_id, vo1.visit_concept_id
+	;
+
+	WITH cteRawData (cohort_definition_id, stratum_1, count_value) as
+	(
+		select cohort_definition_id, visit_concept_id, count_value FROM #raw_231
+	), 
+	overallStats (cohort_definition_id, stratum_1, avg_value, stdev_value, min_value, max_value, total) as
+	(
+		select cohort_definition_id, 
+			stratum_1,
+			avg(1.0 * count_value) as avg_value,
+			stdev(count_value) as stdev_value,
+			min(count_value) as min_value,
+			max(count_value) as max_value,
+			count_big(*) as total
+		from cteRawData
+		group by cohort_definition_id, stratum_1
+	),
+	valueStats (cohort_definition_id, stratum_1, count_value, total, accumulated) as
+	(
+		select cohort_definition_id,
+			stratum_1,
+			count_value, 
+			total, 
+			SUM(total) over (partition by cohort_definition_id, stratum_1 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+		FROM (
+			select cohort_definition_id, stratum_1, count_value, count_big(*) as total
+			FROM cteRawData
+			GROUP BY cohort_definition_id, stratum_1, count_value
+		) D
+	)
+	select o.cohort_definition_id,
+		231 as analysis_id,
+		CAST(o.stratum_1 as VARCHAR) as stratum_1, 
+		cast( '' as varchar(1) ) as stratum_2,
+		o.total as count_value,
+		o.min_value,
+		o.max_value,
+		o.avg_value,
+		coalesce(o.stdev_value, 0.0) as stdev_value,
+		MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+		MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+		MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+		MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+		MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+	into #results_dist_231
+	from valueStats s
+	join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1
+	GROUP BY o.cohort_definition_id, o.stratum_1, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+	;
+
+	TRUNCATE TABLE #raw_231;
+	DROP TABLE #raw_231;
+}
+
+{232 IN (@list_of_analysis_ids)}?{
+	-- distribution of number of visit dates per subject by visit_concept_id in 365d prior to cohort start date
+	select c1.cohort_definition_id,
+		c1.subject_id, 
+		vo1.visit_concept_id,
+		count(distinct visit_start_date) as count_value
+	INTO #raw_232
+	from #HERACLES_cohort c1
+	inner join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
+		and visit_start_date >= dateadd(d, -365, cohort_start_date) and visit_start_date < cohort_start_date
+	group by c1.cohort_definition_id, c1.subject_id, vo1.visit_concept_id
+	;
+
+	WITH cteRawData (cohort_definition_id, stratum_1, count_value) as
+	(
+		select cohort_definition_id, visit_concept_id, count_value FROM #raw_232
+	), 
+	overallStats (cohort_definition_id, stratum_1, avg_value, stdev_value, min_value, max_value, total) as
+	(
+		select cohort_definition_id, 
+			stratum_1,
+			avg(1.0 * count_value) as avg_value,
+			stdev(count_value) as stdev_value,
+			min(count_value) as min_value,
+			max(count_value) as max_value,
+			count_big(*) as total
+		from cteRawData
+		group by cohort_definition_id, stratum_1
+	),
+	valueStats (cohort_definition_id, stratum_1, count_value, total, accumulated) as
+	(
+		select cohort_definition_id,
+			stratum_1,
+			count_value, 
+			total, 
+			SUM(total) over (partition by cohort_definition_id, stratum_1 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+		FROM (
+			select cohort_definition_id, stratum_1, count_value, count_big(*) as total
+			FROM cteRawData
+			GROUP BY cohort_definition_id, stratum_1, count_value
+		) D
+	)
+	select o.cohort_definition_id,
+		232 as analysis_id,
+		CAST(o.stratum_1 as VARCHAR) as stratum_1, 
+		cast( '' as varchar(1) ) as stratum_2,
+		o.total as count_value,
+		o.min_value,
+		o.max_value,
+		o.avg_value,
+		coalesce(o.stdev_value, 0.0) as stdev_value,
+		MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+		MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+		MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+		MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+		MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+	into #results_dist_232
+	from valueStats s
+	join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1
+	GROUP BY o.cohort_definition_id, o.stratum_1, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+	;
+
+	TRUNCATE TABLE #raw_232;
+	DROP TABLE #raw_232;
+}
+
+{233 IN (@list_of_analysis_ids)}?{
+	-- distribution of number of visit dates at care_site per subject by visit_concept_id in 365d prior to cohort start date
+	select c1.cohort_definition_id,
+		c1.subject_id, 
+		vo1.visit_concept_id,
+		count(distinct cast(care_site_id as varchar(19)) + '_' + CONVERT(VARCHAR,visit_start_date, 112)) as count_value
+	INTO #raw_233
+	from #HERACLES_cohort c1
+	inner join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
+		and visit_start_date >= dateadd(d, -365, cohort_start_date) and visit_start_date < cohort_start_date
+	group by c1.cohort_definition_id, c1.subject_id, vo1.visit_concept_id
+	;
+
+	WITH cteRawData (cohort_definition_id, stratum_1, count_value) as
+	(
+		select cohort_definition_id, visit_concept_id, count_value FROM #raw_233
+	), 
+	overallStats (cohort_definition_id, stratum_1, avg_value, stdev_value, min_value, max_value, total) as
+	(
+		select cohort_definition_id, 
+			stratum_1,
+			avg(1.0 * count_value) as avg_value,
+			stdev(count_value) as stdev_value,
+			min(count_value) as min_value,
+			max(count_value) as max_value,
+			count_big(*) as total
+		from cteRawData
+		group by cohort_definition_id, stratum_1
+	),
+	valueStats (cohort_definition_id, stratum_1, count_value, total, accumulated) as
+	(
+		select cohort_definition_id,
+			stratum_1,
+			count_value, 
+			total, 
+			SUM(total) over (partition by cohort_definition_id, stratum_1 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+		FROM (
+			select cohort_definition_id, stratum_1, count_value, count_big(*) as total
+			FROM cteRawData
+			GROUP BY cohort_definition_id, stratum_1, count_value
+		) D
+	)
+	select o.cohort_definition_id,
+		233 as analysis_id,
+		CAST(o.stratum_1 as VARCHAR) as stratum_1, 
+		cast( '' as varchar(1) ) as stratum_2,
+		o.total as count_value,
+		o.min_value,
+		o.max_value,
+		o.avg_value,
+		coalesce(o.stdev_value, 0.0) as stdev_value,
+		MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+		MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+		MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+		MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+		MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+	into #results_dist_233
+	from valueStats s
+	join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1
+	GROUP BY o.cohort_definition_id, o.stratum_1, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+	;
+
+	TRUNCATE TABLE #raw_233;
+	DROP TABLE #raw_233;
+}
+
   --/********************************************
   
   --HERACLES Analyses on CONDITION_OCCURRENCE table
@@ -8207,6 +8414,10 @@ DROP TABLE #raw_1813;
   select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
   cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
   from  #results_220 union all }
+  --{ 230  IN (@list_of_analysis_ids)}?{
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
+  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  from  #results_230 union all }
   --{ 400  IN (@list_of_analysis_ids)}?{
   select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
   cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
@@ -8759,6 +8970,18 @@ DROP TABLE #raw_1813;
   select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
   cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_211 union all }
+  --{ 231  IN (@list_of_analysis_ids)}?{
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
+  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_231 union all }
+  --{ 232  IN (@list_of_analysis_ids)}?{
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
+  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_232 union all }
+  --{ 233  IN (@list_of_analysis_ids)}?{
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
+  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_233 union all }
   --{ 403  IN (@list_of_analysis_ids)}?{
   select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
   cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
@@ -9751,6 +9974,15 @@ drop table  #results_dist_211;
 
 IF OBJECT_ID('tempdb..#results_220', 'U') IS NOT NULL
 drop table  #results_220;
+
+IF OBJECT_ID('tempdb..#results_230', 'U') IS NOT NULL
+drop table  #results_230;
+
+IF OBJECT_ID('tempdb..#results_dist_231', 'U') IS NOT NULL
+drop table  #results_dist_231;
+
+IF OBJECT_ID('tempdb..#results_dist_232', 'U') IS NOT NULL
+drop table  #results_dist_232;
 
 IF OBJECT_ID('tempdb..#results_400', 'U') IS NOT NULL
 drop table  #results_400;

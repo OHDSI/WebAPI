@@ -189,7 +189,7 @@ public class CohortAnalysisService extends AbstractDaoService {
 				"measurement_concept_ids", "cohort_period_only", "source_id"};
 		String[] values = new String[]{cdmTableQualifier, resultsTableQualifier, task.getSource().getSourceName(),
 				String.valueOf(task.getSmallCellCount()),
-				String.valueOf(task.runHeraclesHeel()).toUpperCase(), "5", cohortDefinitionIds,
+				String.valueOf(task.runHeraclesHeel()).toUpperCase(), task.getCdmVersion(), cohortDefinitionIds,
 				analysisIds, conditionIds, drugIds, procedureIds, observationIds, measurementIds,
 				String.valueOf(task.isCohortPeriodOnly()), String.valueOf(task.getSource().getSourceId())};
 		sql = SqlRender.renderSql(sql, params, values);
@@ -265,6 +265,7 @@ public class CohortAnalysisService extends AbstractDaoService {
 		if (task.isCohortPeriodOnly()) {
 			builder.addString("cohortPeriodOnly", "true");
 		}
+		
 		if (!StringUtils.isEmpty(task.getJobName())) {
 			builder.addString("jobName", limitJobParams(task.getJobName()));
 		}

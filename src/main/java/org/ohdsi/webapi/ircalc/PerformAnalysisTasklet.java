@@ -83,6 +83,7 @@ public class PerformAnalysisTasklet implements Tasklet {
     Integer analysisId = Integer.valueOf(jobParams.get("analysis_id").toString());
     int[] result;
     try {
+      String targetDialect = jobParams.get("target_dialect").toString();
       String sessionId = SessionUtils.sessionId();
       IncidenceRateAnalysis analysis = this.incidenceRateAnalysisRepository.findOne(analysisId);
       IncidenceRateAnalysisExpression expression = mapper.readValue(analysis.getDetails().getExpression(), IncidenceRateAnalysisExpression.class);
@@ -92,12 +93,13 @@ public class PerformAnalysisTasklet implements Tasklet {
       options.resultsSchema = jobParams.get("results_database_schema").toString();
       options.vocabularySchema = jobParams.get("vocabulary_database_schema").toString();
 
-      String delete = "DELETE FROM @tableQualifier.ir_strata WHERE analysis_id = @analysis_id";
+      String delete = "DELETE FROM @tableQualifier.ir_strata WHERE analysis_id = @analysis_id;";
       PreparedStatementRenderer psr = new PreparedStatementRenderer(null, delete, "tableQualifier",
         options.resultsSchema, "analysis_id", analysisId);
-      jdbcTemplate.update(psr.getSql(), psr.getSetter());
+      String sql = SqlTranslate.translateSql(psr.getSql(), targetDialect);
+      jdbcTemplate.update(sql, psr.getSetter());
 
-      String insert = "INSERT INTO @results_schema.ir_strata (analysis_id, strata_sequence, name, description) VALUES (@analysis_id,@strata_sequence,@name,@description)";
+      String insert = "INSERT INTO @results_schema.ir_strata (analysis_id, strata_sequence, name, description) VALUES (@analysis_id,@strata_sequence,CAST(@name AS VARCHAR(255)),CAST(@description AS VARCHAR(1000)));";
 
       String [] params = {"analysis_id", "strata_sequence", "name", "description"};
       List<StratifyRule> strataRules = expression.strata;
@@ -105,13 +107,13 @@ public class PerformAnalysisTasklet implements Tasklet {
       {
         StratifyRule r = strataRules.get(i);
         psr = new PreparedStatementRenderer(null, insert, "results_schema",
-          options.resultsSchema, params, new Object[] { analysisId, i, r.name, r.description});
-        psr.setTargetDialect(jobParams.get("target_dialect").toString());
+          options.resultsSchema, params, new Object[] { analysisId, i, r.name, ""/*r.description*/}); // todo pozhidaeva
+        psr.setTargetDialect(targetDialect);
         jdbcTemplate.update(psr.getSql(), psr.getSetter());
       }
       
       String expressionSql = analysisQueryBuilder.buildAnalysisQuery(analysis, options);
-      String translatedSql = SqlTranslate.translateSql(expressionSql, jobParams.get("target_dialect").toString(), sessionId, null);
+      String translatedSql = SqlTranslate.translateSql(expressionSql, targetDialect, sessionId, null);
       String[] sqlStatements = SqlSplit.splitSql(translatedSql);
       result = PerformAnalysisTasklet.this.jdbcTemplate.batchUpdate(sqlStatements);
     } catch (Exception e) {

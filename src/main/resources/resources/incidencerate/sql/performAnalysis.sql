@@ -107,11 +107,11 @@ DELETE FROM @results_database_schema.ir_analysis_result where analysis_id = @ana
 INSERT INTO @results_database_schema.ir_analysis_result (analysis_id, target_id, outcome_id, strata_mask, person_count, time_at_risk, cases)
 select @analysisId as analysis_id, T.target_id, T.outcome_id, E.strata_mask,
   COUNT(subject_id) as person_count, 
-  sum(1.0 * time_at_risk / 365.25) as time_at_risk, 
-  sum(is_case) as cases
+  CAST(sum(1.0 * time_at_risk / 365.25) as BIGINT) as time_at_risk,
+  CAST(sum(is_case) as BIGINT) as cases
 from #time_at_risk T
 JOIN (
-  select E.event_id, E.person_id, E.start_date, E.end_date, SUM(coalesce(POWER(cast(2 as bigint), SC.strata_sequence), 0)) as strata_mask
+  select E.event_id, E.person_id, E.start_date, E.end_date, CAST(SUM(coalesce(POWER(cast(2 as bigint), SC.strata_sequence), 0)) as BIGINT) as strata_mask
   FROM #analysis_events E
   LEFT JOIN #strataCohorts SC on SC.person_id = E.person_id and SC.event_id = E.event_id
   group by E.event_id, E.person_id, E.start_date, E.end_date
@@ -133,7 +133,7 @@ cross join (
 ) combos
 left join
 (
-  select T.target_id, T.outcome_id, S.strata_sequence, count(S.event_id) as person_count, sum(1.0 * T.time_at_risk / 365.25) as time_at_risk, sum(T.is_case) as cases
+  select T.target_id, T.outcome_id, S.strata_sequence, count(S.event_id) as person_count, CAST(sum(1.0 * T.time_at_risk / 365.25) as BIGINT) as time_at_risk, CAST(sum(T.is_case) as BIGINT) as cases
   from #analysis_events E
   JOIN #strataCohorts S on S.person_id = E.person_id and E.event_id = S.event_id
   join #time_at_risk T on T.subject_id = E.person_id and T.cohort_start_date = E.start_date and T.cohort_end_date = E.end_date
@@ -165,8 +165,8 @@ WITH cteRawData (target_id, outcome_id, strata_sequence, count_value) as
   select target_id, 
     outcome_id, 
     strata_sequence, 
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) as FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -244,8 +244,8 @@ WITH cteRawData (target_id, outcome_id, strata_sequence, count_value) as
   select target_id, 
     outcome_id, 
     strata_sequence, 
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) as float) as avg_value,
+    CAST(stdev(count_value) as float) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total

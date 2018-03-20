@@ -17,7 +17,7 @@ public class InvalidateAccessTokenFilter extends AdviceFilter {
     HttpServletResponse httpResponse = WebUtils.toHttp(response);
     httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     
-    String jwt = TokenManager.extractToken(request);
+    String jwt = TokenManager.extractToken(request, null);
     
     if (TokenManager.invalidate(jwt))    
       httpResponse.setStatus(HttpServletResponse.SC_NO_CONTENT);

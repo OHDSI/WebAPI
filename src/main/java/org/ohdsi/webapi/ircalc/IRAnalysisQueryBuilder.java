@@ -34,19 +34,20 @@ public class IRAnalysisQueryBuilder {
   private final static ConceptSetExpressionQueryBuilder conceptSetQueryBuilder = new ConceptSetExpressionQueryBuilder();
   private final static CohortExpressionQueryBuilder cohortExpressionQueryBuilder = new CohortExpressionQueryBuilder();
   
-  private final static String PERFORM_ANALYSIS_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/incidencerate/sql/performAnalysis.sql"); 
-  private final static String STRATA_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/incidencerate/sql/strata.sql");  
+  private final static String PERFORM_ANALYSIS_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/incidencerate/sql/performAnalysis.sql");
+  private final static String STRATA_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/incidencerate/sql/strata.sql");
   
   public static class BuildExpressionQueryOptions {
     @JsonProperty("cdmSchema")  
     public String cdmSchema;
 
+    @JsonProperty("vocabularySchema")
+    public String vocabularySchema;
+
     @JsonProperty("resultsSchema")  
     public String resultsSchema;
 		
-    @JsonProperty("vocabularySchema")  
-    public String vocabularySchema;
-  } 
+  }
 
   private String getStrataQuery(CriteriaGroup strataCriteria)
   {
@@ -143,6 +144,7 @@ public class IRAnalysisQueryBuilder {
     {
       // replease query parameters with tokens
       resultSql = StringUtils.replace(resultSql, "@cdm_database_schema", options.cdmSchema);
+      resultSql = StringUtils.replace(resultSql, "@vocabulary_database_schema", StringUtils.defaultIfEmpty(options.vocabularySchema, options.cdmSchema));
       resultSql = StringUtils.replace(resultSql, "@results_database_schema", options.resultsSchema);
       resultSql = StringUtils.replace(resultSql, "@vocabulary_database_schema", options.vocabularySchema);
     }

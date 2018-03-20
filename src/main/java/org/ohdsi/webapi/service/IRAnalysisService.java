@@ -102,7 +102,7 @@ import org.springframework.transaction.support.TransactionCallback;
 public class IRAnalysisService extends AbstractDaoService {
 
   private static final Log log = LogFactory.getLog(IRAnalysisService.class);
-  private final static String STRATA_STATS_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/incidencerate/sql/strata_stats.sql"); 
+  private final static String STRATA_STATS_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/incidencerate/sql/strata_stats.sql");
   
 
   @Autowired
@@ -138,10 +138,8 @@ public class IRAnalysisService extends AbstractDaoService {
     public String name;
     public String description;
     public String createdBy;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd, HH:mm")
     public Date createdDate;
     public String modifiedBy;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd, HH:mm")
     public Date modifiedDate;
   }
 
@@ -175,12 +173,13 @@ public class IRAnalysisService extends AbstractDaoService {
   };
 
   private List<AnalysisReport.Summary> getAnalysisSummaryList(int id, Source source) {
-    String tqName = "tableQualifier";
-    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-    String sql = "select target_id, outcome_id, sum(person_count) as person_count, sum(time_at_risk) as time_at_risk," +
-      " sum(cases) as cases from @tableQualifier.ir_analysis_result where analysis_id = @id GROUP BY target_id, outcome_id";
-    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, tqName, tqValue, "id", whitelist(id));
-    return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), summaryMapper);
+
+      String tqName = "tableQualifier";
+      String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+      String sql = "select target_id, outcome_id, sum(person_count) as person_count, sum(time_at_risk) as time_at_risk," +
+        " sum(cases) as cases from @tableQualifier.ir_analysis_result where analysis_id = @id GROUP BY target_id, outcome_id";
+      PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, tqName, tqValue, "id", whitelist(id));
+      return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), summaryMapper);
   }
 
   private final RowMapper<AnalysisReport.StrataStatistic> strataRuleStatisticMapper = new RowMapper<AnalysisReport.StrataStatistic>() {
@@ -236,9 +235,9 @@ public class IRAnalysisService extends AbstractDaoService {
   private String getStrataTreemapData(int analysisId, int targetId, int outcomeId, int inclusionRuleCount, Source source) {
     String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 
-    String query = "select strata_mask, person_count, time_at_risk, cases from @resultsTableQualifier.ir_analysis_result where analysis_id = @analysis_id and target_id = @target_id and outcome_id = @outcome_id";
+    String query = "select strata_mask, person_count, time_at_risk, cases from @resultsTableQualifier.ir_analysis_result where analysis_id = @analysisId and target_id = @targetId and outcome_id = @outcomeId";
     Object[] paramValues = {analysisId, targetId, outcomeId};
-    String[] params = {"analysis_id", "target_id", "outcome_id"};
+    String[] params = {"analysisId", "targetId", "outcomeId"};
     PreparedStatementRenderer psr = new PreparedStatementRenderer(source, query, "resultsTableQualifier", resultsTableQualifier, params, paramValues, SessionUtils.sessionId());
     // [0] is the inclusion rule bitmask, [1] is the count of the match
     List<StratifyReportItem> items = getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), stratifyResultsMapper);
@@ -409,7 +408,7 @@ public class IRAnalysisService extends AbstractDaoService {
     String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
     String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
     String vocabularyTableQualifier = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
-		
+
 		// No vocabulary table qualifier found - use the CDM as a default
     if (vocabularyTableQualifier == null) {
       vocabularyTableQualifier = cdmTableQualifier;

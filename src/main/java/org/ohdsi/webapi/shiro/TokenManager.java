@@ -10,12 +10,16 @@ import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.SigningKeyResolverAdapter;
 import io.jsonwebtoken.impl.crypto.MacProvider;
 import java.security.Key;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Stream;
 import javax.servlet.ServletRequest;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.web.util.WebUtils;
 
 /**
@@ -25,6 +29,7 @@ import org.apache.shiro.web.util.WebUtils;
 public class TokenManager {
   
   private static final String AUTHORIZATION_HEADER = "Authorization";
+  private static final String TOKEN_NAME = "bearerToken";
   
   private static final Map<String, Key> userToKeyMap = new HashMap<>();
   
@@ -81,22 +86,34 @@ public class TokenManager {
     userToKeyMap.remove(subject);
     return true;
   }
-  
-  public static String extractToken(ServletRequest request) {
+
+  public static String extractToken(ServletRequest request, Collection<String> allowedUrls) {
     HttpServletRequest httpRequest = WebUtils.toHttp(request);
+
+    String jwt = null;
     
-    String header =  httpRequest.getHeader(AUTHORIZATION_HEADER);
-    if (header == null || header.isEmpty())
-      return null;
+    String header = httpRequest.getHeader(AUTHORIZATION_HEADER);
+    if (header == null || header.isEmpty() || !StringUtils.startsWith(StringUtils.lowerCase(header, Locale.ENGLISH), "bearer")) {
+      HttpServletRequest httpServletRequest = (HttpServletRequest) request;
+      if (allowedUrls != null && allowedUrls.contains(httpServletRequest.getPathInfo())) {
+        jwt = getTokenFromCookies(httpServletRequest);
+      }
+    } else {
+      String[] headerParts = header.split(" ");
+      if (headerParts.length == 2) {
+        jwt = headerParts[1];
+      }
+    }
     
-    if (!header.toLowerCase(Locale.ENGLISH).startsWith("bearer"))
-      return null;
-    
-    String[] headerParts = header.split(" ");
-    if (headerParts.length != 2)
-      return null;
-    
-    String jwt = headerParts[1];
     return jwt;
+  }
+
+  private static String getTokenFromCookies(final HttpServletRequest request) {
+
+    return Stream.of(request.getCookies())
+            .filter(cookie -> TOKEN_NAME.equals(cookie.getName()))
+            .findFirst()
+            .map(Cookie::getValue)
+            .orElse(null);
   }
 }

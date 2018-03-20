@@ -7,18 +7,25 @@
 				name="ConversionPattern" />
 		</layout>
 	</appender>
+	 <appender name="fileAppender" class="org.apache.log4j.RollingFileAppender">
+        <param name="File" value="../logs/webapi.log" />
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d  %-5p  [%c{1}] %m %n" />
+        </layout>
+    </appender>
 
 	<logger name="org.ohdsi">
 		<level value="debug" />
 	</logger>
 	<logger name="org.springframework.orm">
-		<level value="debug" />
+		<level value="info" />
 	</logger>
 	<logger name="org.springframework.jdbc">
-		<level value="debug" />
+		<level value="info" />
 	</logger>
 	<root>
-		<level value="info" />
-		<appender-ref ref="stdout" />
+		<priority value="${log4j.priority}" />
+		<appender-ref ref="fileAppender" />
+		<appender-ref ref="stdout"/>
 	</root>
 </log4j:configuration>

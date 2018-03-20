@@ -42,6 +42,8 @@ public class InfoService {
   public static class Info {
     @JsonProperty("version")
     public String version;
+    @JsonProperty("buildNumber")
+    public String buildNumber;
   }
   
   @Bean
@@ -49,6 +51,7 @@ public class InfoService {
   {
     Info newInfo = new Info();
     newInfo.version = this.env.getRequiredProperty("webapi.version");
+    newInfo.buildNumber = this.env.getProperty("webapi.build.number", "SNAPSHOT");
     return newInfo;
   }
   

@@ -11,3 +11,4 @@ sandbox/
 /nbactions*.xml
 *~
 .DS_Store
+src/main/extras/**/*.jar

@@ -6,6 +6,7 @@ import io.buji.pac4j.realm.Pac4jRealm;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.PostConstruct;
@@ -31,9 +32,34 @@ import org.apache.shiro.web.filter.session.NoSessionCreationFilter;
 import org.apache.shiro.web.servlet.AdviceFilter;
 import org.apache.shiro.web.util.WebUtils;
 import org.ohdsi.webapi.OidcConfCreator;
-import org.ohdsi.webapi.shiro.*;
+import org.ohdsi.webapi.shiro.ADRealm;
+import org.ohdsi.webapi.shiro.ActiveDirectoryAuthFilter;
+import org.ohdsi.webapi.shiro.CorsFilter;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
+import org.ohdsi.webapi.shiro.ForceSessionCreationFilter;
+import org.ohdsi.webapi.shiro.InvalidateAccessTokenFilter;
+import org.ohdsi.webapi.shiro.JdbcAuthFilter;
+import org.ohdsi.webapi.shiro.JdbcAuthRealm;
+import org.ohdsi.webapi.shiro.JwtAuthFilter;
+import org.ohdsi.webapi.shiro.JwtAuthRealm;
+import org.ohdsi.webapi.shiro.LdapAuthFilter;
+import org.ohdsi.webapi.shiro.LdapRealm;
+import org.ohdsi.webapi.shiro.LogoutFilter;
+import org.ohdsi.webapi.shiro.NegotiateAuthenticationPropagationFilter;
+import org.ohdsi.webapi.shiro.PermissionManager;
+import org.ohdsi.webapi.shiro.ProcessResponseContentFilter;
+import org.ohdsi.webapi.shiro.RedirectOnFailedOAuthFilter;
+import org.ohdsi.webapi.shiro.SendTokenInHeaderFilter;
+import org.ohdsi.webapi.shiro.SendTokenInRedirectFilter;
+import org.ohdsi.webapi.shiro.SendTokenInUrlFilter;
+import org.ohdsi.webapi.shiro.SkipFurtherFilteringFilter;
+import org.ohdsi.webapi.shiro.UpdateAccessTokenFilter;
+import org.ohdsi.webapi.shiro.UrlBasedAuthorizingFilter;
 import org.ohdsi.webapi.shiro.filters.KerberosAuthFilter;
+import org.ohdsi.webapi.shiro.lockout.DefaultLockoutPolicy;
+import org.ohdsi.webapi.shiro.lockout.ExponentLockoutStrategy;
+import org.ohdsi.webapi.shiro.lockout.LockoutPolicy;
+import org.ohdsi.webapi.shiro.lockout.LockoutStrategy;
 import org.ohdsi.webapi.shiro.realms.KerberosAuthRealm;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
@@ -46,7 +72,7 @@ import org.pac4j.oidc.config.OidcConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import waffle.shiro.negotiate.NegotiateAuthenticationFilter;
+import org.springframework.stereotype.Component;
 import waffle.shiro.negotiate.NegotiateAuthenticationRealm;
 import waffle.shiro.negotiate.NegotiateAuthenticationStrategy;
 
@@ -54,8 +80,10 @@ import waffle.shiro.negotiate.NegotiateAuthenticationStrategy;
  *
  * @author gennadiy.anisimov
  */
+@Component
 public class AtlasSecurity extends Security {
   public static final String TOKEN_ATTRIBUTE = "TOKEN";
+  public static final String AUTH_FILTER_ATTRIBUTE = "AuthenticatingFilter";
   public static final String PERMISSIONS_ATTRIBUTE = "PERMISSIONS";
   private final Log log = LogFactory.getLog(getClass());
 
@@ -125,6 +153,8 @@ public class AtlasSecurity extends Security {
   @Value("${security.ad.system.password}")
   private String adSystemPassword;
 
+  @Value("#{'${security.token.cookies.allowedList}'.toLowerCase().split(',')}")
+  private List<String> allowedUrls;
 
   @Autowired
   @Qualifier("authDataSource")
@@ -142,7 +172,11 @@ public class AtlasSecurity extends Security {
   private final Map<String, String> estimationPermissionTemplates = new LinkedHashMap<>();
   private final Map<String, String> plpPermissionTemplate = new LinkedHashMap<>();
 
-  public AtlasSecurity() {
+  private final CaseSensitiveProperties caseSensitiveProperties;
+
+  public AtlasSecurity(CaseSensitiveProperties caseSensitiveProperties) {
+
+    this.caseSensitiveProperties = caseSensitiveProperties;
     this.defaultRoles.add("public");
 
     this.cohortdefinitionCreatorPermissionTemplates.put("cohortdefinition:%s:put", "Update Cohort Definition with ID = %s");
@@ -235,9 +269,15 @@ public class AtlasSecurity extends Security {
       .addProtectedRestPath("/job/execution")
       .addProtectedRestPath("/job")
 
+      // cohorts
+      .addProtectedRestPath("/cohort/*")
+      .addProtectedRestPath("/cohort/*/*")
+      .addProtectedRestPath("/cohort/import")
+
       // configuration
       .addProtectedRestPath("/source/refresh")
       .addProtectedRestPath("/source/priorityVocabulary")
+      .addProtectedRestPath("/source/*/daimons/*/set-priority")
 
       // cohort analysis
       .addProtectedRestPath("/cohortanalysis")
@@ -260,10 +300,18 @@ public class AtlasSecurity extends Security {
       .addProtectedRestPath("/featureextraction/*")
 
       // vocabulary services
+//      .addProtectedRestPath("/vocabulary/*/lookup/identifiers")
+//      .addProtectedRestPath("/vocabulary/lookup/identifiers")
       .addProtectedRestPath("/vocabulary/*")
+      .addProtectedRestPath("/vocabulary/*/*")
+      .addProtectedRestPath("/vocabulary/*/*/*")
+
+      // profiles
+      .addProtectedRestPath("/*/person/*")
 
       // data sources
       .addProtectedRestPath("/cdmresults/*")
+      .addProtectedRestPath("/cdmresults/*/*")
 
       // not protected resources - all the rest
       .addRestPath("/**")
@@ -278,9 +326,10 @@ public class AtlasSecurity extends Security {
     filters.put("logout", new LogoutFilter());
     filters.put("noSessionCreation", new NoSessionCreationFilter());
     filters.put("forceSessionCreation", new ForceSessionCreationFilter());
-    filters.put("jwtAuthc", new JwtAuthFilter());
-    filters.put("negotiateAuthc", new NegotiateAuthenticationFilter());
-    filters.put("updateToken", new UpdateAccessTokenFilter(this.authorizer, this.defaultRoles, this.tokenExpirationIntervalInSeconds));
+    filters.put("jwtAuthc", new JwtAuthFilter(allowedUrls));
+    filters.put("negotiateAuthc", new NegotiateAuthenticationPropagationFilter());
+    filters.put("updateToken", new UpdateAccessTokenFilter(this.authorizer, this.defaultRoles,
+            this.tokenExpirationIntervalInSeconds, filters, caseSensitiveProperties.getCaseSensitive()));
     filters.put("invalidateToken", new InvalidateAccessTokenFilter());
     filters.put("authz", new UrlBasedAuthorizingFilter());
     filters.put("createPermissionsOnCreateCohortDefinition", this.getCreatePermissionsOnCreateCohortDefinitionFilter());

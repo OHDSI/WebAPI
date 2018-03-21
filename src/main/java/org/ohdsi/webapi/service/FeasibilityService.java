@@ -122,7 +122,7 @@ public class FeasibilityService extends AbstractDaoService {
       }
     }
     return null;
-  }
+    }
 
   private CohortGenerationInfo findCohortGenerationInfoBySourceId(Collection<CohortGenerationInfo> infoList, Integer sourceId) {
 
@@ -130,7 +130,7 @@ public class FeasibilityService extends AbstractDaoService {
       if (info.getId().getSourceId().equals(sourceId)) {
         return info;
       }
-    }
+      }
     return null;
   }
 
@@ -231,7 +231,7 @@ public class FeasibilityService extends AbstractDaoService {
           parentGroup.groups = new CriteriaGroup[1];
           parentGroup.groups[0] = indexRuleExpression.additionalCriteria;
           indexRuleExpression.additionalCriteria = parentGroup;
-        }
+      }
       }
       // place each inclusion rule (which is a CriteriaGroup) in the indexRuleExpression.additionalCriteria.group array to create the 'allCriteriaExpression'
       ArrayList<CriteriaGroup> additionalCriteriaGroups = new ArrayList<>();
@@ -270,7 +270,7 @@ public class FeasibilityService extends AbstractDaoService {
     while (n > 0) {
       n &= (n - 1);
       count++;
-    }
+  }
     return count;
   }
 

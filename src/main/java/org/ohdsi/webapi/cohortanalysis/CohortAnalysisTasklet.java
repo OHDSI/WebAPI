@@ -21,19 +21,19 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 public class CohortAnalysisTasklet implements Tasklet {
 
-  private static final Log log = LogFactory.getLog(CohortAnalysisTasklet.class);
+    private static final Log log = LogFactory.getLog(CohortAnalysisTasklet.class);
 
-  private final CohortAnalysisTask task;
+    private final CohortAnalysisTask task;
 
-  private final JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
-  private final TransactionTemplate transactionTemplate;
+    private final TransactionTemplate transactionTemplate;
 
-  private final CohortResultsAnalysisRunner analysisRunner;
+    private final CohortResultsAnalysisRunner analysisRunner;
 
-  public CohortAnalysisTasklet(CohortAnalysisTask task, final JdbcTemplate jdbcTemplate,
-                               final TransactionTemplate transactionTemplate,
-                               String sourceDialect, VisualizationDataRepository visualizationDataRepository) {
+    public CohortAnalysisTasklet(CohortAnalysisTask task, final JdbcTemplate jdbcTemplate,
+        final TransactionTemplate transactionTemplate, 
+        String sourceDialect, VisualizationDataRepository visualizationDataRepository) {
 
     this.task = task;
     this.jdbcTemplate = jdbcTemplate;
@@ -60,9 +60,9 @@ public class CohortAnalysisTasklet implements Tasklet {
               if (log.isDebugEnabled()) {
                 for (int x = 0; x < stmts.length; x++) {
                   log.debug(String.format("Split SQL %s : %s", x, stmts[x]));
-                }
+                	}
               }
-            }
+                }
             return CohortAnalysisTasklet.this.jdbcTemplate.batchUpdate(stmts);
           } catch (DataAccessException e) {
             log.error(whitelist(e));

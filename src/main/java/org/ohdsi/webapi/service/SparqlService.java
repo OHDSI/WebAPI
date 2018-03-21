@@ -196,4 +196,4 @@ public class SparqlService {
 		return jsonObj.getJSONObject("results").getJSONArray("bindings");
 	}
 
-}
+	}

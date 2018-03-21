@@ -379,7 +379,7 @@ public class VocabularyService extends AbstractDaoService {
     return new PreparedStatementRenderer(source, resourcePath, searchNames, replacementNames, variableNames, variableValues);
 
   }
-  
+
   /**
    * Perform a search using the default vocabulary source.
    * @param search
@@ -641,7 +641,7 @@ public class VocabularyService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<RelatedConcept> getDescendantConcepts(@PathParam("id") final Long id) {
     String defaultSourceKey = getDefaultVocabularySourceKey();
-    
+  
     if (defaultSourceKey == null)
       throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."), Response.Status.SERVICE_UNAVAILABLE); // http 503      
 
@@ -950,7 +950,7 @@ public class VocabularyService extends AbstractDaoService {
         return csc;
       }
     });
-    
+  
     return returnVal;
   }
 
@@ -1033,7 +1033,7 @@ public class VocabularyService extends AbstractDaoService {
     }
     returnVal.optimizedConceptSet.items = optimzedExpressionItems.toArray(new ConceptSetExpression.ConceptSetItem[optimzedExpressionItems.size()]);
     returnVal.removedConceptSet.items = removedExpressionItems.toArray(new ConceptSetExpression.ConceptSetItem[removedExpressionItems.size()]);
-    
+  
     return returnVal;
   }
 

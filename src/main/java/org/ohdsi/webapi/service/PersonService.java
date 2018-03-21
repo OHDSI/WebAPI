@@ -117,7 +117,7 @@ public class PersonService extends AbstractDaoService {
 
         profile.cohorts.add(item);
         return null;
-      }
+  }
     });
     return profile;
   }

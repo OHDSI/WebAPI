@@ -64,7 +64,7 @@ public class FeasibilityStudyQueryBuilder {
     {
       InclusionRule r = inclusionRules.get(i);
       insertStatements.append(String.format(insertTemplate, study.getId(), i, r.getName()));
-    }
+  }
     return insertStatements.toString();
   }
 
@@ -124,7 +124,7 @@ public class FeasibilityStudyQueryBuilder {
       resultSql = StringUtils.replace(resultSql, "@ohdsi_database_schema", options.ohdsiSchema);
       resultSql = StringUtils.replace(resultSql, "@cohortTable", options.cohortTable);
     }
-    
+
     resultSql = StringUtils.replace(resultSql, "@resultCohortId", study.getResultRule().getId().toString());
     resultSql = StringUtils.replace(resultSql, "@studyId", study.getId().toString());
 

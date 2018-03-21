@@ -105,7 +105,7 @@ public class PerformFeasibilityTasklet implements Tasklet {
       PreparedStatementRenderer psr = new PreparedStatementRenderer(null, insSql, null, (String) null, names, values, sessionId);
       jdbcTemplate.update(psr.getSql(), psr.getSetter());
     }
-  }
+    }
 
   private void cleanupTempTables(String dialect, String sessionId) {
 
@@ -143,7 +143,7 @@ public class PerformFeasibilityTasklet implements Tasklet {
       }
     } catch (Exception e) {
       throw new RuntimeException(e);
-    }
+  }
     return result;
   }
 

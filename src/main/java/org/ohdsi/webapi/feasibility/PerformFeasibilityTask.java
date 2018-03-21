@@ -35,7 +35,7 @@ public class PerformFeasibilityTask {
   private BuildExpressionQueryOptions options;
   private String sourceDialect;
   private String targetDialect;
-    
+  
   
   public BuildExpressionQueryOptions getOptions()
   {
@@ -77,5 +77,5 @@ public class PerformFeasibilityTask {
     	log.error(whitelist(e));
     }
     return super.toString();
-  }
+}
 }

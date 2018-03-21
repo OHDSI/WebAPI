@@ -84,7 +84,7 @@ public class GenerateCohortTasklet implements Tasklet {
 
       DefaultTransactionDefinition requresNewTx = new DefaultTransactionDefinition();
       requresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-    
+      
       TransactionStatus initStatus = this.transactionTemplate.getTransactionManager().getTransaction(requresNewTx);
       CohortDefinition def = this.cohortDefinitionRepository.findOne(defId);
       CohortExpression expression = mapper.readValue(def.getDetails().getExpression(), CohortExpression.class);

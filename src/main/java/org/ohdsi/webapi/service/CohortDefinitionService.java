@@ -154,7 +154,7 @@ public class CohortDefinitionService extends AbstractDaoService {
       return statistic;
     }
   };
-  
+
   private final RowMapper<Long[]> inclusionRuleResultItemMapper = new RowMapper<Long[]>() {
 
     @Override
@@ -171,7 +171,7 @@ public class CohortDefinitionService extends AbstractDaoService {
     for (CohortGenerationInfo info : infoList) {
       if (info.getId().getSourceId().equals(sourceId)) {
         return info;
-      }
+  }
     }
     return null;
   }
@@ -206,7 +206,7 @@ public class CohortDefinitionService extends AbstractDaoService {
       count++;
     }
     return count;
-  }
+  }  
   
   private String formatBitMask(Long n, int size) {
     return StringUtils.reverse(StringUtils.leftPad(Long.toBinaryString(n), size, "0"));
@@ -641,7 +641,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 
     SourceInfo sourceInfo = sourceService.getPriorityVocabularySourceInfo();
     CohortDefinition def = this.cohortDefinitionRepository.findOneWithDetail(id);
-    
+
     ArrayList<ConceptSetExport> exports = getConceptSetExports(def, sourceInfo);
     ByteArrayOutputStream exportStream = ExportUtil.writeConceptSetExportToCSVAndZip(exports);
 

@@ -52,5 +52,5 @@ public class CohortAnalysisServiceIT extends WebApiIT {
         Assert.state(execution != null);
         Assert.state(execution.getExecutionId() != null);
         Assert.state(execution.getJobInstanceResource().getInstanceId() != null);
-    }
+}
 }

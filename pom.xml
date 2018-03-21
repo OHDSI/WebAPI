@@ -19,6 +19,7 @@
     <waffle.version>1.7.3</waffle.version>
     <start-class>org.ohdsi.webapi.WebApi</start-class>
 
+    <dockerImagePrefix>hub.arachnenetwork.com</dockerImagePrefix>
     <!-- Primary DataSource -->
     <!-- default sql server - TODO How about making postgres the default (e.g. in line with open source tech)? -alexfranken -->
     <datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</datasource.driverClassName>
@@ -38,7 +39,7 @@
     <!-- Note: Schema name is case-sensitive. -->
     <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
     <flyway.validateOnMigrate>false</flyway.validateOnMigrate>
-    <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>		
+    <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>
     <!-- CDM properties -->
     <source.name>CDM_NAME</source.name>
     <cdm.version>5</cdm.version>
@@ -81,7 +82,7 @@
     <use.single.connect.datasource.for.testing>true</use.single.connect.datasource.for.testing>
 
     <security.cors.enabled>true</security.cors.enabled>
-    
+
     <spring.datasource.hikari.connection-test-query>SELECT 1</spring.datasource.hikari.connection-test-query>
     <spring.datasource.hikari.maximum-pool-size>5</spring.datasource.hikari.maximum-pool-size>
     <spring.datasource.hikari.minimum-idle>1</spring.datasource.hikari.minimum-idle>
@@ -92,6 +93,9 @@
     <server.ssl.key-store-password></server.ssl.key-store-password>
     <server.ssl.key-password></server.ssl.key-password>
   </properties>
+  <scm>
+    <developerConnection>scm:git:https://github.com/OHDSI/Atlas.git</developerConnection>
+  </scm>
   <build>
     <finalName>WebAPI</finalName>
     <resources>
@@ -160,7 +164,7 @@
         <configuration>
           <skipTests>true</skipTests>
         </configuration>
-</plugin>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -178,6 +182,93 @@
         <configuration>
           <failOnMissingWebXml>false</failOnMissingWebXml>
         </configuration>
+      </plugin>
+
+      <!-- AtlasUI packaging -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.0.2</version>
+          <configuration>
+            <encoding>UTF-8</encoding>
+            <escapeString>\</escapeString>
+          </configuration>
+        </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-scm-plugin</artifactId>
+        <version>1.9.5</version>
+        <configuration>
+          <connectionType>developerConnection</connectionType>
+          <scmVersion>${frontendBranch}</scmVersion>
+          <scmVersionType>branch</scmVersionType>
+          <checkoutDirectory>target/atlas</checkoutDirectory>
+        </configuration>
+        <executions>
+          <execution>
+            <id>checkout</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>checkout</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.6</version>
+        <configuration>
+          <finalName>atlasui</finalName>
+          <descriptors>
+            <descriptor>src/main/assembly/assembly.xml</descriptor>
+          </descriptors>
+          <appendAssemblyId>false</appendAssemblyId>
+        </configuration>
+        <executions>
+          <execution>
+            <id>make-assembly</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- Docker image build -->
+
+      <plugin>
+        <groupId>com.spotify</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+        <version>1.0.0</version>
+        <configuration>
+          <imageName>${dockerImagePrefix}/atlas</imageName>
+          <imageTags>
+            <imageTag>${project.version}</imageTag>
+            <imageTag>latest${latestSuffix}</imageTag>
+          </imageTags>
+          <dockerDirectory>src/main/docker</dockerDirectory>
+          <resources>
+            <resource>
+              <directory>${project.build.directory}</directory>
+              <include>${project.build.finalName}.${project.packaging}</include>
+            </resource>
+            <resource>
+              <directory>${project.build.directory}</directory>
+              <include>atlasui.zip</include>
+            </resource>
+          </resources>
+          <serverId>arachne-hub</serverId>
+          <registryUrl>https://hub.arachnenetwork.com/v2/</registryUrl>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>install</phase>
+            <goals>
+              <goal>build</goal>
+              <goal>push</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -232,7 +323,7 @@
       <id>ohdsi.thirdparty</id>
       <name>repo.ohdsi.org</name>
       <url>http://repo.ohdsi.org:8085/nexus/content/repositories/thirdparty</url>
-    </repository>    
+    </repository>
     <repository>
       <id>ohdsi.snapshots</id>
       <name>repo.ohdsi.org-snapshots</name>
@@ -259,6 +350,32 @@
       <id>redshift</id>
       <url>http://redshift-maven-repository.s3-website-us-east-1.amazonaws.com/release</url>
     </repository>
+    <repository>
+      <id>odysseus.community.snapshots</id>
+      <name>Odysseus community snapshots</name>
+      <releases>
+        <enabled>false</enabled>
+        <updatePolicy>always</updatePolicy>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+        <updatePolicy>always</updatePolicy>
+      </snapshots>
+      <url>http://repo.odysseusinc.com/artifactory/community-libs-snapshot-local</url>
+    </repository>
+    <repository>
+      <id>odysseus.community.releases</id>
+      <name>Odysseus community releases</name>
+      <releases>
+        <enabled>true</enabled>
+        <updatePolicy>always</updatePolicy>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+        <updatePolicy>always</updatePolicy>
+      </snapshots>
+      <url>http://repo.odysseusinc.com/artifactory/community-libs-release-local</url>
+    </repository>
   </repositories>
 
   <pluginRepositories>
@@ -267,6 +384,12 @@
       <name>MireDot Releases</name>
       <url>http://nexus.qmino.com/content/repositories/miredot</url>
     </pluginRepository>
+    <pluginRepository>
+      <id>central</id>
+      <name>plugins</name>
+      <url>http://repo.maven.apache.org/maven2</url>
+    </pluginRepository>
+
   </pluginRepositories>
 
   <dependencyManagement>
@@ -287,7 +410,7 @@
     </dependencies>
   </dependencyManagement>
   <dependencies>
-    <!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-actuator</artifactId> 
+    <!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-actuator</artifactId>
     <version>${spring.boot.version}</version> </dependency> -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -511,6 +634,33 @@
     </dependency>
   </dependencies>
   <profiles>
+    <profile>
+      <id>dev</id>
+      <properties>
+        <env>dev</env>
+        <latestSuffix>-dev</latestSuffix>
+        <frontendBranch>master</frontendBranch>
+      </properties>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+    </profile>
+    <profile>
+      <id>qa</id>
+      <properties>
+        <env>qa</env>
+        <latestSuffix>-qa</latestSuffix>
+        <frontendBranch>qa</frontendBranch>
+      </properties>
+    </profile>
+    <profile>
+      <id>prod</id>
+      <properties>
+        <env>prod</env>
+        <latestSuffix>-prod</latestSuffix>
+        <frontendBranch>master</frontendBranch>
+      </properties>
+    </profile>
     <profile>
       <id>webapi-oracle</id>
       <properties>

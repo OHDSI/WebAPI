@@ -1,5 +1,7 @@
 package org.ohdsi.webapi.test;
 
+import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
+
 import org.junit.Test;
 import org.ohdsi.webapi.vocabulary.Domain;
 import org.ohdsi.webapi.vocabulary.Vocabulary;

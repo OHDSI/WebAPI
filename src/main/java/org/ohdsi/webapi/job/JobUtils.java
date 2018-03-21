@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.JobExecution;
@@ -14,20 +13,21 @@ import org.springframework.batch.core.JobInstance;
 import org.springframework.batch.core.JobParameter;
 import org.springframework.batch.core.JobParameter.ParameterType;
 import org.springframework.batch.core.JobParameters;
-import org.springframework.batch.core.JobParametersBuilder;
 
 /**
  *
  */
 public final class JobUtils {
-    
+
     public static JobInstanceResource toJobInstanceResource(final JobInstance jobInstance) {
+
         final JobInstanceResource job = new JobInstanceResource(jobInstance.getId());
         job.setName(jobInstance.getJobName());
         return job;
     }
-    
+
     public static JobExecutionResource toJobExecutionResource(final JobExecution jobExecution) {
+
         final JobExecutionResource execution = new JobExecutionResource(
                 toJobInstanceResource(jobExecution.getJobInstance()), jobExecution.getId());
         execution.setStatus(jobExecution.getStatus().name());
@@ -47,21 +47,21 @@ public final class JobUtils {
         }
         return execution;
     }
-    
+
     /**
      * Create List of JobExecutionResource objects containing job parameters.
      * <p>
      * See /resources/job/sql/jobExecutions.sql for ResultSet expectations.
-     * 
+     *
      * @param rs
      * @return
      * @throws SQLException
      */
     public static List<JobExecutionResource> toJobExecutionResource(final ResultSet rs) throws SQLException {
         //TODO order by executionId
-        List<JobExecutionResource> jobs = new ArrayList<>();
+        List<JobExecutionResource> jobs = new ArrayList<JobExecutionResource>();
         JobExecutionResource jobexec = null;
-        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<String, Object>();
         while (rs.next()) {
             Long id = rs.getLong(1);
             if (jobexec != null) {//possible continuation
@@ -79,7 +79,7 @@ public final class JobUtils {
                 JobInstance jobInstance = new JobInstance(rs.getLong(10), rs.getString(11));
                 JobExecution jobExecution = new JobExecution(jobInstance, null);//jobParameters);
                 jobExecution.setId(id);
-                
+
                 jobExecution.setStartTime(rs.getTimestamp(2));
                 jobExecution.setEndTime(rs.getTimestamp(3));
                 jobExecution.setStatus(BatchStatus.valueOf(rs.getString(4)));
@@ -89,7 +89,6 @@ public final class JobUtils {
                 jobExecution.setVersion(rs.getInt(9));
                 jobexec = toJobExecutionResource(jobExecution);
             }
-            
             //parameters starts at 12
             ParameterType type = ParameterType.valueOf(rs.getString(13));
             JobParameter value = null;
@@ -111,12 +110,13 @@ public final class JobUtils {
                     break;
                 }
             }
-            
+
             // No need to assert that value is not null because it's an enum
-            map.put(rs.getString(12), value.getValue());//value);
-            
+            if (map != null && value != null) {
+                map.put(rs.getString(12), value.getValue());//value);
+            }
         }
-        if (jobexec.getExecutionId() != null) {
+        if (jobexec != null && jobexec.getExecutionId() != null) {
             jobexec.setJobParametersResource(map);
             jobs.add(jobexec);
         }

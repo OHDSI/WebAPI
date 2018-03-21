@@ -10,7 +10,7 @@ from @tableQualifier.drug_era
 join @tableQualifier.concept c on c.concept_id = drug_era.drug_concept_id
 where person_id = @personId  
 
-union all 
+union all
 
 select 'condition' as "domain", condition_concept_id concept_id, concept_name, condition_start_date start_date, condition_end_date end_date
 from @tableQualifier.condition_occurrence co

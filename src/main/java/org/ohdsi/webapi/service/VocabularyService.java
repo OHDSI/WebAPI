@@ -165,7 +165,7 @@ public class VocabularyService extends AbstractDaoService {
   }  
 
   public Collection<Concept> executeIncludedConceptLookup(String sourceKey, ConceptSetExpression conceptSetExpression) {
-
+  
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
     ConceptSetExpressionQueryBuilder builder = new ConceptSetExpressionQueryBuilder();
@@ -563,7 +563,7 @@ public class VocabularyService extends AbstractDaoService {
     if (defaultSourceKey == null)
       throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."),
         Response.Status.SERVICE_UNAVAILABLE); // http 503
-
+  
     return getCommonAncestors(defaultSourceKey, identifiers);
   }
   
@@ -609,7 +609,7 @@ public class VocabularyService extends AbstractDaoService {
   @Produces(MediaType.TEXT_PLAIN)
   @Consumes(MediaType.APPLICATION_JSON)
   public String getConceptSetExpressionSQL(ConceptSetExpression conceptSetExpression) {
-
+  
     ConceptSetExpressionQueryBuilder builder = new ConceptSetExpressionQueryBuilder();
     return  builder.buildExpressionQuery(conceptSetExpression);
   }
@@ -635,7 +635,7 @@ public class VocabularyService extends AbstractDaoService {
 
     return concepts.values();
   }
-
+    
   @GET
   @Path("concept/{id}/descendants")
   @Produces(MediaType.APPLICATION_JSON)
@@ -800,7 +800,7 @@ public class VocabularyService extends AbstractDaoService {
 
     return new PreparedStatementRenderer(source, sqlPath, tqName, tqValue, names, values);
   }
-
+  
   @POST
   @Path("descendantofancestor")
   @Produces(MediaType.APPLICATION_JSON)

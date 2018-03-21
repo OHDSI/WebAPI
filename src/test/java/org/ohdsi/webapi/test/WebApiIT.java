@@ -45,7 +45,7 @@ public abstract class WebApiIT {
    * @return the baseUri
    */
   public String getBaseUri() {
-
+    
     return this.baseUri;
   }
 

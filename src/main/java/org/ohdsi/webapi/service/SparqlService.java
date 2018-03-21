@@ -77,7 +77,7 @@ public class SparqlService {
 	@Path("rdfinfo")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Collection<RdfInfo> getInfo() throws JSONException {
-
+	
 		String query = ResourceHelper.GetResourceAsString("/resources/evidence/sparql/info.sparql");
 		String uriQuery = null;
 		String sparqlEndpoint = this.env.getRequiredProperty("sparql.endpoint");
@@ -149,7 +149,7 @@ public class SparqlService {
 		URL url = new URL(whitelist(shortenedUrl));
 		// open connection
 		HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection(Proxy.NO_PROXY);
-
+	
 		// stop following browser redirect
 		httpURLConnection.setInstanceFollowRedirects(false);
 

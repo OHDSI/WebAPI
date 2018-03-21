@@ -127,7 +127,7 @@ public class FeasibilityStudyQueryBuilder {
 
     resultSql = StringUtils.replace(resultSql, "@resultCohortId", study.getResultRule().getId().toString());
     resultSql = StringUtils.replace(resultSql, "@studyId", study.getId().toString());
-
+  
     return resultSql;
   }
   

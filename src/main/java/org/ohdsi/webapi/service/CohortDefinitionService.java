@@ -506,7 +506,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 		if (includeFeatures != null) {
 			GenerateCohortFeaturesTasklet generateCohortFeaturesTasklet = 
 						new GenerateCohortFeaturesTasklet(getSourceJdbcTemplate(source), getTransactionTemplate());
-
+		
 			Step generateCohortFeaturesStep = stepBuilders.get("cohortFeatures.generateFeatures")
 					.tasklet(generateCohortFeaturesTasklet)
 					.build();
@@ -632,7 +632,7 @@ public class CohortDefinitionService extends AbstractDaoService {
     }
     return exports;
   }
-
+    
   @GET
   @Path("/{id}/export/conceptset")
   @Consumes(MediaType.APPLICATION_JSON)

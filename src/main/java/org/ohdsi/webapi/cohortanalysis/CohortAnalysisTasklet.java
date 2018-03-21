@@ -20,17 +20,17 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 public class CohortAnalysisTasklet implements Tasklet {
-
+    
     private static final Log log = LogFactory.getLog(CohortAnalysisTasklet.class);
-
+    
     private final CohortAnalysisTask task;
-
+       
     private final JdbcTemplate jdbcTemplate;
-
+    
     private final TransactionTemplate transactionTemplate;
-
+    
     private final CohortResultsAnalysisRunner analysisRunner;
-
+    
     public CohortAnalysisTasklet(CohortAnalysisTask task, final JdbcTemplate jdbcTemplate,
         final TransactionTemplate transactionTemplate, 
         String sourceDialect, VisualizationDataRepository visualizationDataRepository) {

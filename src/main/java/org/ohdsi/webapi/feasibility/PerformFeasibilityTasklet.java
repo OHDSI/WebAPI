@@ -20,7 +20,6 @@ import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.logging.Log;
@@ -55,8 +54,8 @@ public class PerformFeasibilityTasklet implements Tasklet {
   private static final Log log = LogFactory.getLog(PerformFeasibilityTasklet.class);
 
   private final static FeasibilityStudyQueryBuilder studyQueryBuilder = new FeasibilityStudyQueryBuilder();
-  private final static String CREATE_TEMP_TABLES_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/feasibility/sql/inclusionRuleTable_CREATE.sql"); 
-  private final static String DROP_TEMP_TABLES_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/feasibility/sql/inclusionRuleTable_DROP.sql"); 
+  private final static String CREATE_TEMP_TABLES_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/feasibility/sql/inclusionRuleTable_CREATE.sql");
+  private final static String DROP_TEMP_TABLES_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/feasibility/sql/inclusionRuleTable_DROP.sql");
 
   private final JdbcTemplate jdbcTemplate;
   private final TransactionTemplate transactionTemplate;
@@ -64,7 +63,7 @@ public class PerformFeasibilityTasklet implements Tasklet {
   private final CohortDefinitionRepository cohortDefinitionRepository;
 
   public PerformFeasibilityTasklet(
-          final JdbcTemplate jdbcTemplate, 
+          final JdbcTemplate jdbcTemplate,
           final TransactionTemplate transactionTemplate,
           final FeasibilityStudyRepository feasibilityStudyRepository,
           final CohortDefinitionRepository cohortDefinitionRepository) {
@@ -82,9 +81,9 @@ public class PerformFeasibilityTasklet implements Tasklet {
     }
     return null;
   }
-  
-  private CohortGenerationInfo findCohortGenerationInfoBySourceId(Collection<CohortGenerationInfo> infoList, Integer sourceId)
-  {
+
+  private CohortGenerationInfo findCohortGenerationInfoBySourceId(Collection<CohortGenerationInfo> infoList, Integer sourceId) {
+
     for (CohortGenerationInfo info : infoList) {
       if (info.getId().getSourceId().equals(sourceId))
         return info;
@@ -106,7 +105,7 @@ public class PerformFeasibilityTasklet implements Tasklet {
       PreparedStatementRenderer psr = new PreparedStatementRenderer(null, insSql, null, (String) null, names, values, sessionId);
       jdbcTemplate.update(psr.getSql(), psr.getSetter());
     }
-  }
+    }
 
   private void cleanupTempTables(String dialect, String sessionId) {
 
@@ -114,8 +113,9 @@ public class PerformFeasibilityTasklet implements Tasklet {
     String[] sqlStatements = SqlSplit.splitSql(translatedSql);
     this.jdbcTemplate.batchUpdate(sqlStatements);
   }
-  
+
   private int[] doTask(ChunkContext chunkContext) {
+
     Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
     Integer studyId = Integer.valueOf(jobParams.get("study_id").toString());
     int[] result;
@@ -124,10 +124,12 @@ public class PerformFeasibilityTasklet implements Tasklet {
       FeasibilityStudy study = this.feasibilityStudyRepository.findOne(studyId);
       FeasibilityStudyQueryBuilder.BuildExpressionQueryOptions options = new FeasibilityStudyQueryBuilder.BuildExpressionQueryOptions();
       options.cdmSchema = jobParams.get("cdm_database_schema").toString();
+      options.vocabularySchema = jobParams.get("vocabulary_schema").toString();
       options.ohdsiSchema = jobParams.get("target_database_schema").toString();
       options.cohortTable = jobParams.get("target_database_schema").toString() + "." + jobParams.get("target_table").toString();
       if (study.getResultRule() != null) {
         prepareTempTables(study, jobParams.get("target_dialect").toString(), sessionId);
+
         String expressionSql = studyQueryBuilder.buildSimulateQuery(study, options);
         String translatedSql = SqlTranslate.translateSql(expressionSql, jobParams.get("target_dialect").toString(), sessionId, null);
         String[] sqlStatements = SqlSplit.splitSql(translatedSql);
@@ -141,12 +143,14 @@ public class PerformFeasibilityTasklet implements Tasklet {
       }
     } catch (Exception e) {
       throw new RuntimeException(e);
-    }
+  }
     return result;
   }
 
   @Override
-  public RepeatStatus execute(final StepContribution contribution, final ChunkContext chunkContext) throws Exception {
+  public RepeatStatus execute(final StepContribution contribution, final ChunkContext chunkContext) {
+    TransactionException transactionException = null;
+
     Date startTime = Calendar.getInstance().getTime();
     Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
     Integer studyId = Integer.valueOf(jobParams.get("study_id").toString());
@@ -155,40 +159,38 @@ public class PerformFeasibilityTasklet implements Tasklet {
 
     DefaultTransactionDefinition requresNewTx = new DefaultTransactionDefinition();
     requresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-    
+
     TransactionStatus initStatus = this.transactionTemplate.getTransactionManager().getTransaction(requresNewTx);
     FeasibilityStudy study = this.feasibilityStudyRepository.findOne(studyId);
-    
+
     CohortDefinition resultDef = study.getResultRule();
     if (resultDef != null) {
       CohortGenerationInfo resultInfo = findCohortGenerationInfoBySourceId(resultDef.getGenerationInfoList(), sourceId);
       resultInfo.setIsValid(false)
-              .setStatus(GenerationStatus.RUNNING)
-              .setStartTime(startTime)
-              .setExecutionDuration(null);
+          .setStatus(GenerationStatus.RUNNING)
+          .setStartTime(startTime)
+          .setExecutionDuration(null);
     }
     StudyGenerationInfo studyInfo = findStudyGenerationInfoBySourceId(study.getStudyGenerationInfoList(), sourceId);
     studyInfo.setIsValid(false);
     studyInfo.setStartTime(startTime);
     studyInfo.setStatus(GenerationStatus.RUNNING);
-    
+
     this.feasibilityStudyRepository.save(study);
     this.transactionTemplate.getTransactionManager().commit(initStatus);
-    
     try {
       final int[] ret = this.transactionTemplate.execute(new TransactionCallback<int[]>() {
 
         @Override
         public int[] doInTransaction(final TransactionStatus status) {
+
           return doTask(chunkContext);
         }
       });
       log.debug("Update count: " + ret.length);
       isValid = true;
     } catch (final TransactionException e) {
-      isValid = false;
-      log.error(whitelist(e));
-      throw e;//FAIL job status
+        transactionException = e;
     }
     finally {
       TransactionStatus completeStatus = this.transactionTemplate.getTransactionManager().getTransaction(requresNewTx);
@@ -202,17 +204,24 @@ public class PerformFeasibilityTasklet implements Tasklet {
         resultInfo.setExecutionDuration(new Integer((int)(endTime.getTime() - startTime.getTime())));
         resultInfo.setStatus(GenerationStatus.COMPLETE);
       }
-      
+
       studyInfo = findStudyGenerationInfoBySourceId(study.getStudyGenerationInfoList(), sourceId);
       studyInfo.setIsValid(isValid);
       studyInfo.setExecutionDuration(new Integer((int)(endTime.getTime() - startTime.getTime())));
       studyInfo.setStatus(GenerationStatus.COMPLETE);
-      
+
       this.feasibilityStudyRepository.save(study);
       this.transactionTemplate.getTransactionManager().commit(completeStatus);
     }
 
-    return RepeatStatus.FINISHED;
+      /// goal is to replicate original functionality only without the Fortify issue
+      if (transactionException != null) {
+          String errorMessage = whitelist(transactionException);
+          log.error(errorMessage);
+          throw transactionException;
+      } else {
+          return RepeatStatus.FINISHED;
+      }
   }
 
 }

@@ -25,7 +25,6 @@ import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.CriteriaGroup;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.circe.vocabulary.ConceptSetExpressionQueryBuilder;
-import org.ohdsi.webapi.service.FeasibilityService;
 
 /**
  *
@@ -35,15 +34,18 @@ public class FeasibilityStudyQueryBuilder {
   
   private final static ConceptSetExpressionQueryBuilder conceptSetQueryBuilder = new ConceptSetExpressionQueryBuilder();
   private final static CohortExpressionQueryBuilder cohortExpressionQueryBuilder = new CohortExpressionQueryBuilder();
-  
-  private final static String PERFORM_FEASIBILITY_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/feasibility/sql/performFeasibilityStudy.sql"); 
-  private final static String PERFORM_NULL_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/feasibility/sql/nullStudy.sql"); 
-  private final static String INDEX_COHORT_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/feasibility/sql/indexCohort.sql"); 
-  private final static String INCLUSION_RULE_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/feasibility/sql/inclusionrule.sql");  
+
+  private final static String PERFORM_FEASIBILITY_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/feasibility/sql/performFeasibilityStudy.sql");
+  private final static String PERFORM_NULL_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/feasibility/sql/nullStudy.sql");
+  private final static String INDEX_COHORT_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/feasibility/sql/indexCohort.sql");
+  private final static String INCLUSION_RULE_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/feasibility/sql/inclusionrule.sql");
   
   public static class BuildExpressionQueryOptions {
-    @JsonProperty("cdmSchema")  
+    @JsonProperty("cdmSchema")
     public String cdmSchema;
+
+    @JsonProperty("vocabularySchema")
+    public String vocabularySchema;
 
     @JsonProperty("ohdsiSchema")  
     public String ohdsiSchema;
@@ -51,18 +53,18 @@ public class FeasibilityStudyQueryBuilder {
     @JsonProperty("cohortTable")  
     public String cohortTable;
   } 
-  
+
   private String getInclusionRuleInserts(FeasibilityStudy study)
   {
     String insertTemplate = "insert into #inclusionRules vaues (%d, %d, %s)\n";
     StringBuilder insertStatements = new StringBuilder();
-    
+
     List<InclusionRule> inclusionRules = study.getInclusionRules();
     for (int i = 0; i< inclusionRules.size(); i++)
     {
       InclusionRule r = inclusionRules.get(i);
       insertStatements.append(String.format(insertTemplate, study.getId(), i, r.getName()));
-    }
+  }
     return insertStatements.toString();
   }
 
@@ -118,13 +120,14 @@ public class FeasibilityStudyQueryBuilder {
     {
       // replease query parameters with tokens
       resultSql = StringUtils.replace(resultSql, "@cdm_database_schema", options.cdmSchema);
+      resultSql = StringUtils.replace(resultSql, "@vocabulary_schema", options.vocabularySchema);
       resultSql = StringUtils.replace(resultSql, "@ohdsi_database_schema", options.ohdsiSchema);
       resultSql = StringUtils.replace(resultSql, "@cohortTable", options.cohortTable);
     }
-    
+
     resultSql = StringUtils.replace(resultSql, "@resultCohortId", study.getResultRule().getId().toString());
     resultSql = StringUtils.replace(resultSql, "@studyId", study.getId().toString());
-
+  
     return resultSql;
   }
   

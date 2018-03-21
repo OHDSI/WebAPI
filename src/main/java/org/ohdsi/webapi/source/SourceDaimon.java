@@ -34,75 +34,86 @@ import javax.persistence.Table;
 @Entity(name = "SourceDaimon")
 @Table(name="source_daimon")
 public class SourceDaimon implements Serializable {
-  public enum DaimonType { CDM, Vocabulary, Results, Evidence };
-  
+
+  public enum DaimonType {CDM, Vocabulary, Results, Evidence}
+
   public SourceDaimon() {
-  
+
   }
-  
+
   public SourceDaimon(Source source) {
+
     this.source = source;
   }
-  
+
   @Id
-  @GeneratedValue    
-  @Column(name="SOURCE_DAIMON_ID")  
+  @GeneratedValue
+  @Column(name = "SOURCE_DAIMON_ID")
   private int sourceDaimonId;
-  
+
   @ManyToOne
   @JsonIgnore
-  @JoinColumn(name="SOURCE_ID", referencedColumnName="SOURCE_ID")  
+  @JoinColumn(name = "SOURCE_ID", referencedColumnName = "SOURCE_ID")
   private Source source;
 
-  @Enumerated(EnumType.ORDINAL)  
-  @Column(name="DAIMON_TYPE")  
+  @Enumerated(EnumType.ORDINAL)
+  @Column(name = "DAIMON_TYPE")
   private DaimonType daimonType;
-  
-  @Column(name="TABLE_QUALIFIER")  
-  private String tableQualifier;  
-  
-  @Column(name="PRIORITY")
-  private String priority;
+
+  @Column(name = "TABLE_QUALIFIER")
+  private String tableQualifier;
+
+  @Column(name = "PRIORITY")
+  private Integer priority;
 
   public int getSourceDaimonId() {
+
     return sourceDaimonId;
   }
 
   public void setSourceDaimonId(int sourceDaimonId) {
+
     this.sourceDaimonId = sourceDaimonId;
   }
 
   public Source getSource() {
+
     return source;
   }
 
   public void setSource(Source source) {
+
     this.source = source;
   }
 
   public DaimonType getDaimonType() {
+
     return daimonType;
   }
 
   public void setDaimonType(DaimonType daimonType) {
+
     this.daimonType = daimonType;
   }
 
   public String getTableQualifier() {
+
     return tableQualifier;
   }
 
   public void setTableQualifier(String tableQualifier) {
+
     this.tableQualifier = tableQualifier;
   }
 
-  public String getPriority() {
+  public Integer getPriority() {
+
     return priority;
   }
 
-  public void setPriority(String priority) {
+  public void setPriority(Integer priority) {
+
     this.priority = priority;
   }
-  
-  
+
 }

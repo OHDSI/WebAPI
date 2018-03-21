@@ -34,46 +34,53 @@ public class CohortAnalysisTasklet implements Tasklet {
     public CohortAnalysisTasklet(CohortAnalysisTask task, final JdbcTemplate jdbcTemplate,
         final TransactionTemplate transactionTemplate, 
         String sourceDialect, VisualizationDataRepository visualizationDataRepository) {
-        this.task = task;
-        this.jdbcTemplate = jdbcTemplate;
-        this.transactionTemplate = transactionTemplate;
-        this.analysisRunner = new CohortResultsAnalysisRunner(sourceDialect, visualizationDataRepository);
-    }
-    
-    @Override
-    public RepeatStatus execute(final StepContribution contribution, final ChunkContext chunkContext) throws Exception {
-        
-        try {
-            final int[] ret = this.transactionTemplate.execute(new TransactionCallback<int[]>() {
-                
-                @Override
-                public int[] doInTransaction(final TransactionStatus status) {
-                	
-                	String cohortSql = CohortAnalysisService.getCohortAnalysisSql(task);
-                	
-                	String[] stmts = null;
-                	if (cohortSql != null) {
-                		if (log.isDebugEnabled()) {
-                			
-                			stmts = SqlSplit.splitSql(cohortSql);
-                            for (int x = 0; x < stmts.length; x++) {
-                                log.debug(String.format("Split SQL %s : %s", x, stmts[x]));
-                            }
-                        }
+
+    this.task = task;
+    this.jdbcTemplate = jdbcTemplate;
+    this.transactionTemplate = transactionTemplate;
+    this.analysisRunner = new CohortResultsAnalysisRunner(sourceDialect, visualizationDataRepository);
+  }
+
+  @Override
+  public RepeatStatus execute(final StepContribution contribution, final ChunkContext chunkContext) throws Exception {
+
+    try {
+      final int[] ret = this.transactionTemplate.execute(new TransactionCallback<int[]>() {
+
+        @Override
+        public int[] doInTransaction(final TransactionStatus status) {
+
+          try {
+            String cohortSql = CohortAnalysisService.getCohortAnalysisSql(task);
+
+            String[] stmts = null;
+            if (cohortSql != null) {
+              cohortSql = cohortSql.replaceAll("--\\n", "");
+              stmts = SqlSplit.splitSql(cohortSql);
+              if (log.isDebugEnabled()) {
+                for (int x = 0; x < stmts.length; x++) {
+                  log.debug(String.format("Split SQL %s : %s", x, stmts[x]));
                 	}
-                    return CohortAnalysisTasklet.this.jdbcTemplate.batchUpdate(stmts);
+              }
                 }
-            });
-            log.debug("Update count: " + ret.length);
-            
-            log.debug("warm up visualizations");
-            final int count = this.analysisRunner.warmupData(jdbcTemplate, task);
-            log.debug("warmed up " + count + " visualizations");
-        } catch (final TransactionException | DataAccessException e) {
+            return CohortAnalysisTasklet.this.jdbcTemplate.batchUpdate(stmts);
+          } catch (DataAccessException e) {
             log.error(whitelist(e));
-            throw e;//FAIL job status
+            return null;
+          }
+
         }
-        return RepeatStatus.FINISHED;
+      });
+      log.debug("Update count: " + ret.length);
+
+      log.debug("warm up visualizations");
+      final int count = this.analysisRunner.warmupData(jdbcTemplate, task);
+      log.debug("warmed up " + count + " visualizations");
+    } catch (final TransactionException e) {
+      log.error(whitelist(e));
+      throw e;//FAIL job status
     }
-    
-}
+    return RepeatStatus.FINISHED;
+  }
+
+};

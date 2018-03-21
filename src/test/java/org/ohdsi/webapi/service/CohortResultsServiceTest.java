@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.util.regex.Pattern;
 import org.junit.Before;
 import org.junit.Test;
 import org.ohdsi.webapi.cohortresults.ExposureCohortSearch;
@@ -23,7 +22,7 @@ public class CohortResultsServiceTest extends AbstractServiceTest {
     if (cohortResultsService == null) {
       cohortResultsService = new CohortResultsService();
     }
-  }
+    }
 
   @Test(expected = Exception.class)
   public void getCohortSpecificResultsRefreshIsTrue() {
@@ -92,7 +91,7 @@ public class CohortResultsServiceTest extends AbstractServiceTest {
     for (Object param : psr.getOrderedParamsList()) {
       assertTrue("1".equals(param) || "2".equals(param) || "3".equals(param) || "4".equals(param));
     }
-  }
+    }
 
   @Test
   public void prepareGetExposureOutcomeCohortRates() throws IOException {
@@ -106,7 +105,7 @@ public class CohortResultsServiceTest extends AbstractServiceTest {
     for (Object object : psr.getOrderedParamsList()) {
       assertTrue("1".equals(object));
     }
-  }
+    }
 
   @Test
   public void prepareGetCohortMembers() throws IOException {

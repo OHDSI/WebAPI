@@ -12,7 +12,7 @@
  */
 package org.ohdsi.webapi.test;
 
-import java.util.Arrays;
+import java.util.Collections;
 import org.junit.Test;
 import org.ohdsi.webapi.util.SecurityUtils;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTask;
@@ -34,9 +34,10 @@ public class CohortAnalysisServiceIT extends WebApiIT {
     public void createAnalysis() {
         CohortAnalysisTask task = new CohortAnalysisTask();
         //set attributes
-        task.setAnalysisIds(Arrays.asList("0"));
-        task.setCohortDefinitionIds(Arrays.asList("1"));
-        final ResponseEntity<JobExecutionResource> postEntity = getRestTemplate().postForEntity(this.endpointCohortAnalysis,
+        task.setAnalysisIds(Collections.singletonList("0"));
+        task.setCohortDefinitionIds(Collections.singletonList("1"));
+        //task.setSourceKey("CDM_NAME");
+        final ResponseEntity<JobExecutionResource> postEntity = getRestTemplate().postForEntity(endpointCohortAnalysis,
             task, JobExecutionResource.class);//TODO 409 or other errors prevent deserialization...
         assertOk(postEntity);
         SecurityUtils.sleep(10000);
@@ -46,10 +47,10 @@ public class CohortAnalysisServiceIT extends WebApiIT {
     private void assertOk(final ResponseEntity<?> entity) {
         Assert.state(entity.getStatusCode() == HttpStatus.OK);
     }
-    
+
     private void assertJobExecution(final JobExecutionResource execution) {
         Assert.state(execution != null);
         Assert.state(execution.getExecutionId() != null);
         Assert.state(execution.getJobInstanceResource().getInstanceId() != null);
-    }
+}
 }

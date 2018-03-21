@@ -39,14 +39,14 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import org.apache.commons.lang3.StringUtils;
-import org.ohdsi.sql.SqlTranslate;
 import javax.ws.rs.core.Response;
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.sql.SqlRender;
 
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
+import org.ohdsi.webapi.cohortdefinition.CleanupCohortTasklet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
@@ -54,7 +54,6 @@ import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfo;
 import org.ohdsi.webapi.cohortdefinition.ExpressionType;
 import org.ohdsi.webapi.cohortdefinition.GenerateCohortTasklet;
 import org.ohdsi.webapi.GenerationStatus;
-import org.ohdsi.webapi.cohortdefinition.CleanupCohortTasklet;
 import org.ohdsi.webapi.cohortdefinition.GenerationJobExecutionListener;
 import org.ohdsi.webapi.cohortdefinition.InclusionRuleReport;
 import org.ohdsi.webapi.cohortfeatures.GenerateCohortFeaturesTasklet;
@@ -65,15 +64,16 @@ import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
-import org.ohdsi.webapi.source.SourceInfo;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
@@ -120,6 +120,7 @@ public class CohortDefinitionService extends AbstractDaoService {
   private final RowMapper<InclusionRuleReport.Summary> summaryMapper = new RowMapper<InclusionRuleReport.Summary>() {
     @Override
     public InclusionRuleReport.Summary mapRow(ResultSet rs, int rowNum) throws SQLException {
+
       InclusionRuleReport.Summary summary = new InclusionRuleReport.Summary();
       summary.baseCount = rs.getLong("base_count");
       summary.finalCount = rs.getLong("final_count");
@@ -134,6 +135,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 
     @Override
     public InclusionRuleReport.InclusionRuleStatistic mapRow(ResultSet rs, int rowNum) throws SQLException {
+
       InclusionRuleReport.InclusionRuleStatistic statistic = new InclusionRuleReport.InclusionRuleStatistic();
       statistic.id = rs.getInt("rule_sequence");
       statistic.name = rs.getString("name");
@@ -152,7 +154,7 @@ public class CohortDefinitionService extends AbstractDaoService {
       return statistic;
     }
   };
-  
+
   private final RowMapper<Long[]> inclusionRuleResultItemMapper = new RowMapper<Long[]>() {
 
     @Override
@@ -165,10 +167,11 @@ public class CohortDefinitionService extends AbstractDaoService {
   };  
 
   private CohortGenerationInfo findBySourceId(Set<CohortGenerationInfo> infoList, Integer sourceId) {
+
     for (CohortGenerationInfo info : infoList) {
       if (info.getId().getSourceId().equals(sourceId)) {
         return info;
-      }
+  }
     }
     return null;
   }
@@ -196,13 +199,14 @@ public class CohortDefinitionService extends AbstractDaoService {
   }
   
   private int countSetBits(long n) {
+
     int count = 0;
     while (n > 0) {
       n &= (n - 1);
       count++;
     }
     return count;
-  }
+  }  
   
   private String formatBitMask(Long n, int size) {
     return StringUtils.reverse(StringUtils.leftPad(Long.toBinaryString(n), size, "0"));
@@ -285,10 +289,8 @@ public class CohortDefinitionService extends AbstractDaoService {
     public String description;
     public ExpressionType expressionType;
     public String createdBy;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd, HH:mm")
     public Date createdDate;
     public String modifiedBy;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd, HH:mm")
     public Date modifiedDate;
   }
 
@@ -298,6 +300,7 @@ public class CohortDefinitionService extends AbstractDaoService {
   }
 
   public CohortDefinitionDTO cohortDefinitionToDTO(CohortDefinition def) {
+
     CohortDefinitionDTO result = new CohortDefinitionDTO();
 
     result.id = def.getId();
@@ -321,10 +324,10 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public GenerateSqlResult generateSql(GenerateSqlRequest request) {
+
     CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = request.options;
     GenerateSqlResult result = new GenerateSqlResult();
-    if (options == null)
-    {
+    if (options == null) {
       options = new CohortExpressionQueryBuilder.BuildExpressionQueryOptions();
     }
     String expressionSql = queryBuilder.buildExpressionQuery(request.expression, options);
@@ -342,6 +345,7 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
   public List<CohortDefinitionListItem> getCohortDefinitionList() {
+
     ArrayList<CohortDefinitionListItem> result = new ArrayList<>();
     List<Object[]> defs = entityManager.createQuery("SELECT cd.id, cd.name, cd.description, cd.expressionType, cd.createdBy, cd.createdDate, cd.modifiedBy, cd.modifiedDate FROM CohortDefinition cd").getResultList();
     for (Object[] d : defs) {
@@ -370,6 +374,7 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public CohortDefinitionDTO createCohortDefinition(CohortDefinitionDTO def) {
+
     Date currentTime = Calendar.getInstance().getTime();
 
     //create definition in 2 saves, first to get the generated ID for the new def
@@ -405,6 +410,7 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Path("/{id}")
   @Produces(MediaType.APPLICATION_JSON)
   public CohortDefinitionDTO getCohortDefinition(@PathParam("id") final int id) {
+
     CohortDefinition d = this.cohortDefinitionRepository.findOneWithDetail(id);
     return cohortDefinitionToDTO(d);
   }
@@ -420,6 +426,7 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public CohortDefinitionDTO saveCohortDefinition(@PathParam("id") final int id, CohortDefinitionDTO def) {
+
     Date currentTime = Calendar.getInstance().getTime();
 
     CohortDefinition currentDefinition = this.cohortDefinitionRepository.findOneWithDetail(id);
@@ -447,10 +454,10 @@ public class CohortDefinitionService extends AbstractDaoService {
   public JobExecutionResource generateCohort(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey, @QueryParam("includeFeatures") final String includeFeatures) {
 
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);    
-    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);    
+    String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
     String vocabularyTableQualifier = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
-		
+
     DefaultTransactionDefinition requresNewTx = new DefaultTransactionDefinition();
     requresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     TransactionStatus initStatus = this.getTransactionTemplate().getTransactionManager().getTransaction(requresNewTx);
@@ -499,7 +506,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 		if (includeFeatures != null) {
 			GenerateCohortFeaturesTasklet generateCohortFeaturesTasklet = 
 						new GenerateCohortFeaturesTasklet(getSourceJdbcTemplate(source), getTransactionTemplate());
-
+		
 			Step generateCohortFeaturesStep = stepBuilders.get("cohortFeatures.generateFeatures")
 					.tasklet(generateCohortFeaturesTasklet)
 					.build();
@@ -525,6 +532,7 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Path("/{id}/info")
   @Transactional
   public List<CohortGenerationInfo> getInfo(@PathParam("id") final int id) {
+
     CohortDefinition def = this.cohortDefinitionRepository.findOne(id);
     Set<CohortGenerationInfo> infoList = def.getGenerationInfoList();
 
@@ -546,6 +554,7 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Path("/{id}/copy")
   @Transactional
   public CohortDefinitionDTO copy(@PathParam("id") final int id) {
+
     CohortDefinitionDTO sourceDef = getCohortDefinition(id);
     sourceDef.id = null; // clear the ID
     sourceDef.name = "COPY OF: " + sourceDef.name;
@@ -596,6 +605,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 	}
 	
   private ArrayList<ConceptSetExport> getConceptSetExports(CohortDefinition def, SourceInfo vocabSource) throws RuntimeException {
+
     ArrayList<ConceptSetExport> exports = new ArrayList<>();
     ObjectMapper mapper = new ObjectMapper();
     CohortExpression expression;
@@ -622,17 +632,16 @@ public class CohortDefinitionService extends AbstractDaoService {
     }
     return exports;
   }
-
+    
   @GET
   @Path("/{id}/export/conceptset")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
-  public Response exportConceptSets(@PathParam("id") final int id)
-  {
-    
+  public Response exportConceptSets(@PathParam("id") final int id) {
+
     SourceInfo sourceInfo = sourceService.getPriorityVocabularySourceInfo();
     CohortDefinition def = this.cohortDefinitionRepository.findOneWithDetail(id);
-    
+
     ArrayList<ConceptSetExport> exports = getConceptSetExports(def, sourceInfo);
     ByteArrayOutputStream exportStream = ExportUtil.writeConceptSetExportToCSVAndZip(exports);
 

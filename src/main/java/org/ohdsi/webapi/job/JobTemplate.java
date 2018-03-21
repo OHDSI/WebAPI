@@ -10,7 +10,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.JobParameter;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.Step;
@@ -20,6 +19,7 @@ import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
 import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
 import org.springframework.batch.core.step.tasklet.Tasklet;
+
 
 /**
  *
@@ -51,9 +51,9 @@ public class JobTemplate {
               log.debug("JobExecution queued: " + exec);
           }
         } catch (final JobExecutionAlreadyRunningException e) {
-            throw new WebApplicationException(Response.status(Status.CONFLICT).entity(whitelist(e)).build());
+            throw new WebApplicationException(Response.status(Status.CONFLICT).entity(whitelist(e.getMessage())).build());
         } catch (final Exception e) {
-            throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity(whitelist(e)).build());
+            throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity(whitelist(e.getMessage())).build());
         }
         return JobUtils.toJobExecutionResource(exec);
     }
@@ -70,9 +70,9 @@ public class JobTemplate {
             final Job job = this.jobBuilders.get(jobName).start(step).build();
             exec = this.jobLauncher.run(job, jobParameters);
         } catch (final JobExecutionAlreadyRunningException e) {
-            throw new WebApplicationException(Response.status(Status.CONFLICT).entity(whitelist(e.getMessage())).build());
+            throw new WebApplicationException(Response.status(Status.CONFLICT).entity(whitelist(e)).build());
         } catch (final JobInstanceAlreadyCompleteException e) {
-            throw new WebApplicationException(Response.status(Status.CONFLICT).entity(whitelist(e.getMessage())).build());
+            throw new WebApplicationException(Response.status(Status.CONFLICT).entity(whitelist(e)).build());
         } catch (final Exception e) {
             throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity(whitelist(e.getMessage())).build());
         }

@@ -6,10 +6,11 @@
   <groupId>org.ohdsi</groupId>
   <artifactId>WebAPI</artifactId>
   <packaging>war</packaging>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>2.3.1-SNAPSHOT</version>
   <name>WebAPI</name>
   <properties>
-    <webapi.version>2.3.0</webapi.version>
+    <webapi.version>${project.version}</webapi.version>
+    <webapi.build.number>SNAPSHOT</webapi.build.number>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jersey.version>2.14</jersey.version>
     <!-- Spring Boot manages spring.version as well -->
@@ -17,28 +18,35 @@
     <spring.batch.version>3.0.8.RELEASE</spring.batch.version>
     <flyway.version>3.1</flyway.version>
     <waffle.version>1.7.3</waffle.version>
+    <arachne.version>1.12.0-SNAPSHOT</arachne.version>
+    <jersey-media-multipart.version>2.25.1</jersey-media-multipart.version>
     <start-class>org.ohdsi.webapi.WebApi</start-class>
 
+    <dockerImagePrefix>hub.arachnenetwork.com</dockerImagePrefix>
     <!-- Primary DataSource -->
     <!-- default sql server - TODO How about making postgres the default (e.g. in line with open source tech)? -alexfranken -->
+<!--
     <datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</datasource.driverClassName>
     <datasource.url>jdbc:sqlserver://serverName;databaseName=databaseName</datasource.url>
     <datasource.username>user</datasource.username>
     <datasource.password>password</datasource.password>
+-->
     <!--<datasource.validationQuery>SELECT 1</datasource.validationQuery>-->
     <datasource.dialect>sql server</datasource.dialect>
     <datasource.ohdsi.schema>dbo</datasource.ohdsi.schema>
     <datasource.dialect.source>sql server</datasource.dialect.source>
     <!-- DB Change Management / Migration -->
+<!--
     <flyway.datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</flyway.datasource.driverClassName>
     <flyway.datasource.url>jdbc:sqlserver://serverName</flyway.datasource.url>
     <flyway.datasource.username>userWithWritePrivs</flyway.datasource.username>
     <flyway.datasource.password>password</flyway.datasource.password>
     <flyway.locations>classpath:db/migration/sqlserver</flyway.locations>
+-->
     <!-- Note: Schema name is case-sensitive. -->
     <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
     <flyway.validateOnMigrate>false</flyway.validateOnMigrate>
-    <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>		
+    <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>
     <!-- CDM properties -->
     <source.name>CDM_NAME</source.name>
     <cdm.version>5</cdm.version>
@@ -48,6 +56,7 @@
     <spring.profiles.active>default</spring.profiles.active>
 
     <security.enabled>false</security.enabled>
+    <security.cors.enabled>true</security.cors.enabled>
     <security.token.expiration>43200</security.token.expiration>
     <security.origin>http://localhost</security.origin>
     <security.ssl.enabled>false</security.ssl.enabled>
@@ -70,28 +79,27 @@
     <security.ad.principalSuffix>@example.org</security.ad.principalSuffix>
     <security.ad.system.username></security.ad.system.username>
     <security.ad.system.password></security.ad.system.password>
-
-    <security.db.datasource.schema>${datasource.ohdsi.schema}</security.db.datasource.schema>
-    <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
-    <security.db.datasource.driverClassName>${datasource.driverClassName}</security.db.datasource.driverClassName>
-    <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
-    <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
-
-    <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.users where email = ?</security.db.datasource.authenticationQuery>
-    <use.single.connect.datasource.for.testing>true</use.single.connect.datasource.for.testing>
-
+    <security.db.datasource.schema>public</security.db.datasource.schema>
     <security.cors.enabled>true</security.cors.enabled>
-    
-    <spring.datasource.hikari.connection-test-query>SELECT 1</spring.datasource.hikari.connection-test-query>
-    <spring.datasource.hikari.maximum-pool-size>5</spring.datasource.hikari.maximum-pool-size>
-    <spring.datasource.hikari.minimum-idle>1</spring.datasource.hikari.minimum-idle>
+    <security.maxLoginAttempts>3</security.maxLoginAttempts>
+    <security.duration.initial>10</security.duration.initial>
+    <security.duration.increment>10</security.duration.increment>
 
     <!-- EMBEDDED SERVER CONFIGURATION (ServerProperties) -->
     <server.port>8080</server.port>
     <server.ssl.key-store></server.ssl.key-store>
     <server.ssl.key-store-password></server.ssl.key-store-password>
     <server.ssl.key-password></server.ssl.key-password>
+
+    <impala.enabled>false</impala.enabled>
+    <!-- max age in hours -->
+    <execution.invalidation.maxage>4</execution.invalidation.maxage>
+    <execution.invalidation.period>10000</execution.invalidation.period>
+    <security.token.cookies.allowedList>/conceptset/exportlist</security.token.cookies.allowedList>
   </properties>
+  <scm>
+    <developerConnection>scm:git:https://github.com/odysseusinc/Atlas.git</developerConnection>
+  </scm>
   <build>
     <finalName>WebAPI</finalName>
     <resources>
@@ -160,7 +168,7 @@
         <configuration>
           <skipTests>true</skipTests>
         </configuration>
-</plugin>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -178,6 +186,93 @@
         <configuration>
           <failOnMissingWebXml>false</failOnMissingWebXml>
         </configuration>
+      </plugin>
+
+      <!-- AtlasUI packaging -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.0.2</version>
+          <configuration>
+            <encoding>UTF-8</encoding>
+            <escapeString>\</escapeString>
+          </configuration>
+        </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-scm-plugin</artifactId>
+        <version>1.9.5</version>
+        <configuration>
+          <connectionType>developerConnection</connectionType>
+          <scmVersion>${frontendBranch}</scmVersion>
+          <scmVersionType>branch</scmVersionType>
+          <checkoutDirectory>target/atlas</checkoutDirectory>
+        </configuration>
+        <executions>
+          <execution>
+            <id>checkout</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>checkout</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.6</version>
+        <configuration>
+          <finalName>atlasui</finalName>
+          <descriptors>
+            <descriptor>src/main/assembly/assembly.xml</descriptor>
+          </descriptors>
+          <appendAssemblyId>false</appendAssemblyId>
+        </configuration>
+        <executions>
+          <execution>
+            <id>make-assembly</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- Docker image build -->
+
+      <plugin>
+        <groupId>com.spotify</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+        <version>1.0.0</version>
+        <configuration>
+          <imageName>${dockerImagePrefix}/atlas</imageName>
+          <imageTags>
+            <imageTag>${project.version}</imageTag>
+            <imageTag>latest${latestSuffix}</imageTag>
+          </imageTags>
+          <dockerDirectory>src/main/docker</dockerDirectory>
+          <resources>
+            <resource>
+              <directory>${project.build.directory}</directory>
+              <include>${project.build.finalName}.${project.packaging}</include>
+            </resource>
+            <resource>
+              <directory>${project.build.directory}</directory>
+              <include>atlasui.zip</include>
+            </resource>
+          </resources>
+          <serverId>arachne-hub</serverId>
+          <registryUrl>https://hub.arachnenetwork.com/v2/</registryUrl>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>install</phase>
+            <goals>
+              <goal>build</goal>
+              <goal>push</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -224,6 +319,11 @@
       <url>http://repo.maven.apache.org/maven2/ </url>
     </repository>
     <repository>
+      <id>redhat.ga</id>
+      <name>Redhat GA</name>
+      <url>https://maven.repository.redhat.com/ga/</url>
+    </repository>
+    <repository>
       <id>ohdsi</id>
       <name>repo.ohdsi.org</name>
       <url>http://repo.ohdsi.org:8085/nexus/content/repositories/releases</url>
@@ -232,7 +332,7 @@
       <id>ohdsi.thirdparty</id>
       <name>repo.ohdsi.org</name>
       <url>http://repo.ohdsi.org:8085/nexus/content/repositories/thirdparty</url>
-    </repository>    
+    </repository>
     <repository>
       <id>ohdsi.snapshots</id>
       <name>repo.ohdsi.org-snapshots</name>
@@ -259,6 +359,32 @@
       <id>redshift</id>
       <url>http://redshift-maven-repository.s3-website-us-east-1.amazonaws.com/release</url>
     </repository>
+    <repository>
+      <id>odysseus.community.snapshots</id>
+      <name>Odysseus community snapshots</name>
+      <releases>
+        <enabled>false</enabled>
+        <updatePolicy>always</updatePolicy>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+        <updatePolicy>always</updatePolicy>
+      </snapshots>
+      <url>http://repo.odysseusinc.com/artifactory/community-libs-snapshot-local</url>
+    </repository>
+    <repository>
+      <id>odysseus.community.releases</id>
+      <name>Odysseus community releases</name>
+      <releases>
+        <enabled>true</enabled>
+        <updatePolicy>always</updatePolicy>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+        <updatePolicy>always</updatePolicy>
+      </snapshots>
+      <url>http://repo.odysseusinc.com/artifactory/community-libs-release-local</url>
+    </repository>
   </repositories>
 
   <pluginRepositories>
@@ -267,6 +393,12 @@
       <name>MireDot Releases</name>
       <url>http://nexus.qmino.com/content/repositories/miredot</url>
     </pluginRepository>
+    <pluginRepository>
+      <id>central</id>
+      <name>plugins</name>
+      <url>http://repo.maven.apache.org/maven2</url>
+    </pluginRepository>
+
   </pluginRepositories>
 
   <dependencyManagement>
@@ -287,7 +419,7 @@
     </dependencies>
   </dependencyManagement>
   <dependencies>
-    <!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-actuator</artifactId> 
+    <!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-actuator</artifactId>
     <version>${spring.boot.version}</version> </dependency> -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -350,7 +482,7 @@
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>2.4</version>
+      <version>2.4.0.redhat-1</version>
     </dependency>
     <dependency>
       <groupId>com.sun.xml.security</groupId>
@@ -369,6 +501,42 @@
       <version>3.3.2</version>
     </dependency>
     <dependency>
+      <groupId>commons-fileupload</groupId>
+      <artifactId>commons-fileupload</artifactId>
+      <version>1.3.3</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.santuario</groupId>
+      <artifactId>xmlsec</artifactId>
+      <version>1.4.8</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.8.9.redhat-1</version>
+    </dependency>
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <version>1.2.17.redhat-1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thoughtworks.xstream</groupId>
+      <artifactId>xstream</artifactId>
+      <version>1.4.7-redhat-1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-aspects</artifactId>
+      <version>4.3.5.RELEASE</version>
+    </dependency>
+    <dependency>
+      <groupId>com.nimbusds</groupId>
+      <artifactId>nimbus-jose-jwt</artifactId>
+      <version>4.36.1</version>
+    </dependency>
+    <dependency>
       <groupId>org.flywaydb</groupId>
       <artifactId>flyway-core</artifactId>
       <version>${flyway.version}</version>
@@ -376,7 +544,7 @@
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
-      <version>4.3.6</version>
+      <version>4.5.2.redhat-1</version>
     </dependency>
     <dependency>
       <groupId>commons-httpclient</groupId>
@@ -408,6 +576,16 @@
       <groupId>com.microsoft.sqlserver</groupId>
       <artifactId>mssql-jdbc</artifactId>
       <version>6.2.2.jre8</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-client</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.opencsv</groupId>
@@ -434,17 +612,17 @@
     <dependency>
       <groupId>org.apache.shiro</groupId>
       <artifactId>shiro-core</artifactId>
-      <version>1.2.4</version>
+      <version>1.2.5</version>
     </dependency>
     <dependency>
       <groupId>org.apache.shiro</groupId>
       <artifactId>shiro-web</artifactId>
-      <version>1.2.4</version>
+      <version>1.2.5</version>
     </dependency>
     <dependency>
       <groupId>org.apache.shiro</groupId>
       <artifactId>shiro-spring</artifactId>
-      <version>1.2.4</version>
+      <version>1.2.5</version>
     </dependency>
     <dependency>
       <groupId>com.github.dblock.waffle</groupId>
@@ -470,6 +648,12 @@
       <groupId>org.pac4j</groupId>
       <artifactId>pac4j-oauth</artifactId>
       <version>1.9.2</version>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.ws.rs</groupId>
+          <artifactId>jsr311-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.pac4j</groupId>
@@ -489,16 +673,26 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>featureExtraction</artifactId>
-      <version>2.0.2</version>
+      <version>2.0.2-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.amazon.redshift</groupId>
       <artifactId>redshift-jdbc4-no-awssdk</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.odysseusinc.arachne</groupId>
+      <artifactId>execution-engine-commons</artifactId>
+      <version>${arachne.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jersey.media</groupId>
+      <artifactId>jersey-media-multipart</artifactId>
+      <version>${jersey-media-multipart.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.springframework.security</groupId>
       <artifactId>spring-security-crypto</artifactId>
-      <version>4.2.3.RELEASE</version>
+      <version>4.2.4.RELEASE</version>
     </dependency>
     <dependency>
       <groupId>com.zaxxer</groupId>
@@ -509,8 +703,46 @@
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-configuration-processor</artifactId>
+      <optional>true</optional>
+      <exclusions>
+        <exclusion>
+          <groupId>com.vaadin.external.google</groupId>
+          <artifactId>android-json</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
   </dependencies>
   <profiles>
+    <profile>
+      <id>dev</id>
+      <properties>
+        <env>dev</env>
+        <latestSuffix>-dev</latestSuffix>
+        <frontendBranch>master</frontendBranch>
+      </properties>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+    </profile>
+    <profile>
+      <id>qa</id>
+      <properties>
+        <env>qa</env>
+        <latestSuffix>-qa</latestSuffix>
+        <frontendBranch>qa</frontendBranch>
+      </properties>
+    </profile>
+    <profile>
+      <id>prod</id>
+      <properties>
+        <env>prod</env>
+        <latestSuffix>-prod</latestSuffix>
+        <frontendBranch>master</frontendBranch>
+      </properties>
+    </profile>
     <profile>
       <id>webapi-oracle</id>
       <properties>
@@ -519,84 +751,26 @@
         <datasource.username>user</datasource.username>
         <datasource.password>password</datasource.password>
         <datasource.dialect>oracle</datasource.dialect>
-        <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
-        <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
-        <flyway.datasource.username>user</flyway.datasource.username>
-        <flyway.datasource.password>pass</flyway.datasource.password>
         <datasource.ohdsi.schema>OHDSI</datasource.ohdsi.schema>
-        <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
-        <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>
-        <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
         <!--<datasource.validationQuery>SELECT 1 FROM DUAL</datasource.validationQuery>-->
         <flyway.locations>classpath:db/migration/oracle</flyway.locations>
         <hibernate.dialect>org.hibernate.dialect.Oracle10gDialect</hibernate.dialect>
-        <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
-        <security.db.datasource.driverClassName>${datasource.driverClassName}</security.db.datasource.driverClassName>
-        <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
-        <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
-        <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.user where \
-          login = ?</security.db.datasource.authenticationQuery>
       </properties>
       <dependencies>
         <dependency>
-          <groupId>ojdbc</groupId>
-          <artifactId>ojdbc</artifactId>
-          <version>6.0.0</version>
+          <groupId>oracle</groupId>
+          <artifactId>ojdbc6</artifactId>
+          <version>11.2.0.3</version>
           <!-- If you have it local and not in a repository <systemPath></systemPath> -->
         </dependency>
       </dependencies>
-    </profile>
-    <profile>
-      <id>webapi-postgresql</id>
-      <properties>
-        <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
-        <datasource.url>jdbc:postgresql://54.209.111.128:5432/vocabularyv5</datasource.url>
-        <datasource.username>USER</datasource.username>
-        <datasource.password>PASS</datasource.password>
-        <datasource.dialect>postgresql</datasource.dialect>
-        <datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>
-        <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
-        <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
-        <flyway.datasource.username>userWithWritesToOhdsiSchema</flyway.datasource.username>
-        <flyway.datasource.password>PASS</flyway.datasource.password>
-        <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
-        <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>
-        <flyway.locations>classpath:db/migration/postgresql</flyway.locations>
-        <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
-        <hibernate.dialect>org.hibernate.dialect.PostgreSQL9Dialect</hibernate.dialect>
-        <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
-        <security.db.datasource.driverClassName>${datasource.driverClassName}</security.db.datasource.driverClassName>
-        <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
-        <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
-        <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.user where \
-              login = ?</security.db.datasource.authenticationQuery>
-      </properties>
-    </profile>
-    <profile>
-      <id>webapi-mssql</id>
-      <properties>
-        <datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</datasource.driverClassName>
-        <datasource.url>jdbc:sqlserver://server</datasource.url>
-        <datasource.username>USER</datasource.username>
-        <datasource.password>PASS</datasource.password>
-        <datasource.dialect>sql server</datasource.dialect>
-        <datasource.ohdsi.schema>OHDSI_schema</datasource.ohdsi.schema>
-        <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
-        <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
-        <flyway.datasource.username>FLYWAY_USER</flyway.datasource.username>
-        <flyway.datasource.password>FLYWAY_PASS</flyway.datasource.password>
-        <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
-        <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>
-        <flyway.locations>classpath:db/migration/sqlserver</flyway.locations>
-        <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
-        <hibernate.dialect>org.hibernate.dialect.SQLServer2012Dialect</hibernate.dialect>
-        <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
-        <security.db.datasource.driverClassName>${datasource.driverClassName}</security.db.datasource.driverClassName>
-        <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
-        <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
-        <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.user where \
-          login = ?</security.db.datasource.authenticationQuery>
-      </properties>
+        <repositories>
+            <repository>
+                <id>datanucleus</id>
+                <name>datanucleus</name>
+                <url>http://www.datanucleus.org/downloads/maven2/</url>
+            </repository>
+        </repositories>
     </profile>
     <profile>
       <id>webapi-netezza</id>
@@ -635,6 +809,242 @@
           </plugin>
         </plugins>
       </build>
+    </profile>
+    <profile>
+      <id>webapi-impala</id>
+      <properties>
+        <impala.enabled>true</impala.enabled>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>hive</groupId>
+          <artifactId>hive_metastore</artifactId>
+          <version>1.0.0</version>
+        </dependency>
+        <dependency>
+          <groupId>hive</groupId>
+          <artifactId>hive_service</artifactId>
+          <version>1.0.0</version>
+        </dependency>
+        <dependency>
+          <groupId>com.cloudera</groupId>
+          <artifactId>ImpalaJDBC41</artifactId>
+          <version>2.5.42</version>
+        </dependency>
+        <dependency>
+          <groupId>libfb</groupId>
+          <artifactId>libfb303</artifactId>
+          <version>0.9.0</version>
+        </dependency>
+        <dependency>
+          <groupId>libthrift</groupId>
+          <artifactId>libthrift</artifactId>
+          <version>0.9.0</version>
+        </dependency>
+        <dependency>
+          <groupId>ql</groupId>
+          <artifactId>ql</artifactId>
+          <version>1.0.0</version>
+        </dependency>
+        <dependency>
+          <groupId>TCLI</groupId>
+          <artifactId>TCLI</artifactId>
+          <version>1.0.0</version>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.zookeeper</groupId>
+          <artifactId>zookeeper</artifactId>
+          <version>3.4.6</version>
+          <type>pom</type>
+        </dependency>
+      </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-install-plugin</artifactId>
+            <version>2.5.2</version>
+            <executions>
+              <execution>
+                  <id>impala-jdbc</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                    <groupId>com.cloudera</groupId>
+                    <artifactId>ImpalaJDBC41</artifactId>
+                    <version>2.5.41</version>
+                    <packaging>jar</packaging>
+                    <file>${basedir}/src/main/extras/impala/ImpalaJDBC41.jar</file>
+                </configuration>
+              </execution>
+                <execution>
+                    <id>hive_metastore</id>
+                    <phase>initialize</phase>
+                    <goals>
+                        <goal>install-file</goal>
+                    </goals>
+                    <configuration>
+                        <groupId>hive</groupId>
+                        <artifactId>hive_metastore</artifactId>
+                        <version>1.0.0</version>
+                        <packaging>jar</packaging>
+                        <file>${basedir}/src/main/extras/impala/hive_metastore.jar</file>
+                    </configuration>
+                </execution>
+                <execution>
+                    <id>hive_service</id>
+                    <phase>initialize</phase>
+                    <goals>
+                        <goal>install-file</goal>
+                    </goals>
+                    <configuration>
+                        <groupId>hive</groupId>
+                        <artifactId>hive_service</artifactId>
+                        <version>1.0.0</version>
+                        <packaging>jar</packaging>
+                        <file>${basedir}/src/main/extras/impala/hive_service.jar</file>
+                    </configuration>
+                </execution>
+                <execution>
+                    <id>libfb</id>
+                    <phase>initialize</phase>
+                    <goals>
+                        <goal>install-file</goal>
+                    </goals>
+                    <configuration>
+                        <groupId>libfb</groupId>
+                        <artifactId>libfb303</artifactId>
+                        <version>0.9.0</version>
+                        <packaging>jar</packaging>
+                        <file>${basedir}/src/main/extras/impala/libfb303-0.9.0.jar</file>
+                    </configuration>
+                </execution>
+                <execution>
+                    <id>libthrift</id>
+                    <phase>initialize</phase>
+                    <goals>
+                        <goal>install-file</goal>
+                    </goals>
+                    <configuration>
+                        <groupId>libthrift</groupId>
+                        <artifactId>libthrift</artifactId>
+                        <version>0.9.0</version>
+                        <packaging>jar</packaging>
+                        <file>${basedir}/src/main/extras/impala/libthrift-0.9.0.jar</file>
+                    </configuration>
+                </execution>
+                <execution>
+                    <id>ql</id>
+                    <phase>initialize</phase>
+                    <goals>
+                        <goal>install-file</goal>
+                    </goals>
+                    <configuration>
+                        <groupId>ql</groupId>
+                        <artifactId>ql</artifactId>
+                        <version>1.0.0</version>
+                        <packaging>jar</packaging>
+                        <file>${basedir}/src/main/extras/impala/ql.jar</file>
+                    </configuration>
+                </execution>
+                <execution>
+                    <id>TCLI</id>
+                    <phase>initialize</phase>
+                    <goals>
+                        <goal>install-file</goal>
+                    </goals>
+                    <configuration>
+                        <groupId>TCLI</groupId>
+                        <artifactId>TCLI</artifactId>
+                        <version>1.0.0</version>
+                        <packaging>jar</packaging>
+                        <file>${basedir}/src/main/extras/impala/TCLIServiceClient.jar</file>
+                    </configuration>
+                </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>webapi-postgresql</id>
+      <properties>
+        <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
+        <datasource.url>jdbc:postgresql://54.209.111.128:5432/vocabularyv5</datasource.url>
+        <datasource.username>USER</datasource.username>
+        <datasource.password>PASS</datasource.password>
+        <datasource.dialect>postgresql</datasource.dialect>
+        <datasource.ohdsi.schema>webapi</datasource.ohdsi.schema>
+        <flyway.locations>classpath:db/migration/postgresql</flyway.locations>
+        <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
+        <hibernate.dialect>org.hibernate.dialect.PostgreSQL9Dialect</hibernate.dialect>
+        <executionengine.url>https://localhost:8888/api/v1/analyze</executionengine.url>
+        <executionengine.token>Basic YWRtaW5Ab2R5c3NldXNpbmMuY29tOnBhc3N3b3Jk</executionengine.token>
+        <executionengine.update_status_callback>http://localhost:8080/WebAPI\
+          /execution_service_callbacks/submission/{id}/status_update/{password}</executionengine.update_status_callback>
+        <executionengine.result_callback>http://localhost:8080/WebAPI\
+          /execution_service_callbacks/submission/{id}/result/{password}</executionengine.result_callback>
+        <security.enabled>true</security.enabled>
+        <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.users where \
+          email = ?</security.db.datasource.authenticationQuery>
+        <security.db.datasource.schema>public</security.db.datasource.schema>
+      </properties>
+    </profile>
+    <profile>
+      <id>webapi-mssql</id>
+      <properties>
+        <datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</datasource.driverClassName>
+        <datasource.url>jdbc:sqlserver://server</datasource.url>
+        <datasource.username>USER</datasource.username>
+        <datasource.password>PASS</datasource.password>
+        <datasource.dialect>sql server</datasource.dialect>
+        <datasource.ohdsi.schema>OHDSI_schema</datasource.ohdsi.schema>
+        <flyway.locations>classpath:db/migration/sqlserver</flyway.locations>
+        <hibernate.dialect>org.hibernate.dialect.SQLServer2012Dialect</hibernate.dialect>
+      </properties>
+    </profile>
+    <profile>
+      <id>test</id>
+      <properties>
+        <packaging.excludes></packaging.excludes>
+        <datasource.jndi-name>java:/comp/env/jdbc/webapi</datasource.jndi-name>
+        <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
+        <datasource.url>jdbc:postgresql://localhost:5432/atlas_test</datasource.url>
+        <datasource.username>ohdsi</datasource.username>
+        <datasource.password>ohdsi</datasource.password>
+        <datasource.dialect>postgresql</datasource.dialect>
+        <datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>
+        <hibernate.dialect>org.hibernate.dialect.PostgreSQL9Dialect</hibernate.dialect>
+        <flyway.locations>classpath:db/migration/postgresql</flyway.locations>
+        <use.single.connect.datasource.for.testing>true</use.single.connect.datasource.for.testing>
+      </properties>
+    </profile>
+    <profile>
+      <id>develop</id>
+      <properties>
+        <packaging.excludes></packaging.excludes>
+        <security.enabled>true</security.enabled>
+        <datasource.jndi-name>java:/comp/env/jdbc/webapi</datasource.jndi-name>
+        <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
+        <datasource.url>jdbc:postgresql://localhost:5432/webapi</datasource.url>
+        <datasource.username>ohdsi</datasource.username>
+        <datasource.password>ohdsi</datasource.password>
+        <datasource.dialect>postgresql</datasource.dialect>
+        <datasource.ohdsi.schema>webapi</datasource.ohdsi.schema>
+        <hibernate.dialect>org.hibernate.dialect.PostgreSQL9Dialect</hibernate.dialect>
+        <flyway.locations>classpath:db/migration/postgresql</flyway.locations>
+        <use.single.connect.datasource.for.testing>true</use.single.connect.datasource.for.testing>
+        <executionengine.url>https://localhost:8888/api/v1/analyze</executionengine.url>
+        <executionengine.token></executionengine.token>
+        <executionengine.update_status_callback>http://localhost:8089/WebAPI\
+          /execution_service_callbacks/submission/{id}/status_update/{password}</executionengine.update_status_callback>
+        <executionengine.result_callback>http://localhost:8089/WebAPI\
+          /execution_service_callbacks/submission/{id}/result/{password}</executionengine.result_callback>
+        <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.users where \
+          email = ?</security.db.datasource.authenticationQuery>
+      </properties>
     </profile>
   </profiles>
 </project>

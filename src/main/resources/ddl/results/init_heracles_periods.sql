@@ -59,6 +59,14 @@ FROM (
 		, dateadd(mm,3,qd.generated_date) as period_end_date
 	from quarterly_dates qd
 
+	UNION ALL
+  select 'Yearly' as period_name
+		, 4 as period_order
+		, 'yy' as period_type
+		, qd.generated_date as period_start_date
+		, dateadd(yy,1,qd.generated_date) as period_end_date
+	from quarterly_dates qd
+
 	-- ADD UNION ALLs for additional period definitions
 ) P
 ;

@@ -1,10 +1,15 @@
-SELECT
-  c1.concept_id   AS measurement_concept_id,
-  c1.concept_name AS measurement_concept_name,
-  c2.concept_id   AS concept_id,
-  c2.concept_name AS concept_name,
-  ar1.count_value AS count_value
-FROM @results_database_schema.ACHILLES_results ar1
-INNER JOIN @vocab_database_schema.concept c1 ON CAST(ar1.stratum_1 AS INT) = c1.concept_id
-INNER JOIN @vocab_database_schema.concept c2 ON CAST(ar1.stratum_2 AS INT) = c2.concept_id
-WHERE ar1.analysis_id = 1807
+select c1.concept_id as measurement_concept_id,
+       c1.concept_name as measurement_concept_name,
+       c2.concept_id as concept_id,
+       c2.concept_name as concept_name,
+       ar1.count_value as count_value
+from (
+       select cast(stratum_1 as int) stratum_1, cast(stratum_2 as int) stratum_2, count_value
+       from @results_database_schema.achilles_results
+       where analysis_id = 1807
+       group by analysis_id, stratum_1, stratum_2, count_value
+     ) ar1
+  inner join @vocab_database_schema.concept c1 on ar1.stratum_1 = c1.concept_id
+  inner join @vocab_database_schema.concept c2 on ar1.stratum_2 = c2.concept_id
+where
+  c1.concept_id = @conceptId

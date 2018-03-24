@@ -27,7 +27,7 @@ import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.web.filter.authc.AuthenticatingFilter;
 import org.apache.shiro.web.util.WebUtils;
 
-public abstract class AbstractLdapAuthFilter<T extends UsernamePasswordToken> extends AuthenticatingFilter {
+public abstract class AbstractLdapAuthFilter<T extends UsernamePasswordToken> extends AuthenticatingPropagationFilter {
     @Override
     protected AuthenticationToken createToken(ServletRequest request, ServletResponse response) throws Exception {
 
@@ -53,16 +53,7 @@ public abstract class AbstractLdapAuthFilter<T extends UsernamePasswordToken> ex
         boolean loggedIn = false;
 
         if (request.getParameter("login") != null) {
-            try {
-                loggedIn = executeLogin(request, response);
-            } catch (AuthenticationException ae) {
-                loggedIn = false;
-            }
-        }
-
-        if (!loggedIn) {
-            HttpServletResponse httpResponse = WebUtils.toHttp(response);
-            httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            loggedIn = executeLogin(request, response);
         }
 
         return loggedIn;

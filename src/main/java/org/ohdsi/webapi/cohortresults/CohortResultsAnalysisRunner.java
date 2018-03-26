@@ -17,6 +17,8 @@ import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
 
 public class CohortResultsAnalysisRunner {
 
@@ -1507,4 +1509,58 @@ public class CohortResultsAnalysisRunner {
 
 		return count;
 	}
+	
+	/* Healthcare Utilizaton Reports */
+	public HealthcareExposureReport getBaselineExposureReport(JdbcTemplate jdbcTemplate, final int cohortId, String periodType, Source source) {
+		return getExposureReport(jdbcTemplate, cohortId, periodType, 4000, source);
+	}
+	
+	public HealthcareExposureReport getCohortExposureReport(JdbcTemplate jdbcTemplate, final int cohortId, String periodType, Source source) {
+		return getExposureReport(jdbcTemplate, cohortId, periodType, 4006, source);
+	}
+	
+	private HealthcareExposureReport getExposureReport(JdbcTemplate jdbcTemplate, final int cohortId, final String periodType, final int analysisId, Source source) {
+		String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+
+		String[] search = new String[]{"results_schema"};
+		String[] replace = new String[]{resultsTableQualifier};
+
+		HealthcareExposureReport report = new HealthcareExposureReport();
+		
+		String summaryPath = BASE_SQL_PATH + "/healthcareutilization/getExposureSummary.sql";
+		String[] summaryCols = new String[]{"cohort_definition_id","analysis_id"};
+		Object[] summaryColVals = new Object[]{cohortId, analysisId};
+
+		PreparedStatementRenderer summaryPsr =  new PreparedStatementRenderer(source, summaryPath, search, replace, summaryCols, summaryColVals);
+		
+		report.summary = jdbcTemplate.query(summaryPsr.getSql(), summaryPsr.getSetter(), (rs,rowNum) -> {
+			HealthcareExposureReport.ExposureSummary s = new HealthcareExposureReport.ExposureSummary();
+			s.personsCount = rs.getLong("person_total");
+			s.exposureTotal = new BigDecimal(rs.getDouble("exposure_years_total")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			s.exposureAvg = new BigDecimal(rs.getDouble("exposure_avg_years_1k")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			return s;
+		}).get(0);
+		
+		String dataPath = BASE_SQL_PATH + "/healthcareutilization/getExposureData.sql";
+		String[] dataCols = new String[]{"cohort_definition_id","analysis_id", "period_type"};
+		Object[] dataColVals = new Object[]{cohortId, analysisId, periodType};
+
+		PreparedStatementRenderer dataPsr =  new PreparedStatementRenderer(source, dataPath, search, replace, dataCols, dataColVals);
+		
+		report.data = jdbcTemplate.query(dataPsr.getSql(), dataPsr.getSetter(), (rs,rowNum) -> {
+			HealthcareExposureReport.ExposureReportItem item = new HealthcareExposureReport.ExposureReportItem();
+			item.periodType = rs.getString("period_type");
+			item.periodStart = rs.getDate("period_start_date");
+			item.periodEnd = rs.getDate("period_end_date");
+			item.personsCount = rs.getLong("person_total");
+			item.personsPct = new BigDecimal(rs.getDouble("person_percent")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			item.exposureTotal = new BigDecimal(rs.getDouble("exposure_years_total")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			item.exposurePct = new BigDecimal(rs.getDouble("exposure_percent")).setScale(2, BigDecimal.ROUND_HALF_UP); 
+			item.exposureAvg = new BigDecimal(rs.getDouble("exposure_avg_years_1k")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			return item;
+		});
+
+		
+		return report;
+	}	
 }

@@ -10,7 +10,7 @@ with generate_dates (d_years, d_months) AS
 	(select 1 union all select 2) y1000(n),
 	(select 1 union all select 2 union all select 3 union all select 4 union all select 5 union all select 6 union all select 7 union all select 8 union all select 9 union all select 10 union all select 11 union all select 12) mths(n)
 	where y1.n + (10*y10.n) + (100*y100.n) + (1000*y1000.n) >= 1900 and y1.n + (10*y10.n) + (100*y100.n) + (1000*y1000.n) < 2100
-), 
+),
 monthly_dates (generated_date) as
 (
 	SELECT DATEFROMPARTS(d_years, d_months, 01) as generated_date
@@ -19,7 +19,7 @@ monthly_dates (generated_date) as
 weekly_dates (generated_date) as (
   SELECT DATEFROMPARTS(d_years, d_months, i.day_of_month) as generated_date
 	from generate_dates
-	CROSS JOIN ( 
+	CROSS JOIN (
 		select 1 as day_of_month
 		UNION ALL select 8 as day_of_month
 		UNION ALL select 15 as day_of_month
@@ -32,8 +32,8 @@ quarterly_dates (generated_date) as (
 	where d_months in (1,4,7,10)
 )
 
-select row_number() over (order by period_order, period_start_date) as period_id, period_name, period_order, period_type, period_start_date, period_end_date
-INTO #temp_period
+select period_name, period_order, period_type, period_start_date, period_end_date
+INTO #temp_period1
 FROM (
   -- monthly dates
   select 'Monthly' as period_name
@@ -72,7 +72,10 @@ FROM (
 ;
 
 INSERT INTO @results_schema.heracles_periods (period_id, period_name, period_order, period_type, period_start_date, period_end_date)
-select period_id, period_name, period_order, period_type, period_start_date, period_end_date from #temp_period;
+select row_number() over (order by period_order, period_start_date) as period_id
+			, period_name, period_order, period_type, period_start_date, period_end_date
+from #temp_period;
 
 TRUNCATE TABLE #temp_period;
 DROP TABLE #temp_period;
+

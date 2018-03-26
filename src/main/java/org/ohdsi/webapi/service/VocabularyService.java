@@ -2,6 +2,7 @@ package org.ohdsi.webapi.service;
 
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
+import com.google.common.collect.Maps;
 import com.microsoft.sqlserver.jdbc.SQLServerDriver;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -24,6 +25,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.circe.vocabulary.Concept;
@@ -101,7 +103,59 @@ public class VocabularyService extends AbstractDaoService {
     
     return null;
   }
-    
+
+  /**
+   * @summary Calculates ancestors for every descendants
+   * 
+   * @param ids concepts identifiers from concept set
+   *                            
+   * @return map {id -> ascendant id}
+   */
+  @Path("{sourceKey}/lookup/identifiers/ancestors")
+  @POST
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Map<Long, List<Long>> calculateAscendants(@PathParam("sourceKey") String sourceKey, Ids ids) {
+
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+
+    final PreparedStatementRenderer psr = prepareAscendantsCalculating(ids.ancestors, ids.descendants, source);
+
+    final List<Map.Entry<Long, Long>> result = getSourceJdbcTemplate(source)
+            .query(
+                    psr.getSql(),
+                    psr.getSetter(),
+                    (resultSet, arg1) -> Maps.immutableEntry(resultSet.getLong("ANCESTOR_ID"), resultSet.getLong("DESCENDANT_ID")));
+
+    return result
+            .stream()
+            .collect(
+                    Collectors.groupingBy(
+                            Map.Entry::getValue, 
+                            Collectors.mapping(
+                                    Map.Entry::getKey, 
+                                    Collectors.toList()
+                            )
+                    )
+            ); 
+  }
+  
+  private static class Ids {
+    public long[] ancestors;
+    public long[] descendants;
+  }
+
+  protected PreparedStatementRenderer prepareAscendantsCalculating(long[] identifiers, long[] descendants, Source source) {
+
+    String sqlPath = "/resources/vocabulary/sql/calculateAscendants.sql";
+    String tqName = "CDM_schema";
+    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
+
+    return new PreparedStatementRenderer(source, sqlPath, tqName, tqValue, 
+            new String[]{ "ancestors", "descendants" }, 
+            new Object[]{ identifiers, descendants });
+  }
+  
   /**
    * @summary Perform a lookup of an array of concept identifiers returning the
    * matching concepts with their detailed properties.

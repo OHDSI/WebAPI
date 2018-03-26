@@ -60,9 +60,10 @@ public class AuthDataSource {
 
         HikariConfig config = new HikariConfig();
         config.setDriverClassName(driverClassName);
-        config.setJdbcUrl(url);
-        config.setUsername(username);
-        config.setPassword(password);
+        config.setJdbcUrl("jdbc:postgresql://localhost:5432/arachne_portal_enterprise");
+        config.setUsername("ohdsi");
+        config.setPassword("ohdsi");
+        config.setSchema("public");
         config.setConnectionTestQuery(testQuery);
         config.setMaximumPoolSize(maxPoolSize);
         config.setMinimumIdle(minPoolIdle);

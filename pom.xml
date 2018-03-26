@@ -47,9 +47,9 @@
     <spring.batch.repository.isolationLevelForCreate>ISOLATION_READ_COMMITTED</spring.batch.repository.isolationLevelForCreate>
     <spring.profiles.active>default</spring.profiles.active>
 
-    <security.enabled>true</security.enabled>
+    <security.enabled>false</security.enabled>
     <security.token.expiration>43200</security.token.expiration>
-    <security.origin>http://localhost:3000</security.origin>
+    <security.origin>http://localhost</security.origin>
     <security.ssl.enabled>false</security.ssl.enabled>
     <security.oauth.callback.ui>http://localhost/Atlas/#/welcome</security.oauth.callback.ui>
     <security.oauth.callback.api>http://localhost:8080/WebAPI/user/oauth/callback</security.oauth.callback.api>
@@ -309,7 +309,7 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-tomcat</artifactId>
       <version>${spring.boot.version}</version>
-      <!--<scope>provided</scope>-->
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework.batch</groupId>
@@ -550,15 +550,15 @@
       <id>webapi-postgresql</id>
       <properties>
         <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
-        <datasource.url>jdbc:postgresql://localhost:5432/web_api_ohdsi</datasource.url>
-        <datasource.username>ohdsi</datasource.username>
-        <datasource.password>ohdsi</datasource.password>
+        <datasource.url>jdbc:postgresql://54.209.111.128:5432/vocabularyv5</datasource.url>
+        <datasource.username>USER</datasource.username>
+        <datasource.password>PASS</datasource.password>
         <datasource.dialect>postgresql</datasource.dialect>
-        <datasource.ohdsi.schema>public</datasource.ohdsi.schema>
+        <datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>
         <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
         <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
-        <flyway.datasource.username>ohdsi</flyway.datasource.username>
-        <flyway.datasource.password>ohdsi</flyway.datasource.password>
+        <flyway.datasource.username>userWithWritesToOhdsiSchema</flyway.datasource.username>
+        <flyway.datasource.password>PASS</flyway.datasource.password>
         <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
         <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>
         <flyway.locations>classpath:db/migration/postgresql</flyway.locations>
@@ -568,8 +568,8 @@
         <security.db.datasource.driverClassName>${datasource.driverClassName}</security.db.datasource.driverClassName>
         <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
         <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
-        <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.users_data where \
-              email = ?</security.db.datasource.authenticationQuery>
+        <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.user where \
+              login = ?</security.db.datasource.authenticationQuery>
       </properties>
     </profile>
     <profile>

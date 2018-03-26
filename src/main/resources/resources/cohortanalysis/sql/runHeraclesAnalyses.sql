@@ -8214,9 +8214,9 @@ with visit_records (cohort_definition_id, subject_id, visit_concept_id, visit_ty
 	from (
 		select cohort_definition_id, subject_id, min(cohort_start_date) as cohort_start_date from #HERACLES_cohort group by cohort_definition_id, subject_id
 	) c1
-	join dbo.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
+	join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
 			and vo1.visit_start_date >= dateadd(d, -365, c1.cohort_start_date) and vo1.visit_start_date < c1.cohort_start_date
-	join dbo.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
+	join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
 )
 select cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id, visit_start_date
 INTO #raw_4001
@@ -8587,7 +8587,7 @@ select distinct c1.cohort_definition_id,
 	vo1.visit_concept_id,
 	vo1.visit_type_concept_id,
 	vo1.visit_start_date,
-	cast(care_site_id as varchar(19)) + '_' + CONVERT(VARCHAR,visit_start_date, 112) as care_site_date_id
+	cast(care_site_id as varchar(19)) + '_' + CAST(YEAR(visit_start_date) as varchar(4)) + RIGHT('00' + cast(MONTH(visit_start_date) as varchar(2)),2) + RIGHT('00' + cast(DAY(visit_start_date) as varchar(2)),2) as care_site_date_id
 INTO #raw_4004
 from (
 	select cohort_definition_id, subject_id, min(cohort_start_date) as cohort_start_date from #HERACLES_cohort group by cohort_definition_id, subject_id
@@ -8808,7 +8808,7 @@ with visit_records (cohort_definition_id, subject_id, visit_concept_id, visit_ty
 	from #HERACLES_cohort c1
 	join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
 			and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date < c1.cohort_end_date
-	join dbo.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
+	join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
 )
 select cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id, visit_start_date
 INTO #raw_4007
@@ -9175,7 +9175,7 @@ select distinct c1.cohort_definition_id,
 	vo1.visit_concept_id,
 	vo1.visit_type_concept_id,
 	vo1.visit_start_date,
-	cast(care_site_id as varchar(19)) + '_' + CONVERT(VARCHAR,visit_start_date, 112) as care_site_date_id
+	cast(care_site_id as varchar(19)) + '_' + CAST(YEAR(visit_start_date) as varchar(4)) + RIGHT('00' + cast(MONTH(visit_start_date) as varchar(2)),2) + RIGHT('00' + cast(DAY(visit_start_date) as varchar(2)),2) as care_site_date_id
 INTO #raw_4010
 from #HERACLES_cohort c1
 join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id

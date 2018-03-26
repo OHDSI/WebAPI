@@ -1769,7 +1769,25 @@ public class CohortResultsService extends AbstractDaoService {
         
         return el;
     }
-    
+		
+	@GET
+	@Path("{sourceKey}/{id}/healthcareutilization/exposure/baseline")
+	@Produces(MediaType.APPLICATION_JSON)
+  public HealthcareExposureReport getBaselineExposureReport(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey) {
+		Source source = getSourceRepository().findBySourceKey(sourceKey);
+		HealthcareExposureReport exposureReport = queryRunner.getBaselineExposureReport(getSourceJdbcTemplate(source), id, source);
+		return exposureReport;
+	}
+	
+	@GET
+	@Path("{sourceKey}/{id}/healthcareutilization/exposure/cohort")
+	@Produces(MediaType.APPLICATION_JSON)
+  public HealthcareExposureReport getCohortExposureReport(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey) {
+		Source source = getSourceRepository().findBySourceKey(sourceKey);
+		HealthcareExposureReport exposureReport = queryRunner.getCohortExposureReport(getSourceJdbcTemplate(source), id, source);
+		return exposureReport;
+	}	
+	
   protected PreparedStatementRenderer prepareGetExposureOutcomeCohortPredictors(
     ExposureCohortSearch search, Source source) {
 

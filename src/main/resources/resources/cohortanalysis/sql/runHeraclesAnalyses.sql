@@ -8120,15 +8120,19 @@ with observation_periods (cohort_definition_id, subject_id, op_start_date, op_en
 		from #HERACLES_cohort c1
 		group by cohort_definition_id, subject_id
 	) c2
-	inner join @CDM_schema.observation_period as op on c2.subject_id = op.person_id
-	WHERE not ( 
-			op.observation_period_end_date < dateadd(d, -365, c2.cohort_start_date) or op.observation_period_start_date > c2.cohort_start_date 
+	inner join @CDM_schema.observation_period as op on c2.subject_id = op.person_id 
+		and not ( 
+			op.observation_period_end_date < dateadd(d, -365, c2.cohort_start_date) or op.observation_period_start_date >= c2.cohort_start_date 
 		) -- only returns overlapping periods
 )
 select cohort_definition_id, subject_id, op_start_date, op_end_date
 INTO #raw_4000
-from observation_periods;
+from observation_periods
 ;
+
+CREATE CLUSTERED INDEX idx_raw_4000 ON #raw_4000 (cohort_definition_id, subject_id, op_start_date);
+CREATE INDEX idx_raw_4000_op_start_date ON #raw_4000 (op_start_date);
+CREATE INDEX idx_raw_4000_op_end_date ON #raw_4000 (op_end_date);
 
 WITH cteRawData (cohort_definition_id, subject_id, stratum_1, count_value) as
 (
@@ -8140,8 +8144,8 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, count_value) as
 			case when hp.period_end_date > op.op_end_date then op.op_end_date else hp.period_end_date end)
 		) as count_value
 	from #raw_4000 op
-	cross join @results_schema.heracles_periods hp
-	where not (hp.period_end_date <= op.op_start_date or hp.period_start_date > op.op_end_date) -- find overlapping periods with the cohort's observation periods
+	join @results_schema.heracles_periods hp on 
+		not (hp.period_end_date <= op.op_start_date or hp.period_start_date > op.op_end_date) -- find overlapping periods with the cohort's observation periods
 	group by op.cohort_definition_id, op.subject_id, hp.period_id
 
 	union all
@@ -8222,6 +8226,9 @@ select cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id
 INTO #raw_4001
 FROM visit_records;
 
+CREATE CLUSTERED INDEX idx_raw_4001_grouped ON #raw_4001 (cohort_definition_id, subject_id, visit_concept_id, visit_start_date);
+CREATE INDEX idx_raw_4001_visit_start_date ON #raw_4001 (visit_start_date);
+
 with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id) as
 (
 	select distinct cohort_definition_id
@@ -8230,8 +8237,7 @@ with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_i
 		, cast(visit_type_concept_id as varchar(19)) as stratum_3
 		, subject_id
 	from #raw_4001
-	cross join @results_schema.heracles_periods hp
-	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+	join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 
 	UNION ALL
 
@@ -8241,8 +8247,7 @@ with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_i
 		,cast(''  as varchar(19)) as stratum_3
 		, subject_id
 	from #raw_4001
-	cross join @results_schema.heracles_periods hp
-	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+	join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 
 	UNION ALL	
 
@@ -8252,8 +8257,7 @@ with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_i
 		, cast(''  as varchar(19)) as stratum_3
 		, subject_id
 	from #raw_4001
-	cross join @results_schema.heracles_periods hp
-	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+	join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 
 	UNION ALL
 
@@ -8300,7 +8304,7 @@ DROP TABLE #raw_4001;
 	-- 4002 Distribution of number of visit occurrence records per subject by period_id, by visit_concept_id, by visit_type_concept_id  in 365d prior to cohort start date
 select distinct c1.cohort_definition_id,
 	c1.subject_id, 
-	vo1.visit_concept_id,
+	vca.ancestor_concept_id as visit_concept_id,
 	vo1.visit_type_concept_id,
 	vo1.visit_occurrence_id,
 	vo1.visit_start_date
@@ -8310,7 +8314,9 @@ from (
 ) c1
 join @CDM_schema.visit_occurrence vo1 on c1.subject_id = vo1.person_id
 	and vo1.visit_start_date >= dateadd(d, -365, c1.cohort_start_date) and vo1.visit_start_date < c1.cohort_start_date
+join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
 ;
+
 
 WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
 (
@@ -8321,8 +8327,7 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 		, cast(visit_type_concept_id as varchar(19)) as stratum_3
 		, count(distinct visit_occurrence_id) as count_value
 	from #raw_4002
-	cross join @results_schema.heracles_periods hp
-	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+		join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 	GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id, visit_type_concept_id
 
 	UNION ALL
@@ -8334,8 +8339,7 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 		, cast(''  as varchar(19)) as stratum_3
 		, count(distinct visit_occurrence_id) as count_value
 	from #raw_4002
-	cross join @results_schema.heracles_periods hp
-	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+		join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 	GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id
 
 	UNION ALL	
@@ -8347,8 +8351,7 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 		, cast(''  as varchar(19)) as stratum_3
 		, count(distinct visit_occurrence_id) as count_value
 	from #raw_4002
-	cross join @results_schema.heracles_periods hp
-	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+		join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 	GROUP BY cohort_definition_id, subject_id, period_id
 
 	UNION ALL
@@ -8442,7 +8445,7 @@ DROP TABLE #raw_4002;
 	-- 4003 Distribution of number of visit dates per subject by period_id, by visit_concept_id, by visit_type_concept_id in 365d prior to first cohort start date
 select distinct c1.cohort_definition_id,
 	c1.subject_id, 
-	vo1.visit_concept_id,
+	vca.ancestor_concept_id as visit_concept_id,
 	vo1.visit_type_concept_id,
 	vo1.visit_start_date
 INTO #raw_4003
@@ -8451,7 +8454,9 @@ from (
 ) c1
 join @CDM_schema.visit_occurrence vo1 on c1.subject_id = vo1.person_id
 	and vo1.visit_start_date >= dateadd(d, -365, c1.cohort_start_date) and vo1.visit_start_date < c1.cohort_start_date
+join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
 ;
+
 
 WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
 (
@@ -8462,8 +8467,7 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 		, cast(visit_type_concept_id as varchar(19)) as stratum_3
 		, count(distinct visit_start_date) as count_value
 	from #raw_4003
-	cross join @results_schema.heracles_periods hp
-	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+		join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 	GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id, visit_type_concept_id
 
 	UNION ALL
@@ -8475,8 +8479,7 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 		, cast(''  as varchar(19)) as stratum_3
 		, count(distinct visit_start_date) as count_value
 	from #raw_4003
-	cross join @results_schema.heracles_periods hp
-	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+		join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 	GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id
 
 	UNION ALL	
@@ -8488,8 +8491,7 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 		, cast(''  as varchar(19)) as stratum_3
 		, count(distinct visit_start_date) as count_value
 	from #raw_4003
-	cross join @results_schema.heracles_periods hp
-	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+		join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 	GROUP BY cohort_definition_id, subject_id, period_id
 
 	UNION ALL
@@ -8584,17 +8586,19 @@ DROP TABLE #raw_4003;
 
 select distinct c1.cohort_definition_id,
 	c1.subject_id, 
-	vo1.visit_concept_id,
+	vca.ancestor_concept_id as visit_concept_id,
 	vo1.visit_type_concept_id,
 	vo1.visit_start_date,
-	cast(care_site_id as varchar(19)) + '_' + CAST(YEAR(visit_start_date) as varchar(4)) + RIGHT('00' + cast(MONTH(visit_start_date) as varchar(2)),2) + RIGHT('00' + cast(DAY(visit_start_date) as varchar(2)),2) as care_site_date_id
+	cast(care_site_id as varchar(19)) + '_' + CAST(YEAR(visit_start_date) as varchar(4)) + CAST(RIGHT('00' + cast(MONTH(visit_start_date) as varchar(2)),2) as varchar(2)) + CAST(RIGHT('00' + cast(DAY(visit_start_date) as varchar(2)),2) as varchar(2)) as care_site_date_id
 INTO #raw_4004
 from (
 	select cohort_definition_id, subject_id, min(cohort_start_date) as cohort_start_date from #HERACLES_cohort group by cohort_definition_id, subject_id
 ) c1
 join @CDM_schema.visit_occurrence vo1 on c1.subject_id = vo1.person_id
 	and vo1.visit_start_date >= dateadd(d, -365, c1.cohort_start_date) and vo1.visit_start_date < c1.cohort_start_date
+join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
 ;
+
 
 WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
 (
@@ -8605,8 +8609,7 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 		, cast(visit_type_concept_id as varchar(19)) as stratum_3
 		, count(distinct care_site_date_id) as count_value
 	from #raw_4004
-	cross join @results_schema.heracles_periods hp
-	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+		join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 	GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id, visit_type_concept_id
 
 	UNION ALL
@@ -8618,8 +8621,7 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 		, cast(''  as varchar(19)) as stratum_3
 		, count(distinct care_site_date_id) as count_value
 	from #raw_4004
-	cross join @results_schema.heracles_periods hp
-	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+		join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 	GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id
 
 	UNION ALL	
@@ -8631,8 +8633,7 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 		, cast(''  as varchar(19)) as stratum_3
 		, count(distinct care_site_date_id) as count_value
 	from #raw_4004
-	cross join @results_schema.heracles_periods hp
-	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+		join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 	GROUP BY cohort_definition_id, subject_id, period_id
 
 	UNION ALL
@@ -8722,6 +8723,154 @@ TRUNCATE TABLE #raw_4004;
 DROP TABLE #raw_4004;
 }
 
+{4005 IN (@list_of_analysis_ids)}?{
+-- 4005	Distribution of observation period days for inpatient visits per subject by period_id, by visit_concept_id, by visit_type_concept_id in the 365 days prior to first cohort_start_date
+select distinct c1.cohort_definition_id,
+	c1.subject_id,
+	vc1.ancestor_concept_id as visit_concept_id,
+	vo1.visit_type_concept_id,
+	vo1.visit_start_date,
+  datediff(dd,visit_start_date,visit_end_date) + 1 as duration
+INTO #raw_4005
+from (
+	select cohort_definition_id, subject_id, min(cohort_start_date) as cohort_start_date from #HERACLES_cohort group by cohort_definition_id, subject_id
+) c1
+join @CDM_schema.visit_occurrence vo1 on c1.subject_id = vo1.person_id
+	and vo1.visit_start_date >= dateadd(d, -365, c1.cohort_start_date) and vo1.visit_start_date < c1.cohort_start_date
+join (
+	select vc.ancestor_concept_id, vc.descendant_concept_id
+	from @CDM_schema.concept_ancestor as vc
+	inner join @CDM_schema.concept as co on vc.descendant_concept_id = co.concept_id
+	where lower(co.concept_name) like '%inpatient%'
+) as vc1 on vo1.visit_concept_id = vc1.descendant_concept_id
+;
+
+CREATE CLUSTERED INDEX idx_raw_4005_grouped ON #raw_4005 (cohort_definition_id, subject_id, visit_concept_id, visit_start_date);
+CREATE INDEX idx_raw_4005_visit_start_date ON #raw_4005 (visit_start_date);
+
+WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
+(
+	select cohort_definition_id
+		, subject_id
+		, cast(period_id  as varchar(19)) as stratum_1
+		, cast(visit_concept_id as varchar(19)) as stratum_2
+		, cast(visit_type_concept_id as varchar(19)) as stratum_3
+		, sum(duration) as count_value
+	from #raw_4005
+		join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+	GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id, visit_type_concept_id
+
+	UNION ALL
+
+	select distinct cohort_definition_id
+		, subject_id
+		, cast(period_id  as varchar(19)) as stratum_1
+		, cast(visit_concept_id as varchar(19)) as stratum_2
+		, cast(''  as varchar(19)) as stratum_3
+		, sum(duration) as count_value
+	from #raw_4005
+		join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+	GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id
+
+	UNION ALL
+
+	select distinct cohort_definition_id
+		, subject_id
+		, cast(period_id  as varchar(19)) as stratum_1
+		, cast(''  as varchar(19)) as stratum_2
+		, cast(''  as varchar(19)) as stratum_3
+		, sum(duration) as count_value
+	from #raw_4005
+		join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+	GROUP BY cohort_definition_id, subject_id, period_id
+
+	UNION ALL
+
+	select distinct cohort_definition_id
+		, subject_id
+		, cast(''  as varchar(19)) as stratum_1
+		, cast(visit_concept_id as varchar(19)) as stratum_2
+		, cast(visit_type_concept_id as varchar(19)) as stratum_3
+		, sum(duration) as count_value
+	from #raw_4005
+	GROUP BY cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id
+
+	UNION ALL
+
+	select distinct cohort_definition_id
+		, subject_id
+		, cast(''  as varchar(19)) as stratum_1
+		, cast(visit_concept_id as varchar(19)) as stratum_2
+		, cast(''  as varchar(19)) as stratum_3
+		, sum(duration) as count_value
+	from #raw_4005
+	GROUP BY cohort_definition_id, subject_id, visit_concept_id
+
+	UNION ALL
+
+	select distinct cohort_definition_id
+		, subject_id
+		, cast(''  as varchar(19)) as stratum_1
+		, cast(''  as varchar(19)) as stratum_2
+		, cast(''  as varchar(19)) as stratum_3
+		, sum(duration) as count_value
+	from #raw_4005
+	GROUP BY cohort_definition_id, subject_id
+),
+overallStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, avg_value, stdev_value, min_value, max_value, total) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		avg(1.0 * count_value) as avg_value,
+		stdev(count_value) as stdev_value,
+		min(count_value) as min_value,
+		max(count_value) as max_value,
+		count_big(*) as total
+	from cteRawData
+	group by cohort_definition_id, stratum_1, stratum_2, stratum_3
+),
+valueStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		count_value,
+		total,
+		SUM(total) over (partition by cohort_definition_id, stratum_1, stratum_2, stratum_3 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value
+	) D
+)
+select o.cohort_definition_id,
+	4005 as analysis_id,
+	CAST(o.stratum_1 as VARCHAR(19)) as stratum_1,
+	cast(o.stratum_2 as varchar(19)) as stratum_2,
+	cast(o.stratum_3 as varchar(19)) as stratum_3, cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_4005
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1 and s.stratum_2 = o.stratum_2 and s.stratum_3 = o.stratum_3
+GROUP BY o.cohort_definition_id, o.stratum_1, o.stratum_2, o.stratum_3, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_4005;
+DROP TABLE #raw_4005;
+}
+
 {4006 IN (@list_of_analysis_ids)}?{
 -- 4006 Distribution of observation period days per subject, by period_id during cohort period
 
@@ -8735,8 +8884,7 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, count_value) as
 			case when hp.period_end_date > c1.cohort_end_date then c1.cohort_end_date else hp.period_end_date end)
 		) as count_value
 	from #HERACLES_cohort c1
-	cross join @results_schema.heracles_periods hp
-	where not (hp.period_end_date <= c1.cohort_start_date or hp.period_start_date >  c1.cohort_end_date) -- find overlapping periods with the cohort's observation periods
+		join @results_schema.heracles_periods hp on not (hp.period_end_date <= c1.cohort_start_date or hp.period_start_date >  c1.cohort_end_date) -- find overlapping periods with the cohort's observation periods
 	group by c1.cohort_definition_id, c1.subject_id, hp.period_id
 
 	union all
@@ -8807,12 +8955,13 @@ with visit_records (cohort_definition_id, subject_id, visit_concept_id, visit_ty
 		vo1.visit_start_date
 	from #HERACLES_cohort c1
 	join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
-			and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date < c1.cohort_end_date
+		and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date <= c1.cohort_end_date
 	join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
 )
 select cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id, visit_start_date
 INTO #raw_4007
 FROM visit_records;
+
 
 with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id) as
 (
@@ -8822,8 +8971,7 @@ with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_i
 		, cast(visit_type_concept_id as varchar(19)) as stratum_3
 		, subject_id
 	from #raw_4007
-	cross join @results_schema.heracles_periods hp
-	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+		join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 
 	UNION ALL
 
@@ -8833,8 +8981,7 @@ with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_i
 		,cast(''  as varchar(19)) as stratum_3
 		, subject_id
 	from #raw_4007
-	cross join @results_schema.heracles_periods hp
-	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+		join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 
 	UNION ALL	
 
@@ -8844,8 +8991,7 @@ with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_i
 		, cast(''  as varchar(19)) as stratum_3
 		, subject_id
 	from #raw_4007
-	cross join @results_schema.heracles_periods hp
-	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+		join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 
 	UNION ALL
 
@@ -8892,15 +9038,17 @@ DROP TABLE #raw_4007;
 	-- 4008 Distribution of number of visit occurrence records per subject by period_id, by visit_concept_id, by visit_type_concept_id during the cohort period
 select distinct c1.cohort_definition_id,
 	c1.subject_id, 
-	vo1.visit_concept_id,
+	vca.ancestor_concept_id as visit_concept_id,
 	vo1.visit_type_concept_id,
 	vo1.visit_occurrence_id,
 	vo1.visit_start_date
 INTO #raw_4008
 from #HERACLES_cohort c1
 join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
-		and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date < c1.cohort_end_date
+	and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date <= c1.cohort_end_date
+join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
 ;
+
 
 WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
 (
@@ -8911,8 +9059,7 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 		, cast(visit_type_concept_id as varchar(19)) as stratum_3
 		, count(distinct visit_occurrence_id) as count_value
 	from #raw_4008
-	cross join @results_schema.heracles_periods hp
-	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+		join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 	GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id, visit_type_concept_id
 
 	UNION ALL
@@ -8924,8 +9071,7 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 		, cast(''  as varchar(19)) as stratum_3
 		, count(distinct visit_occurrence_id) as count_value
 	from #raw_4008
-	cross join @results_schema.heracles_periods hp
-	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+		join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 	GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id
 
 	UNION ALL	
@@ -8937,8 +9083,7 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 		, cast(''  as varchar(19)) as stratum_3
 		, count(distinct visit_occurrence_id) as count_value
 	from #raw_4008
-	cross join @results_schema.heracles_periods hp
-	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+		join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 	GROUP BY cohort_definition_id, subject_id, period_id
 
 	UNION ALL
@@ -9032,14 +9177,16 @@ DROP TABLE #raw_4008;
 	-- 4009 Distribution of number of visit dates per subject by period_id, by visit_concept_id, by visit_type_concept_id in 365d prior to first cohort start date
 select distinct c1.cohort_definition_id,
 	c1.subject_id, 
-	vo1.visit_concept_id,
+	vca.ancestor_concept_id as visit_concept_id,
 	vo1.visit_type_concept_id,
 	vo1.visit_start_date
 INTO #raw_4009
 from #HERACLES_cohort c1
 join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
-		and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date < c1.cohort_end_date
+	and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date <= c1.cohort_end_date
+join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
 ;
+
 
 WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
 (
@@ -9050,8 +9197,7 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 		, cast(visit_type_concept_id as varchar(19)) as stratum_3
 		, count(distinct visit_start_date) as count_value
 	from #raw_4009
-	cross join @results_schema.heracles_periods hp
-	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+		join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 	GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id, visit_type_concept_id
 
 	UNION ALL
@@ -9063,8 +9209,7 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 		, cast(''  as varchar(19)) as stratum_3
 		, count(distinct visit_start_date) as count_value
 	from #raw_4009
-	cross join @results_schema.heracles_periods hp
-	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+		join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 	GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id
 
 	UNION ALL	
@@ -9076,8 +9221,7 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 		, cast(''  as varchar(19)) as stratum_3
 		, count(distinct visit_start_date) as count_value
 	from #raw_4009
-	cross join @results_schema.heracles_periods hp
-	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+		join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 	GROUP BY cohort_definition_id, subject_id, period_id
 
 	UNION ALL
@@ -9172,15 +9316,17 @@ DROP TABLE #raw_4009;
 
 select distinct c1.cohort_definition_id,
 	c1.subject_id, 
-	vo1.visit_concept_id,
+	vca.ancestor_concept_id as visit_concept_id,
 	vo1.visit_type_concept_id,
 	vo1.visit_start_date,
-	cast(care_site_id as varchar(19)) + '_' + CAST(YEAR(visit_start_date) as varchar(4)) + RIGHT('00' + cast(MONTH(visit_start_date) as varchar(2)),2) + RIGHT('00' + cast(DAY(visit_start_date) as varchar(2)),2) as care_site_date_id
+	cast(care_site_id as varchar(19)) + '_' + CAST(YEAR(visit_start_date) as varchar(4)) + CAST(RIGHT('00' + cast(MONTH(visit_start_date) as varchar(2)),2) as varchar(2)) + CAST(RIGHT('00' + cast(DAY(visit_start_date) as varchar(2)),2) as varchar(2)) as care_site_date_id
 INTO #raw_4010
 from #HERACLES_cohort c1
 join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
-		and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date < c1.cohort_end_date
+	and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date <= c1.cohort_end_date
+join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
 ;
+
 
 WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
 (
@@ -9191,8 +9337,7 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 		, cast(visit_type_concept_id as varchar(19)) as stratum_3
 		, count(distinct care_site_date_id) as count_value
 	from #raw_4010
-	cross join @results_schema.heracles_periods hp
-	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+		join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 	GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id, visit_type_concept_id
 
 	UNION ALL
@@ -9204,8 +9349,7 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 		, cast(''  as varchar(19)) as stratum_3
 		, count(distinct care_site_date_id) as count_value
 	from #raw_4010
-	cross join @results_schema.heracles_periods hp
-	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+		join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 	GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id
 
 	UNION ALL	
@@ -9217,8 +9361,7 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 		, cast(''  as varchar(19)) as stratum_3
 		, count(distinct care_site_date_id) as count_value
 	from #raw_4010
-	cross join @results_schema.heracles_periods hp
-	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+		join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 	GROUP BY cohort_definition_id, subject_id, period_id
 
 	UNION ALL
@@ -9308,7 +9451,150 @@ TRUNCATE TABLE #raw_4010;
 DROP TABLE #raw_4010;
 }
 
-  
+{4011 IN (@list_of_analysis_ids)}?{
+-- 4011	Distribution of observation period days for inpatient visits per subject by period_id, by visit_concept_id, by visit_type_concept_id during cohort period
+select distinct c1.cohort_definition_id,
+	c1.subject_id,
+	vc1.ancestor_concept_id as visit_concept_id,
+	vo1.visit_type_concept_id,
+	vo1.visit_start_date,
+  datediff(dd,visit_start_date,visit_end_date) as duration
+INTO #raw_4011
+FROM #HERACLES_cohort c1
+join @CDM_schema.visit_occurrence vo1 on c1.subject_id = vo1.person_id
+	and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date <= c1.cohort_end_date
+join (
+	select vc.ancestor_concept_id, vc.descendant_concept_id
+	from @CDM_schema.concept_ancestor as vc
+	inner join @CDM_schema.concept as co on vc.descendant_concept_id = co.concept_id
+	where lower(co.concept_name) like '%inpatient%'
+) as vc1 on vo1.visit_concept_id = vc1.descendant_concept_id
+;
+
+
+WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
+(
+	select cohort_definition_id
+		, subject_id
+		, cast(period_id  as varchar(19)) as stratum_1
+		, cast(visit_concept_id as varchar(19)) as stratum_2
+		, cast(visit_type_concept_id as varchar(19)) as stratum_3
+		, sum(duration) as count_value
+	from #raw_4011
+	  join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+	GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id, visit_type_concept_id
+
+	UNION ALL
+
+	select distinct cohort_definition_id
+		, subject_id
+		, cast(period_id  as varchar(19)) as stratum_1
+		, cast(visit_concept_id as varchar(19)) as stratum_2
+		, cast(''  as varchar(19)) as stratum_3
+		, sum(duration) as count_value
+	from #raw_4011
+	  join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+	GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id
+
+	UNION ALL
+
+	select distinct cohort_definition_id
+		, subject_id
+		, cast(period_id  as varchar(19)) as stratum_1
+		, cast(''  as varchar(19)) as stratum_2
+		, cast(''  as varchar(19)) as stratum_3
+		, sum(duration) as count_value
+	from #raw_4011
+	  join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+	GROUP BY cohort_definition_id, subject_id, period_id
+
+	UNION ALL
+
+	select distinct cohort_definition_id
+		, subject_id
+		, cast(''  as varchar(19)) as stratum_1
+		, cast(visit_concept_id as varchar(19)) as stratum_2
+		, cast(visit_type_concept_id as varchar(19)) as stratum_3
+		, sum(duration) as count_value
+	from #raw_4011
+	GROUP BY cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id
+
+	UNION ALL
+
+	select distinct cohort_definition_id
+		, subject_id
+		, cast(''  as varchar(19)) as stratum_1
+		, cast(visit_concept_id as varchar(19)) as stratum_2
+		, cast(''  as varchar(19)) as stratum_3
+		, sum(duration) as count_value
+	from #raw_4011
+	GROUP BY cohort_definition_id, subject_id, visit_concept_id
+
+	UNION ALL
+
+	select distinct cohort_definition_id
+		, subject_id
+		, cast(''  as varchar(19)) as stratum_1
+		, cast(''  as varchar(19)) as stratum_2
+		, cast(''  as varchar(19)) as stratum_3
+		, sum(duration) as count_value
+	from #raw_4011
+	GROUP BY cohort_definition_id, subject_id
+),
+overallStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, avg_value, stdev_value, min_value, max_value, total) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		avg(1.0 * count_value) as avg_value,
+		stdev(count_value) as stdev_value,
+		min(count_value) as min_value,
+		max(count_value) as max_value,
+		count_big(*) as total
+	from cteRawData
+	group by cohort_definition_id, stratum_1, stratum_2, stratum_3
+),
+valueStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		count_value,
+		total,
+		SUM(total) over (partition by cohort_definition_id, stratum_1, stratum_2, stratum_3 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value
+	) D
+)
+select o.cohort_definition_id,
+	4011 as analysis_id,
+	CAST(o.stratum_1 as VARCHAR(19)) as stratum_1,
+	cast(o.stratum_2 as varchar(19)) as stratum_2,
+	cast(o.stratum_3 as varchar(19)) as stratum_3, cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_4011
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1 and s.stratum_2 = o.stratum_2 and s.stratum_3 = o.stratum_3
+GROUP BY o.cohort_definition_id, o.stratum_1, o.stratum_2, o.stratum_3, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_4011;
+DROP TABLE #raw_4011;
+}
+
   -- INSERT UNION-ALL into heracles_results, the last line is a dummy insert that 
   -- can be deleted later.  Adding it so we can easily use union all for all temp tables.
   
@@ -10225,6 +10511,11 @@ DROP TABLE #raw_4010;
 	cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(stratum_3 as varchar), cast(stratum_4 as varchar), cast(stratum_5 as varchar),
 	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_4004 union all }
+  --{ 4005  IN (@list_of_analysis_ids)}?{
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(stratum_3 as varchar), cast(stratum_4 as varchar), cast(stratum_5 as varchar),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_4005 union all }
   --{ 4006  IN (@list_of_analysis_ids)}?{
   select cohort_definition_id, analysis_id,
 	cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(stratum_3 as varchar), cast(stratum_4 as varchar), cast(stratum_5 as varchar),
@@ -10245,6 +10536,11 @@ DROP TABLE #raw_4010;
 	cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(stratum_3 as varchar), cast(stratum_4 as varchar), cast(stratum_5 as varchar),
 	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_4010 union all }
+  --{ 4011  IN (@list_of_analysis_ids)}?{
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(stratum_3 as varchar), cast(stratum_4 as varchar), cast(stratum_5 as varchar),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_4011 union all }
   select -1, -1, '', '','','','', -1, -1, -1, -1, -1, -1, -1, -1, -1, -1;
   -- this final select handles the union all in the case of whatever conditional query runs last
   

@@ -1773,18 +1773,20 @@ public class CohortResultsService extends AbstractDaoService {
 	@GET
 	@Path("{sourceKey}/{id}/healthcareutilization/exposure/baseline")
 	@Produces(MediaType.APPLICATION_JSON)
-  public HealthcareExposureReport getBaselineExposureReport(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey) {
+  public HealthcareExposureReport getBaselineExposureReport(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey
+		, @DefaultValue("ww") @QueryParam("periodType") final String periodType) {
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
-		HealthcareExposureReport exposureReport = queryRunner.getBaselineExposureReport(getSourceJdbcTemplate(source), id, source);
+		HealthcareExposureReport exposureReport = queryRunner.getBaselineExposureReport(getSourceJdbcTemplate(source), id, periodType, source);
 		return exposureReport;
 	}
 	
 	@GET
 	@Path("{sourceKey}/{id}/healthcareutilization/exposure/cohort")
 	@Produces(MediaType.APPLICATION_JSON)
-  public HealthcareExposureReport getCohortExposureReport(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey) {
+  public HealthcareExposureReport getCohortExposureReport(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey
+		, @DefaultValue("ww") @QueryParam("periodType") final String periodType) {
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
-		HealthcareExposureReport exposureReport = queryRunner.getCohortExposureReport(getSourceJdbcTemplate(source), id, source);
+		HealthcareExposureReport exposureReport = queryRunner.getCohortExposureReport(getSourceJdbcTemplate(source), id, periodType, source);
 		return exposureReport;
 	}	
 	

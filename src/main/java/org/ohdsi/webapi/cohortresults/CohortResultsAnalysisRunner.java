@@ -1511,15 +1511,15 @@ public class CohortResultsAnalysisRunner {
 	}
 	
 	/* Healthcare Utilizaton Reports */
-	public HealthcareExposureReport getBaselineExposureReport(JdbcTemplate jdbcTemplate, final int cohortId, Source source) {
-		return getExposureReport(jdbcTemplate, cohortId, 4000, source);
+	public HealthcareExposureReport getBaselineExposureReport(JdbcTemplate jdbcTemplate, final int cohortId, String periodType, Source source) {
+		return getExposureReport(jdbcTemplate, cohortId, periodType, 4000, source);
 	}
 	
-	public HealthcareExposureReport getCohortExposureReport(JdbcTemplate jdbcTemplate, final int cohortId, Source source) {
-		return getExposureReport(jdbcTemplate, cohortId, 4006, source);
+	public HealthcareExposureReport getCohortExposureReport(JdbcTemplate jdbcTemplate, final int cohortId, String periodType, Source source) {
+		return getExposureReport(jdbcTemplate, cohortId, periodType, 4006, source);
 	}
 	
-	private HealthcareExposureReport getExposureReport(JdbcTemplate jdbcTemplate, final int cohortId, final int analysisId, Source source) {
+	private HealthcareExposureReport getExposureReport(JdbcTemplate jdbcTemplate, final int cohortId, final String periodType, final int analysisId, Source source) {
 		String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 
 		String[] search = new String[]{"results_schema"};
@@ -1542,8 +1542,8 @@ public class CohortResultsAnalysisRunner {
 		}).get(0);
 		
 		String dataPath = BASE_SQL_PATH + "/healthcareutilization/getExposureData.sql";
-		String[] dataCols = new String[]{"cohort_definition_id","analysis_id"};
-		Object[] dataColVals = new Object[]{cohortId, analysisId};
+		String[] dataCols = new String[]{"cohort_definition_id","analysis_id", "period_type"};
+		Object[] dataColVals = new Object[]{cohortId, analysisId, periodType};
 
 		PreparedStatementRenderer dataPsr =  new PreparedStatementRenderer(source, dataPath, search, replace, dataCols, dataColVals);
 		

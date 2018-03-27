@@ -19,3 +19,4 @@ inner join (
 left join @results_schema.heracles_periods P on N.stratum_1 = cast(P.period_id as varchar(19))
 where N.analysis_id = @analysis_id
 	AND N.cohort_definition_id = @cohort_definition_id
+  AND P.period_type = '@period_type'

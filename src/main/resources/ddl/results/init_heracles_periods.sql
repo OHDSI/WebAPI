@@ -33,7 +33,7 @@ quarterly_dates (generated_date) as (
 )
 
 select period_name, period_order, period_type, period_start_date, period_end_date
-INTO #temp_period1
+INTO #temp_period
 FROM (
   -- monthly dates
   select 'Monthly' as period_name

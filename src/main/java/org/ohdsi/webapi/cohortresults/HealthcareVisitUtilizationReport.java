@@ -24,15 +24,21 @@ import java.util.List;
  *
  * @author cknoll1
  */
-public class HealthcareExposureReport {
+public class HealthcareVisitUtilizationReport {
 	public Summary summary;
 	public List<ReportItem> data;
-
+	public List<Concept> visitConcepts;
+	public List<Concept> visitTypeConcepts;
 	
-	public static class Summary {
+		public static class Summary {
 		public long personsCount;
-		public BigDecimal exposureTotal;
-		public BigDecimal exposureAvg;
+		public BigDecimal personsPct;
+		public long visitsCount;
+		public BigDecimal visitsPer1000;
+		public BigDecimal visitsPer1000WithVisits;
+		public BigDecimal visitsPer1000PerYear;
+		public long lengthOfStayTotal;
+		public BigDecimal lengthOfStayAvg;
 
 		public Summary() {
 
@@ -46,11 +52,8 @@ public class HealthcareExposureReport {
 		public Date periodStart;
 		@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 		public Date periodEnd;
-		public BigDecimal personsPct;
-		public BigDecimal exposurePct;
 		
 		public ReportItem() {
 		}
 	}
 }
-

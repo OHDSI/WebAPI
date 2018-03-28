@@ -81,7 +81,11 @@
     <use.single.connect.datasource.for.testing>true</use.single.connect.datasource.for.testing>
 
     <security.cors.enabled>true</security.cors.enabled>
-    
+    <security.maxLoginAttempts>3</security.maxLoginAttempts>
+    <security.duration.initial>10</security.duration.initial>
+    <security.duration.increment>10</security.duration.increment>
+
+
     <spring.datasource.hikari.connection-test-query>SELECT 1</spring.datasource.hikari.connection-test-query>
     <spring.datasource.hikari.maximum-pool-size>5</spring.datasource.hikari.maximum-pool-size>
     <spring.datasource.hikari.minimum-idle>1</spring.datasource.hikari.minimum-idle>

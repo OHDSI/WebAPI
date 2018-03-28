@@ -118,6 +118,13 @@ public class VocabularyService extends AbstractDaoService {
   public Map<Long, List<Long>> calculateAscendants(@PathParam("sourceKey") String sourceKey, Ids ids) {
 
     Source source = getSourceRepository().findBySourceKey(sourceKey);
+		
+		if (ids.ancestors == null || ids.ancestors.length == 0) { 
+			ids.ancestors = new long[] {0};
+		}
+		if (ids.descendants == null || ids.descendants.length == 0) {
+			ids.descendants = new long[] {0};
+		}
 
     final PreparedStatementRenderer psr = prepareAscendantsCalculating(ids.ancestors, ids.descendants, source);
 

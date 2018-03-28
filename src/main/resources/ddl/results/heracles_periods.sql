@@ -8,3 +8,6 @@ CREATE TABLE @results_schema.heracles_periods
 	period_start_date date,
 	period_end_date date
 );
+
+CREATE INDEX idx_heracles_periods_start_date ON @results_schema.heracles_periods (period_start_date);
+CREATE INDEX idx_heracles_periods_end_date ON @results_schema.heracles_periods (period_end_date);

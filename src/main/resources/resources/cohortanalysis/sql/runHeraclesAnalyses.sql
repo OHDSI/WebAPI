@@ -8127,8 +8127,12 @@ with observation_periods (cohort_definition_id, subject_id, op_start_date, op_en
 )
 select cohort_definition_id, subject_id, op_start_date, op_end_date
 INTO #raw_4000
-from observation_periods;
+from observation_periods
+where op_end_date >= op_start_date
 ;
+
+CREATE INDEX idx_raw_4000_op_start_date ON raw_4000 (op_start_date);
+CREATE INDEX idx_raw_4000_op_end_date ON raw_4000 (op_end_date);
 
 WITH cteRawData (cohort_definition_id, subject_id, stratum_1, count_value) as
 (
@@ -8222,6 +8226,8 @@ select cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id
 INTO #raw_4001
 FROM visit_records;
 
+CREATE INDEX idx_raw_4001_visit_start_date ON raw_4001 (visit_start_date);
+
 with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id) as
 (
 	select distinct cohort_definition_id
@@ -8230,8 +8236,7 @@ with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_i
 		, cast(visit_type_concept_id as varchar(19)) as stratum_3
 		, subject_id
 	from #raw_4001
-	cross join @results_schema.heracles_periods hp
-	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+	join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 
 	UNION ALL
 
@@ -8241,8 +8246,7 @@ with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_i
 		,cast(''  as varchar(19)) as stratum_3
 		, subject_id
 	from #raw_4001
-	cross join @results_schema.heracles_periods hp
-	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+	join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 
 	UNION ALL	
 
@@ -8252,8 +8256,7 @@ with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_i
 		, cast(''  as varchar(19)) as stratum_3
 		, subject_id
 	from #raw_4001
-	cross join @results_schema.heracles_periods hp
-	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+	join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 
 	UNION ALL
 

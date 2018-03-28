@@ -19,6 +19,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
+import org.ohdsi.circe.helper.ResourceHelper;
+import org.ohdsi.sql.SqlRender;
 
 public class CohortResultsAnalysisRunner {
 
@@ -1511,17 +1513,19 @@ public class CohortResultsAnalysisRunner {
 	}
 	
 	/* Healthcare Utilizaton Reports */
-	public HealthcareExposureReport getBaselineExposureReport(JdbcTemplate jdbcTemplate, final int cohortId, String periodType, Source source) {
-		return getExposureReport(jdbcTemplate, cohortId, periodType, 4000, source);
-	}
 	
-	public HealthcareExposureReport getCohortExposureReport(JdbcTemplate jdbcTemplate, final int cohortId, String periodType, Source source) {
-		return getExposureReport(jdbcTemplate, cohortId, periodType, 4006, source);
-	}
-	
-	private HealthcareExposureReport getExposureReport(JdbcTemplate jdbcTemplate, final int cohortId, final String periodType, final int analysisId, Source source) {
+	public HealthcareExposureReport getHealthcareExposureReport(JdbcTemplate jdbcTemplate, final int cohortId, final String window, final String periodType, Source source) {
 		String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-
+		int windowAnalysisId;
+		
+		if ("baseline".equals(window)) {
+			windowAnalysisId = 4000;
+		} else if ("atrisk".equals(window)) {
+			windowAnalysisId = 4006;
+		} else {
+			throw new RuntimeException("Invalid window type: " + window);			
+		}
+		
 		String[] search = new String[]{"results_schema"};
 		String[] replace = new String[]{resultsTableQualifier};
 
@@ -1529,12 +1533,12 @@ public class CohortResultsAnalysisRunner {
 		
 		String summaryPath = BASE_SQL_PATH + "/healthcareutilization/getExposureSummary.sql";
 		String[] summaryCols = new String[]{"cohort_definition_id","analysis_id"};
-		Object[] summaryColVals = new Object[]{cohortId, analysisId};
+		Object[] summaryColVals = new Object[]{cohortId, windowAnalysisId};
 
 		PreparedStatementRenderer summaryPsr =  new PreparedStatementRenderer(source, summaryPath, search, replace, summaryCols, summaryColVals);
 		
 		report.summary = jdbcTemplate.query(summaryPsr.getSql(), summaryPsr.getSetter(), (rs,rowNum) -> {
-			HealthcareExposureReport.ExposureSummary s = new HealthcareExposureReport.ExposureSummary();
+			HealthcareExposureReport.Summary s = new HealthcareExposureReport.Summary();
 			s.personsCount = rs.getLong("person_total");
 			s.exposureTotal = new BigDecimal(rs.getDouble("exposure_years_total")).setScale(2, BigDecimal.ROUND_HALF_UP);
 			s.exposureAvg = new BigDecimal(rs.getDouble("exposure_avg_years_1k")).setScale(2, BigDecimal.ROUND_HALF_UP);
@@ -1543,12 +1547,12 @@ public class CohortResultsAnalysisRunner {
 		
 		String dataPath = BASE_SQL_PATH + "/healthcareutilization/getExposureData.sql";
 		String[] dataCols = new String[]{"cohort_definition_id","analysis_id", "period_type"};
-		Object[] dataColVals = new Object[]{cohortId, analysisId, periodType};
+		Object[] dataColVals = new Object[]{cohortId, windowAnalysisId, periodType};
 
 		PreparedStatementRenderer dataPsr =  new PreparedStatementRenderer(source, dataPath, search, replace, dataCols, dataColVals);
 		
 		report.data = jdbcTemplate.query(dataPsr.getSql(), dataPsr.getSetter(), (rs,rowNum) -> {
-			HealthcareExposureReport.ExposureReportItem item = new HealthcareExposureReport.ExposureReportItem();
+			HealthcareExposureReport.ReportItem item = new HealthcareExposureReport.ReportItem();
 			item.periodType = rs.getString("period_type");
 			item.periodStart = rs.getDate("period_start_date");
 			item.periodEnd = rs.getDate("period_end_date");
@@ -1560,6 +1564,157 @@ public class CohortResultsAnalysisRunner {
 			return item;
 		});
 
+		
+		return report;
+	}	
+	
+	public HealthcareVisitUtilizationReport getHealthcareVisitReport(JdbcTemplate jdbcTemplate, final int cohortId, final String window, String visitStat
+		, final String periodType, final String visitConceptId, final String visitTypeConceptId
+		, Source source) {
+		String vocabularyTableQualifier = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
+		if (vocabularyTableQualifier == null) {
+			vocabularyTableQualifier = source.getTableQualifierOrNull(SourceDaimon.DaimonType.CDM);
+		};
+		String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+		int subjectsAnalysisId;
+		int subjectWithRecordsAnalysisId;		
+		int visitStatAnalysisId;
+		int losAnalysisId;
+		
+		// set apprpriate analysis IDs
+		if ("baseline".equalsIgnoreCase(window)) {
+			subjectsAnalysisId = 4000;
+			subjectWithRecordsAnalysisId = 4001;
+			losAnalysisId = 4005;
+			switch(visitStat) {
+				case "occurrence":
+					visitStatAnalysisId = 4002;
+					break;
+				case "visitdate":
+					visitStatAnalysisId = 4003;
+					break;
+				case "caresitedate":
+					visitStatAnalysisId = 4004;
+					break;
+				default:
+					throw new RuntimeException("Invalid visitStat: " + visitStat);
+			}
+		} else if ("atrisk".equalsIgnoreCase(window)) {
+			subjectsAnalysisId = 4006;
+			subjectWithRecordsAnalysisId = 4007;
+			losAnalysisId = 4011;			
+			switch(visitStat) {
+				case "occurrence":
+					visitStatAnalysisId = 4008;
+					break;
+				case "visitdate":
+					visitStatAnalysisId = 4009;
+					break;
+				case "caresitedate":
+					visitStatAnalysisId = 4010;
+					break;
+				default:
+					throw new RuntimeException("Invalid visitStat: " + visitStat);
+			}
+		} else {
+			throw new RuntimeException("Invalid window type: " + window);			
+		}
+		
+		String[] search = new String[]{"vocabulary_schema","results_schema"};
+		String[] replace = new String[]{vocabularyTableQualifier, resultsTableQualifier};
+
+		HealthcareVisitUtilizationReport report = new HealthcareVisitUtilizationReport();
+		
+		String reportPath = BASE_SQL_PATH + "/healthcareutilization/getVisitUtilization.sql";
+		String reportSql = ResourceHelper.GetResourceAsString(reportPath);
+		
+		String summarySql = SqlRender.renderSql(reportSql, new String[] {"is_summary"}, new String[]{"true"});
+		
+		String[] reportCols = new String[]{"cohort_definition_id"
+			, "subjects_analysis_id"
+			, "subject_with_records_analysis_id"
+			, "visit_stat_analysis_id"
+			, "los_analysis_id"
+			, "visit_concept_id"
+			, "visit_type_concept_id"
+			, "period_type"
+		};
+		Object[] summaryColVals = new Object[]{cohortId
+			, subjectsAnalysisId
+			, subjectWithRecordsAnalysisId
+			, visitStatAnalysisId
+			, losAnalysisId
+			, visitConceptId
+			, visitTypeConceptId
+			,""
+		};
+
+		PreparedStatementRenderer summaryPsr =  new PreparedStatementRenderer(source, summarySql, search, replace, reportCols, summaryColVals);
+		
+		report.summary = jdbcTemplate.query(summaryPsr.getSql(), summaryPsr.getSetter(), (rs,rowNum) -> {
+			HealthcareVisitUtilizationReport.Summary s = new HealthcareVisitUtilizationReport.Summary();
+			s.personsCount = rs.getLong("person_total");
+			s.personsPct = new BigDecimal(rs.getDouble("person_percent")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			s.visitsCount = rs.getLong("visits_total");
+			s.visitsPer1000 = new BigDecimal(rs.getDouble("visits_per_1000")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			s.visitsPer1000WithVisits = new BigDecimal(rs.getDouble("visits_per_1000_with_visit")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			s.visitsPer1000PerYear = new BigDecimal(rs.getDouble("visits_per_1000_per_year")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			s.lengthOfStayTotal = rs.getLong("los_total");
+			s.lengthOfStayAvg = new BigDecimal(rs.getDouble("los_average")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			return s;
+		}).get(0);
+		
+		Object[] dataColVals = new Object[]{cohortId
+			, subjectsAnalysisId
+			, subjectWithRecordsAnalysisId
+			, visitStatAnalysisId
+			, losAnalysisId
+			, visitConceptId
+			, visitTypeConceptId
+			, periodType
+		};
+
+		String dataSql = SqlRender.renderSql(reportSql, new String[] {"is_summary"}, new String[]{"false"});
+		
+		PreparedStatementRenderer dataPsr =  new PreparedStatementRenderer(source, dataSql, search, replace, reportCols, dataColVals);
+		
+		report.data = jdbcTemplate.query(dataPsr.getSql(), dataPsr.getSetter(), (rs,rowNum) -> {
+			HealthcareVisitUtilizationReport.ReportItem item = new HealthcareVisitUtilizationReport.ReportItem();
+			item.periodType = rs.getString("period_type");
+			item.periodStart = rs.getDate("period_start_date");
+			item.periodEnd = rs.getDate("period_end_date");
+			item.personsCount = rs.getLong("person_total");
+			item.personsPct = new BigDecimal(rs.getDouble("person_percent")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			item.visitsCount = rs.getLong("visits_total");
+			item.visitsPer1000 = new BigDecimal(rs.getDouble("visits_per_1000")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			item.visitsPer1000WithVisits = new BigDecimal(rs.getDouble("visits_per_1000_with_visit")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			item.visitsPer1000PerYear = new BigDecimal(rs.getDouble("visits_per_1000_per_year")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			item.lengthOfStayTotal = rs.getLong("los_total");
+			item.lengthOfStayAvg = new BigDecimal(rs.getDouble("los_average")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			return item;
+		});
+
+		// load visit and visit type concepts
+		String[] conceptCols = new String[]{"cohort_definition_id", "analysis_id"};
+		Object[] conceptColValues = new Object[]{cohortId, visitStatAnalysisId};
+		
+		String visitConceptQuery = BASE_SQL_PATH + "/healthcareutilization/getVisitConceptsForAnalysis.sql";
+		PreparedStatementRenderer visitConceptPsr =  new PreparedStatementRenderer(source, visitConceptQuery, search, replace, conceptCols, conceptColValues);
+		report.visitConcepts = jdbcTemplate.query(visitConceptPsr.getSql(), visitConceptPsr.getSetter(), (rs,rowNum) -> {
+			Concept c = new Concept();
+			c.conceptName = rs.getString("concept_name");
+			c.conceptId = rs.getLong("concept_id");
+			return c;
+		});
+		
+		String visitTypeConceptQuery = BASE_SQL_PATH + "/healthcareutilization/getVisitTypeConceptsForAnalysis.sql";
+		PreparedStatementRenderer visitTypeConceptPsr =  new PreparedStatementRenderer(source, visitTypeConceptQuery, search, replace, conceptCols, conceptColValues);
+		report.visitTypeConcepts = jdbcTemplate.query(visitTypeConceptPsr.getSql(), visitTypeConceptPsr.getSetter(), (rs,rowNum) -> {
+			Concept c = new Concept();
+			c.conceptName = rs.getString("concept_name");
+			c.conceptId = rs.getLong("concept_id");
+			return c;
+		});
 		
 		return report;
 	}	

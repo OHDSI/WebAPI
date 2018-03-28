@@ -2,8 +2,8 @@ package org.ohdsi.webapi.service;
 
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.microsoft.sqlserver.jdbc.SQLServerDriver;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.circe.vocabulary.Concept;
@@ -105,7 +105,7 @@ public class VocabularyService extends AbstractDaoService {
   }
 
   /**
-   * @summary Calculates ancestors for every descendants
+   * @summary Calculates ancestors for the given descendants
    * 
    * @param ids concepts identifiers from concept set
    *                            
@@ -118,21 +118,33 @@ public class VocabularyService extends AbstractDaoService {
   public Map<Long, List<Long>> calculateAscendants(@PathParam("sourceKey") String sourceKey, Ids ids) {
 
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-		
-		if (ids.ancestors == null || ids.ancestors.length == 0) { 
-			ids.ancestors = new long[] {0};
-		}
-		if (ids.descendants == null || ids.descendants.length == 0) {
-			ids.descendants = new long[] {0};
-		}
+    
+    if (CollectionUtils.isEmpty(ids.ancestors) || CollectionUtils.isEmpty(ids.descendants)) { 
+        return new HashMap<>();
+    }
 
-    final PreparedStatementRenderer psr = prepareAscendantsCalculating(ids.ancestors, ids.descendants, source);
+    final int limit = PreparedSqlRender.getParameterLimit(source);
 
-    final List<Map.Entry<Long, Long>> result = getSourceJdbcTemplate(source)
-            .query(
-                    psr.getSql(),
-                    psr.getSetter(),
-                    (resultSet, arg1) -> Maps.immutableEntry(resultSet.getLong("ANCESTOR_ID"), resultSet.getLong("DESCENDANT_ID")));
+    final List<Map.Entry<Long, Long>> result = new ArrayList<>();
+    
+    // Here we calculate cartesian product of batches
+    for (final List<Long> ancestorsBatch : Lists.partition(ids.ancestors, limit)) {
+      
+        for (final List<Long> descendantsBatch : Lists.partition(ids.descendants, limit)) {
+          
+            final PreparedStatementRenderer psr = prepareAscendantsCalculating(
+                    ancestorsBatch.toArray(new Long[0]),
+                    descendantsBatch.toArray(new Long[0]), 
+                    source
+            );
+            
+            result.addAll(getSourceJdbcTemplate(source)
+                    .query(
+                            psr.getSql(),
+                            psr.getSetter(),
+                            (resultSet, arg1) -> Maps.immutableEntry(resultSet.getLong("ANCESTOR_ID"), resultSet.getLong("DESCENDANT_ID"))));
+        }
+    }
 
     return result
             .stream()
@@ -148,11 +160,11 @@ public class VocabularyService extends AbstractDaoService {
   }
   
   private static class Ids {
-    public long[] ancestors;
-    public long[] descendants;
+    public List<Long> ancestors;
+    public List<Long> descendants;
   }
 
-  protected PreparedStatementRenderer prepareAscendantsCalculating(long[] identifiers, long[] descendants, Source source) {
+  protected PreparedStatementRenderer prepareAscendantsCalculating(Long[] identifiers, Long[] descendants, Source source) {
 
     String sqlPath = "/resources/vocabulary/sql/calculateAscendants.sql";
     String tqName = "CDM_schema";

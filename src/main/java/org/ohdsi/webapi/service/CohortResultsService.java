@@ -1771,23 +1771,28 @@ public class CohortResultsService extends AbstractDaoService {
     }
 		
 	@GET
-	@Path("{sourceKey}/{id}/healthcareutilization/exposure/baseline")
+	@Path("{sourceKey}/{id}/healthcareutilization/exposure/{window}")
 	@Produces(MediaType.APPLICATION_JSON)
-  public HealthcareExposureReport getBaselineExposureReport(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey
+  public HealthcareExposureReport getHealthcareUtilizationExposureReport(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey
+		, @PathParam("window") final String window
 		, @DefaultValue("ww") @QueryParam("periodType") final String periodType) {
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
-		HealthcareExposureReport exposureReport = queryRunner.getBaselineExposureReport(getSourceJdbcTemplate(source), id, periodType, source);
+		HealthcareExposureReport exposureReport = queryRunner.getHealthcareExposureReport(getSourceJdbcTemplate(source), id, window, periodType, source);
 		return exposureReport;
 	}
 	
 	@GET
-	@Path("{sourceKey}/{id}/healthcareutilization/exposure/cohort")
+	@Path("{sourceKey}/{id}/healthcareutilization/visit/{window}/{visitStat}")
 	@Produces(MediaType.APPLICATION_JSON)
-  public HealthcareExposureReport getCohortExposureReport(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey
-		, @DefaultValue("ww") @QueryParam("periodType") final String periodType) {
+  public HealthcareVisitUtilizationReport getHealthcareUtilizationVisitReport(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey
+		, @PathParam("window") final String window
+		, @PathParam("visitStat") final String visitStat
+		, @DefaultValue("ww") @QueryParam("periodType") final String periodType
+		, @DefaultValue("") @QueryParam("visitConcept") final String visitConcept
+		, @DefaultValue("") @QueryParam("visitTypeConcept") final String visitTypeConcept) {
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
-		HealthcareExposureReport exposureReport = queryRunner.getCohortExposureReport(getSourceJdbcTemplate(source), id, periodType, source);
-		return exposureReport;
+		HealthcareVisitUtilizationReport visitUtilizationReport = queryRunner.getHealthcareVisitReport(getSourceJdbcTemplate(source), id, window, visitStat, periodType, visitConcept, visitTypeConcept, source);
+		return visitUtilizationReport;
 	}	
 	
   protected PreparedStatementRenderer prepareGetExposureOutcomeCohortPredictors(

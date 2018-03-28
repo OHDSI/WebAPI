@@ -8130,9 +8130,6 @@ INTO #raw_4000
 from observation_periods
 ;
 
-CREATE CLUSTERED INDEX idx_raw_4000 ON #raw_4000 (cohort_definition_id, subject_id, op_start_date);
-CREATE INDEX idx_raw_4000_op_start_date ON #raw_4000 (op_start_date);
-CREATE INDEX idx_raw_4000_op_end_date ON #raw_4000 (op_end_date);
 
 WITH cteRawData (cohort_definition_id, subject_id, stratum_1, count_value) as
 (
@@ -8226,8 +8223,6 @@ select cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id
 INTO #raw_4001
 FROM visit_records;
 
-CREATE CLUSTERED INDEX idx_raw_4001_grouped ON #raw_4001 (cohort_definition_id, subject_id, visit_concept_id, visit_start_date);
-CREATE INDEX idx_raw_4001_visit_start_date ON #raw_4001 (visit_start_date);
 
 with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id) as
 (
@@ -8745,9 +8740,6 @@ join (
 ) as vc1 on vo1.visit_concept_id = vc1.descendant_concept_id
 ;
 
-CREATE CLUSTERED INDEX idx_raw_4005_grouped ON #raw_4005 (cohort_definition_id, subject_id, visit_concept_id, visit_start_date);
-CREATE INDEX idx_raw_4005_visit_start_date ON #raw_4005 (visit_start_date);
-
 WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
 (
 	select cohort_definition_id
@@ -8757,7 +8749,8 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 		, cast(visit_type_concept_id as varchar(19)) as stratum_3
 		, sum(duration) as count_value
 	from #raw_4005
-		join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+	cross join @results_schema.heracles_periods hp
+	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 	GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id, visit_type_concept_id
 
 	UNION ALL
@@ -8769,7 +8762,8 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 		, cast(''  as varchar(19)) as stratum_3
 		, sum(duration) as count_value
 	from #raw_4005
-		join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+	cross join @results_schema.heracles_periods hp
+	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 	GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id
 
 	UNION ALL
@@ -8781,7 +8775,8 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 		, cast(''  as varchar(19)) as stratum_3
 		, sum(duration) as count_value
 	from #raw_4005
-		join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+	cross join @results_schema.heracles_periods hp
+	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 	GROUP BY cohort_definition_id, subject_id, period_id
 
 	UNION ALL
@@ -9047,6 +9042,7 @@ from #HERACLES_cohort c1
 join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
 	and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date <= c1.cohort_end_date
 join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
+join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
 ;
 
 
@@ -9184,6 +9180,7 @@ INTO #raw_4009
 from #HERACLES_cohort c1
 join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
 	and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date <= c1.cohort_end_date
+join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
 join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
 ;
 
@@ -9324,6 +9321,7 @@ INTO #raw_4010
 from #HERACLES_cohort c1
 join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
 	and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date <= c1.cohort_end_date
+join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
 join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
 ;
 
@@ -11901,6 +11899,9 @@ drop table  #results_dist_4003;
 IF OBJECT_ID('tempdb..#results_dist_4004', 'U') IS NOT NULL
 drop table  #results_dist_4004;
 
+IF OBJECT_ID('tempdb..#results_dist_4005', 'U') IS NOT NULL
+drop table  #results_dist_4005;
+
 IF OBJECT_ID('tempdb..#results_dist_4006', 'U') IS NOT NULL
 drop table  #results_dist_4006;
 
@@ -11915,3 +11916,7 @@ drop table  #results_dist_4009;
 
 IF OBJECT_ID('tempdb..#results_dist_4010', 'U') IS NOT NULL
 drop table  #results_dist_4010;
+
+IF OBJECT_ID('tempdb..#results_dist_4011', 'U') IS NOT NULL
+drop table  #results_dist_4011;
+

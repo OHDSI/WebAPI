@@ -2,9 +2,10 @@ select N1.cohort_definition_id
 	, N1.stratum_1
 	, N1.stratum_2
 	, N1.stratum_3
+{@is_summary == FALSE} ? {
 	, P.period_type
 	, P.period_start_date
-	, P.period_end_date
+	, P.period_end_date }
 	, N1.count_value as person_total
 	, ((N1.count_value * 1.0)/D1.count_value) * 100.0 as person_percent
 	, N2.count_value as visits_total
@@ -65,11 +66,10 @@ join
 */
 ) as D1 on  N1.cohort_definition_id = D1.cohort_definition_id
 	and N1.stratum_1 = D1.stratum_1
-	and N1.stratum_2 = D1.stratum_2
-	and N1.stratum_3 = D1.stratum_3
-left join @results_schema.heracles_periods P on cast(N1.stratum_1 as integer) = P.period_id
+{@is_summary == FALSE} ? {left join @results_schema.heracles_periods P on cast(N1.stratum_1 as integer) = P.period_id }
 where N1.cohort_definition_id = @cohort_definition_id
 {@is_summary} ? {	and N1.stratum_1 = ''} : { and P.period_type = '@period_type'}
 	and N1.stratum_2 = '@visit_concept_id'
 	and N2.stratum_3 = '@visit_type_concept_id'
+{@is_summary == FALSE} ? {ORDER BY P.PERIOD_START_DATE}
 ;

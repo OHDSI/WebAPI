@@ -20,3 +20,4 @@ left join @results_schema.heracles_periods P on N.stratum_1 = cast(P.period_id a
 where N.analysis_id = @analysis_id
 	AND N.cohort_definition_id = @cohort_definition_id
   AND P.period_type = '@period_type'
+ORDER BY P.period_start_date

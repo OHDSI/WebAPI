@@ -18,7 +18,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
-import java.sql.ResultSet;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 
@@ -1514,13 +1513,13 @@ public class CohortResultsAnalysisRunner {
 	
 	/* Healthcare Utilizaton Reports */
 	
-	public HealthcareExposureReport getHealthcareExposureReport(JdbcTemplate jdbcTemplate, final int cohortId, final String window, final String periodType, Source source) {
+	public HealthcareExposureReport getHealthcareExposureReport(JdbcTemplate jdbcTemplate, final int cohortId, final WindowType window, final PeriodType periodType, Source source) {
 		String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 		int windowAnalysisId;
 		
-		if ("baseline".equals(window)) {
+		if (window == WindowType.BASELINE) {
 			windowAnalysisId = 4000;
-		} else if ("atrisk".equals(window)) {
+		} else if (window == WindowType.AT_RISK) {
 			windowAnalysisId = 4006;
 		} else {
 			throw new RuntimeException("Invalid window type: " + window);			
@@ -1547,7 +1546,7 @@ public class CohortResultsAnalysisRunner {
 		
 		String dataPath = BASE_SQL_PATH + "/healthcareutilization/getExposureData.sql";
 		String[] dataCols = new String[]{"cohort_definition_id","analysis_id", "period_type"};
-		Object[] dataColVals = new Object[]{cohortId, windowAnalysisId, periodType};
+		Object[] dataColVals = new Object[]{cohortId, windowAnalysisId, periodType.toString().toLowerCase()};
 
 		PreparedStatementRenderer dataPsr =  new PreparedStatementRenderer(source, dataPath, search, replace, dataCols, dataColVals);
 		
@@ -1568,8 +1567,8 @@ public class CohortResultsAnalysisRunner {
 		return report;
 	}	
 	
-	public HealthcareVisitUtilizationReport getHealthcareVisitReport(JdbcTemplate jdbcTemplate, final int cohortId, final String window, String visitStat
-		, final String periodType, final String visitConceptId, final String visitTypeConceptId
+	public HealthcareVisitUtilizationReport getHealthcareVisitReport(JdbcTemplate jdbcTemplate, final int cohortId, final WindowType window, VisitStatType visitStat
+		, final PeriodType periodType, final Long visitConceptId, final Long visitTypeConceptId
 		, Source source) {
 		String vocabularyTableQualifier = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
 		if (vocabularyTableQualifier == null) {
@@ -1582,35 +1581,35 @@ public class CohortResultsAnalysisRunner {
 		int losAnalysisId;
 		
 		// set apprpriate analysis IDs
-		if ("baseline".equalsIgnoreCase(window)) {
+		if (window == WindowType.BASELINE) {
 			subjectsAnalysisId = 4000;
 			subjectWithRecordsAnalysisId = 4001;
 			losAnalysisId = 4005;
 			switch(visitStat) {
-				case "occurrence":
+				case OCCURRENCE:
 					visitStatAnalysisId = 4002;
 					break;
-				case "visitdate":
+				case VISIT_DATE:
 					visitStatAnalysisId = 4003;
 					break;
-				case "caresitedate":
+				case CARESITE_DATE:
 					visitStatAnalysisId = 4004;
 					break;
 				default:
 					throw new RuntimeException("Invalid visitStat: " + visitStat);
 			}
-		} else if ("atrisk".equalsIgnoreCase(window)) {
+		} else if (window == WindowType.AT_RISK) {
 			subjectsAnalysisId = 4006;
 			subjectWithRecordsAnalysisId = 4007;
 			losAnalysisId = 4011;			
 			switch(visitStat) {
-				case "occurrence":
+				case OCCURRENCE:
 					visitStatAnalysisId = 4008;
 					break;
-				case "visitdate":
+				case VISIT_DATE:
 					visitStatAnalysisId = 4009;
 					break;
-				case "caresitedate":
+				case CARESITE_DATE:
 					visitStatAnalysisId = 4010;
 					break;
 				default:
@@ -1628,7 +1627,7 @@ public class CohortResultsAnalysisRunner {
 		String reportPath = BASE_SQL_PATH + "/healthcareutilization/getVisitUtilization.sql";
 		String reportSql = ResourceHelper.GetResourceAsString(reportPath);
 		
-		String summarySql = SqlRender.renderSql(reportSql, new String[] {"is_summary"}, new String[]{"true"});
+		String summarySql = SqlRender.renderSql(reportSql, new String[] {"is_summary"}, new String[]{"TRUE"});
 		
 		String[] reportCols = new String[]{"cohort_definition_id"
 			, "subjects_analysis_id"
@@ -1644,14 +1643,14 @@ public class CohortResultsAnalysisRunner {
 			, subjectWithRecordsAnalysisId
 			, visitStatAnalysisId
 			, losAnalysisId
-			, visitConceptId
-			, visitTypeConceptId
-			,""
+			, ""
+			, ""
+			, ""
 		};
 
 		PreparedStatementRenderer summaryPsr =  new PreparedStatementRenderer(source, summarySql, search, replace, reportCols, summaryColVals);
 		
-		report.summary = jdbcTemplate.query(summaryPsr.getSql(), summaryPsr.getSetter(), (rs,rowNum) -> {
+		List<HealthcareVisitUtilizationReport.Summary> summaryRows = jdbcTemplate.query(summaryPsr.getSql(), summaryPsr.getSetter(), (rs,rowNum) -> {
 			HealthcareVisitUtilizationReport.Summary s = new HealthcareVisitUtilizationReport.Summary();
 			s.personsCount = rs.getLong("person_total");
 			s.personsPct = new BigDecimal(rs.getDouble("person_percent")).setScale(2, BigDecimal.ROUND_HALF_UP);
@@ -1662,19 +1661,21 @@ public class CohortResultsAnalysisRunner {
 			s.lengthOfStayTotal = rs.getLong("los_total");
 			s.lengthOfStayAvg = new BigDecimal(rs.getDouble("los_average")).setScale(2, BigDecimal.ROUND_HALF_UP);
 			return s;
-		}).get(0);
+		});
 		
+		report.summary = summaryRows.size() > 0 ? summaryRows.get(0) : new HealthcareVisitUtilizationReport.Summary();
+
 		Object[] dataColVals = new Object[]{cohortId
 			, subjectsAnalysisId
 			, subjectWithRecordsAnalysisId
 			, visitStatAnalysisId
 			, losAnalysisId
-			, visitConceptId
-			, visitTypeConceptId
-			, periodType
+			, visitConceptId == null ? "" : visitConceptId.toString()
+			, visitTypeConceptId == null ? "" : visitTypeConceptId.toString()
+			, periodType.toString().toLowerCase()
 		};
 
-		String dataSql = SqlRender.renderSql(reportSql, new String[] {"is_summary"}, new String[]{"false"});
+		String dataSql = SqlRender.renderSql(reportSql, new String[] {"is_summary"}, new String[]{"FALSE"});
 		
 		PreparedStatementRenderer dataPsr =  new PreparedStatementRenderer(source, dataSql, search, replace, reportCols, dataColVals);
 		

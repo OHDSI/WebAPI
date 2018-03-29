@@ -9057,7 +9057,7 @@ join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
 join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
 ;
 
-CREATE CLUSTERED INDEX idx_raw_4008_visit_start_date ON #raw_4008 (cohort_definition_id, subject_id, visit_concept_id, visit_start_date);
+CREATE CLUSTERED INDEX idx_raw_4008_grouped ON #raw_4008 (cohort_definition_id, subject_id, visit_concept_id, visit_start_date);
 CREATE INDEX idx_raw_4008_visit_start_date ON #raw_4008 (visit_start_date);
 
 WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
@@ -9197,7 +9197,7 @@ join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
 join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
 ;
 
-CREATE CLUSTERED INDEX idx_raw_4009_visit_start_date ON #raw_4009 (cohort_definition_id, subject_id, visit_concept_id, visit_start_date);
+CREATE CLUSTERED INDEX idx_raw_4009_grouped ON #raw_4009 (cohort_definition_id, subject_id, visit_concept_id, visit_start_date);
 CREATE INDEX idx_raw_4009_visit_start_date ON #raw_4009 (visit_start_date);
 
 WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
@@ -9339,7 +9339,7 @@ join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
 join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
 ;
 
-CREATE CLUSTERED INDEX idx_raw_4010_visit_start_date ON #raw_4010 (cohort_definition_id, subject_id, visit_concept_id, visit_start_date);
+CREATE CLUSTERED INDEX idx_raw_4010_grouped ON #raw_4010 (cohort_definition_id, subject_id, visit_concept_id, visit_start_date);
 CREATE INDEX idx_raw_4010_visit_start_date ON #raw_4010 (visit_start_date);
 
 WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
@@ -9485,7 +9485,7 @@ join (
 ) as vc1 on vo1.visit_concept_id = vc1.descendant_concept_id
 ;
 
-CREATE CLUSTERED INDEX idx_raw_4011_visit_start_date ON #raw_4011 (cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id);
+CREATE CLUSTERED INDEX idx_raw_4011_grouped ON #raw_4011 (cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id);
 CREATE INDEX idx_raw_4011_visit_start_date ON #raw_4011 (visit_start_date);
 
 WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as

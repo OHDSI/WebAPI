@@ -8131,6 +8131,8 @@ from observation_periods
 ;
 
 CREATE CLUSTERED INDEX idx_raw_4000 ON #raw_4000 (cohort_definition_id, subject_id, op_start_date);
+CREATE INDEX idx_raw_4000_op_start_date ON #raw_4000 (op_start_date);
+CREATE INDEX idx_raw_4000_op_end_date ON #raw_4000 (op_end_date);
 
 WITH cteRawData (cohort_definition_id, subject_id, stratum_1, count_value) as
 (
@@ -8224,7 +8226,8 @@ select cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id
 INTO #raw_4001
 FROM visit_records;
 
-CREATE CLUSTERED INDEX idx_raw_4001 ON #raw_4001 (cohort_definition_id, subject_id, visit_concept_id, visit_start_date);
+CREATE CLUSTERED INDEX idx_raw_4001_grouped ON #raw_4001 (cohort_definition_id, subject_id, visit_concept_id, visit_start_date);
+CREATE INDEX idx_raw_4001_visit_start_date ON #raw_4001 (visit_start_date);
 
 with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id) as
 (
@@ -8314,7 +8317,8 @@ join @CDM_schema.visit_occurrence vo1 on c1.subject_id = vo1.person_id
 join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
 ;
 
-CREATE CLUSTERED INDEX idx_raw_4002 ON #raw_4002 (cohort_definition_id, subject_id, visit_concept_id, visit_start_date);
+CREATE CLUSTERED INDEX idx_raw_4002_grouped ON #raw_4002 (cohort_definition_id, subject_id, visit_concept_id, visit_start_date);
+CREATE INDEX idx_raw_4002_visit_start_date ON #raw_4002 (visit_start_date);
 
 WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
 (
@@ -8455,7 +8459,8 @@ join @CDM_schema.visit_occurrence vo1 on c1.subject_id = vo1.person_id
 join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
 ;
 
-CREATE CLUSTERED INDEX idx_raw_4003 ON #raw_4003 (cohort_definition_id, subject_id, visit_concept_id, visit_start_date);
+CREATE CLUSTERED INDEX idx_raw_4003_grouped ON #raw_4003 (cohort_definition_id, subject_id, visit_concept_id, visit_start_date);
+CREATE INDEX idx_raw_4003_visit_start_date ON #raw_4003 (visit_start_date);
 
 WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
 (
@@ -8598,7 +8603,8 @@ join @CDM_schema.visit_occurrence vo1 on c1.subject_id = vo1.person_id
 join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
 ;
 
-CREATE CLUSTERED INDEX idx_raw_4004 ON #raw_4004 (cohort_definition_id, subject_id, visit_concept_id, visit_start_date);
+CREATE CLUSTERED INDEX idx_raw_4004_grouped ON #raw_4004 (cohort_definition_id, subject_id, visit_concept_id, visit_start_date);
+CREATE INDEX idx_raw_4004_visit_start_date ON #raw_4004 (visit_start_date);
 
 WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
 (
@@ -8745,6 +8751,9 @@ join (
 ) as vc1 on vo1.visit_concept_id = vc1.descendant_concept_id
 ;
 
+CREATE CLUSTERED INDEX idx_raw_4005_grouped ON #raw_4005 (cohort_definition_id, subject_id, visit_concept_id, visit_start_date);
+CREATE INDEX idx_raw_4005_visit_start_date ON #raw_4005 (visit_start_date);
+
 WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
 (
 	select cohort_definition_id
@@ -8754,8 +8763,7 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 		, cast(visit_type_concept_id as varchar(19)) as stratum_3
 		, sum(duration) as count_value
 	from #raw_4005
-	cross join @results_schema.heracles_periods hp
-	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+		join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 	GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id, visit_type_concept_id
 
 	UNION ALL
@@ -8767,8 +8775,7 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 		, cast(''  as varchar(19)) as stratum_3
 		, sum(duration) as count_value
 	from #raw_4005
-	cross join @results_schema.heracles_periods hp
-	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+		join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 	GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id
 
 	UNION ALL
@@ -8780,8 +8787,7 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 		, cast(''  as varchar(19)) as stratum_3
 		, sum(duration) as count_value
 	from #raw_4005
-	cross join @results_schema.heracles_periods hp
-	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+		join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 	GROUP BY cohort_definition_id, subject_id, period_id
 
 	UNION ALL
@@ -8962,7 +8968,8 @@ select cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id
 INTO #raw_4007
 FROM visit_records;
 
-CREATE CLUSTERED INDEX idx_raw_4007 ON #raw_4007 (cohort_definition_id, subject_id, visit_concept_id, visit_start_date);
+CREATE CLUSTERED INDEX idx_raw_4007_grouped ON #raw_4007 (cohort_definition_id, subject_id, visit_concept_id, visit_start_date);
+CREATE INDEX idx_raw_4007_visit_start_date ON #raw_4007 (visit_start_date);
 
 with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id) as
 (
@@ -9051,6 +9058,7 @@ join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_c
 ;
 
 CREATE CLUSTERED INDEX idx_raw_4008_visit_start_date ON #raw_4008 (cohort_definition_id, subject_id, visit_concept_id, visit_start_date);
+CREATE INDEX idx_raw_4008_visit_start_date ON #raw_4008 (visit_start_date);
 
 WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
 (
@@ -9190,6 +9198,7 @@ join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_c
 ;
 
 CREATE CLUSTERED INDEX idx_raw_4009_visit_start_date ON #raw_4009 (cohort_definition_id, subject_id, visit_concept_id, visit_start_date);
+CREATE INDEX idx_raw_4009_visit_start_date ON #raw_4009 (visit_start_date);
 
 WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
 (
@@ -9331,6 +9340,7 @@ join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_c
 ;
 
 CREATE CLUSTERED INDEX idx_raw_4010_visit_start_date ON #raw_4010 (cohort_definition_id, subject_id, visit_concept_id, visit_start_date);
+CREATE INDEX idx_raw_4010_visit_start_date ON #raw_4010 (visit_start_date);
 
 WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
 (
@@ -9475,6 +9485,9 @@ join (
 ) as vc1 on vo1.visit_concept_id = vc1.descendant_concept_id
 ;
 
+CREATE CLUSTERED INDEX idx_raw_4011_visit_start_date ON #raw_4011 (cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id);
+CREATE INDEX idx_raw_4011_visit_start_date ON #raw_4011 (visit_start_date);
+
 WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
 (
 	select cohort_definition_id
@@ -9484,8 +9497,7 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 		, cast(visit_type_concept_id as varchar(19)) as stratum_3
 		, sum(duration) as count_value
 	from #raw_4011
-	cross join @results_schema.heracles_periods hp
-	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+	  join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 	GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id, visit_type_concept_id
 
 	UNION ALL
@@ -9497,8 +9509,7 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 		, cast(''  as varchar(19)) as stratum_3
 		, sum(duration) as count_value
 	from #raw_4011
-	cross join @results_schema.heracles_periods hp
-	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+	  join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 	GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id
 
 	UNION ALL
@@ -9510,8 +9521,7 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 		, cast(''  as varchar(19)) as stratum_3
 		, sum(duration) as count_value
 	from #raw_4011
-	cross join @results_schema.heracles_periods hp
-	where visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+	  join @results_schema.heracles_periods hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 	GROUP BY cohort_definition_id, subject_id, period_id
 
 	UNION ALL

@@ -28,8 +28,6 @@ import javax.ws.rs.core.MediaType;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
-import org.ohdsi.sql.SqlRender;
-import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysis;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTask;
 import org.ohdsi.webapi.cohortanalysis.CohortSummary;
@@ -49,7 +47,6 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayOutputStream;
-import java.math.BigDecimal;
 import java.sql.ResultSetMetaData;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -1774,8 +1771,8 @@ public class CohortResultsService extends AbstractDaoService {
 	@Path("{sourceKey}/{id}/healthcareutilization/exposure/{window}")
 	@Produces(MediaType.APPLICATION_JSON)
   public HealthcareExposureReport getHealthcareUtilizationExposureReport(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey
-		, @PathParam("window") final String window
-		, @DefaultValue("ww") @QueryParam("periodType") final String periodType) {
+		, @PathParam("window") final WindowType window
+		, @DefaultValue("ww") @QueryParam("periodType") final PeriodType periodType) {
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		HealthcareExposureReport exposureReport = queryRunner.getHealthcareExposureReport(getSourceJdbcTemplate(source), id, window, periodType, source);
 		return exposureReport;
@@ -1785,11 +1782,11 @@ public class CohortResultsService extends AbstractDaoService {
 	@Path("{sourceKey}/{id}/healthcareutilization/visit/{window}/{visitStat}")
 	@Produces(MediaType.APPLICATION_JSON)
   public HealthcareVisitUtilizationReport getHealthcareUtilizationVisitReport(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey
-		, @PathParam("window") final String window
-		, @PathParam("visitStat") final String visitStat
-		, @DefaultValue("ww") @QueryParam("periodType") final String periodType
-		, @DefaultValue("") @QueryParam("visitConcept") final String visitConcept
-		, @DefaultValue("") @QueryParam("visitTypeConcept") final String visitTypeConcept) {
+		, @PathParam("window") final WindowType window
+		, @PathParam("visitStat") final VisitStatType visitStat
+		, @DefaultValue("ww") @QueryParam("periodType") final PeriodType periodType
+		, @QueryParam("visitConcept") final Long visitConcept
+		, @QueryParam("visitTypeConcept") final Long visitTypeConcept) {
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		HealthcareVisitUtilizationReport visitUtilizationReport = queryRunner.getHealthcareVisitReport(getSourceJdbcTemplate(source), id, window, visitStat, periodType, visitConcept, visitTypeConcept, source);
 		return visitUtilizationReport;

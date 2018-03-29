@@ -10531,7 +10531,8 @@ DROP TABLE #raw_4011;
   select cohort_definition_id, analysis_id,
 	cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(stratum_3 as varchar), cast(stratum_4 as varchar), cast(stratum_5 as varchar),
 	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
-  cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_4005 union   --{ 4006  IN (@list_of_analysis_ids)}?{
+  cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_4005 union all }
+  --{ 4006  IN (@list_of_analysis_ids)}?{
   select cohort_definition_id, analysis_id,
 	cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(stratum_3 as varchar), cast(stratum_4 as varchar), cast(stratum_5 as varchar),
 	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
@@ -10555,7 +10556,7 @@ DROP TABLE #raw_4011;
   select cohort_definition_id, analysis_id,
 	cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(stratum_3 as varchar), cast(stratum_4 as varchar), cast(stratum_5 as varchar),
 	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
-  cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_4011 union 
+  cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_4011 union }
   select -1, -1, '', '','','','', -1, -1, -1, -1, -1, -1, -1, -1, -1, -1;
   -- this final select handles the union all in the case of whatever conditional query runs last
   

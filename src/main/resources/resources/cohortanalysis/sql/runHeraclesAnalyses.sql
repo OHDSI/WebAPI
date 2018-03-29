@@ -8961,7 +8961,7 @@ with visit_records (cohort_definition_id, subject_id, visit_concept_id, visit_ty
 		vo1.visit_start_date
 	from #HERACLES_cohort c1
 	join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
-			and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date < c1.cohort_end_date
+		and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date <= c1.cohort_end_date
 	join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
 )
 select cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id, visit_start_date
@@ -9053,7 +9053,7 @@ select distinct c1.cohort_definition_id,
 INTO #raw_4008
 from #HERACLES_cohort c1
 join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
-		and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date < c1.cohort_end_date
+	and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date <= c1.cohort_end_date
 join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
 ;
 
@@ -9193,7 +9193,7 @@ select distinct c1.cohort_definition_id,
 INTO #raw_4009
 from #HERACLES_cohort c1
 join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
-		and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date < c1.cohort_end_date
+	and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date <= c1.cohort_end_date
 join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
 ;
 
@@ -9335,7 +9335,7 @@ select distinct c1.cohort_definition_id,
 INTO #raw_4010
 from #HERACLES_cohort c1
 join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
-		and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date < c1.cohort_end_date
+	and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date <= c1.cohort_end_date
 join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
 ;
 
@@ -9476,7 +9476,7 @@ select distinct c1.cohort_definition_id,
 INTO #raw_4011
 FROM #HERACLES_cohort c1
 join @CDM_schema.visit_occurrence vo1 on c1.subject_id = vo1.person_id
-		and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date < c1.cohort_end_date
+	and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date <= c1.cohort_end_date
 join (
 	select vc.ancestor_concept_id, vc.descendant_concept_id
 	from @CDM_schema.concept_ancestor as vc
@@ -10556,7 +10556,7 @@ DROP TABLE #raw_4011;
   select cohort_definition_id, analysis_id,
 	cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(stratum_3 as varchar), cast(stratum_4 as varchar), cast(stratum_5 as varchar),
 	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
-  cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_4011 union }
+  cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_4011 union all }
   select -1, -1, '', '','','','', -1, -1, -1, -1, -1, -1, -1, -1, -1, -1;
   -- this final select handles the union all in the case of whatever conditional query runs last
   

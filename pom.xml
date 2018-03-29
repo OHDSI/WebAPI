@@ -346,7 +346,7 @@
     <dependency>
       <groupId>org.ohdsi.sql</groupId>
       <artifactId>SqlRender</artifactId>
-      <version>1.4.8</version>
+      <version>1.4.10</version>
     </dependency>
     <dependency>
       <groupId>commons-dbutils</groupId>

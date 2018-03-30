@@ -67,7 +67,7 @@ join
 	and N1.stratum_1 = D1.stratum_1
 	and N1.stratum_2 = D1.stratum_2
 	and N1.stratum_3 = D1.stratum_3
-left join @results_schema.heracles_periods P on cast(N1.stratum_1 as integer) = P.period_id
+left join @results_schema.heracles_periods P on N1.stratum_1 = cast(P.period_id as VARCHAR)
 where N1.cohort_definition_id = @cohort_definition_id
 {@is_summary} ? {	and N1.stratum_1 = ''} : { and P.period_type = '@period_type'}
 	and N1.stratum_2 = '@visit_concept_id'

@@ -17,6 +17,7 @@ package org.ohdsi.webapi.source;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
+import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -62,7 +63,7 @@ public class SourceDaimon implements Serializable {
   private String tableQualifier;  
   
   @Column(name="PRIORITY")
-  private String priority;
+  private Integer priority;
 
   public int getSourceDaimonId() {
     return sourceDaimonId;
@@ -96,13 +97,29 @@ public class SourceDaimon implements Serializable {
     this.tableQualifier = tableQualifier;
   }
 
-  public String getPriority() {
+  public Integer getPriority() {
     return priority;
   }
 
-  public void setPriority(String priority) {
+  public void setPriority(Integer priority) {
     this.priority = priority;
   }
-  
-  
+
+    @Override
+    public boolean equals(Object o) {
+
+        if (this == o) return true;
+        if (!(o instanceof SourceDaimon)) return false;
+        SourceDaimon that = (SourceDaimon) o;
+        return sourceDaimonId == that.sourceDaimonId &&
+                daimonType == that.daimonType &&
+                Objects.equals(tableQualifier, that.tableQualifier) &&
+                Objects.equals(priority, that.priority);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(sourceDaimonId, daimonType, tableQualifier, priority);
+    }
 }

@@ -25,6 +25,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import org.hibernate.annotations.Cascade;
 import org.ohdsi.webapi.source.SourceDaimon.DaimonType;
 
 /**
@@ -39,7 +40,7 @@ public class Source implements Serializable {
   @GeneratedValue  
   @Column(name="SOURCE_ID")  
   private int sourceId;
-  
+
   @OneToMany(fetch= FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "source")
   private Collection<SourceDaimon> daimons;
     

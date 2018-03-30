@@ -146,6 +146,7 @@ public class AtlasSecurity extends Security {
   private final Map<String, String> incidenceRatePermissionTemplates = new LinkedHashMap<>();
   private final Map<String, String> estimationPermissionTemplates = new LinkedHashMap<>();
   private final Map<String, String> plpPermissionTemplate = new LinkedHashMap<>();
+  private final Map<String, String> dataSourcePermissionTemplates = new LinkedHashMap<>();
 
   public AtlasSecurity() {
     this.defaultRoles.add("public");
@@ -176,6 +177,10 @@ public class AtlasSecurity extends Security {
     this.plpPermissionTemplate.put("plp:%s:delete", "Delete Population Level Prediction with ID=%s");
     this.plpPermissionTemplate.put("plp:%s:get", "Read Population Level Prediction with ID=%s");
     this.plpPermissionTemplate.put("plp:%s:copy:get", "Copy Population Level Prediction with ID=%s");
+
+    this.dataSourcePermissionTemplates.put("source:%s:put", "Edit Source with sourceKey=%s");
+    this.dataSourcePermissionTemplates.put("source:%s:get", "Read Source with sourceKey=%s");
+    this.dataSourcePermissionTemplates.put("source:%s:delete", "Delete Source with sourceKey=%s");
   }
 
   @Override
@@ -243,6 +248,9 @@ public class AtlasSecurity extends Security {
       // configuration
       .addProtectedRestPath("/source/refresh")
       .addProtectedRestPath("/source/priorityVocabulary")
+      .addRestPath("/source/sources")
+      .addProtectedRestPath("/source", "createPermissionsOnCreateSource")
+      .addProtectedRestPath("/source/*", "deletePermissionsOnDeleteSource")
 
       // cohort analysis
       .addProtectedRestPath("/cohortanalysis")
@@ -299,6 +307,8 @@ public class AtlasSecurity extends Security {
     filters.put("createPermissionsOnCreateEstimation", this.getCreatePermissionsOnCreateFilter(estimationPermissionTemplates, "analysisId"));
     filters.put("createPermissionsOnCreatePlp", this.getCreatePermissionsOnCreateFilter(plpPermissionTemplate, "analysisId"));
     filters.put("createPermissionsOnCopyPlp", this.getCreatePermissionsOnCopyFilter(plpPermissionTemplate, ".*plp/.*/copy", "analysisId"));
+    filters.put("createPermissionsOnCreateSource", this.getCreatePermissionsOnCreateFilter(dataSourcePermissionTemplates, "sourceKey"));
+    filters.put("deletePermissionsOnDeleteSource", this.getDeletePermissionsOnDeleteFilter(dataSourcePermissionTemplates));
     filters.put("cors", new CorsFilter());
     filters.put("skipFurtherFiltersIfNotPost", this.getSkipFurtherFiltersIfNotPostFilter());
     filters.put("skipFurtherFiltersIfNotPut", this.getSkipFurtherFiltersIfNotPutFilter());

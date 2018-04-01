@@ -15,12 +15,13 @@
  */
 package org.ohdsi.webapi.conceptset;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 /**
@@ -33,8 +34,9 @@ import javax.persistence.Table;
 public class ConceptSetItem implements Serializable{
   
   @Id
-  @GeneratedValue  
-  @Column(name="concept_set_item_id")    
+  @SequenceGenerator(name = "concept_set_item_seq", sequenceName = "concept_set_item_sequence", allocationSize = 1)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "concept_set_item_seq")
+  @Column(name="concept_set_item_id")
   private int id;
   
   @Column(name="concept_set_id")

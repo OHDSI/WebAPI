@@ -10,8 +10,8 @@ SELECT setval('${ohdsiSchema}.concept_set_sequence', coalesce(max(concept_set_id
 -- concept_set_item_sequence already exists - no need to create
 SELECT setval('${ohdsiSchema}.concept_set_item_sequence', coalesce(max(concept_set_item_id), 1)) FROM ${ohdsiSchema}.concept_set_item;
 
--- concept_set_negative_controls_sequence already exists - no need to create
-SELECT setval('${ohdsiSchema}.concept_set_negative_controls_sequence', coalesce(max(id), 1)) FROM ${ohdsiSchema}.concept_set_negative_controls;
+-- negative_controls_sequence already exists - no need to create
+SELECT setval('${ohdsiSchema}.negative_controls_sequence', coalesce(max(id), 1)) FROM ${ohdsiSchema}.concept_set_negative_controls;
 
 CREATE SEQUENCE ${ohdsiSchema}.feasibility_study_sequence;
 SELECT setval('${ohdsiSchema}.feasibility_study_sequence', coalesce(max(id), 1)) FROM ${ohdsiSchema}.feasibility_study;

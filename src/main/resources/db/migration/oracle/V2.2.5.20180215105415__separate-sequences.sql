@@ -4,7 +4,7 @@ DECLARE
   stmt VARCHAR2(255);
 BEGIN
   stmt := 'CREATE SEQUENCE ${ohdsiSchema}.cca_sequence START WITH ';
-  SELECT nvl(max(cca_id), 1) INTO val FROM ${ohdsiSchema}.cca;
+  SELECT nvl2(max(cca_id), max(cca_id) + 1, 1) INTO val FROM ${ohdsiSchema}.cca;
   EXECUTE IMMEDIATE stmt || val;
 END;
 /
@@ -15,50 +15,34 @@ DECLARE
   stmt VARCHAR2(255);
 BEGIN
   stmt := 'CREATE SEQUENCE ${ohdsiSchema}.cohort_definition_sequence START WITH ';
-  SELECT nvl(max(id), 1) INTO val FROM ${ohdsiSchema}.cohort_definition;
+  SELECT nvl2(max(id), max(id) + 1, 1) INTO val FROM ${ohdsiSchema}.cohort_definition;
   EXECUTE IMMEDIATE stmt || val;
 END;
 /
 
+DROP SEQUENCE ${ohdsiSchema}.CONCEPT_SET_SEQUENCE;
+
 -- concept_set
 DECLARE
-  diff INTEGER;
   val INTEGER;
   stmt VARCHAR2(255);
 BEGIN
-  stmt := 'ALTER SEQUENCE ${ohdsiSchema}.concept_set_sequence INCREMENT BY ';
-  BEGIN
-    SELECT ${ohdsiSchema}.concept_set_sequence.NEXTVAL INTO val FROM ${ohdsiSchema}.concept_set;
-    EXCEPTION WHEN NO_DATA_FOUND THEN
-      val := 1;
-  END;
-  SELECT (nvl(max(concept_set_id), 1) - val) INTO diff FROM ${ohdsiSchema}.concept_set;
-  IF diff > 0 THEN
-    EXECUTE IMMEDIATE stmt || val;
-    SELECT ${ohdsiSchema}.concept_set_sequence.NEXTVAL INTO val FROM ${ohdsiSchema}.concept_set;
-    EXECUTE IMMEDIATE stmt || 1;
-  END IF;
+  stmt := 'CREATE SEQUENCE ${ohdsiSchema}.concept_set_sequence START WITH ';
+  SELECT nvl2(max(concept_set_id), max(concept_set_id) + 1, 1) INTO val FROM ${ohdsiSchema}.concept_set;
+  EXECUTE IMMEDIATE stmt || val;
 END;
 /
 
+DROP SEQUENCE ${ohdsiSchema}.CONCEPT_SET_ITEM_SEQUENCE;
+
 -- concept_set_item
 DECLARE
-  diff INTEGER;
   val INTEGER;
   stmt VARCHAR2(255);
 BEGIN
-  stmt := 'ALTER SEQUENCE ${ohdsiSchema}.concept_set_item_sequence INCREMENT BY ';
-  BEGIN
-    SELECT ${ohdsiSchema}.concept_set_item_sequence.NEXTVAL INTO val FROM ${ohdsiSchema}.concept_set_item;
-    EXCEPTION WHEN NO_DATA_FOUND THEN
-      val := 1;
-  END;
-  SELECT (nvl(max(concept_set_id), 1) - val) INTO diff FROM ${ohdsiSchema}.concept_set_item;
-  IF diff > 0 THEN
-    EXECUTE IMMEDIATE stmt || val;
-    SELECT ${ohdsiSchema}.concept_set_item_sequence.NEXTVAL INTO val FROM ${ohdsiSchema}.concept_set_item;
-    EXECUTE IMMEDIATE stmt || 1;
-  END IF;
+  stmt := 'CREATE SEQUENCE ${ohdsiSchema}.concept_set_item_sequence START WITH ';
+  SELECT nvl2(max(concept_set_item_id), max(concept_set_item_id) + 1, 1) INTO val FROM ${ohdsiSchema}.concept_set_item;
+  EXECUTE IMMEDIATE stmt || val;
 END;
 /
 
@@ -68,7 +52,7 @@ DECLARE
   stmt VARCHAR2(255);
 BEGIN
   stmt := 'CREATE SEQUENCE ${ohdsiSchema}.negative_controls_sequence START WITH ';
-  SELECT nvl(max(id), 1) INTO val FROM ${ohdsiSchema}.concept_set_negative_controls;
+  SELECT nvl2(max(id), max(id) + 1, 1) INTO val FROM ${ohdsiSchema}.concept_set_negative_controls;
   EXECUTE IMMEDIATE stmt || val;
 END;
 /
@@ -79,7 +63,7 @@ DECLARE
   stmt VARCHAR2(255);
 BEGIN
   stmt := 'CREATE SEQUENCE ${ohdsiSchema}.feasibility_study_sequence START WITH ';
-  SELECT nvl(max(id), 1) INTO val FROM ${ohdsiSchema}.feasibility_study;
+  SELECT nvl2(max(id), max(id) + 1, 1) INTO val FROM ${ohdsiSchema}.feasibility_study;
   EXECUTE IMMEDIATE stmt || val;
 END;
 /
@@ -90,7 +74,7 @@ DECLARE
   stmt VARCHAR2(255);
 BEGIN
   stmt := 'CREATE SEQUENCE ${ohdsiSchema}.ir_analysis_sequence START WITH ';
-  SELECT nvl(max(id), 1) INTO val FROM ${ohdsiSchema}.ir_analysis;
+  SELECT nvl2(max(id), max(id) + 1, 1) INTO val FROM ${ohdsiSchema}.ir_analysis;
   EXECUTE IMMEDIATE stmt || val;
 END;
 /
@@ -101,7 +85,7 @@ DECLARE
   stmt VARCHAR2(255);
 BEGIN
   stmt := 'CREATE SEQUENCE ${ohdsiSchema}.plp_sequence START WITH ';
-  SELECT nvl(max(plp_id), 1) INTO val FROM ${ohdsiSchema}.plp;
+  SELECT nvl2(max(plp_id), max(plp_id) + 1, 1) INTO val FROM ${ohdsiSchema}.plp;
   EXECUTE IMMEDIATE stmt || val;
 END;
 /

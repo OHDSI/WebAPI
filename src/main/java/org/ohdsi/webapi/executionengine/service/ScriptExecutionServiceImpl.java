@@ -110,6 +110,10 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         Source source = sourceRepository.findBySourceKey(dto.sourceKey);
         final String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
         final String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+        String vocabularyTableQualifier = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
+        if (vocabularyTableQualifier == null) {
+            vocabularyTableQualifier = cdmTableQualifier;
+        }
         final String password = StringGenerationUtil.generateRandomString();
 
         AnalysisExecution execution = makeAnalysisExecution(dto, source, password);
@@ -117,7 +121,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         String name = getAnalysisName(dto);
 
         //replace var in R-script
-        final String script = processTemplate(dto, cdmTableQualifier, resultsTableQualifier, source);
+        final String script = processTemplate(dto, cdmTableQualifier, resultsTableQualifier, vocabularyTableQualifier, source);
         AnalysisFile inputFile = new AnalysisFile();
         inputFile.setAnalysisExecution(execution);
         inputFile.setContents(script.getBytes());
@@ -254,6 +258,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
 
     private String processTemplate(ExecutionRequestDTO requestDTO,
                                    String cdmTable, String resultsTable,
+                                   String vocabularyTable,
                                    Source source) {
 
         ConnectionParams connectionParams = getConnectionParams(source.getSourceConnection());
@@ -263,7 +268,10 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
                 .replace("server = \"localhost/ohdsi\"", "server = \"" + connectionParams.getServer() + "\"")
                 .replace("user = \"joe\"", "user = \"" + connectionParams.getUser() + "\"")
                 .replace("my_cdm_data", cdmTable)
+                .replace("my_vocabulary_data", vocabularyTable)
                 .replace("my_results", resultsTable)
+                .replace("exposure_database_schema", cdmTable)
+                .replace("outcome_database_schema", resultsTable)
                 .replace("exposure_table", "cohort")
                 .replace("outcome_table", "cohort")
                 .replace("cohort_table", "cohort")

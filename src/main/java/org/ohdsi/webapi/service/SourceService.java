@@ -17,9 +17,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
-import org.ohdsi.webapi.shiro.Entities.RoleEntity;
-import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
@@ -124,11 +121,11 @@ public class SourceService extends AbstractDaoService {
     return sourceRepository.findBySourceKey(sourceKey).getSourceInfo();
   }
 
-  @Path("details/{key}")
+  @Path("details/{sourceId}")
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  public SourceDetails getSourceDetails(@PathParam("key") String sourceKey) {
-    return new SourceDetails(sourceRepository.findBySourceKey(sourceKey));
+  public SourceDetails getSourceDetails(@PathParam("sourceId") Integer sourceId) {
+    return new SourceDetails(sourceRepository.findBySourceId(sourceId));
   }
 
   @Path("")
@@ -144,17 +141,17 @@ public class SourceService extends AbstractDaoService {
     return new SourceInfo(saved);
   }
 
-  @Path("{key}")
+  @Path("{sourceId}")
   @PUT
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   @Transactional
-  public SourceInfo updateSource(@PathParam("key") String sourceKey, SourceRequest request) {
+  public SourceInfo updateSource(@PathParam("sourceId") Integer sourceId, SourceRequest request) {
     Source updated = conversionService.convert(request, Source.class);
-    Source source = sourceRepository.findBySourceKey(sourceKey);
+    Source source = sourceRepository.findBySourceId(sourceId);
     if (source != null) {
-      updated.setSourceId(source.getSourceId());
-      updated.setSourceKey(sourceKey);
+      updated.setSourceId(sourceId);
+      updated.setSourceKey(source.getSourceKey());
       List<SourceDaimon> removed = source.getDaimons().stream().filter(d -> !updated.getDaimons().contains(d))
               .collect(Collectors.toList());
       sourceDaimonRepository.delete(removed);
@@ -166,12 +163,13 @@ public class SourceService extends AbstractDaoService {
     }
   }
 
-  @Path("{key}")
+  @Path("{sourceId}")
   @DELETE
   @Transactional
-  public Response delete(@PathParam("key") String sourceKey) throws Exception {
-    Source source = sourceRepository.findBySourceKey(sourceKey);
+  public Response delete(@PathParam("sourceId") Integer sourceId) throws Exception {
+    Source source = sourceRepository.findBySourceId(sourceId);
     if (source != null) {
+      final String sourceKey = source.getSourceKey();
       sourceRepository.delete(source);
       cachedSources = null;
       securityManager.removeSourceRole(sourceKey);

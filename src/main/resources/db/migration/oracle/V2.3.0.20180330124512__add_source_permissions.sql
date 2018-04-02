@@ -30,3 +30,10 @@ INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
   FROM ${ohdsiSchema}.sec_role_permission sp,
     ${ohdsiSchema}.sec_role sr
   WHERE sp."value" = 'source:*:delete' AND sr.name IN ('admin');
+
+INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description) VALUES(${ohdsiSchema}.sec_permission_id_seq, 'source:details:*:get', 'Read source details');
+INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
+  SELECT sr.id, sp.id
+  FROM ${ohdsiSchema}.sec_role_permission sp,
+    ${ohdsiSchema}.sec_role sr
+  WHERE sp."value" = 'source:details:*:get' AND sr.name IN ('admin');

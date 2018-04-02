@@ -252,6 +252,7 @@ public class AtlasSecurity extends Security {
       .addRestPath("/source/sources")
       .addProtectedRestPath("/source", "createPermissionsOnCreateSource")
       .addProtectedRestPath("/source/*", "deletePermissionsOnDeleteSource")
+      .addProtectedRestPath("/source/details/*")
 
       // cohort analysis
       .addProtectedRestPath("/cohortanalysis")

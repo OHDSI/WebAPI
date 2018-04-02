@@ -29,6 +29,7 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.NamedAttributeNode;
@@ -37,6 +38,7 @@ import javax.persistence.NamedEntityGraphs;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.OrderColumn;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 
@@ -64,7 +66,8 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 public class FeasibilityStudy {
   
   @Id
-  @GeneratedValue
+  @SequenceGenerator(name = "feasibility_study_seq", sequenceName = "feasibility_study_sequence", allocationSize = 1)
+  @GeneratedValue(generator = "feasibility_study_seq", strategy = GenerationType.SEQUENCE)
   @Column(name="id")
   @Access(AccessType.PROPERTY) 
   private Integer id; 

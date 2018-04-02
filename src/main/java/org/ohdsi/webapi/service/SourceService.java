@@ -17,6 +17,10 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
+import org.ohdsi.webapi.shiro.Entities.RoleEntity;
+import org.ohdsi.webapi.shiro.PermissionManager;
+import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceDaimonRepository;
@@ -58,6 +62,9 @@ public class SourceService extends AbstractDaoService {
 
   @Autowired
   private GenericConversionService conversionService;
+
+  @Autowired
+  private Security securityManager;
 
   @Value("${security.enabled}")
   private boolean securityEnabled;
@@ -128,10 +135,12 @@ public class SourceService extends AbstractDaoService {
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public SourceInfo createSource(SourceRequest request) {
+  public SourceInfo createSource(SourceRequest request) throws Exception {
     Source source = conversionService.convert(request, Source.class);
     Source saved = sourceRepository.save(source);
+    String sourceKey = saved.getSourceKey();
     cachedSources = null;
+    securityManager.addSourceRole(sourceKey);
     return new SourceInfo(saved);
   }
 
@@ -160,11 +169,12 @@ public class SourceService extends AbstractDaoService {
   @Path("{key}")
   @DELETE
   @Transactional
-  public Response delete(@PathParam("key") String sourceKey) {
+  public Response delete(@PathParam("key") String sourceKey) throws Exception {
     Source source = sourceRepository.findBySourceKey(sourceKey);
     if (source != null) {
       sourceRepository.delete(source);
       cachedSources = null;
+      securityManager.removeSourceRole(sourceKey);
       return Response.ok().build();
     } else {
       throw new NotFoundException();

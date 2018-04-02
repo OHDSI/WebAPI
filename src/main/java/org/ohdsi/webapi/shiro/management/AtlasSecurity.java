@@ -33,6 +33,7 @@ import org.apache.shiro.web.util.WebUtils;
 import org.ohdsi.webapi.OidcConfCreator;
 import org.ohdsi.webapi.shiro.*;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.filters.KerberosAuthFilter;
 import org.ohdsi.webapi.shiro.lockout.DefaultLockoutPolicy;
 import org.ohdsi.webapi.shiro.lockout.ExponentLockoutStrategy;
@@ -414,14 +415,33 @@ public class AtlasSecurity extends Security {
     return authenticator;
   }
 
-  private void addSourceRole(String sourceKey) throws Exception {
-    String roleName = String.format("Source user (%s)", sourceKey);
+  private String getSourceRoleName(String sourceKey) {
+    return String.format("Source user (%s)", sourceKey);
+  }
+
+  @Override
+  public void addSourceRole(String sourceKey) throws Exception {
+    final String roleName = getSourceRoleName(sourceKey);
     if (this.authorizer.roleExists(roleName)) {
       return;
     }
 
     RoleEntity role = this.authorizer.addRole(roleName);
     this.authorizer.addPermissionsFromTemplate(role, this.sourcePermissionTemplates, sourceKey);
+  }
+
+  @Override
+  public void removeSourceRole(String sourceKey) throws Exception {
+    final String roleName = getSourceRoleName(sourceKey);
+    if (this.authorizer.roleExists(roleName)) {
+      RoleEntity role = this.authorizer.getRoleByName(roleName);
+      this.authorizer.removePermissionsFromTemplate(this.sourcePermissionTemplates, sourceKey);
+      Set<UserEntity> roleUsers = this.authorizer.getRoleUsers(role.getId());
+      for(UserEntity user : roleUsers) {
+        this.authorizer.removeUserFromRole(roleName, user.getLogin());
+      }
+      this.authorizer.removeRole(role.getId());
+    }
   }
 
   @PostConstruct

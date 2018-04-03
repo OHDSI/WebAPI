@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -34,6 +35,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Path("/source/")
 @Component
 public class SourceService extends AbstractDaoService {
+
+  public static final String SECURE_MODE_ERROR = "Priority setting is available only in secured mode of application";
 
   public class SortByKey implements Comparator<SourceInfo>
   {
@@ -133,6 +136,9 @@ public class SourceService extends AbstractDaoService {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public SourceInfo createSource(SourceRequest request) throws Exception {
+    if (!securityEnabled) {
+      throw new NotAuthorizedException(SECURE_MODE_ERROR);
+    }
     Source source = conversionService.convert(request, Source.class);
     Source saved = sourceRepository.save(source);
     String sourceKey = saved.getSourceKey();
@@ -147,6 +153,9 @@ public class SourceService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Transactional
   public SourceInfo updateSource(@PathParam("sourceId") Integer sourceId, SourceRequest request) {
+    if (!securityEnabled) {
+      throw new NotAuthorizedException(SECURE_MODE_ERROR);
+    }
     Source updated = conversionService.convert(request, Source.class);
     Source source = sourceRepository.findBySourceId(sourceId);
     if (source != null) {
@@ -167,6 +176,9 @@ public class SourceService extends AbstractDaoService {
   @DELETE
   @Transactional
   public Response delete(@PathParam("sourceId") Integer sourceId) throws Exception {
+    if (!securityEnabled){
+        getInsecureModeResponse();
+    }
     Source source = sourceRepository.findBySourceId(sourceId);
     if (source != null) {
       final String sourceKey = source.getSourceKey();
@@ -187,9 +199,7 @@ public class SourceService extends AbstractDaoService {
           @PathParam("daimonType") final String daimonTypeName
   ) {
     if (!securityEnabled) {
-      return Response.status(Response.Status.UNAUTHORIZED)
-              .entity("Priority setting is available only in secured mode of application")
-              .build();
+        getInsecureModeResponse();
     }
     SourceDaimon.DaimonType daimonType = SourceDaimon.DaimonType.valueOf(daimonTypeName);
     List<SourceDaimon> daimonList = sourceDaimonRepository.findByDaimonType(daimonType);
@@ -200,6 +210,12 @@ public class SourceService extends AbstractDaoService {
     });
     cachedSources = null;
     return Response.ok().build();
+  }
+
+  private Response getInsecureModeResponse() {
+      return Response.status(Response.Status.UNAUTHORIZED)
+              .entity(SECURE_MODE_ERROR)
+              .build();
   }
 
 }

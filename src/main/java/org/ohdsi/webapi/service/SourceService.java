@@ -36,7 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class SourceService extends AbstractDaoService {
 
-  public static final String SECURE_MODE_ERROR = "Priority setting is available only in secured mode of application";
+  public static final String SECURE_MODE_ERROR = "This feautre requires the administrator to enable security for the application";
 
   public class SortByKey implements Comparator<SourceInfo>
   {
@@ -128,6 +128,9 @@ public class SourceService extends AbstractDaoService {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public SourceDetails getSourceDetails(@PathParam("sourceId") Integer sourceId) {
+    if (!securityEnabled) {
+      throw new NotAuthorizedException(SECURE_MODE_ERROR);
+    }
     return new SourceDetails(sourceRepository.findBySourceId(sourceId));
   }
 
@@ -177,7 +180,7 @@ public class SourceService extends AbstractDaoService {
   @Transactional
   public Response delete(@PathParam("sourceId") Integer sourceId) throws Exception {
     if (!securityEnabled){
-        getInsecureModeResponse();
+        return getInsecureModeResponse();
     }
     Source source = sourceRepository.findBySourceId(sourceId);
     if (source != null) {
@@ -199,7 +202,7 @@ public class SourceService extends AbstractDaoService {
           @PathParam("daimonType") final String daimonTypeName
   ) {
     if (!securityEnabled) {
-        getInsecureModeResponse();
+        return getInsecureModeResponse();
     }
     SourceDaimon.DaimonType daimonType = SourceDaimon.DaimonType.valueOf(daimonTypeName);
     List<SourceDaimon> daimonList = sourceDaimonRepository.findByDaimonType(daimonType);

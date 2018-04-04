@@ -50,6 +50,16 @@ public class DisabledSecurity extends Security {
   }
 
   @Override
+  public void addSourceRole(String sourceKey) throws Exception {
+    //Do nothing
+  }
+
+  @Override
+  public void removeSourceRole(String sourceKey) throws Exception {
+    //Do nothing
+  }
+
+  @Override
   public String getSubject() {
     return "anonymous";
   }

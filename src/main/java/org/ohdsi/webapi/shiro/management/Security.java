@@ -13,6 +13,10 @@ import org.springframework.stereotype.Component;
 @Component
 public abstract class Security {
 
+  public abstract void addSourceRole(String sourceKey) throws Exception;
+
+  public abstract void removeSourceRole(String sourceKey) throws Exception;
+
   public abstract String getSubject();
 
   public abstract Set<Realm> getRealms();

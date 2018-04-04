@@ -424,7 +424,7 @@ public class PermissionManager {
     return user;
   }
 
-  private RoleEntity getRoleByName(String roleName) throws Exception {
+  public RoleEntity getRoleByName(String roleName) throws Exception {
     final RoleEntity roleEntity = this.roleRepository.findByName(roleName);
     if (roleEntity == null)
       throw new Exception("Role doesn't exist");

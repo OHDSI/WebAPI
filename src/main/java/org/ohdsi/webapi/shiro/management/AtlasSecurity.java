@@ -280,6 +280,9 @@ public class AtlasSecurity extends Security {
       // data sources
       .addProtectedRestPath("/cdmresults/*")
 
+      // profiles
+      .addProtectedRestPath("/*/person/*")
+
       // not protected resources - all the rest
       .addRestPath("/**")
 

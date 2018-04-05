@@ -13,6 +13,8 @@ import org.springframework.stereotype.Component;
 @Component
 public abstract class Security {
 
+  public static String PROFILE_VIEW_DATES_PERMISSION = "profile:dates:view";
+
   public abstract void addSourceRole(String sourceKey) throws Exception;
 
   public abstract void removeSourceRole(String sourceKey) throws Exception;

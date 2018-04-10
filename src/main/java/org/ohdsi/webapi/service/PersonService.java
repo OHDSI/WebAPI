@@ -17,32 +17,52 @@ package org.ohdsi.webapi.service;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
+import java.util.Objects;
+import java.util.Optional;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import org.apache.shiro.SecurityUtils;
 import org.ohdsi.webapi.person.ObservationPeriod;
 import org.ohdsi.webapi.person.PersonRecord;
 import org.ohdsi.webapi.person.CohortPerson;
 import org.ohdsi.webapi.person.PersonProfile;
+import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
 @Path("{sourceKey}/person/")
 @Component
 public class PersonService extends AbstractDaoService {
-  
+
+  @Value("${person.viewDates}")
+  private Boolean viewDatesPermitted;
+	
+  @Value("${security.enabled}")
+  private boolean securityEnabled;
+
   @Path("{personId}")
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  public PersonProfile getPersonProfile(@PathParam("sourceKey") String sourceKey, @PathParam("personId") String personId)  
+  public PersonProfile getPersonProfile(@PathParam("sourceKey") String sourceKey, @PathParam("personId") String personId,
+                                        @DefaultValue("0") @QueryParam("cohort") Long cohortId)
   {
     final PersonProfile profile = new PersonProfile();
-    
+
+    boolean showDates = this.canViewDates();
+
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     profile.gender = "not found";
     profile.yearOfBirth = 0;
@@ -109,6 +129,34 @@ public class PersonService extends AbstractDaoService {
         return null;
       }
     });
+
+
+    LocalDateTime cohortStartDate = null;
+    Optional<CohortPerson> cohort = cohortId > 0 ? profile.cohorts.stream().filter(c -> c.cohortDefinitionId.equals(cohortId)).findFirst() :
+            Optional.empty();
+    cohortStartDate = cohort.map(c -> c.startDate.toLocalDateTime()).orElseGet(() ->
+      profile.records.stream().min(Comparator.comparing(c -> c.startDate))
+        .map(r -> r.startDate.toLocalDateTime()).orElse(null));
+
+    for(PersonRecord record : profile.records){
+      record.startDay = Math.toIntExact(ChronoUnit.DAYS.between(cohortStartDate, record.startDate.toLocalDateTime()));
+      record.endDay = Objects.nonNull(record.endDate) ? Math.toIntExact(ChronoUnit.DAYS.between(cohortStartDate,
+              record.endDate.toLocalDateTime())) : record.startDay;
+      if (!showDates) {
+        record.startDate = null;
+        record.endDate = null;
+      }
+    }
+    for(ObservationPeriod period : profile.observationPeriods){
+      period.x1 = Math.toIntExact(ChronoUnit.DAYS.between(cohortStartDate,
+              period.startDate.toLocalDateTime()));
+      period.x2 = Math.toIntExact(ChronoUnit.DAYS.between(cohortStartDate,
+              period.endDate.toLocalDateTime()));
+      if (!showDates) {
+        period.startDate = null;
+        period.endDate = null;
+      }
+    }
     
     return profile;
   }
@@ -136,4 +184,12 @@ public class PersonService extends AbstractDaoService {
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
     return new PreparedStatementRenderer(source, "/resources/person/sql/getRecords.sql", "tableQualifier", tqValue, "personId", Long.valueOf(personId));
   }
+	
+	private Boolean canViewDates() {
+		if (this.viewDatesPermitted && this.securityEnabled) {
+			return SecurityUtils.getSubject().isPermitted(Security.PROFILE_VIEW_DATES_PERMISSION);
+		} else {
+			return this.viewDatesPermitted;
+		}
+	}
 }

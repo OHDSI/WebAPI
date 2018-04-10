@@ -27,4 +27,6 @@ public class PersonRecord {
   public String conceptName;
   public Timestamp startDate;
   public Timestamp endDate;
+  public int startDay;
+  public int endDay;
 }

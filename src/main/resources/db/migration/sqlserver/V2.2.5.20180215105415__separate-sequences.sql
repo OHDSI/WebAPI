@@ -102,7 +102,10 @@ GO
 UPDATE ${ohdsiSchema}.concept_set SET concept_set_id_tmp = concept_set_id;
 GO
 
-ALTER TABLE ${ohdsiSchema}.concept_set_generation_info DROP CONSTRAINT FK_concept_set_generation_info_concept_set;
+IF EXISTS (SELECT * FROM sys.objects where name = 'FK_concept_set_generation_info_concept_set')
+BEGIN
+	ALTER TABLE ${ohdsiSchema}.concept_set_generation_info DROP CONSTRAINT FK_concept_set_generation_info_concept_set
+END
 GO
 
 DECLARE @sql NVARCHAR(MAX), @pk NVARCHAR(512);

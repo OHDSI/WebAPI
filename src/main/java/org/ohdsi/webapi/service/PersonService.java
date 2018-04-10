@@ -47,8 +47,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class PersonService extends AbstractDaoService {
 
-  @Value("${profiles.allow.physicalDates}")
-  private Boolean allowPhysicalDates;
+  @Value("${person.viewDates}")
+  private Boolean viewDatesPermitted;
+	
+  @Value("${security.enabled}")
+  private boolean securityEnabled;
 
   @Path("{personId}")
   @GET
@@ -58,7 +61,7 @@ public class PersonService extends AbstractDaoService {
   {
     final PersonProfile profile = new PersonProfile();
 
-    boolean viewDatesAllowed = allowPhysicalDates && SecurityUtils.getSubject().isPermitted(Security.PROFILE_VIEW_DATES_PERMISSION);
+    boolean showDates = this.canViewDates();
 
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     profile.gender = "not found";
@@ -139,7 +142,7 @@ public class PersonService extends AbstractDaoService {
       record.startDay = Math.toIntExact(ChronoUnit.DAYS.between(cohortStartDate, record.startDate.toLocalDateTime()));
       record.endDay = Objects.nonNull(record.endDate) ? Math.toIntExact(ChronoUnit.DAYS.between(cohortStartDate,
               record.endDate.toLocalDateTime())) : record.startDay;
-      if (!viewDatesAllowed) {
+      if (!showDates) {
         record.startDate = null;
         record.endDate = null;
       }
@@ -149,7 +152,7 @@ public class PersonService extends AbstractDaoService {
               period.startDate.toLocalDateTime()));
       period.x2 = Math.toIntExact(ChronoUnit.DAYS.between(cohortStartDate,
               period.endDate.toLocalDateTime()));
-      if (!viewDatesAllowed) {
+      if (!showDates) {
         period.startDate = null;
         period.endDate = null;
       }
@@ -181,4 +184,12 @@ public class PersonService extends AbstractDaoService {
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
     return new PreparedStatementRenderer(source, "/resources/person/sql/getRecords.sql", "tableQualifier", tqValue, "personId", Long.valueOf(personId));
   }
+	
+	private Boolean canViewDates() {
+		if (this.viewDatesPermitted && this.securityEnabled) {
+			return SecurityUtils.getSubject().isPermitted(Security.PROFILE_VIEW_DATES_PERMISSION);
+		} else {
+			return this.viewDatesPermitted;
+		}
+	}
 }

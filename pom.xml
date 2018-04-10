@@ -42,8 +42,8 @@
     <!-- CDM properties -->
     <source.name>CDM_NAME</source.name>
     <cdm.version>5</cdm.version>
-    <!-- Profiles -->
-    <profile.allow.physicalDates>false</profile.allow.physicalDates>
+    <!-- Person properties -->
+    <person.viewDates>false</person.viewDates>
 
     <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
     <spring.batch.repository.isolationLevelForCreate>ISOLATION_READ_COMMITTED</spring.batch.repository.isolationLevelForCreate>

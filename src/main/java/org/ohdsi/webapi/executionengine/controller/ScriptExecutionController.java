@@ -79,7 +79,7 @@ public class ScriptExecutionController {
         logger.info("Received an execution script to run");
 
         JobParametersBuilder parametersBuilder = new JobParametersBuilder();
-        parametersBuilder.addString("jobName", "Generate estimation (" + dto.sourceKey + ")");
+        parametersBuilder.addString("jobName", String.format("Generate %s (%s)", dto.analysisType, dto.sourceKey));
         final JobParameters jobParameters = parametersBuilder.toJobParameters();
         RunExecutionEngineTasklet runExecutionEngineTasklet = new RunExecutionEngineTasklet(scriptExecutionService, dto);
         ExecutionEngineCallbackTasklet callbackTasklet = new ExecutionEngineCallbackTasklet(analysisExecutionRepository);

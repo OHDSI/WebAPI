@@ -30,4 +30,6 @@ public class ObservationPeriod {
     public Timestamp startDate;
     public Timestamp endDate;
     public String type;
+    public int x1;
+    public int x2;
 }

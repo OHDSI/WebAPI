@@ -11,7 +11,9 @@ import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.webapi.model.CommonEntity;
@@ -29,7 +31,8 @@ import org.ohdsi.webapi.model.CommonEntity;
 public class PatientLevelPredictionAnalysis extends CommonEntity {
 	
     @Id
-    @GeneratedValue
+	@SequenceGenerator(name = "plp_seq", sequenceName = "plp_sequence", allocationSize = 1)
+    @GeneratedValue(generator = "plp_seq", strategy = GenerationType.SEQUENCE)
     @Column(name = "plp_id")
     private Integer analysisId;
 

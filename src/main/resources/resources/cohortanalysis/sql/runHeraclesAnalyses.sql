@@ -9614,63 +9614,70 @@ DROP TABLE #raw_4011;
 {4012 IN (@list_of_analysis_ids)}?{
 	-- 4012 Number of subjects with Drug Exposure by period_id, by drug_concept_id, by drug_type_concept_id in the 365d prior to first cohort start date
 
-with drug_records (cohort_definition_id, subject_id, period_id, drug_concept_id, drug_type_concept_id) as
+with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date) as
 (
 	select distinct c1.cohort_definition_id,
 		c1.subject_id,
-		hp.period_id,
 		de1.drug_concept_id,
-		de1.drug_type_concept_id
+		de1.drug_type_concept_id,
+		de1.drug_exposure_start_date
 	from (
 		select cohort_definition_id, subject_id, min(cohort_start_date) as cohort_start_date from #HERACLES_cohort group by cohort_definition_id, subject_id
 	) c1
 	join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
 			and de1.drug_exposure_start_date >= dateadd(d, -365, c1.cohort_start_date) and de1.drug_exposure_start_date < c1.cohort_start_date
-	join @results_schema.heracles_periods hp on drug_exposure_start_date >= hp.period_start_date and drug_exposure_start_date < hp.period_end_date
-
 )
-select cohort_definition_id, subject_id, period_id, drug_concept_id, drug_type_concept_id
-INTO #raw_4012
+select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date
+INTO #raw_de_4012
 FROM drug_records;
 
-CREATE CLUSTERED INDEX idx_raw_4012_group ON #raw_4012 (subject_id, period_id, drug_concept_id);
-CREATE INDEX idx_raw_4012_de_start_date ON #raw_4012 (period_id);
+CREATE INDEX idx_raw_4012_de_date ON #raw_de_4012 (drug_exposure_date);
+
+select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, period_id
+into #raw_4012
+from #raw_de_4012 r
+join @results_schema.heracles_periods hp on r.drug_exposure_date >= hp.period_start_date and r.drug_exposure_date < hp.period_end_date
+;
 
 with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id) as
 (
-	select distinct cohort_definition_id
+	select cohort_definition_id
 		, cast(period_id as varchar(255)) as stratum_1
 		, cast(drug_concept_id as varchar(255)) as stratum_2
 		, cast(drug_type_concept_id as varchar(255)) as stratum_3
 		, subject_id
 	from #raw_4012
+	GROUP BY cohort_definition_id, subject_id, period_id, drug_concept_id, drug_type_concept_id
 
 	UNION ALL
 
-	select distinct cohort_definition_id
+	select cohort_definition_id
 		, cast(period_id as varchar(255)) as stratum_1
 		, cast(drug_concept_id as varchar(255)) as stratum_2
 		, cast('' as varchar(255)) as stratum_3
 		, subject_id
 	from #raw_4012
+	GROUP BY cohort_definition_id, subject_id, period_id, drug_concept_id
 
 	UNION ALL
 
-	select distinct cohort_definition_id
+	select cohort_definition_id
 		, cast('' as varchar(255)) as stratum_1
 		, cast(drug_concept_id as varchar(255)) as stratum_2
 		, cast(drug_type_concept_id as varchar(255)) as stratum_3
 		, subject_id
 	from #raw_4012
+	GROUP BY cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id
 
 	UNION ALL
 
-	select distinct cohort_definition_id
+	select cohort_definition_id
 		, cast('' as varchar(255)) as stratum_1
-		, drug_concept_id as stratum_2
+		, cast(drug_concept_id as varchar(255)) as stratum_2
 		, cast('' as varchar(255)) as stratum_3
 		, subject_id
 	from #raw_4012
+	GROUP BY cohort_definition_id, subject_id, drug_concept_id
 
 )
 select cohort_definition_id, 4012 as analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
@@ -9683,8 +9690,12 @@ from
 	group by cohort_definition_id, stratum_1, stratum_2, stratum_3
 ) D;
 
+TRUNCATE TABLE #raw_de_4012;
+DROP TABLE #raw_de_4012;
+
 TRUNCATE TABLE #raw_4012;
 DROP TABLE #raw_4012;
+
 }
 
 {4013 IN (@list_of_analysis_ids)}?{

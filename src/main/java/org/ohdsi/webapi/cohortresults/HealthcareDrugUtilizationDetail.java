@@ -15,11 +15,29 @@
  */
 package org.ohdsi.webapi.cohortresults;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import java.util.Date;
+import java.util.List;
+
+
 /**
  *
  * @author cknoll1
  */
-public class Concept {
-	public long conceptId;
-	public String conceptName;
+public class HealthcareDrugUtilizationDetail {
+	
+	public List<Record> data;
+	
+	public static class Record extends HealthcareDrugUtlizationStatistic {
+		public String periodType;
+		@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+		public Date periodStart;
+		@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+		public Date periodEnd;
+		
+		public Record() {
+			
+		}
+	}
+
 }

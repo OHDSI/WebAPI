@@ -1792,6 +1792,44 @@ public class CohortResultsService extends AbstractDaoService {
 		return visitUtilizationReport;
 	}	
 	
+	@GET
+	@Path("{sourceKey}/{id}/healthcareutilization/drug/{window}")
+	@Produces(MediaType.APPLICATION_JSON)
+  public HealthcareDrugUtilizationSummary getHealthcareUtilizationDrugSummaryReport(@PathParam("id") final int id
+		, @PathParam("sourceKey") String sourceKey
+		, @PathParam("window") final WindowType window 
+		, @QueryParam("drugType") final Long drugTypeConceptId) {
+		Source source = getSourceRepository().findBySourceKey(sourceKey);
+		HealthcareDrugUtilizationSummary report = queryRunner.getHealthcareDrugUtilizationSummary(getSourceJdbcTemplate(source), id, window, drugTypeConceptId, source);
+		return report;
+	}	
+	
+	@GET
+	@Path("{sourceKey}/{id}/healthcareutilization/drug/{window}/{drugConceptId}")
+	@Produces(MediaType.APPLICATION_JSON)
+  public HealthcareDrugUtilizationDetail getHealthcareUtilizationDrugSummaryReport(@PathParam("id") final int id
+		, @PathParam("sourceKey") String sourceKey
+		, @PathParam("window") final WindowType window
+		, @PathParam("drugConceptId") final Long drugConceptId
+		, @DefaultValue("ww") @QueryParam("periodType") final PeriodType periodType
+		, @QueryParam("drugType") final Long drugTypeConceptId) 
+	{	
+		Source source = getSourceRepository().findBySourceKey(sourceKey);
+		HealthcareDrugUtilizationDetail report = queryRunner.getHealthcareDrugUtilizationReport(getSourceJdbcTemplate(source), id, window, drugConceptId, drugTypeConceptId, periodType, source);
+		return report;
+	}
+	
+	@GET
+	@Path("{sourceKey}/{id}/healthcareutilization/drugtypes")
+	@Produces(MediaType.APPLICATION_JSON)
+  public List<Concept> getDrugTypes(@PathParam("id") final int id
+		, @PathParam("sourceKey") String sourceKey
+		, @QueryParam("drugConceptId") final Long drugConceptId) 
+	{	
+		Source source = getSourceRepository().findBySourceKey(sourceKey);
+		return queryRunner.getDrugTypes(getSourceJdbcTemplate(source), id, drugConceptId, source);
+	}	
+	
   protected PreparedStatementRenderer prepareGetExposureOutcomeCohortPredictors(
     ExposureCohortSearch search, Source source) {
 

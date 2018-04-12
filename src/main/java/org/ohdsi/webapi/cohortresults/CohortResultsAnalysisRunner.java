@@ -1724,7 +1724,7 @@ public class CohortResultsAnalysisRunner {
 		return report;
 	}
 	
-	public HealthcareDrugUtilizationSummary getHealthcareDrugUtilizationSummary(JdbcTemplate jdbcTemplate, final int cohortId, final WindowType window, Source source) {
+	public HealthcareDrugUtilizationSummary getHealthcareDrugUtilizationSummary(JdbcTemplate jdbcTemplate, final int cohortId, final WindowType window, Long drugTypeConceptId, Source source) {
 		String vocabularyTableQualifier = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
 		if (vocabularyTableQualifier == null) {
 			vocabularyTableQualifier = source.getTableQualifierOrNull(SourceDaimon.DaimonType.CDM);
@@ -1776,7 +1776,7 @@ public class CohortResultsAnalysisRunner {
 			, drugAnalysisId
 			, daysSupplyAnalysisId
 			, quantityAnalysisId
-			, ""
+			, drugTypeConceptId == null ? ""  : drugTypeConceptId.toString()
 			, ""
 		};
 

@@ -1797,9 +1797,10 @@ public class CohortResultsService extends AbstractDaoService {
 	@Produces(MediaType.APPLICATION_JSON)
   public HealthcareDrugUtilizationSummary getHealthcareUtilizationDrugSummaryReport(@PathParam("id") final int id
 		, @PathParam("sourceKey") String sourceKey
-		, @PathParam("window") final WindowType window) {
+		, @PathParam("window") final WindowType window 
+		, @QueryParam("drugType") final Long drugTypeConceptId) {
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
-		HealthcareDrugUtilizationSummary report = queryRunner.getHealthcareDrugUtilizationSummary(getSourceJdbcTemplate(source), id, window, source);
+		HealthcareDrugUtilizationSummary report = queryRunner.getHealthcareDrugUtilizationSummary(getSourceJdbcTemplate(source), id, window, drugTypeConceptId, source);
 		return report;
 	}	
 	

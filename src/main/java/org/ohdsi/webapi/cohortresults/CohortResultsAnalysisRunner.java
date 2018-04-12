@@ -18,6 +18,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.util.HashMap;
+import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 
@@ -1654,10 +1658,10 @@ public class CohortResultsAnalysisRunner {
 			HealthcareVisitUtilizationReport.Summary s = new HealthcareVisitUtilizationReport.Summary();
 			s.personsCount = rs.getLong("person_total");
 			s.personsPct = new BigDecimal(rs.getDouble("person_percent")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			s.visitsCount = rs.getLong("visits_total");
-			s.visitsPer1000 = new BigDecimal(rs.getDouble("visits_per_1000")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			s.visitsPer1000WithVisits = new BigDecimal(rs.getDouble("visits_per_1000_with_visit")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			s.visitsPer1000PerYear = new BigDecimal(rs.getDouble("visits_per_1000_per_year")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			s.visitsCount = rs.getLong("records_total");
+			s.visitsPer1000 = new BigDecimal(rs.getDouble("records_per_1000")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			s.visitsPer1000WithVisits = new BigDecimal(rs.getDouble("records_per_1000_with_record")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			s.visitsPer1000PerYear = new BigDecimal(rs.getDouble("records_per_1000_per_year")).setScale(2, BigDecimal.ROUND_HALF_UP);
 			s.lengthOfStayTotal = rs.getLong("los_total");
 			s.lengthOfStayAvg = new BigDecimal(rs.getDouble("los_average")).setScale(2, BigDecimal.ROUND_HALF_UP);
 			return s;
@@ -1686,10 +1690,10 @@ public class CohortResultsAnalysisRunner {
 			item.periodEnd = rs.getDate("period_end_date");
 			item.personsCount = rs.getLong("person_total");
 			item.personsPct = new BigDecimal(rs.getDouble("person_percent")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			item.visitsCount = rs.getLong("visits_total");
-			item.visitsPer1000 = new BigDecimal(rs.getDouble("visits_per_1000")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			item.visitsPer1000WithVisits = new BigDecimal(rs.getDouble("visits_per_1000_with_visit")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			item.visitsPer1000PerYear = new BigDecimal(rs.getDouble("visits_per_1000_per_year")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			item.visitsCount = rs.getLong("records_total");
+			item.visitsPer1000 = new BigDecimal(rs.getDouble("records_per_1000")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			item.visitsPer1000WithVisits = new BigDecimal(rs.getDouble("records_per_1000_with_record")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			item.visitsPer1000PerYear = new BigDecimal(rs.getDouble("records_per_1000_per_year")).setScale(2, BigDecimal.ROUND_HALF_UP);
 			item.lengthOfStayTotal = rs.getLong("los_total");
 			item.lengthOfStayAvg = new BigDecimal(rs.getDouble("los_average")).setScale(2, BigDecimal.ROUND_HALF_UP);
 			return item;
@@ -1718,5 +1722,197 @@ public class CohortResultsAnalysisRunner {
 		});
 		
 		return report;
+	}
+	
+	public HealthcareDrugUtilizationSummary getHealthcareDrugUtilizationSummary(JdbcTemplate jdbcTemplate, final int cohortId, final WindowType window, Long drugTypeConceptId, Source source) {
+		String vocabularyTableQualifier = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
+		if (vocabularyTableQualifier == null) {
+			vocabularyTableQualifier = source.getTableQualifierOrNull(SourceDaimon.DaimonType.CDM);
+		}
+		String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+		int subjectsAnalysisId;
+		int subjectWithRecordsAnalysisId;
+		int drugAnalysisId;
+		int daysSupplyAnalysisId;
+		int quantityAnalysisId;
+		
+		// set apprpriate analysis IDs
+		if (window == WindowType.BASELINE) {
+			subjectsAnalysisId = 4000;
+			subjectWithRecordsAnalysisId = 4012;
+			drugAnalysisId = 4013;
+			daysSupplyAnalysisId = 4014;
+			quantityAnalysisId = 4015;
+		} else if (window == WindowType.AT_RISK) {
+			subjectsAnalysisId = 4006;
+			subjectWithRecordsAnalysisId = 4016;
+			drugAnalysisId = 4017;
+			daysSupplyAnalysisId = 4018;
+			quantityAnalysisId = 4019;
+		} else {
+			throw new RuntimeException("Invalid window type: " + window);			
+		}
+		
+		String[] search = new String[]{"vocabulary_schema","results_schema"};
+		String[] replace = new String[]{vocabularyTableQualifier, resultsTableQualifier};
+
+		String reportPath = BASE_SQL_PATH + "/healthcareutilization/getDrugUtilization.sql";
+		String reportSql = ResourceHelper.GetResourceAsString(reportPath);
+		
+		String summarySql = SqlRender.renderSql(reportSql, new String[] {"is_summary"}, new String[]{"TRUE"});
+		
+		String[] reportCols = new String[]{"cohort_definition_id"
+			, "subjects_analysis_id"
+			, "subject_with_records_analysis_id"
+			, "drug_analysis_id"
+			, "days_supply_analysis_id"
+			, "quantity_analysis_id"
+			, "drug_type_concept_id"
+			, "period_type"
+		};
+		Object[] summaryColVals = new Object[]{cohortId
+			, subjectsAnalysisId
+			, subjectWithRecordsAnalysisId
+			, drugAnalysisId
+			, daysSupplyAnalysisId
+			, quantityAnalysisId
+			, drugTypeConceptId == null ? ""  : drugTypeConceptId.toString()
+			, ""
+		};
+
+		PreparedStatementRenderer summaryPsr =  new PreparedStatementRenderer(source, summarySql, search, replace, reportCols, summaryColVals);
+
+		HealthcareDrugUtilizationSummary summary = new HealthcareDrugUtilizationSummary();
+		
+		summary.data = jdbcTemplate.query(summaryPsr.getSql(), summaryPsr.getSetter(), (rs,rowNum) -> {
+			HealthcareDrugUtilizationSummary.Record r = new HealthcareDrugUtilizationSummary.Record();
+			r.drugName = rs.getString("drug_concept_name");
+			r.drugId = rs.getString("stratum_2");
+			r.personsCount = rs.getLong("person_total");
+			r.personsPct = new BigDecimal(rs.getDouble("person_percent")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			r.exposureCount = rs.getLong("records_total");
+			r.exposuresPer1000= new BigDecimal(rs.getDouble("records_per_1000")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			r.exposurePer1000WithExposures = new BigDecimal(rs.getDouble("records_per_1000_with_record")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			r.exposurePer1000PerYear = new BigDecimal(rs.getDouble("records_per_1000_per_year")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			r.quantityTotal = rs.getLong("quantity_total");
+			r.quantityAvg = new BigDecimal(rs.getDouble("quantity_average")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			r.quantityPer1000PerYear = new BigDecimal(rs.getDouble("quantity_per_1000_per_year")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			r.daysSupplyTotal = rs.getLong("days_supply_total");
+			r.daysSupplyAvg = new BigDecimal(rs.getDouble("days_supply_average")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			r.daysSupplyPer1000PerYear = new BigDecimal(rs.getDouble("days_supply_per_1000_per_year")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			return r;
+		});
+		return summary;
 	}	
+
+	public HealthcareDrugUtilizationDetail getHealthcareDrugUtilizationReport(JdbcTemplate jdbcTemplate, final int cohortId, final WindowType window, 
+		Long drugConceptId, Long drugTypeConceptId, PeriodType periodType, Source source) {
+		String vocabularyTableQualifier = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
+		if (vocabularyTableQualifier == null) {
+			vocabularyTableQualifier = source.getTableQualifierOrNull(SourceDaimon.DaimonType.CDM);
+		}
+		String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+		int subjectsAnalysisId;
+		int subjectWithRecordsAnalysisId;
+		int drugAnalysisId;
+		int daysSupplyAnalysisId;
+		int quantityAnalysisId;
+		
+		// set apprpriate analysis IDs
+		if (window == WindowType.BASELINE) {
+			subjectsAnalysisId = 4000;
+			subjectWithRecordsAnalysisId = 4012;
+			drugAnalysisId = 4013;
+			daysSupplyAnalysisId = 4014;
+			quantityAnalysisId = 4015;
+		} else if (window == WindowType.AT_RISK) {
+			subjectsAnalysisId = 4006;
+			subjectWithRecordsAnalysisId = 4016;
+			drugAnalysisId = 4017;
+			daysSupplyAnalysisId = 4018;
+			quantityAnalysisId = 4019;
+		} else {
+			throw new RuntimeException("Invalid window type: " + window);			
+		}
+		
+		String[] search = new String[]{"vocabulary_schema","results_schema"};
+		String[] replace = new String[]{vocabularyTableQualifier, resultsTableQualifier};	
+		
+		String reportPath = BASE_SQL_PATH + "/healthcareutilization/getDrugUtilization.sql";
+		String reportSql = ResourceHelper.GetResourceAsString(reportPath);
+		
+		String detailSql = SqlRender.renderSql(reportSql, new String[] {"is_summary"}, new String[]{"FALSE"});
+		
+		String[] reportCols = new String[]{"cohort_definition_id"
+			, "subjects_analysis_id"
+			, "subject_with_records_analysis_id"
+			, "drug_analysis_id"
+			, "days_supply_analysis_id"
+			, "quantity_analysis_id"
+			, "drug_concept_id"
+			, "drug_type_concept_id"
+			, "period_type"
+		};
+		Object[] reportColVals = new Object[]{cohortId
+			, subjectsAnalysisId
+			, subjectWithRecordsAnalysisId
+			, drugAnalysisId
+			, daysSupplyAnalysisId
+			, quantityAnalysisId
+			, drugConceptId.toString()
+			, drugTypeConceptId == null ? "" : drugTypeConceptId.toString()
+			, periodType.toString().toLowerCase()
+		};
+
+		PreparedStatementRenderer detailPsr =  new PreparedStatementRenderer(source, detailSql, search, replace, reportCols, reportColVals);
+
+		HealthcareDrugUtilizationDetail detail = new HealthcareDrugUtilizationDetail();
+
+		detail.data = jdbcTemplate.query(detailPsr.getSql(), detailPsr.getSetter(), (rs,rowNum) -> {
+			HealthcareDrugUtilizationDetail.Record r = new HealthcareDrugUtilizationDetail.Record();
+			r.periodType = rs.getString("period_type");
+			r.periodStart = rs.getDate("period_start_date");
+			r.periodEnd = rs.getDate("period_end_date");
+			r.personsCount = rs.getLong("person_total");
+			r.personsPct = new BigDecimal(rs.getDouble("person_percent")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			r.exposureCount = rs.getLong("exposures_total");
+			r.exposuresPer1000= new BigDecimal(rs.getDouble("exposures_per_1000")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			r.exposurePer1000WithExposures = new BigDecimal(rs.getDouble("exposures_per_1000_with_exposure")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			r.exposurePer1000PerYear = new BigDecimal(rs.getDouble("exposures_per_1000_per_year")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			r.quantityTotal = rs.getLong("quantity_total");
+			r.quantityAvg = new BigDecimal(rs.getDouble("quantity_average")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			r.daysSupplyTotal = rs.getLong("days_supply_total");
+			r.daysSupplyAvg = new BigDecimal(rs.getDouble("days_supply_average")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			return r;
+		});
+		
+		return detail;
+	}
+	
+	public List<Concept> getDrugTypes(JdbcTemplate jdbcTemplate, final int cohortId, Long drugConceptId, Source source) {
+		String vocabularyTableQualifier = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
+		if (vocabularyTableQualifier == null) {
+			vocabularyTableQualifier = source.getTableQualifierOrNull(SourceDaimon.DaimonType.CDM);
+		}
+		String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+
+		String analysisList = StringUtils.join(new Integer[]{4012, 40016}, ",");
+		String[] search = new String[]{"vocabulary_schema","results_schema", "analysis_id_list"};
+		String[] replace = new String[]{vocabularyTableQualifier, resultsTableQualifier, analysisList};	
+		
+		String queryPath = BASE_SQL_PATH + "/healthcareutilization/getDrugTypes.sql";
+		String[] reportCols = new String[]{"cohort_definition_id", "drug_concept_id"};
+		Object[] reportColVals = new Object[]{cohortId, drugConceptId};
+
+		PreparedStatementRenderer detailPsr =  new PreparedStatementRenderer(source, queryPath, search, replace, reportCols, reportColVals);
+
+		List<Concept> drugTypes = jdbcTemplate.query(detailPsr.getSql(), detailPsr.getSetter(), (rs,rowNum) -> {
+			Concept c = new Concept();
+			c.conceptId = Long.parseLong(rs.getString("concept_id"));
+			c.conceptName = rs.getString("concept_name");
+			return c;
+		});
+		
+		return drugTypes;
+	}
 }

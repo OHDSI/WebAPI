@@ -15,11 +15,21 @@
  */
 package org.ohdsi.webapi.cohortresults;
 
+import java.util.List;
+
 /**
  *
  * @author cknoll1
  */
-public class Concept {
-	public long conceptId;
-	public String conceptName;
+public class HealthcareDrugUtilizationSummary {
+	
+	public List<Record> data;
+
+	public static class Record extends HealthcareDrugUtlizationStatistic {
+		public String drugName;
+		public String drugId;
+		public Record() {
+
+		}
+	}
 }

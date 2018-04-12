@@ -15,11 +15,23 @@
  */
 package org.ohdsi.webapi.cohortresults;
 
+import java.math.BigDecimal;
+
 /**
  *
  * @author cknoll1
  */
-public class Concept {
-	public long conceptId;
-	public String conceptName;
+public class HealthcareDrugUtlizationStatistic {
+	public long personsCount;
+	public BigDecimal personsPct;
+	public long exposureCount;
+	public BigDecimal exposuresPer1000;
+	public BigDecimal exposurePer1000WithExposures;
+	public BigDecimal exposurePer1000PerYear;
+	public long daysSupplyTotal;
+	public BigDecimal daysSupplyAvg;
+	public BigDecimal daysSupplyPer1000PerYear;
+	public long quantityTotal;
+	public BigDecimal quantityAvg;
+	public BigDecimal quantityPer1000PerYear;	
 }

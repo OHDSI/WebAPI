@@ -8,10 +8,10 @@ select N1.cohort_definition_id
 	, P.period_end_date }
 	, N1.count_value as person_total -- subjects with records in period
 	, ((N1.count_value * 1.0)/D1.count_value) * 100.0 as person_percent -- subjects with records in period/subjects in period
-	, N2.total as visits_total -- total visits
-	, (N2.total * 1000.0)/D1.count_value as visits_per_1000 --total records in period/subjects in period
-	, (N2.total * 1000.0)/N1.count_value as visits_per_1000_with_visit -- total reocrds in period/subjects with visits in period
-	, (((N2.total/D1.total)*1000) /365.25) as visits_per_1000_per_year --total visits in period/exposure in period
+	, N2.total as records_total -- total records
+	, (N2.total * 1000.0)/D1.count_value as records_per_1000 --total records in period/subjects in period
+	, (N2.total * 1000.0)/N1.count_value as records_per_1000_with_record -- total reocrds in period/subjects with visits in period
+	, (((N2.total/D1.total)*1000) /365.25) as records_per_1000_per_year --total records in period/exposure in period
 	, N3.total as los_total -- total length of stay
 	, N3.avg_value as los_average -- average length of stay
 FROM
@@ -44,7 +44,7 @@ JOIN
     and N1.stratum_3 = N2.stratum_3
 left join
 (
-	select cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, avg_value, count_value * avg_value as total
+	select cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, avg_value, (count_value * 1.0 * avg_value) as total
 	from @results_schema.heracles_results_dist
 	where analysis_id = @los_analysis_id
 /*
@@ -57,7 +57,7 @@ left join
 	and N1.stratum_3 = N3.stratum_3
 join
 (
-	select cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, avg_value, count_value * avg_value as total --exposure
+	select cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, avg_value, (count_value * 1.0 * avg_value) as total --exposure
 	from @results_schema.heracles_results_dist
 	where analysis_id = @subjects_analysis_id
 /*

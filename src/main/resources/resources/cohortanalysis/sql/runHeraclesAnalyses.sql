@@ -78,6 +78,35 @@ into #HERACLES_cohort
 from @results_schema.cohort
 where cohort_definition_id in (@cohort_definition_id)
 ;
+create index ix_cohort_subject on #HERACLES_cohort (subject_id, cohort_start_date);
+
+select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date 
+into #cohort_first
+from (
+	select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date, row_number() over (partition by cohort_definition_id, subject_id order by cohort_start_date) as rn
+	FROM #HERACLES_cohort
+) F
+where F.rn = 1
+;
+
+create index ix_cohort_first_subject on #cohort_first (subject_id, cohort_start_date);
+
+SELECT hp.period_id, hp.period_start_date, hp.period_end_date
+into #periods_baseline
+FROM @results_schema.heracles_periods hp
+WHERE hp.period_start_date >= (SELECT dateadd(d, -365, min(cohort_start_date)) FROM #HERACLES_cohort)
+	and hp.period_start_date <= (SELECT max(cohort_start_date) FROM #HERACLES_cohort);
+
+create index ix_periods_baseline_start on #eriods_baseline (period_start_date);
+create index ix_periods_baseline_end on #periods_baseline (period_end_date);
+
+SELECT hp.period_id, hp.period_start_date, hp.period_end_date
+into #periods_atrisk
+FROM @results_schema.heracles_periods hp
+WHERE hp.period_start_date >= (SELECT min(cohort_start_date) FROM #HERACLES_cohort) and hp.period_start_date <= (SELECT max(cohort_end_date) FROM #HERACLES_cohort);
+
+create index ix_periods_atrisk_start on #periods_atrisk (period_start_date);
+create index ix_periods_atrisk_end on #periods_atrisk (period_end_date);
 
 --{0 IN (@list_of_analysis_ids)}?{
 -- 0       Number of persons
@@ -9621,30 +9650,30 @@ with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_
 		de1.drug_concept_id,
 		de1.drug_type_concept_id,
 		de1.drug_exposure_start_date
-	from (
-		select cohort_definition_id, subject_id, min(cohort_start_date) as cohort_start_date from #HERACLES_cohort group by cohort_definition_id, subject_id
-	) c1
+	from #cohort_first c1
 	join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
 			and de1.drug_exposure_start_date >= dateadd(d, -365, c1.cohort_start_date) and de1.drug_exposure_start_date < c1.cohort_start_date
 )
 select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date
 INTO #raw_de_4012
-FROM drug_records;
+FROM drug_records
+WHERE drug_concept_id != 0
+;
 
 CREATE INDEX idx_raw_4012_de_date ON #raw_de_4012 (drug_exposure_date);
 
 select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, period_id
 into #raw_4012
 from #raw_de_4012 r
-join @results_schema.heracles_periods hp on r.drug_exposure_date >= hp.period_start_date and r.drug_exposure_date < hp.period_end_date
+join #periods_baseline hp on r.drug_exposure_date >= hp.period_start_date and r.drug_exposure_date < hp.period_end_date
 ;
 
 with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id) as
 (
 	select cohort_definition_id
-		, cast(period_id as varchar(255)) as stratum_1
-		, cast(drug_concept_id as varchar(255)) as stratum_2
-		, cast(drug_type_concept_id as varchar(255)) as stratum_3
+		, period_id as stratum_1
+		, drug_concept_id as stratum_2
+		, drug_type_concept_id as stratum_3
 		, subject_id
 	from #raw_4012
 	GROUP BY cohort_definition_id, subject_id, period_id, drug_concept_id, drug_type_concept_id
@@ -9652,9 +9681,9 @@ with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_i
 	UNION ALL
 
 	select cohort_definition_id
-		, cast(period_id as varchar(255)) as stratum_1
-		, cast(drug_concept_id as varchar(255)) as stratum_2
-		, cast('' as varchar(255)) as stratum_3
+		, period_id as stratum_1
+		, drug_concept_id as stratum_2
+		, 0 as stratum_3
 		, subject_id
 	from #raw_4012
 	GROUP BY cohort_definition_id, subject_id, period_id, drug_concept_id
@@ -9662,9 +9691,9 @@ with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_i
 	UNION ALL
 
 	select cohort_definition_id
-		, cast('' as varchar(255)) as stratum_1
-		, cast(drug_concept_id as varchar(255)) as stratum_2
-		, cast(drug_type_concept_id as varchar(255)) as stratum_3
+		, 0 as stratum_1
+		, drug_concept_id as stratum_2
+		, drug_type_concept_id as stratum_3
 		, subject_id
 	from #raw_4012
 	GROUP BY cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id
@@ -9672,19 +9701,22 @@ with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_i
 	UNION ALL
 
 	select cohort_definition_id
-		, cast('' as varchar(255)) as stratum_1
-		, cast(drug_concept_id as varchar(255)) as stratum_2
-		, cast('' as varchar(255)) as stratum_3
+		, 0 as stratum_1
+		, drug_concept_id as stratum_2
+		, 0 as stratum_3
 		, subject_id
 	from #raw_4012
 	GROUP BY cohort_definition_id, subject_id, drug_concept_id
-
 )
 select cohort_definition_id, 4012 as analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
 INTO #results_4012
 from
 (
-	select cohort_definition_id, stratum_1, stratum_2, stratum_3, cast('' as char(1)) as stratum_4, cast('' as char(1)) as stratum_5
+	select cohort_definition_id
+		, case when stratum_1 = 0 then cast('' as varchar(255)) else cast(stratum_1 as varchar(255)) end as stratum_1
+		, case when stratum_2 = 0 then cast('' as varchar(255)) else cast(stratum_2 as varchar(255)) end as stratum_2
+		, case when stratum_3 = 0 then cast('' as varchar(255)) else cast(stratum_3 as varchar(255)) end as stratum_3
+		, cast('' as char(1)) as stratum_4, cast('' as char(1)) as stratum_5
 		, COUNT_BIG(subject_id) as count_value
 	from cteRawData
 	group by cohort_definition_id, stratum_1, stratum_2, stratum_3
@@ -9707,24 +9739,21 @@ select distinct c1.cohort_definition_id,
 	de1.drug_type_concept_id,
 	de1.drug_exposure_id
 INTO #raw_4013
-from (
-	select cohort_definition_id, subject_id, min(cohort_start_date) as cohort_start_date from #HERACLES_cohort group by cohort_definition_id, subject_id
-) c1
+from #cohort_first c1
 join @CDM_schema.drug_exposure de1 on c1.subject_id = de1.person_id
 	and de1.drug_exposure_start_date >= dateadd(d, -365, c1.cohort_start_date) and de1.drug_exposure_start_date < c1.cohort_start_date
-join @results_schema.heracles_periods hp on drug_exposure_start_date >= hp.period_start_date and drug_exposure_start_date < hp.period_end_date
-;
+join #periods_baseline hp on drug_exposure_start_date >= hp.period_start_date and drug_exposure_start_date < hp.period_end_date
+WHERE de1.drug_concept_id != 0
 
-CREATE CLUSTERED INDEX idx_raw_4013_group ON #raw_4013 (subject_id, period_id, drug_concept_id);
-CREATE INDEX idx_raw_4013_de_start_date ON #raw_4013 (period_id);
+;
 
 WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
 (
 	select cohort_definition_id
 		, subject_id
-		, cast(period_id as varchar(255)) as stratum_1
-		, cast(drug_concept_id as varchar(255)) as stratum_2
-		, cast(drug_type_concept_id as varchar(255)) as stratum_3
+		, period_id as stratum_1
+		, drug_concept_id as stratum_2
+		, drug_type_concept_id as stratum_3
 		, count(distinct drug_exposure_id) as count_value
 	from #raw_4013
 	GROUP BY cohort_definition_id, subject_id, period_id, drug_concept_id, drug_type_concept_id
@@ -9733,9 +9762,9 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 
 	select distinct cohort_definition_id
 		, subject_id
-		, cast(period_id as varchar(255)) as stratum_1
-		, cast(drug_concept_id as varchar(255)) as stratum_2
-		, cast('' as varchar(255)) as stratum_3
+		, period_id as stratum_1
+		, drug_concept_id as stratum_2
+		, 0 as stratum_3
 		, count(distinct drug_exposure_id) as count_value
 	from #raw_4013
 	GROUP BY cohort_definition_id, subject_id, period_id, drug_concept_id
@@ -9744,9 +9773,9 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 
 	select distinct cohort_definition_id
 		, subject_id
-		, cast('' as varchar(255)) as stratum_1
-		, cast(drug_concept_id as varchar(255)) as stratum_2
-		, cast(drug_type_concept_id as varchar(255)) as stratum_3
+		, 0 as stratum_1
+		, drug_concept_id as stratum_2
+		, drug_type_concept_id as stratum_3
 		, count(distinct drug_exposure_id) as count_value
 	from #raw_4013
 	GROUP BY cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id
@@ -9755,12 +9784,12 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 
 	select distinct cohort_definition_id
 		, subject_id
-		, cast('' as varchar(255)) as stratum_1
-		, cast(drug_concept_id as varchar(255)) as stratum_2
-		, cast('' as varchar(255)) as stratum_3
+		, 0 as stratum_1
+		, drug_concept_id as stratum_2
+		, 0 as stratum_3
 		, count(distinct drug_exposure_id) as count_value
 	from #raw_4013
-	GROUP BY cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id
+	GROUP BY cohort_definition_id, subject_id, drug_concept_id
 
 ),
 overallStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, avg_value, stdev_value, min_value, max_value, total) as
@@ -9794,9 +9823,9 @@ valueStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, 
 )
 select o.cohort_definition_id,
 	4013 as analysis_id,
-	o.stratum_1,
-	o.stratum_2,
-	o.stratum_3,
+	case when o.stratum_1 = 0 then cast('' as varchar(255)) else cast(o.stratum_1 as varchar(255)) end as stratum_1,
+	case when o.stratum_2 = 0 then cast('' as varchar(255)) else cast(o.stratum_2 as varchar(255)) end as stratum_2,
+	case when o.stratum_3 = 0 then cast('' as varchar(255)) else cast(o.stratum_3 as varchar(255)) end as stratum_3,
 	cast( '' as varchar(255) ) as stratum_4, cast( '' as varchar(255) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
@@ -9827,25 +9856,20 @@ select distinct c1.cohort_definition_id,
 	de1.drug_type_concept_id,
   de1.days_supply as duration
 INTO #raw_4014
-from (
-	select cohort_definition_id, subject_id, min(cohort_start_date) as cohort_start_date from #HERACLES_cohort group by cohort_definition_id, subject_id
-) c1
+from #cohort_first c1
 join @CDM_schema.drug_exposure de1 on c1.subject_id = de1.person_id
 	and de1.drug_exposure_start_date >= dateadd(d, -365, c1.cohort_start_date) and de1.drug_exposure_start_date < c1.cohort_start_date
-join @results_schema.heracles_periods hp on drug_exposure_start_date >= hp.period_start_date and drug_exposure_start_date < hp.period_end_date
-where days_supply > 0
+join #periods_baseline hp on drug_exposure_start_date >= hp.period_start_date and drug_exposure_start_date < hp.period_end_date
+where de1.days_supply > 0 and de1.drug_concept_id != 0
 ;
-
-CREATE CLUSTERED INDEX idx_raw_4014_group ON #raw_4014 (subject_id, period_id, drug_concept_id);
-CREATE INDEX idx_raw_4014_de_start_date ON #raw_4014 (period_id);
 
 WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
 (
 	select cohort_definition_id
 		, subject_id
-		, cast(period_id as varchar(255)) as stratum_1
-		, cast(drug_concept_id as varchar(255)) as stratum_2
-		, cast(drug_type_concept_id as varchar(255)) as stratum_3
+		, period_id as stratum_1
+		, drug_concept_id as stratum_2
+		, drug_type_concept_id as stratum_3
 		, sum(duration) as count_value
 	from #raw_4014
 	GROUP BY cohort_definition_id, subject_id, period_id, drug_concept_id, drug_type_concept_id
@@ -9854,9 +9878,9 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 
 	select distinct cohort_definition_id
 		, subject_id
-		, cast(period_id as varchar(255)) as stratum_1
-		, cast(drug_concept_id as varchar(255)) as stratum_2
-		, cast('' as varchar(255)) as stratum_3
+		, period_id as stratum_1
+		, drug_concept_id as stratum_2
+		, 0 as stratum_3
 		, sum(duration) as count_value
 	from #raw_4014
 	GROUP BY cohort_definition_id, subject_id, period_id, drug_concept_id
@@ -9865,9 +9889,9 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 
 	select distinct cohort_definition_id
 		, subject_id
-		, cast('' as varchar(255)) as stratum_1
-		, cast(drug_concept_id as varchar(255)) as stratum_2
-		, cast(drug_type_concept_id as varchar(255)) as stratum_3
+		, 0 as stratum_1
+		, drug_concept_id as stratum_2
+		, drug_type_concept_id as stratum_3
 		, sum(duration) as count_value
 	from #raw_4014
 	GROUP BY cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id
@@ -9876,12 +9900,12 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 
 	select distinct cohort_definition_id
 		, subject_id
-		, cast('' as varchar(255)) as stratum_1
-		, cast(drug_concept_id as varchar(255)) as stratum_2
-		, cast('' as varchar(255)) as stratum_3
+		, 0 as stratum_1
+		, drug_concept_id as stratum_2
+		, 0 as stratum_3
 		, sum(duration) as count_value
 	from #raw_4014
-	GROUP BY cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id
+	GROUP BY cohort_definition_id, subject_id, drug_concept_id
 ),
 overallStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, avg_value, stdev_value, min_value, max_value, total) as
 (
@@ -9914,9 +9938,9 @@ valueStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, 
 )
 select o.cohort_definition_id,
 	4014 as analysis_id,
-	o.stratum_1,
-	o.stratum_2,
-	o.stratum_3,
+	case when o.stratum_1 = 0 then cast('' as varchar(255)) else cast(o.stratum_1 as varchar(255)) end as stratum_1,
+	case when o.stratum_2 = 0 then cast('' as varchar(255)) else cast(o.stratum_2 as varchar(255)) end as stratum_2,
+	case when o.stratum_3 = 0 then cast('' as varchar(255)) else cast(o.stratum_3 as varchar(255)) end as stratum_3,
 	cast( '' as varchar(255) ) as stratum_4, cast( '' as varchar(255) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
@@ -9947,25 +9971,20 @@ select distinct c1.cohort_definition_id,
 	de1.drug_type_concept_id,
   quantity as duration
 INTO #raw_4015
-from (
-	select cohort_definition_id, subject_id, min(cohort_start_date) as cohort_start_date from #HERACLES_cohort group by cohort_definition_id, subject_id
-) c1
+from #cohort_first c1
 join @CDM_schema.drug_exposure de1 on c1.subject_id = de1.person_id
 	and de1.drug_exposure_start_date >= dateadd(d, -365, c1.cohort_start_date) and de1.drug_exposure_start_date < c1.cohort_start_date
-join @results_schema.heracles_periods hp on drug_exposure_start_date >= hp.period_start_date and drug_exposure_start_date < hp.period_end_date
-where quantity > 0
+join #periods_baseline hp on drug_exposure_start_date >= hp.period_start_date and drug_exposure_start_date < hp.period_end_date
+where de1.quantity > 0 and de1.drug_concept_id != 0
 ;
-
-CREATE CLUSTERED INDEX idx_raw_4015_group ON #raw_4015 (subject_id, period_id, drug_concept_id);
-CREATE INDEX idx_raw_4015_de_start_date ON #raw_4015 (period_id);
 
 WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
 (
 	select cohort_definition_id
 		, subject_id
-		, cast(period_id as varchar(255)) as stratum_1
-		, cast(drug_concept_id as varchar(255)) as stratum_2
-		, cast(drug_type_concept_id as varchar(255)) as stratum_3
+		, period_id as stratum_1
+		, drug_concept_id as stratum_2
+		, drug_type_concept_id as stratum_3
 		, sum(duration) as count_value
 	from #raw_4015
 	GROUP BY cohort_definition_id, subject_id, period_id, drug_concept_id, drug_type_concept_id
@@ -9974,9 +9993,9 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 
 	select distinct cohort_definition_id
 		, subject_id
-		, cast(period_id as varchar(255)) as stratum_1
-		, cast(drug_concept_id as varchar(255)) as stratum_2
-		, cast('' as varchar(255)) as stratum_3
+		, period_id as stratum_1
+		, drug_concept_id as stratum_2
+		, 0 as stratum_3
 		, sum(duration) as count_value
 	from #raw_4015
 	GROUP BY cohort_definition_id, subject_id, period_id, drug_concept_id
@@ -9985,9 +10004,9 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 
 	select distinct cohort_definition_id
 		, subject_id
-		, cast('' as varchar(255)) as stratum_1
-		, cast(drug_concept_id as varchar(255)) as stratum_2
-		, cast(drug_type_concept_id as varchar(255)) as stratum_3
+		, 0 as stratum_1
+		, drug_concept_id as stratum_2
+		, drug_type_concept_id as stratum_3
 		, sum(duration) as count_value
 	from #raw_4015
 	GROUP BY cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id
@@ -9996,12 +10015,12 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 
 	select distinct cohort_definition_id
 		, subject_id
-		, cast('' as varchar(255)) as stratum_1
-		, cast(drug_concept_id as varchar(255)) as stratum_2
-		, cast('' as varchar(255)) as stratum_3
+		, 0 as stratum_1
+		, drug_concept_id as stratum_2
+		, 0 as stratum_3
 		, sum(duration) as count_value
 	from #raw_4015
-	GROUP BY cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id
+	GROUP BY cohort_definition_id, subject_id, drug_concept_id
 
 ),
 overallStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, avg_value, stdev_value, min_value, max_value, total) as
@@ -10035,9 +10054,9 @@ valueStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, 
 )
 select o.cohort_definition_id,
 	4015 as analysis_id,
-	o.stratum_1,
-	o.stratum_2,
-	o.stratum_3,
+	case when o.stratum_1 = 0 then cast('' as varchar(255)) else cast(o.stratum_1 as varchar(255)) end as stratum_1,
+	case when o.stratum_2 = 0 then cast('' as varchar(255)) else cast(o.stratum_2 as varchar(255)) end as stratum_2,
+	case when o.stratum_3 = 0 then cast('' as varchar(255)) else cast(o.stratum_3 as varchar(255)) end as stratum_3,
 	cast( '' as varchar(255) ) as stratum_4, cast( '' as varchar(255) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
@@ -10062,58 +10081,64 @@ DROP TABLE #raw_4015;
 {4016 IN (@list_of_analysis_ids)}?{
 	-- 4016 Number of subjects with Drug Exposure by period_id, by drug_concept_id during the cohort period
 
-with drug_records (cohort_definition_id, subject_id, period_id, drug_concept_id, drug_type_concept_id) as
+with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date) as
 (
 	select distinct c1.cohort_definition_id,
 		c1.subject_id,
-		hp.period_id,
 		de1.drug_concept_id,
-		de1.drug_type_concept_id
+		de1.drug_type_concept_id,
+		de1.drug_exposure_start_date
 	from  #HERACLES_cohort c1
 	join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
 		and de1.drug_exposure_start_date >= c1.cohort_start_date and de1.drug_exposure_start_date <= c1.cohort_end_date
-	join @results_schema.heracles_periods hp on drug_exposure_start_date >= hp.period_start_date and drug_exposure_start_date < hp.period_end_date
 )
-select cohort_definition_id, subject_id, period_id, drug_concept_id, drug_type_concept_id
-INTO #raw_4016
-FROM drug_records;
+select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date
+INTO #raw_de_4016
+FROM drug_records
+WHERE drug_concept_id != 0
+;
 
-CREATE CLUSTERED INDEX idx_raw_4016_group ON #raw_4016 (subject_id, period_id, drug_concept_id);
-CREATE INDEX idx_raw_4016_de_start_date ON #raw_4016 (period_id);
+CREATE INDEX idx_raw_4016_de_date ON #raw_de_4016 (drug_exposure_date);
+
+select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, period_id
+into #raw_4016
+from #raw_de_4016 r
+join #periods_atrisk hp on r.drug_exposure_date >= hp.period_start_date and r.drug_exposure_date < hp.period_end_date
+;
 
 with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id) as
 (
 	select distinct cohort_definition_id
-		, cast(period_id as varchar(255)) as stratum_1
-		, cast(drug_concept_id as varchar(255)) as stratum_2
-		, cast(drug_type_concept_id as varchar(255)) as stratum_3
+		, period_id as stratum_1
+		, drug_concept_id as stratum_2
+		, drug_type_concept_id as stratum_3
 		, subject_id
 	from #raw_4016
 
 	UNION ALL
 
 	select distinct cohort_definition_id
-		, cast(period_id as varchar(255)) as stratum_1
-		, cast(drug_concept_id as varchar(255)) as stratum_2
-		, cast('' as varchar(255)) as stratum_3
+		, period_id as stratum_1
+		, drug_concept_id as stratum_2
+		, 0 as stratum_3
 		, subject_id
 	from #raw_4016
 
 	UNION ALL
 
 	select distinct cohort_definition_id
-		, cast('' as varchar(255)) as stratum_1
-		, cast(drug_concept_id as varchar(255)) as stratum_2
-		, cast(drug_type_concept_id as varchar(255)) as stratum_3
+		, 0 as stratum_1
+		, drug_concept_id as stratum_2
+		, drug_type_concept_id as stratum_3
 		, subject_id
 	from #raw_4016
 
 	UNION ALL
 
 	select distinct cohort_definition_id
-		, cast('' as varchar(255)) as stratum_1
-		, cast(drug_concept_id as varchar(255)) as stratum_2
-		, cast('' as varchar(255)) as stratum_3
+		, 0 as stratum_1
+		, drug_concept_id as stratum_2
+		, 0 as stratum_3
 		, subject_id
 	from #raw_4016
 
@@ -10122,11 +10147,18 @@ select cohort_definition_id, 4016 as analysis_id, stratum_1, stratum_2, stratum_
 INTO #results_4016
 from
 (
-	select cohort_definition_id, stratum_1, stratum_2, stratum_3, cast('' as char(1)) as stratum_4, cast('' as char(1)) as stratum_5
+	select cohort_definition_id
+		, case when stratum_1 = 0 then cast('' as varchar(255)) else cast(stratum_1 as varchar(255)) end as stratum_1
+		, case when stratum_2 = 0 then cast('' as varchar(255)) else cast(stratum_2 as varchar(255)) end as stratum_2
+		, case when stratum_3 = 0 then cast('' as varchar(255)) else cast(stratum_3 as varchar(255)) end as stratum_3
+		, cast('' as char(1)) as stratum_4, cast('' as char(1)) as stratum_5
 		, COUNT_BIG(subject_id) as count_value
 	from cteRawData
 	group by cohort_definition_id, stratum_1, stratum_2, stratum_3
 ) D;
+
+TRUNCATE TABLE #raw_de_4016;
+DROP TABLE #raw_de_4016;
 
 TRUNCATE TABLE #raw_4016;
 DROP TABLE #raw_4016;
@@ -10141,22 +10173,20 @@ select distinct c1.cohort_definition_id,
 	de1.drug_type_concept_id,
 	de1.drug_exposure_id
 INTO #raw_4017
-from #HERACLES_cohort c1
-join @CDM_schema.drug_exposure de1 on c1.subject_id = de1.person_id
+from  #HERACLES_cohort c1
+join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
 	and de1.drug_exposure_start_date >= c1.cohort_start_date and de1.drug_exposure_start_date <= c1.cohort_end_date
-join @results_schema.heracles_periods hp on drug_exposure_start_date >= hp.period_start_date and drug_exposure_start_date < hp.period_end_date
+join #periods_atrisk hp on drug_exposure_start_date >= hp.period_start_date and drug_exposure_start_date < hp.period_end_date
+WHERE de1.drug_concept_id != 0;
 ;
-
-CREATE CLUSTERED INDEX idx_raw_4017_group ON #raw_4017 (subject_id, period_id, drug_concept_id);
-CREATE INDEX idx_raw_4017_de_start_date ON #raw_4017 (period_id);
 
 WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
 (
 	select cohort_definition_id
 		, subject_id
-		, cast(period_id as varchar(255)) as stratum_1
-		, cast(drug_concept_id as varchar(255)) as stratum_2
-		, cast(drug_type_concept_id as varchar(255)) as stratum_3
+		, period_id as stratum_1
+		, drug_concept_id as stratum_2
+		, drug_type_concept_id as stratum_3
 		, count(distinct drug_exposure_id) as count_value
 	from #raw_4017
 	GROUP BY cohort_definition_id, subject_id, period_id, drug_concept_id, drug_type_concept_id
@@ -10165,9 +10195,9 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 
 	select distinct cohort_definition_id
 		, subject_id
-		, cast(period_id as varchar(255)) as stratum_1
-		, cast(drug_concept_id as varchar(255)) as stratum_2
-		, cast('' as varchar(255)) as stratum_3
+		, period_id as stratum_1
+		, drug_concept_id as stratum_2
+		, 0 as stratum_3
 		, count(distinct drug_exposure_id) as count_value
 	from #raw_4017
 	GROUP BY cohort_definition_id, subject_id, period_id, drug_concept_id
@@ -10176,9 +10206,9 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 
 	select distinct cohort_definition_id
 		, subject_id
-		, cast('' as varchar(255)) as stratum_1
-		, cast(drug_concept_id as varchar(255)) as stratum_2
-		, cast(drug_type_concept_id as varchar(255)) as stratum_3
+		, 0 as stratum_1
+		, drug_concept_id as stratum_2
+		, drug_type_concept_id as stratum_3
 		, count(distinct drug_exposure_id) as count_value
 	from #raw_4017
 	GROUP BY cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id
@@ -10187,12 +10217,12 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 
 	select distinct cohort_definition_id
 		, subject_id
-		, cast('' as varchar(255)) as stratum_1
-		, cast(drug_concept_id as varchar(255)) as stratum_2
-		, cast('' as varchar(255)) as stratum_3
+		, 0 as stratum_1
+		, drug_concept_id as stratum_2
+		, 0 as stratum_3
 		, count(distinct drug_exposure_id) as count_value
 	from #raw_4017
-	GROUP BY cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id
+	GROUP BY cohort_definition_id, subject_id, drug_concept_id
 ),
 overallStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, avg_value, stdev_value, min_value, max_value, total) as
 (
@@ -10225,9 +10255,9 @@ valueStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, 
 )
 select o.cohort_definition_id,
 	4017 as analysis_id,
-	o.stratum_1,
-	o.stratum_2,
-	o.stratum_3,
+	case when o.stratum_1 = 0 then cast('' as varchar(255)) else cast(o.stratum_1 as varchar(255)) end as stratum_1,
+	case when o.stratum_2 = 0 then cast('' as varchar(255)) else cast(o.stratum_2 as varchar(255)) end as stratum_2,
+	case when o.stratum_3 = 0 then cast('' as varchar(255)) else cast(o.stratum_3 as varchar(255)) end as stratum_3,
 	cast( '' as varchar(255) ) as stratum_4, cast( '' as varchar(255) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
@@ -10258,23 +10288,20 @@ select distinct c1.cohort_definition_id,
 	de1.drug_type_concept_id,
   days_supply as duration
 INTO #raw_4018
-from #HERACLES_cohort c1
-join @CDM_schema.drug_exposure de1 on c1.subject_id = de1.person_id
+from  #HERACLES_cohort c1
+join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
 	and de1.drug_exposure_start_date >= c1.cohort_start_date and de1.drug_exposure_start_date <= c1.cohort_end_date
-join @results_schema.heracles_periods hp on drug_exposure_start_date >= hp.period_start_date and drug_exposure_start_date < hp.period_end_date
-where days_supply > 0
+join #periods_atrisk hp on drug_exposure_start_date >= hp.period_start_date and drug_exposure_start_date < hp.period_end_date
+where de1.days_supply > 0 and de1.drug_concept_id != 0
 ;
-
-CREATE CLUSTERED INDEX idx_raw_4018_group ON #raw_4018 (subject_id, period_id, drug_concept_id);
-CREATE INDEX idx_raw_4018_de_start_date ON #raw_4018 (period_id);
 
 WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
 (
 	select cohort_definition_id
 		, subject_id
-		, cast(period_id as varchar(255)) as stratum_1
-		, cast(drug_concept_id as varchar(255)) as stratum_2
-		, cast(drug_type_concept_id as varchar(255)) as stratum_3
+		, period_id as stratum_1
+		, drug_concept_id as stratum_2
+		, drug_type_concept_id as stratum_3
 		, sum(duration) as count_value
 	from #raw_4018
 	GROUP BY cohort_definition_id, subject_id, period_id, drug_concept_id, drug_type_concept_id
@@ -10283,9 +10310,9 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 
 	select distinct cohort_definition_id
 		, subject_id
-		, cast(period_id as varchar(255)) as stratum_1
-		, cast(drug_concept_id as varchar(255)) as stratum_2
-		, cast('' as varchar(255)) as stratum_3
+		, period_id as stratum_1
+		, drug_concept_id as stratum_2
+		, 0 as stratum_3
 		, sum(duration) as count_value
 	from #raw_4018
 	GROUP BY cohort_definition_id, subject_id, period_id, drug_concept_id
@@ -10294,9 +10321,9 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 
 	select distinct cohort_definition_id
 		, subject_id
-		, cast('' as varchar(255)) as stratum_1
-		, cast(drug_concept_id as varchar(255)) as stratum_2
-		, cast(drug_type_concept_id as varchar(255)) as stratum_3
+		, 0 as stratum_1
+		, drug_concept_id as stratum_2
+		, drug_type_concept_id as stratum_3
 		, sum(duration) as count_value
 	from #raw_4018
 	GROUP BY cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id
@@ -10305,12 +10332,12 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 
 	select distinct cohort_definition_id
 		, subject_id
-		, cast('' as varchar(255)) as stratum_1
-		, cast(drug_concept_id as varchar(255)) as stratum_2
-		, cast('' as varchar(255)) as stratum_3
+		, 0 as stratum_1
+		, drug_concept_id as stratum_2
+		, 0 as stratum_3
 		, sum(duration) as count_value
 	from #raw_4018
-	GROUP BY cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id
+	GROUP BY cohort_definition_id, subject_id, drug_concept_id
 ),
 overallStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, avg_value, stdev_value, min_value, max_value, total) as
 (
@@ -10343,9 +10370,9 @@ valueStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, 
 )
 select o.cohort_definition_id,
 	4018 as analysis_id,
-	o.stratum_1,
-	o.stratum_2,
-	o.stratum_3,
+	case when o.stratum_1 = 0 then cast('' as varchar(255)) else cast(o.stratum_1 as varchar(255)) end as stratum_1,
+	case when o.stratum_2 = 0 then cast('' as varchar(255)) else cast(o.stratum_2 as varchar(255)) end as stratum_2,
+	case when o.stratum_3 = 0 then cast('' as varchar(255)) else cast(o.stratum_3 as varchar(255)) end as stratum_3,
 	cast( '' as varchar(255) ) as stratum_4, cast( '' as varchar(255) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
@@ -10374,25 +10401,22 @@ select distinct c1.cohort_definition_id,
 	hp.period_id,
 	de1.drug_concept_id,
 	de1.drug_type_concept_id,
-  quantity as duration
+  de1.quantity as duration
 INTO #raw_4019
 from #HERACLES_cohort c1
 join @CDM_schema.drug_exposure de1 on c1.subject_id = de1.person_id
 	and de1.drug_exposure_start_date >= c1.cohort_start_date and de1.drug_exposure_start_date <= c1.cohort_end_date
-join @results_schema.heracles_periods hp on drug_exposure_start_date >= hp.period_start_date and drug_exposure_start_date < hp.period_end_date
-where quantity > 0
+join #periods_atrisk hp on drug_exposure_start_date >= hp.period_start_date and drug_exposure_start_date < hp.period_end_date
+where de1.quantity > 0 and de1.drug_concept_id != 0
 ;
-
-CREATE CLUSTERED INDEX idx_raw_4019_group ON #raw_4019 (subject_id, period_id, drug_concept_id);
-CREATE INDEX idx_raw_4019_de_start_date ON #raw_4019 (period_id);
 
 WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
 (
 	select cohort_definition_id
 		, subject_id
-		, cast(period_id as varchar(255)) as stratum_1
-		, cast(drug_concept_id as varchar(255)) as stratum_2
-		, cast(drug_type_concept_id as varchar(255)) as stratum_3
+		, period_id as stratum_1
+		, drug_concept_id as stratum_2
+		, drug_type_concept_id as stratum_3
 		, sum(duration) as count_value
 	from #raw_4019
 	GROUP BY cohort_definition_id, subject_id, period_id, drug_concept_id, drug_type_concept_id
@@ -10401,9 +10425,9 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 
 	select distinct cohort_definition_id
 		, subject_id
-		, cast(period_id as varchar(255)) as stratum_1
-		, cast(drug_concept_id as varchar(255)) as stratum_2
-		, cast('' as varchar(255)) as stratum_3
+		, period_id as stratum_1
+		, drug_concept_id as stratum_2
+		, 0 as stratum_3
 		, sum(duration) as count_value
 	from #raw_4019
 	GROUP BY cohort_definition_id, subject_id, period_id, drug_concept_id
@@ -10412,9 +10436,9 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 
 	select distinct cohort_definition_id
 		, subject_id
-		, cast('' as varchar(255)) as stratum_1
-		, cast(drug_concept_id as varchar(255)) as stratum_2
-		, cast(drug_type_concept_id as varchar(255)) as stratum_3
+		, 0 as stratum_1
+		, drug_concept_id as stratum_2
+		, drug_type_concept_id as stratum_3
 		, sum(duration) as count_value
 	from #raw_4019
 	GROUP BY cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id
@@ -10423,12 +10447,12 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum
 
 	select distinct cohort_definition_id
 		, subject_id
-		, cast('' as varchar(255)) as stratum_1
-		, cast(drug_concept_id as varchar(255)) as stratum_2
-		, cast('' as varchar(255)) as stratum_3
+		, 0 as stratum_1
+		, drug_concept_id as stratum_2
+		, 0 as stratum_3
 		, sum(duration) as count_value
 	from #raw_4019
-	GROUP BY cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id
+	GROUP BY cohort_definition_id, subject_id, drug_concept_id
 ),
 overallStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, avg_value, stdev_value, min_value, max_value, total) as
 (
@@ -10461,9 +10485,9 @@ valueStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, 
 )
 select o.cohort_definition_id,
 	4019 as analysis_id,
-	o.stratum_1,
-	o.stratum_2,
-	o.stratum_3,
+	case when o.stratum_1 = 0 then cast('' as varchar(255)) else cast(o.stratum_1 as varchar(255)) end as stratum_1,
+	case when o.stratum_2 = 0 then cast('' as varchar(255)) else cast(o.stratum_2 as varchar(255)) end as stratum_2,
+	case when o.stratum_3 = 0 then cast('' as varchar(255)) else cast(o.stratum_3 as varchar(255)) end as stratum_3,
 	cast( '' as varchar(255) ) as stratum_4, cast( '' as varchar(255) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
@@ -11474,7 +11498,16 @@ DROP TABLE #raw_4019;
   
   TRUNCATE TABLE #HERACLES_cohort;
   DROP TABLE #HERACLES_cohort;
-  
+
+  TRUNCATE TABLE #cohort_first;
+  DROP TABLE #cohort_first;
+
+  TRUNCATE TABLE #periods_baseline;
+  DROP TABLE #periods_baseline;
+
+	TRUNCATE TABLE #periods_atrisk;
+  DROP TABLE #periods_atrisk;
+
   delete from @results_schema.HERACLES_results where count_value <= @smallcellcount and cohort_definition_id in (@cohort_definition_id);
   delete from @results_schema.HERACLES_results_dist where count_value <= @smallcellcount and cohort_definition_id in (@cohort_definition_id);
   

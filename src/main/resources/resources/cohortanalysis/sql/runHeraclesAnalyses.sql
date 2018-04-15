@@ -9112,7 +9112,7 @@ with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_i
 		, visit_type_concept_id as stratum_3
 		, subject_id
 	from #raw_4007
-	join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+	join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 
 	UNION ALL
   -- period_id, visit_concept_id
@@ -9122,7 +9122,7 @@ with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_i
 		, 0 as stratum_3
 		, subject_id
 	from #raw_4007
-	join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+	join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 
 	UNION ALL
 
@@ -9133,7 +9133,7 @@ with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_i
 		, 0 as stratum_3
 		, subject_id
 	from #raw_4007
-	join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+	join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 
 	UNION ALL
 
@@ -9205,7 +9205,7 @@ select cohort_definition_id
 	, count(distinct visit_occurrence_id) as count_value
 into #raw_4008_u1
 from #raw_4008
-join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id, visit_type_concept_id
 ;
 -- period_id, visit_concept_id
@@ -9217,7 +9217,7 @@ select distinct cohort_definition_id
 	, count(distinct visit_occurrence_id) as count_value
 into #raw_4008_u2
 from #raw_4008
-join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id
 ;
 -- period_id
@@ -9229,7 +9229,7 @@ select distinct cohort_definition_id
 	, count(distinct visit_occurrence_id) as count_value
 into #raw_4008_u3
 from #raw_4008
-join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 GROUP BY cohort_definition_id, subject_id, period_id
 ;
 -- visit_concept_id, visit_type_concept_id
@@ -9388,7 +9388,7 @@ select cohort_definition_id
 	, count(distinct visit_start_date) as count_value
 into #raw_4009_u1
 from #raw_4009
-join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id, visit_type_concept_id
 ;
 -- period_id, visit_concept_id
@@ -9400,7 +9400,7 @@ select distinct cohort_definition_id
 	, count(distinct visit_start_date) as count_value
 into #raw_4009_u2
 from #raw_4009
-join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id
 ;
 -- period_id
@@ -9412,7 +9412,7 @@ select distinct cohort_definition_id
 	, count(distinct visit_start_date) as count_value
 into #raw_4009_u3
 from #raw_4009
-join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 GROUP BY cohort_definition_id, subject_id, period_id;
 -- visit_concept_id, visit_type_concept_id
 select distinct cohort_definition_id
@@ -9562,7 +9562,7 @@ select cohort_definition_id
 	, count(distinct care_site_date_id) as count_value
 into #raw_4010_u1
 from #raw_4010
-join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id, visit_type_concept_id
 ;
 -- period_id, visit_concept_id
@@ -9574,7 +9574,7 @@ select distinct cohort_definition_id
 	, count(distinct care_site_date_id) as count_value
 into #raw_4010_u2
 from #raw_4010
-join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id
 ;
 -- period_id
@@ -9586,7 +9586,7 @@ select distinct cohort_definition_id
 	, count(distinct care_site_date_id) as count_value
 into #raw_4010_u3
 from #raw_4010
-join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 GROUP BY cohort_definition_id, subject_id, period_id;
 -- visit_concept_id, visit_type_concept_id
 select distinct cohort_definition_id
@@ -9741,7 +9741,7 @@ select cohort_definition_id
 	, sum(duration) as count_value
 into #raw_4011_u1
 from #raw_4011
-join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id, visit_type_concept_id
 ;
 -- period_id, visit_concept_id
@@ -9753,7 +9753,7 @@ select distinct cohort_definition_id
 	, sum(duration) as count_value
 into #raw_4011_u2
 from #raw_4011
-join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id
 ;
 

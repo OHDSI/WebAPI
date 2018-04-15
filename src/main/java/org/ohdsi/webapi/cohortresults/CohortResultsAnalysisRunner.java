@@ -1896,7 +1896,7 @@ public class CohortResultsAnalysisRunner {
 		}
 		String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 
-		String analysisList = StringUtils.join(new Integer[]{4012, 40016}, ",");
+		String analysisList = StringUtils.join(new Integer[]{4012, 4016}, ",");
 		String[] search = new String[]{"vocabulary_schema","results_schema", "analysis_id_list"};
 		String[] replace = new String[]{vocabularyTableQualifier, resultsTableQualifier, analysisList};	
 		

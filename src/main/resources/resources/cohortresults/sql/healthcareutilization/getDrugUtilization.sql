@@ -22,6 +22,7 @@ FROM
 	select cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value
 	from @results_schema.heracles_results
 	where analysis_id = @subject_with_records_analysis_id
+	AND stratum_2 <> ''
 /*
 	(Report 1) --> (analysis_id1 4012) -- 4012 Number of subjects with Drug Exposure by period_id, by drug_concept_id, by drug_type_concept_id in the 365d prior to first cohort start date
 	(Report 2) --> (analysis_id1 4016) -- 4016 Number of subjects with Drug Exposure by period_id, by drug_concept_id during the cohort period
@@ -79,7 +80,7 @@ join
 	and N1.stratum_1 = D1.stratum_1
 {@is_summary == FALSE} ?
 {left join @results_schema.heracles_periods P on N1.stratum_1 = cast(P.period_id as VARCHAR) } :
-{join @vocabulary_schema.concept c on cast(c.concept_id as varchar(19)) = N1.stratum_2}
+{join @vocabulary_schema.concept c on c.concept_id = cast(N1.stratum_2 as INTEGER)}
 where N1.cohort_definition_id = @cohort_definition_id
 {@is_summary} ? {	and N1.stratum_1 = ''} : { and P.period_type = '@period_type'
 	and N1.stratum_2 = '@drug_concept_id'}

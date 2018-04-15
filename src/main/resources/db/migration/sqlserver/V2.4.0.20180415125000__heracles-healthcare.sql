@@ -1,0 +1,1 @@
+CREATE INDEX HR_IDX_COHORT_ID_ANALYSIS_ID_CONCEPT ON ${ohdsiSchema}.HERACLES_RESULTS (cohort_definition_id, analysis_id) WHERE stratum_2 <> '';

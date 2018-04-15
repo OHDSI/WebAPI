@@ -1875,14 +1875,16 @@ public class CohortResultsAnalysisRunner {
 			r.periodEnd = rs.getDate("period_end_date");
 			r.personsCount = rs.getLong("person_total");
 			r.personsPct = new BigDecimal(rs.getDouble("person_percent")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			r.exposureCount = rs.getLong("exposures_total");
-			r.exposuresPer1000= new BigDecimal(rs.getDouble("exposures_per_1000")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			r.exposurePer1000WithExposures = new BigDecimal(rs.getDouble("exposures_per_1000_with_exposure")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			r.exposurePer1000PerYear = new BigDecimal(rs.getDouble("exposures_per_1000_per_year")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			r.exposureCount = rs.getLong("records_total");
+			r.exposuresPer1000= new BigDecimal(rs.getDouble("records_per_1000")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			r.exposurePer1000WithExposures = new BigDecimal(rs.getDouble("records_per_1000_with_record")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			r.exposurePer1000PerYear = new BigDecimal(rs.getDouble("records_per_1000_per_year")).setScale(2, BigDecimal.ROUND_HALF_UP);
 			r.quantityTotal = rs.getLong("quantity_total");
 			r.quantityAvg = new BigDecimal(rs.getDouble("quantity_average")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			r.quantityPer1000PerYear = new BigDecimal(rs.getDouble("quantity_per_1000_per_year")).setScale(2, BigDecimal.ROUND_HALF_UP);
 			r.daysSupplyTotal = rs.getLong("days_supply_total");
 			r.daysSupplyAvg = new BigDecimal(rs.getDouble("days_supply_average")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			r.daysSupplyPer1000PerYear = new BigDecimal(rs.getDouble("days_supply_per_1000_per_year")).setScale(2, BigDecimal.ROUND_HALF_UP);
 			return r;
 		});
 		
@@ -1896,7 +1898,7 @@ public class CohortResultsAnalysisRunner {
 		}
 		String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 
-		String analysisList = StringUtils.join(new Integer[]{4012, 40016}, ",");
+		String analysisList = StringUtils.join(new Integer[]{4012, 4016}, ",");
 		String[] search = new String[]{"vocabulary_schema","results_schema", "analysis_id_list"};
 		String[] replace = new String[]{vocabularyTableQualifier, resultsTableQualifier, analysisList};	
 		

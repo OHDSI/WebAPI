@@ -11,7 +11,7 @@ select N1.cohort_definition_id
 	, N2.total as records_total -- total records
 	, (N2.total * 1000.0)/D1.count_value as records_per_1000 --total records in period/subjects in period
 	, (N2.total * 1000.0)/N1.count_value as records_per_1000_with_record -- total reocrds in period/subjects with visits in period
-	, (((N2.total/D1.total)*1000) /365.25) as records_per_1000_per_year --total records in period/exposure in period
+	, (((N2.total/D1.total)*1000)*365.25) as records_per_1000_per_year --total records in period/exposure in period
 	, N3.total as los_total -- total length of stay
 	, N3.avg_value as los_average -- average length of stay
 FROM
@@ -67,9 +67,7 @@ join
 ) as D1 -- subjects in time period
 on  N1.cohort_definition_id = D1.cohort_definition_id
 	and N1.stratum_1 = D1.stratum_1
-	and N1.stratum_2 = D1.stratum_2
-	and N1.stratum_3 = D1.stratum_3
-{@is_summary == FALSE} ? {left join @results_schema.heracles_periods P on cast(N1.stratum_1 as integer) = P.period_id }
+{@is_summary == FALSE} ? {left join @results_schema.heracles_periods P on N1.stratum_1 = CAST(P.period_id as VARCHAR(255)) }
 where N1.cohort_definition_id = @cohort_definition_id
 {@is_summary} ? {	and N1.stratum_1 = ''} : { and P.period_type = '@period_type'}
 	and N1.stratum_2 = '@visit_concept_id'

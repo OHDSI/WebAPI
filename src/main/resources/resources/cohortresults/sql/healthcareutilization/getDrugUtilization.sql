@@ -10,13 +10,13 @@ select N1.cohort_definition_id
 	, N2.total as records_total -- total records
 	, (N2.total * 1000.0)/D1.count_value as records_per_1000 --total records in period/subjects in period
 	, (N2.total * 1000.0)/N1.count_value as records_per_1000_with_record -- total reocrds in period/subjects with visits in period
-	, (((N2.total/D1.total)*1000) /365.25) as records_per_1000_per_year --total records in period/exposure in period
+	, (((N2.total/D1.total)*1000)*365.25) as records_per_1000_per_year --total records in period/exposure in period
 	, N3.total as days_supply_total  -- total days supply
 	, N3.avg_value as days_supply_average  -- average ddays supply
-	, (((N3.total/D1.total)*1000) /365.25) as days_supply_per_1000_per_year --total days supply in period/exposure in period
+	, (((N3.total/D1.total)*1000)*365.25) as days_supply_per_1000_per_year --total days supply in period/exposure in period
 	, N4.total as quantity_total	-- total quantity
 	, N4.avg_value as quantity_average -- average quantity
-	, (((N4.total/D1.total)*1000) /365.25) as quantity_per_1000_per_year --total quantity in period/exposure in period
+	, (((N4.total/D1.total)*1000)*365.25) as quantity_per_1000_per_year --total quantity in period/exposure in period
 FROM
 (
 	select cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value
@@ -79,7 +79,7 @@ join
 ) as D1 on  N1.cohort_definition_id = D1.cohort_definition_id
 	and N1.stratum_1 = D1.stratum_1
 {@is_summary == FALSE} ?
-{left join @results_schema.heracles_periods P on N1.stratum_1 = cast(P.period_id as VARCHAR) } :
+{left join @results_schema.heracles_periods P on N1.stratum_1 = cast(P.period_id as VARCHAR(255)) } :
 {join @vocabulary_schema.concept c on c.concept_id = cast(N1.stratum_2 as INTEGER)}
 where N1.cohort_definition_id = @cohort_definition_id
 {@is_summary} ? {	and N1.stratum_1 = ''} : { and P.period_type = '@period_type'

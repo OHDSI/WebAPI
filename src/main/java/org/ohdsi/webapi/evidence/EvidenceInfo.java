@@ -15,30 +15,30 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @author rkboyce
  */
 public class EvidenceInfo {
-    @JsonProperty("TITLE")
+    @JsonProperty("title")
     public String title;
     
-    @JsonProperty("DESCRIPTION")
+    @JsonProperty("description")
     public String description;
+		
+    @JsonProperty("provenance")
+    public String provenance;
 
-    @JsonProperty("CONTRIBUTER")
-    public String contributer;
+    @JsonProperty("contributor")
+    public String contributor;
 
-    @JsonProperty("CREATOR")
-    public String creator;
+    @JsonProperty("contactName")
+    public String contactName;
 
-    @JsonProperty("CREATION_DATE")
+    @JsonProperty("creationDate")
     public Date creationDate;
 
-    @JsonProperty("RIGHTS")
-    public String rights;
-
-    @JsonProperty("SOURCE")
-    public String source;
-
-    @JsonProperty("COVERAGE_START_DATE")
+    @JsonProperty("coverageStartDate")
     public Date coverageStartDate;
 
-    @JsonProperty("COVERAGE_END_DATE")
+    @JsonProperty("coverageEndDate")
     public Date coverageEndDate;
+		
+    @JsonProperty("versionIdentifier")
+    public String versionIdentifier;		
 }

@@ -79,7 +79,7 @@ from cteRawData
 ;
 
 -- from here, take all the people's person_id, start_date, end_date, create an 'events table' 
-select row_number() over (partition by P.person_id order by P.start_date) as event_id, P.person_id, P.start_date, P.end_date, P.op_start_date, P.op_end_date
+select row_number() over (partition by P.person_id order by P.start_date) as event_id, P.person_id, P.start_date, P.end_date, P.op_start_date, P.op_end_date, CAST(NULL as bigint) as TARGET_CONCEPT_ID, CAST(NULL as bigint) as visit_occurrence_id
 INTO #analysis_events
 FROM
 (

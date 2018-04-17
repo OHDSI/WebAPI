@@ -793,7 +793,12 @@ public class EvidenceService extends AbstractDaoService {
 		task.setCsToExcludeSQL("");
 		task.setConceptDomainId(conceptDomain);
 		task.setOutcomeOfInterest(targetDomain);
-		task.setConceptsOfInterest(new String[] { conceptOfInterest });
+		CharSequence csCommaDelimited = ",";
+		if (conceptOfInterest.contains(csCommaDelimited)) {
+			task.setConceptsOfInterest(conceptOfInterest.split(","));
+		} else {
+			task.setConceptsOfInterest(new String[] { conceptOfInterest });
+		}
 		Long jobId = new Long(0);
 		try{
 			jobId = Long.parseLong(userSpecifiedJobId);
@@ -836,6 +841,7 @@ public class EvidenceService extends AbstractDaoService {
 		String translatedSchema = "translated";
 		String medlineWinnenburgTable = translatedSchema + ".MEDLINE_WINNENBURG";
 		String splicerTable = translatedSchema + ".SPLICER";
+		String aeolusTable = translatedSchema + ".AEOLUS";
 		String conceptsToExcludeData = "#NC_EXCLUDED_CONCEPTS";
 		String conceptsToIncludeData = "#NC_INCLUDED_CONCEPTS";
 		String broadConceptsData = evidenceSchema + ".NC_LU_BROAD_CONCEPTS";
@@ -866,11 +872,10 @@ public class EvidenceService extends AbstractDaoService {
 			ArrayUtils.addAll(values, new String[] {conceptsToExcludeData, csToExclude, csToExcludeSQL})
 		);
 		sb.append(sql + "\n\n");
-		
 	
 		sqlFile = "findConcepts.sql";
 		sb.append("-- User included - ").append(sqlFile).append("\n\n");
-		sql = ResourceHelper.GetResourceAsString(resourceRoot + "findConcepts.sql");
+		sql = ResourceHelper.GetResourceAsString(resourceRoot + sqlFile);
 		sql = SqlRender.renderSql(sql, 
 			ArrayUtils.addAll(params, new String[] {"storeData", "conceptSetId", "conceptSetExpression"}), 
 			ArrayUtils.addAll(values, new String[] {conceptsToIncludeData, csToInclude, csToIncludeSQL})
@@ -898,6 +903,15 @@ public class EvidenceService extends AbstractDaoService {
 		sql = SqlRender.renderSql(sql, 
 			ArrayUtils.addAll(params, new String[] { "adeType", "adeData" }), 
 			ArrayUtils.addAll(values, new String[] { "SPLICER", splicerTable })
+		);
+		sb.append(sql + "\n\n");
+		
+		sqlFile = "pullEvidence.sql";
+		sb.append("-- AEOLUS -- ").append(sqlFile).append("\n\n");
+		sql = ResourceHelper.GetResourceAsString(resourceRoot + sqlFile);
+		sql = SqlRender.renderSql(sql, 
+			ArrayUtils.addAll(params, new String[] { "adeType", "adeData" }), 
+			ArrayUtils.addAll(values, new String[] { "AEOLUS", aeolusTable })
 		);
 		sb.append(sql + "\n\n");
 		

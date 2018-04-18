@@ -1,14 +1,18 @@
 package org.ohdsi.webapi;
 
-import java.sql.DriverManager;
 import java.util.Properties;
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
+import com.jnj.honeur.webapi.CurrentTenantIdentifierResolverImpl;
+import com.jnj.honeur.webapi.DataSourceLookup;
+import com.jnj.honeur.webapi.MultiTenantConnectionProviderImpl;
+import org.hibernate.MultiTenancyStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -33,9 +37,10 @@ public class DataAccessConfig {
   
     private Properties getJPAProperties() {
         Properties properties = new Properties();
-        properties.setProperty("hibernate.default_schema", this.env.getProperty("spring.jpa.properties.hibernate.default_schema"));
-        properties.setProperty("hibernate.dialect", this.env.getProperty("spring.jpa.properties.hibernate.dialect"));
-        properties.setProperty("hibernate.id.new_generator_mappings", "false");
+        //properties.setProperty("hibernate.default_schema", this.env.getProperty("spring.jpa.properties.hibernate.default_schema"));
+        properties.setProperty(org.hibernate.cfg.Environment.DIALECT, this.env.getProperty("spring.jpa.properties.hibernate.dialect"));
+        properties.setProperty(org.hibernate.cfg.Environment.SHOW_SQL, env.getProperty("spring.jpa.show-sql"));
+        properties.setProperty(org.hibernate.cfg.Environment.USE_NEW_ID_GENERATOR_MAPPINGS, "false");
         return properties;
     }
       
@@ -46,6 +51,7 @@ public class DataAccessConfig {
         String url = this.env.getRequiredProperty("datasource.url");
         String user = this.env.getRequiredProperty("datasource.username");
         String pass = this.env.getRequiredProperty("datasource.password");
+        String schema = this.env.getRequiredProperty("datasource.ohdsi.schema");
         boolean autoCommit = false;
 
 
@@ -60,6 +66,7 @@ public class DataAccessConfig {
         //non-pooling
         DriverManagerDataSource ds = new DriverManagerDataSource(url, user, pass);
         ds.setDriverClassName(driver);
+        ds.setSchema(schema);
         //note autocommit defaults vary across vendors. use provided @Autowired TransactionTemplate
 
         String[] supportedDrivers;
@@ -77,7 +84,13 @@ public class DataAccessConfig {
     }
 
     @Bean
+    DataSourceLookup dataSourceLookup() {
+        return new DataSourceLookup();
+    }
+
+    @Bean
     public EntityManagerFactory entityManagerFactory() {
+        final DataSourceLookup dataSourceLookup = dataSourceLookup();
 
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         vendorAdapter.setGenerateDdl(false);
@@ -88,8 +101,11 @@ public class DataAccessConfig {
         LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
         factory.setJpaVendorAdapter(vendorAdapter);
         factory.setJpaProperties(getJPAProperties());
-        factory.setPackagesToScan("org.ohdsi.webapi");
+        factory.setPackagesToScan("com.jnj.honeur.webapi", DataAccessConfig.class.getPackage().getName());  // "org.ohdsi.webapi"
         factory.setDataSource(primaryDataSource());
+        factory.getJpaPropertyMap().put(org.hibernate.cfg.Environment.MULTI_TENANT, MultiTenancyStrategy.DATABASE);
+        factory.getJpaPropertyMap().put(org.hibernate.cfg.Environment.MULTI_TENANT_CONNECTION_PROVIDER, new MultiTenantConnectionProviderImpl(dataSourceLookup));
+        factory.getJpaPropertyMap().put(org.hibernate.cfg.Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, new CurrentTenantIdentifierResolverImpl());
         factory.afterPropertiesSet();
 
         return factory.getObject();
@@ -97,6 +113,7 @@ public class DataAccessConfig {
 
     @Bean
     @Primary
+    @Order(Integer.MIN_VALUE+1)
     //This is needed so that JpaTransactionManager is used for autowiring, instead of DataSourceTransactionManager
     public PlatformTransactionManager jpaTransactionManager() {//EntityManagerFactory entityManagerFactory) {
 

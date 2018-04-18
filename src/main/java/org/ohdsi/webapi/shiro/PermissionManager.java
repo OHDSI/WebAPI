@@ -34,7 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * @author gennadiy.anisimov
  */
-@Component
+//@Component
 @Transactional
 public class PermissionManager {
   

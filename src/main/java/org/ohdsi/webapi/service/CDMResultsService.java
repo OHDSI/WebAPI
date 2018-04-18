@@ -52,8 +52,9 @@ public class CDMResultsService extends AbstractDaoService {
             long id = resultSet.getLong("concept_id");
             long record_count = resultSet.getLong("record_count");
             long descendant_record_count = resultSet.getLong("descendant_record_count");
+            long person_record_count = resultSet.getLong("person_record_count");
 
-            SimpleEntry<Long, Long[]> entry = new SimpleEntry<Long, Long[]>(id, new Long[]{record_count, descendant_record_count});
+            SimpleEntry<Long, Long[]> entry = new SimpleEntry<>(id, new Long[]{record_count, descendant_record_count, person_record_count});
             return entry;
         }
     };

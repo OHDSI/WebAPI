@@ -70,9 +70,10 @@ public class CDMResultsCacheTasklet implements Tasklet {
 											long id = rs.getLong("concept_id");
 											long record_count = rs.getLong("record_count");
 											long descendant_record_count = rs.getLong("descendant_record_count");
+											long person_record_count = rs.getLong("person_record_count");
 
-											newCache.put(id, new Long[] { record_count, descendant_record_count });
-									}
+                                            newCache.put(id, new Long[] { record_count, descendant_record_count, person_record_count});
+                                    }
 									return newCache;
 							}
 					});

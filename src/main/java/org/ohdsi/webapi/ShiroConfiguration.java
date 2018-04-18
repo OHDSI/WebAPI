@@ -1,6 +1,8 @@
 package org.ohdsi.webapi;
 
 import java.util.*;
+
+import com.jnj.honeur.webapi.shiro.management.AtlasWithCasSecurity;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.shiro.realm.Realm;
@@ -20,6 +22,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.core.annotation.Order;
 
 /**
  * Created by GMalikov on 20.08.2015.
@@ -31,6 +34,8 @@ public class ShiroConfiguration {
 
   @Value("${security.enabled}")
   private boolean enabled;
+  @Value("${security.cas}")
+  private boolean cas;
 
   @Value("${security.maxLoginAttempts}")
   private int maxLoginAttempts;
@@ -40,16 +45,18 @@ public class ShiroConfiguration {
   private long increment;
 
   @Bean
-  @DependsOn("flyway")
+  @DependsOn(value={"flyway"})
   public Security security() {
     if (enabled) {
-      log.debug("AtlasSecurity module loaded");
+      if(cas){
+        log.debug("AtlasSecurity module loaded, with CAS");
+        return new AtlasWithCasSecurity();
+      }
+      log.debug("AtlasSecurity module loaded, without CAS");
       return new AtlasSecurity();
     }
-    else {
-      log.debug("DisabledSecurity module loaded");
-      return new DisabledSecurity();
-    }
+    log.debug("DisabledSecurity module loaded");
+    return new DisabledSecurity();
   };
 
   @Bean

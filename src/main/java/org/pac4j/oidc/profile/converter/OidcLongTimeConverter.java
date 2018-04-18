@@ -19,7 +19,7 @@
 package org.pac4j.oidc.profile.converter;
 
 import org.pac4j.core.exception.TechnicalException;
-import org.pac4j.core.profile.FormattedDate;
+import org.pac4j.core.profile.converter.DateConverter;
 import org.pac4j.core.profile.converter.AttributeConverter;
 
 import java.text.ParseException;
@@ -35,17 +35,19 @@ public class OidcLongTimeConverter implements AttributeConverter<Date> {
     public Date convert(Object attribute) {
         if (attribute instanceof Long) {
             long seconds = ((Long)attribute).longValue();
-            return new FormattedDate(new Date(seconds * 1000L), "yyyy-MM-dd'T'HH:mm:ss'z'", Locale.getDefault());
+            DateConverter converter = new DateConverter("yyyy-MM-dd'T'HH:mm:ss'z'", Locale.getDefault());
+            return converter.convert(new Date(seconds * 1000L));
         } else if (attribute instanceof String) {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss'Z'");
 
             try {
-                return new FormattedDate(sdf.parse((String)attribute), "yyyy-MM-dd'T'HH:mm:ssz", Locale.getDefault());
+                DateConverter converter = new DateConverter("yyyy-MM-dd'T'HH:mm:ssz", Locale.getDefault());
+                return converter.convert(sdf.parse((String)attribute));
             } catch (ParseException var4) {
                 throw new TechnicalException(var4);
             }
         } else {
-            return attribute instanceof FormattedDate ? (Date)attribute : null;
+            return attribute instanceof DateConverter ? (Date)attribute : null;
         }
     }
 }

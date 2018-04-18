@@ -15,17 +15,11 @@
 package org.ohdsi.webapi.cohortdefinition;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
-import javax.persistence.CollectionTable;
 import javax.persistence.Column;
-import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -38,7 +32,6 @@ import javax.persistence.NamedEntityGraph;
 import javax.persistence.NamedSubgraph;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
-import javax.persistence.OrderColumn;
 import javax.persistence.Table;
 
 /**
@@ -87,6 +80,13 @@ public class CohortDefinition implements Serializable{
     
   @Column(name="modified_date")
   private Date modifiedDate;
+
+  @Column(name = "uuid")
+  private UUID uuid;
+
+  @OneToOne
+  @JoinColumn(name = "previous_version", referencedColumnName = "uuid")
+  private CohortDefinition previousVersion;
 
   public Integer getId() {
     return id;
@@ -174,6 +174,24 @@ public class CohortDefinition implements Serializable{
   
   public CohortDefinition setGenerationInfoList(Set<CohortGenerationInfo> list) {
     this.generationInfoList = list;
+    return this;
+  }
+
+  public UUID getUuid() {
+    return uuid;
+  }
+
+  public CohortDefinition setUuid(UUID uuid) {
+    this.uuid = uuid;
+    return this;
+  }
+
+  public CohortDefinition getPreviousVersion() {
+    return previousVersion;
+  }
+
+  public CohortDefinition setPreviousVersion(CohortDefinition previousVersion) {
+    this.previousVersion = previousVersion;
     return this;
   }
 }

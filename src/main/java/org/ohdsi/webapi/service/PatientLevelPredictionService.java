@@ -28,6 +28,7 @@ import org.ohdsi.webapi.prediction.PatientLevelPredictionListItem;
 import org.ohdsi.webapi.service.CohortDefinitionService.CohortDefinitionDTO;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 /**

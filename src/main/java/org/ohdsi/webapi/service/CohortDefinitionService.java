@@ -15,14 +15,8 @@ import java.math.RoundingMode;
 import java.io.ByteArrayOutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
@@ -39,6 +33,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+
+import com.jnj.honeur.webapi.liferay.model.Organization;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.sql.SqlTranslate;
 import javax.ws.rs.core.Response;
@@ -76,19 +72,22 @@ import org.springframework.batch.core.configuration.annotation.JobBuilderFactory
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 /**
  *
  * @author cknoll1
  */
 @Path("/cohortdefinition")
-@Component
+@Component("cohortDefinitionService")
+@ConditionalOnProperty(value = "datasource.honeur.enabled", havingValue = "false")
 public class CohortDefinitionService extends AbstractDaoService {
 
   private static final CohortExpressionQueryBuilder queryBuilder = new CohortExpressionQueryBuilder();
@@ -107,16 +106,16 @@ public class CohortDefinitionService extends AbstractDaoService {
 
   @Autowired
   private VocabularyService vocabService;
-  
+
   @Autowired
   private SourceService sourceService;
-    
+
   @Autowired
   private JobTemplate jobTemplate;
 
-	@PersistenceContext
-	protected EntityManager entityManager;
-	
+  @PersistenceContext
+  protected EntityManager entityManager;
+
   private final RowMapper<InclusionRuleReport.Summary> summaryMapper = new RowMapper<InclusionRuleReport.Summary>() {
     @Override
     public InclusionRuleReport.Summary mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -152,7 +151,7 @@ public class CohortDefinitionService extends AbstractDaoService {
       return statistic;
     }
   };
-  
+
   private final RowMapper<Long[]> inclusionRuleResultItemMapper = new RowMapper<Long[]>() {
 
     @Override
@@ -162,7 +161,7 @@ public class CohortDefinitionService extends AbstractDaoService {
       resultItem[1] = rs.getLong("person_count");
       return resultItem;
     }
-  };  
+  };
 
   private CohortGenerationInfo findBySourceId(Set<CohortGenerationInfo> infoList, Integer sourceId) {
     for (CohortGenerationInfo info : infoList) {
@@ -172,7 +171,7 @@ public class CohortDefinitionService extends AbstractDaoService {
     }
     return null;
   }
-  
+
   private InclusionRuleReport.Summary getInclusionRuleReportSummary(int id, Source source) {
 
     String sql = "select base_count, final_count from @tableQualifier.cohort_summary_stats where cohort_definition_id = @id";
@@ -186,15 +185,15 @@ public class CohortDefinitionService extends AbstractDaoService {
   private List<InclusionRuleReport.InclusionRuleStatistic> getInclusionRuleStatistics(int id, Source source) {
 
     String sql = "select i.rule_sequence, i.name, s.person_count, s.gain_count, s.person_total"
-        + " from @tableQualifier.cohort_inclusion i join @tableQualifier.cohort_inclusion_stats s on i.cohort_definition_id = s.cohort_definition_id"
-        + " and i.rule_sequence = s.rule_sequence"
-        + " where i.cohort_definition_id = @id ORDER BY i.rule_sequence";
+            + " from @tableQualifier.cohort_inclusion i join @tableQualifier.cohort_inclusion_stats s on i.cohort_definition_id = s.cohort_definition_id"
+            + " and i.rule_sequence = s.rule_sequence"
+            + " where i.cohort_definition_id = @id ORDER BY i.rule_sequence";
     String tqName = "tableQualifier";
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
     PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, tqName, tqValue, "id", whitelist(id), SessionUtils.sessionId());
     return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), inclusionRuleStatisticMapper);
   }
-  
+
   private int countSetBits(long n) {
     int count = 0;
     while (n > 0) {
@@ -203,11 +202,11 @@ public class CohortDefinitionService extends AbstractDaoService {
     }
     return count;
   }
-  
+
   private String formatBitMask(Long n, int size) {
     return StringUtils.reverse(StringUtils.leftPad(Long.toBinaryString(n), size, "0"));
-  }  
-  
+  }
+
   private String getInclusionRuleTreemapData(int id, int inclusionRuleCount, Source source) {
 
     String sql = "select inclusion_rule_mask, person_count from @tableQualifier.cohort_inclusion_result where cohort_definition_id = @id";
@@ -295,6 +294,8 @@ public class CohortDefinitionService extends AbstractDaoService {
   public static class CohortDefinitionDTO extends CohortDefinitionListItem {
 
     public String expression;
+    public List<Organization> organizations;
+    public UUID uuid;
   }
 
   public CohortDefinitionDTO cohortDefinitionToDTO(CohortDefinition def) {
@@ -447,10 +448,10 @@ public class CohortDefinitionService extends AbstractDaoService {
   public JobExecutionResource generateCohort(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey, @QueryParam("includeFeatures") final String includeFeatures) {
 
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);    
-    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);    
+    String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
     String vocabularyTableQualifier = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
-		
+
     DefaultTransactionDefinition requresNewTx = new DefaultTransactionDefinition();
     requresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     TransactionStatus initStatus = this.getTransactionTemplate().getTransactionManager().getTransaction(requresNewTx);
@@ -462,10 +463,10 @@ public class CohortDefinitionService extends AbstractDaoService {
       currentDefinition.getGenerationInfoList().add(info);
     }
     info.setStatus(GenerationStatus.PENDING)
-      .setStartTime(Calendar.getInstance().getTime());
+            .setStartTime(Calendar.getInstance().getTime());
 
-		info.setIncludeFeatures(includeFeatures != null);
-		
+    info.setIncludeFeatures(includeFeatures != null);
+
     this.cohortDefinitionRepository.save(currentDefinition);
     this.getTransactionTemplate().getTransactionManager().commit(initStatus);
 
@@ -474,8 +475,8 @@ public class CohortDefinitionService extends AbstractDaoService {
     builder.addString("cdm_database_schema", cdmTableQualifier);
     builder.addString("results_database_schema", resultsTableQualifier);
     builder.addString("target_database_schema", resultsTableQualifier);
-		if (vocabularyTableQualifier != null)
-			builder.addString("vocabulary_database_schema", vocabularyTableQualifier);
+    if (vocabularyTableQualifier != null)
+      builder.addString("vocabulary_database_schema", vocabularyTableQualifier);
     builder.addString("target_dialect", source.getSourceDialect());
     builder.addString("target_table", "cohort");
     builder.addString("cohort_definition_id", ("" + id));
@@ -489,25 +490,25 @@ public class CohortDefinitionService extends AbstractDaoService {
     GenerateCohortTasklet generateTasklet = new GenerateCohortTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), cohortDefinitionRepository);
 
     Step generateCohortStep = stepBuilders.get("cohortDefinition.generateCohort")
-      .tasklet(generateTasklet)
-    .build();
+            .tasklet(generateTasklet)
+            .build();
 
-		SimpleJobBuilder generateJobBuilder = jobBuilders.get("generateCohort")
-			.listener(new GenerationJobExecutionListener(cohortDefinitionRepository, this.getTransactionTemplateRequiresNew(), this.getSourceJdbcTemplate(source)))
-			.start(generateCohortStep);
+    SimpleJobBuilder generateJobBuilder = jobBuilders.get("generateCohort")
+            .listener(new GenerationJobExecutionListener(cohortDefinitionRepository, this.getTransactionTemplateRequiresNew(), this.getSourceJdbcTemplate(source)))
+            .start(generateCohortStep);
 
-		if (includeFeatures != null) {
-			GenerateCohortFeaturesTasklet generateCohortFeaturesTasklet = 
-						new GenerateCohortFeaturesTasklet(getSourceJdbcTemplate(source), getTransactionTemplate());
+    if (includeFeatures != null) {
+      GenerateCohortFeaturesTasklet generateCohortFeaturesTasklet =
+              new GenerateCohortFeaturesTasklet(getSourceJdbcTemplate(source), getTransactionTemplate());
 
-			Step generateCohortFeaturesStep = stepBuilders.get("cohortFeatures.generateFeatures")
-					.tasklet(generateCohortFeaturesTasklet)
-					.build();
-	
-			generateJobBuilder.next(generateCohortFeaturesStep);			
-		}
-		
-		Job generateCohortJob = generateJobBuilder.build();
+      Step generateCohortFeaturesStep = stepBuilders.get("cohortFeatures.generateFeatures")
+              .tasklet(generateCohortFeaturesTasklet)
+              .build();
+
+      generateJobBuilder.next(generateCohortFeaturesStep);
+    }
+
+    Job generateCohortJob = generateJobBuilder.build();
 
     JobExecutionResource jobExec = this.jobTemplate.launch(generateCohortJob, jobParameters);
     return jobExec;
@@ -537,7 +538,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 
   /**
    * Copies the specified cohort definition
-   * 
+   *
    * @param id - the Cohort Definition ID to copy
    * @return the copied cohort definition as a CohortDefinitionDTO
    */
@@ -553,48 +554,48 @@ public class CohortDefinitionService extends AbstractDaoService {
     CohortDefinitionDTO copyDef = createCohortDefinition(sourceDef);
 
     return copyDef;
-  }      
+  }
 
   /**
    * Deletes the specified cohort definition
-   * 
+   *
    * @param id - the Cohort Definition ID to copy
    */
   @DELETE
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/{id}")
   public void delete(@PathParam("id") final int id) {
-		
-		// perform the JPA update in a separate transaction
-		this.getTransactionTemplateRequiresNew().execute(new TransactionCallbackWithoutResult() {
-			@Override
-			public void doInTransactionWithoutResult(final TransactionStatus status) {
-				cohortDefinitionRepository.delete(id);
-			}
-		});
 
-		JobParametersBuilder builder = new JobParametersBuilder();
-		builder.addString("jobName", String.format("Cleanup cohort %d.",id));
-		builder.addString("cohort_definition_id", ("" + id));
+    // perform the JPA update in a separate transaction
+    this.getTransactionTemplateRequiresNew().execute(new TransactionCallbackWithoutResult() {
+      @Override
+      public void doInTransactionWithoutResult(final TransactionStatus status) {
+        cohortDefinitionRepository.delete(id);
+      }
+    });
 
-		final JobParameters jobParameters = builder.toJobParameters();
+    JobParametersBuilder builder = new JobParametersBuilder();
+    builder.addString("jobName", String.format("Cleanup cohort %d.",id));
+    builder.addString("cohort_definition_id", ("" + id));
 
-		log.info(String.format("Beginning cohort cleanup for cohort definition id: \n %s", "" + id));
+    final JobParameters jobParameters = builder.toJobParameters();
 
-		CleanupCohortTasklet cleanupTasklet = new CleanupCohortTasklet(this.getTransactionTemplateNoTransaction(),this.getSourceRepository());
+    log.info(String.format("Beginning cohort cleanup for cohort definition id: \n %s", "" + id));
 
-		Step cleanupStep = stepBuilders.get("cohortDefinition.cleanupCohort")
-			.tasklet(cleanupTasklet)
-			.build();
+    CleanupCohortTasklet cleanupTasklet = new CleanupCohortTasklet(this.getTransactionTemplateNoTransaction(),this.getSourceRepository());
 
-		SimpleJobBuilder cleanupJobBuilder = jobBuilders.get("cleanupCohort")
-			.start(cleanupStep);
+    Step cleanupStep = stepBuilders.get("cohortDefinition.cleanupCohort")
+            .tasklet(cleanupTasklet)
+            .build();
 
-		Job cleanupCohortJob = cleanupJobBuilder.build();
+    SimpleJobBuilder cleanupJobBuilder = jobBuilders.get("cleanupCohort")
+            .start(cleanupStep);
 
-		this.jobTemplate.launch(cleanupCohortJob, jobParameters);
-	}
-	
+    Job cleanupCohortJob = cleanupJobBuilder.build();
+
+    this.jobTemplate.launch(cleanupCohortJob, jobParameters);
+  }
+
   private ArrayList<ConceptSetExport> getConceptSetExports(CohortDefinition def, SourceInfo vocabSource) throws RuntimeException {
     ArrayList<ConceptSetExport> exports = new ArrayList<>();
     ObjectMapper mapper = new ObjectMapper();
@@ -604,7 +605,7 @@ public class CohortDefinitionService extends AbstractDaoService {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-    
+
     for (ConceptSet cs : expression.conceptSets) {
       ConceptSetExport export = new ConceptSetExport();
 
@@ -629,10 +630,10 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
   public Response exportConceptSets(@PathParam("id") final int id)
   {
-    
+
     SourceInfo sourceInfo = sourceService.getPriorityVocabularySourceInfo();
     CohortDefinition def = this.cohortDefinitionRepository.findOneWithDetail(id);
-    
+
     ArrayList<ConceptSetExport> exports = getConceptSetExports(def, sourceInfo);
     ByteArrayOutputStream exportStream = ExportUtil.writeConceptSetExportToCSVAndZip(exports);
 
@@ -643,8 +644,8 @@ public class CohortDefinitionService extends AbstractDaoService {
             .build();
 
     return response;
-    
-  }    
+
+  }
 
   @GET
   @Path("/{id}/report/{sourceKey}")
@@ -664,5 +665,10 @@ public class CohortDefinitionService extends AbstractDaoService {
     report.treemapData = treemapData;
 
     return report;
-  }  
+  }
+
+  @PostConstruct
+  public void initIt() throws Exception {
+    System.out.println("COHORT DEFINITION SERVICE CREATED");
+  }
 }

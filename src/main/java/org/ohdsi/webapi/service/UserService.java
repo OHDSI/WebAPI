@@ -23,6 +23,7 @@ import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 /**
@@ -31,11 +32,10 @@ import org.springframework.stereotype.Component;
  */
 
 @Path("/")
-@Component
 public class UserService {
 
   @Autowired
-  private PermissionManager authorizer;
+  protected PermissionManager authorizer;
 
   private Map<String, String> roleCreatorPermissionsTemplate = new LinkedHashMap<>();
 

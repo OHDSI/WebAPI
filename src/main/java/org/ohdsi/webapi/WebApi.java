@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
+import org.springframework.context.annotation.ComponentScan;
 
 
 /**
@@ -17,6 +18,7 @@ import org.springframework.boot.web.support.SpringBootServletInitializer;
  * will source this file).
  */
 @SpringBootApplication(exclude={HibernateJpaAutoConfiguration.class})
+@ComponentScan(basePackages = {"org.ohdsi.webapi", "com.jnj.honeur.webapi"})
 public class WebApi extends SpringBootServletInitializer {
 
     @Override

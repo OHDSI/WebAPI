@@ -39,6 +39,16 @@ public class HealthcareVisitUtilizationReport {
 		public BigDecimal visitsPer1000PerYear;
 		public long lengthOfStayTotal;
 		public BigDecimal lengthOfStayAvg;
+		public BigDecimal allowed;
+		public BigDecimal allowedPmPm;
+		public BigDecimal charged;
+		public BigDecimal chargedPmPm;		
+		public BigDecimal paid;
+		public BigDecimal paidPmPm;
+		public BigDecimal allowedChargedRatio;
+		public BigDecimal paidAllowedRatio;
+		
+		
 
 		public Summary() {
 

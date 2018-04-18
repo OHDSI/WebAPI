@@ -70,9 +70,9 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     private String executionEngineURL;
     @Value("${executionengine.token}")
     private String executionEngineToken;
-    @Value("${executionengine.result_callback}")
+    @Value("${executionengine.resultCallback}")
     private String resultCallback;
-    @Value("${executionengine.update_status_callback}")
+    @Value("${executionengine.updateStatusCallback}")
     private String updateStatusCallback;
     @Value("${execution.invalidation.maxage}")
     private int invalidateHours;

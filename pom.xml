@@ -621,10 +621,10 @@
           email = ?</security.db.datasource.authenticationQuery>
         <executionengine.url>https://localhost:8888/api/v1/analyze</executionengine.url>
         <executionengine.token>Basic YWRtaW5Ab2R5c3NldXNpbmMuY29tOnBhc3N3b3Jk</executionengine.token>
-        <executionengine.update_status_callback>http://localhost:8080/WebAPI\
-          /execution_service_callbacks/submission/{id}/status_update/{password}</executionengine.update_status_callback>
-        <executionengine.result_callback>http://localhost:8080/WebAPI\
-          /execution_service_callbacks/submission/{id}/result/{password}</executionengine.result_callback>
+        <executionengine.updateStatusCallback>http://localhost:8080/WebAPI\
+          /execution_service_callbacks/submission/{id}/status_update/{password}</executionengine.updateStatusCallback>
+        <executionengine.resultCallback>http://localhost:8080/WebAPI\
+          /execution_service_callbacks/submission/{id}/result/{password}</executionengine.resultCallback>
       </properties>
     </profile>
     <profile>

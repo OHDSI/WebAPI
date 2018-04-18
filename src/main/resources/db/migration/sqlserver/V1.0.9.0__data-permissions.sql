@@ -49,8 +49,8 @@ insert into ${ohdsiSchema}.sec_role_permission(role_id, permission_id) values(1,
 insert into ${ohdsiSchema}.sec_permission(id, value, description) values(101, 'evidence:*:get', 'Get evidence');
 insert into ${ohdsiSchema}.sec_role_permission(role_id, permission_id) values(1, 101);
 
-insert into ${ohdsiSchema}.sec_permission(id, value, description) values(102, 'execution_service:*:get', 'Get Execution Service Job status');
-insert into ${ohdsiSchema}.sec_permission(id, value, description) values(103, 'execution_service:run_script:post', 'Start Execution Service Job');
+insert into ${ohdsiSchema}.sec_permission(id, value, description) values(102, 'executionservice:*:get', 'Get Execution Service Job status');
+insert into ${ohdsiSchema}.sec_permission(id, value, description) values(103, 'executionservice:execution:run:post', 'Start Execution Service Job');
 insert into ${ohdsiSchema}.sec_role_permission(role_id, permission_id) values(1, 102);
 insert into ${ohdsiSchema}.sec_role_permission(role_id, permission_id) values(1, 103);
 

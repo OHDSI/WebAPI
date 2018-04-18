@@ -41,7 +41,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-@Path("/execution_service")
+@Path("/executionservice")
 public class ScriptExecutionController {
 
     private final Log logger = LogFactory.getLog(ScriptExecutionController.class);
@@ -70,7 +70,7 @@ public class ScriptExecutionController {
     @Autowired
     private AnalysisExecutionRepository analysisExecutionRepository;
 
-    @Path("run_script")
+    @Path("execution/run")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

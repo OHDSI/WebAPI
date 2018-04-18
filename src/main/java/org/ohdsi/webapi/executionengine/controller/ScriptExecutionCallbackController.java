@@ -32,7 +32,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
-@Path("/execution_service_callbacks")
+@Path("/executionservice/callbacks")
 public class ScriptExecutionCallbackController {
 
     private static final Log log = LogFactory.getLog(ScriptExecutionCallbackController.class);
@@ -55,7 +55,7 @@ public class ScriptExecutionCallbackController {
         this.outputFileRepository = outputFileRepository;
     }
 
-    @Path(value = "submission/{id}/status_update/{password}")
+    @Path(value = "submission/{id}/status/update/{password}")
     @Consumes(MediaType.APPLICATION_JSON)
     @POST
     @Transactional

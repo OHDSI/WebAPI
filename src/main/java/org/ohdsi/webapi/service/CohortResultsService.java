@@ -1781,14 +1781,16 @@ public class CohortResultsService extends AbstractDaoService {
 	@GET
 	@Path("{sourceKey}/{id}/healthcareutilization/visit/{window}/{visitStat}")
 	@Produces(MediaType.APPLICATION_JSON)
-  public HealthcareVisitUtilizationReport getHealthcareUtilizationVisitReport(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey
+  public HealthcareVisitUtilizationReport getHealthcareUtilizationVisitReport(@PathParam("id") final int id
+		, @PathParam("sourceKey") String sourceKey
 		, @PathParam("window") final WindowType window
 		, @PathParam("visitStat") final VisitStatType visitStat
 		, @DefaultValue("ww") @QueryParam("periodType") final PeriodType periodType
 		, @QueryParam("visitConcept") final Long visitConcept
-		, @QueryParam("visitTypeConcept") final Long visitTypeConcept) {
+		, @QueryParam("visitTypeConcept") final Long visitTypeConcept
+		, @DefaultValue("31968") @QueryParam("costTypeConcept") final Long costTypeConcept) {
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
-		HealthcareVisitUtilizationReport visitUtilizationReport = queryRunner.getHealthcareVisitReport(getSourceJdbcTemplate(source), id, window, visitStat, periodType, visitConcept, visitTypeConcept, source);
+		HealthcareVisitUtilizationReport visitUtilizationReport = queryRunner.getHealthcareVisitReport(getSourceJdbcTemplate(source), id, window, visitStat, periodType, visitConcept, visitTypeConcept, costTypeConcept, source);
 		return visitUtilizationReport;
 	}	
 	
@@ -1798,24 +1800,28 @@ public class CohortResultsService extends AbstractDaoService {
   public HealthcareDrugUtilizationSummary getHealthcareUtilizationDrugSummaryReport(@PathParam("id") final int id
 		, @PathParam("sourceKey") String sourceKey
 		, @PathParam("window") final WindowType window 
-		, @QueryParam("drugType") final Long drugTypeConceptId) {
+		, @QueryParam("drugType") final Long drugTypeConceptId
+		, @DefaultValue("31968") @QueryParam("costType") final Long costTypeConceptId
+		
+	) {
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
-		HealthcareDrugUtilizationSummary report = queryRunner.getHealthcareDrugUtilizationSummary(getSourceJdbcTemplate(source), id, window, drugTypeConceptId, source);
+		HealthcareDrugUtilizationSummary report = queryRunner.getHealthcareDrugUtilizationSummary(getSourceJdbcTemplate(source), id, window, drugTypeConceptId, costTypeConceptId, source);
 		return report;
 	}	
 	
 	@GET
 	@Path("{sourceKey}/{id}/healthcareutilization/drug/{window}/{drugConceptId}")
 	@Produces(MediaType.APPLICATION_JSON)
-  public HealthcareDrugUtilizationDetail getHealthcareUtilizationDrugSummaryReport(@PathParam("id") final int id
+  public HealthcareDrugUtilizationDetail getHealthcareUtilizationDrugDetailReport(@PathParam("id") final int id
 		, @PathParam("sourceKey") String sourceKey
 		, @PathParam("window") final WindowType window
 		, @PathParam("drugConceptId") final Long drugConceptId
 		, @DefaultValue("ww") @QueryParam("periodType") final PeriodType periodType
-		, @QueryParam("drugType") final Long drugTypeConceptId) 
-	{	
+		, @QueryParam("drugType") final Long drugTypeConceptId
+		, @DefaultValue("31968") @QueryParam("costType") final Long costTypeConceptId
+	) {	
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
-		HealthcareDrugUtilizationDetail report = queryRunner.getHealthcareDrugUtilizationReport(getSourceJdbcTemplate(source), id, window, drugConceptId, drugTypeConceptId, periodType, source);
+		HealthcareDrugUtilizationDetail report = queryRunner.getHealthcareDrugUtilizationReport(getSourceJdbcTemplate(source), id, window, drugConceptId, drugTypeConceptId, periodType, costTypeConceptId, source);
 		return report;
 	}
 	

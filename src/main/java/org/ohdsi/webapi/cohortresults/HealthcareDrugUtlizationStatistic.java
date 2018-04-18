@@ -33,5 +33,14 @@ public class HealthcareDrugUtlizationStatistic {
 	public BigDecimal daysSupplyPer1000PerYear;
 	public long quantityTotal;
 	public BigDecimal quantityAvg;
-	public BigDecimal quantityPer1000PerYear;	
+	public BigDecimal quantityPer1000PerYear;
+	public BigDecimal allowed;
+	public BigDecimal allowedPmPm;
+	public BigDecimal charged;
+	public BigDecimal chargedPmPm;		
+	public BigDecimal paid;
+	public BigDecimal paidPmPm;
+	public BigDecimal allowedChargedRatio;
+	public BigDecimal paidAllowedRatio;
+	
 }

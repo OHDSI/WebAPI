@@ -1,3 +1,50 @@
+with cost_long as
+(
+	select cohort_definition_id, stratum_1, stratum_2, stratum_3, stratum_4, count_value*avg_value as total
+	from @results_schema.heracles_results_dist
+	where analysis_id = @cost_analysis_id
+				and cohort_definition_id = @cohort_definition_id
+				and cast(stratum_5 as integer) = @cost_type_concept_id -- default is 31968. @cost_type_concept_id may be used as a filter in UI
+				and cast(stratum_4 as integer) in (31978, 31973, 31980) -- allowed, charged, paid
+				/*
+					(Report 1,2,3) --> (analysis_id1 4022) -- 4022	Distribution of greater than 0 US$ cost per subject by period_id, by drug_concept_id, by drug_type_concept_id, by cost_concept_id in the 365d prior to first cohort start date
+					(Report 4,5,6) --> (analysis_id1 4023) -- 4023	Distribution of greater than 0 US$ cost per subject by period_id, by drug_concept_id, by drug_type_concept_id, by cost_concept_id, by cost_type_concept_id during the cohort period
+
+				*/
+)
+, cost_wide as
+(
+	select cl.cohort_definition_id, cl.stratum_1, cl.stratum_2, cl.stratum_3
+				, case when allowed.total is null then 0 else allowed.total end as allowed
+				, case when charged.total is null then 0 else charged.total end as charged
+				, case when paid.total is null then 0 else paid.total end as paid
+	from
+	(
+		select distinct cohort_definition_id, stratum_1, stratum_2, stratum_3
+		from cost_long
+	) cl
+	left join
+	(
+			select cohort_definition_id, stratum_1, stratum_2, stratum_3, total
+			from cost_long
+			where cast(stratum_4 as integer) = 31978 -- allowed
+	) as allowed
+	on cl.cohort_definition_id = allowed.cohort_definition_id and cl.stratum_1 = allowed.stratum_1 and cl.stratum_2 = allowed.stratum_2 and cl.stratum_3 = allowed.stratum_3
+	left join
+	(
+			select cohort_definition_id, stratum_1, stratum_2, stratum_3, total
+			from cost_long
+			where cast(stratum_4 as integer) = 31973 -- charged
+	) as charged
+	on cl.cohort_definition_id = charged.cohort_definition_id and cl.stratum_1 = charged.stratum_1 and cl.stratum_2 = charged.stratum_2 and cl.stratum_3 = charged.stratum_3
+	left join
+	(
+			select cohort_definition_id, stratum_1, stratum_2, stratum_3, total
+			from cost_long
+			where cast(stratum_4 as integer) = 31980 -- paid
+	) as paid
+	on cl.cohort_definition_id = paid.cohort_definition_id and cl.stratum_1 = paid.stratum_1 and cl.stratum_2 = paid.stratum_2 and cl.stratum_3 = paid.stratum_3
+)
 select N1.cohort_definition_id
 	, N1.stratum_1
 	, N1.stratum_2
@@ -20,6 +67,14 @@ select N1.cohort_definition_id
 	, N4.total as quantity_total	-- total quantity
 	, N4.avg_value as quantity_average -- average quantity
 	, (((N4.total/D1.total)*1000)*365.25) as quantity_per_1000_per_year --total quantity in period/exposure in period
+	, cst.allowed -- Allowed
+	, (cst.allowed/D1.total)*30.42 as allowed_pmpm -- allowed per member per month
+	, cst.charged -- Charged
+	, (cst.charged/D1.total)*30.42 as charged_pmpm -- charged per member per month
+	, cst.paid -- paid
+	, (cst.paid/D1.total)*30.42 as paid_pmpm -- paid per member per month
+	, cst.allowed/cst.charged as allowed_charged -- allowed to charged ratio
+	, cst.paid/cst.allowed as paid_allowed -- paid to allowed ratio
 FROM
 (
 	select cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value
@@ -81,6 +136,11 @@ join
 */
 ) as D1 on  N1.cohort_definition_id = D1.cohort_definition_id
 	and N1.stratum_1 = D1.stratum_1
+left JOIN
+cost_wide cst on N1.cohort_definition_id = cst.cohort_definition_id
+	and N1.stratum_1 = cst.stratum_1
+	and N1.stratum_2 = cst.stratum_2
+	and N1.stratum_3 = cst.stratum_3
 {@is_summary == FALSE} ?
 {left join @results_schema.heracles_periods P on N1.stratum_1 = cast(P.period_id as VARCHAR(255)) } :
 {join @vocabulary_schema.concept c on c.concept_id = cast(N1.stratum_2 as INTEGER)}

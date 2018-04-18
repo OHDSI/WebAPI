@@ -46,10 +46,10 @@ public class ScriptExecutionController {
 
     private final Log logger = LogFactory.getLog(ScriptExecutionController.class);
 
-    @Value("${executionengine.result_callback}")
+    @Value("${executionengine.resultCallback}")
     private String resultCallback;
 
-    @Value("${executionengine.update_status_callback}")
+    @Value("${executionengine.updateStatusCallback}")
     private String updateStatusCallback;
 
     @Autowired

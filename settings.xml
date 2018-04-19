@@ -21,16 +21,6 @@
                 <security.oauth.facebook.apiKey></security.oauth.facebook.apiKey>
                 <security.oauth.facebook.apiSecret></security.oauth.facebook.apiSecret>
                 <jersey.resources.additional.packages>com.jnj.honeur.webapi</jersey.resources.additional.packages>
-
-                <!--<datasource.password>${webapi.postgresql.datasource.password}</datasource.password>-->
-                <!--<flyway.datasource.password>${webapi.postgresql.flyway.datasource.password}</flyway.datasource.password>-->
-                <!--<datasource.url>${webapi.postgresql.datasource.url}</datasource.url>-->
-                <!--<datasource.liferay.url>${webapi.postgresql.datasource.liferay.url}</datasource.liferay.url>-->
-                <!--<datasource.hss.url>${webapi.postgresql.datasource.hss.url}</datasource.hss.url>-->
-                <!--<security.cas.login.url>${webapi.postgresql.security.cas.login.url}</security.cas.login.url>-->
-                <!--<security.oauth.callback.ui>${webapi.postgresql.security.oauth.callback.ui}</security.oauth.callback.ui>-->
-                <!--<security.oauth.callback.api>${webapi.postgresql.security.oauth.callback.api}</security.oauth.callback.api>-->
-                <!--<security.ssl.enabled>${webapi.postgresql.security.ssl.enabled}</security.ssl.enabled>-->
             </properties>
             <dependencies>
             </dependencies>

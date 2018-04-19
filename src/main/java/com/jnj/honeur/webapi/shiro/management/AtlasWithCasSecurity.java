@@ -136,6 +136,9 @@ public class AtlasWithCasSecurity extends Security {
   @Value("${security.ad.system.password}")
   private String adSystemPassword;
 
+  @Value("${security.cas.login.url}")
+  private String casLoginUrl;
+
 
   @Autowired
   @Qualifier("authDataSource")
@@ -333,7 +336,7 @@ public class AtlasWithCasSecurity extends Security {
     facebookClient.setScope("email");
     facebookClient.setFields("email");
 
-    CasConfiguration casConfig = new CasConfiguration("https://localhost:8443/cas/login", CasProtocol.CAS30);
+    CasConfiguration casConfig = new CasConfiguration(casLoginUrl, CasProtocol.CAS30);
     CasClient casClient = new CasClient(casConfig);
     casClient.setName("CasClient");
 

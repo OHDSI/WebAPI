@@ -30,14 +30,15 @@ INSERT INTO ${ohdsiSchema}.SEC_ROLE_PERMISSION (ID, ROLE_ID, PERMISSION_ID, STAT
   VALUES (nextval('${ohdsiSchema}.sec_role_permission_sequence'),currval('sec_role_sequence'),(
       SELECT p.id FROM ${ohdsiSchema}.SEC_PERMISSION p WHERE p.value = '*:cohortresults:*:breakdown:get'
     ),NULL );
-INSERT INTO ${ohdsiSchema}.SEC_ROLE_PERMISSION (ID, ROLE_ID, PERMISSION_ID, STATUS)
-  VALUES (nextval('${ohdsiSchema}.sec_role_permission_sequence'),currval('sec_role_sequence'),(
-      SELECT p.id FROM ${ohdsiSchema}.SEC_PERMISSION p WHERE p.value = 'user:permission:get'
-    ),NULL );
 
 -- HONEUR-central role - Honeur specific permissions
 INSERT INTO ${ohdsiSchema}.SEC_PERMISSION (id, value, description)
   VALUES (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohortdefinition:*:organizations:get', 'Get the list of organizations who can access the definition.');
+INSERT INTO ${ohdsiSchema}.SEC_ROLE_PERMISSION (ID, ROLE_ID, PERMISSION_ID, STATUS)
+  VALUES (nextval('${ohdsiSchema}.sec_role_permission_sequence'),currval('sec_role_sequence'),currval('${ohdsiSchema}.sec_permission_id_seq'),NULL );
+
+INSERT INTO ${ohdsiSchema}.SEC_PERMISSION (id, value, description)
+  VALUES (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'user:permission:get', 'Get the list of permissions for the logged in user.');
 INSERT INTO ${ohdsiSchema}.SEC_ROLE_PERMISSION (ID, ROLE_ID, PERMISSION_ID, STATUS)
   VALUES (nextval('${ohdsiSchema}.sec_role_permission_sequence'),currval('sec_role_sequence'),currval('${ohdsiSchema}.sec_permission_id_seq'),NULL );
 
@@ -49,10 +50,10 @@ INSERT INTO ${ohdsiSchema}.SEC_ROLE_PERMISSION (ID, ROLE_ID, PERMISSION_ID, STAT
   VALUES (nextval('${ohdsiSchema}.sec_role_permission_sequence'),currval('sec_role_sequence'),(
       SELECT p.id FROM ${ohdsiSchema}.SEC_PERMISSION p WHERE p.value = 'cohortdefinition:get'
     ),NULL );
+
+-- 'user:permission:get' permission
 INSERT INTO ${ohdsiSchema}.SEC_ROLE_PERMISSION (ID, ROLE_ID, PERMISSION_ID, STATUS)
-  VALUES (nextval('${ohdsiSchema}.sec_role_permission_sequence'),currval('sec_role_sequence'),(
-      SELECT p.id FROM ${ohdsiSchema}.SEC_PERMISSION p WHERE p.value = 'user:permission:get'
-    ),NULL );
+  VALUES (nextval('${ohdsiSchema}.sec_role_permission_sequence'),currval('sec_role_sequence'),currval('${ohdsiSchema}.sec_permission_id_seq'),NULL );
 
 -- HONEUR-local role - Honeur specific permissions
 INSERT INTO ${ohdsiSchema}.SEC_ROLE_PERMISSION (ID, ROLE_ID, PERMISSION_ID, STATUS)
@@ -70,7 +71,7 @@ INSERT INTO ${ohdsiSchema}.SEC_ROLE_PERMISSION (ID, ROLE_ID, PERMISSION_ID, STAT
   VALUES (nextval('${ohdsiSchema}.sec_role_permission_sequence'),currval('sec_role_sequence'),currval('${ohdsiSchema}.sec_permission_id_seq'),NULL );
 
 INSERT INTO ${ohdsiSchema}.SEC_PERMISSION (id, value, description)
-  VALUES (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohortdefinition:hss:get', 'Get the cohortdefinitions in the HSS for the logged in user.');
+  VALUES (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohortdefinition:hss:list:all:get', 'Get the cohortdefinitions in the HSS for the logged in user.');
 INSERT INTO ${ohdsiSchema}.SEC_ROLE_PERMISSION (ID, ROLE_ID, PERMISSION_ID, STATUS)
   VALUES (nextval('${ohdsiSchema}.sec_role_permission_sequence'),currval('sec_role_sequence'),currval('${ohdsiSchema}.sec_permission_id_seq'),NULL );
 

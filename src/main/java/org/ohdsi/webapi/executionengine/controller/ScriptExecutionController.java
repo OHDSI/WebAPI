@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import javax.persistence.EntityManager;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -70,6 +71,9 @@ public class ScriptExecutionController {
     @Autowired
     private AnalysisExecutionRepository analysisExecutionRepository;
 
+    @Autowired
+    private EntityManager entityManager;
+
     @Path("execution/run")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -82,7 +86,7 @@ public class ScriptExecutionController {
         parametersBuilder.addString("jobName", String.format("Generate %s (%s)", dto.analysisType, dto.sourceKey));
         final JobParameters jobParameters = parametersBuilder.toJobParameters();
         RunExecutionEngineTasklet runExecutionEngineTasklet = new RunExecutionEngineTasklet(scriptExecutionService, dto);
-        ExecutionEngineCallbackTasklet callbackTasklet = new ExecutionEngineCallbackTasklet(analysisExecutionRepository);
+        ExecutionEngineCallbackTasklet callbackTasklet = new ExecutionEngineCallbackTasklet(analysisExecutionRepository, entityManager);
 
         Step runExecutionStep = stepBuilderFactory.get("executionEngine.start")
                 .listener(executionContextPromotionListener())

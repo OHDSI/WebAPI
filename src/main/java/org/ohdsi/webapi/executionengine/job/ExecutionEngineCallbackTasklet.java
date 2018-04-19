@@ -4,6 +4,7 @@ import static org.ohdsi.webapi.executionengine.entity.AnalysisExecution.Status.C
 import static org.ohdsi.webapi.executionengine.entity.AnalysisExecution.Status.FAILED;
 
 import java.util.Map;
+import javax.persistence.EntityManager;
 import org.ohdsi.webapi.executionengine.entity.AnalysisExecution;
 import org.ohdsi.webapi.executionengine.exception.ScriptCallbackException;
 import org.ohdsi.webapi.executionengine.repository.AnalysisExecutionRepository;
@@ -15,10 +16,12 @@ import org.springframework.batch.repeat.RepeatStatus;
 public class ExecutionEngineCallbackTasklet implements Tasklet {
 
     private final AnalysisExecutionRepository analysisExecutionRepository;
+    private final EntityManager entityManager;
 
-    public ExecutionEngineCallbackTasklet(AnalysisExecutionRepository analysisExecutionRepository) {
+    public ExecutionEngineCallbackTasklet(AnalysisExecutionRepository analysisExecutionRepository, final EntityManager entityManager) {
 
         this.analysisExecutionRepository = analysisExecutionRepository;
+        this.entityManager = entityManager;
     }
 
     @Override
@@ -30,6 +33,7 @@ public class ExecutionEngineCallbackTasklet implements Tasklet {
             Map<String, Object> executionContext = chunkContext.getStepContext().getJobExecutionContext();
             if (executionContext.containsKey("engineExecutionId")) {
                 Long engineExecutionId = (Long) executionContext.get("engineExecutionId");
+                entityManager.clear();
                 AnalysisExecution analysisExecution = analysisExecutionRepository.findOne(engineExecutionId.intValue());
                 status = analysisExecution.getExecutionStatus();
                 if (status == COMPLETED || status == FAILED) {

@@ -4,35 +4,66 @@
             <id>webapi-postgresql</id>
             <properties>
                 <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
-                <datasource.url>jdbc:postgresql://honeur-dev-rds.cycgk9opaizc.eu-west-1.rds.amazonaws.com:5432/OHDSI</datasource.url>
                 <datasource.username>ohdsi_app_user</datasource.username>
-                <datasource.password>${env.OHDSI_APP_USER}</datasource.password>
                 <datasource.dialect>postgresql</datasource.dialect>
                 <datasource.ohdsi.schema>webapi</datasource.ohdsi.schema>
                 <datasource.honeur.enabled>true</datasource.honeur.enabled>
-                <datasource.liferay.url>http://liferay-dev.eu-west-1.elasticbeanstalk.com/</datasource.liferay.url>
-                <datasource.hss.url>http://cas-dev.eu-west-1.elasticbeanstalk.com/storage</datasource.hss.url>
                 <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
                 <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
                 <flyway.datasource.username>ohdsi_admin_user</flyway.datasource.username>
-                <flyway.datasource.password>${env.OHDSI_ADMIN_USER}</flyway.datasource.password>
                 <flyway.locations>classpath:db/migration/postgresql,classpath:db/extension/honeur</flyway.locations>
                 <security.enabled>true</security.enabled>
                 <security.cas>true</security.cas>
-                <security.cas.login.url>http://cas-dev.eu-west-1.elasticbeanstalk.com/login</security.cas.login.url>
                 <security.token.expiration>43200</security.token.expiration>
                 <security.origin>*</security.origin>
-                <security.ssl.enabled>false</security.ssl.enabled>
-                <security.oauth.callback.ui>http://cas-dev.eu-west-1.elasticbeanstalk.com/atlas/#/welcome</security.oauth.callback.ui>
-                <security.oauth.callback.api>http://cas-dev.eu-west-1.elasticbeanstalk.com/webapi/user/oauth/callback</security.oauth.callback.api>
                 <security.oauth.google.apiKey></security.oauth.google.apiKey>
                 <security.oauth.google.apiSecret></security.oauth.google.apiSecret>
                 <security.oauth.facebook.apiKey></security.oauth.facebook.apiKey>
                 <security.oauth.facebook.apiSecret></security.oauth.facebook.apiSecret>
                 <jersey.resources.additional.packages>com.jnj.honeur.webapi</jersey.resources.additional.packages>
+
+                <!--<datasource.password>${webapi.postgresql.datasource.password}</datasource.password>-->
+                <!--<flyway.datasource.password>${webapi.postgresql.flyway.datasource.password}</flyway.datasource.password>-->
+                <!--<datasource.url>${webapi.postgresql.datasource.url}</datasource.url>-->
+                <!--<datasource.liferay.url>${webapi.postgresql.datasource.liferay.url}</datasource.liferay.url>-->
+                <!--<datasource.hss.url>${webapi.postgresql.datasource.hss.url}</datasource.hss.url>-->
+                <!--<security.cas.login.url>${webapi.postgresql.security.cas.login.url}</security.cas.login.url>-->
+                <!--<security.oauth.callback.ui>${webapi.postgresql.security.oauth.callback.ui}</security.oauth.callback.ui>-->
+                <!--<security.oauth.callback.api>${webapi.postgresql.security.oauth.callback.api}</security.oauth.callback.api>-->
+                <!--<security.ssl.enabled>${webapi.postgresql.security.ssl.enabled}</security.ssl.enabled>-->
             </properties>
             <dependencies>
             </dependencies>
+        </profile>
+        <profile>
+            <id>amazon-dev</id>
+            <properties>
+                <datasource.password>${env.OHDSI_APP_USER}</datasource.password>
+                <flyway.datasource.password>${env.OHDSI_ADMIN_USER}</flyway.datasource.password>
+                <datasource.url>jdbc:postgresql://honeur-dev-rds.cycgk9opaizc.eu-west-1.rds.amazonaws.com:5432/OHDSI</datasource.url>
+                <datasource.liferay.url>http://liferay-dev.eu-west-1.elasticbeanstalk.com</datasource.liferay.url>
+                <datasource.hss.url>http://cas-dev.eu-west-1.elasticbeanstalk.com/storage</datasource.hss.url>
+
+                <security.cas.login.url>http://cas-dev.eu-west-1.elasticbeanstalk.com/login</security.cas.login.url>
+                <security.oauth.callback.ui>http://cas-dev.eu-west-1.elasticbeanstalk.com/atlas/#/welcome</security.oauth.callback.ui>
+                <security.oauth.callback.api>http://cas-dev.eu-west-1.elasticbeanstalk.com/webapi/user/oauth/callback</security.oauth.callback.api>
+                <security.ssl.enabled>false</security.ssl.enabled>
+            </properties>
+        </profile>
+        <profile>
+            <id>local-dev</id>
+            <properties>
+                <datasource.password>app1</datasource.password>
+                <flyway.datasource.password>admin1</flyway.datasource.password>
+                <datasource.url>jdbc:postgresql://localhost:5432/OHDSI</datasource.url>
+                <datasource.liferay.url>http://localhost:8080</datasource.liferay.url>
+                <datasource.hss.url>https://localhost:8445</datasource.hss.url>
+                <security.cas.login.url>https://localhost:8443/cas/login</security.cas.login.url>
+                <security.oauth.callback.ui>https://localhost:8444/Atlas/#/welcome</security.oauth.callback.ui>
+                <security.oauth.callback.api>https://localhost:8444/WebAPI/user/oauth/callback</security.oauth.callback.api>
+                <security.ssl.enabled>true</security.ssl.enabled>
+                <server.port>8444</server.port>
+            </properties>
         </profile>
     </profiles>
 </settings>

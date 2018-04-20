@@ -45,7 +45,10 @@
     <!-- Person properties -->
     <person.viewDates>false</person.viewDates>
 
-    <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
+    <!-- Heracles properties -->
+    <heracles.smallcellcount>5</heracles.smallcellcount>
+
+		<spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
     <spring.batch.repository.isolationLevelForCreate>ISOLATION_READ_COMMITTED</spring.batch.repository.isolationLevelForCreate>
     <spring.profiles.active>default</spring.profiles.active>
 

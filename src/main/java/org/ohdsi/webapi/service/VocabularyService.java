@@ -123,7 +123,7 @@ public class VocabularyService extends AbstractDaoService {
         return new HashMap<>();
     }
 
-    final int limit = PreparedSqlRender.getParameterLimit(source);
+    final int limit = Math.floorDiv(PreparedSqlRender.getParameterLimit(source), 2);
 
     final List<Map.Entry<Long, Long>> result = new ArrayList<>();
     

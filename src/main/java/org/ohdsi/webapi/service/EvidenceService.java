@@ -818,11 +818,13 @@ public class EvidenceService extends AbstractDaoService {
     String resourceRoot = "/resources/evidence/sql/negativecontrols/";
 		Source source = task.getSource();
 	  String evidenceSchema = source.getTableQualifier(SourceDaimon.DaimonType.Evidence);
-		String vocabularySchema = evidenceSchema;
-		try {
-			vocabularySchema = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
-		} catch (Exception e) {
-			// Default the vocabulary schema to the evidence schema
+		String vocabularySchema = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
+		if (vocabularySchema == null) {			
+			vocabularySchema = evidenceSchema;
+		} 
+		String translatedSchema = task.getTranslatedSchema();
+		if (translatedSchema == null) {
+			translatedSchema = evidenceSchema;
 		}
 		
 		String csToExcludeSQL = SqlRender.renderSql(task.getCsToExcludeSQL(), 
@@ -838,7 +840,6 @@ public class EvidenceService extends AbstractDaoService {
 		String conceptsOfInterest = JoinArray(task.getConceptsOfInterest());
 		String csToInclude = String.valueOf(task.getCsToInclude());
 		String csToExclude = String.valueOf(task.getCsToExclude());
-		String translatedSchema = "translated";
 		String medlineWinnenburgTable = translatedSchema + ".MEDLINE_WINNENBURG";
 		String splicerTable = translatedSchema + ".SPLICER";
 		String aeolusTable = translatedSchema + ".AEOLUS";

@@ -36,6 +36,8 @@ public class NegativeControlTaskParameters {
 	private String sourceDialect;
 
 	private String ohdsiSchema;
+	
+	private String translatedSchema;
         
 	public String getSourceKey() {
 		return sourceKey;
@@ -244,5 +246,19 @@ public class NegativeControlTaskParameters {
 	 */
 	public void setCsToExcludeSQL(String csToExcludeSQL) {
 		this.csToExcludeSQL = csToExcludeSQL;
+	}
+
+	/**
+	 * @return the translatedSchema
+	 */
+	public String getTranslatedSchema() {
+		return translatedSchema;
+	}
+
+	/**
+	 * @param translatedSchema the translatedSchema to set
+	 */
+	public void setTranslatedSchema(String translatedSchema) {
+		this.translatedSchema = translatedSchema;
 	}
 }

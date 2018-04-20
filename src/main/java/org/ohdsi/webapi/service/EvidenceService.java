@@ -939,11 +939,7 @@ public class EvidenceService extends AbstractDaoService {
 		
 		sqlFile = "deleteJobResults.sql";
 		sb.append("-- ").append(sqlFile).append("\n\n");
-		sql = ResourceHelper.GetResourceAsString(resourceRoot + sqlFile);
-		sql = SqlRender.renderSql(sql, 
-			ArrayUtils.addAll(params, new String[] {"jobId"}), 
-			ArrayUtils.addAll(values, new String[] {Long.toString(jobId)})
-		);
+		sql = EvidenceService.getJobResultsDeleteStatementSql(evidenceSchema, jobId);
 		sb.append(sql + "\n\n");
 		
 		sqlFile = "exportNegativeControls.sql";
@@ -973,6 +969,15 @@ public class EvidenceService extends AbstractDaoService {
 
     return sql;
 }
+	
+	public static String getJobResultsDeleteStatementSql(String evidenceSchema, Long jobId) {
+		String sql = ResourceHelper.GetResourceAsString("/resources/evidence/sql/negativecontrols/deleteJobResults.sql");
+		sql = SqlRender.renderSql(sql, 
+			(new String[] {"evidenceSchema", "jobId"}), 
+			(new String[] {evidenceSchema, Long.toString(jobId)})
+		);
+		return sql;
+	}
 
 	/**
 	 * SQL to insert negative controls

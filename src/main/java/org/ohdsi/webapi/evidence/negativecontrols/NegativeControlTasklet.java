@@ -19,6 +19,8 @@ import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfo;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationType;
 import org.ohdsi.webapi.service.EvidenceService;
+import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceDaimon;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
@@ -104,6 +106,8 @@ public class NegativeControlTasklet implements Tasklet {
                     log.debug("entering tasklet");
 										log.debug("creating ID for job");
 										Long evidenceJobId = null;
+										Source source = task.getSource();
+										String evidenceSchema = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Evidence);
 										String sql = EvidenceService.getEvidenceJobIdSql(task);
 										try {
 											Connection conn = NegativeControlTasklet.this.evidenceJdbcTemplate.getDataSource().getConnection();
@@ -138,7 +142,7 @@ public class NegativeControlTasklet implements Tasklet {
                     
                     // Insert the results
                     String insertSql = EvidenceService.getNegativeControlInsertStatementSql(task);
-                    return NegativeControlTasklet.this.ohdsiJdbcTemplate.batchUpdate(insertSql, new BatchPreparedStatementSetter() {
+                    int[] recCount = NegativeControlTasklet.this.ohdsiJdbcTemplate.batchUpdate(insertSql, new BatchPreparedStatementSetter() {
                         @Override
                         public void setValues(PreparedStatement ps, int i)
                             throws SQLException {
@@ -180,6 +184,12 @@ public class NegativeControlTasklet implements Tasklet {
                             return recs.size();
                         }
                     });
+                    
+                    // Clean up the results from the evidence daimon
+                    String deleteJobSql = EvidenceService.getJobResultsDeleteStatementSql(evidenceSchema, evidenceJobId);
+                    NegativeControlTasklet.this.evidenceJdbcTemplate.execute(deleteJobSql);
+                    
+                    return recCount;
                 }
             });
             log.debug("Update count: " + ret.length);

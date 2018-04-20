@@ -102,6 +102,8 @@
     <jersey-media-multipart.version>2.25.1</jersey-media-multipart.version>
     <execution.invalidation.maxage>4</execution.invalidation.maxage>
     <execution.invalidation.period>10000</execution.invalidation.period>
+    <execution.status.period>10000</execution.status.period>
+    
   </properties>
   <build>
     <finalName>WebAPI</finalName>

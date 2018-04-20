@@ -80,6 +80,12 @@ public class LiferayPermissionManager extends PermissionManager {
         return info;
     }
 
+    public Set<PermissionEntity> getUserPermissions(String userName) {
+        UserEntity user = this.liferayApiClient.findUserByLogin(userName);
+        Set<PermissionEntity> permissions = this.getUserPermissions(user);
+        return permissions;
+    }
+
     @Transactional
     @Override
     public UserEntity registerUser(final String login, final Set<String> defaultRoles) throws Exception {
@@ -212,12 +218,14 @@ public class LiferayPermissionManager extends PermissionManager {
                 .map(Organization::getName).collect(Collectors.toList());
 
         for(String role: rolNames){
-            if(role.startsWith("Atlas ") || organizationNames.contains(role)){
-                if(role.startsWith("Atlas ")){
+            if (role.startsWith("Atlas ") || organizationNames.contains(role)) {
+                if (role.startsWith("Atlas ")) {
                     role = role.substring(6, role.length());
                 }
                 RoleEntity entity = roleRepository.findByName(role);
-                roles.add(entity);
+                if (entity != null) {
+                    roles.add(entity);
+                }
             }
         }
 

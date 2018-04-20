@@ -27,8 +27,10 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfo;
 import org.ohdsi.webapi.cohortdefinition.ExpressionType;
 import org.ohdsi.webapi.service.CohortDefinitionService;
+import org.ohdsi.webapi.service.UserService;
 import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
+import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -48,10 +50,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -60,8 +59,10 @@ import java.util.stream.StreamSupport;
 @ConditionalOnProperty(name = "datasource.honeur.enabled", havingValue = "true")
 public class HoneurCohortDefinitionServiceExtension {
 
-
     protected final Log log = LogFactory.getLog(getClass());
+
+    @Autowired
+    private Security security;
 
     @Autowired
     private LiferayPermissionManager authorizer;
@@ -212,7 +213,7 @@ public class HoneurCohortDefinitionServiceExtension {
     @GET
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     @Path("/{id}/export")
-    public Response getCohortDefinitionExpression(@Context HttpServletRequest request, @PathParam("id") final int id, @QueryParam("toCloud") final boolean toCloud) {
+    public Response exportCohortDefinition(@Context HttpServletRequest request, @PathParam("id") final int id, @QueryParam("toCloud") final boolean toCloud) {
         CohortDefinition cohortDefinition = this.cohortDefinitionRepository.findOneWithDetail(id);
 
         String expression = cohortDefinition.getDetails().getExpression();
@@ -282,6 +283,27 @@ public class HoneurCohortDefinitionServiceExtension {
                     return organization;
                 }).collect(Collectors.toList());
         return organizations;
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/uuids")
+    public List<String> getUUIDSList(){
+        String permissionPattern = "cohortdefinition:([0-9]+|\\*):get";
+        List<Integer> definitionIds = this.authorizer.getUserPermissions(security.getSubject()).stream()
+                .map(permissionEntity -> permissionEntity.getValue())
+                .filter(permissionString -> permissionString.matches(permissionPattern))
+                .map(permissionString -> Integer.parseInt(permissionString.split(":")[1]))
+                .collect(Collectors.toList());
+
+        List<String> uuids = new ArrayList<>();
+        List<CohortDefinition> cohortDefinitions = cohortDefinitionRepository.findFromList(definitionIds);
+        for (CohortDefinition def: cohortDefinitions){
+            if (def.getUuid() != null) {
+                uuids.add(def.getUuid().toString());
+            }
+        }
+        return uuids;
     }
 
     /**
@@ -444,7 +466,10 @@ public class HoneurCohortDefinitionServiceExtension {
                         .collect(Collectors.toList()).size() == 0)
                 .collect(Collectors.toList());
 
-        PermissionEntity permissionEntity = this.authorizer.getPermissionByValue("cohortdefinition:" + newDef.getId() + ":get");
+        List<PermissionEntity> entities = new ArrayList<>();
+        entities.add(this.authorizer.getPermissionByValue("cohortdefinition:" + newDef.getId() + ":get"));
+        entities.add(this.authorizer.getPermissionByValue("cohortdefinition:" + newDef.getId() + ":info:get"));
+        entities.add(this.authorizer.getPermissionByValue("cohortdefinition:sql:post"));
 
         for (Organization org: organisationsWithoutRoles) {
             RoleEntity roleEntity = this.authorizer.addOrganizationRole(org.getName());
@@ -453,15 +478,17 @@ public class HoneurCohortDefinitionServiceExtension {
             }
         }
 
-        for (RoleEntity role: existingOrganizationRolesPermissionAdd) {
-            if(permissionEntity != null){
-                this.authorizer.addPermission(role, permissionEntity);
+        for(PermissionEntity permissionEntity: entities) {
+            for (RoleEntity role : existingOrganizationRolesPermissionAdd) {
+                if (permissionEntity != null) {
+                    this.authorizer.addPermission(role, permissionEntity);
+                }
             }
-        }
 
-        for(RoleEntity role: existingOrganizationRolesPermissionRemove) {
-            if(permissionEntity != null) {
-                this.authorizer.removePermission(permissionEntity.getId(), role.getId());
+            for (RoleEntity role : existingOrganizationRolesPermissionRemove) {
+                if (permissionEntity != null) {
+                    this.authorizer.removePermission(permissionEntity.getId(), role.getId());
+                }
             }
         }
 

@@ -36,5 +36,8 @@ public interface CohortDefinitionRepository extends CrudRepository<CohortDefinit
   
   @Query("select cd from CohortDefinition AS cd JOIN FETCH cd.details as d")          
   List<CohortDefinition> list();
+
+  @Query("SELECT cd FROM CohortDefinition cd WHERE cd.id IN ?1")
+  List<CohortDefinition> findFromList(List<Integer> ids);
   
 }

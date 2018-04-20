@@ -25,9 +25,7 @@ import java.util.Set;
 public class HoneurUserServiceExtension {
 
     @Autowired
-    private PermissionManager authorizer;
-    @Autowired
-    private LiferayApiClient liferayApiClient;
+    private LiferayPermissionManager authorizer;
     @Autowired
     private Security security;
 
@@ -40,13 +38,22 @@ public class HoneurUserServiceExtension {
     }
 
     @GET
-    @Path("user/permissions")
+    @Path("user/permission")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Iterable<PermissionEntity> getPermissions() throws Exception{
-        UserEntity user = this.liferayApiClient.findUserByLogin(security.getSubject());
-        Set<PermissionEntity> permissionEntities = this.authorizer.getUserPermissions(user.getId());
-        return permissionEntities;
+    public Iterable<UserService.Permission> getPermissions() throws Exception{
+        Set<PermissionEntity> permissionEntities = this.authorizer.getUserPermissions(security.getSubject());
+        List<UserService.Permission> permissions = convertPermissions(permissionEntities);
+        return permissions;
     }
 
+    private ArrayList<UserService.Permission> convertPermissions(final Iterable<PermissionEntity> permissionEntities) {
+        ArrayList<UserService.Permission> permissions = new ArrayList<UserService.Permission>();
+        for (PermissionEntity permissionEntity : permissionEntities) {
+            UserService.Permission permission = new UserService.Permission(permissionEntity);
+            permissions.add(permission);
+        }
+
+        return permissions;
+    }
 }

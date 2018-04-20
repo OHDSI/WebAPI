@@ -181,6 +181,7 @@
         <version>2.2</version>
         <configuration>
           <failOnMissingWebXml>false</failOnMissingWebXml>
+          <warName>webapi</warName>
         </configuration>
       </plugin>
       <plugin>

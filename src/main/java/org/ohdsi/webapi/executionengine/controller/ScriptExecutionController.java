@@ -26,6 +26,8 @@ import org.ohdsi.webapi.executionengine.entity.AnalysisResultFile;
 import org.ohdsi.webapi.executionengine.job.ExecutionEngineCallbackTasklet;
 import org.ohdsi.webapi.executionengine.job.RunExecutionEngineTasklet;
 import org.ohdsi.webapi.executionengine.repository.AnalysisExecutionRepository;
+import org.ohdsi.webapi.executionengine.service.ExecutionEngineStatus;
+import org.ohdsi.webapi.executionengine.service.ExecutionEngineStatusService;
 import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
@@ -53,26 +55,34 @@ public class ScriptExecutionController {
     @Value("${executionengine.updateStatusCallback}")
     private String updateStatusCallback;
 
-    @Autowired
-    private ScriptExecutionService scriptExecutionService;
+    private final ScriptExecutionService scriptExecutionService;
+    private final StepBuilderFactory stepBuilderFactory;
+    private final JobBuilderFactory jobBuilders;
+    private final JobTemplate jobTemplate;
+    private final ComparativeCohortAnalysisExecutionRepository ccaRepository;
+    private final AnalysisExecutionRepository analysisExecutionRepository;
+    private final EntityManager entityManager;
+    private final ExecutionEngineStatusService executionEngineStatusService;
 
     @Autowired
-    private StepBuilderFactory stepBuilderFactory;
+    public ScriptExecutionController(final ScriptExecutionService scriptExecutionService,
+                                     final StepBuilderFactory stepBuilderFactory,
+                                     final JobBuilderFactory jobBuilders,
+                                     final JobTemplate jobTemplate,
+                                     final ComparativeCohortAnalysisExecutionRepository ccaRepository,
+                                     final AnalysisExecutionRepository analysisExecutionRepository,
+                                     final EntityManager entityManager, 
+                                     final ExecutionEngineStatusService executionEngineStatusService) {
 
-    @Autowired
-    private JobBuilderFactory jobBuilders;
-
-    @Autowired
-    private JobTemplate jobTemplate;
-
-    @Autowired
-    private ComparativeCohortAnalysisExecutionRepository ccaRepository;
-
-    @Autowired
-    private AnalysisExecutionRepository analysisExecutionRepository;
-
-    @Autowired
-    private EntityManager entityManager;
+        this.scriptExecutionService = scriptExecutionService;
+        this.stepBuilderFactory = stepBuilderFactory;
+        this.jobBuilders = jobBuilders;
+        this.jobTemplate = jobTemplate;
+        this.ccaRepository = ccaRepository;
+        this.analysisExecutionRepository = analysisExecutionRepository;
+        this.entityManager = entityManager;
+        this.executionEngineStatusService = executionEngineStatusService;
+    }
 
     @Path("execution/run")
     @POST
@@ -155,5 +165,20 @@ public class ScriptExecutionController {
                                                              @PathParam("id") Integer id){
 
         return analysisExecutionRepository.findByAnalysisIdAndAnalysisType(id, type);
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("status")
+    public StatusResponse getExecutionEngineStatus(){
+
+        return new StatusResponse(executionEngineStatusService.getExecutionEngineStatus());
+    }
+    
+    private class StatusResponse {
+        public StatusResponse(final ExecutionEngineStatus status) {
+            this.status = status;
+        }
+        public ExecutionEngineStatus status;
     }
 }

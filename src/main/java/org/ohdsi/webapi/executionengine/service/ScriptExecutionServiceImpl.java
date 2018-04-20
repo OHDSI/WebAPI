@@ -9,14 +9,9 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
@@ -29,7 +24,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
-import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
 import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysis;
 import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisExecutionRepository;
@@ -44,6 +38,7 @@ import org.ohdsi.webapi.executionengine.repository.OutputFileRepository;
 import org.ohdsi.webapi.executionengine.util.StringGenerationUtil;
 import org.ohdsi.webapi.prediction.PatientLevelPredictionAnalysis;
 import org.ohdsi.webapi.prediction.PatientLevelPredictionAnalysisRepository;
+import org.ohdsi.webapi.service.HttpClient;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceRepository;
@@ -56,13 +51,13 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 @Service
-@SuppressWarnings("unused")
 class ScriptExecutionServiceImpl implements ScriptExecutionService {
 
     private static final Log logger = LogFactory.getLog(ScriptExecutionServiceImpl.class);
     private static final String IMPALA_DATASOURCE = "impala";
 
-    private final Client client = getClient();
+    @Autowired
+    private HttpClient client;
 
     @Autowired
     ComparativeCohortAnalysisExecutionRepository comparativeCohortAnalysisExecutionRepository;
@@ -128,7 +123,8 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         inputFile.setFileName(name + ".r");
         inputFileRepository.save(inputFile);
 
-        WebTarget webTarget = client.target(executionEngineURL);
+        final String analysisExecutionUrl = "/analyze";
+        WebTarget webTarget = client.target(executionEngineURL + analysisExecutionUrl);
         MultiPart multiPart = buildRequest(buildAnalysisRequest(execution, source, password), script);
         try {
                 webTarget
@@ -347,42 +343,6 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         DataSourceUnsecuredDTO dto = DataSourceDTOParser.parseDTO(source);
         dto.setCdmSchema(source.getTableQualifier(SourceDaimon.DaimonType.CDM));
         return dto;
-    }
-
-    private Client getClient() throws NoSuchAlgorithmException, KeyManagementException {
-
-        TrustManager[] trustAllCerts = new TrustManager[]{
-                new X509TrustManager() {
-
-                    @Override
-                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-
-                        return null;
-                    }
-
-                    @Override
-                    public void checkClientTrusted(
-                            java.security.cert.X509Certificate[] certs, String authType) {
-
-                    }
-
-                    @Override
-                    public void checkServerTrusted(
-                            java.security.cert.X509Certificate[] certs, String authType) {
-
-                    }
-                }
-        };
-        HostnameVerifier hostnameVerifier = HttpsURLConnection.getDefaultHostnameVerifier();
-
-
-        SSLContext sslContext = SSLContext.getInstance("SSL");
-        sslContext.init(null, trustAllCerts, null);
-
-        return ClientBuilder.newBuilder()
-                .sslContext(sslContext)
-                .register(MultiPartFeature.class)
-                .build();
     }
 
     private class ConnectionParams {

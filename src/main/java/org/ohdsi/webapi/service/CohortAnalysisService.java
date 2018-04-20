@@ -39,6 +39,7 @@ import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -50,6 +51,9 @@ import org.springframework.util.StringUtils;
 @Component
 public class CohortAnalysisService extends AbstractDaoService {
 
+	@Value("${heracles.smallcellcount}")
+	private String smallCellCount;
+	
 	@Autowired
 	private JobTemplate jobTemplate;
 
@@ -161,6 +165,7 @@ public class CohortAnalysisService extends AbstractDaoService {
 	@Produces(MediaType.TEXT_PLAIN)
 	@Consumes(MediaType.APPLICATION_JSON)
 	public String getRunCohortAnalysisSql(CohortAnalysisTask task) {
+		task.setSmallCellCount(Integer.parseInt(this.smallCellCount));
 		return getCohortAnalysisSql(task);
 	}
 
@@ -182,16 +187,16 @@ public class CohortAnalysisService extends AbstractDaoService {
 				task.getObservationConceptIds()));
 		String measurementIds = (task.getMeasurementConceptIds() == null ? "" : Joiner.on(",").join(
 				task.getMeasurementConceptIds()));
-
+		String smallCellCount = Integer.toString(task.getSmallCellCount());
 		String[] params = new String[]{"CDM_schema", "results_schema", "source_name",
 				"smallcellcount", "runHERACLESHeel", "CDM_version", "cohort_definition_id", "list_of_analysis_ids",
 				"condition_concept_ids", "drug_concept_ids", "procedure_concept_ids", "observation_concept_ids",
-				"measurement_concept_ids", "cohort_period_only", "source_id"};
+				"measurement_concept_ids", "cohort_period_only", "source_id", "smallcellcount"};
 		String[] values = new String[]{cdmTableQualifier, resultsTableQualifier, task.getSource().getSourceName(),
 				String.valueOf(task.getSmallCellCount()),
 				String.valueOf(task.runHeraclesHeel()).toUpperCase(), task.getCdmVersion(), cohortDefinitionIds,
 				analysisIds, conditionIds, drugIds, procedureIds, observationIds, measurementIds,
-				String.valueOf(task.isCohortPeriodOnly()), String.valueOf(task.getSource().getSourceId())};
+				String.valueOf(task.isCohortPeriodOnly()), String.valueOf(task.getSource().getSourceId()), smallCellCount};
 		sql = SqlRender.renderSql(sql, params, values);
 		sql = SqlTranslate.translateSql(sql, task.getSource().getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
 
@@ -207,6 +212,7 @@ public class CohortAnalysisService extends AbstractDaoService {
 	 */
 	public String[] getRunCohortAnalysisSqlBatch(CohortAnalysisTask task) {
 		if (task != null) {
+			task.setSmallCellCount(Integer.parseInt(this.smallCellCount));
 			String sql = this.getRunCohortAnalysisSql(task);
 			String[] stmts = null;
 			if (log.isDebugEnabled()) {
@@ -236,6 +242,7 @@ public class CohortAnalysisService extends AbstractDaoService {
 		if (task == null) {
 			return null;
 		}
+		task.setSmallCellCount(Integer.parseInt(this.smallCellCount));
 		JobParametersBuilder builder = new JobParametersBuilder();
 
 		// source key comes from the client, we look it up here and hand it off to the tasklet

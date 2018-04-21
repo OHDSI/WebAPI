@@ -94,8 +94,9 @@ create index ix_cohort_first_subject on #cohort_first (subject_id, cohort_start_
 SELECT hp.period_id, hp.period_start_date, hp.period_end_date
 into #periods_baseline
 FROM @results_schema.heracles_periods hp
-WHERE hp.period_start_date >= (SELECT dateadd(d, -365, min(cohort_start_date)) FROM #HERACLES_cohort)
-	and hp.period_start_date <= (SELECT max(cohort_start_date) FROM #HERACLES_cohort);
+WHERE not (
+	hp.period_end_date <= (SELECT dateadd(d, -365, min(cohort_start_date)) FROM #HERACLES_cohort) or hp.period_start_date > (SELECT max(cohort_start_date) FROM #HERACLES_cohort)
+); -- only returns overlapping periods
 
 create index ix_periods_baseline_start on #periods_baseline (period_start_date);
 create index ix_periods_baseline_end on #periods_baseline (period_end_date);
@@ -103,7 +104,9 @@ create index ix_periods_baseline_end on #periods_baseline (period_end_date);
 SELECT hp.period_id, hp.period_start_date, hp.period_end_date
 into #periods_atrisk
 FROM @results_schema.heracles_periods hp
-WHERE hp.period_start_date >= (SELECT min(cohort_start_date) FROM #HERACLES_cohort) and hp.period_start_date <= (SELECT max(cohort_end_date) FROM #HERACLES_cohort);
+WHERE not (
+	hp.period_end_date <= (SELECT min(cohort_start_date) FROM HERACLES_cohort) or hp.period_start_date > (SELECT max(cohort_end_date) FROM HERACLES_cohort)
+); -- only returns overlapping periods
 
 create index ix_periods_atrisk_start on #periods_atrisk (period_start_date);
 create index ix_periods_atrisk_end on #periods_atrisk (period_end_date);

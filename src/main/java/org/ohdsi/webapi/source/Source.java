@@ -26,6 +26,7 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.Type;
 import org.ohdsi.webapi.source.SourceDaimon.DaimonType;
 
 /**
@@ -35,7 +36,9 @@ import org.ohdsi.webapi.source.SourceDaimon.DaimonType;
 @Entity(name = "Source")
 @Table(name="source")
 public class Source implements Serializable {
-  
+
+  public static final String MASQUERADED_STRING = "<jdbc connection string>";
+
   @Id
   @GeneratedValue  
   @Column(name="SOURCE_ID")  
@@ -50,7 +53,8 @@ public class Source implements Serializable {
   @Column(name="SOURCE_DIALECT")
   private String sourceDialect;
  
-  @Column(name="SOURCE_CONNECTION")  
+  @Column(name="SOURCE_CONNECTION")
+  @Type(type = "encryptedString")
   private String sourceConnection;
   
   @Column(name="SOURCE_KEY")

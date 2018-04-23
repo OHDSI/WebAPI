@@ -6,7 +6,7 @@ public class SourceDetails extends SourceInfo {
 
     public SourceDetails(Source s) {
         super(s);
-        connectionString = s.getSourceConnection();
+        connectionString = Source.MASQUERADED_STRING;
     }
 
     public String getConnectionString() {

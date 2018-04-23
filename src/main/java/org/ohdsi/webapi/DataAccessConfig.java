@@ -5,6 +5,9 @@ import java.util.Properties;
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
+import org.jasypt.hibernate4.encryptor.HibernatePBEEncryptorRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -48,7 +51,7 @@ public class DataAccessConfig {
         String pass = this.env.getRequiredProperty("datasource.password");
         boolean autoCommit = false;
 
-
+        defaultStringEncryptor();
         //pooling - currently issues with (at least) oracle with use of temp tables and "on commit preserve rows" instead of "on commit delete rows";
         //http://forums.ohdsi.org/t/transaction-vs-session-scope-for-global-temp-tables-statements/333/2
         /*final PoolConfiguration pc = new org.apache.tomcat.jdbc.pool.PoolProperties();
@@ -74,6 +77,18 @@ public class DataAccessConfig {
         }
         return ds;
         //return new org.apache.tomcat.jdbc.pool.DataSource(pc);
+    }
+
+    private void defaultStringEncryptor(){
+
+        StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
+        encryptor.setProvider(new BouncyCastleProvider());
+        encryptor.setProviderName("BC");
+        encryptor.setAlgorithm(env.getRequiredProperty("jasypt.encryptor.algorithm"));
+        encryptor.setKeyObtentionIterations(1000);
+        encryptor.setPassword(env.getRequiredProperty("jasypt.encryptor.password"));
+        HibernatePBEEncryptorRegistry.getInstance()
+                .registerPBEStringEncryptor("defaultStringEncryptor", encryptor);
     }
 
     @Bean

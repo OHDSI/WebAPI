@@ -1,11 +1,8 @@
 package org.ohdsi.webapi.service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
+import javax.annotation.PostConstruct;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -18,6 +15,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
@@ -30,13 +29,27 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
 @Path("/source/")
 @Component
+@Transactional
 public class SourceService extends AbstractDaoService {
 
   public static final String SECURE_MODE_ERROR = "This feautre requires the administrator to enable security for the application";
+
+  @PostConstruct
+  public void ensureSourceEncrypted(){
+    getTransactionTemplateRequiresNew().execute(new TransactionCallbackWithoutResult() {
+       @Override
+       protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+         Iterable<Source> sources = sourceRepository.findAll();
+         sources.forEach(source -> sourceRepository.persist(source));
+       }
+    });
+  }
 
   public class SortByKey implements Comparator<SourceInfo>
   {
@@ -164,6 +177,10 @@ public class SourceService extends AbstractDaoService {
     if (source != null) {
       updated.setSourceId(sourceId);
       updated.setSourceKey(source.getSourceKey());
+      if (StringUtils.isBlank(updated.getSourceConnection()) ||
+              Objects.equals(updated.getSourceConnection().trim(), Source.MASQUERADED_STRING)) {
+        updated.setSourceConnection(source.getSourceConnection());
+      }
       List<SourceDaimon> removed = source.getDaimons().stream().filter(d -> !updated.getDaimons().contains(d))
               .collect(Collectors.toList());
       sourceDaimonRepository.delete(removed);

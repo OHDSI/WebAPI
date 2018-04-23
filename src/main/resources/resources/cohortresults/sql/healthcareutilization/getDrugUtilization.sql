@@ -4,7 +4,10 @@ select N1.cohort_definition_id
 	, N1.stratum_3
 	{@is_summary == FALSE} ? {, P.period_type
 	, P.period_start_date
-	, P.period_end_date } : {, C.concept_name as drug_concept_name}
+	, P.period_end_date } : 
+{	, C.concept_name as drug_concept_name
+	, C.concept_class_id as drug_concept_class
+	, C.vocabulary_id as drug_vocabulary_id }
 	, N1.count_value as person_total -- subjects with records in period
 	, ((N1.count_value * 1.0)/D1.count_value) * 100.0 as person_percent -- subjects with records in period/subjects in period
 	, N2.total as records_total -- total records

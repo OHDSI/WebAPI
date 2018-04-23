@@ -28,6 +28,8 @@ public class HealthcareDrugUtilizationSummary {
 	public static class Record extends HealthcareDrugUtlizationStatistic {
 		public String drugName;
 		public String drugId;
+		public String drugClass;
+		public String drugVocabularyId;
 		public Record() {
 
 		}

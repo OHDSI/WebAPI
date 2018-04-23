@@ -29,6 +29,7 @@ public class HealthcareDrugUtilizationSummary {
 		public String drugName;
 		public String drugId;
 		public String drugClass;
+		public String drugCode;
 		public String drugVocabularyId;
 		public Record() {
 

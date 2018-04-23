@@ -53,6 +53,7 @@ select N1.cohort_definition_id
 	, P.period_start_date
 	, P.period_end_date } : 
 {	, C.concept_name as drug_concept_name
+	, C.concept_code as drug_concept_code
 	, C.concept_class_id as drug_concept_class
 	, C.vocabulary_id as drug_vocabulary_id }
 	, N1.count_value as person_total -- subjects with records in period

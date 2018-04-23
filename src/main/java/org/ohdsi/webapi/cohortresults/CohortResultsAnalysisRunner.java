@@ -1820,6 +1820,7 @@ public class CohortResultsAnalysisRunner {
 			HealthcareDrugUtilizationSummary.Record r = new HealthcareDrugUtilizationSummary.Record();
 			r.drugName = rs.getString("drug_concept_name");
 			r.drugId = rs.getString("stratum_2");
+			r.drugCode = rs.getString("drug_concept_code");
 			r.drugClass = rs.getString("drug_concept_class");
 			r.drugVocabularyId = rs.getString("drug_vocabulary_id");
 			r.personsCount = rs.getLong("person_total");

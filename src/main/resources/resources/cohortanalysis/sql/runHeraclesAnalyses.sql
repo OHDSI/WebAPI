@@ -11583,24 +11583,41 @@ DROP TABLE #raw_period_4021;
 
 {4022 IN (@list_of_analysis_ids)}?{
 -- 4022	Distribution of greater than 0 US$ cost per subject by period_id, by drug_concept_id, by drug_type_concept_id, by cost_concept_id in the 365d prior to first cohort start date
-select c1.cohort_definition_id,
-	c1.subject_id,
-  de1.drug_exposure_id,
-  de1.drug_concept_id,
-  de1.drug_type_concept_id,
-	cst1.cost_concept_id,
-  cst1.cost_type_concept_id,
-	de1.drug_exposure_start_date,
-  cost
+with drug_records(cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost) as
+(
+	select c1.cohort_definition_id,
+		c1.subject_id,
+		de1.drug_concept_id,
+		de1.drug_type_concept_id,
+		cst1.cost_concept_id,
+		cst1.cost_type_concept_id,
+		de1.drug_exposure_start_date,
+		de1.drug_exposure_id,
+		cost
+	from #cohort_first c1
+	join @CDM_schema.drug_exposure de1 on c1.subject_id = de1.person_id
+		and de1.drug_exposure_start_date >= dateadd(d, -365, c1.cohort_start_date) and de1.drug_exposure_start_date < c1.cohort_start_date
+	join @CDM_schema.cost cst1 on c1.subject_id = cst1.person_id
+		and cst1.person_id = de1.person_id
+		and de1.visit_occurrence_id = cst1.cost_event_id
+	where cost >= 0
+			and currency_concept_id = 44818668
+),
+atc_rollup (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost) as
+(
+	select r.cohort_definition_id, r.subject_id, ca.ancestor_concept_id as drug_concept_id, r.drug_type_concept_id, r.cost_concept_id, r.cost_type_concept_id, r.drug_exposure_start_date, r.drug_exposure_id, r.cost
+  from drug_records r
+	join @CDM_schema.concept_ancestor ca on ca.descendant_concept_id = r.drug_concept_id
+  join @CDM_schema.concept c on ca.ancestor_concept_id = c.concept_id
+  where c.vocabulary_id = 'ATC' and c.concept_class_id in ('ATC 4th', 'ATC 5th')
+)
+select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost
 INTO #raw_cost_4022
-from #cohort_first c1
-join @CDM_schema.drug_exposure de1 on c1.subject_id = de1.person_id
-  and de1.drug_exposure_start_date >= dateadd(d, -365, c1.cohort_start_date) and de1.drug_exposure_start_date < c1.cohort_start_date
-join @CDM_schema.cost cst1 on c1.subject_id = cst1.person_id
-  and cst1.person_id = de1.person_id
-  and de1.visit_occurrence_id = cst1.cost_event_id
-where cost >= 0
-    and currency_concept_id = 44818668
+FROM (
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost FROM drug_records
+	UNION ALL
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost FROM atc_rollup
+) D
 ;
 
 create index ix_rc_visit_date on #raw_cost_4022 (drug_exposure_start_date);
@@ -11793,24 +11810,41 @@ DROP TABLE #raw_period_4022;
 
 {4023 IN (@list_of_analysis_ids)}?{
 -- 4023	Distribution of greater than 0 US$ cost per subject by period_id, by drug_concept_id, by drug_type_concept_id, by cost_concept_id, by cost_type_concept_id during the cohort period
-select c1.cohort_definition_id,
-	c1.subject_id,
-  de1.drug_exposure_id,
-  de1.drug_concept_id,
-  de1.drug_type_concept_id,
-	cst1.cost_concept_id,
-  cst1.cost_type_concept_id,
-	de1.drug_exposure_start_date,
-  cst1.cost
+with drug_records(cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost) as
+(
+	select c1.cohort_definition_id,
+		c1.subject_id,
+		de1.drug_concept_id,
+		de1.drug_type_concept_id,
+		cst1.cost_concept_id,
+		cst1.cost_type_concept_id,
+		de1.drug_exposure_start_date,
+		de1.drug_exposure_id,
+		cost
+	from #HERACLES_cohort c1
+	join @CDM_schema.drug_exposure de1 on c1.subject_id = de1.person_id
+		and de1.drug_exposure_start_date >= dateadd(d, -365, c1.cohort_start_date) and de1.drug_exposure_start_date < c1.cohort_start_date
+	join @CDM_schema.cost cst1 on c1.subject_id = cst1.person_id
+		and cst1.person_id = de1.person_id
+		and de1.visit_occurrence_id = cst1.cost_event_id
+	where cost >= 0
+			and currency_concept_id = 44818668
+),
+atc_rollup (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost) as
+(
+	select r.cohort_definition_id, r.subject_id, ca.ancestor_concept_id as drug_concept_id, r.drug_type_concept_id, r.cost_concept_id, r.cost_type_concept_id, r.drug_exposure_start_date, r.drug_exposure_id, r.cost
+  from drug_records r
+	join @CDM_schema.concept_ancestor ca on ca.descendant_concept_id = r.drug_concept_id
+  join @CDM_schema.concept c on ca.ancestor_concept_id = c.concept_id
+  where c.vocabulary_id = 'ATC' and c.concept_class_id in ('ATC 4th', 'ATC 5th')
+)
+select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost
 INTO #raw_cost_4023
-from #HERACLES_cohort c1
-join @CDM_schema.drug_exposure de1 on c1.subject_id = de1.person_id
-  and de1.drug_exposure_start_date >= dateadd(d, -365, c1.cohort_start_date) and de1.drug_exposure_start_date < c1.cohort_start_date
-join @CDM_schema.cost cst1 on c1.subject_id = cst1.person_id
-  and cst1.person_id = de1.person_id
-  and de1.visit_occurrence_id = cst1.cost_event_id
-where cost >= 0
-    and currency_concept_id = 44818668
+FROM (
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost FROM drug_records
+	UNION ALL
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost FROM atc_rollup
+) D
 ;
 
 create index ix_rc_visit_date on #raw_cost_4023 (drug_exposure_start_date);

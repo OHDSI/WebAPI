@@ -1770,14 +1770,14 @@ public class CohortResultsAnalysisRunner {
 			drugAnalysisId = 4013;
 			daysSupplyAnalysisId = 4014;
 			quantityAnalysisId = 4015;
-			costAnalysisId = 4020;			
+			costAnalysisId = 4022;			
 		} else if (window == WindowType.AT_RISK) {
 			subjectsAnalysisId = 4006;
 			subjectWithRecordsAnalysisId = 4016;
 			drugAnalysisId = 4017;
 			daysSupplyAnalysisId = 4018;
 			quantityAnalysisId = 4019;
-			costAnalysisId = 4021;
+			costAnalysisId = 4023;
 		} else {
 			throw new RuntimeException("Invalid window type: " + window);			
 		}
@@ -1870,14 +1870,14 @@ public class CohortResultsAnalysisRunner {
 			drugAnalysisId = 4013;
 			daysSupplyAnalysisId = 4014;
 			quantityAnalysisId = 4015;
-			costAnalysisId = 4020;			
+			costAnalysisId = 4022;
 		} else if (window == WindowType.AT_RISK) {
 			subjectsAnalysisId = 4006;
 			subjectWithRecordsAnalysisId = 4016;
 			drugAnalysisId = 4017;
 			daysSupplyAnalysisId = 4018;
 			quantityAnalysisId = 4019;
-			costAnalysisId = 4021;
+			costAnalysisId = 4023;
 		} else {
 			throw new RuntimeException("Invalid window type: " + window);			
 		}

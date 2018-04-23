@@ -1660,7 +1660,6 @@ public class CohortResultsAnalysisRunner {
 		};
 
 		PreparedStatementRenderer summaryPsr =  new PreparedStatementRenderer(source, summarySql, search, replace, reportCols, summaryColVals);
-		
 		List<HealthcareVisitUtilizationReport.Summary> summaryRows = jdbcTemplate.query(summaryPsr.getSql(), summaryPsr.getSetter(), (rs,rowNum) -> {
 			HealthcareVisitUtilizationReport.Summary s = new HealthcareVisitUtilizationReport.Summary();
 			s.personsCount = rs.getLong("person_total");
@@ -1815,7 +1814,6 @@ public class CohortResultsAnalysisRunner {
 		};
 
 		PreparedStatementRenderer summaryPsr =  new PreparedStatementRenderer(source, summarySql, search, replace, reportCols, summaryColVals);
-
 		HealthcareDrugUtilizationSummary summary = new HealthcareDrugUtilizationSummary();
 		
 		summary.data = jdbcTemplate.query(summaryPsr.getSql(), summaryPsr.getSetter(), (rs,rowNum) -> {
@@ -1917,7 +1915,6 @@ public class CohortResultsAnalysisRunner {
 		};
 
 		PreparedStatementRenderer detailPsr =  new PreparedStatementRenderer(source, detailSql, search, replace, reportCols, reportColVals);
-
 		HealthcareDrugUtilizationDetail detail = new HealthcareDrugUtilizationDetail();
 
 		detail.data = jdbcTemplate.query(detailPsr.getSql(), detailPsr.getSetter(), (rs,rowNum) -> {

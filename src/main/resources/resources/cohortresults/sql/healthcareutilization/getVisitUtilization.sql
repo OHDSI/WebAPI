@@ -59,22 +59,21 @@ select N1.cohort_definition_id
 	, P.period_start_date
 	, P.period_end_date }
 	, N1.count_value as person_total -- subjects with records in period
-	, ((N1.count_value * 1.0)/D1.count_value) * 100.0 as person_percent -- subjects with records in period/subjects in period
+	, ((N1.count_value * 1.0)/nullif(D1.count_value,0)) * 100.0 as person_percent -- subjects with records in period/subjects in period
 	, N2.total as records_total -- total records
-	, (N2.total * 1000.0)/D1.count_value as records_per_1000 --total records in period/subjects in period
-	, (N2.total * 1000.0)/N1.count_value as records_per_1000_with_record -- total reocrds in period/subjects with visits in period
-	, (((N2.total/D1.total)*1000)*365.25) as records_per_1000_per_year --total records in period/exposure in period
+	, (N2.total * 1000.0)/nullif(D1.count_value,0) as records_per_1000 --total records in period/subjects in period
+	, (N2.total * 1000.0)/nullif(N1.count_value,0) as records_per_1000_with_record -- total reocrds in period/subjects with visits in period
+	, (((N2.total/nullif(D1.total,0))*1000)*365.25) as records_per_1000_per_year --total records in period/exposure in period
 	, N3.total as los_total -- total length of stay
 	, N3.avg_value as los_average -- average length of stay
   , cst.allowed -- Allowed
-	, (cst.allowed/D1.total)*30.42 as allowed_pmpm -- allowed per member per month
+	, (cst.allowed/nullif(D1.total,0))*30.42 as allowed_pmpm -- allowed per member per month
   , cst.charged -- Charged
-	, (cst.charged/D1.total)*30.42 as charged_pmpm -- charged per member per month
+	, (cst.charged/nullif(D1.total,0))*30.42 as charged_pmpm -- charged per member per month
   , cst.paid -- paid
-	, (cst.paid/D1.total)*30.42 as paid_pmpm -- paid per member per month
-	, cst.allowed/cst.charged as allowed_charged -- allowed to charged ratio
-	, cst.paid/cst.allowed as paid_allowed -- paid to allowed ratio
-
+	, (cst.paid/nullif(D1.total,0))*30.42 as paid_pmpm -- paid per member per month
+	, cst.allowed/nullif(cst.charged,0) as allowed_charged -- allowed to charged ratio
+	, cst.paid/nullif(cst.allowed,0) as paid_allowed -- paid to allowed ratio
 FROM
 (
 	select cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value

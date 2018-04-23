@@ -9874,10 +9874,22 @@ with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_
 	join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
 			and de1.drug_exposure_start_date >= dateadd(d, -365, c1.cohort_start_date) and de1.drug_exposure_start_date < c1.cohort_start_date
 	WHERE de1.drug_concept_id != 0
+),
+atc_rollup (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date) as
+(
+	select r.cohort_definition_id, subject_id, ca.ancestor_concept_id as drug_concept_id, r.drug_type_concept_id, r.drug_exposure_date
+  from drug_records r
+	join @CDM_schema.concept_ancestor ca on ca.descendant_concept_id = r.drug_concept_id
+  join @CDM_schema.concept c on ca.ancestor_concept_id = c.concept_id
+  where c.vocabulary_id = 'ATC' and c.concept_class_id in ('ATC 4th', 'ATC 5th')
 )
 select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date
 INTO #raw_de_4012
-FROM drug_records
+FROM (
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date FROM drug_records
+	UNION ALL
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date FROM atc_rollup
+) D
 ;
 
 CREATE INDEX idx_raw_4012_de_date ON #raw_de_4012 (drug_exposure_date);
@@ -9993,10 +10005,22 @@ with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_
 	join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
 			and de1.drug_exposure_start_date >= dateadd(d, -365, c1.cohort_start_date) and de1.drug_exposure_start_date < c1.cohort_start_date
 	WHERE de1.drug_concept_id != 0
+),
+atc_rollup (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, drug_exposure_id) as
+(
+	select r.cohort_definition_id, subject_id, ca.ancestor_concept_id as drug_concept_id, r.drug_type_concept_id, r.drug_exposure_date, r.drug_exposure_id
+  from drug_records r
+	join @CDM_schema.concept_ancestor ca on ca.descendant_concept_id = r.drug_concept_id
+  join @CDM_schema.concept c on ca.ancestor_concept_id = c.concept_id
+  where c.vocabulary_id = 'ATC' and c.concept_class_id in ('ATC 4th', 'ATC 5th')
 )
 select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, drug_exposure_id
 INTO #raw_de_4013
-FROM drug_records
+FROM (
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, drug_exposure_id FROM drug_records
+	UNION ALL
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, drug_exposure_id FROM atc_rollup
+) D
 ;
 
 CREATE INDEX idx_raw_4013_de_date ON #raw_de_4013 (drug_exposure_date);
@@ -10154,10 +10178,22 @@ with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_
 	join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
 			and de1.drug_exposure_start_date >= dateadd(d, -365, c1.cohort_start_date) and de1.drug_exposure_start_date < c1.cohort_start_date
 	WHERE de1.drug_concept_id != 0
+),
+atc_rollup (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration) as
+(
+	select r.cohort_definition_id, subject_id, ca.ancestor_concept_id as drug_concept_id, r.drug_type_concept_id, r.drug_exposure_date, r.duration
+  from drug_records r
+	join @CDM_schema.concept_ancestor ca on ca.descendant_concept_id = r.drug_concept_id
+  join @CDM_schema.concept c on ca.ancestor_concept_id = c.concept_id
+  where c.vocabulary_id = 'ATC' and c.concept_class_id in ('ATC 4th', 'ATC 5th')
 )
 select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration
 INTO #raw_de_4014
-FROM drug_records
+FROM (
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration FROM drug_records
+	UNION ALL
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration FROM atc_rollup
+) D
 WHERE duration > 0
 ;
 
@@ -10316,10 +10352,22 @@ with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_
 	join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
 			and de1.drug_exposure_start_date >= dateadd(d, -365, c1.cohort_start_date) and de1.drug_exposure_start_date < c1.cohort_start_date
 	WHERE de1.drug_concept_id != 0
+),
+atc_rollup (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration) as
+(
+	select r.cohort_definition_id, subject_id, ca.ancestor_concept_id as drug_concept_id, r.drug_type_concept_id, r.drug_exposure_date, r.duration
+  from drug_records r
+	join @CDM_schema.concept_ancestor ca on ca.descendant_concept_id = r.drug_concept_id
+  join @CDM_schema.concept c on ca.ancestor_concept_id = c.concept_id
+  where c.vocabulary_id = 'ATC' and c.concept_class_id in ('ATC 4th', 'ATC 5th')
 )
 select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration
 INTO #raw_de_4015
-FROM drug_records
+FROM (
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration FROM drug_records
+	UNION ALL
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration FROM atc_rollup
+) D
 WHERE duration > 0
 ;
 
@@ -10475,11 +10523,23 @@ with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_
 	from  #HERACLES_cohort c1
 	join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
 		and de1.drug_exposure_start_date >= c1.cohort_start_date and de1.drug_exposure_start_date <= c1.cohort_end_date
+	WHERE de1.drug_concept_id != 0
+),
+atc_rollup (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date) as
+(
+	select r.cohort_definition_id, r.subject_id, ca.ancestor_concept_id as drug_concept_id, r.drug_type_concept_id, r.drug_exposure_date
+  from drug_records r
+	join @CDM_schema.concept_ancestor ca on ca.descendant_concept_id = r.drug_concept_id
+  join @CDM_schema.concept c on ca.ancestor_concept_id = c.concept_id
+  where c.vocabulary_id = 'ATC' and c.concept_class_id in ('ATC 4th', 'ATC 5th')
 )
 select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date
 INTO #raw_de_4016
-FROM drug_records
-WHERE drug_concept_id != 0
+FROM (
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date FROM drug_records
+	UNION ALL
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date FROM atc_rollup
+) D
 ;
 
 CREATE INDEX idx_raw_4016_de_date ON #raw_de_4016 (drug_exposure_date);
@@ -10596,10 +10656,22 @@ with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_
   join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
   	and de1.drug_exposure_start_date >= c1.cohort_start_date and de1.drug_exposure_start_date <= c1.cohort_end_date
   WHERE de1.drug_concept_id != 0
+),
+atc_rollup (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, drug_exposure_id) as
+(
+	select r.cohort_definition_id, subject_id, ca.ancestor_concept_id as drug_concept_id, r.drug_type_concept_id, r.drug_exposure_date, r.drug_exposure_id
+  from drug_records r
+	join @CDM_schema.concept_ancestor ca on ca.descendant_concept_id = r.drug_concept_id
+  join @CDM_schema.concept c on ca.ancestor_concept_id = c.concept_id
+  where c.vocabulary_id = 'ATC' and c.concept_class_id in ('ATC 4th', 'ATC 5th')
 )
 select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, drug_exposure_id
 INTO #raw_de_4017
-FROM drug_records
+FROM (
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, drug_exposure_id FROM drug_records
+	UNION ALL
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, drug_exposure_id FROM atc_rollup
+) D
 ;
 
 CREATE INDEX idx_raw_4017_de_date ON #raw_de_4017 (drug_exposure_date);
@@ -10757,10 +10829,22 @@ with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_
     join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
     	and de1.drug_exposure_start_date >= c1.cohort_start_date and de1.drug_exposure_start_date <= c1.cohort_end_date
 	WHERE de1.drug_concept_id != 0
+),
+atc_rollup (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration) as
+(
+	select r.cohort_definition_id, subject_id, ca.ancestor_concept_id as drug_concept_id, r.drug_type_concept_id, r.drug_exposure_date, r.duration
+  from drug_records r
+	join @CDM_schema.concept_ancestor ca on ca.descendant_concept_id = r.drug_concept_id
+  join @CDM_schema.concept c on ca.ancestor_concept_id = c.concept_id
+  where c.vocabulary_id = 'ATC' and c.concept_class_id in ('ATC 4th', 'ATC 5th')
 )
 select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration
 INTO #raw_de_4018
-FROM drug_records
+FROM (
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration FROM drug_records
+	UNION ALL
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration FROM atc_rollup
+) D
 WHERE duration > 0
 ;
 
@@ -10919,10 +11003,22 @@ with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_
     join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
     	and de1.drug_exposure_start_date >= c1.cohort_start_date and de1.drug_exposure_start_date <= c1.cohort_end_date
 	WHERE de1.drug_concept_id != 0
+),
+atc_rollup (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration) as
+(
+	select r.cohort_definition_id, subject_id, ca.ancestor_concept_id as drug_concept_id, r.drug_type_concept_id, r.drug_exposure_date, r.duration
+  from drug_records r
+	join @CDM_schema.concept_ancestor ca on ca.descendant_concept_id = r.drug_concept_id
+  join @CDM_schema.concept c on ca.ancestor_concept_id = c.concept_id
+  where c.vocabulary_id = 'ATC' and c.concept_class_id in ('ATC 4th', 'ATC 5th')
 )
 select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration
 INTO #raw_de_4019
-FROM drug_records
+FROM (
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration FROM drug_records
+	UNION ALL
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration FROM atc_rollup
+) D
 WHERE duration > 0
 ;
 

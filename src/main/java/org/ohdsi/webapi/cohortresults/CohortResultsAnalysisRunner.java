@@ -1788,6 +1788,8 @@ public class CohortResultsAnalysisRunner {
 			HealthcareDrugUtilizationSummary.Record r = new HealthcareDrugUtilizationSummary.Record();
 			r.drugName = rs.getString("drug_concept_name");
 			r.drugId = rs.getString("stratum_2");
+			r.drugClass = rs.getString("drug_concept_class");
+			r.drugVocabularyId = rs.getString("drug_vocabulary_id");
 			r.personsCount = rs.getLong("person_total");
 			r.personsPct = new BigDecimal(rs.getDouble("person_percent")).setScale(2, BigDecimal.ROUND_HALF_UP);
 			r.exposureCount = rs.getLong("records_total");

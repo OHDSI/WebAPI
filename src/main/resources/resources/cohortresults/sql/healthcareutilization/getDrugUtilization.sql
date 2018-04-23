@@ -4,8 +4,8 @@ with cost_long as
 	from @results_schema.heracles_results_dist
 	where analysis_id = @cost_analysis_id
 				and cohort_definition_id = @cohort_definition_id
-				and cast(stratum_5 as integer) = cast(@cost_type_concept_id as integer) -- default is 31968. @cost_type_concept_id may be used as a filter in UI
-				and cast(stratum_4 as integer) in (31978, 31973, 31980) -- allowed, charged, paid
+				and stratum_5 = '@cost_type_concept_id' -- default is 31968. @cost_type_concept_id may be used as a filter in UI
+				and stratum_4 in ('31978', '31973', '31980') -- allowed, charged, paid
 				/*
 					(Report 1,2,3) --> (analysis_id1 4022) -- 4022	Distribution of greater than 0 US$ cost per subject by period_id, by drug_concept_id, by drug_type_concept_id, by cost_concept_id in the 365d prior to first cohort start date
 					(Report 4,5,6) --> (analysis_id1 4023) -- 4023	Distribution of greater than 0 US$ cost per subject by period_id, by drug_concept_id, by drug_type_concept_id, by cost_concept_id, by cost_type_concept_id during the cohort period

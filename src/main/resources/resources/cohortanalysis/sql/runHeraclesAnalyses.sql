@@ -105,7 +105,7 @@ SELECT hp.period_id, hp.period_start_date, hp.period_end_date
 into #periods_atrisk
 FROM @results_schema.heracles_periods hp
 WHERE not (
-	hp.period_end_date <= (SELECT min(cohort_start_date) FROM HERACLES_cohort) or hp.period_start_date > (SELECT max(cohort_end_date) FROM HERACLES_cohort)
+	hp.period_end_date <= (SELECT min(cohort_start_date) FROM #HERACLES_cohort) or hp.period_start_date > (SELECT max(cohort_end_date) FROM #HERACLES_cohort)
 ); -- only returns overlapping periods
 
 create index ix_periods_atrisk_start on #periods_atrisk (period_start_date);

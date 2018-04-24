@@ -6,9 +6,12 @@ import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.jasypt.encryption.pbe.PBEStringEncryptor;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import org.jasypt.hibernate4.encryptor.HibernatePBEEncryptorRegistry;
+import org.ohdsi.webapi.source.NotEncrypted;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -33,6 +36,8 @@ public class DataAccessConfig {
 
     @Autowired
     private Environment env;
+    @Value("${jasypt.encryptor.enabled}")
+    private boolean encryptorEnabled;
   
     private Properties getJPAProperties() {
         Properties properties = new Properties();
@@ -81,14 +86,20 @@ public class DataAccessConfig {
 
     private void defaultStringEncryptor(){
 
-        StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
-        encryptor.setProvider(new BouncyCastleProvider());
-        encryptor.setProviderName("BC");
-        encryptor.setAlgorithm(env.getRequiredProperty("jasypt.encryptor.algorithm"));
-        encryptor.setKeyObtentionIterations(1000);
-        encryptor.setPassword(env.getRequiredProperty("jasypt.encryptor.password"));
+        PBEStringEncryptor stringEncryptor;
+        if (encryptorEnabled) {
+            StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
+            encryptor.setProvider(new BouncyCastleProvider());
+            encryptor.setProviderName("BC");
+            encryptor.setAlgorithm(env.getRequiredProperty("jasypt.encryptor.algorithm"));
+            encryptor.setKeyObtentionIterations(1000);
+            encryptor.setPassword(env.getRequiredProperty("jasypt.encryptor.password"));
+            stringEncryptor = encryptor;
+        } else {
+            stringEncryptor = new NotEncrypted();
+        }
         HibernatePBEEncryptorRegistry.getInstance()
-                .registerPBEStringEncryptor("defaultStringEncryptor", encryptor);
+                .registerPBEStringEncryptor("defaultStringEncryptor", stringEncryptor);
     }
 
     @Bean

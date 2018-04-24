@@ -99,6 +99,7 @@
     <server.ssl.key-password></server.ssl.key-password>
 
     <!-- PASSWORD ENCRYPTION -->
+    <jasypt.encryptor.enabled>false</jasypt.encryptor.enabled>
     <jasypt.encryptor.algorithm>PBEWITHSHA256AND128BITAES-CBC-BC</jasypt.encryptor.algorithm>
   </properties>
   <build>

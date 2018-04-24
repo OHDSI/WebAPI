@@ -26,8 +26,12 @@ public class CheckedEncryptedStringType extends AbstractEncryptedAsStringType {
 
         checkInitialization();
         if (Objects.nonNull(value)){
-            String encrypted = this.encryptor.encrypt(convertToString(value));
-            st.setString(index, ENCODED_PREFIX + encrypted + ENCODED_SUFFIX);
+            if (Objects.nonNull(this.encryptor)) {
+                String encrypted = this.encryptor.encrypt(convertToString(value));
+                st.setString(index, ENCODED_PREFIX + encrypted + ENCODED_SUFFIX);
+            } else {
+                st.setString(index, convertToString(value));
+            }
         } else {
             st.setNull(index, Types.VARCHAR);
         }
@@ -45,7 +49,7 @@ public class CheckedEncryptedStringType extends AbstractEncryptedAsStringType {
             if (Objects.isNull(message)) {
                 return null;
             }
-            if (message.startsWith(ENCODED_PREFIX)) {
+            if (message.startsWith(ENCODED_PREFIX) && Objects.nonNull(this.encryptor)) {
                 String value = message.substring(4, message.length() - ENCODED_SUFFIX.length());
                 result = convertToObject(encryptor.decrypt(value));
             } else {

@@ -42,13 +42,15 @@ public class SourceService extends AbstractDaoService {
 
   @PostConstruct
   public void ensureSourceEncrypted(){
-    getTransactionTemplateRequiresNew().execute(new TransactionCallbackWithoutResult() {
-       @Override
-       protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-         Iterable<Source> sources = sourceRepository.findAll();
-         sources.forEach(source -> sourceRepository.persist(source));
-       }
-    });
+    if (encryptorEnabled) {
+      getTransactionTemplateRequiresNew().execute(new TransactionCallbackWithoutResult() {
+        @Override
+        protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+          Iterable<Source> sources = sourceRepository.findAll();
+          sources.forEach(source -> sourceRepository.persist(source));
+        }
+      });
+    }
   }
 
   public class SortByKey implements Comparator<SourceInfo>
@@ -81,6 +83,9 @@ public class SourceService extends AbstractDaoService {
 
   @Value("${security.enabled}")
   private boolean securityEnabled;
+
+  @Value("${jasypt.encryptor.enabled}")
+  private boolean encryptorEnabled;
 
   private static Collection<SourceInfo> cachedSources = null;
   
@@ -144,7 +149,12 @@ public class SourceService extends AbstractDaoService {
     if (!securityEnabled) {
       throw new NotAuthorizedException(SECURE_MODE_ERROR);
     }
-    return new SourceDetails(sourceRepository.findBySourceId(sourceId));
+    Source source = sourceRepository.findBySourceId(sourceId);
+    SourceDetails details = new SourceDetails(source);
+    if (!encryptorEnabled) {
+      details.setConnectionString(source.getSourceConnection());
+    }
+    return details;
   }
 
   @Path("")

@@ -1,5 +1,7 @@
 package org.ohdsi.webapi.service;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
@@ -17,6 +19,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jasypt.properties.PropertyValueEncryptionUtils;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
@@ -28,6 +31,8 @@ import org.ohdsi.webapi.source.SourceRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.support.GenericConversionService;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,9 +45,25 @@ public class SourceService extends AbstractDaoService {
 
   public static final String SECURE_MODE_ERROR = "This feautre requires the administrator to enable security for the application";
 
+  @Autowired
+  private JdbcTemplate jdbcTemplate;
+  @Value("${datasource.ohdsi.schema}")
+  private String schema;
+
   @PostConstruct
   public void ensureSourceEncrypted(){
     if (encryptorEnabled) {
+        String query = "SELECT source_id, source_connection FROM ${schema}.source".replaceAll("\\$\\{schema\\}", schema);
+        String update = "UPDATE ${schema}.source SET source_connection = ? WHERE source_id = ?".replaceAll("\\$\\{schema\\}", schema);
+        jdbcTemplate.query(query, rs -> {
+            int id = rs.getInt("source_id");
+            String connection = rs.getString("source_connection");
+            if (!PropertyValueEncryptionUtils.isEncryptedValue(connection)){
+                String encrypted = connection;
+                jdbcTemplate.update(update, encrypted, id);
+            }
+        });
+/*
       getTransactionTemplateRequiresNew().execute(new TransactionCallbackWithoutResult() {
         @Override
         protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
@@ -50,6 +71,7 @@ public class SourceService extends AbstractDaoService {
           sources.forEach(source -> sourceRepository.persist(source));
         }
       });
+*/
     }
   }
 

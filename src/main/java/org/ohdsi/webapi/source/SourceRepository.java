@@ -15,13 +15,13 @@
  */
 package org.ohdsi.webapi.source;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.CrudRepository;
 
 /**
  *
  * @author fdefalco
  */
-public interface SourceRepository extends JpaRepository<Source, Integer>, PersitableRepository<Source, Integer> {
+public interface SourceRepository extends CrudRepository<Source, Integer>, PersitableRepository<Source, Integer> {
   Source findBySourceKey(String sourceKey);
   Source findBySourceId(int sourceId);
 }

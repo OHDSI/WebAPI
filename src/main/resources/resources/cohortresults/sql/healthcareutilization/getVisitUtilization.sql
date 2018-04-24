@@ -94,8 +94,8 @@ JOIN
 (Report 2) --> (analysis_id2 4003) -- 4003 Distribution of number of visit dates per subject by period_id, by visit_concept_id, by visit_type_concept_id in 365d prior to first cohort start date
 (Report 3) --> (analysis_id2 4004) -- 4004 Distribution of number of care_site+visit dates per subject by period_id, by visit_concept_id, by visit_type_concept_id in 365d prior to first cohort start date
 (Report 4) --> (analysis_id2 4008) -- 4008 Distribution of number of visit occurrence records per subject by period_id, by visit_concept_id, by visit_type_concept_id during the cohort period
-(Report 5) --> (analysis_id2 4009) -- 4009 Distribution of number of visit dates per subject by period_id, by visit_concept_id, by visit_type_concept_id in 365d prior to first cohort start date
-(Report 6) --> (analysis_id2 4010) -- 4010 Distribution of number of care_site+visit dates per subject by period_id, by visit_concept_id, by visit_type_concept_id in 365d prior to first cohort start date
+(Report 5) --> (analysis_id2 4009) -- 4009 Distribution of number of visit dates per subject by period_id, by visit_concept_id, by visit_type_concept_id during the cohort period
+(Report 6) --> (analysis_id2 4010) -- 4010 Distribution of number of care_site+visit dates per subject by period_id, by visit_concept_id, by visit_type_concept_id during the cohort period
 */
 ) N2 -- distribution of records per subject
 	on  N1.cohort_definition_id = N2.cohort_definition_id

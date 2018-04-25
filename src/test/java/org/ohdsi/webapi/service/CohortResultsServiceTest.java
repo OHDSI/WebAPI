@@ -62,7 +62,7 @@ public class CohortResultsServiceTest extends AbstractServiceTest {
   public void prepareGetCompletedAnalyses() throws IOException {
 
     String id = "1230";
-    PreparedStatementRenderer psr = cohortResultsService.prepareGetCompletedAnalysis(id, getSource());
+    PreparedStatementRenderer psr = cohortResultsService.prepareGetCompletedAnalysis(id, getSource().getSourceId());
     assertSqlEquals("/cohortresults/sql/raw/getCompletedAnalyses-expected.sql", psr);
     assertEquals(2, psr.getOrderedParamsList().size());
   }

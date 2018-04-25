@@ -1,18 +1,20 @@
 package org.ohdsi.webapi.cohortanalysis;
 
-import jersey.repackaged.com.google.common.base.Joiner;
+import java.util.Calendar;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
-import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortresults.CohortResultsAnalysisRunner;
 import org.ohdsi.webapi.cohortresults.VisualizationDataRepository;
 import org.ohdsi.webapi.service.CohortAnalysisService;
-import org.ohdsi.webapi.source.SourceDaimon;
-import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
@@ -35,68 +37,82 @@ public class CohortAnalysisTasklet implements Tasklet {
     private final TransactionTemplate transactionTemplate;
     
     private final CohortResultsAnalysisRunner analysisRunner;
+		
+		private final CohortDefinitionRepository cohortDefinitionRepository;
     
-    public CohortAnalysisTasklet(CohortAnalysisTask task, final JdbcTemplate jdbcTemplate,
-        final TransactionTemplate transactionTemplate, 
-        String sourceDialect, VisualizationDataRepository visualizationDataRepository) {
+    public CohortAnalysisTasklet(CohortAnalysisTask task
+				, final JdbcTemplate jdbcTemplate
+				, final TransactionTemplate transactionTemplate
+				, String sourceDialect
+				, VisualizationDataRepository visualizationDataRepository
+				, CohortDefinitionRepository cohortDefinitionRepository) {
         this.task = task;
         this.jdbcTemplate = jdbcTemplate;
         this.transactionTemplate = transactionTemplate;
         this.analysisRunner = new CohortResultsAnalysisRunner(sourceDialect, visualizationDataRepository);
+				this.cohortDefinitionRepository = cohortDefinitionRepository;
     }
     
     @Override
     public RepeatStatus execute(final StepContribution contribution, final ChunkContext chunkContext) throws Exception {
-        
+        boolean successful = false;
+				String failMessage = null;
         try {
             final int[] ret = this.transactionTemplate.execute(new TransactionCallback<int[]>() {
                 
                 @Override
                 public int[] doInTransaction(final TransactionStatus status) {
-                	
-									String clearResultsSql = "DELETE FROM @results_schema.heracles_results where analysis_id in (@analysis_ids) and cohort_definition_id in (@cohort_definition_ids)";
-									String clearResultsDistSql = "DELETE FROM @results_schema.heracles_results_dist where analysis_id in (@analysis_ids) and cohort_definition_id in (@cohort_definition_ids)";
-									String resultsTableQualifier = task.getSource().getTableQualifier(SourceDaimon.DaimonType.Results);
-									String cohortDefinitionIds = (task.getCohortDefinitionIds() == null ? "" : Joiner.on(",").join(
-											task.getCohortDefinitionIds()));
-									String analysisIds = (task.getAnalysisIds() == null ? "" : Joiner.on(",").join(task.getAnalysisIds()));
-
-									String[] params = new String[]{"results_schema", "cohort_definition_ids", "analysis_ids"};
-									String[] values = new String[]{resultsTableQualifier, cohortDefinitionIds,analysisIds};
-									
-									clearResultsSql = SqlRender.renderSql(clearResultsSql, params, values);
-									clearResultsSql = SqlTranslate.translateSql(clearResultsSql, task.getSource().getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
-									CohortAnalysisTasklet.this.jdbcTemplate.execute(clearResultsSql);
-									
-									clearResultsDistSql = SqlRender.renderSql(clearResultsDistSql, params, values);
-									clearResultsDistSql = SqlTranslate.translateSql(clearResultsDistSql, task.getSource().getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
-									CohortAnalysisTasklet.this.jdbcTemplate.execute(clearResultsDistSql);
-									
                 	String cohortSql = CohortAnalysisService.getCohortAnalysisSql(task);
-                	
-                	String[] stmts = null;
-                	if (cohortSql != null) {
-                		if (log.isDebugEnabled()) {
-                			
-                			stmts = SqlSplit.splitSql(cohortSql);
-                            for (int x = 0; x < stmts.length; x++) {
-                                log.debug(String.format("Split SQL %s : %s", x, stmts[x]));
-                            }
-                        }
-                	}
-                    return CohortAnalysisTasklet.this.jdbcTemplate.batchUpdate(stmts);
-                }
+									String[] stmts = SqlSplit.splitSql(cohortSql);
+									return CohortAnalysisTasklet.this.jdbcTemplate.batchUpdate(stmts);
+							 }
             });
             log.debug("Update count: " + ret.length);
-            
             log.debug("warm up visualizations");
             final int count = this.analysisRunner.warmupData(jdbcTemplate, task);
             log.debug("warmed up " + count + " visualizations");
+						successful = true;
+
         } catch (final TransactionException | DataAccessException e) {
             log.error(whitelist(e));
+						failMessage = StringUtils.left(e.getMessage(),2000);
             throw e;//FAIL job status
-        }
+        } finally {
+						// add genrated analysis IDs to  cohort analysis generation info
+						final String f_failMessage = failMessage; // assign final var to pass into lambda
+						final boolean f_successful = successful; // assign final var to pass into lambda
+						
+						this.transactionTemplate.execute(status -> { 
+							CohortDefinition cohortDef = this.cohortDefinitionRepository.findOne(Integer.parseInt(task.getCohortDefinitionIds().get(0)));
+							CohortAnalysisGenerationInfo info = cohortDef.getCohortAnalysisGenerationInfoList().stream()
+								.filter(a -> a.getSourceId() == task.getSource().getSourceId())
+								.findFirst()
+								.orElse(null);
+
+							if (info == null) {
+								// initialize new info object
+								info = new CohortAnalysisGenerationInfo();
+								info.setSourceId(task.getSource().getSourceId());
+								info.setCohortDefinition(cohortDef);
+								cohortDef.getCohortAnalysisGenerationInfoList().add(info);
+							} else {
+								info.setExecutionDuration((int)(Calendar.getInstance().getTime().getTime()- info.getLastExecution().getTime()));
+							}
+							
+							if (f_successful) {
+								// merge existing analysisIds with analysis Ids generated.
+								Set<Integer> generatedIds = Stream.concat(
+									task.getAnalysisIds().stream().map(Integer::parseInt), 
+									info.getAnalysisIds().stream())
+								.collect(Collectors.toSet());
+								info.setAnalysisIds(generatedIds);
+							} else {
+								info.setFailMessage(f_failMessage);
+							}
+							this.cohortDefinitionRepository.save(cohortDef);
+							return null;								
+						});					
+				}
         return RepeatStatus.FINISHED;
-    }
-    
+    }    
 }

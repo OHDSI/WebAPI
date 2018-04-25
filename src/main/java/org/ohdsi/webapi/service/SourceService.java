@@ -19,6 +19,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jasypt.encryption.pbe.PBEStringEncryptor;
 import org.jasypt.properties.PropertyValueEncryptionUtils;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
@@ -47,6 +48,8 @@ public class SourceService extends AbstractDaoService {
 
   @Autowired
   private JdbcTemplate jdbcTemplate;
+  @Autowired
+  private PBEStringEncryptor defaultStringEncryptor;
   @Value("${datasource.ohdsi.schema}")
   private String schema;
 
@@ -55,23 +58,19 @@ public class SourceService extends AbstractDaoService {
     if (encryptorEnabled) {
         String query = "SELECT source_id, source_connection FROM ${schema}.source".replaceAll("\\$\\{schema\\}", schema);
         String update = "UPDATE ${schema}.source SET source_connection = ? WHERE source_id = ?".replaceAll("\\$\\{schema\\}", schema);
-        jdbcTemplate.query(query, rs -> {
-            int id = rs.getInt("source_id");
-            String connection = rs.getString("source_connection");
-            if (!PropertyValueEncryptionUtils.isEncryptedValue(connection)){
-                String encrypted = connection;
-                jdbcTemplate.update(update, encrypted, id);
+        getTransactionTemplateRequiresNew().execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                jdbcTemplate.query(query, rs -> {
+                    int id = rs.getInt("source_id");
+                    String connection = rs.getString("source_connection");
+                    if (!PropertyValueEncryptionUtils.isEncryptedValue(connection)){
+                        String encrypted = "ENC(" + defaultStringEncryptor.encrypt(connection) + ")";
+                        jdbcTemplate.update(update, encrypted, id);
+                    }
+                });
             }
         });
-/*
-      getTransactionTemplateRequiresNew().execute(new TransactionCallbackWithoutResult() {
-        @Override
-        protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-          Iterable<Source> sources = sourceRepository.findAll();
-          sources.forEach(source -> sourceRepository.persist(source));
-        }
-      });
-*/
     }
   }
 

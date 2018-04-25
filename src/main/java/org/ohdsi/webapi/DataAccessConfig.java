@@ -84,7 +84,8 @@ public class DataAccessConfig {
         //return new org.apache.tomcat.jdbc.pool.DataSource(pc);
     }
 
-    private void defaultStringEncryptor(){
+    @Bean
+    public PBEStringEncryptor defaultStringEncryptor(){
 
         PBEStringEncryptor stringEncryptor;
         if (encryptorEnabled) {
@@ -100,6 +101,7 @@ public class DataAccessConfig {
         }
         HibernatePBEEncryptorRegistry.getInstance()
                 .registerPBEStringEncryptor("defaultStringEncryptor", stringEncryptor);
+        return stringEncryptor;
     }
 
     @Bean

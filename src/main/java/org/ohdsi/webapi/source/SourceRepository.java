@@ -21,7 +21,7 @@ import org.springframework.data.repository.CrudRepository;
  *
  * @author fdefalco
  */
-public interface SourceRepository extends CrudRepository<Source, Integer>, PersitableRepository<Source, Integer> {
+public interface SourceRepository extends CrudRepository<Source, Integer> {
   Source findBySourceKey(String sourceKey);
   Source findBySourceId(int sourceId);
 }

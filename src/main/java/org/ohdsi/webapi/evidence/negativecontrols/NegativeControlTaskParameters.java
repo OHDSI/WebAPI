@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.evidence;
+package org.ohdsi.webapi.evidence.negativecontrols;
 
 import java.util.List;
 
@@ -6,28 +6,38 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ohdsi.webapi.source.Source;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-public class NegativeControl {
-        private String jobName;
+public class NegativeControlTaskParameters {
+	private String jobName;
 
 	private Source source;
-        
-        private int conceptSetId;
-        
-        private String conceptSetName;
+
+	private int conceptSetId;
+
+	private String conceptSetName;
 
 	private String sourceKey;
 
-        private String[] conceptIds;
-        
-        private String conceptDomainId;
-        
-        private String targetDomainId;
-        
-        private JdbcTemplate jdbcTemplate;
-        
-        private String sourceDialect;
-        
-        private String ohdsiSchema;
+	private String[] conceptsOfInterest;
+
+	private int csToInclude = 0;
+	
+	private String csToIncludeSQL = "";
+
+	private int csToExclude = 0;
+	
+	private String csToExcludeSQL = "";
+
+	private String conceptDomainId;
+
+	private String outcomeOfInterest;
+
+	private JdbcTemplate jdbcTemplate;
+
+	private String sourceDialect;
+
+	private String ohdsiSchema;
+	
+	private String translatedSchema;
         
 	public String getSourceKey() {
 		return sourceKey;
@@ -60,17 +70,17 @@ public class NegativeControl {
 	}
 
         /**
-	 * @return the conceptIds
+	 * @return the conceptsOfInterest
 	 */
-	public String[] getConceptIds() {
-		return conceptIds;
+	public String[] getConceptsOfInterest() {
+		return conceptsOfInterest;
 	}
 
 	/**
-	 * @param conceptIds the conceptIds to set
+	 * @param conceptsOfInterest the conceptsOfInterest to set
 	 */
-	public void setConceptIds(String[] conceptIds) {
-		this.conceptIds = conceptIds;
+	public void setConceptsOfInterest(String[] conceptsOfInterest) {
+		this.conceptsOfInterest = conceptsOfInterest;
 	}
         
 	@Override
@@ -120,10 +130,10 @@ public class NegativeControl {
     }
 
     /**
-     * @return the targetDomainId
+     * @return the outcomeOfInterest
      */
-    public String getTargetDomainId() {
-        return targetDomainId;
+    public String getOutcomeOfInterest() {
+        return outcomeOfInterest;
     }
 
     /**
@@ -134,10 +144,10 @@ public class NegativeControl {
     }
 
     /**
-     * @param targetDomainId the targetDomainId to set
+     * @param outcomeOfInterest the outcomeOfInterest to set
      */
-    public void setTargetDomainId(String targetDomainId) {
-        this.targetDomainId = targetDomainId;
+    public void setOutcomeOfInterest(String outcomeOfInterest) {
+        this.outcomeOfInterest = outcomeOfInterest;
     }
 
     /**
@@ -181,4 +191,74 @@ public class NegativeControl {
     public void setOhdsiSchema(String ohdsiSchema) {
         this.ohdsiSchema = ohdsiSchema;
     }
+
+	/**
+	 * @return the csToInclude
+	 */
+	public int getCsToInclude() {
+		return csToInclude;
+	}
+
+	/**
+	 * @param csToInclude the csToInclude to set
+	 */
+	public void setCsToInclude(int csToInclude) {
+		this.csToInclude = csToInclude;
+	}
+
+	/**
+	 * @return the csToExclude
+	 */
+	public int getCsToExclude() {
+		return csToExclude;
+	}
+
+	/**
+	 * @param conceptsToExclude the csToExclude to set
+	 */
+	public void setCsToExclude(int conceptsToExclude) {
+		this.csToExclude = conceptsToExclude;
+	}
+
+	/**
+	 * @return the csToIncludeSQL
+	 */
+	public String getCsToIncludeSQL() {
+		return csToIncludeSQL;
+	}
+
+	/**
+	 * @param csToIncludeSQL the csToIncludeSQL to set
+	 */
+	public void setCsToIncludeSQL(String csToIncludeSQL) {
+		this.csToIncludeSQL = csToIncludeSQL;
+	}
+
+	/**
+	 * @return the csToExcludeSQL
+	 */
+	public String getCsToExcludeSQL() {
+		return csToExcludeSQL;
+	}
+
+	/**
+	 * @param csToExcludeSQL the csToExcludeSQL to set
+	 */
+	public void setCsToExcludeSQL(String csToExcludeSQL) {
+		this.csToExcludeSQL = csToExcludeSQL;
+	}
+
+	/**
+	 * @return the translatedSchema
+	 */
+	public String getTranslatedSchema() {
+		return translatedSchema;
+	}
+
+	/**
+	 * @param translatedSchema the translatedSchema to set
+	 */
+	public void setTranslatedSchema(String translatedSchema) {
+		this.translatedSchema = translatedSchema;
+	}
 }

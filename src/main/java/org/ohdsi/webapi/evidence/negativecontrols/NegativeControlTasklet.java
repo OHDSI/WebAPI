@@ -1,6 +1,8 @@
-package org.ohdsi.webapi.evidence;
+package org.ohdsi.webapi.evidence.negativecontrols;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Calendar;
@@ -8,6 +10,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ohdsi.webapi.GenerationStatus;
@@ -15,6 +19,8 @@ import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfo;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationType;
 import org.ohdsi.webapi.service.EvidenceService;
+import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceDaimon;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
@@ -31,7 +37,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 public class NegativeControlTasklet implements Tasklet {
     private static final Log log = LogFactory.getLog(NegativeControlTasklet.class);
     
-    private final NegativeControl task;
+    private final NegativeControlTaskParameters task;
        
     private final JdbcTemplate evidenceJdbcTemplate;
     
@@ -43,7 +49,7 @@ public class NegativeControlTasklet implements Tasklet {
     
     //private final CohortResultsAnalysisRunner analysisRunner;
     
-    public NegativeControlTasklet(NegativeControl task, 
+    public NegativeControlTasklet(NegativeControlTaskParameters task, 
             final JdbcTemplate evidenceJdbcTemplate, 
             final JdbcTemplate ohdsiJdbcTemplate,
             final TransactionTemplate transactionTemplate, 
@@ -85,6 +91,7 @@ public class NegativeControlTasklet implements Tasklet {
             info.setSourceId(sourceId);
             info.setGenerationType(ConceptSetGenerationType.NEGATIVE_CONTROLS);
         }
+				info.setParams(jobParams.get("params").toString());
         info.setIsValid(isValid);
         info.setStartTime(startTime);
         info.setStatus(GenerationStatus.RUNNING);
@@ -97,9 +104,33 @@ public class NegativeControlTasklet implements Tasklet {
                 @Override
                 public int[] doInTransaction(final TransactionStatus status) {	
                     log.debug("entering tasklet");
-                    String negativeControlSql = EvidenceService.getNegativeControlSql(task);
-                    log.debug("negative control sql to execute: " + negativeControlSql);
-                    final List<NegativeControlRecord> recs = NegativeControlTasklet.this.evidenceJdbcTemplate.query(negativeControlSql, new NegativeControlMapper());
+										log.debug("creating ID for job");
+										Long evidenceJobId = null;
+										Source source = task.getSource();
+										String evidenceSchema = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Evidence);
+										String sql = EvidenceService.getEvidenceJobIdSql(task);
+										try {
+											Connection conn = NegativeControlTasklet.this.evidenceJdbcTemplate.getDataSource().getConnection();
+											PreparedStatement ps = conn.prepareStatement(sql, new String[] { "id"});
+											if (ps.executeUpdate() > 0) {
+												ResultSet generatedKeys = ps.getGeneratedKeys();
+												if (generatedKeys != null && generatedKeys.next()) {
+													evidenceJobId = generatedKeys.getLong(1);
+												}
+											}
+											log.debug("evidenceJobId: " + evidenceJobId);
+										} catch (SQLException ex) {
+											Logger.getLogger(NegativeControlTasklet.class.getName()).log(Level.SEVERE, null, ex);
+										}
+										
+                    String negativeControlSql = EvidenceService.getNegativeControlSql(task, evidenceJobId);
+                    log.debug("process negative controls with: \n\t" + negativeControlSql);
+										NegativeControlTasklet.this.evidenceJdbcTemplate.execute(negativeControlSql);
+										
+										// Retrieve the results
+										String getNegativeControlResultsSql = EvidenceService.getNegativeControlsFromEvidenceSource(task, evidenceJobId);
+										log.debug("Retrieving negative controls from evidence base: \n\t" + getNegativeControlResultsSql);
+                    final List<NegativeControlRecord> recs = NegativeControlTasklet.this.evidenceJdbcTemplate.query(getNegativeControlResultsSql, new NegativeControlMapper());
                     
                     // Remove any results that exist for the concept set
                     String deleteSql = EvidenceService.getNegativeControlDeleteStatementSql(task);
@@ -111,59 +142,41 @@ public class NegativeControlTasklet implements Tasklet {
                     
                     // Insert the results
                     String insertSql = EvidenceService.getNegativeControlInsertStatementSql(task);
-                    return NegativeControlTasklet.this.ohdsiJdbcTemplate.batchUpdate(insertSql, new BatchPreparedStatementSetter() {
+                    int[] recCount = NegativeControlTasklet.this.ohdsiJdbcTemplate.batchUpdate(insertSql, new BatchPreparedStatementSetter() {
                         @Override
                         public void setValues(PreparedStatement ps, int i)
                             throws SQLException {
 
                             NegativeControlRecord ncr = recs.get(i);
-                            ps.setInt(1, ncr.getSourceId());
-                            ps.setInt(2, ncr.getConceptSetId());
-                            ps.setString(3, ncr.getConceptSetName());
-                            ps.setInt(4, ncr.getConceptId());
-                            ps.setString(5, ncr.getConceptName());
-                            ps.setString(6, ncr.getDomainId());
-                            ps.setDouble(7, ncr.getMedlineCt());
-                            ps.setDouble(8, ncr.getMedlineCase());
-                            ps.setDouble(9, ncr.getMedlineOther());
-                            ps.setDouble(10, ncr.getSemmeddbCtT());
-                            ps.setDouble(11, ncr.getSemmeddbCaseT());
-                            ps.setDouble(12, ncr.getSemmeddbOtherT());
-                            ps.setDouble(13, ncr.getSemmeddbCtF());
-                            ps.setDouble(14, ncr.getSemmeddbCaseF());
-                            ps.setDouble(15, ncr.getSemmeddbOtherF());
-                            ps.setDouble(16, ncr.getEu_spc());
-                            ps.setDouble(17, ncr.getSplADR());
-                            ps.setDouble(18, ncr.getAers());
-                            ps.setDouble(19, ncr.getAersPRR());
-                            ps.setDouble(20, ncr.getMedlineCtScaled());
-                            ps.setDouble(21, ncr.getMedlineCaseScaled());
-                            ps.setDouble(22, ncr.getMedlineOtherScaled());
-                            ps.setDouble(23, ncr.getSemmeddbCtTScaled());
-                            ps.setDouble(24, ncr.getSemmeddbCaseTScaled());
-                            ps.setDouble(25, ncr.getSemmeddbOtherTScaled());
-                            ps.setDouble(26, ncr.getSemmeddbCtFScaled());
-                            ps.setDouble(27, ncr.getSemmeddbCaseFScaled());
-                            ps.setDouble(28, ncr.getSemmeddbOtherFScaled());
-                            ps.setDouble(29, ncr.getEuSPCScaled());
-                            ps.setDouble(30, ncr.getSplADRScaled());
-                            ps.setDouble(31, ncr.getAersScaled());
-                            ps.setDouble(32, ncr.getAersPRRScaled());
-                            ps.setDouble(33, ncr.getMedlineCtBeta());
-                            ps.setDouble(34, ncr.getMedlineCaseBeta());
-                            ps.setDouble(35, ncr.getMedlineOtherBeta());
-                            ps.setDouble(36, ncr.getSemmeddbCtTBeta());
-                            ps.setDouble(37, ncr.getSemmeddbCaseTBeta());
-                            ps.setDouble(38, ncr.getSemmeddbOtherFBeta());
-                            ps.setDouble(39, ncr.getSemmeddbCtFBeta());
-                            ps.setDouble(40, ncr.getSemmeddbCaseFBeta());
-                            ps.setDouble(41, ncr.getSemmeddbOtherFBeta());
-                            ps.setDouble(42, ncr.getEuSPCBeta());
-                            ps.setDouble(43, ncr.getSplADRBeta());
-                            ps.setDouble(44, ncr.getAersBeta());
-                            ps.setDouble(45, ncr.getAersPRRBeta());
-                            ps.setDouble(46, ncr.getRawPrediction());
-                            ps.setDouble(47, ncr.getPrediction());
+														ps.setLong(1, ncr.getEvidenceJobId());
+                            ps.setInt(2, ncr.getSourceId());
+                            ps.setInt(3, ncr.getConceptSetId());
+                            ps.setString(4, ncr.getConceptSetName());
+														ps.setInt(5, ncr.getNegativeControl());
+                            ps.setInt(6, ncr.getConceptId());
+                            ps.setString(7, ncr.getConceptName());
+                            ps.setString(8, ncr.getDomainId());
+                            ps.setLong(9, ncr.getSortOrder());
+                            ps.setLong(10, ncr.getDescendantPmidCount());
+                            ps.setLong(11, ncr.getExactPmidCount());
+                            ps.setLong(12, ncr.getParentPmidCount());
+                            ps.setLong(13, ncr.getAncestorPmidCount());
+                            ps.setInt(14, ncr.getIndCi());
+														ps.setInt(15, ncr.getTooBroad());
+                            ps.setInt(16, ncr.getDrugInduced());
+														ps.setInt(17, ncr.getPregnancy());
+                            ps.setLong(18, ncr.getDescendantSplicerCount());
+														ps.setLong(19, ncr.getExactSplicerCount());
+														ps.setLong(20, ncr.getParentSplicerCount());
+														ps.setLong(21, ncr.getAncestorSplicerCount());
+														ps.setLong(22,ncr.getDescendantFaersCount());
+														ps.setLong(23, ncr.getExactFaersCount());
+														ps.setLong(24, ncr.getParentFaersCount());
+														ps.setLong(25, ncr.getAncestorFaersCount());
+                            ps.setInt(26, ncr.getUserExcluded());
+                            ps.setInt(27, ncr.getUserIncluded());
+														ps.setInt(28, ncr.getOptimizedOut());
+														ps.setInt(29, ncr.getNotPrevalent());
                         }
 
                         @Override
@@ -171,6 +184,12 @@ public class NegativeControlTasklet implements Tasklet {
                             return recs.size();
                         }
                     });
+                    
+                    // Clean up the results from the evidence daimon
+                    String deleteJobSql = EvidenceService.getJobResultsDeleteStatementSql(evidenceSchema, evidenceJobId);
+                    NegativeControlTasklet.this.evidenceJdbcTemplate.execute(deleteJobSql);
+                    
+                    return recCount;
                 }
             });
             log.debug("Update count: " + ret.length);

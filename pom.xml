@@ -225,6 +225,30 @@
         </executions>
         <configuration>
            <licence>cHJvamVjdHxvcmcub2hkc2kuV2ViQVBJfDIwMjAtMDMtMzF8dHJ1ZXwtMSNNQzBDRkNNQ2R2ZEhjbDg0Z2tONVI3bHlmQ2Y4SnNkYUFoVUFoMkdtOUVFdy9RelpLVzM1V2p6a2FsdzJZV009</licence>
+           <restModel>
+						<httpStatusCodes>
+							<httpStatusCode>
+									<httpCode>200</httpCode>
+									<document>always</document>
+									<defaultMessage>The service call has completed successfully.</defaultMessage>
+							</httpStatusCode>
+							<httpStatusCode>
+									<httpCode>401</httpCode>
+									<document>Authorization Exception</document>
+									<defaultMessage>The user is not authorized to use this service.</defaultMessage>
+							</httpStatusCode>
+							<httpStatusCode>
+									<httpCode>412</httpCode>
+									<document>put,post</document>
+									<defaultMessage>Invalid JSON/XML input.</defaultMessage>
+							</httpStatusCode>
+							<httpStatusCode>
+									<httpCode>500</httpCode>
+									<document>always</document>
+									<defaultMessage>The service call has not succeeded.</defaultMessage>
+							</httpStatusCode>
+						</httpStatusCodes>
+           </restModel>
         </configuration>
       </plugin>
     </plugins>

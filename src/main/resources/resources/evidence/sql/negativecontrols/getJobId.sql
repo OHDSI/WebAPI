@@ -1,0 +1,1 @@
+INSERT INTO @evidenceSchema.evidence_job SELECT MAX(id) + 1 from @evidenceSchema.evidence_job;

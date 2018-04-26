@@ -10,12 +10,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 
 /**
  * Launch as java application or deploy as WAR (@link {@link WebApplication}
  * will source this file).
  */
+@EnableScheduling
 @SpringBootApplication(exclude={HibernateJpaAutoConfiguration.class})
 public class WebApi extends SpringBootServletInitializer {
 

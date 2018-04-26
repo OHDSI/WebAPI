@@ -57,11 +57,13 @@ public class DDLService {
 		"/ddl/results/ir_analysis_dist.sql",
 		"/ddl/results/ir_analysis_result.sql",
 		"/ddl/results/ir_analysis_strata_stats.sql",
-		"/ddl/results/ir_strata.sql"
+		"/ddl/results/ir_strata.sql",
+		"/ddl/results/heracles_periods.sql"
 	);
 
 	public static final Collection<String> RESULT_INIT_FILE_PATHS = Arrays.asList(
-		"/ddl/results/init_heracles_analysis.sql"
+		"/ddl/results/init_heracles_analysis.sql",
+		"/ddl/results/init_heracles_periods.sql"
 	);
 
 	private static final Collection<String> RESULT_INDEX_FILE_PATHS = Arrays.asList(

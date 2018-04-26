@@ -26,6 +26,8 @@ public class CohortAnalysisTask {
 
 	private boolean cohortPeriodOnly;
 	
+	private String cdmVersion = "5";  // Default to CDM V5
+	
 	private List<String> visualizations;
 
 	private List<String> cohortDefinitionIds;
@@ -220,6 +222,21 @@ public class CohortAnalysisTask {
 		this.cohortPeriodOnly = cohortPeriodOnly;
 	}
 
+	/**
+	 * @return the cdmVersion
+	 */	
+	public String getCdmVersion() {
+		return cdmVersion;
+	}
+
+	/**
+	 * @param cdmVersion the cdmVersion to set
+	 */	
+	public void setCdmVersion(String cdmVersion) {
+		this.cdmVersion = cdmVersion;
+	}
+
+	
 
 	/**
 	 * @return the visualizations

@@ -7,8 +7,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 import org.apache.commons.lang.ArrayUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
+import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.source.Source;
 import org.springframework.jdbc.core.PreparedStatementSetter;
@@ -23,6 +25,7 @@ import org.springframework.jdbc.core.PreparedStatementSetter;
 public class PreparedStatementRenderer {
 
   private String sql;
+	private String debugSql;
   private String sourceDialect = "sql server";
   private List<Object> orderedParamsList;
   private String targetDialect = "sql server";
@@ -69,7 +72,8 @@ public class PreparedStatementRenderer {
 
     validateArguments(source, sqlResource, searchRegexes, replacementStrings, sourceDialect, sqlVariableNames, sqlVariableValues);
     /// this part does the heavy lifting, the calling classes can get needed items through getters
-    sql = PreparedSqlRender.removeSqlComments(sql);
+		debugSql = sql;
+		sql = PreparedSqlRender.removeSqlComments(sql);
 
     updateSqlWithVariableSearchAndReplace(searchRegexes, replacementStrings);
     paramValueMap = buildParamValueMap(sqlVariableNames, sqlVariableValues);
@@ -286,5 +290,10 @@ public class PreparedStatementRenderer {
     return value;
   }
 
-
+	public String generateDebugSql(String sql, String[] searchRegexes, String[] replacementStrings, String[] sqlVariableNames, Object[]sqlVariableValues)
+	{
+		String[] vars = Stream.concat(Stream.of(searchRegexes), Stream.of(sqlVariableNames)).toArray(String[]::new);
+		String[] vals = Stream.concat(Stream.of(replacementStrings), Stream.of(sqlVariableValues)).map(Object::toString).toArray(size->new String[size]);
+		return SqlRender.renderSql(sql, vars, vals);
+	}
 }

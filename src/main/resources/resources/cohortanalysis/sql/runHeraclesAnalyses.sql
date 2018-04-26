@@ -73,17 +73,43 @@ delete from @results_schema.HERACLES_results_dist where cohort_definition_id IN 
 
 --7. generate results for analysis_results
 
-IF OBJECT_ID('HERACLES_cohort', 'U') IS NOT NULL --This should only do something in Oracle
-drop table HERACLES_cohort;
-
-IF OBJECT_ID('tempdb..#HERACLES_cohort', 'U') IS NOT NULL
-drop table #HERACLES_cohort;
-
 select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date 
 into #HERACLES_cohort
 from @results_schema.cohort
 where cohort_definition_id in (@cohort_definition_id)
-;  
+;
+create index ix_cohort_subject on #HERACLES_cohort (subject_id, cohort_start_date);
+
+select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date 
+into #cohort_first
+from (
+	select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date, row_number() over (partition by cohort_definition_id, subject_id order by cohort_start_date) as rn
+	FROM #HERACLES_cohort
+) F
+where F.rn = 1
+;
+
+create index ix_cohort_first_subject on #cohort_first (subject_id, cohort_start_date);
+
+SELECT hp.period_id, hp.period_start_date, hp.period_end_date
+into #periods_baseline
+FROM @results_schema.heracles_periods hp
+WHERE not (
+	hp.period_end_date <= (SELECT dateadd(d, -365, min(cohort_start_date)) FROM #HERACLES_cohort) or hp.period_start_date > (SELECT max(cohort_start_date) FROM #HERACLES_cohort)
+); -- only returns overlapping periods
+
+create index ix_periods_baseline_start on #periods_baseline (period_start_date);
+create index ix_periods_baseline_end on #periods_baseline (period_end_date);
+
+SELECT hp.period_id, hp.period_start_date, hp.period_end_date
+into #periods_atrisk
+FROM @results_schema.heracles_periods hp
+WHERE not (
+	hp.period_end_date <= (SELECT min(cohort_start_date) FROM #HERACLES_cohort) or hp.period_start_date > (SELECT max(cohort_end_date) FROM #HERACLES_cohort)
+); -- only returns overlapping periods
+
+create index ix_periods_atrisk_start on #periods_atrisk (period_start_date);
+create index ix_periods_atrisk_end on #periods_atrisk (period_end_date);
 
 --{0 IN (@list_of_analysis_ids)}?{
 -- 0       Number of persons
@@ -99,7 +125,8 @@ on p1.person_id = c1.subject_id
 group by c1.cohort_definition_id;
 
 --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, stratum_1, count_value)
-select c1.cohort_definition_id, 0 as analysis_id, '@source_name' as stratum_1, cast( '' as varchar(1) ) as stratum_2, 
+select c1.cohort_definition_id, 0 as analysis_id, '@source_name' as stratum_1, cast( '' as varchar(1) ) as stratum_2,
+cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 0 as min_value, 0 as max_value, 0 as avg_value, 0 as stdev_value, 0 as median_value,
 0 as p10_value, 0 as p25_value, 0 as p75_value, 0 as p90_value,
 COUNT_BIG(distinct person_id) as count_value
@@ -365,6 +392,7 @@ select o.cohort_definition_id,
 	103 as analysis_id,
 	cast( '' as varchar(1) ) as stratum_1, 
 	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -435,6 +463,7 @@ select o.cohort_definition_id,
 	104 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
 	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -515,6 +544,7 @@ select o.cohort_definition_id,
 	105 as analysis_id,
 	cast( '' as varchar(1) ) as stratum_1, 
 	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -590,6 +620,7 @@ select o.cohort_definition_id,
 	106 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
 	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -666,6 +697,7 @@ select o.cohort_definition_id,
 	107 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
 	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -715,10 +747,7 @@ DROP TABLE #raw_107;
   --{109 IN (@list_of_analysis_ids)}?{
   -- 109   Number of persons with continuous observation in each year
   -- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
-  
-  IF OBJECT_ID('temp_dates', 'U') IS NOT NULL --This should only do something in Oracle
-  drop table temp_dates;
-  
+   
   SELECT DISTINCT 
   YEAR(observation_period_start_date) AS obs_year,
 	DATEFROMPARTS(YEAR(observation_period_start_date),1,1) as obs_year_start,
@@ -764,9 +793,6 @@ DROP TABLE #raw_107;
   --{110 IN (@list_of_analysis_ids)}?{
   -- 110   Number of persons with continuous observation in each month
   -- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
-  
-  IF OBJECT_ID('temp_dates', 'U') IS NOT NULL --This should only do something in Oracle
-  drop table temp_dates;
   
   SELECT DISTINCT 
   YEAR(observation_period_start_date)*100 + MONTH(observation_period_start_date) AS obs_month,
@@ -917,10 +943,7 @@ DROP TABLE #raw_107;
   --{116 IN (@list_of_analysis_ids)}?{
   -- 116   Number of persons with at least one day of observation in each year by gender and age decile
   -- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
-  
-  IF OBJECT_ID('temp_dates', 'U') IS NOT NULL --This should only do something in Oracle
-  drop table temp_dates;
-  
+
   select distinct 
   YEAR(observation_period_start_date) as obs_year 
   INTO
@@ -967,10 +990,7 @@ DROP TABLE #raw_107;
   --{117 IN (@list_of_analysis_ids)}?{
   -- 117   Number of persons with at least one day of observation in each year by gender and age decile
   -- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
-  
-  IF OBJECT_ID('temp_dates', 'U') IS NOT NULL --This should only do something in Oracle
-  drop table temp_dates;
-  
+    
   select distinct 
   YEAR(observation_period_start_date)*100 + MONTH(observation_period_start_date)  as obs_month
   into 
@@ -1006,7 +1026,6 @@ DROP TABLE #raw_107;
   DROP TABLE #temp_dates_4;
   
   --}
-  
   
   --/********************************************
   
@@ -1165,6 +1184,7 @@ select o.cohort_definition_id,
 	203 as analysis_id,
 	cast( '' as varchar(1) ) as stratum_1, 
 	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -1284,6 +1304,7 @@ select o.cohort_definition_id,
 	206 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
 	CAST(o.stratum_2 as VARCHAR) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -1436,6 +1457,7 @@ select o.cohort_definition_id,
 	211 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
 	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -1457,9 +1479,8 @@ DROP TABLE #raw_211;
 
  --}
   
-  --{220 IN (@list_of_analysis_ids)}?{
+{220 IN (@list_of_analysis_ids)}?{
   -- 220   Number of visit occurrence records by condition occurrence start month
-  --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
   select c1.cohort_definition_id, 
   220 as analysis_id,   
   YEAR(visit_start_date)*100 + month(visit_start_date) as stratum_1, 
@@ -1470,17 +1491,13 @@ DROP TABLE #raw_211;
   @CDM_schema.visit_occurrence vo1
   inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
   on vo1.person_id = c1.subject_id
-  --{@cohort_period_only == 'true'}?{  
+  {@cohort_period_only == 'true'}?{  
   WHERE vo1.visit_start_date>=c1.cohort_start_date and vo1.visit_end_date<=c1.cohort_end_date
-  --}  
+  }  
   group by c1.cohort_definition_id, YEAR(visit_start_date)*100 + month(visit_start_date)
   ;
-  --}
-  
-  
-  
-  
-  
+}
+
   --/********************************************
   
   --HERACLES Analyses on CONDITION_OCCURRENCE table
@@ -1631,6 +1648,7 @@ select o.cohort_definition_id,
 	403 as analysis_id,
 	cast( '' as varchar(1) ) as stratum_1, 
 	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -1780,6 +1798,7 @@ select o.cohort_definition_id,
 	406 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
 	CAST(o.stratum_2 as VARCHAR) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -2111,6 +2130,7 @@ select o.cohort_definition_id,
 	506 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
 	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -2229,6 +2249,7 @@ select o.cohort_definition_id,
 	511 as analysis_id,
 	cast( '' as varchar(1) ) as stratum_1, 
 	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -2302,6 +2323,7 @@ select o.cohort_definition_id,
 	512 as analysis_id,
 	cast( '' as varchar(1) ) as stratum_1, 
 	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -2374,6 +2396,7 @@ select o.cohort_definition_id,
 	513 as analysis_id,
 	cast( '' as varchar(1) ) as stratum_1, 
 	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -2448,6 +2471,7 @@ select o.cohort_definition_id,
 	514 as analysis_id,
 	cast( '' as varchar(1) ) as stratum_1, 
 	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -2522,6 +2546,7 @@ select o.cohort_definition_id,
 	515 as analysis_id,
 	cast( '' as varchar(1) ) as stratum_1, 
 	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -2694,6 +2719,7 @@ select o.cohort_definition_id,
 	603 as analysis_id,
 	cast( '' as varchar(1) ) as stratum_1, 
 	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -2843,6 +2869,7 @@ select o.cohort_definition_id,
 	606 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
 	CAST(o.stratum_2 as VARCHAR) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -3125,6 +3152,7 @@ select o.cohort_definition_id,
 	703 as analysis_id,
 	cast( '' as varchar(1) ) as stratum_1, 
 	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -3274,6 +3302,7 @@ select o.cohort_definition_id,
 	706 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
 	CAST(o.stratum_2 as VARCHAR) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -3443,6 +3472,7 @@ select o.cohort_definition_id,
 	715 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
 	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -3514,6 +3544,7 @@ select o.cohort_definition_id,
 	716 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
 	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -3584,6 +3615,7 @@ select o.cohort_definition_id,
 	717 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
 	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -3786,6 +3818,7 @@ select o.cohort_definition_id,
 	803 as analysis_id,
 	cast( '' as varchar(1) ) as stratum_1, 
 	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -3934,6 +3967,7 @@ select o.cohort_definition_id,
 	806 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
 	CAST(o.stratum_2 as VARCHAR) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -4140,6 +4174,7 @@ select o.cohort_definition_id,
 	815 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
 	CAST(o.stratum_2 as VARCHAR) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -4339,6 +4374,7 @@ select o.cohort_definition_id,
 	903 as analysis_id,
 	cast( '' as varchar(1) ) as stratum_1, 
 	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -4457,6 +4493,7 @@ select o.cohort_definition_id,
 	906 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
 	CAST(o.stratum_2 as VARCHAR) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -4527,6 +4564,7 @@ select o.cohort_definition_id,
 	907 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
 	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -4790,6 +4828,7 @@ select o.cohort_definition_id,
 	1003 as analysis_id,
 	cast( '' as varchar(1) ) as stratum_1, 
 	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -4907,6 +4946,7 @@ select o.cohort_definition_id,
 	1006 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
 	CAST(o.stratum_2 as VARCHAR) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -4979,6 +5019,7 @@ select o.cohort_definition_id,
 	1007 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
 	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -5336,6 +5377,7 @@ select o.cohort_definition_id,
 	1303 as analysis_id,
 	cast( '' as varchar(1) ) as stratum_1, 
 	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -5486,6 +5528,7 @@ select o.cohort_definition_id,
 	1306 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
 	CAST(o.stratum_2 as VARCHAR) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -5694,6 +5737,7 @@ select o.cohort_definition_id,
 	1315 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
 	CAST(o.stratum_2 as VARCHAR) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -5768,6 +5812,7 @@ select o.cohort_definition_id,
 	1316 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
 	CAST(o.stratum_2 as VARCHAR) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -5843,6 +5888,7 @@ select o.cohort_definition_id,
 	1317 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
 	CAST(o.stratum_2 as VARCHAR) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -6046,6 +6092,7 @@ select o.cohort_definition_id,
 	1801 as analysis_id,
 	cast( '' as varchar(1) ) as stratum_1, 
 	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -6114,6 +6161,7 @@ select o.cohort_definition_id,
 	1802 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
 	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -6182,6 +6230,7 @@ select o.cohort_definition_id,
 	1803 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
 	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -6325,6 +6374,7 @@ select o.cohort_definition_id,
 	1808 as analysis_id,
 	cast( '' as varchar(1) ) as stratum_1, 
 	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -6393,6 +6443,7 @@ select o.cohort_definition_id,
 	1809 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
 	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -6461,6 +6512,7 @@ select o.cohort_definition_id,
 	1810 as analysis_id,
 	CAST(o.stratum_1 as VARCHAR) as stratum_1, 
 	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -6528,6 +6580,7 @@ select o.cohort_definition_id,
 	1811 as analysis_id,
 	cast( '' as varchar(1) ) as stratum_1, 
 	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -6596,6 +6649,7 @@ select o.cohort_definition_id,
 	1812 as analysis_id,
 	cast( '' as varchar(1) ) as stratum_1, 
 	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -6664,6 +6718,7 @@ select o.cohort_definition_id,
 	1813 as analysis_id,
 	cast( '' as varchar(1) ) as stratum_1, 
 	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
 	o.total as count_value,
 	o.min_value,
 	o.max_value,
@@ -6743,7 +6798,6 @@ DROP TABLE #raw_1813;
   group by cohort_definition_id, num_periods
   ;
 }
-  
   
 {1820 IN (@list_of_analysis_ids)}?{
   -- 1820                Number of persons by duration from cohort start to first occurrence of condition occurrence, by condition_concept_id
@@ -8074,849 +8128,4937 @@ DROP TABLE #raw_1813;
   GROUP BY care_site_id, site_source_value, obs_date
   ) entropyT;
   --}
-  
+
+-- ******************************
+-- Healthcare Utlization Analysis
+-- ******************************
+
+{4000 IN (@list_of_analysis_ids)}?{
+-- 4000	Distribution of observation period days by period_id in the 365 days prior to first cohort_start_date
+with observation_periods (cohort_definition_id, subject_id, op_start_date, op_end_date) as
+(
+	select cohort_definition_id
+	, subject_id
+	, case
+				when op.observation_period_start_date < dateadd(d, -365, c2.cohort_start_date) then dateadd(d, -365, c2.cohort_start_date)
+				else op.observation_period_start_date
+				end as op_start_date
+	, case
+				when op.observation_period_end_date > dateadd(d, -1, c2.cohort_start_date) then dateadd(d, -1, c2.cohort_start_date)
+				else op.observation_period_end_date
+				end as op_end_date
+	from #cohort_first c2
+	inner join @CDM_schema.observation_period as op on c2.subject_id = op.person_id
+		and not (
+			op.observation_period_end_date < dateadd(d, -365, c2.cohort_start_date) or op.observation_period_start_date >= c2.cohort_start_date
+		) -- only returns overlapping periods
+)
+select cohort_definition_id, subject_id, op_start_date, op_end_date
+INTO #raw_4000
+from observation_periods
+;
+
+
+WITH cteRawData (cohort_definition_id, subject_id, stratum_1, count_value) as
+(
+	select op.cohort_definition_id,
+		op.subject_id,
+		hp.period_id as stratum_1,
+		sum(datediff(dd,
+			case when hp.period_start_date < op_start_date then op_start_date else hp.period_start_date end,
+			case when hp.period_end_date > op.op_end_date then op.op_end_date else hp.period_end_date end)
+		) as count_value
+	from #raw_4000 op
+	join #periods_baseline hp on
+		not (hp.period_end_date <= op.op_start_date or hp.period_start_date > op.op_end_date) -- find overlapping periods with the cohort's observation periods
+	group by op.cohort_definition_id, op.subject_id, hp.period_id
+
+	union all
+
+	select op.cohort_definition_id,
+		op.subject_id,
+		0 as stratum_1,
+		sum(datediff(dd,op.op_start_date,op.op_end_date)) as count_value
+	from #raw_4000 op
+	group by op.cohort_definition_id, op.subject_id
+),
+overallStats (cohort_definition_id, stratum_1, avg_value, stdev_value, min_value, max_value, total) as
+(
+	select cohort_definition_id, stratum_1,
+		avg(1.0 * count_value) as avg_value,
+		stdev(count_value) as stdev_value,
+		min(count_value) as min_value,
+		max(count_value) as max_value,
+		count_big(*) as total
+	from cteRawData
+	group by cohort_definition_id, stratum_1
+),
+valueStats (cohort_definition_id, stratum_1, count_value, total, accumulated) as
+(
+	select cohort_definition_id, stratum_1,
+		count_value,
+		total,
+		SUM(total) over (partition by cohort_definition_id, stratum_1 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, count_value
+	) D
+)
+select o.cohort_definition_id,
+	4000 as analysis_id,
+	case when o.stratum_1 = 0 then cast('' as varchar(255)) else cast(o.stratum_1 as varchar(255)) end as stratum_1,
+	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_4000
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1
+GROUP BY o.cohort_definition_id, o.stratum_1, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_4000;
+DROP TABLE #raw_4000;
+}
+
+{4001 IN (@list_of_analysis_ids)}?{
+	-- 4001 Number of subjects with visits by period_id, by visit_concept_id, by visit_type_concept_id in the 365d prior to first cohort start date
+
+with visit_records (cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id, visit_start_date) as
+(
+	select distinct c1.cohort_definition_id,
+		c1.subject_id,
+		vca.ancestor_concept_id as visit_concept_id,
+		vo1.visit_type_concept_id,
+		vo1.visit_start_date
+	from #cohort_first c1
+	join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
+			and vo1.visit_start_date >= dateadd(d, -365, c1.cohort_start_date) and vo1.visit_start_date < c1.cohort_start_date
+	join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
+)
+select cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id, visit_start_date
+INTO #raw_4001
+FROM visit_records;
+
+
+with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id) as
+(
+	-- period_id, visit_concept_id, visit_type_concept_id
+	select distinct cohort_definition_id
+		, period_id as stratum_1
+		, visit_concept_id as stratum_2
+		, visit_type_concept_id as stratum_3
+		, subject_id
+	from #raw_4001
+	join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+
+	UNION ALL
+  -- period_id, visit_concept_id
+	select distinct cohort_definition_id
+		, period_id as stratum_1
+		, visit_concept_id as stratum_2
+		, 0 as stratum_3
+		, subject_id
+	from #raw_4001
+	join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+
+	UNION ALL
+
+  -- period_id
+	select distinct cohort_definition_id
+		, period_id as stratum_1
+		, 0 as stratum_2
+		, 0 as stratum_3
+		, subject_id
+	from #raw_4001
+	join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+
+	UNION ALL
+
+  -- visit_concept_id, visit_type_concept_id
+	select distinct cohort_definition_id
+		, 0 as stratum_1
+		, visit_concept_id as stratum_2
+		, visit_type_concept_id as stratum_3
+		, subject_id
+	from #raw_4001
+
+	UNION ALL
+  -- period_id, visit_concept_id
+	select distinct cohort_definition_id
+		, 0 as stratum_1
+		, visit_concept_id as stratum_2
+		, 0 as stratum_3
+		, subject_id
+	from #raw_4001
+
+	UNION ALL
+  --
+	select distinct cohort_definition_id
+		, 0 as stratum_1
+		, 0 as stratum_2
+		, 0 as stratum_3
+		, subject_id
+	from #raw_4001
+)
+select cohort_definition_id, 4001 as analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
+INTO #results_4001
+from
+(
+select cohort_definition_id
+		, case when stratum_1 = 0 then cast('' as varchar(255)) else cast(stratum_1 as varchar(255)) end as stratum_1
+		, case when stratum_2 = 0 then cast('' as varchar(255)) else cast(stratum_2 as varchar(255)) end as stratum_2
+		, case when stratum_3 = 0 then cast('' as varchar(255)) else cast(stratum_3 as varchar(255)) end as stratum_3
+		, cast('' as varchar(255)) as stratum_4, cast('' as varchar(255)) as stratum_5
+		, COUNT_BIG(subject_id) as count_value
+	from cteRawData
+	group by cohort_definition_id, stratum_1, stratum_2, stratum_3
+) D;
+
+TRUNCATE TABLE #raw_4001;
+DROP TABLE #raw_4001;
+}
+
+{4002 IN (@list_of_analysis_ids)}?{
+	-- 4002 Distribution of number of visit occurrence records per subject by period_id, by visit_concept_id, by visit_type_concept_id in 365d prior to cohort start date
+select distinct c1.cohort_definition_id,
+	c1.subject_id,
+	vca.ancestor_concept_id as visit_concept_id,
+	vo1.visit_type_concept_id,
+	vo1.visit_occurrence_id,
+	vo1.visit_start_date
+INTO #raw_4002
+from #cohort_first c1
+join @CDM_schema.visit_occurrence vo1 on c1.subject_id = vo1.person_id
+	and vo1.visit_start_date >= dateadd(d, -365, c1.cohort_start_date) and vo1.visit_start_date < c1.cohort_start_date
+join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
+;
+-- period_id, visit_concept_id, visit_type_concept_id
+select cohort_definition_id
+	, subject_id
+	, period_id as stratum_1
+	, visit_concept_id as stratum_2
+	, visit_type_concept_id as stratum_3
+	, count(distinct visit_occurrence_id) as count_value
+into #raw_4002_u1
+from #raw_4002
+join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id, visit_type_concept_id
+;
+-- period_id, visit_concept_id
+select distinct cohort_definition_id
+	, subject_id
+	, period_id as stratum_1
+	, visit_concept_id as stratum_2
+	, 0 as stratum_3
+	, count(distinct visit_occurrence_id) as count_value
+into #raw_4002_u2
+from #raw_4002
+join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id
+;
+-- period_id
+select distinct cohort_definition_id
+	, subject_id
+	, period_id as stratum_1
+	, 0 as stratum_2
+	, 0 as stratum_3
+	, count(distinct visit_occurrence_id) as count_value
+into #raw_4002_u3
+from #raw_4002
+join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+GROUP BY cohort_definition_id, subject_id, period_id
+;
+-- visit_concept_id, visit_type_concept_id
+select distinct cohort_definition_id
+	, subject_id
+	, 0 as stratum_1
+	, visit_concept_id as stratum_2
+	, visit_type_concept_id as stratum_3
+	, count(distinct visit_occurrence_id) as count_value
+into #raw_4002_u4
+from #raw_4002
+GROUP BY cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id
+;
+-- visit_concept_id
+select distinct cohort_definition_id
+	, subject_id
+	, 0 as stratum_1
+	, visit_concept_id as stratum_2
+	, 0 as stratum_3
+	, count(distinct visit_occurrence_id) as count_value
+into #raw_4002_u5
+from #raw_4002
+GROUP BY cohort_definition_id, subject_id, visit_concept_id
+;
+--
+select distinct cohort_definition_id
+	, subject_id
+	, 0 as stratum_1
+	, 0 as stratum_2
+	, 0 as stratum_3
+	, count(distinct visit_occurrence_id) as count_value
+into #raw_4002_u6
+from #raw_4002
+GROUP BY cohort_definition_id, subject_id
+;
+
+WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
+(
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	from #raw_4002_u1
+	UNION ALL
+
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	from #raw_4002_u2
+	UNION ALL
+
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	from #raw_4002_u3
+	UNION ALL
+
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	from #raw_4002_u4
+	UNION ALL
+
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	from #raw_4002_u5
+	UNION ALL
+
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	from #raw_4002_u6
+
+),
+overallStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, avg_value, stdev_value, min_value, max_value, total) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		avg(1.0 * count_value) as avg_value,
+		stdev(count_value) as stdev_value,
+		min(count_value) as min_value,
+		max(count_value) as max_value,
+		count_big(*) as total
+	from cteRawData
+	group by cohort_definition_id, stratum_1, stratum_2, stratum_3
+),
+valueStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		count_value,
+		total,
+		SUM(total) over (partition by cohort_definition_id, stratum_1, stratum_2, stratum_3 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value
+	) D
+)
+select o.cohort_definition_id,
+	4002 as analysis_id,
+	case when o.stratum_1 = 0 then cast('' as varchar(255)) else cast(o.stratum_1 as varchar(255)) end as stratum_1,
+	case when o.stratum_2 = 0 then cast('' as varchar(255)) else cast(o.stratum_2 as varchar(255)) end as stratum_2,
+	case when o.stratum_3 = 0 then cast('' as varchar(255)) else cast(o.stratum_3 as varchar(255)) end as stratum_3,
+	cast( '' as varchar(255) ) as stratum_4, cast( '' as varchar(255) ) as stratum_5,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_4002
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1 and s.stratum_2 = o.stratum_2 and s.stratum_3 = o.stratum_3
+GROUP BY o.cohort_definition_id, o.stratum_1, o.stratum_2, o.stratum_3, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_4002_u1;
+DROP TABLE #raw_4002_u1;
+
+TRUNCATE TABLE #raw_4002_u2;
+DROP TABLE #raw_4002_u2;
+
+TRUNCATE TABLE #raw_4002_u3;
+DROP TABLE #raw_4002_u3;
+
+TRUNCATE TABLE #raw_4002_u4;
+DROP TABLE #raw_4002_u4;
+
+TRUNCATE TABLE #raw_4002_u5;
+DROP TABLE #raw_4002_u5;
+
+TRUNCATE TABLE #raw_4002_u6;
+DROP TABLE #raw_4002_u6;
+
+TRUNCATE TABLE #raw_4002;
+DROP TABLE #raw_4002;
+}
+
+{4003 IN (@list_of_analysis_ids)}?{
+	-- 4003 Distribution of number of visit dates per subject by period_id, by visit_concept_id, by visit_type_concept_id in 365d prior to first cohort start date
+select distinct c1.cohort_definition_id,
+	c1.subject_id,
+	vca.ancestor_concept_id as visit_concept_id,
+	vo1.visit_type_concept_id,
+	vo1.visit_start_date
+INTO #raw_4003
+from #cohort_first c1
+join @CDM_schema.visit_occurrence vo1 on c1.subject_id = vo1.person_id
+	and vo1.visit_start_date >= dateadd(d, -365, c1.cohort_start_date) and vo1.visit_start_date < c1.cohort_start_date
+join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
+;
+-- period_id, visit_concept_id, visit_type_concept_id
+select cohort_definition_id
+	, subject_id
+	, period_id as stratum_1
+	, visit_concept_id as stratum_2
+	, visit_type_concept_id as stratum_3
+	, count(distinct visit_start_date) as count_value
+into #raw_4003_u1
+from #raw_4003
+join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id, visit_type_concept_id
+;
+-- period_id, visit_concept_id
+select distinct cohort_definition_id
+	, subject_id
+	, period_id as stratum_1
+	, visit_concept_id as stratum_2
+	, 0 as stratum_3
+	, count(distinct visit_start_date) as count_value
+into #raw_4003_u2
+from #raw_4003
+join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id
+;
+-- period_id
+select distinct cohort_definition_id
+	, subject_id
+	, period_id as stratum_1
+	, 0 as stratum_2
+	, 0 as stratum_3
+	, count(distinct visit_start_date) as count_value
+into #raw_4003_u3
+from #raw_4003
+join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+GROUP BY cohort_definition_id, subject_id, period_id;
+-- visit_concept_id, visit_type_concept_id
+select distinct cohort_definition_id
+	, subject_id
+	, 0 as stratum_1
+	, visit_concept_id as stratum_2
+	, visit_type_concept_id as stratum_3
+	, count(distinct visit_start_date) as count_value
+into #raw_4003_u4
+from #raw_4003
+GROUP BY cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id;
+-- visit_concept_id
+select distinct cohort_definition_id
+	, subject_id
+	, 0 as stratum_1
+	, visit_concept_id as stratum_2
+	, 0 as stratum_3
+	, count(distinct visit_start_date) as count_value
+into #raw_4003_u5
+from #raw_4003
+GROUP BY cohort_definition_id, subject_id, visit_concept_id;
+--
+select distinct cohort_definition_id
+	, subject_id
+	, 0 as stratum_1
+	, 0 as stratum_2
+	, 0 as stratum_3
+	, count(distinct visit_start_date) as count_value
+into #raw_4003_u6
+from #raw_4003
+GROUP BY cohort_definition_id, subject_id;
+
+WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
+(
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	FROM #raw_4003_u1
+	UNION ALL
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	FROM #raw_4003_u2
+	UNION ALL
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	FROM #raw_4003_u3
+	UNION ALL
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	FROM #raw_4003_u4
+	UNION ALL
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	FROM #raw_4003_u5
+	UNION ALL
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	FROM #raw_4003_u6
+),
+overallStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, avg_value, stdev_value, min_value, max_value, total) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		avg(1.0 * count_value) as avg_value,
+		stdev(count_value) as stdev_value,
+		min(count_value) as min_value,
+		max(count_value) as max_value,
+		count_big(*) as total
+	from cteRawData
+	group by cohort_definition_id, stratum_1, stratum_2, stratum_3
+),
+valueStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		count_value,
+		total,
+		SUM(total) over (partition by cohort_definition_id, stratum_1, stratum_2, stratum_3 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value
+	) D
+)
+select o.cohort_definition_id,
+	4003 as analysis_id,
+	case when o.stratum_1 = 0 then cast('' as varchar(255)) else cast(o.stratum_1 as varchar(255)) end as stratum_1,
+	case when o.stratum_2 = 0 then cast('' as varchar(255)) else cast(o.stratum_2 as varchar(255)) end as stratum_2,
+	case when o.stratum_3 = 0 then cast('' as varchar(255)) else cast(o.stratum_3 as varchar(255)) end as stratum_3,
+	cast( '' as varchar(255) ) as stratum_4, cast( '' as varchar(255) ) as stratum_5,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_4003
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1 and s.stratum_2 = o.stratum_2 and s.stratum_3 = o.stratum_3
+GROUP BY o.cohort_definition_id, o.stratum_1, o.stratum_2, o.stratum_3, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_4003_u1;
+DROP TABLE #raw_4003_u1;
+
+TRUNCATE TABLE #raw_4003_u2;
+DROP TABLE #raw_4003_u2;
+
+TRUNCATE TABLE #raw_4003_u3;
+DROP TABLE #raw_4003_u3;
+
+TRUNCATE TABLE #raw_4003_u4;
+DROP TABLE #raw_4003_u4;
+
+TRUNCATE TABLE #raw_4003_u5;
+DROP TABLE #raw_4003_u5;
+
+TRUNCATE TABLE #raw_4003_u6;
+DROP TABLE #raw_4003_u6;
+
+TRUNCATE TABLE #raw_4003;
+DROP TABLE #raw_4003;
+}
+
+
+{4004 IN (@list_of_analysis_ids)}?{
+	-- 4004 Distribution of number of care_site+visit dates per subject by period_id, by visit_concept_id, by visit_type_concept_id in 365d prior to first cohort start date
+select distinct c1.cohort_definition_id,
+	c1.subject_id,
+	vca.ancestor_concept_id as visit_concept_id,
+	vo1.visit_type_concept_id,
+	vo1.visit_start_date,
+	cast(care_site_id as varchar(19)) + '_' + CAST(YEAR(visit_start_date) as varchar(4)) + CAST(RIGHT('00' + cast(MONTH(visit_start_date) as varchar(2)),2) as varchar(2)) + CAST(RIGHT('00' + cast(DAY(visit_start_date) as varchar(2)),2) as varchar(2)) as care_site_date_id
+INTO #raw_4004
+from #cohort_first c1
+join @CDM_schema.visit_occurrence vo1 on c1.subject_id = vo1.person_id
+	and vo1.visit_start_date >= dateadd(d, -365, c1.cohort_start_date) and vo1.visit_start_date < c1.cohort_start_date
+join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
+;
+-- period_id, visit_concept_id, visit_type_concept_id
+select cohort_definition_id
+	, subject_id
+	, period_id as stratum_1
+	, visit_concept_id as stratum_2
+	, visit_type_concept_id as stratum_3
+	, count(distinct care_site_date_id) as count_value
+into #raw_4004_u1
+from #raw_4004
+join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id, visit_type_concept_id
+;
+-- period_id, visit_concept_id
+select distinct cohort_definition_id
+	, subject_id
+	, period_id as stratum_1
+	, visit_concept_id as stratum_2
+	, 0 as stratum_3
+	, count(distinct care_site_date_id) as count_value
+into #raw_4004_u2
+from #raw_4004
+join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id
+;
+-- period_id
+select distinct cohort_definition_id
+	, subject_id
+	, period_id as stratum_1
+	, 0 as stratum_2
+	, 0 as stratum_3
+	, count(distinct care_site_date_id) as count_value
+into #raw_4004_u3
+from #raw_4004
+join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+GROUP BY cohort_definition_id, subject_id, period_id;
+-- visit_concept_id, visit_type_concept_id
+select distinct cohort_definition_id
+	, subject_id
+	, 0 as stratum_1
+	, visit_concept_id as stratum_2
+	, visit_type_concept_id as stratum_3
+	, count(distinct care_site_date_id) as count_value
+into #raw_4004_u4
+from #raw_4004
+GROUP BY cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id;
+-- visit_concept_id
+select distinct cohort_definition_id
+	, subject_id
+	, 0 as stratum_1
+	, visit_concept_id as stratum_2
+	, 0 as stratum_3
+	, count(distinct care_site_date_id) as count_value
+into #raw_4004_u5
+from #raw_4004
+GROUP BY cohort_definition_id, subject_id, visit_concept_id;
+--
+select distinct cohort_definition_id
+	, subject_id
+	, 0 as stratum_1
+	, 0 as stratum_2
+	, 0 as stratum_3
+	, count(distinct care_site_date_id) as count_value
+into #raw_4004_u6
+from #raw_4004
+GROUP BY cohort_definition_id, subject_id;
+
+
+WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
+(
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	FROM #raw_4004_u1
+	UNION ALL
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	FROM #raw_4004_u2
+	UNION ALL
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	FROM #raw_4004_u3
+	UNION ALL
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	FROM #raw_4004_u4
+	UNION ALL
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	FROM #raw_4004_u5
+	UNION ALL
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	FROM #raw_4004_u6
+),
+overallStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, avg_value, stdev_value, min_value, max_value, total) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		avg(1.0 * count_value) as avg_value,
+		stdev(count_value) as stdev_value,
+		min(count_value) as min_value,
+		max(count_value) as max_value,
+		count_big(*) as total
+	from cteRawData
+	group by cohort_definition_id, stratum_1, stratum_2, stratum_3
+),
+valueStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		count_value,
+		total,
+		SUM(total) over (partition by cohort_definition_id, stratum_1, stratum_2, stratum_3 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value
+	) D
+)
+select o.cohort_definition_id,
+	4004 as analysis_id,
+	case when o.stratum_1 = 0 then cast('' as varchar(255)) else cast(o.stratum_1 as varchar(255)) end as stratum_1,
+	case when o.stratum_2 = 0 then cast('' as varchar(255)) else cast(o.stratum_2 as varchar(255)) end as stratum_2,
+	case when o.stratum_3 = 0 then cast('' as varchar(255)) else cast(o.stratum_3 as varchar(255)) end as stratum_3,
+	cast( '' as varchar(255) ) as stratum_4, cast( '' as varchar(255) ) as stratum_5,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_4004
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1 and s.stratum_2 = o.stratum_2 and s.stratum_3 = o.stratum_3
+GROUP BY o.cohort_definition_id, o.stratum_1, o.stratum_2, o.stratum_3, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_4004_u1;
+DROP TABLE #raw_4004_u1;
+
+TRUNCATE TABLE #raw_4004_u2;
+DROP TABLE #raw_4004_u2;
+
+TRUNCATE TABLE #raw_4004_u3;
+DROP TABLE #raw_4004_u3;
+
+TRUNCATE TABLE #raw_4004_u4;
+DROP TABLE #raw_4004_u4;
+
+TRUNCATE TABLE #raw_4004_u5;
+DROP TABLE #raw_4004_u5;
+
+TRUNCATE TABLE #raw_4004_u6;
+DROP TABLE #raw_4004_u6;
+
+TRUNCATE TABLE #raw_4004;
+DROP TABLE #raw_4004;
+}
+
+
+
+{4005 IN (@list_of_analysis_ids)}?{
+	-- 4005 Distribution of length of stay for inpatient visits per subject by period_id, by visit_concept_id, by visit_type_concept_id in the 365 days prior to first cohort_start_date
+select distinct c1.cohort_definition_id,
+	c1.subject_id,
+	vc1.ancestor_concept_id as visit_concept_id,
+	vo1.visit_type_concept_id,
+	vo1.visit_start_date,
+  datediff(dd,visit_start_date,visit_end_date) + 1 as duration
+INTO #raw_4005
+from #cohort_first c1
+join @CDM_schema.visit_occurrence vo1 on c1.subject_id = vo1.person_id
+	and vo1.visit_start_date >= dateadd(d, -365, c1.cohort_start_date) and vo1.visit_start_date < c1.cohort_start_date
+join (
+	select vc.ancestor_concept_id, vc.descendant_concept_id
+	from @CDM_schema.concept_ancestor as vc
+	inner join @CDM_schema.concept as co on vc.descendant_concept_id = co.concept_id
+	where lower(co.concept_name) like '%inpatient%'
+) as vc1 on vo1.visit_concept_id = vc1.descendant_concept_id
+;
+-- period_id, visit_concept_id, visit_type_concept_id
+select cohort_definition_id
+	, subject_id
+	, period_id as stratum_1
+	, visit_concept_id as stratum_2
+	, visit_type_concept_id as stratum_3
+	, sum(duration) as count_value
+into #raw_4005_u1
+from #raw_4005
+join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id, visit_type_concept_id
+;
+-- period_id, visit_concept_id
+select distinct cohort_definition_id
+	, subject_id
+	, period_id as stratum_1
+	, visit_concept_id as stratum_2
+	, 0 as stratum_3
+	, sum(duration) as count_value
+into #raw_4005_u2
+from #raw_4005
+join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id
+;
+
+-- visit_concept_id, visit_type_concept_id
+select distinct cohort_definition_id
+	, subject_id
+	, 0 as stratum_1
+	, visit_concept_id as stratum_2
+	, visit_type_concept_id as stratum_3
+	, sum(duration) as count_value
+into #raw_4005_u4
+from #raw_4005
+GROUP BY cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id;
+-- visit_concept_id
+select distinct cohort_definition_id
+	, subject_id
+	, 0 as stratum_1
+	, visit_concept_id as stratum_2
+	, 0 as stratum_3
+	, sum(duration) as count_value
+into #raw_4005_u5
+from #raw_4005
+GROUP BY cohort_definition_id, subject_id, visit_concept_id;
+
+
+WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
+(
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	FROM #raw_4005_u1
+	UNION ALL
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	FROM #raw_4005_u2
+	UNION ALL
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	FROM #raw_4005_u4
+	UNION ALL
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	FROM #raw_4005_u5
+),
+overallStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, avg_value, stdev_value, min_value, max_value, total) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		avg(1.0 * count_value) as avg_value,
+		stdev(count_value) as stdev_value,
+		min(count_value) as min_value,
+		max(count_value) as max_value,
+		count_big(*) as total
+	from cteRawData
+	group by cohort_definition_id, stratum_1, stratum_2, stratum_3
+),
+valueStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		count_value,
+		total,
+		SUM(total) over (partition by cohort_definition_id, stratum_1, stratum_2, stratum_3 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value
+	) D
+)
+select o.cohort_definition_id,
+	4005 as analysis_id,
+	case when o.stratum_1 = 0 then cast('' as varchar(255)) else cast(o.stratum_1 as varchar(255)) end as stratum_1,
+	case when o.stratum_2 = 0 then cast('' as varchar(255)) else cast(o.stratum_2 as varchar(255)) end as stratum_2,
+	case when o.stratum_3 = 0 then cast('' as varchar(255)) else cast(o.stratum_3 as varchar(255)) end as stratum_3,
+	cast( '' as varchar(255) ) as stratum_4, cast( '' as varchar(255) ) as stratum_5,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_4005
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1 and s.stratum_2 = o.stratum_2 and s.stratum_3 = o.stratum_3
+GROUP BY o.cohort_definition_id, o.stratum_1, o.stratum_2, o.stratum_3, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_4005_u1;
+DROP TABLE #raw_4005_u1;
+
+TRUNCATE TABLE #raw_4005_u2;
+DROP TABLE #raw_4005_u2;
+
+TRUNCATE TABLE #raw_4005_u4;
+DROP TABLE #raw_4005_u4;
+
+TRUNCATE TABLE #raw_4005_u5;
+DROP TABLE #raw_4005_u5;
+
+TRUNCATE TABLE #raw_4005;
+DROP TABLE #raw_4005;
+}
+
+
+{4006 IN (@list_of_analysis_ids)}?{
+-- 4006 Distribution of observation period days per subject, by period_id during cohort period
+
+WITH cteRawData (cohort_definition_id, subject_id, stratum_1, count_value) as
+(
+	select c1.cohort_definition_id,
+		c1.subject_id,
+		cast(hp.period_id as varchar(50)) as stratum_1,
+		sum(datediff(dd,
+			case when hp.period_start_date < c1.cohort_start_date then c1.cohort_start_date else hp.period_start_date end,
+			case when hp.period_end_date > c1.cohort_end_date then c1.cohort_end_date else hp.period_end_date end)
+		) as count_value
+	from #HERACLES_cohort c1
+		join @results_schema.heracles_periods hp on not (hp.period_end_date <= c1.cohort_start_date or hp.period_start_date >  c1.cohort_end_date) -- find overlapping periods with the cohort's observation periods
+	group by c1.cohort_definition_id, c1.subject_id, hp.period_id
+
+	union all
+
+	select c1.cohort_definition_id,
+		c1.subject_id,
+		cast('' as varchar(1)) as stratum_1,
+		sum(datediff(dd,c1.cohort_start_date,c1.cohort_end_date)) as count_value
+	from #HERACLES_cohort c1
+	group by c1.cohort_definition_id, c1.subject_id
+),
+overallStats (cohort_definition_id, stratum_1, avg_value, stdev_value, min_value, max_value, total) as
+(
+	select cohort_definition_id, stratum_1,
+		avg(1.0 * count_value) as avg_value,
+		stdev(count_value) as stdev_value,
+		min(count_value) as min_value,
+		max(count_value) as max_value,
+		count_big(*) as total
+	from cteRawData
+	group by cohort_definition_id, stratum_1
+),
+valueStats (cohort_definition_id, stratum_1, count_value, total, accumulated) as
+(
+	select cohort_definition_id, stratum_1,
+		count_value,
+		total,
+		SUM(total) over (partition by cohort_definition_id, stratum_1 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, count_value
+	) D
+)
+select o.cohort_definition_id,
+	4006 as analysis_id,
+	o.stratum_1,
+	cast( '' as varchar(1) ) as stratum_2,
+	cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_4006
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1
+GROUP BY o.cohort_definition_id, o.stratum_1, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+}
+
+
+{4007 IN (@list_of_analysis_ids)}?{
+	-- 4007 Number of subjects with visits by period_id, by visit_concept_id, by visit_type_concept_id during the cohort period
+
+with visit_records (cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id, visit_start_date) as
+(
+	select distinct c1.cohort_definition_id,
+		c1.subject_id,
+		vca.ancestor_concept_id as visit_concept_id,
+		vo1.visit_type_concept_id,
+		vo1.visit_start_date
+	from #HERACLES_cohort c1
+	join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
+		and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date <= c1.cohort_end_date
+	join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
+)
+select cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id, visit_start_date
+INTO #raw_4007
+FROM visit_records;
+
+with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id) as
+(
+	-- period_id, visit_concept_id, visit_type_concept_id
+	select distinct cohort_definition_id
+		, period_id as stratum_1
+		, visit_concept_id as stratum_2
+		, visit_type_concept_id as stratum_3
+		, subject_id
+	from #raw_4007
+	join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+
+	UNION ALL
+  -- period_id, visit_concept_id
+	select distinct cohort_definition_id
+		, period_id as stratum_1
+		, visit_concept_id as stratum_2
+		, 0 as stratum_3
+		, subject_id
+	from #raw_4007
+	join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+
+	UNION ALL
+
+  -- period_id
+	select distinct cohort_definition_id
+		, period_id as stratum_1
+		, 0 as stratum_2
+		, 0 as stratum_3
+		, subject_id
+	from #raw_4007
+	join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+
+	UNION ALL
+
+  -- visit_concept_id, visit_type_concept_id
+	select distinct cohort_definition_id
+		, 0 as stratum_1
+		, visit_concept_id as stratum_2
+		, visit_type_concept_id as stratum_3
+		, subject_id
+	from #raw_4007
+
+	UNION ALL
+  -- period_id, visit_concept_id
+	select distinct cohort_definition_id
+		, 0 as stratum_1
+		, visit_concept_id as stratum_2
+		, 0 as stratum_3
+		, subject_id
+	from #raw_4007
+
+	UNION ALL
+  --
+	select distinct cohort_definition_id
+		, 0 as stratum_1
+		, 0 as stratum_2
+		, 0 as stratum_3
+		, subject_id
+	from #raw_4007
+)
+select cohort_definition_id, 4007 as analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
+INTO #results_4007
+from
+(
+select cohort_definition_id
+		, case when stratum_1 = 0 then cast('' as varchar(255)) else cast(stratum_1 as varchar(255)) end as stratum_1
+		, case when stratum_2 = 0 then cast('' as varchar(255)) else cast(stratum_2 as varchar(255)) end as stratum_2
+		, case when stratum_3 = 0 then cast('' as varchar(255)) else cast(stratum_3 as varchar(255)) end as stratum_3
+		, cast('' as varchar(255)) as stratum_4, cast('' as varchar(255)) as stratum_5
+		, COUNT_BIG(subject_id) as count_value
+	from cteRawData
+	group by cohort_definition_id, stratum_1, stratum_2, stratum_3
+) D;
+
+TRUNCATE TABLE #raw_4007;
+DROP TABLE #raw_4007;
+}
+
+
+{4008 IN (@list_of_analysis_ids)}?{
+	-- 4008 Distribution of number of visit occurrence records per subject by period_id, by visit_concept_id, by visit_type_concept_id during the cohort period
+select distinct c1.cohort_definition_id,
+	c1.subject_id,
+	vca.ancestor_concept_id as visit_concept_id,
+	vo1.visit_type_concept_id,
+	vo1.visit_occurrence_id,
+	vo1.visit_start_date
+INTO #raw_4008
+from #HERACLES_cohort c1
+join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
+	and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date <= c1.cohort_end_date
+join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
+;
+-- period_id, visit_concept_id, visit_type_concept_id
+select cohort_definition_id
+	, subject_id
+	, period_id as stratum_1
+	, visit_concept_id as stratum_2
+	, visit_type_concept_id as stratum_3
+	, count(distinct visit_occurrence_id) as count_value
+into #raw_4008_u1
+from #raw_4008
+join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id, visit_type_concept_id
+;
+-- period_id, visit_concept_id
+select distinct cohort_definition_id
+	, subject_id
+	, period_id as stratum_1
+	, visit_concept_id as stratum_2
+	, 0 as stratum_3
+	, count(distinct visit_occurrence_id) as count_value
+into #raw_4008_u2
+from #raw_4008
+join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id
+;
+-- period_id
+select distinct cohort_definition_id
+	, subject_id
+	, period_id as stratum_1
+	, 0 as stratum_2
+	, 0 as stratum_3
+	, count(distinct visit_occurrence_id) as count_value
+into #raw_4008_u3
+from #raw_4008
+join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+GROUP BY cohort_definition_id, subject_id, period_id
+;
+-- visit_concept_id, visit_type_concept_id
+select distinct cohort_definition_id
+	, subject_id
+	, 0 as stratum_1
+	, visit_concept_id as stratum_2
+	, visit_type_concept_id as stratum_3
+	, count(distinct visit_occurrence_id) as count_value
+into #raw_4008_u4
+from #raw_4008
+GROUP BY cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id
+;
+-- visit_concept_id
+select distinct cohort_definition_id
+	, subject_id
+	, 0 as stratum_1
+	, visit_concept_id as stratum_2
+	, 0 as stratum_3
+	, count(distinct visit_occurrence_id) as count_value
+into #raw_4008_u5
+from #raw_4008
+GROUP BY cohort_definition_id, subject_id, visit_concept_id
+;
+--
+select distinct cohort_definition_id
+	, subject_id
+	, 0 as stratum_1
+	, 0 as stratum_2
+	, 0 as stratum_3
+	, count(distinct visit_occurrence_id) as count_value
+into #raw_4008_u6
+from #raw_4008
+GROUP BY cohort_definition_id, subject_id
+;
+
+
+WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
+(
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	from #raw_4008_u1
+	UNION ALL
+
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	from #raw_4008_u2
+	UNION ALL
+
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	from #raw_4008_u3
+	UNION ALL
+
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	from #raw_4008_u4
+	UNION ALL
+
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	from #raw_4008_u5
+	UNION ALL
+
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	from #raw_4008_u6
+
+),
+overallStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, avg_value, stdev_value, min_value, max_value, total) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		avg(1.0 * count_value) as avg_value,
+		stdev(count_value) as stdev_value,
+		min(count_value) as min_value,
+		max(count_value) as max_value,
+		count_big(*) as total
+	from cteRawData
+	group by cohort_definition_id, stratum_1, stratum_2, stratum_3
+),
+valueStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		count_value,
+		total,
+		SUM(total) over (partition by cohort_definition_id, stratum_1, stratum_2, stratum_3 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value
+	) D
+)
+select o.cohort_definition_id,
+	4008 as analysis_id,
+	case when o.stratum_1 = 0 then cast('' as varchar(255)) else cast(o.stratum_1 as varchar(255)) end as stratum_1,
+	case when o.stratum_2 = 0 then cast('' as varchar(255)) else cast(o.stratum_2 as varchar(255)) end as stratum_2,
+	case when o.stratum_3 = 0 then cast('' as varchar(255)) else cast(o.stratum_3 as varchar(255)) end as stratum_3,
+	cast( '' as varchar(255) ) as stratum_4, cast( '' as varchar(255) ) as stratum_5,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_4008
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1 and s.stratum_2 = o.stratum_2 and s.stratum_3 = o.stratum_3
+GROUP BY o.cohort_definition_id, o.stratum_1, o.stratum_2, o.stratum_3, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_4008_u1;
+DROP TABLE #raw_4008_u1;
+
+TRUNCATE TABLE #raw_4008_u2;
+DROP TABLE #raw_4008_u2;
+
+TRUNCATE TABLE #raw_4008_u3;
+DROP TABLE #raw_4008_u3;
+
+TRUNCATE TABLE #raw_4008_u4;
+DROP TABLE #raw_4008_u4;
+
+TRUNCATE TABLE #raw_4008_u5;
+DROP TABLE #raw_4008_u5;
+
+TRUNCATE TABLE #raw_4008_u6;
+DROP TABLE #raw_4008_u6;
+
+TRUNCATE TABLE #raw_4008;
+DROP TABLE #raw_4008;
+}
+
+
+{4009 IN (@list_of_analysis_ids)}?{
+	-- 4009 Distribution of number of visit dates per subject by period_id, by visit_concept_id, by visit_type_concept_id in 365d prior to first cohort start date
+select distinct c1.cohort_definition_id,
+	c1.subject_id,
+	vca.ancestor_concept_id as visit_concept_id,
+	vo1.visit_type_concept_id,
+	vo1.visit_start_date
+INTO #raw_4009
+from #HERACLES_cohort c1
+join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
+	and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date <= c1.cohort_end_date
+join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
+;
+-- period_id, visit_concept_id, visit_type_concept_id
+select cohort_definition_id
+	, subject_id
+	, period_id as stratum_1
+	, visit_concept_id as stratum_2
+	, visit_type_concept_id as stratum_3
+	, count(distinct visit_start_date) as count_value
+into #raw_4009_u1
+from #raw_4009
+join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id, visit_type_concept_id
+;
+-- period_id, visit_concept_id
+select distinct cohort_definition_id
+	, subject_id
+	, period_id as stratum_1
+	, visit_concept_id as stratum_2
+	, 0 as stratum_3
+	, count(distinct visit_start_date) as count_value
+into #raw_4009_u2
+from #raw_4009
+join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id
+;
+-- period_id
+select distinct cohort_definition_id
+	, subject_id
+	, period_id as stratum_1
+	, 0 as stratum_2
+	, 0 as stratum_3
+	, count(distinct visit_start_date) as count_value
+into #raw_4009_u3
+from #raw_4009
+join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+GROUP BY cohort_definition_id, subject_id, period_id;
+-- visit_concept_id, visit_type_concept_id
+select distinct cohort_definition_id
+	, subject_id
+	, 0 as stratum_1
+	, visit_concept_id as stratum_2
+	, visit_type_concept_id as stratum_3
+	, count(distinct visit_start_date) as count_value
+into #raw_4009_u4
+from #raw_4009
+GROUP BY cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id;
+-- visit_concept_id
+select distinct cohort_definition_id
+	, subject_id
+	, 0 as stratum_1
+	, visit_concept_id as stratum_2
+	, 0 as stratum_3
+	, count(distinct visit_start_date) as count_value
+into #raw_4009_u5
+from #raw_4009
+GROUP BY cohort_definition_id, subject_id, visit_concept_id;
+--
+select distinct cohort_definition_id
+	, subject_id
+	, 0 as stratum_1
+	, 0 as stratum_2
+	, 0 as stratum_3
+	, count(distinct visit_start_date) as count_value
+into #raw_4009_u6
+from #raw_4009
+GROUP BY cohort_definition_id, subject_id;
+
+
+WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
+(
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	FROM #raw_4009_u1
+	UNION ALL
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	FROM #raw_4009_u2
+	UNION ALL
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	FROM #raw_4009_u3
+	UNION ALL
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	FROM #raw_4009_u4
+	UNION ALL
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	FROM #raw_4009_u5
+	UNION ALL
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	FROM #raw_4009_u6
+),
+overallStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, avg_value, stdev_value, min_value, max_value, total) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		avg(1.0 * count_value) as avg_value,
+		stdev(count_value) as stdev_value,
+		min(count_value) as min_value,
+		max(count_value) as max_value,
+		count_big(*) as total
+	from cteRawData
+	group by cohort_definition_id, stratum_1, stratum_2, stratum_3
+),
+valueStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		count_value,
+		total,
+		SUM(total) over (partition by cohort_definition_id, stratum_1, stratum_2, stratum_3 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value
+	) D
+)
+select o.cohort_definition_id,
+	4009 as analysis_id,
+	case when o.stratum_1 = 0 then cast('' as varchar(255)) else cast(o.stratum_1 as varchar(255)) end as stratum_1,
+	case when o.stratum_2 = 0 then cast('' as varchar(255)) else cast(o.stratum_2 as varchar(255)) end as stratum_2,
+	case when o.stratum_3 = 0 then cast('' as varchar(255)) else cast(o.stratum_3 as varchar(255)) end as stratum_3,
+	cast( '' as varchar(255) ) as stratum_4, cast( '' as varchar(255) ) as stratum_5,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_4009
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1 and s.stratum_2 = o.stratum_2 and s.stratum_3 = o.stratum_3
+GROUP BY o.cohort_definition_id, o.stratum_1, o.stratum_2, o.stratum_3, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_4009_u1;
+DROP TABLE #raw_4009_u1;
+
+TRUNCATE TABLE #raw_4009_u2;
+DROP TABLE #raw_4009_u2;
+
+TRUNCATE TABLE #raw_4009_u3;
+DROP TABLE #raw_4009_u3;
+
+TRUNCATE TABLE #raw_4009_u4;
+DROP TABLE #raw_4009_u4;
+
+TRUNCATE TABLE #raw_4009_u5;
+DROP TABLE #raw_4009_u5;
+
+TRUNCATE TABLE #raw_4009_u6;
+DROP TABLE #raw_4009_u6;
+
+TRUNCATE TABLE #raw_4009;
+DROP TABLE #raw_4009;
+}
+
+
+
+{4010 IN (@list_of_analysis_ids)}?{
+	-- 4010 Distribution of number of care_site+visit dates per subject by period_id, by visit_concept_id, by visit_type_concept_id in 365d prior to first cohort start date
+select distinct c1.cohort_definition_id,
+	c1.subject_id,
+	vca.ancestor_concept_id as visit_concept_id,
+	vo1.visit_type_concept_id,
+	vo1.visit_start_date,
+	cast(care_site_id as varchar(19)) + '_' + CAST(YEAR(visit_start_date) as varchar(4)) + CAST(RIGHT('00' + cast(MONTH(visit_start_date) as varchar(2)),2) as varchar(2)) + CAST(RIGHT('00' + cast(DAY(visit_start_date) as varchar(2)),2) as varchar(2)) as care_site_date_id
+INTO #raw_4010
+from #HERACLES_cohort c1
+join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
+	and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date <= c1.cohort_end_date
+join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
+;
+-- period_id, visit_concept_id, visit_type_concept_id
+select cohort_definition_id
+	, subject_id
+	, period_id as stratum_1
+	, visit_concept_id as stratum_2
+	, visit_type_concept_id as stratum_3
+	, count(distinct care_site_date_id) as count_value
+into #raw_4010_u1
+from #raw_4010
+join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id, visit_type_concept_id
+;
+-- period_id, visit_concept_id
+select distinct cohort_definition_id
+	, subject_id
+	, period_id as stratum_1
+	, visit_concept_id as stratum_2
+	, 0 as stratum_3
+	, count(distinct care_site_date_id) as count_value
+into #raw_4010_u2
+from #raw_4010
+join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id
+;
+-- period_id
+select distinct cohort_definition_id
+	, subject_id
+	, period_id as stratum_1
+	, 0 as stratum_2
+	, 0 as stratum_3
+	, count(distinct care_site_date_id) as count_value
+into #raw_4010_u3
+from #raw_4010
+join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+GROUP BY cohort_definition_id, subject_id, period_id;
+-- visit_concept_id, visit_type_concept_id
+select distinct cohort_definition_id
+	, subject_id
+	, 0 as stratum_1
+	, visit_concept_id as stratum_2
+	, visit_type_concept_id as stratum_3
+	, count(distinct care_site_date_id) as count_value
+into #raw_4010_u4
+from #raw_4010
+GROUP BY cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id;
+-- visit_concept_id
+select distinct cohort_definition_id
+	, subject_id
+	, 0 as stratum_1
+	, visit_concept_id as stratum_2
+	, 0 as stratum_3
+	, count(distinct care_site_date_id) as count_value
+into #raw_4010_u5
+from #raw_4010
+GROUP BY cohort_definition_id, subject_id, visit_concept_id;
+--
+select distinct cohort_definition_id
+	, subject_id
+	, 0 as stratum_1
+	, 0 as stratum_2
+	, 0 as stratum_3
+	, count(distinct care_site_date_id) as count_value
+into #raw_4010_u6
+from #raw_4010
+GROUP BY cohort_definition_id, subject_id;
+
+
+WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
+(
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	FROM #raw_4010_u1
+	UNION ALL
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	FROM #raw_4010_u2
+	UNION ALL
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	FROM #raw_4010_u3
+	UNION ALL
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	FROM #raw_4010_u4
+	UNION ALL
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	FROM #raw_4010_u5
+	UNION ALL
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	FROM #raw_4010_u6
+),
+overallStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, avg_value, stdev_value, min_value, max_value, total) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		avg(1.0 * count_value) as avg_value,
+		stdev(count_value) as stdev_value,
+		min(count_value) as min_value,
+		max(count_value) as max_value,
+		count_big(*) as total
+	from cteRawData
+	group by cohort_definition_id, stratum_1, stratum_2, stratum_3
+),
+valueStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		count_value,
+		total,
+		SUM(total) over (partition by cohort_definition_id, stratum_1, stratum_2, stratum_3 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value
+	) D
+)
+select o.cohort_definition_id,
+	4010 as analysis_id,
+	case when o.stratum_1 = 0 then cast('' as varchar(255)) else cast(o.stratum_1 as varchar(255)) end as stratum_1,
+	case when o.stratum_2 = 0 then cast('' as varchar(255)) else cast(o.stratum_2 as varchar(255)) end as stratum_2,
+	case when o.stratum_3 = 0 then cast('' as varchar(255)) else cast(o.stratum_3 as varchar(255)) end as stratum_3,
+	cast( '' as varchar(255) ) as stratum_4, cast( '' as varchar(255) ) as stratum_5,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_4010
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1 and s.stratum_2 = o.stratum_2 and s.stratum_3 = o.stratum_3
+GROUP BY o.cohort_definition_id, o.stratum_1, o.stratum_2, o.stratum_3, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_4010_u1;
+DROP TABLE #raw_4010_u1;
+
+TRUNCATE TABLE #raw_4010_u2;
+DROP TABLE #raw_4010_u2;
+
+TRUNCATE TABLE #raw_4010_u3;
+DROP TABLE #raw_4010_u3;
+
+TRUNCATE TABLE #raw_4010_u4;
+DROP TABLE #raw_4010_u4;
+
+TRUNCATE TABLE #raw_4010_u5;
+DROP TABLE #raw_4010_u5;
+
+TRUNCATE TABLE #raw_4010_u6;
+DROP TABLE #raw_4010_u6;
+
+TRUNCATE TABLE #raw_4010;
+DROP TABLE #raw_4010;
+}
+
+
+{4011 IN (@list_of_analysis_ids)}?{
+	-- 4011 Distribution of length of stay for inpatient visits per subject by period_id, by visit_concept_id, by visit_type_concept_id during cohort period
+select distinct c1.cohort_definition_id,
+	c1.subject_id,
+	vc1.ancestor_concept_id as visit_concept_id,
+	vo1.visit_type_concept_id,
+	vo1.visit_start_date,
+  datediff(dd,visit_start_date,visit_end_date) + 1 as duration
+INTO #raw_4011
+FROM #HERACLES_cohort c1
+join @CDM_schema.visit_occurrence vo1 on c1.subject_id = vo1.person_id
+	and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date <= c1.cohort_end_date
+  join (
+  	select vc.ancestor_concept_id, vc.descendant_concept_id
+  	from @CDM_schema.concept_ancestor as vc
+  	inner join @CDM_schema.concept as co on vc.descendant_concept_id = co.concept_id
+  	where lower(co.concept_name) like '%inpatient%'
+  ) as vc1 on vo1.visit_concept_id = vc1.descendant_concept_id
+;
+-- period_id, visit_concept_id, visit_type_concept_id
+select cohort_definition_id
+	, subject_id
+	, period_id as stratum_1
+	, visit_concept_id as stratum_2
+	, visit_type_concept_id as stratum_3
+	, sum(duration) as count_value
+into #raw_4011_u1
+from #raw_4011
+join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id, visit_type_concept_id
+;
+-- period_id, visit_concept_id
+select distinct cohort_definition_id
+	, subject_id
+	, period_id as stratum_1
+	, visit_concept_id as stratum_2
+	, 0 as stratum_3
+	, sum(duration) as count_value
+into #raw_4011_u2
+from #raw_4011
+join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id
+;
+
+-- visit_concept_id, visit_type_concept_id
+select distinct cohort_definition_id
+	, subject_id
+	, 0 as stratum_1
+	, visit_concept_id as stratum_2
+	, visit_type_concept_id as stratum_3
+	, sum(duration) as count_value
+into #raw_4011_u4
+from #raw_4011
+GROUP BY cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id;
+-- visit_concept_id
+select distinct cohort_definition_id
+	, subject_id
+	, 0 as stratum_1
+	, visit_concept_id as stratum_2
+	, 0 as stratum_3
+	, sum(duration) as count_value
+into #raw_4011_u5
+from #raw_4011
+GROUP BY cohort_definition_id, subject_id, visit_concept_id;
+
+
+WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
+(
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	FROM #raw_4011_u1
+	UNION ALL
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	FROM #raw_4011_u2
+	UNION ALL
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	FROM #raw_4011_u4
+	UNION ALL
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value
+	FROM #raw_4011_u5
+),
+overallStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, avg_value, stdev_value, min_value, max_value, total) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		avg(1.0 * count_value) as avg_value,
+		stdev(count_value) as stdev_value,
+		min(count_value) as min_value,
+		max(count_value) as max_value,
+		count_big(*) as total
+	from cteRawData
+	group by cohort_definition_id, stratum_1, stratum_2, stratum_3
+),
+valueStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		count_value,
+		total,
+		SUM(total) over (partition by cohort_definition_id, stratum_1, stratum_2, stratum_3 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value
+	) D
+)
+select o.cohort_definition_id,
+	4011 as analysis_id,
+	case when o.stratum_1 = 0 then cast('' as varchar(255)) else cast(o.stratum_1 as varchar(255)) end as stratum_1,
+	case when o.stratum_2 = 0 then cast('' as varchar(255)) else cast(o.stratum_2 as varchar(255)) end as stratum_2,
+	case when o.stratum_3 = 0 then cast('' as varchar(255)) else cast(o.stratum_3 as varchar(255)) end as stratum_3,
+	cast( '' as varchar(255) ) as stratum_4, cast( '' as varchar(255) ) as stratum_5,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_4011
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1 and s.stratum_2 = o.stratum_2 and s.stratum_3 = o.stratum_3
+GROUP BY o.cohort_definition_id, o.stratum_1, o.stratum_2, o.stratum_3, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_4011_u1;
+DROP TABLE #raw_4011_u1;
+
+TRUNCATE TABLE #raw_4011_u2;
+DROP TABLE #raw_4011_u2;
+
+TRUNCATE TABLE #raw_4011_u4;
+DROP TABLE #raw_4011_u4;
+
+TRUNCATE TABLE #raw_4011_u5;
+DROP TABLE #raw_4011_u5;
+
+TRUNCATE TABLE #raw_4011;
+DROP TABLE #raw_4011;
+}
+
+{4012 IN (@list_of_analysis_ids)}?{
+	-- 4012 Number of subjects with Drug Exposure by period_id, by drug_concept_id, by drug_type_concept_id in the 365d prior to first cohort start date
+
+with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date) as
+(
+	select distinct c1.cohort_definition_id,
+		c1.subject_id,
+		de1.drug_concept_id,
+		de1.drug_type_concept_id,
+		de1.drug_exposure_start_date
+	from #cohort_first c1
+	join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
+			and de1.drug_exposure_start_date >= dateadd(d, -365, c1.cohort_start_date) and de1.drug_exposure_start_date < c1.cohort_start_date
+	WHERE de1.drug_concept_id != 0
+),
+atc_rollup (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date) as
+(
+	select r.cohort_definition_id, subject_id, ca.ancestor_concept_id as drug_concept_id, r.drug_type_concept_id, r.drug_exposure_date
+  from drug_records r
+	join @CDM_schema.concept_ancestor ca on ca.descendant_concept_id = r.drug_concept_id
+  join @CDM_schema.concept c on ca.ancestor_concept_id = c.concept_id
+  where c.vocabulary_id = 'ATC' and c.concept_class_id in ('ATC 4th', 'ATC 5th')
+)
+select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date
+INTO #raw_de_4012
+FROM (
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date FROM drug_records
+	UNION ALL
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date FROM atc_rollup
+) D
+;
+
+CREATE INDEX idx_raw_4012_de_date ON #raw_de_4012 (drug_exposure_date);
+
+select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, period_id
+into #raw_de_p_4012
+from #raw_de_4012 r
+join #periods_baseline hp on r.drug_exposure_date >= hp.period_start_date and r.drug_exposure_date < hp.period_end_date
+;
+
+-- period_id, drug_concept_id, drug_type_concept_id
+select cohort_definition_id
+  , period_id as stratum_1
+  , drug_concept_id as stratum_2
+  , drug_type_concept_id as stratum_3
+  , subject_id
+into #raw_4012_u1
+from #raw_de_p_4012
+GROUP BY cohort_definition_id, subject_id, period_id, drug_concept_id, drug_type_concept_id;
+-- period_id, drug_concept_id
+select cohort_definition_id
+  , period_id as stratum_1
+  , drug_concept_id as stratum_2
+  , 0 as stratum_3
+  , subject_id
+into #raw_4012_u2
+from #raw_de_p_4012
+GROUP BY cohort_definition_id, subject_id, period_id, drug_concept_id;
+-- drug_concept_id, drug_type_concept_id
+select cohort_definition_id
+  , 0 as stratum_1
+  , drug_concept_id as stratum_2
+  , drug_type_concept_id as stratum_3
+  , subject_id
+into #raw_4012_u3
+from #raw_de_4012
+GROUP BY cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id;
+-- drug_concept_id
+select cohort_definition_id
+  , 0 as stratum_1
+  , drug_concept_id as stratum_2
+  , 0 as stratum_3
+  , subject_id
+into #raw_4012_u4
+from #raw_de_4012
+GROUP BY cohort_definition_id, subject_id, drug_concept_id;
+
+with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id) as
+(
+
+  select cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id
+  from #raw_4012_u1
+	UNION ALL
+
+  select cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id
+  from #raw_4012_u2
+	UNION ALL
+
+  select cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id
+  from #raw_4012_u3
+	UNION ALL
+
+  select cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id
+  from #raw_4012_u4
+
+)
+select cohort_definition_id, 4012 as analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
+INTO #results_4012
+from
+(
+	select cohort_definition_id
+		, case when stratum_1 = 0 then cast('' as varchar(255)) else cast(stratum_1 as varchar(255)) end as stratum_1
+		, case when stratum_2 = 0 then cast('' as varchar(255)) else cast(stratum_2 as varchar(255)) end as stratum_2
+		, case when stratum_3 = 0 then cast('' as varchar(255)) else cast(stratum_3 as varchar(255)) end as stratum_3
+		, cast('' as char(1)) as stratum_4, cast('' as char(1)) as stratum_5
+		, COUNT_BIG(subject_id) as count_value
+	from cteRawData
+	group by cohort_definition_id, stratum_1, stratum_2, stratum_3
+) D;
+
+TRUNCATE TABLE #raw_4012_u1;
+DROP TABLE #raw_4012_u1;
+
+TRUNCATE TABLE #raw_4012_u2;
+DROP TABLE #raw_4012_u2;
+
+TRUNCATE TABLE #raw_4012_u3;
+DROP TABLE #raw_4012_u3;
+
+TRUNCATE TABLE #raw_4012_u4;
+DROP TABLE #raw_4012_u4;
+
+TRUNCATE TABLE #raw_de_4012;
+DROP TABLE #raw_de_4012;
+
+TRUNCATE TABLE #raw_de_p_4012;
+DROP TABLE #raw_de_p_4012;
+
+}
+
+{4013 IN (@list_of_analysis_ids)}?{
+	-- 4013 Distribution of number of Drug Exposure records per subject, by period_id, by drug_concept_id in 365d prior to first cohort start date
+
+with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, drug_exposure_id) as
+(
+	select distinct c1.cohort_definition_id,
+		c1.subject_id,
+		de1.drug_concept_id,
+		de1.drug_type_concept_id,
+		de1.drug_exposure_start_date,
+  	de1.drug_exposure_id
+	from #cohort_first c1
+	join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
+			and de1.drug_exposure_start_date >= dateadd(d, -365, c1.cohort_start_date) and de1.drug_exposure_start_date < c1.cohort_start_date
+	WHERE de1.drug_concept_id != 0
+),
+atc_rollup (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, drug_exposure_id) as
+(
+	select r.cohort_definition_id, subject_id, ca.ancestor_concept_id as drug_concept_id, r.drug_type_concept_id, r.drug_exposure_date, r.drug_exposure_id
+  from drug_records r
+	join @CDM_schema.concept_ancestor ca on ca.descendant_concept_id = r.drug_concept_id
+  join @CDM_schema.concept c on ca.ancestor_concept_id = c.concept_id
+  where c.vocabulary_id = 'ATC' and c.concept_class_id in ('ATC 4th', 'ATC 5th')
+)
+select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, drug_exposure_id
+INTO #raw_de_4013
+FROM (
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, drug_exposure_id FROM drug_records
+	UNION ALL
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, drug_exposure_id FROM atc_rollup
+) D
+;
+
+CREATE INDEX idx_raw_4013_de_date ON #raw_de_4013 (drug_exposure_date);
+
+select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, period_id, drug_exposure_id
+into #raw_de_p_4013
+from #raw_de_4013 r
+join #periods_baseline hp on r.drug_exposure_date >= hp.period_start_date and r.drug_exposure_date < hp.period_end_date
+;
+
+-- period_id, drug_concept_id, drug_type_concept_id
+select cohort_definition_id
+  , period_id as stratum_1
+  , drug_concept_id as stratum_2
+  , drug_type_concept_id as stratum_3
+  , subject_id
+  , count(distinct drug_exposure_id) as count_value
+into #raw_4013_u1
+from #raw_de_p_4013
+GROUP BY cohort_definition_id, subject_id, period_id, drug_concept_id, drug_type_concept_id;
+-- period_id, drug_concept_id
+select cohort_definition_id
+  , period_id as stratum_1
+  , drug_concept_id as stratum_2
+  , 0 as stratum_3
+  , subject_id
+  , count(distinct drug_exposure_id) as count_value
+into #raw_4013_u2
+from #raw_de_p_4013
+GROUP BY cohort_definition_id, subject_id, period_id, drug_concept_id;
+-- drug_concept_id, drug_type_concept_id
+select cohort_definition_id
+  , 0 as stratum_1
+  , drug_concept_id as stratum_2
+  , drug_type_concept_id as stratum_3
+  , subject_id
+  , count(distinct drug_exposure_id) as count_value
+into #raw_4013_u3
+from #raw_de_4013
+GROUP BY cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id;
+-- drug_concept_id
+select cohort_definition_id
+  , 0 as stratum_1
+  , drug_concept_id as stratum_2
+  , 0 as stratum_3
+  , subject_id
+  , count(distinct drug_exposure_id) as count_value
+into #raw_4013_u4
+from #raw_de_4013
+GROUP BY cohort_definition_id, subject_id, drug_concept_id;
+
+with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id, count_value) as
+(
+
+  select cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id, count_value
+  from #raw_4013_u1
+	UNION ALL
+
+  select cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id, count_value
+  from #raw_4013_u2
+	UNION ALL
+
+  select cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id, count_value
+  from #raw_4013_u3
+	UNION ALL
+
+  select cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id, count_value
+  from #raw_4013_u4
+
+),
+overallStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, avg_value, stdev_value, min_value, max_value, total) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		avg(1.0 * count_value) as avg_value,
+		stdev(count_value) as stdev_value,
+		min(count_value) as min_value,
+		max(count_value) as max_value,
+		count_big(*) as total
+	from cteRawData
+	group by cohort_definition_id, stratum_1, stratum_2, stratum_3
+),
+valueStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		count_value,
+		total,
+		SUM(total) over (partition by cohort_definition_id, stratum_1, stratum_2, stratum_3 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value
+	) D
+)
+select o.cohort_definition_id,
+	4013 as analysis_id,
+	case when o.stratum_1 = 0 then cast('' as varchar(255)) else cast(o.stratum_1 as varchar(255)) end as stratum_1,
+	case when o.stratum_2 = 0 then cast('' as varchar(255)) else cast(o.stratum_2 as varchar(255)) end as stratum_2,
+	case when o.stratum_3 = 0 then cast('' as varchar(255)) else cast(o.stratum_3 as varchar(255)) end as stratum_3,
+	cast( '' as varchar(255) ) as stratum_4, cast( '' as varchar(255) ) as stratum_5,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_4013
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1 and s.stratum_2 = o.stratum_2 and s.stratum_3 = o.stratum_3
+GROUP BY o.cohort_definition_id, o.stratum_1, o.stratum_2, o.stratum_3, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_4013_u1;
+DROP TABLE #raw_4013_u1;
+
+TRUNCATE TABLE #raw_4013_u2;
+DROP TABLE #raw_4013_u2;
+
+TRUNCATE TABLE #raw_4013_u3;
+DROP TABLE #raw_4013_u3;
+
+TRUNCATE TABLE #raw_4013_u4;
+DROP TABLE #raw_4013_u4;
+
+TRUNCATE TABLE #raw_de_4013;
+DROP TABLE #raw_de_4013;
+
+TRUNCATE TABLE #raw_de_p_4013;
+DROP TABLE #raw_de_p_4013;
+
+}
+
+
+{4014 IN (@list_of_analysis_ids)}?{
+	-- 4014	Distribution of greater than 0 drug day supply per subject by period_id, by drug_concept_id in the 365d prior to first cohort start date
+
+with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration) as
+(
+	select distinct c1.cohort_definition_id,
+		c1.subject_id,
+		de1.drug_concept_id,
+		de1.drug_type_concept_id,
+		de1.drug_exposure_start_date,
+    de1.days_supply as duration
+	from #cohort_first c1
+	join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
+			and de1.drug_exposure_start_date >= dateadd(d, -365, c1.cohort_start_date) and de1.drug_exposure_start_date < c1.cohort_start_date
+	WHERE de1.drug_concept_id != 0
+),
+atc_rollup (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration) as
+(
+	select r.cohort_definition_id, subject_id, ca.ancestor_concept_id as drug_concept_id, r.drug_type_concept_id, r.drug_exposure_date, r.duration
+  from drug_records r
+	join @CDM_schema.concept_ancestor ca on ca.descendant_concept_id = r.drug_concept_id
+  join @CDM_schema.concept c on ca.ancestor_concept_id = c.concept_id
+  where c.vocabulary_id = 'ATC' and c.concept_class_id in ('ATC 4th', 'ATC 5th')
+)
+select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration
+INTO #raw_de_4014
+FROM (
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration FROM drug_records
+	UNION ALL
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration FROM atc_rollup
+) D
+WHERE duration > 0
+;
+
+CREATE INDEX idx_raw_4014_de_date ON #raw_de_4014 (drug_exposure_date);
+
+select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, period_id, duration
+into #raw_de_p_4014
+from #raw_de_4014 r
+join #periods_baseline hp on r.drug_exposure_date >= hp.period_start_date and r.drug_exposure_date < hp.period_end_date
+;
+
+-- period_id, drug_concept_id, drug_type_concept_id
+select cohort_definition_id
+  , period_id as stratum_1
+  , drug_concept_id as stratum_2
+  , drug_type_concept_id as stratum_3
+  , subject_id
+  , sum(duration) as count_value
+into #raw_4014_u1
+from #raw_de_p_4014
+GROUP BY cohort_definition_id, subject_id, period_id, drug_concept_id, drug_type_concept_id;
+-- period_id, drug_concept_id
+select cohort_definition_id
+  , period_id as stratum_1
+  , drug_concept_id as stratum_2
+  , 0 as stratum_3
+  , subject_id
+  , sum(duration) as count_value
+into #raw_4014_u2
+from #raw_de_p_4014
+GROUP BY cohort_definition_id, subject_id, period_id, drug_concept_id;
+-- drug_concept_id, drug_type_concept_id
+select cohort_definition_id
+  , 0 as stratum_1
+  , drug_concept_id as stratum_2
+  , drug_type_concept_id as stratum_3
+  , subject_id
+  , sum(duration) as count_value
+into #raw_4014_u3
+from #raw_de_4014
+GROUP BY cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id;
+-- drug_concept_id
+select cohort_definition_id
+  , 0 as stratum_1
+  , drug_concept_id as stratum_2
+  , 0 as stratum_3
+  , subject_id
+  , sum(duration) as count_value
+into #raw_4014_u4
+from #raw_de_4014
+GROUP BY cohort_definition_id, subject_id, drug_concept_id;
+
+with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id, count_value) as
+(
+
+  select cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id, count_value
+  from #raw_4014_u1
+	UNION ALL
+
+  select cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id, count_value
+  from #raw_4014_u2
+	UNION ALL
+
+  select cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id, count_value
+  from #raw_4014_u3
+	UNION ALL
+
+  select cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id, count_value
+  from #raw_4014_u4
+
+),
+overallStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, avg_value, stdev_value, min_value, max_value, total) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		avg(1.0 * count_value) as avg_value,
+		stdev(count_value) as stdev_value,
+		min(count_value) as min_value,
+		max(count_value) as max_value,
+		count_big(*) as total
+	from cteRawData
+	group by cohort_definition_id, stratum_1, stratum_2, stratum_3
+),
+valueStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		count_value,
+		total,
+		SUM(total) over (partition by cohort_definition_id, stratum_1, stratum_2, stratum_3 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value
+	) D
+)
+select o.cohort_definition_id,
+	4014 as analysis_id,
+	case when o.stratum_1 = 0 then cast('' as varchar(255)) else cast(o.stratum_1 as varchar(255)) end as stratum_1,
+	case when o.stratum_2 = 0 then cast('' as varchar(255)) else cast(o.stratum_2 as varchar(255)) end as stratum_2,
+	case when o.stratum_3 = 0 then cast('' as varchar(255)) else cast(o.stratum_3 as varchar(255)) end as stratum_3,
+	cast( '' as varchar(255) ) as stratum_4, cast( '' as varchar(255) ) as stratum_5,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_4014
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1 and s.stratum_2 = o.stratum_2 and s.stratum_3 = o.stratum_3
+GROUP BY o.cohort_definition_id, o.stratum_1, o.stratum_2, o.stratum_3, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_4014_u1;
+DROP TABLE #raw_4014_u1;
+
+TRUNCATE TABLE #raw_4014_u2;
+DROP TABLE #raw_4014_u2;
+
+TRUNCATE TABLE #raw_4014_u3;
+DROP TABLE #raw_4014_u3;
+
+TRUNCATE TABLE #raw_4014_u4;
+DROP TABLE #raw_4014_u4;
+
+TRUNCATE TABLE #raw_de_4014;
+DROP TABLE #raw_de_4014;
+
+TRUNCATE TABLE #raw_de_p_4014;
+DROP TABLE #raw_de_p_4014;
+
+}
+
+
+{4015 IN (@list_of_analysis_ids)}?{
+	-- 4015	Distribution of greater than 0 drug quantity per subject by period_id, by drug_concept_id in the 365d prior to first cohort start date
+
+with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration) as
+(
+	select distinct c1.cohort_definition_id,
+		c1.subject_id,
+		de1.drug_concept_id,
+		de1.drug_type_concept_id,
+		de1.drug_exposure_start_date,
+    de1.quantity as duration
+	from #cohort_first c1
+	join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
+			and de1.drug_exposure_start_date >= dateadd(d, -365, c1.cohort_start_date) and de1.drug_exposure_start_date < c1.cohort_start_date
+	WHERE de1.drug_concept_id != 0
+),
+atc_rollup (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration) as
+(
+	select r.cohort_definition_id, subject_id, ca.ancestor_concept_id as drug_concept_id, r.drug_type_concept_id, r.drug_exposure_date, r.duration
+  from drug_records r
+	join @CDM_schema.concept_ancestor ca on ca.descendant_concept_id = r.drug_concept_id
+  join @CDM_schema.concept c on ca.ancestor_concept_id = c.concept_id
+  where c.vocabulary_id = 'ATC' and c.concept_class_id in ('ATC 4th', 'ATC 5th')
+)
+select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration
+INTO #raw_de_4015
+FROM (
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration FROM drug_records
+	UNION ALL
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration FROM atc_rollup
+) D
+WHERE duration > 0
+;
+
+CREATE INDEX idx_raw_4015_de_date ON #raw_de_4015 (drug_exposure_date);
+
+select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, period_id, duration
+into #raw_de_p_4015
+from #raw_de_4015 r
+join #periods_atrisk hp on r.drug_exposure_date >= hp.period_start_date and r.drug_exposure_date < hp.period_end_date
+;
+
+-- period_id, drug_concept_id, drug_type_concept_id
+select cohort_definition_id
+  , period_id as stratum_1
+  , drug_concept_id as stratum_2
+  , drug_type_concept_id as stratum_3
+  , subject_id
+  , sum(duration) as count_value
+into #raw_4015_u1
+from #raw_de_p_4015
+GROUP BY cohort_definition_id, subject_id, period_id, drug_concept_id, drug_type_concept_id;
+-- period_id, drug_concept_id
+select cohort_definition_id
+  , period_id as stratum_1
+  , drug_concept_id as stratum_2
+  , 0 as stratum_3
+  , subject_id
+  , sum(duration) as count_value
+into #raw_4015_u2
+from #raw_de_p_4015
+GROUP BY cohort_definition_id, subject_id, period_id, drug_concept_id;
+-- drug_concept_id, drug_type_concept_id
+select cohort_definition_id
+  , 0 as stratum_1
+  , drug_concept_id as stratum_2
+  , drug_type_concept_id as stratum_3
+  , subject_id
+  , sum(duration) as count_value
+into #raw_4015_u3
+from #raw_de_4015
+GROUP BY cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id;
+-- drug_concept_id
+select cohort_definition_id
+  , 0 as stratum_1
+  , drug_concept_id as stratum_2
+  , 0 as stratum_3
+  , subject_id
+  , sum(duration) as count_value
+into #raw_4015_u4
+from #raw_de_4015
+GROUP BY cohort_definition_id, subject_id, drug_concept_id;
+
+with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id, count_value) as
+(
+
+  select cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id, count_value
+  from #raw_4015_u1
+	UNION ALL
+
+  select cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id, count_value
+  from #raw_4015_u2
+	UNION ALL
+
+  select cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id, count_value
+  from #raw_4015_u3
+	UNION ALL
+
+  select cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id, count_value
+  from #raw_4015_u4
+
+),
+overallStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, avg_value, stdev_value, min_value, max_value, total) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		avg(1.0 * count_value) as avg_value,
+		stdev(count_value) as stdev_value,
+		min(count_value) as min_value,
+		max(count_value) as max_value,
+		count_big(*) as total
+	from cteRawData
+	group by cohort_definition_id, stratum_1, stratum_2, stratum_3
+),
+valueStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		count_value,
+		total,
+		SUM(total) over (partition by cohort_definition_id, stratum_1, stratum_2, stratum_3 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value
+	) D
+)
+select o.cohort_definition_id,
+	4015 as analysis_id,
+	case when o.stratum_1 = 0 then cast('' as varchar(255)) else cast(o.stratum_1 as varchar(255)) end as stratum_1,
+	case when o.stratum_2 = 0 then cast('' as varchar(255)) else cast(o.stratum_2 as varchar(255)) end as stratum_2,
+	case when o.stratum_3 = 0 then cast('' as varchar(255)) else cast(o.stratum_3 as varchar(255)) end as stratum_3,
+	cast( '' as varchar(255) ) as stratum_4, cast( '' as varchar(255) ) as stratum_5,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_4015
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1 and s.stratum_2 = o.stratum_2 and s.stratum_3 = o.stratum_3
+GROUP BY o.cohort_definition_id, o.stratum_1, o.stratum_2, o.stratum_3, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_4015_u1;
+DROP TABLE #raw_4015_u1;
+
+TRUNCATE TABLE #raw_4015_u2;
+DROP TABLE #raw_4015_u2;
+
+TRUNCATE TABLE #raw_4015_u3;
+DROP TABLE #raw_4015_u3;
+
+TRUNCATE TABLE #raw_4015_u4;
+DROP TABLE #raw_4015_u4;
+
+TRUNCATE TABLE #raw_de_4015;
+DROP TABLE #raw_de_4015;
+
+TRUNCATE TABLE #raw_de_p_4015;
+DROP TABLE #raw_de_p_4015;
+
+}
+
+{4016 IN (@list_of_analysis_ids)}?{
+	-- 4016 Number of subjects with Drug Exposure by period_id, by drug_concept_id during the cohort period
+
+with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date) as
+(
+	select distinct c1.cohort_definition_id,
+		c1.subject_id,
+		de1.drug_concept_id,
+		de1.drug_type_concept_id,
+		de1.drug_exposure_start_date
+	from  #HERACLES_cohort c1
+	join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
+		and de1.drug_exposure_start_date >= c1.cohort_start_date and de1.drug_exposure_start_date <= c1.cohort_end_date
+	WHERE de1.drug_concept_id != 0
+),
+atc_rollup (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date) as
+(
+	select r.cohort_definition_id, r.subject_id, ca.ancestor_concept_id as drug_concept_id, r.drug_type_concept_id, r.drug_exposure_date
+  from drug_records r
+	join @CDM_schema.concept_ancestor ca on ca.descendant_concept_id = r.drug_concept_id
+  join @CDM_schema.concept c on ca.ancestor_concept_id = c.concept_id
+  where c.vocabulary_id = 'ATC' and c.concept_class_id in ('ATC 4th', 'ATC 5th')
+)
+select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date
+INTO #raw_de_4016
+FROM (
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date FROM drug_records
+	UNION ALL
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date FROM atc_rollup
+) D
+;
+
+CREATE INDEX idx_raw_4016_de_date ON #raw_de_4016 (drug_exposure_date);
+
+select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, period_id
+into #raw_de_p_4016
+from #raw_de_4016 r
+join #periods_atrisk hp on r.drug_exposure_date >= hp.period_start_date and r.drug_exposure_date < hp.period_end_date
+;
+
+-- period_id, drug_concept_id, drug_type_concept_id
+select cohort_definition_id
+  , period_id as stratum_1
+  , drug_concept_id as stratum_2
+  , drug_type_concept_id as stratum_3
+  , subject_id
+into #raw_4016_u1
+from #raw_de_p_4016
+GROUP BY cohort_definition_id, subject_id, period_id, drug_concept_id, drug_type_concept_id;
+-- period_id, drug_concept_id
+select cohort_definition_id
+  , period_id as stratum_1
+  , drug_concept_id as stratum_2
+  , 0 as stratum_3
+  , subject_id
+into #raw_4016_u2
+from #raw_de_p_4016
+GROUP BY cohort_definition_id, subject_id, period_id, drug_concept_id;
+-- drug_concept_id, drug_type_concept_id
+select cohort_definition_id
+  , 0 as stratum_1
+  , drug_concept_id as stratum_2
+  , drug_type_concept_id as stratum_3
+  , subject_id
+into #raw_4016_u3
+from #raw_de_4016
+GROUP BY cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id;
+-- drug_concept_id
+select cohort_definition_id
+  , 0 as stratum_1
+  , drug_concept_id as stratum_2
+  , 0 as stratum_3
+  , subject_id
+into #raw_4016_u4
+from #raw_de_4016
+GROUP BY cohort_definition_id, subject_id, drug_concept_id;
+
+with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id) as
+(
+
+  select cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id
+  from #raw_4016_u1
+	UNION ALL
+
+  select cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id
+  from #raw_4016_u2
+	UNION ALL
+
+  select cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id
+  from #raw_4016_u3
+	UNION ALL
+
+  select cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id
+  from #raw_4016_u4
+
+)
+select cohort_definition_id, 4016 as analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
+INTO #results_4016
+from
+(
+	select cohort_definition_id
+		, case when stratum_1 = 0 then cast('' as varchar(255)) else cast(stratum_1 as varchar(255)) end as stratum_1
+		, case when stratum_2 = 0 then cast('' as varchar(255)) else cast(stratum_2 as varchar(255)) end as stratum_2
+		, case when stratum_3 = 0 then cast('' as varchar(255)) else cast(stratum_3 as varchar(255)) end as stratum_3
+		, cast('' as char(1)) as stratum_4, cast('' as char(1)) as stratum_5
+		, COUNT_BIG(subject_id) as count_value
+	from cteRawData
+	group by cohort_definition_id, stratum_1, stratum_2, stratum_3
+) D;
+
+TRUNCATE TABLE #raw_4016_u1;
+DROP TABLE #raw_4016_u1;
+
+TRUNCATE TABLE #raw_4016_u2;
+DROP TABLE #raw_4016_u2;
+
+TRUNCATE TABLE #raw_4016_u3;
+DROP TABLE #raw_4016_u3;
+
+TRUNCATE TABLE #raw_4016_u4;
+DROP TABLE #raw_4016_u4;
+
+TRUNCATE TABLE #raw_de_4016;
+DROP TABLE #raw_de_4016;
+
+TRUNCATE TABLE #raw_de_p_4016;
+DROP TABLE #raw_de_p_4016;
+
+}
+
+
+{4017 IN (@list_of_analysis_ids)}?{
+	-- 4017 Distribution of number of Drug Exposure records per subject, by period_id, by drug_concept_id during the cohort period
+
+with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, drug_exposure_id) as
+(
+	select distinct c1.cohort_definition_id,
+		c1.subject_id,
+		de1.drug_concept_id,
+		de1.drug_type_concept_id,
+		de1.drug_exposure_start_date,
+  	de1.drug_exposure_id
+  from  #HERACLES_cohort c1
+  join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
+  	and de1.drug_exposure_start_date >= c1.cohort_start_date and de1.drug_exposure_start_date <= c1.cohort_end_date
+  WHERE de1.drug_concept_id != 0
+),
+atc_rollup (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, drug_exposure_id) as
+(
+	select r.cohort_definition_id, subject_id, ca.ancestor_concept_id as drug_concept_id, r.drug_type_concept_id, r.drug_exposure_date, r.drug_exposure_id
+  from drug_records r
+	join @CDM_schema.concept_ancestor ca on ca.descendant_concept_id = r.drug_concept_id
+  join @CDM_schema.concept c on ca.ancestor_concept_id = c.concept_id
+  where c.vocabulary_id = 'ATC' and c.concept_class_id in ('ATC 4th', 'ATC 5th')
+)
+select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, drug_exposure_id
+INTO #raw_de_4017
+FROM (
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, drug_exposure_id FROM drug_records
+	UNION ALL
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, drug_exposure_id FROM atc_rollup
+) D
+;
+
+CREATE INDEX idx_raw_4017_de_date ON #raw_de_4017 (drug_exposure_date);
+
+select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, period_id, drug_exposure_id
+into #raw_de_p_4017
+from #raw_de_4017 r
+join #periods_atrisk hp on r.drug_exposure_date >= hp.period_start_date and r.drug_exposure_date < hp.period_end_date
+;
+
+-- period_id, drug_concept_id, drug_type_concept_id
+select cohort_definition_id
+  , period_id as stratum_1
+  , drug_concept_id as stratum_2
+  , drug_type_concept_id as stratum_3
+  , subject_id
+  , count(distinct drug_exposure_id) as count_value
+into #raw_4017_u1
+from #raw_de_p_4017
+GROUP BY cohort_definition_id, subject_id, period_id, drug_concept_id, drug_type_concept_id;
+-- period_id, drug_concept_id
+select cohort_definition_id
+  , period_id as stratum_1
+  , drug_concept_id as stratum_2
+  , 0 as stratum_3
+  , subject_id
+  , count(distinct drug_exposure_id) as count_value
+into #raw_4017_u2
+from #raw_de_p_4017
+GROUP BY cohort_definition_id, subject_id, period_id, drug_concept_id;
+-- drug_concept_id, drug_type_concept_id
+select cohort_definition_id
+  , 0 as stratum_1
+  , drug_concept_id as stratum_2
+  , drug_type_concept_id as stratum_3
+  , subject_id
+  , count(distinct drug_exposure_id) as count_value
+into #raw_4017_u3
+from #raw_de_4017
+GROUP BY cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id;
+-- drug_concept_id
+select cohort_definition_id
+  , 0 as stratum_1
+  , drug_concept_id as stratum_2
+  , 0 as stratum_3
+  , subject_id
+  , count(distinct drug_exposure_id) as count_value
+into #raw_4017_u4
+from #raw_de_4017
+GROUP BY cohort_definition_id, subject_id, drug_concept_id;
+
+with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id, count_value) as
+(
+
+  select cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id, count_value
+  from #raw_4017_u1
+	UNION ALL
+
+  select cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id, count_value
+  from #raw_4017_u2
+	UNION ALL
+
+  select cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id, count_value
+  from #raw_4017_u3
+	UNION ALL
+
+  select cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id, count_value
+  from #raw_4017_u4
+
+),
+overallStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, avg_value, stdev_value, min_value, max_value, total) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		avg(1.0 * count_value) as avg_value,
+		stdev(count_value) as stdev_value,
+		min(count_value) as min_value,
+		max(count_value) as max_value,
+		count_big(*) as total
+	from cteRawData
+	group by cohort_definition_id, stratum_1, stratum_2, stratum_3
+),
+valueStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		count_value,
+		total,
+		SUM(total) over (partition by cohort_definition_id, stratum_1, stratum_2, stratum_3 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value
+	) D
+)
+select o.cohort_definition_id,
+	4017 as analysis_id,
+	case when o.stratum_1 = 0 then cast('' as varchar(255)) else cast(o.stratum_1 as varchar(255)) end as stratum_1,
+	case when o.stratum_2 = 0 then cast('' as varchar(255)) else cast(o.stratum_2 as varchar(255)) end as stratum_2,
+	case when o.stratum_3 = 0 then cast('' as varchar(255)) else cast(o.stratum_3 as varchar(255)) end as stratum_3,
+	cast( '' as varchar(255) ) as stratum_4, cast( '' as varchar(255) ) as stratum_5,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_4017
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1 and s.stratum_2 = o.stratum_2 and s.stratum_3 = o.stratum_3
+GROUP BY o.cohort_definition_id, o.stratum_1, o.stratum_2, o.stratum_3, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_4017_u1;
+DROP TABLE #raw_4017_u1;
+
+TRUNCATE TABLE #raw_4017_u2;
+DROP TABLE #raw_4017_u2;
+
+TRUNCATE TABLE #raw_4017_u3;
+DROP TABLE #raw_4017_u3;
+
+TRUNCATE TABLE #raw_4017_u4;
+DROP TABLE #raw_4017_u4;
+
+TRUNCATE TABLE #raw_de_4017;
+DROP TABLE #raw_de_4017;
+
+TRUNCATE TABLE #raw_de_p_4017;
+DROP TABLE #raw_de_p_4017;
+
+}
+
+
+{4018 IN (@list_of_analysis_ids)}?{
+	-- 4018	Distribution of greater than 0 drug day supply per subject by period_id, by drug_concept_id during the cohort period
+
+with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration) as
+(
+	select distinct c1.cohort_definition_id,
+		c1.subject_id,
+		de1.drug_concept_id,
+		de1.drug_type_concept_id,
+		de1.drug_exposure_start_date,
+    de1.days_supply as duration
+    from  #HERACLES_cohort c1
+    join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
+    	and de1.drug_exposure_start_date >= c1.cohort_start_date and de1.drug_exposure_start_date <= c1.cohort_end_date
+	WHERE de1.drug_concept_id != 0
+),
+atc_rollup (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration) as
+(
+	select r.cohort_definition_id, subject_id, ca.ancestor_concept_id as drug_concept_id, r.drug_type_concept_id, r.drug_exposure_date, r.duration
+  from drug_records r
+	join @CDM_schema.concept_ancestor ca on ca.descendant_concept_id = r.drug_concept_id
+  join @CDM_schema.concept c on ca.ancestor_concept_id = c.concept_id
+  where c.vocabulary_id = 'ATC' and c.concept_class_id in ('ATC 4th', 'ATC 5th')
+)
+select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration
+INTO #raw_de_4018
+FROM (
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration FROM drug_records
+	UNION ALL
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration FROM atc_rollup
+) D
+WHERE duration > 0
+;
+
+CREATE INDEX idx_raw_4018_de_date ON #raw_de_4018 (drug_exposure_date);
+
+select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, period_id, duration
+into #raw_de_p_4018
+from #raw_de_4018 r
+join #periods_atrisk hp on r.drug_exposure_date >= hp.period_start_date and r.drug_exposure_date < hp.period_end_date
+;
+
+-- period_id, drug_concept_id, drug_type_concept_id
+select cohort_definition_id
+  , period_id as stratum_1
+  , drug_concept_id as stratum_2
+  , drug_type_concept_id as stratum_3
+  , subject_id
+  , sum(duration) as count_value
+into #raw_4018_u1
+from #raw_de_p_4018
+GROUP BY cohort_definition_id, subject_id, period_id, drug_concept_id, drug_type_concept_id;
+-- period_id, drug_concept_id
+select cohort_definition_id
+  , period_id as stratum_1
+  , drug_concept_id as stratum_2
+  , 0 as stratum_3
+  , subject_id
+  , sum(duration) as count_value
+into #raw_4018_u2
+from #raw_de_p_4018
+GROUP BY cohort_definition_id, subject_id, period_id, drug_concept_id;
+-- drug_concept_id, drug_type_concept_id
+select cohort_definition_id
+  , 0 as stratum_1
+  , drug_concept_id as stratum_2
+  , drug_type_concept_id as stratum_3
+  , subject_id
+  , sum(duration) as count_value
+into #raw_4018_u3
+from #raw_de_4018
+GROUP BY cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id;
+-- drug_concept_id
+select cohort_definition_id
+  , 0 as stratum_1
+  , drug_concept_id as stratum_2
+  , 0 as stratum_3
+  , subject_id
+  , sum(duration) as count_value
+into #raw_4018_u4
+from #raw_de_4018
+GROUP BY cohort_definition_id, subject_id, drug_concept_id;
+
+with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id, count_value) as
+(
+
+  select cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id, count_value
+  from #raw_4018_u1
+	UNION ALL
+
+  select cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id, count_value
+  from #raw_4018_u2
+	UNION ALL
+
+  select cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id, count_value
+  from #raw_4018_u3
+	UNION ALL
+
+  select cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id, count_value
+  from #raw_4018_u4
+
+),
+overallStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, avg_value, stdev_value, min_value, max_value, total) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		avg(1.0 * count_value) as avg_value,
+		stdev(count_value) as stdev_value,
+		min(count_value) as min_value,
+		max(count_value) as max_value,
+		count_big(*) as total
+	from cteRawData
+	group by cohort_definition_id, stratum_1, stratum_2, stratum_3
+),
+valueStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		count_value,
+		total,
+		SUM(total) over (partition by cohort_definition_id, stratum_1, stratum_2, stratum_3 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value
+	) D
+)
+select o.cohort_definition_id,
+	4018 as analysis_id,
+	case when o.stratum_1 = 0 then cast('' as varchar(255)) else cast(o.stratum_1 as varchar(255)) end as stratum_1,
+	case when o.stratum_2 = 0 then cast('' as varchar(255)) else cast(o.stratum_2 as varchar(255)) end as stratum_2,
+	case when o.stratum_3 = 0 then cast('' as varchar(255)) else cast(o.stratum_3 as varchar(255)) end as stratum_3,
+	cast( '' as varchar(255) ) as stratum_4, cast( '' as varchar(255) ) as stratum_5,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_4018
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1 and s.stratum_2 = o.stratum_2 and s.stratum_3 = o.stratum_3
+GROUP BY o.cohort_definition_id, o.stratum_1, o.stratum_2, o.stratum_3, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_4018_u1;
+DROP TABLE #raw_4018_u1;
+
+TRUNCATE TABLE #raw_4018_u2;
+DROP TABLE #raw_4018_u2;
+
+TRUNCATE TABLE #raw_4018_u3;
+DROP TABLE #raw_4018_u3;
+
+TRUNCATE TABLE #raw_4018_u4;
+DROP TABLE #raw_4018_u4;
+
+TRUNCATE TABLE #raw_de_4018;
+DROP TABLE #raw_de_4018;
+
+TRUNCATE TABLE #raw_de_p_4018;
+DROP TABLE #raw_de_p_4018;
+
+}
+
+
+{4019 IN (@list_of_analysis_ids)}?{
+	-- 4019	Distribution of greater than 0 drug quantity per subject by period_id, by drug_concept_id during the cohort period
+
+with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration) as
+(
+	select distinct c1.cohort_definition_id,
+		c1.subject_id,
+		de1.drug_concept_id,
+		de1.drug_type_concept_id,
+		de1.drug_exposure_start_date,
+    de1.quantity as duration
+    from  #HERACLES_cohort c1
+    join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
+    	and de1.drug_exposure_start_date >= c1.cohort_start_date and de1.drug_exposure_start_date <= c1.cohort_end_date
+	WHERE de1.drug_concept_id != 0
+),
+atc_rollup (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration) as
+(
+	select r.cohort_definition_id, subject_id, ca.ancestor_concept_id as drug_concept_id, r.drug_type_concept_id, r.drug_exposure_date, r.duration
+  from drug_records r
+	join @CDM_schema.concept_ancestor ca on ca.descendant_concept_id = r.drug_concept_id
+  join @CDM_schema.concept c on ca.ancestor_concept_id = c.concept_id
+  where c.vocabulary_id = 'ATC' and c.concept_class_id in ('ATC 4th', 'ATC 5th')
+)
+select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration
+INTO #raw_de_4019
+FROM (
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration FROM drug_records
+	UNION ALL
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration FROM atc_rollup
+) D
+WHERE duration > 0
+;
+
+CREATE INDEX idx_raw_4019_de_date ON #raw_de_4019 (drug_exposure_date);
+
+select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, period_id, duration
+into #raw_de_p_4019
+from #raw_de_4019 r
+join #periods_atrisk hp on r.drug_exposure_date >= hp.period_start_date and r.drug_exposure_date < hp.period_end_date
+;
+
+-- period_id, drug_concept_id, drug_type_concept_id
+select cohort_definition_id
+  , period_id as stratum_1
+  , drug_concept_id as stratum_2
+  , drug_type_concept_id as stratum_3
+  , subject_id
+  , sum(duration) as count_value
+into #raw_4019_u1
+from #raw_de_p_4019
+GROUP BY cohort_definition_id, subject_id, period_id, drug_concept_id, drug_type_concept_id;
+-- period_id, drug_concept_id
+select cohort_definition_id
+  , period_id as stratum_1
+  , drug_concept_id as stratum_2
+  , 0 as stratum_3
+  , subject_id
+  , sum(duration) as count_value
+into #raw_4019_u2
+from #raw_de_p_4019
+GROUP BY cohort_definition_id, subject_id, period_id, drug_concept_id;
+-- drug_concept_id, drug_type_concept_id
+select cohort_definition_id
+  , 0 as stratum_1
+  , drug_concept_id as stratum_2
+  , drug_type_concept_id as stratum_3
+  , subject_id
+  , sum(duration) as count_value
+into #raw_4019_u3
+from #raw_de_4019
+GROUP BY cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id;
+-- drug_concept_id
+select cohort_definition_id
+  , 0 as stratum_1
+  , drug_concept_id as stratum_2
+  , 0 as stratum_3
+  , subject_id
+  , sum(duration) as count_value
+into #raw_4019_u4
+from #raw_de_4019
+GROUP BY cohort_definition_id, subject_id, drug_concept_id;
+
+with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id, count_value) as
+(
+
+  select cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id, count_value
+  from #raw_4019_u1
+	UNION ALL
+
+  select cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id, count_value
+  from #raw_4019_u2
+	UNION ALL
+
+  select cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id, count_value
+  from #raw_4019_u3
+	UNION ALL
+
+  select cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_id, count_value
+  from #raw_4019_u4
+
+),
+overallStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, avg_value, stdev_value, min_value, max_value, total) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		avg(1.0 * count_value) as avg_value,
+		stdev(count_value) as stdev_value,
+		min(count_value) as min_value,
+		max(count_value) as max_value,
+		count_big(*) as total
+	from cteRawData
+	group by cohort_definition_id, stratum_1, stratum_2, stratum_3
+),
+valueStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		count_value,
+		total,
+		SUM(total) over (partition by cohort_definition_id, stratum_1, stratum_2, stratum_3 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, stratum_2, stratum_3, count_value
+	) D
+)
+select o.cohort_definition_id,
+	4019 as analysis_id,
+	case when o.stratum_1 = 0 then cast('' as varchar(255)) else cast(o.stratum_1 as varchar(255)) end as stratum_1,
+	case when o.stratum_2 = 0 then cast('' as varchar(255)) else cast(o.stratum_2 as varchar(255)) end as stratum_2,
+	case when o.stratum_3 = 0 then cast('' as varchar(255)) else cast(o.stratum_3 as varchar(255)) end as stratum_3,
+	cast( '' as varchar(255) ) as stratum_4, cast( '' as varchar(255) ) as stratum_5,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_4019
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id and s.stratum_1 = o.stratum_1 and s.stratum_2 = o.stratum_2 and s.stratum_3 = o.stratum_3
+GROUP BY o.cohort_definition_id, o.stratum_1, o.stratum_2, o.stratum_3, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_4019_u1;
+DROP TABLE #raw_4019_u1;
+
+TRUNCATE TABLE #raw_4019_u2;
+DROP TABLE #raw_4019_u2;
+
+TRUNCATE TABLE #raw_4019_u3;
+DROP TABLE #raw_4019_u3;
+
+TRUNCATE TABLE #raw_4019_u4;
+DROP TABLE #raw_4019_u4;
+
+TRUNCATE TABLE #raw_de_4019;
+DROP TABLE #raw_de_4019;
+
+TRUNCATE TABLE #raw_de_p_4019;
+DROP TABLE #raw_de_p_4019;
+
+}
+
+{4020 IN (@list_of_analysis_ids)}?{
+-- 4020	Distribution of greater than 0 US$ cost per subject by period_id, by visit_concept_id, by visit_type_concept_id, by cost_concept_id in the 365d prior to first cohort start date
+select c1.cohort_definition_id,
+	c1.subject_id,
+  vo1.visit_occurrence_id,
+  vo1.visit_concept_id,
+  vo1.visit_type_concept_id,
+	cst1.cost_concept_id,
+  cst1.cost_type_concept_id,
+	vo1.visit_start_date,
+  cost
+INTO #raw_cost_4020
+from #cohort_first c1
+join @CDM_schema.visit_occurrence vo1 on c1.subject_id = vo1.person_id
+  and vo1.visit_start_date >= dateadd(d, -365, c1.cohort_start_date) and vo1.visit_start_date < c1.cohort_start_date
+join @CDM_schema.cost cst1 on c1.subject_id = cst1.person_id
+  and cst1.person_id = vo1.person_id
+  and vo1.visit_occurrence_id = cst1.cost_event_id
+where cost >= 0
+    and currency_concept_id = 44818668
+;
+
+create index ix_rc_visit_date on #raw_cost_4020 (visit_start_date);
+
+select cohort_definition_id, subject_id, hp.period_id, visit_occurrence_id,visit_concept_id, visit_type_concept_id, cost_concept_id, cost_type_concept_id, cost
+into #raw_period_4020
+from #raw_cost_4020
+join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+;
+
+select cohort_definition_id
+	, subject_id
+	, period_id as stratum_1
+	, visit_concept_id as stratum_2
+	, visit_type_concept_id as stratum_3
+	, cost_concept_id as stratum_4
+	, cost_type_concept_id as stratum_5
+	, sum(cost) as count_value
+into #raw_4020_u1
+from raw_period_4020
+GROUP BY subject_id, period_id, visit_concept_id, visit_type_concept_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
+
+select cohort_definition_id
+	, subject_id
+	, period_id as stratum_1
+	, visit_concept_id as stratum_2
+	, 0 as stratum_3
+	, cost_concept_id as stratum_4
+	, cost_type_concept_id as stratum_5
+	, sum(cost) as count_value
+into #raw_4020_u2
+from raw_period_4020
+GROUP BY subject_id, period_id, visit_concept_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
+
+select cohort_definition_id
+	, subject_id
+	, period_id as stratum_1
+	, 0 as stratum_2
+	, 0 as stratum_3
+	, cost_concept_id as stratum_4
+	, cost_type_concept_id as stratum_5
+	, sum(cost) as count_value
+into #raw_4020_u3
+from raw_period_4020
+GROUP BY subject_id, period_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
+
+select cohort_definition_id
+	, subject_id
+	, 0 as stratum_1
+	, visit_concept_id as stratum_2
+	, visit_type_concept_id as stratum_3
+	, cost_concept_id as stratum_4
+	, cost_type_concept_id as stratum_5
+	, sum(cost) as count_value
+into #raw_4020_u4
+from raw_cost_4020
+GROUP BY subject_id, visit_concept_id, visit_type_concept_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
+
+select cohort_definition_id
+	, subject_id
+	, 0 as stratum_1
+	, visit_concept_id as stratum_2
+	, 0 as stratum_3
+	, cost_concept_id as stratum_4
+	, cost_type_concept_id as stratum_5
+	, sum(cost) as count_value
+into #raw_4020_u5
+from raw_cost_4020
+GROUP BY subject_id, visit_concept_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
+
+select cohort_definition_id
+	, subject_id
+	, 0 as stratum_1
+	, 0 as stratum_2
+	, 0 as stratum_3
+	, cost_concept_id as stratum_4
+	, cost_type_concept_id as stratum_5
+	, sum(cost) as count_value
+into #raw_4020_u6
+from raw_cost_4020
+GROUP BY subject_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
+
+
+WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value) as
+(
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
+	FROM #raw_4020_u1
+	UNION ALL
+
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
+	FROM #raw_4020_u2
+	UNION ALL
+
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
+	FROM #raw_4020_u3
+	UNION ALL
+
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
+	FROM #raw_4020_u4
+	UNION ALL
+
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
+	FROM #raw_4020_u5
+	UNION ALL
+
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
+	FROM #raw_4020_u6
+),
+overallStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, avg_value, stdev_value, min_value, max_value, total) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		stratum_4,
+		stratum_5,
+		avg(1.0 * count_value) as avg_value,
+		stdev(count_value) as stdev_value,
+		min(count_value) as min_value,
+		max(count_value) as max_value,
+		count_big(*) as total
+	from cteRawData
+	group by cohort_definition_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5
+),
+valueStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		stratum_4,
+    stratum_5,
+		count_value,
+		total,
+		SUM(total) over (partition by cohort_definition_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
+	) D
+)
+select o.cohort_definition_id,
+	4020 as analysis_id,
+	case when o.stratum_1 = 0 then cast('' as varchar(255)) else cast(o.stratum_1 as varchar(255)) end as stratum_1,
+	case when o.stratum_2 = 0 then cast('' as varchar(255)) else cast(o.stratum_2 as varchar(255)) end as stratum_2,
+	case when o.stratum_3 = 0 then cast('' as varchar(255)) else cast(o.stratum_3 as varchar(255)) end as stratum_3,
+	case when o.stratum_4 = 0 then cast('' as varchar(255)) else cast(o.stratum_4 as varchar(255)) end as stratum_4,
+	case when o.stratum_5 = 0 then cast('' as varchar(255)) else cast(o.stratum_5 as varchar(255)) end as stratum_5,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_4020
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id 
+	and s.stratum_1 = o.stratum_1 and s.stratum_2 = o.stratum_2 and s.stratum_3 = o.stratum_3 and s.stratum_4 = o.stratum_4 and s.stratum_5 = o.stratum_5
+GROUP BY o.cohort_definition_id, o.stratum_1, o.stratum_2, o.stratum_3, o.stratum_4, o.stratum_5, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_4020_u1;
+DROP TABLE #raw_4020_u1;
+
+TRUNCATE TABLE #raw_4020_u2;
+DROP TABLE #raw_4020_u2;
+
+TRUNCATE TABLE #raw_4020_u3;
+DROP TABLE #raw_4020_u3;
+
+TRUNCATE TABLE #raw_4020_u4;
+DROP TABLE #raw_4020_u4;
+
+TRUNCATE TABLE #raw_4020_u5;
+DROP TABLE #raw_4020_u5;
+
+TRUNCATE TABLE #raw_4020_u6;
+DROP TABLE #raw_4020_u6;
+
+TRUNCATE TABLE #raw_cost_4020;
+DROP TABLE #raw_cost_4020;
+
+TRUNCATE TABLE #raw_period_4020;
+DROP TABLE #raw_period_4020;
+}
+
+{4021 IN (@list_of_analysis_ids)}?{
+-- 4021	Distribution of greater than 0 US$ cost per subject by period_id, by visit_concept_id, by visit_type_concept_id, by cost_concept_id, by cost_type_concept_id during the cohort period
+select c1.cohort_definition_id,
+	c1.subject_id,
+  vo1.visit_occurrence_id,
+  vo1.visit_concept_id,
+  vo1.visit_type_concept_id,
+	cst1.cost_concept_id,
+  cst1.cost_type_concept_id,
+	vo1.visit_start_date,
+  cst1.cost
+INTO #raw_cost_4021
+from #HERACLES_cohort c1
+join @CDM_schema.visit_occurrence vo1 on c1.subject_id = vo1.person_id
+    and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date <= c1.cohort_end_date
+join @CDM_schema.cost cst1 on c1.subject_id = cst1.person_id
+    and vo1.visit_occurrence_id = cst1.cost_event_id
+where cost >= 0
+    and currency_concept_id = 44818668
+;
+
+create index ix_rc_visit_date on #raw_cost_4021 (visit_start_date);
+
+select cohort_definition_id, subject_id, hp.period_id, visit_occurrence_id,visit_concept_id, visit_type_concept_id, cost_concept_id, cost_type_concept_id, cost
+into #raw_period_4021
+from #raw_cost_4021
+join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+;
+
+select cohort_definition_id
+	, subject_id
+	, period_id as stratum_1
+	, visit_concept_id as stratum_2
+	, visit_type_concept_id as stratum_3
+	, cost_concept_id as stratum_4
+	, cost_type_concept_id as stratum_5
+	, sum(cost) as count_value
+into #raw_4021_u1
+from #raw_period_4021
+GROUP BY subject_id, period_id, visit_concept_id, visit_type_concept_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
+
+select cohort_definition_id
+	, subject_id
+	, period_id as stratum_1
+	, visit_concept_id as stratum_2
+	, 0 as stratum_3
+	, cost_concept_id as stratum_4
+	, cost_type_concept_id as stratum_5
+	, sum(cost) as count_value
+into #raw_4021_u2
+from #raw_period_4021
+GROUP BY subject_id, period_id, visit_concept_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
+
+select cohort_definition_id
+	, subject_id
+	, period_id as stratum_1
+	, 0 as stratum_2
+	, 0 as stratum_3
+	, cost_concept_id as stratum_4
+	, cost_type_concept_id as stratum_5
+	, sum(cost) as count_value
+into #raw_4021_u3
+from #raw_period_4021
+GROUP BY subject_id, period_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
+
+select cohort_definition_id
+	, subject_id
+	, 0 as stratum_1
+	, visit_concept_id as stratum_2
+	, visit_type_concept_id as stratum_3
+	, cost_concept_id as stratum_4
+	, cost_type_concept_id as stratum_5
+	, sum(cost) as count_value
+into #raw_4021_u4
+from #raw_cost_4021
+GROUP BY subject_id, visit_concept_id, visit_type_concept_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
+
+select cohort_definition_id
+	, subject_id
+	, 0 as stratum_1
+	, visit_concept_id as stratum_2
+	, 0 as stratum_3
+	, cost_concept_id as stratum_4
+	, cost_type_concept_id as stratum_5
+	, sum(cost) as count_value
+into #raw_4021_u5
+from #raw_cost_4021
+GROUP BY subject_id, visit_concept_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
+
+select cohort_definition_id
+	, subject_id
+	, 0 as stratum_1
+	, 0 as stratum_2
+	, 0 as stratum_3
+	, cost_concept_id as stratum_4
+	, cost_type_concept_id as stratum_5
+	, sum(cost) as count_value
+into #raw_4021_u6
+from #raw_cost_4021
+GROUP BY subject_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
+
+
+WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value) as
+(
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
+	FROM #raw_4021_u1
+	UNION ALL
+
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
+	FROM #raw_4021_u2
+	UNION ALL
+
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
+	FROM #raw_4021_u3
+	UNION ALL
+
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
+	FROM #raw_4021_u4
+	UNION ALL
+
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
+	FROM #raw_4021_u5
+	UNION ALL
+
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
+	FROM #raw_4021_u6
+),
+overallStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, avg_value, stdev_value, min_value, max_value, total) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		stratum_4,
+		stratum_5,
+		avg(1.0 * count_value) as avg_value,
+		stdev(count_value) as stdev_value,
+		min(count_value) as min_value,
+		max(count_value) as max_value,
+		count_big(*) as total
+	from cteRawData
+	group by cohort_definition_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5
+),
+valueStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		stratum_4,
+    stratum_5,
+		count_value,
+		total,
+		SUM(total) over (partition by cohort_definition_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
+	) D
+)
+select o.cohort_definition_id,
+	4021 as analysis_id,
+	case when o.stratum_1 = 0 then cast('' as varchar(255)) else cast(o.stratum_1 as varchar(255)) end as stratum_1,
+	case when o.stratum_2 = 0 then cast('' as varchar(255)) else cast(o.stratum_2 as varchar(255)) end as stratum_2,
+	case when o.stratum_3 = 0 then cast('' as varchar(255)) else cast(o.stratum_3 as varchar(255)) end as stratum_3,
+	case when o.stratum_4 = 0 then cast('' as varchar(255)) else cast(o.stratum_4 as varchar(255)) end as stratum_4,
+	case when o.stratum_5 = 0 then cast('' as varchar(255)) else cast(o.stratum_5 as varchar(255)) end as stratum_5,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_4021
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id 
+	and s.stratum_1 = o.stratum_1 and s.stratum_2 = o.stratum_2 and s.stratum_3 = o.stratum_3 and s.stratum_4 = o.stratum_4 and s.stratum_5 = o.stratum_5
+GROUP BY o.cohort_definition_id, o.stratum_1, o.stratum_2, o.stratum_3, o.stratum_4, o.stratum_5, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+
+TRUNCATE TABLE #raw_4021_u1;
+DROP TABLE #raw_4021_u1;
+
+TRUNCATE TABLE #raw_4021_u2;
+DROP TABLE #raw_4021_u2;
+
+TRUNCATE TABLE #raw_4021_u3;
+DROP TABLE #raw_4021_u3;
+
+TRUNCATE TABLE #raw_4021_u4;
+DROP TABLE #raw_4021_u4;
+
+TRUNCATE TABLE #raw_4021_u5;
+DROP TABLE #raw_4021_u5;
+
+TRUNCATE TABLE #raw_4021_u6;
+DROP TABLE #raw_4021_u6;
+
+TRUNCATE TABLE #raw_cost_4021;
+DROP TABLE #raw_cost_4021;
+
+TRUNCATE TABLE #raw_period_4021;
+DROP TABLE #raw_period_4021;
+}
+
+{4022 IN (@list_of_analysis_ids)}?{
+-- 4022	Distribution of greater than 0 US$ cost per subject by period_id, by drug_concept_id, by drug_type_concept_id, by cost_concept_id in the 365d prior to first cohort start date
+with drug_records(cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost) as
+(
+	select c1.cohort_definition_id,
+		c1.subject_id,
+		de1.drug_concept_id,
+		de1.drug_type_concept_id,
+		cst1.cost_concept_id,
+		cst1.cost_type_concept_id,
+		de1.drug_exposure_start_date,
+		de1.drug_exposure_id,
+		cost
+	from #cohort_first c1
+	join @CDM_schema.drug_exposure de1 on c1.subject_id = de1.person_id
+		and de1.drug_exposure_start_date >= dateadd(d, -365, c1.cohort_start_date) and de1.drug_exposure_start_date < c1.cohort_start_date
+	join @CDM_schema.cost cst1 on c1.subject_id = cst1.person_id
+		and cst1.person_id = de1.person_id
+		and de1.visit_occurrence_id = cst1.cost_event_id
+	where cost >= 0
+			and currency_concept_id = 44818668
+),
+atc_rollup (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost) as
+(
+	select r.cohort_definition_id, r.subject_id, ca.ancestor_concept_id as drug_concept_id, r.drug_type_concept_id, r.cost_concept_id, r.cost_type_concept_id, r.drug_exposure_start_date, r.drug_exposure_id, r.cost
+  from drug_records r
+	join @CDM_schema.concept_ancestor ca on ca.descendant_concept_id = r.drug_concept_id
+  join @CDM_schema.concept c on ca.ancestor_concept_id = c.concept_id
+  where c.vocabulary_id = 'ATC' and c.concept_class_id in ('ATC 4th', 'ATC 5th')
+)
+select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost
+INTO #raw_cost_4022
+FROM (
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost FROM drug_records
+	UNION ALL
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost FROM atc_rollup
+) D
+;
+
+create index ix_rc_visit_date on #raw_cost_4022 (drug_exposure_start_date);
+
+select cohort_definition_id, subject_id, hp.period_id, drug_exposure_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, cost
+into #raw_period_4022
+from #raw_cost_4022
+join #periods_baseline hp on drug_exposure_start_date >= hp.period_start_date and drug_exposure_start_date < hp.period_end_date
+;
+
+select cohort_definition_id
+	, subject_id
+	, period_id as stratum_1
+	, drug_concept_id as stratum_2
+	, drug_type_concept_id as stratum_3
+	, cost_concept_id as stratum_4
+	, cost_type_concept_id as stratum_5
+	, sum(cost) as count_value
+into #raw_4022_u1
+from #raw_period_4022
+GROUP BY subject_id, period_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
+
+select cohort_definition_id
+	, subject_id
+	, period_id as stratum_1
+	, drug_concept_id as stratum_2
+	, 0 as stratum_3
+	, cost_concept_id as stratum_4
+	, cost_type_concept_id as stratum_5
+	, sum(cost) as count_value
+into #raw_4022_u2
+from #raw_period_4022
+GROUP BY subject_id, period_id, drug_concept_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
+
+select cohort_definition_id
+	, subject_id
+	, period_id as stratum_1
+	, 0 as stratum_2
+	, 0 as stratum_3
+	, cost_concept_id as stratum_4
+	, cost_type_concept_id as stratum_5
+	, sum(cost) as count_value
+into #raw_4022_u3
+from #raw_period_4022
+GROUP BY subject_id, period_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
+
+select cohort_definition_id
+	, subject_id
+	, 0 as stratum_1
+	, drug_concept_id as stratum_2
+	, drug_type_concept_id as stratum_3
+	, cost_concept_id as stratum_4
+	, cost_type_concept_id as stratum_5
+	, sum(cost) as count_value
+into #raw_4022_u4
+from #raw_cost_4022
+GROUP BY subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
+
+select cohort_definition_id
+	, subject_id
+	, 0 as stratum_1
+	, drug_concept_id as stratum_2
+	, 0 as stratum_3
+	, cost_concept_id as stratum_4
+	, cost_type_concept_id as stratum_5
+	, sum(cost) as count_value
+into #raw_4022_u5
+from #raw_cost_4022
+GROUP BY subject_id, drug_concept_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
+
+select cohort_definition_id
+	, subject_id
+	, 0 as stratum_1
+	, 0 as stratum_2
+	, 0 as stratum_3
+	, cost_concept_id as stratum_4
+	, cost_type_concept_id as stratum_5
+	, sum(cost) as count_value
+into #raw_4022_u6
+from #raw_cost_4022
+GROUP BY subject_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
+
+
+WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value) as
+(
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
+	FROM #raw_4022_u1
+	UNION ALL
+
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
+	FROM #raw_4022_u2
+	UNION ALL
+
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
+	FROM #raw_4022_u3
+	UNION ALL
+
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
+	FROM #raw_4022_u4
+	UNION ALL
+
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
+	FROM #raw_4022_u5
+	UNION ALL
+
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
+	FROM #raw_4022_u6
+),
+overallStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, avg_value, stdev_value, min_value, max_value, total) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		stratum_4,
+		stratum_5,
+		avg(1.0 * count_value) as avg_value,
+		stdev(count_value) as stdev_value,
+		min(count_value) as min_value,
+		max(count_value) as max_value,
+		count_big(*) as total
+	from cteRawData
+	group by cohort_definition_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5
+),
+valueStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		stratum_4,
+    stratum_5,
+		count_value,
+		total,
+		SUM(total) over (partition by cohort_definition_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
+	) D
+)
+select o.cohort_definition_id,
+	4022 as analysis_id,
+	case when o.stratum_1 = 0 then cast('' as varchar(255)) else cast(o.stratum_1 as varchar(255)) end as stratum_1,
+	case when o.stratum_2 = 0 then cast('' as varchar(255)) else cast(o.stratum_2 as varchar(255)) end as stratum_2,
+	case when o.stratum_3 = 0 then cast('' as varchar(255)) else cast(o.stratum_3 as varchar(255)) end as stratum_3,
+	case when o.stratum_4 = 0 then cast('' as varchar(255)) else cast(o.stratum_4 as varchar(255)) end as stratum_4,
+	case when o.stratum_5 = 0 then cast('' as varchar(255)) else cast(o.stratum_5 as varchar(255)) end as stratum_5,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_4022
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id
+	and s.stratum_1 = o.stratum_1 and s.stratum_2 = o.stratum_2 and s.stratum_3 = o.stratum_3 and s.stratum_4 = o.stratum_4 and s.stratum_5 = o.stratum_5
+GROUP BY o.cohort_definition_id, o.stratum_1, o.stratum_2, o.stratum_3, o.stratum_4, o.stratum_5, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+TRUNCATE TABLE #raw_4022_u1;
+DROP TABLE #raw_4022_u1;
+
+TRUNCATE TABLE #raw_4022_u2;
+DROP TABLE #raw_4022_u2;
+
+TRUNCATE TABLE #raw_4022_u3;
+DROP TABLE #raw_4022_u3;
+
+TRUNCATE TABLE #raw_4022_u4;
+DROP TABLE #raw_4022_u4;
+
+TRUNCATE TABLE #raw_4022_u5;
+DROP TABLE #raw_4022_u5;
+
+TRUNCATE TABLE #raw_4022_u6;
+DROP TABLE #raw_4022_u6;
+
+TRUNCATE TABLE #raw_cost_4022;
+DROP TABLE #raw_cost_4022;
+
+TRUNCATE TABLE #raw_period_4022;
+DROP TABLE #raw_period_4022;
+}
+
+{4023 IN (@list_of_analysis_ids)}?{
+-- 4023	Distribution of greater than 0 US$ cost per subject by period_id, by drug_concept_id, by drug_type_concept_id, by cost_concept_id, by cost_type_concept_id during the cohort period
+with drug_records(cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost) as
+(
+	select c1.cohort_definition_id,
+		c1.subject_id,
+		de1.drug_concept_id,
+		de1.drug_type_concept_id,
+		cst1.cost_concept_id,
+		cst1.cost_type_concept_id,
+		de1.drug_exposure_start_date,
+		de1.drug_exposure_id,
+		cost
+	from #HERACLES_cohort c1
+	join @CDM_schema.drug_exposure de1 on c1.subject_id = de1.person_id
+		and de1.drug_exposure_start_date >= dateadd(d, -365, c1.cohort_start_date) and de1.drug_exposure_start_date < c1.cohort_start_date
+	join @CDM_schema.cost cst1 on c1.subject_id = cst1.person_id
+		and cst1.person_id = de1.person_id
+		and de1.visit_occurrence_id = cst1.cost_event_id
+	where cost >= 0
+			and currency_concept_id = 44818668
+),
+atc_rollup (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost) as
+(
+	select r.cohort_definition_id, r.subject_id, ca.ancestor_concept_id as drug_concept_id, r.drug_type_concept_id, r.cost_concept_id, r.cost_type_concept_id, r.drug_exposure_start_date, r.drug_exposure_id, r.cost
+  from drug_records r
+	join @CDM_schema.concept_ancestor ca on ca.descendant_concept_id = r.drug_concept_id
+  join @CDM_schema.concept c on ca.ancestor_concept_id = c.concept_id
+  where c.vocabulary_id = 'ATC' and c.concept_class_id in ('ATC 4th', 'ATC 5th')
+)
+select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost
+INTO #raw_cost_4023
+FROM (
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost FROM drug_records
+	UNION ALL
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost FROM atc_rollup
+) D
+;
+
+create index ix_rc_visit_date on #raw_cost_4023 (drug_exposure_start_date);
+
+select cohort_definition_id, subject_id, hp.period_id, drug_exposure_id,drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, cost
+into #raw_period_4023
+from #raw_cost_4023
+join #periods_atrisk hp on drug_exposure_start_date >= hp.period_start_date and drug_exposure_start_date < hp.period_end_date
+;
+
+select cohort_definition_id
+	, subject_id
+	, period_id as stratum_1
+	, drug_concept_id as stratum_2
+	, drug_type_concept_id as stratum_3
+	, cost_concept_id as stratum_4
+	, cost_type_concept_id as stratum_5
+	, sum(cost) as count_value
+into #raw_4023_u1
+from #raw_period_4023
+GROUP BY subject_id, period_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
+
+select cohort_definition_id
+	, subject_id
+	, period_id as stratum_1
+	, drug_concept_id as stratum_2
+	, 0 as stratum_3
+	, cost_concept_id as stratum_4
+	, cost_type_concept_id as stratum_5
+	, sum(cost) as count_value
+into #raw_4023_u2
+from #raw_period_4023
+GROUP BY subject_id, period_id, drug_concept_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
+
+select cohort_definition_id
+	, subject_id
+	, period_id as stratum_1
+	, 0 as stratum_2
+	, 0 as stratum_3
+	, cost_concept_id as stratum_4
+	, cost_type_concept_id as stratum_5
+	, sum(cost) as count_value
+into #raw_4023_u3
+from #raw_period_4023
+GROUP BY subject_id, period_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
+
+select cohort_definition_id
+	, subject_id
+	, 0 as stratum_1
+	, drug_concept_id as stratum_2
+	, drug_type_concept_id as stratum_3
+	, cost_concept_id as stratum_4
+	, cost_type_concept_id as stratum_5
+	, sum(cost) as count_value
+into #raw_4023_u4
+from #raw_cost_4023
+GROUP BY subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
+
+select cohort_definition_id
+	, subject_id
+	, 0 as stratum_1
+	, drug_concept_id as stratum_2
+	, 0 as stratum_3
+	, cost_concept_id as stratum_4
+	, cost_type_concept_id as stratum_5
+	, sum(cost) as count_value
+into #raw_4023_u5
+from #raw_cost_4023
+GROUP BY subject_id, drug_concept_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
+
+select cohort_definition_id
+	, subject_id
+	, 0 as stratum_1
+	, 0 as stratum_2
+	, 0 as stratum_3
+	, cost_concept_id as stratum_4
+	, cost_type_concept_id as stratum_5
+	, sum(cost) as count_value
+into #raw_4023_u6
+from #raw_cost_4023
+GROUP BY subject_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
+
+WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value) as
+(
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
+	FROM #raw_4023_u1
+	UNION ALL
+
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
+	FROM #raw_4023_u2
+	UNION ALL
+
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
+	FROM #raw_4023_u3
+	UNION ALL
+
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
+	FROM #raw_4023_u4
+	UNION ALL
+
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
+	FROM #raw_4023_u5
+	UNION ALL
+
+	select cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
+	FROM #raw_4023_u6
+),
+overallStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, avg_value, stdev_value, min_value, max_value, total) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		stratum_4,
+		stratum_5,
+		avg(1.0 * count_value) as avg_value,
+		stdev(count_value) as stdev_value,
+		min(count_value) as min_value,
+		max(count_value) as max_value,
+		count_big(*) as total
+	from cteRawData
+	group by cohort_definition_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5
+),
+valueStats (cohort_definition_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value, total, accumulated) as
+(
+	select cohort_definition_id,
+		stratum_1,
+		stratum_2,
+		stratum_3,
+		stratum_4,
+    stratum_5,
+		count_value,
+		total,
+		SUM(total) over (partition by cohort_definition_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5 order by count_value ROWS UNBOUNDED PRECEDING) as accumulated
+	FROM (
+		select cohort_definition_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value, count_big(*) as total
+		FROM cteRawData
+		GROUP BY cohort_definition_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
+	) D
+)
+select o.cohort_definition_id,
+	4023 as analysis_id,
+	case when o.stratum_1 = 0 then cast('' as varchar(255)) else cast(o.stratum_1 as varchar(255)) end as stratum_1,
+	case when o.stratum_2 = 0 then cast('' as varchar(255)) else cast(o.stratum_2 as varchar(255)) end as stratum_2,
+	case when o.stratum_3 = 0 then cast('' as varchar(255)) else cast(o.stratum_3 as varchar(255)) end as stratum_3,
+	case when o.stratum_4 = 0 then cast('' as varchar(255)) else cast(o.stratum_4 as varchar(255)) end as stratum_4,
+	case when o.stratum_5 = 0 then cast('' as varchar(255)) else cast(o.stratum_5 as varchar(255)) end as stratum_5,
+	o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	coalesce(o.stdev_value, 0.0) as stdev_value,
+	MIN(case when s.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when s.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #results_dist_4023
+from valueStats s
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id
+	and s.stratum_1 = o.stratum_1 and s.stratum_2 = o.stratum_2 and s.stratum_3 = o.stratum_3 and s.stratum_4 = o.stratum_4 and s.stratum_5 = o.stratum_5
+GROUP BY o.cohort_definition_id, o.stratum_1, o.stratum_2, o.stratum_3, o.stratum_4, o.stratum_5, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+
+TRUNCATE TABLE #raw_4023_u1;
+DROP TABLE #raw_4023_u1;
+
+TRUNCATE TABLE #raw_4023_u2;
+DROP TABLE #raw_4023_u2;
+
+TRUNCATE TABLE #raw_4023_u3;
+DROP TABLE #raw_4023_u3;
+
+TRUNCATE TABLE #raw_4023_u4;
+DROP TABLE #raw_4023_u4;
+
+TRUNCATE TABLE #raw_4023_u5;
+DROP TABLE #raw_4023_u5;
+
+TRUNCATE TABLE #raw_4023_u6;
+DROP TABLE #raw_4023_u6;
+
+TRUNCATE TABLE #raw_cost_4023;
+DROP TABLE #raw_cost_4023;
+
+TRUNCATE TABLE #raw_period_4023;
+DROP TABLE #raw_period_4023;
+}
+
   -- INSERT UNION-ALL into heracles_results, the last line is a dummy insert that 
   -- can be deleted later.  Adding it so we can easily use union all for all temp tables.
   
   insert into @results_schema.heracles_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, count_value) 
   --{ 0  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_0 union all }
   --{ 3000  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_3000 union all }
   --{ 3001  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_3001 union all }
   --{ 1  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1 union all }
   --{ 2  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_2 union all }
   --{ 3  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_3 union all }
   --{ 4  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_4 union all }
   --{ 5  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_5 union all }
   --{ 7  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_7 union all }
   --{ 8  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_8 union all }
   --{ 9  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_9 union all }
   --{ 101  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_101 union all }
   --{ 102  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_102 union all }
   --{ 108  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_108 union all }
   --{ 109  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_109 union all }
   --{ 110  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_110 union all }
   --{ 111  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_111 union all }
   --{ 112  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_112 union all }
   --{ 113  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_113 union all }
   --{ 114  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_114 union all }
   --{ 115  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_115 union all }
   --{ 116  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_116 union all }
   --{ 117  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_117 union all }
   --{ 200  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_200 union all }
   --{ 201  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_201 union all }
   --{ 202  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_202 union all }
   --{ 204  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_204 union all }
   --{ 207  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_207 union all }
   --{ 208  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_208 union all }
   --{ 209  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_209 union all }
   --{ 210  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_210 union all }
   --{ 220  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_220 union all }
   --{ 400  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_400 union all }
   --{ 401  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_401 union all }
   --{ 402  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_402 union all }
   --{ 404  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_404 union all }
   --{ 405  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_405 union all }
   --{ 409  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_409 union all }
   --{ 410  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_410 union all }
   --{ 411  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_411 union all }
   --{ 412  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_412 union all }
   --{ 413  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_413 union all }
   --{ 420  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_420 union all }
   --{ 500  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_500 union all }
   --{ 501  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_501 union all }
   --{ 502  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_502 union all }
   --{ 504  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_504 union all }
   --{ 505  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_505 union all }
   --{ 509  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_509 union all }
   --{ 510  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_510 union all }
   --{ 600  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_600 union all }
   --{ 601  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_601 union all }
   --{ 602  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_602 union all }
   --{ 604  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_604 union all }
   --{ 605  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_605 union all }
   --{ 609  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_609 union all }
   --{ 610  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_610 union all }
   --{ 612  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_612 union all }
   --{ 613  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_613 union all }
   --{ 620  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_620 union all }
   --{ 700  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_700 union all }
   --{ 701  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_701 union all }
   --{ 702  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_702 union all }
   --{ 704  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_704 union all }
   --{ 705  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_705 union all }
   --{ 709  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_709 union all }
   --{ 710  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_710 union all }
   --{ 711  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_711 union all }
   --{ 712  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_712 union all }
   --{ 713  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_713 union all }
   --{ 720  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_720 union all }
   --{ 800  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_800 union all }
   --{ 801  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_801 union all }
   --{ 802  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_802 union all }
   --{ 804  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_804 union all }
   --{ 805  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_805 union all }
   --{ 807  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_807 union all }
   --{ 809  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_809 union all }
   --{ 810  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_810 union all }
   --{ 812  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_812 union all }
   --{ 813  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_813 union all }
   --{ 814  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_814 union all }
   --{ 820  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_820 union all }
   --{ 900  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_900 union all }
   --{ 901  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_901 union all }
   --{ 902  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_902 union all }
   --{ 908  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_908 union all }
   --{ 909  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_909 union all }
   --{ 910  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_910 union all }
   --{ 920  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_920 union all }
   --{ 1000  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1000 union all }
   --{ 1001  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1001 union all }
   --{ 1002  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1002 union all }
   --{ 1004  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1004 union all }
   --{ 1008  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1008 union all }
   --{ 1009  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1009 union all }
   --{ 1010  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1010 union all }
   --{ 1020  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1020 union all }
   --{ 1100  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1100 union all }
   --{ 1101  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1101 union all }
   --{ 1200  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1200 union all }
   --{ 1201  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1201 union all }
   --{ 1300  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1300 union all }
   --{ 1301  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1301 union all }
   --{ 1302  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1302 union all }
   --{ 1304  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1304 union all }
   --{ 1305  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1305 union all }
   --{ 1307  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1307 union all }
   --{ 1309  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1309 union all }
   --{ 1310  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1310 union all }
   --{ 1312  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1312 union all }
   --{ 1313  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1313 union all }
   --{ 1314  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1314 union all }
   --{ 1318  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1318 union all }
   --{ 1320  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1320 union all }
   --{ 1700  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1700 union all }
   --{ 1701  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1701 union all }
   --{ 1800  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1800 union all }
   --{ 1804  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1804 union all }
   --{ 1805  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1805 union all }
   --{ 1806  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1806 union all }
   --{ 1807  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1807 union all }
   --{ 1814  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1814 union all }
   --{ 1815  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1815 union all }
   --{ 1816  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1816 union all }
   --{ 1820  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1820 union all }
   --{ 1821  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1821 union all }
   --{ 1830  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1830 union all }
   --{ 1831  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1831 union all }
   --{ 1840  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1840 union all }
   --{ 1841  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1841 union all }
   --{ 1850  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1850 union all }
   --{ 1851  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1851 union all }
   --{ 1860  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1860 union all }
   --{ 1861  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1861 union all }
   --{ 1870  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1870 union all }
   --{ 1871  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_1871 union all }
   --{ 2001  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_2001 union all }
   --{ 2002  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_2002 union all }
   --{ 2003  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_2003 union all }
   --{ 2004  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_2004 union all }
   --{ 2005  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_2005 union all }
   --{ 2006  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_2006 union all }
   --{ 2007  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_2007 union all }
   --{ 2011  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_2011 union all }
   --{ 2012  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_2012 union all }
   --{ 2013  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_2013 union all }
   --{ 2014  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_2014 union all }
   --{ 2015  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_2015 union all }
   --{ 2016  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_2016 union all }
   --{ 2017  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_2017 union all }
   --{ 2021  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_2021 union all }
   --{ 2022  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_2022 union all }
   --{ 2023  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_2023 union all }
   --{ 2024  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_2024 union all }
   --{ 2025  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_2025 union all }
   --{ 2026  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_2026 union all }
   --{ 2027  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_2027 union all }
   --{ 2031  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_2031 union all }
   --{ 2032  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), 
-  cast(stratum_3 as varchar), cast(stratum_4 as varchar), count_value
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_2032 union all } 
+  --{ 4001  IN (@list_of_analysis_ids)}?{
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
+  from  #results_4001 union all }
+  --{ 4007  IN (@list_of_analysis_ids)}?{
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
+  from  #results_4007 union all }
+  --{ 4012  IN (@list_of_analysis_ids)}?{
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
+  from  #results_4012 union all }
+  --{ 4016  IN (@list_of_analysis_ids)}?{
+  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
+  cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
+  from  #results_4016 union all }
   select -1, -1, '', '', '', '', -1;
   -- this final select handles the union all in the case of whatever conditional query runs last
   
-  insert into @results_schema.heracles_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value) 
+  insert into @results_schema.heracles_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value) 
   --{ 0  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_0 union all }
   --{ 103  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_103 union all }
   --{ 104  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_104 union all }
   --{ 105  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_105 union all }
   --{ 106  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_106 union all }
   --{ 107  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_107 union all }
+  --{ 120  IN (@list_of_analysis_ids)}?{
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_120 union all }
   --{ 203  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_203 union all }
   --{ 206  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_206 union all }
   --{ 211  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_211 union all }
   --{ 403  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_403 union all }
   --{ 406  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_406 union all }
   --{ 506  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_506 union all }
   --{ 511  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_511 union all }
   --{ 512  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_512 union all }
   --{ 513  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_513 union all }
   --{ 514  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_514 union all }
   --{ 515  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_515 union all }
   --{ 603  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_603 union all }
   --{ 606  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_606 union all }
   --{ 703  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_703 union all }
   --{ 706  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_706 union all }
   --{ 715  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_715 union all }
   --{ 716  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_716 union all }
   --{ 717  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_717 union all }
   --{ 803  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_803 union all }
   --{ 806  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_806 union all }
   --{ 815  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_815 union all }
   --{ 903  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_903 union all }
   --{ 906  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_906 union all }
   --{ 907  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_907 union all }
   --{ 1003  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_1003 union all }
   --{ 1006  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_1006 union all }
   --{ 1007  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_1007 union all }
   --{ 1303  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_1303 union all }
   --{ 1306  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_1306 union all }
   --{ 1315  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_1315 union all }
   --{ 1316  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_1316 union all }
   --{ 1317  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_1317 union all }
   --{ 1801  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_1801 union all }
   --{ 1802  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_1802 union all }
   --{ 1803  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_1803 union all }
   --{ 1808  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_1808 union all }
   --{ 1809  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_1809 union all }
   --{ 1810  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_1810 union all }
   --{ 1811  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_1811 union all }
   --{ 1812  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_1812 union all }
   --{ 1813  IN (@list_of_analysis_ids)}?{
-  select cohort_definition_id, analysis_id, cast(stratum_1 as varchar), cast(stratum_2 as varchar), cast(count_value as bigint),  
-  cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_1813 union all } 
-  select -1, -1, '', '', -1, -1, -1, -1, -1, -1, -1, -1, -1, -1;
+  --{ 4000  IN (@list_of_analysis_ids)}?{
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_4000 union all }
+  --{ 4002  IN (@list_of_analysis_ids)}?{
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_4002 union all }
+  --{ 4003  IN (@list_of_analysis_ids)}?{
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_4003 union all }
+  --{ 4004  IN (@list_of_analysis_ids)}?{
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_4004 union all }
+  --{ 4005  IN (@list_of_analysis_ids)}?{
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_4005 union all }
+  --{ 4006  IN (@list_of_analysis_ids)}?{
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_4006 union all }
+  --{ 4008  IN (@list_of_analysis_ids)}?{
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_4008 union all }
+  --{ 4009  IN (@list_of_analysis_ids)}?{
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_4009 union all }
+  --{ 4010  IN (@list_of_analysis_ids)}?{
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_4010 union all }
+  --{ 4011  IN (@list_of_analysis_ids)}?{
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_4011 union all }
+  --{ 4013 IN (@list_of_analysis_ids)}?{
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_4013 union all }
+  --{ 4014  IN (@list_of_analysis_ids)}?{
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_4014 union all }
+  --{ 4015  IN (@list_of_analysis_ids)}?{
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_4015 union all }
+  --{ 4017  IN (@list_of_analysis_ids)}?{
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_4017 union all }
+  --{ 4018  IN (@list_of_analysis_ids)}?{
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_4018 union all }
+  --{ 4019  IN (@list_of_analysis_ids)}?{
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_4019 union all }
+  --{ 4020  IN (@list_of_analysis_ids)}?{
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_4020
+ union all }
+  --{ 4021  IN (@list_of_analysis_ids)}?{
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_4021
+ union all }
+  --{ 4022  IN (@list_of_analysis_ids)}?{
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_4022
+ union all }
+  --{ 4023  IN (@list_of_analysis_ids)}?{
+  select cohort_definition_id, analysis_id,
+	cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), cast(stratum_5 as varchar(255)),
+	cast(count_value as bigint), cast(min_value as float), cast(max_value as float), cast(avg_value as float), cast(stdev_value as float), 
+  cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_4023
+ union all }
+
+  select -1, -1, '', '','','','', -1, -1, -1, -1, -1, -1, -1, -1, -1, -1;
   -- this final select handles the union all in the case of whatever conditional query runs last
   
   TRUNCATE TABLE #HERACLES_cohort;
   DROP TABLE #HERACLES_cohort;
-  
+
+  TRUNCATE TABLE #cohort_first;
+  DROP TABLE #cohort_first;
+
+  TRUNCATE TABLE #periods_baseline;
+  DROP TABLE #periods_baseline;
+
+	TRUNCATE TABLE #periods_atrisk;
+  DROP TABLE #periods_atrisk;
+
   delete from @results_schema.HERACLES_results where count_value <= @smallcellcount and cohort_definition_id in (@cohort_definition_id);
   delete from @results_schema.HERACLES_results_dist where count_value <= @smallcellcount and cohort_definition_id in (@cohort_definition_id);
   
@@ -10148,6 +14290,9 @@ drop table  #results_1815;
 IF OBJECT_ID('tempdb..#results_1816', 'U') IS NOT NULL
 drop table  #results_1816;
 
+IF OBJECT_ID('tempdb..#results_1817', 'U') IS NOT NULL
+drop table  #results_1817;
+
 IF OBJECT_ID('tempdb..#results_1820', 'U') IS NOT NULL
 drop table  #results_1820;
 
@@ -10252,3 +14397,75 @@ drop table  #results_2031;
 
 IF OBJECT_ID('tempdb..#results_2032', 'U') IS NOT NULL
 drop table  #results_2032;
+
+IF OBJECT_ID('tempdb..#results_4000', 'U') IS NOT NULL
+drop table  #results_dist_4000;
+
+IF OBJECT_ID('tempdb..#results_4001', 'U') IS NOT NULL
+drop table  #results_4001;
+
+IF OBJECT_ID('tempdb..#results_dist_4002', 'U') IS NOT NULL
+drop table  #results_dist_4002;
+
+IF OBJECT_ID('tempdb..#results_dist_4003', 'U') IS NOT NULL
+drop table  #results_dist_4003;
+
+IF OBJECT_ID('tempdb..#results_dist_4004', 'U') IS NOT NULL
+drop table  #results_dist_4004;
+
+IF OBJECT_ID('tempdb..#results_dist_4005', 'U') IS NOT NULL
+drop table  #results_dist_4005;
+
+IF OBJECT_ID('tempdb..#results_dist_4006', 'U') IS NOT NULL
+drop table  #results_dist_4006;
+
+IF OBJECT_ID('tempdb..#results_4007', 'U') IS NOT NULL
+drop table  #results_4007;
+
+IF OBJECT_ID('tempdb..#results_dist_4008', 'U') IS NOT NULL
+drop table  #results_dist_4008;
+
+IF OBJECT_ID('tempdb..#results_dist_4009', 'U') IS NOT NULL
+drop table  #results_dist_4009;
+
+IF OBJECT_ID('tempdb..#results_dist_4010', 'U') IS NOT NULL
+drop table  #results_dist_4010;
+
+IF OBJECT_ID('tempdb..#results_dist_4011', 'U') IS NOT NULL
+drop table  #results_dist_4011;
+
+IF OBJECT_ID('tempdb..#results_4012', 'U') IS NOT NULL
+drop table  #results_4012;
+
+IF OBJECT_ID('tempdb..#results_dist_4013', 'U') IS NOT NULL
+drop table  #results_dist_4013;
+
+IF OBJECT_ID('tempdb..#results_dist_4014', 'U') IS NOT NULL
+drop table  #results_dist_4014;
+
+IF OBJECT_ID('tempdb..#results_dist_4015', 'U') IS NOT NULL
+drop table  #results_dist_4015;
+
+IF OBJECT_ID('tempdb..#results_4016', 'U') IS NOT NULL
+drop table  #results_4016;
+
+IF OBJECT_ID('tempdb..#results_dist_4017', 'U') IS NOT NULL
+drop table  #results_dist_4017;
+
+IF OBJECT_ID('tempdb..#results_dist_4018', 'U') IS NOT NULL
+drop table  #results_dist_4018;
+
+IF OBJECT_ID('tempdb..#results_dist_4019', 'U') IS NOT NULL
+drop table  #results_dist_4019;
+
+IF OBJECT_ID('tempdb..#results_dist_4020', 'U') IS NOT NULL
+drop table  #results_dist_4020;
+
+IF OBJECT_ID('tempdb..#results_dist_4021', 'U') IS NOT NULL
+drop table  #results_dist_4021;
+
+IF OBJECT_ID('tempdb..#results_dist_4022', 'U') IS NOT NULL
+drop table  #results_dist_4022;
+
+IF OBJECT_ID('tempdb..#results_dist_4023', 'U') IS NOT NULL
+drop table  #results_dist_4023;

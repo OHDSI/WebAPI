@@ -452,9 +452,11 @@ public class CohortResultsService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   public List<Integer> getCompletedAnalyses(@PathParam("sourceKey") String sourceKey, @PathParam("id") String id) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    PreparedStatementRenderer psr = prepareGetCompletedAnalysis(id, source);
+		int sourceId = source.getSourceId();
+		
+    PreparedStatementRenderer psr = prepareGetCompletedAnalysis(id, sourceId);
     final String sql = psr.getSql();
-    return getSourceJdbcTemplate(source).query(sql, psr.getSetter(), new RowMapper<Integer>() {
+    return this.getJdbcTemplate().query(sql, psr.getSetter(), new RowMapper<Integer>() {
           @Override
           public Integer mapRow(ResultSet resultSet, int arg1) throws SQLException {
 
@@ -464,12 +466,14 @@ public class CohortResultsService extends AbstractDaoService {
     );
   }
 
-  protected PreparedStatementRenderer prepareGetCompletedAnalysis(String id, Source source) {
+  protected PreparedStatementRenderer prepareGetCompletedAnalysis(String id, int sourceId) {
 
     String sqlPath = BASE_SQL_PATH + "/raw/getCompletedAnalyses.sql";
-    String tqName = "tableQualifier";
-    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sqlPath, tqName, tqValue, "id", Integer.valueOf(id));
+    PreparedStatementRenderer psr = new PreparedStatementRenderer(null
+			, sqlPath
+			, new String[]{"tableQualifier"}, new String[] { this.getOhdsiSchema()}
+			, new String[]{"cohort_definition_id", "source_id"}, new Object[]{Integer.valueOf(id), Integer.valueOf(sourceId)});
+		psr.setTargetDialect(this.getDialect());
     return psr;
   }
 

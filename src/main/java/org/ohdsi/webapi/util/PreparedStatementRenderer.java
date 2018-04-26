@@ -25,7 +25,6 @@ import org.springframework.jdbc.core.PreparedStatementSetter;
 public class PreparedStatementRenderer {
 
   private String sql;
-	private String debugSql;
   private String sourceDialect = "sql server";
   private List<Object> orderedParamsList;
   private String targetDialect = "sql server";
@@ -72,7 +71,6 @@ public class PreparedStatementRenderer {
 
     validateArguments(source, sqlResource, searchRegexes, replacementStrings, sourceDialect, sqlVariableNames, sqlVariableValues);
     /// this part does the heavy lifting, the calling classes can get needed items through getters
-		debugSql = sql;
 		sql = PreparedSqlRender.removeSqlComments(sql);
 
     updateSqlWithVariableSearchAndReplace(searchRegexes, replacementStrings);

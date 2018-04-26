@@ -4,16 +4,16 @@ import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Calendar;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import jersey.repackaged.com.google.common.base.Joiner;
@@ -23,11 +23,12 @@ import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysis;
+import org.ohdsi.webapi.cohortanalysis.CohortAnalysisGenerationInfo;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTask;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTasklet;
 import org.ohdsi.webapi.cohortanalysis.CohortSummary;
-import org.ohdsi.webapi.cohortresults.CohortDashboard;
-import org.ohdsi.webapi.cohortresults.CohortSpecificSummary;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortresults.VisualizationDataRepository;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
@@ -59,6 +60,9 @@ public class CohortAnalysisService extends AbstractDaoService {
 
 	@Autowired
 	private CohortDefinitionService definitionService;
+	
+	@Autowired
+  private CohortDefinitionRepository cohortDefinitionRepository;
 	
 	@Autowired
 	private VisualizationDataRepository visualizationDataRepository;
@@ -242,12 +246,13 @@ public class CohortAnalysisService extends AbstractDaoService {
 		if (task == null) {
 			return null;
 		}
-		task.setSmallCellCount(Integer.parseInt(this.smallCellCount));
-		JobParametersBuilder builder = new JobParametersBuilder();
-
+		
 		// source key comes from the client, we look it up here and hand it off to the tasklet
 		Source source = getSourceRepository().findBySourceKey(task.getSourceKey());
 		task.setSource(source);
+	
+		task.setSmallCellCount(Integer.parseInt(this.smallCellCount));
+		JobParametersBuilder builder = new JobParametersBuilder();
 
 		builder.addString("cohortDefinitionIds", limitJobParams(Joiner.on(",").join(task.getCohortDefinitionIds())));
 		builder.addString("analysisIds", limitJobParams(Joiner.on(",").join(task.getAnalysisIds())));
@@ -276,13 +281,34 @@ public class CohortAnalysisService extends AbstractDaoService {
 		if (!StringUtils.isEmpty(task.getJobName())) {
 			builder.addString("jobName", limitJobParams(task.getJobName()));
 		}
+
+		// clear analysis IDs from the generated set
+		this.getTransactionTemplateRequiresNew().execute(status -> { 
+			CohortDefinition cohortDef = this.cohortDefinitionRepository.findOne(Integer.parseInt(task.getCohortDefinitionIds().get(0)));
+			CohortAnalysisGenerationInfo info = cohortDef.getCohortAnalysisGenerationInfoList().stream()
+				.filter(a -> a.getSourceId() == task.getSource().getSourceId())
+				.findFirst()
+				.orElse(null);
+			if (info == null) {
+				info = new CohortAnalysisGenerationInfo();
+				info.setSourceId(task.getSource().getSourceId());
+				info.setCohortDefinition(cohortDef);
+				cohortDef.getCohortAnalysisGenerationInfoList().add(info);
+			}
+			List<Integer> analysisList = task.getAnalysisIds().stream().map(Integer::parseInt).collect(Collectors.toList());
+			info.getAnalysisIds().removeAll(analysisList);
+			info.setLastExecution(Calendar.getInstance().getTime());
+			this.cohortDefinitionRepository.save(cohortDef);
+			return null;
+		});
+
 		//TODO consider analysisId
 		final String taskString = task.toString();
 		final JobParameters jobParameters = builder.toJobParameters();
 		log.info(String.format("Beginning run for cohort analysis task: \n %s", taskString));
 
 		CohortAnalysisTasklet tasklet = new CohortAnalysisTasklet(task, getSourceJdbcTemplate(task.getSource()), 
-				getTransactionTemplate(), this.getSourceDialect(), this.visualizationDataRepository);
+				getTransactionTemplate(), this.getSourceDialect(), this.visualizationDataRepository, this.cohortDefinitionRepository);
 
 		return this.jobTemplate.launchTasklet("cohortAnalysisJob", "cohortAnalysisStep", tasklet, jobParameters);
 	}

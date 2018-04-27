@@ -3,7 +3,7 @@ WHERE TABLE_NAME = 'cca_execution_ext'
 AND TABLE_SCHEMA = '${ohdsiSchema}'))
 BEGIN
   CREATE TABLE ${ohdsiSchema}.cca_execution_ext (
-    cca_execution_id INTEGER NOT NULL PRIMARY KEY ,
+    cca_execution_id INTEGER NOT NULL,
     update_password  VARCHAR(250)
   );
 END;

@@ -6,7 +6,7 @@ CREATE TABLE ${ohdsiSchema}.analysis_execution(
   executed DATETIME,
   sec_user_id INTEGER,
   executionStatus VARCHAR(250),
-  update_password VARCHAR(1),
+  update_password VARCHAR(250),
   source_id INTEGER
 );
 

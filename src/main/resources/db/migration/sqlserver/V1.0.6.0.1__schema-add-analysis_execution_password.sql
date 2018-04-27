@@ -4,7 +4,7 @@ AND TABLE_SCHEMA = '${ohdsiSchema}'))
 BEGIN
   CREATE TABLE ${ohdsiSchema}.cca_execution_ext (
     cca_execution_id INTEGER NOT NULL PRIMARY KEY ,
-    update_password  VARCHAR(1)
+    update_password  VARCHAR(250)
   );
 END;
 

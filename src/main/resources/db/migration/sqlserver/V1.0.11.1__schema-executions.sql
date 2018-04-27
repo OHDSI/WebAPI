@@ -1,12 +1,12 @@
 CREATE TABLE ${ohdsiSchema}.analysis_execution(
   id INTEGER IDENTITY,
   analysis_id INTEGER NOT NULL,
-  analysis_type VARCHAR NOT NULL,
+  analysis_type VARCHAR(250) NOT NULL,
   duration INTEGER NOT NULL,
   executed DATETIME,
   sec_user_id INTEGER,
-  executionStatus VARCHAR,
-  update_password VARCHAR,
+  executionStatus VARCHAR(250),
+  update_password VARCHAR(1),
   source_id INTEGER
 );
 
@@ -26,14 +26,10 @@ INSERT INTO ${ohdsiSchema}.analysis_execution(analysis_id, analysis_type, durati
       END as status, ext.update_password FROM
         ${ohdsiSchema}.cca_execution cca LEFT JOIN ${ohdsiSchema}.cca_execution_ext ext ON ext.cca_execution_id = cca.cca_id;
 
-ALTER TABLE ${ohdsiSchema}.input_files ADD execution_id INTEGER;
-
 UPDATE ${ohdsiSchema}.input_files SET execution_id =
   (SELECT TOP 1 a.id FROM ${ohdsiSchema}.analysis_execution a JOIN ${ohdsiSchema}.cca_execution cca
     ON cca.cca_id = a.analysis_id AND a.analysis_type = 'CCA' AND a.executed = cca.executed
     WHERE cca.cca_execution_id = ${ohdsiSchema}.input_files.cca_execution_id);
-
-ALTER TABLE ${ohdsiSchema}.output_files ADD execution_id INTEGER;
 
 UPDATE ${ohdsiSchema}.output_files SET execution_id =
   (SELECT TOP 1 a.id FROM ${ohdsiSchema}.analysis_execution a JOIN ${ohdsiSchema}.cca_execution cca

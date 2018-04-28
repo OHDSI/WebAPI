@@ -10,9 +10,6 @@ CREATE TABLE ${ohdsiSchema}.analysis_execution(
   source_id INTEGER
 );
 
-IF (EXISTS (SELECT * FROM information_schema.tables WHERE table_schema = '${ohdsiSchema}' AND table_name = 'cca_execution_ext' AND table_type = 'BASE TABLE'))
-BEGIN
-
 DELETE FROM ${ohdsiSchema}.analysis_execution WHERE analysis_type = 'CCA';
 
 INSERT INTO ${ohdsiSchema}.analysis_execution(analysis_id, analysis_type, duration, executed, sec_user_id, source_id, executionStatus, update_password)
@@ -39,5 +36,3 @@ UPDATE ${ohdsiSchema}.output_files SET execution_id =
 ALTER TABLE ${ohdsiSchema}.input_files ALTER COLUMN cca_execution_id INTEGER NOT NULL;
 
 ALTER TABLE ${ohdsiSchema}.output_files ALTER COLUMN cca_execution_id INTEGER NOT NULL;
-
-END

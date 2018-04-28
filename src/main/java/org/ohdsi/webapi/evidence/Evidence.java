@@ -23,30 +23,37 @@ import java.math.BigDecimal;
  * @author fdefalco
  */
 public class Evidence {
-  @JsonProperty("evidenceType")
-  public String evidenceType;
+	  @JsonProperty("evidenceSource")
+    public String evidenceSource;
+    
+    @JsonProperty("relationshipType")
+    public String relationshipType;
+    
+    @JsonProperty("statisticType")
+    public String statisticType;
+		
+    @JsonProperty("statisticValue")
+    public BigDecimal statisticValue;
 
-  @JsonProperty("supports")
-  public Character supports;
+    @JsonProperty("drugConceptId")
+    public String drugConceptId;	
+    
+    @JsonProperty("drugConceptName")
+    public String drugConceptName;	
+    
+    @JsonProperty("hoiConceptId")
+    public String hoiConceptId;	
+    
+    @JsonProperty("hoiConceptName")
+    public String hoiConceptName;	
+		
+    @JsonProperty("uniqueIdentifier")
+    public String uniqueIdentifier;
+		
+    @JsonProperty("uniqueIdentifierType")
+    public String uniqueIdentifierType;
+		
+    @JsonProperty("count")
+    public Integer count;	
 
-  @JsonProperty("linkout")
-  public String linkout;
-
-  @JsonProperty("statisticType")
-  public String statisticType;
-
-  @JsonProperty("drugId")
-  public Integer drugId;
-
-  @JsonProperty("drugName")
-  public String drugName;
-  
-  @JsonProperty("value")
-  public BigDecimal value;
-
-  @JsonProperty("conditionId")
-  public Integer conditionId;
-  
-  @JsonProperty("conditionName")
-  public String conditionName;
 }

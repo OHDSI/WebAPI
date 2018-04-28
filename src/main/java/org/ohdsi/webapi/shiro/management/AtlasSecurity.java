@@ -265,7 +265,7 @@ public class AtlasSecurity extends Security {
       .addProtectedRestPath("/evidence/*")
 
       // execution service
-      .addProtectedRestPath("/execution_service/*")
+      .addProtectedRestPath("/executionservice/*")
 
       // feasibility
       .addProtectedRestPath("/feasibility")

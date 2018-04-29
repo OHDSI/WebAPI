@@ -9863,7 +9863,7 @@ DROP TABLE #raw_4011;
 {4012 IN (@list_of_analysis_ids)}?{
 	-- 4012 Number of subjects with Drug Exposure by period_id, by drug_concept_id, by drug_type_concept_id in the 365d prior to first cohort start date
 
-with drug_records (cohort_def4nition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date) as
+with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date) as
 (
 	select distinct c1.cohort_definition_id,
 		c1.subject_id,

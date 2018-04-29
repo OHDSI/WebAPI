@@ -1676,8 +1676,8 @@ public class CohortResultsAnalysisRunner {
 			s.chargedPmPm = rs.getString("charged_pmpm") == null ? null : new BigDecimal(rs.getDouble("charged_pmpm")).setScale(2, BigDecimal.ROUND_HALF_UP);
 			s.paid = rs.getString("paid") == null ? null : new BigDecimal(rs.getDouble("paid")).setScale(2, BigDecimal.ROUND_HALF_UP);
 			s.paidPmPm = rs.getString("paid_pmpm") == null ? null : new BigDecimal(rs.getDouble("paid_pmpm")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			s.allowedChargedRatio = rs.getString("allowed_charged") == null ? null : new BigDecimal(rs.getDouble("paid_pmpm")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			s.paidAllowedRatio = rs.getString("paid_allowed") == null ? null : new BigDecimal(rs.getDouble("paid_pmpm")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			s.allowedChargedRatio = rs.getString("allowed_charged") == null ? null : new BigDecimal(rs.getDouble("allowed_charged")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			s.paidAllowedRatio = rs.getString("paid_allowed") == null ? null : new BigDecimal(rs.getDouble("paid_allowed")).setScale(2, BigDecimal.ROUND_HALF_UP);
 
 			return s;
 		});

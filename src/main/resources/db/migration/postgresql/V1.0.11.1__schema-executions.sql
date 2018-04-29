@@ -42,10 +42,10 @@ INSERT INTO ${ohdsiSchema}.analysis_execution (analysis_id, analysis_type, durat
                          AND sec_user_id = cca.sec_user_id
                          AND source_id = cca.source_id
   )
-ON CONFLICT DO NOTHING;
+;
 
 ALTER TABLE ${ohdsiSchema}.input_files
-  ADD COLUMN IF NOT EXISTS execution_id INTEGER;
+  ADD COLUMN execution_id INTEGER;
 
 UPDATE ${ohdsiSchema}.input_files f
 SET execution_id =
@@ -57,7 +57,7 @@ SET execution_id =
  LIMIT 1);
 
 ALTER TABLE ${ohdsiSchema}.output_files
-  ADD COLUMN IF NOT EXISTS execution_id INTEGER;
+  ADD COLUMN execution_id INTEGER;
 
 UPDATE ${ohdsiSchema}.output_files f
 SET execution_id =

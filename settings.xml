@@ -32,6 +32,8 @@
                 <flyway.datasource.password>${OHDSI_ADMIN_USER}</flyway.datasource.password>
                 <datasource.url>jdbc:postgresql://honeur-dev-rds.cycgk9opaizc.eu-west-1.rds.amazonaws.com:5432/OHDSI</datasource.url>
                 <datasource.liferay.url>http://liferay-dev.eu-west-1.elasticbeanstalk.com</datasource.liferay.url>
+                <datasource.liferay.user>${WEBAPI_LIFERAY_USER}</datasource.liferay.user>
+                <datasource.liferay.password>${WEBAPI_LIFERAY_PASSWORD}</datasource.liferay.password>
                 <datasource.hss.url>http://cas-dev.eu-west-1.elasticbeanstalk.com/storage</datasource.hss.url>
 
                 <security.cas.login.url>http://cas-dev.eu-west-1.elasticbeanstalk.com/login</security.cas.login.url>
@@ -43,16 +45,36 @@
         <profile>
             <id>local-dev</id>
             <properties>
+                <server.port>${honeur.port}</server.port>
                 <datasource.password>app1</datasource.password>
                 <flyway.datasource.password>admin1</flyway.datasource.password>
-                <datasource.url>jdbc:postgresql://localhost:5432/OHDSI</datasource.url>
+                <datasource.url>jdbc:postgresql://localhost:5432/${datasource.db}</datasource.url>
                 <datasource.liferay.url>http://localhost:8080</datasource.liferay.url>
+                <datasource.liferay.user>sander.bylemans@continuum.be</datasource.liferay.user>
+                <datasource.liferay.password>test</datasource.liferay.password>
                 <datasource.hss.url>https://localhost:8445</datasource.hss.url>
                 <security.cas.login.url>https://localhost:8443/cas/login</security.cas.login.url>
-                <security.oauth.callback.ui>https://localhost:8444/atlas/#/welcome</security.oauth.callback.ui>
-                <security.oauth.callback.api>https://localhost:8444/WebAPI/user/oauth/callback</security.oauth.callback.api>
+                <security.oauth.callback.ui>https://localhost:${server.port}/atlas/#/welcome</security.oauth.callback.ui>
+                <security.oauth.callback.api>https://localhost:${server.port}/WebAPI/user/oauth/callback</security.oauth.callback.api>
                 <security.ssl.enabled>true</security.ssl.enabled>
-                <server.port>8444</server.port>
+            </properties>
+        </profile>
+        <profile>
+            <id>honeur-central</id>
+            <properties>
+                <remote>false</remote>
+                <war.directory>target</war.directory>
+                <datasource.db>OHDSI</datasource.db>
+                <honeur.port>8444</honeur.port>
+            </properties>
+        </profile>
+        <profile>
+            <id>honeur-local</id>
+            <properties>
+                <remote>true</remote>
+                <war.directory>target-local</war.directory>
+                <datasource.db>OHDSI-local</datasource.db>
+                <honeur.port>8844</honeur.port>
             </properties>
         </profile>
     </profiles>

@@ -31,7 +31,7 @@
                 <datasource.password>${OHDSI_APP_USER}</datasource.password>
                 <flyway.datasource.password>${OHDSI_ADMIN_USER}</flyway.datasource.password>
                 <datasource.url>jdbc:postgresql://honeur-dev-rds.cycgk9opaizc.eu-west-1.rds.amazonaws.com:5432/OHDSI</datasource.url>
-                <datasource.liferay.url>http://liferay-dev.eu-west-1.elasticbeanstalk.com</datasource.liferay.url>
+                <datasource.liferay.url>${LIFERAY_SERVER_BASE_URL}</datasource.liferay.url>
                 <datasource.liferay.user>${WEBAPI_LIFERAY_USER}</datasource.liferay.user>
                 <datasource.liferay.password>${WEBAPI_LIFERAY_PASSWORD}</datasource.liferay.password>
                 <datasource.hss.url>http://cas-dev.eu-west-1.elasticbeanstalk.com/storage</datasource.hss.url>

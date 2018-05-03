@@ -20,11 +20,14 @@ import org.ohdsi.webapi.cdmresults.CDMResultsCacheTasklet;
 import org.ohdsi.webapi.report.*;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
+import org.ohdsi.webapi.source.EncryptorPasswordUpdatedEvent;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.event.EventListener;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -40,10 +43,32 @@ public class CDMResultsService extends AbstractDaoService {
 
     @Autowired
     private JobTemplate jobTemplate;
+    @Autowired
+    private SourceService sourceService;
+    @Value("${jasypt.encryptor.enabled}")
+    private boolean encryptorEnabled;
 
     @PostConstruct
     public void init() {
         queryRunner = new CDMResultsAnalysisRunner(this.getSourceDialect());
+        warmCaches();
+    }
+
+    public void warmCaches(){
+        if (!encryptorEnabled || sourceService.isEncryptorReady()) {
+            sourceService.getSources().stream().forEach((s) -> {
+                for (SourceDaimon sd : s.daimons) {
+                    if (sd.getDaimonType() == SourceDaimon.DaimonType.Results) {
+                        warmCache(s.sourceKey);
+                    }
+                }
+            });
+        }
+    }
+
+    @EventListener
+    public void encryptorPasswordUpdated(EncryptorPasswordUpdatedEvent event) {
+        warmCaches();
     }
 
     private final RowMapper<SimpleEntry<Long, Long[]>> rowMapper = new RowMapper<SimpleEntry<Long, Long[]>>() {

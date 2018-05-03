@@ -50,7 +50,7 @@ public class CheckedEncryptedStringType extends AbstractEncryptedAsStringType {
                 return null;
             }
             if (message.startsWith(ENCODED_PREFIX) && Objects.nonNull(this.encryptor)) {
-                String value = message.substring(4, message.length() - ENCODED_SUFFIX.length());
+                String value = message.substring(ENCODED_PREFIX.length(), message.length() - ENCODED_SUFFIX.length());
                 result = convertToObject(encryptor.decrypt(value));
             } else {
                 result = message;

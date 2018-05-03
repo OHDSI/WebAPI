@@ -3,15 +3,19 @@ package org.ohdsi.webapi;
 import java.sql.DriverManager;
 import java.util.Properties;
 import javax.persistence.EntityManagerFactory;
+import javax.servlet.Filter;
 import javax.sql.DataSource;
 
+import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jasypt.encryption.pbe.PBEStringEncryptor;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import org.jasypt.hibernate4.encryptor.HibernatePBEEncryptorRegistry;
+import org.ohdsi.webapi.source.EncryptorConfigFilter;
 import org.ohdsi.webapi.source.NotEncrypted;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -94,7 +98,10 @@ public class DataAccessConfig {
             encryptor.setProviderName("BC");
             encryptor.setAlgorithm(env.getRequiredProperty("jasypt.encryptor.algorithm"));
             encryptor.setKeyObtentionIterations(1000);
-            encryptor.setPassword(env.getRequiredProperty("jasypt.encryptor.password"));
+            String password = env.getRequiredProperty("jasypt.encryptor.password");
+            if (StringUtils.isNotEmpty(password)) {
+                encryptor.setPassword(password);
+            }
             stringEncryptor = encryptor;
         } else {
             stringEncryptor = new NotEncrypted();
@@ -102,6 +109,20 @@ public class DataAccessConfig {
         HibernatePBEEncryptorRegistry.getInstance()
                 .registerPBEStringEncryptor("defaultStringEncryptor", stringEncryptor);
         return stringEncryptor;
+    }
+
+    @Bean
+    public FilterRegistrationBean encryptorConfigFilterBean(){
+        FilterRegistrationBean registrationBean = new FilterRegistrationBean();
+        registrationBean.setFilter(encryptorConfigFilter());
+        registrationBean.addUrlPatterns("/source/*");
+        registrationBean.setName("encryptorConfigFilter");
+        return registrationBean;
+    }
+
+    @Bean
+    public Filter encryptorConfigFilter(){
+        return new EncryptorConfigFilter();
     }
 
     @Bean

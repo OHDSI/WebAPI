@@ -20,7 +20,6 @@ import org.ohdsi.webapi.cdmresults.CDMResultsCacheTasklet;
 import org.ohdsi.webapi.report.*;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
-import org.ohdsi.webapi.source.EncryptorPasswordUpdatedEvent;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
@@ -55,20 +54,13 @@ public class CDMResultsService extends AbstractDaoService {
     }
 
     public void warmCaches(){
-        if (!encryptorEnabled || sourceService.isEncryptorReady()) {
-            sourceService.getSources().stream().forEach((s) -> {
-                for (SourceDaimon sd : s.daimons) {
-                    if (sd.getDaimonType() == SourceDaimon.DaimonType.Results) {
-                        warmCache(s.sourceKey);
-                    }
+        sourceService.getSources().stream().forEach((s) -> {
+            for (SourceDaimon sd : s.daimons) {
+                if (sd.getDaimonType() == SourceDaimon.DaimonType.Results) {
+                    warmCache(s.sourceKey);
                 }
-            });
-        }
-    }
-
-    @EventListener
-    public void encryptorPasswordUpdated(EncryptorPasswordUpdatedEvent event) {
-        warmCaches();
+            }
+        });
     }
 
     private final RowMapper<SimpleEntry<Long, Long[]>> rowMapper = new RowMapper<SimpleEntry<Long, Long[]>>() {

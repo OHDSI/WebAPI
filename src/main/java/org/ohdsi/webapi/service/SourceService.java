@@ -23,10 +23,7 @@ import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.event.EventListener;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -57,7 +54,7 @@ public class SourceService extends AbstractDaoService {
 
   @PostConstruct
   public void ensureSourceEncrypted(){
-    if (encryptorEnabled && isEncryptorReady()) {
+    if (encryptorEnabled) {
         String query = "SELECT source_id, source_connection FROM ${schema}.source".replaceAll("\\$\\{schema\\}", schema);
         String update = "UPDATE ${schema}.source SET source_connection = ? WHERE source_id = ?".replaceAll("\\$\\{schema\\}", schema);
         getTransactionTemplateRequiresNew().execute(new TransactionCallbackWithoutResult() {
@@ -74,16 +71,6 @@ public class SourceService extends AbstractDaoService {
             }
         });
     }
-  }
-
-  @EventListener
-  public void onEncryptorPasswordUpdated(EncryptorPasswordUpdatedEvent event) {
-    ensureSourceEncrypted();
-  }
-
-  public boolean isEncryptorReady() {
-
-    return StringUtils.isNotEmpty(env.getProperty("jasypt.encryptor.password")) || encryptorPasswordSet;
   }
 
   public class SortByKey implements Comparator<SourceInfo>
@@ -272,20 +259,6 @@ public class SourceService extends AbstractDaoService {
       sourceDaimonRepository.save(daimon);
     });
     cachedSources = null;
-    return Response.ok().build();
-  }
-
-  @Path("encyptor")
-  @POST
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response setEncryptorPassword(String password) {
-    if (encryptorPasswordSet) {
-      return Response.notModified().build();
-    }
-    defaultStringEncryptor.setPassword(password);
-    encryptorPasswordSet = true;
-    publisher.publishEvent(new EncryptorPasswordUpdatedEvent(this));
     return Response.ok().build();
   }
 

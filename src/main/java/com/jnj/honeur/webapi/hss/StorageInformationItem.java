@@ -1,6 +1,7 @@
 package com.jnj.honeur.webapi.hss;
 
 import java.util.Date;
+import java.util.Objects;
 
 public class StorageInformationItem {
 
@@ -42,5 +43,22 @@ public class StorageInformationItem {
 
     public void setKey(String key) {
         this.key = key;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        StorageInformationItem that = (StorageInformationItem) o;
+        return Objects.equals(uuid, that.uuid) &&
+                Objects.equals(originalFilename, that.originalFilename) &&
+                Objects.equals(lastModified, that.lastModified) &&
+                Objects.equals(key, that.key);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(uuid, originalFilename, lastModified, key);
     }
 }

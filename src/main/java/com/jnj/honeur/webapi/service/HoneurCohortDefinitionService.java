@@ -61,14 +61,39 @@ import java.util.stream.StreamSupport;
 public class HoneurCohortDefinitionService extends CohortDefinitionService {
 
   @Autowired
-  private LiferayPermissionManager authorizer;
-
-  @Autowired
   private Security security;
 
   @Autowired
   private CohortDefinitionRepository cohortDefinitionRepository;
 
+
+
+  /**
+   * Returns all cohort definitions in the cohort schema without uuid
+   *
+   * @return List of cohort_definition
+   */
+  @Override
+  public List<CohortDefinitionListItem> getCohortDefinitionList() {
+    ArrayList<CohortDefinitionListItem> result = new ArrayList<>();
+    Iterable<CohortDefinition> defs = cohortDefinitionRepository.findAll();
+    for (CohortDefinition d : defs) {
+      if(d.getUuid() != null){
+        continue;
+      }
+      CohortDefinitionDTO item = new CohortDefinitionDTO();
+      item.id = d.getId();
+      item.name = d.getName();
+      item.description = d.getDescription();
+      item.expressionType = d.getExpressionType();
+      item.createdBy = d.getCreatedBy();
+      item.createdDate = d.getCreatedDate();
+      item.modifiedBy = d.getModifiedBy();
+      item.modifiedDate = d.getModifiedDate();
+      result.add(item);
+    }
+    return result;
+  }
 
   /**
    * Creates the cohort definition, and connects the organizations that have access to this definition
@@ -88,6 +113,7 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
             .setCreatedBy(security.getSubject())
             .setCreatedDate(currentTime)
             .setExpressionType(def.expressionType)
+            .setPreviousVersion(def.previousVersion == null ? null : cohortDefinitionRepository.findByUuid(def.previousVersion))
             .setUuid(def.uuid);
 
     newDef = this.cohortDefinitionRepository.save(newDef);

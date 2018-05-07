@@ -296,6 +296,7 @@ public class CohortDefinitionService extends AbstractDaoService {
     public String expression;
     public List<Organization> organizations;
     public UUID uuid;
+    public UUID previousVersion;
   }
 
   public CohortDefinitionDTO cohortDefinitionToDTO(CohortDefinition def) {
@@ -310,6 +311,9 @@ public class CohortDefinitionService extends AbstractDaoService {
     result.modifiedBy = def.getModifiedBy();
     result.modifiedDate = def.getModifiedDate();
     result.name = def.getName();
+    if(def.getPreviousVersion() != null){
+      result.previousVersion = def.getPreviousVersion().getUuid();
+    }
 
     return result;
   }

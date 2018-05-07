@@ -1,5 +1,6 @@
 package com.jnj.honeur.webapi.hss;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jnj.honeur.webapi.cohortdefinition.CohortGenerationResults;
 import com.jnj.honeur.webapi.liferay.LiferayApiClient;
@@ -99,17 +100,17 @@ public class StorageServiceClient extends RestTemplate {
     }
 
     public List<StorageInformationItem> getCohortDefinitionImportList() {
-        String endpoint = "/cohort-definitions";
+        String endpoint = "/cohort-definitions?reverseOrder=true";
         return Arrays.asList(restTemplate.getForEntity(STORAGE_SERVICE_API + endpoint, StorageInformationItem[].class).getBody());
     }
 
     public String getCohortDefinition(String uuid) {
         String endpoint = "/cohort-definitions/" + uuid;
-        return restTemplate.getForEntity(STORAGE_SERVICE_API + endpoint, String.class).getBody();
+        return restTemplate.getForEntity(STORAGE_SERVICE_API + endpoint, JsonNode.class).getBody().asText();
     }
 
     public List<StorageInformationItem> getCohortDefinitionResultsImportList(String uuid) {
-        String endpoint = "/cohort-results/"+uuid;
+        String endpoint = "/cohort-results/"+uuid+"?reverseOrder=true";
         return Arrays.asList(restTemplate.getForEntity(STORAGE_SERVICE_API + endpoint, StorageInformationItem[].class).getBody());
     }
 
@@ -119,4 +120,6 @@ public class StorageServiceClient extends RestTemplate {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(response, CohortGenerationResults.class);
     }
+
+
 }

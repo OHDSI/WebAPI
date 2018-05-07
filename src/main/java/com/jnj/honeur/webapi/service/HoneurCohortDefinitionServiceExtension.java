@@ -1,6 +1,7 @@
 package com.jnj.honeur.webapi.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 import com.jnj.honeur.webapi.SourceDaimonContextHolder;
 import com.jnj.honeur.webapi.cohortdefinition.CohortGenerationInfoRepository;
 import com.jnj.honeur.webapi.cohortdefinition.CohortGenerationResults;
@@ -32,6 +33,7 @@ import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.source.SourceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
@@ -81,6 +83,9 @@ public class HoneurCohortDefinitionServiceExtension {
     private CohortDefinitionService cohortDefinitionService;
 
     @Autowired
+    private SourceRepository sourceRepository;
+
+    @Autowired
     private CohortGenerationInfoRepository cohortGenerationInfoRepository;
 
     @Autowired
@@ -123,6 +128,9 @@ public class HoneurCohortDefinitionServiceExtension {
     @Path("/hss/list/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public List<StorageInformationItem> getCohortDefinitionResultsImportList(@PathParam("id") final int id) {
+        if (cohortDefinitionRepository.findOne(id) == null) {
+            throw new IllegalArgumentException(String.format("Definition with ID=%s does not exist!", id));
+        }
         return storageServiceClient.getCohortDefinitionResultsImportList(cohortDefinitionRepository.findOne(id).getUuid().toString());
     }
 
@@ -179,7 +187,7 @@ public class HoneurCohortDefinitionServiceExtension {
     @GET
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     @Path("/{id}/export/{sourceKey}")
-    public Response exportCohortResults(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey, @QueryParam("toCloud") final boolean toCloud, @QueryParam("uuid") final String uuid, HttpHeaders headers) {
+    public Response exportCohortResults(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey, @QueryParam("toCloud") final boolean toCloud, HttpHeaders headers) {
         SourceDaimonContextHolder.setCurrentSourceDaimonContext(new SourceDaimonContext(sourceKey, SourceDaimon.DaimonType.Results));
 
         List<CohortEntity> cohorts = cohortRepository.getAllCohortsForId((long) id);
@@ -190,30 +198,32 @@ public class HoneurCohortDefinitionServiceExtension {
 
         SourceDaimonContextHolder.clear();
 
-        List<CohortGenerationInfo> infos = this.cohortGenerationInfoRepository.listGenerationInfoById(id);
+        CohortGenerationInfo info = this.cohortGenerationInfoRepository.findGenerationInfoByIdAndSourceId(id, sourceRepository.findBySourceKey(sourceKey).getSourceId());
 
         CohortGenerationResults results = new CohortGenerationResults();
-        results.cohort = cohorts;
-        results.cohortInclusion = cohortInclusions;
-        results.cohortInclusionResult = cohortInclusionResults;
-        results.cohortInclusionStats = cohortInclusionStats;
-        results.cohortSummaryStats = cohortSummaryStats;
-        results.cohortGenerationInfo = infos;
+        results.setCohort(cohorts);
+        results.setCohortInclusion(cohortInclusions);
+        results.setCohortInclusionResult(cohortInclusionResults);
+        results.setCohortInclusionStats(cohortInclusionStats);
+        results.setCohortSummaryStats(cohortSummaryStats);
+        results.setCohortGenerationInfo(info);
 
 
         String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
         File file = createFile(sourceKey+"-"+timeStamp+".results", results);
 
+        CohortDefinition cohortDefinition = this.cohortDefinitionRepository.findOneWithDetail(id);
+
         if(toCloud && file != null){
-            storageServiceClient.saveResults(file,uuid);
+            storageServiceClient.saveResults(file,cohortDefinition.getUuid().toString());
         }
         return getResponse(file);
     }
 
     @GET
-    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/export")
-    public Response exportCohortDefinition(@Context HttpServletRequest request, @PathParam("id") final int id, @QueryParam("toCloud") final boolean toCloud) {
+    public CohortDefinitionService.CohortDefinitionDTO exportCohortDefinition(@Context HttpServletRequest request, @PathParam("id") final int id, @QueryParam("toCloud") final boolean toCloud) {
         CohortDefinition cohortDefinition = this.cohortDefinitionRepository.findOneWithDetail(id);
 
         String expression = cohortDefinition.getDetails().getExpression();
@@ -225,7 +235,25 @@ public class HoneurCohortDefinitionServiceExtension {
             cohortDefinition.setUuid(UUID.fromString(uuid));
             this.cohortDefinitionRepository.save(cohortDefinition);
         }
-        return getResponse(file);
+
+        //Copy definition
+        CohortDefinition newDef = new CohortDefinition();
+        newDef.setPreviousVersion(cohortDefinition);
+        newDef.setCreatedBy(cohortDefinition.getCreatedBy());
+        newDef.setCreatedDate(cohortDefinition.getCreatedDate());
+        newDef.setDescription(cohortDefinition.getDescription());
+        newDef.setDetails(cohortDefinition.getDetails());
+        newDef.setExpressionType(cohortDefinition.getExpressionType());
+        newDef.setGenerationInfoList(cohortDefinition.getGenerationInfoList());
+        newDef.setModifiedBy(cohortDefinition.getModifiedBy());
+        newDef.setModifiedDate(cohortDefinition.getModifiedDate());
+        newDef.setName(cohortDefinition.getName());
+
+        CohortDefinitionService.CohortDefinitionDTO  toReturn = this.cohortDefinitionService.cohortDefinitionToDTO(newDef);
+        CohortDefinitionService.CohortDefinitionDTO copyDef = this.cohortDefinitionService.createCohortDefinition(toReturn);
+
+
+        return copyDef;
     }
 
     @POST
@@ -239,10 +267,10 @@ public class HoneurCohortDefinitionServiceExtension {
 
         //Add organization to role in liferay
         List<Organization> organizationsToAddToRole = organisationsWithRoles.stream()
-                .map(roleEntity -> StreamSupport.stream(organizations.spliterator(), false)
+                .map(roleEntity -> organizations.stream()
                         .filter(organization -> organization.getName().equals(roleEntity.getName()) )
                         .findFirst().orElse(null))
-                .filter(organization -> organization != null)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
 //    this.authorizer.addOrganization(organizationsToAddToRole);
@@ -271,10 +299,10 @@ public class HoneurCohortDefinitionServiceExtension {
                     return permissions.size() > 0;
                 })
                 .filter(roleEntity -> finalOrganizations.stream()
-                        .map(organization -> organization.getName())
+                        .map(Organization::getName)
                         .collect(Collectors.toList())
                         .contains(roleEntity.getName()))
-                .map(roleEntity -> roleEntity.getName())
+                .map(RoleEntity::getName)
                 .collect(Collectors.toList());
 
         organizations = organizations.stream()
@@ -291,7 +319,7 @@ public class HoneurCohortDefinitionServiceExtension {
     public List<String> getUUIDSList(){
         String permissionPattern = "cohortdefinition:([0-9]+|\\*):get";
         List<Integer> definitionIds = this.authorizer.getUserPermissions(security.getSubject()).stream()
-                .map(permissionEntity -> permissionEntity.getValue())
+                .map(PermissionEntity::getValue)
                 .filter(permissionString -> permissionString.matches(permissionPattern))
                 .map(permissionString -> Integer.parseInt(permissionString.split(":")[1]))
                 .collect(Collectors.toList());
@@ -321,14 +349,17 @@ public class HoneurCohortDefinitionServiceExtension {
         SourceDaimonContextHolder.setCurrentSourceDaimonContext(new SourceDaimonContext(sourceKey, SourceDaimon.DaimonType.Results));
         CohortGenerationResults results = importCohortGenerationResults(id, cohortGenerationResults);
         SourceDaimonContextHolder.clear();
-        results.cohortGenerationInfo = importCohortGenerationInfo(id, sourceKey, cohortGenerationResults.cohortGenerationInfo);
+        results.setCohortGenerationInfo(
+                importCohortGenerationInfo(id, sourceKey, cohortGenerationResults.getCohortGenerationInfo()));
         return results;
     }
 
     @Transactional
     CohortGenerationResults importCohortGenerationResults(int id, CohortGenerationResults cohortGenerationResults) {
+        CohortGenerationResults newResults = new CohortGenerationResults();
+
         List<CohortEntity> cohortEntities = new ArrayList<>();
-        for(CohortEntity cohort: cohortGenerationResults.cohort){
+        for(CohortEntity cohort: cohortGenerationResults.getCohort()){
             CohortEntity cohortEntity = new CohortEntity();
             cohortEntity.setCohortDefinitionId((long)id);
             cohortEntity.setCohortEndDate(cohort.getCohortEndDate());
@@ -336,10 +367,10 @@ public class HoneurCohortDefinitionServiceExtension {
             cohortEntity.setSubjectId(cohort.getSubjectId());
             cohortEntities.add(cohortEntity);
         }
-        cohortRepository.save(cohortEntities);
+        newResults.setCohort(Lists.newArrayList(cohortRepository.save(cohortEntities)));
 
         List<CohortInclusionEntity> cohortInclusionEntities = new ArrayList<>();
-        for(CohortInclusionEntity cohortInclusion: cohortGenerationResults.cohortInclusion){
+        for(CohortInclusionEntity cohortInclusion: cohortGenerationResults.getCohortInclusion()){
             CohortInclusionEntity cohortInclusionEntity = new CohortInclusionEntity();
             cohortInclusionEntity.setCohortDefinitionId((long) id);
             cohortInclusionEntity.setDescription(cohortInclusion.getDescription());
@@ -347,20 +378,21 @@ public class HoneurCohortDefinitionServiceExtension {
             cohortInclusionEntity.setRuleSequence(cohortInclusion.getRuleSequence());
             cohortInclusionEntities.add(cohortInclusionEntity);
         }
-        cohortInclusionRepository.save(cohortInclusionEntities);
+        newResults.setCohortInclusion(Lists.newArrayList(cohortInclusionRepository.save(cohortInclusionEntities)));
 
         List<CohortInclusionResultEntity> cohortInclusionResultEntities = new ArrayList<>();
-        for(CohortInclusionResultEntity cohortInclusionResult: cohortGenerationResults.cohortInclusionResult){
+        for(CohortInclusionResultEntity cohortInclusionResult: cohortGenerationResults.getCohortInclusionResult()){
             CohortInclusionResultEntity cohortInclusionResultEntity = new CohortInclusionResultEntity();
             cohortInclusionResultEntity.setCohortDefinitionId((long)id);
             cohortInclusionResultEntity.setInclusionRuleMask(cohortInclusionResult.getInclusionRuleMask());
             cohortInclusionResultEntity.setPersonCount(cohortInclusionResult.getPersonCount());
             cohortInclusionResultEntities.add(cohortInclusionResultEntity);
         }
-        cohortInclusionResultRepository.save(cohortInclusionResultEntities);
+        newResults.setCohortInclusionResult(
+                Lists.newArrayList(cohortInclusionResultRepository.save(cohortInclusionResultEntities)));
 
         List<CohortInclusionStatsEntity> cohortInclusionStatsList = new ArrayList<>();
-        for(CohortInclusionStatsEntity cohortInclusionStats: cohortGenerationResults.cohortInclusionStats){
+        for(CohortInclusionStatsEntity cohortInclusionStats: cohortGenerationResults.getCohortInclusionStats()){
             CohortInclusionStatsEntity cohortInclusionStatsEntity = new CohortInclusionStatsEntity();
             cohortInclusionStatsEntity.setCohortDefinitionId((long)id);
             cohortInclusionStatsEntity.setGainCount(cohortInclusionStats.getGainCount());
@@ -369,38 +401,36 @@ public class HoneurCohortDefinitionServiceExtension {
             cohortInclusionStatsEntity.setRuleSequence(cohortInclusionStats.getRuleSequence());
             cohortInclusionStatsList.add(cohortInclusionStatsEntity);
         }
-        cohortInclusionStatsRepository.save(cohortInclusionStatsList);
+        newResults.setCohortInclusionStats(
+                Lists.newArrayList(cohortInclusionStatsRepository.save(cohortInclusionStatsList)));
 
         List<CohortSummaryStatsEntity> cohortSummaryStatsList = new ArrayList<>();
-        for(CohortSummaryStatsEntity cohortSummaryStats: cohortGenerationResults.cohortSummaryStats){
+        for(CohortSummaryStatsEntity cohortSummaryStats: cohortGenerationResults.getCohortSummaryStats()){
             CohortSummaryStatsEntity cohortSummaryStatsEntity = new CohortSummaryStatsEntity();
             cohortSummaryStatsEntity.setCohortDefinitionId((long)id);
             cohortSummaryStatsEntity.setBaseCount(cohortSummaryStats.getBaseCount());
             cohortSummaryStatsEntity.setFinalCount(cohortSummaryStats.getFinalCount());
             cohortSummaryStatsList.add(cohortSummaryStatsEntity);
         }
-        cohortSummaryStatsRepository.save(cohortSummaryStatsList);
+        newResults.setCohortSummaryStats(Lists.newArrayList(cohortSummaryStatsRepository.save(cohortSummaryStatsList)));
 
-        return cohortGenerationResults;
+        return newResults;
     }
 
     @Transactional
-    List<CohortGenerationInfo> importCohortGenerationInfo(int id, String sourceKey, List<CohortGenerationInfo> cohortGenerationInfo) {
-        List<CohortGenerationInfo> cohortGenerationInfoList = new ArrayList<>();
-        for(CohortGenerationInfo cgi : cohortGenerationInfo){
-            CohortGenerationInfo cohortGenerationInfoAdapted = new CohortGenerationInfo(this.cohortDefinitionRepository.findOne(id),cohortDefinitionService.getSourceRepository().findBySourceKey(sourceKey).getSourceId());
-            cohortGenerationInfoAdapted.setStatus(cgi.getStatus());
-            cohortGenerationInfoAdapted.setExecutionDuration(cgi.getExecutionDuration());
-            cohortGenerationInfoAdapted.setIsValid(cgi.isIsValid());
-            cohortGenerationInfoAdapted.setStartTime(cgi.getStartTime());
-            cohortGenerationInfoAdapted.setFailMessage(cgi.getFailMessage());
-            cohortGenerationInfoAdapted.setPersonCount(cgi.getPersonCount());
-            cohortGenerationInfoAdapted.setRecordCount(cgi.getRecordCount());
-            cohortGenerationInfoAdapted.setIncludeFeatures(cgi.isIncludeFeatures());
-            cohortGenerationInfoList.add(cohortGenerationInfoAdapted);
-        }
-        cohortGenerationInfoRepository.save(cohortGenerationInfoList);
-        return cohortGenerationInfoList;
+    CohortGenerationInfo importCohortGenerationInfo(int id, String sourceKey, CohortGenerationInfo cohortGenerationInfo) {
+
+        CohortGenerationInfo cohortGenerationInfoAdapted = new CohortGenerationInfo(this.cohortDefinitionRepository.findOne(id),cohortDefinitionService.getSourceRepository().findBySourceKey(sourceKey).getSourceId());
+        cohortGenerationInfoAdapted.setStatus(cohortGenerationInfo.getStatus());
+        cohortGenerationInfoAdapted.setExecutionDuration(cohortGenerationInfo.getExecutionDuration());
+        cohortGenerationInfoAdapted.setIsValid(cohortGenerationInfo.isIsValid());
+        cohortGenerationInfoAdapted.setStartTime(cohortGenerationInfo.getStartTime());
+        cohortGenerationInfoAdapted.setFailMessage(cohortGenerationInfo.getFailMessage());
+        cohortGenerationInfoAdapted.setPersonCount(cohortGenerationInfo.getPersonCount());
+        cohortGenerationInfoAdapted.setRecordCount(cohortGenerationInfo.getRecordCount());
+        cohortGenerationInfoAdapted.setIncludeFeatures(cohortGenerationInfo.isIncludeFeatures());
+
+        return cohortGenerationInfoRepository.save(cohortGenerationInfoAdapted);
     }
 
 
@@ -450,14 +480,14 @@ public class HoneurCohortDefinitionServiceExtension {
                 .map(organisation -> StreamSupport.stream(roles.spliterator(), false)
                         .filter(roleEntity -> roleEntity.getName().equals(organisation.getName()) && organisation.isCanRead())
                         .findFirst().orElse(null))
-                .filter(roleEntity -> roleEntity != null)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
         List<RoleEntity> existingOrganizationRolesPermissionRemove = organizations.stream()
                 .map(organisation -> StreamSupport.stream(roles.spliterator(), false)
                         .filter(roleEntity -> roleEntity.getName().equals(organisation.getName()) && !organisation.isCanRead())
                         .findFirst().orElse(null))
-                .filter(roleEntity -> roleEntity != null)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
         List<Organization> organisationsWithoutRoles = organizations.stream()

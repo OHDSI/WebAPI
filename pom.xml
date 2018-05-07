@@ -38,7 +38,7 @@
     <!-- Note: Schema name is case-sensitive. -->
     <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
     <flyway.validateOnMigrate>false</flyway.validateOnMigrate>
-    <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>		
+    <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>
     <!-- CDM properties -->
     <source.name>CDM_NAME</source.name>
     <cdm.version>5</cdm.version>
@@ -97,7 +97,8 @@
     <server.ssl.key-password></server.ssl.key-password>
   </properties>
   <build>
-    <finalName>WebAPI</finalName>
+    <finalName>webapi</finalName>
+    <directory>${war.directory}</directory>
     <resources>
       <resource>
         <directory>src/main/resources</directory>
@@ -164,7 +165,7 @@
         <configuration>
           <skipTests>true</skipTests>
         </configuration>
-</plugin>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -181,7 +182,6 @@
         <version>2.2</version>
         <configuration>
           <failOnMissingWebXml>false</failOnMissingWebXml>
-          <warName>webapi</warName>
         </configuration>
       </plugin>
       <plugin>
@@ -216,8 +216,23 @@
           </execution>
         </executions>
         <configuration>
-           <licence>cHJvamVjdHxvcmcub2hkc2kuV2ViQVBJfDIwMjAtMDMtMzF8dHJ1ZXwtMSNNQzBDRkNNQ2R2ZEhjbDg0Z2tONVI3bHlmQ2Y4SnNkYUFoVUFoMkdtOUVFdy9RelpLVzM1V2p6a2FsdzJZV009</licence>
+          <licence>cHJvamVjdHxvcmcub2hkc2kuV2ViQVBJfDIwMjAtMDMtMzF8dHJ1ZXwtMSNNQzBDRkNNQ2R2ZEhjbDg0Z2tONVI3bHlmQ2Y4SnNkYUFoVUFoMkdtOUVFdy9RelpLVzM1V2p6a2FsdzJZV009</licence>
         </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>com.lazerycode.jmeter</groupId>
+        <artifactId>jmeter-maven-plugin</artifactId>
+        <version>2.7.0</version>
+        <executions>
+          <execution>
+            <id>jmeter-tests</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>jmeter</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
@@ -237,7 +252,7 @@
       <id>ohdsi.thirdparty</id>
       <name>repo.ohdsi.org</name>
       <url>http://repo.ohdsi.org:8085/nexus/content/repositories/thirdparty</url>
-    </repository>    
+    </repository>
     <repository>
       <id>ohdsi.snapshots</id>
       <name>repo.ohdsi.org-snapshots</name>
@@ -579,7 +594,7 @@
         <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
         <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
         <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.user where \
-              login = ?</security.db.datasource.authenticationQuery>
+          login = ?</security.db.datasource.authenticationQuery>
       </properties>
     </profile>
     <profile>

@@ -13,35 +13,61 @@ import java.util.List;
 
 public class CohortGenerationResults implements Serializable {
 
-//    public static class Cohort {
-//        public long id;
-//        public Date startDate;
-//        public Date endDate;
-//    }
-//    public static class CohortInclusion {
-//        public int ruleSequence;
-//        public String name;
-//        public String description;
-//    }
-//    public static class CohortInclusionResult {
-//        public long inclusionRuleMask;
-//        public long personCount;
-//    }
-//    public static class CohortInclusionStats {
-//        public int ruleSequence;
-//        public long personCount;
-//        public long gainCount;
-//        public long personTotal;
-//    }
-//    public static class CohortSummaryStats {
-//        public long baseCount;
-//        public long finalCount;
-//    }
+    private List<CohortEntity> cohort;
+    private List<CohortInclusionEntity> cohortInclusion;
+    private List<CohortInclusionResultEntity> cohortInclusionResult;
+    private List<CohortInclusionStatsEntity> cohortInclusionStats;
+    private List<CohortSummaryStatsEntity> cohortSummaryStats;
+    private CohortGenerationInfo cohortGenerationInfo;
 
-    public List<CohortEntity> cohort;
-    public List<CohortInclusionEntity> cohortInclusion;
-    public List<CohortInclusionResultEntity> cohortInclusionResult;
-    public List<CohortInclusionStatsEntity> cohortInclusionStats;
-    public List<CohortSummaryStatsEntity> cohortSummaryStats;
-    public List<CohortGenerationInfo> cohortGenerationInfo;
+    public List<CohortEntity> getCohort() {
+        return cohort;
+    }
+
+    public void setCohort(List<CohortEntity> cohort) {
+        this.cohort = cohort;
+    }
+
+    public List<CohortInclusionEntity> getCohortInclusion() {
+        return cohortInclusion;
+    }
+
+    public void setCohortInclusion(List<CohortInclusionEntity> cohortInclusion) {
+        this.cohortInclusion = cohortInclusion;
+    }
+
+    public List<CohortInclusionResultEntity> getCohortInclusionResult() {
+        return cohortInclusionResult;
+    }
+
+    public void setCohortInclusionResult(
+            List<CohortInclusionResultEntity> cohortInclusionResult) {
+        this.cohortInclusionResult = cohortInclusionResult;
+    }
+
+    public List<CohortInclusionStatsEntity> getCohortInclusionStats() {
+        return cohortInclusionStats;
+    }
+
+    public void setCohortInclusionStats(
+            List<CohortInclusionStatsEntity> cohortInclusionStats) {
+        this.cohortInclusionStats = cohortInclusionStats;
+    }
+
+    public List<CohortSummaryStatsEntity> getCohortSummaryStats() {
+        return cohortSummaryStats;
+    }
+
+    public void setCohortSummaryStats(
+            List<CohortSummaryStatsEntity> cohortSummaryStats) {
+        this.cohortSummaryStats = cohortSummaryStats;
+    }
+
+    public CohortGenerationInfo getCohortGenerationInfo() {
+        return cohortGenerationInfo;
+    }
+
+    public void setCohortGenerationInfo(CohortGenerationInfo cohortGenerationInfo) {
+        this.cohortGenerationInfo = cohortGenerationInfo;
+    }
 }

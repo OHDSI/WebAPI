@@ -1,0 +1,14 @@
+*application.properties
+.idea/
+.metadata/
+*.iml
+sandbox/
+/target/
+.settings
+.classpath
+.project
+/nb-configuration.xml
+/nbactions*.xml
+*~
+.DS_Store
+**jmeter.log

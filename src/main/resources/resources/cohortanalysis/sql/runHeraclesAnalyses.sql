@@ -11166,7 +11166,7 @@ DROP TABLE #raw_de_p_4019;
 select c1.cohort_definition_id,
 	c1.subject_id,
   vo1.visit_occurrence_id,
-  vo1.visit_concept_id,
+  vca.ancestor_concept_id visit_concept_id,
   vo1.visit_type_concept_id,
 	cst1.cost_concept_id,
   cst1.cost_type_concept_id,
@@ -11179,6 +11179,7 @@ join @CDM_schema.visit_occurrence vo1 on c1.subject_id = vo1.person_id
 join @CDM_schema.cost cst1 on c1.subject_id = cst1.person_id
   and cst1.person_id = vo1.person_id
   and vo1.visit_occurrence_id = cst1.cost_event_id
+join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
 where cost >= 0
     and currency_concept_id = 44818668
 ;
@@ -11376,7 +11377,7 @@ DROP TABLE #raw_period_4020;
 select c1.cohort_definition_id,
 	c1.subject_id,
   vo1.visit_occurrence_id,
-  vo1.visit_concept_id,
+  vca.ancestor_concept_id visit_concept_id,
   vo1.visit_type_concept_id,
 	cst1.cost_concept_id,
   cst1.cost_type_concept_id,
@@ -11388,6 +11389,7 @@ join @CDM_schema.visit_occurrence vo1 on c1.subject_id = vo1.person_id
     and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date <= c1.cohort_end_date
 join @CDM_schema.cost cst1 on c1.subject_id = cst1.person_id
     and vo1.visit_occurrence_id = cst1.cost_event_id
+join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
 where cost >= 0
     and currency_concept_id = 44818668
 ;

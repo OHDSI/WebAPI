@@ -1,11 +1,8 @@
 package org.ohdsi.webapi.service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
+import javax.annotation.PostConstruct;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -18,25 +15,67 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import org.apache.commons.lang3.StringUtils;
+import org.jasypt.encryption.pbe.PBEStringEncryptor;
+import org.jasypt.properties.PropertyValueEncryptionUtils;
 import org.ohdsi.webapi.shiro.management.Security;
-import org.ohdsi.webapi.source.Source;
-import org.ohdsi.webapi.source.SourceDaimon;
-import org.ohdsi.webapi.source.SourceDaimonRepository;
-import org.ohdsi.webapi.source.SourceDetails;
-import org.ohdsi.webapi.source.SourceInfo;
-import org.ohdsi.webapi.source.SourceRepository;
-import org.ohdsi.webapi.source.SourceRequest;
+import org.ohdsi.webapi.source.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.convert.support.GenericConversionService;
+import org.springframework.core.env.Environment;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
 @Path("/source/")
 @Component
+@Transactional
 public class SourceService extends AbstractDaoService {
 
   public static final String SECURE_MODE_ERROR = "This feautre requires the administrator to enable security for the application";
+
+  @Autowired
+  private JdbcTemplate jdbcTemplate;
+  @Autowired
+  private PBEStringEncryptor defaultStringEncryptor;
+  @Autowired
+  private Environment env;
+  @Autowired
+  private ApplicationEventPublisher publisher;
+  @Value("${datasource.ohdsi.schema}")
+  private String schema;
+
+  private boolean encryptorPasswordSet = false;
+
+  @PostConstruct
+  public void ensureSourceEncrypted(){
+    if (encryptorEnabled) {
+			String query = "SELECT source_id, username, password FROM ${schema}.source".replaceAll("\\$\\{schema\\}", schema);
+			String update = "UPDATE ${schema}.source SET username = ?, password = ? WHERE source_id = ?".replaceAll("\\$\\{schema\\}", schema);
+			getTransactionTemplateRequiresNew().execute(new TransactionCallbackWithoutResult() {
+				@Override
+				protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+					jdbcTemplate.query(query, rs -> {
+						int id = rs.getInt("source_id");
+						String username = rs.getString("username");
+						String password = rs.getString("password");
+						if (username != null && !PropertyValueEncryptionUtils.isEncryptedValue(username)){
+							username = "ENC(" + defaultStringEncryptor.encrypt(username) + ")";
+						}
+						if (password != null && !PropertyValueEncryptionUtils.isEncryptedValue(password)){
+							password = "ENC(" + defaultStringEncryptor.encrypt(password) + ")";
+						}
+						jdbcTemplate.update(update, username, password, id);
+					});
+				}
+			});
+		}
+	}
 
   public class SortByKey implements Comparator<SourceInfo>
   {
@@ -69,6 +108,9 @@ public class SourceService extends AbstractDaoService {
   @Value("${security.enabled}")
   private boolean securityEnabled;
 
+  @Value("${jasypt.encryptor.enabled}")
+  private boolean encryptorEnabled;
+
   private static Collection<SourceInfo> cachedSources = null;
   
   @Path("sources")
@@ -92,6 +134,7 @@ public class SourceService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)  
   public Collection<SourceInfo> refreshSources() {
     cachedSources = null;
+		this.ensureSourceEncrypted();
     return getSources();
   }  
 
@@ -131,7 +174,8 @@ public class SourceService extends AbstractDaoService {
     if (!securityEnabled) {
       throw new NotAuthorizedException(SECURE_MODE_ERROR);
     }
-    return new SourceDetails(sourceRepository.findBySourceId(sourceId));
+    Source source = sourceRepository.findBySourceId(sourceId);
+    return new SourceDetails(source);
   }
 
   @Path("")
@@ -164,6 +208,14 @@ public class SourceService extends AbstractDaoService {
     if (source != null) {
       updated.setSourceId(sourceId);
       updated.setSourceKey(source.getSourceKey());
+      if (StringUtils.isBlank(updated.getUsername()) ||
+              Objects.equals(updated.getUsername().trim(), Source.MASQUERADED_USERNAME)) {
+        updated.setUsername(source.getUsername());
+      }
+      if (StringUtils.isBlank(updated.getPassword()) ||
+              Objects.equals(updated.getPassword().trim(), Source.MASQUERADED_PASSWORD)) {
+        updated.setPassword(source.getPassword());
+      }
       List<SourceDaimon> removed = source.getDaimons().stream().filter(d -> !updated.getDaimons().contains(d))
               .collect(Collectors.toList());
       sourceDaimonRepository.delete(removed);

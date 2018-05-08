@@ -26,6 +26,7 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.Type;
 import org.ohdsi.webapi.source.SourceDaimon.DaimonType;
 
 /**
@@ -35,7 +36,10 @@ import org.ohdsi.webapi.source.SourceDaimon.DaimonType;
 @Entity(name = "Source")
 @Table(name="source")
 public class Source implements Serializable {
-  
+
+  public static final String MASQUERADED_USERNAME = "<username>";
+  public static final String MASQUERADED_PASSWORD = "<password>";
+
   @Id
   @GeneratedValue  
   @Column(name="SOURCE_ID")  
@@ -50,11 +54,19 @@ public class Source implements Serializable {
   @Column(name="SOURCE_DIALECT")
   private String sourceDialect;
  
-  @Column(name="SOURCE_CONNECTION")  
+  @Column(name="SOURCE_CONNECTION")
   private String sourceConnection;
   
   @Column(name="SOURCE_KEY")
   private String sourceKey;
+
+  @Column
+  @Type(type = "encryptedString")
+  private String username;
+
+  @Column
+  @Type(type = "encryptedString")
+  private String password;
 
   
   public String getTableQualifier(DaimonType daimonType) {
@@ -123,5 +135,21 @@ public class Source implements Serializable {
 
   public SourceInfo getSourceInfo() {
     return new SourceInfo(this);
+  }
+
+  public String getUsername() {
+    return username;
+  }
+
+  public void setUsername(String username) {
+    this.username = username;
+  }
+
+  public String getPassword() {
+    return password;
+  }
+
+  public void setPassword(String password) {
+    this.password = password;
   }
 }

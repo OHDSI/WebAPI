@@ -116,9 +116,18 @@ public abstract class AbstractDaoService {
 
   public JdbcTemplate getSourceJdbcTemplate(Source source) {
 
-    DriverManagerDataSource dataSource = new DriverManagerDataSource(source.getSourceConnection());
-    JdbcTemplate template = new JdbcTemplate(dataSource);
-    return template;
+    DriverManagerDataSource dataSource;
+    if (source.getUsername() != null && source.getPassword() != null) {
+      // NOTE: jdbc link should NOT include username and password, because they have higher priority than separate ones
+      dataSource = new DriverManagerDataSource(
+              source.getSourceConnection(),
+              source.getUsername(),
+              source.getPassword()
+      );
+    } else {
+      dataSource = new DriverManagerDataSource(source.getSourceConnection());
+    }
+    return new JdbcTemplate(dataSource);
   }
 
   /**

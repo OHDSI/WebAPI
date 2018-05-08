@@ -19,6 +19,8 @@ public class SourceRequestToSourceConverter implements Converter<SourceRequest, 
         Source source = new Source();
         source.setSourceName(request.getName());
         source.setSourceConnection(request.getConnectionString());
+        source.setUsername(request.getUsername());
+        source.setPassword(request.getPassword());
         source.setSourceDialect(request.getDialect());
         source.setSourceKey(request.getKey());
         source.setDaimons(request.getDaimons());

@@ -1,2 +1,2 @@
-ALTER TABLE ${ohdsiSchema}.source ADD COLUMN username VARCHAR;
-ALTER TABLE ${ohdsiSchema}.source ADD COLUMN password VARCHAR;
+ALTER TABLE ${ohdsiSchema}.source ADD COLUMN username VARCHAR(255);
+ALTER TABLE ${ohdsiSchema}.source ADD COLUMN password VARCHAR(255);

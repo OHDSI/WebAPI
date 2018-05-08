@@ -12,9 +12,8 @@ public class SourceRequest {
     private String key;
     @NotNull
     private String connectionString;
-    @NotNull
+
     private String username;
-    @NotNull
     private String password;
 
     private Collection<SourceDaimon> daimons;

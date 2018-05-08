@@ -115,7 +115,8 @@
     <!-- PASSWORD ENCRYPTION -->
     <jasypt.encryptor.enabled>false</jasypt.encryptor.enabled>
     <jasypt.encryptor.password></jasypt.encryptor.password>
-    <jasypt.encryptor.algorithm>PBEWITHSHA256AND128BITAES-CBC-BC</jasypt.encryptor.algorithm>
+		<jasypt.encryptor.algorithm>PBEWithMD5AndDES</jasypt.encryptor.algorithm>
+		
   </properties>
   <build>
     <finalName>WebAPI</finalName>

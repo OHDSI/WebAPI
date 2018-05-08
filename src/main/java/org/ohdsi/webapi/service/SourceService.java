@@ -55,27 +55,27 @@ public class SourceService extends AbstractDaoService {
   @PostConstruct
   public void ensureSourceEncrypted(){
     if (encryptorEnabled) {
-        String query = "SELECT source_id, username, password FROM ${schema}.source".replaceAll("\\$\\{schema\\}", schema);
-        String update = "UPDATE ${schema}.source SET username = ?, password = ? WHERE source_id = ?".replaceAll("\\$\\{schema\\}", schema);
-        getTransactionTemplateRequiresNew().execute(new TransactionCallbackWithoutResult() {
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-                jdbcTemplate.query(query, rs -> {
-                    int id = rs.getInt("source_id");
-                    String username = rs.getString("username");
-                    String password = rs.getString("password");
-                    if (!PropertyValueEncryptionUtils.isEncryptedValue(username)){
-                      username = "ENC(" + defaultStringEncryptor.encrypt(username) + ")";
-                    }
-                    if (!PropertyValueEncryptionUtils.isEncryptedValue(password)){
-                      password = "ENC(" + defaultStringEncryptor.encrypt(password) + ")";
-                    }
-                    jdbcTemplate.update(update, username, password, id);
-                });
-            }
-        });
-    }
-  }
+			String query = "SELECT source_id, username, password FROM ${schema}.source".replaceAll("\\$\\{schema\\}", schema);
+			String update = "UPDATE ${schema}.source SET username = ?, password = ? WHERE source_id = ?".replaceAll("\\$\\{schema\\}", schema);
+			getTransactionTemplateRequiresNew().execute(new TransactionCallbackWithoutResult() {
+				@Override
+				protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+					jdbcTemplate.query(query, rs -> {
+						int id = rs.getInt("source_id");
+						String username = rs.getString("username");
+						String password = rs.getString("password");
+						if (username != null && !PropertyValueEncryptionUtils.isEncryptedValue(username)){
+							username = "ENC(" + defaultStringEncryptor.encrypt(username) + ")";
+						}
+						if (password != null && !PropertyValueEncryptionUtils.isEncryptedValue(password)){
+							password = "ENC(" + defaultStringEncryptor.encrypt(password) + ")";
+						}
+						jdbcTemplate.update(update, username, password, id);
+					});
+				}
+			});
+		}
+	}
 
   public class SortByKey implements Comparator<SourceInfo>
   {
@@ -134,6 +134,7 @@ public class SourceService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)  
   public Collection<SourceInfo> refreshSources() {
     cachedSources = null;
+		this.ensureSourceEncrypted();
     return getSources();
   }  
 

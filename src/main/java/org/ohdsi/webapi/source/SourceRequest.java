@@ -12,6 +12,11 @@ public class SourceRequest {
     private String key;
     @NotNull
     private String connectionString;
+    @NotNull
+    private String username;
+    @NotNull
+    private String password;
+
     private Collection<SourceDaimon> daimons;
 
     public String getName() {
@@ -52,6 +57,22 @@ public class SourceRequest {
     public void setConnectionString(String connectionString) {
 
         this.connectionString = connectionString;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public Collection<SourceDaimon> getDaimons() {

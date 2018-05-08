@@ -55,18 +55,22 @@ public class SourceService extends AbstractDaoService {
   @PostConstruct
   public void ensureSourceEncrypted(){
     if (encryptorEnabled) {
-        String query = "SELECT source_id, source_connection FROM ${schema}.source".replaceAll("\\$\\{schema\\}", schema);
-        String update = "UPDATE ${schema}.source SET source_connection = ? WHERE source_id = ?".replaceAll("\\$\\{schema\\}", schema);
+        String query = "SELECT source_id, username, password FROM ${schema}.source".replaceAll("\\$\\{schema\\}", schema);
+        String update = "UPDATE ${schema}.source SET username = ?, password = ? WHERE source_id = ?".replaceAll("\\$\\{schema\\}", schema);
         getTransactionTemplateRequiresNew().execute(new TransactionCallbackWithoutResult() {
             @Override
             protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                 jdbcTemplate.query(query, rs -> {
                     int id = rs.getInt("source_id");
-                    String connection = rs.getString("source_connection");
-                    if (!PropertyValueEncryptionUtils.isEncryptedValue(connection)){
-                        String encrypted = "ENC(" + defaultStringEncryptor.encrypt(connection) + ")";
-                        jdbcTemplate.update(update, encrypted, id);
+                    String username = rs.getString("username");
+                    String password = rs.getString("password");
+                    if (!PropertyValueEncryptionUtils.isEncryptedValue(username)){
+                      username = "ENC(" + defaultStringEncryptor.encrypt(username) + ")";
                     }
+                    if (!PropertyValueEncryptionUtils.isEncryptedValue(password)){
+                      password = "ENC(" + defaultStringEncryptor.encrypt(password) + ")";
+                    }
+                    jdbcTemplate.update(update, username, password, id);
                 });
             }
         });
@@ -170,11 +174,7 @@ public class SourceService extends AbstractDaoService {
       throw new NotAuthorizedException(SECURE_MODE_ERROR);
     }
     Source source = sourceRepository.findBySourceId(sourceId);
-    SourceDetails details = new SourceDetails(source);
-    if (!encryptorEnabled) {
-      details.setConnectionString(source.getSourceConnection());
-    }
-    return details;
+    return new SourceDetails(source);
   }
 
   @Path("")
@@ -207,9 +207,13 @@ public class SourceService extends AbstractDaoService {
     if (source != null) {
       updated.setSourceId(sourceId);
       updated.setSourceKey(source.getSourceKey());
-      if (StringUtils.isBlank(updated.getSourceConnection()) ||
-              Objects.equals(updated.getSourceConnection().trim(), Source.MASQUERADED_STRING)) {
-        updated.setSourceConnection(source.getSourceConnection());
+      if (StringUtils.isBlank(updated.getUsername()) ||
+              Objects.equals(updated.getUsername().trim(), Source.MASQUERADED_USERNAME)) {
+        updated.setUsername(source.getUsername());
+      }
+      if (StringUtils.isBlank(updated.getPassword()) ||
+              Objects.equals(updated.getPassword().trim(), Source.MASQUERADED_PASSWORD)) {
+        updated.setPassword(source.getPassword());
       }
       List<SourceDaimon> removed = source.getDaimons().stream().filter(d -> !updated.getDaimons().contains(d))
               .collect(Collectors.toList());

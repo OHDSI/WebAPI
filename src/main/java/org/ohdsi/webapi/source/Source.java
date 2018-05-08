@@ -37,7 +37,8 @@ import org.ohdsi.webapi.source.SourceDaimon.DaimonType;
 @Table(name="source")
 public class Source implements Serializable {
 
-  public static final String MASQUERADED_STRING = "<jdbc connection string>";
+  public static final String MASQUERADED_USERNAME = "<username>";
+  public static final String MASQUERADED_PASSWORD = "<password>";
 
   @Id
   @GeneratedValue  
@@ -54,11 +55,18 @@ public class Source implements Serializable {
   private String sourceDialect;
  
   @Column(name="SOURCE_CONNECTION")
-  @Type(type = "encryptedString")
   private String sourceConnection;
   
   @Column(name="SOURCE_KEY")
   private String sourceKey;
+
+  @Column
+  @Type(type = "encryptedString")
+  private String username;
+
+  @Column
+  @Type(type = "encryptedString")
+  private String password;
 
   
   public String getTableQualifier(DaimonType daimonType) {
@@ -127,5 +135,21 @@ public class Source implements Serializable {
 
   public SourceInfo getSourceInfo() {
     return new SourceInfo(this);
+  }
+
+  public String getUsername() {
+    return username;
+  }
+
+  public void setUsername(String username) {
+    this.username = username;
+  }
+
+  public String getPassword() {
+    return password;
+  }
+
+  public void setPassword(String password) {
+    this.password = password;
   }
 }

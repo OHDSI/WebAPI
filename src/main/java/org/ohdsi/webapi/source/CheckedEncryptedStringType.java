@@ -26,7 +26,7 @@ public class CheckedEncryptedStringType extends AbstractEncryptedAsStringType {
 
         checkInitialization();
         if (Objects.nonNull(value)){
-            if (Objects.nonNull(this.encryptor)) {
+            if (Objects.nonNull(this.encryptor) && !(this.encryptor instanceof NotEncrypted)) {
                 String encrypted = this.encryptor.encrypt(convertToString(value));
                 st.setString(index, ENCODED_PREFIX + encrypted + ENCODED_SUFFIX);
             } else {

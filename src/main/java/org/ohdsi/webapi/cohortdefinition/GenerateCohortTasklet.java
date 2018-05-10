@@ -99,7 +99,7 @@ public class GenerateCohortTasklet implements Tasklet {
         options.resultSchema, "cohortDefinitionId", options.cohortId);
       jdbcTemplate.update(psr.getSql(), psr.getSetter());
 
-      String insertSql = "INSERT INTO @results_schema.cohort_inclusion (cohort_definition_id, rule_sequence, name, description) VALUES (@cohortId,@iteration,@ruleName,@ruleDescription)";
+      String insertSql = "INSERT INTO @results_schema.cohort_inclusion (cohort_definition_id, rule_sequence, name, description) VALUES (@cohortId,@iteration,@ruleName,@ruleDescription);";
       String tqName = "results_schema";
       String tqValue = options.resultSchema;
       String[] names = new String[]{"cohortId", "iteration", "ruleName", "ruleDescription"};

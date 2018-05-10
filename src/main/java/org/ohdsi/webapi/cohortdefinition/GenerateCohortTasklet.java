@@ -94,7 +94,7 @@ public class GenerateCohortTasklet implements Tasklet {
 				options.vocabularySchema = jobParams.get("vocabulary_database_schema").toString();
       options.generateStats = Boolean.valueOf(jobParams.get("generate_stats").toString());
 
-      String deleteSql = "DELETE FROM @tableQualifier.cohort_inclusion WHERE cohort_definition_id = @cohortDefinitionId";
+      String deleteSql = "DELETE FROM @tableQualifier.cohort_inclusion WHERE cohort_definition_id = @cohortDefinitionId;";
       PreparedStatementRenderer psr = new PreparedStatementRenderer(null, deleteSql, "tableQualifier",
         options.resultSchema, "cohortDefinitionId", options.cohortId);
       jdbcTemplate.update(psr.getSql(), psr.getSetter());

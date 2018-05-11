@@ -25,6 +25,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.StepContribution;
@@ -41,7 +44,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.lang.StringUtils;
+
 import org.ohdsi.sql.SqlRender;
 
 /**
@@ -57,14 +60,17 @@ public class GenerateCohortTasklet implements Tasklet {
   private final JdbcTemplate jdbcTemplate;
   private final TransactionTemplate transactionTemplate;
   private final CohortDefinitionRepository cohortDefinitionRepository;
+  private final SourceRepository sourceRepository;
 
   public GenerateCohortTasklet(
-          final JdbcTemplate jdbcTemplate, 
+          final JdbcTemplate jdbcTemplate,
           final TransactionTemplate transactionTemplate,
-          final CohortDefinitionRepository cohortDefinitionRepository) {
+          final CohortDefinitionRepository cohortDefinitionRepository,
+          SourceRepository sourceRepository) {
     this.jdbcTemplate = jdbcTemplate;
     this.transactionTemplate = transactionTemplate;
     this.cohortDefinitionRepository = cohortDefinitionRepository;
+    this.sourceRepository = sourceRepository;
   }
 
   private int[] doTask(ChunkContext chunkContext) {
@@ -94,12 +100,15 @@ public class GenerateCohortTasklet implements Tasklet {
 				options.vocabularySchema = jobParams.get("vocabulary_database_schema").toString();
       options.generateStats = Boolean.valueOf(jobParams.get("generate_stats").toString());
 
+      Integer sourceId = Integer.parseInt(jobParams.get("source_id").toString());
+      Source source = sourceRepository.findBySourceId(sourceId);
+
       String deleteSql = "DELETE FROM @tableQualifier.cohort_inclusion WHERE cohort_definition_id = @cohortDefinitionId;";
-      PreparedStatementRenderer psr = new PreparedStatementRenderer(null, deleteSql, "tableQualifier",
+      PreparedStatementRenderer psr = new PreparedStatementRenderer(source, deleteSql, "tableQualifier",
         options.resultSchema, "cohortDefinitionId", options.cohortId);
       jdbcTemplate.update(psr.getSql(), psr.getSetter());
 
-      String insertSql = "INSERT INTO @results_schema.cohort_inclusion (cohort_definition_id, rule_sequence, name, description) VALUES (@cohortId,@iteration,@ruleName,@ruleDescription);";
+      String insertSql = "INSERT INTO @results_schema.cohort_inclusion (cohort_definition_id, rule_sequence, name, description) VALUES (@cohortId,@iteration,CAST(@ruleName AS VARCHAR(255)),@ruleDescription);";
       String tqName = "results_schema";
       String tqValue = options.resultSchema;
       String[] names = new String[]{"cohortId", "iteration", "ruleName", "ruleDescription"};
@@ -107,7 +116,7 @@ public class GenerateCohortTasklet implements Tasklet {
       for (int i = 0; i < inclusionRules.size(); i++) {
         InclusionRule r = inclusionRules.get(i);
         Object[] values = new Object[]{options.cohortId, i, r.name, r.description};
-        psr = new PreparedStatementRenderer(null, insertSql, tqName, tqValue, names, values, sessionId);
+        psr = new PreparedStatementRenderer(source, insertSql, tqName, tqValue, names, values, sessionId);
         jdbcTemplate.update(psr.getSql(), psr.getSetter());
       }
       

@@ -486,7 +486,8 @@ public class CohortDefinitionService extends AbstractDaoService {
 
     log.info(String.format("Beginning generate cohort for cohort definition id: \n %s", "" + id));
 
-    GenerateCohortTasklet generateTasklet = new GenerateCohortTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), cohortDefinitionRepository);
+    GenerateCohortTasklet generateTasklet = new GenerateCohortTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), cohortDefinitionRepository,
+            getSourceRepository());
 
     Step generateCohortStep = stepBuilders.get("cohortDefinition.generateCohort")
       .tasklet(generateTasklet)

@@ -90,7 +90,7 @@ public class GenerateCohortFeaturesTasklet implements Tasklet
                 String.format(cohortWrapper, options.cohortId, columns, 
                         StringUtils.stripEnd(jsonObject.getString("sqlQueryFeatureRef"), ";"))));
 
-        columns = "cohort_definition_id, analysis_id, analysis_name, domain_id, start_day, end_day, is_binary, missing_means_zero";
+        columns = "cohort_definition_id, CAST(analysis_id AS INT) analysis_id, analysis_name, domain_id, start_day, end_day, CAST(is_binary AS CHAR(1)) is_binary,CAST(missing_means_zero AS CHAR(1))";
         joiner.add(String.format(insertStr, 
                 "cohort_features_analysis_ref", 
                 String.format(cohortWrapper, options.cohortId, columns, 

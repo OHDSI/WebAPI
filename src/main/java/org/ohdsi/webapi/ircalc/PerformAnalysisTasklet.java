@@ -92,7 +92,7 @@ public class PerformAnalysisTasklet implements Tasklet {
       options.resultsSchema = jobParams.get("results_database_schema").toString();
       options.vocabularySchema = jobParams.get("vocabulary_database_schema").toString();
 
-      String delete = "DELETE FROM @tableQualifier.ir_strata WHERE analysis_id = @analysis_id";
+      String delete = "DELETE FROM @tableQualifier.ir_strata WHERE analysis_id = @analysis_id;";
       PreparedStatementRenderer psr = new PreparedStatementRenderer(null, delete, "tableQualifier",
         options.resultsSchema, "analysis_id", analysisId);
       jdbcTemplate.update(psr.getSql(), psr.getSetter());

@@ -40,6 +40,7 @@
                 <security.oauth.callback.ui>http://cas-dev.eu-west-1.elasticbeanstalk.com/atlas/#/welcome</security.oauth.callback.ui>
                 <security.oauth.callback.api>http://cas-dev.eu-west-1.elasticbeanstalk.com/webapi/user/oauth/callback</security.oauth.callback.api>
                 <security.ssl.enabled>false</security.ssl.enabled>
+                <war.directory>target</war.directory>
             </properties>
         </profile>
         <profile>

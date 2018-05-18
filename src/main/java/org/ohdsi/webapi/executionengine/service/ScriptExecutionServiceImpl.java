@@ -4,20 +4,8 @@ import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisReques
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisRequestStatusDTO;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisRequestTypeDTO;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.DataSourceUnsecuredDTO;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import javax.net.ssl.HttpsURLConnection;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
 import jersey.repackaged.com.google.common.collect.ImmutableMap;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.logging.Log;
@@ -42,6 +30,7 @@ import org.ohdsi.webapi.service.HttpClient;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceRepository;
+import org.ohdsi.webapi.util.ConnectionParams;
 import org.ohdsi.webapi.util.DataSourceDTOParser;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.explore.JobExplorer;
@@ -49,6 +38,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 @Service
 class ScriptExecutionServiceImpl implements ScriptExecutionService {
@@ -257,7 +257,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
                                    String vocabularyTable,
                                    Source source) {
 
-        ConnectionParams connectionParams = getConnectionParams(source.getSourceConnection());
+        ConnectionParams connectionParams = DataSourceDTOParser.parse(source);
 
         String temp = requestDTO.template
                 .replace("dbms = \"postgresql\"", "dbms = \"" + connectionParams.getDbms() + "\"")
@@ -300,44 +300,6 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
                 .replace("false", "FALSE");
     }
 
-    private ConnectionParams getConnectionParams(final String sourceConnection) {
-
-        ConnectionParams connectionParams = new ConnectionParams();
-        String tmp = sourceConnection;
-        tmp = tmp.substring(tmp.indexOf(":") + 1);
-        connectionParams.setDbms(tmp.substring(0, tmp.indexOf(":")));
-        tmp = tmp.substring(tmp.indexOf(":") + 3);
-        String serverPortDB = tmp.indexOf("?") > 0 ? tmp.substring(0, tmp.indexOf("?")) :
-                tmp.indexOf(";") > 0 ? tmp.substring(0, tmp.indexOf(";")) : tmp;
-        String port = serverPortDB.substring(serverPortDB.indexOf(":") + 1, serverPortDB.indexOf("/"));
-
-        if (StringUtils.isNotBlank(port)) {
-            connectionParams.setPort(port);
-        }
-
-        if (IMPALA_DATASOURCE.equalsIgnoreCase(connectionParams.getDbms())){
-            int colonIndex = serverPortDB.indexOf(":");
-            connectionParams.setServer(serverPortDB.substring(0, colonIndex));
-            connectionParams.setSchema(serverPortDB.substring(serverPortDB.indexOf("/") + 1));
-            connectionParams.setExtraSettings(tmp.substring(tmp.indexOf(";") + 1));
-        } else {
-            connectionParams.setServer(serverPortDB.substring(0, serverPortDB.indexOf(":")) + serverPortDB.substring(
-                    serverPortDB.indexOf("/")));
-        }
-        tmp = tmp.substring(tmp.indexOf("?") + 1);
-        String[] split = tmp.split("&");
-        for (String s : split) {
-            if (s.contains("user")) {
-                connectionParams.setUser(s.substring(s.indexOf("=") + 1));
-            }
-            if (s.contains("password")) {
-                connectionParams.setPassword(s.substring(s.indexOf("=") + 1));
-            }
-        }
-
-        return connectionParams;
-    }
-
     private DataSourceUnsecuredDTO makeDataSourceDTO(Source source) {
 
         DataSourceUnsecuredDTO dto = DataSourceDTOParser.parseDTO(source);
@@ -345,83 +307,4 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         return dto;
     }
 
-    private class ConnectionParams {
-        private String dbms;
-        private String server;
-        private String user;
-        private String password;
-        private String port;
-        private String schema;
-        private String extraSettings;
-
-        String getDbms() {
-
-            return dbms;
-        }
-
-        void setDbms(String dbms) {
-
-            this.dbms = dbms;
-        }
-
-        String getServer() {
-
-            return server;
-        }
-
-        void setServer(String server) {
-
-            this.server = server;
-        }
-
-        String getUser() {
-
-            return user;
-        }
-
-        void setUser(String user) {
-
-            this.user = user;
-        }
-
-        String getPassword() {
-
-            return password;
-        }
-
-        void setPassword(String password) {
-
-            this.password = password;
-        }
-
-        public String getPort() {
-
-            return port;
-        }
-
-        public void setPort(String port) {
-
-            this.port = port;
-        }
-
-        public String getSchema() {
-
-            return schema;
-        }
-
-        public void setSchema(String schema) {
-
-            this.schema = schema;
-        }
-
-        public String getExtraSettings() {
-
-            return extraSettings;
-        }
-
-        public void setExtraSettings(String extraSettings) {
-
-            this.extraSettings = extraSettings;
-        }
-    }
 }

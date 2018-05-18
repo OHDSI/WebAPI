@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.executionengine.service;
 
+import com.odysseusinc.arachne.commons.types.DBMSType;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisRequestDTO;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisRequestStatusDTO;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisRequestTypeDTO;
@@ -259,9 +260,16 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
 
         ConnectionParams connectionParams = DataSourceDTOParser.parse(source);
 
+        String serverName;
+        if (DBMSType.POSTGRESQL.getOhdsiDB().equalsIgnoreCase(source.getSourceDialect())) {
+            serverName = connectionParams.getServer() + "/" + connectionParams.getSchema();
+        } else {
+            serverName = connectionParams.getServer();
+        }
+
         String temp = requestDTO.template
                 .replace("dbms = \"postgresql\"", "dbms = \"" + connectionParams.getDbms() + "\"")
-                .replace("server = \"localhost/ohdsi\"", "server = \"" + connectionParams.getServer() + "\"")
+                .replace("server = \"localhost/ohdsi\"", "server = \"" + serverName + "\"")
                 .replace("user = \"joe\"", "user = \"" + connectionParams.getUser() + "\"")
                 .replace("my_cdm_data", cdmTable)
                 .replace("my_vocabulary_data", vocabularyTable)

@@ -28,6 +28,8 @@ public class PreparedStatementRenderer {
   private String sourceDialect = "sql server";
   private List<Object> orderedParamsList;
   private String targetDialect = "sql server";
+	private String sessionId;
+	
 
   public List<Object> getOrderedParamsList() {
 
@@ -79,8 +81,12 @@ public class PreparedStatementRenderer {
     this.orderedParamsList = PreparedSqlRender.getOrderedListOfParameterValues(paramValueMap, sql);
     buildPreparedStatementSetter();
     sql = PreparedSqlRender.fixPreparedStatementSql(sql, paramValueMap);
-    String targetDialect = source != null ? source.getSourceDialect() : this.targetDialect;
-    sql = SqlTranslate.translateSql(sql, targetDialect, sessionId, null);
+
+		if (source != null) {
+			this.targetDialect = source.getSourceDialect();
+		}
+
+		this.sessionId = sessionId;
   }
 
   public PreparedStatementRenderer(Source source, String sqlResource, String[] searchRegexes, String[] replacementStrings, String sessionId) {
@@ -262,8 +268,8 @@ public class PreparedStatementRenderer {
   }
 
   public String getSql() {
-
-    return sql;
+    String translatedSql = SqlTranslate.translateSql(sql, targetDialect, sessionId, null);
+    return translatedSql;
   }
 
   public PreparedStatementSetter getSetter() {

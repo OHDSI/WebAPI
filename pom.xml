@@ -101,7 +101,7 @@
     <server.ssl.key-store-password></server.ssl.key-store-password>
     <server.ssl.key-password></server.ssl.key-password>
 
-    <arachne.version>1.12.0</arachne.version>
+    <arachne.version>1.12.2-QA</arachne.version>
     <jersey-media-multipart.version>2.25.1</jersey-media-multipart.version>
     <execution.invalidation.maxage>4</execution.invalidation.maxage>
     <execution.invalidation.period>10000</execution.invalidation.period>

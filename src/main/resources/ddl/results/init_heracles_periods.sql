@@ -6,6 +6,7 @@ CREATE TABLE #temp_period (
 	period_end_date date
 );
 
+INSERT INTO #temp_period
 with digits as (
 	select 0 as n union all select 1 union all select 2 union all select 3 union all select 4 union all select 5 union all select 6 union all select 7 union all select 8 union all select 9
 ),
@@ -45,7 +46,6 @@ quarterly_dates as (
 	from generate_dates
 	where d_months in (1,4,7,10)
 )
-INSERT INTO #temp_period
 -- monthly dates
 select CAST('Monthly' AS VARCHAR(255)) as period_name
   , 1 as period_order

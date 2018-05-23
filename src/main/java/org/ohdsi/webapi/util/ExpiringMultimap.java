@@ -48,10 +48,7 @@ public class ExpiringMultimap<K, V> {
 
     public synchronized void put(K key, V value) {
 
-        PassiveExpiringMap<V, Object> storage = map.get(key);
-        if (storage == null) {
-            storage = new PassiveExpiringMap<>(timeToLiveMs);
-        }
+        PassiveExpiringMap<V, Object> storage = map.computeIfAbsent(key, k -> new PassiveExpiringMap<>(timeToLiveMs));
         storage.put(value, null);
         map.put(key, storage);
     }

@@ -5,6 +5,7 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.impl.crypto.MacProvider;
 import java.security.Key;
 import java.util.Date;
@@ -55,6 +56,9 @@ public class TokenManager {
 
     // Get untrusted subject for secret key retrieval
     String untrustedSubject = getUntrustedSubject(jwt);
+    if (untrustedSubject == null) {
+        throw new UnsupportedJwtException("Cannot extract subject from the token");
+    }
 
     // Pick all secret keys: latest one + previous keys, which were just invalidated (to overcome concurrency issue)
     List<Key> keyOptions = gracePeriodInvalidTokens.get(untrustedSubject);
@@ -75,11 +79,14 @@ public class TokenManager {
             })
             .filter(Objects::nonNull)
             .findFirst()
-            .orElseThrow(() -> new SignatureException("Signing key is not reqistred for the subject."));
+            .orElseThrow(() -> new SignatureException("Signing key is not registered for the subject."));
   }
 
   protected static String getUntrustedSubject(String jws) {
     int i = jws.lastIndexOf('.');
+    if (i == -1) {
+        return null;
+    }
     String untrustedJwtString = jws.substring(0, i+1);
     return Jwts.parser().parseClaimsJwt(untrustedJwtString).getBody().getSubject();
   }

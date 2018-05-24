@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
@@ -40,23 +41,15 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
-import org.ohdsi.sql.SqlTranslate;
+
 import javax.ws.rs.core.Response;
 import org.ohdsi.sql.SqlRender;
 
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
-import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfo;
-import org.ohdsi.webapi.cohortdefinition.ExpressionType;
-import org.ohdsi.webapi.cohortdefinition.GenerateCohortTasklet;
+import org.ohdsi.webapi.cohortdefinition.*;
 import org.ohdsi.webapi.GenerationStatus;
-import org.ohdsi.webapi.cohortdefinition.CleanupCohortTasklet;
-import org.ohdsi.webapi.cohortdefinition.GenerationJobExecutionListener;
-import org.ohdsi.webapi.cohortdefinition.InclusionRuleReport;
 import org.ohdsi.webapi.cohortfeatures.GenerateCohortFeaturesTasklet;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ExportUtil;
@@ -98,6 +91,9 @@ public class CohortDefinitionService extends AbstractDaoService {
 
   @Autowired
   private CohortDefinitionRepository cohortDefinitionRepository;
+
+  @Autowired
+  private CohortGenerationInfoRepository cohortGenerationInfoRepository;
 
   @Autowired
   private JobBuilderFactory jobBuilders;
@@ -162,7 +158,7 @@ public class CohortDefinitionService extends AbstractDaoService {
       resultItem[1] = rs.getLong("person_count");
       return resultItem;
     }
-  };  
+  };
 
   private CohortGenerationInfo findBySourceId(Set<CohortGenerationInfo> infoList, Integer sourceId) {
     for (CohortGenerationInfo info : infoList) {
@@ -665,5 +661,21 @@ public class CohortDefinitionService extends AbstractDaoService {
     report.treemapData = treemapData;
 
     return report;
-  }  
+  }
+
+  @PostConstruct
+  public void init(){
+
+    invalidateCohortGenerations();
+  }
+
+  private void invalidateCohortGenerations() {
+
+    getTransactionTemplateRequiresNew().execute(status -> {
+      List<CohortGenerationInfo> executions = cohortGenerationInfoRepository.findByStatusIn(INVALIDATE_STATUSES);
+      invalidateExecutions(executions);
+      cohortGenerationInfoRepository.save(executions);
+      return null;
+    });
+  }
 }

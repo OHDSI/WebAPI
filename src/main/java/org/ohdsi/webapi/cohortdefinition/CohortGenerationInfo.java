@@ -16,6 +16,8 @@
 package org.ohdsi.webapi.cohortdefinition;
 
 import org.ohdsi.webapi.GenerationStatus;
+import org.ohdsi.webapi.IExecutionInfo;
+
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Column;
@@ -32,7 +34,7 @@ import javax.persistence.Table;
  */
 @Entity(name = "CohortGenerationInfo")
 @Table(name="cohort_generation_info")
-public class CohortGenerationInfo implements Serializable {
+public class CohortGenerationInfo implements Serializable, IExecutionInfo {
   private static final long serialVersionUID = 1L;
 
   public  CohortGenerationInfo()
@@ -103,6 +105,16 @@ public class CohortGenerationInfo implements Serializable {
     return status;
   }
 
+  @Override
+  public boolean getIsValid() {
+      return isIsValid();
+  }
+
+  @Override
+  public String getMessage() {
+      return getFailMessage();
+  }
+
   public CohortGenerationInfo setStatus(GenerationStatus status) {
     this.status = status;
     return this;
@@ -117,40 +129,45 @@ public class CohortGenerationInfo implements Serializable {
     return this;
   }
 
-	public boolean isIncludeFeatures() {
-		return includeFeatures;
-	}
+  @Override
+  public IExecutionInfo setMessage(String message) {
+    return setFailMessage(message);
+  }
 
-	public CohortGenerationInfo setIncludeFeatures(boolean includeFeatures) {
-		this.includeFeatures = includeFeatures;
-		return this;
-	}
+  public boolean isIncludeFeatures() {
+      return includeFeatures;
+  }
 
-	public String getFailMessage() {
-		return failMessage;
-	}
+  public CohortGenerationInfo setIncludeFeatures(boolean includeFeatures) {
+      this.includeFeatures = includeFeatures;
+      return this;
+  }
 
-	public CohortGenerationInfo setFailMessage(String failMessage) {
-		this.failMessage = failMessage;
-		return this;
-	}
+  public String getFailMessage() {
+      return failMessage;
+  }
 
-	public Long getPersonCount() {
-		return personCount;
-	}
+  public CohortGenerationInfo setFailMessage(String failMessage) {
+      this.failMessage = failMessage;
+      return this;
+  }
 
-	public CohortGenerationInfo setPersonCount(Long personCount) {
-		this.personCount = personCount;
-		return this;
-	}
+  public Long getPersonCount() {
+      return personCount;
+  }
 
-	public Long getRecordCount() {
-		return recordCount;
-	}
+  public CohortGenerationInfo setPersonCount(Long personCount) {
+      this.personCount = personCount;
+      return this;
+  }
 
-	public CohortGenerationInfo setRecordCount(Long recordCount) {
-		this.recordCount = recordCount;
-		return this;
-	}
-	
+  public Long getRecordCount() {
+      return recordCount;
+  }
+
+  public CohortGenerationInfo setRecordCount(Long recordCount) {
+      this.recordCount = recordCount;
+      return this;
+  }
+
 }

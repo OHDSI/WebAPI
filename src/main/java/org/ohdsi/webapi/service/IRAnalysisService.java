@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceContextType;
@@ -62,13 +63,7 @@ import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.exampleapplication.model.Widget;
-import org.ohdsi.webapi.ircalc.AnalysisReport;
-import org.ohdsi.webapi.ircalc.ExecutionInfo;
-import org.ohdsi.webapi.ircalc.IncidenceRateAnalysis;
-import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisDetails;
-import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisExpression;
-import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisRepository;
-import org.ohdsi.webapi.ircalc.PerformAnalysisTasklet;
+import org.ohdsi.webapi.ircalc.*;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.shiro.management.Security;
@@ -107,6 +102,9 @@ public class IRAnalysisService extends AbstractDaoService {
 
   @Autowired
   private IncidenceRateAnalysisRepository irAnalysisRepository;
+
+  @Autowired
+  private IRExecutionInfoRepository irExecutionInfoRepository;
 
   @Autowired
   private JobBuilderFactory jobBuilders;
@@ -716,6 +714,23 @@ public class IRAnalysisService extends AbstractDaoService {
       analysis.getExecutionInfoList().remove(itemToRemove);
     
     irAnalysisRepository.save(analysis);
+  }
+
+  @PostConstruct
+  public void init() {
+
+    invalidateIRExecutions();
+  }
+
+  private void invalidateIRExecutions() {
+
+    getTransactionTemplateRequiresNew().execute(status -> {
+
+      List<ExecutionInfo> executions = irExecutionInfoRepository.findByStatusIn(INVALIDATE_STATUSES);
+      invalidateExecutions(executions);
+      irExecutionInfoRepository.save(executions);
+      return null;
+    });
   }
   
 }

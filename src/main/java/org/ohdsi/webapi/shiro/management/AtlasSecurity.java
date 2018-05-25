@@ -382,7 +382,9 @@ public class AtlasSecurity extends Security {
     realms.add(new JwtAuthRealm(this.authorizer));
     realms.add(new NegotiateAuthenticationRealm());
     realms.add(new Pac4jRealm());
-    realms.add(new JdbcAuthRealm(jdbcDataSource, jdbcAuthenticationQuery));
+    if (jdbcDataSource != null) {
+      realms.add(new JdbcAuthRealm(jdbcDataSource, jdbcAuthenticationQuery));
+    }
     realms.add(new KerberosAuthRealm(kerberosSpn, kerberosKeytabPath));
     realms.add(ldapRealm());
     realms.add(activeDirectoryRealm());

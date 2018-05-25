@@ -82,7 +82,7 @@ public class GenerateCohortTasklet implements StoppableTasklet {
     int[] result = new int[0];
     
     Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
-    Integer defId = Integer.valueOf(jobParams.get("cohort_definition_id").toString());
+    Integer defId = Integer.valueOf(jobParams.get(Constants.Params.COHORT_DEFINITION_ID).toString());
     String sessionId = SessionUtils.sessionId();
 
     try {
@@ -98,14 +98,14 @@ public class GenerateCohortTasklet implements StoppableTasklet {
       
       CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = new CohortExpressionQueryBuilder.BuildExpressionQueryOptions();
       options.cohortId = defId;
-      options.cdmSchema = jobParams.get("cdm_database_schema").toString();
-      options.targetTable = jobParams.get("target_database_schema").toString() + "." + jobParams.get("target_table").toString();
-      options.resultSchema = jobParams.get("results_database_schema").toString();
-      if (jobParams.get("vocabulary_database_schema") != null)
-				options.vocabularySchema = jobParams.get("vocabulary_database_schema").toString();
-      options.generateStats = Boolean.valueOf(jobParams.get("generate_stats").toString());
+      options.cdmSchema = jobParams.get(Constants.Params.CDM_DATABASE_SCHEMA).toString();
+      options.targetTable = jobParams.get(Constants.Params.TARGET_DATABASE_SCHEMA).toString() + "." + jobParams.get(Constants.Params.TARGET_TABLE).toString();
+      options.resultSchema = jobParams.get(Constants.Params.RESULTS_DATABASE_SCHEMA).toString();
+      if (jobParams.get(Constants.Params.VOCABULARY_DATABASE_SCHEMA) != null)
+				options.vocabularySchema = jobParams.get(Constants.Params.VOCABULARY_DATABASE_SCHEMA).toString();
+      options.generateStats = Boolean.valueOf(jobParams.get(Constants.Params.GENERATE_STATS).toString());
 
-      Integer sourceId = Integer.parseInt(jobParams.get("source_id").toString());
+      Integer sourceId = Integer.parseInt(jobParams.get(Constants.Params.SOURCE_ID).toString());
       Source source = sourceRepository.findBySourceId(sourceId);
 
       String deleteSql = "DELETE FROM @tableQualifier.cohort_inclusion WHERE cohort_definition_id = @cohortDefinitionId;";

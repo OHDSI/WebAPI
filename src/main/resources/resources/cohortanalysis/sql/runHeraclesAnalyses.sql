@@ -13714,7 +13714,7 @@ INSERT INTO @results_schema.HERACLES_HEEL_results
 )
 SELECT her1.cohort_definition_id,
   her1.analysis_id,
-  'WARNING: ' + CAST(her1.analysis_id  AS VARCHAR(1000)) + '-' + aa1.analysis_name + '; ' + CAST(COUNT(DISTINCT her1.stratum_1)  AS VARCHAR(1000)) + 'concepts have a 100% change in monthly count of events' AS HERACLES_HEEL_warning
+  'WARNING: ' + CAST(her1.analysis_id  AS VARCHAR(1000)) + '-' + aa1.analysis_name + '; ' + CAST(COUNT_BIG(DISTINCT her1.stratum_1)  AS VARCHAR(1000)) + 'concepts have a 100% change in monthly count of events' AS HERACLES_HEEL_warning
   FROM @results_schema.HERACLES_analysis aa1
   INNER JOIN hr her1
   ON aa1.analysis_id = her1.analysis_id

@@ -13707,6 +13707,11 @@ WITH hr AS (
       1002
     )
 )
+INSERT INTO @results_schema.HERACLES_HEEL_results
+  cohort_definition_id,
+  analysis_id,
+  HERACLES_HEEL_warning
+)
 SELECT her1.cohort_definition_id,
   her1.analysis_id,
   'WARNING: ' || CAST(her1.analysis_id  AS VARCHAR(1000)) || '-' || aa1.analysis_name || '; ' || CAST(COUNT(DISTINCT her1.stratum_1)  AS VARCHAR(1000)) || 'concepts have a 100% change in monthly count of events' AS HERACLES_HEEL_warning

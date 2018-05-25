@@ -54,7 +54,6 @@ public class ExecutionInfo implements Serializable, IExecutionInfo {
   @JoinColumn(name="source_id", referencedColumnName="source_id")
   private Source source;
   
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd, HH:mm")
   @Column(name="start_time")
   private Date startTime;  
   

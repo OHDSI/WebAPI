@@ -15,8 +15,6 @@
  */
 package org.ohdsi.webapi.cohortdefinition;
 
-import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
-
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.InclusionRule;
@@ -25,14 +23,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
-import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
-import org.springframework.batch.core.step.tasklet.Tasklet;
+import org.springframework.batch.core.step.tasklet.StoppableTasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.TransactionDefinition;
@@ -44,6 +42,9 @@ import org.springframework.transaction.support.TransactionTemplate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
 
 import org.ohdsi.sql.SqlRender;
 
@@ -51,7 +52,7 @@ import org.ohdsi.sql.SqlRender;
  *
  * @author Chris Knoll <cknoll@ohdsi.org>
  */
-public class GenerateCohortTasklet implements Tasklet {
+public class GenerateCohortTasklet implements StoppableTasklet {
 
   private static final Log log = LogFactory.getLog(GenerateCohortTasklet.class);
 
@@ -61,6 +62,9 @@ public class GenerateCohortTasklet implements Tasklet {
   private final TransactionTemplate transactionTemplate;
   private final CohortDefinitionRepository cohortDefinitionRepository;
   private final SourceRepository sourceRepository;
+  private final ExecutorService taskExecutor;
+  private boolean stopped = false;
+  private long checkInterval = 1000;
 
   public GenerateCohortTasklet(
           final JdbcTemplate jdbcTemplate,
@@ -71,10 +75,11 @@ public class GenerateCohortTasklet implements Tasklet {
     this.transactionTemplate = transactionTemplate;
     this.cohortDefinitionRepository = cohortDefinitionRepository;
     this.sourceRepository = sourceRepository;
+    taskExecutor = Executors.newSingleThreadExecutor();
   }
 
   private int[] doTask(ChunkContext chunkContext) {
-    int[] result;
+    int[] result = new int[0];
     
     Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
     Integer defId = Integer.valueOf(jobParams.get("cohort_definition_id").toString());
@@ -106,6 +111,9 @@ public class GenerateCohortTasklet implements Tasklet {
       String deleteSql = "DELETE FROM @tableQualifier.cohort_inclusion WHERE cohort_definition_id = @cohortDefinitionId;";
       PreparedStatementRenderer psr = new PreparedStatementRenderer(source, deleteSql, "tableQualifier",
         options.resultSchema, "cohortDefinitionId", options.cohortId);
+      if (stopped) {
+        return result;
+      }
       jdbcTemplate.update(psr.getSql(), psr.getSetter());
 
       String insertSql = "INSERT INTO @results_schema.cohort_inclusion (cohort_definition_id, rule_sequence, name, description) VALUES (@cohortId,@iteration,CAST(@ruleName AS VARCHAR(255)),@ruleDescription);";
@@ -117,6 +125,9 @@ public class GenerateCohortTasklet implements Tasklet {
         InclusionRule r = inclusionRules.get(i);
         Object[] values = new Object[]{options.cohortId, i, r.name, r.description};
         psr = new PreparedStatementRenderer(source, insertSql, tqName, tqValue, names, values, sessionId);
+        if (stopped) {
+          return result;
+        }
         jdbcTemplate.update(psr.getSql(), psr.getSetter());
       }
       
@@ -124,7 +135,19 @@ public class GenerateCohortTasklet implements Tasklet {
       expressionSql = SqlRender.renderSql(expressionSql, null, null);
       String translatedSql = SqlTranslate.translateSql(expressionSql, jobParams.get("target_dialect").toString(), sessionId, null);
       String[] sqlStatements = SqlSplit.splitSql(translatedSql);
-      result = GenerateCohortTasklet.this.jdbcTemplate.batchUpdate(sqlStatements);
+      FutureTask<int[]> batchUpdateTask = new FutureTask<>(() -> GenerateCohortTasklet.this.jdbcTemplate.batchUpdate(sqlStatements));
+      taskExecutor.execute(batchUpdateTask);
+      while(true) {
+        Thread.sleep(checkInterval);
+        if (batchUpdateTask.isDone()) {
+          result = batchUpdateTask.get();
+          break;
+        } else if (stopped) {
+          batchUpdateTask.cancel(true);
+          break;
+        }
+      }
+      taskExecutor.shutdown();
 
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -143,6 +166,15 @@ public class GenerateCohortTasklet implements Tasklet {
 			}
 		});
 
+		if (this.stopped) {
+		  contribution.setExitStatus(ExitStatus.STOPPED);
+    }
+
     return RepeatStatus.FINISHED;
+  }
+
+  @Override
+  public void stop() {
+    this.stopped = true;
   }
 }

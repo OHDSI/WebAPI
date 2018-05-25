@@ -235,7 +235,7 @@ public abstract class AbstractDaoService {
   protected IExecutionInfo invalidateExecution(IExecutionInfo executionInfo) {
 
     return executionInfo.setIsValid(false)
-            .setStatus(GenerationStatus.ERROR)
+            .setStatus(GenerationStatus.COMPLETE)
             .setMessage("Invalidated by system");
   }
 

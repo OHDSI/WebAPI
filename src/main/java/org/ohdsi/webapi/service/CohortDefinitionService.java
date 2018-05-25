@@ -15,29 +15,14 @@ import java.math.RoundingMode;
 import java.io.ByteArrayOutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import javax.servlet.ServletContext;
 import javax.transaction.Transactional;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
@@ -61,13 +46,14 @@ import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.source.SourceInfo;
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobParameters;
-import org.springframework.batch.core.JobParametersBuilder;
-import org.springframework.batch.core.Step;
+import org.springframework.batch.core.*;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
+import org.springframework.batch.core.launch.JobExecutionNotRunningException;
+import org.springframework.batch.core.launch.JobOperator;
+import org.springframework.batch.core.launch.NoSuchJobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -109,6 +95,12 @@ public class CohortDefinitionService extends AbstractDaoService {
     
   @Autowired
   private JobTemplate jobTemplate;
+
+  @Autowired
+  private JobExplorer jobExplorer;
+
+  @Autowired
+  private JobOperator jobOperator;
 
 	@PersistenceContext
 	protected EntityManager entityManager;
@@ -508,6 +500,40 @@ public class CohortDefinitionService extends AbstractDaoService {
 
     JobExecutionResource jobExec = this.jobTemplate.launch(generateCohortJob, jobParameters);
     return jobExec;
+  }
+
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/{id}/cancel/{sourceKey}")
+  public Response cancelGenerateCohort(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey) {
+
+    final Source source = Optional.ofNullable(getSourceRepository().findBySourceKey(sourceKey))
+            .orElseThrow(NotFoundException::new);
+    getTransactionTemplateRequiresNew().execute(status -> {
+      CohortDefinition currentDefinition = cohortDefinitionRepository.findOne(id);
+      if (Objects.nonNull(currentDefinition)) {
+        CohortGenerationInfo info = findBySourceId(currentDefinition.getGenerationInfoList(), source.getSourceId());
+        if (Objects.nonNull(info)) {
+          invalidateExecution(info);
+          cohortDefinitionRepository.save(currentDefinition);
+        }
+      }
+      return null;
+    });
+
+    Set<JobExecution> executions = jobExplorer.findRunningJobExecutions("generateCohort");
+    executions.stream().filter(e -> {
+      JobParameters parameters = e.getJobParameters();
+      return Objects.equals(parameters.getString("cohort_definition_id"), Integer.toString(id))
+              && Objects.equals(parameters.getString("source_id"), Integer.toString(source.getSourceId()));
+    }).findFirst()
+            .ifPresent(job -> {
+              try {
+                jobOperator.stop(job.getJobId());
+              } catch (NoSuchJobExecutionException | JobExecutionNotRunningException ignored) {
+              }
+            });
+    return Response.status(Response.Status.OK).build();
   }
 
   /**

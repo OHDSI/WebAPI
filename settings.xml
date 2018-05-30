@@ -34,12 +34,12 @@
                 <datasource.liferay.url>${LIFERAY_SERVER_BASE_URL}</datasource.liferay.url>
                 <datasource.liferay.user>${WEBAPI_LIFERAY_USER}</datasource.liferay.user>
                 <datasource.liferay.password>${WEBAPI_LIFERAY_PASSWORD}</datasource.liferay.password>
-                <datasource.hss.url>http://cas-dev.eu-west-1.elasticbeanstalk.com/storage</datasource.hss.url>
+                <datasource.hss.url>${STORAGE_SERVER_BASE_URL}/storage</datasource.hss.url>
 
-                <security.cas.login.url>http://cas-dev.eu-west-1.elasticbeanstalk.com/login</security.cas.login.url>
-                <security.oauth.callback.ui>http://cas-dev.eu-west-1.elasticbeanstalk.com/atlas/#/welcome</security.oauth.callback.ui>
-                <security.oauth.callback.api>http://cas-dev.eu-west-1.elasticbeanstalk.com/webapi/user/oauth/callback</security.oauth.callback.api>
-                <security.ssl.enabled>false</security.ssl.enabled>
+                <security.cas.login.url>${CAS_SERVER_LOGIN_URL}</security.cas.login.url>
+                <security.oauth.callback.ui>${ATLAS_WELCOME_URL}</security.oauth.callback.ui>
+                <security.oauth.callback.api>${ATLAS_WEBAPI_CALLBACK_URL}</security.oauth.callback.api>
+                <security.ssl.enabled>true</security.ssl.enabled>
                 <war.directory>target</war.directory>
             </properties>
         </profile>

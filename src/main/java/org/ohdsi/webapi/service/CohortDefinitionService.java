@@ -15,29 +15,15 @@ import java.math.RoundingMode;
 import java.io.ByteArrayOutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import javax.annotation.PostConstruct;
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import javax.servlet.ServletContext;
 import javax.transaction.Transactional;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
@@ -61,13 +47,14 @@ import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.source.SourceInfo;
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobParameters;
-import org.springframework.batch.core.JobParametersBuilder;
-import org.springframework.batch.core.Step;
+import org.springframework.batch.core.*;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
+import org.springframework.batch.core.launch.JobExecutionNotRunningException;
+import org.springframework.batch.core.launch.JobOperator;
+import org.springframework.batch.core.launch.NoSuchJobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -109,6 +96,12 @@ public class CohortDefinitionService extends AbstractDaoService {
     
   @Autowired
   private JobTemplate jobTemplate;
+
+  @Autowired
+  private JobExplorer jobExplorer;
+
+  @Autowired
+  private JobOperator jobOperator;
 
 	@PersistenceContext
 	protected EntityManager entityManager;
@@ -466,17 +459,17 @@ public class CohortDefinitionService extends AbstractDaoService {
     this.getTransactionTemplate().getTransactionManager().commit(initStatus);
 
     JobParametersBuilder builder = new JobParametersBuilder();
-    builder.addString("jobName", "generating cohort " + currentDefinition.getId() + " : " + source.getSourceName() + " (" + source.getSourceKey() + ")");
-    builder.addString("cdm_database_schema", cdmTableQualifier);
-    builder.addString("results_database_schema", resultsTableQualifier);
-    builder.addString("target_database_schema", resultsTableQualifier);
+    builder.addString(Constants.Params.JOB_NAME, "generating cohort " + currentDefinition.getId() + " : " + source.getSourceName() + " (" + source.getSourceKey() + ")");
+    builder.addString(Constants.Params.CDM_DATABASE_SCHEMA, cdmTableQualifier);
+    builder.addString(Constants.Params.RESULTS_DATABASE_SCHEMA, resultsTableQualifier);
+    builder.addString(Constants.Params.TARGET_DATABASE_SCHEMA, resultsTableQualifier);
 		if (vocabularyTableQualifier != null)
-			builder.addString("vocabulary_database_schema", vocabularyTableQualifier);
-    builder.addString("target_dialect", source.getSourceDialect());
-    builder.addString("target_table", "cohort");
-    builder.addString("cohort_definition_id", ("" + id));
-    builder.addString("source_id", ("" + source.getSourceId()));
-    builder.addString("generate_stats", Boolean.TRUE.toString());
+			builder.addString(Constants.Params.VOCABULARY_DATABASE_SCHEMA, vocabularyTableQualifier);
+    builder.addString(Constants.Params.TARGET_DIALECT, source.getSourceDialect());
+    builder.addString(Constants.Params.TARGET_TABLE, "cohort");
+    builder.addString(Constants.Params.COHORT_DEFINITION_ID, ("" + id));
+    builder.addString(Constants.Params.SOURCE_ID, ("" + source.getSourceId()));
+    builder.addString(Constants.Params.GENERATE_STATS, Boolean.TRUE.toString());
 
     final JobParameters jobParameters = builder.toJobParameters();
 
@@ -489,7 +482,7 @@ public class CohortDefinitionService extends AbstractDaoService {
       .tasklet(generateTasklet)
     .build();
 
-		SimpleJobBuilder generateJobBuilder = jobBuilders.get("generateCohort")
+		SimpleJobBuilder generateJobBuilder = jobBuilders.get(Constants.JOB_NAME)
 			.listener(new GenerationJobExecutionListener(cohortDefinitionRepository, this.getTransactionTemplateRequiresNew(), this.getSourceJdbcTemplate(source)))
 			.start(generateCohortStep);
 
@@ -508,6 +501,40 @@ public class CohortDefinitionService extends AbstractDaoService {
 
     JobExecutionResource jobExec = this.jobTemplate.launch(generateCohortJob, jobParameters);
     return jobExec;
+  }
+
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/{id}/cancel/{sourceKey}")
+  public Response cancelGenerateCohort(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey) {
+
+    final Source source = Optional.ofNullable(getSourceRepository().findBySourceKey(sourceKey))
+            .orElseThrow(NotFoundException::new);
+    getTransactionTemplateRequiresNew().execute(status -> {
+      CohortDefinition currentDefinition = cohortDefinitionRepository.findOne(id);
+      if (Objects.nonNull(currentDefinition)) {
+        CohortGenerationInfo info = findBySourceId(currentDefinition.getGenerationInfoList(), source.getSourceId());
+        if (Objects.nonNull(info)) {
+          invalidateExecution(info);
+          cohortDefinitionRepository.save(currentDefinition);
+        }
+      }
+      return null;
+    });
+
+    Set<JobExecution> executions = jobExplorer.findRunningJobExecutions(Constants.JOB_NAME);
+    executions.stream().filter(e -> {
+      JobParameters parameters = e.getJobParameters();
+      return Objects.equals(parameters.getString(Constants.Params.COHORT_DEFINITION_ID), Integer.toString(id))
+              && Objects.equals(parameters.getString(Constants.Params.SOURCE_ID), Integer.toString(source.getSourceId()));
+    }).findFirst()
+            .ifPresent(job -> {
+              try {
+                jobOperator.stop(job.getJobId());
+              } catch (NoSuchJobExecutionException | JobExecutionNotRunningException ignored) {
+              }
+            });
+    return Response.status(Response.Status.OK).build();
   }
 
   /**
@@ -571,8 +598,8 @@ public class CohortDefinitionService extends AbstractDaoService {
 		});
 
 		JobParametersBuilder builder = new JobParametersBuilder();
-		builder.addString("jobName", String.format("Cleanup cohort %d.",id));
-		builder.addString("cohort_definition_id", ("" + id));
+		builder.addString(Constants.Params.JOB_NAME, String.format("Cleanup cohort %d.",id));
+		builder.addString(Constants.Params.COHORT_DEFINITION_ID, ("" + id));
 
 		final JobParameters jobParameters = builder.toJobParameters();
 

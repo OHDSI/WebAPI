@@ -1647,19 +1647,19 @@ public class CohortResultsAnalysisRunner {
 			, "cost_type_concept_id"
 			, "period_type"
 		};
-		Object[] summaryColVals = new Object[]{cohortId
+		Object[] colVals = new Object[]{cohortId
 			, subjectsAnalysisId
 			, subjectWithRecordsAnalysisId
 			, visitStatAnalysisId
 			, losAnalysisId
 			, costAnalysisId
-			, ""
-			, ""
+			, visitConceptId == null ? "" : visitConceptId.toString()
+			, visitTypeConceptId == null ? "" : visitTypeConceptId.toString()
 			, costTypeConceptId == null ? "" : costTypeConceptId.toString()
-			, ""
+			, periodType.toString().toLowerCase()
 		};
 
-		PreparedStatementRenderer summaryPsr =  new PreparedStatementRenderer(source, summarySql, search, replace, reportCols, summaryColVals);
+		PreparedStatementRenderer summaryPsr =  new PreparedStatementRenderer(source, summarySql, search, replace, reportCols, colVals);
 		List<HealthcareVisitUtilizationReport.Summary> summaryRows = jdbcTemplate.query(summaryPsr.getSql(), summaryPsr.getSetter(), (rs,rowNum) -> {
 			HealthcareVisitUtilizationReport.Summary s = new HealthcareVisitUtilizationReport.Summary();
 			s.personsCount = rs.getLong("person_total");
@@ -1684,21 +1684,9 @@ public class CohortResultsAnalysisRunner {
 		
 		report.summary = summaryRows.size() > 0 ? summaryRows.get(0) : new HealthcareVisitUtilizationReport.Summary();
 
-		Object[] dataColVals = new Object[]{cohortId
-			, subjectsAnalysisId
-			, subjectWithRecordsAnalysisId
-			, visitStatAnalysisId
-			, losAnalysisId
-			, costAnalysisId
-			, visitConceptId == null ? "" : visitConceptId.toString()
-			, visitTypeConceptId == null ? "" : visitTypeConceptId.toString()
-			, costTypeConceptId == null ? "" : costTypeConceptId.toString()
-			, periodType.toString().toLowerCase()
-		};
-
 		String dataSql = SqlRender.renderSql(reportSql, new String[] {"is_summary"}, new String[]{"FALSE"});
 		
-		PreparedStatementRenderer dataPsr =  new PreparedStatementRenderer(source, dataSql, search, replace, reportCols, dataColVals);
+		PreparedStatementRenderer dataPsr =  new PreparedStatementRenderer(source, dataSql, search, replace, reportCols, colVals);
 		
 		report.data = jdbcTemplate.query(dataPsr.getSql(), dataPsr.getSetter(), (rs,rowNum) -> {
 			HealthcareVisitUtilizationReport.ReportItem item = new HealthcareVisitUtilizationReport.ReportItem();

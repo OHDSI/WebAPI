@@ -5,6 +5,7 @@ import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisReques
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisRequestStatusDTO;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisRequestTypeDTO;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.DataSourceUnsecuredDTO;
+import com.odysseusinc.arachne.execution_engine_common.util.ConnectionParams;
 import jersey.repackaged.com.google.common.collect.ImmutableMap;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.text.StrSubstitutor;
@@ -31,7 +32,6 @@ import org.ohdsi.webapi.service.HttpClient;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceRepository;
-import org.ohdsi.webapi.util.ConnectionParams;
 import org.ohdsi.webapi.util.DataSourceDTOParser;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.explore.JobExplorer;

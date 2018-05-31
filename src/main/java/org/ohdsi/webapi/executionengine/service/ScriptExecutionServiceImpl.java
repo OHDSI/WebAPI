@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.executionengine.service;
 
+import com.google.common.collect.ImmutableList;
 import com.odysseusinc.arachne.commons.types.DBMSType;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisRequestDTO;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisRequestStatusDTO;
@@ -75,6 +76,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     @Autowired
     private OutputFileRepository outputFileRepository;
 
+    private List<DBMSType> DBMS_REQUIRE_DB = ImmutableList.of(DBMSType.POSTGRESQL, DBMSType.REDSHIFT);
 
     @Autowired
     private SourceRepository sourceRepository;
@@ -261,7 +263,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         ConnectionParams connectionParams = DataSourceDTOParser.parse(source);
 
         String serverName;
-        if (DBMSType.POSTGRESQL.getOhdsiDB().equalsIgnoreCase(source.getSourceDialect())) {
+        if (DBMS_REQUIRE_DB.stream().anyMatch(dbms -> dbms.getOhdsiDB().equalsIgnoreCase(source.getSourceDialect()))) {
             serverName = connectionParams.getServer() + "/" + connectionParams.getSchema();
         } else {
             serverName = connectionParams.getServer();

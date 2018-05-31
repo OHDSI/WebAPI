@@ -8233,7 +8233,7 @@ DROP TABLE #raw_4000;
 {4001 IN (@list_of_analysis_ids)}?{
 	-- 4001 Number of subjects with visits by period_id, by visit_concept_id, by visit_type_concept_id in the 365d prior to first cohort start date
 
-with visit_records (cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id, visit_start_date) as
+with visit_records (cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id, visit_start_date, ancestor) as
 (
 	select distinct c1.cohort_definition_id,
 		c1.subject_id,
@@ -8246,7 +8246,7 @@ with visit_records (cohort_definition_id, subject_id, visit_concept_id, visit_ty
 			and vo1.visit_start_date >= dateadd(d, -365, c1.cohort_start_date) and vo1.visit_start_date < c1.cohort_start_date
 	join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
 )
-select cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id, visit_start_date
+select cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id, visit_start_date, ancestor
 INTO #raw_4001
 FROM visit_records;
 
@@ -9095,7 +9095,7 @@ GROUP BY o.cohort_definition_id, o.stratum_1, o.total, o.min_value, o.max_value,
 {4007 IN (@list_of_analysis_ids)}?{
 	-- 4007 Number of subjects with visits by period_id, by visit_concept_id, by visit_type_concept_id during the cohort period
 
-with visit_records (cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id, visit_start_date) as
+with visit_records (cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id, visit_start_date, ancestor) as
 (
 	select distinct c1.cohort_definition_id,
 		c1.subject_id,
@@ -9108,7 +9108,7 @@ with visit_records (cohort_definition_id, subject_id, visit_concept_id, visit_ty
 		and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date <= c1.cohort_end_date
 	join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
 )
-select cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id, visit_start_date
+select cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id, visit_start_date, ancestor
 INTO #raw_4007
 FROM visit_records;
 
@@ -11502,7 +11502,7 @@ where cost >= 0
 
 create index ix_rc_visit_date on #raw_cost_4021 (visit_start_date);
 
-select cohort_definition_id, subject_id, hp.period_id, visit_occurrence_id,visit_concept_id, visit_type_concept_id, cost_concept_id, cost_type_concept_id, cost
+select cohort_definition_id, subject_id, hp.period_id, visit_occurrence_id,visit_concept_id, visit_type_concept_id, cost_concept_id, cost_type_concept_id, cost, ancestor
 into #raw_period_4021
 from #raw_cost_4021
 join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date

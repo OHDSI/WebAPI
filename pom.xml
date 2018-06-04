@@ -82,7 +82,7 @@
     <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
     <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
 
-    <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.users where email = ?</security.db.datasource.authenticationQuery>
+    <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.users where lower(email) = lower(?)</security.db.datasource.authenticationQuery>
     <use.single.connect.datasource.for.testing>true</use.single.connect.datasource.for.testing>
 
     <security.cors.enabled>true</security.cors.enabled>
@@ -632,7 +632,7 @@
         <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
         <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
         <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.user where \
-          login = ?</security.db.datasource.authenticationQuery>
+          lower(email) = lower(?)</security.db.datasource.authenticationQuery>
       </properties>
       <dependencies>
         <dependency>
@@ -666,7 +666,7 @@
         <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
         <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
         <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.users_data where \
-          email = ?</security.db.datasource.authenticationQuery>
+          lower(email) = lower(?)</security.db.datasource.authenticationQuery>
       </properties>
     </profile>
     <profile>
@@ -692,7 +692,7 @@
         <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
         <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
         <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.user where \
-          login = ?</security.db.datasource.authenticationQuery>
+          lower(email) = lower(?)</security.db.datasource.authenticationQuery>
       </properties>
     </profile>
     <profile>

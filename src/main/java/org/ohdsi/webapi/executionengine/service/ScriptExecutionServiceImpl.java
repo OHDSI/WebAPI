@@ -6,6 +6,7 @@ import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisReques
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisRequestTypeDTO;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.DataSourceUnsecuredDTO;
 import com.odysseusinc.arachne.execution_engine_common.util.ConnectionParams;
+import jersey.repackaged.com.google.common.collect.ImmutableList;
 import jersey.repackaged.com.google.common.collect.ImmutableMap;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.text.StrSubstitutor;
@@ -75,6 +76,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     @Autowired
     private OutputFileRepository outputFileRepository;
 
+    private List<DBMSType> DBMS_REQUIRE_DB = ImmutableList.of(DBMSType.POSTGRESQL, DBMSType.REDSHIFT);
 
     @Autowired
     private SourceRepository sourceRepository;
@@ -261,7 +263,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         ConnectionParams connectionParams = DataSourceDTOParser.parse(source);
 
         String serverName;
-        if (DBMSType.POSTGRESQL.getOhdsiDB().equalsIgnoreCase(source.getSourceDialect())) {
+        if (DBMS_REQUIRE_DB.stream().anyMatch(dbms -> dbms.getOhdsiDB().equalsIgnoreCase(source.getSourceDialect()))) {
             serverName = connectionParams.getServer() + "/" + connectionParams.getSchema();
         } else {
             serverName = connectionParams.getServer();

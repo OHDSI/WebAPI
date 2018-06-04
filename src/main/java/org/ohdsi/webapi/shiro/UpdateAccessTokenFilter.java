@@ -64,6 +64,10 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
       throw new Exception("Unknown type of principal");
     }
 
+    if (login != null) {
+      login = login.toLowerCase();
+    }
+
     // stop session to make logout of OAuth users possible
     Session session = SecurityUtils.getSubject().getSession(false);
     if (session != null) {

@@ -75,7 +75,6 @@
     <security.ad.principalSuffix>@example.org</security.ad.principalSuffix>
     <security.ad.system.username></security.ad.system.username>
     <security.ad.system.password></security.ad.system.password>
-    <security.ad.groupRolesMapFile></security.ad.groupRolesMapFile>
     <security.ad.searchFilter></security.ad.searchFilter>
 
     <security.db.datasource.schema>${datasource.ohdsi.schema}</security.db.datasource.schema>

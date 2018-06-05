@@ -4,9 +4,7 @@ import io.buji.pac4j.filter.CallbackFilter;
 import io.buji.pac4j.filter.SecurityFilter;
 import io.buji.pac4j.realm.Pac4jRealm;
 
-import java.io.*;
 import java.util.*;
-import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.naming.Context;
 import javax.servlet.Filter;
@@ -16,7 +14,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.sql.DataSource;
 import javax.ws.rs.HttpMethod;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -50,7 +47,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ldap.core.AuthenticationSource;
 import org.springframework.ldap.core.LdapTemplate;
-import org.springframework.ldap.core.support.DirContextAuthenticationStrategy;
 import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.ldap.core.support.SimpleDirContextAuthenticationStrategy;
 import waffle.shiro.negotiate.NegotiateAuthenticationFilter;
@@ -132,9 +128,6 @@ public class AtlasSecurity extends Security {
 
   @Value("${security.ad.system.password}")
   private String adSystemPassword;
-
-  @Value("${security.ad.groupRolesMapFile}")
-  private String adGroupRolesMapFile;
 
   @Value("${security.ad.searchFilter}")
   private String adSearchFilter;
@@ -417,10 +410,6 @@ public class AtlasSecurity extends Security {
     realm.setPrincipalSuffix(adPrincipalSuffix);
     realm.setSystemUsername(adSystemUsername);
     realm.setSystemPassword(adSystemPassword);
-    try {
-      realm.setGroupRolesMap(getGroupRolesMap());
-    } catch (IOException ignored) {
-    }
     return realm;
   }
 
@@ -446,20 +435,6 @@ public class AtlasSecurity extends Security {
         }
       });
       return new LdapTemplate(contextSource);
-    }
-    return null;
-  }
-
-  private Map<String, String> getGroupRolesMap() throws IOException {
-    if (StringUtils.isNotBlank(adGroupRolesMapFile)) {
-      File file = new File(adGroupRolesMapFile);
-      List<String> lines;
-      try(final Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)))) {
-        lines = IOUtils.readLines(reader);
-        return lines.stream().map(s -> s.split(":"))
-                .filter(s -> s.length == 2)
-                .collect(Collectors.toMap(k -> k[0], v -> v[1]));
-      }
     }
     return null;
   }

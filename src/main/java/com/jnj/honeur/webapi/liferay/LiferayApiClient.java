@@ -225,7 +225,7 @@ public class LiferayApiClient extends RestTemplate {
     }
 
     public List<Organization> getOrganizations() {
-        String endpoint = "/organization/get-organizations/company-id/20116/parent-organization-id/-1";
+        String endpoint = "/organization/get-organizations/company-id/" + COMPANY_ID + "/parent-organization-id/-1";
         List<Organization> organizations = new ArrayList<>();
         try {
             organizations = Arrays.asList(restTemplate.exchange(LIFERAY_WEB_API + endpoint,

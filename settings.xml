@@ -38,7 +38,7 @@
                 <security.cas.login.url>${CAS_SERVER_LOGIN_URL}</security.cas.login.url>
                 <security.oauth.callback.ui>${ATLAS_WELCOME_URL}</security.oauth.callback.ui>
                 <security.oauth.callback.api>${ATLAS_WEBAPI_CALLBACK_URL}</security.oauth.callback.api>
-                <security.ssl.enabled>false</security.ssl.enabled>
+                <security.ssl.enabled>true</security.ssl.enabled>
                 <war.directory>target</war.directory>
             </properties>
         </profile>

@@ -8,6 +8,8 @@ import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.ohdsi.webapi.helper.Guard;
 import org.ohdsi.webapi.shiro.Entities.*;
 import org.ohdsi.webapi.shiro.PermissionManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +18,8 @@ import java.util.stream.Collectors;
 
 @Transactional
 public class LiferayPermissionManager extends PermissionManager {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(LiferayPermissionManager.class);
 
     @Autowired
     private LiferayApiClient liferayApiClient;
@@ -91,7 +95,14 @@ public class LiferayPermissionManager extends PermissionManager {
     public UserEntity registerUser(final String login, final Set<String> defaultRoles) throws Exception {
         Guard.checkNotEmpty(login);
 
+        LOGGER.info("registerUser: " + login);
+
         UserEntity user = liferayApiClient.findUserByLogin(login);
+
+        if(user == null) {
+            LOGGER.warn(String.format("No user with login %s found in Liferay!", login));
+            return null;
+        }
 
         Set<UserRoleEntity> userRoleEntities = getUserRoleEntities(user);
 

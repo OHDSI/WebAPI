@@ -66,7 +66,7 @@ public class LiferayPermissionManager extends PermissionManager {
         final UserEntity userEntity = liferayApiClient.findUserByLogin(login);
 
         if(userEntity == null) {
-            throw new UnknownAccountException("Account does not exist");
+            throw new UnknownAccountException(String.format("Account %s does not exist in Liferay", login));
         }
 
         Set<UserRoleEntity> userRoleEntities = getUserRoleEntities(userEntity);
@@ -123,23 +123,27 @@ public class LiferayPermissionManager extends PermissionManager {
         return null;
     }
 
-    private UserEntity getUserById(Long userId) throws Exception {
+    private UserEntity getUserById(Long userId) {
         UserEntity user = liferayApiClient.findUserById(userId);
-        if (user == null)
-            throw new Exception("User doesn't exist");
+        if (user == null) {
+            String errorMessage = String.format("No user with id %s found in Liferay!", userId);
+            LOGGER.error(errorMessage);
+            throw new RuntimeException(errorMessage);
+        }
 
         return user;
     }
 
-    private UserEntity getUserByLogin(final String login) throws Exception {
+    private UserEntity getUserByLogin(final String login) {
         final UserEntity user = liferayApiClient.findUserByLogin(login);
+        if (user == null) {
+            String errorMessage = String.format("No user with login %s found in Liferay!", login);
+            LOGGER.error(errorMessage);
+            throw new RuntimeException(errorMessage);
+        }
 
         Set<UserRoleEntity> userRoleEntities = getUserRoleEntities(user);
-
         user.setUserRoles(userRoleEntities);
-
-        if (user == null)
-            throw new Exception("User doesn't exist");
 
         return user;
     }
@@ -179,12 +183,12 @@ public class LiferayPermissionManager extends PermissionManager {
     }
 
     @Override
-    public void removeUserFromRole(String roleName, String login) throws Exception {
+    public void removeUserFromRole(String roleName, String login) {
         Guard.checkNotEmpty(roleName);
         Guard.checkNotEmpty(login);
 
         if (roleName.equalsIgnoreCase(login))
-            throw new Exception("Can't remove user from personal role");
+            throw new RuntimeException("Can't remove user from personal role");
 
         RoleEntity role = this.getRoleByName(roleName);
         UserEntity user = this.getUserByLogin(login);
@@ -194,11 +198,7 @@ public class LiferayPermissionManager extends PermissionManager {
 
     @Override
     public void removeUser(Long userId, Long roleId) {
-        try {
-            removeUserFromRole(roleRepository.findById(roleId).getName(), this.liferayApiClient.findUserById(userId).getLogin());
-        } catch (Exception e){
-
-        }
+        removeUserFromRole(roleRepository.findById(roleId).getName(), this.liferayApiClient.findUserById(userId).getLogin());
     }
 
     public RoleEntity addOrganizationRole(String name) {
@@ -265,10 +265,10 @@ public class LiferayPermissionManager extends PermissionManager {
     }
 
 
-    private RoleEntity getRoleByName(String roleName) throws Exception {
+    private RoleEntity getRoleByName(String roleName) {
         final RoleEntity roleEntity = this.roleRepository.findByName(roleName);
         if (roleEntity == null)
-            throw new Exception("Role doesn't exist");
+            throw new RuntimeException(String.format("Role %s doesn't exist", roleName));
 
         return roleEntity;
     }

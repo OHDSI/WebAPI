@@ -210,14 +210,18 @@ public class LiferayPermissionManager extends PermissionManager {
 //    }
 
     private Set<RoleEntity> getUserRoles(UserEntity user) {
-        Set<String> rolNames = this.liferayApiClient.getRoleNamesOfUser(user);
+        if(user == null) {
+            return Collections.emptySet();
+        }
+
+        Set<String> roleNames = this.liferayApiClient.getRoleNamesOfUser(user);
         Set<RoleEntity> roles = new LinkedHashSet<>();
 
         List<String> organizationNames = this.liferayApiClient.getOrganizations()
                 .stream()
                 .map(Organization::getName).collect(Collectors.toList());
 
-        for(String role: rolNames){
+        for(String role: roleNames){
             if (role.startsWith("Atlas ") || organizationNames.contains(role)) {
                 if (role.startsWith("Atlas ")) {
                     role = role.substring(6, role.length());
@@ -229,7 +233,10 @@ public class LiferayPermissionManager extends PermissionManager {
             }
         }
 
-        roles.add(roleRepository.findByName(user.getLogin()));
+        RoleEntity personalRole = roleRepository.findByName(user.getLogin());
+        if(personalRole != null) {
+            roles.add(personalRole);
+        }
 
         return roles;
     }

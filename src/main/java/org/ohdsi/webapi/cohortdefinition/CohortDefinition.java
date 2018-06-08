@@ -88,6 +88,9 @@ public class CohortDefinition implements Serializable{
   @JoinColumn(name = "previous_version", referencedColumnName = "uuid")
   private CohortDefinition previousVersion;
 
+  @Column(name = "group_key")
+  private UUID groupKey;
+
   public Integer getId() {
     return id;
   }
@@ -192,6 +195,15 @@ public class CohortDefinition implements Serializable{
 
   public CohortDefinition setPreviousVersion(CohortDefinition previousVersion) {
     this.previousVersion = previousVersion;
+    return this;
+  }
+
+  public UUID getGroupKey() {
+    return groupKey;
+  }
+
+  public CohortDefinition setGroupKey(UUID groupKey) {
+    this.groupKey = groupKey;
     return this;
   }
 }

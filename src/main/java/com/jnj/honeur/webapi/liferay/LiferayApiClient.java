@@ -184,6 +184,7 @@ public class LiferayApiClient extends RestTemplate {
                 roleNames.add(roleResponse.path("name").asText());
             }
 
+            //TODO: Not yet working
             List<String> groups = getUserGroupIdsOfUser(user);
             for (String group: groups) {
                 String getGroupRoleEndpoint = "/role/get-group-roles/group-id/"+group;

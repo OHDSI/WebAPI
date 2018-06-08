@@ -26,6 +26,7 @@ import com.jnj.honeur.webapi.source.SourceDaimonContext;
 import org.ohdsi.webapi.cohort.CohortEntity;
 import org.ohdsi.webapi.cohort.CohortRepository;
 import org.ohdsi.webapi.cohortdefinition.*;
+import org.ohdsi.webapi.model.Cohort;
 import org.ohdsi.webapi.service.CohortDefinitionService;
 import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
@@ -69,7 +70,7 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
 
 
   /**
-   * Returns all cohort definitions in the cohort schema without uuid
+   * Returns all most recent cohort definitions in the cohort schema, the ones who are not a previous version to another.
    *
    * @return List of cohort_definition
    */
@@ -77,10 +78,17 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
   public List<CohortDefinitionListItem> getCohortDefinitionList() {
     ArrayList<CohortDefinitionListItem> result = new ArrayList<>();
     Iterable<CohortDefinition> defs = cohortDefinitionRepository.findAll();
-    for (CohortDefinition d : defs) {
-      if(d.getUuid() != null){
-        continue;
-      }
+
+    List<UUID> previousVersions = StreamSupport.stream(defs.spliterator(), false)
+            .filter(cohortDefinition -> cohortDefinition.getUuid() != null)
+            .map(CohortDefinition::getUuid)
+            .collect(Collectors.toList());
+
+    List<CohortDefinition> filteredDefs = StreamSupport.stream(defs.spliterator(), false)
+            .filter(cohortDefinition -> !previousVersions.contains(cohortDefinition.getUuid()))
+            .collect(Collectors.toList());
+
+    for (CohortDefinition d : filteredDefs) {
       CohortDefinitionDTO item = new CohortDefinitionDTO();
       item.id = d.getId();
       item.name = d.getName();
@@ -90,6 +98,7 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
       item.createdDate = d.getCreatedDate();
       item.modifiedBy = d.getModifiedBy();
       item.modifiedDate = d.getModifiedDate();
+
       result.add(item);
     }
     return result;
@@ -114,7 +123,8 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
             .setCreatedDate(currentTime)
             .setExpressionType(def.expressionType)
             .setPreviousVersion(def.previousVersion == null ? null : cohortDefinitionRepository.findByUuid(def.previousVersion))
-            .setUuid(def.uuid);
+            .setUuid(def.uuid)
+            .setGroupKey(def.groupKey);
 
     newDef = this.cohortDefinitionRepository.save(newDef);
 
@@ -137,7 +147,7 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
    * @return The CohortDefinition
    */
   @Override
-  public CohortDefinitionDTO saveCohortDefinition(@PathParam("id") final int id, CohortDefinitionDTO def) {
+  public CohortDefinitionDTO saveCohortDefinition(final int id, CohortDefinitionDTO def) {
     Date currentTime = Calendar.getInstance().getTime();
 
     CohortDefinition currentDefinition = this.cohortDefinitionRepository.findOneWithDetail(id);

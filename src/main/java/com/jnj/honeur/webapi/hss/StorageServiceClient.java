@@ -29,8 +29,10 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 @Component
 public class StorageServiceClient extends RestTemplate {
@@ -63,10 +65,10 @@ public class StorageServiceClient extends RestTemplate {
         restTemplate = new RestTemplate(requestFactory);
     }
 
-    public void saveResults(File results, String uuid) {
+    public void saveResults(final String token, File results, String uuid) {
         String endpoint = "/cohort-results/" + uuid;
         try {
-            HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = createHttpEntity(results);
+            HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = createHttpEntity(token, results);
 
             restTemplate.exchange(STORAGE_SERVICE_API + endpoint,
                     HttpMethod.POST, requestEntity, String.class).getBody();
@@ -75,10 +77,10 @@ public class StorageServiceClient extends RestTemplate {
         }
     }
 
-    public String saveCohort(File results) {
-        String endpoint = "/cohort-definitions";
+    public String saveCohort(final String token, File results, final UUID groupKey) {
+        String endpoint = "/cohort-definitions/"+groupKey;
         try {
-            HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = createHttpEntity(results);
+            HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = createHttpEntity(token, results);
 
             return restTemplate.exchange(STORAGE_SERVICE_API + endpoint,
                     HttpMethod.POST, requestEntity, StorageInformationItem.class).getHeaders()
@@ -89,36 +91,46 @@ public class StorageServiceClient extends RestTemplate {
         }
     }
 
-    private HttpEntity<LinkedMultiValueMap<String, Object>> createHttpEntity(File file) {
+    private HttpEntity<LinkedMultiValueMap<String, Object>> createHttpEntity(String token, File file) {
 
         LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
         map.add("file", new FileSystemResource(file.getAbsolutePath()));
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+        headers.set("token", token.replace("Bearer ", ""));
 
         return new HttpEntity<>(map, headers);
     }
 
-    public List<StorageInformationItem> getCohortDefinitionImportList() {
-        String endpoint = "/cohort-definitions?reverseOrder=true";
-        return Arrays.asList(restTemplate.getForEntity(STORAGE_SERVICE_API + endpoint, StorageInformationItem[].class).getBody());
+    public List<CohortDefinitionStorageInformationItem> getCohortDefinitionImportList(final String token) {
+        String endpoint = "/cohort-definitions";
+
+        return Arrays.asList(restTemplate.exchange(STORAGE_SERVICE_API + endpoint, HttpMethod.GET,
+                getTokenHeader(token), CohortDefinitionStorageInformationItem[].class).getBody());
     }
 
-    public String getCohortDefinition(String uuid) {
+    public String getCohortDefinition(final String token, String uuid) {
         String endpoint = "/cohort-definitions/" + uuid;
-        return restTemplate.getForEntity(STORAGE_SERVICE_API + endpoint, JsonNode.class).getBody().asText();
+        return restTemplate.exchange(STORAGE_SERVICE_API + endpoint, HttpMethod.GET, getTokenHeader(token), JsonNode.class).getBody().asText();
     }
 
-    public List<StorageInformationItem> getCohortDefinitionResultsImportList(String uuid) {
+    public List<StorageInformationItem> getCohortDefinitionResultsImportList(final String token, UUID uuid) {
         String endpoint = "/cohort-results/"+uuid+"?reverseOrder=true";
-        return Arrays.asList(restTemplate.getForEntity(STORAGE_SERVICE_API + endpoint, StorageInformationItem[].class).getBody());
+        return Arrays.asList(restTemplate.exchange(STORAGE_SERVICE_API + endpoint, HttpMethod.GET, getTokenHeader(token), StorageInformationItem[].class).getBody());
     }
 
-    public CohortGenerationResults getCohortGenerationResults(String definitionUuid, String resultsUuid) throws IOException {
+    public CohortGenerationResults getCohortGenerationResults(final String token, String definitionUuid, String resultsUuid) throws IOException {
         String endpoint = "/cohort-results/"+definitionUuid+"/"+resultsUuid;
-        String response = restTemplate.getForEntity(STORAGE_SERVICE_API + endpoint, String.class).getBody();
+        String response = restTemplate.exchange(STORAGE_SERVICE_API + endpoint, HttpMethod.GET, getTokenHeader(token), String.class).getBody();
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(response, CohortGenerationResults.class);
+    }
+
+    private HttpEntity getTokenHeader(final String token){
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("token", token.replace("Bearer ", ""));
+
+        return new HttpEntity(headers);
     }
 
 

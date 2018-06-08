@@ -262,7 +262,7 @@ public class PermissionManager {
 
     PermissionEntity permission = this.permissionRepository.findByValueIgnoreCase(permissionName);
     if (permission != null) {
-      throw new Exception("Can't create permission - it already exists");
+      throw new Exception(String.format("Can't create permission %s - it already exists", permissionName));
     }
 
     permission = new PermissionEntity();

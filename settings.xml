@@ -53,7 +53,7 @@
                 <datasource.liferay.url>http://localhost:8080</datasource.liferay.url>
                 <datasource.liferay.user>sander.bylemans@continuum.be</datasource.liferay.user>
                 <datasource.liferay.password>test</datasource.liferay.password>
-                <datasource.hss.url>https://localhost:8445</datasource.hss.url>
+                <datasource.hss.url>https://localhost:8445/api</datasource.hss.url>
                 <security.cas.login.url>https://localhost:8443/cas/login</security.cas.login.url>
                 <security.oauth.callback.ui>https://localhost:${server.port}/atlas/#/welcome</security.oauth.callback.ui>
                 <security.oauth.callback.api>https://localhost:${server.port}/WebAPI/user/oauth/callback</security.oauth.callback.api>

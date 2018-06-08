@@ -502,6 +502,16 @@
       <version>2.2.1</version>
     </dependency>
     <dependency>
+      <groupId>org.pac4j</groupId>
+      <artifactId>pac4j-http</artifactId>
+      <version>2.2.1</version>
+    </dependency>
+    <!--<dependency>-->
+      <!--<groupId>org.pac4j</groupId>-->
+      <!--<artifactId>pac4j-jwt</artifactId>-->
+      <!--<version>3.0.0</version>-->
+    <!--</dependency>-->
+    <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>circe</artifactId>
       <version>1.4.0</version>
@@ -533,6 +543,11 @@
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.jnj.honeur</groupId>
+      <artifactId>security</artifactId>
+      <version>1.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
   <profiles>

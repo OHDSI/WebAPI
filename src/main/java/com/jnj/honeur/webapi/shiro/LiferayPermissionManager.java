@@ -62,7 +62,7 @@ public class LiferayPermissionManager extends PermissionManager {
         final UserEntity userEntity = liferayApiClient.findUserByLogin(login);
 
         if(userEntity == null) {
-            throw new UnknownAccountException("Account does not exist");
+            throw new UnknownAccountException("No user for login: " + login);
         }
 
         Set<UserRoleEntity> userRoleEntities = getUserRoleEntities(userEntity);

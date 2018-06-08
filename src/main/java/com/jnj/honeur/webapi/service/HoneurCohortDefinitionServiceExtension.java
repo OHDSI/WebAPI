@@ -13,6 +13,7 @@ import com.jnj.honeur.webapi.cohortinclusionstats.CohortInclusionStatsEntity;
 import com.jnj.honeur.webapi.cohortinclusionstats.CohortInclusionStatsRepository;
 import com.jnj.honeur.webapi.cohortsummarystats.CohortSummaryStatsEntity;
 import com.jnj.honeur.webapi.cohortsummarystats.CohortSummaryStatsRepository;
+import com.jnj.honeur.webapi.hss.CohortDefinitionStorageInformationItem;
 import com.jnj.honeur.webapi.hss.StorageInformationItem;
 import com.jnj.honeur.webapi.hss.StorageServiceClient;
 import com.jnj.honeur.webapi.liferay.LiferayApiClient;
@@ -38,6 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import javax.annotation.PostConstruct;
@@ -114,8 +116,8 @@ public class HoneurCohortDefinitionServiceExtension {
     @GET
     @Path("/hss/list/all")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<StorageInformationItem> getCohortDefinitionImportList() {
-        return storageServiceClient.getCohortDefinitionImportList();
+    public List<CohortDefinitionStorageInformationItem> getCohortDefinitionImportList(@HeaderParam("Authorization") String token) {
+        return storageServiceClient.getCohortDefinitionImportList(token);
     }
 
     /**
@@ -127,11 +129,11 @@ public class HoneurCohortDefinitionServiceExtension {
     @GET
     @Path("/hss/list/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<StorageInformationItem> getCohortDefinitionResultsImportList(@PathParam("id") final int id) {
-        if (cohortDefinitionRepository.findOne(id) == null) {
-            throw new IllegalArgumentException(String.format("Definition with ID=%s does not exist!", id));
+    public List<StorageInformationItem> getCohortDefinitionResultsImportList(@HeaderParam("Authorization") String token, @PathParam("id") final int id) {
+        if (cohortDefinitionRepository.findOne(id) == null || cohortDefinitionRepository.findOne(id).getUuid() == null) {
+            throw new IllegalArgumentException(String.format("Definition with ID=%s does not exist or is not yet shared!", id));
         }
-        return storageServiceClient.getCohortDefinitionResultsImportList(cohortDefinitionRepository.findOne(id).getUuid().toString());
+        return storageServiceClient.getCohortDefinitionResultsImportList(token, cohortDefinitionRepository.findOne(id).getUuid());
     }
 
     /**
@@ -145,8 +147,8 @@ public class HoneurCohortDefinitionServiceExtension {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional
-    public CohortDefinitionService.CohortDefinitionDTO createCohortDefinitionFromFile(final StorageInformationItem storageInformationItem) {
-        String expression = storageServiceClient.getCohortDefinition(storageInformationItem.getUuid());
+    public CohortDefinitionService.CohortDefinitionDTO createCohortDefinitionFromFile(@HeaderParam("Authorization") String token, final StorageInformationItem storageInformationItem) {
+        String expression = storageServiceClient.getCohortDefinition(token, storageInformationItem.getUuid());
 
         CohortDefinitionService.CohortDefinitionDTO def = new CohortDefinitionService.CohortDefinitionDTO();
         def.expression = expression;
@@ -170,8 +172,8 @@ public class HoneurCohortDefinitionServiceExtension {
     @Path("/hss/{id}/select/{sourceKey}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public CohortGenerationResults createCohortDefinitionResultsFromFile(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey, final StorageInformationItem storageInformationItem) throws Exception {
-        CohortGenerationResults results = storageServiceClient.getCohortGenerationResults(
+    public CohortGenerationResults createCohortDefinitionResultsFromFile(@HeaderParam("Authorization") String token, @PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey, final StorageInformationItem storageInformationItem) throws Exception {
+        CohortGenerationResults results = storageServiceClient.getCohortGenerationResults(token,
                 cohortDefinitionRepository.findOne(id).getUuid().toString(), storageInformationItem.getUuid());
         return importCohortResults(id, sourceKey, results);
     }
@@ -187,7 +189,7 @@ public class HoneurCohortDefinitionServiceExtension {
     @GET
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     @Path("/{id}/export/{sourceKey}")
-    public Response exportCohortResults(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey, @QueryParam("toCloud") final boolean toCloud, HttpHeaders headers) {
+    public Response exportCohortResults(@HeaderParam("Authorization") String token, @PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey, @QueryParam("toCloud") final boolean toCloud, HttpHeaders headers) {
         SourceDaimonContextHolder.setCurrentSourceDaimonContext(new SourceDaimonContext(sourceKey, SourceDaimon.DaimonType.Results));
 
         List<CohortEntity> cohorts = cohortRepository.getAllCohortsForId((long) id);
@@ -215,7 +217,7 @@ public class HoneurCohortDefinitionServiceExtension {
         CohortDefinition cohortDefinition = this.cohortDefinitionRepository.findOneWithDetail(id);
 
         if(toCloud && file != null){
-            storageServiceClient.saveResults(file,cohortDefinition.getUuid().toString());
+            storageServiceClient.saveResults(token, file,cohortDefinition.getUuid().toString());
         }
         return getResponse(file);
     }
@@ -223,7 +225,7 @@ public class HoneurCohortDefinitionServiceExtension {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/export")
-    public CohortDefinitionService.CohortDefinitionDTO exportCohortDefinition(@Context HttpServletRequest request, @PathParam("id") final int id, @QueryParam("toCloud") final boolean toCloud) {
+    public CohortDefinitionService.CohortDefinitionDTO exportCohortDefinition(@HeaderParam("Authorization") String token, @Context HttpServletRequest request, @PathParam("id") final int id, @QueryParam("toCloud") final boolean toCloud) {
         CohortDefinition cohortDefinition = this.cohortDefinitionRepository.findOneWithDetail(id);
 
         String expression = cohortDefinition.getDetails().getExpression();
@@ -231,7 +233,14 @@ public class HoneurCohortDefinitionServiceExtension {
         String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
         File file = createFile(cohortDefinition.getName()+"-"+timeStamp+".cohort", expression);
         if(toCloud && file != null){
-            String uuid = storageServiceClient.saveCohort(file);
+            String uuid;
+            if(cohortDefinition.getGroupKey() == null){
+                UUID groupKey = UUID.randomUUID();
+                uuid = storageServiceClient.saveCohort(token, file, groupKey);
+                cohortDefinition.setGroupKey(groupKey);
+            } else {
+                uuid = storageServiceClient.saveCohort(token, file, cohortDefinition.getGroupKey());
+            }
             cohortDefinition.setUuid(UUID.fromString(uuid));
             this.cohortDefinitionRepository.save(cohortDefinition);
         }
@@ -248,6 +257,7 @@ public class HoneurCohortDefinitionServiceExtension {
         newDef.setModifiedBy(cohortDefinition.getModifiedBy());
         newDef.setModifiedDate(cohortDefinition.getModifiedDate());
         newDef.setName(cohortDefinition.getName());
+        newDef.setGroupKey(cohortDefinition.getGroupKey());
 
         CohortDefinitionService.CohortDefinitionDTO  toReturn = this.cohortDefinitionService.cohortDefinitionToDTO(newDef);
         CohortDefinitionService.CohortDefinitionDTO copyDef = this.cohortDefinitionService.createCohortDefinition(toReturn);

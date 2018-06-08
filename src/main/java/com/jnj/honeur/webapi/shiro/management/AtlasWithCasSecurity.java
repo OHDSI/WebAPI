@@ -1,5 +1,8 @@
 package com.jnj.honeur.webapi.shiro.management;
 
+import com.jnj.honeur.webapi.shiro.HoneurInvalidateAccessTokenFilter;
+import com.jnj.honeur.webapi.shiro.HoneurJwtAuthFilter;
+import com.jnj.honeur.webapi.shiro.HoneurUpdateAccessTokenFilter;
 import com.jnj.honeur.webapi.shiro.LiferayPermissionManager;
 import io.buji.pac4j.filter.CallbackFilter;
 import io.buji.pac4j.filter.SecurityFilter;
@@ -166,11 +169,13 @@ public class AtlasWithCasSecurity extends Security {
     this.cohortdefinitionCreatorPermissionTemplates.put("cohortdefinition:%s:export:get", "Export Cohort Definition with ID = %s");
     this.cohortdefinitionCreatorPermissionTemplates.put("cohortdefinition:hss:%s:get", "List Cohort Definition Generation Results in Amazon for Cohort Definition with ID = %s");
     this.cohortdefinitionCreatorPermissionTemplates.put("cohortdefinition:hss:%s:select:*:post", "Import Cohort Definition Generation Results for Cohort Definition with ID = %s");
+    this.cohortdefinitionCreatorPermissionTemplates.put("cohortdefinition:sql:post", "Generate SQL of Cohort Definition");
 
+    this.cohortdefinitionImporterPermissionTemplates.put("cohortdefinition:%s:generate:*:get", "Generate Cohort Definition generation results for defintion with ID = %s");
     this.cohortdefinitionImporterPermissionTemplates.put("cohortdefinition:%s:delete", "Delete Cohort Definition with ID = %s");
     this.cohortdefinitionImporterPermissionTemplates.put("cohortdefinition:%s:get", "View Cohort Definition with ID = %s");
     this.cohortdefinitionImporterPermissionTemplates.put("cohortdefinition:%s:export:*:get", "Export Cohort Definition generation results for defintion with ID = %s");
-    this.cohortdefinitionImporterPermissionTemplates.put("cohortdefinition:%s:generate:*:get", "Generate Cohort Definition generation results for defintion with ID = %s");
+    this.cohortdefinitionImporterPermissionTemplates.put("cohortdefinition:sql:post", "Generate SQL of Cohort Definition");
 
     this.conceptsetCreatorPermissionTemplates.put("conceptset:%s:put", "Update Concept Set with ID = %s");
     this.conceptsetCreatorPermissionTemplates.put("conceptset:%s:items:put", "Update Items of Concept Set with ID = %s");
@@ -305,10 +310,10 @@ public class AtlasWithCasSecurity extends Security {
     filters.put("logout", new LogoutFilter());
     filters.put("noSessionCreation", new NoSessionCreationFilter());
     filters.put("forceSessionCreation", new ForceSessionCreationFilter());
-    filters.put("jwtAuthc", new JwtAuthFilter());
+    filters.put("jwtAuthc", new HoneurJwtAuthFilter());
     filters.put("negotiateAuthc", new NegotiateAuthenticationFilter());
-    filters.put("updateToken", new UpdateAccessTokenFilter(this.authorizer, this.defaultRoles, this.tokenExpirationIntervalInSeconds));
-    filters.put("invalidateToken", new InvalidateAccessTokenFilter());
+    filters.put("updateToken", new HoneurUpdateAccessTokenFilter(this.authorizer, this.defaultRoles, this.tokenExpirationIntervalInSeconds));
+    filters.put("invalidateToken", new HoneurInvalidateAccessTokenFilter());
     filters.put("authz", new UrlBasedAuthorizingFilter());
     filters.put("createPermissionsOnCreateCohortDefinition", this.getCreatePermissionsOnCreateCohortDefinitionFilter());
     filters.put("createPermissionsOnImportCohortDefinition", this.getCreatePermissionsOnImportCohortDefinitionFilter());

@@ -1,0 +1,1 @@
+ALTER TABLE ${ohdsiSchema}.cohort_analysis_gen_info ADD COLUMN progress INT DEFAULT 0;

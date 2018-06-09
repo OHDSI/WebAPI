@@ -288,16 +288,17 @@ public class CohortAnalysisService extends AbstractDaoService {
 			CohortAnalysisGenerationInfo info = cohortDef.getCohortAnalysisGenerationInfoList().stream()
 				.filter(a -> a.getSourceId() == task.getSource().getSourceId())
 				.findFirst()
-				.orElse(null);
-			if (info == null) {
-				info = new CohortAnalysisGenerationInfo();
-				info.setSourceId(task.getSource().getSourceId());
-				info.setCohortDefinition(cohortDef);
-				cohortDef.getCohortAnalysisGenerationInfoList().add(info);
-			}
+				.orElseGet(() -> {
+          CohortAnalysisGenerationInfo genInfo = new CohortAnalysisGenerationInfo();
+          genInfo.setSourceId(task.getSource().getSourceId());
+          genInfo.setCohortDefinition(cohortDef);
+          cohortDef.getCohortAnalysisGenerationInfoList().add(genInfo);
+          return genInfo;
+        });
 			List<Integer> analysisList = task.getAnalysisIds().stream().map(Integer::parseInt).collect(Collectors.toList());
 			info.getAnalysisIds().removeAll(analysisList);
 			info.setLastExecution(Calendar.getInstance().getTime());
+			info.setProgress(0);
 			this.cohortDefinitionRepository.save(cohortDef);
 			return null;
 		});
@@ -308,7 +309,7 @@ public class CohortAnalysisService extends AbstractDaoService {
 		log.info(String.format("Beginning run for cohort analysis task: \n %s", taskString));
 
 		CohortAnalysisTasklet tasklet = new CohortAnalysisTasklet(task, getSourceJdbcTemplate(task.getSource()), 
-				getTransactionTemplate(), this.getSourceDialect(), this.visualizationDataRepository, this.cohortDefinitionRepository);
+				getTransactionTemplate(), getTransactionTemplateRequiresNew(), this.getSourceDialect(), this.visualizationDataRepository, this.cohortDefinitionRepository);
 
 		return this.jobTemplate.launchTasklet("cohortAnalysisJob", "cohortAnalysisStep", tasklet, jobParameters);
 	}

@@ -75,6 +75,7 @@
     <security.ad.principalSuffix>@example.org</security.ad.principalSuffix>
     <security.ad.system.username></security.ad.system.username>
     <security.ad.system.password></security.ad.system.password>
+    <security.ad.searchFilter></security.ad.searchFilter>
 
     <security.db.datasource.schema>${datasource.ohdsi.schema}</security.db.datasource.schema>
     <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
@@ -605,6 +606,11 @@
       <groupId>org.glassfish.jersey.media</groupId>
       <artifactId>jersey-media-multipart</artifactId>
       <version>${jersey-media-multipart.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.ldap</groupId>
+      <artifactId>spring-ldap-core</artifactId>
+      <version>2.3.2.RELEASE</version>
     </dependency>
   </dependencies>
   <profiles>

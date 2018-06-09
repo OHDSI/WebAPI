@@ -3,11 +3,8 @@ package org.ohdsi.webapi.shiro.management;
 import io.buji.pac4j.filter.CallbackFilter;
 import io.buji.pac4j.filter.SecurityFilter;
 import io.buji.pac4j.realm.Pac4jRealm;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
+
+import java.util.*;
 import javax.annotation.PostConstruct;
 import javax.naming.Context;
 import javax.servlet.Filter;
@@ -16,6 +13,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.sql.DataSource;
 import javax.ws.rs.HttpMethod;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,10 +33,6 @@ import org.ohdsi.webapi.shiro.*;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.filters.KerberosAuthFilter;
-import org.ohdsi.webapi.shiro.lockout.DefaultLockoutPolicy;
-import org.ohdsi.webapi.shiro.lockout.ExponentLockoutStrategy;
-import org.ohdsi.webapi.shiro.lockout.LockoutPolicy;
-import org.ohdsi.webapi.shiro.lockout.LockoutStrategy;
 import org.ohdsi.webapi.shiro.realms.KerberosAuthRealm;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
@@ -51,6 +45,10 @@ import org.pac4j.oidc.config.OidcConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.ldap.core.AuthenticationSource;
+import org.springframework.ldap.core.LdapTemplate;
+import org.springframework.ldap.core.support.LdapContextSource;
+import org.springframework.ldap.core.support.SimpleDirContextAuthenticationStrategy;
 import waffle.shiro.negotiate.NegotiateAuthenticationFilter;
 import waffle.shiro.negotiate.NegotiateAuthenticationRealm;
 import waffle.shiro.negotiate.NegotiateAuthenticationStrategy;
@@ -131,6 +129,8 @@ public class AtlasSecurity extends Security {
   @Value("${security.ad.system.password}")
   private String adSystemPassword;
 
+  @Value("${security.ad.searchFilter}")
+  private String adSearchFilter;
 
   @Autowired
   @Qualifier("authDataSource")
@@ -404,13 +404,39 @@ public class AtlasSecurity extends Security {
   }
 
   private ActiveDirectoryRealm activeDirectoryRealm() {
-    ActiveDirectoryRealm realm = new ADRealm();
+    ActiveDirectoryRealm realm = new ADRealm(getLdapTemplate(), adSearchFilter);
     realm.setUrl(adUrl);
     realm.setSearchBase(adSearchBase);
     realm.setPrincipalSuffix(adPrincipalSuffix);
     realm.setSystemUsername(adSystemUsername);
     realm.setSystemPassword(adSystemPassword);
     return realm;
+  }
+
+  private LdapTemplate getLdapTemplate() {
+
+    if (StringUtils.isNotBlank(adSearchFilter)) {
+      LdapContextSource contextSource = new LdapContextSource();
+      contextSource.setUrl(adUrl);
+      contextSource.setBase(adSearchBase);
+      contextSource.setUserDn(adSystemUsername);
+      contextSource.setPassword(adSystemPassword);
+      contextSource.setCacheEnvironmentProperties(false);
+      contextSource.setAuthenticationStrategy(new SimpleDirContextAuthenticationStrategy());
+      contextSource.setAuthenticationSource(new AuthenticationSource() {
+        @Override
+        public String getPrincipal() {
+          return StringUtils.isNotBlank(adPrincipalSuffix) ? adSystemUsername + adPrincipalSuffix : adSystemUsername;
+        }
+
+        @Override
+        public String getCredentials() {
+          return adSystemPassword;
+        }
+      });
+      return new LdapTemplate(contextSource);
+    }
+    return null;
   }
 
   @Override

@@ -48,6 +48,12 @@ public class JobConfig {
     
     @Value("${spring.batch.repository.isolationLevelForCreate}")
     private String isolationLevelForCreate;
+
+    @Value("${spring.batch.taskExecutor.corePoolSize}")
+    private Integer corePoolSize;
+
+    @Value("${spring.batch.taskExecutor.maxPoolSize}")
+    private Integer maxPoolSize;
     
     @Autowired
     private DataSource dataSource;
@@ -60,8 +66,8 @@ public class JobConfig {
     @Bean
     public TaskExecutor taskExecutor() {
         final ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
-        taskExecutor.setCorePoolSize(10);
-        taskExecutor.setMaxPoolSize(20);//TODO
+        taskExecutor.setCorePoolSize(corePoolSize);
+        taskExecutor.setMaxPoolSize(maxPoolSize);
         taskExecutor.afterPropertiesSet();
         return taskExecutor;
     }

@@ -194,6 +194,7 @@ public class JobConfig {
             factory.setIsolationLevelForCreate(JobConfig.this.isolationLevelForCreate);
             factory.setTablePrefix(JobConfig.this.tablePrefix);
             factory.setTransactionManager(getTransactionManager());
+            factory.setValidateTransactionState(false);
             factory.afterPropertiesSet();
             return factory.getObject();
         }

@@ -117,7 +117,9 @@
     <jasypt.encryptor.enabled>false</jasypt.encryptor.enabled>
     <jasypt.encryptor.password></jasypt.encryptor.password>
 		<jasypt.encryptor.algorithm>PBEWithMD5AndDES</jasypt.encryptor.algorithm>
-		
+
+    <spring.batch.taskExecutor.corePoolSize>10</spring.batch.taskExecutor.corePoolSize>
+    <spring.batch.taskExecutor.maxPoolSize>20</spring.batch.taskExecutor.maxPoolSize>
   </properties>
   <build>
     <finalName>WebAPI</finalName>

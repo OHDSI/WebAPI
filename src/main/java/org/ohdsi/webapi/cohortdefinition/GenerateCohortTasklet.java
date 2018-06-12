@@ -116,8 +116,10 @@ public class GenerateCohortTasklet implements StoppableTasklet {
       }
       jdbcTemplate.update(psr.getSql(), psr.getSetter());
 
-      String insertSql = "INSERT INTO @results_schema.cohort_inclusion (cohort_definition_id, rule_sequence, name, description) VALUES (@cohortId,@iteration,CAST(@ruleName AS VARCHAR(255)),@ruleDescription);";
-      String tqName = "results_schema";
+//      String insertSql = "INSERT INTO @results_schema.cohort_inclusion (cohort_definition_id, rule_sequence, name, description)  VALUES (@cohortId,@iteration,'@ruleName','@ruleDescription');";
+      String insertSql = "INSERT INTO @results_schema.cohort_inclusion (cohort_definition_id, rule_sequence, name, description) SELECT @cohortId as cohort_definition_id, @iteration as rule_sequence, CAST('@ruleName' as VARCHAR(255)) as name, CAST('@ruleDescription' as VARCHAR(1000)) as description;";
+
+			String tqName = "results_schema";
       String tqValue = options.resultSchema;
       String[] names = new String[]{"cohortId", "iteration", "ruleName", "ruleDescription"};
       List<InclusionRule> inclusionRules = expression.inclusionRules;

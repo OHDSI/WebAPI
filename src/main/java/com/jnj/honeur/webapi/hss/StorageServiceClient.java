@@ -37,7 +37,7 @@ import java.util.UUID;
 @Component
 public class StorageServiceClient extends RestTemplate {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(LiferayApiClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(StorageServiceClient.class);
 
     private RestTemplate restTemplate;
 

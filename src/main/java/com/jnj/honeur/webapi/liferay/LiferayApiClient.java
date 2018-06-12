@@ -161,6 +161,11 @@ public class LiferayApiClient extends RestTemplate {
         return userRoleEntity;
     }
 
+    /**
+     * Get role names associated with the user. These role names are retrieved from Liferay.
+     * @param user
+     * @return
+     */
     public Set<String> getRoleNamesOfUser(UserEntity user) {
         if(user == null) {
             return Collections.emptySet();
@@ -174,17 +179,9 @@ public class LiferayApiClient extends RestTemplate {
                     JsonNode.class).getBody();
 
             for(JsonNode node: response){
-                String roleId = node.path("roleId").asText();
-                String getRoleEndpoint = "/role/get-role/role-id/"+roleId;
-
-                JsonNode roleResponse = restTemplate.exchange(LIFERAY_WEB_API + getRoleEndpoint,
-                        HttpMethod.GET, new HttpEntity<>(createHeaders()),
-                        JsonNode.class).getBody();
-
-                roleNames.add(roleResponse.path("name").asText());
+                roleNames.add(node.path("name").asText());
             }
 
-            //TODO: Not yet working
             List<String> groups = getUserGroupIdsOfUser(user);
             for (String group: groups) {
                 String getGroupRoleEndpoint = "/role/get-group-roles/group-id/"+group;

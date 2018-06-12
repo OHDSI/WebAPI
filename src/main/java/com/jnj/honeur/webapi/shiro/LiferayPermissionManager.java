@@ -148,13 +148,18 @@ public class LiferayPermissionManager extends PermissionManager {
         return user;
     }
 
-    private RoleEntity addRole(String roleName, boolean addToLiferay) throws Exception {
+    private RoleEntity addRole(String roleName, boolean addToLiferay) {
         return addRole(roleName, addToLiferay, true);
     }
 
-    private RoleEntity addRole(String roleName, boolean addToLiferay, boolean prefix) throws Exception {
-        RoleEntity roleEntity = super.addRole(roleName);
-        if(addToLiferay) {
+    private RoleEntity addRole(String roleName, boolean addToLiferay, boolean prefix) {
+        RoleEntity roleEntity;
+        try {
+            roleEntity = super.addRole(roleName);
+        } catch (Exception e) {
+            roleEntity = this.roleRepository.findByName(roleName);
+        }
+        if(addToLiferay && roleEntity != null) {
             liferayApiClient.addRole(roleEntity, prefix);
         }
         return roleEntity;
@@ -202,11 +207,7 @@ public class LiferayPermissionManager extends PermissionManager {
     }
 
     public RoleEntity addOrganizationRole(String name) {
-        try {
-            return addRole(name, true, false);
-        } catch (Exception e) {
-            return null;
-        }
+        return addRole(name, false, false);
     }
 
     private UserRoleEntity addUser(final UserEntity user, final RoleEntity role, final String status) {

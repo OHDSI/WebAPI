@@ -2,6 +2,7 @@ package com.jnj.honeur.webapi.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import com.jnj.honeur.security.SecurityUtils2;
 import com.jnj.honeur.webapi.SourceDaimonContextHolder;
 import com.jnj.honeur.webapi.cohortdefinition.CohortGenerationInfoRepository;
 import com.jnj.honeur.webapi.cohortdefinition.CohortGenerationResults;
@@ -326,19 +327,21 @@ public class HoneurCohortDefinitionServiceExtension {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/uuids")
-    public List<String> getUUIDSList(){
+    public List<String> getUUIDSList(@HeaderParam("token") String token){
         String permissionPattern = "cohortdefinition:([0-9]+|\\*):get";
-        List<Integer> definitionIds = this.authorizer.getUserPermissions(security.getSubject()).stream()
+        List<Integer> definitionIds = this.authorizer.getUserPermissions(SecurityUtils2.getSubject(token)).stream()
                 .map(PermissionEntity::getValue)
                 .filter(permissionString -> permissionString.matches(permissionPattern))
                 .map(permissionString -> Integer.parseInt(permissionString.split(":")[1]))
                 .collect(Collectors.toList());
 
         List<String> uuids = new ArrayList<>();
-        List<CohortDefinition> cohortDefinitions = cohortDefinitionRepository.findFromList(definitionIds);
-        for (CohortDefinition def: cohortDefinitions){
-            if (def.getUuid() != null) {
-                uuids.add(def.getUuid().toString());
+        if(definitionIds.size() > 0) {
+            List<CohortDefinition> cohortDefinitions = cohortDefinitionRepository.findFromList(definitionIds);
+            for (CohortDefinition def : cohortDefinitions) {
+                if (def.getUuid() != null) {
+                    uuids.add(def.getUuid().toString());
+                }
             }
         }
         return uuids;
@@ -475,9 +478,14 @@ public class HoneurCohortDefinitionServiceExtension {
                 .build();
     }
 
-
-
-
+    /**
+     * Create roles for organizations to which a cohort definition is shared.
+     * Add the appropriate permissions to those created roles.
+     *
+     * @param organizations
+     * @param newDef
+     * @return
+     */
     private List<RoleEntity> createRoleEntities(List<Organization> organizations,
                                                 CohortDefinition newDef) {
         if (organizations == null) {

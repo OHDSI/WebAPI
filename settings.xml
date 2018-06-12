@@ -35,7 +35,7 @@
                 <datasource.liferay.user>${WEBAPI_LIFERAY_USER}</datasource.liferay.user>
                 <datasource.liferay.password>${WEBAPI_LIFERAY_PASSWORD}</datasource.liferay.password>
                 <datasource.hss.url>${STORAGE_SERVER_BASE_URL}/storage</datasource.hss.url>
-                <security.cas.login.url>${REAL_CAS_SERVER_LOGIN_URL}</security.cas.login.url>
+                <security.cas.login.url>${CAS_SERVER_LOGIN_URL}</security.cas.login.url>
                 <security.oauth.callback.ui>${ATLAS_WELCOME_URL}</security.oauth.callback.ui>
                 <security.oauth.callback.api>${ATLAS_WEBAPI_CALLBACK_URL}</security.oauth.callback.api>
                 <security.ssl.enabled>false</security.ssl.enabled> <!-- !!! Enabling this property doesn't work on AWS.  Not a real problem as SSL is already enforced on AWS !!! -->

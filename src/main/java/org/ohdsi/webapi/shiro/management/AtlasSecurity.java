@@ -132,6 +132,9 @@ public class AtlasSecurity extends Security {
   @Value("${security.ad.searchFilter}")
   private String adSearchFilter;
 
+  @Value("${security.ad.ignore.partial.result.exception}")
+  private Boolean adIgnorePartialResultException;
+
   @Autowired
   @Qualifier("authDataSource")
   private DataSource jdbcDataSource;
@@ -434,7 +437,9 @@ public class AtlasSecurity extends Security {
           return adSystemPassword;
         }
       });
-      return new LdapTemplate(contextSource);
+      LdapTemplate ldapTemplate = new LdapTemplate(contextSource);
+      ldapTemplate.setIgnorePartialResultException(adIgnorePartialResultException);
+      return ldapTemplate;
     }
     return null;
   }

@@ -40,6 +40,7 @@
                 <security.oauth.callback.api>${ATLAS_WEBAPI_CALLBACK_URL}</security.oauth.callback.api>
                 <security.ssl.enabled>false</security.ssl.enabled> <!-- !!! Enabling this property doesn't work on AWS.  Not a real problem as SSL is already enforced on AWS !!! -->
                 <war.directory>target</war.directory>
+                <central>true</central>
             </properties>
         </profile>
         <profile>

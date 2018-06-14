@@ -80,7 +80,9 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
     Iterable<CohortDefinition> defs = cohortDefinitionRepository.findAll();
 
     List<UUID> previousVersions = StreamSupport.stream(defs.spliterator(), false)
-            .filter(cohortDefinition -> cohortDefinition.getUuid() != null)
+            .filter(cohortDefinition -> cohortDefinition.getPreviousVersion() != null)
+            .filter(cohortDefinition -> cohortDefinition.getPreviousVersion().getUuid() != null)
+            .map(CohortDefinition::getPreviousVersion)
             .map(CohortDefinition::getUuid)
             .collect(Collectors.toList());
 

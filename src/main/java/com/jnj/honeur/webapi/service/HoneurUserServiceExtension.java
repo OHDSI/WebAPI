@@ -1,7 +1,9 @@
 package com.jnj.honeur.webapi.service;
 
+import com.jnj.honeur.security.SecurityUtils2;
 import com.jnj.honeur.webapi.liferay.LiferayApiClient;
 import com.jnj.honeur.webapi.shiro.LiferayPermissionManager;
+import org.apache.shiro.authz.AuthorizationInfo;
 import org.ohdsi.webapi.service.UserService;
 import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
@@ -14,10 +16,7 @@ import org.springframework.stereotype.Component;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Path("/")
 @Component
@@ -25,7 +24,7 @@ import java.util.Set;
 public class HoneurUserServiceExtension {
 
     @Autowired
-    private LiferayPermissionManager authorizer;
+    private PermissionManager authorizer;
     @Autowired
     private Security security;
 
@@ -41,10 +40,11 @@ public class HoneurUserServiceExtension {
     @Path("user/permission")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Iterable<UserService.Permission> getPermissions() throws Exception{
-        Set<PermissionEntity> permissionEntities = this.authorizer.getUserPermissions(security.getSubject());
-        List<UserService.Permission> permissions = convertPermissions(permissionEntities);
-        return permissions;
+    public Iterable<String> getPermissions(@HeaderParam("Authorization") String token) throws Exception{
+        String login = SecurityUtils2.getSubject(token.replace("Bearer ", ""));
+        AuthorizationInfo authorizationInfo = this.authorizer.getAuthorizationInfo(login);
+        Collection<String> permissionEntities = authorizationInfo.getStringPermissions();
+        return permissionEntities;
     }
 
     private ArrayList<UserService.Permission> convertPermissions(final Iterable<PermissionEntity> permissionEntities) {

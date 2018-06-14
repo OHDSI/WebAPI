@@ -157,6 +157,7 @@ public class LiferayPermissionManager extends PermissionManager {
         try {
             roleEntity = super.addRole(roleName);
         } catch (Exception e) {
+            LOGGER.info(String.format("ERROR CREATING ROLE: %s"+e.getStackTrace()));
             roleEntity = this.roleRepository.findByName(roleName);
         }
         if(addToLiferay && roleEntity != null) {

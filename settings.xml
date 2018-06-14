@@ -7,7 +7,7 @@
                 <datasource.username>ohdsi_app_user</datasource.username>
                 <datasource.dialect>postgresql</datasource.dialect>
                 <datasource.ohdsi.schema>webapi</datasource.ohdsi.schema>
-                <datasource.honeur.enabled>true</datasource.honeur.enabled>
+                <honeur.enabled>true</honeur.enabled>
                 <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
                 <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
                 <flyway.datasource.username>ohdsi_admin_user</flyway.datasource.username>
@@ -31,10 +31,10 @@
                 <datasource.password>${OHDSI_APP_USER}</datasource.password>
                 <flyway.datasource.password>${OHDSI_ADMIN_USER}</flyway.datasource.password>
                 <datasource.url>${OHDSI_DATASOURCE_URL}</datasource.url>
-                <datasource.liferay.url>${LIFERAY_SERVER_BASE_URL}</datasource.liferay.url>
-                <datasource.liferay.user>${WEBAPI_LIFERAY_USER}</datasource.liferay.user>
-                <datasource.liferay.password>${WEBAPI_LIFERAY_PASSWORD}</datasource.liferay.password>
-                <datasource.hss.url>${STORAGE_SERVER_BASE_URL}/api</datasource.hss.url>
+                <liferay.url>${LIFERAY_SERVER_BASE_URL}</liferay.url>
+                <liferay.user>${WEBAPI_LIFERAY_USER}</liferay.user>
+                <liferay.password>${WEBAPI_LIFERAY_PASSWORD}</liferay.password>
+                <hss.url>${STORAGE_SERVER_BASE_URL}/api</hss.url>
                 <security.cas.login.url>${CAS_SERVER_LOGIN_URL}</security.cas.login.url>
                 <security.oauth.callback.ui>${ATLAS_WELCOME_URL}</security.oauth.callback.ui>
                 <security.oauth.callback.api>${ATLAS_WEBAPI_CALLBACK_URL}</security.oauth.callback.api>
@@ -49,10 +49,10 @@
                 <datasource.password>app1</datasource.password>
                 <flyway.datasource.password>admin1</flyway.datasource.password>
                 <datasource.url>jdbc:postgresql://localhost:5432/${datasource.db}</datasource.url>
-                <datasource.liferay.url>http://localhost:8080</datasource.liferay.url>
-                <datasource.liferay.user>sander.bylemans@continuum.be</datasource.liferay.user>
-                <datasource.liferay.password>test</datasource.liferay.password>
-                <datasource.hss.url>https://localhost:8445/api</datasource.hss.url>
+                <liferay.url>http://localhost:8080</liferay.url>
+                <liferay.user>sander.bylemans@continuum.be</liferay.user>
+                <liferay.password>test</liferay.password>
+                <hss.url>https://localhost:8445/api</hss.url>
                 <security.cas.login.url>https://localhost:8443/cas/login</security.cas.login.url>
                 <security.oauth.callback.ui>https://localhost:${server.port}/atlas/#/welcome</security.oauth.callback.ui>
                 <security.oauth.callback.api>https://localhost:${server.port}/WebAPI/user/oauth/callback</security.oauth.callback.api>
@@ -62,7 +62,7 @@
         <profile>
             <id>honeur-central</id>
             <properties>
-                <remote>false</remote>
+                <central>true</central>
                 <war.directory>target</war.directory>
                 <datasource.db>OHDSI</datasource.db>
                 <honeur.port>8444</honeur.port>
@@ -71,7 +71,7 @@
         <profile>
             <id>honeur-local</id>
             <properties>
-                <remote>true</remote>
+                <central>false</central>
                 <war.directory>target-local</war.directory>
                 <datasource.db>OHDSI-local</datasource.db>
                 <honeur.port>8844</honeur.port>

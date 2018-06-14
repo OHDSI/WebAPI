@@ -3,7 +3,6 @@ package com.jnj.honeur.webapi.shiro.management;
 import com.jnj.honeur.webapi.shiro.HoneurInvalidateAccessTokenFilter;
 import com.jnj.honeur.webapi.shiro.HoneurJwtAuthFilter;
 import com.jnj.honeur.webapi.shiro.HoneurUpdateAccessTokenFilter;
-import com.jnj.honeur.webapi.shiro.LiferayPermissionManager;
 import io.buji.pac4j.filter.CallbackFilter;
 import io.buji.pac4j.filter.SecurityFilter;
 import io.buji.pac4j.realm.Pac4jRealm;
@@ -23,7 +22,6 @@ import org.apache.shiro.web.servlet.AdviceFilter;
 import org.apache.shiro.web.util.WebUtils;
 import org.ohdsi.webapi.OidcConfCreator;
 import org.ohdsi.webapi.shiro.*;
-import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.filters.KerberosAuthFilter;
 import org.ohdsi.webapi.shiro.management.Security;
@@ -142,6 +140,9 @@ public class AtlasWithCasSecurity extends Security {
   @Value("${security.cas.login.url}")
   private String casLoginUrl;
 
+  @Value("${webapi.central}")
+  private boolean central;
+
 
   @Autowired
   @Qualifier("authDataSource")
@@ -175,6 +176,7 @@ public class AtlasWithCasSecurity extends Security {
     this.cohortdefinitionImporterPermissionTemplates.put("cohortdefinition:%s:delete", "Delete Cohort Definition with ID = %s");
     this.cohortdefinitionImporterPermissionTemplates.put("cohortdefinition:%s:get", "View Cohort Definition with ID = %s");
     this.cohortdefinitionImporterPermissionTemplates.put("cohortdefinition:%s:export:*:get", "Export Cohort Definition generation results for defintion with ID = %s");
+    this.cohortdefinitionImporterPermissionTemplates.put("cohortdefinition:%s:info:get", "Get Cohort Definition Info for cohort definition with ID = %s");
     this.cohortdefinitionImporterPermissionTemplates.put("cohortdefinition:sql:post", "Generate SQL of Cohort Definition");
 
     this.conceptsetCreatorPermissionTemplates.put("conceptset:%s:put", "Update Concept Set with ID = %s");
@@ -200,6 +202,13 @@ public class AtlasWithCasSecurity extends Security {
     this.plpPermissionTemplate.put("plp:%s:delete", "Delete Population Level Prediction with ID=%s");
     this.plpPermissionTemplate.put("plp:%s:get", "Read Population Level Prediction with ID=%s");
     this.plpPermissionTemplate.put("plp:%s:copy:get", "Copy Population Level Prediction with ID=%s");
+  }
+
+  @PostConstruct
+  private void addHoneurLocalRoleIfRemote(){
+    if(!central){
+      this.defaultRoles.add("HONEUR-local");
+    }
   }
 
   @Override

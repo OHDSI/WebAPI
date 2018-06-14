@@ -69,14 +69,14 @@ public class HoneurCohortDefinitionServiceExtension {
     @Autowired
     private Security security;
 
-    @Autowired
+    @Autowired(required = false)
     private LiferayPermissionManager authorizer;
 
     @Autowired
     private CohortDefinitionRepository cohortDefinitionRepository;
 
 
-    @Autowired
+    @Autowired(required = false)
     private LiferayApiClient liferayApiClient;
 
     @Autowired
@@ -523,6 +523,8 @@ public class HoneurCohortDefinitionServiceExtension {
             RoleEntity roleEntity = this.authorizer.addOrganizationRole(org.getName());
             if(roleEntity != null){
                 existingOrganizationRolesPermissionAdd.add(roleEntity);
+            } else {
+                log.info(String.format("CREATION OF ORGANIZATION ROLE FAILED: Role is %s", roleEntity));
             }
         }
 

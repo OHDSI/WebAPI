@@ -524,7 +524,7 @@ public class HoneurCohortDefinitionServiceExtension {
             if(roleEntity != null){
                 existingOrganizationRolesPermissionAdd.add(roleEntity);
             } else {
-                log.info(String.format("CREATION OF ORGANIZATION ROLE FAILED: Role is %s", roleEntity));
+                log.info("CREATION OF ORGANIZATION ROLE FAILED: Role is null");
             }
         }
 

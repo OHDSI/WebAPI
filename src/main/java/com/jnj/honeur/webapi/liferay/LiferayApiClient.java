@@ -175,6 +175,7 @@ public class LiferayApiClient {
 
         Set<String> roleNames = new HashSet<>();
         try {
+            // Add all user's roles in liferay
             String endpoint = "/role/get-user-roles/user-id/"+user.getId();
             JsonNode response = restTemplate.exchange(LIFERAY_WEB_API + endpoint,
                     HttpMethod.GET, new HttpEntity<>(createHeaders()),
@@ -184,16 +185,20 @@ public class LiferayApiClient {
                 roleNames.add(node.path("name").asText());
             }
 
-            List<String> groups = getUserGroupNamesOfUser(user);
-            roleNames.addAll(groups);
-//            for (String group: groups) {
-//                String getGroupRoleEndpoint = "/role/get-group-roles/group-id/"+group;
-//
-//                JsonNode roleResponse = restTemplate.exchange(LIFERAY_WEB_API + getGroupRoleEndpoint,
-//                        HttpMethod.GET, new HttpEntity<>(createHeaders()),
-//                        JsonNode.class).getBody();
-//                roleNames.addAll(roleResponse.findValuesAsText("name"));
-//            }
+            // Add all user's organizations as role
+            List<String> groupNames = getUserGroupNamesOfUser(user);
+            roleNames.addAll(groupNames);
+
+            // Add all roles related to user's organizations
+            List<String> groupIds = getUserGroupIdsOfUser(user);
+            for (String group: groupIds) {
+                String getGroupRoleEndpoint = "/role/get-group-roles/group-id/"+group;
+
+                JsonNode roleResponse = restTemplate.exchange(LIFERAY_WEB_API + getGroupRoleEndpoint,
+                        HttpMethod.GET, new HttpEntity<>(createHeaders()),
+                        JsonNode.class).getBody();
+                roleNames.addAll(roleResponse.findValuesAsText("name"));
+            }
         } catch (HttpStatusCodeException e){
             logger.log(Level.INFO, "Error in getting the names of the roles associated to the user ("+user.getLogin()+") in Liferay: " + e.toString());
         }
@@ -239,23 +244,23 @@ public class LiferayApiClient {
 
     }
 
-//    private List<String> getUserGroupIdsOfUser(UserEntity userEntity) {
-//        String endpoint = "/group/get-user-organizations-groups/user-id/"+userEntity.getId()+"?start=-1&end=-1";
-//        JsonNode response;
-//        try {
-//            response = restTemplate.exchange(LIFERAY_WEB_API + endpoint,
-//            HttpMethod.GET, new HttpEntity<>(createHeaders()),
-//            JsonNode.class).getBody();
-//        } catch (HttpStatusCodeException e){
-//            logger.log(Level.INFO, "Error in retrieving groups in Liferay: " + e.toString());
-//            return new ArrayList<>();
-//        }
-//        List<String> listOfIds = new ArrayList<>();
-//        for(JsonNode node: response){
-//            listOfIds.add(node.path("groupId").asText());
-//        }
-//        return listOfIds;
-//    }
+    private List<String> getUserGroupIdsOfUser(UserEntity userEntity) {
+        String endpoint = "/group/get-user-organizations-groups/user-id/"+userEntity.getId()+"?start=-1&end=-1";
+        JsonNode response;
+        try {
+            response = restTemplate.exchange(LIFERAY_WEB_API + endpoint,
+            HttpMethod.GET, new HttpEntity<>(createHeaders()),
+            JsonNode.class).getBody();
+        } catch (HttpStatusCodeException e){
+            logger.log(Level.INFO, "Error in retrieving groups in Liferay: " + e.toString());
+            return new ArrayList<>();
+        }
+        List<String> listOfIds = new ArrayList<>();
+        for(JsonNode node: response){
+            listOfIds.add(node.path("groupId").asText());
+        }
+        return listOfIds;
+    }
 
     private List<String> getUserGroupNamesOfUser(UserEntity userEntity) {
         String endpoint = "/group/get-user-organizations-groups/user-id/"+userEntity.getId()+"?start=-1&end=-1";

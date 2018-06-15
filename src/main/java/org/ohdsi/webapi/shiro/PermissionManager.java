@@ -59,7 +59,7 @@ public class PermissionManager {
     
     RoleEntity role = this.roleRepository.findByName(roleName);
     if (role != null) {
-      throw new Exception("Can't create role - it already exists");
+      throw new Exception(String.format("Can't create role %s - it already exists", roleName));
     }
     
     role = new RoleEntity();

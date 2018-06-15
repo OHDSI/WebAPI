@@ -228,6 +228,8 @@ public class LiferayPermissionManager extends PermissionManager {
         }
 
         Set<String> roleNames = this.liferayApiClient.getRoleNamesOfUser(user);
+        LOGGER.info(String.format("%s has following roles: %s", user.getLogin(), roleNames));
+
         Set<RoleEntity> roles = new LinkedHashSet<>();
 
         List<String> organizationNames = this.liferayApiClient.getOrganizations()

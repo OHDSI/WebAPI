@@ -328,12 +328,14 @@ public class HoneurCohortDefinitionServiceExtension {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/uuids")
     public List<String> getUUIDSList(@HeaderParam("token") String token){
+        log.info("Path: /cohortdefinition/uuids");
         String permissionPattern = "cohortdefinition:([0-9]+|\\*):get";
         List<Integer> definitionIds = this.authorizer.getUserPermissions(SecurityUtils2.getSubject(token)).stream()
                 .map(PermissionEntity::getValue)
                 .filter(permissionString -> permissionString.matches(permissionPattern))
                 .map(permissionString -> Integer.parseInt(permissionString.split(":")[1]))
                 .collect(Collectors.toList());
+        log.info(String.format("User has access to : %s", definitionIds));
 
         List<String> uuids = new ArrayList<>();
         if(definitionIds.size() > 0) {

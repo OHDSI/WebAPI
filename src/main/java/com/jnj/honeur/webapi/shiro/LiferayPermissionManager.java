@@ -40,7 +40,7 @@ public class LiferayPermissionManager extends PermissionManager {
                 .collect(Collectors.toList());
 
         List<String> liferayRoles = liferayApiClient.getRoleNames().stream()
-                .filter(role -> role.startsWith("Atlas ") || organizationNames.contains(role))
+                .filter(role -> role.startsWith("Atlas "))
                 .map(role -> {
                     String result = role;
                     if(role.startsWith("Atlas ")){
@@ -51,7 +51,7 @@ public class LiferayPermissionManager extends PermissionManager {
                 .collect(Collectors.toList());
         HashSet<RoleEntity> filteredRoles = new HashSet<>();
         for (RoleEntity role : roles) {
-            if (liferayRoles.contains(role.getName())) {
+            if (liferayRoles.contains(role.getName()) || organizationNames.contains(role.getName())) {
                 filteredRoles.add(role);
             }
         }

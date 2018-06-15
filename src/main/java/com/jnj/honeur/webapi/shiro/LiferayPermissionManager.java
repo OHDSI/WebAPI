@@ -231,10 +231,6 @@ public class LiferayPermissionManager extends PermissionManager {
 
         Set<RoleEntity> roles = new LinkedHashSet<>();
 
-//        List<String> organizationNames = this.liferayApiClient.getOrganizations()
-//                .stream()
-//                .map(Organization::getName).collect(Collectors.toList());
-
         for(String role: roleNames){
             if (role.startsWith("Atlas ")) {
                 role = role.substring(6, role.length());
@@ -249,7 +245,6 @@ public class LiferayPermissionManager extends PermissionManager {
         if(personalRole != null) {
             roles.add(personalRole);
         }
-        LOGGER.info(String.format("%s has following roles: %s", user.getLogin(), roles.stream().map(role -> role.getName())));
 
         return roles;
     }

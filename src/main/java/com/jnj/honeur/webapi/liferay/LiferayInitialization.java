@@ -6,6 +6,7 @@ import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.Entities.RoleRepository;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
+@ConditionalOnProperty(value="webapi.central", matchIfMissing = true)
 public class LiferayInitialization implements ApplicationListener<ApplicationReadyEvent> {
 
     @Autowired

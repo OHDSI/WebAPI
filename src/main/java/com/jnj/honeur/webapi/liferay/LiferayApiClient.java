@@ -7,6 +7,7 @@ import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRoleEntity;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -21,7 +22,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Component
-public class LiferayApiClient extends RestTemplate {
+@ConditionalOnProperty(value="webapi.central", matchIfMissing = true)
+public class LiferayApiClient {
 
     @Value("${datasource.liferay.url}")
     private String liferayBaseUrl;

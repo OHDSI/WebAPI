@@ -3,7 +3,6 @@ package com.jnj.honeur.webapi.liferay;
 import com.jnj.honeur.webapi.DataSourceLookup;
 //import com.jnj.honeur.webapi.service.HoneurUserService;
 import com.jnj.honeur.webapi.shiro.LiferayPermissionManager;
-import org.ohdsi.webapi.service.UserService;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -24,9 +23,12 @@ public class LiferayConfiguration {
     @Value("${datasource.honeur.enabled}")
     private boolean liferay;
 
+    @Value("${webapi.central}")
+    private boolean central;
+
     @Bean
     public PermissionManager createPermissionManager(){
-        if(liferay){
+        if(liferay && central){
             return new LiferayPermissionManager();
         } else {
             return new PermissionManager();

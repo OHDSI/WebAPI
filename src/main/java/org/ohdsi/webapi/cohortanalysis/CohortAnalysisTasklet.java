@@ -43,9 +43,7 @@ public class CohortAnalysisTasklet implements Tasklet {
 		
 		private final CohortDefinitionRepository cohortDefinitionRepository;
 
-		private ExecutorService executorService;
-    
-    public CohortAnalysisTasklet(CohortAnalysisTask task
+	public CohortAnalysisTasklet(CohortAnalysisTask task
 				, final JdbcTemplate jdbcTemplate
 				, final TransactionTemplate transactionTemplate
 				, final TransactionTemplate transactionTemplateRequiresNew
@@ -58,21 +56,13 @@ public class CohortAnalysisTasklet implements Tasklet {
         this.transactionTemplateRequiresNew = transactionTemplateRequiresNew;
         this.analysisRunner = new CohortResultsAnalysisRunner(sourceDialect, visualizationDataRepository);
 				this.cohortDefinitionRepository = cohortDefinitionRepository;
-				executorService = Executors.newSingleThreadExecutor();
-    }
+	}
     
     @Override
     public RepeatStatus execute(final StepContribution contribution, final ChunkContext chunkContext) throws Exception {
         boolean successful = false;
 				String failMessage = null;
 				Integer cohortDefinitionId = Integer.parseInt(task.getCohortDefinitionIds().get(0));
-/*
-				CohortDefinition cohortDef = transactionTemplate.execute(status -> {
-					CohortDefinition result = cohortDefinitionRepository.findOne(Integer.parseInt(task.getCohortDefinitionIds().get(0)));
-					result.getCohortAnalysisGenerationInfoList().size();
-					return result;
-				});
-*/
 				this.transactionTemplate.execute(status -> {
 					CohortDefinition cohortDef = cohortDefinitionRepository.findOne(cohortDefinitionId);
 					CohortAnalysisGenerationInfo gi = cohortDef.getCohortAnalysisGenerationInfoList().stream()

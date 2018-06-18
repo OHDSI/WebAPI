@@ -2,7 +2,6 @@ package org.ohdsi.webapi.cohortanalysis;
 
 import java.util.Calendar;
 import java.util.Set;
-import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
@@ -11,7 +10,6 @@ import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ohdsi.sql.SqlSplit;
-import org.ohdsi.webapi.ProgressAware;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortresults.CohortResultsAnalysisRunner;

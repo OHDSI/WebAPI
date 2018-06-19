@@ -9,7 +9,7 @@ import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 
-public class RunExecutionEngineTasklet implements Tasklet {
+public class RunExecutionEngineTasklet extends BaseExecutionTasklet {
 
     private final ScriptExecutionService executionService;
     private final ExecutionRequestDTO executionRequest;
@@ -23,7 +23,7 @@ public class RunExecutionEngineTasklet implements Tasklet {
     @Override
     public RepeatStatus execute(StepContribution stepContribution, ChunkContext chunkContext) throws Exception {
 
-        final int analysisExecutionId = chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext().getInt(ANALYSIS_EXECUTION_ID);
+        final int analysisExecutionId = getInt(ANALYSIS_EXECUTION_ID);
         executionService.runScript(executionRequest, analysisExecutionId);
         return RepeatStatus.FINISHED;
     }

@@ -7,14 +7,12 @@ import org.ohdsi.webapi.executionengine.util.StringGenerationUtil;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.StepExecution;
-import org.springframework.batch.core.StepExecutionListener;
 import org.springframework.batch.core.scope.context.ChunkContext;
-import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 
-public class CreateAnalysisTasklet implements Tasklet, StepExecutionListener {
+public class CreateAnalysisTasklet extends BaseExecutionTasklet {
 
-    public static final String ANALYSIS_EXECUTION_ID = "engineAnalysisExecutionId";
+    static final String ANALYSIS_EXECUTION_ID = "engineAnalysisExecutionId";
     
     private final ScriptExecutionService service;
     private final ExecutionRequestDTO request;
@@ -25,10 +23,6 @@ public class CreateAnalysisTasklet implements Tasklet, StepExecutionListener {
 
         this.service = executionService;
         this.request = executionRequest;
-    }
-
-    @Override
-    public void beforeStep(final StepExecution stepExecution) {
     }
     
     @Override
@@ -45,10 +39,7 @@ public class CreateAnalysisTasklet implements Tasklet, StepExecutionListener {
     @Override
     public ExitStatus afterStep(final StepExecution stepExecution) {
 
-        stepExecution
-                .getJobExecution()
-                .getExecutionContext()
-                .putInt(ANALYSIS_EXECUTION_ID, this.analysisId);
+        putInt(ANALYSIS_EXECUTION_ID, this.analysisId);
         return ExitStatus.COMPLETED;
     }
 }

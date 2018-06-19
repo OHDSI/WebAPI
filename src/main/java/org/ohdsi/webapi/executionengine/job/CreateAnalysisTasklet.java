@@ -14,7 +14,7 @@ import org.springframework.batch.repeat.RepeatStatus;
 
 public class CreateAnalysisTasklet implements Tasklet, StepExecutionListener {
 
-    public static final String ANALYSIS_EXECUTION_ID = "analysisId";
+    public static final String ANALYSIS_EXECUTION_ID = "engineAnalysisExecutionId";
     
     private final ScriptExecutionService service;
     private final ExecutionRequestDTO request;

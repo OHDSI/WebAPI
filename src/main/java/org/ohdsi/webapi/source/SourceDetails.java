@@ -6,7 +6,7 @@ public class SourceDetails extends SourceInfo {
 
     public SourceDetails(Source s) {
         super(s);
-        connectionString = s.getSourceConnection();
+        setConnectionString(s.getSourceConnection());
     }
 
     public String getConnectionString() {

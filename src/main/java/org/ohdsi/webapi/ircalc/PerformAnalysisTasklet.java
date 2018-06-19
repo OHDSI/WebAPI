@@ -29,6 +29,7 @@ import org.apache.commons.logging.LogFactory;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.GenerationStatus;
+import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
@@ -80,6 +81,10 @@ public class PerformAnalysisTasklet implements Tasklet {
     ObjectMapper mapper = new ObjectMapper();
     
     Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
+
+    Source source = new Source();
+    source.setSourceDialect(jobParams.get("target_dialect").toString());
+
     Integer analysisId = Integer.valueOf(jobParams.get("analysis_id").toString());
     int[] result;
     try {
@@ -92,8 +97,8 @@ public class PerformAnalysisTasklet implements Tasklet {
       options.resultsSchema = jobParams.get("results_database_schema").toString();
       options.vocabularySchema = jobParams.get("vocabulary_database_schema").toString();
 
-      String delete = "DELETE FROM @tableQualifier.ir_strata WHERE analysis_id = @analysis_id";
-      PreparedStatementRenderer psr = new PreparedStatementRenderer(null, delete, "tableQualifier",
+      String delete = "DELETE FROM @tableQualifier.ir_strata WHERE analysis_id = @analysis_id;";
+      PreparedStatementRenderer psr = new PreparedStatementRenderer(source, delete, "tableQualifier",
         options.resultsSchema, "analysis_id", analysisId);
       jdbcTemplate.update(psr.getSql(), psr.getSetter());
 
@@ -104,9 +109,8 @@ public class PerformAnalysisTasklet implements Tasklet {
       for (int i = 0; i< strataRules.size(); i++)
       {
         StratifyRule r = strataRules.get(i);
-        psr = new PreparedStatementRenderer(null, insert, "results_schema",
+        psr = new PreparedStatementRenderer(source, insert, "results_schema",
           options.resultsSchema, params, new Object[] { analysisId, i, r.name, r.description});
-        psr.setTargetDialect(jobParams.get("target_dialect").toString());
         jdbcTemplate.update(psr.getSql(), psr.getSetter());
       }
       

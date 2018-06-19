@@ -11,7 +11,9 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
+import javax.persistence.Lob;
 import javax.persistence.Table;
+import org.hibernate.annotations.Type;
 import org.ohdsi.webapi.GenerationStatus;
 
 /**
@@ -55,6 +57,11 @@ public class ConceptSetGenerationInfo implements Serializable {
 
     @Column(name = "is_valid")
     private boolean isValid;
+		
+		@Lob
+		@Type(type = "org.hibernate.type.TextType")  
+		private String params;
+		
 
     /**
      * @return the conceptSetId
@@ -153,4 +160,18 @@ public class ConceptSetGenerationInfo implements Serializable {
     public void setGenerationType(ConceptSetGenerationType generationType) {
         this.generationType = generationType;
     }
+
+	/**
+	 * @return the params
+	 */
+	public String getParams() {
+		return params;
+	}
+
+	/**
+	 * @param params the params to set
+	 */
+	public void setParams(String params) {
+		this.params = params;
+	}
 }

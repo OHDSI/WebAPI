@@ -25,6 +25,8 @@ import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.event.EventListener;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -40,10 +42,25 @@ public class CDMResultsService extends AbstractDaoService {
 
     @Autowired
     private JobTemplate jobTemplate;
+    @Autowired
+    private SourceService sourceService;
+    @Value("${jasypt.encryptor.enabled}")
+    private boolean encryptorEnabled;
 
     @PostConstruct
     public void init() {
         queryRunner = new CDMResultsAnalysisRunner(this.getSourceDialect());
+        warmCaches();
+    }
+
+    public void warmCaches(){
+        sourceService.getSources().stream().forEach((s) -> {
+            for (SourceDaimon sd : s.daimons) {
+                if (sd.getDaimonType() == SourceDaimon.DaimonType.Results) {
+                    warmCache(s.sourceKey);
+                }
+            }
+        });
     }
 
     private final RowMapper<SimpleEntry<Long, Long[]>> rowMapper = new RowMapper<SimpleEntry<Long, Long[]>>() {

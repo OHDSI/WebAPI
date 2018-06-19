@@ -15,6 +15,7 @@
  */
 package org.ohdsi.webapi.cohortfeatures;
 
+import java.util.ArrayList;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 
 
@@ -35,6 +36,9 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Map;
 import java.util.StringJoiner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.sql.SqlRender;
 import org.springframework.transaction.TransactionException;
@@ -52,7 +56,10 @@ public class GenerateCohortFeaturesTasklet implements Tasklet
 {
     private static final Log log = LogFactory.getLog(GenerateCohortFeaturesTasklet.class);
     private final TransactionTemplate transactionTemplate;
-    //private final static CohortExpressionQueryBuilder expressionQueryBuilder = new CohortExpressionQueryBuilder();
+
+		private final ExecutorService taskExecutor;
+		private boolean stopped = false;
+		private long checkInterval = 1000;
 
     private final JdbcTemplate jdbcTemplate;
    
@@ -60,6 +67,8 @@ public class GenerateCohortFeaturesTasklet implements Tasklet
     {
         this.jdbcTemplate = jdbcTemplate;
         this.transactionTemplate = transactionTemplate;
+				taskExecutor = Executors.newSingleThreadExecutor();
+				
     }
     
     private String getSql(CohortExpressionQueryBuilder.BuildExpressionQueryOptions options, 
@@ -90,7 +99,7 @@ public class GenerateCohortFeaturesTasklet implements Tasklet
                 String.format(cohortWrapper, options.cohortId, columns, 
                         StringUtils.stripEnd(jsonObject.getString("sqlQueryFeatureRef"), ";"))));
 
-        columns = "cohort_definition_id, analysis_id, analysis_name, domain_id, start_day, end_day, is_binary, missing_means_zero";
+        columns = "cohort_definition_id, CAST(analysis_id AS INT) analysis_id, analysis_name, domain_id, start_day, end_day, CAST(is_binary AS CHAR(1)) is_binary,CAST(missing_means_zero AS CHAR(1)) missing_means_zero";
         joiner.add(String.format(insertStr, 
                 "cohort_features_analysis_ref", 
                 String.format(cohortWrapper, options.cohortId, columns, 
@@ -147,7 +156,19 @@ public class GenerateCohortFeaturesTasklet implements Tasklet
         String sql = getSql(options, jsonObject);
         String translatedSql = SqlTranslate.translateSql(sql, jobParams.get("target_dialect").toString(), sessionId, null);
         String[] sqlStatements = SqlSplit.splitSql(translatedSql);
-        this.jdbcTemplate.batchUpdate(sqlStatements);
+				FutureTask<int[]> batchUpdateTask = new FutureTask<>(() -> GenerateCohortFeaturesTasklet.this.jdbcTemplate.batchUpdate(sqlStatements));
+				taskExecutor.execute(batchUpdateTask);
+				while(true) {
+					Thread.sleep(checkInterval);
+					if (batchUpdateTask.isDone()) {
+						result = batchUpdateTask.get();
+						break;
+					} else if (stopped) {
+						batchUpdateTask.cancel(true);
+						break;
+					}
+				}
+				taskExecutor.shutdown();
       } 
       catch (Exception e) 
       {

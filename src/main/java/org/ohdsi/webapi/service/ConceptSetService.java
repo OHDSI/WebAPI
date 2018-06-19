@@ -41,7 +41,7 @@ import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfo;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetItem;
 import org.ohdsi.webapi.conceptset.ExportUtil;
-import org.ohdsi.webapi.evidence.NegativeControlRepository;
+import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.springframework.beans.factory.annotation.Autowired;

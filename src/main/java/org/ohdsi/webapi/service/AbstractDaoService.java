@@ -3,12 +3,12 @@ package org.ohdsi.webapi.service;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ohdsi.webapi.GenerationStatus;
+import org.ohdsi.webapi.IExecutionInfo;
 import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisExecutionRepository;
 import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetItemRepository;
@@ -24,7 +24,6 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.Connection;
-import java.util.Properties;
 
 /**
  *
@@ -56,6 +55,11 @@ public abstract class AbstractDaoService {
 
   @Autowired 
   ConceptSetItemRepository conceptSetItemRepository;
+
+  public static final List<GenerationStatus> INVALIDATE_STATUSES = new ArrayList<GenerationStatus>() {{
+    add(GenerationStatus.PENDING);
+    add(GenerationStatus.RUNNING);
+  }};
 
   public ConceptSetItemRepository getConceptSetItemRepository() {
     return conceptSetItemRepository;
@@ -116,9 +120,18 @@ public abstract class AbstractDaoService {
 
   public JdbcTemplate getSourceJdbcTemplate(Source source) {
 
-    DriverManagerDataSource dataSource = new DriverManagerDataSource(source.getSourceConnection());
-    JdbcTemplate template = new JdbcTemplate(dataSource);
-    return template;
+    DriverManagerDataSource dataSource;
+    if (source.getUsername() != null && source.getPassword() != null) {
+      // NOTE: jdbc link should NOT include username and password, because they have higher priority than separate ones
+      dataSource = new DriverManagerDataSource(
+              source.getSourceConnection(),
+              source.getUsername(),
+              source.getPassword()
+      );
+    } else {
+      dataSource = new DriverManagerDataSource(source.getSourceConnection());
+    }
+    return new JdbcTemplate(dataSource);
   }
 
   /**
@@ -218,4 +231,17 @@ public abstract class AbstractDaoService {
   public String getOhdsiSchema() {
       return ohdsiSchema;
   }
+
+  protected IExecutionInfo invalidateExecution(IExecutionInfo executionInfo) {
+
+    return executionInfo.setIsValid(false)
+            .setStatus(GenerationStatus.COMPLETE)
+            .setMessage("Invalidated by system");
+  }
+
+  protected void invalidateExecutions(List<? extends IExecutionInfo> executionInfoList) {
+
+    executionInfoList.forEach(this::invalidateExecution);
+  }
+
 }

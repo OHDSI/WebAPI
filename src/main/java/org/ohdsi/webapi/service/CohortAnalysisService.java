@@ -4,16 +4,16 @@ import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Calendar;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import jersey.repackaged.com.google.common.base.Joiner;
@@ -23,11 +23,12 @@ import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysis;
+import org.ohdsi.webapi.cohortanalysis.CohortAnalysisGenerationInfo;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTask;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTasklet;
 import org.ohdsi.webapi.cohortanalysis.CohortSummary;
-import org.ohdsi.webapi.cohortresults.CohortDashboard;
-import org.ohdsi.webapi.cohortresults.CohortSpecificSummary;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortresults.VisualizationDataRepository;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
@@ -39,6 +40,7 @@ import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -50,11 +52,17 @@ import org.springframework.util.StringUtils;
 @Component
 public class CohortAnalysisService extends AbstractDaoService {
 
+	@Value("${heracles.smallcellcount}")
+	private String smallCellCount;
+	
 	@Autowired
 	private JobTemplate jobTemplate;
 
 	@Autowired
 	private CohortDefinitionService definitionService;
+	
+	@Autowired
+  private CohortDefinitionRepository cohortDefinitionRepository;
 	
 	@Autowired
 	private VisualizationDataRepository visualizationDataRepository;
@@ -161,6 +169,7 @@ public class CohortAnalysisService extends AbstractDaoService {
 	@Produces(MediaType.TEXT_PLAIN)
 	@Consumes(MediaType.APPLICATION_JSON)
 	public String getRunCohortAnalysisSql(CohortAnalysisTask task) {
+		task.setSmallCellCount(Integer.parseInt(this.smallCellCount));
 		return getCohortAnalysisSql(task);
 	}
 
@@ -182,16 +191,16 @@ public class CohortAnalysisService extends AbstractDaoService {
 				task.getObservationConceptIds()));
 		String measurementIds = (task.getMeasurementConceptIds() == null ? "" : Joiner.on(",").join(
 				task.getMeasurementConceptIds()));
-
+		String smallCellCount = Integer.toString(task.getSmallCellCount());
 		String[] params = new String[]{"CDM_schema", "results_schema", "source_name",
 				"smallcellcount", "runHERACLESHeel", "CDM_version", "cohort_definition_id", "list_of_analysis_ids",
 				"condition_concept_ids", "drug_concept_ids", "procedure_concept_ids", "observation_concept_ids",
-				"measurement_concept_ids", "cohort_period_only", "source_id"};
+				"measurement_concept_ids", "cohort_period_only", "source_id", "smallcellcount"};
 		String[] values = new String[]{cdmTableQualifier, resultsTableQualifier, task.getSource().getSourceName(),
 				String.valueOf(task.getSmallCellCount()),
-				String.valueOf(task.runHeraclesHeel()).toUpperCase(), "5", cohortDefinitionIds,
+				String.valueOf(task.runHeraclesHeel()).toUpperCase(), task.getCdmVersion(), cohortDefinitionIds,
 				analysisIds, conditionIds, drugIds, procedureIds, observationIds, measurementIds,
-				String.valueOf(task.isCohortPeriodOnly()), String.valueOf(task.getSource().getSourceId())};
+				String.valueOf(task.isCohortPeriodOnly()), String.valueOf(task.getSource().getSourceId()), smallCellCount};
 		sql = SqlRender.renderSql(sql, params, values);
 		sql = SqlTranslate.translateSql(sql, task.getSource().getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
 
@@ -207,6 +216,7 @@ public class CohortAnalysisService extends AbstractDaoService {
 	 */
 	public String[] getRunCohortAnalysisSqlBatch(CohortAnalysisTask task) {
 		if (task != null) {
+			task.setSmallCellCount(Integer.parseInt(this.smallCellCount));
 			String sql = this.getRunCohortAnalysisSql(task);
 			String[] stmts = null;
 			if (log.isDebugEnabled()) {
@@ -236,11 +246,13 @@ public class CohortAnalysisService extends AbstractDaoService {
 		if (task == null) {
 			return null;
 		}
-		JobParametersBuilder builder = new JobParametersBuilder();
-
+		
 		// source key comes from the client, we look it up here and hand it off to the tasklet
 		Source source = getSourceRepository().findBySourceKey(task.getSourceKey());
 		task.setSource(source);
+	
+		task.setSmallCellCount(Integer.parseInt(this.smallCellCount));
+		JobParametersBuilder builder = new JobParametersBuilder();
 
 		builder.addString("cohortDefinitionIds", limitJobParams(Joiner.on(",").join(task.getCohortDefinitionIds())));
 		builder.addString("analysisIds", limitJobParams(Joiner.on(",").join(task.getAnalysisIds())));
@@ -265,16 +277,38 @@ public class CohortAnalysisService extends AbstractDaoService {
 		if (task.isCohortPeriodOnly()) {
 			builder.addString("cohortPeriodOnly", "true");
 		}
+		
 		if (!StringUtils.isEmpty(task.getJobName())) {
 			builder.addString("jobName", limitJobParams(task.getJobName()));
 		}
+
+		// clear analysis IDs from the generated set
+		this.getTransactionTemplateRequiresNew().execute(status -> { 
+			CohortDefinition cohortDef = this.cohortDefinitionRepository.findOne(Integer.parseInt(task.getCohortDefinitionIds().get(0)));
+			CohortAnalysisGenerationInfo info = cohortDef.getCohortAnalysisGenerationInfoList().stream()
+				.filter(a -> a.getSourceId() == task.getSource().getSourceId())
+				.findFirst()
+				.orElse(null);
+			if (info == null) {
+				info = new CohortAnalysisGenerationInfo();
+				info.setSourceId(task.getSource().getSourceId());
+				info.setCohortDefinition(cohortDef);
+				cohortDef.getCohortAnalysisGenerationInfoList().add(info);
+			}
+			List<Integer> analysisList = task.getAnalysisIds().stream().map(Integer::parseInt).collect(Collectors.toList());
+			info.getAnalysisIds().removeAll(analysisList);
+			info.setLastExecution(Calendar.getInstance().getTime());
+			this.cohortDefinitionRepository.save(cohortDef);
+			return null;
+		});
+
 		//TODO consider analysisId
 		final String taskString = task.toString();
 		final JobParameters jobParameters = builder.toJobParameters();
 		log.info(String.format("Beginning run for cohort analysis task: \n %s", taskString));
 
 		CohortAnalysisTasklet tasklet = new CohortAnalysisTasklet(task, getSourceJdbcTemplate(task.getSource()), 
-				getTransactionTemplate(), this.getSourceDialect(), this.visualizationDataRepository);
+				getTransactionTemplate(), this.getSourceDialect(), this.visualizationDataRepository, this.cohortDefinitionRepository);
 
 		return this.jobTemplate.launchTasklet("cohortAnalysisJob", "cohortAnalysisStep", tasklet, jobParameters);
 	}

@@ -120,10 +120,18 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public ComparativeCohortAnalysis updateComparativeCohortAnalysis(@PathParam("id") final int id, ComparativeCohortAnalysis comparativeCohortAnalysis) throws Exception {
+
+        // TODO:
+        // Back-end should not persist all the data coming from UI. There should be white list of attributes
+
+        ComparativeCohortAnalysis exist = getComparativeCohortAnalysisRepository().findOne(id);
+
         Date d = new Date();
-//        comparativeCohortAnalysis.setCreatedDate(d); // temporary workaround until client sends the current created value.
         comparativeCohortAnalysis.setModifiedDate(d);
         comparativeCohortAnalysis.setModifiedBy(security.getSubject());
+
+        comparativeCohortAnalysis.setCreatedBy(exist.getCreatedBy());
+        comparativeCohortAnalysis.setCreatedDate(exist.getCreatedDate());
         
         comparativeCohortAnalysis = this.getComparativeCohortAnalysisRepository().save(comparativeCohortAnalysis);
         return comparativeCohortAnalysis;

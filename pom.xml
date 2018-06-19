@@ -740,7 +740,7 @@
       <properties>
         <impala.enabled>true</impala.enabled>
 				<!-- Impala JDBC driver path -->
-				<impala.classpath>src/main/extras/impala</impala.classpath>
+				<impala.classpath>...path/to/impala/jdbc/drivers...</impala.classpath>
       </properties>
       <dependencies>
         <dependency>

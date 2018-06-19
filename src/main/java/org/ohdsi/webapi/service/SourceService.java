@@ -77,6 +77,11 @@ public class SourceService extends AbstractDaoService {
 		}
 	}
 
+  public Source findBySourceKey(final String sourceKey) {
+
+    return sourceRepository.findBySourceKey(sourceKey);
+  }
+
   public class SortByKey implements Comparator<SourceInfo>
   {
     private boolean isAscending;

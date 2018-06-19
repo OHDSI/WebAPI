@@ -2,6 +2,7 @@ package org.ohdsi.webapi.executionengine.job;
 
 import static org.ohdsi.webapi.executionengine.entity.AnalysisExecution.Status.COMPLETED;
 import static org.ohdsi.webapi.executionengine.entity.AnalysisExecution.Status.FAILED;
+import static org.ohdsi.webapi.executionengine.job.RunExecutionEngineTasklet.ENGINE_EXECUTION_ID;
 
 import java.util.Map;
 import javax.persistence.EntityManager;
@@ -31,8 +32,8 @@ public class ExecutionEngineCallbackTasklet implements Tasklet {
 
         while (true) {
             Map<String, Object> executionContext = chunkContext.getStepContext().getJobExecutionContext();
-            if (executionContext.containsKey("engineExecutionId")) {
-                Long engineExecutionId = (Long) executionContext.get("engineExecutionId");
+            if (executionContext.containsKey(ENGINE_EXECUTION_ID)) {
+                Long engineExecutionId = (Long) executionContext.get(ENGINE_EXECUTION_ID);
                 entityManager.clear();
                 AnalysisExecution analysisExecution = analysisExecutionRepository.findOne(engineExecutionId.intValue());
                 status = analysisExecution.getExecutionStatus();

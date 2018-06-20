@@ -29,28 +29,12 @@ import org.springframework.context.annotation.DependsOn;
 public class ShiroConfiguration {
   private static final Log log = LogFactory.getLog(ShiroConfiguration.class);
 
-  @Value("${security.enabled}")
-  private boolean enabled;
-
   @Value("${security.maxLoginAttempts}")
   private int maxLoginAttempts;
   @Value("${security.duration.initial}")
   private long initialDuration;
   @Value("${security.duration.increment}")
   private long increment;
-
-  @Bean
-  @DependsOn("flyway")
-  public Security security() {
-    if (enabled) {
-      log.debug("AtlasSecurity module loaded");
-      return new AtlasSecurity();
-    }
-    else {
-      log.debug("DisabledSecurity module loaded");
-      return new DisabledSecurity();
-    }
-  };
 
   @Bean
   public ShiroFilterFactoryBean shiroFilter(Security security, LockoutPolicy lockoutPolicy){
@@ -77,21 +61,21 @@ public class ShiroConfiguration {
   }
 
   @Bean
-  @ConditionalOnProperty(name = "security.enabled", havingValue = "false")
+  @ConditionalOnProperty(name = "security.provider", havingValue = "AtlasRegularSecurity")
   public LockoutPolicy noLockoutPolicy(){
 
     return new NoLockoutPolicy();
   }
 
   @Bean
-  @ConditionalOnProperty(name = "security.enabled", havingValue = "true")
+  @ConditionalOnProperty(name = "security.provider", havingValue = "AtlasRegularSecurity")
   public LockoutPolicy lockoutPolicy(){
 
     return new DefaultLockoutPolicy(lockoutStrategy(), maxLoginAttempts);
   }
 
   @Bean
-  @ConditionalOnProperty(name = "security.enabled", havingValue = "true")
+  @ConditionalOnProperty(name = "security.provider", havingValue = "AtlasRegularSecurity")
   public LockoutStrategy lockoutStrategy(){
 
     return new ExponentLockoutStrategy(initialDuration, increment, maxLoginAttempts);

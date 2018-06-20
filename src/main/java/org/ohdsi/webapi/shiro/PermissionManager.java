@@ -402,7 +402,7 @@ public class PermissionManager {
     return users;
   }
 
-  private UserEntity getCurrentUser() throws Exception {
+  public UserEntity getCurrentUser() throws Exception {
     final String login = this.getSubjectName();
     final UserEntity currentUser = this.getUserByLogin(login);
     return currentUser;

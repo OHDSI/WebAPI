@@ -16,16 +16,14 @@
  * Authors: Alexandr Ryabokon
  *
  */
-package org.ohdsi.webapi.shiro;
+package org.ohdsi.webapi.shiro.filters;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletResponse;
+
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.UsernamePasswordToken;
-import org.apache.shiro.web.filter.authc.AuthenticatingFilter;
-import org.apache.shiro.web.util.WebUtils;
 
 public abstract class AbstractLdapAuthFilter<T extends UsernamePasswordToken> extends AuthenticatingPropagationFilter {
     @Override

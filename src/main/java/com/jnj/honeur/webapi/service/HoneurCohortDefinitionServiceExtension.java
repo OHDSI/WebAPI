@@ -333,7 +333,9 @@ public class HoneurCohortDefinitionServiceExtension {
         List<Integer> definitionIds = this.authorizer.getUserPermissions(SecurityUtils2.getSubject(token)).stream()
                 .map(PermissionEntity::getValue)
                 .filter(permissionString -> permissionString.matches(permissionPattern))
-                .map(permissionString -> Integer.parseInt(permissionString.split(":")[1]))
+                .map(permissionString -> parseCohortDefinitionId(permissionString))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .collect(Collectors.toList());
         log.info(String.format("User has access to : %s", definitionIds));
 
@@ -347,6 +349,14 @@ public class HoneurCohortDefinitionServiceExtension {
             }
         }
         return uuids;
+    }
+
+    private Optional<Integer> parseCohortDefinitionId(String permission) {
+        try {
+            return Optional.of(Integer.parseInt(permission.split(":")[1]));
+        } catch (NumberFormatException e) {
+            return Optional.empty();
+        }
     }
 
     /**

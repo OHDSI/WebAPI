@@ -13836,7 +13836,7 @@ WITH hr AS (
       1002
     )
 )
-INSERT INTO @results_schema.HERACLES_HEEL_results
+INSERT INTO @results_schema.HERACLES_HEEL_results (
   cohort_definition_id,
   analysis_id,
   HERACLES_HEEL_warning

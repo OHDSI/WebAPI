@@ -285,7 +285,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
                 .replace("my_cdm_data", cdmTable)
                 .replace("my_vocabulary_data", vocabularyTable)
                 .replace("my_results", resultsTable)
-                .replace("exposure_database_schema", cdmTable)
+                .replace("exposure_database_schema", resultsTable)
                 .replace("outcome_database_schema", resultsTable)
                 .replace("exposure_table", "cohort")
                 .replace("outcome_table", "cohort")

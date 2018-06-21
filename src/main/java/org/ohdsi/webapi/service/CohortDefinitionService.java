@@ -17,6 +17,8 @@ import java.io.ByteArrayOutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.PostConstruct;
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
@@ -29,10 +31,10 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.circe.check.Checker;
-import org.ohdsi.circe.check.DefaultWarning;
 import org.ohdsi.circe.check.Warning;
 import javax.ws.rs.core.Response;
 import org.ohdsi.circe.check.WarningSeverity;
+import org.ohdsi.circe.check.warnings.DefaultWarning;
 import org.ohdsi.sql.SqlRender;
 
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
@@ -761,7 +763,6 @@ public class CohortDefinitionService extends AbstractDaoService {
 
       this.warnings = warnings;
     }
-  }
   }
 
   @PostConstruct

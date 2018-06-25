@@ -16,6 +16,7 @@ import org.ohdsi.webapi.shiro.management.AtlasSecurity;
 import org.ohdsi.webapi.shiro.management.DisabledSecurity;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -61,7 +62,7 @@ public class ShiroConfiguration {
   }
 
   @Bean
-  @ConditionalOnProperty(name = "security.provider", havingValue = "AtlasRegularSecurity")
+  @ConditionalOnExpression("#{!'${security.provider}'.equals('AtlasRegularSecurity')}")
   public LockoutPolicy noLockoutPolicy(){
 
     return new NoLockoutPolicy();

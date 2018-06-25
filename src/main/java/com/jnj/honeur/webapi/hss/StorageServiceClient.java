@@ -103,7 +103,7 @@ public class StorageServiceClient extends RestTemplate {
     }
 
     public List<CohortDefinitionStorageInformationItem> getCohortDefinitionImportList(final String token) {
-        String endpoint = "/cohort-definitions";
+        String endpoint = "/cohort-definitions/list";
 
         return Arrays.asList(restTemplate.exchange(STORAGE_SERVICE_API + endpoint, HttpMethod.GET,
                 getTokenHeader(token), CohortDefinitionStorageInformationItem[].class).getBody());
@@ -115,7 +115,7 @@ public class StorageServiceClient extends RestTemplate {
     }
 
     public List<StorageInformationItem> getCohortDefinitionResultsImportList(final String token, UUID uuid) {
-        String endpoint = "/cohort-results/"+uuid+"?reverseOrder=true";
+        String endpoint = "/cohort-results/list/"+uuid+"?reverseOrder=true";
         return Arrays.asList(restTemplate.exchange(STORAGE_SERVICE_API + endpoint, HttpMethod.GET, getTokenHeader(token), StorageInformationItem[].class).getBody());
     }
 

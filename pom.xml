@@ -9,7 +9,7 @@
   <version>1.0.0-SNAPSHOT</version>
   <name>WebAPI</name>
   <properties>
-    <webapi.version>2.5.0-SNAPSHOT</webapi.version>
+    <webapi.version>2.4.3</webapi.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jersey.version>2.14</jersey.version>
     <!-- Spring Boot manages spring.version as well -->
@@ -52,7 +52,7 @@
     <spring.batch.repository.isolationLevelForCreate>ISOLATION_READ_COMMITTED</spring.batch.repository.isolationLevelForCreate>
     <spring.profiles.active>default</spring.profiles.active>
 
-    <security.enabled>false</security.enabled>
+    <security.provider>DisabledSecurity</security.provider>
     <security.token.expiration>43200</security.token.expiration>
     <security.origin>http://localhost</security.origin>
     <security.ssl.enabled>false</security.ssl.enabled>
@@ -82,8 +82,11 @@
     <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
     <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
 
-    <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.users where email = ?</security.db.datasource.authenticationQuery>
+    <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.users where lower(email) = lower(?)</security.db.datasource.authenticationQuery>
     <use.single.connect.datasource.for.testing>true</use.single.connect.datasource.for.testing>
+
+    <security.googleIap.cloudProjectId></security.googleIap.cloudProjectId>
+    <security.googleIap.backendServiceId></security.googleIap.backendServiceId>
 
     <security.cors.enabled>true</security.cors.enabled>
     <security.maxLoginAttempts>3</security.maxLoginAttempts>
@@ -117,7 +120,9 @@
     <jasypt.encryptor.enabled>false</jasypt.encryptor.enabled>
     <jasypt.encryptor.password></jasypt.encryptor.password>
 		<jasypt.encryptor.algorithm>PBEWithMD5AndDES</jasypt.encryptor.algorithm>
-		
+
+    <spring.batch.taskExecutor.corePoolSize>10</spring.batch.taskExecutor.corePoolSize>
+    <spring.batch.taskExecutor.maxPoolSize>20</spring.batch.taskExecutor.maxPoolSize>
   </properties>
   <build>
     <finalName>WebAPI</finalName>
@@ -417,7 +422,7 @@
     <dependency>
       <groupId>org.ohdsi.sql</groupId>
       <artifactId>SqlRender</artifactId>
-      <version>1.4.10-SNAPSHOT</version>
+      <version>1.5.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>commons-dbutils</groupId>
@@ -556,7 +561,7 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>circe</artifactId>
-      <version>1.5.0</version>
+      <version>1.5.1</version>
     </dependency>
     <dependency>
       <groupId>org.json</groupId>
@@ -566,7 +571,7 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>featureExtraction</artifactId>
-      <version>2.0.2-SNAPSHOT</version>
+      <version>2.1.4</version>
     </dependency>
     <dependency>
       <groupId>com.amazon.redshift</groupId>
@@ -632,7 +637,7 @@
         <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
         <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
         <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.user where \
-          login = ?</security.db.datasource.authenticationQuery>
+          lower(email) = lower(?)</security.db.datasource.authenticationQuery>
       </properties>
       <dependencies>
         <dependency>
@@ -666,7 +671,7 @@
         <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
         <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
         <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.users_data where \
-          email = ?</security.db.datasource.authenticationQuery>
+          lower(email) = lower(?)</security.db.datasource.authenticationQuery>
       </properties>
     </profile>
     <profile>
@@ -692,7 +697,7 @@
         <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
         <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
         <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.user where \
-          login = ?</security.db.datasource.authenticationQuery>
+          lower(email) = lower(?)</security.db.datasource.authenticationQuery>
       </properties>
     </profile>
     <profile>

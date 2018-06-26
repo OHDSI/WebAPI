@@ -13,12 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Authors: Alexandr Ryabokon
+ * Authors: Alexandr Ryabokon, Vitaly Koulakov
  *
  */
-package org.ohdsi.webapi.shiro;
+package org.ohdsi.webapi.shiro.filters;
 
-import org.apache.shiro.authc.UsernamePasswordToken;
+import org.ohdsi.webapi.shiro.tokens.LdapUsernamePasswordToken;
 
-public class ActiveDirectoryUsernamePasswordToken extends UsernamePasswordToken {
+public class LdapAuthFilter extends AbstractLdapAuthFilter<LdapUsernamePasswordToken> {
+    @Override
+    protected LdapUsernamePasswordToken getToken() {
+
+        return new LdapUsernamePasswordToken();
+    }
 }

@@ -56,7 +56,7 @@ FROM
 	AND stratum_2 <> ''
 /*
 	(Report 1) --> (analysis_id1 4012) -- 4012 Number of subjects with Drug Exposure by period_id, by drug_concept_id, by drug_type_concept_id in the 365d prior to first cohort start date
-	(Report 2) --> (analysis_id1 4016) -- 4016 Number of subjects with Drug Exposure by period_id, by drug_concept_id during the cohort period
+	(Report 2) --> (analysis_id1 4016) -- 4016 Number of subjects with Drug Exposure by period_id, by drug_concept_id, by drug_type_concept_id during the cohort period
 */
 ) N1 -- number of subjects with records
 JOIN

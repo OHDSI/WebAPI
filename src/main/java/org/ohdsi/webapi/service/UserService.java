@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.ws.rs.Consumes;
@@ -49,6 +50,7 @@ public class UserService {
   public static class User implements Comparable<User> {
     public Long id;
     public String login;
+    public List<Permission> permissions;
 
     public User() {}
 
@@ -119,6 +121,22 @@ public class UserService {
     Iterable<UserEntity> userEntities = this.authorizer.getUsers();
     ArrayList<User> users = convertUsers(userEntities);
     return users;
+  }
+
+  @GET
+  @Path("user/me")
+  @Produces(MediaType.APPLICATION_JSON)
+  public User getCurrentUser() throws Exception {
+
+    UserEntity currentUser = this.authorizer.getCurrentUser();
+    Iterable<PermissionEntity> permissions = this.authorizer.getUserPermissions(currentUser.getId());
+
+    User user = new User();
+    user.id = currentUser.getId();
+    user.login = currentUser.getLogin();
+    user.permissions = convertPermissions(permissions);
+
+    return user;
   }
 
   @GET

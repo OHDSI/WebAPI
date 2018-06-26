@@ -433,16 +433,13 @@ public class CohortDefinitionService extends AbstractDaoService {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/{id}/generate/{sourceKey}")
+  @Transactional
   public JobExecutionResource generateCohort(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey, @QueryParam("includeFeatures") final String includeFeatures) {
 
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);    
     String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);    
     String vocabularyTableQualifier = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
-		
-    DefaultTransactionDefinition requresNewTx = new DefaultTransactionDefinition();
-    requresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-    TransactionStatus initStatus = this.getTransactionTemplate().getTransactionManager().getTransaction(requresNewTx);
 
     CohortDefinition currentDefinition = this.cohortDefinitionRepository.findOne(id);
     CohortGenerationInfo info = findBySourceId(currentDefinition.getGenerationInfoList(), source.getSourceId());
@@ -456,7 +453,6 @@ public class CohortDefinitionService extends AbstractDaoService {
 		info.setIncludeFeatures(includeFeatures != null);
 		
     this.cohortDefinitionRepository.save(currentDefinition);
-    this.getTransactionTemplate().getTransactionManager().commit(initStatus);
 
     JobParametersBuilder builder = new JobParametersBuilder();
     builder.addString(Constants.Params.JOB_NAME, "generating cohort " + currentDefinition.getId() + " : " + source.getSourceName() + " (" + source.getSourceKey() + ")");

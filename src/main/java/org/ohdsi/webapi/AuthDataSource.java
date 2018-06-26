@@ -37,7 +37,7 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 @Configuration("authDataSourceConfig")
-@ConditionalOnProperty(name = "security.enabled", havingValue = "true")
+@ConditionalOnProperty(name = "security.provider", havingValue = "AtlasRegularSecurity")
 public class AuthDataSource {
     private final Log logger = LogFactory.getLog(AuthDataSource.class);
 

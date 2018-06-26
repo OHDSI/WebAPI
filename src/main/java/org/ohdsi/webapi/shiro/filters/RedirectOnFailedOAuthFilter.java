@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.shiro;
+package org.ohdsi.webapi.shiro.filters;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;

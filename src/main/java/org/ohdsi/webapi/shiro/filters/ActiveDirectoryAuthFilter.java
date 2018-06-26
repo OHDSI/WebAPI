@@ -16,7 +16,9 @@
  * Authors: Alexandr Ryabokon
  *
  */
-package org.ohdsi.webapi.shiro;
+package org.ohdsi.webapi.shiro.filters;
+
+import org.ohdsi.webapi.shiro.tokens.ActiveDirectoryUsernamePasswordToken;
 
 public class ActiveDirectoryAuthFilter extends AbstractLdapAuthFilter<ActiveDirectoryUsernamePasswordToken> {
     @Override

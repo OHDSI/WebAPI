@@ -508,7 +508,7 @@ public class CohortResultsService extends AbstractDaoService {
       return def.getCohortAnalysisGenerationInfoList().stream()
               .filter(cd -> Objects.equals(cd.getSourceId(), source.getSourceId()))
               .findFirst().map(gen -> new GenerationInfoDTO(sourceKey, id, gen.getProgress()))
-              .orElseThrow(NotFoundException::new);
+              .<RuntimeException>orElseThrow(NotFoundException::new);
     });
   }
 

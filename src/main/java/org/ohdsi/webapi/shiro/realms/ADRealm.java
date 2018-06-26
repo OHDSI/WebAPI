@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.shiro;
+package org.ohdsi.webapi.shiro.realms;
 
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.AuthorizationInfo;

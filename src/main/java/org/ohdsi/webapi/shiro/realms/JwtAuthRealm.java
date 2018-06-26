@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.shiro;
+package org.ohdsi.webapi.shiro.realms;
 
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
@@ -7,6 +7,8 @@ import org.apache.shiro.authc.SimpleAuthenticationInfo;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.ohdsi.webapi.shiro.PermissionManager;
+import org.ohdsi.webapi.shiro.tokens.JwtAuthToken;
 
 /**
  *
@@ -17,7 +19,7 @@ public class JwtAuthRealm extends AuthorizingRealm {
   private final PermissionManager authorizer;
 
   public JwtAuthRealm(PermissionManager authorizer) {
-    setAuthenticationTokenClass(org.ohdsi.webapi.shiro.JwtAuthToken.class);
+    setAuthenticationTokenClass(JwtAuthToken.class);
     this.authorizer = authorizer;
   }
    

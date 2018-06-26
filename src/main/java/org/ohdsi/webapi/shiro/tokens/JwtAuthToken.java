@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.shiro;
+package org.ohdsi.webapi.shiro.tokens;
 
 import org.apache.shiro.authc.AuthenticationToken;
 

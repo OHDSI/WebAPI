@@ -16,9 +16,17 @@
  * Authors: Vitaly Koulakov
  *
  */
-package org.ohdsi.webapi.shiro;
+package org.ohdsi.webapi.shiro.realms;
 
-import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.realm.ldap.JndiLdapRealm;
+import org.ohdsi.webapi.shiro.tokens.LdapUsernamePasswordToken;
 
-public class LdapUsernamePasswordToken extends UsernamePasswordToken {
+public class LdapRealm extends JndiLdapRealm {
+
+    @Override
+    public boolean supports(AuthenticationToken token) {
+
+        return token instanceof LdapUsernamePasswordToken;
+    }
 }

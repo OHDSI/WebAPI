@@ -8,17 +8,21 @@ import javax.servlet.Filter;
 import org.apache.shiro.authc.Authenticator;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
 import org.apache.shiro.realm.Realm;
-import org.ohdsi.webapi.shiro.CorsFilter;
-import org.ohdsi.webapi.shiro.HideResourceFilter;
-import org.ohdsi.webapi.shiro.lockout.LockoutPolicy;
-import org.ohdsi.webapi.shiro.lockout.NoLockoutPolicy;
-import org.springframework.context.annotation.Bean;
+import org.ohdsi.webapi.shiro.filters.CorsFilter;
+import org.ohdsi.webapi.shiro.filters.HideResourceFilter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 /**
  *
  * @author gennadiy.anisimov
  */
+@Component
+@Primary
+@ConditionalOnProperty(name = "security.provider", havingValue = "DisabledSecurity")
+@DependsOn("flyway")
 public class DisabledSecurity extends Security {
 
   @Override

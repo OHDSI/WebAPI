@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.shiro;
+package org.ohdsi.webapi.shiro.filters;
 
 import static org.ohdsi.webapi.shiro.management.AtlasSecurity.PERMISSIONS_ATTRIBUTE;
 import static org.ohdsi.webapi.shiro.management.AtlasSecurity.TOKEN_ATTRIBUTE;

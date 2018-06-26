@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.shiro;
+package org.ohdsi.webapi.shiro.filters;
 
 import java.io.IOException;
 import javax.servlet.Filter;

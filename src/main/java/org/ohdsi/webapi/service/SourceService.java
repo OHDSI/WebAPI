@@ -110,7 +110,7 @@ public class SourceService extends AbstractDaoService {
   @Autowired
   private Security securityManager;
 
-  @Value("${security.enabled}")
+  @Value("#{!'${security.provider}'.equals('DisabledSecurity')}")
   private boolean securityEnabled;
 
   @Value("${jasypt.encryptor.enabled}")

@@ -50,7 +50,7 @@ public class PersonService extends AbstractDaoService {
   @Value("${person.viewDates}")
   private Boolean viewDatesPermitted;
 	
-  @Value("${security.enabled}")
+  @Value("#{!'${security.provider}'.equals('DisabledSecurity')}")
   private boolean securityEnabled;
 
   @Path("{personId}")

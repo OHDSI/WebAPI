@@ -16,7 +16,7 @@
  * Authors: Mikhail Mironov, Pavel Grafkin
  *
  */
-package org.ohdsi.webapi.shiro;
+package org.ohdsi.webapi.shiro.realms;
 
 
 import org.apache.commons.logging.Log;

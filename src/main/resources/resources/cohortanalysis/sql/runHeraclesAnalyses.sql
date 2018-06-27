@@ -8283,6 +8283,7 @@ with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_i
 	from #raw_4001
 	join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 	where ancestor = 0
+	where ancestor = 0
 
 	UNION ALL
 
@@ -11290,7 +11291,7 @@ where cost >= 0
 
 create index ix_rc_visit_date on #raw_cost_4020 (visit_start_date);
 
-select cohort_definition_id, subject_id, hp.period_id, visit_occurrence_id,visit_concept_id, visit_type_concept_id, cost_concept_id, cost_type_concept_id, cost
+select cohort_definition_id, subject_id, hp.period_id, visit_occurrence_id,visit_concept_id, visit_type_concept_id, cost_concept_id, cost_type_concept_id, cost, ancestor
 into #raw_period_4020
 from #raw_cost_4020
 join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
@@ -11367,6 +11368,7 @@ select cohort_definition_id
 	, sum(cost) as count_value
 into #raw_4020_u6
 from raw_cost_4020
+where ancestor = 0
 GROUP BY subject_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
 
 

@@ -110,7 +110,7 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
                 .setCreatedBy(security.getSubject())
                 .setCreatedDate(currentTime)
                 .setExpressionType(def.expressionType)
-                .setPreviousVersion(cohortDefinitionRepository.findByUuid(def.previousVersion.uuid))
+                .setPreviousVersion(def.previousVersion == null ? null : cohortDefinitionRepository.findByUuid(def.previousVersion.uuid))
                 .setUuid(def.uuid)
                 .setGroupKey(def.groupKey);
 

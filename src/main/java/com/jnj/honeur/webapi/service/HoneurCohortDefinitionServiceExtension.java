@@ -374,6 +374,7 @@ public class HoneurCohortDefinitionServiceExtension {
         SourceDaimonContextHolder.setCurrentSourceDaimonContext(new SourceDaimonContext(sourceKey, SourceDaimon.DaimonType.Results));
         CohortGenerationResults results = importCohortGenerationResults(id, cohortGenerationResults);
         SourceDaimonContextHolder.clear();
+
         results.setCohortGenerationInfo(
                 importCohortGenerationInfo(id, sourceKey, cohortGenerationResults.getCohortGenerationInfo()));
         return results;

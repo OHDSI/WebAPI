@@ -313,6 +313,8 @@ public class CohortDefinitionService extends AbstractDaoService {
     result.modifiedDate = def.getModifiedDate();
     result.name = def.getName();
     result.groupKey = def.getGroupKey();
+    result.uuid = def.getUuid();
+
     if(def.getPreviousVersion() != null){
       result.previousVersion = cohortDefinitionToDTO(def.getPreviousVersion());
     }

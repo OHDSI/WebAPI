@@ -71,7 +71,7 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
             item.groupKey = d.getGroupKey();
             List<CohortDefinitionDTO> groupedPreviousVersions =
                     StreamSupport.stream(defs.spliterator(), false)
-                            .filter(cohortDefinition -> cohortDefinition.getGroupKey().equals(item.groupKey) && !cohortDefinition.getId().equals(item.id))
+                            .filter(cohortDefinition -> (cohortDefinition.getGroupKey() == null || cohortDefinition.getGroupKey().equals(item.groupKey)) && !cohortDefinition.getId().equals(item.id))
                             .sorted(Comparator.comparing(CohortDefinition::getCreatedDate).reversed())
                             .map(this::cohortDefinitionToDTO).collect(Collectors.toList());
 

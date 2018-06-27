@@ -8281,8 +8281,8 @@ with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_i
 		, 0 as stratum_3
 		, subject_id
 	from #raw_4001
-	where ancestor = 0
 	join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+	where ancestor = 0
 
 	UNION ALL
 
@@ -8563,9 +8563,9 @@ select distinct cohort_definition_id
 	, 0 as stratum_3
 	, count(distinct visit_start_date) as count_value
 into #raw_4003_u3
-where ancestor = 0
 from #raw_4003
 join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+where ancestor = 0
 GROUP BY cohort_definition_id, subject_id, period_id;
 -- visit_concept_id, visit_type_concept_id
 select distinct cohort_definition_id
@@ -13816,7 +13816,16 @@ DROP TABLE #raw_period_4023;
   AND her1.count_value > 10;
   
 --WARNING:  monthly change > 100% at concept level
-WITH hr AS (
+INSERT INTO @results_schema.HERACLES_HEEL_results (
+  cohort_definition_id,
+  analysis_id,
+  HERACLES_HEEL_warning
+)
+SELECT her1.cohort_definition_id,
+  her1.analysis_id,
+  'WARNING: ' + CAST(her1.analysis_id  AS VARCHAR(1000)) + '-' + aa1.analysis_name + '; ' + CAST(COUNT_BIG(DISTINCT her1.stratum_1)  AS VARCHAR(1000)) + 'concepts have a 100% change in monthly count of events' AS HERACLES_HEEL_warning
+  FROM @results_schema.HERACLES_analysis aa1
+  INNER JOIN (
     SELECT
       cohort_definition_id,
       analysis_id,
@@ -13834,22 +13843,29 @@ WITH hr AS (
       902,
       1002
     )
-)
-INSERT INTO @results_schema.HERACLES_HEEL_results
-  cohort_definition_id,
-  analysis_id,
-  HERACLES_HEEL_warning
-)
-SELECT her1.cohort_definition_id,
-  her1.analysis_id,
-  'WARNING: ' + CAST(her1.analysis_id  AS VARCHAR(1000)) + '-' + aa1.analysis_name + '; ' + CAST(COUNT_BIG(DISTINCT her1.stratum_1)  AS VARCHAR(1000)) + 'concepts have a 100% change in monthly count of events' AS HERACLES_HEEL_warning
-  FROM @results_schema.HERACLES_analysis aa1
-  INNER JOIN hr her1
-  ON aa1.analysis_id = her1.analysis_id
-  INNER JOIN hr ar2
-  ON her1.analysis_id = ar2.analysis_id
-  and her1.cohort_definition_id = ar2.cohort_definition_id
-  AND her1.stratum_1 = ar2.stratum_1
+	) her1 ON aa1.analysis_id = her1.analysis_id
+  INNER JOIN 
+	(
+    SELECT
+      cohort_definition_id,
+      analysis_id,
+      stratum_1,
+      CAST((CASE WHEN stratum_2 = ''
+        THEN NULL
+            ELSE stratum_2 END) AS INT) stratum_2,
+      count_value
+    FROM @results_schema.HERACLES_results
+    WHERE analysis_id IN (
+      402,
+      602,
+      702,
+      802,
+      902,
+      1002
+    )
+	) ar2 ON her1.analysis_id = ar2.analysis_id
+		and her1.cohort_definition_id = ar2.cohort_definition_id
+		AND her1.stratum_1 = ar2.stratum_1
   WHERE (
     her1.stratum_2 + 1 = ar2.stratum_2
     OR her1.stratum_2 + 89 = ar2.stratum_2

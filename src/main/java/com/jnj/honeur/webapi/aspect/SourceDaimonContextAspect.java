@@ -75,9 +75,9 @@ public class SourceDaimonContextAspect {
         } catch (Throwable t) {
             LOG.error(t.getMessage(), t);
             throw new DataAccessResourceFailureException(String.format("Data access exception: %s", t.getMessage()), t);
+        } finally {
+            SourceDaimonContextHolder.clear();
         }
-
-        SourceDaimonContextHolder.clear();
 
         return result;
     }

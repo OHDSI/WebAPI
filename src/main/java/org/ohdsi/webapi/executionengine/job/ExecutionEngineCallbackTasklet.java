@@ -2,18 +2,17 @@ package org.ohdsi.webapi.executionengine.job;
 
 import static org.ohdsi.webapi.executionengine.entity.AnalysisExecution.Status.COMPLETED;
 import static org.ohdsi.webapi.executionengine.entity.AnalysisExecution.Status.FAILED;
+import static org.ohdsi.webapi.executionengine.job.CreateAnalysisTasklet.ANALYSIS_EXECUTION_ID;
 
-import java.util.Map;
 import javax.persistence.EntityManager;
 import org.ohdsi.webapi.executionengine.entity.AnalysisExecution;
 import org.ohdsi.webapi.executionengine.exception.ScriptCallbackException;
 import org.ohdsi.webapi.executionengine.repository.AnalysisExecutionRepository;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
-import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 
-public class ExecutionEngineCallbackTasklet implements Tasklet {
+public class ExecutionEngineCallbackTasklet extends BaseExecutionTasklet {
 
     private final AnalysisExecutionRepository analysisExecutionRepository;
     private final EntityManager entityManager;
@@ -30,11 +29,10 @@ public class ExecutionEngineCallbackTasklet implements Tasklet {
         AnalysisExecution.Status status;
 
         while (true) {
-            Map<String, Object> executionContext = chunkContext.getStepContext().getJobExecutionContext();
-            if (executionContext.containsKey("engineExecutionId")) {
-                Long engineExecutionId = (Long) executionContext.get("engineExecutionId");
+            if (contains(ANALYSIS_EXECUTION_ID)) {
+                int engineExecutionId = getInt(ANALYSIS_EXECUTION_ID);
                 entityManager.clear();
-                AnalysisExecution analysisExecution = analysisExecutionRepository.findOne(engineExecutionId.intValue());
+                AnalysisExecution analysisExecution = analysisExecutionRepository.findOne(engineExecutionId);
                 status = analysisExecution.getExecutionStatus();
                 if (status == COMPLETED || status == FAILED) {
                     break;

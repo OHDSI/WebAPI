@@ -53,13 +53,15 @@ public class CohortAnalysisGenerationInfo {
     @Basic
     private String failMessage;
 
+    @Column(name = "progress")
+    private Integer progress;
+
 		@Column(name = "analysis_id")
 		@ElementCollection(fetch = FetchType.LAZY)
 		@CollectionTable(name = "cohort_analysis_list_xref", joinColumns = {
 			@JoinColumn(name = "cohort_id", referencedColumnName = "cohort_id")
 			,@JoinColumn(name = "source_id", referencedColumnName = "source_id")})
 	  private Set<Integer> analysisIds = new HashSet<>();
-
 
     public Integer getSourceId() {
         return this.sourceId;
@@ -112,5 +114,13 @@ public class CohortAnalysisGenerationInfo {
 
     public void setCohortDefinition(CohortDefinition cohortDefinition) {
         this.cohortDefinition = cohortDefinition;
+    }
+
+    public Integer getProgress() {
+        return progress;
+    }
+
+    public void setProgress(Integer progress) {
+        this.progress = progress;
     }
 }

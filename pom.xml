@@ -656,7 +656,7 @@
         <datasource.username>USER</datasource.username>
         <datasource.password>PASS</datasource.password>
         <datasource.dialect>postgresql</datasource.dialect>
-        <datasource.ohdsi.schema>public</datasource.ohdsi.schema>
+        <datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>
         <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
         <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
         <flyway.datasource.username>userWithWritesToOhdsiSchema</flyway.datasource.username>
@@ -743,7 +743,7 @@
       <properties>
         <impala.enabled>true</impala.enabled>
 				<!-- Impala JDBC driver path -->
-				<impala.classpath>${basedir}/src/main/extras/impala</impala.classpath>
+				<impala.classpath>...path/to/impala/jdbc/drivers...</impala.classpath>
       </properties>
       <dependencies>
         <dependency>

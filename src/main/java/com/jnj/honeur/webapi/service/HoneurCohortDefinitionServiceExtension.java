@@ -191,36 +191,49 @@ public class HoneurCohortDefinitionServiceExtension {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     @Path("/{id}/export/{sourceKey}")
     public Response exportCohortResults(@HeaderParam("Authorization") String token, @PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey, @QueryParam("toCloud") final boolean toCloud, HttpHeaders headers) {
-        SourceDaimonContextHolder.setCurrentSourceDaimonContext(new SourceDaimonContext(sourceKey, SourceDaimon.DaimonType.Results));
+        try {
+            SourceDaimonContextHolder
+                    .setCurrentSourceDaimonContext(new SourceDaimonContext(sourceKey, SourceDaimon.DaimonType.Results));
 
-        List<CohortEntity> cohorts = cohortRepository.getAllCohortsForId((long) id);
-        List<CohortInclusionEntity> cohortInclusions = cohortInclusionRepository.getAllCohortInclusionsForId((long) id);
-        List<CohortInclusionResultEntity> cohortInclusionResults = cohortInclusionResultRepository.getAllCohortInclusionResultsForId((long) id);
-        List<CohortInclusionStatsEntity> cohortInclusionStats = cohortInclusionStatsRepository.getAllCohortInclusionStatsForId((long) id);
-        List<CohortSummaryStatsEntity> cohortSummaryStats = cohortSummaryStatsRepository.getAllCohortInclusionSummaryStatsForId((long) id);
+            List<CohortEntity> cohorts = cohortRepository.getAllCohortsForId((long) id);
+            List<CohortInclusionEntity> cohortInclusions =
+                    cohortInclusionRepository.getAllCohortInclusionsForId((long) id);
+            List<CohortInclusionResultEntity> cohortInclusionResults =
+                    cohortInclusionResultRepository.getAllCohortInclusionResultsForId((long) id);
+            List<CohortInclusionStatsEntity> cohortInclusionStats =
+                    cohortInclusionStatsRepository.getAllCohortInclusionStatsForId((long) id);
+            List<CohortSummaryStatsEntity> cohortSummaryStats =
+                    cohortSummaryStatsRepository.getAllCohortInclusionSummaryStatsForId((long) id);
 
-        SourceDaimonContextHolder.clear();
+            SourceDaimonContextHolder.clear();
 
-        CohortGenerationInfo info = this.cohortGenerationInfoRepository.findGenerationInfoByIdAndSourceId(id, sourceRepository.findBySourceKey(sourceKey).getSourceId());
+            CohortGenerationInfo info = this.cohortGenerationInfoRepository.findGenerationInfoByIdAndSourceId(id, sourceRepository.findBySourceKey(sourceKey).getSourceId());
 
-        CohortGenerationResults results = new CohortGenerationResults();
-        results.setCohort(cohorts);
-        results.setCohortInclusion(cohortInclusions);
-        results.setCohortInclusionResult(cohortInclusionResults);
-        results.setCohortInclusionStats(cohortInclusionStats);
-        results.setCohortSummaryStats(cohortSummaryStats);
-        results.setCohortGenerationInfo(info);
+            CohortGenerationResults results = new CohortGenerationResults();
+            results.setCohort(cohorts);
+            results.setCohortInclusion(cohortInclusions);
+            results.setCohortInclusionResult(cohortInclusionResults);
+            results.setCohortInclusionStats(cohortInclusionStats);
+            results.setCohortSummaryStats(cohortSummaryStats);
+            results.setCohortGenerationInfo(info);
 
 
-        String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
-        File file = createFile(sourceKey+"-"+timeStamp+".results", results);
+            String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+            File file = createFile(sourceKey+"-"+timeStamp+".results", results);
 
-        CohortDefinition cohortDefinition = this.cohortDefinitionRepository.findOneWithDetail(id);
+            CohortDefinition cohortDefinition = this.cohortDefinitionRepository.findOneWithDetail(id);
 
-        if(toCloud && file != null){
-            storageServiceClient.saveResults(token, file,cohortDefinition.getUuid().toString());
+            if(toCloud && file != null){
+                storageServiceClient.saveResults(token, file,cohortDefinition.getUuid().toString());
+            }
+            return getResponse(file);
+        } catch(Exception e){
+            log.error(e.getMessage(), e);
+            // TODO: beter return
+            return null;
+        } finally {
+            SourceDaimonContextHolder.clear();
         }
-        return getResponse(file);
     }
 
     @GET
@@ -371,13 +384,22 @@ public class HoneurCohortDefinitionServiceExtension {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/import/{sourceKey}")
     public CohortGenerationResults importCohortResults(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey, CohortGenerationResults cohortGenerationResults){
-        SourceDaimonContextHolder.setCurrentSourceDaimonContext(new SourceDaimonContext(sourceKey, SourceDaimon.DaimonType.Results));
-        CohortGenerationResults results = importCohortGenerationResults(id, cohortGenerationResults);
-        SourceDaimonContextHolder.clear();
+        try {
+            SourceDaimonContextHolder.setCurrentSourceDaimonContext(new SourceDaimonContext(sourceKey, SourceDaimon.DaimonType.Results));
+            CohortGenerationResults results = importCohortGenerationResults(id, cohortGenerationResults);
+            SourceDaimonContextHolder.clear();
 
-        results.setCohortGenerationInfo(
-                importCohortGenerationInfo(id, sourceKey, cohortGenerationResults.getCohortGenerationInfo()));
-        return results;
+            results.setCohortGenerationInfo(
+                    importCohortGenerationInfo(id, sourceKey, cohortGenerationResults.getCohortGenerationInfo()));
+            return results;
+
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            // TODO: better return
+            return new CohortGenerationResults();
+        } finally {
+            SourceDaimonContextHolder.clear();
+        }
     }
 
     @Transactional

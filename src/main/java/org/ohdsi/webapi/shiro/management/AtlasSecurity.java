@@ -62,24 +62,6 @@ public abstract class AtlasSecurity extends Security {
   @Value("${security.ssl.enabled}")
   private boolean sslEnabled;
 
-  @Value("${security.ad.url}")
-  private String adUrl;
-
-  @Value("${security.ad.searchBase}")
-  private String adSearchBase;
-
-  @Value("${security.ad.principalSuffix}")
-  private String adPrincipalSuffix;
-
-  @Value("${security.ad.system.username}")
-  private String adSystemUsername;
-
-  @Value("${security.ad.system.password}")
-  private String adSystemPassword;
-
-  @Value("${security.ad.searchFilter}")
-  private String adSearchFilter;
-
   protected final Set<String> defaultRoles = new LinkedHashSet<>();
 
   private final Map<String, String> cohortdefinitionCreatorPermissionTemplates = new LinkedHashMap<>();
@@ -245,43 +227,6 @@ public abstract class AtlasSecurity extends Security {
   public Set<Realm> getRealms() {
 
     return new LinkedHashSet<>();
-  }
-
-
-  private ActiveDirectoryRealm activeDirectoryRealm() {
-    ActiveDirectoryRealm realm = new ADRealm(getLdapTemplate(), adSearchFilter);
-    realm.setUrl(adUrl);
-    realm.setSearchBase(adSearchBase);
-    realm.setPrincipalSuffix(adPrincipalSuffix);
-    realm.setSystemUsername(adSystemUsername);
-    realm.setSystemPassword(adSystemPassword);
-    return realm;
-  }
-
-  private LdapTemplate getLdapTemplate() {
-
-    if (StringUtils.isNotBlank(adSearchFilter)) {
-      LdapContextSource contextSource = new LdapContextSource();
-      contextSource.setUrl(adUrl);
-      contextSource.setBase(adSearchBase);
-      contextSource.setUserDn(adSystemUsername);
-      contextSource.setPassword(adSystemPassword);
-      contextSource.setCacheEnvironmentProperties(false);
-      contextSource.setAuthenticationStrategy(new SimpleDirContextAuthenticationStrategy());
-      contextSource.setAuthenticationSource(new AuthenticationSource() {
-        @Override
-        public String getPrincipal() {
-          return StringUtils.isNotBlank(adPrincipalSuffix) ? adSystemUsername + adPrincipalSuffix : adSystemUsername;
-        }
-
-        @Override
-        public String getCredentials() {
-          return adSystemPassword;
-        }
-      });
-      return new LdapTemplate(contextSource);
-    }
-    return null;
   }
 
   @Override

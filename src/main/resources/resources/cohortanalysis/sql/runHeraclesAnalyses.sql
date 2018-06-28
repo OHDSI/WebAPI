@@ -9461,6 +9461,7 @@ select cohort_definition_id
 	, count(distinct visit_start_date) as count_value
 into #raw_4009_u6
 from #raw_4009
+where ancestor = 0
 GROUP BY cohort_definition_id, subject_id;
 
 
@@ -11734,17 +11735,17 @@ rxnorm_rollup (cohort_definition_id, subject_id, drug_concept_id, drug_type_conc
 select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost, ancestor
 INTO #raw_cost_4022
 FROM (
-  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost FROM drug_records
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost, 0 as ancestor FROM drug_records
 	UNION ALL
-  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost FROM atc_rollup
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost, 1 as ancestor FROM atc_rollup
 	UNION ALL
-  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost FROM rxnorm_rollup
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost, 1 as ancestor FROM rxnorm_rollup
 ) D
 ;
 
 create index ix_rc_visit_date on #raw_cost_4022 (drug_exposure_start_date);
 
-select cohort_definition_id, subject_id, hp.period_id, drug_exposure_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, cost
+select cohort_definition_id, subject_id, hp.period_id, drug_exposure_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, cost, ancestor
 into #raw_period_4022
 from #raw_cost_4022
 join #periods_baseline hp on drug_exposure_start_date >= hp.period_start_date and drug_exposure_start_date < hp.period_end_date
@@ -11784,6 +11785,7 @@ select cohort_definition_id
 	, sum(cost) as count_value
 into #raw_4022_u3
 from #raw_period_4022
+where ancestor = 0
 GROUP BY subject_id, period_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
 
 select cohort_definition_id
@@ -11820,6 +11822,7 @@ select cohort_definition_id
 	, sum(cost) as count_value
 into #raw_4022_u6
 from #raw_cost_4022
+where ancestor = 0
 GROUP BY subject_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
 
 
@@ -11971,17 +11974,17 @@ rxnorm_rollup (cohort_definition_id, subject_id, drug_concept_id, drug_type_conc
 select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost, ancestor
 INTO #raw_cost_4023
 FROM (
-  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost FROM drug_records
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost, 0 as ancestor FROM drug_records
 	UNION ALL
-  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost FROM atc_rollup
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost, 1 as ancestor FROM atc_rollup
 	UNION ALL
-  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost FROM rxnorm_rollup
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost, 1 as ancestor FROM rxnorm_rollup
 ) D
 ;
  
 create index ix_rc_visit_date on #raw_cost_4023 (drug_exposure_start_date);
 
-select cohort_definition_id, subject_id, hp.period_id, drug_exposure_id,drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, cost
+select cohort_definition_id, subject_id, hp.period_id, drug_exposure_id,drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, cost, ancestor
 into #raw_period_4023
 from #raw_cost_4023
 join #periods_atrisk hp on drug_exposure_start_date >= hp.period_start_date and drug_exposure_start_date < hp.period_end_date
@@ -12021,6 +12024,7 @@ select cohort_definition_id
 	, sum(cost) as count_value
 into #raw_4023_u3
 from #raw_period_4023
+where ancestor = 0
 GROUP BY subject_id, period_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
 
 select cohort_definition_id
@@ -12057,6 +12061,7 @@ select cohort_definition_id
 	, sum(cost) as count_value
 into #raw_4023_u6
 from #raw_cost_4023
+where ancestor = 0
 GROUP BY subject_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
 
 WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value) as

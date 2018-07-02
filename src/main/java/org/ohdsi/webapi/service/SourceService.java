@@ -71,7 +71,7 @@ public class SourceService extends AbstractDaoService {
         }
 
         //TODO to remove when in order.
-        createAdditionalTables();
+//        createAdditionalTables();
         return cachedSources;
     }
 

@@ -22,8 +22,6 @@
                 <security.oauth.facebook.apiSecret></security.oauth.facebook.apiSecret>
                 <jersey.resources.additional.packages>com.jnj.honeur.webapi</jersey.resources.additional.packages>
             </properties>
-            <dependencies>
-            </dependencies>
         </profile>
         <profile>
             <id>aws</id>

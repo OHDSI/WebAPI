@@ -39,14 +39,14 @@ public class WebApi extends SpringBootServletInitializer {
     @Autowired
     private SourceService sourceService;
 
-    @PostConstruct
-    public void warmCaches() {
-        sourceService.getSources().stream().forEach((s) -> {
-            for (SourceDaimon sd : s.daimons) {
-                if (sd.getDaimonType() == SourceDaimon.DaimonType.Results) {
-                    resultsService.warmCache(s.sourceKey);
-                }
-            }
-        });
-    }
+//    @PostConstruct
+//    public void warmCaches() {
+//        sourceService.getSources().stream().forEach((s) -> {
+//            for (SourceDaimon sd : s.daimons) {
+//                if (sd.getDaimonType() == SourceDaimon.DaimonType.Results) {
+//                    resultsService.warmCache(s.sourceKey);
+//                }
+//            }
+//        });
+//    }
 }

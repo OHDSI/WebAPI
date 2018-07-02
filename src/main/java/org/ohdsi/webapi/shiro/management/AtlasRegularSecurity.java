@@ -3,6 +3,7 @@ package org.ohdsi.webapi.shiro.management;
 import io.buji.pac4j.filter.CallbackFilter;
 import io.buji.pac4j.filter.SecurityFilter;
 import io.buji.pac4j.realm.Pac4jRealm;
+import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.realm.activedirectory.ActiveDirectoryRealm;
 import org.apache.shiro.realm.ldap.JndiLdapContextFactory;
@@ -35,6 +36,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.ldap.core.AuthenticationSource;
+import org.springframework.ldap.core.LdapTemplate;
+import org.springframework.ldap.core.support.LdapContextSource;
+import org.springframework.ldap.core.support.SimpleDirContextAuthenticationStrategy;
 import org.springframework.stereotype.Component;
 import waffle.shiro.negotiate.NegotiateAuthenticationFilter;
 import waffle.shiro.negotiate.NegotiateAuthenticationRealm;
@@ -100,6 +105,12 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
     @Value("${security.db.datasource.authenticationQuery}")
     private String jdbcAuthenticationQuery;
+
+    @Value("${security.ad.searchFilter}")
+    private String adSearchFilter;
+
+    @Value("${security.ad.ignore.partial.result.exception}")
+    private Boolean adIgnorePartialResultException;
 
     @Autowired
     @Qualifier("authDataSource")
@@ -231,12 +242,40 @@ public class AtlasRegularSecurity extends AtlasSecurity {
     }
 
     private ActiveDirectoryRealm activeDirectoryRealm() {
-        ActiveDirectoryRealm realm = new ADRealm();
+        ActiveDirectoryRealm realm = new ADRealm(getLdapTemplate(), adSearchFilter);
         realm.setUrl(adUrl);
         realm.setSearchBase(adSearchBase);
         realm.setPrincipalSuffix(adPrincipalSuffix);
         realm.setSystemUsername(adSystemUsername);
         realm.setSystemPassword(adSystemPassword);
         return realm;
+    }
+
+    private LdapTemplate getLdapTemplate() {
+
+        if (StringUtils.isNotBlank(adSearchFilter)) {
+            LdapContextSource contextSource = new LdapContextSource();
+            contextSource.setUrl(adUrl);
+            contextSource.setBase(adSearchBase);
+            contextSource.setUserDn(adSystemUsername);
+            contextSource.setPassword(adSystemPassword);
+            contextSource.setCacheEnvironmentProperties(false);
+            contextSource.setAuthenticationStrategy(new SimpleDirContextAuthenticationStrategy());
+            contextSource.setAuthenticationSource(new AuthenticationSource() {
+                @Override
+                public String getPrincipal() {
+                    return StringUtils.isNotBlank(adPrincipalSuffix) ? adSystemUsername + adPrincipalSuffix : adSystemUsername;
+                }
+
+                @Override
+                public String getCredentials() {
+                    return adSystemPassword;
+                }
+            });
+            LdapTemplate ldapTemplate = new LdapTemplate(contextSource);
+            ldapTemplate.setIgnorePartialResultException(adIgnorePartialResultException);
+            return ldapTemplate;
+        }
+        return null;
     }
 }

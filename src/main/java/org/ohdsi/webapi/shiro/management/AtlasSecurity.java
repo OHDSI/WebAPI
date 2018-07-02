@@ -229,55 +229,6 @@ public abstract class AtlasSecurity extends Security {
     return new LinkedHashSet<>();
   }
 
-  private JndiLdapRealm ldapRealm() {
-    JndiLdapRealm realm = new LdapRealm();
-    realm.setUserDnTemplate(userDnTemplate);
-    JndiLdapContextFactory contextFactory = new JndiLdapContextFactory();
-    contextFactory.setUrl(ldapUrl);
-    contextFactory.setPoolingEnabled(false);
-    contextFactory.getEnvironment().put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-    realm.setContextFactory(contextFactory);
-    return realm;
-  }
-
-  private ActiveDirectoryRealm activeDirectoryRealm() {
-    ActiveDirectoryRealm realm = new ADRealm(getLdapTemplate(), adSearchFilter);
-    realm.setUrl(adUrl);
-    realm.setSearchBase(adSearchBase);
-    realm.setPrincipalSuffix(adPrincipalSuffix);
-    realm.setSystemUsername(adSystemUsername);
-    realm.setSystemPassword(adSystemPassword);
-    return realm;
-  }
-
-  private LdapTemplate getLdapTemplate() {
-
-    if (StringUtils.isNotBlank(adSearchFilter)) {
-      LdapContextSource contextSource = new LdapContextSource();
-      contextSource.setUrl(adUrl);
-      contextSource.setBase(adSearchBase);
-      contextSource.setUserDn(adSystemUsername);
-      contextSource.setPassword(adSystemPassword);
-      contextSource.setCacheEnvironmentProperties(false);
-      contextSource.setAuthenticationStrategy(new SimpleDirContextAuthenticationStrategy());
-      contextSource.setAuthenticationSource(new AuthenticationSource() {
-        @Override
-        public String getPrincipal() {
-          return StringUtils.isNotBlank(adPrincipalSuffix) ? adSystemUsername + adPrincipalSuffix : adSystemUsername;
-        }
-
-        @Override
-        public String getCredentials() {
-          return adSystemPassword;
-        }
-      });
-      LdapTemplate ldapTemplate = new LdapTemplate(contextSource);
-      ldapTemplate.setIgnorePartialResultException(adIgnorePartialResultException);
-      return ldapTemplate;
-    }
-    return null;
-  }
-
   @Override
   public Authenticator getAuthenticator() {
     ModularRealmAuthenticator authenticator = new ModularRealmAuthenticator();

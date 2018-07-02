@@ -23,6 +23,7 @@ import org.ohdsi.webapi.executionengine.dto.ExecutionRequestDTO;
 import org.ohdsi.webapi.executionengine.entity.AnalysisExecution;
 import org.ohdsi.webapi.executionengine.entity.AnalysisExecutionType;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFile;
+import org.ohdsi.webapi.executionengine.job.CreateAnalysisTasklet;
 import org.ohdsi.webapi.executionengine.job.ExecutionEngineCallbackTasklet;
 import org.ohdsi.webapi.executionengine.job.RunExecutionEngineTasklet;
 import org.ohdsi.webapi.executionengine.repository.AnalysisExecutionRepository;
@@ -98,30 +99,28 @@ public class ScriptExecutionController {
         RunExecutionEngineTasklet runExecutionEngineTasklet = new RunExecutionEngineTasklet(scriptExecutionService, dto);
         ExecutionEngineCallbackTasklet callbackTasklet = new ExecutionEngineCallbackTasklet(analysisExecutionRepository, entityManager);
 
+        CreateAnalysisTasklet createAnalysisTasklet = new CreateAnalysisTasklet(scriptExecutionService, dto);
+
+        Step analysisCreationStep = stepBuilderFactory.get("executionEngine.create-analysis")
+                .tasklet(createAnalysisTasklet)
+                .build();
+        
         Step runExecutionStep = stepBuilderFactory.get("executionEngine.start")
-                .listener(executionContextPromotionListener())
                 .tasklet(runExecutionEngineTasklet)
                 .build();
 
         Step waitCallbackStep = stepBuilderFactory.get("executionEngine.callback")
-                .listener(executionContextPromotionListener())
                 .tasklet(callbackTasklet)
                 .build();
 
         Job runExecutionJob = jobBuilders.get("executionEngine")
-                .start(runExecutionStep)
+                .start(analysisCreationStep)
+                .next(runExecutionStep)
                 .next(waitCallbackStep)
                 .build();
 
         JobExecutionResource executionResource = jobTemplate.launch(runExecutionJob, jobParameters);
         return executionResource;
-    }
-
-    private StepExecutionListener executionContextPromotionListener() {
-
-        ExecutionContextPromotionListener listener = new ExecutionContextPromotionListener();
-        listener.setKeys(new String[]{ "engineExecutionId" });
-        return listener;
     }
 
     @Path("execution/status/{executionId}")

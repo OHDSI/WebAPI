@@ -8233,19 +8233,20 @@ DROP TABLE #raw_4000;
 {4001 IN (@list_of_analysis_ids)}?{
 	-- 4001 Number of subjects with visits by period_id, by visit_concept_id, by visit_type_concept_id in the 365d prior to first cohort start date
 
-with visit_records (cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id, visit_start_date) as
+with visit_records (cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id, visit_start_date, ancestor) as
 (
 	select distinct c1.cohort_definition_id,
 		c1.subject_id,
 		vca.ancestor_concept_id as visit_concept_id,
 		vo1.visit_type_concept_id,
-		vo1.visit_start_date
+		vo1.visit_start_date,
+    case when vca.ancestor_concept_id = vca.descendant_concept_id then 0 else 1 end as ancestor
 	from #cohort_first c1
 	join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
 			and vo1.visit_start_date >= dateadd(d, -365, c1.cohort_start_date) and vo1.visit_start_date < c1.cohort_start_date
 	join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
 )
-select cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id, visit_start_date
+select cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id, visit_start_date, ancestor
 INTO #raw_4001
 FROM visit_records;
 
@@ -8281,6 +8282,7 @@ with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_i
 		, subject_id
 	from #raw_4001
 	join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+	where ancestor = 0
 
 	UNION ALL
 
@@ -8309,6 +8311,7 @@ with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_i
 		, 0 as stratum_3
 		, subject_id
 	from #raw_4001
+	where ancestor = 0
 )
 select cohort_definition_id, 4001 as analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
 INTO #results_4001
@@ -8335,7 +8338,8 @@ select distinct c1.cohort_definition_id,
 	vca.ancestor_concept_id as visit_concept_id,
 	vo1.visit_type_concept_id,
 	vo1.visit_occurrence_id,
-	vo1.visit_start_date
+	vo1.visit_start_date,
+  case when vca.ancestor_concept_id = vca.descendant_concept_id then 0 else 1 end as ancestor
 INTO #raw_4002
 from #cohort_first c1
 join @CDM_schema.visit_occurrence vo1 on c1.subject_id = vo1.person_id
@@ -8376,6 +8380,7 @@ select distinct cohort_definition_id
 into #raw_4002_u3
 from #raw_4002
 join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+where ancestor = 0
 GROUP BY cohort_definition_id, subject_id, period_id
 ;
 -- visit_concept_id, visit_type_concept_id
@@ -8409,6 +8414,7 @@ select distinct cohort_definition_id
 	, count(distinct visit_occurrence_id) as count_value
 into #raw_4002_u6
 from #raw_4002
+where ancestor = 0
 GROUP BY cohort_definition_id, subject_id
 ;
 
@@ -8517,7 +8523,8 @@ select distinct c1.cohort_definition_id,
 	c1.subject_id,
 	vca.ancestor_concept_id as visit_concept_id,
 	vo1.visit_type_concept_id,
-	vo1.visit_start_date
+	vo1.visit_start_date,
+  case when vca.ancestor_concept_id = vca.descendant_concept_id then 0 else 1 end as ancestor
 INTO #raw_4003
 from #cohort_first c1
 join @CDM_schema.visit_occurrence vo1 on c1.subject_id = vo1.person_id
@@ -8558,6 +8565,7 @@ select distinct cohort_definition_id
 into #raw_4003_u3
 from #raw_4003
 join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+where ancestor = 0
 GROUP BY cohort_definition_id, subject_id, period_id;
 -- visit_concept_id, visit_type_concept_id
 select distinct cohort_definition_id
@@ -8588,6 +8596,7 @@ select distinct cohort_definition_id
 	, count(distinct visit_start_date) as count_value
 into #raw_4003_u6
 from #raw_4003
+where ancestor = 0
 GROUP BY cohort_definition_id, subject_id;
 
 WITH cteRawData (cohort_definition_id, subject_id, stratum_1, stratum_2, stratum_3, count_value) as
@@ -8691,7 +8700,8 @@ select distinct c1.cohort_definition_id,
 	vca.ancestor_concept_id as visit_concept_id,
 	vo1.visit_type_concept_id,
 	vo1.visit_start_date,
-	cast(care_site_id as varchar(19)) + '_' + CAST(YEAR(visit_start_date) as varchar(4)) + CAST(RIGHT('00' + cast(MONTH(visit_start_date) as varchar(2)),2) as varchar(2)) + CAST(RIGHT('00' + cast(DAY(visit_start_date) as varchar(2)),2) as varchar(2)) as care_site_date_id
+	cast(care_site_id as varchar(19)) + '_' + CAST(YEAR(visit_start_date) as varchar(4)) + CAST(RIGHT('00' + cast(MONTH(visit_start_date) as varchar(2)),2) as varchar(2)) + CAST(RIGHT('00' + cast(DAY(visit_start_date) as varchar(2)),2) as varchar(2)) as care_site_date_id,
+  case when vca.ancestor_concept_id = vca.descendant_concept_id then 0 else 1 end as ancestor
 INTO #raw_4004
 from #cohort_first c1
 join @CDM_schema.visit_occurrence vo1 on c1.subject_id = vo1.person_id
@@ -8732,6 +8742,7 @@ select distinct cohort_definition_id
 into #raw_4004_u3
 from #raw_4004
 join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+where ancestor = 0
 GROUP BY cohort_definition_id, subject_id, period_id;
 -- visit_concept_id, visit_type_concept_id
 select distinct cohort_definition_id
@@ -8762,6 +8773,7 @@ select distinct cohort_definition_id
 	, count(distinct care_site_date_id) as count_value
 into #raw_4004_u6
 from #raw_4004
+where ancestor = 0
 GROUP BY cohort_definition_id, subject_id;
 
 
@@ -9083,19 +9095,20 @@ GROUP BY o.cohort_definition_id, o.stratum_1, o.total, o.min_value, o.max_value,
 {4007 IN (@list_of_analysis_ids)}?{
 	-- 4007 Number of subjects with visits by period_id, by visit_concept_id, by visit_type_concept_id during the cohort period
 
-with visit_records (cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id, visit_start_date) as
+with visit_records (cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id, visit_start_date, ancestor) as
 (
 	select distinct c1.cohort_definition_id,
 		c1.subject_id,
 		vca.ancestor_concept_id as visit_concept_id,
 		vo1.visit_type_concept_id,
-		vo1.visit_start_date
+		vo1.visit_start_date,
+		case when vca.ancestor_concept_id = vca.descendant_concept_id then 0 else 1 end as ancestor
 	from #HERACLES_cohort c1
 	join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
 		and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date <= c1.cohort_end_date
 	join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
 )
-select cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id, visit_start_date
+select cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id, visit_start_date, ancestor
 INTO #raw_4007
 FROM visit_records;
 
@@ -9130,6 +9143,7 @@ with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_i
 		, subject_id
 	from #raw_4007
 	join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+	where ancestor = 0
 
 	UNION ALL
 
@@ -9158,6 +9172,7 @@ with cteRawData(cohort_definition_id, stratum_1, stratum_2, stratum_3, subject_i
 		, 0 as stratum_3
 		, subject_id
 	from #raw_4007
+	where ancestor = 0
 )
 select cohort_definition_id, 4007 as analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value
 INTO #results_4007
@@ -9185,7 +9200,8 @@ select distinct c1.cohort_definition_id,
 	vca.ancestor_concept_id as visit_concept_id,
 	vo1.visit_type_concept_id,
 	vo1.visit_occurrence_id,
-	vo1.visit_start_date
+	vo1.visit_start_date,
+	case when vca.ancestor_concept_id = vca.descendant_concept_id then 0 else 1 end as ancestor
 INTO #raw_4008
 from #HERACLES_cohort c1
 join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
@@ -9226,6 +9242,7 @@ select distinct cohort_definition_id
 into #raw_4008_u3
 from #raw_4008
 join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+where ancestor = 0
 GROUP BY cohort_definition_id, subject_id, period_id
 ;
 -- visit_concept_id, visit_type_concept_id
@@ -9259,6 +9276,7 @@ select distinct cohort_definition_id
 	, count(distinct visit_occurrence_id) as count_value
 into #raw_4008_u6
 from #raw_4008
+where ancestor = 0
 GROUP BY cohort_definition_id, subject_id
 ;
 
@@ -9364,12 +9382,13 @@ DROP TABLE #raw_4008;
 
 
 {4009 IN (@list_of_analysis_ids)}?{
-	-- 4009 Distribution of number of visit dates per subject by period_id, by visit_concept_id, by visit_type_concept_id in 365d prior to first cohort start date
+	-- 4009 Distribution of number of visit dates per subject by period_id, by visit_concept_id, by visit_type_concept_id during the cohort period
 select distinct c1.cohort_definition_id,
 	c1.subject_id,
 	vca.ancestor_concept_id as visit_concept_id,
 	vo1.visit_type_concept_id,
-	vo1.visit_start_date
+	vo1.visit_start_date,
+	case when vca.ancestor_concept_id = vca.descendant_concept_id then 0 else 1 end as ancestor
 INTO #raw_4009
 from #HERACLES_cohort c1
 join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
@@ -9410,6 +9429,7 @@ select distinct cohort_definition_id
 into #raw_4009_u3
 from #raw_4009
 join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+where ancestor = 0
 GROUP BY cohort_definition_id, subject_id, period_id;
 -- visit_concept_id, visit_type_concept_id
 select distinct cohort_definition_id
@@ -9539,13 +9559,14 @@ DROP TABLE #raw_4009;
 
 
 {4010 IN (@list_of_analysis_ids)}?{
-	-- 4010 Distribution of number of care_site+visit dates per subject by period_id, by visit_concept_id, by visit_type_concept_id in 365d prior to first cohort start date
+	-- 4010 Distribution of number of care_site+visit dates per subject by period_id, by visit_concept_id, by visit_type_concept_id during the cohort period
 select distinct c1.cohort_definition_id,
 	c1.subject_id,
 	vca.ancestor_concept_id as visit_concept_id,
 	vo1.visit_type_concept_id,
 	vo1.visit_start_date,
-	cast(care_site_id as varchar(19)) + '_' + CAST(YEAR(visit_start_date) as varchar(4)) + CAST(RIGHT('00' + cast(MONTH(visit_start_date) as varchar(2)),2) as varchar(2)) + CAST(RIGHT('00' + cast(DAY(visit_start_date) as varchar(2)),2) as varchar(2)) as care_site_date_id
+	cast(care_site_id as varchar(19)) + '_' + CAST(YEAR(visit_start_date) as varchar(4)) + CAST(RIGHT('00' + cast(MONTH(visit_start_date) as varchar(2)),2) as varchar(2)) + CAST(RIGHT('00' + cast(DAY(visit_start_date) as varchar(2)),2) as varchar(2)) as care_site_date_id,
+	case when vca.ancestor_concept_id = vca.descendant_concept_id then 0 else 1 end as ancestor
 INTO #raw_4010
 from #HERACLES_cohort c1
 join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
@@ -9586,6 +9607,7 @@ select distinct cohort_definition_id
 into #raw_4010_u3
 from #raw_4010
 join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
+where ancestor = 0
 GROUP BY cohort_definition_id, subject_id, period_id;
 -- visit_concept_id, visit_type_concept_id
 select distinct cohort_definition_id
@@ -9616,6 +9638,7 @@ select distinct cohort_definition_id
 	, count(distinct care_site_date_id) as count_value
 into #raw_4010_u6
 from #raw_4010
+where ancestor = 0
 GROUP BY cohort_definition_id, subject_id;
 
 
@@ -10551,7 +10574,7 @@ DROP TABLE #raw_de_p_4015;
 }
 
 {4016 IN (@list_of_analysis_ids)}?{
-	-- 4016 Number of subjects with Drug Exposure by period_id, by drug_concept_id during the cohort period
+	-- 4016 Number of subjects with Drug Exposure by period_id, by drug_concept_id, by drug_type_concept_id during the cohort period
 
 with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date) as
 (
@@ -11242,7 +11265,7 @@ DROP TABLE #raw_de_p_4019;
 }
 
 {4020 IN (@list_of_analysis_ids)}?{
--- 4020	Distribution of greater than 0 US$ cost per subject by period_id, by visit_concept_id, by visit_type_concept_id, by cost_concept_id in the 365d prior to first cohort start date
+-- 4020	Distribution of greater than 0 US$ cost per subject by period_id, by visit_concept_id, by visit_type_concept_id, by cost_concept_id, by cost_type_concept_id in the 365d prior to first cohort start date
 select c1.cohort_definition_id,
 	c1.subject_id,
   vo1.visit_occurrence_id,
@@ -11251,7 +11274,8 @@ select c1.cohort_definition_id,
 	cst1.cost_concept_id,
   cst1.cost_type_concept_id,
 	vo1.visit_start_date,
-  cost
+  cost,
+  case when vca.ancestor_concept_id = vca.descendant_concept_id then 0 else 1 end as ancestor
 INTO #raw_cost_4020
 from #cohort_first c1
 join @CDM_schema.visit_occurrence vo1 on c1.subject_id = vo1.person_id
@@ -11266,7 +11290,7 @@ where cost >= 0
 
 create index ix_rc_visit_date on #raw_cost_4020 (visit_start_date);
 
-select cohort_definition_id, subject_id, hp.period_id, visit_occurrence_id,visit_concept_id, visit_type_concept_id, cost_concept_id, cost_type_concept_id, cost
+select cohort_definition_id, subject_id, hp.period_id, visit_occurrence_id,visit_concept_id, visit_type_concept_id, cost_concept_id, cost_type_concept_id, cost, ancestor
 into #raw_period_4020
 from #raw_cost_4020
 join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
@@ -11306,6 +11330,7 @@ select cohort_definition_id
 	, sum(cost) as count_value
 into #raw_4020_u3
 from raw_period_4020
+where ancestor = 0
 GROUP BY subject_id, period_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
 
 select cohort_definition_id
@@ -11342,6 +11367,7 @@ select cohort_definition_id
 	, sum(cost) as count_value
 into #raw_4020_u6
 from raw_cost_4020
+where ancestor = 0
 GROUP BY subject_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
 
 
@@ -11422,7 +11448,7 @@ select o.cohort_definition_id,
 	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
 into #results_dist_4020
 from valueStats s
-join overallStats o on s.cohort_definition_id = o.cohort_definition_id 
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id
 	and s.stratum_1 = o.stratum_1 and s.stratum_2 = o.stratum_2 and s.stratum_3 = o.stratum_3 and s.stratum_4 = o.stratum_4 and s.stratum_5 = o.stratum_5
 GROUP BY o.cohort_definition_id, o.stratum_1, o.stratum_2, o.stratum_3, o.stratum_4, o.stratum_5, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
@@ -11462,7 +11488,8 @@ select c1.cohort_definition_id,
 	cst1.cost_concept_id,
   cst1.cost_type_concept_id,
 	vo1.visit_start_date,
-  cst1.cost
+  cst1.cost,
+  case when vca.ancestor_concept_id = vca.descendant_concept_id then 0 else 1 end as ancestor
 INTO #raw_cost_4021
 from #HERACLES_cohort c1
 join @CDM_schema.visit_occurrence vo1 on c1.subject_id = vo1.person_id
@@ -11476,7 +11503,7 @@ where cost >= 0
 
 create index ix_rc_visit_date on #raw_cost_4021 (visit_start_date);
 
-select cohort_definition_id, subject_id, hp.period_id, visit_occurrence_id,visit_concept_id, visit_type_concept_id, cost_concept_id, cost_type_concept_id, cost
+select cohort_definition_id, subject_id, hp.period_id, visit_occurrence_id,visit_concept_id, visit_type_concept_id, cost_concept_id, cost_type_concept_id, cost, ancestor
 into #raw_period_4021
 from #raw_cost_4021
 join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
@@ -11516,6 +11543,7 @@ select cohort_definition_id
 	, sum(cost) as count_value
 into #raw_4021_u3
 from #raw_period_4021
+where ancestor = 0
 GROUP BY subject_id, period_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
 
 select cohort_definition_id
@@ -11552,6 +11580,7 @@ select cohort_definition_id
 	, sum(cost) as count_value
 into #raw_4021_u6
 from #raw_cost_4021
+where ancestor = 0
 GROUP BY subject_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
 
 
@@ -11632,7 +11661,7 @@ select o.cohort_definition_id,
 	MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
 into #results_dist_4021
 from valueStats s
-join overallStats o on s.cohort_definition_id = o.cohort_definition_id 
+join overallStats o on s.cohort_definition_id = o.cohort_definition_id
 	and s.stratum_1 = o.stratum_1 and s.stratum_2 = o.stratum_2 and s.stratum_3 = o.stratum_3 and s.stratum_4 = o.stratum_4 and s.stratum_5 = o.stratum_5
 GROUP BY o.cohort_definition_id, o.stratum_1, o.stratum_2, o.stratum_3, o.stratum_4, o.stratum_5, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
@@ -11664,7 +11693,7 @@ DROP TABLE #raw_period_4021;
 }
 
 {4022 IN (@list_of_analysis_ids)}?{
--- 4022	Distribution of greater than 0 US$ cost per subject by period_id, by drug_concept_id, by drug_type_concept_id, by cost_concept_id in the 365d prior to first cohort start date
+-- 4022	Distribution of greater than 0 US$ cost per subject by period_id, by drug_concept_id, by drug_type_concept_id, by cost_concept_id, by cost_type_concept_id in the 365d prior to first cohort start date
 with drug_records(cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost) as
 (
 	select c1.cohort_definition_id,
@@ -11901,7 +11930,7 @@ DROP TABLE #raw_period_4022;
 }
 
 {4023 IN (@list_of_analysis_ids)}?{
--- 4023	Distribution of greater than 0 US$ cost per subject by period_id, by drug_concept_id, by drug_type_concept_id, by cost_concept_id, by cost_type_concept_id during the cohort period
+-- 4023	Distribution of greater than 0 US$ cost per subject by period_id, by drug_concept_id, by drug_type_concept_id, by cost_concept_id, by cost_type_concept_id, by cost_type_concept_id during the cohort period
 with drug_records(cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost) as
 (
 	select c1.cohort_definition_id,
@@ -13807,7 +13836,7 @@ WITH hr AS (
       1002
     )
 )
-INSERT INTO @results_schema.HERACLES_HEEL_results
+INSERT INTO @results_schema.HERACLES_HEEL_results (
   cohort_definition_id,
   analysis_id,
   HERACLES_HEEL_warning

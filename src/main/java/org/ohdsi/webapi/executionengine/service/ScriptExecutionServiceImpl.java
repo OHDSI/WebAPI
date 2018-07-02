@@ -1,12 +1,12 @@
 package org.ohdsi.webapi.executionengine.service;
 
-import com.google.common.collect.ImmutableList;
 import com.odysseusinc.arachne.commons.types.DBMSType;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisRequestDTO;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisRequestStatusDTO;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisRequestTypeDTO;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.DataSourceUnsecuredDTO;
 import com.odysseusinc.arachne.execution_engine_common.util.ConnectionParams;
+import jersey.repackaged.com.google.common.collect.ImmutableList;
 import jersey.repackaged.com.google.common.collect.ImmutableMap;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.text.StrSubstitutor;
@@ -30,6 +30,7 @@ import org.ohdsi.webapi.executionengine.util.StringGenerationUtil;
 import org.ohdsi.webapi.prediction.PatientLevelPredictionAnalysis;
 import org.ohdsi.webapi.prediction.PatientLevelPredictionAnalysisRepository;
 import org.ohdsi.webapi.service.HttpClient;
+import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceRepository;
@@ -79,7 +80,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     private List<DBMSType> DBMS_REQUIRE_DB = ImmutableList.of(DBMSType.POSTGRESQL, DBMSType.REDSHIFT);
 
     @Autowired
-    private SourceRepository sourceRepository;
+    private SourceService sourceService;
     @Autowired
     private InputFileRepository inputFileRepository;
 
@@ -103,18 +104,18 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     }
 
     @Override
-    public Long runScript(ExecutionRequestDTO dto) throws Exception {
+    public Long runScript(ExecutionRequestDTO dto, int analysisExecutionId) throws Exception {
 
-        Source source = sourceRepository.findBySourceKey(dto.sourceKey);
+        Source source = findSourceByKey(dto.sourceKey);
+        
         final String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
         final String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
         String vocabularyTableQualifier = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
         if (vocabularyTableQualifier == null) {
             vocabularyTableQualifier = cdmTableQualifier;
         }
-        final String password = StringGenerationUtil.generateRandomString();
-
-        AnalysisExecution execution = makeAnalysisExecution(dto, source, password);
+        
+        AnalysisExecution execution = analysisExecutionRepository.findOne(analysisExecutionId);
 
         String name = getAnalysisName(dto);
 
@@ -128,7 +129,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
 
         final String analysisExecutionUrl = "/analyze";
         WebTarget webTarget = client.target(executionEngineURL + analysisExecutionUrl);
-        MultiPart multiPart = buildRequest(buildAnalysisRequest(execution, source, password), script);
+        MultiPart multiPart = buildRequest(buildAnalysisRequest(execution, source, execution.getUpdatePassword()), script);
         try {
                 webTarget
                     .request(MediaType.MULTIPART_FORM_DATA_TYPE)
@@ -142,6 +143,12 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
             analysisExecutionRepository.save(execution);
         }
         return execution.getId().longValue();
+    }
+
+    @Override
+    public Source findSourceByKey(final String key) {
+
+        return sourceService.findBySourceKey(key);
     }
 
     private MultiPart buildRequest(AnalysisRequestDTO analysisRequestDTO, String script) {
@@ -184,7 +191,9 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         return analysisRequestDTO;
     }
 
-    private AnalysisExecution makeAnalysisExecution(ExecutionRequestDTO dto, Source source, String password) {
+    
+    @Override
+    public AnalysisExecution createAnalysisExecution(ExecutionRequestDTO dto, Source source, String password) {
 
         AnalysisExecution execution = new AnalysisExecution();
         execution.setAnalysisId(dto.cohortId);
@@ -195,7 +204,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         execution.setExecutionStatus(AnalysisExecution.Status.STARTED);
         execution.setUserId(0); //Looks strange
         execution.setUpdatePassword(password);
-        analysisExecutionRepository.save(execution);
+        analysisExecutionRepository.saveAndFlush(execution);
         return execution;
     }
 
@@ -276,7 +285,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
                 .replace("my_cdm_data", cdmTable)
                 .replace("my_vocabulary_data", vocabularyTable)
                 .replace("my_results", resultsTable)
-                .replace("exposure_database_schema", cdmTable)
+                .replace("exposure_database_schema", resultsTable)
                 .replace("outcome_database_schema", resultsTable)
                 .replace("exposure_table", "cohort")
                 .replace("outcome_table", "cohort")

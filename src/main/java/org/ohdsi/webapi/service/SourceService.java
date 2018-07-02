@@ -1,10 +1,14 @@
 package org.ohdsi.webapi.service;
 
 import com.jnj.honeur.webapi.DataSourceLookup;
+import com.jnj.honeur.webapi.SourceDaimonContextHolder;
 import com.jnj.honeur.webapi.source.SourceDaimonContext;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.ShiroConfiguration;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
@@ -29,6 +33,8 @@ import java.util.Comparator;
 @Path("/source/")
 @Component
 public class SourceService extends AbstractDaoService {
+
+    private static final Log log = LogFactory.getLog(SourceService.class);
 
     public class SortByKey implements Comparator<SourceInfo> {
         private boolean isAscending;
@@ -58,6 +64,9 @@ public class SourceService extends AbstractDaoService {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Collection<SourceInfo> getSources() {
+
+        log.info(dataSourceLookup.getPrimaryDataSource());
+        log.info(SourceDaimonContextHolder.getCurrentSourceDaimonContextKey());
 
         if (cachedSources == null) {
             Iterable<Source> sourceIterable = sourceRepository.findAll();

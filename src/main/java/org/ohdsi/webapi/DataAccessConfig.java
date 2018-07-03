@@ -7,6 +7,8 @@ import javax.sql.DataSource;
 import com.jnj.honeur.webapi.CurrentTenantIdentifierResolverImpl;
 import com.jnj.honeur.webapi.DataSourceLookup;
 import com.jnj.honeur.webapi.MultiTenantConnectionProviderImpl;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.hibernate.MultiTenancyStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -32,6 +34,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 @EnableTransactionManagement
 public class DataAccessConfig {
 
+    private static final Log log = LogFactory.getLog(DataAccessConfig.class);
+
     @Autowired
     private Environment env;
   
@@ -52,6 +56,9 @@ public class DataAccessConfig {
         String user = this.env.getRequiredProperty("datasource.username");
         String pass = this.env.getRequiredProperty("datasource.password");
         String schema = this.env.getRequiredProperty("datasource.ohdsi.schema");
+
+        log.info(String.format("Connected to schema %s", schema));
+
         boolean autoCommit = false;
 
 

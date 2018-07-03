@@ -41,7 +41,7 @@ public class DataAccessConfig {
   
     private Properties getJPAProperties() {
         Properties properties = new Properties();
-        //properties.setProperty("hibernate.default_schema", this.env.getProperty("spring.jpa.properties.hibernate.default_schema"));
+        properties.setProperty(org.hibernate.cfg.Environment.DEFAULT_SCHEMA, this.env.getProperty("spring.jpa.properties.hibernate.default_schema"));
         properties.setProperty(org.hibernate.cfg.Environment.DIALECT, this.env.getProperty("spring.jpa.properties.hibernate.dialect"));
         properties.setProperty(org.hibernate.cfg.Environment.SHOW_SQL, env.getProperty("spring.jpa.show-sql"));
         properties.setProperty(org.hibernate.cfg.Environment.USE_NEW_ID_GENERATOR_MAPPINGS, "false");
@@ -56,8 +56,6 @@ public class DataAccessConfig {
         String user = this.env.getRequiredProperty("datasource.username");
         String pass = this.env.getRequiredProperty("datasource.password");
         String schema = this.env.getRequiredProperty("datasource.ohdsi.schema");
-
-        log.info(String.format("Connected to schema %s", schema));
 
         boolean autoCommit = false;
 

@@ -7,6 +7,5 @@ import java.util.List;
 
 public interface CohortInclusionResultRepository extends CrudRepository<CohortInclusionResultEntity, Long> {
 
-    @Query("from CohortInclusionResultEntity where cohort_definition_id = ?1")
-    List<CohortInclusionResultEntity> getAllCohortInclusionResultsForId(long id);
+    List<CohortInclusionResultEntity> findByCohortDefinitionId(long id);
 }

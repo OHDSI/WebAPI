@@ -170,14 +170,12 @@ public class AtlasWithCasSecurity extends Security {
     this.cohortdefinitionCreatorPermissionTemplates.put("cohortdefinition:%s:export:get", "Export Cohort Definition with ID = %s");
     this.cohortdefinitionCreatorPermissionTemplates.put("cohortdefinition:hss:%s:get", "List Cohort Definition Generation Results in Amazon for Cohort Definition with ID = %s");
     this.cohortdefinitionCreatorPermissionTemplates.put("cohortdefinition:hss:%s:select:*:post", "Import Cohort Definition Generation Results for Cohort Definition with ID = %s");
-    this.cohortdefinitionCreatorPermissionTemplates.put("cohortdefinition:sql:post", "Generate SQL of Cohort Definition");
 
-    this.cohortdefinitionImporterPermissionTemplates.put("cohortdefinition:%s:generate:*:get", "Generate Cohort Definition generation results for defintion with ID = %s");
+//    this.cohortdefinitionImporterPermissionTemplates.put("cohortdefinition:%s:generate:*:get", "Generate Cohort Definition generation results for defintion with ID = %s");
     this.cohortdefinitionImporterPermissionTemplates.put("cohortdefinition:%s:delete", "Delete Cohort Definition with ID = %s");
     this.cohortdefinitionImporterPermissionTemplates.put("cohortdefinition:%s:get", "View Cohort Definition with ID = %s");
-    this.cohortdefinitionImporterPermissionTemplates.put("cohortdefinition:%s:export:*:get", "Export Cohort Definition generation results for defintion with ID = %s");
+//    this.cohortdefinitionImporterPermissionTemplates.put("cohortdefinition:%s:export:*:get", "Export Cohort Definition generation results for defintion with ID = %s");
     this.cohortdefinitionImporterPermissionTemplates.put("cohortdefinition:%s:info:get", "Get Cohort Definition Info for cohort definition with ID = %s");
-    this.cohortdefinitionImporterPermissionTemplates.put("cohortdefinition:sql:post", "Generate SQL of Cohort Definition");
 
     this.conceptsetCreatorPermissionTemplates.put("conceptset:%s:put", "Update Concept Set with ID = %s");
     this.conceptsetCreatorPermissionTemplates.put("conceptset:%s:items:put", "Update Items of Concept Set with ID = %s");

@@ -6,7 +6,7 @@ import java.util.Objects;
 
 @Entity(name = "CohortInclusionStatsEntity")
 @Table(name = "cohort_inclusion_stats")
-@IdClass(CohortInclusionStatsEntity.class)
+@IdClass(CohortInclusionStatsEntityId.class)
 public class CohortInclusionStatsEntity implements Serializable{
 
     private static final long serialVersionUID = -7595365875490423613L;
@@ -15,6 +15,7 @@ public class CohortInclusionStatsEntity implements Serializable{
     @Column(name = "cohort_definition_id")
     private Long cohortDefinitionId;
 
+    @Id
     @Column(name = "rule_sequence")
     private int ruleSequence;
 

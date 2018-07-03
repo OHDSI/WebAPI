@@ -9,7 +9,13 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.service.CohortDefinitionService;
+import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
+import org.ohdsi.webapi.shiro.Entities.RoleEntity;
+import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.management.Security;
+import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.source.SourceInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -31,7 +37,13 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
     private Security security;
 
     @Autowired
+    protected PermissionManager authorizer;
+
+    @Autowired
     private CohortDefinitionRepository cohortDefinitionRepository;
+
+    @Autowired
+    private SourceService sourceService;
 
 
 
@@ -125,7 +137,33 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
 
         CohortDefinition createdDefinition = this.cohortDefinitionRepository.save(newDef);
 
+        // Add generation permission if the source daimons are there
+        addGenerationPermissions(createdDefinition);
+
         return cohortDefinitionToDTO(createdDefinition);
+    }
+
+    private void addGenerationPermissions(CohortDefinition createdDefinition) {
+        Collection<SourceInfo> sources = sourceService.getSources();
+        for(SourceInfo sourceInfo: sources){
+            HashMap<String, String> map = new HashMap<>();
+            map.put("cohortdefinition:%s:generate:"+sourceInfo.sourceKey+":get", "Generate Cohort Definition generation results for defintion with ID = %s for source "+sourceInfo.sourceKey);
+            map.put("cohortdefinition:%s:export:"+sourceInfo.sourceKey+":get", "Export Cohort Definition generation results for defintion with ID = %s for source "+sourceInfo.sourceKey);
+            List<SourceDaimon> daimonsForGeneration = sourceInfo.daimons.stream()
+                    .filter(sourceDaimon -> sourceDaimon.getDaimonType().equals(SourceDaimon.DaimonType.CDM) ||
+                            sourceDaimon.getDaimonType().equals(SourceDaimon.DaimonType.Vocabulary) ||
+                            sourceDaimon.getDaimonType().equals(SourceDaimon.DaimonType.Results))
+                    .collect(Collectors.toList());
+            if(daimonsForGeneration.size() == 3){
+                try {
+                    RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
+                    authorizer.addPermissionsFromTemplate(currentUserPersonalRole, map,
+                            String.valueOf(createdDefinition.getId()));
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
+        }
     }
 
     /**

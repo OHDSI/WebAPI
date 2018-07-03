@@ -6,10 +6,19 @@ import java.util.Objects;
 
 @Entity(name = "CohortSummaryStatsEntity")
 @Table(name = "cohort_summary_stats")
-@IdClass(CohortSummaryStatsEntity.class)
 public class CohortSummaryStatsEntity implements Serializable {
 
     private static final long serialVersionUID = 8196131925781288320L;
+
+    @Id
+    @Column(name = "cohort_definition_id")
+    private Long cohortDefinitionId;
+
+    @Column(name = "base_count")
+    private Long baseCount;
+
+    @Column(name = "final_count")
+    private Long finalCount;
 
     public Long getCohortDefinitionId() {
         return cohortDefinitionId;
@@ -51,14 +60,4 @@ public class CohortSummaryStatsEntity implements Serializable {
 
         return Objects.hash(cohortDefinitionId, baseCount, finalCount);
     }
-
-    @Id
-    @Column(name = "cohort_definition_id")
-    private Long cohortDefinitionId;
-
-    @Column(name = "base_count")
-    private Long baseCount;
-
-    @Column(name = "final_count")
-    private Long finalCount;
 }

@@ -65,9 +65,6 @@ public class SourceService extends AbstractDaoService {
     @Produces(MediaType.APPLICATION_JSON)
     public Collection<SourceInfo> getSources() {
 
-        log.info(dataSourceLookup.getPrimaryDataSource());
-        log.info(SourceDaimonContextHolder.getCurrentSourceDaimonContextKey());
-
         if (cachedSources == null) {
             Iterable<Source> sourceIterable = sourceRepository.findAll();
             ArrayList<SourceInfo> sources = new ArrayList<>();

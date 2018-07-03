@@ -30,11 +30,13 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfo;
 import org.ohdsi.webapi.cohortdefinition.ExpressionType;
 import org.ohdsi.webapi.service.CohortDefinitionService;
+import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.service.UserService;
 import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -84,6 +86,9 @@ public class HoneurCohortDefinitionServiceExtension {
 
     @Autowired
     private CohortDefinitionService cohortDefinitionService;
+
+    @Autowired
+    private SourceService sourceService;
 
     @Autowired
     private SourceRepository sourceRepository;
@@ -158,7 +163,33 @@ public class HoneurCohortDefinitionServiceExtension {
         def.organizations = new ArrayList<>();
         def.uuid = UUID.fromString(storageInformationItem.getUuid());
 
+        addGenerationPermissions(def);
+
         return cohortDefinitionService.createCohortDefinition(def);
+    }
+
+    private void addGenerationPermissions(CohortDefinitionService.CohortDefinitionDTO createdDefinition) {
+        //TODO make more central (code duplication in HoneurCohortService.java
+        Collection<SourceInfo> sources = sourceService.getSources();
+        for(SourceInfo sourceInfo: sources){
+            HashMap<String, String> map = new HashMap<>();
+            map.put("cohortdefinition:%s:generate:"+sourceInfo.sourceKey+":get", "Generate Cohort Definition generation results for defintion with ID = %s for source "+sourceInfo.sourceKey);
+            map.put("cohortdefinition:%s:export:"+sourceInfo.sourceKey+":get", "Export Cohort Definition generation results for defintion with ID = %s for source "+sourceInfo.sourceKey);
+            List<SourceDaimon> daimonsForGeneration = sourceInfo.daimons.stream()
+                    .filter(sourceDaimon -> sourceDaimon.getDaimonType().equals(SourceDaimon.DaimonType.CDM) ||
+                            sourceDaimon.getDaimonType().equals(SourceDaimon.DaimonType.Vocabulary) ||
+                            sourceDaimon.getDaimonType().equals(SourceDaimon.DaimonType.Results))
+                    .collect(Collectors.toList());
+            if(daimonsForGeneration.size() == 3){
+                try {
+                    RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
+                    authorizer.addPermissionsFromTemplate(currentUserPersonalRole, map,
+                            String.valueOf(createdDefinition.id));
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
+        }
     }
 
     /**
@@ -195,15 +226,15 @@ public class HoneurCohortDefinitionServiceExtension {
             SourceDaimonContextHolder
                     .setCurrentSourceDaimonContext(new SourceDaimonContext(sourceKey, SourceDaimon.DaimonType.Results));
 
-            List<CohortEntity> cohorts = cohortRepository.getAllCohortsForId((long) id);
+            List<CohortEntity> cohorts = cohortRepository.findByCohortDefinitionId((long) id);
             List<CohortInclusionEntity> cohortInclusions =
-                    cohortInclusionRepository.getAllCohortInclusionsForId((long) id);
+                    cohortInclusionRepository.findByCohortDefinitionId((long) id);
             List<CohortInclusionResultEntity> cohortInclusionResults =
-                    cohortInclusionResultRepository.getAllCohortInclusionResultsForId((long) id);
+                    cohortInclusionResultRepository.findByCohortDefinitionId((long) id);
             List<CohortInclusionStatsEntity> cohortInclusionStats =
-                    cohortInclusionStatsRepository.getAllCohortInclusionStatsForId((long) id);
+                    cohortInclusionStatsRepository.findByCohortDefinitionId((long) id);
             List<CohortSummaryStatsEntity> cohortSummaryStats =
-                    cohortSummaryStatsRepository.getAllCohortInclusionSummaryStatsForId((long) id);
+                    cohortSummaryStatsRepository.findByCohortDefinitionId((long) id);
 
             SourceDaimonContextHolder.clear();
 
@@ -276,6 +307,7 @@ public class HoneurCohortDefinitionServiceExtension {
         CohortDefinitionService.CohortDefinitionDTO  toReturn = this.cohortDefinitionService.cohortDefinitionToDTO(newDef);
         CohortDefinitionService.CohortDefinitionDTO copyDef = this.cohortDefinitionService.createCohortDefinition(toReturn);
 
+        addGenerationPermissions(copyDef);
 
         return copyDef;
     }

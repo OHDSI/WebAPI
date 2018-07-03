@@ -6,13 +6,14 @@ import java.util.Objects;
 
 @Entity(name = "CohortInclusionResultEntity")
 @Table(name = "cohort_inclusion_result")
-@IdClass(CohortInclusionResultEntity.class)
+@IdClass(CohortInclusionResultEntityId.class)
 public class CohortInclusionResultEntity implements Serializable {
 
     @Id
     @Column(name = "cohort_definition_id")
     private Long cohortDefinitionId;
 
+    @Id
     @Column(name = "inclusion_rule_mask")
     private Long inclusionRuleMask;
 

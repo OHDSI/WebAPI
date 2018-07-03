@@ -149,6 +149,7 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
             HashMap<String, String> map = new HashMap<>();
             map.put("cohortdefinition:%s:generate:"+sourceInfo.sourceKey+":get", "Generate Cohort Definition generation results for defintion with ID = %s for source "+sourceInfo.sourceKey);
             map.put("cohortdefinition:%s:export:"+sourceInfo.sourceKey+":get", "Export Cohort Definition generation results for defintion with ID = %s for source "+sourceInfo.sourceKey);
+            map.put("cohortdefinition:%s:report:"+sourceInfo.sourceKey+":get", "View Cohort Definition generation results for defintion with ID = %s for source "+sourceInfo.sourceKey);
             List<SourceDaimon> daimonsForGeneration = sourceInfo.daimons.stream()
                     .filter(sourceDaimon -> sourceDaimon.getDaimonType().equals(SourceDaimon.DaimonType.CDM) ||
                             sourceDaimon.getDaimonType().equals(SourceDaimon.DaimonType.Vocabulary) ||

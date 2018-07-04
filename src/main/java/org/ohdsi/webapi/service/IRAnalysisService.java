@@ -15,13 +15,19 @@
  */
 package org.ohdsi.webapi.service;
 
+import static java.lang.String.format;
+import static org.ohdsi.webapi.Constants.Params.ANALYSIS_ID;
+import static org.ohdsi.webapi.Constants.Params.CDM_DATABASE_SCHEMA;
+import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
+import static org.ohdsi.webapi.Constants.Params.RESULTS_DATABASE_SCHEMA;
+import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
+import static org.ohdsi.webapi.Constants.Params.TARGET_DIALECT;
+import static org.ohdsi.webapi.Constants.Params.VOCABULARY_DATABASE_SCHEMA;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.CSVWriter;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.StringWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -37,9 +43,6 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.annotation.PostConstruct;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceContextType;
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -62,8 +65,13 @@ import org.apache.commons.logging.LogFactory;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.GenerationStatus;
-import org.ohdsi.webapi.exampleapplication.model.Widget;
-import org.ohdsi.webapi.ircalc.*;
+import org.ohdsi.webapi.ircalc.AnalysisReport;
+import org.ohdsi.webapi.ircalc.ExecutionInfo;
+import org.ohdsi.webapi.ircalc.IRExecutionInfoRepository;
+import org.ohdsi.webapi.ircalc.IncidenceRateAnalysis;
+import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisDetails;
+import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisRepository;
+import org.ohdsi.webapi.ircalc.PerformAnalysisTasklet;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.shiro.management.Security;
@@ -78,7 +86,6 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
@@ -86,7 +93,6 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
-import org.springframework.transaction.support.TransactionCallback;
 
 /**
  *
@@ -263,7 +269,7 @@ public class IRAnalysisService extends AbstractDaoService {
         treemapData.append(",");
       }
 
-      treemapData.append(String.format("{\"name\" : \"Group %d\", \"children\" : [", groupKey));
+      treemapData.append(format("{\"name\" : \"Group %d\", \"children\" : [", groupKey));
 
       int groupItemCount = 0;
       for (StratifyReportItem groupItem : groups.get(groupKey)) {
@@ -272,7 +278,7 @@ public class IRAnalysisService extends AbstractDaoService {
         }
 
         //sb_treemap.Append("{\"name\": \"" + cohort_identifer + "\", \"size\": " + cohorts[cohort_identifer].ToString() + "}");
-        treemapData.append(String.format("{\"name\": \"%s\", \"size\": %d, \"cases\": %d, \"timeAtRisk\": %d }", formatBitMask(groupItem.bits, inclusionRuleCount), groupItem.totalPersons, groupItem.cases, groupItem.timeAtRisk));
+        treemapData.append(format("{\"name\": \"%s\", \"size\": %d, \"cases\": %d, \"timeAtRisk\": %d }", formatBitMask(groupItem.bits, inclusionRuleCount), groupItem.totalPersons, groupItem.cases, groupItem.timeAtRisk));
         groupItemCount++;
       }
       groupCount++;
@@ -439,13 +445,13 @@ public class IRAnalysisService extends AbstractDaoService {
     this.getTransactionTemplate().getTransactionManager().commit(initStatus);
 
     JobParametersBuilder builder = new JobParametersBuilder();
-    builder.addString("jobName", "IR Analysis: " + analysis.getId() + " : " + source.getSourceName() + " (" + source.getSourceKey() + ")");
-    builder.addString("cdm_database_schema", cdmTableQualifier);
-    builder.addString("results_database_schema", resultsTableQualifier);
-    builder.addString("vocabulary_database_schema", vocabularyTableQualifier);
-    builder.addString("target_dialect", source.getSourceDialect());
-    builder.addString("analysis_id", ("" + analysisId));
-    builder.addString("source_id", ("" + source.getSourceId()));
+    builder.addString(JOB_NAME, format("IR Analysis: %d: %s (%s)", analysis.getId(), source.getSourceName(), source.getSourceKey()));
+    builder.addString(CDM_DATABASE_SCHEMA, cdmTableQualifier);
+    builder.addString(RESULTS_DATABASE_SCHEMA, resultsTableQualifier);
+    builder.addString(VOCABULARY_DATABASE_SCHEMA, vocabularyTableQualifier);
+    builder.addString(TARGET_DIALECT, source.getSourceDialect());
+    builder.addString(ANALYSIS_ID, String.valueOf(analysisId));
+    builder.addString(SOURCE_ID, String.valueOf(source.getSourceId()));
 
     final JobParameters jobParameters = builder.toJobParameters();
 
@@ -602,7 +608,7 @@ public class IRAnalysisService extends AbstractDaoService {
         }        
         
         // get the distribution data
-        String distQuery = String.format("select '%s' as db_id, target_id, outcome_id, strata_sequence, dist_type, total, avg_value, std_dev, min_value, p10_value, p25_value, median_value, p75_value, p90_value, max_value from %s.ir_analysis_dist where analysis_id = %d", source.getSourceKey(), resultsTableQualifier, id);
+        String distQuery = format("select '%s' as db_id, target_id, outcome_id, strata_sequence, dist_type, total, avg_value, std_dev, min_value, p10_value, p25_value, median_value, p75_value, p90_value, max_value from %s.ir_analysis_dist where analysis_id = %d", source.getSourceKey(), resultsTableQualifier, id);
         String translatedSql = SqlTranslate.translateSql(distQuery, source.getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
         
         SqlRowSet rs = this.getSourceJdbcTemplate(source).queryForRowSet(translatedSql);
@@ -672,7 +678,7 @@ public class IRAnalysisService extends AbstractDaoService {
       response = Response
         .ok(baos)
         .type(MediaType.APPLICATION_OCTET_STREAM)
-        .header("Content-Disposition", String.format("attachment; filename=\"%s\"", "ir_analysis_" + id + ".zip"))
+        .header("Content-Disposition", format("attachment; filename=\"%s\"", "ir_analysis_" + id + ".zip"))
         .build();
     } catch (Exception ex) {
       throw new RuntimeException(ex);

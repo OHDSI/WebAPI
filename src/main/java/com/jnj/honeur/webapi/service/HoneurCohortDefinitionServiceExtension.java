@@ -163,6 +163,8 @@ public class HoneurCohortDefinitionServiceExtension {
         def.organizations = new ArrayList<>();
         def.uuid = UUID.fromString(storageInformationItem.getUuid());
 
+        addGenerationPermissions(def);
+
         return cohortDefinitionService.createCohortDefinition(def);
     }
 
@@ -423,7 +425,7 @@ public class HoneurCohortDefinitionServiceExtension {
             results.setCohortGenerationInfo(
                     importCohortGenerationInfo(id, sourceKey, cohortGenerationResults.getCohortGenerationInfo()));
 
-            addGenerationPermissions(this.cohortDefinitionService.cohortDefinitionToDTO(cohortDefinitionRepository.findOne(id)));
+            addViewPermissions(id, sourceKey);
 
             return results;
 
@@ -434,6 +436,20 @@ public class HoneurCohortDefinitionServiceExtension {
         } finally {
             SourceDaimonContextHolder.clear();
         }
+    }
+
+    private void addViewPermissions(int id, String sourceKey) {
+        //TODO make more central (code duplication in HoneurCohortService.java
+            HashMap<String, String> map = new HashMap<>();
+            map.put("cohortdefinition:%s:report:"+sourceKey+":get", "View Cohort Definition generation results for defintion with ID = %s for source "+sourceKey);
+
+            try {
+                RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
+                authorizer.addPermissionsFromTemplate(currentUserPersonalRole, map,
+                        String.valueOf(id));
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
     }
 
     @Transactional

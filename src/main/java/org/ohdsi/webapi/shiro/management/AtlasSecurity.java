@@ -86,6 +86,7 @@ public abstract class AtlasSecurity extends Security {
     this.sourcePermissionTemplates.put("cohortdefinition:*:generate:%s:get", "Generate Cohort on Source with SourceKey = %s");
 
     this.incidenceRatePermissionTemplates.put("ir:%s:get", "Read Incidence Rate with ID=%s");
+    this.incidenceRatePermissionTemplates.put("ir:%s:execution:*:get", "Execute Incidence Rate job with ID=%s");
     this.incidenceRatePermissionTemplates.put("ir:%s:info:get", "Read Incidence Rate info with ID=%s");
     this.incidenceRatePermissionTemplates.put("ir:%s:report:*:get", "Report Incidence Rate with ID=%s");
     this.incidenceRatePermissionTemplates.put("ir:%s:copy:get", "Copy Incidence Rate with ID=%s");
@@ -133,6 +134,7 @@ public abstract class AtlasSecurity extends Security {
       .addProtectedRestPath("/ir", "jwtAuthc, authz, createPermissionsOnCreateIR")
       .addProtectedRestPath("/ir/*/copy", "createPermissionsOnCopyIR")
       .addProtectedRestPath("/ir/*", "jwtAuthc, authz")
+      .addProtectedRestPath("/ir/*/execute/*")
 
       // comparative cohort analysis (estimation)
       .addProtectedRestPath("/comparativecohortanalysis", "createPermissionsOnCreateEstimation")
@@ -172,9 +174,11 @@ public abstract class AtlasSecurity extends Security {
 
       // evidence
       .addProtectedRestPath("/evidence/*")
+      .addProtectedRestPath("/evidence/*/negativecontrols")
 
       // execution service
       .addProtectedRestPath("/executionservice/*")
+      .addProtectedRestPath("/executionservice/execution/run")
 
       // feasibility
       .addProtectedRestPath("/feasibility")

@@ -163,8 +163,6 @@ public class HoneurCohortDefinitionServiceExtension {
         def.organizations = new ArrayList<>();
         def.uuid = UUID.fromString(storageInformationItem.getUuid());
 
-        addGenerationPermissions(def);
-
         return cohortDefinitionService.createCohortDefinition(def);
     }
 
@@ -424,6 +422,9 @@ public class HoneurCohortDefinitionServiceExtension {
 
             results.setCohortGenerationInfo(
                     importCohortGenerationInfo(id, sourceKey, cohortGenerationResults.getCohortGenerationInfo()));
+
+            addGenerationPermissions(this.cohortDefinitionService.cohortDefinitionToDTO(cohortDefinitionRepository.findOne(id)));
+
             return results;
 
         } catch (Exception e) {

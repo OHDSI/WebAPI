@@ -1,20 +1,15 @@
 package org.ohdsi.webapi.shiro.management;
 
-import io.buji.pac4j.filter.CallbackFilter;
-import io.buji.pac4j.filter.SecurityFilter;
-import io.buji.pac4j.realm.Pac4jRealm;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.PostConstruct;
-import javax.naming.Context;
 import javax.servlet.Filter;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
-import javax.sql.DataSource;
 import javax.ws.rs.HttpMethod;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -23,9 +18,6 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.Authenticator;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
 import org.apache.shiro.realm.Realm;
-import org.apache.shiro.realm.activedirectory.ActiveDirectoryRealm;
-import org.apache.shiro.realm.ldap.JndiLdapContextFactory;
-import org.apache.shiro.realm.ldap.JndiLdapRealm;
 import org.apache.shiro.web.filter.authz.SslFilter;
 import org.apache.shiro.web.filter.session.NoSessionCreationFilter;
 import org.apache.shiro.web.servlet.AdviceFilter;
@@ -34,39 +26,29 @@ import org.ohdsi.webapi.OidcConfCreator;
 import org.ohdsi.webapi.shiro.*;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
-import org.ohdsi.webapi.shiro.filters.KerberosAuthFilter;
-import org.ohdsi.webapi.shiro.lockout.DefaultLockoutPolicy;
-import org.ohdsi.webapi.shiro.lockout.ExponentLockoutStrategy;
-import org.ohdsi.webapi.shiro.lockout.LockoutPolicy;
-import org.ohdsi.webapi.shiro.lockout.LockoutStrategy;
-import org.ohdsi.webapi.shiro.realms.KerberosAuthRealm;
+import org.ohdsi.webapi.shiro.filters.CorsFilter;
+import org.ohdsi.webapi.shiro.filters.ForceSessionCreationFilter;
+import org.ohdsi.webapi.shiro.filters.ProcessResponseContentFilter;
+import org.ohdsi.webapi.shiro.filters.SkipFurtherFilteringFilter;
+import org.ohdsi.webapi.shiro.filters.UrlBasedAuthorizingFilter;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
-import org.pac4j.core.client.Clients;
-import org.pac4j.core.config.Config;
-import org.pac4j.oauth.client.FacebookClient;
-import org.pac4j.oauth.client.Google2Client;
-import org.pac4j.oidc.client.OidcClient;
-import org.pac4j.oidc.config.OidcConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import waffle.shiro.negotiate.NegotiateAuthenticationFilter;
-import waffle.shiro.negotiate.NegotiateAuthenticationRealm;
 import waffle.shiro.negotiate.NegotiateAuthenticationStrategy;
 
 /**
  *
  * @author gennadiy.anisimov
  */
-public class AtlasSecurity extends Security {
+public abstract class AtlasSecurity extends Security {
   public static final String TOKEN_ATTRIBUTE = "TOKEN";
   public static final String AUTH_FILTER_ATTRIBUTE = "AuthenticatingFilter";
   public static final String PERMISSIONS_ATTRIBUTE = "PERMISSIONS";
   private final Log log = LogFactory.getLog(getClass());
 
   @Autowired
-  private PermissionManager authorizer;
+  protected PermissionManager authorizer;
 
   @Autowired
   SourceRepository sourceRepository;
@@ -74,72 +56,13 @@ public class AtlasSecurity extends Security {
   @Autowired
   OidcConfCreator oidcConfCreator;
 
-  @Value("${security.token.expiration}")
-  private int tokenExpirationIntervalInSeconds;
-
   @Value("${server.port}")
   private int sslPort;
 
   @Value("${security.ssl.enabled}")
   private boolean sslEnabled;
 
-  @Value("${security.oauth.callback.ui}")
-  private String oauthUiCallback;
-
-  @Value("${security.oauth.callback.api}")
-  private String oauthApiCallback;
-
-  @Value("${security.oauth.google.apiKey}")
-  private String googleApiKey;
-
-  @Value("${security.oauth.google.apiSecret}")
-  private String googleApiSecret;
-
-  @Value("${security.oauth.facebook.apiKey}")
-  private String facebookApiKey;
-
-  @Value("${security.oauth.facebook.apiSecret}")
-  private String facebookApiSecret;
-
-  @Value("${security.oid.redirectUrl}")
-  private String redirectUrl;
-
-  @Value("${security.kerberos.spn}")
-  private String kerberosSpn;
-
-  @Value("${security.kerberos.keytabPath}")
-  private String kerberosKeytabPath;
-
-  @Value("${security.ldap.dn}")
-  private String userDnTemplate;
-
-  @Value("${security.ldap.url}")
-  private String ldapUrl;
-
-  @Value("${security.ad.url}")
-  private String adUrl;
-
-  @Value("${security.ad.searchBase}")
-  private String adSearchBase;
-
-  @Value("${security.ad.principalSuffix}")
-  private String adPrincipalSuffix;
-
-  @Value("${security.ad.system.username}")
-  private String adSystemUsername;
-
-  @Value("${security.ad.system.password}")
-  private String adSystemPassword;
-
-
-  @Autowired
-  @Qualifier("authDataSource")
-  private DataSource jdbcDataSource;
-
-  @Value("${security.db.datasource.authenticationQuery}")
-  private String jdbcAuthenticationQuery;
-
-  private final Set<String> defaultRoles = new LinkedHashSet<>();
+  protected final Set<String> defaultRoles = new LinkedHashSet<>();
 
   private final Map<String, String> cohortdefinitionCreatorPermissionTemplates = new LinkedHashMap<>();
   private final Map<String, String> conceptsetCreatorPermissionTemplates = new LinkedHashMap<>();
@@ -187,28 +110,14 @@ public class AtlasSecurity extends Security {
   @Override
   public Map<String, String> getFilterChain() {
 
-    return new FilterChainBuilder()
-      .setOAuthFilters("ssl, cors, forceSessionCreation", "updateToken, sendTokenInUrl")
-      .setRestFilters("ssl, noSessionCreation, cors")
-      .setAuthcFilter("jwtAuthc")
-      .setAuthzFilter("authz")
+      return getFilterChainBuilder().build();
+  }
 
-      // the order does matter - first match wins
+  protected abstract FilterChainBuilder getFilterChainBuilder();
 
-      // protected resources
-      //
-      // login/logout
-      .addRestPath("/user/login/openid", "forceSessionCreation, oidcAuth, updateToken, sendTokenInRedirect")
-      .addRestPath("/user/login/windows","negotiateAuthc, updateToken, sendTokenInHeader")
-      .addRestPath("/user/login/kerberos","kerberosFilter, updateToken, sendTokenInHeader")
-      .addRestPath("/user/login/db", "jdbcFilter, updateToken, sendTokenInHeader")
-      .addRestPath("/user/login/ldap", "ldapFilter, updateToken, sendTokenInHeader")
-      .addRestPath("/user/login/ad", "adFilter, updateToken, sendTokenInHeader")
-      .addRestPath("/user/refresh", "jwtAuthc, updateToken, sendTokenInHeader")
-      .addRestPath("/user/logout", "invalidateToken, logout")
-      .addOAuthPath("/user/oauth/google", "googleAuthc")
-      .addOAuthPath("/user/oauth/facebook", "facebookAuthc")
-      .addPath("/user/oauth/callback", "ssl, handleUnsuccessfullOAuth, oauthCallback")
+  protected FilterChainBuilder setupProtectedPaths(FilterChainBuilder filterChainBuilder) {
+
+    return filterChainBuilder
 
       // permissions
       .addProtectedRestPath("/user/**")
@@ -281,25 +190,15 @@ public class AtlasSecurity extends Security {
       .addProtectedRestPath("/cdmresults/*")
 
       // profiles
-      .addProtectedRestPath("/*/person/*")
-
-      // not protected resources - all the rest
-      .addRestPath("/**")
-
-      .build();
+      .addProtectedRestPath("/*/person/*");
   }
 
   @Override
   public Map<String, Filter> getFilters() {
     Map<String, javax.servlet.Filter> filters = new HashMap<>();
 
-    filters.put("logout", new LogoutFilter());
     filters.put("noSessionCreation", new NoSessionCreationFilter());
     filters.put("forceSessionCreation", new ForceSessionCreationFilter());
-    filters.put("jwtAuthc", new JwtAuthFilter());
-    filters.put("negotiateAuthc", new NegotiateAuthenticationFilter());
-    filters.put("updateToken", new UpdateAccessTokenFilter(this.authorizer, this.defaultRoles, this.tokenExpirationIntervalInSeconds));
-    filters.put("invalidateToken", new InvalidateAccessTokenFilter());
     filters.put("authz", new UrlBasedAuthorizingFilter());
     filters.put("createPermissionsOnCreateCohortDefinition", this.getCreatePermissionsOnCreateCohortDefinitionFilter());
     filters.put("createPermissionsOnCreateConceptSet", this.getCreatePermissionsOnCreateConceptSetFilter());
@@ -319,96 +218,15 @@ public class AtlasSecurity extends Security {
     filters.put("skipFurtherFiltersIfNotPut", this.getSkipFurtherFiltersIfNotPutFilter());
     filters.put("skipFurtherFiltersIfNotPutOrPost", this.getskipFurtherFiltersIfNotPutOrPostFilter());
     filters.put("skipFurtherFiltersIfNotPutOrDelete", this.getskipFurtherFiltersIfNotPutOrDeleteFilter());
-    filters.put("sendTokenInUrl", new SendTokenInUrlFilter(this.oauthUiCallback));
-    filters.put("sendTokenInHeader", new SendTokenInHeaderFilter());
-    filters.put("sendTokenInRedirect", new SendTokenInRedirectFilter(redirectUrl));
     filters.put("ssl", this.getSslFilter());
-    filters.put("jdbcFilter", new JdbcAuthFilter());
-    filters.put("kerberosFilter", new KerberosAuthFilter());
-    filters.put("ldapFilter", new LdapAuthFilter());
-    filters.put("adFilter", new ActiveDirectoryAuthFilter());
-
-    // OAuth
-    //
-    Google2Client googleClient = new Google2Client(this.googleApiKey, this.googleApiSecret);
-    googleClient.setScope(Google2Client.Google2Scope.EMAIL);
-
-    FacebookClient facebookClient = new FacebookClient(this.facebookApiKey, this.facebookApiSecret);
-    facebookClient.setScope("email");
-    facebookClient.setFields("email");
-
-    OidcConfiguration configuration = oidcConfCreator.build();
-    OidcClient oidcClient = new OidcClient(configuration);
-
-    Config cfg =
-            new Config(
-                    new Clients(
-                            this.oauthApiCallback
-                            , googleClient
-                            , facebookClient
-                            , oidcClient
-                            // ... put new clients here and then assign them to filters ...
-                    )
-            );
-
-    // assign clients to filters
-    SecurityFilter googleOauthFilter = new SecurityFilter();
-    googleOauthFilter.setConfig(cfg);
-    googleOauthFilter.setClients("Google2Client");
-    filters.put("googleAuthc", googleOauthFilter);
-
-    SecurityFilter facebookOauthFilter = new SecurityFilter();
-    facebookOauthFilter.setConfig(cfg);
-    facebookOauthFilter.setClients("FacebookClient");
-    filters.put("facebookAuthc", facebookOauthFilter);
-
-    SecurityFilter oidcFilter = new SecurityFilter();
-    oidcFilter.setConfig(cfg);
-    oidcFilter.setClients("OidcClient");
-    filters.put("oidcAuth", oidcFilter);
-
-    CallbackFilter callbackFilter = new CallbackFilter();
-    callbackFilter.setConfig(cfg);
-    filters.put("oauthCallback", callbackFilter);
-    filters.put("handleUnsuccessfullOAuth", new RedirectOnFailedOAuthFilter(this.oauthUiCallback));
 
     return filters;
   }
 
   @Override
   public Set<Realm> getRealms() {
-    Set<Realm> realms = new LinkedHashSet<>();
 
-    realms.add(new JwtAuthRealm(this.authorizer));
-    realms.add(new NegotiateAuthenticationRealm());
-    realms.add(new Pac4jRealm());
-    realms.add(new JdbcAuthRealm(jdbcDataSource, jdbcAuthenticationQuery));
-    realms.add(new KerberosAuthRealm(kerberosSpn, kerberosKeytabPath));
-    realms.add(ldapRealm());
-    realms.add(activeDirectoryRealm());
-
-    return realms;
-  }
-
-  private JndiLdapRealm ldapRealm() {
-    JndiLdapRealm realm = new LdapRealm();
-    realm.setUserDnTemplate(userDnTemplate);
-    JndiLdapContextFactory contextFactory = new JndiLdapContextFactory();
-    contextFactory.setUrl(ldapUrl);
-    contextFactory.setPoolingEnabled(false);
-    contextFactory.getEnvironment().put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-    realm.setContextFactory(contextFactory);
-    return realm;
-  }
-
-  private ActiveDirectoryRealm activeDirectoryRealm() {
-    ActiveDirectoryRealm realm = new ADRealm();
-    realm.setUrl(adUrl);
-    realm.setSearchBase(adSearchBase);
-    realm.setPrincipalSuffix(adPrincipalSuffix);
-    realm.setSystemUsername(adSystemUsername);
-    realm.setSystemPassword(adSystemPassword);
-    return realm;
+    return new LinkedHashSet<>();
   }
 
   @Override
@@ -698,7 +516,7 @@ public class AtlasSecurity extends Security {
       return "anonymous";
   }
 
-  private class FilterChainBuilder {
+  class FilterChainBuilder {
 
     private Map<String, String> filterChain = new LinkedHashMap<>();
     private String restFilters;

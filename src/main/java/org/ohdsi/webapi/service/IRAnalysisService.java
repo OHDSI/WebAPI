@@ -15,7 +15,6 @@
  */
 package org.ohdsi.webapi.service;
 
-import static java.lang.String.format;
 import static org.ohdsi.webapi.Constants.Params.ANALYSIS_ID;
 import static org.ohdsi.webapi.Constants.Params.CDM_DATABASE_SCHEMA;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
@@ -269,7 +268,7 @@ public class IRAnalysisService extends AbstractDaoService {
         treemapData.append(",");
       }
 
-      treemapData.append(format("{\"name\" : \"Group %d\", \"children\" : [", groupKey));
+      treemapData.append(String.format("{\"name\" : \"Group %d\", \"children\" : [", groupKey));
 
       int groupItemCount = 0;
       for (StratifyReportItem groupItem : groups.get(groupKey)) {
@@ -278,7 +277,7 @@ public class IRAnalysisService extends AbstractDaoService {
         }
 
         //sb_treemap.Append("{\"name\": \"" + cohort_identifer + "\", \"size\": " + cohorts[cohort_identifer].ToString() + "}");
-        treemapData.append(format("{\"name\": \"%s\", \"size\": %d, \"cases\": %d, \"timeAtRisk\": %d }", formatBitMask(groupItem.bits, inclusionRuleCount), groupItem.totalPersons, groupItem.cases, groupItem.timeAtRisk));
+        treemapData.append(String.format("{\"name\": \"%s\", \"size\": %d, \"cases\": %d, \"timeAtRisk\": %d }", formatBitMask(groupItem.bits, inclusionRuleCount), groupItem.totalPersons, groupItem.cases, groupItem.timeAtRisk));
         groupItemCount++;
       }
       groupCount++;
@@ -445,7 +444,7 @@ public class IRAnalysisService extends AbstractDaoService {
     this.getTransactionTemplate().getTransactionManager().commit(initStatus);
 
     JobParametersBuilder builder = new JobParametersBuilder();
-    builder.addString(JOB_NAME, format("IR Analysis: %d: %s (%s)", analysis.getId(), source.getSourceName(), source.getSourceKey()));
+    builder.addString(JOB_NAME, String.format("IR Analysis: %d: %s (%s)", analysis.getId(), source.getSourceName(), source.getSourceKey()));
     builder.addString(CDM_DATABASE_SCHEMA, cdmTableQualifier);
     builder.addString(RESULTS_DATABASE_SCHEMA, resultsTableQualifier);
     builder.addString(VOCABULARY_DATABASE_SCHEMA, vocabularyTableQualifier);
@@ -608,7 +607,7 @@ public class IRAnalysisService extends AbstractDaoService {
         }        
         
         // get the distribution data
-        String distQuery = format("select '%s' as db_id, target_id, outcome_id, strata_sequence, dist_type, total, avg_value, std_dev, min_value, p10_value, p25_value, median_value, p75_value, p90_value, max_value from %s.ir_analysis_dist where analysis_id = %d", source.getSourceKey(), resultsTableQualifier, id);
+        String distQuery = String.format("select '%s' as db_id, target_id, outcome_id, strata_sequence, dist_type, total, avg_value, std_dev, min_value, p10_value, p25_value, median_value, p75_value, p90_value, max_value from %s.ir_analysis_dist where analysis_id = %d", source.getSourceKey(), resultsTableQualifier, id);
         String translatedSql = SqlTranslate.translateSql(distQuery, source.getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
         
         SqlRowSet rs = this.getSourceJdbcTemplate(source).queryForRowSet(translatedSql);
@@ -678,7 +677,7 @@ public class IRAnalysisService extends AbstractDaoService {
       response = Response
         .ok(baos)
         .type(MediaType.APPLICATION_OCTET_STREAM)
-        .header("Content-Disposition", format("attachment; filename=\"%s\"", "ir_analysis_" + id + ".zip"))
+        .header("Content-Disposition", String.format("attachment; filename=\"%s\"", "ir_analysis_" + id + ".zip"))
         .build();
     } catch (Exception ex) {
       throw new RuntimeException(ex);

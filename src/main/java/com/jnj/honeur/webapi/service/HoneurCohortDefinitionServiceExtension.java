@@ -449,7 +449,7 @@ public class HoneurCohortDefinitionServiceExtension {
             map.put("cohortdefinition:%s:report:"+sourceKey+":get", "View Cohort Definition generation results for defintion with ID = %s for source "+sourceKey);
 
             try {
-                RoleEntity currentUserPersonalRole = roleRepository.findByName(HoneurTokenManager.getSubject(token));
+                RoleEntity currentUserPersonalRole = roleRepository.findByName(HoneurTokenManager.getSubject(token.replace("Bearer ", "")));
                 authorizer.addPermissionsFromTemplate(currentUserPersonalRole, map,
                         String.valueOf(id));
             } catch (Exception e) {

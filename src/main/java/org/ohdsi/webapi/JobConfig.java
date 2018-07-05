@@ -6,6 +6,7 @@ import javax.sql.DataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ohdsi.webapi.job.JobTemplate;
+import org.ohdsi.webapi.shiro.management.Security;
 import org.springframework.batch.admin.service.JdbcSearchableJobExecutionDao;
 import org.springframework.batch.admin.service.JdbcSearchableJobInstanceDao;
 import org.springframework.batch.admin.service.SearchableJobExecutionDao;
@@ -79,8 +80,8 @@ public class JobConfig {
     
     @Bean
     public JobTemplate jobTemplate(final JobLauncher jobLauncher, final JobBuilderFactory jobBuilders,
-                                   final StepBuilderFactory stepBuilders) {
-        return new JobTemplate(jobLauncher, jobBuilders, stepBuilders);
+                                   final StepBuilderFactory stepBuilders, final Security security) {
+        return new JobTemplate(jobLauncher, jobBuilders, stepBuilders, security);
     }
     
     @Bean

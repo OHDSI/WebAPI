@@ -19,6 +19,7 @@ import com.jnj.honeur.webapi.hss.StorageInformationItem;
 import com.jnj.honeur.webapi.hss.StorageServiceClient;
 import com.jnj.honeur.webapi.liferay.LiferayApiClient;
 import com.jnj.honeur.webapi.liferay.model.Organization;
+import com.jnj.honeur.webapi.shiro.HoneurTokenManager;
 import com.jnj.honeur.webapi.shiro.LiferayPermissionManager;
 import com.jnj.honeur.webapi.source.SourceDaimonContext;
 import org.apache.commons.logging.Log;
@@ -34,6 +35,7 @@ import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.service.UserService;
 import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
+import org.ohdsi.webapi.shiro.Entities.RoleRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
@@ -110,6 +112,9 @@ public class HoneurCohortDefinitionServiceExtension {
 
     @Autowired
     private CohortSummaryStatsRepository cohortSummaryStatsRepository;
+
+    @Autowired
+    private RoleRepository roleRepository;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -208,7 +213,7 @@ public class HoneurCohortDefinitionServiceExtension {
     public CohortGenerationResults createCohortDefinitionResultsFromFile(@HeaderParam("Authorization") String token, @PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey, final StorageInformationItem storageInformationItem) throws Exception {
         CohortGenerationResults results = storageServiceClient.getCohortGenerationResults(token,
                 cohortDefinitionRepository.findOne(id).getUuid().toString(), storageInformationItem.getUuid());
-        return importCohortResults(id, sourceKey, results);
+        return importCohortResults(token, id, sourceKey, results);
     }
 
 
@@ -416,7 +421,7 @@ public class HoneurCohortDefinitionServiceExtension {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/import/{sourceKey}")
-    public CohortGenerationResults importCohortResults(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey, CohortGenerationResults cohortGenerationResults){
+    public CohortGenerationResults importCohortResults(@HeaderParam("Authorization") String token, @PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey, CohortGenerationResults cohortGenerationResults){
         try {
             SourceDaimonContextHolder.setCurrentSourceDaimonContext(new SourceDaimonContext(sourceKey, SourceDaimon.DaimonType.Results));
             CohortGenerationResults results = importCohortGenerationResults(id, cohortGenerationResults);
@@ -425,7 +430,7 @@ public class HoneurCohortDefinitionServiceExtension {
             results.setCohortGenerationInfo(
                     importCohortGenerationInfo(id, sourceKey, cohortGenerationResults.getCohortGenerationInfo()));
 
-            addViewPermissions(id, sourceKey);
+            addViewPermissions(token, id, sourceKey);
 
             return results;
 
@@ -438,13 +443,13 @@ public class HoneurCohortDefinitionServiceExtension {
         }
     }
 
-    private void addViewPermissions(int id, String sourceKey) {
+    private void addViewPermissions(String token, int id, String sourceKey) {
         //TODO make more central (code duplication in HoneurCohortService.java
             HashMap<String, String> map = new HashMap<>();
             map.put("cohortdefinition:%s:report:"+sourceKey+":get", "View Cohort Definition generation results for defintion with ID = %s for source "+sourceKey);
 
             try {
-                RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
+                RoleEntity currentUserPersonalRole = roleRepository.findByName(HoneurTokenManager.getSubject(token));
                 authorizer.addPermissionsFromTemplate(currentUserPersonalRole, map,
                         String.valueOf(id));
             } catch (Exception e) {

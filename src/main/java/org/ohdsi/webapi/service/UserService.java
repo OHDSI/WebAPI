@@ -32,6 +32,8 @@ import org.springframework.stereotype.Component;
  */
 
 @Path("/")
+@Component("userService")
+@ConditionalOnProperty(value = "datasource.honeur.enabled", havingValue = "false")
 public class UserService {
 
   @Autowired

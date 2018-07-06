@@ -19,7 +19,7 @@ import java.util.*;
  * @author gennadiy.anisimov
  */
 
-@Component
+@Component("honeurUserService")
 @ConditionalOnProperty(name = "datasource.honeur.enabled", havingValue = "true")
 public class HoneurUserService extends UserService{
 

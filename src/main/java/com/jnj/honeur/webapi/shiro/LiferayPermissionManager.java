@@ -1,7 +1,6 @@
 package com.jnj.honeur.webapi.shiro;
 
 import com.jnj.honeur.webapi.liferay.LiferayApiClient;
-import com.jnj.honeur.webapi.liferay.model.Organization;
 import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;

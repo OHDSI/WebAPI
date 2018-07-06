@@ -3,7 +3,7 @@ package com.jnj.honeur.webapi.hss;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jnj.honeur.webapi.cohortdefinition.CohortGenerationResults;
-import com.jnj.honeur.webapi.liferay.LiferayApiClient;
+import com.jnj.honeur.webapi.shiro.HoneurTokenManager;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -29,10 +29,7 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Component
 public class StorageServiceClient extends RestTemplate {
@@ -43,6 +40,15 @@ public class StorageServiceClient extends RestTemplate {
 
     @Value("${datasource.hss.url}")
     private String STORAGE_SERVICE_API;
+
+    @Value("${datasource.hss.user}")
+    private String USER;
+    
+    @Value("${webapi.central}")
+    private boolean WEBAPI_CENTRAL;
+    
+    @Value("${security.token.expiration}")
+    private int EXPIRATION_TIME;
 
 
     public StorageServiceClient() throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
@@ -65,7 +71,10 @@ public class StorageServiceClient extends RestTemplate {
         restTemplate = new RestTemplate(requestFactory);
     }
 
-    public void saveResults(final String token, File results, String uuid) {
+    public void saveResults(String token, File results, String uuid) {
+        if(!WEBAPI_CENTRAL){
+            token = HoneurTokenManager.createJsonWebToken(USER, getExpirationDate(EXPIRATION_TIME));
+        }
         String endpoint = "/cohort-results/" + uuid;
         try {
             HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = createHttpEntity(token, results);
@@ -77,7 +86,10 @@ public class StorageServiceClient extends RestTemplate {
         }
     }
 
-    public String saveCohort(final String token, File results, final UUID groupKey) {
+    public String saveCohort(String token, File results, final UUID groupKey) {
+        if(!WEBAPI_CENTRAL){
+            token = HoneurTokenManager.createJsonWebToken(USER, getExpirationDate(EXPIRATION_TIME));
+        }
         String endpoint = "/cohort-definitions/"+groupKey;
         try {
             HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = createHttpEntity(token, results);
@@ -92,7 +104,6 @@ public class StorageServiceClient extends RestTemplate {
     }
 
     private HttpEntity<LinkedMultiValueMap<String, Object>> createHttpEntity(String token, File file) {
-
         LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
         map.add("file", new FileSystemResource(file.getAbsolutePath()));
         HttpHeaders headers = new HttpHeaders();
@@ -102,36 +113,54 @@ public class StorageServiceClient extends RestTemplate {
         return new HttpEntity<>(map, headers);
     }
 
-    public List<CohortDefinitionStorageInformationItem> getCohortDefinitionImportList(final String token) {
+    public List<CohortDefinitionStorageInformationItem> getCohortDefinitionImportList(String token) {
+        if(!WEBAPI_CENTRAL){
+            token = HoneurTokenManager.createJsonWebToken(USER, getExpirationDate(EXPIRATION_TIME));
+        }
         String endpoint = "/cohort-definitions/list";
 
         return Arrays.asList(restTemplate.exchange(STORAGE_SERVICE_API + endpoint, HttpMethod.GET,
                 getTokenHeader(token), CohortDefinitionStorageInformationItem[].class).getBody());
     }
 
-    public String getCohortDefinition(final String token, String uuid) {
+    public String getCohortDefinition(String token, String uuid) {
+        if(!WEBAPI_CENTRAL){
+            token = HoneurTokenManager.createJsonWebToken(USER, getExpirationDate(EXPIRATION_TIME));
+        }
         String endpoint = "/cohort-definitions/" + uuid;
         return restTemplate.exchange(STORAGE_SERVICE_API + endpoint, HttpMethod.GET, getTokenHeader(token), JsonNode.class).getBody().asText();
     }
 
-    public List<StorageInformationItem> getCohortDefinitionResultsImportList(final String token, UUID uuid) {
+    public List<StorageInformationItem> getCohortDefinitionResultsImportList(String token, UUID uuid) {
+        if(!WEBAPI_CENTRAL){
+            token = HoneurTokenManager.createJsonWebToken(USER, getExpirationDate(EXPIRATION_TIME));
+        }
         String endpoint = "/cohort-results/list/"+uuid+"?reverseOrder=true";
         return Arrays.asList(restTemplate.exchange(STORAGE_SERVICE_API + endpoint, HttpMethod.GET, getTokenHeader(token), StorageInformationItem[].class).getBody());
     }
 
-    public CohortGenerationResults getCohortGenerationResults(final String token, String definitionUuid, String resultsUuid) throws IOException {
+    public CohortGenerationResults getCohortGenerationResults(String token, String definitionUuid, String resultsUuid) throws IOException {
+        if(!WEBAPI_CENTRAL){
+            token = HoneurTokenManager.createJsonWebToken(USER, getExpirationDate(EXPIRATION_TIME));
+        }
         String endpoint = "/cohort-results/"+definitionUuid+"/"+resultsUuid;
         String response = restTemplate.exchange(STORAGE_SERVICE_API + endpoint, HttpMethod.GET, getTokenHeader(token), String.class).getBody();
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(response, CohortGenerationResults.class);
     }
 
-    private HttpEntity getTokenHeader(final String token){
+    private HttpEntity getTokenHeader(String token){
         HttpHeaders headers = new HttpHeaders();
         headers.set("token", token.replace("Bearer ", ""));
 
         return new HttpEntity(headers);
     }
 
+
+    private Date getExpirationDate(final int expirationIntervalInSeconds) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.SECOND, expirationIntervalInSeconds);
+        return calendar.getTime();
+    }
 
 }

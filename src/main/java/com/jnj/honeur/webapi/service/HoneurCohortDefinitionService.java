@@ -17,6 +17,7 @@ import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -44,6 +45,9 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
 
     @Autowired
     private SourceService sourceService;
+
+    @Value("${security.enabled}")
+    private boolean securityEnabled;
 
 
 
@@ -144,24 +148,29 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
     }
 
     private void addGenerationPermissions(CohortDefinition createdDefinition) {
-        Collection<SourceInfo> sources = sourceService.getSources();
-        for(SourceInfo sourceInfo: sources){
-            HashMap<String, String> map = new HashMap<>();
-            map.put("cohortdefinition:%s:generate:"+sourceInfo.sourceKey+":get", "Generate Cohort Definition generation results for defintion with ID = %s for source "+sourceInfo.sourceKey);
-            map.put("cohortdefinition:%s:export:"+sourceInfo.sourceKey+":get", "Export Cohort Definition generation results for defintion with ID = %s for source "+sourceInfo.sourceKey);
-            map.put("cohortdefinition:%s:report:"+sourceInfo.sourceKey+":get", "View Cohort Definition generation results for defintion with ID = %s for source "+sourceInfo.sourceKey);
-            List<SourceDaimon> daimonsForGeneration = sourceInfo.daimons.stream()
-                    .filter(sourceDaimon -> sourceDaimon.getDaimonType().equals(SourceDaimon.DaimonType.CDM) ||
-                            sourceDaimon.getDaimonType().equals(SourceDaimon.DaimonType.Vocabulary) ||
-                            sourceDaimon.getDaimonType().equals(SourceDaimon.DaimonType.Results))
-                    .collect(Collectors.toList());
-            if(daimonsForGeneration.size() == 3){
-                try {
-                    RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
-                    authorizer.addPermissionsFromTemplate(currentUserPersonalRole, map,
-                            String.valueOf(createdDefinition.getId()));
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
+        if(securityEnabled) {
+            Collection<SourceInfo> sources = sourceService.getSources();
+            for (SourceInfo sourceInfo : sources) {
+                HashMap<String, String> map = new HashMap<>();
+                map.put("cohortdefinition:%s:generate:" + sourceInfo.sourceKey + ":get",
+                        "Generate Cohort Definition generation results for defintion with ID = %s for source " + sourceInfo.sourceKey);
+                map.put("cohortdefinition:%s:export:" + sourceInfo.sourceKey + ":get",
+                        "Export Cohort Definition generation results for defintion with ID = %s for source " + sourceInfo.sourceKey);
+                map.put("cohortdefinition:%s:report:" + sourceInfo.sourceKey + ":get",
+                        "View Cohort Definition generation results for defintion with ID = %s for source " + sourceInfo.sourceKey);
+                List<SourceDaimon> daimonsForGeneration = sourceInfo.daimons.stream()
+                        .filter(sourceDaimon -> sourceDaimon.getDaimonType().equals(SourceDaimon.DaimonType.CDM) ||
+                                sourceDaimon.getDaimonType().equals(SourceDaimon.DaimonType.Vocabulary) ||
+                                sourceDaimon.getDaimonType().equals(SourceDaimon.DaimonType.Results))
+                        .collect(Collectors.toList());
+                if (daimonsForGeneration.size() == 3) {
+                    try {
+                        RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
+                        authorizer.addPermissionsFromTemplate(currentUserPersonalRole, map,
+                                String.valueOf(createdDefinition.getId()));
+                    } catch (Exception e) {
+                        log.error(e.getMessage(), e);
+                    }
                 }
             }
         }

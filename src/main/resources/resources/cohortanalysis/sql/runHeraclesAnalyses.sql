@@ -67,6 +67,7 @@
 --data completeness: ethnicity: 2021, 2022, 2023, 2024, 2025, 2026, 2027
 --entropy: 2031, 2032
 --tornado: 3000, 3001
+--cost and utilization: 4000,4001,4002,4003,4004,4005,4006,4007,4008,4009,4010,4011,4012,4013,4014,4015,4016,4017,4018,4019,4020,4021,4022,4023
 
 delete from @results_schema.HERACLES_results where cohort_definition_id IN (@cohort_definition_id) and analysis_id IN (@list_of_analysis_ids);
 delete from @results_schema.HERACLES_results_dist where cohort_definition_id IN (@cohort_definition_id) and analysis_id IN (@list_of_analysis_ids);

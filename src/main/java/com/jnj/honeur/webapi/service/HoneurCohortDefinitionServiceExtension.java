@@ -6,6 +6,14 @@ import com.jnj.honeur.security.SecurityUtils2;
 import com.jnj.honeur.webapi.SourceDaimonContextHolder;
 import com.jnj.honeur.webapi.cohortdefinition.CohortGenerationInfoRepository;
 import com.jnj.honeur.webapi.cohortdefinition.CohortGenerationResults;
+import com.jnj.honeur.webapi.cohortfeatures.CohortFeaturesEntity;
+import com.jnj.honeur.webapi.cohortfeatures.CohortFeaturesRepository;
+import com.jnj.honeur.webapi.cohortfeaturesanalysisref.CohortFeaturesAnalysisRefEntity;
+import com.jnj.honeur.webapi.cohortfeaturesanalysisref.CohortFeaturesAnalysisRefRepository;
+import com.jnj.honeur.webapi.cohortfeaturesdist.CohortFeaturesDistEntity;
+import com.jnj.honeur.webapi.cohortfeaturesdist.CohortFeaturesDistRepository;
+import com.jnj.honeur.webapi.cohortfeaturesref.CohortFeaturesRefEntity;
+import com.jnj.honeur.webapi.cohortfeaturesref.CohortFeaturesRefRepository;
 import com.jnj.honeur.webapi.cohortinclusion.CohortInclusionEntity;
 import com.jnj.honeur.webapi.cohortinclusion.CohortInclusionRepository;
 import com.jnj.honeur.webapi.cohortinclusionresult.CohortInclusionResultEntity;
@@ -113,6 +121,18 @@ public class HoneurCohortDefinitionServiceExtension {
 
     @Autowired
     private CohortSummaryStatsRepository cohortSummaryStatsRepository;
+
+    @Autowired
+    private CohortFeaturesRepository cohortFeaturesRepository;
+
+    @Autowired
+    private CohortFeaturesAnalysisRefRepository cohortFeaturesAnalysisRefRepository;
+
+    @Autowired
+    private CohortFeaturesDistRepository cohortFeaturesDistRepository;
+
+    @Autowired
+    private CohortFeaturesRefRepository cohortFeaturesRefRepository;
 
     @Autowired
     private RoleRepository roleRepository;
@@ -238,6 +258,8 @@ public class HoneurCohortDefinitionServiceExtension {
     @Path("/{id}/export/{sourceKey}")
     public Response exportCohortResults(@HeaderParam("Authorization") String token, @PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey, @QueryParam("toCloud") final boolean toCloud, HttpHeaders headers) {
         try {
+            CohortGenerationInfo info = this.cohortGenerationInfoRepository.findGenerationInfoByIdAndSourceId(id, sourceRepository.findBySourceKey(sourceKey).getSourceId());
+
             SourceDaimonContextHolder
                     .setCurrentSourceDaimonContext(new SourceDaimonContext(sourceKey, SourceDaimon.DaimonType.Results));
 
@@ -251,18 +273,28 @@ public class HoneurCohortDefinitionServiceExtension {
             List<CohortSummaryStatsEntity> cohortSummaryStats =
                     cohortSummaryStatsRepository.findByCohortDefinitionId((long) id);
 
-            SourceDaimonContextHolder.clear();
-
-            CohortGenerationInfo info = this.cohortGenerationInfoRepository.findGenerationInfoByIdAndSourceId(id, sourceRepository.findBySourceKey(sourceKey).getSourceId());
-
             CohortGenerationResults results = new CohortGenerationResults();
             results.setCohort(cohorts);
             results.setCohortInclusion(cohortInclusions);
             results.setCohortInclusionResult(cohortInclusionResults);
             results.setCohortInclusionStats(cohortInclusionStats);
             results.setCohortSummaryStats(cohortSummaryStats);
+
+            if(info.isIncludeFeatures()){
+                List<CohortFeaturesEntity> cohortFeaturesEntities = cohortFeaturesRepository.findByCohortDefinitionId((long) id);
+                List<CohortFeaturesAnalysisRefEntity> cohortFeaturesAnalysisRefEntities = cohortFeaturesAnalysisRefRepository.findByCohortDefinitionId((long) id);
+                List<CohortFeaturesDistEntity> cohortFeaturesDistEntities = cohortFeaturesDistRepository.findByCohortDefinitionId((long) id);
+                List<CohortFeaturesRefEntity> cohortFeaturesRefEntities = cohortFeaturesRefRepository.findByCohortDefinitionId((long) id);
+
+                results.setCohortFeatures(cohortFeaturesEntities);
+                results.setCohortFeaturesAnalysisRef(cohortFeaturesAnalysisRefEntities);
+                results.setCohortFeaturesDist(cohortFeaturesDistEntities);
+                results.setCohortFeaturesRef(cohortFeaturesRefEntities);
+            }
+
             results.setCohortGenerationInfo(info);
 
+            SourceDaimonContextHolder.clear();
 
             String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
             File file = createFile(sourceKey+"-"+timeStamp+".results", results);

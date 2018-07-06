@@ -1,5 +1,9 @@
 package com.jnj.honeur.webapi.cohortdefinition;
 
+import com.jnj.honeur.webapi.cohortfeatures.CohortFeaturesEntity;
+import com.jnj.honeur.webapi.cohortfeaturesanalysisref.CohortFeaturesAnalysisRefEntity;
+import com.jnj.honeur.webapi.cohortfeaturesdist.CohortFeaturesDistEntity;
+import com.jnj.honeur.webapi.cohortfeaturesref.CohortFeaturesRefEntity;
 import com.jnj.honeur.webapi.cohortinclusion.CohortInclusionEntity;
 import com.jnj.honeur.webapi.cohortinclusionresult.CohortInclusionResultEntity;
 import com.jnj.honeur.webapi.cohortinclusionstats.CohortInclusionStatsEntity;
@@ -19,6 +23,11 @@ public class CohortGenerationResults implements Serializable {
     private List<CohortInclusionStatsEntity> cohortInclusionStats;
     private List<CohortSummaryStatsEntity> cohortSummaryStats;
     private CohortGenerationInfo cohortGenerationInfo;
+
+    private List<CohortFeaturesEntity> cohortFeatures;
+    private List<CohortFeaturesAnalysisRefEntity> cohortFeaturesAnalysisRef;
+    private List<CohortFeaturesDistEntity> cohortFeaturesDist;
+    private List<CohortFeaturesRefEntity> cohortFeaturesRef;
 
     public List<CohortEntity> getCohort() {
         return cohort;
@@ -61,6 +70,41 @@ public class CohortGenerationResults implements Serializable {
     public void setCohortSummaryStats(
             List<CohortSummaryStatsEntity> cohortSummaryStats) {
         this.cohortSummaryStats = cohortSummaryStats;
+    }
+
+    public List<CohortFeaturesEntity> getCohortFeatures() {
+        return cohortFeatures;
+    }
+
+    public void setCohortFeatures(List<CohortFeaturesEntity> cohortFeatures) {
+        this.cohortFeatures = cohortFeatures;
+    }
+
+    public List<CohortFeaturesAnalysisRefEntity> getCohortFeaturesAnalysisRef() {
+        return cohortFeaturesAnalysisRef;
+    }
+
+    public void setCohortFeaturesAnalysisRef(
+            List<CohortFeaturesAnalysisRefEntity> cohortFeaturesAnalysisRef) {
+        this.cohortFeaturesAnalysisRef = cohortFeaturesAnalysisRef;
+    }
+
+    public List<CohortFeaturesDistEntity> getCohortFeaturesDist() {
+        return cohortFeaturesDist;
+    }
+
+    public void setCohortFeaturesDist(
+            List<CohortFeaturesDistEntity> cohortFeaturesDist) {
+        this.cohortFeaturesDist = cohortFeaturesDist;
+    }
+
+    public List<CohortFeaturesRefEntity> getCohortFeaturesRef() {
+        return cohortFeaturesRef;
+    }
+
+    public void setCohortFeaturesRef(
+            List<CohortFeaturesRefEntity> cohortFeaturesRef) {
+        this.cohortFeaturesRef = cohortFeaturesRef;
     }
 
     public CohortGenerationInfo getCohortGenerationInfo() {

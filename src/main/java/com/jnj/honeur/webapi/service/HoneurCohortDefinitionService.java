@@ -78,6 +78,7 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
                 .filter(cohortDefinition -> !previousVersionsUuids.contains(cohortDefinition.getUuid()))
                 .collect(Collectors.toList());
 
+        //TODO: Do we want this also at remote site?
         if(isCentral) {
             if(token == null){
                 //TODO: If token == null?

@@ -567,7 +567,7 @@ public class HoneurCohortDefinitionServiceExtension {
             cohortFeaturesEntity.setSumValue(cohortFeatures.getSumValue());
             cohortFeaturesEntities.add(cohortFeaturesEntity);
         }
-        newResults.setCohortFeatures(cohortFeaturesEntities);
+        newResults.setCohortFeatures(Lists.newArrayList(cohortFeaturesRepository.save(cohortFeaturesEntities)));
 
         List<CohortFeaturesAnalysisRefEntity> cohortFeaturesAnalysisRefEntities = new ArrayList<>();
         for(CohortFeaturesAnalysisRefEntity cohortFeaturesAnalysisRef: cohortGenerationResults.getCohortFeaturesAnalysisRef()){
@@ -582,7 +582,7 @@ public class HoneurCohortDefinitionServiceExtension {
             cohortFeaturesAnalysisRefEntity.setStartDay(cohortFeaturesAnalysisRef.getStartDay());
             cohortFeaturesAnalysisRefEntities.add(cohortFeaturesAnalysisRefEntity);
         }
-        newResults.setCohortFeaturesAnalysisRef(cohortFeaturesAnalysisRefEntities);
+        newResults.setCohortFeaturesAnalysisRef(Lists.newArrayList(cohortFeaturesAnalysisRefRepository.save(cohortFeaturesAnalysisRefEntities)));
 
         List<CohortFeaturesDistEntity> cohortFeaturesDistEntities = new ArrayList<>();
         for(CohortFeaturesDistEntity cohortFeaturesDist: cohortGenerationResults.getCohortFeaturesDist()){
@@ -601,7 +601,7 @@ public class HoneurCohortDefinitionServiceExtension {
             cohortFeaturesDistEntity.setP90Value(cohortFeaturesDist.getP90Value());
             cohortFeaturesDistEntities.add(cohortFeaturesDistEntity);
         }
-        newResults.setCohortFeaturesDist(cohortFeaturesDistEntities);
+        newResults.setCohortFeaturesDist(Lists.newArrayList(cohortFeaturesDistRepository.save(cohortFeaturesDistEntities)));
 
         List<CohortFeaturesRefEntity> cohortFeaturesRefEntities = new ArrayList<>();
         for(CohortFeaturesRefEntity cohortFeaturesRef: cohortGenerationResults.getCohortFeaturesRef()){
@@ -613,7 +613,7 @@ public class HoneurCohortDefinitionServiceExtension {
             cohortFeaturesRefEntity.setConceptId(cohortFeaturesRef.getConceptId());
             cohortFeaturesRefEntities.add(cohortFeaturesRefEntity);
         }
-        newResults.setCohortFeaturesRef(cohortFeaturesRefEntities);
+        newResults.setCohortFeaturesRef(Lists.newArrayList(cohortFeaturesRefRepository.save(cohortFeaturesRefEntities)));
 
         return newResults;
     }

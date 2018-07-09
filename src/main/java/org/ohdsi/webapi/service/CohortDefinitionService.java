@@ -22,15 +22,7 @@ import javax.persistence.PersistenceContext;
 
 import javax.servlet.ServletContext;
 import javax.transaction.Transactional;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
@@ -350,7 +342,7 @@ public class CohortDefinitionService extends AbstractDaoService {
   @GET
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
-  public List<CohortDefinitionListItem> getCohortDefinitionList() {
+  public List<CohortDefinitionListItem> getCohortDefinitionList(@HeaderParam("Authorization") String token) {
     ArrayList<CohortDefinitionListItem> result = new ArrayList<>();
     List<Object[]> defs = entityManager.createQuery("SELECT cd.id, cd.name, cd.description, cd.expressionType, cd.createdBy, cd.createdDate, cd.modifiedBy, cd.modifiedDate FROM CohortDefinition cd").getResultList();
     for (Object[] d : defs) {

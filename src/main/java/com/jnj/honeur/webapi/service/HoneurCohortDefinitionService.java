@@ -5,6 +5,8 @@
  */
 package com.jnj.honeur.webapi.service;
 
+import com.jnj.honeur.security.SecurityUtils2;
+import com.jnj.honeur.webapi.shiro.LiferayPermissionManager;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
@@ -22,6 +24,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import javax.ws.rs.HeaderParam;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -38,7 +41,7 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
     private Security security;
 
     @Autowired
-    protected PermissionManager authorizer;
+    protected LiferayPermissionManager authorizer;
 
     @Autowired
     private CohortDefinitionRepository cohortDefinitionRepository;
@@ -49,6 +52,9 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
     @Value("${security.enabled}")
     private boolean securityEnabled;
 
+    @Value("${webapi.central}")
+    private boolean isCentral;
+
 
 
     /**
@@ -57,7 +63,7 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
      * @return List of cohort_definition
      */
     @Override
-    public List<CohortDefinitionListItem> getCohortDefinitionList() {
+    public List<CohortDefinitionListItem> getCohortDefinitionList(@HeaderParam("Authorization") String token) {
         ArrayList<CohortDefinitionListItem> result = new ArrayList<>();
         Iterable<CohortDefinition> defs = cohortDefinitionRepository.findAll();
 
@@ -71,6 +77,23 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
         List<CohortDefinition> filteredDefs = StreamSupport.stream(defs.spliterator(), false)
                 .filter(cohortDefinition -> !previousVersionsUuids.contains(cohortDefinition.getUuid()))
                 .collect(Collectors.toList());
+
+        if(isCentral) {
+            if(token == null){
+                //TODO: If token == null?
+            }
+            String permissionPattern = "cohortdefinition:([0-9]+|\\*):get";
+            List<Integer> definitionIds = this.authorizer.getUserPermissions(SecurityUtils2.getSubject(token.replace("Bearer ", ""))).stream()
+                    .map(PermissionEntity::getValue)
+                    .filter(permissionString -> permissionString.matches(permissionPattern))
+                    .map(permissionString -> parseCohortDefinitionId(permissionString))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .collect(Collectors.toList());
+            filteredDefs = filteredDefs.stream()
+                    .filter(cohortDefinition -> definitionIds.contains(cohortDefinition.getId()))
+                    .collect(Collectors.toList());
+        }
 
         for (CohortDefinition d : filteredDefs) {
             CohortDefinitionDTO item = new CohortDefinitionDTO();
@@ -106,6 +129,14 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
             }
         }
         return result;
+    }
+
+    private Optional<Integer> parseCohortDefinitionId(String permission) {
+        try {
+            return Optional.of(Integer.parseInt(permission.split(":")[1]));
+        } catch (NumberFormatException e) {
+            return Optional.empty();
+        }
     }
 
     /**

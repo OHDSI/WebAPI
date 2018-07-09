@@ -41,7 +41,7 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
     private Security security;
 
     @Autowired
-    protected LiferayPermissionManager authorizer;
+    protected PermissionManager authorizer;
 
     @Autowired
     private CohortDefinitionRepository cohortDefinitionRepository;
@@ -84,7 +84,8 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
                 //TODO: If token == null?
             }
             String permissionPattern = "cohortdefinition:([0-9]+|\\*):get";
-            List<Integer> definitionIds = this.authorizer.getUserPermissions(SecurityUtils2.getSubject(token.replace("Bearer ", ""))).stream()
+            LiferayPermissionManager liferayPermissionManager = (LiferayPermissionManager) authorizer;
+            List<Integer> definitionIds = liferayPermissionManager.getUserPermissions(SecurityUtils2.getSubject(token.replace("Bearer ", ""))).stream()
                     .map(PermissionEntity::getValue)
                     .filter(permissionString -> permissionString.matches(permissionPattern))
                     .map(permissionString -> parseCohortDefinitionId(permissionString))

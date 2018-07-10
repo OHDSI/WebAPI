@@ -43,10 +43,10 @@ public class StorageServiceClient extends RestTemplate {
     @Value("${datasource.hss.url}")
     private String STORAGE_SERVICE_API;
 
-    @Value("${datasource.hss.user}")
+    @Value("${datasource.hss.user:null}")
     private String HSS_USER;
 
-    @Value("${datasource.hss.password}")
+    @Value("${datasource.hss.password:null}")
     private String HSS_PASSWORD;
     
     @Value("${webapi.central}")

@@ -3,7 +3,6 @@ package com.jnj.honeur.webapi.hss;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jnj.honeur.webapi.cohortdefinition.CohortGenerationResults;
-import com.jnj.honeur.webapi.shiro.HoneurTokenManager;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -34,7 +33,7 @@ import java.security.cert.X509Certificate;
 import java.util.*;
 
 @Component
-public class StorageServiceClient extends RestTemplate {
+public class StorageServiceClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StorageServiceClient.class);
 
@@ -43,15 +42,15 @@ public class StorageServiceClient extends RestTemplate {
     @Value("${datasource.hss.url}")
     private String STORAGE_SERVICE_API;
 
-    @Value("${datasource.hss.user:null}")
+    @Value("${datasource.hss.user}")
     private String HSS_USER;
 
-    @Value("${datasource.hss.password:null}")
+    @Value("${datasource.hss.password}")
     private String HSS_PASSWORD;
-    
+
     @Value("${webapi.central}")
     private boolean WEBAPI_CENTRAL;
-    
+
     @Value("${security.token.expiration}")
     private int EXPIRATION_TIME;
 
@@ -77,8 +76,10 @@ public class StorageServiceClient extends RestTemplate {
     }
 
     public void saveResults(String token, File results, String uuid) {
-        if(!WEBAPI_CENTRAL){
-            JsonNode tokenResponse = restTemplate.exchange(STORAGE_SERVICE_API+"/login", HttpMethod.GET, getBasicAuthenticationHeader(), JsonNode.class).getBody();
+        if (!WEBAPI_CENTRAL) {
+            JsonNode tokenResponse = restTemplate
+                    .exchange(STORAGE_SERVICE_API + "/login", HttpMethod.GET, getBasicAuthenticationHeader(),
+                            JsonNode.class).getBody();
             token = tokenResponse.path("token").asText();
         }
         String endpoint = "/cohort-results/" + uuid;
@@ -93,18 +94,20 @@ public class StorageServiceClient extends RestTemplate {
     }
 
     public String saveCohort(String token, File results, final UUID groupKey) {
-        if(!WEBAPI_CENTRAL){
-            JsonNode tokenResponse = restTemplate.exchange(STORAGE_SERVICE_API+"/login", HttpMethod.GET, getBasicAuthenticationHeader(), JsonNode.class).getBody();
+        if (!WEBAPI_CENTRAL) {
+            JsonNode tokenResponse = restTemplate
+                    .exchange(STORAGE_SERVICE_API + "/login", HttpMethod.GET, getBasicAuthenticationHeader(),
+                            JsonNode.class).getBody();
             token = tokenResponse.path("token").asText();
         }
-        String endpoint = "/cohort-definitions/"+groupKey;
+        String endpoint = "/cohort-definitions/" + groupKey;
         try {
             HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = createHttpEntity(token, results);
 
             return restTemplate.exchange(STORAGE_SERVICE_API + endpoint,
                     HttpMethod.POST, requestEntity, StorageInformationItem.class).getHeaders()
                     .getLocation().getPath().replace("/cohort-definitions/", "");
-        } catch (HttpStatusCodeException e){
+        } catch (HttpStatusCodeException e) {
             LOGGER.error(e.getMessage(), e);
             return null;
         }
@@ -121,8 +124,10 @@ public class StorageServiceClient extends RestTemplate {
     }
 
     public List<CohortDefinitionStorageInformationItem> getCohortDefinitionImportList(String token) {
-        if(!WEBAPI_CENTRAL){
-            JsonNode tokenResponse = restTemplate.exchange(STORAGE_SERVICE_API+"/login", HttpMethod.GET, getBasicAuthenticationHeader(), JsonNode.class).getBody();
+        if (!WEBAPI_CENTRAL) {
+            JsonNode tokenResponse = restTemplate
+                    .exchange(STORAGE_SERVICE_API + "/login", HttpMethod.GET, getBasicAuthenticationHeader(),
+                            JsonNode.class).getBody();
             token = tokenResponse.path("token").asText();
         }
         String endpoint = "/cohort-definitions/list";
@@ -132,35 +137,48 @@ public class StorageServiceClient extends RestTemplate {
     }
 
     public String getCohortDefinition(String token, String uuid) {
-        if(!WEBAPI_CENTRAL){
-            JsonNode tokenResponse = restTemplate.exchange(STORAGE_SERVICE_API+"/login", HttpMethod.GET, getBasicAuthenticationHeader(), JsonNode.class).getBody();
+        if (!WEBAPI_CENTRAL) {
+            JsonNode tokenResponse = restTemplate
+                    .exchange(STORAGE_SERVICE_API + "/login", HttpMethod.GET, getBasicAuthenticationHeader(),
+                            JsonNode.class).getBody();
             token = tokenResponse.path("token").asText();
         }
         String endpoint = "/cohort-definitions/" + uuid;
-        return restTemplate.exchange(STORAGE_SERVICE_API + endpoint, HttpMethod.GET, getTokenHeader(token), JsonNode.class).getBody().asText();
+        return restTemplate
+                .exchange(STORAGE_SERVICE_API + endpoint, HttpMethod.GET, getTokenHeader(token), JsonNode.class)
+                .getBody().asText();
     }
 
     public List<StorageInformationItem> getCohortDefinitionResultsImportList(String token, UUID uuid) {
-        if(!WEBAPI_CENTRAL){
-            JsonNode tokenResponse = restTemplate.exchange(STORAGE_SERVICE_API+"/login", HttpMethod.GET, getBasicAuthenticationHeader(), JsonNode.class).getBody();
+        if (!WEBAPI_CENTRAL) {
+            JsonNode tokenResponse = restTemplate
+                    .exchange(STORAGE_SERVICE_API + "/login", HttpMethod.GET, getBasicAuthenticationHeader(),
+                            JsonNode.class).getBody();
             token = tokenResponse.path("token").asText();
         }
-        String endpoint = "/cohort-results/list/"+uuid+"?reverseOrder=true";
-        return Arrays.asList(restTemplate.exchange(STORAGE_SERVICE_API + endpoint, HttpMethod.GET, getTokenHeader(token), StorageInformationItem[].class).getBody());
+        String endpoint = "/cohort-results/list/" + uuid + "?reverseOrder=true";
+        return Arrays.asList(restTemplate
+                .exchange(STORAGE_SERVICE_API + endpoint, HttpMethod.GET, getTokenHeader(token),
+                        StorageInformationItem[].class).getBody());
     }
 
-    public CohortGenerationResults getCohortGenerationResults(String token, String definitionUuid, String resultsUuid) throws IOException {
-        if(!WEBAPI_CENTRAL){
-            JsonNode tokenResponse = restTemplate.exchange(STORAGE_SERVICE_API+"/login", HttpMethod.GET, getBasicAuthenticationHeader(), JsonNode.class).getBody();
+    public CohortGenerationResults getCohortGenerationResults(String token, String definitionUuid, String resultsUuid)
+            throws IOException {
+        if (!WEBAPI_CENTRAL) {
+            JsonNode tokenResponse = restTemplate
+                    .exchange(STORAGE_SERVICE_API + "/login", HttpMethod.GET, getBasicAuthenticationHeader(),
+                            JsonNode.class).getBody();
             token = tokenResponse.path("token").asText();
         }
-        String endpoint = "/cohort-results/"+definitionUuid+"/"+resultsUuid;
-        String response = restTemplate.exchange(STORAGE_SERVICE_API + endpoint, HttpMethod.GET, getTokenHeader(token), String.class).getBody();
+        String endpoint = "/cohort-results/" + definitionUuid + "/" + resultsUuid;
+        String response = restTemplate
+                .exchange(STORAGE_SERVICE_API + endpoint, HttpMethod.GET, getTokenHeader(token), String.class)
+                .getBody();
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(response, CohortGenerationResults.class);
     }
 
-    private HttpEntity getTokenHeader(String token){
+    private HttpEntity getTokenHeader(String token) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("token", token.replace("Bearer ", ""));
 
@@ -168,13 +186,13 @@ public class StorageServiceClient extends RestTemplate {
     }
 
 
-    private HttpEntity getBasicAuthenticationHeader(){
+    private HttpEntity getBasicAuthenticationHeader() {
         return new HttpEntity(new HttpHeaders() {{
             String auth = HSS_USER + ":" + HSS_PASSWORD;
             byte[] encodedAuth = Base64.encodeBase64(
-                    auth.getBytes(Charset.forName("US-ASCII")) );
-            String authHeader = "Basic " + new String( encodedAuth );
-            set( "Authorization", authHeader );
+                    auth.getBytes(Charset.forName("US-ASCII")));
+            String authHeader = "Basic " + new String(encodedAuth);
+            set("Authorization", authHeader);
         }});
     }
 

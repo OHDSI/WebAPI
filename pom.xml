@@ -29,6 +29,9 @@
     <datasource.dialect>sql server</datasource.dialect>
     <datasource.ohdsi.schema>dbo</datasource.ohdsi.schema>
     <datasource.dialect.source>sql server</datasource.dialect.source>
+    <!-- HONEUR extension: add properties by default -->
+    <hss.user></hss.user>
+    <hss.password></hss.password>
     <!-- DB Change Management / Migration -->
     <flyway.datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</flyway.datasource.driverClassName>
     <flyway.datasource.url>jdbc:sqlserver://serverName</flyway.datasource.url>

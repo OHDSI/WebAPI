@@ -8,8 +8,6 @@
                 <datasource.dialect>postgresql</datasource.dialect>
                 <datasource.ohdsi.schema>webapi</datasource.ohdsi.schema>
                 <honeur.enabled>true</honeur.enabled>
-                <hss.user></hss.user>
-                <hss.password></hss.password>
                 <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
                 <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
                 <flyway.datasource.username>ohdsi_admin_user</flyway.datasource.username>

@@ -1,31 +1,8 @@
 package org.ohdsi.webapi.service;
 
-import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
+import com.google.common.collect.*;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.circe.vocabulary.Concept;
@@ -37,25 +14,35 @@ import org.ohdsi.webapi.activity.Activity.ActivityType;
 import org.ohdsi.webapi.activity.Tracker;
 import org.ohdsi.webapi.conceptset.ConceptSetComparison;
 import org.ohdsi.webapi.conceptset.ConceptSetOptimizationResult;
+import org.ohdsi.webapi.model.*;
+import org.ohdsi.webapi.service.vocabulary.*;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
+import org.ohdsi.webapi.util.PageableUtils;
 import org.ohdsi.webapi.util.PreparedSqlRender;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
-import org.ohdsi.webapi.vocabulary.ConceptRelationship;
-import org.ohdsi.webapi.vocabulary.ConceptSearch;
-import org.ohdsi.webapi.vocabulary.DescendentOfAncestorSearch;
-import org.ohdsi.webapi.vocabulary.Domain;
-import org.ohdsi.webapi.vocabulary.RelatedConcept;
-import org.ohdsi.webapi.vocabulary.RelatedConceptSearch;
-import org.ohdsi.webapi.vocabulary.Vocabulary;
-import org.ohdsi.webapi.vocabulary.VocabularyInfo;
+import org.ohdsi.webapi.vocabulary.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.RowCallbackHandler;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementSetter;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 /**
  * @author fdefalco
@@ -68,6 +55,9 @@ public class VocabularyService extends AbstractDaoService {
 
   @Autowired
   private SourceService sourceService;
+
+  @Autowired
+  private CDMResultsService resultsService;
 
   @Value("${datasource.driverClassName}")
   private String driver;
@@ -87,6 +77,26 @@ public class VocabularyService extends AbstractDaoService {
       return concept;
     }
   };
+
+  private static Map<String, String> INCLUDED_CONCEPTS_FIELD_MAP = ImmutableMap.of("STANDARD_CONCEPT_CAPTION", "STANDARD_CONCEPT",
+          "INVALID_REASON_CAPTION", "INVALID_REASON");
+
+  private static Map<String, List<String>> STANDARD_CONCEPT_VALUES_MAP = ImmutableMap.of("Non-Standard", ImmutableList.of("N"),
+          "Standard", ImmutableList.of("S"), "Classification", ImmutableList.of("C"));
+
+  private static Map<String, List<String>> INVALID_REASON_VALUES_MAP = ImmutableMap.of("Valid", ImmutableList.of("V"),
+          "Invalid", ImmutableList.of("D", "U"));
+
+  private static Map<String, Map<String, List<String>>> INCLUDED_CONCEPT_VALUES_MAP = ImmutableMap.of("STANDARD_CONCEPT_CAPTION", STANDARD_CONCEPT_VALUES_MAP,
+          "INVALID_REASON_CAPTION", INVALID_REASON_VALUES_MAP);
+
+  private static Set<String> INCLUDED_CONCEPTS_COUNTS_FIELDS = ImmutableSet.of("RECORD_COUNT", "DESCENDANT_RECORD_COUNT");
+
+  private static Map<String, String> INCLUDED_CONCEPTS_COUNTS_SELECT = ImmutableMap.of("RECORD_COUNT", "ISNULL(max(c1.agg_count_value), 0) record_count",
+          "DESCENDANT_RECORD_COUNT", "ISNULL(sum(c2.agg_count_value), 0) descendant_record_count");
+
+  private static Map<String, Predicate<ConceptAncestors>> CONCEPT_COUNT_PREDICATE_MAP = ImmutableMap.of("RECORD_COUNT", concept -> concept.recordCount > 0,
+          "DESCENDANT_RECORD_COUNT", concept -> concept.descendantRecordCount > 0);
 
   private String getDefaultVocabularySourceKey()
   {
@@ -270,16 +280,20 @@ public class VocabularyService extends AbstractDaoService {
     }
 
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    PreparedStatementRenderer psr = prepareExecuteSourcecodeLookup(sourcecodes, source);
+    PreparedStatementRenderer psr = prepareExecuteSourcecodeLookup(sourcecodes, source, null);
     return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), this.rowMapper);
   }
 
-  protected PreparedStatementRenderer prepareExecuteSourcecodeLookup(String[] sourcecodes, Source source) {
+  protected PreparedStatementRenderer prepareExecuteSourcecodeLookup(String[] sourcecodes, Source source, Function<String, String> queryModifier) {
 
     String sqlPath = "/resources/vocabulary/sql/lookupSourcecodes.sql";
     String tqName = "CDM_schema";
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
-    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sqlPath, tqName, tqValue, "sourcecodes", sourcecodes);
+    String sql = ResourceHelper.GetResourceAsString(sqlPath);
+    if (Objects.nonNull(queryModifier)) {
+      sql = queryModifier.apply(sql);
+    }
+    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, tqName, tqValue, "sourcecodes", sourcecodes);
     return psr;
   }
 
@@ -300,7 +314,112 @@ public class VocabularyService extends AbstractDaoService {
 
     return executeSourcecodeLookup(defaultSourceKey, sourcecodes);
   }
-  
+
+  @Path("lookup/mappedPage")
+  @POST
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public PageResponse<Concept> lookupSourcecodesPage(ConceptSetExpressionPageRequest pageRequest) {
+    String defaultSourceKey = getDefaultVocabularySourceKey();
+
+    if (defaultSourceKey == null) {
+      throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."), Response.Status.SERVICE_UNAVAILABLE); // http 503
+    }
+
+    return lookupMappedSourcecodesPage(defaultSourceKey, pageRequest);
+  }
+
+  @Path("lookup/mapped/facets")
+  @POST
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public FacetsResponse lookupMappedSourcecodesFacets(FacetsRequest request) {
+
+    String defaultSourceKey = getDefaultVocabularySourceKey();
+    if (defaultSourceKey == null) {
+      throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."), Response.Status.SERVICE_UNAVAILABLE); // http 503
+    }
+    return lookupMappedSourcecodesFacets(defaultSourceKey, request);
+  }
+
+  @Path("{sourceKey}/lookup/mapped/facets")
+  @POST
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public FacetsResponse lookupMappedSourcecodesFacets(@PathParam("sourceKey") String sourceKey, FacetsRequest request) {
+
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    long[] sourcecodes = lookupMappedConcepts(sourceKey, request.getExpression());
+    FacetValuesStrategy strategy = new MappedLookupFacetValues(sourcecodes, source, getSourceJdbcTemplate(source));
+    return doResolveFacets(source, request, strategy);
+  }
+
+  @Path("{sourceKey}/lookup/mappedPage")
+  @POST
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public PageResponse<Concept> lookupMappedSourcecodesPage(@PathParam("sourceKey") String sourceKey, ConceptSetExpressionPageRequest pageRequest) {
+    List<Concept> concepts;
+    int totals, filtered;
+
+    long[] sourcecodes = lookupMappedConcepts(sourceKey, pageRequest.getExpression());
+
+    if (sourcecodes.length > 0) {
+      int offset = pageRequest.getStart(), limit = pageRequest.getLength();
+      String orderClause = PageableUtils.getOrderClause(pageRequest);
+      String searchClause = PageableUtils.getSearchClause(pageRequest);
+      List<String> where = StringUtils.isNotBlank(searchClause) ? Lists.newArrayList(searchClause) : new ArrayList<>();
+      where.addAll(getConceptSetFilters(pageRequest));
+      String whereClause = where.isEmpty() ? "" : "WHERE " + where.stream().collect(Collectors.joining(" AND "));
+
+      Source source = getSourceRepository().findBySourceKey(sourceKey);
+      Function<String, String> queryModifier = getWhereFunction(whereClause);
+      StatementPrepareStrategy sps = new MappedLookupStrategy(sourcecodes);
+
+      PreparedStatementRenderer psr = sps.prepareStatement(source,
+              query -> "with rows as ( select ROW_NUMBER() over(ORDER BY " + orderClause + ") as row, Q.* FROM (" + query + ") Q " + whereClause + ") select top "
+                      + limit + " * from rows where rows.row > " + offset + " order by rows.row;");
+
+      JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
+
+      concepts = jdbcTemplate.query(psr.getSql(), psr.getSetter(), conceptRowMapper);
+
+      psr = sps.prepareStatement(source, countFunction);
+      totals = jdbcTemplate.query(psr.getSql(), psr.getSetter(), integerResultSetExtractor);
+
+      psr = sps.prepareStatement(source, countFunction.andThen(queryModifier));
+      filtered = jdbcTemplate.query(psr.getSql(), psr.getSetter(), integerResultSetExtractor);
+    } else {
+      concepts = new ArrayList<>();
+      totals = 0;
+      filtered = 0;
+    }
+
+    PageResponse<Concept> response = new PageResponse<>();
+    response.setData(concepts);
+    response.setDraw(pageRequest.getDraw());
+    response.setRecordsTotal(totals);
+    response.setRecordsFiltered(filtered);
+    return response;
+  }
+
+  protected long[] lookupMappedConcepts(String sourceKey, ConceptSetExpression conceptSetExpression) {
+    List<Long> identifiers = (List<Long>) resolveConceptSetExpression(sourceKey, conceptSetExpression);
+    long[] idents = new long[identifiers.size()];
+    for(int i = 0; i < identifiers.size(); i++){
+      idents[i] = identifiers.get(i);
+    }
+    List<Long> lookupConcepts = executeIdentifierLookup(sourceKey, idents)
+            .stream()
+            .map(c -> c.conceptId)
+            .collect(Collectors.toList());
+    long[] sourcecodes = new long[lookupConcepts.size()];
+    for(int i = 0; i < lookupConcepts.size(); i++) {
+      sourcecodes[i] = lookupConcepts.get(i);
+    }
+    return sourcecodes;
+  }
+
   /**
    * @summary find all concepts mapped to the identifiers provided
    * @param sourceKey path parameter specifying the source key identifying the
@@ -339,11 +458,7 @@ public class VocabularyService extends AbstractDaoService {
 	}
 
   protected PreparedStatementRenderer prepareExecuteMappedLookup(long[] identifiers, Source source) {
-
-    String tqName = "CDM_schema";
-    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
-    String resourcePath = "/resources/vocabulary/sql/getMappedSourcecodes.sql";
-    return new PreparedStatementRenderer(source, resourcePath, tqName, tqValue, "identifiers", identifiers);
+    return new MappedLookupStrategy(identifiers).prepareStatement(source, null);
   }
 
   /**
@@ -636,24 +751,23 @@ public class VocabularyService extends AbstractDaoService {
 
     return getCommonAncestors(defaultSourceKey, identifiers);
   }
-  
+
   @POST
   @Path("{sourceKey}/resolveConceptSetExpression")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<Long> resolveConceptSetExpression(@PathParam("sourceKey") String sourceKey, ConceptSetExpression conceptSetExpression) {
+
+    return queryConceptSetExpression(sourceKey, conceptSetExpression, null);
+  }
+
+  private List<Long> queryConceptSetExpression(String sourceKey, ConceptSetExpression conceptSetExpression, Function<String, String> queryModifier) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    String tqName = "vocabulary_database_schema";
-    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
-    ConceptSetExpressionQueryBuilder builder = new ConceptSetExpressionQueryBuilder();
-    String query = builder.buildExpressionQuery(conceptSetExpression);
-    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, query, tqName, tqValue);
-    final ArrayList<Long> identifiers = new ArrayList<>();
-    getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), new RowCallbackHandler() {
-      @Override
-      public void processRow(ResultSet rs) throws SQLException {
-        identifiers.add(rs.getLong("CONCEPT_ID"));
-      }
+    StatementPrepareStrategy sps = new ConceptSetStrategy(conceptSetExpression);
+    String query = sps.prepareStatement(source, queryModifier).getSql();
+    final List<Long> identifiers = new ArrayList<>();
+    getSourceJdbcTemplate(source).query(query, (PreparedStatementSetter) null, rs -> {
+      identifiers.add(rs.getLong("CONCEPT_ID"));
     });
 
     return identifiers;
@@ -665,11 +779,266 @@ public class VocabularyService extends AbstractDaoService {
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<Long> resolveConceptSetExpression(ConceptSetExpression conceptSetExpression) {
     String defaultSourceKey = getDefaultVocabularySourceKey();
-    
+
     if (defaultSourceKey == null)
-      throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."), Response.Status.SERVICE_UNAVAILABLE); // http 503      
+      throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."), Response.Status.SERVICE_UNAVAILABLE); // http 503
 
     return resolveConceptSetExpression(defaultSourceKey, conceptSetExpression);
+  }
+
+  @POST
+  @Path("resolveConceptSetExpressionPage")
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public PageResponse<ConceptAncestors> resolveConceptSetExpression(ConceptSetExpressionPageRequest pageRequest) throws SQLException {
+    String defaultSourceKey = getDefaultVocabularySourceKey();
+    if (defaultSourceKey == null) {
+      throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."), Response.Status.SERVICE_UNAVAILABLE);
+    }
+
+    return resolveConceptSetExpression(defaultSourceKey, pageRequest);
+  }
+
+  private Function<String, String> getOrderFunction(String orderClause) {
+
+    return sql -> sql.replaceAll("select distinct", "select distinct ROW_NUMBER() over(ORDER BY " + orderClause + ") as row,");
+  }
+
+  private Function<String, String> getWhereFunction(String whereClause) {
+
+    return sql -> sql + " " + whereClause + "\n";
+  }
+
+  private Function<String, String> countFunction = sql -> "select count(*) from ( " + sql + " ) Q";
+
+  private RowMapper<Concept> conceptRowMapper = (rs, rowNum) -> {
+    Concept concept = new Concept();
+    concept.conceptId = rs.getLong("CONCEPT_ID");
+    concept.domainId = rs.getString("DOMAIN_ID");
+    concept.conceptClassId = rs.getString("CONCEPT_CLASS_ID");
+    concept.conceptCode = rs.getString("CONCEPT_CODE");
+    concept.conceptName = rs.getString("CONCEPT_NAME");
+    concept.invalidReason = rs.getString("INVALID_REASON");
+    concept.standardConcept = rs.getString("STANDARD_CONCEPT");
+    concept.vocabularyId = rs.getString("VOCABULARY_ID");
+    return concept;
+  };
+
+  private ResultSetExtractor<Integer> integerResultSetExtractor = rs -> rs.next() ? rs.getInt(1) : 0;
+
+  @POST
+  @Path("{sourceKey}/resolveConceptSetExpressionPage")
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public PageResponse<ConceptAncestors> resolveConceptSetExpression(@PathParam("sourceKey") String sourceKey, ConceptSetExpressionPageRequest pageRequest) throws SQLException {
+
+    int offset = pageRequest.getStart(), limit = pageRequest.getLength();
+    String orderClause = PageableUtils.getOrderClause(pageRequest);
+    String searchClause = PageableUtils.getSearchClause(pageRequest);
+    List<String> where = StringUtils.isNotBlank(searchClause) ? Lists.newArrayList(searchClause) : new ArrayList<>();
+    where.addAll(getConceptSetFilters(pageRequest));
+    String whereClause = where.isEmpty() ? "" : "WHERE " + where.stream().collect(Collectors.joining(" AND "));
+
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
+
+    StatementPrepareStrategy sps = new ConceptSetStrategy(pageRequest.getExpression());
+    PreparedStatementRenderer psr = sps.prepareStatement(source,
+            getOrderFunction(orderClause).andThen(ConceptSetFacetValues.conceptSetStatementFunction).andThen(getWhereFunction(whereClause)));
+    String query = psr.getSql();
+    String queryPage = "with rows as ( " + query + ") select top " + limit + " * from rows where rows.row > " + offset + " order by rows.row;";
+    queryPage = SqlTranslate.translateSql(queryPage, source.getSourceDialect());
+
+    List<Concept> concepts = jdbcTemplate.query(queryPage, (PreparedStatementSetter) null, conceptRowMapper);
+
+    int totals = countIncludedConceptSets(sourceKey, pageRequest.getExpression());
+    String queryFiltered = "select count(*) from (" + query + ") Q;";
+    int filtered = jdbcTemplate.query(queryFiltered, rs -> rs.next() ? rs.getInt(1) : 0);
+
+    //Get ancestors
+    Ids ancestorIds = new Ids();
+    ancestorIds.descendants = concepts.stream().map(c -> c.conceptId).collect(Collectors.toList());
+    ancestorIds.ancestors = Arrays.stream(pageRequest.getExpression().items).filter(i -> !i.isExcluded)
+            .map(i -> i.concept.conceptId).collect(Collectors.toList());
+    Map<Long, Concept> conceptMap = Arrays.stream(pageRequest.getExpression().items).collect(Collectors.toMap(item -> item.concept.conceptId,
+            item -> item.concept));
+    Map<Long, List<Long>> ascendants = calculateAscendants(sourceKey, ancestorIds);
+    Collection<ConceptAncestors> conceptAncestors = concepts.stream().map(ConceptAncestors::new)
+            .peek(c -> {
+              c.ancestors = ascendants.get(c.conceptId).stream().map(conceptMap::get).collect(Collectors.toList());
+              c.recordCount = 0L;
+              c.descendantRecordCount = 0L;
+            })
+            .collect(Collectors.toList());
+
+    //Get record counts
+    String[] identifiers = concepts.stream().filter(c -> Objects.equals(c.GetStandardConcept(), "Standard") ||
+            Objects.equals(c.GetStandardConcept(), "Classification")).map(c -> Long.toString(c.conceptId)).toArray(String[]::new);
+    List<AbstractMap.SimpleEntry<Long, Long[]>> recordCounts = resultsService.getConceptRecordCount(sourceKey, identifiers);
+    Map<Long, ConceptAncestors> conceptAncestorsMap = conceptAncestors.stream().collect(Collectors.toMap(c -> c.conceptId, c -> c));
+    for(AbstractMap.SimpleEntry<Long, Long[]> count : recordCounts) {
+      if (Objects.nonNull(count.getValue()) && conceptAncestorsMap.containsKey(count.getKey()) && count.getValue().length == 2) {
+        ConceptAncestors concept = conceptAncestorsMap.get(count.getKey());
+        concept.recordCount = count.getValue()[0];
+        concept.descendantRecordCount = count.getValue()[1];
+      }
+    }
+
+    PageResponse<ConceptAncestors> result = new PageResponse<>();
+    result.setData(conceptAncestors);
+    result.setDraw(pageRequest.getDraw());
+    result.setRecordsTotal(totals);
+    result.setRecordsFiltered(filtered);
+    return result;
+  }
+
+  private List<String> getConceptSetFilters(PageRequest pageRequest) {
+    List<String> result = new ArrayList<>();
+    if (Objects.nonNull(pageRequest.getFilters())) {
+      List<String> filters = pageRequest.getFilters().stream()
+              .filter(f -> !INCLUDED_CONCEPTS_COUNTS_FIELDS.contains(f.getColumnName()))
+              .peek(f -> {
+                if (f.isComputed()) {
+                  Map<String, List<String>> valuesMap = INCLUDED_CONCEPT_VALUES_MAP.getOrDefault(f.getColumnName(), Maps.newHashMap());
+                  f.setValues(f.getValues()
+                          .stream()
+                          .map(v -> valuesMap.getOrDefault(v, Lists.newArrayList()))
+                          .flatMap(Collection::stream)
+                          .collect(Collectors.toList()));
+                }
+                f.setColumnName(INCLUDED_CONCEPTS_FIELD_MAP.getOrDefault(f.getColumnName(), f.getColumnName()));
+              })
+              .filter(f -> !f.getValues().isEmpty())
+              .map(f -> sqlInClause(f.getColumnName(), f.getValues()))
+              .collect(Collectors.toList());
+      List<String> countFilters = pageRequest.getFilters().stream()
+              .filter(f -> INCLUDED_CONCEPTS_COUNTS_FIELDS.contains(f.getColumnName()))
+              .map(this::countClause)
+              .collect(Collectors.toList());
+      result.addAll(filters);
+      result.addAll(countFilters);
+    }
+    return result;
+  }
+
+  private String countClause(PageRequest.Filter filter) {
+    String sql = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/whereConceptRecordCount.sql")
+            .replaceAll("@select_column", INCLUDED_CONCEPTS_COUNTS_SELECT.get(filter.getColumnName()));
+    return filter.getValues().stream()
+            .map(Boolean::valueOf)
+            .map(v -> v ? "> 0" : "= 0")
+            .map(condition -> " (" + sql.replaceAll("@condition", condition) + ") ")
+            .collect(Collectors.joining(" OR "));
+  }
+
+  private String sqlInClause(String fieldName, List<String> values) {
+    return fieldName + " IN (" + values.stream().map(v -> "'" + v + "'").collect(Collectors.joining(",")) + ")";
+  }
+
+  @POST
+  @Path("{sourceKey}/included-concepts/count")
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Integer countIncludedConceptSets(@PathParam("sourceKey") String sourceKey, ConceptSetExpression conceptSetExpression) {
+
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String query = new ConceptSetStrategy(conceptSetExpression).prepareStatement(source, sql -> "select count(*) from (" + sql + ") Q;").getSql();
+    return getSourceJdbcTemplate(source).query(query, rs -> rs.next() ? rs.getInt(1) : 0);
+  }
+
+  @POST
+  @Path("included-concepts/count")
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Integer countIncludedConcepSets(ConceptSetExpression conceptSetExpression) {
+
+    String defaultSourceKey = getDefaultVocabularySourceKey();
+    if (Objects.isNull(defaultSourceKey)) {
+      throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."), Response.Status.SERVICE_UNAVAILABLE);
+    }
+    return countIncludedConceptSets(defaultSourceKey, conceptSetExpression);
+  }
+
+  @POST
+  @Path("{sourceKey}/included-concepts/facets")
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public FacetsResponse getIncludedConceptSetsFacets(@PathParam("sourceKey") String sourceKey, FacetsRequest facetsRequest) {
+
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    FacetValuesStrategy strategy = new ConceptSetFacetValues(facetsRequest.getExpression(), source, getSourceJdbcTemplate(source));
+    return doResolveFacets(source, facetsRequest, strategy);
+  }
+
+  protected FacetsResponse doResolveFacets(Source source, FacetsRequest facetsRequest, FacetValuesStrategy strategy) {
+
+    Map<String, List<FacetValue>> facetValues = new TreeMap<>();
+    for(FacetsRequest.FacetColumn facetColumn : facetsRequest.getColumns()) {
+      List<FacetValue> values = new ArrayList<>();
+      final String columnName = facetColumn.getColumnName();
+      if (!facetColumn.isComputed()) {
+        values = strategy.getFacetValues(columnName);
+      } else {
+        if ("STANDARD_CONCEPT_CAPTION".equals(columnName)) {
+          values = strategy.getFacetValues("STANDARD_CONCEPT").stream()
+                  .peek(fv -> {
+                    Concept c = new Concept();
+                    c.standardConcept = fv.getValue();
+                    fv.setValue(c.GetStandardConcept());
+                  }).collect(Collectors.toList());
+        } else if ("INVALID_REASON_CAPTION".equals(columnName)) {
+          values = strategy.getFacetValues("INVALID_REASON").stream()
+                  .peek(fv -> {
+                    Concept c = new Concept();
+                    c.invalidReason = fv.getValue();
+                    fv.setValue(c.GetInvalidReason());
+                  }).collect(Collectors.toList());
+        } else if ("RECORD_COUNT".equals(columnName) || "DESCENDANT_RECORD_COUNT".equals(columnName)) {
+          Collection<Long> identifiers = resolveConceptSetExpression(source.getSourceKey(), facetsRequest.getExpression());
+          values = getCountFacetValues(source, identifiers, columnName.toLowerCase());
+        }
+      }
+      facetValues.put(facetColumn.getColumnName(), values);
+    }
+    FacetsResponse response = new FacetsResponse();
+    response.setFacets(facetValues);
+    return response;
+  }
+
+  private List<FacetValue> getCountFacetValues(Source source, Collection<Long> identifiers, String column) {
+    List<FacetValue> values = new ArrayList<>();
+    int totals = identifiers.size();
+    String sqlPath = "/resources/vocabulary/sql/getConceptRecordCountFacet.sql";
+
+    String resultTableQualifierName = "resultTableQualifier";
+    String vocabularyTableQualifierName = "vocabularyTableQualifier";
+    String resultTableQualifierValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    String vocabularyTableQualifierValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
+
+    String[] tableQualifierNames = {resultTableQualifierName, vocabularyTableQualifierName, "facetColumn"};
+    String[] tableQualifierValues = {resultTableQualifierValue, vocabularyTableQualifierValue, column};
+
+    Object[] results = identifiers.toArray();
+    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sqlPath, tableQualifierNames, tableQualifierValues, "conceptIdentifiers", results);
+    Integer count = getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), rs -> rs.next() ? rs.getInt("count") : 0);
+    if (count > 0) {
+      values.add(new FacetValue(Boolean.TRUE.toString(), count));
+    }
+    if (count < totals) {
+      values.add(new FacetValue(Boolean.FALSE.toString(), totals - count));
+    }
+    return values;
+  }
+
+  @POST
+  @Path("included-concepts/facets")
+  public FacetsResponse getIncludedConceptSetsFacets(FacetsRequest facetsRequest) {
+
+    String defaultSourceKey = getDefaultVocabularySourceKey();
+    if (Objects.isNull(defaultSourceKey)) {
+      throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."), Response.Status.SERVICE_UNAVAILABLE);
+    }
+    return getIncludedConceptSetsFacets(defaultSourceKey, facetsRequest);
   }
 
   @POST

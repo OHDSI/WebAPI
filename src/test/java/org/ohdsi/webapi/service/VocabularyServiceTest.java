@@ -162,7 +162,7 @@ public class VocabularyServiceTest extends AbstractServiceTest {
   public void prepareExecuteSourcecodeLookup() throws IOException {
 
     String[] sourcecodes = new String[]{"a", "b", "c", "d", "e"};
-    PreparedStatementRenderer psr = vocabularyService.prepareExecuteSourcecodeLookup(sourcecodes, getSource());
+    PreparedStatementRenderer psr = vocabularyService.prepareExecuteSourcecodeLookup(sourcecodes, getSource(), null);
     assertSqlEquals("/vocabulary/sql/lookupSourcecodes-expected.sql", psr);
     assertEquals("a", psr.getOrderedParamsList().get(0));
     assertEquals("b", psr.getOrderedParamsList().get(1));

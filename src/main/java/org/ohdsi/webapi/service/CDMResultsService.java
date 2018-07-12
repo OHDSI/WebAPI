@@ -118,7 +118,7 @@ public class CDMResultsService extends AbstractDaoService {
 
         Object[] results = new Object[identifiers.length];
         for (int i = 0; i < identifiers.length; i++) {
-            results[i] = Integer.parseInt(identifiers[i]);
+            results[i] = Integer.parseInt(identifiers[i].replaceAll("'", ""));
         }
         return new PreparedStatementRenderer(source, sqlPath, tableQualifierNames, tableQualifierValues, "conceptIdentifiers", results);
     }

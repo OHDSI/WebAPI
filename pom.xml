@@ -485,8 +485,7 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <version>9.4-1201-jdbc41</version>
-      <type>jar</type>
+      <version>42.2.4</version>
     </dependency>
     <dependency>
       <groupId>com.microsoft.sqlserver</groupId>

@@ -308,7 +308,7 @@ public class HoneurCohortDefinitionServiceExtension {
         } catch(Exception e){
             log.error(e.getMessage(), e);
             // TODO: beter return
-            return null;
+            throw new RuntimeException(e);
         } finally {
             SourceDaimonContextHolder.clear();
         }
@@ -558,63 +558,68 @@ public class HoneurCohortDefinitionServiceExtension {
         }
         newResults.setCohortSummaryStats(Lists.newArrayList(cohortSummaryStatsRepository.save(cohortSummaryStatsList)));
 
-        List<CohortFeaturesEntity> cohortFeaturesEntities = new ArrayList<>();
-        for(CohortFeaturesEntity cohortFeatures: cohortGenerationResults.getCohortFeatures()){
-            CohortFeaturesEntity cohortFeaturesEntity = new CohortFeaturesEntity();
-            cohortFeaturesEntity.setCohortDefinitionId((long)id);
-            cohortFeaturesEntity.setAverageValue(cohortFeatures.getAverageValue());
-            cohortFeaturesEntity.setCovariateId(cohortFeatures.getCovariateId());
-            cohortFeaturesEntity.setSumValue(cohortFeatures.getSumValue());
-            cohortFeaturesEntities.add(cohortFeaturesEntity);
-        }
-        newResults.setCohortFeatures(Lists.newArrayList(cohortFeaturesRepository.save(cohortFeaturesEntities)));
+        if(cohortGenerationResults.getCohortGenerationInfo().isIncludeFeatures()) {
+            List<CohortFeaturesEntity> cohortFeaturesEntities = new ArrayList<>();
+            for (CohortFeaturesEntity cohortFeatures : cohortGenerationResults.getCohortFeatures()) {
+                CohortFeaturesEntity cohortFeaturesEntity = new CohortFeaturesEntity();
+                cohortFeaturesEntity.setCohortDefinitionId((long) id);
+                cohortFeaturesEntity.setAverageValue(cohortFeatures.getAverageValue());
+                cohortFeaturesEntity.setCovariateId(cohortFeatures.getCovariateId());
+                cohortFeaturesEntity.setSumValue(cohortFeatures.getSumValue());
+                cohortFeaturesEntities.add(cohortFeaturesEntity);
+            }
+            newResults.setCohortFeatures(Lists.newArrayList(cohortFeaturesRepository.save(cohortFeaturesEntities)));
 
-        List<CohortFeaturesAnalysisRefEntity> cohortFeaturesAnalysisRefEntities = new ArrayList<>();
-        for(CohortFeaturesAnalysisRefEntity cohortFeaturesAnalysisRef: cohortGenerationResults.getCohortFeaturesAnalysisRef()){
-            CohortFeaturesAnalysisRefEntity cohortFeaturesAnalysisRefEntity = new CohortFeaturesAnalysisRefEntity();
-            cohortFeaturesAnalysisRefEntity.setCohortDefinitionId((long) id);
-            cohortFeaturesAnalysisRefEntity.setAnalysisId(cohortFeaturesAnalysisRef.getAnalysisId());
-            cohortFeaturesAnalysisRefEntity.setAnalysisName(cohortFeaturesAnalysisRef.getAnalysisName());
-            cohortFeaturesAnalysisRefEntity.setBinary(cohortFeaturesAnalysisRef.getBinary());
-            cohortFeaturesAnalysisRefEntity.setDomainId(cohortFeaturesAnalysisRef.getDomainId());
-            cohortFeaturesAnalysisRefEntity.setEndDay(cohortFeaturesAnalysisRef.getEndDay());
-            cohortFeaturesAnalysisRefEntity.setMissingMeansZero(cohortFeaturesAnalysisRef.getMissingMeansZero());
-            cohortFeaturesAnalysisRefEntity.setStartDay(cohortFeaturesAnalysisRef.getStartDay());
-            cohortFeaturesAnalysisRefEntities.add(cohortFeaturesAnalysisRefEntity);
-        }
-        newResults.setCohortFeaturesAnalysisRef(Lists.newArrayList(cohortFeaturesAnalysisRefRepository.save(cohortFeaturesAnalysisRefEntities)));
+            List<CohortFeaturesAnalysisRefEntity> cohortFeaturesAnalysisRefEntities = new ArrayList<>();
+            for (CohortFeaturesAnalysisRefEntity cohortFeaturesAnalysisRef : cohortGenerationResults
+                    .getCohortFeaturesAnalysisRef()) {
+                CohortFeaturesAnalysisRefEntity cohortFeaturesAnalysisRefEntity = new CohortFeaturesAnalysisRefEntity();
+                cohortFeaturesAnalysisRefEntity.setCohortDefinitionId((long) id);
+                cohortFeaturesAnalysisRefEntity.setAnalysisId(cohortFeaturesAnalysisRef.getAnalysisId());
+                cohortFeaturesAnalysisRefEntity.setAnalysisName(cohortFeaturesAnalysisRef.getAnalysisName());
+                cohortFeaturesAnalysisRefEntity.setBinary(cohortFeaturesAnalysisRef.getBinary());
+                cohortFeaturesAnalysisRefEntity.setDomainId(cohortFeaturesAnalysisRef.getDomainId());
+                cohortFeaturesAnalysisRefEntity.setEndDay(cohortFeaturesAnalysisRef.getEndDay());
+                cohortFeaturesAnalysisRefEntity.setMissingMeansZero(cohortFeaturesAnalysisRef.getMissingMeansZero());
+                cohortFeaturesAnalysisRefEntity.setStartDay(cohortFeaturesAnalysisRef.getStartDay());
+                cohortFeaturesAnalysisRefEntities.add(cohortFeaturesAnalysisRefEntity);
+            }
+            newResults.setCohortFeaturesAnalysisRef(
+                    Lists.newArrayList(cohortFeaturesAnalysisRefRepository.save(cohortFeaturesAnalysisRefEntities)));
 
-        List<CohortFeaturesDistEntity> cohortFeaturesDistEntities = new ArrayList<>();
-        for(CohortFeaturesDistEntity cohortFeaturesDist: cohortGenerationResults.getCohortFeaturesDist()){
-            CohortFeaturesDistEntity cohortFeaturesDistEntity = new CohortFeaturesDistEntity();
-            cohortFeaturesDistEntity.setCohortDefinitionId((long) id);
-            cohortFeaturesDistEntity.setCovariateId(cohortFeaturesDist.getCovariateId());
-            cohortFeaturesDistEntity.setCountValue(cohortFeaturesDist.getCountValue());
-            cohortFeaturesDistEntity.setMinValue(cohortFeaturesDist.getMinValue());
-            cohortFeaturesDistEntity.setMaxValue(cohortFeaturesDist.getMaxValue());
-            cohortFeaturesDistEntity.setAverageValue(cohortFeaturesDist.getAverageValue());
-            cohortFeaturesDistEntity.setStandardDeviation(cohortFeaturesDist.getStandardDeviation());
-            cohortFeaturesDistEntity.setMedianValue(cohortFeaturesDist.getMedianValue());
-            cohortFeaturesDistEntity.setP10Value(cohortFeaturesDist.getP10Value());
-            cohortFeaturesDistEntity.setP25Value(cohortFeaturesDist.getP25Value());
-            cohortFeaturesDistEntity.setP75Value(cohortFeaturesDist.getP75Value());
-            cohortFeaturesDistEntity.setP90Value(cohortFeaturesDist.getP90Value());
-            cohortFeaturesDistEntities.add(cohortFeaturesDistEntity);
-        }
-        newResults.setCohortFeaturesDist(Lists.newArrayList(cohortFeaturesDistRepository.save(cohortFeaturesDistEntities)));
+            List<CohortFeaturesDistEntity> cohortFeaturesDistEntities = new ArrayList<>();
+            for (CohortFeaturesDistEntity cohortFeaturesDist : cohortGenerationResults.getCohortFeaturesDist()) {
+                CohortFeaturesDistEntity cohortFeaturesDistEntity = new CohortFeaturesDistEntity();
+                cohortFeaturesDistEntity.setCohortDefinitionId((long) id);
+                cohortFeaturesDistEntity.setCovariateId(cohortFeaturesDist.getCovariateId());
+                cohortFeaturesDistEntity.setCountValue(cohortFeaturesDist.getCountValue());
+                cohortFeaturesDistEntity.setMinValue(cohortFeaturesDist.getMinValue());
+                cohortFeaturesDistEntity.setMaxValue(cohortFeaturesDist.getMaxValue());
+                cohortFeaturesDistEntity.setAverageValue(cohortFeaturesDist.getAverageValue());
+                cohortFeaturesDistEntity.setStandardDeviation(cohortFeaturesDist.getStandardDeviation());
+                cohortFeaturesDistEntity.setMedianValue(cohortFeaturesDist.getMedianValue());
+                cohortFeaturesDistEntity.setP10Value(cohortFeaturesDist.getP10Value());
+                cohortFeaturesDistEntity.setP25Value(cohortFeaturesDist.getP25Value());
+                cohortFeaturesDistEntity.setP75Value(cohortFeaturesDist.getP75Value());
+                cohortFeaturesDistEntity.setP90Value(cohortFeaturesDist.getP90Value());
+                cohortFeaturesDistEntities.add(cohortFeaturesDistEntity);
+            }
+            newResults.setCohortFeaturesDist(
+                    Lists.newArrayList(cohortFeaturesDistRepository.save(cohortFeaturesDistEntities)));
 
-        List<CohortFeaturesRefEntity> cohortFeaturesRefEntities = new ArrayList<>();
-        for(CohortFeaturesRefEntity cohortFeaturesRef: cohortGenerationResults.getCohortFeaturesRef()){
-            CohortFeaturesRefEntity cohortFeaturesRefEntity = new CohortFeaturesRefEntity();
-            cohortFeaturesRefEntity.setCohortDefinitionId((long) id);
-            cohortFeaturesRefEntity.setCovariateId(cohortFeaturesRef.getCovariateId());
-            cohortFeaturesRefEntity.setCovariateName(cohortFeaturesRef.getCovariateName());
-            cohortFeaturesRefEntity.setAnalysisId(cohortFeaturesRef.getAnalysisId());
-            cohortFeaturesRefEntity.setConceptId(cohortFeaturesRef.getConceptId());
-            cohortFeaturesRefEntities.add(cohortFeaturesRefEntity);
+            List<CohortFeaturesRefEntity> cohortFeaturesRefEntities = new ArrayList<>();
+            for (CohortFeaturesRefEntity cohortFeaturesRef : cohortGenerationResults.getCohortFeaturesRef()) {
+                CohortFeaturesRefEntity cohortFeaturesRefEntity = new CohortFeaturesRefEntity();
+                cohortFeaturesRefEntity.setCohortDefinitionId((long) id);
+                cohortFeaturesRefEntity.setCovariateId(cohortFeaturesRef.getCovariateId());
+                cohortFeaturesRefEntity.setCovariateName(cohortFeaturesRef.getCovariateName());
+                cohortFeaturesRefEntity.setAnalysisId(cohortFeaturesRef.getAnalysisId());
+                cohortFeaturesRefEntity.setConceptId(cohortFeaturesRef.getConceptId());
+                cohortFeaturesRefEntities.add(cohortFeaturesRefEntity);
+            }
+            newResults.setCohortFeaturesRef(
+                    Lists.newArrayList(cohortFeaturesRefRepository.save(cohortFeaturesRefEntities)));
         }
-        newResults.setCohortFeaturesRef(Lists.newArrayList(cohortFeaturesRefRepository.save(cohortFeaturesRefEntities)));
-
         return newResults;
     }
 

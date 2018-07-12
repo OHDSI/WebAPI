@@ -64,10 +64,10 @@ public class SourceDaimonContextAspect {
 
         Object result;
 
-        String sourceKey = getSourceKeyValue(jp);
-        if(StringUtils.isNotBlank(sourceKey)) {
-            SourceDaimonContextHolder.setCurrentSourceDaimonContext(new SourceDaimonContext(sourceKey, SourceDaimon.DaimonType.Results));
-        }
+//        String sourceKey = getSourceKeyValue(jp);
+//        if(StringUtils.isNotBlank(sourceKey)) {
+//            SourceDaimonContextHolder.setCurrentSourceDaimonContext(new SourceDaimonContext(sourceKey, SourceDaimon.DaimonType.Results));
+//        }
 
         // Proceed
         try {

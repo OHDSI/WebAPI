@@ -3,6 +3,8 @@ package com.jnj.honeur.webapi.hss;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jnj.honeur.webapi.cohortdefinition.CohortGenerationResults;
+import com.jnj.honeur.webapi.hssserviceuser.HSSServiceUserEntity;
+import com.jnj.honeur.webapi.hssserviceuser.HSSServiceUserRepository;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -10,6 +12,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.TrustStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
@@ -39,14 +42,11 @@ public class StorageServiceClient {
 
     private RestTemplate restTemplate;
 
+    @Autowired
+    private HSSServiceUserRepository hssServiceUserRepository;
+
     @Value("${datasource.hss.url}")
     private String STORAGE_SERVICE_API;
-
-    @Value("${datasource.hss.user}")
-    private String HSS_USER;
-
-    @Value("${datasource.hss.password}")
-    private String HSS_PASSWORD;
 
     @Value("${webapi.central}")
     private boolean WEBAPI_CENTRAL;
@@ -187,8 +187,13 @@ public class StorageServiceClient {
 
 
     private HttpEntity getBasicAuthenticationHeader() {
+        Iterator<HSSServiceUserEntity> hssServiceUserEntities = hssServiceUserRepository.findAll().iterator();
+        if(!hssServiceUserEntities.hasNext()){
+            throw new IllegalStateException("No HSS service user defined.");
+        }
+        HSSServiceUserEntity hssServiceUser = hssServiceUserEntities.next();
         return new HttpEntity(new HttpHeaders() {{
-            String auth = HSS_USER + ":" + HSS_PASSWORD;
+            String auth = hssServiceUser.getUsername() + ":" + hssServiceUser.getPassword();
             byte[] encodedAuth = Base64.encodeBase64(
                     auth.getBytes(Charset.forName("US-ASCII")));
             String authHeader = "Basic " + new String(encodedAuth);

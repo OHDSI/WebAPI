@@ -1,6 +1,9 @@
 package com.jnj.honeur.webapi.service;
 
 import com.jnj.honeur.security.SecurityUtils2;
+import com.jnj.honeur.security.UserDetails;
+import com.jnj.honeur.webapi.hssserviceuser.HSSServiceUserEntity;
+import com.jnj.honeur.webapi.hssserviceuser.HSSServiceUserRepository;
 import com.jnj.honeur.webapi.liferay.LiferayApiClient;
 import com.jnj.honeur.webapi.shiro.LiferayPermissionManager;
 import org.apache.shiro.authz.AuthorizationInfo;
@@ -27,6 +30,8 @@ public class HoneurUserServiceExtension {
     private PermissionManager authorizer;
     @Autowired
     private Security security;
+    @Autowired
+    private HSSServiceUserRepository hssServiceUserRepository;
 
     @POST
     @Path("permission")
@@ -38,13 +43,21 @@ public class HoneurUserServiceExtension {
 
     @GET
     @Path("user/permission")
-    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Iterable<String> getPermissions(@HeaderParam("Authorization") String token) throws Exception{
         String login = SecurityUtils2.getSubject(token.replace("Bearer ", ""));
         AuthorizationInfo authorizationInfo = this.authorizer.getAuthorizationInfo(login);
         Collection<String> permissionEntities = authorizationInfo.getStringPermissions();
         return permissionEntities;
+    }
+
+    @POST
+    @Path("user/hss")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public void changeServiceUser(@HeaderParam("Authorization") String token, HSSServiceUserEntity hssServiceUserEntity) throws Exception{
+        hssServiceUserRepository.deleteAll();
+        hssServiceUserRepository.save(hssServiceUserEntity);
     }
 
     private ArrayList<UserService.Permission> convertPermissions(final Iterable<PermissionEntity> permissionEntities) {

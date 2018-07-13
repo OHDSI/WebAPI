@@ -268,7 +268,7 @@ public class AtlasWithCasSecurity extends Security {
       // cohort definition
       .addProtectedRestPath("/cohortdefinition", "createPermissionsOnCreateCohortDefinition")
       .addProtectedRestPath("/cohortdefinition/*/copy", "createPermissionsOnCreateCohortDefinition")
-      .addProtectedRestPath("/cohortdefinition/*/export", "deletePermissionsOnExportCohortDefinition")
+      .addProtectedRestPath("/cohortdefinition/*/export", "createPermissionsOnCreateCohortDefinition")
       .addProtectedRestPath("/cohortdefinition/hss/select", "createPermissionsOnImportCohortDefinition")
       .addProtectedRestPath("/cohortdefinition/*", "deletePermissionsOnDeleteCohortDefinition")
       .addProtectedRestPath("/cohortdefinition/*/info")
@@ -330,7 +330,7 @@ public class AtlasWithCasSecurity extends Security {
     filters.put("createPermissionsOnCreateCohortDefinition", this.getCreatePermissionsOnCreateCohortDefinitionFilter());
     filters.put("createPermissionsOnImportCohortDefinition", this.getCreatePermissionsOnImportCohortDefinitionFilter());
     filters.put("createPermissionsOnCreateConceptSet", this.getCreatePermissionsOnCreateConceptSetFilter());
-    filters.put("deletePermissionsOnExportCohortDefinition", this.getDeletePermissionsOnExportCohortDefinitionFilter());
+//    filters.put("deletePermissionsOnExportCohortDefinition", this.getDeletePermissionsOnExportCohortDefinitionFilter());
     filters.put("deletePermissionsOnDeleteCohortDefinition", this.getDeletePermissionsOnDeleteCohortDefinitionFilter());
     filters.put("deletePermissionsOnDeleteConceptSet", this.getDeletePermissionsOnDeleteConceptSetFilter());
     filters.put("deletePermissionsOnDeleteEstimation", this.getDeletePermissionsOnDeleteFilter(estimationPermissionTemplates));

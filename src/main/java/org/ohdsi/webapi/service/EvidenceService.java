@@ -40,12 +40,14 @@ import org.ohdsi.webapi.evidence.EvidenceUniverse;
 import org.ohdsi.webapi.evidence.HoiEvidence;
 import org.ohdsi.webapi.evidence.DrugHoiEvidence;
 import org.ohdsi.webapi.evidence.DrugLabel;
+import org.ohdsi.webapi.evidence.DrugLabelInfo;
 import org.ohdsi.webapi.evidence.DrugLabelRepository;
 import org.ohdsi.webapi.evidence.EvidenceInfo;
 import org.ohdsi.webapi.evidence.DrugRollUpEvidence;
 import org.ohdsi.webapi.evidence.Evidence;
 import org.ohdsi.webapi.evidence.SpontaneousReport;
 import org.ohdsi.webapi.evidence.EvidenceSearch;
+import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlMapper;
 import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlTaskParameters;
 import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlRecord;
 import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlRepository;
@@ -59,6 +61,7 @@ import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.stereotype.Component;
 
 /**
@@ -150,7 +153,7 @@ public class EvidenceService extends AbstractDaoService {
 	@GET
   @Path("label/{setid}")
   @Produces(MediaType.APPLICATION_JSON) 
-  public Collection<DrugLabel> getDrugLabels(@PathParam("setid") String setid) {
+  public Collection<DrugLabel> getDrugLabel(@PathParam("setid") String setid) {
     return drugLabelRepository.findAllBySetid(setid);
   }
   
@@ -275,6 +278,31 @@ public class EvidenceService extends AbstractDaoService {
 		});
   }
 
+  /**
+   * Retrieves a list of RxNorm ingredients from the concept
+   * set and determines if we have label evidence for them.
+   * @summary Get Drug Labels For RxNorm Ingredients
+   * @param sourceKey The source key of the evidence daimon
+   * @param identifiers The list of RxNorm Ingredients concepts or ancestors
+   * @return A list of evidence for the drug and HOI
+   */
+  @Path("{sourceKey}/druglabel")
+  @POST
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public List<DrugLabelInfo> getDrugIngredientLabel(@PathParam("sourceKey") String sourceKey, long[] identifiers) {
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    PreparedStatementRenderer psr = prepareGetDrugLabels(identifiers, source);
+    return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), (rs, rowNum) -> {
+      DrugLabelInfo returnVal = new DrugLabelInfo();
+      returnVal.conceptId = rs.getString("CONCEPT_ID");
+      returnVal.conceptName = rs.getString("CONCEPT_NAME");
+      returnVal.usaProductLabelExists = rs.getInt("US_SPL_LABEL");
+
+      return returnVal;
+    });
+  }
+  
   /**
 	 * Retrieves a list of evidence for the specified health outcome of
 	 * interest and drug as defined in the key parameter.
@@ -1000,26 +1028,49 @@ public class EvidenceService extends AbstractDaoService {
 	 * @param jobId The jobId that holds the negative controls
 	 * @return The SQL statement for retrieving the negative controls
 	 */
-	public static String getNegativeControlsFromEvidenceSource(NegativeControlTaskParameters task, Long jobId) {
-    String resourceRoot = "/resources/evidence/sql/negativecontrols/";
-		String sql = ResourceHelper.GetResourceAsString(resourceRoot + "getNegativeControls.sql");
-		String evidenceSchema = task.getSource().getTableQualifier(SourceDaimon.DaimonType.Evidence);
-    String[] params = new String[]{"CONCEPT_SET_ID", "CONCEPT_SET_NAME", "outcomeOfInterest", "SOURCE_ID", "evidenceSchema", "jobId"};
-    String[] values = new String[]{String.valueOf(task.getConceptSetId()), task.getConceptSetName(), task.getOutcomeOfInterest().toUpperCase(), String.valueOf(task.getSource().getSourceId()), evidenceSchema, Long.toString(jobId)};
-    sql = SqlRender.renderSql(sql, params, values);
+    public static PreparedStatementRenderer getNegativeControlsFromEvidenceSource(NegativeControlTaskParameters task, Long jobId) {
+        String sqlPath = "/resources/evidence/sql/negativecontrols/getNegativeControls.sql";
+        String evidenceSchema = task.getSource().getTableQualifier(SourceDaimon.DaimonType.Evidence);
+        String vocabularySchema = task.getSource().getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
+        if (vocabularySchema == null) {
+            vocabularySchema = evidenceSchema;
+        }
+        String[] tableQualifierNames = new String[]{"evidenceSchema", "vocabularySchema"};
+        String[] tableQualifierValues = new String[]{evidenceSchema, vocabularySchema};
+        String[] params = new String[]{"CONCEPT_SET_ID", "CONCEPT_SET_NAME", "outcomeOfInterest", "SOURCE_ID", "jobId"};
+        Object[] values = new Object[]{task.getConceptSetId(), task.getConceptSetName(), task.getOutcomeOfInterest().toUpperCase(), task.getSource().getSourceId(), jobId};
+        return new PreparedStatementRenderer(task.getSource(), sqlPath, tableQualifierNames, tableQualifierValues, params, values);
+    }
 
-    return sql;
-		
-	}
-
-	/**
-	 * Get the SQL for obtaining evidence for a drug/hoi combination
-	 * @summary SQL for obtaining evidence for a drug/hoi combination
-	 * @param key The drug-hoi conceptId pair
-	 * @param source The source that contains the evidence daimon
-	 * @return A prepared SQL statement 
-	 */
-	protected PreparedStatementRenderer prepareGetDrugHoiEvidence(final String key, Source source) {
+    /**
+     * Get the SQL for obtaining product label evidence from a set 
+     * of RxNorm Ingredients
+     * @summary SQL for obtaining product label evidence
+     * @param identifiers The list of RxNorm Ingredient conceptIds
+     * @param source The source that contains the evidence daimon
+     * @return A prepared SQL statement 
+     */
+    protected PreparedStatementRenderer prepareGetDrugLabels(long[] identifiers, Source source) {
+        String sqlPath = "/resources/evidence/sql/getDrugLabelForIngredients.sql";
+        String evidenceSchema = source.getTableQualifier(SourceDaimon.DaimonType.Evidence);
+        String vocabularySchema = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
+        if (vocabularySchema == null) {
+            vocabularySchema = evidenceSchema;
+        }
+        String[] tableQualifierNames = new String[]{"evidenceSchema", "vocabularySchema"};
+        String[] tableQualifierValues = new String[]{evidenceSchema, vocabularySchema};
+        return new PreparedStatementRenderer(source, sqlPath, tableQualifierNames, tableQualifierValues, "conceptIds", identifiers);
+    }
+        
+        
+    /**
+     * Get the SQL for obtaining evidence for a drug/hoi combination
+     * @summary SQL for obtaining evidence for a drug/hoi combination
+     * @param key The drug-hoi conceptId pair
+     * @param source The source that contains the evidence daimon
+     * @return A prepared SQL statement 
+     */
+    protected PreparedStatementRenderer prepareGetDrugHoiEvidence(final String key, Source source) {
 
     String[] par = key.split("-");
     String drug_id = par[0];

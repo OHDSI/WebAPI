@@ -154,7 +154,7 @@ public class AtlasWithCasSecurity extends Security {
   private final Set<String> defaultRoles = new LinkedHashSet<>();
 
   private final Map<String, String> cohortdefinitionCreatorPermissionTemplates = new LinkedHashMap<>();
-  private final Map<String, String> cohortdefinitionExporterPermissionTemplates = new LinkedHashMap<>();
+  private final Map<String, String> cohortdefinitionExporterPermissionTemplatesToDelete = new LinkedHashMap<>();
   private final Map<String, String> cohortdefinitionImporterPermissionTemplates = new LinkedHashMap<>();
   private final Map<String, String> conceptsetCreatorPermissionTemplates = new LinkedHashMap<>();
   private final Map<String, String> sourcePermissionTemplates = new LinkedHashMap<>();
@@ -172,9 +172,12 @@ public class AtlasWithCasSecurity extends Security {
     this.cohortdefinitionCreatorPermissionTemplates.put("cohortdefinition:hss:%s:get", "List Cohort Definition Generation Results in Amazon for Cohort Definition with ID = %s");
     this.cohortdefinitionCreatorPermissionTemplates.put("cohortdefinition:hss:%s:select:*:post", "Import Cohort Definition Generation Results for Cohort Definition with ID = %s");
 
-    this.cohortdefinitionExporterPermissionTemplates.put("cohortdefinition:%s:put", "Update Cohort Definition with ID = %s");
-    this.cohortdefinitionExporterPermissionTemplates.put("cohortdefinition:%s:delete", "Delete Cohort Definition with ID = %s");
-    this.cohortdefinitionExporterPermissionTemplates.put("cohortdefinition:%s:export:get", "Export Cohort Definition with ID = %s");
+    this.cohortdefinitionExporterPermissionTemplatesToDelete
+            .put("cohortdefinition:%s:put", "Update Cohort Definition with ID = %s");
+    this.cohortdefinitionExporterPermissionTemplatesToDelete
+            .put("cohortdefinition:%s:delete", "Delete Cohort Definition with ID = %s");
+    this.cohortdefinitionExporterPermissionTemplatesToDelete
+            .put("cohortdefinition:%s:export:get", "Export Cohort Definition with ID = %s");
 
 //    this.cohortdefinitionImporterPermissionTemplates.put("cohortdefinition:%s:generate:*:get", "Generate Cohort Definition generation results for defintion with ID = %s");
     this.cohortdefinitionImporterPermissionTemplates.put("cohortdefinition:%s:delete", "Delete Cohort Definition with ID = %s");
@@ -268,7 +271,7 @@ public class AtlasWithCasSecurity extends Security {
       // cohort definition
       .addProtectedRestPath("/cohortdefinition", "createPermissionsOnCreateCohortDefinition")
       .addProtectedRestPath("/cohortdefinition/*/copy", "createPermissionsOnCreateCohortDefinition")
-      .addProtectedRestPath("/cohortdefinition/*/export", "createPermissionsOnCreateCohortDefinition")
+      .addProtectedRestPath("/cohortdefinition/*/export", "deletePermissionsOnExportCohortDefinition, createPermissionsOnCreateCohortDefinition")
       .addProtectedRestPath("/cohortdefinition/hss/select", "createPermissionsOnImportCohortDefinition")
       .addProtectedRestPath("/cohortdefinition/*", "deletePermissionsOnDeleteCohortDefinition")
       .addProtectedRestPath("/cohortdefinition/*/info")
@@ -330,7 +333,7 @@ public class AtlasWithCasSecurity extends Security {
     filters.put("createPermissionsOnCreateCohortDefinition", this.getCreatePermissionsOnCreateCohortDefinitionFilter());
     filters.put("createPermissionsOnImportCohortDefinition", this.getCreatePermissionsOnImportCohortDefinitionFilter());
     filters.put("createPermissionsOnCreateConceptSet", this.getCreatePermissionsOnCreateConceptSetFilter());
-//    filters.put("deletePermissionsOnExportCohortDefinition", this.getDeletePermissionsOnExportCohortDefinitionFilter());
+    filters.put("deletePermissionsOnExportCohortDefinition", this.getDeletePermissionsOnExportCohortDefinitionFilter());
     filters.put("deletePermissionsOnDeleteCohortDefinition", this.getDeletePermissionsOnDeleteCohortDefinitionFilter());
     filters.put("deletePermissionsOnDeleteConceptSet", this.getDeletePermissionsOnDeleteConceptSetFilter());
     filters.put("deletePermissionsOnDeleteEstimation", this.getDeletePermissionsOnDeleteFilter(estimationPermissionTemplates));
@@ -517,8 +520,9 @@ public class AtlasWithCasSecurity extends Security {
 
       @Override
       protected void doProcessResponseContent(String content) throws Exception {
-        String id = this.parseJsonField(content, "id");
-        authorizer.removePermissionsFromTemplate(cohortdefinitionExporterPermissionTemplates, id);
+        String previousVersion = this.parseJsonField(content, "previousVersion");
+        String id = this.parseJsonField(previousVersion, "id");
+        authorizer.removePermissionsFromTemplate(cohortdefinitionExporterPermissionTemplatesToDelete, id);
       }
     };
   }
@@ -531,6 +535,8 @@ public class AtlasWithCasSecurity extends Security {
         String path = httpRequest.getPathInfo().replaceAll("/+$", "");
 
         if (StringUtils.endsWithIgnoreCase(path, "copy")) {
+          return HttpMethod.GET.equalsIgnoreCase(WebUtils.toHttp(request).getMethod());
+        } else if (StringUtils.endsWithIgnoreCase(path, "export")) {
           return HttpMethod.GET.equalsIgnoreCase(WebUtils.toHttp(request).getMethod());
         } else {
           return  HttpMethod.POST.equalsIgnoreCase(WebUtils.toHttp(request).getMethod());

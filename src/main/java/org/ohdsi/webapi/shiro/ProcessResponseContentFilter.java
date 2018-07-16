@@ -81,7 +81,7 @@ public abstract class ProcessResponseContentFilter implements Filter {
     ObjectMapper mapper = new ObjectMapper();
     JsonNode rootNode = mapper.readValue(json, JsonNode.class);
     JsonNode fieldNode = rootNode.get(field);
-    String fieldValue = fieldNode.asText();
+    String fieldValue = fieldNode.toString();
     return fieldValue;
   }
 

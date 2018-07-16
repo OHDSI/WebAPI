@@ -12832,7 +12832,7 @@ DROP TABLE #raw_period_4023;
   select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
   cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_4016 union all }
-  select -1, -1, '', '', '', '', -1;
+  select -1, -1, cast('' as varchar(255)),cast('' as varchar(255)),cast('' as varchar(255)),cast('' as varchar(255)), -1;
   -- this final select handles the union all in the case of whatever conditional query runs last
   
   insert into @results_schema.heracles_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value) 
@@ -13181,7 +13181,7 @@ DROP TABLE #raw_period_4023;
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_4023
  union all }
 
-  select -1, -1, '', '','','','', -1, -1, -1, -1, -1, -1, -1, -1, -1, -1;
+  select -1, -1, cast('' as varchar(255)),cast('' as varchar(255)),cast('' as varchar(255)),cast('' as varchar(255)),cast('' as varchar(255)), -1, -1, -1, -1, -1, -1, -1, -1, -1, -1;
   -- this final select handles the union all in the case of whatever conditional query runs last
   
   TRUNCATE TABLE #HERACLES_cohort;

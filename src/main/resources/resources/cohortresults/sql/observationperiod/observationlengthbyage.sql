@@ -1,4 +1,4 @@
- select cast(cast(hrd1.stratum_1 as int)*10 as varchar) + '-' + cast((cast(hrd1.stratum_1 as int)+1)*10-1 as varchar)  as category,
+ select CONCAT(cast(cast(hrd1.stratum_1 as int)*10 as varchar), '-', cast((cast(hrd1.stratum_1 as int)+1)*10-1 as varchar))  as category,
   hrd1.min_value as min_value,
   hrd1.p10_value as p10_value,
   hrd1.p25_value as p25_value,

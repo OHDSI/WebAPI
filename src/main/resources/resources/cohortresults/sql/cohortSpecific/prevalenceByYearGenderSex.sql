@@ -2,7 +2,7 @@ select
 	hr1.index_year as X_CALENDAR_YEAR,
 	c1.concept_name as SERIES_NAME,
 	CONCAT(
-	  cast(hr1.age_decile*10 as varchar), '-', cast((hr1.age_decile+1)*10-1 as varchar)
+	  cast(hr1.age_decile*10 as varchar(11)), '-', cast((hr1.age_decile+1)*10-1 as varchar(11))
 	) as TRELLIS_NAME,
 	hr1.count_value as NUM_PERSONS,
 	round(1000*(1.0*hr1.count_value / t1.count_value),5) as Y_PREVALENCE_1000PP

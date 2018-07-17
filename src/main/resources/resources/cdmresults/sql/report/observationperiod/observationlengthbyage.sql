@@ -1,6 +1,8 @@
 SELECT
-  cast(cast(ard1.stratum_1 AS INT) * 10 AS VARCHAR) + '-' +
-  cast((cast(ard1.stratum_1 AS INT) + 1) * 10 - 1 AS VARCHAR) AS category,
+  CONCAT(
+    cast(cast(ard1.stratum_1 AS INT) * 10 AS VARCHAR(11)), '-',
+    cast((cast(ard1.stratum_1 AS INT) + 1) * 10 - 1 AS VARCHAR(11))
+  )                                                           AS category,
   ard1.min_value                                              AS minValue,
   ard1.p10_value                                              AS p10Value,
   ard1.p25_value                                              AS p25Value,

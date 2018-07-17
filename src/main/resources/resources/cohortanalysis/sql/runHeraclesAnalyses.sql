@@ -1137,7 +1137,7 @@ DROP TABLE #raw_107;
   -- 203   Number of distinct visit occurrence concepts per person
   --insert into @results_schema.HERACLES_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 
-select distinct c1.cohort_definition_id,
+select c1.cohort_definition_id,
 	c1.subject_id,
 --{@CDM_version == '4'}?{
 	COUNT_BIG(distinct vo1.place_of_service_concept_id) as count_value
@@ -8034,19 +8034,18 @@ DROP TABLE #raw_1813;
   as total_per_day
   from 
   (
-  select distinct 
+  select
 		all_observ.value_as_string,
 		DATEFROMPARTS(YEAR(all_observ.observation_date),MONTH(all_observ.observation_date),DAY(all_observ.observation_date)) as obs_date,
-		COUNT_BIG(*) OVER (
-				PARTITION BY all_observ.value_as_string, DATEFROMPARTS(YEAR(all_observ.observation_date),MONTH(all_observ.observation_date),DAY(all_observ.observation_date))
-		)	as cnt
+		COUNT(*) as cnt
   from 
   (select * from @CDM_schema.OBSERVATION observ
   join #HERACLES_cohort co
   on co.SUBJECT_ID = observ.PERSON_ID
   and observ.observation_date >= co.cohort_start_date
   and observ.observation_date <= co.cohort_end_date) all_observ
-  ) value_day_cnt 
+  GROUP BY all_observ.value_as_string, DATEFROMPARTS(YEAR(all_observ.observation_date),MONTH(all_observ.observation_date),DAY(all_observ.observation_date))
+  ) value_day_cnt
   ) with_sum
   ) allProb
   group by obs_date
@@ -8090,16 +8089,12 @@ DROP TABLE #raw_1813;
   cnt,
   SUM (cnt) OVER (PARTITION BY care_site_id, obs_date)
   AS total_per_day
-  FROM (SELECT DISTINCT
+  FROM (SELECT
   all_observ.CARE_SITE_ID  AS care_site_id,
-  all_observ.site_source_value
-  AS site_source_value,
+  all_observ.site_source_value AS site_source_value,
   all_observ.value_as_string AS value_as_string,
 	DATEFROMPARTS(YEAR(all_observ.observation_date),MONTH(all_observ.observation_date),DAY(all_observ.observation_date)) as obs_date,
-  COUNT_BIG(*) OVER (
-		PARTITION BY all_observ.care_site_id, all_observ.value_as_string, DATEFROMPARTS(YEAR(all_observ.observation_date),MONTH(all_observ.observation_date),DAY(all_observ.observation_date))
-	)
-  AS cnt
+  COUNT(*) AS cnt
   FROM (SELECT CASE
   WHEN caresite.CARE_SITE_ID IS NULL
   THEN
@@ -8125,7 +8120,12 @@ DROP TABLE #raw_1813;
   LEFT JOIN @CDM_schema.CARE_SITE caresite
   ON caresite.CARE_SITE_ID =
   provider.CARE_SITE_ID)
-  all_observ) value_day_cnt) with_sum) allProb
+  all_observ
+  GROUP BY all_observ.CARE_SITE_ID,
+    all_observ.site_source_value,
+    all_observ.value_as_string,
+    DATEFROMPARTS(YEAR(all_observ.observation_date),MONTH(all_observ.observation_date),DAY(all_observ.observation_date))
+  ) value_day_cnt) with_sum) allProb
   GROUP BY care_site_id, site_source_value, obs_date
   ) entropyT;
   --}
@@ -8360,7 +8360,7 @@ join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_
 GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id, visit_type_concept_id
 ;
 -- period_id, visit_concept_id
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, period_id as stratum_1
 	, visit_concept_id as stratum_2
@@ -8372,7 +8372,7 @@ join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_
 GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id
 ;
 -- period_id
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, period_id as stratum_1
 	, 0 as stratum_2
@@ -8385,7 +8385,7 @@ where ancestor = 0
 GROUP BY cohort_definition_id, subject_id, period_id
 ;
 -- visit_concept_id, visit_type_concept_id
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, 0 as stratum_1
 	, visit_concept_id as stratum_2
@@ -8396,7 +8396,7 @@ from #raw_4002
 GROUP BY cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id
 ;
 -- visit_concept_id
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, 0 as stratum_1
 	, visit_concept_id as stratum_2
@@ -8407,7 +8407,7 @@ from #raw_4002
 GROUP BY cohort_definition_id, subject_id, visit_concept_id
 ;
 --
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, 0 as stratum_1
 	, 0 as stratum_2
@@ -8545,7 +8545,7 @@ join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_
 GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id, visit_type_concept_id
 ;
 -- period_id, visit_concept_id
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, period_id as stratum_1
 	, visit_concept_id as stratum_2
@@ -8557,7 +8557,7 @@ join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_
 GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id
 ;
 -- period_id
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, period_id as stratum_1
 	, 0 as stratum_2
@@ -8569,7 +8569,7 @@ join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_
 where ancestor = 0
 GROUP BY cohort_definition_id, subject_id, period_id;
 -- visit_concept_id, visit_type_concept_id
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, 0 as stratum_1
 	, visit_concept_id as stratum_2
@@ -8579,7 +8579,7 @@ into #raw_4003_u4
 from #raw_4003
 GROUP BY cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id;
 -- visit_concept_id
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, 0 as stratum_1
 	, visit_concept_id as stratum_2
@@ -8589,7 +8589,7 @@ into #raw_4003_u5
 from #raw_4003
 GROUP BY cohort_definition_id, subject_id, visit_concept_id;
 --
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, 0 as stratum_1
 	, 0 as stratum_2
@@ -8701,7 +8701,7 @@ select distinct c1.cohort_definition_id,
 	vca.ancestor_concept_id as visit_concept_id,
 	vo1.visit_type_concept_id,
 	vo1.visit_start_date,
-	cast(care_site_id as varchar(19)) + '_' + CAST(YEAR(visit_start_date) as varchar(4)) + CAST(RIGHT('00' + cast(MONTH(visit_start_date) as varchar(2)),2) as varchar(2)) + CAST(RIGHT('00' + cast(DAY(visit_start_date) as varchar(2)),2) as varchar(2)) as care_site_date_id,
+	CONCAT(cast(care_site_id as varchar(19)), '_', CAST(YEAR(visit_start_date) as varchar(4)), CAST(RIGHT(CONCAT('00', cast(MONTH(visit_start_date) as varchar(2))),2) as varchar(2)), CAST(RIGHT(CONCAT('00', cast(DAY(visit_start_date) as varchar(2))),2) as varchar(2))) as care_site_date_id,
   case when vca.ancestor_concept_id = vca.descendant_concept_id then 0 else 1 end as ancestor
 INTO #raw_4004
 from #cohort_first c1
@@ -8722,7 +8722,7 @@ join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_
 GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id, visit_type_concept_id
 ;
 -- period_id, visit_concept_id
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, period_id as stratum_1
 	, visit_concept_id as stratum_2
@@ -8734,7 +8734,7 @@ join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_
 GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id
 ;
 -- period_id
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, period_id as stratum_1
 	, 0 as stratum_2
@@ -8746,7 +8746,7 @@ join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_
 where ancestor = 0
 GROUP BY cohort_definition_id, subject_id, period_id;
 -- visit_concept_id, visit_type_concept_id
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, 0 as stratum_1
 	, visit_concept_id as stratum_2
@@ -8756,7 +8756,7 @@ into #raw_4004_u4
 from #raw_4004
 GROUP BY cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id;
 -- visit_concept_id
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, 0 as stratum_1
 	, visit_concept_id as stratum_2
@@ -8766,7 +8766,7 @@ into #raw_4004_u5
 from #raw_4004
 GROUP BY cohort_definition_id, subject_id, visit_concept_id;
 --
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, 0 as stratum_1
 	, 0 as stratum_2
@@ -8905,7 +8905,7 @@ join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_
 GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id, visit_type_concept_id
 ;
 -- period_id, visit_concept_id
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, period_id as stratum_1
 	, visit_concept_id as stratum_2
@@ -8918,7 +8918,7 @@ GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id
 ;
 
 -- visit_concept_id, visit_type_concept_id
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, 0 as stratum_1
 	, visit_concept_id as stratum_2
@@ -8928,7 +8928,7 @@ into #raw_4005_u4
 from #raw_4005
 GROUP BY cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id;
 -- visit_concept_id
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, 0 as stratum_1
 	, visit_concept_id as stratum_2
@@ -9222,7 +9222,7 @@ join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_st
 GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id, visit_type_concept_id
 ;
 -- period_id, visit_concept_id
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, period_id as stratum_1
 	, visit_concept_id as stratum_2
@@ -9234,7 +9234,7 @@ join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_st
 GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id
 ;
 -- period_id
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, period_id as stratum_1
 	, 0 as stratum_2
@@ -9247,7 +9247,7 @@ where ancestor = 0
 GROUP BY cohort_definition_id, subject_id, period_id
 ;
 -- visit_concept_id, visit_type_concept_id
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, 0 as stratum_1
 	, visit_concept_id as stratum_2
@@ -9258,7 +9258,7 @@ from #raw_4008
 GROUP BY cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id
 ;
 -- visit_concept_id
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, 0 as stratum_1
 	, visit_concept_id as stratum_2
@@ -9269,7 +9269,7 @@ from #raw_4008
 GROUP BY cohort_definition_id, subject_id, visit_concept_id
 ;
 --
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, 0 as stratum_1
 	, 0 as stratum_2
@@ -9409,7 +9409,7 @@ join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_st
 GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id, visit_type_concept_id
 ;
 -- period_id, visit_concept_id
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, period_id as stratum_1
 	, visit_concept_id as stratum_2
@@ -9421,7 +9421,7 @@ join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_st
 GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id
 ;
 -- period_id
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, period_id as stratum_1
 	, 0 as stratum_2
@@ -9433,7 +9433,7 @@ join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_st
 where ancestor = 0
 GROUP BY cohort_definition_id, subject_id, period_id;
 -- visit_concept_id, visit_type_concept_id
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, 0 as stratum_1
 	, visit_concept_id as stratum_2
@@ -9443,7 +9443,7 @@ into #raw_4009_u4
 from #raw_4009
 GROUP BY cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id;
 -- visit_concept_id
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, 0 as stratum_1
 	, visit_concept_id as stratum_2
@@ -9453,7 +9453,7 @@ into #raw_4009_u5
 from #raw_4009
 GROUP BY cohort_definition_id, subject_id, visit_concept_id;
 --
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, 0 as stratum_1
 	, 0 as stratum_2
@@ -9567,7 +9567,7 @@ select distinct c1.cohort_definition_id,
 	vca.ancestor_concept_id as visit_concept_id,
 	vo1.visit_type_concept_id,
 	vo1.visit_start_date,
-	cast(care_site_id as varchar(19)) + '_' + CAST(YEAR(visit_start_date) as varchar(4)) + CAST(RIGHT('00' + cast(MONTH(visit_start_date) as varchar(2)),2) as varchar(2)) + CAST(RIGHT('00' + cast(DAY(visit_start_date) as varchar(2)),2) as varchar(2)) as care_site_date_id,
+	CONCAT(cast(care_site_id as varchar(19)), '_', CAST(YEAR(visit_start_date) as varchar(4)), CAST(RIGHT(CONCAT('00', cast(MONTH(visit_start_date) as varchar(2))),2) as varchar(2)), CAST(RIGHT(CONCAT('00', cast(DAY(visit_start_date) as varchar(2))),2) as varchar(2))) as care_site_date_id,
 	case when vca.ancestor_concept_id = vca.descendant_concept_id then 0 else 1 end as ancestor
 INTO #raw_4010
 from #HERACLES_cohort c1
@@ -9588,7 +9588,7 @@ join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_st
 GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id, visit_type_concept_id
 ;
 -- period_id, visit_concept_id
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, period_id as stratum_1
 	, visit_concept_id as stratum_2
@@ -9600,7 +9600,7 @@ join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_st
 GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id
 ;
 -- period_id
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, period_id as stratum_1
 	, 0 as stratum_2
@@ -9612,7 +9612,7 @@ join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_st
 where ancestor = 0
 GROUP BY cohort_definition_id, subject_id, period_id;
 -- visit_concept_id, visit_type_concept_id
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, 0 as stratum_1
 	, visit_concept_id as stratum_2
@@ -9622,7 +9622,7 @@ into #raw_4010_u4
 from #raw_4010
 GROUP BY cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id;
 -- visit_concept_id
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, 0 as stratum_1
 	, visit_concept_id as stratum_2
@@ -9632,7 +9632,7 @@ into #raw_4010_u5
 from #raw_4010
 GROUP BY cohort_definition_id, subject_id, visit_concept_id;
 --
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, 0 as stratum_1
 	, 0 as stratum_2
@@ -9770,7 +9770,7 @@ join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_st
 GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id, visit_type_concept_id
 ;
 -- period_id, visit_concept_id
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, period_id as stratum_1
 	, visit_concept_id as stratum_2
@@ -9783,7 +9783,7 @@ GROUP BY cohort_definition_id, subject_id, period_id, visit_concept_id
 ;
 
 -- visit_concept_id, visit_type_concept_id
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, 0 as stratum_1
 	, visit_concept_id as stratum_2
@@ -9793,7 +9793,7 @@ into #raw_4011_u4
 from #raw_4011
 GROUP BY cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id;
 -- visit_concept_id
-select distinct cohort_definition_id
+select cohort_definition_id
 	, subject_id
 	, 0 as stratum_1
 	, visit_concept_id as stratum_2
@@ -12832,7 +12832,7 @@ DROP TABLE #raw_period_4023;
   select cohort_definition_id, analysis_id, cast(stratum_1 as varchar(255)), cast(stratum_2 as varchar(255)), 
   cast(stratum_3 as varchar(255)), cast(stratum_4 as varchar(255)), count_value
   from  #results_4016 union all }
-  select -1, -1, '', '', '', '', -1;
+  select -1, -1, cast('' as varchar(255)),cast('' as varchar(255)),cast('' as varchar(255)),cast('' as varchar(255)), -1;
   -- this final select handles the union all in the case of whatever conditional query runs last
   
   insert into @results_schema.heracles_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value) 
@@ -13181,7 +13181,7 @@ DROP TABLE #raw_period_4023;
   cast(median_value as float), cast(p10_value as float), cast(p25_value as float), cast(p75_value as float), cast(p90_value as float) from  #results_dist_4023
  union all }
 
-  select -1, -1, '', '','','','', -1, -1, -1, -1, -1, -1, -1, -1, -1, -1;
+  select -1, -1, cast('' as varchar(255)),cast('' as varchar(255)),cast('' as varchar(255)),cast('' as varchar(255)),cast('' as varchar(255)), -1, -1, -1, -1, -1, -1, -1, -1, -1, -1;
   -- this final select handles the union all in the case of whatever conditional query runs last
   
   TRUNCATE TABLE #HERACLES_cohort;
@@ -13216,7 +13216,7 @@ DROP TABLE #raw_period_4023;
   HERACLES_HEEL_warning
   )
   SELECT DISTINCT or1.cohort_definition_id, or1.analysis_id,
-  'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; count (n=' + cast(or1.count_value as VARCHAR) + ') should not be > 0' AS HERACLES_HEEL_warning
+  CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; count (n=', cast(or1.count_value as VARCHAR), ') should not be > 0') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.HERACLES_results or1
   INNER JOIN @results_schema.HERACLES_analysis oa1
   ON or1.analysis_id = oa1.analysis_id
@@ -13275,7 +13275,7 @@ DROP TABLE #raw_period_4023;
   HERACLES_HEEL_warning
   )
   SELECT DISTINCT ord1.cohort_definition_id, ord1.analysis_id,
-  'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; min (value=' + cast(ord1.min_value as VARCHAR) + ') should not be negative' AS HERACLES_HEEL_warning
+  CAST(CONCAT('ERROR: ', cast(ord1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; min (value=', cast(ord1.min_value as VARCHAR), ') should not be negative') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.HERACLES_results_dist ord1
   INNER JOIN @results_schema.HERACLES_analysis oa1
   ON ord1.analysis_id = oa1.analysis_id
@@ -13323,7 +13323,7 @@ DROP TABLE #raw_period_4023;
   HERACLES_HEEL_warning
   )
   SELECT DISTINCT ord1.cohort_definition_id, ord1.analysis_id,
-  'WARNING: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; max (value=' + cast(ord1.max_value as VARCHAR) + ') should not be positive, otherwise its a zombie with data >1mo after death ' AS HERACLES_HEEL_warning
+  CAST(CONCAT('WARNING: ', cast(ord1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; max (value=', cast(ord1.max_value as VARCHAR), ') should not be positive, otherwise its a zombie with data >1mo after death ') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.HERACLES_results_dist ord1
   INNER JOIN @results_schema.HERACLES_analysis oa1
   ON ord1.analysis_id = oa1.analysis_id
@@ -13344,7 +13344,7 @@ DROP TABLE #raw_period_4023;
   HERACLES_HEEL_warning
   )
   SELECT or1.cohort_definition_id, or1.analysis_id,
-  'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in vocabulary' AS HERACLES_HEEL_warning
+  CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in vocabulary') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.HERACLES_results or1
   INNER JOIN @results_schema.HERACLES_analysis oa1
   ON or1.analysis_id = oa1.analysis_id
@@ -13382,7 +13382,7 @@ DROP TABLE #raw_period_4023;
   )
   SELECT or1.cohort_definition_id, 
   or1.analysis_id,
-  'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_2) AS VARCHAR) + ' concepts in data are not in vocabulary' AS HERACLES_HEEL_warning
+  CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_2) AS VARCHAR), ' concepts in data are not in vocabulary') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.HERACLES_results or1
   INNER JOIN @results_schema.HERACLES_analysis oa1
   ON or1.analysis_id = oa1.analysis_id
@@ -13409,7 +13409,7 @@ DROP TABLE #raw_period_4023;
   )
   SELECT or1.cohort_definition_id, 
   or1.analysis_id,
-  'WARNING: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; data with unmapped concepts' AS HERACLES_HEEL_warning
+  CAST(CONCAT('WARNING: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; data with unmapped concepts') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.HERACLES_results or1
   INNER JOIN @results_schema.HERACLES_analysis oa1
   ON or1.analysis_id = oa1.analysis_id
@@ -13446,7 +13446,7 @@ DROP TABLE #raw_period_4023;
   )
   SELECT or1.cohort_definition_id, 
   or1.analysis_id,
-  'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (HL7 Sex)' AS HERACLES_HEEL_warning
+  CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (HL7 Sex)') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.HERACLES_results or1
   INNER JOIN @results_schema.HERACLES_analysis oa1
   ON or1.analysis_id = oa1.analysis_id
@@ -13471,7 +13471,7 @@ DROP TABLE #raw_period_4023;
   )
   SELECT or1.cohort_definition_id, 
   or1.analysis_id,
-  'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (CDC Race)' AS HERACLES_HEEL_warning
+  CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (CDC Race)') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.HERACLES_results or1
   INNER JOIN @results_schema.HERACLES_analysis oa1
   ON or1.analysis_id = oa1.analysis_id
@@ -13495,7 +13495,7 @@ DROP TABLE #raw_period_4023;
   )
   SELECT or1.cohort_definition_id, 
   or1.analysis_id,
-  'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (CMS Ethnicity)' AS HERACLES_HEEL_warning
+  CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (CMS Ethnicity)') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.HERACLES_results or1
   INNER JOIN @results_schema.HERACLES_analysis oa1
   ON or1.analysis_id = oa1.analysis_id
@@ -13519,7 +13519,7 @@ DROP TABLE #raw_period_4023;
   )
   SELECT or1.cohort_definition_id, 
   or1.analysis_id,
-  'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (CMS place of service or OMOP visit)' AS HERACLES_HEEL_warning
+  CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (CMS place of service or OMOP visit)') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.HERACLES_results or1
   INNER JOIN @results_schema.HERACLES_analysis oa1
   ON or1.analysis_id = oa1.analysis_id
@@ -13543,7 +13543,7 @@ DROP TABLE #raw_period_4023;
   )
   SELECT or1.cohort_definition_id, 
   or1.analysis_id,
-  'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (Specialty)' AS HERACLES_HEEL_warning
+  CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (Specialty)') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.HERACLES_results or1
   INNER JOIN @results_schema.HERACLES_analysis oa1
   ON or1.analysis_id = oa1.analysis_id
@@ -13567,7 +13567,7 @@ DROP TABLE #raw_period_4023;
   )
   SELECT or1.cohort_definition_id, 
   or1.analysis_id,
-  'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (SNOMED)' AS HERACLES_HEEL_warning
+  CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (SNOMED)') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.HERACLES_results or1
   INNER JOIN @results_schema.HERACLES_analysis oa1
   ON or1.analysis_id = oa1.analysis_id
@@ -13594,7 +13594,7 @@ DROP TABLE #raw_period_4023;
   )
   SELECT or1.cohort_definition_id, 
   or1.analysis_id,
-  'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (RxNorm)' AS HERACLES_HEEL_warning
+  CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (RxNorm)') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.HERACLES_results or1
   INNER JOIN @results_schema.HERACLES_analysis oa1
   ON or1.analysis_id = oa1.analysis_id
@@ -13621,7 +13621,7 @@ DROP TABLE #raw_period_4023;
   )
   SELECT or1.cohort_definition_id, 
   or1.analysis_id,
-  'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (CPT4/HCPCS/ICD9P)' AS HERACLES_HEEL_warning
+  CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (CPT4/HCPCS/ICD9P)') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.HERACLES_results or1
   INNER JOIN @results_schema.HERACLES_analysis oa1
   ON or1.analysis_id = oa1.analysis_id
@@ -13645,7 +13645,7 @@ DROP TABLE #raw_period_4023;
   )
   SELECT or1.cohort_definition_id, 
   or1.analysis_id,
-  'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (LOINC)' AS HERACLES_HEEL_warning
+  CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (LOINC)') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.HERACLES_results or1
   INNER JOIN @results_schema.HERACLES_analysis oa1
   ON or1.analysis_id = oa1.analysis_id
@@ -13670,7 +13670,7 @@ DROP TABLE #raw_period_4023;
   )
   SELECT or1.cohort_definition_id, 
   or1.analysis_id,
-  'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (DRG)' AS HERACLES_HEEL_warning
+  CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (DRG)') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.HERACLES_results or1
   INNER JOIN @results_schema.HERACLES_analysis oa1
   ON or1.analysis_id = oa1.analysis_id
@@ -13694,7 +13694,7 @@ DROP TABLE #raw_period_4023;
   )
   SELECT or1.cohort_definition_id, 
   or1.analysis_id,
-  'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (revenue code)' AS HERACLES_HEEL_warning
+  CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (revenue code)') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.HERACLES_results or1
   INNER JOIN @results_schema.HERACLES_analysis oa1
   ON or1.analysis_id = oa1.analysis_id
@@ -13719,7 +13719,7 @@ DROP TABLE #raw_period_4023;
   )
   SELECT or1.cohort_definition_id, 
   or1.analysis_id,
-  'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; should not have year of birth in the future, (n=' + cast(sum(or1.count_value) as VARCHAR) + ')' AS HERACLES_HEEL_warning
+  CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; should not have year of birth in the future, (n=', cast(sum(or1.count_value) as VARCHAR), ')') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.HERACLES_results or1
   INNER JOIN @results_schema.HERACLES_analysis oa1
   ON or1.analysis_id = oa1.analysis_id
@@ -13740,7 +13740,7 @@ DROP TABLE #raw_period_4023;
   )
   SELECT or1.cohort_definition_id, 
   or1.analysis_id,
-  'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; should not have year of birth < 1900, (n=' + cast(sum(or1.count_value) as VARCHAR) + ')' AS HERACLES_HEEL_warning
+  CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; should not have year of birth < 1900, (n=', cast(sum(or1.count_value) as VARCHAR), ')') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.HERACLES_results or1
   INNER JOIN @results_schema.HERACLES_analysis oa1
   ON or1.analysis_id = oa1.analysis_id
@@ -13760,7 +13760,7 @@ DROP TABLE #raw_period_4023;
   )
   SELECT or1.cohort_definition_id, 
   or1.analysis_id,
-  'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; should not have age < 0, (n=' + cast(sum(or1.count_value) as VARCHAR) + ')' AS HERACLES_HEEL_warning
+  CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; should not have age < 0, (n=', cast(sum(or1.count_value) as VARCHAR), ')') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.HERACLES_results or1
   INNER JOIN @results_schema.HERACLES_analysis oa1
   ON or1.analysis_id = oa1.analysis_id
@@ -13780,7 +13780,7 @@ DROP TABLE #raw_period_4023;
   )
   SELECT or1.cohort_definition_id, 
   or1.analysis_id,
-  'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; should not have age > 100, (n=' + cast(sum(or1.count_value) as VARCHAR) + ')' AS HERACLES_HEEL_warning
+  CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; should not have age > 100, (n=', cast(sum(or1.count_value) as VARCHAR), ')') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.HERACLES_results or1
   INNER JOIN @results_schema.HERACLES_analysis oa1
   ON or1.analysis_id = oa1.analysis_id
@@ -13799,7 +13799,7 @@ DROP TABLE #raw_period_4023;
   HERACLES_HEEL_warning
   )
   SELECT DISTINCT her1.cohort_definition_id, her1.analysis_id,
-  'WARNING: ' + cast(her1.analysis_id as VARCHAR) + '-' + aa1.analysis_name + '; theres a 100% change in monthly count of events' AS HERACLES_HEEL_warning
+  CAST(CONCAT('WARNING: ', cast(her1.analysis_id as VARCHAR), '-', aa1.analysis_name, '; theres a 100% change in monthly count of events') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.HERACLES_analysis aa1
   INNER JOIN @results_schema.HERACLES_results her1
   ON aa1.analysis_id = her1.analysis_id
@@ -13823,7 +13823,12 @@ DROP TABLE #raw_period_4023;
   AND her1.count_value > 10;
   
 	--WARNING:  monthly change > 100% at concept level
-	WITH HR as (
+	SELECT her1.cohort_definition_id,
+		her1.analysis_id,
+		CAST(CONCAT('WARNING: ', CAST(her1.analysis_id  AS VARCHAR(1000)), '-', aa1.analysis_name, '; ', CAST(COUNT_BIG(DISTINCT her1.stratum_1)  AS VARCHAR(1000)), 'concepts have a 100% change in monthly count of events') AS VARCHAR(255)) AS HERACLES_HEEL_warning
+	INTO #heel_monthly_change
+	FROM @results_schema.HERACLES_analysis aa1
+	INNER JOIN (
 		SELECT
 			cohort_definition_id,
 			analysis_id,
@@ -13841,14 +13846,26 @@ DROP TABLE #raw_period_4023;
 			902,
 			1002
 		)
-	)
-	SELECT her1.cohort_definition_id,
-		her1.analysis_id,
-		'WARNING: ' + CAST(her1.analysis_id  AS VARCHAR(1000)) + '-' + aa1.analysis_name + '; ' + CAST(COUNT_BIG(DISTINCT her1.stratum_1)  AS VARCHAR(1000)) + 'concepts have a 100% change in monthly count of events' AS HERACLES_HEEL_warning
-	INTO #heel_monthly_change
-	FROM @results_schema.HERACLES_analysis aa1
-	INNER JOIN hr her1 ON aa1.analysis_id = her1.analysis_id
-	INNER JOIN hr ar2 ON her1.analysis_id = ar2.analysis_id
+	) her1 ON aa1.analysis_id = her1.analysis_id
+	INNER JOIN (
+		SELECT
+			cohort_definition_id,
+			analysis_id,
+			stratum_1,
+			CAST((CASE WHEN stratum_2 = ''
+				THEN NULL
+						ELSE stratum_2 END) AS INT) stratum_2,
+			count_value
+		FROM @results_schema.HERACLES_results
+		WHERE analysis_id IN (
+			402,
+			602,
+			702,
+			802,
+			902,
+			1002
+		)
+	) ar2 ON her1.analysis_id = ar2.analysis_id
 		and her1.cohort_definition_id = ar2.cohort_definition_id
 		AND her1.stratum_1 = ar2.stratum_1
 	WHERE (
@@ -13865,7 +13882,7 @@ DROP TABLE #raw_period_4023;
 		analysis_id,
 		HERACLES_HEEL_warning
 	)
-	SELECT cohort_definition_id,  analysis_id, HERACLES_HEEL_warning 
+	SELECT cohort_definition_id,  analysis_id, HERACLES_HEEL_warning
 	FROM #heel_monthly_change;
 
 	TRUNCATE TABLE #heel_monthly_change;
@@ -13879,7 +13896,7 @@ DROP TABLE #raw_period_4023;
   )
   SELECT DISTINCT ord1.cohort_definition_id, 
   ord1.analysis_id,
-  'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; max (value=' + cast(ord1.max_value as VARCHAR) + ' should not be > 180' AS HERACLES_HEEL_warning
+  CAST(CONCAT('ERROR: ', cast(ord1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; max (value=', cast(ord1.max_value as VARCHAR), ' should not be > 180') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.HERACLES_results_dist ord1
   INNER JOIN @results_schema.HERACLES_analysis oa1
   ON ord1.analysis_id = oa1.analysis_id
@@ -13895,7 +13912,7 @@ DROP TABLE #raw_period_4023;
   )
   SELECT DISTINCT ord1.cohort_definition_id, 
   ord1.analysis_id,
-  'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; max (value=' + cast(ord1.max_value as VARCHAR) + ' should not be > 10' AS HERACLES_HEEL_warning
+  CAST(CONCAT('ERROR: ', cast(ord1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; max (value=', cast(ord1.max_value as VARCHAR), ' should not be > 10') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.HERACLES_results_dist ord1
   INNER JOIN @results_schema.HERACLES_analysis oa1
   ON ord1.analysis_id = oa1.analysis_id
@@ -13911,7 +13928,7 @@ DROP TABLE #raw_period_4023;
   )
   SELECT DISTINCT ord1.cohort_definition_id, 
   ord1.analysis_id,
-  'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; max (value=' + cast(ord1.max_value as VARCHAR) + ' should not be > 600' AS HERACLES_HEEL_warning
+  CAST(CONCAT('ERROR: ', cast(ord1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; max (value=', cast(ord1.max_value as VARCHAR), ' should not be > 600') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.HERACLES_results_dist ord1
   INNER JOIN @results_schema.HERACLES_analysis oa1
   ON ord1.analysis_id = oa1.analysis_id

@@ -15,10 +15,12 @@ select   concept_hierarchy.concept_id,
 	isnull(concept_hierarchy.atc5_concept_name,'NA') as atc5_concept_name,
 	isnull(concept_hierarchy.atc3_concept_name,'NA') as atc3_concept_name,
 	isnull(concept_hierarchy.atc1_concept_name,'NA') as atc1_concept_name,
- isnull(concept_hierarchy.atc1_concept_name,'NA') + '||' + 
-	isnull(concept_hierarchy.atc3_concept_name,'NA') + '||' +
-	isnull(concept_hierarchy.atc5_concept_name,'NA') + '||' +
-	isnull(concept_hierarchy.rxnorm_ingredient_concept_name,'||') as concept_path,
+  CONCAT(
+    isnull(concept_hierarchy.atc1_concept_name,'NA'), '||',
+    isnull(concept_hierarchy.atc3_concept_name,'NA'), '||',
+    isnull(concept_hierarchy.atc5_concept_name,'NA'), '||',
+    isnull(concept_hierarchy.rxnorm_ingredient_concept_name,'||')
+	) as concept_path,
 	1.0*hr1.num_persons / denom.count_value as percent_persons,
 	1.0*hr1.num_persons_before / denom.count_value as percent_persons_before,
 	1.0*hr1.num_persons_after / denom.count_value as percent_persons_after,

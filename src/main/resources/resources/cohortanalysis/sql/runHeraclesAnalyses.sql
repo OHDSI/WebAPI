@@ -67,6 +67,7 @@
 --data completeness: ethnicity: 2021, 2022, 2023, 2024, 2025, 2026, 2027
 --entropy: 2031, 2032
 --tornado: 3000, 3001
+--cost and utilization: 4000,4001,4002,4003,4004,4005,4006,4007,4008,4009,4010,4011,4012,4013,4014,4015,4016,4017,4018,4019,4020,4021,4022,4023
 
 delete from @results_schema.HERACLES_results where cohort_definition_id IN (@cohort_definition_id) and analysis_id IN (@list_of_analysis_ids);
 delete from @results_schema.HERACLES_results_dist where cohort_definition_id IN (@cohort_definition_id) and analysis_id IN (@list_of_analysis_ids);
@@ -11730,7 +11731,7 @@ rxnorm_rollup (cohort_definition_id, subject_id, drug_concept_id, drug_type_conc
   join @CDM_schema.concept c on ca.ancestor_concept_id = c.concept_id
   where c.vocabulary_id = 'RxNorm' and c.concept_class_id in ('Ingredient', 'Branded Drug Comp', 'Clinical Drug Comp') and ca.ancestor_concept_id != ca.descendant_concept_id
 )
-select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost
+select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost, ancestor
 INTO #raw_cost_4022
 FROM (
   select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost FROM drug_records
@@ -11967,7 +11968,7 @@ rxnorm_rollup (cohort_definition_id, subject_id, drug_concept_id, drug_type_conc
   join @CDM_schema.concept c on ca.ancestor_concept_id = c.concept_id
   where c.vocabulary_id = 'RxNorm' and c.concept_class_id in ('Ingredient', 'Branded Drug Comp', 'Clinical Drug Comp') and ca.ancestor_concept_id != ca.descendant_concept_id
 )
-select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost
+select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost, ancestor
 INTO #raw_cost_4023
 FROM (
   select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost FROM drug_records

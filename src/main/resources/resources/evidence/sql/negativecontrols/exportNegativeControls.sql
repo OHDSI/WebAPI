@@ -1,4 +1,4 @@
-INSERT INTO @evidenceSchema.NC_RESULTS (
+INSERT INTO @resultsSchema.NC_RESULTS (
 	job_id, 
 	negative_control, 
 	outcome_of_interest_concept_id, 

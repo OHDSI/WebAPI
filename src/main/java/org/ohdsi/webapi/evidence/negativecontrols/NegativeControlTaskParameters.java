@@ -8,6 +8,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 public class NegativeControlTaskParameters {
 	private String jobName;
+        
+        private Long previousJobId = new Long(0);
 
 	private Source source;
 
@@ -261,4 +263,18 @@ public class NegativeControlTaskParameters {
 	public void setTranslatedSchema(String translatedSchema) {
 		this.translatedSchema = translatedSchema;
 	}
+
+    /**
+     * @return the previousJobId
+     */
+    public Long getPreviousJobId() {
+        return previousJobId;
+    }
+
+    /**
+     * @param previousJobId the previousJobId to set
+     */
+    public void setPreviousJobId(Long previousJobId) {
+        this.previousJobId = previousJobId;
+    }
 }

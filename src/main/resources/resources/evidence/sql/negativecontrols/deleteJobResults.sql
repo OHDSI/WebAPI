@@ -1,1 +1,1 @@
-DELETE FROM @evidenceSchema.NC_RESULTS WHERE job_id = @jobId;
+DELETE FROM @resultsSchema.NC_RESULTS WHERE job_id = @jobId;

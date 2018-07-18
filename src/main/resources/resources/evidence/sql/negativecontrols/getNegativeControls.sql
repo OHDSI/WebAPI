@@ -1,12 +1,8 @@
 SELECT 
 	job_id, 
-	@SOURCE_ID source_id,
-	@CONCEPT_SET_ID concept_set_id,
-	'@CONCEPT_SET_NAME' concept_set_name,
 	negative_control, 
 	outcome_of_interest_concept_id concept_id, 
 	outcome_of_interest_concept_name concept_name, 
-	'@outcomeOfInterest' domain_id,
 	sort_order, 
 	descendant_pmid_cnt, 
 	exact_pmid_cnt, 
@@ -28,5 +24,5 @@ SELECT
 	user_included,
 	optimized_out,
 	not_prevalent
-FROM @evidenceSchema.nc_results
+FROM @resultsSchema.nc_results
 WHERE job_id = 	@jobId;

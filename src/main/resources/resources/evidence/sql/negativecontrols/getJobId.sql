@@ -1,1 +1,1 @@
-INSERT INTO @evidenceSchema.evidence_job SELECT ISNULL(MAX(id), 0) + 1 from @evidenceSchema.evidence_job;
+INSERT INTO @resultsSchema.evidence_job SELECT ISNULL(MAX(id), 0) + 1 from @resultsSchema.evidence_job;

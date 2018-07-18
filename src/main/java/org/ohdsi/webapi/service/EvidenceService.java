@@ -9,6 +9,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -47,6 +48,7 @@ import org.ohdsi.webapi.evidence.DrugRollUpEvidence;
 import org.ohdsi.webapi.evidence.Evidence;
 import org.ohdsi.webapi.evidence.SpontaneousReport;
 import org.ohdsi.webapi.evidence.EvidenceSearch;
+import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlDTO;
 import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlMapper;
 import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlTaskParameters;
 import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlRecord;
@@ -704,7 +706,27 @@ public class EvidenceService extends AbstractDaoService {
 
         // source key comes from the client, we look it up here and hand it off to the tasklet
         Source source = getSourceRepository().findBySourceKey(sourceKey);
+        // Verify the source has both the evidence & results daimon configured
+        // and throw an exception if either is missing
+        String evidenceSchema = source.getTableQualifier(SourceDaimon.DaimonType.Evidence);
+        String resultsSchema = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Results);
+        if (evidenceSchema == null) {
+            throw NotFoundException("Evidence daimon not configured for source.");
+        }
+        if (resultsSchema == null) {
+            throw NotFoundException("Results daimon not configured for source.");            
+        }
+        
         task.setSource(source);
+        
+        // Get and set any previous job Id on the task
+        Collection<NegativeControlRecord> negativeControlJobList = negativeControlRepository.findAllBySourceIdAndConceptId(source.getSourceId(), task.getConceptSetId());
+        if (negativeControlJobList.size() > 0) {
+            NegativeControlRecord ncr = negativeControlJobList.iterator().next();
+            task.setPreviousJobId(ncr.getEvidenceJobId());
+            builder.addString("previousJobId", ("" + ncr.getEvidenceJobId()));
+        }
+        
 
         if (!StringUtils.isEmpty(task.getJobName())) {
             builder.addString("jobName", limitJobParams(task.getJobName()));
@@ -714,46 +736,46 @@ public class EvidenceService extends AbstractDaoService {
         builder.addString("concept_domain_id", task.getConceptDomainId());
         builder.addString("source_id", ("" + source.getSourceId()));
 				
-				// Create a set of parameters to store with the generation info
-				JSONObject params = new JSONObject();
-				// If/when we want to treat these concepts as lists, this
-				// code will do the trick
-				//JSONArray conceptsToInclude = new JSONArray();
-				//JSONArray conceptsToExclude = new JSONArray();
-				//for(int i = 0; i < task.getConceptsToInclude().length; i++) {
-				//	conceptsToInclude.put(task.getConceptsToInclude()[i]);
-				//}
-				//for(int i = 0; i < task.getConceptsToExclude().length; i++) {
-				//	conceptsToExclude.put(task.getConceptsToExclude()[i]);
-				//}
-				params.put("csToInclude", task.getCsToInclude());
-				params.put("csToExclude", task.getCsToExclude());
-				builder.addString("params", params.toString());
-				
-				// Resolve the concept set expressions for the included and excluded
-				// concept sets if specified
-				ConceptSetExpressionQueryBuilder csBuilder = new ConceptSetExpressionQueryBuilder();
-				ConceptSetExpression csExpression;
-				String csSQL = "";
-				if (task.getCsToInclude() > 0) {
-					try {
-						csExpression = conceptSetService.getConceptSetExpression(task.getCsToInclude());
-						csSQL = csBuilder.buildExpressionQuery(csExpression);
-					} catch (Exception e) {
-						log.debug(e);
-					}
-				}
-				task.setCsToIncludeSQL(csSQL);
-				csSQL = "";
-				if (task.getCsToExclude() > 0) {
-					try {
-						csExpression = conceptSetService.getConceptSetExpression(task.getCsToExclude());
-						csSQL = csBuilder.buildExpressionQuery(csExpression);
-					} catch (Exception e) {
-						log.debug(e);
-					}
-				}
-				task.setCsToExcludeSQL(csSQL);
+        // Create a set of parameters to store with the generation info
+        JSONObject params = new JSONObject();
+        // If/when we want to treat these concepts as lists, this
+        // code will do the trick
+        //JSONArray conceptsToInclude = new JSONArray();
+        //JSONArray conceptsToExclude = new JSONArray();
+        //for(int i = 0; i < task.getConceptsToInclude().length; i++) {
+        //	conceptsToInclude.put(task.getConceptsToInclude()[i]);
+        //}
+        //for(int i = 0; i < task.getConceptsToExclude().length; i++) {
+        //	conceptsToExclude.put(task.getConceptsToExclude()[i]);
+        //}
+        params.put("csToInclude", task.getCsToInclude());
+        params.put("csToExclude", task.getCsToExclude());
+        builder.addString("params", params.toString());
+
+        // Resolve the concept set expressions for the included and excluded
+        // concept sets if specified
+        ConceptSetExpressionQueryBuilder csBuilder = new ConceptSetExpressionQueryBuilder();
+        ConceptSetExpression csExpression;
+        String csSQL = "";
+        if (task.getCsToInclude() > 0) {
+                try {
+                        csExpression = conceptSetService.getConceptSetExpression(task.getCsToInclude());
+                        csSQL = csBuilder.buildExpressionQuery(csExpression);
+                } catch (Exception e) {
+                        log.debug(e);
+                }
+        }
+        task.setCsToIncludeSQL(csSQL);
+        csSQL = "";
+        if (task.getCsToExclude() > 0) {
+                try {
+                        csExpression = conceptSetService.getConceptSetExpression(task.getCsToExclude());
+                        csSQL = csBuilder.buildExpressionQuery(csExpression);
+                } catch (Exception e) {
+                        log.debug(e);
+                }
+        }
+        task.setCsToExcludeSQL(csSQL);
 				
         
         final String taskString = task.toString();
@@ -773,13 +795,20 @@ public class EvidenceService extends AbstractDaoService {
  * @param conceptSetId The concept set id
  * @return The list of negative controls
  */
-	@GET
+  @GET
   @Path("{sourceKey}/negativecontrols/{conceptsetid}")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public Collection<NegativeControlRecord> getNegativeControls(@PathParam("sourceKey") String sourceKey, @PathParam("conceptsetid") int conceptSetId) {
+  public Collection<NegativeControlDTO> getNegativeControls(@PathParam("sourceKey") String sourceKey, @PathParam("conceptsetid") int conceptSetId) throws Exception {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    return negativeControlRepository.findAllBySourceIdAndConceptId(source.getSourceId(), conceptSetId);
+    Collection<NegativeControlRecord> negativeControlJobList = negativeControlRepository.findAllBySourceIdAndConceptId(source.getSourceId(), conceptSetId);
+    if (negativeControlJobList.size() <= 0) {
+        throw new NotFoundException("No job information found for source and concept set");
+    }
+    NegativeControlRecord ncr = negativeControlJobList.iterator().next();
+    PreparedStatementRenderer psr = this.prepareGetNegativeControls(source, ncr.getEvidenceJobId());
+    final List<NegativeControlDTO> recs = getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), new NegativeControlMapper());
+    return recs;
   }
 	
 	/**
@@ -791,9 +820,9 @@ public class EvidenceService extends AbstractDaoService {
 	public static String getEvidenceJobIdSql(NegativeControlTaskParameters task) {
     String resourceRoot = "/resources/evidence/sql/negativecontrols/";
     String sql = ResourceHelper.GetResourceAsString(resourceRoot + "getJobId.sql");
-    String evidenceSchema = task.getSource().getTableQualifier(SourceDaimon.DaimonType.Evidence);
-    String[] params = new String[]{"evidenceSchema"};
-    String[] values = new String[]{evidenceSchema};
+    String resultsSchema = task.getSource().getTableQualifier(SourceDaimon.DaimonType.Results);
+    String[] params = new String[]{"resultsSchema"};
+    String[] values = new String[]{resultsSchema};
     sql = SqlRender.renderSql(sql, params, values);
     sql = SqlTranslate.translateSql(sql, task.getSource().getSourceDialect());
 
@@ -810,10 +839,10 @@ public class EvidenceService extends AbstractDaoService {
   @Path("{sourceKey}/negativecontrols/sql")
   @Produces(MediaType.TEXT_PLAIN)
   public String getNegativeControlsSqlStatement(@PathParam("sourceKey") String sourceKey, 
-																								@QueryParam("jobId") String userSpecifiedJobId,
-																								@DefaultValue("CONDITION") @QueryParam("conceptDomain") String conceptDomain,																								
-																								@DefaultValue("DRUG") @QueryParam("targetDomain") String targetDomain,
-																								@DefaultValue("192671") @QueryParam("conceptOfInterest") String conceptOfInterest) {
+                                                @QueryParam("jobId") String userSpecifiedJobId,
+                                                @DefaultValue("CONDITION") @QueryParam("conceptDomain") String conceptDomain,																								
+                                                @DefaultValue("DRUG") @QueryParam("targetDomain") String targetDomain,
+                                                @DefaultValue("192671") @QueryParam("conceptOfInterest") String conceptOfInterest) {
 		NegativeControlTaskParameters task = new NegativeControlTaskParameters();
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		task.setSource(source);
@@ -834,155 +863,156 @@ public class EvidenceService extends AbstractDaoService {
 		return getNegativeControlSql(task, jobId);
   }
 	
-	/**
-	 * Retrieve the SQL used to generate negative controls
-	 * @summary Get negative control SQL
-	 * @param task The task containing the parameters for generating negative controls
-	 * @param jobId The job Id for capturing the negative controls
-	 * @return The SQL script for generating negative controls
-	 */
-	public static String getNegativeControlSql(NegativeControlTaskParameters task, Long jobId ) {
-		StringBuilder sb = new StringBuilder();
-    String resourceRoot = "/resources/evidence/sql/negativecontrols/";
-		Source source = task.getSource();
-	  String evidenceSchema = source.getTableQualifier(SourceDaimon.DaimonType.Evidence);
-		String vocabularySchema = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
-		if (vocabularySchema == null) {			
-			vocabularySchema = evidenceSchema;
-		} 
-		String translatedSchema = task.getTranslatedSchema();
-		if (translatedSchema == null) {
-			translatedSchema = evidenceSchema;
-		}
-		
-		String csToExcludeSQL = SqlRender.renderSql(task.getCsToExcludeSQL(), 
-			new String[] {"vocabulary_database_schema"}, 
-			new String[] {vocabularySchema}
-		);
-		String csToIncludeSQL = SqlRender.renderSql(task.getCsToIncludeSQL(), 
-			new String[] {"vocabulary_database_schema"}, 
-			new String[] {vocabularySchema}
-		);
-				
-		String outcomeOfInterest = task.getOutcomeOfInterest().toLowerCase();
-		String conceptsOfInterest = JoinArray(task.getConceptsOfInterest());
-		String csToInclude = String.valueOf(task.getCsToInclude());
-		String csToExclude = String.valueOf(task.getCsToExclude());
-		String medlineWinnenburgTable = translatedSchema + ".MEDLINE_WINNENBURG";
-		String splicerTable = translatedSchema + ".SPLICER";
-		String aeolusTable = translatedSchema + ".AEOLUS";
-		String conceptsToExcludeData = "#NC_EXCLUDED_CONCEPTS";
-		String conceptsToIncludeData = "#NC_INCLUDED_CONCEPTS";
-		String broadConceptsData = evidenceSchema + ".NC_LU_BROAD_CONCEPTS";
-		String drugInducedConditionsData = evidenceSchema + ".NC_LU_DRUG_INDUCED_CONDITIONS";
-		String pregnancyConditionData = evidenceSchema + ".NC_LU_PREGNANCY_CONDITIONS";
-	
-		String[] params = new String[]{"outcomeOfInterest", "conceptsOfInterest", "vocabulary", "evidenceSchema", "translatedSchema"};
-		String[] values = new String[]{outcomeOfInterest, conceptsOfInterest, vocabularySchema, evidenceSchema, translatedSchema};
-		
-		
-		String sqlFile = "findConceptUniverse.sql";
-		sb.append("-- ").append(sqlFile).append("\n\n");
-		String sql = ResourceHelper.GetResourceAsString(resourceRoot + sqlFile);
-		sql = SqlRender.renderSql(sql, params, values);
-		sb.append(sql + "\n\n");
-		
-		sqlFile = "findDrugIndications.sql";
-		sb.append("-- ").append(sqlFile).append("\n\n");
-		sql = ResourceHelper.GetResourceAsString(resourceRoot + sqlFile);
-		sql = SqlRender.renderSql(sql, params, values);
-		sb.append(sql + "\n\n");
-		
-		sqlFile = "findConcepts.sql";
-		sb.append("-- User excluded - ").append(sqlFile).append("\n\n");
-		sql = ResourceHelper.GetResourceAsString(resourceRoot + sqlFile);
-		sql = SqlRender.renderSql(sql, 
-			ArrayUtils.addAll(params, new String[] {"storeData", "conceptSetId", "conceptSetExpression"}), 
-			ArrayUtils.addAll(values, new String[] {conceptsToExcludeData, csToExclude, csToExcludeSQL})
-		);
-		sb.append(sql + "\n\n");
-	
-		sqlFile = "findConcepts.sql";
-		sb.append("-- User included - ").append(sqlFile).append("\n\n");
-		sql = ResourceHelper.GetResourceAsString(resourceRoot + sqlFile);
-		sql = SqlRender.renderSql(sql, 
-			ArrayUtils.addAll(params, new String[] {"storeData", "conceptSetId", "conceptSetExpression"}), 
-			ArrayUtils.addAll(values, new String[] {conceptsToIncludeData, csToInclude, csToIncludeSQL})
-		);
-		sb.append(sql + "\n\n");
-		
-		sqlFile = "pullEvidencePrep.sql";
-		sb.append("-- ").append(sqlFile).append("\n\n");
-		sql = ResourceHelper.GetResourceAsString(resourceRoot + sqlFile);
-		sql = SqlRender.renderSql(sql, params, values);
-		sb.append(sql + "\n\n");
-		
-		sqlFile = "pullEvidence.sql";
-		sb.append("-- MEDLINE_WINNENBURG -- ").append(sqlFile).append("\n\n");
-		sql = ResourceHelper.GetResourceAsString(resourceRoot + sqlFile);
-		sql = SqlRender.renderSql(sql, 
-			ArrayUtils.addAll(params, new String[] { "adeType", "adeData" }), 
-			ArrayUtils.addAll(values, new String[] { "MEDLINE_WINNENBURG", medlineWinnenburgTable })
-		);
-		sb.append(sql + "\n\n");
-		
-		sqlFile = "pullEvidence.sql";
-		sb.append("-- SPLICER -- ").append(sqlFile).append("\n\n");
-		sql = ResourceHelper.GetResourceAsString(resourceRoot + sqlFile);
-		sql = SqlRender.renderSql(sql, 
-			ArrayUtils.addAll(params, new String[] { "adeType", "adeData" }), 
-			ArrayUtils.addAll(values, new String[] { "SPLICER", splicerTable })
-		);
-		sb.append(sql + "\n\n");
-		
-		sqlFile = "pullEvidence.sql";
-		sb.append("-- AEOLUS -- ").append(sqlFile).append("\n\n");
-		sql = ResourceHelper.GetResourceAsString(resourceRoot + sqlFile);
-		sql = SqlRender.renderSql(sql, 
-			ArrayUtils.addAll(params, new String[] { "adeType", "adeData" }), 
-			ArrayUtils.addAll(values, new String[] { "AEOLUS", aeolusTable })
-		);
-		sb.append(sql + "\n\n");
-		
-		sqlFile = "pullEvidencePost.sql";
-		sb.append("-- ").append(sqlFile).append("\n\n");
-		sql = ResourceHelper.GetResourceAsString(resourceRoot + sqlFile);
-		sql = SqlRender.renderSql(sql, params, values);
-		sb.append(sql + "\n\n");
-		
-		sqlFile = "summarizeEvidence.sql";
-		sb.append("-- ").append(sqlFile).append("\n\n");
-		sql = ResourceHelper.GetResourceAsString(resourceRoot + sqlFile);
-		sql = SqlRender.renderSql(sql, 
-			ArrayUtils.addAll(params, new String[] {"broadConceptsData", "drugInducedConditionsData", "pregnancyConditionData", "conceptsToExclude", "conceptsToInclude"}), 
-			ArrayUtils.addAll(values, new String[] {broadConceptsData, drugInducedConditionsData, pregnancyConditionData, conceptsToExcludeData, conceptsToIncludeData})
-		);
-		sb.append(sql + "\n\n");
-		
-		sqlFile = "optimizeEvidence.sql";
-		sb.append("-- ").append(sqlFile).append("\n\n");
-		sql = ResourceHelper.GetResourceAsString(resourceRoot + sqlFile);
-		sql = SqlRender.renderSql(sql, params, values);
-		sb.append(sql + "\n\n");
-		
-		sqlFile = "deleteJobResults.sql";
-		sb.append("-- ").append(sqlFile).append("\n\n");
-		sql = EvidenceService.getJobResultsDeleteStatementSql(evidenceSchema, jobId);
-		sb.append(sql + "\n\n");
-		
-		sqlFile = "exportNegativeControls.sql";
-		sb.append("-- ").append(sqlFile).append("\n\n");
-		sql = ResourceHelper.GetResourceAsString(resourceRoot + sqlFile);
-		sql = SqlRender.renderSql(sql, 
-			ArrayUtils.addAll(params, new String[] {"jobId"}), 
-			ArrayUtils.addAll(values, new String[] {Long.toString(jobId)})
-		);
-		sb.append(sql + "\n\n");
-		
-		sql = SqlTranslate.translateSql(sb.toString(), source.getSourceDialect());
+    /**
+     * Retrieve the SQL used to generate negative controls
+     * @summary Get negative control SQL
+     * @param task The task containing the parameters for generating negative controls
+     * @param jobId The job Id for capturing the negative controls
+     * @return The SQL script for generating negative controls
+     */
+    public static String getNegativeControlSql(NegativeControlTaskParameters task, Long jobId ) {
+        StringBuilder sb = new StringBuilder();
+        String resourceRoot = "/resources/evidence/sql/negativecontrols/";
+        Source source = task.getSource();
+        String evidenceSchema = source.getTableQualifier(SourceDaimon.DaimonType.Evidence);
+        String resultsSchema = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Results);
+        String vocabularySchema = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
+        if (vocabularySchema == null) {			
+                vocabularySchema = evidenceSchema;
+        } 
+        String translatedSchema = task.getTranslatedSchema();
+        if (translatedSchema == null) {
+                translatedSchema = evidenceSchema;
+        }
 
-		return sql;
-	}
+        String csToExcludeSQL = SqlRender.renderSql(task.getCsToExcludeSQL(), 
+                new String[] {"vocabulary_database_schema"}, 
+                new String[] {vocabularySchema}
+        );
+        String csToIncludeSQL = SqlRender.renderSql(task.getCsToIncludeSQL(), 
+                new String[] {"vocabulary_database_schema"}, 
+                new String[] {vocabularySchema}
+        );
+
+        String outcomeOfInterest = task.getOutcomeOfInterest().toLowerCase();
+        String conceptsOfInterest = JoinArray(task.getConceptsOfInterest());
+        String csToInclude = String.valueOf(task.getCsToInclude());
+        String csToExclude = String.valueOf(task.getCsToExclude());
+        String medlineWinnenburgTable = translatedSchema + ".MEDLINE_WINNENBURG";
+        String splicerTable = translatedSchema + ".SPLICER";
+        String aeolusTable = translatedSchema + ".AEOLUS";
+        String conceptsToExcludeData = "#NC_EXCLUDED_CONCEPTS";
+        String conceptsToIncludeData = "#NC_INCLUDED_CONCEPTS";
+        String broadConceptsData = evidenceSchema + ".NC_LU_BROAD_CONCEPTS";
+        String drugInducedConditionsData = evidenceSchema + ".NC_LU_DRUG_INDUCED_CONDITIONS";
+        String pregnancyConditionData = evidenceSchema + ".NC_LU_PREGNANCY_CONDITIONS";
+
+        String[] params = new String[]{"outcomeOfInterest", "conceptsOfInterest", "vocabulary", "evidenceSchema", "resultsSchema", "translatedSchema"};
+        String[] values = new String[]{outcomeOfInterest, conceptsOfInterest, vocabularySchema, evidenceSchema, resultsSchema, translatedSchema};
+
+
+        String sqlFile = "findConceptUniverse.sql";
+        sb.append("-- ").append(sqlFile).append("\n\n");
+        String sql = ResourceHelper.GetResourceAsString(resourceRoot + sqlFile);
+        sql = SqlRender.renderSql(sql, params, values);
+        sb.append(sql + "\n\n");
+
+        sqlFile = "findDrugIndications.sql";
+        sb.append("-- ").append(sqlFile).append("\n\n");
+        sql = ResourceHelper.GetResourceAsString(resourceRoot + sqlFile);
+        sql = SqlRender.renderSql(sql, params, values);
+        sb.append(sql + "\n\n");
+
+        sqlFile = "findConcepts.sql";
+        sb.append("-- User excluded - ").append(sqlFile).append("\n\n");
+        sql = ResourceHelper.GetResourceAsString(resourceRoot + sqlFile);
+        sql = SqlRender.renderSql(sql, 
+                ArrayUtils.addAll(params, new String[] {"storeData", "conceptSetId", "conceptSetExpression"}), 
+                ArrayUtils.addAll(values, new String[] {conceptsToExcludeData, csToExclude, csToExcludeSQL})
+        );
+        sb.append(sql + "\n\n");
+
+        sqlFile = "findConcepts.sql";
+        sb.append("-- User included - ").append(sqlFile).append("\n\n");
+        sql = ResourceHelper.GetResourceAsString(resourceRoot + sqlFile);
+        sql = SqlRender.renderSql(sql, 
+                ArrayUtils.addAll(params, new String[] {"storeData", "conceptSetId", "conceptSetExpression"}), 
+                ArrayUtils.addAll(values, new String[] {conceptsToIncludeData, csToInclude, csToIncludeSQL})
+        );
+        sb.append(sql + "\n\n");
+
+        sqlFile = "pullEvidencePrep.sql";
+        sb.append("-- ").append(sqlFile).append("\n\n");
+        sql = ResourceHelper.GetResourceAsString(resourceRoot + sqlFile);
+        sql = SqlRender.renderSql(sql, params, values);
+        sb.append(sql + "\n\n");
+
+        sqlFile = "pullEvidence.sql";
+        sb.append("-- MEDLINE_WINNENBURG -- ").append(sqlFile).append("\n\n");
+        sql = ResourceHelper.GetResourceAsString(resourceRoot + sqlFile);
+        sql = SqlRender.renderSql(sql, 
+                ArrayUtils.addAll(params, new String[] { "adeType", "adeData" }), 
+                ArrayUtils.addAll(values, new String[] { "MEDLINE_WINNENBURG", medlineWinnenburgTable })
+        );
+        sb.append(sql + "\n\n");
+
+        sqlFile = "pullEvidence.sql";
+        sb.append("-- SPLICER -- ").append(sqlFile).append("\n\n");
+        sql = ResourceHelper.GetResourceAsString(resourceRoot + sqlFile);
+        sql = SqlRender.renderSql(sql, 
+                ArrayUtils.addAll(params, new String[] { "adeType", "adeData" }), 
+                ArrayUtils.addAll(values, new String[] { "SPLICER", splicerTable })
+        );
+        sb.append(sql + "\n\n");
+
+        sqlFile = "pullEvidence.sql";
+        sb.append("-- AEOLUS -- ").append(sqlFile).append("\n\n");
+        sql = ResourceHelper.GetResourceAsString(resourceRoot + sqlFile);
+        sql = SqlRender.renderSql(sql, 
+                ArrayUtils.addAll(params, new String[] { "adeType", "adeData" }), 
+                ArrayUtils.addAll(values, new String[] { "AEOLUS", aeolusTable })
+        );
+        sb.append(sql + "\n\n");
+
+        sqlFile = "pullEvidencePost.sql";
+        sb.append("-- ").append(sqlFile).append("\n\n");
+        sql = ResourceHelper.GetResourceAsString(resourceRoot + sqlFile);
+        sql = SqlRender.renderSql(sql, params, values);
+        sb.append(sql + "\n\n");
+
+        sqlFile = "summarizeEvidence.sql";
+        sb.append("-- ").append(sqlFile).append("\n\n");
+        sql = ResourceHelper.GetResourceAsString(resourceRoot + sqlFile);
+        sql = SqlRender.renderSql(sql, 
+                ArrayUtils.addAll(params, new String[] {"broadConceptsData", "drugInducedConditionsData", "pregnancyConditionData", "conceptsToExclude", "conceptsToInclude"}), 
+                ArrayUtils.addAll(values, new String[] {broadConceptsData, drugInducedConditionsData, pregnancyConditionData, conceptsToExcludeData, conceptsToIncludeData})
+        );
+        sb.append(sql + "\n\n");
+
+        sqlFile = "optimizeEvidence.sql";
+        sb.append("-- ").append(sqlFile).append("\n\n");
+        sql = ResourceHelper.GetResourceAsString(resourceRoot + sqlFile);
+        sql = SqlRender.renderSql(sql, params, values);
+        sb.append(sql + "\n\n");
+
+        sqlFile = "deleteJobResults.sql";
+        sb.append("-- ").append(sqlFile).append("\n\n");
+        sql = EvidenceService.getJobResultsDeleteStatementSql(resultsSchema, jobId);
+        sb.append(sql + "\n\n");
+
+        sqlFile = "exportNegativeControls.sql";
+        sb.append("-- ").append(sqlFile).append("\n\n");
+        sql = ResourceHelper.GetResourceAsString(resourceRoot + sqlFile);
+        sql = SqlRender.renderSql(sql, 
+                ArrayUtils.addAll(params, new String[] {"jobId"}), 
+                ArrayUtils.addAll(values, new String[] {Long.toString(jobId)})
+        );
+        sb.append(sql + "\n\n");
+
+        sql = SqlTranslate.translateSql(sb.toString(), source.getSourceDialect());
+
+        return sql;
+    }
 
 	/**
 	 * SQL to delete negative controls
@@ -998,50 +1028,29 @@ public class EvidenceService extends AbstractDaoService {
     return sql;
 }
 	
-	public static String getJobResultsDeleteStatementSql(String evidenceSchema, Long jobId) {
+	public static String getJobResultsDeleteStatementSql(String resultsSchema, Long jobId) {
 		String sql = ResourceHelper.GetResourceAsString("/resources/evidence/sql/negativecontrols/deleteJobResults.sql");
 		sql = SqlRender.renderSql(sql, 
-			(new String[] {"evidenceSchema", "jobId"}), 
-			(new String[] {evidenceSchema, Long.toString(jobId)})
+			(new String[] {"resultsSchema", "jobId"}), 
+			(new String[] {resultsSchema, Long.toString(jobId)})
 		);
 		return sql;
 	}
 
-	/**
-	 * SQL to insert negative controls
-	 * @summary SQL to insert negative controls
-	 * @param task The negative control task and parameters
-	 * @return The SQL statement
-	 */
-	public static String getNegativeControlInsertStatementSql(NegativeControlTaskParameters task){
-    String sql = ResourceHelper.GetResourceAsString("/resources/evidence/sql/negativecontrols/insertNegativeControls.sql");
-    sql = SqlRender.renderSql(sql, new String[] { "ohdsiSchema" },  new String[] { task.getOhdsiSchema() });
-    sql = SqlTranslate.translateSql(sql, task.getSourceDialect());
+    /**
+     * SQL to insert negative controls
+     * @summary SQL to insert negative controls
+     * @param task The negative control task and parameters
+     * @return The SQL statement
+     */
+    public static String getNegativeControlInsertStatementSql(NegativeControlTaskParameters task){
+        String sql = ResourceHelper.GetResourceAsString("/resources/evidence/sql/negativecontrols/insertNegativeControls.sql");
+        sql = SqlRender.renderSql(sql, new String[] { "ohdsiSchema" },  new String[] { task.getOhdsiSchema() });
+        sql = SqlTranslate.translateSql(sql, task.getSourceDialect());
 
-    return sql;
-}
-	
-	/**
-	 * Retrieve the negative controls from the evidence source
-	 * @summary Retrieves negative controls from Common Evidence Model (CEM)
-	 * @param task The negative control task and parameters
-	 * @param jobId The jobId that holds the negative controls
-	 * @return The SQL statement for retrieving the negative controls
-	 */
-    public static PreparedStatementRenderer getNegativeControlsFromEvidenceSource(NegativeControlTaskParameters task, Long jobId) {
-        String sqlPath = "/resources/evidence/sql/negativecontrols/getNegativeControls.sql";
-        String evidenceSchema = task.getSource().getTableQualifier(SourceDaimon.DaimonType.Evidence);
-        String vocabularySchema = task.getSource().getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
-        if (vocabularySchema == null) {
-            vocabularySchema = evidenceSchema;
-        }
-        String[] tableQualifierNames = new String[]{"evidenceSchema", "vocabularySchema"};
-        String[] tableQualifierValues = new String[]{evidenceSchema, vocabularySchema};
-        String[] params = new String[]{"CONCEPT_SET_ID", "CONCEPT_SET_NAME", "outcomeOfInterest", "SOURCE_ID", "jobId"};
-        Object[] values = new Object[]{task.getConceptSetId(), task.getConceptSetName(), task.getOutcomeOfInterest().toUpperCase(), task.getSource().getSourceId(), jobId};
-        return new PreparedStatementRenderer(task.getSource(), sqlPath, tableQualifierNames, tableQualifierValues, params, values);
+        return sql;
     }
-
+	
     /**
      * Get the SQL for obtaining product label evidence from a set 
      * of RxNorm Ingredients
@@ -1109,6 +1118,23 @@ public class EvidenceService extends AbstractDaoService {
     return new PreparedStatementRenderer(source, sqlPath, tableQualifierNames, tableQualifierValues, names, values);
   }
 	
+    /**
+     * Get the SQL for obtaining negative controls for the jobId specified
+     * @summary SQL for obtaining negative controls
+     * @param source The source that contains the evidence daimon
+     * @param jobId The jobId containing the negative controls
+     * @return A prepared SQL statement 
+     */
+    protected PreparedStatementRenderer prepareGetNegativeControls(Source source, Long jobId) {
+        String sqlPath = "/resources/evidence/sql/negativecontrols/getNegativeControls.sql";
+        String resultsSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+        String[] tableQualifierNames = new String[]{"resultsSchema"};
+        String[] tableQualifierValues = new String[]{resultsSchema};
+        String[] names = new String[]{"jobId"};
+        Object[] values = new Object[]{jobId};
+        return new PreparedStatementRenderer(source, sqlPath, tableQualifierNames, tableQualifierValues, names, values);
+    }
+    
 	/*
 	protected PreparedStatementRenderer prepareGetEvidenceSummaryBySource(
       String conditionID, String drugID, String evidenceGroup,
@@ -1288,5 +1314,9 @@ public class EvidenceService extends AbstractDaoService {
                     return param.substring(0, 245) + "...";
             }
             return param;
+    }
+
+    private Exception NotFoundException(String evidence_daimon_not_configured_for_source) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

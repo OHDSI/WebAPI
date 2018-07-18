@@ -108,7 +108,7 @@ public class NegativeControlTasklet implements Tasklet {
                     log.debug("creating ID for job");
                     Long evidenceJobId = null;
                     Source source = task.getSource();
-                    String evidenceSchema = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Evidence);
+                    String resultsSchema = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Results);
                     String sql = EvidenceService.getEvidenceJobIdSql(task);
                     try {
                             Connection conn = NegativeControlTasklet.this.evidenceJdbcTemplate.getDataSource().getConnection();
@@ -128,10 +128,6 @@ public class NegativeControlTasklet implements Tasklet {
                     log.debug("process negative controls with: \n\t" + negativeControlSql);
                     NegativeControlTasklet.this.evidenceJdbcTemplate.execute(negativeControlSql);
 
-                    // Retrieve the results
-                    PreparedStatementRenderer negativeControlResultsRenderer = EvidenceService.getNegativeControlsFromEvidenceSource(task, evidenceJobId);
-                    final List<NegativeControlRecord> recs = NegativeControlTasklet.this.evidenceJdbcTemplate.query(negativeControlResultsRenderer.getSql(), negativeControlResultsRenderer.getSetter(), new NegativeControlMapper());
-                    
                     // Remove any results that exist for the concept set
                     String deleteSql = EvidenceService.getNegativeControlDeleteStatementSql(task);
                     Object[] params = { task.getConceptSetId(), task.getSource().getSourceId() };
@@ -142,63 +138,22 @@ public class NegativeControlTasklet implements Tasklet {
                     
                     // Insert the results
                     String insertSql = EvidenceService.getNegativeControlInsertStatementSql(task);
-                    int[] recCount = NegativeControlTasklet.this.ohdsiJdbcTemplate.batchUpdate(insertSql, new BatchPreparedStatementSetter() {
-                        @Override
-                        public void setValues(PreparedStatement ps, int i)
-                            throws SQLException {
-
-                            NegativeControlRecord ncr = recs.get(i);
-                            ps.setLong(1, ncr.getEvidenceJobId());
-                            ps.setInt(2, ncr.getSourceId());
-                            ps.setInt(3, ncr.getConceptSetId());
-                            ps.setString(4, ncr.getConceptSetName());
-                            ps.setInt(5, ncr.getNegativeControl());
-                            ps.setInt(6, ncr.getConceptId());
-                            ps.setString(7, ncr.getConceptName());
-                            ps.setString(8, ncr.getDomainId());
-                            ps.setLong(9, ncr.getSortOrder());
-                            ps.setLong(10, ncr.getDescendantPmidCount());
-                            ps.setLong(11, ncr.getExactPmidCount());
-                            ps.setLong(12, ncr.getParentPmidCount());
-                            ps.setLong(13, ncr.getAncestorPmidCount());
-                            ps.setInt(14, ncr.getIndCi());
-                            ps.setInt(15, ncr.getTooBroad());
-                            ps.setInt(16, ncr.getDrugInduced());
-                            ps.setInt(17, ncr.getPregnancy());
-                            ps.setLong(18, ncr.getDescendantSplicerCount());
-                            ps.setLong(19, ncr.getExactSplicerCount());
-                            ps.setLong(20, ncr.getParentSplicerCount());
-                            ps.setLong(21, ncr.getAncestorSplicerCount());
-                            ps.setLong(22,ncr.getDescendantFaersCount());
-                            ps.setLong(23, ncr.getExactFaersCount());
-                            ps.setLong(24, ncr.getParentFaersCount());
-                            ps.setLong(25, ncr.getAncestorFaersCount());
-                            ps.setInt(26, ncr.getUserExcluded());
-                            ps.setInt(27, ncr.getUserIncluded());
-                            ps.setInt(28, ncr.getOptimizedOut());
-                            ps.setInt(29, ncr.getNotPrevalent());
-                        }
-
-                        @Override
-                        public int getBatchSize() {
-                            return recs.size();
-                        }
-                    });
+                    params = new Object[] { evidenceJobId, task.getSource().getSourceId(), task.getConceptSetId() };
+                    types = new int[] { Types.BIGINT, Types.INTEGER, Types.INTEGER };
+                    rows = NegativeControlTasklet.this.ohdsiJdbcTemplate.update(insertSql, params, types);
                     
-                    // Clean up the results from the evidence daimon
-                    String deleteJobSql = EvidenceService.getJobResultsDeleteStatementSql(evidenceSchema, evidenceJobId);
-                    NegativeControlTasklet.this.evidenceJdbcTemplate.execute(deleteJobSql);
+                    log.debug("rows inserted: " + rows);
                     
-                    return recCount;
+                    // Clean up the results from any previous runs
+                    if (task.getPreviousJobId() > 0) {
+                        String deleteJobSql = EvidenceService.getJobResultsDeleteStatementSql(resultsSchema, task.getPreviousJobId());
+                        NegativeControlTasklet.this.evidenceJdbcTemplate.execute(deleteJobSql);
+                    }
+                    
+                    return null;
                 }
             });
-            log.debug("Update count: " + ret.length);
             isValid = true;
-            /*
-            log.debug("warm up visualizations");
-            final int count = this.analysisRunner.warmupData(evidenceJdbcTemplate, task);
-            log.debug("warmed up " + count + " visualizations");
-            */
         } catch (final TransactionException e) {
             log.error(e.getMessage(), e);
             throw e;//FAIL job status

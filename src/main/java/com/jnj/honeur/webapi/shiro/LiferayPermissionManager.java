@@ -206,6 +206,22 @@ public class LiferayPermissionManager extends PermissionManager {
         removeUserFromRole(roleRepository.findById(roleId).getName(), this.liferayApiClient.findUserById(userId).getLogin());
     }
 
+    @Override
+    public PermissionEntity addPermission(final String permissionName, final String permissionDescription) {
+        Guard.checkNotEmpty(permissionName);
+
+        PermissionEntity permission = this.permissionRepository.findByValueIgnoreCase(permissionName);
+        if (permission != null) {
+            return permission;
+        }
+
+        permission = new PermissionEntity();
+        permission.setValue(permissionName);
+        permission.setDescription(permissionDescription);
+        permission = this.permissionRepository.save(permission);
+        return permission;
+    }
+
     public RoleEntity addOrganizationRole(String name) {
         return addRole(name, false, false);
     }

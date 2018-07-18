@@ -10,6 +10,7 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.TrustStrategy;
+import org.ohdsi.webapi.service.CohortDefinitionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -136,7 +137,7 @@ public class StorageServiceClient {
                 getTokenHeader(token), CohortDefinitionStorageInformationItem[].class).getBody());
     }
 
-    public String getCohortDefinition(String token, String uuid) {
+    public CohortDefinitionService.CohortDefinitionDTO getCohortDefinition(String token, String uuid) {
         if (!WEBAPI_CENTRAL) {
             JsonNode tokenResponse = restTemplate
                     .exchange(STORAGE_SERVICE_API + "/login", HttpMethod.GET, getBasicAuthenticationHeader(),
@@ -145,8 +146,8 @@ public class StorageServiceClient {
         }
         String endpoint = "/cohort-definitions/" + uuid;
         return restTemplate
-                .exchange(STORAGE_SERVICE_API + endpoint, HttpMethod.GET, getTokenHeader(token), JsonNode.class)
-                .getBody().asText();
+                .exchange(STORAGE_SERVICE_API + endpoint, HttpMethod.GET, getTokenHeader(token), CohortDefinitionService.CohortDefinitionDTO.class)
+                .getBody();
     }
 
     public List<StorageInformationItem> getCohortDefinitionResultsImportList(String token, UUID uuid) {

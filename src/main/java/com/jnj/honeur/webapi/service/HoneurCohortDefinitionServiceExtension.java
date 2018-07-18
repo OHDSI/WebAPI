@@ -183,48 +183,13 @@ public class HoneurCohortDefinitionServiceExtension {
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional
     public CohortDefinitionService.CohortDefinitionDTO createCohortDefinitionFromFile(@HeaderParam("Authorization") String token, final StorageInformationItem storageInformationItem) {
-        String expression = storageServiceClient.getCohortDefinition(token, storageInformationItem.getUuid());
+        CohortDefinitionService.CohortDefinitionDTO
+                definition = storageServiceClient.getCohortDefinition(token, storageInformationItem.getUuid());
 
-        CohortDefinitionService.CohortDefinitionDTO def = new CohortDefinitionService.CohortDefinitionDTO();
-        def.expression = expression;
-        def.name = storageInformationItem.getOriginalFilename().replace(".cohort","");
-        def.expressionType = ExpressionType.SIMPLE_EXPRESSION;
-        def.organizations = new ArrayList<>();
-        def.uuid = UUID.fromString(storageInformationItem.getUuid());
+        definition.id = null;
+        definition.organizations = new ArrayList<>();
 
-        addGenerationPermissions(def);
-
-        return cohortDefinitionService.createCohortDefinition(def);
-    }
-
-    private void addGenerationPermissions(CohortDefinitionService.CohortDefinitionDTO createdDefinition) {
-        if(securityEnabled) {
-            //TODO make more central (code duplication in HoneurCohortService.java
-            Collection<SourceInfo> sources = sourceService.getSources();
-            for (SourceInfo sourceInfo : sources) {
-                HashMap<String, String> map = new HashMap<>();
-                map.put("cohortdefinition:%s:generate:" + sourceInfo.sourceKey + ":get",
-                        "Generate Cohort Definition generation results for defintion with ID = %s for source " + sourceInfo.sourceKey);
-                map.put("cohortdefinition:%s:export:" + sourceInfo.sourceKey + ":get",
-                        "Export Cohort Definition generation results for defintion with ID = %s for source " + sourceInfo.sourceKey);
-                map.put("cohortdefinition:%s:report:" + sourceInfo.sourceKey + ":get",
-                        "View Cohort Definition generation results for defintion with ID = %s for source " + sourceInfo.sourceKey);
-                List<SourceDaimon> daimonsForGeneration = sourceInfo.daimons.stream()
-                        .filter(sourceDaimon -> sourceDaimon.getDaimonType().equals(SourceDaimon.DaimonType.CDM) ||
-                                sourceDaimon.getDaimonType().equals(SourceDaimon.DaimonType.Vocabulary) ||
-                                sourceDaimon.getDaimonType().equals(SourceDaimon.DaimonType.Results))
-                        .collect(Collectors.toList());
-                if (daimonsForGeneration.size() == 3) {
-                    try {
-                        RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
-                        authorizer.addPermissionsFromTemplate(currentUserPersonalRole, map,
-                                String.valueOf(createdDefinition.id));
-                    } catch (Exception e) {
-                        log.error(e.getMessage(), e);
-                    }
-                }
-            }
-        }
+        return cohortDefinitionService.createCohortDefinition(definition);
     }
 
     /**
@@ -320,43 +285,48 @@ public class HoneurCohortDefinitionServiceExtension {
     public CohortDefinitionService.CohortDefinitionDTO exportCohortDefinition(@HeaderParam("Authorization") String token, @Context HttpServletRequest request, @PathParam("id") final int id, @QueryParam("toCloud") final boolean toCloud) {
         CohortDefinition cohortDefinition = this.cohortDefinitionRepository.findOneWithDetail(id);
 
-        String expression = cohortDefinition.getDetails().getExpression();
+//        String expression = cohortDefinition.getDetails().getExpression();
 
         String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
-        File file = createFile(cohortDefinition.getName()+"-"+timeStamp+".cohort", expression);
-        if(toCloud && file != null){
-            String uuid;
-            if(cohortDefinition.getGroupKey() == null){
-                UUID groupKey = UUID.randomUUID();
-                uuid = storageServiceClient.saveCohort(token, file, groupKey);
-                cohortDefinition.setGroupKey(groupKey);
-            } else {
-                uuid = storageServiceClient.saveCohort(token, file, cohortDefinition.getGroupKey());
+        File file = createFile(cohortDefinition.getName()+"-"+timeStamp+".cohort", this.cohortDefinitionService.cohortDefinitionToDTO(cohortDefinition));
+        if(toCloud){
+            if(file != null) {
+                String uuid;
+                if (cohortDefinition.getGroupKey() == null) {
+                    UUID groupKey = UUID.randomUUID();
+                    uuid = storageServiceClient.saveCohort(token, file, groupKey);
+                    cohortDefinition.setGroupKey(groupKey);
+                } else {
+                    uuid = storageServiceClient.saveCohort(token, file, cohortDefinition.getGroupKey());
+                }
+                cohortDefinition.setUuid(UUID.fromString(uuid));
+                this.cohortDefinitionRepository.save(cohortDefinition);
             }
-            cohortDefinition.setUuid(UUID.fromString(uuid));
-            this.cohortDefinitionRepository.save(cohortDefinition);
+
+            //Copy definition
+            CohortDefinition newDef = new CohortDefinition();
+            newDef.setPreviousVersion(cohortDefinition);
+            newDef.setCreatedBy(cohortDefinition.getCreatedBy());
+            newDef.setCreatedDate(cohortDefinition.getCreatedDate());
+            newDef.setDescription(cohortDefinition.getDescription());
+            newDef.setDetails(cohortDefinition.getDetails());
+            newDef.setExpressionType(cohortDefinition.getExpressionType());
+            newDef.setGenerationInfoList(cohortDefinition.getGenerationInfoList());
+            newDef.setModifiedBy(cohortDefinition.getModifiedBy());
+            newDef.setModifiedDate(cohortDefinition.getModifiedDate());
+            newDef.setName(cohortDefinition.getName());
+            newDef.setGroupKey(cohortDefinition.getGroupKey());
+
+            CohortDefinitionService.CohortDefinitionDTO  toReturn = this.cohortDefinitionService.cohortDefinitionToDTO(newDef);
+            CohortDefinitionService.CohortDefinitionDTO copyDef = this.cohortDefinitionService.createCohortDefinition(toReturn);
+
+            List<Organization> organizations = getAllOrganisations(id);
+            savePermissionsForOrganizations(copyDef.id, organizations);
+
+            return copyDef;
         }
 
-        //Copy definition
-        CohortDefinition newDef = new CohortDefinition();
-        newDef.setPreviousVersion(cohortDefinition);
-        newDef.setCreatedBy(cohortDefinition.getCreatedBy());
-        newDef.setCreatedDate(cohortDefinition.getCreatedDate());
-        newDef.setDescription(cohortDefinition.getDescription());
-        newDef.setDetails(cohortDefinition.getDetails());
-        newDef.setExpressionType(cohortDefinition.getExpressionType());
-        newDef.setGenerationInfoList(cohortDefinition.getGenerationInfoList());
-        newDef.setModifiedBy(cohortDefinition.getModifiedBy());
-        newDef.setModifiedDate(cohortDefinition.getModifiedDate());
-        newDef.setName(cohortDefinition.getName());
-        newDef.setGroupKey(cohortDefinition.getGroupKey());
-
-        CohortDefinitionService.CohortDefinitionDTO  toReturn = this.cohortDefinitionService.cohortDefinitionToDTO(newDef);
-        CohortDefinitionService.CohortDefinitionDTO copyDef = this.cohortDefinitionService.createCohortDefinition(toReturn);
-
-        addGenerationPermissions(copyDef);
-
-        return copyDef;
+        return this.cohortDefinitionService.cohortDefinitionToDTO(cohortDefinition);
     }
 
     @POST

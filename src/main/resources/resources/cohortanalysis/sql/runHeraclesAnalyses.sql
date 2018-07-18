@@ -13822,72 +13822,67 @@ DROP TABLE #raw_period_4023;
   AND 1.0 * abs(ar2.count_value - her1.count_value) / her1.count_value > 1
   AND her1.count_value > 10;
   
-	--WARNING:  monthly change > 100% at concept level
-	SELECT her1.cohort_definition_id,
-		her1.analysis_id,
-		CAST(CONCAT('WARNING: ', CAST(her1.analysis_id  AS VARCHAR(1000)), '-', aa1.analysis_name, '; ', CAST(COUNT_BIG(DISTINCT her1.stratum_1)  AS VARCHAR(1000)), 'concepts have a 100% change in monthly count of events') AS VARCHAR(255)) AS HERACLES_HEEL_warning
-	INTO #heel_monthly_change
-	FROM @results_schema.HERACLES_analysis aa1
-	INNER JOIN (
-		SELECT
-			cohort_definition_id,
-			analysis_id,
-			stratum_1,
-			CAST((CASE WHEN stratum_2 = ''
-				THEN NULL
-						ELSE stratum_2 END) AS INT) stratum_2,
-			count_value
-		FROM @results_schema.HERACLES_results
-		WHERE analysis_id IN (
-			402,
-			602,
-			702,
-			802,
-			902,
-			1002
-		)
+--WARNING:  monthly change > 100% at concept level
+INSERT INTO @results_schema.HERACLES_HEEL_results (
+  cohort_definition_id,
+  analysis_id,
+  HERACLES_HEEL_warning
+)
+SELECT her1.cohort_definition_id,
+  her1.analysis_id,
+  CAST(CONCAT('WARNING: ', CAST(her1.analysis_id  AS VARCHAR(1000)), '-', aa1.analysis_name, '; ', CAST(COUNT_BIG(DISTINCT her1.stratum_1)  AS VARCHAR(1000)), 'concepts have a 100% change in monthly count of events') AS VARCHAR(255)) AS HERACLES_HEEL_warning
+  FROM @results_schema.HERACLES_analysis aa1
+  INNER JOIN (
+    SELECT
+      cohort_definition_id,
+      analysis_id,
+      stratum_1,
+      CAST((CASE WHEN stratum_2 = ''
+        THEN NULL
+            ELSE stratum_2 END) AS INT) stratum_2,
+      count_value
+    FROM @results_schema.HERACLES_results
+    WHERE analysis_id IN (
+      402,
+      602,
+      702,
+      802,
+      902,
+      1002
+    )
 	) her1 ON aa1.analysis_id = her1.analysis_id
-	INNER JOIN (
-		SELECT
-			cohort_definition_id,
-			analysis_id,
-			stratum_1,
-			CAST((CASE WHEN stratum_2 = ''
-				THEN NULL
-						ELSE stratum_2 END) AS INT) stratum_2,
-			count_value
-		FROM @results_schema.HERACLES_results
-		WHERE analysis_id IN (
-			402,
-			602,
-			702,
-			802,
-			902,
-			1002
-		)
+  INNER JOIN (
+    SELECT
+      cohort_definition_id,
+      analysis_id,
+      stratum_1,
+      CAST((CASE WHEN stratum_2 = ''
+        THEN NULL
+            ELSE stratum_2 END) AS INT) stratum_2,
+      count_value
+    FROM @results_schema.HERACLES_results
+    WHERE analysis_id IN (
+      402,
+      602,
+      702,
+      802,
+      902,
+      1002
+    )
 	) ar2 ON her1.analysis_id = ar2.analysis_id
-		and her1.cohort_definition_id = ar2.cohort_definition_id
-		AND her1.stratum_1 = ar2.stratum_1
-	WHERE (
-		her1.stratum_2 + 1 = ar2.stratum_2
-		OR her1.stratum_2 + 89 = ar2.stratum_2
-	)
-	and her1.cohort_definition_id in (@cohort_definition_id)
-	AND 1.0 * abs(ar2.count_value - her1.count_value) / her1.count_value > 1
-	AND her1.count_value > 10
-	GROUP BY her1.cohort_definition_id, her1.analysis_id, aa1.analysis_name;
-
-	INSERT INTO @results_schema.HERACLES_HEEL_results (
-		cohort_definition_id,
-		analysis_id,
-		HERACLES_HEEL_warning
-	)
-	SELECT cohort_definition_id,  analysis_id, HERACLES_HEEL_warning
-	FROM #heel_monthly_change;
-
-	TRUNCATE TABLE #heel_monthly_change;
-	DROP TABLE #heel_monthly_change;
-
+  and her1.cohort_definition_id = ar2.cohort_definition_id
+  AND her1.stratum_1 = ar2.stratum_1
+  WHERE (
+    her1.stratum_2 + 1 = ar2.stratum_2
+    OR her1.stratum_2 + 89 = ar2.stratum_2
+  )
+  and her1.cohort_definition_id in (@cohort_definition_id)
+  AND 1.0 * abs(ar2.count_value - her1.count_value) / her1.count_value > 1
+  AND her1.count_value > 10
+  GROUP BY her1.cohort_definition_id,
+  her1.analysis_id,
+  aa1.analysis_name;
+  
   --WARNING: days_supply > 180 
   INSERT INTO @results_schema.HERACLES_HEEL_results (
   cohort_definition_id,

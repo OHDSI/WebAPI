@@ -51,8 +51,8 @@ import org.ohdsi.webapi.evidence.EvidenceSearch;
 import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlDTO;
 import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlMapper;
 import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlTaskParameters;
-import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlRecord;
-import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlRepository;
+//import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlRecord;
+//import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlRepository;
 import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlTasklet;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
@@ -89,8 +89,8 @@ public class EvidenceService extends AbstractDaoService {
   @Autowired
   private CohortStudyMappingRepository cohortStudyMappingRepository;
   
-  @Autowired
-  private NegativeControlRepository negativeControlRepository;
+  //@Autowired
+  //private NegativeControlRepository negativeControlRepository;
   
   @Autowired
   private ConceptSetGenerationInfoRepository conceptSetGenerationInfoRepository;
@@ -187,7 +187,7 @@ public class EvidenceService extends AbstractDaoService {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String sqlPath = "/resources/evidence/sql/getInfo.sql";
     String tqName = "evidenceSchema";
-    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Evidence);
+    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.CEM);
     PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sqlPath, tqName, tqValue);
     return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), (rs, rowNum) -> {
 
@@ -708,8 +708,8 @@ public class EvidenceService extends AbstractDaoService {
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         // Verify the source has both the evidence & results daimon configured
         // and throw an exception if either is missing
-        String evidenceSchema = source.getTableQualifier(SourceDaimon.DaimonType.Evidence);
-        String resultsSchema = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Results);
+        String evidenceSchema = source.getTableQualifier(SourceDaimon.DaimonType.CEM);
+        String resultsSchema = source.getTableQualifierOrNull(SourceDaimon.DaimonType.CEMResults);
         if (evidenceSchema == null) {
             throw NotFoundException("Evidence daimon not configured for source.");
         }
@@ -720,12 +720,12 @@ public class EvidenceService extends AbstractDaoService {
         task.setSource(source);
         
         // Get and set any previous job Id on the task
-        Collection<NegativeControlRecord> negativeControlJobList = negativeControlRepository.findAllBySourceIdAndConceptId(source.getSourceId(), task.getConceptSetId());
-        if (negativeControlJobList.size() > 0) {
-            NegativeControlRecord ncr = negativeControlJobList.iterator().next();
-            task.setPreviousJobId(ncr.getEvidenceJobId());
-            builder.addString("previousJobId", ("" + ncr.getEvidenceJobId()));
-        }
+//        Collection<NegativeControlRecord> negativeControlJobList = negativeControlRepository.findAllBySourceIdAndConceptId(source.getSourceId(), task.getConceptSetId());
+//        if (negativeControlJobList.size() > 0) {
+//            NegativeControlRecord ncr = negativeControlJobList.iterator().next();
+//            task.setPreviousJobId(ncr.getEvidenceJobId());
+//            builder.addString("previousJobId", ("" + ncr.getEvidenceJobId()));
+//        }
         
 
         if (!StringUtils.isEmpty(task.getJobName())) {
@@ -801,33 +801,53 @@ public class EvidenceService extends AbstractDaoService {
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<NegativeControlDTO> getNegativeControls(@PathParam("sourceKey") String sourceKey, @PathParam("conceptsetid") int conceptSetId) throws Exception {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    Collection<NegativeControlRecord> negativeControlJobList = negativeControlRepository.findAllBySourceIdAndConceptId(source.getSourceId(), conceptSetId);
-    if (negativeControlJobList.size() <= 0) {
-        throw new NotFoundException("No job information found for source and concept set");
-    }
-    NegativeControlRecord ncr = negativeControlJobList.iterator().next();
-    PreparedStatementRenderer psr = this.prepareGetNegativeControls(source, ncr.getEvidenceJobId());
+//    Collection<NegativeControlRecord> negativeControlJobList = negativeControlRepository.findAllBySourceIdAndConceptId(source.getSourceId(), conceptSetId);
+//    if (negativeControlJobList.size() <= 0) {
+//        throw new NotFoundException("No job information found for source and concept set");
+//    }
+    //NegativeControlRecord ncr = negativeControlJobList.iterator().next();
+    PreparedStatementRenderer psr = this.prepareGetNegativeControls(source, conceptSetId);
     final List<NegativeControlDTO> recs = getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), new NegativeControlMapper());
     return recs;
   }
 	
-	/**
-	 * Get the jobId to be associated with the negative controls task
-	 * @summary Retrieves the next available jobId
-	 * @param task The negative control task
-	 * @return The SQL statement to get the evidence job id
-	 */
-	public static String getEvidenceJobIdSql(NegativeControlTaskParameters task) {
-    String resourceRoot = "/resources/evidence/sql/negativecontrols/";
-    String sql = ResourceHelper.GetResourceAsString(resourceRoot + "getJobId.sql");
-    String resultsSchema = task.getSource().getTableQualifier(SourceDaimon.DaimonType.Results);
-    String[] params = new String[]{"resultsSchema"};
-    String[] values = new String[]{resultsSchema};
-    sql = SqlRender.renderSql(sql, params, values);
-    sql = SqlTranslate.translateSql(sql, task.getSource().getSourceDialect());
+    /**
+     * Get the SQL used to create the jobId 
+     * associated with the negative controls task
+     * @summary Retrieves the next available jobId
+     * @param task The negative control task
+     * @return The SQL statement to get the evidence job id
+     */
+    public static String getCreateEvidenceJobIdSql(NegativeControlTaskParameters task) {
+        String resourceRoot = "/resources/evidence/sql/negativecontrols/";
+        String sql = ResourceHelper.GetResourceAsString(resourceRoot + "createJobId.sql");
+        String resultsSchema = task.getSource().getTableQualifier(SourceDaimon.DaimonType.CEMResults);
+        String[] params = new String[]{"resultsSchema"};
+        String[] values = new String[]{resultsSchema};
+        sql = SqlRender.renderSql(sql, params, values);
+        sql = SqlTranslate.translateSql(sql, task.getSource().getSourceDialect());
 
-    return sql;
-	}
+        return sql;
+    }
+    
+    /**
+     * Get the SQL used to retrieve the most recent jobId 
+     * associated with the negative controls task
+     * @summary Retrieves the most recent jobId
+     * @param task The negative control task
+     * @return The SQL statement to get the evidence job id
+     */
+    public static String getEvidenceJobIdSql(NegativeControlTaskParameters task) {
+        String resourceRoot = "/resources/evidence/sql/negativecontrols/";
+        String sql = ResourceHelper.GetResourceAsString(resourceRoot + "getJobId.sql");
+        String resultsSchema = task.getSource().getTableQualifier(SourceDaimon.DaimonType.CEMResults);
+        String[] params = new String[]{"resultsSchema"};
+        String[] values = new String[]{resultsSchema};
+        sql = SqlRender.renderSql(sql, params, values);
+        sql = SqlTranslate.translateSql(sql, task.getSource().getSourceDialect());
+
+        return sql;
+    }
 	
 	/**
    * Retrieves parameterized SQL used to generate negative controls
@@ -839,28 +859,23 @@ public class EvidenceService extends AbstractDaoService {
   @Path("{sourceKey}/negativecontrols/sql")
   @Produces(MediaType.TEXT_PLAIN)
   public String getNegativeControlsSqlStatement(@PathParam("sourceKey") String sourceKey, 
-                                                @QueryParam("jobId") String userSpecifiedJobId,
                                                 @DefaultValue("CONDITION") @QueryParam("conceptDomain") String conceptDomain,																								
                                                 @DefaultValue("DRUG") @QueryParam("targetDomain") String targetDomain,
                                                 @DefaultValue("192671") @QueryParam("conceptOfInterest") String conceptOfInterest) {
-		NegativeControlTaskParameters task = new NegativeControlTaskParameters();
-		Source source = getSourceRepository().findBySourceKey(sourceKey);
-		task.setSource(source);
-		task.setCsToIncludeSQL("");
-		task.setCsToExcludeSQL("");
-		task.setConceptDomainId(conceptDomain);
-		task.setOutcomeOfInterest(targetDomain);
-		CharSequence csCommaDelimited = ",";
-		if (conceptOfInterest.contains(csCommaDelimited)) {
-			task.setConceptsOfInterest(conceptOfInterest.split(","));
-		} else {
-			task.setConceptsOfInterest(new String[] { conceptOfInterest });
-		}
-		Long jobId = new Long(0);
-		try{
-			jobId = Long.parseLong(userSpecifiedJobId);
-		} catch (Exception e) {}
-		return getNegativeControlSql(task, jobId);
+        NegativeControlTaskParameters task = new NegativeControlTaskParameters();
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+        task.setSource(source);
+        task.setCsToIncludeSQL("");
+        task.setCsToExcludeSQL("");
+        task.setConceptDomainId(conceptDomain);
+        task.setOutcomeOfInterest(targetDomain);
+        CharSequence csCommaDelimited = ",";
+        if (conceptOfInterest.contains(csCommaDelimited)) {
+                task.setConceptsOfInterest(conceptOfInterest.split(","));
+        } else {
+                task.setConceptsOfInterest(new String[] { conceptOfInterest });
+        }
+        return getNegativeControlSql(task);
   }
 	
     /**
@@ -870,12 +885,12 @@ public class EvidenceService extends AbstractDaoService {
      * @param jobId The job Id for capturing the negative controls
      * @return The SQL script for generating negative controls
      */
-    public static String getNegativeControlSql(NegativeControlTaskParameters task, Long jobId ) {
+    public static String getNegativeControlSql(NegativeControlTaskParameters task ) {
         StringBuilder sb = new StringBuilder();
         String resourceRoot = "/resources/evidence/sql/negativecontrols/";
         Source source = task.getSource();
-        String evidenceSchema = source.getTableQualifier(SourceDaimon.DaimonType.Evidence);
-        String resultsSchema = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Results);
+        String evidenceSchema = source.getTableQualifier(SourceDaimon.DaimonType.CEM);
+        String resultsSchema = source.getTableQualifierOrNull(SourceDaimon.DaimonType.CEMResults);
         String vocabularySchema = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
         if (vocabularySchema == null) {			
                 vocabularySchema = evidenceSchema;
@@ -997,15 +1012,15 @@ public class EvidenceService extends AbstractDaoService {
 
         sqlFile = "deleteJobResults.sql";
         sb.append("-- ").append(sqlFile).append("\n\n");
-        sql = EvidenceService.getJobResultsDeleteStatementSql(resultsSchema, jobId);
+        sql = EvidenceService.getJobResultsDeleteStatementSql(resultsSchema, task.getConceptSetId());
         sb.append(sql + "\n\n");
 
         sqlFile = "exportNegativeControls.sql";
         sb.append("-- ").append(sqlFile).append("\n\n");
         sql = ResourceHelper.GetResourceAsString(resourceRoot + sqlFile);
         sql = SqlRender.renderSql(sql, 
-                ArrayUtils.addAll(params, new String[] {"jobId"}), 
-                ArrayUtils.addAll(values, new String[] {Long.toString(jobId)})
+                ArrayUtils.addAll(params, new String[] {"conceptSetId"}), 
+                ArrayUtils.addAll(values, new String[] {Integer.toString(task.getConceptSetId())})
         );
         sb.append(sql + "\n\n");
 
@@ -1028,11 +1043,11 @@ public class EvidenceService extends AbstractDaoService {
     return sql;
 }
 	
-	public static String getJobResultsDeleteStatementSql(String resultsSchema, Long jobId) {
+	public static String getJobResultsDeleteStatementSql(String resultsSchema, int conceptSetId) {
 		String sql = ResourceHelper.GetResourceAsString("/resources/evidence/sql/negativecontrols/deleteJobResults.sql");
 		sql = SqlRender.renderSql(sql, 
-			(new String[] {"resultsSchema", "jobId"}), 
-			(new String[] {resultsSchema, Long.toString(jobId)})
+			(new String[] {"resultsSchema", "conceptSetId"}), 
+			(new String[] {resultsSchema, Integer.toString(conceptSetId)})
 		);
 		return sql;
 	}
@@ -1061,7 +1076,7 @@ public class EvidenceService extends AbstractDaoService {
      */
     protected PreparedStatementRenderer prepareGetDrugLabels(long[] identifiers, Source source) {
         String sqlPath = "/resources/evidence/sql/getDrugLabelForIngredients.sql";
-        String evidenceSchema = source.getTableQualifier(SourceDaimon.DaimonType.Evidence);
+        String evidenceSchema = source.getTableQualifier(SourceDaimon.DaimonType.CEM);
         String vocabularySchema = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
         if (vocabularySchema == null) {
             vocabularySchema = evidenceSchema;
@@ -1085,7 +1100,7 @@ public class EvidenceService extends AbstractDaoService {
     String drug_id = par[0];
     String hoi_id = par[1];
     String sqlPath = "/resources/evidence/sql/getDrugHoiEvidence.sql";
-    String evidenceSchema = source.getTableQualifier(SourceDaimon.DaimonType.Evidence);
+    String evidenceSchema = source.getTableQualifier(SourceDaimon.DaimonType.CEM);
 		String vocabularySchema = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
 		if (vocabularySchema == null) {
 			vocabularySchema = evidenceSchema;
@@ -1106,7 +1121,7 @@ public class EvidenceService extends AbstractDaoService {
 	 */
 	protected PreparedStatementRenderer prepareGetEvidenceForConcept(Source source, Long conceptId) {
     String sqlPath = "/resources/evidence/sql/getEvidenceForConcept.sql";
-    String evidenceSchema = source.getTableQualifier(SourceDaimon.DaimonType.Evidence);
+    String evidenceSchema = source.getTableQualifier(SourceDaimon.DaimonType.CEM);
 		String vocabularySchema = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
 		if (vocabularySchema == null) {
 			vocabularySchema = evidenceSchema;
@@ -1119,19 +1134,19 @@ public class EvidenceService extends AbstractDaoService {
   }
 	
     /**
-     * Get the SQL for obtaining negative controls for the jobId specified
+     * Get the SQL for obtaining negative controls for the concept set specified
      * @summary SQL for obtaining negative controls
      * @param source The source that contains the evidence daimon
-     * @param jobId The jobId containing the negative controls
+     * @param conceptSetId The conceptSetId associated to the negative controls
      * @return A prepared SQL statement 
      */
-    protected PreparedStatementRenderer prepareGetNegativeControls(Source source, Long jobId) {
+    protected PreparedStatementRenderer prepareGetNegativeControls(Source source, int conceptSetId) {
         String sqlPath = "/resources/evidence/sql/negativecontrols/getNegativeControls.sql";
-        String resultsSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+        String resultsSchema = source.getTableQualifier(SourceDaimon.DaimonType.CEMResults);
         String[] tableQualifierNames = new String[]{"resultsSchema"};
         String[] tableQualifierValues = new String[]{resultsSchema};
-        String[] names = new String[]{"jobId"};
-        Object[] values = new Object[]{jobId};
+        String[] names = new String[]{"conceptSetId"};
+        Object[] values = new Object[]{conceptSetId};
         return new PreparedStatementRenderer(source, sqlPath, tableQualifierNames, tableQualifierValues, names, values);
     }
     

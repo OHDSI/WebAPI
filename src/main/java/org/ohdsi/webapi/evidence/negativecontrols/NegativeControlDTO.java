@@ -8,9 +8,8 @@ import java.io.Serializable;
  */
 public class NegativeControlDTO implements Serializable {
 
-    public Long jobId;
-    public int sourceId;
     public int conceptSetId;
+    public int sourceId;
     public String conceptSetName;
     public int negativeControl;
     public int conceptId;

@@ -105,50 +105,50 @@ public class NegativeControlTasklet implements Tasklet {
                 @Override
                 public int[] doInTransaction(final TransactionStatus status) {	
                     log.debug("entering tasklet");
-                    log.debug("creating ID for job");
-                    Long evidenceJobId = null;
-                    Source source = task.getSource();
-                    String resultsSchema = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Results);
-                    String sql = EvidenceService.getEvidenceJobIdSql(task);
-                    try {
-                            Connection conn = NegativeControlTasklet.this.evidenceJdbcTemplate.getDataSource().getConnection();
-                            PreparedStatement ps = conn.prepareStatement(sql, new String[] { "id"});
-                            if (ps.executeUpdate() > 0) {
-                                    ResultSet generatedKeys = ps.getGeneratedKeys();
-                                    if (generatedKeys != null && generatedKeys.next()) {
-                                            evidenceJobId = generatedKeys.getLong(1);
-                                    }
-                            }
-                            log.debug("evidenceJobId: " + evidenceJobId);
-                    } catch (SQLException ex) {
-                            Logger.getLogger(NegativeControlTasklet.class.getName()).log(Level.SEVERE, null, ex);
-                    }
+//                    log.debug("creating ID for job");
+//                    Long evidenceJobId = null;
+//                    Source source = task.getSource();
+//                    String resultsSchema = source.getTableQualifierOrNull(SourceDaimon.DaimonType.CEMResults);
+//                    String sql = EvidenceService.getCreateEvidenceJobIdSql(task);
+//                    try {
+//                        Connection conn = NegativeControlTasklet.this.evidenceJdbcTemplate.getDataSource().getConnection();
+//                        PreparedStatement ps = conn.prepareStatement(sql, new String[] { "id"});
+//                        if (ps.executeUpdate() > 0) {
+//                                ResultSet generatedKeys = ps.getGeneratedKeys();
+//                                if (generatedKeys != null && generatedKeys.next()) {
+//                                        evidenceJobId = generatedKeys.getLong(1);
+//                                }
+//                        }
+//                        log.debug("evidenceJobId: " + evidenceJobId);
+//                    } catch (Exception ex) {
+//                        Logger.getLogger(NegativeControlTasklet.class.getName()).log(Level.SEVERE, null, ex);
+//                    }
 										
-                    String negativeControlSql = EvidenceService.getNegativeControlSql(task, evidenceJobId);
+                    String negativeControlSql = EvidenceService.getNegativeControlSql(task);
                     log.debug("process negative controls with: \n\t" + negativeControlSql);
                     NegativeControlTasklet.this.evidenceJdbcTemplate.execute(negativeControlSql);
 
                     // Remove any results that exist for the concept set
-                    String deleteSql = EvidenceService.getNegativeControlDeleteStatementSql(task);
-                    Object[] params = { task.getConceptSetId(), task.getSource().getSourceId() };
-                    int[] types = { Types.INTEGER, Types.INTEGER };
-                    int rows = NegativeControlTasklet.this.ohdsiJdbcTemplate.update(deleteSql, params, types);
+//                    String deleteSql = EvidenceService.getNegativeControlDeleteStatementSql(task);
+//                    Object[] params = { task.getConceptSetId(), task.getSource().getSourceId() };
+//                    int[] types = { Types.INTEGER, Types.INTEGER };
+//                    int rows = NegativeControlTasklet.this.ohdsiJdbcTemplate.update(deleteSql, params, types);
+//                    
+//                    log.debug("rows deleted: " + rows);
+//                    
+//                    // Insert the results
+//                    String insertSql = EvidenceService.getNegativeControlInsertStatementSql(task);
+//                    params = new Object[] { task.getSource().getSourceId(), task.getConceptSetId() };
+//                    types = new int[] { Types.INTEGER, Types.INTEGER };
+//                    rows = NegativeControlTasklet.this.ohdsiJdbcTemplate.update(insertSql, params, types);
+//                    
+//                    log.debug("rows inserted: " + rows);
                     
-                    log.debug("rows deleted: " + rows);
-                    
-                    // Insert the results
-                    String insertSql = EvidenceService.getNegativeControlInsertStatementSql(task);
-                    params = new Object[] { evidenceJobId, task.getSource().getSourceId(), task.getConceptSetId() };
-                    types = new int[] { Types.BIGINT, Types.INTEGER, Types.INTEGER };
-                    rows = NegativeControlTasklet.this.ohdsiJdbcTemplate.update(insertSql, params, types);
-                    
-                    log.debug("rows inserted: " + rows);
-                    
-                    // Clean up the results from any previous runs
-                    if (task.getPreviousJobId() > 0) {
-                        String deleteJobSql = EvidenceService.getJobResultsDeleteStatementSql(resultsSchema, task.getPreviousJobId());
-                        NegativeControlTasklet.this.evidenceJdbcTemplate.execute(deleteJobSql);
-                    }
+//                    // Clean up the results from any previous runs
+//                    if (task.getPreviousJobId() > 0) {
+//                        String deleteJobSql = EvidenceService.getJobResultsDeleteStatementSql(resultsSchema, task.getPreviousJobId());
+//                        NegativeControlTasklet.this.evidenceJdbcTemplate.execute(deleteJobSql);
+//                    }
                     
                     return null;
                 }

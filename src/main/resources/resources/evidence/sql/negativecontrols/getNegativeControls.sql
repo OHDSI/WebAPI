@@ -1,5 +1,5 @@
 SELECT 
-	job_id, 
+	concept_set_id, 
 	negative_control, 
 	outcome_of_interest_concept_id concept_id, 
 	outcome_of_interest_concept_name concept_name, 
@@ -25,4 +25,4 @@ SELECT
 	optimized_out,
 	not_prevalent
 FROM @resultsSchema.nc_results
-WHERE job_id = 	@jobId;
+WHERE concept_set_id = 	@conceptSetId;

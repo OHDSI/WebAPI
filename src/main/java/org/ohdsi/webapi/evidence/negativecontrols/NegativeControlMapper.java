@@ -19,7 +19,7 @@ public class NegativeControlMapper implements RowMapper<NegativeControlDTO> {
         @Override
 	public NegativeControlDTO mapRow(ResultSet rs, int rowNum) throws SQLException {
 		NegativeControlDTO record = new NegativeControlDTO();
-		record.jobId = rs.getLong("JOB_ID");
+                record.conceptSetId = rs.getInt("CONCEPT_SET_ID");
 		record.negativeControl = rs.getInt("NEGATIVE_CONTROL");
 		record.conceptId = rs.getInt("CONCEPT_ID");
 		record.conceptName = rs.getString("CONCEPT_NAME");

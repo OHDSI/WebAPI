@@ -254,7 +254,7 @@ public class SourceService extends AbstractDaoService {
 
     final Source source = sourceRepository.findBySourceKey(sourceKey);
     final JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
-    jdbcTemplate.execute(SqlTranslate.translateSql("select 1", source.getSourceDialect()));
+    jdbcTemplate.execute(SqlTranslate.translateSql("select 1;", source.getSourceDialect()).replaceAll(";$", ""));
     return source.getSourceInfo();
   }
 

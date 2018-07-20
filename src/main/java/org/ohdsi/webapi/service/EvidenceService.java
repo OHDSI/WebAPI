@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Arrays;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 
@@ -58,12 +61,14 @@ import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.util.PreparedSqlRender;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementSetter;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
 /**
@@ -97,16 +102,27 @@ public class EvidenceService extends AbstractDaoService {
 	
   @Autowired
   private ConceptSetService conceptSetService;
+  
+  private final RowMapper<DrugLabelInfo> drugLabelRowMapper = new RowMapper<DrugLabelInfo>() {
+    @Override
+    public DrugLabelInfo mapRow(final ResultSet rs, final int arg1) throws SQLException {
+        final DrugLabelInfo returnVal = new DrugLabelInfo();
+        returnVal.conceptId = rs.getString("CONCEPT_ID");
+        returnVal.conceptName = rs.getString("CONCEPT_NAME");
+        returnVal.usaProductLabelExists = rs.getInt("US_SPL_LABEL");
+        return returnVal;
+    }
+  };
 	
   
-	/**
-	 * <a href="https://github.com/OHDSI/Penelope">PENELOPE</a> function: search the 
-	 * cohort_study table for the selected cohortId in the WebAPI DB
-	 * @summary Find studies for a cohort - will be depreciated
-	 * @param cohortId The cohort Id
-	 * @return A list of studies related to the cohort
-	 */
-	@GET
+    /**
+     * <a href="https://github.com/OHDSI/Penelope">PENELOPE</a> function: search the 
+     * cohort_study table for the selected cohortId in the WebAPI DB
+     * @summary Find studies for a cohort - will be depreciated
+     * @param cohortId The cohort Id
+     * @return A list of studies related to the cohort
+     */
+    @GET
   @Path("study/{cohortId}")
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<CohortStudyMapping> getCohortStudyMapping(@PathParam("cohortId") int cohortId) {
@@ -292,17 +308,24 @@ public class EvidenceService extends AbstractDaoService {
   @POST
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public List<DrugLabelInfo> getDrugIngredientLabel(@PathParam("sourceKey") String sourceKey, long[] identifiers) {
+  public Collection<DrugLabelInfo> getDrugIngredientLabel(@PathParam("sourceKey") String sourceKey, long[] identifiers) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    PreparedStatementRenderer psr = prepareGetDrugLabels(identifiers, source);
-    return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), (rs, rowNum) -> {
-      DrugLabelInfo returnVal = new DrugLabelInfo();
-      returnVal.conceptId = rs.getString("CONCEPT_ID");
-      returnVal.conceptName = rs.getString("CONCEPT_NAME");
-      returnVal.usaProductLabelExists = rs.getInt("US_SPL_LABEL");
-
-      return returnVal;
-    });
+    return executeGetDrugLabels(identifiers, source);
+//    PreparedStatementRenderer psr = executeGetDrugLabels(identifiers, source);
+//    List<DrugLabelInfo> returnValList = null;
+//    try {
+//        returnValList = getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), (rs, rowNum) -> {
+//          DrugLabelInfo returnVal = new DrugLabelInfo();
+//          returnVal.conceptId = rs.getString("CONCEPT_ID");
+//          returnVal.conceptName = rs.getString("CONCEPT_NAME");
+//          returnVal.usaProductLabelExists = rs.getInt("US_SPL_LABEL");
+//
+//          return returnVal;
+//        });
+//    } catch (Exception e) {
+//        System.out.println(e.getMessage());
+//    }
+//    return returnValList;
   }
   
   /**
@@ -1065,6 +1088,18 @@ public class EvidenceService extends AbstractDaoService {
 
         return sql;
     }
+    
+    protected PreparedStatementRenderer prepareExecuteGetDrugLabels(long[] identifiers, Source source) {
+        String sqlPath = "/resources/evidence/sql/getDrugLabelForIngredients.sql";
+        String evidenceSchema = source.getTableQualifier(SourceDaimon.DaimonType.CEM);
+        String vocabularySchema = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
+        if (vocabularySchema == null) {
+            vocabularySchema = evidenceSchema;
+        }
+        String[] tableQualifierNames = new String[]{"evidenceSchema", "vocabularySchema"};
+        String[] tableQualifierValues = new String[]{evidenceSchema, vocabularySchema};
+        return new PreparedStatementRenderer(source, sqlPath, tableQualifierNames, tableQualifierValues, "conceptIds", identifiers);        
+    }
 	
     /**
      * Get the SQL for obtaining product label evidence from a set 
@@ -1074,16 +1109,21 @@ public class EvidenceService extends AbstractDaoService {
      * @param source The source that contains the evidence daimon
      * @return A prepared SQL statement 
      */
-    protected PreparedStatementRenderer prepareGetDrugLabels(long[] identifiers, Source source) {
-        String sqlPath = "/resources/evidence/sql/getDrugLabelForIngredients.sql";
-        String evidenceSchema = source.getTableQualifier(SourceDaimon.DaimonType.CEM);
-        String vocabularySchema = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
-        if (vocabularySchema == null) {
-            vocabularySchema = evidenceSchema;
+    protected Collection<DrugLabelInfo> executeGetDrugLabels(long[] identifiers, Source source) {
+        Collection<DrugLabelInfo> info = new ArrayList<>();
+        if (identifiers.length == 0) {
+            return info;
+        } else {
+            int parameterLimit = PreparedSqlRender.getParameterLimit(source);
+            if (parameterLimit > 0 && identifiers.length > parameterLimit) {
+                info = executeGetDrugLabels(Arrays.copyOfRange(identifiers, parameterLimit, identifiers.length), source);
+                System.out.println("executeGetDrugLabels: " + info.size());
+                identifiers = Arrays.copyOfRange(identifiers, 0, parameterLimit);
+            }
+            PreparedStatementRenderer psr = prepareExecuteGetDrugLabels(identifiers, source);
+            info.addAll(getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), this.drugLabelRowMapper));
+            return info;
         }
-        String[] tableQualifierNames = new String[]{"evidenceSchema", "vocabularySchema"};
-        String[] tableQualifierValues = new String[]{evidenceSchema, vocabularySchema};
-        return new PreparedStatementRenderer(source, sqlPath, tableQualifierNames, tableQualifierValues, "conceptIds", identifiers);
     }
         
         

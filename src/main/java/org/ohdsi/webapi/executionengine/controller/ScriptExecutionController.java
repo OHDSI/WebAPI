@@ -1,5 +1,7 @@
 package org.ohdsi.webapi.executionengine.controller;
 
+import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -23,6 +25,7 @@ import org.ohdsi.webapi.executionengine.dto.ExecutionRequestDTO;
 import org.ohdsi.webapi.executionengine.entity.AnalysisExecution;
 import org.ohdsi.webapi.executionengine.entity.AnalysisExecutionType;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFile;
+import org.ohdsi.webapi.executionengine.job.CreateAnalysisTasklet;
 import org.ohdsi.webapi.executionengine.job.ExecutionEngineCallbackTasklet;
 import org.ohdsi.webapi.executionengine.job.RunExecutionEngineTasklet;
 import org.ohdsi.webapi.executionengine.repository.AnalysisExecutionRepository;
@@ -31,14 +34,15 @@ import org.ohdsi.webapi.executionengine.service.ExecutionEngineStatusService;
 import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
+import org.ohdsi.webapi.shiro.management.Security;
+import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceRepository;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.StepExecutionListener;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
-import org.springframework.batch.core.listener.ExecutionContextPromotionListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -59,69 +63,69 @@ public class ScriptExecutionController {
     private final StepBuilderFactory stepBuilderFactory;
     private final JobBuilderFactory jobBuilders;
     private final JobTemplate jobTemplate;
-    private final ComparativeCohortAnalysisExecutionRepository ccaRepository;
     private final AnalysisExecutionRepository analysisExecutionRepository;
     private final EntityManager entityManager;
     private final ExecutionEngineStatusService executionEngineStatusService;
+    private SourceRepository sourceRepository;
 
     @Autowired
     public ScriptExecutionController(final ScriptExecutionService scriptExecutionService,
                                      final StepBuilderFactory stepBuilderFactory,
                                      final JobBuilderFactory jobBuilders,
                                      final JobTemplate jobTemplate,
-                                     final ComparativeCohortAnalysisExecutionRepository ccaRepository,
                                      final AnalysisExecutionRepository analysisExecutionRepository,
-                                     final EntityManager entityManager, 
-                                     final ExecutionEngineStatusService executionEngineStatusService) {
+                                     final EntityManager entityManager,
+                                     final ExecutionEngineStatusService executionEngineStatusService,
+                                     final SourceRepository sourceRepository) {
 
         this.scriptExecutionService = scriptExecutionService;
         this.stepBuilderFactory = stepBuilderFactory;
         this.jobBuilders = jobBuilders;
         this.jobTemplate = jobTemplate;
-        this.ccaRepository = ccaRepository;
         this.analysisExecutionRepository = analysisExecutionRepository;
         this.entityManager = entityManager;
         this.executionEngineStatusService = executionEngineStatusService;
+        this.sourceRepository = sourceRepository;
     }
 
     @Path("execution/run")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public JobExecutionResource runScript(ExecutionRequestDTO dto) throws Exception {
+    public JobExecutionResource runScript(ExecutionRequestDTO dto) {
 
         logger.info("Received an execution script to run");
+        Source source = sourceRepository.findBySourceKey(dto.sourceKey);
 
         JobParametersBuilder parametersBuilder = new JobParametersBuilder();
-        parametersBuilder.addString("jobName", String.format("Generate %s (%s)", dto.analysisType, dto.sourceKey));
+        parametersBuilder.addString(JOB_NAME, String.format("Generate %s %d: %s (%s)", dto.analysisType, dto.cohortId,
+                source.getSourceName(), dto.sourceKey));
         final JobParameters jobParameters = parametersBuilder.toJobParameters();
+
         RunExecutionEngineTasklet runExecutionEngineTasklet = new RunExecutionEngineTasklet(scriptExecutionService, dto);
         ExecutionEngineCallbackTasklet callbackTasklet = new ExecutionEngineCallbackTasklet(analysisExecutionRepository, entityManager);
 
+        CreateAnalysisTasklet createAnalysisTasklet = new CreateAnalysisTasklet(scriptExecutionService, dto);
+
+        Step analysisCreationStep = stepBuilderFactory.get("executionEngine.create-analysis")
+                .tasklet(createAnalysisTasklet)
+                .build();
+
         Step runExecutionStep = stepBuilderFactory.get("executionEngine.start")
-                .listener(executionContextPromotionListener())
                 .tasklet(runExecutionEngineTasklet)
                 .build();
 
         Step waitCallbackStep = stepBuilderFactory.get("executionEngine.callback")
-                .listener(executionContextPromotionListener())
                 .tasklet(callbackTasklet)
                 .build();
 
         Job runExecutionJob = jobBuilders.get("executionEngine")
-                .start(runExecutionStep)
+                .start(analysisCreationStep)
+                .next(runExecutionStep)
                 .next(waitCallbackStep)
                 .build();
 
-        JobExecutionResource executionResource = jobTemplate.launch(runExecutionJob, jobParameters);
-        return executionResource;
-    }
-
-    private StepExecutionListener executionContextPromotionListener() {
-
-        ExecutionContextPromotionListener listener = new ExecutionContextPromotionListener();
-        listener.setKeys(new String[]{ "engineExecutionId" });
-        return listener;
+        return jobTemplate.launch(runExecutionJob, jobParameters);
     }
 
     @Path("execution/status/{executionId}")
@@ -174,7 +178,7 @@ public class ScriptExecutionController {
 
         return new StatusResponse(executionEngineStatusService.getExecutionEngineStatus());
     }
-    
+
     private class StatusResponse {
         public StatusResponse(final ExecutionEngineStatus status) {
             this.status = status;

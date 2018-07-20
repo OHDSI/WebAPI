@@ -78,6 +78,11 @@ public class SourceService extends AbstractDaoService {
 		}
 	}
 
+  public Source findBySourceKey(final String sourceKey) {
+
+    return sourceRepository.findBySourceKey(sourceKey);
+  }
+
   public class SortByKey implements Comparator<SourceInfo>
   {
     private boolean isAscending;
@@ -106,7 +111,7 @@ public class SourceService extends AbstractDaoService {
   @Autowired
   private Security securityManager;
 
-  @Value("${security.enabled}")
+  @Value("#{!'${security.provider}'.equals('DisabledSecurity')}")
   private boolean securityEnabled;
 
   @Value("${jasypt.encryptor.enabled}")

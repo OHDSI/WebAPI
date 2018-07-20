@@ -20,6 +20,8 @@ package org.ohdsi.webapi;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
@@ -35,8 +37,9 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 @Configuration("authDataSourceConfig")
-@ConditionalOnProperty(name = "security.enabled", havingValue = "true")
+@ConditionalOnProperty(name = "security.provider", havingValue = "AtlasRegularSecurity")
 public class AuthDataSource {
+    private final Log logger = LogFactory.getLog(AuthDataSource.class);
 
     @Value("${security.db.datasource.driverClassName}")
     private String driverClassName;
@@ -50,6 +53,8 @@ public class AuthDataSource {
     private String schema;
     @Value("${spring.datasource.hikari.connection-test-query}")
     private String testQuery;
+    @Value("${spring.datasource.hikari.connection-test-query-timeout}")
+    private Long validationTimeout;
     @Value("${spring.datasource.hikari.maximum-pool-size}")
     private int maxPoolSize;
     @Value("${spring.datasource.hikari.minimum-idle}")
@@ -58,15 +63,21 @@ public class AuthDataSource {
     @Bean(name = "authDataSource")
     public DataSource authDataSource() {
 
-        HikariConfig config = new HikariConfig();
-        config.setDriverClassName(driverClassName);
-        config.setJdbcUrl(url);
-        config.setUsername(username);
-        config.setPassword(password);
-        config.setSchema(schema);
-        config.setConnectionTestQuery(testQuery);
-        config.setMaximumPoolSize(maxPoolSize);
-        config.setMinimumIdle(minPoolIdle);
-        return new HikariDataSource(config);
+        try {
+            HikariConfig config = new HikariConfig();
+            config.setDriverClassName(driverClassName);
+            config.setJdbcUrl(url);
+            config.setUsername(username);
+            config.setPassword(password);
+            config.setSchema(schema);
+            config.setConnectionTestQuery(testQuery);
+            config.setMaximumPoolSize(maxPoolSize);
+            config.setMinimumIdle(minPoolIdle);
+            config.setValidationTimeout(validationTimeout);
+            return new HikariDataSource(config);
+        } catch (Exception ex) {
+            logger.error("Failed to initialize connection to DB used for authentication: " + ex.getMessage());
+            return null;
+        }
     }
 }

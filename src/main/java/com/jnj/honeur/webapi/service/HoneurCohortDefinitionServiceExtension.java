@@ -456,16 +456,23 @@ public class HoneurCohortDefinitionServiceExtension {
 
     private void addViewPermissions(String token, int id, String sourceKey) {
         //TODO make more central (code duplication in HoneurCohortService.java
-            HashMap<String, String> map = new HashMap<>();
-            map.put("cohortdefinition:%s:report:"+sourceKey+":get", "View Cohort Definition generation results for defintion with ID = %s for source "+sourceKey);
+        HashMap<String, String> map = new HashMap<>();
+        map.put("cohortdefinition:%s:report:"+sourceKey+":get", "View Cohort Definition generation results for defintion with ID = %s for source "+sourceKey);
 
+
+        String permissionPattern = String.format("cohortdefinition:%s:get", id);
+        Iterable<RoleEntity> roleEntities = authorizer.getRoles(true);
+
+        for(RoleEntity role: roleEntities){
             try {
-                RoleEntity currentUserPersonalRole = roleRepository.findByName(HoneurTokenManager.getSubject(token.replace("Bearer ", "")));
-                authorizer.addPermissionsFromTemplate(currentUserPersonalRole, map,
-                        String.valueOf(id));
+                if (authorizer.getRolePermissions(role.getId()).contains(authorizer.getPermissionByValue(permissionPattern))){
+                    authorizer.addPermissionsFromTemplate(role, map,
+                            String.valueOf(id));
+                }
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
+        }
     }
 
     @Transactional

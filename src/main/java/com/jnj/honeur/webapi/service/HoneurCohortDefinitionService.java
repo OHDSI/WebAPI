@@ -228,6 +228,11 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
                 .setModifiedDate(currentTime)
                 .getDetails().setExpression(def.expression);
 
+        if(!isCentral){
+            currentDefinition.setGroupKey(null);
+            currentDefinition.setUuid(null);
+        }
+
         this.cohortDefinitionRepository.save(currentDefinition);
 
         return getCohortDefinition(id);

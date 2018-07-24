@@ -2,8 +2,10 @@ package org.ohdsi.webapi.service;
 
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
+import java.beans.PropertyEditorSupport;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,6 +20,7 @@ import javax.ws.rs.core.MediaType;
 
 import jersey.repackaged.com.google.common.base.Joiner;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
@@ -29,6 +32,7 @@ import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTasklet;
 import org.ohdsi.webapi.cohortanalysis.CohortSummary;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
+import org.ohdsi.webapi.cohortresults.PeriodType;
 import org.ohdsi.webapi.cohortresults.VisualizationDataRepository;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
@@ -191,16 +195,17 @@ public class CohortAnalysisService extends AbstractDaoService {
 				task.getObservationConceptIds()));
 		String measurementIds = (task.getMeasurementConceptIds() == null ? "" : Joiner.on(",").join(
 				task.getMeasurementConceptIds()));
-		String smallCellCount = Integer.toString(task.getSmallCellCount());
+        List<PeriodType> periods = CollectionUtils.isEmpty(task.getPeriods()) ? Arrays.asList(PeriodType.values()) : task.getPeriods();
+		String concatenatedPeriods = periods.stream().map(PeriodType::getValue).collect(Collectors.joining(",", "'", "'"));
 		String[] params = new String[]{"CDM_schema", "results_schema", "source_name",
 				"smallcellcount", "runHERACLESHeel", "CDM_version", "cohort_definition_id", "list_of_analysis_ids",
 				"condition_concept_ids", "drug_concept_ids", "procedure_concept_ids", "observation_concept_ids",
-				"measurement_concept_ids", "cohort_period_only", "source_id", "smallcellcount"};
+				"measurement_concept_ids", "cohort_period_only", "source_id", "periods"};
 		String[] values = new String[]{cdmTableQualifier, resultsTableQualifier, task.getSource().getSourceName(),
-				String.valueOf(task.getSmallCellCount()),
-				String.valueOf(task.runHeraclesHeel()).toUpperCase(), task.getCdmVersion(), cohortDefinitionIds,
-				analysisIds, conditionIds, drugIds, procedureIds, observationIds, measurementIds,
-				String.valueOf(task.isCohortPeriodOnly()), String.valueOf(task.getSource().getSourceId()), smallCellCount};
+				String.valueOf(task.getSmallCellCount()), String.valueOf(task.runHeraclesHeel()).toUpperCase(), 
+				task.getCdmVersion(), cohortDefinitionIds, analysisIds, conditionIds, drugIds, procedureIds, 
+				observationIds, measurementIds,String.valueOf(task.isCohortPeriodOnly()), 
+				String.valueOf(task.getSource().getSourceId()), concatenatedPeriods};
 		sql = SqlRender.renderSql(sql, params, values);
 		sql = SqlTranslate.translateSql(sql, task.getSource().getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
 

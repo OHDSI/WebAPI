@@ -63,13 +63,13 @@ public class CDMResultsService extends AbstractDaoService {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public List<SimpleEntry<Long, Long[]>> getConceptRecordCount(@PathParam("sourceKey") String sourceKey, String[] identifiers) {
+    public List<SimpleEntry<Long, Long[]>> getConceptRecordCount(@PathParam("sourceKey") String sourceKey, Integer[] identifiers) {
         ResultsCache resultsCache = new ResultsCache();
         CDMResultsCache sourceCache = resultsCache.getCache(sourceKey);
         if (sourceCache != null && sourceCache.warm) {
             ArrayList<SimpleEntry<Long, Long[]>> listFromCache = new ArrayList<>();
-            for (String identifier : identifiers) {
-                Long id = Long.parseLong(identifier);
+            for (Integer identifier : identifiers) {
+                Long id = Long.valueOf(identifier);
                 Long[] counts = sourceCache.cache.get(id);
                 SimpleEntry<Long, Long[]> se = new SimpleEntry<>(id, counts);
                 listFromCache.add(se);
@@ -79,16 +79,11 @@ public class CDMResultsService extends AbstractDaoService {
 
         Source source = getSourceRepository().findBySourceKey(sourceKey);
 
-        for (int i = 0;
-                i < identifiers.length;
-                i++) {
-            identifiers[i] = "'" + identifiers[i] + "'";
-        }
         PreparedStatementRenderer psr = prepareGetConceptRecordCount(identifiers, source);
         return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), rowMapper);
     }
 
-    protected PreparedStatementRenderer prepareGetConceptRecordCount(String[] identifiers, Source source) {
+    protected PreparedStatementRenderer prepareGetConceptRecordCount(Integer[] identifiers, Source source) {
 
         String sqlPath = "/resources/cdmresults/sql/getConceptRecordCount.sql";
 
@@ -100,11 +95,7 @@ public class CDMResultsService extends AbstractDaoService {
         String[] tableQualifierNames = {resultTableQualifierName, vocabularyTableQualifierName};
         String[] tableQualifierValues = {resultTableQualifierValue, vocabularyTableQualifierValue};
 
-        Object[] results = new Object[identifiers.length];
-        for (int i = 0; i < identifiers.length; i++) {
-            results[i] = Integer.parseInt(identifiers[i]);
-        }
-        return new PreparedStatementRenderer(source, sqlPath, tableQualifierNames, tableQualifierValues, "conceptIdentifiers", results);
+        return new PreparedStatementRenderer(source, sqlPath, tableQualifierNames, tableQualifierValues, "conceptIdentifiers", identifiers);
     }
 
     /**

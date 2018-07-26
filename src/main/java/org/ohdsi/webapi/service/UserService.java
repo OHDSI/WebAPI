@@ -19,11 +19,14 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+
+import org.ohdsi.webapi.model.users.AuthenticationProviders;
 import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -37,6 +40,12 @@ public class UserService {
 
   @Autowired
   private PermissionManager authorizer;
+
+  @Value("${security.ad.url}")
+  private String adUrl;
+
+  @Value("${security.ldap.url}")
+  private String ldapUrl;
 
   private Map<String, String> roleCreatorPermissionsTemplate = new LinkedHashMap<>();
 
@@ -137,6 +146,17 @@ public class UserService {
     user.permissions = convertPermissions(permissions);
 
     return user;
+  }
+
+
+  @GET
+  @Path("user/providers")
+  @Produces(MediaType.APPLICATION_JSON)
+  public AuthenticationProviders getAuthenticationProviders() {
+    AuthenticationProviders providers = new AuthenticationProviders();
+    providers.setAdUrl(adUrl);
+    providers.setLdapUrl(ldapUrl);
+    return providers;
   }
 
   @GET

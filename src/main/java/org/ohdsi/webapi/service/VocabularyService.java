@@ -138,9 +138,9 @@ public class VocabularyService extends AbstractDaoService {
     final List<Map.Entry<Long, Long>> result = new ArrayList<>();
     
     // Here we calculate cartesian product of batches
-    for (final List<Long> ancestorsBatch : Lists.partition(ids.ancestors, limit)) {
+    for (final List<Long> ancestorsBatch : Lists.partition(ids.ancestors, limit > 0 ? limit : ids.ancestors.size())) {
       
-        for (final List<Long> descendantsBatch : Lists.partition(ids.descendants, limit)) {
+        for (final List<Long> descendantsBatch : Lists.partition(ids.descendants, limit > 0 ? limit : ids.descendants.size())) {
           
             final PreparedStatementRenderer psr = prepareAscendantsCalculating(
                     ancestorsBatch.toArray(new Long[0]),
@@ -801,7 +801,7 @@ public class VocabularyService extends AbstractDaoService {
 
   private Function<String, String> getOrderFunction(String orderClause) {
 
-    return sql -> sql.replaceAll("select distinct", "select distinct ROW_NUMBER() over(ORDER BY " + orderClause + ") as row,");
+    return sql -> sql.replaceAll("select distinct", "select distinct ROW_NUMBER() over(ORDER BY " + orderClause + ") as rrow,");
   }
 
   private Function<String, String> getWhereFunction(String whereClause) {
@@ -843,10 +843,13 @@ public class VocabularyService extends AbstractDaoService {
     JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
 
     StatementPrepareStrategy sps = new ConceptSetStrategy(pageRequest.getExpression());
-    PreparedStatementRenderer psr = sps.prepareStatement(source,
-            getOrderFunction(orderClause).andThen(ConceptSetFacetValues.conceptSetStatementFunction).andThen(getWhereFunction(whereClause)));
+    Function<String, String> queryModifier = getOrderFunction(orderClause).andThen(ConceptSetFacetValues.conceptSetStatementFunction).andThen(getWhereFunction(whereClause));
+    if (source.getSourceDialect().equals("impala")) {
+      queryModifier = queryModifier.andThen(sql -> sql.replaceAll("distinct ROW_NUMBER\\(\\)", "ROW_NUMBER()"));
+    }
+    PreparedStatementRenderer psr = sps.prepareStatement(source, queryModifier);
     String query = psr.getSql();
-    String queryPage = "with rows as ( " + query + ") select top " + limit + " * from rows where rows.row > " + offset + " order by rows.row;";
+    String queryPage = "with rrows as ( " + query + ") select top " + limit + " * from rrows where rrows.rrow > " + offset + " order by rrows.rrow;";
     queryPage = SqlTranslate.translateSql(queryPage, source.getSourceDialect());
 
     List<Concept> concepts = jdbcTemplate.query(queryPage, (PreparedStatementSetter) null, conceptRowMapper);

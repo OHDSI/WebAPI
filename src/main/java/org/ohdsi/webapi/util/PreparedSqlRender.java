@@ -82,7 +82,9 @@ public class PreparedSqlRender {
 			returnVal = 2000;
 		} else if (sourceDialect.equals("postgresql") || sourceDialect.equals("redshift")) {
 			returnVal = 30000;
-		}
+		} else if (sourceDialect.equals("impala")) {
+		  returnVal = 9999;
+    }
 		return returnVal;
 	}
 }

@@ -52,7 +52,7 @@
     <spring.batch.repository.isolationLevelForCreate>ISOLATION_READ_COMMITTED</spring.batch.repository.isolationLevelForCreate>
     <spring.profiles.active>default</spring.profiles.active>
 
-    <security.enabled>false</security.enabled>
+    <security.provider>DisabledSecurity</security.provider>
     <security.token.expiration>43200</security.token.expiration>
     <security.origin>http://localhost</security.origin>
     <security.ssl.enabled>false</security.ssl.enabled>
@@ -75,6 +75,8 @@
     <security.ad.principalSuffix>@example.org</security.ad.principalSuffix>
     <security.ad.system.username></security.ad.system.username>
     <security.ad.system.password></security.ad.system.password>
+    <security.ad.searchFilter></security.ad.searchFilter>
+    <security.ad.ignore.partial.result.exception>true</security.ad.ignore.partial.result.exception>
 
     <security.db.datasource.schema>${datasource.ohdsi.schema}</security.db.datasource.schema>
     <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
@@ -84,6 +86,9 @@
 
     <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.users where lower(email) = lower(?)</security.db.datasource.authenticationQuery>
     <use.single.connect.datasource.for.testing>true</use.single.connect.datasource.for.testing>
+
+    <security.googleIap.cloudProjectId></security.googleIap.cloudProjectId>
+    <security.googleIap.backendServiceId></security.googleIap.backendServiceId>
 
     <security.cors.enabled>true</security.cors.enabled>
     <security.maxLoginAttempts>3</security.maxLoginAttempts>
@@ -117,7 +122,9 @@
     <jasypt.encryptor.enabled>false</jasypt.encryptor.enabled>
     <jasypt.encryptor.password></jasypt.encryptor.password>
 		<jasypt.encryptor.algorithm>PBEWithMD5AndDES</jasypt.encryptor.algorithm>
-		
+
+    <spring.batch.taskExecutor.corePoolSize>10</spring.batch.taskExecutor.corePoolSize>
+    <spring.batch.taskExecutor.maxPoolSize>20</spring.batch.taskExecutor.maxPoolSize>
   </properties>
   <build>
     <finalName>WebAPI</finalName>
@@ -417,7 +424,7 @@
     <dependency>
       <groupId>org.ohdsi.sql</groupId>
       <artifactId>SqlRender</artifactId>
-      <version>1.4.10-SNAPSHOT</version>
+      <version>1.5.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>commons-dbutils</groupId>
@@ -605,6 +612,11 @@
       <groupId>org.glassfish.jersey.media</groupId>
       <artifactId>jersey-media-multipart</artifactId>
       <version>${jersey-media-multipart.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.ldap</groupId>
+      <artifactId>spring-ldap-core</artifactId>
+      <version>2.3.2.RELEASE</version>
     </dependency>
   </dependencies>
   <profiles>

@@ -1,5 +1,5 @@
 select 	concept_hierarchy.concept_id,
-	isNull(concept_hierarchy.soc_concept_name,'NA') + '||' + isNull(concept_hierarchy.hlgt_concept_name,'NA') + '||' + isNull(concept_hierarchy.hlt_concept_name, 'NA') + '||' + isNull(concept_hierarchy.pt_concept_name,'NA') + '||' + isNull(concept_hierarchy.snomed_concept_name,'NA') concept_path, 
+	CONCAT(isNull(concept_hierarchy.soc_concept_name,'NA'), '||', isNull(concept_hierarchy.hlgt_concept_name,'NA'), '||', isNull(concept_hierarchy.hlt_concept_name, 'NA'), '||', isNull(concept_hierarchy.pt_concept_name,'NA'), '||', isNull(concept_hierarchy.snomed_concept_name,'NA')) concept_path,
 	hr1.count_value as num_persons, 
 	ROUND(1.0*hr1.count_value / denom.count_value,5) as percent_persons,
 	ROUND(hr2.avg_value,5) as length_of_era

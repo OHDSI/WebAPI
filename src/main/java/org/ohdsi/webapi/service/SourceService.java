@@ -19,6 +19,7 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.jasypt.encryption.pbe.PBEStringEncryptor;
 import org.jasypt.properties.PropertyValueEncryptionUtils;
+import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,6 +78,11 @@ public class SourceService extends AbstractDaoService {
 		}
 	}
 
+  public Source findBySourceKey(final String sourceKey) {
+
+    return sourceRepository.findBySourceKey(sourceKey);
+  }
+
   public class SortByKey implements Comparator<SourceInfo>
   {
     private boolean isAscending;
@@ -105,7 +111,7 @@ public class SourceService extends AbstractDaoService {
   @Autowired
   private Security securityManager;
 
-  @Value("${security.enabled}")
+  @Value("#{!'${security.provider}'.equals('DisabledSecurity')}")
   private boolean securityEnabled;
 
   @Value("${jasypt.encryptor.enabled}")
@@ -245,6 +251,18 @@ public class SourceService extends AbstractDaoService {
       throw new NotFoundException();
     }
   }
+
+  @Path("connection/{key}")
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  public SourceInfo checkConnection(@PathParam("key") final String sourceKey) throws Exception {
+
+    final Source source = sourceRepository.findBySourceKey(sourceKey);
+    final JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
+    jdbcTemplate.execute(SqlTranslate.translateSql("select 1;", source.getSourceDialect()).replaceAll(";$", ""));
+    return source.getSourceInfo();
+  }
+
 
   @Path("{sourceKey}/daimons/{daimonType}/set-priority")
   @POST

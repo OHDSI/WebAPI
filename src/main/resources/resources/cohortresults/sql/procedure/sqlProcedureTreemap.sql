@@ -1,8 +1,10 @@
 select 	concept_hierarchy.concept_id,
-	isNull(concept_hierarchy.level4_concept_name,'NA') 
-	+ '||' + isNull(concept_hierarchy.level3_concept_name,'NA') 
-	+ '||' + isNull(concept_hierarchy.level2_concept_name,'NA') 
-	+ '||' + isNull(concept_hierarchy.proc_concept_name,'NA') concept_path,
+	CONCAT(
+	  isNull(concept_hierarchy.level4_concept_name,'NA'), '||',
+	  isNull(concept_hierarchy.level3_concept_name,'NA'), '||',
+	  isNull(concept_hierarchy.level2_concept_name,'NA'), '||',
+	  isNull(concept_hierarchy.proc_concept_name,'NA')
+	) concept_path,
 	hr1.count_value as num_persons, 
 	1.0*hr1.count_value / denom.count_value as percent_persons,
 	1.0*hr2.count_value / hr1.count_value as records_per_person
@@ -20,7 +22,7 @@ from (select * from @ohdsi_database_schema.heracles_results where analysis_id = 
 	 from
 		(
 		select c1.concept_id, 
-			v1.vocabulary_name + ' ' + c1.concept_code + ': ' + c1.concept_name as proc_concept_name
+			CONCAT(v1.vocabulary_name, ' ', c1.concept_code, ': ', c1.concept_name) as proc_concept_name
 		from @cdm_database_schema.concept c1
 			inner join @cdm_database_schema.vocabulary v1
 			on c1.vocabulary_id = v1.vocabulary_id

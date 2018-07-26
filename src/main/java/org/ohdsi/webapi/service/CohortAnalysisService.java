@@ -196,7 +196,10 @@ public class CohortAnalysisService extends AbstractDaoService {
 		String measurementIds = (task.getMeasurementConceptIds() == null ? "" : Joiner.on(",").join(
 				task.getMeasurementConceptIds()));
         List<PeriodType> periods = CollectionUtils.isEmpty(task.getPeriods()) ? Arrays.asList(PeriodType.values()) : task.getPeriods();
-		String concatenatedPeriods = periods.stream().map(PeriodType::getValue).collect(Collectors.joining(",", "'", "'"));
+		String concatenatedPeriods = periods.stream()
+				.map(PeriodType::getValue)
+				.map(StringUtils::quote)
+				.collect(Collectors.joining(","));
 		String[] params = new String[]{"CDM_schema", "results_schema", "source_name",
 				"smallcellcount", "runHERACLESHeel", "CDM_version", "cohort_definition_id", "list_of_analysis_ids",
 				"condition_concept_ids", "drug_concept_ids", "procedure_concept_ids", "observation_concept_ids",
@@ -240,6 +243,7 @@ public class CohortAnalysisService extends AbstractDaoService {
 	 * Queues up a cohort analysis task, that generates and translates SQL for the
 	 * given cohort definitions, analysis ids and concept ids
 	 *
+	 * 
 	 * @param task - the Cohort Analysis task to be ran
 	 * @return information about the Cohort Analysis Job
 	 * @throws Exception

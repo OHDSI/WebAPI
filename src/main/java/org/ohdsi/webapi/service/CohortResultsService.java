@@ -1827,6 +1827,18 @@ public class CohortResultsService extends AbstractDaoService {
 		HealthcareExposureReport exposureReport = queryRunner.getHealthcareExposureReport(getSourceJdbcTemplate(source), id, window, periodType, source);
 		return exposureReport;
 	}
+
+  @GET
+  @Path("{sourceKey}/{id}/healthcareutilization/periods/{window}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public List<String> getHealthcareUtilizationPeriods(
+            @PathParam("id") final int id
+          , @PathParam("sourceKey") final String sourceKey
+          , @PathParam("window") final WindowType window) {
+    final Source source = getSourceRepository().findBySourceKey(sourceKey);
+    final List<String> periodTypes = queryRunner.getHealthcarePeriodTypes(getSourceJdbcTemplate(source), id, window, source);
+    return periodTypes;
+  }
 	
 	@GET
 	@Path("{sourceKey}/{id}/healthcareutilization/visit/{window}/{visitStat}")

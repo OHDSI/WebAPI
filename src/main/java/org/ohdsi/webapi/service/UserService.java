@@ -8,19 +8,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 import org.ohdsi.webapi.model.users.AuthenticationProviders;
+import org.ohdsi.webapi.model.users.LdapGroup;
+import org.ohdsi.webapi.model.users.LdapProviderType;
+import org.ohdsi.webapi.service.userimport.UserImportService;
 import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
@@ -40,6 +34,8 @@ public class UserService {
 
   @Autowired
   private PermissionManager authorizer;
+  @Autowired
+  private UserImportService userImportService;
 
   @Value("${security.ad.url}")
   private String adUrl;
@@ -157,6 +153,22 @@ public class UserService {
     providers.setAdUrl(adUrl);
     providers.setLdapUrl(ldapUrl);
     return providers;
+  }
+
+  @GET
+  @Path("user/import/{type}/test")
+  @Produces(MediaType.APPLICATION_JSON)
+  public void testConnection(@PathParam("type") String providerValue) {
+    LdapProviderType provider = LdapProviderType.valueOf(providerValue);
+    userImportService.getLdapTemplate(provider);
+  }
+
+  @GET
+  @Path("user/import/{type}/groups")
+  @Produces(MediaType.APPLICATION_JSON)
+  public List<LdapGroup> findGroups(@PathParam("type") String type, @QueryParam("search") String searchStr) {
+    LdapProviderType provider = LdapProviderType.fromValue(type);
+    return userImportService.findGroups(provider, searchStr);
   }
 
   @GET

@@ -1,21 +1,5 @@
 package org.ohdsi.webapi.service;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotAuthorizedException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
 import org.apache.commons.lang3.StringUtils;
 import org.jasypt.encryption.pbe.PBEStringEncryptor;
 import org.jasypt.properties.PropertyValueEncryptionUtils;
@@ -32,12 +16,19 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
+import javax.annotation.PostConstruct;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.util.*;
+import java.util.stream.Collectors;
+
 @Path("/source/")
 @Component
 @Transactional
 public class SourceService extends AbstractDaoService {
 
-  public static final String SECURE_MODE_ERROR = "This feautre requires the administrator to enable security for the application";
+    public static final String SECURE_MODE_ERROR = "This feature requires the administrator to enable security for the application";
 
   @Autowired
   private JdbcTemplate jdbcTemplate;

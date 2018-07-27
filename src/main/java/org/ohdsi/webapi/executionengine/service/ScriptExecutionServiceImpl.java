@@ -1,13 +1,11 @@
 package org.ohdsi.webapi.executionengine.service;
 
 import com.odysseusinc.arachne.commons.types.DBMSType;
-import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisRequestDTO;
-import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisRequestStatusDTO;
-import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisRequestTypeDTO;
-import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.DataSourceUnsecuredDTO;
+import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.*;
 import com.odysseusinc.arachne.execution_engine_common.util.ConnectionParams;
 import jersey.repackaged.com.google.common.collect.ImmutableList;
 import jersey.repackaged.com.google.common.collect.ImmutableMap;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.apache.commons.lang3.time.DateUtils;
@@ -33,7 +31,6 @@ import org.ohdsi.webapi.service.HttpClient;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
-import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.util.DataSourceDTOParser;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.explore.JobExplorer;
@@ -47,11 +44,16 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
+import java.io.File;
+import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import static com.odysseusinc.arachne.execution_engine_common.util.ConnectionParamsParser.AUTHENTICATION_BY_KEYTAB;
+import static com.odysseusinc.arachne.execution_engine_common.util.ConnectionParamsParser.AUTHENTICATION_BY_PASSWORD;
 
 @Service
 class ScriptExecutionServiceImpl implements ScriptExecutionService {
@@ -74,6 +76,9 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     private String updateStatusCallback;
     @Value("${execution.invalidation.maxage}")
     private int invalidateHours;
+    @Value("${security.kerberos.keytabPath}")
+    private String kerberosKeytabPath;
+
     @Autowired
     private OutputFileRepository outputFileRepository;
 
@@ -120,7 +125,8 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         String name = getAnalysisName(dto);
 
         //replace var in R-script
-        final String script = processTemplate(dto, cdmTableQualifier, resultsTableQualifier, vocabularyTableQualifier, source);
+        ConnectionParams connectionParams = DataSourceDTOParser.parse(source);
+        final String script = processTemplate(dto, cdmTableQualifier, resultsTableQualifier, vocabularyTableQualifier, source, connectionParams);
         AnalysisFile inputFile = new AnalysisFile();
         inputFile.setAnalysisExecution(execution);
         inputFile.setContents(script.getBytes());
@@ -129,7 +135,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
 
         final String analysisExecutionUrl = "/analyze";
         WebTarget webTarget = client.target(executionEngineURL + analysisExecutionUrl);
-        MultiPart multiPart = buildRequest(buildAnalysisRequest(execution, source, execution.getUpdatePassword()), script);
+        MultiPart multiPart = buildRequest(buildAnalysisRequest(execution, source, execution.getUpdatePassword(), connectionParams), script);
         try {
                 webTarget
                     .request(MediaType.MULTIPART_FORM_DATA_TYPE)
@@ -167,13 +173,28 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         return multiPart;
     }
 
-    private AnalysisRequestDTO buildAnalysisRequest(AnalysisExecution execution, Source source, String password){
+    private AnalysisRequestDTO buildAnalysisRequest(AnalysisExecution execution, Source source, String password, ConnectionParams connectionParams) throws IOException {
         AnalysisRequestDTO analysisRequestDTO = new AnalysisRequestDTO();
         Long executionId = execution.getId().longValue();
         analysisRequestDTO.setId(executionId);
-        analysisRequestDTO.setDataSource(makeDataSourceDTO(source));
+        analysisRequestDTO.setDataSource(makeDataSourceDTO(source, connectionParams));
         analysisRequestDTO.setCallbackPassword(password);
         analysisRequestDTO.setRequested(new Date());
+        if (IMPALA_DATASOURCE.equalsIgnoreCase(source.getSourceDialect())) {
+            analysisRequestDTO.getDataSource().setUseKerberos(Boolean.TRUE);
+            File keyTabFile = new File(kerberosKeytabPath);
+            analysisRequestDTO.getDataSource().setKrbKeytab(FileUtils.readFileToByteArray(keyTabFile));
+            switch (connectionParams.getAuthMechanism()) {
+                case AUTHENTICATION_BY_KEYTAB:
+                    analysisRequestDTO.getDataSource().setKrbAuthMethod(KerberosAuthMethod.KEYTAB);
+                    break;
+                case AUTHENTICATION_BY_PASSWORD:
+                    analysisRequestDTO.getDataSource().setKrbAuthMethod(KerberosAuthMethod.PASSWORD);
+                    break;
+            }
+            analysisRequestDTO.getDataSource().setKrbPassword(connectionParams.getPassword());
+            analysisRequestDTO.getDataSource().setKrbUser(connectionParams.getUser());
+        }
         String executableFileName = StringGenerationUtil.generateFileName(AnalysisRequestTypeDTO.R.name().toLowerCase());
         analysisRequestDTO.setExecutableFileName(executableFileName);
         analysisRequestDTO.setResultCallback(
@@ -267,9 +288,8 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     private String processTemplate(ExecutionRequestDTO requestDTO,
                                    String cdmTable, String resultsTable,
                                    String vocabularyTable,
-                                   Source source) {
-
-        ConnectionParams connectionParams = DataSourceDTOParser.parse(source);
+                                   Source source,
+                                   ConnectionParams connectionParams) {
 
         String serverName;
         if (DBMS_REQUIRE_DB.stream().anyMatch(dbms -> dbms.getOhdsiDB().equalsIgnoreCase(source.getSourceDialect()))) {
@@ -319,9 +339,9 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
                 .replace("false", "FALSE");
     }
 
-    private DataSourceUnsecuredDTO makeDataSourceDTO(Source source) {
+    private DataSourceUnsecuredDTO makeDataSourceDTO(Source source, ConnectionParams connectionParams) {
 
-        DataSourceUnsecuredDTO dto = DataSourceDTOParser.parseDTO(source);
+        DataSourceUnsecuredDTO dto = DataSourceDTOParser.parseDTO(source, connectionParams);
         dto.setCdmSchema(source.getTableQualifier(SourceDaimon.DaimonType.CDM));
         return dto;
     }

@@ -176,25 +176,29 @@ public class CohortDefinitionService extends AbstractDaoService {
     return null;
   }
   
-  private InclusionRuleReport.Summary getInclusionRuleReportSummary(int id, Source source) {
+  private InclusionRuleReport.Summary getInclusionRuleReportSummary(int id, Source source, int modeId) {
 
-    String sql = "select base_count, final_count from @tableQualifier.cohort_summary_stats where cohort_definition_id = @id";
+    String sql = "select base_count, final_count from @tableQualifier.cohort_summary_stats where cohort_definition_id = @id and mode_id = @modeId";
     String tqName = "tableQualifier";
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, tqName, tqValue, "id", whitelist(id), SessionUtils.sessionId());
+		String[] varNames = {"id", "modeId"};
+		Object[] varValues = {whitelist(id), whitelist(modeId)};
+    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, tqName, tqValue, varNames, varValues , SessionUtils.sessionId());
     List<InclusionRuleReport.Summary> result = getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), summaryMapper);
     return result.isEmpty()? new InclusionRuleReport.Summary() : result.get(0);
   }
 
-  private List<InclusionRuleReport.InclusionRuleStatistic> getInclusionRuleStatistics(int id, Source source) {
+  private List<InclusionRuleReport.InclusionRuleStatistic> getInclusionRuleStatistics(int id, Source source, int modeId) {
 
     String sql = "select i.rule_sequence, i.name, s.person_count, s.gain_count, s.person_total"
         + " from @tableQualifier.cohort_inclusion i join @tableQualifier.cohort_inclusion_stats s on i.cohort_definition_id = s.cohort_definition_id"
         + " and i.rule_sequence = s.rule_sequence"
-        + " where i.cohort_definition_id = @id ORDER BY i.rule_sequence";
+        + " where i.cohort_definition_id = @id and mode_id = @modeId ORDER BY i.rule_sequence";
     String tqName = "tableQualifier";
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, tqName, tqValue, "id", whitelist(id), SessionUtils.sessionId());
+		String[] varNames = {"id", "modeId"};
+		Object[] varValues = {whitelist(id), whitelist(modeId)};		
+    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, tqName, tqValue, varNames, varValues, SessionUtils.sessionId());
     return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), inclusionRuleStatisticMapper);
   }
   
@@ -211,12 +215,14 @@ public class CohortDefinitionService extends AbstractDaoService {
     return StringUtils.reverse(StringUtils.leftPad(Long.toBinaryString(n), size, "0"));
   }  
   
-  private String getInclusionRuleTreemapData(int id, int inclusionRuleCount, Source source) {
+  private String getInclusionRuleTreemapData(int id, int inclusionRuleCount, Source source, int modeId) {
 
-    String sql = "select inclusion_rule_mask, person_count from @tableQualifier.cohort_inclusion_result where cohort_definition_id = @id";
+    String sql = "select inclusion_rule_mask, person_count from @tableQualifier.cohort_inclusion_result where cohort_definition_id = @id and mode_id = @modeId";
     String tqName = "tableQualifier";
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, tqName, tqValue, "id", id, SessionUtils.sessionId());
+		String[] varNames = {"id", "modeId"};
+		Object[] varValues = {whitelist(id), whitelist(modeId)};		
+    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, tqName, tqValue, varNames, varValues, SessionUtils.sessionId());
 
     // [0] is the inclusion rule bitmask, [1] is the count of the match
     List<Long[]> items = this.getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), inclusionRuleResultItemMapper);
@@ -684,13 +690,16 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Path("/{id}/report/{sourceKey}")
   @Produces(MediaType.APPLICATION_JSON)
   @Transactional
-  public InclusionRuleReport getInclusionRuleReport(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey) {
+  public InclusionRuleReport getInclusionRuleReport(
+					@PathParam("id") final int id, 
+					@PathParam("sourceKey") final String sourceKey, 
+					@DefaultValue("0") @QueryParam("mode") int modeId) {
 
     Source source = this.getSourceRepository().findBySourceKey(sourceKey);
 
-    InclusionRuleReport.Summary summary = getInclusionRuleReportSummary(whitelist(id), source);
-    List<InclusionRuleReport.InclusionRuleStatistic> inclusionRuleStats = getInclusionRuleStatistics(whitelist(id), source);
-    String treemapData = getInclusionRuleTreemapData(whitelist(id), inclusionRuleStats.size(), source);
+    InclusionRuleReport.Summary summary = getInclusionRuleReportSummary(whitelist(id), source, modeId);
+    List<InclusionRuleReport.InclusionRuleStatistic> inclusionRuleStats = getInclusionRuleStatistics(whitelist(id), source, modeId);
+    String treemapData = getInclusionRuleTreemapData(whitelist(id), inclusionRuleStats.size(), source, modeId);
 
     InclusionRuleReport report = new InclusionRuleReport();
     report.summary = summary;

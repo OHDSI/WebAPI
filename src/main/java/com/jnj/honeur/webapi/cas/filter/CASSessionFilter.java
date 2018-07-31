@@ -22,9 +22,11 @@ public class CASSessionFilter extends AdviceFilter {
     private static final Log log = LogFactory.getLog(CASSessionFilter.class);
 
     private boolean casEnabled;
+    private String domain;
 
-    public CASSessionFilter(boolean casEnabled) {
+    public CASSessionFilter(boolean casEnabled, String domain) {
         this.casEnabled = casEnabled;
+        this.domain = domain;
     }
 
     @Override
@@ -53,6 +55,7 @@ public class CASSessionFilter extends AdviceFilter {
                 setCookieHeader.add(tgcCookie);
                 setCookieHeader.add("Max-Age=900");
                 setCookieHeader.add("Path=/");
+                setCookieHeader.add("Domain="+domain);
                 setCookieHeader.add("Secure");
                 setCookieHeader.add("HttpOnly");
 

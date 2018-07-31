@@ -144,6 +144,9 @@ public class AtlasWithCasSecurity extends Security {
   @Value("${webapi.central}")
   private boolean central;
 
+  @Value("${security.cas.tgc.domain}")
+  private String casTgcDomain;
+
 
   @Autowired
   @Qualifier("authDataSource")
@@ -357,7 +360,7 @@ public class AtlasWithCasSecurity extends Security {
     filters.put("kerberosFilter", new KerberosAuthFilter());
     filters.put("ldapFilter", new LdapAuthFilter());
     filters.put("adFilter", new ActiveDirectoryAuthFilter());
-    filters.put("casSessionFilter", new CASSessionFilter(true));
+    filters.put("casSessionFilter", new CASSessionFilter(true, casTgcDomain));
 
     // OAuth
     //

@@ -1,5 +1,6 @@
 package com.jnj.honeur.webapi.shiro.management;
 
+import com.jnj.honeur.webapi.cas.filter.CASSessionFilter;
 import com.jnj.honeur.webapi.shiro.HoneurInvalidateAccessTokenFilter;
 import com.jnj.honeur.webapi.shiro.HoneurJwtAuthFilter;
 import com.jnj.honeur.webapi.shiro.HoneurUpdateAccessTokenFilter;
@@ -222,7 +223,7 @@ public class AtlasWithCasSecurity extends Security {
 
     return new FilterChainBuilder()
       .setOAuthFilters("ssl, cors, forceSessionCreation", "updateToken, sendTokenInUrl")
-      .setRestFilters("ssl, noSessionCreation, cors")
+      .setRestFilters("ssl, noSessionCreation, cors, casSessionFilter")
       .setAuthcFilter("jwtAuthc")
       .setAuthzFilter("authz")
 
@@ -356,6 +357,7 @@ public class AtlasWithCasSecurity extends Security {
     filters.put("kerberosFilter", new KerberosAuthFilter());
     filters.put("ldapFilter", new LdapAuthFilter());
     filters.put("adFilter", new ActiveDirectoryAuthFilter());
+    filters.put("casSessionFilter", new CASSessionFilter(true));
 
     // OAuth
     //

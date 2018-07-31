@@ -173,6 +173,10 @@ public abstract class AtlasSecurity extends Security {
       // cohort results
       .addProtectedRestPath("/cohortresults/*")
 
+      // cohort characterization
+//      .addProtectedRestPath("/cohortcharacterization")
+//      .addProtectedRestPath("/cohortcharacterization/*")
+            
       // evidence
       .addProtectedRestPath("/evidence/*")
       .addProtectedRestPath("/evidence/*/negativecontrols")

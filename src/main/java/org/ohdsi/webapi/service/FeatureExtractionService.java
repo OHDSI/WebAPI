@@ -9,7 +9,9 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringJoiner;
 import java.util.regex.Pattern;
 import javax.ws.rs.GET;
@@ -202,6 +204,121 @@ public class FeatureExtractionService extends AbstractDaoService {
 			new String[]{cdmSchema, resultsSchema, Long.toString(cohortId), criteriaClauses.isEmpty() ? "" : " AND\n" + StringUtils.join(criteriaClauses, "\n AND ")}
 		);
 
+		final HashMap<String, String> z = new HashMap<String, String>() {{
+			put("DemographicsGender", "Demographics");
+			put("DemographicsAge", "Demographics");
+			put("DemographicsAgeGroup", "Demographics");
+			put("DemographicsRace", "Demographics");
+			put("DemographicsEthnicity", "Demographics");
+			put("DemographicsIndexYear", "Demographics");
+			put("DemographicsIndexMonth", "Demographics");
+			put("DemographicsPriorObservationTime", "Demographics");
+			put("DemographicsPostObservationTime", "Demographics");
+			put("DemographicsTimeInCohort", "Demographics");
+			put("DemographicsIndexYearMonth", "Demographics");
+			put("ConditionOccurrenceAnyTimePrior", "Condition");
+			put("ConditionOccurrenceLongTerm", "Condition");
+			put("ConditionOccurrenceMediumTerm", "Condition");
+			put("ConditionOccurrenceShortTerm", "Condition");
+			put("ConditionOccurrencePrimaryInpatientAnyTimePrior", "Condition");
+			put("ConditionOccurrencePrimaryInpatientLongTerm", "Condition");
+			put("ConditionOccurrencePrimaryInpatientMediumTerm", "Condition");
+			put("ConditionOccurrencePrimaryInpatientShortTerm", "Condition");
+			put("ConditionEraAnyTimePrior", "Condition");
+			put("ConditionEraLongTerm", "Condition");
+			put("ConditionEraMediumTerm", "Condition");
+			put("ConditionEraShortTerm", "Condition");
+			put("ConditionEraOverlapping", "Condition");
+			put("ConditionEraStartLongTerm", "Condition");
+			put("ConditionEraStartMediumTerm", "Condition");
+			put("ConditionEraStartShortTerm", "Condition");
+			put("ConditionGroupEraAnyTimePrior", "Condition");
+			put("ConditionGroupEraLongTerm", "Condition");
+			put("ConditionGroupEraMediumTerm", "Condition");
+			put("ConditionGroupEraShortTerm", "Condition");
+			put("ConditionGroupEraOverlapping", "Condition");
+			put("ConditionGroupEraStartLongTerm", "Condition");
+			put("ConditionGroupEraStartMediumTerm", "Condition");
+			put("ConditionGroupEraStartShortTerm", "Condition");
+			put("DrugExposureAnyTimePrior", "Drug");
+			put("DrugExposureLongTerm", "Drug");
+			put("DrugExposureMediumTerm", "Drug");
+			put("DrugExposureShortTerm", "Drug");
+			put("DrugEraAnyTimePrior", "Drug");
+			put("DrugEraLongTerm", "Drug");
+			put("DrugEraMediumTerm", "Drug");
+			put("DrugEraShortTerm", "Drug");
+			put("DrugEraOverlapping", "Drug");
+			put("DrugEraStartLongTerm", "Drug");
+			put("DrugEraStartMediumTerm", "Drug");
+			put("DrugEraStartShortTerm", "Drug");
+			put("DrugGroupEraAnyTimePrior", "Drug");
+			put("DrugGroupEraLongTerm", "Drug");
+			put("DrugGroupEraMediumTerm", "Drug");
+			put("DrugGroupEraShortTerm", "Drug");
+			put("DrugGroupEraOverlapping", "Drug");
+			put("DrugGroupEraStartLongTerm", "Drug");
+			put("DrugGroupEraStartMediumTerm", "Drug");
+			put("DrugGroupEraStartShortTerm", "Drug");
+			put("ProcedureOccurrenceAnyTimePrior", "Procedure");
+			put("ProcedureOccurrenceLongTerm", "Procedure");
+			put("ProcedureOccurrenceMediumTerm", "Procedure");
+			put("ProcedureOccurrenceShortTerm", "Procedure");
+			put("DeviceExposureAnyTimePrior", "Device");
+			put("DeviceExposureLongTerm", "Device");
+			put("DeviceExposureMediumTerm", "Device");
+			put("DeviceExposureShortTerm", "Device");
+			put("MeasurementAnyTimePrior", "Measurement");
+			put("MeasurementLongTerm", "Measurement");
+			put("MeasurementMediumTerm", "Measurement");
+			put("MeasurementShortTerm", "Measurement");
+			put("MeasurementValueAnyTimePrior", null);
+			put("MeasurementValueLongTerm", null);
+			put("MeasurementValueMediumTerm", null);
+			put("MeasurementValueShortTerm", null);
+			put("MeasurementRangeGroupAnyTimePrior", null);
+			put("MeasurementRangeGroupLongTerm", null);
+			put("MeasurementRangeGroupMediumTerm", null);
+			put("MeasurementRangeGroupShortTerm", null);
+			put("ObservationAnyTimePrior", "Observation");
+			put("ObservationLongTerm", "Observation");
+			put("ObservationMediumTerm", "Observation");
+			put("ObservationShortTerm", "Observation");
+			put("CharlsonIndex", "Condition");
+			put("Dcsi", "Condition");
+			put("Chads2", "Condition");
+			put("Chads2Vasc", "Condition");
+			put("DistinctConditionCountLongTerm", "Condition");
+			put("DistinctConditionCountMediumTerm", "Condition");
+			put("DistinctConditionCountShortTerm", "Condition");
+			put("DistinctIngredientCountLongTerm", "Drug");
+			put("DistinctIngredientCountMediumTerm", "Drug");
+			put("DistinctIngredientCountShortTerm", "Drug");
+			put("DistinctProcedureCountLongTerm", "Procedure");
+			put("DistinctProcedureCountMediumTerm", "Procedure");
+			put("DistinctProcedureCountShortTerm", "Procedure");
+			put("DistinctMeasurementCountLongTerm", "Measurement");
+			put("DistinctMeasurementCountMediumTerm", "Measurement");
+			put("DistinctMeasurementCountShortTerm", "Measurement");
+			put("DistinctObservationCountLongTerm", "Observation");
+			put("DistinctObservationCountMediumTerm", "Observation");
+			put("DistinctObservationCountShortTerm", "Observation");
+			put("VisitCountLongTerm", "Visit");
+			put("VisitCountMediumTerm", "Visit");
+			put("VisitCountShortTerm", "Visit");
+			put("VisitConceptCountLongTerm", "Visit");
+			put("VisitConceptCountMediumTerm", "Visit");
+			put("VisitConceptCountShortTerm", "Visit");
+		}};
+
+		List<Entry> fixed = new ArrayList<>();
+		for (final Map.Entry<String, String> stringStringEntry : z.entrySet()) {
+			final String name = stringStringEntry.getKey();
+			final String domain = stringStringEntry.getValue();
+			final String parsedName = getAnalysisName(name, domain);
+			fixed.add(new Entry(domain, name, parsedName));
+		}
+		
 		translatedSql = SqlTranslate.translateSql(categoricalQuery, source.getSourceDialect(), SessionUtils.sessionId(), resultsSchema);
 		List<PrevalenceStat> prevalenceStats = this.getSourceJdbcTemplate(source).query(translatedSql, (rs, rowNum) -> {
 			PrevalenceStat mappedRow = new PrevalenceStat() {
@@ -220,10 +337,29 @@ public class FeatureExtractionService extends AbstractDaoService {
 			};
 			return mappedRow;
 		});
-
+		
 		return prevalenceStats;
 	}
 
+	private static class Entry {
+		public String domain;
+		public String name;
+		public String parsedName;
+
+		public Entry(final String domain, final String name, final String parsedName) {
+
+			this.domain = domain;
+			this.name = name;
+			this.parsedName = parsedName;
+		}
+
+		@Override
+		public String toString() {
+
+			return "update fe_analyses set name = '" + parsedName + "' where name = '" + name + "';";
+		}
+	}
+	
 	@GET
 	@Path("query/distributions/{cohortId}/{sourceKey}")
 	@Produces(MediaType.APPLICATION_JSON)

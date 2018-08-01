@@ -3,6 +3,7 @@
 TRUNCATE TABLE @results_schema.heracles_analysis;
 
 insert into @results_schema.heracles_analysis
+(analysis_id,analysis_name,stratum_1_name,stratum_2_name,stratum_3_name,stratum_4_name,stratum_5_name,analysis_type)
 select    0 as analysis_id,
 CAST('Source name' as VARCHAR(255)) as analysis_name,
 NULL as stratum_1_name,

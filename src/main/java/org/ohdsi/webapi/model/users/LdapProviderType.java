@@ -1,5 +1,8 @@
 package org.ohdsi.webapi.model.users;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import java.util.Objects;
 
 public enum LdapProviderType {
@@ -11,10 +14,12 @@ public enum LdapProviderType {
     this.value = value;
   }
 
+  @JsonValue
   public String getValue() {
     return value;
   }
 
+  @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
   public static LdapProviderType fromValue(String value) {
     for(LdapProviderType provider : values()) {
       if (Objects.equals(provider.value, value)) {

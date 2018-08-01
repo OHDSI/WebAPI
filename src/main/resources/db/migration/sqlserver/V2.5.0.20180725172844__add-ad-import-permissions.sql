@@ -1,6 +1,6 @@
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
-  VALUES (nextval('${ohdsiSchema}.sec_permission_id_seq'),
-      'user:providers:get', 'Get list of authentication providers AD/LDAP');
+  SELECT NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq,
+      'user:providers:get', 'Get list of authentication providers AD/LDAP';
 
 INSERT INTO ${ohdsiSchema}.sec_role_permission (role_id, permission_id)
   SELECT sr.id, sp.id
@@ -8,8 +8,8 @@ INSERT INTO ${ohdsiSchema}.sec_role_permission (role_id, permission_id)
   WHERE sp."value" =  'user:providers:get' AND sr.name IN ('admin');
 
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
-    VALUES (nextval('${ohdsiSchema}.sec_permission_id_seq'),
-        'user:import:*:groups:get', 'Search groups in AD/LDAP');
+    SELECT NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq,
+        'user:import:*:groups:get', 'Search groups in AD/LDAP';
 
 INSERT INTO ${ohdsiSchema}.sec_role_permission (role_id, permission_id)
     SELECT sr.id, sp.id
@@ -17,8 +17,8 @@ INSERT INTO ${ohdsiSchema}.sec_role_permission (role_id, permission_id)
     WHERE sp."value" = 'user:import:*:groups:get' AND sr.name IN ('admin');
 
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
-VALUES (nextval('${ohdsiSchema}.sec_permission_id_seq'),
-        'user:import:*:post', 'Search users in AD/LDAP');
+  SELECT NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq,
+        'user:import:*:post', 'Search users in AD/LDAP';
 
 INSERT INTO ${ohdsiSchema}.sec_role_permission (role_id, permission_id)
   SELECT sr.id, sp.id
@@ -26,8 +26,8 @@ INSERT INTO ${ohdsiSchema}.sec_role_permission (role_id, permission_id)
   WHERE sp."value" = 'user:import:*:post' AND sr.name IN ('admin');
 
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
-VALUES (nextval('${ohdsiSchema}.sec_permission_id_seq'),
-        'user:import:post', 'Import users from AD/LDAP');
+  SELECT NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq,
+        'user:import:post', 'Import users from AD/LDAP';
 
 INSERT INTO ${ohdsiSchema}.sec_role_permission (role_id, permission_id)
   SELECT sr.id, sp.id
@@ -35,8 +35,8 @@ INSERT INTO ${ohdsiSchema}.sec_role_permission (role_id, permission_id)
   WHERE sp."value" = 'user:import:post' AND sr.name IN ('admin');
 
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
-VALUES (nextval('${ohdsiSchema}.sec_permission_id_seq'),
-        'user:import:*:mapping:post', 'Save Atlas roles mappings to LDAP groups');
+  SELECT NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq,
+        'user:import:*:mapping:post', 'Save Atlas roles mappings to LDAP groups';
 
 INSERT INTO ${ohdsiSchema}.sec_role_permission (role_id, permission_id)
   SELECT sr.id, sp.id
@@ -44,8 +44,8 @@ INSERT INTO ${ohdsiSchema}.sec_role_permission (role_id, permission_id)
   WHERE sp."value" = 'user:import:*:mapping:post' AND sr.name IN ('admin');
 
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
-VALUES (nextval('${ohdsiSchema}.sec_permission_id_seq'),
-        'user:import:*:mapping:get', 'Read Atlas roles mappings to LDAP groups');
+  SELECT NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq,
+        'user:import:*:mapping:get', 'Read Atlas roles mappings to LDAP groups';
 
 INSERT INTO ${ohdsiSchema}.sec_role_permission (role_id, permission_id)
   SELECT sr.id, sp.id
@@ -55,7 +55,7 @@ INSERT INTO ${ohdsiSchema}.sec_role_permission (role_id, permission_id)
 CREATE SEQUENCE ${ohdsiSchema}.sec_role_group_seq;
 
 CREATE TABLE ${ohdsiSchema}.sec_role_group(
-  id INTEGER PRIMARY KEY DEFAULT nextval('${ohdsiSchema}.sec_role_group_seq'),
+  id INTEGER PRIMARY KEY DEFAULT NEXT VALUE FOR ${ohdsiSchema}.sec_role_group_seq,
   provider VARCHAR NOT NULL,
   group_dn VARCHAR NOT NULL,
   group_name VARCHAR,

@@ -5,7 +5,6 @@ import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.*;
 import com.odysseusinc.arachne.execution_engine_common.util.ConnectionParams;
 import jersey.repackaged.com.google.common.collect.ImmutableList;
 import jersey.repackaged.com.google.common.collect.ImmutableMap;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.apache.commons.lang3.time.DateUtils;
@@ -44,8 +43,6 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
-import java.io.File;
-import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -76,8 +73,6 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     private String updateStatusCallback;
     @Value("${execution.invalidation.maxage}")
     private int invalidateHours;
-    @Value("${security.kerberos.keytabPath}")
-    private String kerberosKeytabPath;
 
     @Autowired
     private OutputFileRepository outputFileRepository;
@@ -112,14 +107,14 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     public Long runScript(ExecutionRequestDTO dto, int analysisExecutionId) throws Exception {
 
         Source source = findSourceByKey(dto.sourceKey);
-        
+
         final String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
         final String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
         String vocabularyTableQualifier = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
         if (vocabularyTableQualifier == null) {
             vocabularyTableQualifier = cdmTableQualifier;
         }
-        
+
         AnalysisExecution execution = analysisExecutionRepository.findOne(analysisExecutionId);
 
         String name = getAnalysisName(dto);
@@ -137,7 +132,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         WebTarget webTarget = client.target(executionEngineURL + analysisExecutionUrl);
         MultiPart multiPart = buildRequest(buildAnalysisRequest(execution, source, execution.getUpdatePassword(), connectionParams), script);
         try {
-                webTarget
+            webTarget
                     .request(MediaType.MULTIPART_FORM_DATA_TYPE)
                     .accept(MediaType.APPLICATION_JSON)
                     .header("Authorization", executionEngineToken)
@@ -173,17 +168,17 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         return multiPart;
     }
 
-    private AnalysisRequestDTO buildAnalysisRequest(AnalysisExecution execution, Source source, String password, ConnectionParams connectionParams) throws IOException {
+    private AnalysisRequestDTO buildAnalysisRequest(AnalysisExecution execution, Source source, String password, ConnectionParams connectionParams) {
         AnalysisRequestDTO analysisRequestDTO = new AnalysisRequestDTO();
         Long executionId = execution.getId().longValue();
         analysisRequestDTO.setId(executionId);
         analysisRequestDTO.setDataSource(makeDataSourceDTO(source, connectionParams));
         analysisRequestDTO.setCallbackPassword(password);
         analysisRequestDTO.setRequested(new Date());
-        if (IMPALA_DATASOURCE.equalsIgnoreCase(source.getSourceDialect())) {
+        if (IMPALA_DATASOURCE.equalsIgnoreCase(source.getSourceDialect()) &&
+                (AUTHENTICATION_BY_KEYTAB == connectionParams.getAuthMechanism()) || (AUTHENTICATION_BY_PASSWORD == connectionParams.getAuthMechanism())) {
             analysisRequestDTO.getDataSource().setUseKerberos(Boolean.TRUE);
-            File keyTabFile = new File(kerberosKeytabPath);
-            analysisRequestDTO.getDataSource().setKrbKeytab(FileUtils.readFileToByteArray(keyTabFile));
+            analysisRequestDTO.getDataSource().setKrbKeytab(source.getKrbKeytab());
             switch (connectionParams.getAuthMechanism()) {
                 case AUTHENTICATION_BY_KEYTAB:
                     analysisRequestDTO.getDataSource().setKrbAuthMethod(KerberosAuthMethod.KEYTAB);
@@ -212,7 +207,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         return analysisRequestDTO;
     }
 
-    
+
     @Override
     public AnalysisExecution createAnalysisExecution(ExecutionRequestDTO dto, Source source, String password) {
 
@@ -233,7 +228,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
 
         String name;
 
-        switch (dto.analysisType){
+        switch (dto.analysisType) {
             case CCA:
                 ComparativeCohortAnalysis cca = comparativeCohortAnalysisRepository.findOne(dto.cohortId);
                 name = cca.getName();
@@ -275,7 +270,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     }
 
     @Scheduled(fixedDelayString = "${execution.invalidation.period}")
-    public void invalidateExecutions(){
+    public void invalidateExecutions() {
 
         Date invalidate = DateUtils.addHours(new Date(), -invalidateHours);
         List<AnalysisExecution> executions = analysisExecutionRepository.findByExecutedBeforeAndExecutionStatusIn(invalidate, INVALIDATE_STATUSES);
@@ -317,7 +312,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
                         "cdmVersion <- \"" + requestDTO.cdmVersion + "\"")
                 .replace("<insert your " + "directory here>",
                         requestDTO.workFolder);
-        if (IMPALA_DATASOURCE.equalsIgnoreCase(source.getSourceDialect())){
+        if (IMPALA_DATASOURCE.equalsIgnoreCase(source.getSourceDialect())) {
             temp = temp.replace("password = \"supersecret\"", "password = \""
                     + connectionParams.getPassword() + "\", "
                     + "schema=\"" + connectionParams.getSchema() + "\", "
@@ -331,7 +326,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         if (connectionParams.getPort() != null) {
             temp = temp.replace("port = 5432", "port = " + connectionParams.getPort());
         } else {
-            temp = temp.replace( "port = 5432,", "");
+            temp = temp.replace("port = 5432,", "");
         }
         //uncommenting package installation
         return temp

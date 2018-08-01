@@ -1,6 +1,9 @@
 package org.ohdsi.webapi.service;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.jasypt.encryption.pbe.PBEStringEncryptor;
 import org.jasypt.properties.PropertyValueEncryptionUtils;
 import org.ohdsi.webapi.shiro.management.Security;
@@ -20,6 +23,8 @@ import javax.annotation.PostConstruct;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -29,6 +34,7 @@ import java.util.stream.Collectors;
 public class SourceService extends AbstractDaoService {
 
     public static final String SECURE_MODE_ERROR = "This feature requires the administrator to enable security for the application";
+    private static final String IMPALA_DATASOURCE = "impala";
 
   @Autowired
   private JdbcTemplate jdbcTemplate;
@@ -76,18 +82,18 @@ public class SourceService extends AbstractDaoService {
   public class SortByKey implements Comparator<SourceInfo>
   {
     private boolean isAscending;
-    
+
     public SortByKey(boolean ascending) {
-      isAscending = ascending;      
+        isAscending = ascending;
     }
-    
+
     public SortByKey() {
       this(true);
     }
-    
+
     public int compare(SourceInfo s1, SourceInfo s2) {
       return s1.sourceKey.compareTo(s2.sourceKey) * (isAscending ? 1 : -1);
-    }    
+    }
   }
   @Autowired
   private SourceRepository sourceRepository;
@@ -108,7 +114,7 @@ public class SourceService extends AbstractDaoService {
   private boolean encryptorEnabled;
 
   private static Collection<SourceInfo> cachedSources = null;
-  
+
   @Path("sources")
   @GET
   @Produces(MediaType.APPLICATION_JSON)
@@ -124,15 +130,15 @@ public class SourceService extends AbstractDaoService {
     }
     return cachedSources;
   }
-  
+
   @Path("refresh")
   @GET
-  @Produces(MediaType.APPLICATION_JSON)  
+  @Produces(MediaType.APPLICATION_JSON)
   public Collection<SourceInfo> refreshSources() {
     cachedSources = null;
 		this.ensureSourceEncrypted();
     return getSources();
-  }  
+  }
 
   @Path("priorityVocabulary")
   @GET
@@ -176,13 +182,14 @@ public class SourceService extends AbstractDaoService {
 
   @Path("")
   @POST
-  @Consumes(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
-  public SourceInfo createSource(SourceRequest request) throws Exception {
+  public SourceInfo createSource(@FormDataParam("fileToUpload") InputStream file, @FormDataParam("fileToUpload") FormDataContentDisposition fileDetail, @FormDataParam("source") SourceRequest request) throws Exception {
     if (!securityEnabled) {
       throw new NotAuthorizedException(SECURE_MODE_ERROR);
     }
     Source source = conversionService.convert(request, Source.class);
+      setImpalaKrbData(file, fileDetail.getFileName(), request.getDialect(), source, null, null);
     Source saved = sourceRepository.save(source);
     String sourceKey = saved.getSourceKey();
     cachedSources = null;
@@ -192,10 +199,10 @@ public class SourceService extends AbstractDaoService {
 
   @Path("{sourceId}")
   @PUT
-  @Consumes(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
   @Transactional
-  public SourceInfo updateSource(@PathParam("sourceId") Integer sourceId, SourceRequest request) {
+  public SourceInfo updateSource(@PathParam("sourceId") Integer sourceId, @FormDataParam("fileToUpload") InputStream file, @FormDataParam("fileToUpload") FormDataContentDisposition fileDetail, @FormDataParam("source") SourceRequest request) throws IOException {
     if (!securityEnabled) {
       throw new NotAuthorizedException(SECURE_MODE_ERROR);
     }
@@ -212,6 +219,7 @@ public class SourceService extends AbstractDaoService {
               Objects.equals(updated.getPassword().trim(), Source.MASQUERADED_PASSWORD)) {
         updated.setPassword(source.getPassword());
       }
+        setImpalaKrbData(file, fileDetail.getFileName(), request.getDialect(), updated, source.getKrbKeytab(), source.getKeytabName());
       List<SourceDaimon> removed = source.getDaimons().stream().filter(d -> !updated.getDaimons().contains(d))
               .collect(Collectors.toList());
       sourceDaimonRepository.delete(removed);
@@ -222,6 +230,19 @@ public class SourceService extends AbstractDaoService {
       throw new NotFoundException();
     }
   }
+
+    private void setImpalaKrbData(InputStream file, String fileName, String dialect, Source updated, byte[] krbKeytab, String keytabName) throws IOException {
+        if (IMPALA_DATASOURCE.equalsIgnoreCase(dialect)) {
+            byte[] fileBytes = IOUtils.toByteArray(file);
+            if (fileName != null) {
+                updated.setKrbKeytab(fileBytes);
+                updated.setKeytabName(fileName);
+            } else {
+                updated.setKrbKeytab(krbKeytab);
+                updated.setKeytabName(keytabName);
+            }
+        }
+    }
 
   @Path("{sourceId}")
   @DELETE
@@ -241,6 +262,23 @@ public class SourceService extends AbstractDaoService {
       throw new NotFoundException();
     }
   }
+
+    @Path("{sourceId}/keytab")
+    @DELETE
+    @Transactional
+    public Response deleteKeytab(@PathParam("sourceId") Integer sourceId) {
+        if (!securityEnabled) {
+            return getInsecureModeResponse();
+        }
+        Source source = sourceRepository.findBySourceId(sourceId);
+        if (source != null) {
+            source.setKrbKeytab(null);
+            source.setKeytabName(null);
+            return Response.ok().build();
+        } else {
+            throw new NotFoundException();
+        }
+    }
 
   @Path("{sourceKey}/daimons/{daimonType}/set-priority")
   @POST

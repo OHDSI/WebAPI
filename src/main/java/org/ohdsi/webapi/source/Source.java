@@ -15,19 +15,12 @@
  */
 package org.ohdsi.webapi.source;
 
-import java.io.Serializable;
-import java.util.Collection;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.Type;
 import org.ohdsi.webapi.source.SourceDaimon.DaimonType;
+
+import javax.persistence.*;
+import java.io.Serializable;
+import java.util.Collection;
 
 /**
  *
@@ -53,7 +46,7 @@ public class Source implements Serializable {
   
   @Column(name="SOURCE_DIALECT")
   private String sourceDialect;
- 
+
   @Column(name="SOURCE_CONNECTION")
   private String sourceConnection;
   
@@ -68,6 +61,11 @@ public class Source implements Serializable {
   @Type(type = "encryptedString")
   private String password;
 
+  @Column(name = "krb_keytab")
+  private byte[] krbKeytab;
+
+  @Column(name = "keytab_name")
+  private String keytabName;
   
   public String getTableQualifier(DaimonType daimonType) {
 		String result = getTableQualifierOrNull(daimonType);
@@ -151,5 +149,21 @@ public class Source implements Serializable {
 
   public void setPassword(String password) {
     this.password = password;
+  }
+
+  public byte[] getKrbKeytab() {
+    return krbKeytab;
+  }
+
+  public void setKrbKeytab(byte[] krbKeytab) {
+    this.krbKeytab = krbKeytab;
+  }
+
+  public String getKeytabName() {
+    return keytabName;
+  }
+
+  public void setKeytabName(String keytabName) {
+    this.keytabName = keytabName;
   }
 }

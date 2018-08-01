@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.model.users;
+package org.ohdsi.webapi.userimport.model;
 
 import java.util.List;
 

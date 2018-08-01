@@ -1,6 +1,6 @@
-package org.ohdsi.webapi.model.users.entity;
+package org.ohdsi.webapi.userimport.entities;
 
-import org.ohdsi.webapi.model.users.LdapProviderType;
+import org.ohdsi.webapi.userimport.model.LdapProviderType;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 
 import javax.persistence.*;

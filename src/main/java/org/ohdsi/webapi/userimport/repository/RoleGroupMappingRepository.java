@@ -1,6 +1,7 @@
-package org.ohdsi.webapi.model.users.entity;
+package org.ohdsi.webapi.userimport.repository;
 
-import org.ohdsi.webapi.model.users.LdapProviderType;
+import org.ohdsi.webapi.userimport.model.LdapProviderType;
+import org.ohdsi.webapi.userimport.entities.RoleGroupMappingEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

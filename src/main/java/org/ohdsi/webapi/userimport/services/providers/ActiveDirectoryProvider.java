@@ -1,9 +1,9 @@
-package org.ohdsi.webapi.service.providers;
+package org.ohdsi.webapi.userimport.services.providers;
 
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang.StringUtils;
-import org.ohdsi.webapi.model.users.LdapGroup;
-import org.ohdsi.webapi.model.users.LdapUser;
+import org.ohdsi.webapi.userimport.model.LdapGroup;
+import org.ohdsi.webapi.userimport.model.LdapUser;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.ldap.core.*;
@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.ohdsi.webapi.service.providers.OhdsiLdapUtils.valueAsList;
+import static org.ohdsi.webapi.userimport.services.providers.OhdsiLdapUtils.valueAsList;
 
 @Component
 @ConditionalOnProperty("security.ad.url")

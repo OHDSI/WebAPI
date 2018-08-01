@@ -1,7 +1,7 @@
-package org.ohdsi.webapi.service.providers;
+package org.ohdsi.webapi.userimport.services.providers;
 
-import org.ohdsi.webapi.model.users.LdapGroup;
-import org.ohdsi.webapi.model.users.LdapUser;
+import org.ohdsi.webapi.userimport.model.LdapGroup;
+import org.ohdsi.webapi.userimport.model.LdapUser;
 import org.springframework.ldap.core.*;
 
 import javax.naming.NamingException;

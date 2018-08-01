@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.service.providers;
+package org.ohdsi.webapi.userimport.services.providers;
 
 import org.springframework.ldap.filter.EqualsFilter;
 import org.springframework.ldap.filter.OrFilter;

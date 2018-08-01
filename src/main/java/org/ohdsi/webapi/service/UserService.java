@@ -1,7 +1,6 @@
 package org.ohdsi.webapi.service;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.collections.impl.block.factory.Comparators;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,9 +14,9 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.ohdsi.webapi.model.users.*;
-import org.ohdsi.webapi.model.users.entity.RoleGroupMappingEntity;
-import org.ohdsi.webapi.service.userimport.UserImportService;
+import org.ohdsi.webapi.userimport.entities.RoleGroupMappingEntity;
+import org.ohdsi.webapi.userimport.model.*;
+import org.ohdsi.webapi.userimport.services.UserImportService;
 import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;

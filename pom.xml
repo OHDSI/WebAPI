@@ -650,8 +650,7 @@
         <dependency>
           <groupId>ojdbc</groupId>
           <artifactId>ojdbc</artifactId>
-          <version>6.0.0</version>
-          <!-- If you have it local and not in a repository <systemPath></systemPath> -->
+          <version>14</version>
         </dependency>
       </dependencies>
     </profile>

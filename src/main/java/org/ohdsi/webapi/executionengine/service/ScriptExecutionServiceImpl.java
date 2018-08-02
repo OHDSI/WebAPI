@@ -49,9 +49,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static com.odysseusinc.arachne.execution_engine_common.KrbAuthType.AUTHENTICATION_BY_KEYTAB;
-import static com.odysseusinc.arachne.execution_engine_common.KrbAuthType.AUTHENTICATION_BY_PASSWORD;
-
 @Service
 class ScriptExecutionServiceImpl implements ScriptExecutionService {
 
@@ -176,8 +173,8 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         analysisRequestDTO.setCallbackPassword(password);
         analysisRequestDTO.setRequested(new Date());
         if (IMPALA_DATASOURCE.equalsIgnoreCase(source.getSourceDialect()) &&
-                (AUTHENTICATION_BY_KEYTAB == connectionParams.getAuthMechanism()) || (
-                AUTHENTICATION_BY_PASSWORD == connectionParams.getAuthMechanism())) {
+                (KerberosAuthMethod.KEYTAB == connectionParams.getAuthMechanism()) || (
+                KerberosAuthMethod.PASSWORD == connectionParams.getAuthMechanism())) {
             setDataSourceParams(source.getKrbKeytab(), connectionParams, analysisRequestDTO.getDataSource());
         }
         String executableFileName = StringGenerationUtil.generateFileName(AnalysisRequestTypeDTO.R.name().toLowerCase());
@@ -205,11 +202,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         ds.setKrbRealm(connectionParams.getKrbRealm());
         ds.setKrbPassword(connectionParams.getPassword());
         ds.setKrbUser(connectionParams.getUser());
-        if (AUTHENTICATION_BY_KEYTAB == connectionParams.getAuthMechanism()) {
-            ds.setKrbAuthMethod(KerberosAuthMethod.KEYTAB);
-        } else if (AUTHENTICATION_BY_PASSWORD == connectionParams.getAuthMechanism()) {
-            ds.setKrbAuthMethod(KerberosAuthMethod.PASSWORD);
-        }
+        ds.setKrbAuthMethod(connectionParams.getAuthMechanism());
     }
 
 

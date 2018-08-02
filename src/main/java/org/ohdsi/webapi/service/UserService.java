@@ -36,14 +36,6 @@ public class UserService {
 
   @Autowired
   private PermissionManager authorizer;
-  @Autowired
-  private UserImportService userImportService;
-
-  @Value("${security.ad.url}")
-  private String adUrl;
-
-  @Value("${security.ldap.url}")
-  private String ldapUrl;
 
   private Map<String, String> roleCreatorPermissionsTemplate = new LinkedHashMap<>();
 
@@ -144,103 +136,6 @@ public class UserService {
     user.permissions = convertPermissions(permissions);
 
     return user;
-  }
-
-
-  @GET
-  @Path("user/providers")
-  @Produces(MediaType.APPLICATION_JSON)
-  public AuthenticationProviders getAuthenticationProviders() {
-    AuthenticationProviders providers = new AuthenticationProviders();
-    providers.setAdUrl(adUrl);
-    providers.setLdapUrl(ldapUrl);
-    return providers;
-  }
-
-  @GET
-  @Path("user/import/{type}/groups")
-  @Produces(MediaType.APPLICATION_JSON)
-  public List<LdapGroup> findGroups(@PathParam("type") String type, @QueryParam("search") String searchStr) {
-    LdapProviderType provider = LdapProviderType.fromValue(type);
-    return userImportService.findGroups(provider, searchStr);
-  }
-
-  @POST
-  @Path("user/import/{type}")
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
-  public List<AtlasUserRoles> findDirectoryUsers(@PathParam("type") String type, RoleGroupMapping mapping){
-    LdapProviderType provider = LdapProviderType.fromValue(type);
-    return userImportService.findUsers(provider, mapping);
-  }
-
-  @POST
-  @Path("user/import")
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Response importUsers(List<AtlasUserRoles> users) {
-    userImportService.importUsers(users);
-    return Response.ok().build();
-  }
-
-  @POST
-  @Path("user/import/{type}/mapping")
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Response saveMapping(@PathParam("type") String type, RoleGroupMapping mapping) {
-    LdapProviderType providerType = LdapProviderType.fromValue(type);
-    List<RoleGroupMappingEntity> mappingEntities = convertRoleGroupMapping(mapping);
-    userImportService.saveRoleGroupMapping(providerType, mappingEntities);
-    return Response.ok().build();
-  }
-
-  @GET
-  @Path("user/import/{type}/mapping")
-  @Produces(MediaType.APPLICATION_JSON)
-  public RoleGroupMapping getMapping(@PathParam("type") String type) {
-    LdapProviderType providerType = LdapProviderType.fromValue(type);
-    List<RoleGroupMappingEntity> mappingEntities = userImportService.getRoleGroupMapping(providerType);
-    return convertRoleGroupMapping(type, mappingEntities);
-  }
-
-  private RoleGroupMapping convertRoleGroupMapping(String provider, List<RoleGroupMappingEntity> mappingEntities) {
-
-    RoleGroupMapping roleGroupMapping = new RoleGroupMapping();
-    roleGroupMapping.setProvider(provider);
-    Map<Long, List<RoleGroupMappingEntity>> entityMap = mappingEntities.stream()
-            .collect(Collectors.groupingBy(r -> r.getRole().getId()));
-    Map<Long, RoleEntity> roleMap = entityMap.entrySet().stream().map(e -> new ImmutablePair<>(e.getKey(), e.getValue().iterator().next().getRole()))
-            .collect(Collectors.toMap(ImmutablePair::getKey, ImmutablePair::getValue));
-
-    List<RoleGroupsMap> roleGroups = entityMap
-            .entrySet().stream().map(entry -> {
-              RoleGroupsMap roleGroupsMap = new RoleGroupsMap();
-              roleGroupsMap.setRole(new Role(roleMap.get(entry.getKey())));
-              List<LdapGroup> groups = entry
-                      .getValue()
-                      .stream()
-                      .map(role -> new LdapGroup(role.getGroupName(), role.getGroupDn()))
-                      .collect(Collectors.toList());
-              roleGroupsMap.setGroups(groups);
-              return roleGroupsMap;
-      }).collect(Collectors.toList());
-    roleGroupMapping.setRoleGroups(roleGroups);
-    return roleGroupMapping;
-  }
-
-  private List<RoleGroupMappingEntity> convertRoleGroupMapping(RoleGroupMapping mapping) {
-
-    final String providerTypeName = mapping.getProvider();
-    final LdapProviderType providerTyper = LdapProviderType.fromValue(providerTypeName);
-    return mapping.getRoleGroups().stream().flatMap(m -> {
-      RoleEntity roleEntity = convertRole(m.getRole());
-      return m.getGroups().stream().map(g -> {
-        RoleGroupMappingEntity entity = new RoleGroupMappingEntity();
-        entity.setGroupDn(g.getDistinguishedName());
-        entity.setGroupName(g.getDisplayName());
-        entity.setRole(roleEntity);
-        entity.setProvider(providerTyper);
-        return entity;
-      });
-    }).collect(Collectors.toList());
   }
 
   @GET
@@ -383,13 +278,6 @@ public class UserService {
     return permissions;
   }
 
-  private RoleEntity convertRole(Role role) {
-    RoleEntity roleEntity = new RoleEntity();
-    roleEntity.setName(role.role);
-    roleEntity.setId(role.id);
-    return roleEntity;
-  }
-  
   private ArrayList<Permission> convertPermissions(final Iterable<PermissionEntity> permissionEntities) {
     ArrayList<Permission> permissions = new ArrayList<Permission>();
     for (PermissionEntity permissionEntity : permissionEntities) {

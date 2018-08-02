@@ -45,6 +45,7 @@ import org.ohdsi.webapi.evidence.NegativeControlRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
 
@@ -53,7 +54,8 @@ import org.springframework.stereotype.Component;
  * @author fdefalco
  */
 @Path("/conceptset/")
-@Component
+@Component("conceptSetService")
+@ConditionalOnProperty(value = "datasource.honeur.enabled", havingValue = "false")
 public class ConceptSetService extends AbstractDaoService {
 
     @Autowired

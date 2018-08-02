@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.service;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.eclipse.collections.impl.block.factory.Comparators;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,20 +8,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
-import org.ohdsi.webapi.userimport.entities.RoleGroupMappingEntity;
-import org.ohdsi.webapi.userimport.model.*;
-import org.ohdsi.webapi.userimport.services.UserImportService;
 import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**

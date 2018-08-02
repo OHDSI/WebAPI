@@ -6,6 +6,8 @@ import org.ohdsi.webapi.conceptset.ConceptSetItem;
 import org.ohdsi.webapi.service.ConceptSetService;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.service.VocabularyService;
+import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.source.SourceInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -53,12 +55,26 @@ public class HoneurConceptSetService extends ConceptSetService {
 //        SourceInfo vocabSourceInfo = sourceService.getPriorityVocabularySourceInfo();
 //        Collection<Concept> concepts = vocabService.executeIdentifierLookup(vocabSourceInfo.sourceKey, identifiers);
 
-        List<Collection<Concept>> conceptCollections = sourceService.getSources().stream()
+        Collection<SourceInfo> sources = sourceService.getSources();
+        List<SourceInfo> filteredSources = new ArrayList<>();
+        List<String> tableQualifiersAndDaimonTypesAdded = new ArrayList<>();
+        for (SourceInfo source : sources) {
+            for (SourceDaimon daimon : source.daimons) {
+                if (daimon.getDaimonType().equals(SourceDaimon.DaimonType.Vocabulary) &&
+                        !tableQualifiersAndDaimonTypesAdded
+                                .contains(daimon.getTableQualifier() + daimon.getDaimonType())) {
+                    filteredSources.add(source);
+                    tableQualifiersAndDaimonTypesAdded.add(daimon.getTableQualifier() + daimon.getDaimonType());
+                }
+            }
+        }
+
+        List<Collection<Concept>> conceptCollections = filteredSources.stream()
                 .map(sourceInfo -> vocabService.executeIdentifierLookup(sourceInfo.sourceKey, identifiers))
                 .collect(Collectors.toList());
 
         // put the concept information into the expression along with the concept set item information
-        for(Collection<Concept> concepts: conceptCollections) {
+        for (Collection<Concept> concepts : conceptCollections) {
             for (Concept concept : concepts) {
                 ConceptSetExpression.ConceptSetItem currentItem = new ConceptSetExpression.ConceptSetItem();
                 currentItem.concept = concept;

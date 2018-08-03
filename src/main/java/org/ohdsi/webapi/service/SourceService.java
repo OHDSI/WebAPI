@@ -1,11 +1,27 @@
 package org.ohdsi.webapi.service;
 
 import org.apache.commons.io.IOUtils;
+import java.util.*;
+import java.util.stream.Collectors;
+import javax.annotation.PostConstruct;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.jasypt.encryption.pbe.PBEStringEncryptor;
 import org.jasypt.properties.PropertyValueEncryptionUtils;
+import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -189,7 +205,7 @@ public class SourceService extends AbstractDaoService {
       throw new NotAuthorizedException(SECURE_MODE_ERROR);
     }
     Source source = conversionService.convert(request, Source.class);
-      setImpalaKrbData(file, fileDetail.getFileName(), request.getDialect(), source, null, null);
+    setImpalaKrbData(file, fileDetail.getFileName(), request.getDialect(), source, null, null);
     Source saved = sourceRepository.save(source);
     String sourceKey = saved.getSourceKey();
     cachedSources = null;
@@ -219,7 +235,7 @@ public class SourceService extends AbstractDaoService {
               Objects.equals(updated.getPassword().trim(), Source.MASQUERADED_PASSWORD)) {
         updated.setPassword(source.getPassword());
       }
-        setImpalaKrbData(file, fileDetail.getFileName(), request.getDialect(), updated, source.getKrbKeytab(), source.getKeytabName());
+      setImpalaKrbData(file, fileDetail.getFileName(), request.getDialect(), updated, source.getKrbKeytab(), source.getKeytabName());
       List<SourceDaimon> removed = source.getDaimons().stream().filter(d -> !updated.getDaimons().contains(d))
               .collect(Collectors.toList());
       sourceDaimonRepository.delete(removed);
@@ -279,6 +295,18 @@ public class SourceService extends AbstractDaoService {
             throw new NotFoundException();
         }
     }
+
+  @Path("connection/{key}")
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  public SourceInfo checkConnection(@PathParam("key") final String sourceKey) throws Exception {
+
+    final Source source = sourceRepository.findBySourceKey(sourceKey);
+    final JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
+    jdbcTemplate.execute(SqlTranslate.translateSql("select 1;", source.getSourceDialect()).replaceAll(";$", ""));
+    return source.getSourceInfo();
+  }
+
 
   @Path("{sourceKey}/daimons/{daimonType}/set-priority")
   @POST

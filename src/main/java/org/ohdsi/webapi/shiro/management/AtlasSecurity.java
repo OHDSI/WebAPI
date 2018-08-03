@@ -161,6 +161,7 @@ public abstract class AtlasSecurity extends Security {
       .addProtectedRestPath("/source/refresh")
       .addProtectedRestPath("/source/priorityVocabulary")
       .addRestPath("/source/sources")
+      .addProtectedRestPath("/source/connection/*")
       .addProtectedRestPath("/source", "createPermissionsOnCreateSource")
       .addProtectedRestPath("/source/*", "deletePermissionsOnDeleteSource")
       .addProtectedRestPath("/source/details/*")

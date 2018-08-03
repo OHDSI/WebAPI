@@ -1519,17 +1519,9 @@ public class CohortResultsAnalysisRunner {
 	
 	public HealthcareExposureReport getHealthcareExposureReport(JdbcTemplate jdbcTemplate, final int cohortId, final WindowType window, final PeriodType periodType, Source source) {
 		String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-		int windowAnalysisId;
-		
-		if (window == WindowType.BASELINE) {
-			windowAnalysisId = 4000;
-		} else if (window == WindowType.AT_RISK) {
-			windowAnalysisId = 4006;
-		} else {
-			throw new RuntimeException("Invalid window type: " + window);			
-		}
-		
-		String[] search = new String[]{"results_schema"};
+		int windowAnalysisId = getSubjectAnalysisIdByWindowType(window);
+
+        String[] search = new String[]{"results_schema"};
 		String[] replace = new String[]{resultsTableQualifier};
 
 		HealthcareExposureReport report = new HealthcareExposureReport();
@@ -1569,9 +1561,19 @@ public class CohortResultsAnalysisRunner {
 
 		
 		return report;
-	}	
-	
-	public HealthcareVisitUtilizationReport getHealthcareVisitReport(JdbcTemplate jdbcTemplate, final int cohortId, final WindowType window, VisitStatType visitStat
+	}
+
+    private int getSubjectAnalysisIdByWindowType(final WindowType window) {
+        if (window == WindowType.BASELINE) {
+            return 4000;
+        } else if (window == WindowType.AT_RISK) {
+            return 4006;
+        } else {
+            throw new RuntimeException("Invalid window type: " + window);
+        }
+    }
+
+    public HealthcareVisitUtilizationReport getHealthcareVisitReport(JdbcTemplate jdbcTemplate, final int cohortId, final WindowType window, VisitStatType visitStat
 		, final PeriodType periodType, final Long visitConceptId, final Long visitTypeConceptId, final Long costTypeConceptId
 		, Source source) {
 		String vocabularyTableQualifier = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
@@ -1962,5 +1964,25 @@ public class CohortResultsAnalysisRunner {
 		});
 		
 		return drugTypes;
+	}
+
+	public List<String> getHealthcarePeriodTypes(final JdbcTemplate jdbcTemplate, final int id, final WindowType window, final Source source) {
+        final int windowAnalysisId = getSubjectAnalysisIdByWindowType(window);
+        final String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+ 
+        final String[] search = new String[]{"results_schema"};
+        final String[] replace = new String[]{resultsTableQualifier};
+ 
+        final String dataPath = BASE_SQL_PATH + "/healthcareutilization/getPeriodTypes.sql";
+        final String[] dataCols = new String[]{"cohort_definition_id","analysis_id"};
+        final Object[] dataColVals = new Object[]{id, windowAnalysisId};
+ 
+        final PreparedStatementRenderer dataPsr =  new PreparedStatementRenderer(source, dataPath, search, replace, dataCols, dataColVals);
+        
+        final List<String> periodTypes = jdbcTemplate.query(dataPsr.getSql(), dataPsr.getSetter(), (rs,rowNum) -> {
+            return rs.getString("period_type");
+        });
+
+        return periodTypes;
 	}
 }

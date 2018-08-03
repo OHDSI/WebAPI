@@ -97,7 +97,7 @@ into #periods_baseline
 FROM @results_schema.heracles_periods hp
 WHERE not (
 	hp.period_end_date <= (SELECT dateadd(d, -365, min(cohort_start_date)) FROM #HERACLES_cohort) or hp.period_start_date > (SELECT max(cohort_start_date) FROM #HERACLES_cohort)
-); -- only returns overlapping periods
+) AND hp.period_type in (@periods); -- only returns overlapping periods
 
 create index ix_periods_baseline_start on #periods_baseline (period_start_date);
 create index ix_periods_baseline_end on #periods_baseline (period_end_date);
@@ -107,7 +107,7 @@ into #periods_atrisk
 FROM @results_schema.heracles_periods hp
 WHERE not (
 	hp.period_end_date <= (SELECT min(cohort_start_date) FROM #HERACLES_cohort) or hp.period_start_date > (SELECT max(cohort_end_date) FROM #HERACLES_cohort)
-); -- only returns overlapping periods
+) AND hp.period_type in (@periods); -- only returns overlapping periods
 
 create index ix_periods_atrisk_start on #periods_atrisk (period_start_date);
 create index ix_periods_atrisk_end on #periods_atrisk (period_end_date);
@@ -9034,7 +9034,7 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, count_value) as
 			case when hp.period_end_date > c1.cohort_end_date then c1.cohort_end_date else hp.period_end_date end)
 		) as count_value
 	from #HERACLES_cohort c1
-		join @results_schema.heracles_periods hp on not (hp.period_end_date <= c1.cohort_start_date or hp.period_start_date >  c1.cohort_end_date) -- find overlapping periods with the cohort's observation periods
+		join #periods_atrisk hp on not (hp.period_end_date <= c1.cohort_start_date or hp.period_start_date >  c1.cohort_end_date) -- find overlapping periods with the cohort's observation periods
 	group by c1.cohort_definition_id, c1.subject_id, hp.period_id
 
 	union all

@@ -9034,7 +9034,7 @@ WITH cteRawData (cohort_definition_id, subject_id, stratum_1, count_value) as
 			case when hp.period_end_date > c1.cohort_end_date then c1.cohort_end_date else hp.period_end_date end)
 		) as count_value
 	from #HERACLES_cohort c1
-		join @results_schema.heracles_periods hp on not (hp.period_end_date <= c1.cohort_start_date or hp.period_start_date >  c1.cohort_end_date) -- find overlapping periods with the cohort's observation periods
+	  join #periods_atrisk hp on not (hp.period_end_date <= c1.cohort_start_date or hp.period_start_date >  c1.cohort_end_date) -- find overlapping periods with the cohort's observation periods
 	group by c1.cohort_definition_id, c1.subject_id, hp.period_id
 
 	union all

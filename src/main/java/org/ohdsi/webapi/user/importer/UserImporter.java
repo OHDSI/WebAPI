@@ -1,15 +1,15 @@
-package org.ohdsi.webapi.userimport.services;
+package org.ohdsi.webapi.user.importer;
 
-import org.ohdsi.webapi.userimport.model.AtlasUserRoles;
-import org.ohdsi.webapi.userimport.model.LdapGroup;
-import org.ohdsi.webapi.userimport.model.LdapProviderType;
-import org.ohdsi.webapi.userimport.model.RoleGroupMapping;
-import org.ohdsi.webapi.userimport.entities.RoleGroupMappingEntity;
+import org.ohdsi.webapi.user.importer.model.AtlasUserRoles;
+import org.ohdsi.webapi.user.importer.model.LdapGroup;
+import org.ohdsi.webapi.user.importer.model.LdapProviderType;
+import org.ohdsi.webapi.user.importer.model.RoleGroupMapping;
+import org.ohdsi.webapi.user.importer.RoleGroupMappingEntity;
 import org.springframework.ldap.core.LdapTemplate;
 
 import java.util.List;
 
-public interface UserImportService {
+public interface UserImporter {
 
   LdapTemplate getLdapTemplate(LdapProviderType providerType);
 

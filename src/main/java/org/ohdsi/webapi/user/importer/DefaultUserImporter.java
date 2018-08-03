@@ -1,13 +1,11 @@
-package org.ohdsi.webapi.userimport.services;
+package org.ohdsi.webapi.user.importer;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.ohdsi.webapi.userimport.entities.RoleGroupMappingEntity;
-import org.ohdsi.webapi.userimport.model.*;
-import org.ohdsi.webapi.userimport.repository.RoleGroupMappingRepository;
+import org.ohdsi.webapi.user.importer.model.*;
 import org.ohdsi.webapi.service.UserService;
-import org.ohdsi.webapi.userimport.services.providers.ActiveDirectoryProvider;
-import org.ohdsi.webapi.userimport.services.providers.DefaultLdapProvider;
-import org.ohdsi.webapi.userimport.services.providers.LdapProvider;
+import org.ohdsi.webapi.user.importer.providers.ActiveDirectoryProvider;
+import org.ohdsi.webapi.user.importer.providers.DefaultLdapProvider;
+import org.ohdsi.webapi.user.importer.providers.LdapProvider;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
@@ -26,14 +24,14 @@ import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static org.ohdsi.webapi.userimport.services.providers.OhdsiLdapUtils.getCriteria;
-import static org.ohdsi.webapi.userimport.services.providers.OhdsiLdapUtils.valueAsString;
+import static org.ohdsi.webapi.user.importer.providers.OhdsiLdapUtils.getCriteria;
+import static org.ohdsi.webapi.user.importer.providers.OhdsiLdapUtils.valueAsString;
 
 @Component
 @Transactional(readOnly = true)
-public class DefaultUserImportService implements UserImportService {
+public class DefaultUserImporter implements UserImporter {
 
-  private static final Logger logger = LoggerFactory.getLogger(UserImportService.class);
+  private static final Logger logger = LoggerFactory.getLogger(UserImporter.class);
   private static final String OBJECTCLASS_ATTR = "objectclass";
   private static final String CN_ATTR = "cn";
 
@@ -45,11 +43,11 @@ public class DefaultUserImportService implements UserImportService {
 
   private final RoleGroupMappingRepository roleGroupMappingRepository;
 
-  public DefaultUserImportService(@Autowired(required = false) ActiveDirectoryProvider activeDirectoryProvider,
-                                  @Autowired(required = false) DefaultLdapProvider ldapProvider,
-                                  UserRepository userRepository,
-                                  PermissionManager userManager,
-                                  RoleGroupMappingRepository roleGroupMappingRepository) {
+  public DefaultUserImporter(@Autowired(required = false) ActiveDirectoryProvider activeDirectoryProvider,
+                             @Autowired(required = false) DefaultLdapProvider ldapProvider,
+                             UserRepository userRepository,
+                             PermissionManager userManager,
+                             RoleGroupMappingRepository roleGroupMappingRepository) {
 
     this.userRepository = userRepository;
     this.userManager = userManager;

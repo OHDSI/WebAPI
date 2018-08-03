@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.userimport.model;
+package org.ohdsi.webapi.user.importer.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;

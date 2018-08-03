@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.userimport.model;
+package org.ohdsi.webapi.user.importer.model;
 
 public abstract class LdapObject {
   private String displayName;

@@ -1,11 +1,11 @@
-package org.ohdsi.webapi.userimport.controller;
+package org.ohdsi.webapi.user.importer;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.ohdsi.webapi.service.UserService;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
-import org.ohdsi.webapi.userimport.entities.RoleGroupMappingEntity;
-import org.ohdsi.webapi.userimport.model.*;
-import org.ohdsi.webapi.userimport.services.UserImportService;
+import org.ohdsi.webapi.user.importer.RoleGroupMappingEntity;
+import org.ohdsi.webapi.user.importer.model.*;
+import org.ohdsi.webapi.user.importer.UserImporter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -19,10 +19,10 @@ import java.util.stream.Collectors;
 
 @Component
 @Path("/")
-public class UserImportController {
+public class UserImportService {
 
   @Autowired
-  private UserImportService userImportService;
+  private UserImporter userImporter;
 
   @Value("${security.ad.url}")
   private String adUrl;
@@ -45,7 +45,7 @@ public class UserImportController {
   @Produces(MediaType.APPLICATION_JSON)
   public List<LdapGroup> findGroups(@PathParam("type") String type, @QueryParam("search") String searchStr) {
     LdapProviderType provider = LdapProviderType.fromValue(type);
-    return userImportService.findGroups(provider, searchStr);
+    return userImporter.findGroups(provider, searchStr);
   }
 
   @POST
@@ -54,14 +54,14 @@ public class UserImportController {
   @Produces(MediaType.APPLICATION_JSON)
   public List<AtlasUserRoles> findDirectoryUsers(@PathParam("type") String type, RoleGroupMapping mapping){
     LdapProviderType provider = LdapProviderType.fromValue(type);
-    return userImportService.findUsers(provider, mapping);
+    return userImporter.findUsers(provider, mapping);
   }
 
   @POST
   @Path("user/import")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response importUsers(List<AtlasUserRoles> users) {
-    userImportService.importUsers(users);
+    userImporter.importUsers(users);
     return Response.ok().build();
   }
 
@@ -71,7 +71,7 @@ public class UserImportController {
   public Response saveMapping(@PathParam("type") String type, RoleGroupMapping mapping) {
     LdapProviderType providerType = LdapProviderType.fromValue(type);
     List<RoleGroupMappingEntity> mappingEntities = convertRoleGroupMapping(mapping);
-    userImportService.saveRoleGroupMapping(providerType, mappingEntities);
+    userImporter.saveRoleGroupMapping(providerType, mappingEntities);
     return Response.ok().build();
   }
 
@@ -80,7 +80,7 @@ public class UserImportController {
   @Produces(MediaType.APPLICATION_JSON)
   public RoleGroupMapping getMapping(@PathParam("type") String type) {
     LdapProviderType providerType = LdapProviderType.fromValue(type);
-    List<RoleGroupMappingEntity> mappingEntities = userImportService.getRoleGroupMapping(providerType);
+    List<RoleGroupMappingEntity> mappingEntities = userImporter.getRoleGroupMapping(providerType);
     return convertRoleGroupMapping(type, mappingEntities);
   }
 

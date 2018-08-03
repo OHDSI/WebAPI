@@ -71,7 +71,7 @@ public class HoneurUpdateAccessTokenFilter extends AdviceFilter {
     if (jwt == null) {
       this.authorizer.registerUser(login, defaultRoles);
 
-      Date expiration = this.getExpirationDate(this.tokenExpirationIntervalInSeconds);
+      Date expiration = HoneurTokenManager.getExpirationDate(this.tokenExpirationIntervalInSeconds);
       jwt = HoneurTokenManager.createJsonWebToken(login, expiration);
     }
 
@@ -79,11 +79,5 @@ public class HoneurUpdateAccessTokenFilter extends AdviceFilter {
     Collection<String> permissions = this.authorizer.getAuthorizationInfo(login).getStringPermissions();
     request.setAttribute(PERMISSIONS_ATTRIBUTE, StringUtils.join(permissions, "|"));
     return true;
-  }
-
-  private Date getExpirationDate(final int expirationIntervalInSeconds) {
-    Calendar calendar = Calendar.getInstance();
-    calendar.add(Calendar.SECOND, expirationIntervalInSeconds);
-    return calendar.getTime();
   }
 }

@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Calendar;
 
 /**
  *
@@ -33,7 +34,11 @@ public class HoneurTokenManager {
     return SecurityUtils2.generateJwtToken(casProfile, expiration);
   }
   
-  public static String getSubject(String jwt) throws JwtException {    
+  public static String getSubject(String jwt) throws JwtException {
+    String subject = SecurityUtils2.getSubject(jwt);
+    if(subject == null){
+      throw new JwtException("Token is invalid or expired.");
+    }
     return SecurityUtils2.getSubject(jwt);
   }
   
@@ -43,5 +48,11 @@ public class HoneurTokenManager {
   
   public static String extractToken(ServletRequest request) {
     return TokenManager.extractToken(request);
+  }
+
+  public static Date getExpirationDate(final int expirationIntervalInSeconds) {
+    Calendar calendar = Calendar.getInstance();
+    calendar.add(Calendar.SECOND, expirationIntervalInSeconds);
+    return calendar.getTime();
   }
 }

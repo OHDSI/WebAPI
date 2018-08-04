@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.service;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Collection;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +13,6 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 
 import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -30,7 +30,6 @@ import org.ohdsi.circe.vocabulary.ConceptSetExpressionQueryBuilder;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
-//import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTasklet;
 import org.ohdsi.webapi.evidence.CohortStudyMapping;
 import org.ohdsi.webapi.evidence.CohortStudyMappingRepository;
 import org.ohdsi.webapi.evidence.ConceptCohortMapping;
@@ -54,8 +53,6 @@ import org.ohdsi.webapi.evidence.EvidenceSearch;
 import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlDTO;
 import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlMapper;
 import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlTaskParameters;
-//import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlRecord;
-//import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlRepository;
 import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlTasklet;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
@@ -67,7 +64,6 @@ import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
@@ -113,6 +109,29 @@ public class EvidenceService extends AbstractDaoService {
         return returnVal;
     }
   };
+  
+  public static class DrugConditionSourceSearchParams {
+      @JsonProperty("targetDomain")
+      public String targetDomain = "CONDITION";
+      @JsonProperty("drugConceptIds")
+      public String[] drugConceptIds;
+      @JsonProperty("conditionConceptIds")
+      public String[] conditionConceptIds;
+      @JsonProperty("sourceIds")
+      public String[] sourceIds;
+      
+      public String getDrugConceptIds() {
+          return StringUtils.join(drugConceptIds, ",");
+      }
+      
+      public String getConditionConceptIds() {
+          return StringUtils.join(conditionConceptIds, ",");
+      }
+      
+      public String getSourceIds() {
+          return StringUtils.join(sourceIds, ",");
+      }
+  }
 	
   
     /**
@@ -193,7 +212,7 @@ public class EvidenceService extends AbstractDaoService {
 	 * Provides a high level description of the information found in the 
 	 * Common Evidence Model (CEM). 
 	 * @summary Get summary of the Common Evidence Model (CEM) contents
-	 * @param sourceKey The source key containing the evidence daimon
+	 * @param sourceKey The source key containing the CEM daimon
 	 * @return A collection of evidence information stored in CEM
 	 */
 	@GET
@@ -220,11 +239,47 @@ public class EvidenceService extends AbstractDaoService {
       return info;
     });
   }
+  
+    /**
+     * Searches the evidence base for evidence related to one ore more
+     * drug and condition combinations for the source(s) specified
+     * @param sourceKey The source key containing the CEM daimon
+     * @param searchParams
+     * @return
+     */
+    @POST
+  @Path("{sourceKey}/drugconditionpair")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Collection<DrugHoiEvidence> getDrugConditionPair(@PathParam("sourceKey") String sourceKey, DrugConditionSourceSearchParams searchParams) {
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String sql = getDrugHoiEvidenceSQL(source, searchParams);
+    return getSourceJdbcTemplate(source).query(sql, (rs, rowNum) -> {
+      String evidenceSource = rs.getString("SOURCE_ID");
+      String mappingType = rs.getString("MAPPING_TYPE");
+      String drugConceptId = rs.getString("DRUG_CONCEPT_ID");
+      String drugConceptName = rs.getString("DRUG_CONCEPT_NAME");
+      String conditionConceptId = rs.getString("CONDITION_CONCEPT_ID");
+      String conditionConceptName = rs.getString("CONDITION_CONCEPT_NAME");
+      String uniqueIdentifier = rs.getString("UNIQUE_IDENTIFIER");
+			
+      DrugHoiEvidence evidence = new DrugHoiEvidence();
+      evidence.evidenceSource = evidenceSource;
+      evidence.statisticType = mappingType;
+      evidence.drugConceptId = drugConceptId;
+      evidence.drugConceptName = drugConceptName;
+      evidence.hoiConceptId = conditionConceptId;
+      evidence.hoiConceptName = conditionConceptName;
+      evidence.uniqueIdentifier = uniqueIdentifier;
+      
+      return evidence;
+    });
+  }
 
   /**
 	 * Retrieves a list of evidence for the specified drug conceptId
 	 * @summary Get Evidence For Drug
-	 * @param sourceKey The source key containing the evidence daimon
+	 * @param sourceKey The source key containing the CEM daimon
    * @param id - An RxNorm Drug Concept Id
    * @return A list of evidence
    */
@@ -262,7 +317,7 @@ public class EvidenceService extends AbstractDaoService {
 	 * Retrieves a list of evidence for the specified health outcome of
 	 * interest (hoi) conceptId
 	 * @summary Get Evidence For Health Outcome
-	 * @param sourceKey The source key containing the evidence daimon
+	 * @param sourceKey The source key containing the CEM daimon
    * @param id The conceptId for the health outcome of interest
    * @return A list of evidence
    */
@@ -300,7 +355,7 @@ public class EvidenceService extends AbstractDaoService {
    * Retrieves a list of RxNorm ingredients from the concept
    * set and determines if we have label evidence for them.
    * @summary Get Drug Labels For RxNorm Ingredients
-   * @param sourceKey The source key of the evidence daimon
+   * @param sourceKey The source key of the CEM daimon
    * @param identifiers The list of RxNorm Ingredients concepts or ancestors
    * @return A list of evidence for the drug and HOI
    */
@@ -332,7 +387,7 @@ public class EvidenceService extends AbstractDaoService {
 	 * Retrieves a list of evidence for the specified health outcome of
 	 * interest and drug as defined in the key parameter.
 	 * @summary Get Evidence For Drug & Health Outcome
-	 * @param sourceKey The source key of the evidence daimon
+	 * @param sourceKey The source key of the CEM daimon
 	 * @param key The key must be structured as {drugConceptId}-{hoiConceptId}
    * @return A list of evidence for the drug and HOI
    */
@@ -374,7 +429,7 @@ public class EvidenceService extends AbstractDaoService {
   /**
 	 * Originally provided a roll up of evidence from LAERTES
 	 * @summary Depreciated
-	 * @param sourceKey The source key of the evidence daimon
+	 * @param sourceKey The source key of the CEM daimon
    * @param id The RxNorm drug conceptId
    * @param filter Specified the type of rollup level (ingredient, clinical drug, branded drug)
    * @return A list of evidence rolled up
@@ -445,7 +500,7 @@ public class EvidenceService extends AbstractDaoService {
 	/**
 	 * Retrieve all evidence from Common Evidence Model (CEM) for a given conceptId
 	 * @summary Get evidence for a concept
-	 * @param sourceKey The source key of the evidence daimon
+	 * @param sourceKey The source key of the CEM daimon
 	 * @param id The conceptId of interest
 	 * @return A list of evidence matching the conceptId of interest
 	 */
@@ -487,7 +542,7 @@ public class EvidenceService extends AbstractDaoService {
   /**
 	 * Originally provided an evidence summary from LAERTES
 	 * @summary Depreciated
-	 * @param sourceKey The source key of the evidence daimon
+	 * @param sourceKey The source key of the CEM daimon
    * @param conditionID The condition conceptId
    * @param drugID The drug conceptId
    * @param evidenceGroup The evidence group
@@ -520,7 +575,7 @@ public class EvidenceService extends AbstractDaoService {
   /**
 	 * Originally provided an evidence details from LAERTES
 	 * @summary Depreciated
-	 * @param sourceKey The source key of the evidence daimon
+	 * @param sourceKey The source key of the CEM daimon
    * @param conditionID The condition conceptId
    * @param drugID The drug conceptId
    * @param evidenceType The evidence type
@@ -589,7 +644,7 @@ public class EvidenceService extends AbstractDaoService {
 	/**
 	 * Originally provided an summary from spontaneous reports from LAERTES
 	 * @summary Depreciated
-	 * @param sourceKey The source key of the evidence daimon
+	 * @param sourceKey The source key of the CEM daimon
 	 * @param search The search term
 	 * @return A list of spontaneous report summaries
 	 * @throws JSONException
@@ -625,7 +680,7 @@ public class EvidenceService extends AbstractDaoService {
 	/**
 	 * Originally provided an evidence search from LAERTES
 	 * @summary Depreciated
-	 * @param sourceKey The source key of the evidence daimon
+	 * @param sourceKey The source key of the CEM daimon
 	 * @param search The search term
 	 * @return A list of evidence
 	 * @throws JSONException
@@ -671,7 +726,7 @@ public class EvidenceService extends AbstractDaoService {
 	/**
 	 * Originally provided a label evidence search from LAERTES
 	 * @summary Depreciated
-	 * @param sourceKey The source key of the evidence daimon
+	 * @param sourceKey The source key of the CEM daimon
 	 * @param search The search term
 	 * @return A list of evidence
 	 * @throws JSONException
@@ -703,7 +758,7 @@ public class EvidenceService extends AbstractDaoService {
  * Queues up a negative control generation task to compute 
  * negative controls using Common Evidence Model (CEM)
  * @summary Generate negative controls
- * @param sourceKey The source key of the evidence daimon
+ * @param sourceKey The source key of the CEM daimon
  * @param task - The negative control task with parameters
  * @return information about the negative control job
  * @throws Exception
@@ -814,7 +869,7 @@ public class EvidenceService extends AbstractDaoService {
 /**
  * Retrieves the negative controls for a concept set
  * @summary Retrieve negative controls
- * @param sourceKey The source key of the evidence daimon
+ * @param sourceKey The source key of the CEM daimon
  * @param conceptSetId The concept set id
  * @return The list of negative controls
  */
@@ -875,7 +930,7 @@ public class EvidenceService extends AbstractDaoService {
 	/**
    * Retrieves parameterized SQL used to generate negative controls
    * @summary Retrieves parameterized SQL used to generate negative controls
-   * @param sourceKey The source key of the evidence daimon
+   * @param sourceKey The source key of the CEM daimon
    * @return The list of negative controls
    */
 	@GET
@@ -1106,7 +1161,7 @@ public class EvidenceService extends AbstractDaoService {
      * of RxNorm Ingredients
      * @summary SQL for obtaining product label evidence
      * @param identifiers The list of RxNorm Ingredient conceptIds
-     * @param source The source that contains the evidence daimon
+     * @param source The source that contains the CEM daimon
      * @return A prepared SQL statement 
      */
     protected Collection<DrugLabelInfo> executeGetDrugLabels(long[] identifiers, Source source) {
@@ -1126,12 +1181,34 @@ public class EvidenceService extends AbstractDaoService {
         }
     }
         
-        
+    /**
+     * Get the SQL for obtaining evidence for a drug/condition pair for 
+     * source ids
+     * @summary SQL for obtaining evidence for a drug/hoi pair by source
+     * @param key The drug-hoi conceptId pair
+     * @param source The source that contains the CEM daimon
+     * @return A prepared SQL statement 
+     */
+    protected String getDrugHoiEvidenceSQL(Source source, DrugConditionSourceSearchParams searchParams) {
+        String sqlPath = "/resources/evidence/sql/getDrugConditionPairBySourceId.sql";
+        String sql = ResourceHelper.GetResourceAsString(sqlPath);
+        String evidenceSchema = source.getTableQualifier(SourceDaimon.DaimonType.CEM);
+        String vocabularySchema = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
+        if (vocabularySchema == null) {
+                vocabularySchema = evidenceSchema;
+        }
+        String[] params = new String[]{"evidenceSchema", "vocabularySchema", "targetDomain", "sourceIdList", "drugList", "conditionList"};
+        String[] values = new String[]{evidenceSchema, vocabularySchema, searchParams.targetDomain, searchParams.getSourceIds(), searchParams.getDrugConceptIds(), searchParams.getConditionConceptIds()};
+        sql = SqlRender.renderSql(sql, params, values);
+        sql = SqlTranslate.translateSql(sql, source.getSourceDialect());
+        return sql;
+    }
+    
     /**
      * Get the SQL for obtaining evidence for a drug/hoi combination
      * @summary SQL for obtaining evidence for a drug/hoi combination
      * @param key The drug-hoi conceptId pair
-     * @param source The source that contains the evidence daimon
+     * @param source The source that contains the CEM daimon
      * @return A prepared SQL statement 
      */
     protected PreparedStatementRenderer prepareGetDrugHoiEvidence(final String key, Source source) {
@@ -1155,7 +1232,7 @@ public class EvidenceService extends AbstractDaoService {
 	/**
 	 * Get the SQL for obtaining evidence for a concept
 	 * @summary SQL for obtaining evidence for a concept
-	 * @param source The source that contains the evidence daimon
+	 * @param source The source that contains the CEM daimon
 	 * @param conceptId The conceptId of interest
 	 * @return A prepared SQL statement 
 	 */
@@ -1176,7 +1253,7 @@ public class EvidenceService extends AbstractDaoService {
     /**
      * Get the SQL for obtaining negative controls for the concept set specified
      * @summary SQL for obtaining negative controls
-     * @param source The source that contains the evidence daimon
+     * @param source The source that contains the CEM daimon
      * @param conceptSetId The conceptSetId associated to the negative controls
      * @return A prepared SQL statement 
      */

@@ -6,6 +6,7 @@ EXCEPTION
          RAISE;
       END IF;
 END;
+  /
 
 BEGIN
   EXECUTE IMMEDIATE 'DROP SEQUENCE ' || ${ohdsiSchema}.negative_controls_sequence;
@@ -15,6 +16,7 @@ EXCEPTION
       RAISE;
     END IF;
 END;
+  /
 
 CREATE SEQUENCE ${ohdsiSchema}.negative_controls_sequence START WITH 1 MAXVALUE 9223372036854775807 NO CYCLE;
 CREATE TABLE ${ohdsiSchema}.CONCEPT_SET_NEGATIVE_CONTROLS (

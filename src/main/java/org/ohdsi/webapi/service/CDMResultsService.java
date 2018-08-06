@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -11,6 +12,7 @@ import javax.ws.rs.core.MediaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.apache.commons.lang3.StringUtils;
+import org.glassfish.jersey.internal.util.Producer;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
@@ -95,32 +97,37 @@ public class CDMResultsService extends AbstractDaoService {
 
         Source source = getSourceRepository().findBySourceKey(sourceKey);
 
-        for (int i = 0;
-                i < identifiers.length;
-                i++) {
-            identifiers[i] = "'" + identifiers[i] + "'";
-        }
-        PreparedStatementRenderer psr = prepareGetConceptRecordCount(identifiers, source);
+        PreparedStatementRenderer psr = prepareGetConceptRecordCount(source, () ->
+                Arrays.stream(identifiers).map(i -> Integer.parseInt(i.replaceAll("'", "")))
+                        .collect(Collectors.toList()));
         return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), rowMapper);
     }
 
-    protected PreparedStatementRenderer prepareGetConceptRecordCount(String[] identifiers, Source source) {
+    public PreparedStatementRenderer prepareGetConceptRecordCount(Source source, Producer<Object> producer) {
+
+        return prepareGetConceptRecordCount(source, producer, false);
+    }
+
+    public PreparedStatementRenderer prepareGetConceptRecordCount(Source source, Producer<Object> producer, boolean replace) {
 
         String sqlPath = "/resources/cdmresults/sql/getConceptRecordCount.sql";
 
         String resultTableQualifierName = "resultTableQualifier";
         String vocabularyTableQualifierName = "vocabularyTableQualifier";
+        String conceptIdentifiersName = "conceptIdentifiers";
         String resultTableQualifierValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
         String vocabularyTableQualifierValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
 
-        String[] tableQualifierNames = {resultTableQualifierName, vocabularyTableQualifierName};
-        String[] tableQualifierValues = {resultTableQualifierValue, vocabularyTableQualifierValue};
+        String[] tableQualifierNames = replace ?
+                new String[]{resultTableQualifierName, vocabularyTableQualifierName, conceptIdentifiersName} :
+                new String[]{resultTableQualifierName, vocabularyTableQualifierName};
+        String[] tableQualifierValues = replace ?
+                new String[]{resultTableQualifierValue, vocabularyTableQualifierValue, producer.call().toString()} :
+                new String[]{resultTableQualifierValue, vocabularyTableQualifierValue};
 
-        Object[] results = new Object[identifiers.length];
-        for (int i = 0; i < identifiers.length; i++) {
-            results[i] = Integer.parseInt(identifiers[i].replaceAll("'", ""));
-        }
-        return new PreparedStatementRenderer(source, sqlPath, tableQualifierNames, tableQualifierValues, "conceptIdentifiers", results);
+        return replace ?
+                new PreparedStatementRenderer(source, sqlPath, tableQualifierNames, tableQualifierValues, new String[0], new Object[0]) :
+                new PreparedStatementRenderer(source, sqlPath, tableQualifierNames, tableQualifierValues, conceptIdentifiersName, producer.call());
     }
 
     /**

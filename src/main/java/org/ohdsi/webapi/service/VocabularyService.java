@@ -319,7 +319,7 @@ public class VocabularyService extends AbstractDaoService {
   @POST
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public PageResponse<Concept> lookupSourcecodesPage(ConceptSetExpressionPageRequest pageRequest) {
+  public PageResponse<ConceptAncestors> lookupSourcecodesPage(ConceptSetExpressionPageRequest pageRequest) {
     String defaultSourceKey = getDefaultVocabularySourceKey();
 
     if (defaultSourceKey == null) {
@@ -358,8 +358,8 @@ public class VocabularyService extends AbstractDaoService {
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public PageResponse<Concept> lookupMappedSourcecodesPage(@PathParam("sourceKey") String sourceKey, ConceptSetExpressionPageRequest pageRequest) {
-    List<Concept> concepts;
+  public PageResponse<ConceptAncestors> lookupMappedSourcecodesPage(@PathParam("sourceKey") String sourceKey, ConceptSetExpressionPageRequest pageRequest) {
+    List<ConceptAncestors> concepts;
     int totals, filtered;
 
     long[] sourcecodes = lookupMappedConcepts(sourceKey, pageRequest.getExpression());
@@ -395,7 +395,7 @@ public class VocabularyService extends AbstractDaoService {
       filtered = 0;
     }
 
-    PageResponse<Concept> response = new PageResponse<>();
+    PageResponse<ConceptAncestors> response = new PageResponse<>();
     response.setData(concepts);
     response.setDraw(pageRequest.getDraw());
     response.setRecordsTotal(totals);
@@ -811,8 +811,8 @@ public class VocabularyService extends AbstractDaoService {
 
   private Function<String, String> countFunction = sql -> "select count(*) from ( " + sql + " ) Q";
 
-  private RowMapper<Concept> conceptRowMapper = (rs, rowNum) -> {
-    Concept concept = new Concept();
+  private RowMapper<ConceptAncestors> conceptRowMapper = (rs, rowNum) -> {
+    ConceptAncestors concept = new ConceptAncestors();
     concept.conceptId = rs.getLong("CONCEPT_ID");
     concept.domainId = rs.getString("DOMAIN_ID");
     concept.conceptClassId = rs.getString("CONCEPT_CLASS_ID");
@@ -821,6 +821,8 @@ public class VocabularyService extends AbstractDaoService {
     concept.invalidReason = rs.getString("INVALID_REASON");
     concept.standardConcept = rs.getString("STANDARD_CONCEPT");
     concept.vocabularyId = rs.getString("VOCABULARY_ID");
+    concept.recordCount = rs.getLong("RECORD_COUNT");
+    concept.descendantRecordCount = rs.getLong("DESCENDANT_RECORD_COUNT");
     return concept;
   };
 
@@ -830,7 +832,7 @@ public class VocabularyService extends AbstractDaoService {
   @Path("{sourceKey}/resolveConceptSetExpressionPage")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public PageResponse<ConceptAncestors> resolveConceptSetExpression(@PathParam("sourceKey") String sourceKey, ConceptSetExpressionPageRequest pageRequest) throws SQLException {
+  public PageResponse<ConceptAncestors> resolveConceptSetExpression(@PathParam("sourceKey") String sourceKey, ConceptSetExpressionPageRequest pageRequest) {
 
     int offset = pageRequest.getStart(), limit = pageRequest.getLength();
     String orderClause = PageableUtils.getOrderClause(pageRequest);
@@ -842,17 +844,28 @@ public class VocabularyService extends AbstractDaoService {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
 
+    PreparedStatementRenderer counts = resultsService.prepareGetConceptRecordCount(source, () -> "select concept_id from included", true);
     StatementPrepareStrategy sps = new ConceptSetStrategy(pageRequest.getExpression());
-    Function<String, String> queryModifier = getOrderFunction(orderClause).andThen(ConceptSetFacetValues.conceptSetStatementFunction).andThen(getWhereFunction(whereClause));
+//    Function<String, String> queryModifier = getOrderFunction(orderClause).andThen(ConceptSetFacetValues.conceptSetStatementFunction).andThen(getWhereFunction(whereClause));
+    Function<String, String> columnTable = sql -> sql.replaceAll(" concept_id", " CONCEPT.concept_id");
+    Function<String, String> queryModifier = columnTable.andThen(sql -> "with included as (" + sql + "), counts as ( "
+            + counts.getSql() + ") select c.concept_id, "
+            + "ROW_NUMBER() over(ORDER BY " + orderClause + ") as rrow,"
+            + ConceptSetFacetValues.CONCEPT_SET_FIELDS + ", counts.record_count, counts.descendant_record_count from "
+            + source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary)
+            + ".concept c join included on included.concept_id = c.concept_id join counts on cast(counts.concept_id as integer) = c.concept_id");
+
     if (source.getSourceDialect().equals("impala")) {
       queryModifier = queryModifier.andThen(sql -> sql.replaceAll("distinct ROW_NUMBER\\(\\)", "ROW_NUMBER()"));
     }
+
     PreparedStatementRenderer psr = sps.prepareStatement(source, queryModifier);
     String query = psr.getSql();
     String queryPage = "with rrows as ( " + query + ") select top " + limit + " * from rrows where rrows.rrow > " + offset + " order by rrows.rrow;";
+
     queryPage = SqlTranslate.translateSql(queryPage, source.getSourceDialect());
 
-    List<Concept> concepts = jdbcTemplate.query(queryPage, (PreparedStatementSetter) null, conceptRowMapper);
+    List<ConceptAncestors> concepts = jdbcTemplate.query(queryPage, (PreparedStatementSetter) null, conceptRowMapper);
 
     int totals = countIncludedConceptSets(sourceKey, pageRequest.getExpression());
     String queryFiltered = "select count(*) from (" + query + ") Q;";
@@ -866,16 +879,16 @@ public class VocabularyService extends AbstractDaoService {
     Map<Long, Concept> conceptMap = Arrays.stream(pageRequest.getExpression().items).collect(Collectors.toMap(item -> item.concept.conceptId,
             item -> item.concept));
     Map<Long, List<Long>> ascendants = calculateAscendants(sourceKey, ancestorIds);
-    Collection<ConceptAncestors> conceptAncestors = concepts.stream().map(ConceptAncestors::new)
+    Collection<ConceptAncestors> conceptAncestors = concepts.stream()
             .peek(c -> {
               c.ancestors = ascendants.get(c.conceptId).stream().map(conceptMap::get).collect(Collectors.toList());
-              c.recordCount = 0L;
-              c.descendantRecordCount = 0L;
+//              c.recordCount = 0L;
+//              c.descendantRecordCount = 0L;
             })
             .collect(Collectors.toList());
 
     //Get record counts
-    String[] identifiers = concepts.stream().filter(c -> Objects.equals(c.GetStandardConcept(), "Standard") ||
+/*    String[] identifiers = concepts.stream().filter(c -> Objects.equals(c.GetStandardConcept(), "Standard") ||
             Objects.equals(c.GetStandardConcept(), "Classification")).map(c -> Long.toString(c.conceptId)).toArray(String[]::new);
     List<AbstractMap.SimpleEntry<Long, Long[]>> recordCounts = resultsService.getConceptRecordCount(sourceKey, identifiers);
     Map<Long, ConceptAncestors> conceptAncestorsMap = conceptAncestors.stream().collect(Collectors.toMap(c -> c.conceptId, c -> c));
@@ -885,7 +898,7 @@ public class VocabularyService extends AbstractDaoService {
         concept.recordCount = count.getValue()[0];
         concept.descendantRecordCount = count.getValue()[1];
       }
-    }
+    }*/
 
     PageResponse<ConceptAncestors> result = new PageResponse<>();
     result.setData(conceptAncestors);

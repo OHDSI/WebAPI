@@ -11,7 +11,7 @@ public class PageableUtils {
   public static String getOrderClause(PageRequest pageRequest) {
 
     return Arrays.stream(pageRequest.getOrder())
-            .map(order -> pageRequest.getColumns()[order.getColumn()].getData() + " " + order.getDir())
+            .map(order -> "c." + pageRequest.getColumns()[order.getColumn()].getData() + " " + order.getDir())
             .collect(Collectors.joining(","));
   }
 

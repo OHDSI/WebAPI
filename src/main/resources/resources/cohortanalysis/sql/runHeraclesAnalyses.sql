@@ -13801,19 +13801,47 @@ DROP TABLE #raw_period_4023;
   SELECT DISTINCT her1.cohort_definition_id, her1.analysis_id,
   CAST(CONCAT('WARNING: ', cast(her1.analysis_id as VARCHAR), '-', aa1.analysis_name, '; theres a 100% change in monthly count of events') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.HERACLES_analysis aa1
-  INNER JOIN @results_schema.HERACLES_results her1
+  INNER JOIN (
+    SELECT
+      cohort_definition_id,
+      analysis_id,
+      CAST((CASE WHEN stratum_1 = ''
+        THEN NULL
+            ELSE stratum_1 END) AS INT) stratum_1,
+      stratum_2,
+      count_value
+    FROM @results_schema.HERACLES_results
+    WHERE analysis_id IN (
+      420,
+      620,
+      720,
+      820,
+      920,
+      1020
+    )
+	) her1
   ON aa1.analysis_id = her1.analysis_id
-  INNER JOIN @results_schema.HERACLES_results ar2
+  INNER JOIN (
+    SELECT
+      cohort_definition_id,
+      analysis_id,
+      CAST((CASE WHEN stratum_1 = ''
+        THEN NULL
+            ELSE stratum_1 END) AS INT) stratum_1,
+      stratum_2,
+      count_value
+    FROM @results_schema.HERACLES_results
+    WHERE analysis_id IN (
+      420,
+      620,
+      720,
+      820,
+      920,
+      1020
+    )
+	) ar2
   ON her1.analysis_id = ar2.analysis_id
   and her1.cohort_definition_id = ar2.cohort_definition_id
-  AND her1.analysis_id IN (
-  420,
-  620,
-  720,
-  820,
-  920,
-  1020
-  )
   WHERE (
   CAST(her1.stratum_1 AS INT) + 1 = CAST(ar2.stratum_1 AS INT)
   OR CAST(her1.stratum_1 AS INT) + 89 = CAST(ar2.stratum_1 AS INT)

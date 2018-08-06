@@ -129,7 +129,7 @@ public class EvidenceService extends AbstractDaoService {
       }
       
       public String getSourceIds() {
-          return StringUtils.join(sourceIds, ",");
+          return "'" + StringUtils.join(sourceIds, "','") + "'";
       }
   }
 	
@@ -248,10 +248,10 @@ public class EvidenceService extends AbstractDaoService {
      * @return
      */
     @POST
-  @Path("{sourceKey}/drugconditionpair")
+  @Path("{sourceKey}/drugconditionpairs")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Collection<DrugHoiEvidence> getDrugConditionPair(@PathParam("sourceKey") String sourceKey, DrugConditionSourceSearchParams searchParams) {
+  public Collection<DrugHoiEvidence> getDrugConditionPairs(@PathParam("sourceKey") String sourceKey, DrugConditionSourceSearchParams searchParams) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String sql = getDrugHoiEvidenceSQL(source, searchParams);
     return getSourceJdbcTemplate(source).query(sql, (rs, rowNum) -> {
@@ -265,7 +265,7 @@ public class EvidenceService extends AbstractDaoService {
 			
       DrugHoiEvidence evidence = new DrugHoiEvidence();
       evidence.evidenceSource = evidenceSource;
-      evidence.statisticType = mappingType;
+      evidence.mappingType = mappingType;
       evidence.drugConceptId = drugConceptId;
       evidence.drugConceptName = drugConceptName;
       evidence.hoiConceptId = conditionConceptId;

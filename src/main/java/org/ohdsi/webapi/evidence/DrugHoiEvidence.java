@@ -13,11 +13,14 @@ import java.math.BigDecimal;
  */
 @JsonInclude(Include.NON_NULL)
 public class DrugHoiEvidence {
-	  @JsonProperty("evidenceSource")
+    @JsonProperty("evidenceSource")
     public String evidenceSource;
     
     @JsonProperty("relationshipType")
     public String relationshipType;
+    
+    @JsonProperty("mappingType")
+    public String mappingType;
     
     @JsonProperty("statisticType")
     public String statisticType;

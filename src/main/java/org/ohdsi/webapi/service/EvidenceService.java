@@ -1198,7 +1198,7 @@ public class EvidenceService extends AbstractDaoService {
                 vocabularySchema = evidenceSchema;
         }
         String[] params = new String[]{"evidenceSchema", "vocabularySchema", "targetDomain", "sourceIdList", "drugList", "conditionList"};
-        String[] values = new String[]{evidenceSchema, vocabularySchema, searchParams.targetDomain, searchParams.getSourceIds(), searchParams.getDrugConceptIds(), searchParams.getConditionConceptIds()};
+        String[] values = new String[]{evidenceSchema, vocabularySchema, searchParams.targetDomain.toUpperCase(), searchParams.getSourceIds(), searchParams.getDrugConceptIds(), searchParams.getConditionConceptIds()};
         sql = SqlRender.renderSql(sql, params, values);
         sql = SqlTranslate.translateSql(sql, source.getSourceDialect());
         return sql;

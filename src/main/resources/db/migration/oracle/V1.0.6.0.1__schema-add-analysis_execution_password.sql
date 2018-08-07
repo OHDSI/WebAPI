@@ -3,14 +3,10 @@ CREATE TABLE ${ohdsiSchema}.cca_execution_ext (
   update_password  VARCHAR2(255)
 );
 
-ALTER TABLE ${ohdsiSchema}.input_files DROP CONSTRAINT fk_sof_cca_execution;
-
-ALTER TABLE ${ohdsiSchema}.input_files DROP CONSTRAINT fk_sif_cca_execution;
-
 CREATE TABLE ${ohdsiSchema}.input_files
 (
-  id               BIGINT,
-  cca_execution_id BIGINT                 NOT NULL,
+  id               NUMBER(19),
+  cca_execution_id NUMBER(19)                 NOT NULL,
   file_contents    BLOB,
   file_name        VARCHAR2(255) NOT NULL,
   CONSTRAINT input_files_pkey PRIMARY KEY (id)
@@ -23,8 +19,8 @@ ALTER TABLE ${ohdsiSchema}.input_files
 
 CREATE TABLE ${ohdsiSchema}.output_files
 (
-  id               BIGINT,
-  cca_execution_id BIGINT                 NOT NULL,
+  id               NUMBER(19),
+  cca_execution_id NUMBER(19)                 NOT NULL,
   file_contents    BLOB,
   file_name        VARCHAR2(255) NOT NULL,
   CONSTRAINT output_files_pkey PRIMARY KEY (id)

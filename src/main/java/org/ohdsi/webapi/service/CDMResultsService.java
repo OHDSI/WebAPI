@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ws.rs.*;
@@ -12,7 +13,6 @@ import javax.ws.rs.core.MediaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.apache.commons.lang3.StringUtils;
-import org.glassfish.jersey.internal.util.Producer;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
@@ -103,12 +103,12 @@ public class CDMResultsService extends AbstractDaoService {
         return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), rowMapper);
     }
 
-    public PreparedStatementRenderer prepareGetConceptRecordCount(Source source, Producer<Object> producer) {
+    public PreparedStatementRenderer prepareGetConceptRecordCount(Source source, Supplier<Object> producer) {
 
         return prepareGetConceptRecordCount(source, producer, false);
     }
 
-    public PreparedStatementRenderer prepareGetConceptRecordCount(Source source, Producer<Object> producer, boolean replace) {
+    public PreparedStatementRenderer prepareGetConceptRecordCount(Source source, Supplier<Object> producer, boolean replace) {
 
         String sqlPath = "/resources/cdmresults/sql/getConceptRecordCount.sql";
 
@@ -122,12 +122,12 @@ public class CDMResultsService extends AbstractDaoService {
                 new String[]{resultTableQualifierName, vocabularyTableQualifierName, conceptIdentifiersName} :
                 new String[]{resultTableQualifierName, vocabularyTableQualifierName};
         String[] tableQualifierValues = replace ?
-                new String[]{resultTableQualifierValue, vocabularyTableQualifierValue, producer.call().toString()} :
+                new String[]{resultTableQualifierValue, vocabularyTableQualifierValue, producer.get().toString()} :
                 new String[]{resultTableQualifierValue, vocabularyTableQualifierValue};
 
         return replace ?
                 new PreparedStatementRenderer(source, sqlPath, tableQualifierNames, tableQualifierValues, new String[0], new Object[0]) :
-                new PreparedStatementRenderer(source, sqlPath, tableQualifierNames, tableQualifierValues, conceptIdentifiersName, producer.call());
+                new PreparedStatementRenderer(source, sqlPath, tableQualifierNames, tableQualifierValues, conceptIdentifiersName, producer.get());
     }
 
     /**

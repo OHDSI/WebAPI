@@ -62,15 +62,3 @@ CREATE TABLE ${ohdsiSchema}.sec_role_group(
   role_id INTEGER NOT NULL,
   CONSTRAINT role_group_prov_uniq UNIQUE(provider, group_dn, role_id)
 );
-
-CREATE OR REPLACE TRIGGER new_sec_role_group
-  BEFORE INSERT
-  ON ${ohdsiSchema}.sec_role_group
-  FOR EACH ROW
-  WHEN (new.id is null)
-DECLARE
-  v_id ${ohdsiSchema}.sec_role_group.id%TYPE;
-BEGIN
-  SELECT ${ohdsiSchema}.sec_role_group_seq.nextval INTO v_id FROM dual;
-  :new.id := v_id;
-END new_sec_role_group;

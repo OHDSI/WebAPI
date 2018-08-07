@@ -1,3 +1,5 @@
+ALTER TABLE ${ohdsiSchema}.cca_execution ADD CONSTRAINT PK_cca_execution PRIMARY KEY (cca_execution_id);
+
 CREATE TABLE ${ohdsiSchema}.cca_execution_ext (
   cca_execution_id INTEGER NOT NULL,
   update_password  VARCHAR2(255)

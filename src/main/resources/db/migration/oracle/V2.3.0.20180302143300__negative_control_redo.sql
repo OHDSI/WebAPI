@@ -1,26 +1,11 @@
-BEGIN
-   EXECUTE IMMEDIATE '${ohdsiSchema}.CONCEPT_SET_NEGATIVE_CONTROLS';
-EXCEPTION
-   WHEN OTHERS THEN
-      IF SQLCODE != -942 THEN
-         RAISE;
-      END IF;
-END;
-  /
+DROP SEQUENCE ${ohdsiSchema}.negative_controls_sequence;
 
-BEGIN
-  EXECUTE IMMEDIATE 'DROP SEQUENCE ' || ${ohdsiSchema}.negative_controls_sequence;
-EXCEPTION
-  WHEN OTHERS THEN
-    IF SQLCODE != -2289 THEN
-      RAISE;
-    END IF;
-END;
-  /
+CREATE SEQUENCE ${ohdsiSchema}.negative_controls_sequence START WITH 1 MAXVALUE 9223372036854775807 NOCYCLE;
 
-CREATE SEQUENCE ${ohdsiSchema}.negative_controls_sequence START WITH 1 MAXVALUE 9223372036854775807 NO CYCLE;
+DROP TABLE ${ohdsiSchema}.CONCEPT_SET_NEGATIVE_CONTROLS;
+
 CREATE TABLE ${ohdsiSchema}.CONCEPT_SET_NEGATIVE_CONTROLS (
-    id INTEGER NOT NULL DEFAULT NEXTVAL('negative_controls_sequence'),
+    id INTEGER NOT NULL,
 		evidence_job_id NUMBER(19) NOT NULL,
     source_id INTEGER NOT NULL,
     concept_set_id INTEGER NOT NULL,

@@ -41,7 +41,6 @@ import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfo;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetItem;
 import org.ohdsi.webapi.conceptset.ExportUtil;
-//import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,9 +57,6 @@ public class ConceptSetService extends AbstractDaoService {
 
     @Autowired
     private ConceptSetGenerationInfoRepository conceptSetGenerationInfoRepository;
-
-    //@Autowired
-    //private NegativeControlRepository negativeControlRepository;
 
     @Autowired
     private VocabularyService vocabService;
@@ -280,17 +276,6 @@ public class ConceptSetService extends AbstractDaoService {
   @Transactional(rollbackOn = Exception.class, dontRollbackOn = EmptyResultDataAccessException.class)
   @Path("{id}")
   public void deleteConceptSet(@PathParam("id") final int id) throws Exception {
-//      // Remove any evidence
-//      try {
-//        this.negativeControlRepository.deleteAllByConceptSetId(id);
-//      } catch (EmptyResultDataAccessException e) {
-//          // Ignore - there may be no data
-//          log.debug(e.getMessage());
-//      }
-//      catch (Exception e) {
-//          throw e;
-//      }
-      
       // Remove any generation info
       try {
         this.conceptSetGenerationInfoRepository.deleteByConceptSetId(id);

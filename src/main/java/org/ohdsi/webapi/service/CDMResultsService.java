@@ -97,6 +97,10 @@ public class CDMResultsService extends AbstractDaoService {
 
         Source source = getSourceRepository().findBySourceKey(sourceKey);
 
+        if (Objects.isNull(identifiers) || identifiers.length == 0) {
+            return new ArrayList<>();
+        }
+
         PreparedStatementRenderer psr = prepareGetConceptRecordCount(source, () ->
                 Arrays.stream(identifiers).map(i -> Integer.parseInt(i.replaceAll("'", "")))
                         .collect(Collectors.toList()));

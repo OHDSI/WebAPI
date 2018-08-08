@@ -7,7 +7,7 @@ CREATE SEQUENCE ${ohdsiSchema}.negative_controls_sequence START WITH 1 MAXVALUE 
 DROP TABLE ${ohdsiSchema}.CONCEPT_SET_NEGATIVE_CONTROLS;
 
 CREATE TABLE ${ohdsiSchema}.CONCEPT_SET_NEGATIVE_CONTROLS (
-    id INTEGER NOT NULL DEFAULT NEXTVAL('negative_controls_sequence'),
+    id INTEGER NOT NULL,
     evidence_job_id BIGINT NOT NULL,
     source_id INTEGER NOT NULL,
     concept_set_id INTEGER NOT NULL,

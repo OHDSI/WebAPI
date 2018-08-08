@@ -60,5 +60,5 @@ CREATE TABLE ${ohdsiSchema}.sec_role_group(
   group_dn VARCHAR NOT NULL,
   group_name VARCHAR,
   role_id INTEGER NOT NULL,
-  CONSTRAINT UNIQUE(provider, group_dn, role_id)
+  UNIQUE(provider, group_dn, role_id)
 );

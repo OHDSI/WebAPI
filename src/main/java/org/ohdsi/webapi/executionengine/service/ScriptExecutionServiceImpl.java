@@ -101,7 +101,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     }
 
     @Override
-    public Long runScript(ExecutionRequestDTO dto, int analysisExecutionId) throws Exception {
+    public Long runScript(ExecutionRequestDTO dto, int analysisExecutionId) {
 
         Source source = findSourceByKey(dto.sourceKey);
 
@@ -172,10 +172,8 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         analysisRequestDTO.setDataSource(makeDataSourceDTO(source, connectionParams));
         analysisRequestDTO.setCallbackPassword(password);
         analysisRequestDTO.setRequested(new Date());
-        if (IMPALA_DATASOURCE.equalsIgnoreCase(source.getSourceDialect()) &&
-                (KerberosAuthMethod.KEYTAB == connectionParams.getAuthMechanism()) || (
-                KerberosAuthMethod.PASSWORD == connectionParams.getAuthMechanism())) {
-            setDataSourceParams(source.getKrbKeytab(), connectionParams, analysisRequestDTO.getDataSource());
+        if (IMPALA_DATASOURCE.equalsIgnoreCase(source.getSourceDialect()) && AuthMethod.KERBEROS == connectionParams.getAuthMethod()) {
+            setDataSourceParams(source, connectionParams, analysisRequestDTO.getDataSource());
         }
         String executableFileName = StringGenerationUtil.generateFileName(AnalysisRequestTypeDTO.R.name().toLowerCase());
         analysisRequestDTO.setExecutableFileName(executableFileName);
@@ -194,15 +192,15 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         return analysisRequestDTO;
     }
 
-    private void setDataSourceParams(byte[] krbKeytab, ConnectionParams connectionParams, DataSourceUnsecuredDTO ds) {
+    private void setDataSourceParams(Source source, ConnectionParams connectionParams, DataSourceUnsecuredDTO ds) {
         ds.setUseKerberos(Boolean.TRUE);
-        ds.setKrbKeytab(krbKeytab);
+        ds.setKrbAuthMethod(source.getKrbAuthMethod());
+        ds.setKrbKeytab(source.getKrbKeytab());
         ds.setKrbAdminFQDN(connectionParams.getKrbAdminFQDN());
         ds.setKrbFQDN(connectionParams.getKrbFQDN());
         ds.setKrbRealm(connectionParams.getKrbRealm());
         ds.setKrbPassword(connectionParams.getPassword());
         ds.setKrbUser(connectionParams.getUser());
-        ds.setKrbAuthMethod(connectionParams.getAuthMechanism());
     }
 
 

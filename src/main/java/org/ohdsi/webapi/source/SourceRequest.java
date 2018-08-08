@@ -1,9 +1,10 @@
 package org.ohdsi.webapi.source;
 
-import java.util.Collection;
 import javax.validation.constraints.NotNull;
+import java.util.Collection;
 
 public class SourceRequest {
+
     @NotNull
     private String name;
     @NotNull
@@ -12,10 +13,9 @@ public class SourceRequest {
     private String key;
     @NotNull
     private String connectionString;
-
     private String username;
     private String password;
-
+    private String authType;
     private Collection<SourceDaimon> daimons;
 
     public String getName() {
@@ -82,5 +82,13 @@ public class SourceRequest {
     public void setDaimons(Collection<SourceDaimon> daimons) {
 
         this.daimons = daimons;
+    }
+
+    public String getAuthType() {
+        return authType;
+    }
+
+    public void setAuthType(String authType) {
+        this.authType = authType;
     }
 }

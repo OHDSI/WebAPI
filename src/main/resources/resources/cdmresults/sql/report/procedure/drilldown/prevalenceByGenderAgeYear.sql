@@ -1,8 +1,8 @@
 SELECT
   c1.concept_id                                                          AS concept_id,
   c1.concept_name                                                        AS concept_name,
-  cast(CAST(num_stratum_4 AS INT) * 10 AS VARCHAR) + '-' + cast((CAST(num_stratum_4 AS INT) + 1) * 10 - 1 AS
-                                                                VARCHAR) AS trellis_name,
+  CONCAT(cast(CAST(num_stratum_4 AS INT) * 10 AS VARCHAR(11)), '-', cast((CAST(num_stratum_4 AS INT) + 1) * 10 - 1 AS
+                                                                VARCHAR(11))) AS trellis_name,
   --age decile
   c2.concept_name                                                        AS series_name,
   --gender

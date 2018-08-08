@@ -22,6 +22,7 @@ import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.util.PageableUtils;
 import org.ohdsi.webapi.util.PreparedSqlRender;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
+import org.ohdsi.webapi.util.QueryModifiers;
 import org.ohdsi.webapi.vocabulary.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,6 +42,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static org.ohdsi.webapi.util.QueryModifiers.*;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 /**
@@ -376,7 +378,6 @@ public class VocabularyService extends AbstractDaoService {
 
     PageResponse<Concept> response = new PageResponse<>();
     response.setData(concepts);
-    response.setDraw(pageRequest.getDraw());
     response.setRecordsTotal(totals);
     response.setRecordsFiltered(filtered);
     return response;
@@ -778,18 +779,6 @@ public class VocabularyService extends AbstractDaoService {
     return resolveConceptSetExpression(defaultSourceKey, pageRequest);
   }
 
-  private Function<String, String> getOrderFunction(String orderClause) {
-
-    return sql -> sql.replaceAll("select distinct", "select distinct ROW_NUMBER() over(ORDER BY " + orderClause + ") as rrow,");
-  }
-
-  private Function<String, String> getWhereFunction(String whereClause) {
-
-    return sql -> sql + " " + whereClause + "\n";
-  }
-
-  private Function<String, String> countFunction = sql -> "select count(*) from ( " + sql + " ) Q";
-
   private Concept mapConcept(ResultSet rs, Concept concept) throws SQLException {
     concept.conceptId = rs.getLong("CONCEPT_ID");
     concept.domainId = rs.getString("DOMAIN_ID");
@@ -835,18 +824,13 @@ public class VocabularyService extends AbstractDaoService {
 
     PreparedStatementRenderer counts = resultsService.prepareGetConceptRecordCount(source, () -> "select concept_id from included", true);
     StatementPrepareStrategy sps = new ConceptSetStrategy(pageRequest.getExpression());
-    Function<String, String> columnTable = sql -> sql.replaceAll(" concept_id", " CONCEPT.concept_id");
-    Function<String, String> queryModifier = columnTable.andThen(sql -> "with included as (" + sql + "), counts as ( "
-            + counts.getSql() + ") select c.concept_id, "
-            + "ROW_NUMBER() over(ORDER BY " + orderClause + ") as rrow,"
-            + ConceptSetFacetValues.CONCEPT_SET_FIELDS + ", counts.record_count, counts.descendant_record_count from "
-            + source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary)
-            + ".concept c join included on included.concept_id = c.concept_id join counts on cast(counts.concept_id as integer) = c.concept_id "
-            + whereClause
+
+    Function<String, String> queryModifier = columnTable.andThen(
+            countWrapper(counts.getSql(), orderClause, whereClause, source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary))
     );
 
     if (source.getSourceDialect().equals("impala")) {
-      queryModifier = queryModifier.andThen(sql -> sql.replaceAll("distinct ROW_NUMBER\\(\\)", "ROW_NUMBER()"));
+      queryModifier = queryModifier.andThen(noDistinct);
     }
 
     PreparedStatementRenderer psr = sps.prepareStatement(source, queryModifier);
@@ -875,7 +859,6 @@ public class VocabularyService extends AbstractDaoService {
 
     PageResponse<ConceptAncestors> result = new PageResponse<>();
     result.setData(conceptAncestors);
-    result.setDraw(pageRequest.getDraw());
     result.setRecordsTotal(totals);
     result.setRecordsFiltered(filtered);
     return result;

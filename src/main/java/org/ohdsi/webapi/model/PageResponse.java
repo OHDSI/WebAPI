@@ -4,19 +4,10 @@ import java.util.Collection;
 import java.util.List;
 
 public class PageResponse<T> {
-  private int draw;
   private int recordsTotal;
   private int recordsFiltered;
   private Collection<T> data;
   private String error;
-
-  public int getDraw() {
-    return draw;
-  }
-
-  public void setDraw(int draw) {
-    this.draw = draw;
-  }
 
   public int getRecordsTotal() {
     return recordsTotal;

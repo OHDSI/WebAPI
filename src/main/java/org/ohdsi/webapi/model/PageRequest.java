@@ -3,21 +3,12 @@ package org.ohdsi.webapi.model;
 import java.util.List;
 
 public class PageRequest {
-  private int draw;
   private int length;
   private int start;
   private Order[] order;
   private Search search;
   private Column[] columns;
   private List<Filter> filters;
-
-  public int getDraw() {
-    return draw;
-  }
-
-  public void setDraw(int draw) {
-    this.draw = draw;
-  }
 
   public int getLength() {
     return length;

@@ -1,6 +1,8 @@
 SELECT
-  cast(cast(num.stratum_3 AS INT) * 10 AS VARCHAR) + '-' +
-  cast((cast(num.stratum_3 AS INT) + 1) * 10 - 1 AS VARCHAR)   AS trellis_Name,
+  CONCAT(
+    cast(cast(num.stratum_3 AS INT) * 10 AS VARCHAR), '-',
+    cast((cast(num.stratum_3 AS INT) + 1) * 10 - 1 AS VARCHAR)
+  ) AS trellis_Name,
   --age decile
   c2.concept_name                                              AS series_Name,
   --gender

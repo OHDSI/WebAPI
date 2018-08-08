@@ -103,7 +103,7 @@ public class CDMResultsService extends AbstractDaoService {
 
         PreparedStatementRenderer psr = prepareGetConceptRecordCount(source, () ->
                 Arrays.stream(identifiers).map(i -> Integer.parseInt(i.replaceAll("'", "")))
-                        .collect(Collectors.toList()));
+                        .collect(Collectors.toList()).toArray(new Object[0]));
         return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), rowMapper);
     }
 

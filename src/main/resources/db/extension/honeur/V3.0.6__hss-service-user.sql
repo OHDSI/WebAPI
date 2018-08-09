@@ -4,6 +4,8 @@ CREATE TABLE hss_service_user (
   password  VARCHAR(255)
 );
 
+grant select, insert, update, delete on hss_service_user to ohdsi_app;
+
 INSERT INTO ${ohdsiSchema}.SEC_PERMISSION (id, value, description)
   VALUES (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'user:hss:post', 'Change service user for HSS.');
 

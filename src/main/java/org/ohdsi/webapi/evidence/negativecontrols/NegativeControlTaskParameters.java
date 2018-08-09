@@ -1,98 +1,98 @@
 package org.ohdsi.webapi.evidence.negativecontrols;
 
-import java.util.List;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ohdsi.webapi.source.Source;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 public class NegativeControlTaskParameters {
-	private String jobName;
 
-	private Source source;
+    private String jobName;
 
-	private int conceptSetId;
+    private Source source;
 
-	private String conceptSetName;
+    private int conceptSetId;
 
-	private String sourceKey;
+    private String conceptSetName;
 
-	private String[] conceptsOfInterest;
+    private String sourceKey;
 
-	private int csToInclude = 0;
-	
-	private String csToIncludeSQL = "";
+    private String[] conceptsOfInterest;
 
-	private int csToExclude = 0;
-	
-	private String csToExcludeSQL = "";
+    private int csToInclude = 0;
 
-	private String conceptDomainId;
+    private String csToIncludeSQL = "";
 
-	private String outcomeOfInterest;
+    private int csToExclude = 0;
 
-	private JdbcTemplate jdbcTemplate;
+    private String csToExcludeSQL = "";
 
-	private String sourceDialect;
+    private String conceptDomainId;
 
-	private String ohdsiSchema;
-	
-	private String translatedSchema;
-        
-	public String getSourceKey() {
-		return sourceKey;
-	}
+    private String outcomeOfInterest;
 
-	public void setSourceKey(String sourceKey) {
-		this.sourceKey = sourceKey;
-	}
+    private JdbcTemplate jdbcTemplate;
 
-	public Source getSource() {
-		return source;
-	}
+    private String sourceDialect;
 
-	public void setSource(Source source) {
-		this.source = source;
-	}
+    private String ohdsiSchema;
 
-	/**
-	 * @return the jobName
-	 */
-	public String getJobName() {
-		return jobName;
-	}
+    private String translatedSchema;
 
-	/**
-	 * @param jobName the jobName to set
-	 */
-	public void setJobName(String jobName) {
-		this.jobName = jobName;
-	}
+    public String getSourceKey() {
+        return sourceKey;
+    }
 
-        /**
-	 * @return the conceptsOfInterest
-	 */
-	public String[] getConceptsOfInterest() {
-		return conceptsOfInterest;
-	}
+    public void setSourceKey(String sourceKey) {
+        this.sourceKey = sourceKey;
+    }
 
-	/**
-	 * @param conceptsOfInterest the conceptsOfInterest to set
-	 */
-	public void setConceptsOfInterest(String[] conceptsOfInterest) {
-		this.conceptsOfInterest = conceptsOfInterest;
-	}
-        
-	@Override
-	public String toString() {
-		try {
-			ObjectMapper mapper = new ObjectMapper();
-			return mapper.writeValueAsString(this);
-		} catch (Exception e) {}
+    public Source getSource() {
+        return source;
+    }
 
-		return super.toString();
+    public void setSource(Source source) {
+        this.source = source;
+    }
 
-	}    
+    /**
+     * @return the jobName
+     */
+    public String getJobName() {
+        return jobName;
+    }
+
+    /**
+     * @param jobName the jobName to set
+     */
+    public void setJobName(String jobName) {
+        this.jobName = jobName;
+    }
+
+    /**
+     * @return the conceptsOfInterest
+     */
+    public String[] getConceptsOfInterest() {
+        return conceptsOfInterest;
+    }
+
+    /**
+     * @param conceptsOfInterest the conceptsOfInterest to set
+     */
+    public void setConceptsOfInterest(String[] conceptsOfInterest) {
+        this.conceptsOfInterest = conceptsOfInterest;
+    }
+
+    @Override
+    public String toString() {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.writeValueAsString(this);
+        } catch (Exception e) {
+        }
+
+        return super.toString();
+
+    }
 
     /**
      * @return the conceptSetId
@@ -192,73 +192,73 @@ public class NegativeControlTaskParameters {
         this.ohdsiSchema = ohdsiSchema;
     }
 
-	/**
-	 * @return the csToInclude
-	 */
-	public int getCsToInclude() {
-		return csToInclude;
-	}
+    /**
+     * @return the csToInclude
+     */
+    public int getCsToInclude() {
+        return csToInclude;
+    }
 
-	/**
-	 * @param csToInclude the csToInclude to set
-	 */
-	public void setCsToInclude(int csToInclude) {
-		this.csToInclude = csToInclude;
-	}
+    /**
+     * @param csToInclude the csToInclude to set
+     */
+    public void setCsToInclude(int csToInclude) {
+        this.csToInclude = csToInclude;
+    }
 
-	/**
-	 * @return the csToExclude
-	 */
-	public int getCsToExclude() {
-		return csToExclude;
-	}
+    /**
+     * @return the csToExclude
+     */
+    public int getCsToExclude() {
+        return csToExclude;
+    }
 
-	/**
-	 * @param conceptsToExclude the csToExclude to set
-	 */
-	public void setCsToExclude(int conceptsToExclude) {
-		this.csToExclude = conceptsToExclude;
-	}
+    /**
+     * @param conceptsToExclude the csToExclude to set
+     */
+    public void setCsToExclude(int conceptsToExclude) {
+        this.csToExclude = conceptsToExclude;
+    }
 
-	/**
-	 * @return the csToIncludeSQL
-	 */
-	public String getCsToIncludeSQL() {
-		return csToIncludeSQL;
-	}
+    /**
+     * @return the csToIncludeSQL
+     */
+    public String getCsToIncludeSQL() {
+        return csToIncludeSQL;
+    }
 
-	/**
-	 * @param csToIncludeSQL the csToIncludeSQL to set
-	 */
-	public void setCsToIncludeSQL(String csToIncludeSQL) {
-		this.csToIncludeSQL = csToIncludeSQL;
-	}
+    /**
+     * @param csToIncludeSQL the csToIncludeSQL to set
+     */
+    public void setCsToIncludeSQL(String csToIncludeSQL) {
+        this.csToIncludeSQL = csToIncludeSQL;
+    }
 
-	/**
-	 * @return the csToExcludeSQL
-	 */
-	public String getCsToExcludeSQL() {
-		return csToExcludeSQL;
-	}
+    /**
+     * @return the csToExcludeSQL
+     */
+    public String getCsToExcludeSQL() {
+        return csToExcludeSQL;
+    }
 
-	/**
-	 * @param csToExcludeSQL the csToExcludeSQL to set
-	 */
-	public void setCsToExcludeSQL(String csToExcludeSQL) {
-		this.csToExcludeSQL = csToExcludeSQL;
-	}
+    /**
+     * @param csToExcludeSQL the csToExcludeSQL to set
+     */
+    public void setCsToExcludeSQL(String csToExcludeSQL) {
+        this.csToExcludeSQL = csToExcludeSQL;
+    }
 
-	/**
-	 * @return the translatedSchema
-	 */
-	public String getTranslatedSchema() {
-		return translatedSchema;
-	}
+    /**
+     * @return the translatedSchema
+     */
+    public String getTranslatedSchema() {
+        return translatedSchema;
+    }
 
-	/**
-	 * @param translatedSchema the translatedSchema to set
-	 */
-	public void setTranslatedSchema(String translatedSchema) {
-		this.translatedSchema = translatedSchema;
-	}
+    /**
+     * @param translatedSchema the translatedSchema to set
+     */
+    public void setTranslatedSchema(String translatedSchema) {
+        this.translatedSchema = translatedSchema;
+    }
 }

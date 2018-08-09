@@ -1,5 +1,5 @@
-INSERT INTO @evidenceSchema.NC_RESULTS (
-	job_id, 
+INSERT INTO @cem_results_schema.NC_RESULTS (
+	concept_set_id, 
 	negative_control, 
 	outcome_of_interest_concept_id, 
 	outcome_of_interest_concept_name, 
@@ -26,7 +26,7 @@ INSERT INTO @evidenceSchema.NC_RESULTS (
 	not_prevalent
 )
 select 
-	@jobId,
+	@conceptSetId,
 	CASE WHEN o.OPTIMIZED = 1 THEN 1 ELSE 0 END NEGATIVE_CONTROL,
 	d.outcome_of_interest_concept_id, 
 	d.outcome_of_interest_concept_name, 
@@ -59,4 +59,4 @@ FROM #NC_SUMMARY d
     SELECT CONCEPT_ID FROM @vocabulary.CONCEPT WHERE DOMAIN_ID = 'Drug' AND CONCEPT_CLASS_ID = 'Ingredient'
   )
 }
-ORDER BY 1 DESC, SORT_ORDER, OUTCOME_OF_INTEREST_CONCEPT_NAME
+;

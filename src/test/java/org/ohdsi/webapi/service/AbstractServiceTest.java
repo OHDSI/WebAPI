@@ -25,7 +25,7 @@ public abstract class AbstractServiceTest {
     when(getSource().getTableQualifier(SourceDaimon.DaimonType.Results)).thenReturn("result_schema");
     when(getSource().getTableQualifier(SourceDaimon.DaimonType.Vocabulary)).thenReturn("vocab_schema");
     when(getSource().getTableQualifier(SourceDaimon.DaimonType.CDM)).thenReturn("cdm_schema");
-    when(getSource().getTableQualifier(SourceDaimon.DaimonType.Evidence)).thenReturn("evidence_schema");
+    when(getSource().getTableQualifier(SourceDaimon.DaimonType.CEM)).thenReturn("evidence_schema");
   }
 
   public static void assertSqlEquals(String expectedPath, PreparedStatementRenderer psr) throws IOException {

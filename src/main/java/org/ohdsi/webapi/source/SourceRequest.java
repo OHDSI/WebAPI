@@ -16,6 +16,7 @@ public class SourceRequest {
     private String username;
     private String password;
     private String authType;
+    private String krbAdminServer;
     private Collection<SourceDaimon> daimons;
 
     public String getName() {
@@ -90,5 +91,13 @@ public class SourceRequest {
 
     public void setAuthType(String authType) {
         this.authType = authType;
+    }
+
+    public String getKrbAdminServer() {
+        return krbAdminServer;
+    }
+
+    public void setKrbAdminServer(String krbAdminServer) {
+        this.krbAdminServer = krbAdminServer;
     }
 }

@@ -196,7 +196,11 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         ds.setUseKerberos(Boolean.TRUE);
         ds.setKrbAuthMethod(source.getKrbAuthMethod());
         ds.setKrbKeytab(source.getKrbKeytab());
-        ds.setKrbAdminFQDN(connectionParams.getKrbAdminFQDN());
+        if (source.getKrbAdminServer() != null) {
+            ds.setKrbAdminFQDN(source.getKrbAdminServer());
+        } else {
+            ds.setKrbAdminFQDN(connectionParams.getKrbFQDN());
+        }
         ds.setKrbFQDN(connectionParams.getKrbFQDN());
         ds.setKrbRealm(connectionParams.getKrbRealm());
         ds.setKrbPassword(connectionParams.getPassword());

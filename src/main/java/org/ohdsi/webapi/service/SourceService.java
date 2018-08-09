@@ -194,7 +194,7 @@ public class SourceService extends AbstractDaoService {
         }
         validateConnectionString(request.getConnectionString());
         Source source = conversionService.convert(request, Source.class);
-        setImpalaKrbData(file, fileDetail.getFileName(), request.getDialect(), source, null, null);
+        setImpalaKrbData(file, fileDetail.getFileName(), request.getDialect(), source, null);
         Source saved = sourceRepository.save(source);
         String sourceKey = saved.getSourceKey();
         cachedSources = null;
@@ -225,7 +225,7 @@ public class SourceService extends AbstractDaoService {
                     Objects.equals(updated.getPassword().trim(), Source.MASQUERADED_PASSWORD)) {
                 updated.setPassword(source.getPassword());
             }
-            setImpalaKrbData(file, fileDetail.getFileName(), request.getDialect(), updated, source.getKrbKeytab(), source.getKeytabName());
+            setImpalaKrbData(file, fileDetail.getFileName(), request.getDialect(), updated, source);
             List<SourceDaimon> removed = source.getDaimons().stream().filter(d -> !updated.getDaimons().contains(d))
                     .collect(Collectors.toList());
             sourceDaimonRepository.delete(removed);
@@ -246,16 +246,17 @@ public class SourceService extends AbstractDaoService {
         }
     }
 
-    private void setImpalaKrbData(InputStream file, String fileName, String dialect, Source updated, byte[] krbKeytab, String keytabName) throws IOException {
+    private void setImpalaKrbData(InputStream file, String fileName, String dialect, Source updated, Source source) throws IOException {
         if (IMPALA_DATASOURCE.equalsIgnoreCase(dialect)) {
             byte[] fileBytes = IOUtils.toByteArray(file);
             if (fileName != null) {
                 updated.setKrbKeytab(fileBytes);
                 updated.setKeytabName(fileName);
             } else {
-                updated.setKrbKeytab(krbKeytab);
-                updated.setKeytabName(keytabName);
+                updated.setKrbKeytab(source.getKrbKeytab());
+                updated.setKeytabName(source.getKeytabName());
             }
+            updated.setKrbAdminServer(updated.getKrbAdminServer());
         }
     }
 

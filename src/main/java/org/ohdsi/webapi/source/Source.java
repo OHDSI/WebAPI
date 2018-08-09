@@ -67,6 +67,9 @@ public class Source implements Serializable {
     @Column(name = "keytab_name")
     private String keytabName;
 
+    @Column(name = "krb_admin_server")
+    private String krbAdminServer;
+
     @Column(name = "krb_auth_method")
     @Enumerated(EnumType.STRING)
     private KerberosAuthMechanism krbAuthMethod;
@@ -177,5 +180,13 @@ public class Source implements Serializable {
 
     public void setKrbAuthMethod(KerberosAuthMechanism krbAuthMethod) {
         this.krbAuthMethod = krbAuthMethod;
+    }
+
+    public String getKrbAdminServer() {
+        return krbAdminServer;
+    }
+
+    public void setKrbAdminServer(String krbAdminServer) {
+        this.krbAdminServer = krbAdminServer;
     }
 }

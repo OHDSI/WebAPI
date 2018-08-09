@@ -1,1 +1,1 @@
-ALTER TABLE ohdsi_webapi.ohdsi.source ADD COLUMN krb_auth_method VARCHAR DEFAULT 'password' NOT NULL;
+ALTER TABLE ${ohdsiSchema}.source ADD COLUMN krb_auth_method VARCHAR DEFAULT 'password' NOT NULL;

@@ -8,7 +8,7 @@ DROP TABLE ${ohdsiSchema}.CONCEPT_SET_NEGATIVE_CONTROLS;
 
 CREATE TABLE ${ohdsiSchema}.CONCEPT_SET_NEGATIVE_CONTROLS (
     id INTEGER NOT NULL,
-    evidence_job_id BIGINT NOT NULL,
+    evidence_job_id NUMBER(19) NOT NULL,
     source_id INTEGER NOT NULL,
     concept_set_id INTEGER NOT NULL,
     CONSTRAINT PK_CONCEPT_SET_NC PRIMARY KEY (id)

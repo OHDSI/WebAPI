@@ -178,11 +178,4 @@ public class Source implements Serializable {
     public void setKrbAuthMethod(KerberosAuthMechanism krbAuthMethod) {
         this.krbAuthMethod = krbAuthMethod;
     }
-//public String getKrbAuthMethod() {
-//    return krbAuthMethod;
-//}
-//
-//    public void setKrbAuthMethod(String krbAuthMethod) {
-//        this.krbAuthMethod = krbAuthMethod;
-//    }
 }

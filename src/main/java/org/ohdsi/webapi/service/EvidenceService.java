@@ -227,7 +227,7 @@ public class EvidenceService extends AbstractDaoService {
     public Collection<EvidenceInfo> getInfo(@PathParam("sourceKey") String sourceKey) {
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         String sqlPath = "/resources/evidence/sql/getInfo.sql";
-        String tqName = "evidenceSchema";
+        String tqName = "cem_schema";
         String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.CEM);
         PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sqlPath, tqName, tqValue);
         return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), (rs, rowNum) -> {
@@ -620,12 +620,12 @@ public class EvidenceService extends AbstractDaoService {
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         // Verify the source has both the evidence & results daimon configured
         // and throw an exception if either is missing
-        String evidenceSchema = source.getTableQualifier(SourceDaimon.DaimonType.CEM);
-        String resultsSchema = source.getTableQualifierOrNull(SourceDaimon.DaimonType.CEMResults);
-        if (evidenceSchema == null) {
+        String cemSchema = source.getTableQualifier(SourceDaimon.DaimonType.CEM);
+        String cemResultsSchema = source.getTableQualifierOrNull(SourceDaimon.DaimonType.CEMResults);
+        if (cemSchema == null) {
             throw NotFoundException("Evidence daimon not configured for source.");
         }
-        if (resultsSchema == null) {
+        if (cemResultsSchema == null) {
             throw NotFoundException("Results daimon not configured for source.");
         }
 
@@ -710,46 +710,6 @@ public class EvidenceService extends AbstractDaoService {
     }
 
     /**
-     * Get the SQL used to create the jobId associated with the negative
-     * controls task
-     *
-     * @summary Retrieves the next available jobId
-     * @param task The negative control task
-     * @return The SQL statement to get the evidence job id
-     */
-    public static String getCreateEvidenceJobIdSql(NegativeControlTaskParameters task) {
-        String resourceRoot = "/resources/evidence/sql/negativecontrols/";
-        String sql = ResourceHelper.GetResourceAsString(resourceRoot + "createJobId.sql");
-        String resultsSchema = task.getSource().getTableQualifier(SourceDaimon.DaimonType.CEMResults);
-        String[] params = new String[]{"resultsSchema"};
-        String[] values = new String[]{resultsSchema};
-        sql = SqlRender.renderSql(sql, params, values);
-        sql = SqlTranslate.translateSql(sql, task.getSource().getSourceDialect());
-
-        return sql;
-    }
-
-    /**
-     * Get the SQL used to retrieve the most recent jobId associated with the
-     * negative controls task
-     *
-     * @summary Retrieves the most recent jobId
-     * @param task The negative control task
-     * @return The SQL statement to get the evidence job id
-     */
-    public static String getEvidenceJobIdSql(NegativeControlTaskParameters task) {
-        String resourceRoot = "/resources/evidence/sql/negativecontrols/";
-        String sql = ResourceHelper.GetResourceAsString(resourceRoot + "getJobId.sql");
-        String resultsSchema = task.getSource().getTableQualifier(SourceDaimon.DaimonType.CEMResults);
-        String[] params = new String[]{"resultsSchema"};
-        String[] values = new String[]{resultsSchema};
-        sql = SqlRender.renderSql(sql, params, values);
-        sql = SqlTranslate.translateSql(sql, task.getSource().getSourceDialect());
-
-        return sql;
-    }
-
-    /**
      * Retrieves parameterized SQL used to generate negative controls
      *
      * @summary Retrieves parameterized SQL used to generate negative controls
@@ -792,15 +752,15 @@ public class EvidenceService extends AbstractDaoService {
         StringBuilder sb = new StringBuilder();
         String resourceRoot = "/resources/evidence/sql/negativecontrols/";
         Source source = task.getSource();
-        String evidenceSchema = source.getTableQualifier(SourceDaimon.DaimonType.CEM);
-        String resultsSchema = source.getTableQualifierOrNull(SourceDaimon.DaimonType.CEMResults);
+        String cemSchema = source.getTableQualifier(SourceDaimon.DaimonType.CEM);
+        String cemResultsSchema = source.getTableQualifierOrNull(SourceDaimon.DaimonType.CEMResults);
         String vocabularySchema = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
         if (vocabularySchema == null) {
-            vocabularySchema = evidenceSchema;
+            vocabularySchema = cemSchema;
         }
         String translatedSchema = task.getTranslatedSchema();
         if (translatedSchema == null) {
-            translatedSchema = evidenceSchema;
+            translatedSchema = cemSchema;
         }
 
         String csToExcludeSQL = SqlRender.renderSql(task.getCsToExcludeSQL(),
@@ -821,12 +781,12 @@ public class EvidenceService extends AbstractDaoService {
         String aeolusTable = translatedSchema + ".AEOLUS";
         String conceptsToExcludeData = "#NC_EXCLUDED_CONCEPTS";
         String conceptsToIncludeData = "#NC_INCLUDED_CONCEPTS";
-        String broadConceptsData = evidenceSchema + ".NC_LU_BROAD_CONCEPTS";
-        String drugInducedConditionsData = evidenceSchema + ".NC_LU_DRUG_INDUCED_CONDITIONS";
-        String pregnancyConditionData = evidenceSchema + ".NC_LU_PREGNANCY_CONDITIONS";
+        String broadConceptsData = cemSchema + ".NC_LU_BROAD_CONCEPTS";
+        String drugInducedConditionsData = cemSchema + ".NC_LU_DRUG_INDUCED_CONDITIONS";
+        String pregnancyConditionData = cemSchema + ".NC_LU_PREGNANCY_CONDITIONS";
 
-        String[] params = new String[]{"outcomeOfInterest", "conceptsOfInterest", "vocabulary", "evidenceSchema", "resultsSchema", "translatedSchema"};
-        String[] values = new String[]{outcomeOfInterest, conceptsOfInterest, vocabularySchema, evidenceSchema, resultsSchema, translatedSchema};
+        String[] params = new String[]{"outcomeOfInterest", "conceptsOfInterest", "vocabulary", "cem_schema", "cem_results_schema", "translatedSchema"};
+        String[] values = new String[]{outcomeOfInterest, conceptsOfInterest, vocabularySchema, cemSchema, cemResultsSchema, translatedSchema};
 
         String sqlFile = "findConceptUniverse.sql";
         sb.append("-- ").append(sqlFile).append("\n\n");
@@ -914,7 +874,7 @@ public class EvidenceService extends AbstractDaoService {
 
         sqlFile = "deleteJobResults.sql";
         sb.append("-- ").append(sqlFile).append("\n\n");
-        sql = EvidenceService.getJobResultsDeleteStatementSql(resultsSchema, task.getConceptSetId());
+        sql = EvidenceService.getJobResultsDeleteStatementSql(cemResultsSchema, task.getConceptSetId());
         sb.append(sql + "\n\n");
 
         sqlFile = "exportNegativeControls.sql";
@@ -932,25 +892,18 @@ public class EvidenceService extends AbstractDaoService {
     }
 
     /**
-     * SQL to delete negative controls
+     * SQL to delete negative controls job results
      *
-     * @summary SQL to delete negative controls
-     * @param task The negative control task and parameters
+     * @summary SQL to delete negative controls job results
+     * @param cemResultsSchema The CEM results schema
+     * @param conceptSetId The concept set ID
      * @return The SQL statement
      */
-    public static String getNegativeControlDeleteStatementSql(NegativeControlTaskParameters task) {
-        String sql = ResourceHelper.GetResourceAsString("/resources/evidence/sql/negativecontrols/deleteNegativeControls.sql");
-        sql = SqlRender.renderSql(sql, new String[]{"ohdsiSchema"}, new String[]{task.getOhdsiSchema()});
-        sql = SqlTranslate.translateSql(sql, task.getSourceDialect());
-
-        return sql;
-    }
-
-    public static String getJobResultsDeleteStatementSql(String resultsSchema, int conceptSetId) {
+    public static String getJobResultsDeleteStatementSql(String cemResultsSchema, int conceptSetId) {
         String sql = ResourceHelper.GetResourceAsString("/resources/evidence/sql/negativecontrols/deleteJobResults.sql");
         sql = SqlRender.renderSql(sql,
-                (new String[]{"resultsSchema", "conceptSetId"}),
-                (new String[]{resultsSchema, Integer.toString(conceptSetId)})
+                (new String[]{"cem_results_schema", "conceptSetId"}),
+                (new String[]{cemResultsSchema, Integer.toString(conceptSetId)})
         );
         return sql;
     }
@@ -972,13 +925,13 @@ public class EvidenceService extends AbstractDaoService {
 
     protected PreparedStatementRenderer prepareExecuteGetDrugLabels(long[] identifiers, Source source) {
         String sqlPath = "/resources/evidence/sql/getDrugLabelForIngredients.sql";
-        String evidenceSchema = source.getTableQualifier(SourceDaimon.DaimonType.CEM);
+        String cemSchema = source.getTableQualifier(SourceDaimon.DaimonType.CEM);
         String vocabularySchema = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
         if (vocabularySchema == null) {
-            vocabularySchema = evidenceSchema;
+            vocabularySchema = cemSchema;
         }
-        String[] tableQualifierNames = new String[]{"evidenceSchema", "vocabularySchema"};
-        String[] tableQualifierValues = new String[]{evidenceSchema, vocabularySchema};
+        String[] tableQualifierNames = new String[]{"cem_schema", "vocabularySchema"};
+        String[] tableQualifierValues = new String[]{cemSchema, vocabularySchema};
         return new PreparedStatementRenderer(source, sqlPath, tableQualifierNames, tableQualifierValues, "conceptIds", identifiers);
     }
 
@@ -1020,13 +973,13 @@ public class EvidenceService extends AbstractDaoService {
     protected String getDrugHoiEvidenceSQL(Source source, DrugConditionSourceSearchParams searchParams) {
         String sqlPath = "/resources/evidence/sql/getDrugConditionPairBySourceId.sql";
         String sql = ResourceHelper.GetResourceAsString(sqlPath);
-        String evidenceSchema = source.getTableQualifier(SourceDaimon.DaimonType.CEM);
+        String cemSchema = source.getTableQualifier(SourceDaimon.DaimonType.CEM);
         String vocabularySchema = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
         if (vocabularySchema == null) {
-            vocabularySchema = evidenceSchema;
+            vocabularySchema = cemSchema;
         }
-        String[] params = new String[]{"evidenceSchema", "vocabularySchema", "targetDomain", "sourceIdList", "drugList", "conditionList"};
-        String[] values = new String[]{evidenceSchema, vocabularySchema, searchParams.targetDomain.toUpperCase(), searchParams.getSourceIds(), searchParams.getDrugConceptIds(), searchParams.getConditionConceptIds()};
+        String[] params = new String[]{"cem_schema", "vocabularySchema", "targetDomain", "sourceIdList", "drugList", "conditionList"};
+        String[] values = new String[]{cemSchema, vocabularySchema, searchParams.targetDomain.toUpperCase(), searchParams.getSourceIds(), searchParams.getDrugConceptIds(), searchParams.getConditionConceptIds()};
         sql = SqlRender.renderSql(sql, params, values);
         sql = SqlTranslate.translateSql(sql, source.getSourceDialect());
         return sql;
@@ -1045,13 +998,13 @@ public class EvidenceService extends AbstractDaoService {
         String drug_id = par[0];
         String hoi_id = par[1];
         String sqlPath = "/resources/evidence/sql/getDrugHoiEvidence.sql";
-        String evidenceSchema = source.getTableQualifier(SourceDaimon.DaimonType.CEM);
+        String cemSchema = source.getTableQualifier(SourceDaimon.DaimonType.CEM);
         String vocabularySchema = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
         if (vocabularySchema == null) {
-            vocabularySchema = evidenceSchema;
+            vocabularySchema = cemSchema;
         }
-        String[] tableQualifierNames = new String[]{"evidenceSchema", "vocabularySchema"};
-        String[] tableQualifierValues = new String[]{evidenceSchema, vocabularySchema};
+        String[] tableQualifierNames = new String[]{"cem_schema", "vocabularySchema"};
+        String[] tableQualifierValues = new String[]{cemSchema, vocabularySchema};
         String[] names = new String[]{"drug_id", "hoi_id"};
         Object[] values = new Integer[]{Integer.parseInt(drug_id), Integer.parseInt(hoi_id)};
         return new PreparedStatementRenderer(source, sqlPath, tableQualifierNames, tableQualifierValues, names, values);
@@ -1067,13 +1020,13 @@ public class EvidenceService extends AbstractDaoService {
      */
     protected PreparedStatementRenderer prepareGetEvidenceForConcept(Source source, Long conceptId) {
         String sqlPath = "/resources/evidence/sql/getEvidenceForConcept.sql";
-        String evidenceSchema = source.getTableQualifier(SourceDaimon.DaimonType.CEM);
+        String cemSchema = source.getTableQualifier(SourceDaimon.DaimonType.CEM);
         String vocabularySchema = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
         if (vocabularySchema == null) {
-            vocabularySchema = evidenceSchema;
+            vocabularySchema = cemSchema;
         }
-        String[] tableQualifierNames = new String[]{"evidenceSchema", "vocabularySchema"};
-        String[] tableQualifierValues = new String[]{evidenceSchema, vocabularySchema};
+        String[] tableQualifierNames = new String[]{"cem_schema", "vocabularySchema"};
+        String[] tableQualifierValues = new String[]{cemSchema, vocabularySchema};
         String[] names = new String[]{"id"};
         Object[] values = new Long[]{conceptId};
         return new PreparedStatementRenderer(source, sqlPath, tableQualifierNames, tableQualifierValues, names, values);
@@ -1089,9 +1042,9 @@ public class EvidenceService extends AbstractDaoService {
      */
     protected PreparedStatementRenderer prepareGetNegativeControls(Source source, int conceptSetId) {
         String sqlPath = "/resources/evidence/sql/negativecontrols/getNegativeControls.sql";
-        String resultsSchema = source.getTableQualifier(SourceDaimon.DaimonType.CEMResults);
-        String[] tableQualifierNames = new String[]{"resultsSchema"};
-        String[] tableQualifierValues = new String[]{resultsSchema};
+        String cemResultsSchema = source.getTableQualifier(SourceDaimon.DaimonType.CEMResults);
+        String[] tableQualifierNames = new String[]{"cem_results_schema"};
+        String[] tableQualifierValues = new String[]{cemResultsSchema};
         String[] names = new String[]{"conceptSetId"};
         Object[] values = new Object[]{conceptSetId};
         return new PreparedStatementRenderer(source, sqlPath, tableQualifierNames, tableQualifierValues, names, values);

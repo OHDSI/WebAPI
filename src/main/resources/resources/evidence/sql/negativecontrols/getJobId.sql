@@ -1,1 +1,0 @@
-SELECT MAX(id) from @resultsSchema.evidence_job;

@@ -84,17 +84,17 @@ public class DDLService {
 	@Path("results")
 	@Produces("text/plain")
 	public String generateResultSQL(@QueryParam("dialect") String dialect, @DefaultValue("results") @QueryParam("schema") String schema) {
-            return generateSQL(dialect, schema, RESULT_DDL_FILE_PATHS, RESULT_INIT_FILE_PATHS, RESULT_INDEX_FILE_PATHS);
+            return generateSQL(dialect, "results_schema", schema, RESULT_DDL_FILE_PATHS, RESULT_INIT_FILE_PATHS, RESULT_INDEX_FILE_PATHS);
 	}
         
 	@GET
 	@Path("cemresults")
 	@Produces("text/plain")
-	public String generateCemResultSQL(@QueryParam("dialect") String dialect, @DefaultValue("results") @QueryParam("schema") String schema) {
-            return generateSQL(dialect, schema, CEMRESULT_DDL_FILE_PATHS, CEMRESULT_INIT_FILE_PATHS, CEMRESULT_INDEX_FILE_PATHS);
+	public String generateCemResultSQL(@QueryParam("dialect") String dialect, @DefaultValue("cemresults") @QueryParam("schema") String schema) {
+            return generateSQL(dialect, "cem_results_schema", schema, CEMRESULT_DDL_FILE_PATHS, CEMRESULT_INIT_FILE_PATHS, CEMRESULT_INDEX_FILE_PATHS);
 	}
         
-        private String generateSQL(String dialect, String schema, Collection<String> filePaths, Collection<String> initFilePaths, Collection<String> indexFilePaths) {
+        private String generateSQL(String dialect, String schemaSqlParameter, String schema, Collection<String> filePaths, Collection<String> initFilePaths, Collection<String> indexFilePaths) {
 		StringBuilder sqlBuilder = new StringBuilder();
 		for (String fileName : filePaths) {
 			sqlBuilder.append("\n").append(ResourceHelper.GetResourceAsString(fileName));
@@ -111,18 +111,18 @@ public class DDLService {
 		}
 		String result = sqlBuilder.toString();
 		if (dialect != null) {
-			result = translateSqlFile(result, dialect, schema);
+			result = translateSqlFile(result, dialect, schemaSqlParameter, schema);
 		}
 		return result.replaceAll(";", ";\n");
         }
 
-	private String translateSqlFile(String sql, String dialect, String schema) {
+	private String translateSqlFile(String sql, String dialect, String schemaSqlParameter, String schema) {
 
 		SourceStatement statement = new SourceStatement();
 		statement.targetDialect = dialect.toLowerCase();
 		statement.sql = sql;
 		HashMap<String, String> parameters = new HashMap<>();
-		parameters.put("results_schema", schema);
+		parameters.put(schemaSqlParameter, schema);
 		statement.parameters = parameters;
 		TranslatedStatement translatedStatement = translateSQL(statement);
 		return translatedStatement.targetSQL;

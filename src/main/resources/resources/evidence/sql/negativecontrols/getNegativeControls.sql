@@ -24,5 +24,5 @@ SELECT
 	user_included,
 	optimized_out,
 	not_prevalent
-FROM @resultsSchema.nc_results
+FROM @cem_results_schema.nc_results
 WHERE concept_set_id = 	@conceptSetId;

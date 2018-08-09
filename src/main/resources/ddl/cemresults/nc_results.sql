@@ -1,5 +1,5 @@
-IF OBJECT_ID('@results_schema.nc_results', 'U') IS NULL
-CREATE TABLE @results_schema.nc_results
+IF OBJECT_ID('@cem_results_schema.nc_results', 'U') IS NULL
+CREATE TABLE @cem_results_schema.nc_results
 (
     concept_set_id bigint NOT NULL,
     negative_control int, 

@@ -1,4 +1,4 @@
-INSERT INTO @resultsSchema.NC_RESULTS (
+INSERT INTO @cem_results_schema.NC_RESULTS (
 	concept_set_id, 
 	negative_control, 
 	outcome_of_interest_concept_id, 

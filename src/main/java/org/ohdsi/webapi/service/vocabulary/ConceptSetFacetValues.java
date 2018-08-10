@@ -16,6 +16,8 @@ public class ConceptSetFacetValues implements FacetValuesStrategy {
   public static final Function<String, String> conceptSetStatementFunction = sql -> sql.replaceAll("(?i)I\\.concept_id", "I.*")
           .replaceAll("(?i)select concept_id", "select concept.concept_id, " + CONCEPT_SET_FIELDS)
           .replaceAll("(?i)select c\\.concept_id", "select c.concept_id, " + CONCEPT_SET_FIELDS)
+          .replaceAll("(?i)select distinct cr\\.concept_id_1 as concept_id", "select distinct cr.concept_id_1 as concept_id, "
+                  + CONCEPT_SET_FIELDS.replaceAll("(?i)ISNULL\\(INVALID_REASON", "ISNULL(C.INVALID_REASON"))
           .replaceAll("(?i)where concept_id in", "where concept.concept_id in");
 
   private ConceptSetExpression expression;

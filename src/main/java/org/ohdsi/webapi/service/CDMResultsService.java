@@ -102,17 +102,12 @@ public class CDMResultsService extends AbstractDaoService {
         }
 
         PreparedStatementRenderer psr = prepareGetConceptRecordCount(source, () ->
-                Arrays.stream(identifiers).map(i -> Integer.parseInt(i.replaceAll("'", "")))
-                        .collect(Collectors.toList()).toArray(new Object[0]));
+                Arrays.stream(identifiers).map(i -> String.valueOf(Integer.parseInt(i.replaceAll("'", ""))))
+                        .collect(Collectors.joining(",")));
         return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), rowMapper);
     }
 
-    public PreparedStatementRenderer prepareGetConceptRecordCount(Source source, Supplier<Object> producer) {
-
-        return prepareGetConceptRecordCount(source, producer, false);
-    }
-
-    public PreparedStatementRenderer prepareGetConceptRecordCount(Source source, Supplier<Object> producer, boolean replace) {
+    public PreparedStatementRenderer prepareGetConceptRecordCount(Source source, Supplier<String> producer) {
 
         String sqlPath = "/resources/cdmresults/sql/getConceptRecordCount.sql";
 
@@ -122,16 +117,10 @@ public class CDMResultsService extends AbstractDaoService {
         String resultTableQualifierValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
         String vocabularyTableQualifierValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
 
-        String[] tableQualifierNames = replace ?
-                new String[]{resultTableQualifierName, vocabularyTableQualifierName, conceptIdentifiersName} :
-                new String[]{resultTableQualifierName, vocabularyTableQualifierName};
-        String[] tableQualifierValues = replace ?
-                new String[]{resultTableQualifierValue, vocabularyTableQualifierValue, producer.get().toString()} :
-                new String[]{resultTableQualifierValue, vocabularyTableQualifierValue};
+        String[] tableQualifierNames = new String[]{resultTableQualifierName, vocabularyTableQualifierName, conceptIdentifiersName};
+        String[] tableQualifierValues = new String[]{resultTableQualifierValue, vocabularyTableQualifierValue, producer.get()};
 
-        return replace ?
-                new PreparedStatementRenderer(source, sqlPath, tableQualifierNames, tableQualifierValues, new String[0], new Object[0]) :
-                new PreparedStatementRenderer(source, sqlPath, tableQualifierNames, tableQualifierValues, conceptIdentifiersName, producer.get());
+        return new PreparedStatementRenderer(source, sqlPath, tableQualifierNames, tableQualifierValues, new String[0], new Object[0]);
     }
 
     /**

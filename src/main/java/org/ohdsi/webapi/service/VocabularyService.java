@@ -822,7 +822,7 @@ public class VocabularyService extends AbstractDaoService {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
 
-    PreparedStatementRenderer counts = resultsService.prepareGetConceptRecordCount(source, () -> "select concept_id from included", true);
+    PreparedStatementRenderer counts = resultsService.prepareGetConceptRecordCount(source, () -> "select concept_id from included");
     StatementPrepareStrategy sps = new ConceptSetStrategy(pageRequest.getExpression());
 
     Function<String, String> queryModifier = columnTable.andThen(
@@ -854,7 +854,7 @@ public class VocabularyService extends AbstractDaoService {
             item -> item.concept));
     Map<Long, List<Long>> ascendants = calculateAscendants(sourceKey, ancestorIds);
     Collection<ConceptAncestors> conceptAncestors = concepts.stream()
-            .peek(c -> c.ancestors = ascendants.get(c.conceptId).stream().map(conceptMap::get).collect(Collectors.toList()))
+            .peek(c -> c.ancestors = ascendants.getOrDefault(c.conceptId, new ArrayList<>()).stream().map(conceptMap::get).collect(Collectors.toList()))
             .collect(Collectors.toList());
 
     PageResponse<ConceptAncestors> result = new PageResponse<>();

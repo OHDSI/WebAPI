@@ -1,13 +1,14 @@
 package org.ohdsi.webapi.util;
 
 import org.ohdsi.webapi.service.vocabulary.ConceptSetFacetValues;
-import org.ohdsi.webapi.source.SourceDaimon;
 
 import java.util.function.Function;
 
 public class QueryModifiers {
 
-  public static Function<String, String> columnTable = sql -> sql.replaceAll(" concept_id", " CONCEPT.concept_id");
+  public static Function<String, String> columnTable = sql -> sql
+          .replaceAll("(?i)SELECT concept_id", "SELECT CONCEPT.concept_id")
+          .replaceAll("(?i)WHERE concept_id", "WHERE CONCEPT.concept_id");
 
   public static Function<String, String> countWrapper(String countSql, String orderClause, String whereClause, String tableQualifier) {
     return sql -> "with included as (" + sql + "), counts as ( "

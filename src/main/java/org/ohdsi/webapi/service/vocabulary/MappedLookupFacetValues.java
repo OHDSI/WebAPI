@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.service.vocabulary;
 
-import org.ohdsi.webapi.model.FacetValue;
+import org.ohdsi.webapi.paging.FacetValue;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.QueryModifiers;

@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.model;
+package org.ohdsi.webapi.paging;
 
 import java.util.List;
 

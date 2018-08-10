@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.service.vocabulary;
 
-import org.ohdsi.webapi.model.FacetValue;
+import org.ohdsi.webapi.paging.FacetValue;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.util.List;

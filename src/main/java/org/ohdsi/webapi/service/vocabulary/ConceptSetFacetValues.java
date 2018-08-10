@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.service.vocabulary;
 
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
-import org.ohdsi.webapi.model.FacetValue;
+import org.ohdsi.webapi.paging.FacetValue;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.QueryModifiers;
 import org.springframework.jdbc.core.JdbcTemplate;

@@ -16,7 +16,7 @@ import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
-import org.ohdsi.webapi.model.CommonEntity;
+import org.ohdsi.webapi.util.CommonEntity;
 
 /**
  *

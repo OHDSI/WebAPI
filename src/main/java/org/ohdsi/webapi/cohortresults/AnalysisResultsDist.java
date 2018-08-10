@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.model.results;
+package org.ohdsi.webapi.cohortresults;
 
 
 /**

@@ -1,5 +1,11 @@
 package org.ohdsi.webapi.service;
 
+import org.ohdsi.webapi.paging.PageRequest;
+import org.ohdsi.webapi.paging.FacetsResponse;
+import org.ohdsi.webapi.paging.PageResponse;
+import org.ohdsi.webapi.paging.FacetValue;
+import org.ohdsi.webapi.paging.FacetsRequest;
+import org.ohdsi.webapi.paging.ConceptSetExpressionPageRequest;
 import com.google.common.collect.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -14,7 +20,6 @@ import org.ohdsi.webapi.activity.Activity.ActivityType;
 import org.ohdsi.webapi.activity.Tracker;
 import org.ohdsi.webapi.conceptset.ConceptSetComparison;
 import org.ohdsi.webapi.conceptset.ConceptSetOptimizationResult;
-import org.ohdsi.webapi.model.*;
 import org.ohdsi.webapi.service.vocabulary.*;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;

@@ -36,7 +36,7 @@ import org.ohdsi.webapi.cohortresults.PeriodType;
 import org.ohdsi.webapi.cohortresults.VisualizationDataRepository;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
-import org.ohdsi.webapi.model.results.Analysis;
+import org.ohdsi.webapi.cohortresults.Analysis;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;

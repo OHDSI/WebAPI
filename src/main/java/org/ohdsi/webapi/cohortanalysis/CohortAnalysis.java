@@ -3,7 +3,7 @@ package org.ohdsi.webapi.cohortanalysis;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 
-import org.ohdsi.webapi.model.results.Analysis;
+import org.ohdsi.webapi.cohortresults.Analysis;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

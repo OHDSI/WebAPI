@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.model;
+package org.ohdsi.webapi.util;
 
 import java.io.Serializable;
 import java.util.Date;

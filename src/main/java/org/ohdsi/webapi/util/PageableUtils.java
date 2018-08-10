@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.StringUtils;
-import org.ohdsi.webapi.model.PageRequest;
+import org.ohdsi.webapi.paging.PageRequest;
 import org.ohdsi.webapi.vocabulary.ConceptAncestors;
 
 import java.util.Arrays;

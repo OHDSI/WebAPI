@@ -3,7 +3,7 @@ package org.ohdsi.webapi.cohortresults.mapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.ohdsi.webapi.model.results.AnalysisResults;
+import org.ohdsi.webapi.cohortresults.AnalysisResults;
 import org.springframework.jdbc.core.RowMapper;
 
 

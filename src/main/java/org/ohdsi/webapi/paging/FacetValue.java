@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.model;
+package org.ohdsi.webapi.paging;
 
 public class FacetValue {
   private String value;

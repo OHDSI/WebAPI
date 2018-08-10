@@ -85,6 +85,9 @@ public class LiferayPermissionManager extends PermissionManager {
 
     public Set<PermissionEntity> getUserPermissions(String userName) {
         UserEntity user = this.liferayApiClient.findUserByLogin(userName);
+        if(user == null) {
+            throw new UnknownAccountException(String.format("Account %s does not exist in Liferay", userName));
+        }
         Set<PermissionEntity> permissions = this.getUserPermissions(user);
         return permissions;
     }

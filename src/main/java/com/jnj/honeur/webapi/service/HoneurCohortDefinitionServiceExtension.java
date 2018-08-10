@@ -27,7 +27,6 @@ import com.jnj.honeur.webapi.hss.StorageInformationItem;
 import com.jnj.honeur.webapi.hss.StorageServiceClient;
 import com.jnj.honeur.webapi.liferay.LiferayApiClient;
 import com.jnj.honeur.webapi.liferay.model.Organization;
-import com.jnj.honeur.webapi.shiro.HoneurTokenManager;
 import com.jnj.honeur.webapi.shiro.LiferayPermissionManager;
 import com.jnj.honeur.webapi.source.SourceDaimonContext;
 import org.apache.commons.logging.Log;
@@ -37,23 +36,19 @@ import org.ohdsi.webapi.cohort.CohortRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfo;
-import org.ohdsi.webapi.cohortdefinition.ExpressionType;
 import org.ohdsi.webapi.service.CohortDefinitionService;
 import org.ohdsi.webapi.service.SourceService;
-import org.ohdsi.webapi.service.UserService;
 import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.Entities.RoleRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.SourceDaimon;
-import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import javax.annotation.PostConstruct;
@@ -391,8 +386,23 @@ public class HoneurCohortDefinitionServiceExtension {
     @Path("/uuids")
     public List<String> getUUIDSList(@HeaderParam("token") String token){
         log.info("Path: /cohortdefinition/uuids");
-        String permissionPattern = "cohortdefinition:([0-9]+|\\*):get";
-        List<Integer> definitionIds = this.authorizer.getUserPermissions(SecurityUtils2.getSubject(token)).stream()
+        final Set<PermissionEntity> userPermissions = this.authorizer.getUserPermissions(SecurityUtils2.getSubject(token));
+
+        if(userHasCohortDefinitionWildcardPermission(userPermissions)) {
+            return getCohortDefinitionUuids(cohortDefinitionRepository.findAll());
+        }
+
+        List<Integer> cohortDefinitionIds = getCohortDefinitionIds(userPermissions);
+        if(!cohortDefinitionIds.isEmpty()) {
+            return getCohortDefinitionUuids(cohortDefinitionRepository.findFromList(cohortDefinitionIds));
+        }
+
+        return Collections.emptyList();
+    }
+
+    private List<Integer> getCohortDefinitionIds(Set<PermissionEntity> userPermissions) {
+        String permissionPattern = "cohortdefinition:([0-9]*):get";
+        List<Integer> definitionIds = userPermissions.stream()
                 .map(PermissionEntity::getValue)
                 .filter(permissionString -> permissionString.matches(permissionPattern))
                 .map(permissionString -> parseCohortDefinitionId(permissionString))
@@ -400,17 +410,7 @@ public class HoneurCohortDefinitionServiceExtension {
                 .map(Optional::get)
                 .collect(Collectors.toList());
         log.info(String.format("User has access to : %s", definitionIds));
-
-        List<String> uuids = new ArrayList<>();
-        if(definitionIds.size() > 0) {
-            List<CohortDefinition> cohortDefinitions = cohortDefinitionRepository.findFromList(definitionIds);
-            for (CohortDefinition def : cohortDefinitions) {
-                if (def.getUuid() != null) {
-                    uuids.add(def.getUuid().toString());
-                }
-            }
-        }
-        return uuids;
+        return definitionIds;
     }
 
     private Optional<Integer> parseCohortDefinitionId(String permission) {
@@ -419,6 +419,21 @@ public class HoneurCohortDefinitionServiceExtension {
         } catch (NumberFormatException e) {
             return Optional.empty();
         }
+    }
+
+    private boolean userHasCohortDefinitionWildcardPermission(Set<PermissionEntity> userPermissions) {
+        String wildcardPermissionPattern = "cohortdefinition:*:get";
+        return userPermissions.stream()
+                .map(PermissionEntity::getValue)
+                .anyMatch(permissionString -> permissionString.matches(wildcardPermissionPattern));
+    }
+
+    private List<String> getCohortDefinitionUuids(final Iterable<CohortDefinition> cohortDefinitions) {
+        return StreamSupport.stream(cohortDefinitions.spliterator(), false)
+                .map(CohortDefinition::getUuid)
+                .filter(Objects::nonNull)
+                .map(UUID::toString)
+                .collect(Collectors.toList());
     }
 
     /**

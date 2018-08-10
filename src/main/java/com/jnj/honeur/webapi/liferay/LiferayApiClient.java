@@ -1,11 +1,13 @@
 package com.jnj.honeur.webapi.liferay;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.apache.commons.codec.binary.Base64;
 import com.jnj.honeur.webapi.liferay.model.Organization;
+import org.apache.commons.codec.binary.Base64;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRoleEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpEntity;
@@ -18,12 +20,15 @@ import org.springframework.web.client.RestTemplate;
 import javax.annotation.PostConstruct;
 import java.nio.charset.Charset;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 @Component
 @ConditionalOnProperty(value="webapi.central", matchIfMissing = true)
 public class LiferayApiClient {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(LiferayApiClient.class);
+
+    private static final String STANDARD_ROLE = "1";
+    private static final String COMPANY_ID = "20116";
 
     @Value("${datasource.liferay.url}")
     private String liferayBaseUrl;
@@ -32,13 +37,8 @@ public class LiferayApiClient {
     @Value("${datasource.liferay.password}")
     private String liferayServicePassword;
 
-    private String LIFERAY_WEB_API;
-    private static final String STANDARD_ROLE = "1";
-    private static final String COMPANY_ID = "20116";
-
-    private static RestTemplate restTemplate;
-
-    Logger logger = Logger.getLogger(LiferayApiClient.class.getName());
+    private String liferayWebApi;
+    private RestTemplate restTemplate;
 
     public LiferayApiClient(){
         restTemplate = new RestTemplate();
@@ -46,22 +46,23 @@ public class LiferayApiClient {
 
     @PostConstruct
     private void initializeLiferayUrl(){
-        LIFERAY_WEB_API = liferayBaseUrl +"/api/jsonws";
+        liferayWebApi = liferayBaseUrl +"/api/jsonws";
     }
 
     public UserEntity findUserByLogin(String login) {
         String userIdEndpoint = "/user/get-user-id-by-email-address/company-id/"+COMPANY_ID+"/email-address/"+login;
         String id;
         try {
-            id = restTemplate.exchange(LIFERAY_WEB_API + userIdEndpoint,
+            id = restTemplate.exchange(liferayWebApi + userIdEndpoint,
                     HttpMethod.GET, new HttpEntity<>(createHeaders()),
                     JsonNode.class).getBody().asText();
-        } catch (HttpStatusCodeException e){
+        } catch (HttpStatusCodeException e) {
+            LOGGER.error(e.getMessage());
             return null;
         }
 
         String endpoint = "/user/get-user-by-id/user-id/"+id;
-        JsonNode response = restTemplate.exchange(LIFERAY_WEB_API + endpoint,
+        JsonNode response = restTemplate.exchange(liferayWebApi + endpoint,
                 HttpMethod.GET, new HttpEntity<>(createHeaders()),
                 JsonNode.class).getBody();
         UserEntity u = new UserEntity();
@@ -77,10 +78,11 @@ public class LiferayApiClient {
         JsonNode response;
 
         try {
-            response = restTemplate.exchange(LIFERAY_WEB_API + endpoint,
+            response = restTemplate.exchange(liferayWebApi + endpoint,
                     HttpMethod.GET, new HttpEntity<>(createHeaders()),
                     JsonNode.class).getBody();
-        } catch (HttpStatusCodeException e){
+        } catch (HttpStatusCodeException e) {
+            LOGGER.error(e.getMessage(), e);
             return null;
         }
         UserEntity u = new UserEntity();
@@ -100,11 +102,11 @@ public class LiferayApiClient {
                 (prefix ? "Atlas " : "") + role.getName()+"/title-map/{}/description-map/{}/type/"+STANDARD_ROLE+"?subtype=";
 
         try {
-            restTemplate.exchange(LIFERAY_WEB_API + endpoint,
+            restTemplate.exchange(liferayWebApi + endpoint,
                     HttpMethod.GET, new HttpEntity<>(createHeaders()),
                     JsonNode.class).getBody();
         } catch (HttpStatusCodeException e){
-            logger.log(Level.INFO, "Error in adding Atlas role to Liferay: " + e.toString());
+            LOGGER.error("Error in adding Atlas role {} to Liferay", role.getName());
         }
 
         return role;
@@ -116,11 +118,11 @@ public class LiferayApiClient {
         String endpoint = "/role/update-role/role-id/"+roleId+"/name/Atlas "+role.getName()+"/title-map/{}/description-map/{}?subtype=";
 
         try {
-            restTemplate.exchange(LIFERAY_WEB_API + endpoint,
+            restTemplate.exchange(liferayWebApi + endpoint,
                     HttpMethod.GET, new HttpEntity<>(createHeaders()),
                     JsonNode.class).getBody();
         } catch (HttpStatusCodeException e){
-            logger.log(Level.INFO, "Error in updating Atlas role in Liferay: " + e.toString());
+            LOGGER.error("Error in updating Atlas role in Liferay", e);
         }
 
         return role;
@@ -130,17 +132,18 @@ public class LiferayApiClient {
         String roleId = getRoleId(role);
 
         String endpoint = "/user/has-role-user/role-id/"+roleId+"/user-id/"+user.getId();
-        Boolean hasRole = restTemplate.exchange(LIFERAY_WEB_API + endpoint,
+        Boolean hasRole = restTemplate.exchange(liferayWebApi + endpoint,
                 HttpMethod.GET, new HttpEntity<>(createHeaders()),
                 Boolean.class).getBody();
         if(hasRole){
             String deleteEndpoint = "/user/delete-role-user/role-id/"+roleId+"/user-id/"+user.getId();
             try {
-                restTemplate.exchange(LIFERAY_WEB_API + deleteEndpoint,
+                restTemplate.exchange(liferayWebApi + deleteEndpoint,
                         HttpMethod.GET, new HttpEntity<>(createHeaders()),
                         JsonNode.class);
             } catch (HttpStatusCodeException e){
-                logger.log(Level.INFO, "Error in deleting user role link ("+user.getLogin()+","+role.getName()+") in Liferay: " + e.toString());
+                LOGGER.error("Error in deleting user role link ("+user.getLogin()+","+role.getName()+") in Liferay");
+                LOGGER.error(e.getMessage(), e);
             }
         }
     }
@@ -150,11 +153,12 @@ public class LiferayApiClient {
         String endpoint = "/role/add-user-roles/user-id/"+user.getId()+"/role-ids/"+roleId;
 
         try {
-            restTemplate.exchange(LIFERAY_WEB_API + endpoint,
+            restTemplate.exchange(liferayWebApi + endpoint,
                     HttpMethod.GET, new HttpEntity<>(createHeaders()),
                     JsonNode.class).getBody();
         } catch (HttpStatusCodeException e){
-            logger.log(Level.INFO, "Error in adding user role link ("+user.getLogin()+","+role.getName()+") in Liferay: " + e.toString());
+            LOGGER.error("Error in adding user role link ("+user.getLogin()+","+role.getName()+") in Liferay");
+            LOGGER.error(e.getMessage(), e);
         }
 
         UserRoleEntity userRoleEntity = new UserRoleEntity();
@@ -177,7 +181,7 @@ public class LiferayApiClient {
         try {
             // Add all user's roles in liferay
             String endpoint = "/role/get-user-roles/user-id/"+user.getId();
-            JsonNode response = restTemplate.exchange(LIFERAY_WEB_API + endpoint,
+            JsonNode response = restTemplate.exchange(liferayWebApi + endpoint,
                     HttpMethod.GET, new HttpEntity<>(createHeaders()),
                     JsonNode.class).getBody();
 
@@ -194,13 +198,14 @@ public class LiferayApiClient {
             for (String group: groupIds) {
                 String getGroupRoleEndpoint = "/role/get-group-roles/group-id/"+group;
 
-                JsonNode roleResponse = restTemplate.exchange(LIFERAY_WEB_API + getGroupRoleEndpoint,
+                JsonNode roleResponse = restTemplate.exchange(liferayWebApi + getGroupRoleEndpoint,
                         HttpMethod.GET, new HttpEntity<>(createHeaders()),
                         JsonNode.class).getBody();
                 roleNames.addAll(roleResponse.findValuesAsText("name"));
             }
         } catch (HttpStatusCodeException e){
-            logger.log(Level.INFO, "Error in getting the names of the roles associated to the user ("+user.getLogin()+") in Liferay: " + e.toString());
+            LOGGER.error("Error in getting the names of the roles associated to the user ("+user.getLogin()+") in Liferay");
+            LOGGER.error(e.getMessage(), e);
         }
         return roleNames;
     }
@@ -208,12 +213,12 @@ public class LiferayApiClient {
     public List<String> getRoleNames(){
         String endpoint = "/role/get-roles/company-id/"+COMPANY_ID+"/types/"+STANDARD_ROLE;
         try {
-            JsonNode response = restTemplate.exchange(LIFERAY_WEB_API + endpoint,
+            JsonNode response = restTemplate.exchange(liferayWebApi + endpoint,
                     HttpMethod.GET, new HttpEntity<>(createHeaders()),
                     JsonNode.class).getBody();
             return response.findValuesAsText("name");
         } catch (HttpStatusCodeException e){
-            logger.log(Level.INFO, "Error in getting all the roles in Liferay: " + e.toString());
+            LOGGER.error("Error in getting all the roles in Liferay", e);
         }
         return new ArrayList<>();
     }
@@ -222,77 +227,75 @@ public class LiferayApiClient {
         String roleId = getRoleId(role);
         String endpoint = "/role/delete-role/role-id/"+roleId;
         try {
-           restTemplate.exchange(LIFERAY_WEB_API + endpoint,
+           restTemplate.exchange(liferayWebApi + endpoint,
                     HttpMethod.GET, new HttpEntity<>(createHeaders()),
                     JsonNode.class).getBody();
         } catch (HttpStatusCodeException e){
-            logger.log(Level.INFO, "Error in deleting role in Liferay: " + e.toString());
+            LOGGER.error("Error in deleting role in Liferay", e);
         }
     }
 
     public List<Organization> getOrganizations() {
         String endpoint = "/organization/get-organizations/company-id/" + COMPANY_ID + "/parent-organization-id/-1";
-        List<Organization> organizations = new ArrayList<>();
         try {
-            organizations = Arrays.asList(restTemplate.exchange(LIFERAY_WEB_API + endpoint,
+            return Arrays.asList(restTemplate.exchange(liferayWebApi + endpoint,
                     HttpMethod.GET, new HttpEntity<>(createHeaders()),
                     Organization[].class).getBody());
         } catch (HttpStatusCodeException e){
-            logger.log(Level.INFO, "Error in getting organizations in Liferay: " + e.toString());
+            LOGGER.error("Error in getting organizations in Liferay", e);
+            return Collections.emptyList();
         }
-        return organizations;
-
     }
 
     private List<String> getUserGroupIdsOfUser(UserEntity userEntity) {
         String endpoint = "/group/get-user-organizations-groups/user-id/"+userEntity.getId()+"?start=-1&end=-1";
-        JsonNode response;
         try {
-            response = restTemplate.exchange(LIFERAY_WEB_API + endpoint,
+            JsonNode response = restTemplate.exchange(liferayWebApi + endpoint,
             HttpMethod.GET, new HttpEntity<>(createHeaders()),
             JsonNode.class).getBody();
+
+            List<String> listOfIds = new ArrayList<>();
+            for(JsonNode node: response){
+                listOfIds.add(node.path("groupId").asText());
+            }
+            return listOfIds;
         } catch (HttpStatusCodeException e){
-            logger.log(Level.INFO, "Error in retrieving groups in Liferay: " + e.toString());
-            return new ArrayList<>();
+            LOGGER.error("Error in retrieving groups in Liferay", e);
+            return Collections.emptyList();
         }
-        List<String> listOfIds = new ArrayList<>();
-        for(JsonNode node: response){
-            listOfIds.add(node.path("groupId").asText());
-        }
-        return listOfIds;
+
     }
 
     private List<String> getUserGroupNamesOfUser(UserEntity userEntity) {
         String endpoint = "/group/get-user-organizations-groups/user-id/"+userEntity.getId()+"?start=-1&end=-1";
-        JsonNode response;
         try {
-            response = restTemplate.exchange(LIFERAY_WEB_API + endpoint,
+            JsonNode response = restTemplate.exchange(liferayWebApi + endpoint,
                     HttpMethod.GET, new HttpEntity<>(createHeaders()),
                     JsonNode.class).getBody();
+
+            List<String> listOfIds = new ArrayList<>();
+            for(JsonNode node: response){
+                listOfIds.add(node.path("nameCurrentValue").asText());
+            }
+            return listOfIds;
         } catch (HttpStatusCodeException e){
-            logger.log(Level.INFO, "Error in retrieving groups in Liferay: " + e.toString());
-            return new ArrayList<>();
+            LOGGER.error("Error in retrieving groups in Liferay", e);
+            return Collections.emptyList();
         }
-        List<String> listOfIds = new ArrayList<>();
-        for(JsonNode node: response){
-            listOfIds.add(node.path("nameCurrentValue").asText());
-        }
-        return listOfIds;
     }
 
     private String getRoleId(RoleEntity role) {
         String endpoint = "/role/get-role/company-id/"+COMPANY_ID+"/name/Atlas "+role.getName();
         try {
-            JsonNode response = restTemplate.exchange(LIFERAY_WEB_API + endpoint,
+            JsonNode response = restTemplate.exchange(liferayWebApi + endpoint,
                     HttpMethod.GET, new HttpEntity<>(createHeaders()),
                     JsonNode.class).getBody();
             return response.path("roleId").asText();
         } catch (HttpStatusCodeException e){
-            logger.log(Level.INFO, "Error in getting roleId in Liferay: " + e.toString());
+            LOGGER.error("Error in getting roleId in Liferay", e);
+            return "";
         }
-        return "";
     }
-
 
     private HttpHeaders createHeaders(){
         return new HttpHeaders() {{

@@ -3,11 +3,14 @@ package org.ohdsi.webapi.service.vocabulary;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.webapi.model.FacetValue;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.util.QueryModifiers;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementSetter;
 
 import java.util.List;
 import java.util.function.Function;
+
+import static org.ohdsi.webapi.util.QueryModifiers.groupBy;
 
 public class ConceptSetFacetValues implements FacetValuesStrategy {
 
@@ -35,9 +38,8 @@ public class ConceptSetFacetValues implements FacetValuesStrategy {
   @Override
   public List<FacetValue> getFacetValues(String columnName) {
 
-    String selectCols = columnName + ", count(" + columnName + ") as " + columnName + "_count ";
     String query = new ConceptSetStrategy(expression).prepareStatement(source,
-            conceptSetStatementFunction.andThen(sql -> "select " + selectCols + " from (" + sql + ") facets group by " + columnName)).getSql();
+            QueryModifiers.conceptSetStatementFunction.andThen(groupBy(countColumns(columnName), columnName))).getSql();
     return jdbcTemplate.query(query, (PreparedStatementSetter)null, getFacetRowMapper(columnName));
   }
 }

@@ -17,4 +17,8 @@ public interface FacetValuesStrategy {
       return value;
     };
   }
+
+  default String countColumns(String columnName) {
+    return columnName + ", count(" + columnName + ") as " + columnName + "_count ";
+  }
 }

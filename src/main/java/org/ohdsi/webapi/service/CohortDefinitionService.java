@@ -20,6 +20,7 @@ import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.IOException;
 import java.math.BigDecimal;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.RoundingMode;
@@ -27,6 +28,8 @@ import java.io.ByteArrayOutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -37,8 +40,11 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
-
+import org.ohdsi.circe.check.Checker;
+import org.ohdsi.circe.check.Warning;
 import javax.ws.rs.core.Response;
+import org.ohdsi.circe.check.WarningSeverity;
+import org.ohdsi.circe.check.warnings.DefaultWarning;
 import org.ohdsi.sql.SqlRender;
 
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
@@ -170,25 +176,29 @@ public class CohortDefinitionService extends AbstractDaoService {
     return null;
   }
   
-  private InclusionRuleReport.Summary getInclusionRuleReportSummary(int id, Source source) {
+  private InclusionRuleReport.Summary getInclusionRuleReportSummary(int id, Source source, int modeId) {
 
-    String sql = "select base_count, final_count from @tableQualifier.cohort_summary_stats where cohort_definition_id = @id";
+    String sql = "select base_count, final_count from @tableQualifier.cohort_summary_stats where cohort_definition_id = @id and mode_id = @modeId";
     String tqName = "tableQualifier";
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, tqName, tqValue, "id", whitelist(id), SessionUtils.sessionId());
+		String[] varNames = {"id", "modeId"};
+		Object[] varValues = {whitelist(id), whitelist(modeId)};
+    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, tqName, tqValue, varNames, varValues , SessionUtils.sessionId());
     List<InclusionRuleReport.Summary> result = getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), summaryMapper);
     return result.isEmpty()? new InclusionRuleReport.Summary() : result.get(0);
   }
 
-  private List<InclusionRuleReport.InclusionRuleStatistic> getInclusionRuleStatistics(int id, Source source) {
+  private List<InclusionRuleReport.InclusionRuleStatistic> getInclusionRuleStatistics(int id, Source source, int modeId) {
 
     String sql = "select i.rule_sequence, i.name, s.person_count, s.gain_count, s.person_total"
         + " from @tableQualifier.cohort_inclusion i join @tableQualifier.cohort_inclusion_stats s on i.cohort_definition_id = s.cohort_definition_id"
         + " and i.rule_sequence = s.rule_sequence"
-        + " where i.cohort_definition_id = @id ORDER BY i.rule_sequence";
+        + " where i.cohort_definition_id = @id and mode_id = @modeId ORDER BY i.rule_sequence";
     String tqName = "tableQualifier";
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, tqName, tqValue, "id", whitelist(id), SessionUtils.sessionId());
+		String[] varNames = {"id", "modeId"};
+		Object[] varValues = {whitelist(id), whitelist(modeId)};		
+    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, tqName, tqValue, varNames, varValues, SessionUtils.sessionId());
     return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), inclusionRuleStatisticMapper);
   }
   
@@ -205,12 +215,14 @@ public class CohortDefinitionService extends AbstractDaoService {
     return StringUtils.reverse(StringUtils.leftPad(Long.toBinaryString(n), size, "0"));
   }  
   
-  private String getInclusionRuleTreemapData(int id, int inclusionRuleCount, Source source) {
+  private String getInclusionRuleTreemapData(int id, int inclusionRuleCount, Source source, int modeId) {
 
-    String sql = "select inclusion_rule_mask, person_count from @tableQualifier.cohort_inclusion_result where cohort_definition_id = @id";
+    String sql = "select inclusion_rule_mask, person_count from @tableQualifier.cohort_inclusion_result where cohort_definition_id = @id and mode_id = @modeId";
     String tqName = "tableQualifier";
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, tqName, tqValue, "id", id, SessionUtils.sessionId());
+		String[] varNames = {"id", "modeId"};
+		Object[] varValues = {whitelist(id), whitelist(modeId)};		
+    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, tqName, tqValue, varNames, varValues, SessionUtils.sessionId());
 
     // [0] is the inclusion rule bitmask, [1] is the count of the match
     List<Long[]> items = this.getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), inclusionRuleResultItemMapper);
@@ -282,10 +294,10 @@ public class CohortDefinitionService extends AbstractDaoService {
     public String description;
     public ExpressionType expressionType;
     public String createdBy;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd, HH:mm")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
     public Date createdDate;
     public String modifiedBy;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd, HH:mm")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
     public Date modifiedDate;
   }
 
@@ -678,13 +690,16 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Path("/{id}/report/{sourceKey}")
   @Produces(MediaType.APPLICATION_JSON)
   @Transactional
-  public InclusionRuleReport getInclusionRuleReport(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey) {
+  public InclusionRuleReport getInclusionRuleReport(
+					@PathParam("id") final int id, 
+					@PathParam("sourceKey") final String sourceKey, 
+					@DefaultValue("0") @QueryParam("mode") int modeId) {
 
     Source source = this.getSourceRepository().findBySourceKey(sourceKey);
 
-    InclusionRuleReport.Summary summary = getInclusionRuleReportSummary(whitelist(id), source);
-    List<InclusionRuleReport.InclusionRuleStatistic> inclusionRuleStats = getInclusionRuleStatistics(whitelist(id), source);
-    String treemapData = getInclusionRuleTreemapData(whitelist(id), inclusionRuleStats.size(), source);
+    InclusionRuleReport.Summary summary = getInclusionRuleReportSummary(whitelist(id), source, modeId);
+    List<InclusionRuleReport.InclusionRuleStatistic> inclusionRuleStats = getInclusionRuleStatistics(whitelist(id), source, modeId);
+    String treemapData = getInclusionRuleTreemapData(whitelist(id), inclusionRuleStats.size(), source, modeId);
 
     InclusionRuleReport report = new InclusionRuleReport();
     report.summary = summary;
@@ -692,6 +707,75 @@ public class CohortDefinitionService extends AbstractDaoService {
     report.treemapData = treemapData;
 
     return report;
+  }
+
+  private CheckResultDTO runChecks(int id, final String expression) {
+      CheckResultDTO result;
+      ObjectMapper mapper = new ObjectMapper();
+      try {
+          CohortExpression cohortExpression = mapper.readValue(expression, CohortExpression.class);
+          result = runChecks(id, cohortExpression);
+      } catch (IOException e) {
+          log.error(String.format("Failed to parse cohort:%d expression", id), e);
+          result = new CheckResultDTO(id, Stream.of(new DefaultWarning(WarningSeverity.INFO,"Failed to check expression"))
+                  .collect(Collectors.toList()));
+      }
+      return result;
+  }
+
+  private CheckResultDTO runChecks(int id, CohortExpression expression) {
+      Checker checker = new Checker();
+      return new CheckResultDTO(id, checker.check(expression));
+  }
+
+  @GET
+  @Path("/{id}/check")
+  @Produces(MediaType.APPLICATION_JSON)
+  @Transactional
+  public CheckResultDTO getCheckResults(@PathParam("id") int id) {
+    CohortDefinition cohortDefinition = cohortDefinitionRepository.findOneWithDetail(id);
+    String expression = cohortDefinition.getDetails().getExpression();
+    return runChecks(id, expression);
+  }
+
+  @POST
+  @Path("/{id}/check")
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Transactional
+  public CheckResultDTO runDiagnostics(@PathParam("id") int id,  CohortExpression expression){
+      return runChecks(id, expression);
+  }
+
+  public static class CheckResultDTO{
+    private Integer cohortDefinitionId;
+    private List<Warning> warnings;
+
+    public CheckResultDTO(Integer cohortDefinitionId, List<Warning> warnings) {
+
+      this.cohortDefinitionId = cohortDefinitionId;
+      this.warnings = warnings;
+    }
+
+    public Integer getCohortDefinitionId() {
+
+      return cohortDefinitionId;
+    }
+
+    public void setCohortDefinitionId(Integer cohortDefinitionId) {
+
+      this.cohortDefinitionId = cohortDefinitionId;
+    }
+
+    public List<Warning> getWarnings() {
+
+      return warnings;
+    }
+
+    public void setWarnings(List<Warning> warnings) {
+
+      this.warnings = warnings;
+    }
   }
 
   @PostConstruct

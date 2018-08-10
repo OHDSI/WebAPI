@@ -15,6 +15,7 @@
  */
 package org.ohdsi.webapi.cohortresults;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import java.util.Arrays;
 
 /**
@@ -30,6 +31,11 @@ public enum PeriodType {
 		this.value = value;
 	}
 
+	public String getValue() {
+		return this.value;
+	}
+	
+	@JsonCreator
 	public static PeriodType fromString(String value) {
 		for (PeriodType category : values()) {
 			if (category.value.equalsIgnoreCase(value)) {

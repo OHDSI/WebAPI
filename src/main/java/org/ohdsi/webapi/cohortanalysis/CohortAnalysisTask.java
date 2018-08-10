@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ohdsi.webapi.cohortresults.PeriodType;
 import org.ohdsi.webapi.source.Source;
 
 public class CohortAnalysisTask {
@@ -43,6 +44,8 @@ public class CohortAnalysisTask {
 	private List<String> observationConceptIds;
 
 	private List<String> measurementConceptIds;
+	
+	private List<PeriodType> periods;
 
 	public String getSourceKey() {
 		return sourceKey;
@@ -252,6 +255,22 @@ public class CohortAnalysisTask {
 		this.visualizations = visualizations;
 	}
 
+	/**
+	 * @return the periods
+	 */
+	public List<PeriodType> getPeriods() {
+
+		return periods;
+	}
+
+	/**
+	 * @param periods the periods to set
+	 */
+	public void setPeriods(final List<PeriodType> periods) {
+
+		this.periods = periods;
+	}
+	
 	@Override
 	public String toString() {
 			ObjectMapper mapper = new ObjectMapper();

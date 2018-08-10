@@ -9,7 +9,7 @@
   <version>1.0.0-SNAPSHOT</version>
   <name>WebAPI</name>
   <properties>
-    <webapi.version>2.4.3</webapi.version>
+    <webapi.version>2.5.0-SNAPSHOT</webapi.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jersey.version>2.14</jersey.version>
     <!-- Spring Boot manages spring.version as well -->
@@ -70,6 +70,9 @@
     <security.kerberos.keytabPath></security.kerberos.keytabPath>
     <security.ldap.dn>cn={0},dc=example,dc=org</security.ldap.dn>
     <security.ldap.url>ldap://localhost:389</security.ldap.url>
+    <security.ldap.baseDn></security.ldap.baseDn>
+    <security.ldap.system.username></security.ldap.system.username>
+    <security.ldap.system.password></security.ldap.system.password>
     <security.ad.url>ldap://localhost:389</security.ad.url>
     <security.ad.searchBase>CN=Users,DC=example,DC=org</security.ad.searchBase>
     <security.ad.principalSuffix>@example.org</security.ad.principalSuffix>
@@ -424,7 +427,7 @@
     <dependency>
       <groupId>org.ohdsi.sql</groupId>
       <artifactId>SqlRender</artifactId>
-      <version>1.5.0-SNAPSHOT</version>
+      <version>1.5.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>commons-dbutils</groupId>
@@ -562,7 +565,7 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>circe</artifactId>
-      <version>1.5.1</version>
+      <version>1.6.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.json</groupId>
@@ -649,8 +652,7 @@
         <dependency>
           <groupId>ojdbc</groupId>
           <artifactId>ojdbc</artifactId>
-          <version>6.0.0</version>
-          <!-- If you have it local and not in a repository <systemPath></systemPath> -->
+          <version>14</version>
         </dependency>
       </dependencies>
     </profile>

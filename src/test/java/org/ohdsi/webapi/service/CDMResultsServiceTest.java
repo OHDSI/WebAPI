@@ -6,6 +6,7 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
+import org.ohdsi.webapi.util.QueryModifiers;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class CDMResultsServiceTest extends AbstractServiceTest {
@@ -23,7 +24,7 @@ public class CDMResultsServiceTest extends AbstractServiceTest {
   public void prepareGetConceptRecordCount() throws IOException {
 
     String[] identifiers = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
-    PreparedStatementRenderer psr = cdmResultsService.prepareGetConceptRecordCount(getSource(), () -> identifiers);
+    PreparedStatementRenderer psr = cdmResultsService.prepareGetConceptRecordCount(getSource(), QueryModifiers.identifiersToString(identifiers));
     assertSqlEquals("/cdmresults/sql/getConceptRecordCount-expected.sql", psr);
   }
 

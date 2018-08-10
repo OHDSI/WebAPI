@@ -5,17 +5,12 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import org.apache.commons.lang3.StringUtils;
-import org.ohdsi.circe.helper.ResourceHelper;
-import org.ohdsi.sql.SqlRender;
-import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cache.ResultsCache;
 import org.ohdsi.webapi.cdmresults.CDMResultsCache;
 import org.ohdsi.webapi.cdmresults.CDMResultsCacheTasklet;
@@ -25,10 +20,10 @@ import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
+import org.ohdsi.webapi.util.QueryModifiers;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.event.EventListener;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -101,9 +96,7 @@ public class CDMResultsService extends AbstractDaoService {
             return new ArrayList<>();
         }
 
-        PreparedStatementRenderer psr = prepareGetConceptRecordCount(source, () ->
-                Arrays.stream(identifiers).map(i -> String.valueOf(Integer.parseInt(i.replaceAll("'", ""))))
-                        .collect(Collectors.joining(",")));
+        PreparedStatementRenderer psr = prepareGetConceptRecordCount(source, QueryModifiers.identifiersToString(identifiers));
         return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), rowMapper);
     }
 

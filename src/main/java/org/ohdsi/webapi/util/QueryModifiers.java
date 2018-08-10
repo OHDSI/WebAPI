@@ -1,6 +1,9 @@
 package org.ohdsi.webapi.util;
 
+import java.util.Arrays;
 import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class QueryModifiers {
 
@@ -10,6 +13,11 @@ public class QueryModifiers {
           .replaceAll("(?i)select c\\.concept_id", "select c.concept_id, " + CONCEPT_SET_FIELDS)
           .replaceAll("(?i)where concept_id in", "where concept.concept_id in");
   public static Function<String, String> columnTable = sql -> sql.replaceAll(" concept_id", " CONCEPT.concept_id");
+
+  public static Supplier<String> identifiersToString(String[] identifiers) {
+      return () -> Arrays.stream(identifiers).map(i -> String.valueOf(Integer.parseInt(i.replaceAll("'", ""))))
+          .collect(Collectors.joining(","));
+  }
 
   public static Function<String, String> countWrapper(String countSql, String orderClause, String whereClause, String tableQualifier) {
     return sql -> "with included as (" + sql + "), counts as ( "

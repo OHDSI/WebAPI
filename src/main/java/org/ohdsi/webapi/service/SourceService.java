@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.service;
 
-import org.apache.commons.httpclient.auth.InvalidCredentialsException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -192,7 +191,6 @@ public class SourceService extends AbstractDaoService {
         if (!securityEnabled) {
             throw new NotAuthorizedException(SECURE_MODE_ERROR);
         }
-        validateConnectionString(request.getConnectionString());
         Source source = conversionService.convert(request, Source.class);
         setImpalaKrbData(file, fileDetail.getFileName(), request.getDialect(), source, null);
         Source saved = sourceRepository.save(source);
@@ -211,7 +209,6 @@ public class SourceService extends AbstractDaoService {
         if (!securityEnabled) {
             throw new NotAuthorizedException(SECURE_MODE_ERROR);
         }
-        validateConnectionString(request.getConnectionString());
         Source updated = conversionService.convert(request, Source.class);
         Source source = sourceRepository.findBySourceId(sourceId);
         if (source != null) {
@@ -234,15 +231,6 @@ public class SourceService extends AbstractDaoService {
             return new SourceInfo(result);
         } else {
             throw new NotFoundException();
-        }
-    }
-
-    private void validateConnectionString(String connectionString) throws InvalidCredentialsException {
-        if (!connectionString.contains(KRB_REALM)) {
-            throw new InvalidCredentialsException("KrbRealm parameter is empty");
-        }
-        if (!connectionString.contains(KRB_FQDN)) {
-            throw new InvalidCredentialsException("KrbHostFQDN parameter is empty");
         }
     }
 

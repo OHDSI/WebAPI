@@ -29,6 +29,10 @@
 {DEFAULT @rollupUtilizationVisit = FALSE} -- do not roll up Visit utilization using concept ancestor
 {DEFAULT @rollupUtilizationDrug = FALSE} -- do not roll up Drug utilization using concept ancestor
 {DEFAULT @periods = ''} -- default value for periods is blank. No calendar periods will be used. 
+{DEFAULT @includeVisitTypeUtilization = 32025, 32028, 32022} -- default values of visit type concept id to perform utilization analysis
+{DEFAULT @includeDrugTypeUtilization = 38000175,38000176} -- default values of visit type concept id to perform utilization analysis
+{DEFAULT @includeCostConcepts = 31978, 31973, 31980} -- default values for cost concept_id (Allowed, Charged, Paid)
+{DEFAULT @includeCurrency = 44818668} -- default values for currency (USD - United States dollar)
 
 {DEFAULT @cohort_definition_id = '2000003550,2000004386'}   --cohort_definition_id = @cohort_definition_id
 
@@ -8251,6 +8255,7 @@ with visit_records (cohort_definition_id, subject_id, visit_concept_id, visit_ty
 	join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
 			and vo1.visit_start_date >= dateadd(d, -365, c1.cohort_start_date) and vo1.visit_start_date < c1.cohort_start_date
 	join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
+	where vo1.visit_type_concept_id in (@includeVisitTypeUtilization)
 )
 select cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id, visit_start_date, ancestor
 INTO #raw_4001
@@ -8267,6 +8272,7 @@ with visit_records (cohort_definition_id, subject_id, visit_concept_id, visit_ty
 	from #cohort_first c1
 	join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
 			and vo1.visit_start_date >= dateadd(d, -365, c1.cohort_start_date) and vo1.visit_start_date < c1.cohort_start_date
+	where vo1.visit_type_concept_id in (@includeVisitTypeUtilization)
 )
 select cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id, visit_start_date
 INTO #raw_4001
@@ -8373,6 +8379,7 @@ from #cohort_first c1
 join @CDM_schema.visit_occurrence vo1 on c1.subject_id = vo1.person_id
 	and vo1.visit_start_date >= dateadd(d, -365, c1.cohort_start_date) and vo1.visit_start_date < c1.cohort_start_date
 join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
+where vo1.visit_type_concept_id in (@includeVisitTypeUtilization)
 ;
 -- period_id, visit_concept_id, visit_type_concept_id
 select cohort_definition_id
@@ -8397,6 +8404,7 @@ INTO #raw_4002
 from #cohort_first c1
 join @CDM_schema.visit_occurrence vo1 on c1.subject_id = vo1.person_id
 	and vo1.visit_start_date >= dateadd(d, -365, c1.cohort_start_date) and vo1.visit_start_date < c1.cohort_start_date
+where vo1.visit_type_concept_id in (@includeVisitTypeUtilization)
 ;
 -- period_id, visit_concept_id, visit_type_concept_id
 select cohort_definition_id
@@ -8588,6 +8596,7 @@ from #cohort_first c1
 join @CDM_schema.visit_occurrence vo1 on c1.subject_id = vo1.person_id
 	and vo1.visit_start_date >= dateadd(d, -365, c1.cohort_start_date) and vo1.visit_start_date < c1.cohort_start_date
 join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
+where vo1.visit_type_concept_id in (@includeVisitTypeUtilization)
 ;
 } : {
 select distinct c1.cohort_definition_id,
@@ -8600,6 +8609,7 @@ INTO #raw_4003
 from #cohort_first c1
 join @CDM_schema.visit_occurrence vo1 on c1.subject_id = vo1.person_id
 	and vo1.visit_start_date >= dateadd(d, -365, c1.cohort_start_date) and vo1.visit_start_date < c1.cohort_start_date
+	where vo1.visit_type_concept_id in (@includeVisitTypeUtilization)
 ;
 }
 -- period_id, visit_concept_id, visit_type_concept_id
@@ -8783,6 +8793,7 @@ from #cohort_first c1
 join @CDM_schema.visit_occurrence vo1 on c1.subject_id = vo1.person_id
 	and vo1.visit_start_date >= dateadd(d, -365, c1.cohort_start_date) and vo1.visit_start_date < c1.cohort_start_date
 join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
+where vo1.visit_type_concept_id in (@includeVisitTypeUtilization)
 ;
 } : {
 select distinct c1.cohort_definition_id,
@@ -8795,6 +8806,7 @@ INTO #raw_4004
 from #cohort_first c1
 join @CDM_schema.visit_occurrence vo1 on c1.subject_id = vo1.person_id
 	and vo1.visit_start_date >= dateadd(d, -365, c1.cohort_start_date) and vo1.visit_start_date < c1.cohort_start_date
+where vo1.visit_type_concept_id in (@includeVisitTypeUtilization)
 ;
 }
 -- period_id, visit_concept_id, visit_type_concept_id
@@ -8984,6 +8996,7 @@ join (
 	inner join @CDM_schema.concept as co on vc.descendant_concept_id = co.concept_id
 	where lower(co.concept_name) like '%inpatient%'
 ) as vc1 on vo1.visit_concept_id = vc1.descendant_concept_id
+where vo1.visit_type_concept_id in (@includeVisitTypeUtilization)
 ;
 } : {
 select distinct c1.cohort_definition_id,
@@ -8996,9 +9009,9 @@ INTO #raw_4005
 from #cohort_first c1
 join @CDM_schema.visit_occurrence vo1 on c1.subject_id = vo1.person_id
 	and vo1.visit_start_date >= dateadd(d, -365, c1.cohort_start_date) and vo1.visit_start_date < c1.cohort_start_date
-join @CDM_schema.concept as co
+join (select concept_id from @CDM_schema.concept where lower(concept_name) like '%inpatient%') as co
 on vo1.visit_concept_id = co.concept_id
-where lower(co.concept_name) like '%inpatient%'
+where vo1.visit_type_concept_id in (@includeVisitTypeUtilization)
 ;
 }
 -- period_id, visit_concept_id, visit_type_concept_id
@@ -9217,6 +9230,7 @@ with visit_records (cohort_definition_id, subject_id, visit_concept_id, visit_ty
 	join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
 		and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date <= c1.cohort_end_date
 	join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
+	where vo1.visit_type_concept_id in (@includeVisitTypeUtilization)
 )
 select cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id, visit_start_date, ancestor
 INTO #raw_4007
@@ -9232,6 +9246,7 @@ with visit_records (cohort_definition_id, subject_id, visit_concept_id, visit_ty
 	from #HERACLES_cohort c1
 	join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
 		and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date <= c1.cohort_end_date
+	where vo1.visit_type_concept_id in (@includeVisitTypeUtilization)
 )
 select cohort_definition_id, subject_id, visit_concept_id, visit_type_concept_id, visit_start_date
 INTO #raw_4007
@@ -9338,6 +9353,7 @@ from #HERACLES_cohort c1
 join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
 	and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date <= c1.cohort_end_date
 join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
+where vo1.visit_type_concept_id in (@includeVisitTypeUtilization)
 ;
 } : {
 select distinct c1.cohort_definition_id,
@@ -9350,6 +9366,7 @@ INTO #raw_4008
 from #HERACLES_cohort c1
 join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
 	and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date <= c1.cohort_end_date
+where vo1.visit_type_concept_id in (@includeVisitTypeUtilization)
 ;
 }
 -- period_id, visit_concept_id, visit_type_concept_id
@@ -9543,6 +9560,7 @@ from #HERACLES_cohort c1
 join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
 	and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date <= c1.cohort_end_date
 join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
+where vo1.visit_type_concept_id in (@includeVisitTypeUtilization)
 ;
 } : {
 select distinct c1.cohort_definition_id,
@@ -9554,6 +9572,7 @@ INTO #raw_4009
 from #HERACLES_cohort c1
 join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
 	and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date <= c1.cohort_end_date
+where vo1.visit_type_concept_id in (@includeVisitTypeUtilization)
 ;
 }
 -- period_id, visit_concept_id, visit_type_concept_id
@@ -9739,6 +9758,7 @@ from #HERACLES_cohort c1
 join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
 	and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date <= c1.cohort_end_date
 join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
+where vo1.visit_type_concept_id in (@includeVisitTypeUtilization)
 ;
 } : {
 select distinct c1.cohort_definition_id,
@@ -9751,6 +9771,7 @@ INTO #raw_4010
 from #HERACLES_cohort c1
 join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
 	and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date <= c1.cohort_end_date
+where vo1.visit_type_concept_id in (@includeVisitTypeUtilization)
 ;
 }
 -- period_id, visit_concept_id, visit_type_concept_id
@@ -9939,6 +9960,7 @@ join @CDM_schema.visit_occurrence vo1 on c1.subject_id = vo1.person_id
   	inner join @CDM_schema.concept as co on vc.descendant_concept_id = co.concept_id
   	where lower(co.concept_name) like '%inpatient%'
   ) as vc1 on vo1.visit_concept_id = vc1.descendant_concept_id
+where vo1.visit_type_concept_id in (@includeVisitTypeUtilization)
 ;
 } : {
 select distinct c1.cohort_definition_id,
@@ -9951,9 +9973,9 @@ INTO #raw_4011
 FROM #HERACLES_cohort c1
 join @CDM_schema.visit_occurrence vo1 on c1.subject_id = vo1.person_id
 	and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date <= c1.cohort_end_date
-  join @CDM_schema.concept as co
+  join (select concept_id from @CDM_schema.concept where lower(concept_name) like '%inpatient%') as co
 on vo1.visit_concept_id = co.concept_id
-where lower(co.concept_name) like '%inpatient%'
+	where vo1.visit_type_concept_id in (@includeVisitTypeUtilization)
 ;
 }
 -- period_id, visit_concept_id, visit_type_concept_id
@@ -10098,6 +10120,7 @@ with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_
 	join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
 			and de1.drug_exposure_start_date >= dateadd(d, -365, c1.cohort_start_date) and de1.drug_exposure_start_date < c1.cohort_start_date
 	WHERE de1.drug_concept_id != 0
+	and drug_type_concept_id in (@includeDrugTypeUtilization)
 ),
 atc_rollup (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date) as
 (
@@ -10137,6 +10160,7 @@ with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_
 	join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
 			and de1.drug_exposure_start_date >= dateadd(d, -365, c1.cohort_start_date) and de1.drug_exposure_start_date < c1.cohort_start_date
 	WHERE de1.drug_concept_id != 0
+	and drug_type_concept_id in (@includeDrugTypeUtilization)
 )
 select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date
 INTO #raw_de_4012
@@ -10256,6 +10280,7 @@ with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_
 	join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
 			and de1.drug_exposure_start_date >= dateadd(d, -365, c1.cohort_start_date) and de1.drug_exposure_start_date < c1.cohort_start_date
 	WHERE de1.drug_concept_id != 0
+	and drug_type_concept_id in (@includeDrugTypeUtilization)
 ),
 atc_rollup (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, drug_exposure_id) as
 (
@@ -10296,6 +10321,7 @@ with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_
 	join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
 			and de1.drug_exposure_start_date >= dateadd(d, -365, c1.cohort_start_date) and de1.drug_exposure_start_date < c1.cohort_start_date
 	WHERE de1.drug_concept_id != 0
+	and drug_type_concept_id in (@includeDrugTypeUtilization)
 )
 select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, drug_exposure_id
 INTO #raw_de_4013
@@ -10460,6 +10486,7 @@ with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_
 	join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
 			and de1.drug_exposure_start_date >= dateadd(d, -365, c1.cohort_start_date) and de1.drug_exposure_start_date < c1.cohort_start_date
 	WHERE de1.drug_concept_id != 0
+	and drug_type_concept_id in (@includeDrugTypeUtilization)
 ),
 atc_rollup (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration) as
 (
@@ -10501,6 +10528,7 @@ with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_
 	join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
 			and de1.drug_exposure_start_date >= dateadd(d, -365, c1.cohort_start_date) and de1.drug_exposure_start_date < c1.cohort_start_date
 	WHERE de1.drug_concept_id != 0
+	and drug_type_concept_id in (@includeDrugTypeUtilization)
 )
 select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration
 INTO #raw_de_4014
@@ -10665,6 +10693,7 @@ with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_
 	join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
 			and de1.drug_exposure_start_date >= dateadd(d, -365, c1.cohort_start_date) and de1.drug_exposure_start_date < c1.cohort_start_date
 	WHERE de1.drug_concept_id != 0
+	and drug_type_concept_id in (@includeDrugTypeUtilization)
 ),
 atc_rollup (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration) as
 (
@@ -10706,6 +10735,7 @@ with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_
 	join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
 			and de1.drug_exposure_start_date >= dateadd(d, -365, c1.cohort_start_date) and de1.drug_exposure_start_date < c1.cohort_start_date
 	WHERE de1.drug_concept_id != 0
+	and drug_type_concept_id in (@includeDrugTypeUtilization)
 )
 select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration
 INTO #raw_de_4015
@@ -10868,6 +10898,7 @@ with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_
 	join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
 		and de1.drug_exposure_start_date >= c1.cohort_start_date and de1.drug_exposure_start_date <= c1.cohort_end_date
 	WHERE de1.drug_concept_id != 0
+	and drug_type_concept_id in (@includeDrugTypeUtilization)
 ),
 atc_rollup (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date) as
 (
@@ -10907,6 +10938,7 @@ with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_
 	join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
 		and de1.drug_exposure_start_date >= c1.cohort_start_date and de1.drug_exposure_start_date <= c1.cohort_end_date
 	WHERE de1.drug_concept_id != 0
+	and drug_type_concept_id in (@includeDrugTypeUtilization)
 )
 select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date
 INTO #raw_de_4016
@@ -11030,6 +11062,7 @@ with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_
   join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
   	and de1.drug_exposure_start_date >= c1.cohort_start_date and de1.drug_exposure_start_date <= c1.cohort_end_date
   WHERE de1.drug_concept_id != 0
+	and drug_type_concept_id in (@includeDrugTypeUtilization)
 ),
 atc_rollup (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, drug_exposure_id) as
 (
@@ -11070,6 +11103,7 @@ with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_
   join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
   	and de1.drug_exposure_start_date >= c1.cohort_start_date and de1.drug_exposure_start_date <= c1.cohort_end_date
   WHERE de1.drug_concept_id != 0
+	and drug_type_concept_id in (@includeDrugTypeUtilization)
 )
 select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, drug_exposure_id
 INTO #raw_de_4017
@@ -11233,6 +11267,7 @@ with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_
     join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
     	and de1.drug_exposure_start_date >= c1.cohort_start_date and de1.drug_exposure_start_date <= c1.cohort_end_date
 	WHERE de1.drug_concept_id != 0
+	and drug_type_concept_id in (@includeDrugTypeUtilization)
 ),
 atc_rollup (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration) as
 (
@@ -11274,6 +11309,7 @@ with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_
     join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
     	and de1.drug_exposure_start_date >= c1.cohort_start_date and de1.drug_exposure_start_date <= c1.cohort_end_date
 	WHERE de1.drug_concept_id != 0
+	and drug_type_concept_id in (@includeDrugTypeUtilization)
 )
 select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration
 INTO #raw_de_4018
@@ -11438,6 +11474,7 @@ with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_
     join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
     	and de1.drug_exposure_start_date >= c1.cohort_start_date and de1.drug_exposure_start_date <= c1.cohort_end_date
 	WHERE de1.drug_concept_id != 0
+	and drug_type_concept_id in (@includeDrugTypeUtilization)
 ),
 atc_rollup (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration) as
 (
@@ -11479,6 +11516,7 @@ with drug_records (cohort_definition_id, subject_id, drug_concept_id, drug_type_
     join @CDM_schema.drug_exposure as de1 on c1.subject_id = de1.person_id
     	and de1.drug_exposure_start_date >= c1.cohort_start_date and de1.drug_exposure_start_date <= c1.cohort_end_date
 	WHERE de1.drug_concept_id != 0
+	and drug_type_concept_id in (@includeDrugTypeUtilization)
 )
 select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, drug_exposure_date, duration
 INTO #raw_de_4019
@@ -11649,7 +11687,16 @@ join @CDM_schema.cost cst1 on c1.subject_id = cst1.person_id
   and vo1.visit_occurrence_id = cst1.cost_event_id
 join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
 where cost >= 0
-    and currency_concept_id = 44818668
+    and currency_concept_id in (@includeCurrency)
+	and cost_concept_id in (@includeCostConcepts)
+	and visit_type_concept_id in (@includeVisitTypeUtilization)
+;
+create index ix_rc_visit_date on #raw_cost_4020 (visit_start_date);
+
+select cohort_definition_id, subject_id, hp.period_id, visit_occurrence_id,visit_concept_id, visit_type_concept_id, cost_concept_id, cost_type_concept_id, cost, ancestor
+into #raw_period_4020
+from #raw_cost_4020
+join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 ;
 } : {
 select c1.cohort_definition_id,
@@ -11669,16 +11716,19 @@ join @CDM_schema.cost cst1 on c1.subject_id = cst1.person_id
   and cst1.person_id = vo1.person_id
   and vo1.visit_occurrence_id = cst1.cost_event_id
 where cost >= 0
-    and currency_concept_id = 44818668
+    and currency_concept_id in (@includeCurrency)
+	and cost_concept_id in (@includeCostConcepts)
+	and visit_type_concept_id in (@includeVisitTypeUtilization)
 ;
-}
 create index ix_rc_visit_date on #raw_cost_4020 (visit_start_date);
 
-select cohort_definition_id, subject_id, hp.period_id, visit_occurrence_id,visit_concept_id, visit_type_concept_id, cost_concept_id, cost_type_concept_id, cost, ancestor
+select cohort_definition_id, subject_id, hp.period_id, visit_occurrence_id,visit_concept_id, visit_type_concept_id, cost_concept_id, cost_type_concept_id, cost
 into #raw_period_4020
 from #raw_cost_4020
 join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 ;
+}
+
 
 select cohort_definition_id
 	, subject_id
@@ -11887,7 +11937,16 @@ join @CDM_schema.cost cst1 on c1.subject_id = cst1.person_id
     and vo1.visit_occurrence_id = cst1.cost_event_id
 join @CDM_schema.concept_ancestor vca on vca.descendant_concept_id = vo1.visit_concept_id
 where cost >= 0
-    and currency_concept_id = 44818668
+    and currency_concept_id in (@includeCurrency)
+	and cost_concept_id in (@includeCostConcepts)
+	and visit_type_concept_id in (@includeVisitTypeUtilization)
+;
+create index ix_rc_visit_date on #raw_cost_4021 (visit_start_date);
+
+select cohort_definition_id, subject_id, hp.period_id, visit_occurrence_id,visit_concept_id, visit_type_concept_id, cost_concept_id, cost_type_concept_id, cost, ancestor
+into #raw_period_4021
+from #raw_cost_4021
+join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 ;
 } : {
 select c1.cohort_definition_id,
@@ -11906,16 +11965,19 @@ join @CDM_schema.visit_occurrence vo1 on c1.subject_id = vo1.person_id
 join @CDM_schema.cost cst1 on c1.subject_id = cst1.person_id
     and vo1.visit_occurrence_id = cst1.cost_event_id
 where cost >= 0
-    and currency_concept_id = 44818668
+    and currency_concept_id in (@includeCurrency)
+	and cost_concept_id in (@includeCostConcepts)
+	and visit_type_concept_id in (@includeVisitTypeUtilization)
 ;
-}
 create index ix_rc_visit_date on #raw_cost_4021 (visit_start_date);
 
-select cohort_definition_id, subject_id, hp.period_id, visit_occurrence_id,visit_concept_id, visit_type_concept_id, cost_concept_id, cost_type_concept_id, cost, ancestor
+select cohort_definition_id, subject_id, hp.period_id, visit_occurrence_id,visit_concept_id, visit_type_concept_id, cost_concept_id, cost_type_concept_id, cost
 into #raw_period_4021
 from #raw_cost_4021
 join #periods_atrisk hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 ;
+}
+
 
 select cohort_definition_id
 	, subject_id
@@ -12125,7 +12187,9 @@ with drug_records(cohort_definition_id, subject_id, drug_concept_id, drug_type_c
 		and cst1.person_id = de1.person_id
 		and de1.visit_occurrence_id = cst1.cost_event_id
 	where cost >= 0
-			and currency_concept_id = 44818668
+			and currency_concept_id in (@includeCurrency)
+			and cost_concept_id in (@includeCostConcepts)
+			and drug_type_concept_id in (@includeDrugTypeUtilization)
 ),
 atc_rollup (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost) as
 (
@@ -12153,6 +12217,13 @@ FROM (
   select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost, 1 as ancestor FROM rxnorm_rollup
 ) D
 ;
+create index ix_rc_visit_date on #raw_cost_4022 (drug_exposure_start_date);
+
+select cohort_definition_id, subject_id, hp.period_id, drug_exposure_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, cost, ancestor
+into #raw_period_4022
+from #raw_cost_4022
+join #periods_baseline hp on drug_exposure_start_date >= hp.period_start_date and drug_exposure_start_date < hp.period_end_date
+;
 } : {
 with drug_records(cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost) as
 (
@@ -12172,22 +12243,25 @@ with drug_records(cohort_definition_id, subject_id, drug_concept_id, drug_type_c
 		and cst1.person_id = de1.person_id
 		and de1.visit_occurrence_id = cst1.cost_event_id
 	where cost >= 0
-			and currency_concept_id = 44818668
+			and currency_concept_id in (@includeCurrency)
+			and cost_concept_id in (@includeCostConcepts)
+			and drug_type_concept_id in (@includeDrugTypeUtilization)
 )
 select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost
 INTO #raw_cost_4022
 FROM (
-  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost, 0 as ancestor FROM drug_records
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost FROM drug_records
 ) D
 ;
-}
 create index ix_rc_visit_date on #raw_cost_4022 (drug_exposure_start_date);
 
-select cohort_definition_id, subject_id, hp.period_id, drug_exposure_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, cost, ancestor
+select cohort_definition_id, subject_id, hp.period_id, drug_exposure_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, cost
 into #raw_period_4022
 from #raw_cost_4022
 join #periods_baseline hp on drug_exposure_start_date >= hp.period_start_date and drug_exposure_start_date < hp.period_end_date
 ;
+}
+
 
 select cohort_definition_id
 	, subject_id
@@ -12223,7 +12297,7 @@ select cohort_definition_id
 	, sum(cost) as count_value
 into #raw_4022_u3
 from #raw_period_4022
-{@rollupUtilizationVisit} ? {
+{@rollupUtilizationDrug} ? {
 where ancestor = 0
 }
 GROUP BY subject_id, period_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
@@ -12262,7 +12336,7 @@ select cohort_definition_id
 	, sum(cost) as count_value
 into #raw_4022_u6
 from #raw_cost_4022
-{@rollupUtilizationVisit} ? {
+{@rollupUtilizationDrug} ? {
 where ancestor = 0
 }
 GROUP BY subject_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
@@ -12396,7 +12470,9 @@ with drug_records(cohort_definition_id, subject_id, drug_concept_id, drug_type_c
 		and cst1.person_id = de1.person_id
 		and de1.visit_occurrence_id = cst1.cost_event_id
 	where cost >= 0
-			and currency_concept_id = 44818668
+			and currency_concept_id in (@includeCurrency)
+			and cost_concept_id in (@includeCostConcepts)
+			and drug_type_concept_id in (@includeDrugTypeUtilization)
 ),
 atc_rollup (cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost) as
 (
@@ -12424,6 +12500,13 @@ FROM (
   select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost, 1 as ancestor FROM rxnorm_rollup
 ) D
 ;
+create index ix_rc_visit_date on #raw_cost_4023 (drug_exposure_start_date);
+
+select cohort_definition_id, subject_id, hp.period_id, drug_exposure_id,drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, cost, ancestor
+into #raw_period_4023
+from #raw_cost_4023
+join #periods_atrisk hp on drug_exposure_start_date >= hp.period_start_date and drug_exposure_start_date < hp.period_end_date
+;
 } : {
 with drug_records(cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost) as
 (
@@ -12443,23 +12526,26 @@ with drug_records(cohort_definition_id, subject_id, drug_concept_id, drug_type_c
 		and cst1.person_id = de1.person_id
 		and de1.visit_occurrence_id = cst1.cost_event_id
 	where cost >= 0
-			and currency_concept_id = 44818668
+			and currency_concept_id in (@includeCurrency)
+			and cost_concept_id in (@includeCostConcepts)
+			and drug_type_concept_id in (@includeDrugTypeUtilization)
 )
 select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost
 INTO #raw_cost_4023
 FROM (
-  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost, 0 as ancestor FROM drug_records
+  select cohort_definition_id, subject_id, drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, drug_exposure_start_date, drug_exposure_id, cost FROM drug_records
 ) D
 ;
-}
- 
 create index ix_rc_visit_date on #raw_cost_4023 (drug_exposure_start_date);
 
-select cohort_definition_id, subject_id, hp.period_id, drug_exposure_id,drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, cost, ancestor
+select cohort_definition_id, subject_id, hp.period_id, drug_exposure_id,drug_concept_id, drug_type_concept_id, cost_concept_id, cost_type_concept_id, cost
 into #raw_period_4023
 from #raw_cost_4023
 join #periods_atrisk hp on drug_exposure_start_date >= hp.period_start_date and drug_exposure_start_date < hp.period_end_date
 ;
+}
+ 
+
 
 select cohort_definition_id
 	, subject_id
@@ -12495,7 +12581,7 @@ select cohort_definition_id
 	, sum(cost) as count_value
 into #raw_4023_u3
 from #raw_period_4023
-{@rollupUtilizationVisit} ? {
+{@rollupUtilizationDrug} ? {
 where ancestor = 0
 }
 GROUP BY subject_id, period_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;
@@ -12534,7 +12620,7 @@ select cohort_definition_id
 	, sum(cost) as count_value
 into #raw_4023_u6
 from #raw_cost_4023
-{@rollupUtilizationVisit} ? {
+{@rollupUtilizationDrug} ? {
 where ancestor = 0
 }
 GROUP BY subject_id, cost_concept_id, cost_type_concept_id, cohort_definition_id;

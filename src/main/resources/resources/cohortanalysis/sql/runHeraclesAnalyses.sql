@@ -8432,7 +8432,7 @@ select cohort_definition_id
 	, count(distinct visit_occurrence_id) as count_value
 into #raw_4002_u3
 from #raw_4002
-join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_dat
+join #periods_baseline hp on visit_start_date >= hp.period_start_date and visit_start_date < hp.period_end_date
 {@rollupUtilizationVisit} ? {
 where ancestor = 0
 }

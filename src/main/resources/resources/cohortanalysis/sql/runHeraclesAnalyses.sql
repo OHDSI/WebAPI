@@ -26,8 +26,8 @@
 {DEFAULT @runHERACLESHeel = FALSE}   --runHERACLESHeel = @runHERACLESHeel
 {DEFAULT @CDM_version = '4'}  --we support 4 or 5,   CDM_version = @CDM_version
 {DEFAULT @cohort_period_only = FALSE}
-{DEFAULT @rollupUtilizationVisit = 0} -- by default, do not roll up Visit utilization using concept ancestor
-{DEFAULT @rollupUtilizationDrug = 0} -- by default, do not roll up Drug utilization using concept ancestor
+{DEFAULT @rollupUtilizationVisit = FALSE} -- do not roll up Visit utilization using concept ancestor
+{DEFAULT @rollupUtilizationDrug = FALSE} -- do not roll up Drug utilization using concept ancestor
 {DEFAULT @periods = ''} -- default value for periods is blank. No calendar periods will be used. 
 
 {DEFAULT @cohort_definition_id = '2000003550,2000004386'}   --cohort_definition_id = @cohort_definition_id

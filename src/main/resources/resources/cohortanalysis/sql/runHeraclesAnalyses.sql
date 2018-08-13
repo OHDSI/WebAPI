@@ -12465,7 +12465,7 @@ with drug_records(cohort_definition_id, subject_id, drug_concept_id, drug_type_c
 		cost
 	from #HERACLES_cohort c1
 	join @CDM_schema.drug_exposure de1 on c1.subject_id = de1.person_id
-		and de1.drug_exposure_start_date >= c1.cohort_start_date and de1.drug_exposure_start_date < c1.cohort_end_date
+		and de1.drug_exposure_start_date >= dateadd(d, -365, c1.cohort_start_date) and de1.drug_exposure_start_date < c1.cohort_start_date
 	join @CDM_schema.cost cst1 on c1.subject_id = cst1.person_id
 		and cst1.person_id = de1.person_id
 		and de1.visit_occurrence_id = cst1.cost_event_id
@@ -12521,7 +12521,7 @@ with drug_records(cohort_definition_id, subject_id, drug_concept_id, drug_type_c
 		cost
 	from #HERACLES_cohort c1
 	join @CDM_schema.drug_exposure de1 on c1.subject_id = de1.person_id
-		and de1.drug_exposure_start_date >= c1.cohort_start_date and de1.drug_exposure_start_date < c1.cohort_end_date
+		and de1.drug_exposure_start_date >= dateadd(d, -365, c1.cohort_start_date) and de1.drug_exposure_start_date < c1.cohort_start_date
 	join @CDM_schema.cost cst1 on c1.subject_id = cst1.person_id
 		and cst1.person_id = de1.person_id
 		and de1.visit_occurrence_id = cst1.cost_event_id

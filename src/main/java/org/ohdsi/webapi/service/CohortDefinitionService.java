@@ -294,10 +294,10 @@ public class CohortDefinitionService extends AbstractDaoService {
     public String description;
     public ExpressionType expressionType;
     public String createdBy;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd, HH:mm")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
     public Date createdDate;
     public String modifiedBy;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd, HH:mm")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
     public Date modifiedDate;
   }
 

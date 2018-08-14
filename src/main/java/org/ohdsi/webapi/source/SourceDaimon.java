@@ -35,7 +35,7 @@ import javax.persistence.Table;
 @Entity(name = "SourceDaimon")
 @Table(name="source_daimon")
 public class SourceDaimon implements Serializable {
-  public enum DaimonType { CDM, Vocabulary, Results, Evidence };
+  public enum DaimonType { CDM, Vocabulary, Results, CEM, CEMResults };
   
   public SourceDaimon() {
   

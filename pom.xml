@@ -70,6 +70,9 @@
     <security.kerberos.keytabPath></security.kerberos.keytabPath>
     <security.ldap.dn>cn={0},dc=example,dc=org</security.ldap.dn>
     <security.ldap.url>ldap://localhost:389</security.ldap.url>
+    <security.ldap.baseDn></security.ldap.baseDn>
+    <security.ldap.system.username></security.ldap.system.username>
+    <security.ldap.system.password></security.ldap.system.password>
     <security.ad.url>ldap://localhost:389</security.ad.url>
     <security.ad.searchBase>CN=Users,DC=example,DC=org</security.ad.searchBase>
     <security.ad.principalSuffix>@example.org</security.ad.principalSuffix>

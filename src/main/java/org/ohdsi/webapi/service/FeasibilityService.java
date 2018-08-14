@@ -140,10 +140,10 @@ public class FeasibilityService extends AbstractDaoService {
     public String createdBy;
     public Integer indexCohortId;
     public Integer matchingCohortId;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd, HH:mm")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
     public Date createdDate;
     public String modifiedBy;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd, HH:mm")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
     public Date modifiedDate;
   }
 

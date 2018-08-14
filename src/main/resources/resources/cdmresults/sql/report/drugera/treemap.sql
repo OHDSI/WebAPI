@@ -1,9 +1,11 @@
 SELECT
   concept_hierarchy.concept_id                 AS concept_id,
-  isnull(concept_hierarchy.level3_concept_name, 'NA') + '||' +
-  isnull(concept_hierarchy.level2_concept_name, 'NA') + '||' +
-  isnull(concept_hierarchy.level1_concept_name, 'NA') + '||' +
-  isnull(concept_hierarchy.concept_name, '||') AS concept_path,
+  CONCAT(
+    isnull(concept_hierarchy.level3_concept_name, 'NA'), '||',
+    isnull(concept_hierarchy.level2_concept_name, 'NA'), '||',
+    isnull(concept_hierarchy.level1_concept_name, 'NA'), '||',
+    isnull(concept_hierarchy.concept_name, '||')
+  ) AS concept_path,
   ar1.count_value                                                AS num_persons,
   1.0 * ar1.count_value / denom.count_value                      AS percent_persons,
   ar2.avg_value                                                  AS length_of_era

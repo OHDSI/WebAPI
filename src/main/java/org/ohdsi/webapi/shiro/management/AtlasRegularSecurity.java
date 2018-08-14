@@ -8,6 +8,7 @@ import org.apache.shiro.realm.Realm;
 import org.apache.shiro.realm.activedirectory.ActiveDirectoryRealm;
 import org.apache.shiro.realm.ldap.JndiLdapContextFactory;
 import org.apache.shiro.realm.ldap.JndiLdapRealm;
+import org.ohdsi.webapi.user.importer.providers.LdapProvider;
 import org.ohdsi.webapi.shiro.filters.InvalidateAccessTokenFilter;
 import org.ohdsi.webapi.shiro.filters.LogoutFilter;
 import org.ohdsi.webapi.shiro.filters.SendTokenInHeaderFilter;
@@ -36,10 +37,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.ldap.core.AuthenticationSource;
 import org.springframework.ldap.core.LdapTemplate;
-import org.springframework.ldap.core.support.LdapContextSource;
-import org.springframework.ldap.core.support.SimpleDirContextAuthenticationStrategy;
 import org.springframework.stereotype.Component;
 import waffle.shiro.negotiate.NegotiateAuthenticationFilter;
 import waffle.shiro.negotiate.NegotiateAuthenticationRealm;
@@ -111,6 +109,10 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
     @Value("${security.ad.ignore.partial.result.exception}")
     private Boolean adIgnorePartialResultException;
+
+    @Autowired
+    @Qualifier("activeDirectoryProvider")
+    private LdapProvider adLdapProvider;
 
     @Autowired
     @Qualifier("authDataSource")
@@ -254,27 +256,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
     private LdapTemplate getLdapTemplate() {
 
         if (StringUtils.isNotBlank(adSearchFilter)) {
-            LdapContextSource contextSource = new LdapContextSource();
-            contextSource.setUrl(adUrl);
-            contextSource.setBase(adSearchBase);
-            contextSource.setUserDn(adSystemUsername);
-            contextSource.setPassword(adSystemPassword);
-            contextSource.setCacheEnvironmentProperties(false);
-            contextSource.setAuthenticationStrategy(new SimpleDirContextAuthenticationStrategy());
-            contextSource.setAuthenticationSource(new AuthenticationSource() {
-                @Override
-                public String getPrincipal() {
-                    return StringUtils.isNotBlank(adPrincipalSuffix) ? adSystemUsername + adPrincipalSuffix : adSystemUsername;
-                }
-
-                @Override
-                public String getCredentials() {
-                    return adSystemPassword;
-                }
-            });
-            LdapTemplate ldapTemplate = new LdapTemplate(contextSource);
-            ldapTemplate.setIgnorePartialResultException(adIgnorePartialResultException);
-            return ldapTemplate;
+            return adLdapProvider.getLdapTemplate();
         }
         return null;
     }

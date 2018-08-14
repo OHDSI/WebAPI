@@ -18,6 +18,7 @@ public class SourceRequest {
     private String krbAuthMethod;
     private String krbAdminServer;
     private Collection<SourceDaimon> daimons;
+    private String keytabName;
 
     public String getName() {
 
@@ -99,5 +100,15 @@ public class SourceRequest {
 
     public void setKrbAdminServer(String krbAdminServer) {
         this.krbAdminServer = krbAdminServer;
+    }
+
+    public String getKeytabName() {
+
+        return keytabName;
+    }
+
+    public void setKeytabName(String keytabName) {
+
+        this.keytabName = keytabName;
     }
 }

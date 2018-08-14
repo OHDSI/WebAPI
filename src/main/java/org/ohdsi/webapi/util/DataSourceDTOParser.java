@@ -2,12 +2,12 @@ package org.ohdsi.webapi.util;
 
 import com.odysseusinc.arachne.commons.types.DBMSType;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.DataSourceUnsecuredDTO;
+
+import java.util.*;
+
 import com.odysseusinc.arachne.execution_engine_common.util.ConnectionParams;
 import com.odysseusinc.arachne.execution_engine_common.util.ConnectionParamsParser;
 import org.ohdsi.webapi.source.Source;
-
-import java.util.Arrays;
-import java.util.Objects;
 
 public final class DataSourceDTOParser {
 
@@ -22,12 +22,14 @@ public final class DataSourceDTOParser {
         dto.setConnectionString(params.getConnectionString());
         dto.setUsername(params.getUser());
         dto.setPassword(params.getPassword());
+
         return dto;
     }
 
     public static ConnectionParams parse(Source source) {
 
         Objects.requireNonNull(source, "Source should not be null");
+
         ConnectionParams dto = ConnectionParamsParser.parse(getDbmsType(source), source.getSourceConnection());
         if (Objects.isNull(dto.getUser())) {
             dto.setUser(source.getUsername());

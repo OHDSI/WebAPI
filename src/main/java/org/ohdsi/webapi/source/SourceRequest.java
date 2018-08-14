@@ -1,10 +1,9 @@
 package org.ohdsi.webapi.source;
 
-import javax.validation.constraints.NotNull;
 import java.util.Collection;
+import javax.validation.constraints.NotNull;
 
 public class SourceRequest {
-
     @NotNull
     private String name;
     @NotNull
@@ -13,6 +12,7 @@ public class SourceRequest {
     private String key;
     @NotNull
     private String connectionString;
+
     private String username;
     private String password;
     private String krbAuthMethod;

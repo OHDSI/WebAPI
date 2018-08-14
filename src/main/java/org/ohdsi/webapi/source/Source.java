@@ -18,48 +18,60 @@ package org.ohdsi.webapi.source;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMechanism;
 import org.hibernate.annotations.Type;
 import org.ohdsi.webapi.source.SourceDaimon.DaimonType;
-
-import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Collection;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.Type;
+import org.ohdsi.webapi.source.SourceDaimon.DaimonType;
 
 /**
+ *
  * @author fdefalco
  */
 @Entity(name = "Source")
-@Table(name = "source")
+@Table(name="source")
 public class Source implements Serializable {
 
-    public static final String MASQUERADED_USERNAME = "<username>";
-    public static final String MASQUERADED_PASSWORD = "<password>";
+  public static final String MASQUERADED_USERNAME = "<username>";
+  public static final String MASQUERADED_PASSWORD = "<password>";
 
-    @Id
-    @GeneratedValue
-    @Column(name = "SOURCE_ID")
-    private int sourceId;
+  @Id
+  @GeneratedValue
+  @Column(name="SOURCE_ID")
+  private int sourceId;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "source")
-    private Collection<SourceDaimon> daimons;
+  @OneToMany(fetch= FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "source")
+  private Collection<SourceDaimon> daimons;
 
-    @Column(name = "SOURCE_NAME")
-    private String sourceName;
+  @Column(name="SOURCE_NAME")
+  private String sourceName;
 
-    @Column(name = "SOURCE_DIALECT")
-    private String sourceDialect;
+  @Column(name="SOURCE_DIALECT")
+  private String sourceDialect;
 
-    @Column(name = "SOURCE_CONNECTION")
-    private String sourceConnection;
+  @Column(name="SOURCE_CONNECTION")
+  private String sourceConnection;
 
-    @Column(name = "SOURCE_KEY")
-    private String sourceKey;
+  @Column(name="SOURCE_KEY")
+  private String sourceKey;
 
-    @Column
-    @Type(type = "encryptedString")
-    private String username;
+  @Column
+  @Type(type = "encryptedString")
+  private String username;
 
-    @Column
-    @Type(type = "encryptedString")
-    private String password;
+  @Column
+  @Type(type = "encryptedString")
+  private String password;
 
     @Column(name = "krb_keytab")
     private byte[] krbKeytab;
@@ -74,89 +86,89 @@ public class Source implements Serializable {
     @Enumerated(EnumType.STRING)
     private KerberosAuthMechanism krbAuthMethod;
 
-    public String getTableQualifier(DaimonType daimonType) {
-        String result = getTableQualifierOrNull(daimonType);
-        if (result == null)
-            throw new RuntimeException("DaimonType (" + daimonType + ") not found in Source");
-        return result;
-    }
+  public String getTableQualifier(DaimonType daimonType) {
+		String result = getTableQualifierOrNull(daimonType);
+		if (result == null)
+			throw new RuntimeException("DaimonType (" + daimonType + ") not found in Source");
+		return result;
+  }
 
-    public String getTableQualifierOrNull(DaimonType daimonType) {
-        for (SourceDaimon sourceDaimon : this.getDaimons()) {
-            if (sourceDaimon.getDaimonType() == daimonType) {
-                return sourceDaimon.getTableQualifier();
-            }
-        }
-        return null;
+	  public String getTableQualifierOrNull(DaimonType daimonType) {
+    for (SourceDaimon sourceDaimon : this.getDaimons()) {
+      if (sourceDaimon.getDaimonType() == daimonType) {
+        return sourceDaimon.getTableQualifier();
+      }
     }
+		return null;
+  }
 
-    public String getSourceKey() {
-        return sourceKey;
-    }
+  public String getSourceKey() {
+    return sourceKey;
+  }
 
-    public Collection<SourceDaimon> getDaimons() {
-        return daimons;
-    }
+  public Collection<SourceDaimon> getDaimons() {
+    return daimons;
+  }
 
-    public void setDaimons(Collection<SourceDaimon> daimons) {
-        this.daimons = daimons;
-    }
+  public void setDaimons(Collection<SourceDaimon> daimons) {
+    this.daimons = daimons;
+  }
 
-    public void setSourceKey(String sourceKey) {
-        this.sourceKey = sourceKey;
-    }
+  public void setSourceKey(String sourceKey) {
+    this.sourceKey = sourceKey;
+  }
 
-    public int getSourceId() {
-        return sourceId;
-    }
+  public int getSourceId() {
+    return sourceId;
+  }
 
-    public void setSourceId(int sourceId) {
-        this.sourceId = sourceId;
-    }
+  public void setSourceId(int sourceId) {
+    this.sourceId = sourceId;
+  }
 
-    public String getSourceName() {
-        return sourceName;
-    }
+  public String getSourceName() {
+    return sourceName;
+  }
 
-    public void setSourceName(String sourceName) {
-        this.sourceName = sourceName;
-    }
+  public void setSourceName(String sourceName) {
+    this.sourceName = sourceName;
+  }
 
-    public String getSourceDialect() {
-        return sourceDialect;
-    }
+  public String getSourceDialect() {
+    return sourceDialect;
+  }
 
-    public void setSourceDialect(String sourceDialect) {
-        this.sourceDialect = sourceDialect;
-    }
+  public void setSourceDialect(String sourceDialect) {
+    this.sourceDialect = sourceDialect;
+  }
 
-    public String getSourceConnection() {
-        return sourceConnection;
-    }
+  public String getSourceConnection() {
+    return sourceConnection;
+  }
 
-    public void setSourceConnection(String sourceConnection) {
-        this.sourceConnection = sourceConnection;
-    }
+  public void setSourceConnection(String sourceConnection) {
+    this.sourceConnection = sourceConnection;
+  }
 
-    public SourceInfo getSourceInfo() {
-        return new SourceInfo(this);
-    }
+  public SourceInfo getSourceInfo() {
+    return new SourceInfo(this);
+  }
 
-    public String getUsername() {
-        return username;
-    }
+  public String getUsername() {
+    return username;
+  }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+  public void setUsername(String username) {
+    this.username = username;
+  }
 
-    public String getPassword() {
-        return password;
-    }
+  public String getPassword() {
+    return password;
+  }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+  public void setPassword(String password) {
+    this.password = password;
+  }
 
     public byte[] getKrbKeytab() {
         return krbKeytab;

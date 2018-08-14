@@ -70,7 +70,6 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     private String updateStatusCallback;
     @Value("${execution.invalidation.maxage}")
     private int invalidateHours;
-
     @Autowired
     private OutputFileRepository outputFileRepository;
 
@@ -129,7 +128,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         WebTarget webTarget = client.target(executionEngineURL + analysisExecutionUrl);
         MultiPart multiPart = buildRequest(buildAnalysisRequest(execution, source, execution.getUpdatePassword(), connectionParams), script);
         try {
-            webTarget
+                webTarget
                     .request(MediaType.MULTIPART_FORM_DATA_TYPE)
                     .accept(MediaType.APPLICATION_JSON)
                     .header("Authorization", executionEngineToken)
@@ -228,7 +227,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
 
         String name;
 
-        switch (dto.analysisType) {
+        switch (dto.analysisType){
             case CCA:
                 ComparativeCohortAnalysis cca = comparativeCohortAnalysisRepository.findOne(dto.cohortId);
                 name = cca.getName();
@@ -270,7 +269,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     }
 
     @Scheduled(fixedDelayString = "${execution.invalidation.period}")
-    public void invalidateExecutions() {
+    public void invalidateExecutions(){
 
         Date invalidate = DateUtils.addHours(new Date(), -invalidateHours);
         List<AnalysisExecution> executions = analysisExecutionRepository.findByExecutedBeforeAndExecutionStatusIn(invalidate, INVALIDATE_STATUSES);
@@ -326,7 +325,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         if (connectionParams.getPort() != null) {
             temp = temp.replace("port = 5432", "port = " + connectionParams.getPort());
         } else {
-            temp = temp.replace("port = 5432,", "");
+            temp = temp.replace( "port = 5432,", "");
         }
         //uncommenting package installation
         return temp

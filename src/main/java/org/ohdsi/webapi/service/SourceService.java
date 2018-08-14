@@ -196,12 +196,12 @@ public class SourceService extends AbstractDaoService {
   @POST
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
-  public SourceInfo createSource(@FormDataParam("fileToUpload") InputStream file, @FormDataParam("fileToUpload") FormDataContentDisposition fileDetail, @FormDataParam("source") SourceRequest request) throws Exception {
+  public SourceInfo createSource(@FormDataParam("keytab") InputStream file, @FormDataParam("keytab") FormDataContentDisposition fileDetail, @FormDataParam("source") SourceRequest request) throws Exception {
     if (!securityEnabled) {
       throw new NotAuthorizedException(SECURE_MODE_ERROR);
     }
     Source source = conversionService.convert(request, Source.class);
-    setImpalaKrbData(file, fileDetail.getFileName(), request.getDialect(), source, null);
+    setImpalaKrbData(source, new Source(), file);
     Source saved = sourceRepository.save(source);
     String sourceKey = saved.getSourceKey();
     cachedSources = null;
@@ -214,7 +214,7 @@ public class SourceService extends AbstractDaoService {
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
   @Transactional
-  public SourceInfo updateSource(@PathParam("sourceId") Integer sourceId, @FormDataParam("fileToUpload") InputStream file, @FormDataParam("fileToUpload") FormDataContentDisposition fileDetail, @FormDataParam("source") SourceRequest request) throws IOException {
+  public SourceInfo updateSource(@PathParam("sourceId") Integer sourceId, @FormDataParam("keytab") InputStream file, @FormDataParam("keytab") FormDataContentDisposition fileDetail, @FormDataParam("source") SourceRequest request) throws IOException {
     if (!securityEnabled) {
       throw new NotAuthorizedException(SECURE_MODE_ERROR);
     }
@@ -231,7 +231,7 @@ public class SourceService extends AbstractDaoService {
               Objects.equals(updated.getPassword().trim(), Source.MASQUERADED_PASSWORD)) {
         updated.setPassword(source.getPassword());
       }
-      setImpalaKrbData(file, fileDetail.getFileName(), request.getDialect(), updated, source);
+      setImpalaKrbData(updated, source, file);
       List<SourceDaimon> removed = source.getDaimons().stream().filter(d -> !updated.getDaimons().contains(d))
               .collect(Collectors.toList());
       sourceDaimonRepository.delete(removed);
@@ -243,18 +243,20 @@ public class SourceService extends AbstractDaoService {
     }
   }
 
-   private void setImpalaKrbData(InputStream file, String fileName, String dialect, Source updated, Source source) throws IOException {
-       if (IMPALA_DATASOURCE.equalsIgnoreCase(dialect)) {
-           byte[] fileBytes = IOUtils.toByteArray(file);
-           if (fileName != null) {
-               updated.setKrbKeytab(fileBytes);
-               updated.setKeytabName(fileName);
+   private void setImpalaKrbData(Source updated, Source source, InputStream file) throws IOException {
+     if (IMPALA_DATASOURCE.equalsIgnoreCase(updated.getSourceDialect())) {
+         if (updated.getKeytabName() != null) {
+           if (!Objects.equals(updated.getKeytabName(), source.getKeytabName())) {
+             byte[] fileBytes = IOUtils.toByteArray(file);
+             updated.setKrbKeytab(fileBytes);
            } else {
-                updated.setKrbKeytab(source.getKrbKeytab());
-                updated.setKeytabName(source.getKeytabName());
+             updated.setKrbKeytab(source.getKrbKeytab());
            }
-           updated.setKrbAdminServer(updated.getKrbAdminServer());
-       }
+           return;
+         }
+     }
+     updated.setKrbKeytab(null);
+     updated.setKeytabName(null);
    }
 
   @Path("{sourceId}")

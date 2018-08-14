@@ -363,17 +363,17 @@ public class VocabularyService extends AbstractDaoService {
       StatementPrepareStrategy sps = new MappedLookupStrategy(sourcecodes);
 
       PreparedStatementRenderer psr = sps.prepareStatement(source,
-              query -> "with rows as ( select ROW_NUMBER() over(ORDER BY " + orderClause + ") as row, Q.* FROM (" + query + ") Q " + whereClause + ") select top "
-                      + limit + " * from rows where rows.row > " + offset + " order by rows.row;");
+              noOrderBy.andThen(query -> "with rows as ( select ROW_NUMBER() over(ORDER BY " + orderClause + ") as row, Q.* FROM (" + query + ") Q " + whereClause + ") select top "
+                      + limit + " * from rows where rows.row > " + offset + " order by rows.row;"));
 
       JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
 
       concepts = jdbcTemplate.query(psr.getSql(), psr.getSetter(), conceptRowMapper);
 
-      psr = sps.prepareStatement(source, countFunction);
+      psr = sps.prepareStatement(source, noOrderBy.andThen(countFunction));
       totals = jdbcTemplate.query(psr.getSql(), psr.getSetter(), integerResultSetExtractor);
 
-      psr = sps.prepareStatement(source, countFunction.andThen(queryModifier));
+      psr = sps.prepareStatement(source, noOrderBy.andThen(countFunction.andThen(queryModifier)));
       filtered = jdbcTemplate.query(psr.getSql(), psr.getSetter(), integerResultSetExtractor);
     } else {
       concepts = new ArrayList<>();
@@ -831,7 +831,7 @@ public class VocabularyService extends AbstractDaoService {
     StatementPrepareStrategy sps = new ConceptSetStrategy(pageRequest.getExpression());
 
     Function<String, String> queryModifier = columnTable.andThen(
-            countWrapper(counts.getSql(), orderClause, whereClause, source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary))
+            countWrapper(counts.getSql().replaceAll("(?i)with", ""), orderClause, whereClause, source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary))
     );
 
     if (source.getSourceDialect().equals("impala")) {
@@ -840,14 +840,14 @@ public class VocabularyService extends AbstractDaoService {
 
     PreparedStatementRenderer psr = sps.prepareStatement(source, queryModifier);
     String query = psr.getSql();
-    String queryPage = "with rrows as ( " + query + ") select top " + limit + " * from rrows where rrows.rrow > " + offset + " order by rrows.rrow;";
+    String queryPage = query + " select top " + limit + " * from results where results.rrow > " + offset + " order by results.rrow;";
 
     queryPage = SqlTranslate.translateSql(queryPage, source.getSourceDialect());
 
     List<ConceptAncestors> concepts = jdbcTemplate.query(queryPage, (PreparedStatementSetter) null, conceptAncestorsRowMapper);
 
     int totals = countIncludedConceptSets(sourceKey, pageRequest.getExpression());
-    String queryFiltered = "select count(*) from (" + query + ") Q;";
+    String queryFiltered = SqlTranslate.translateSql(query + " select count(*) from results;", source.getSourceDialect());
     int filtered = jdbcTemplate.query(queryFiltered, rs -> rs.next() ? rs.getInt(1) : 0);
 
     //Get ancestors

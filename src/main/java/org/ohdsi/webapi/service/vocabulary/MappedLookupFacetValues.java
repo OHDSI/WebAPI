@@ -3,12 +3,12 @@ package org.ohdsi.webapi.service.vocabulary;
 import org.ohdsi.webapi.paging.FacetValue;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
-import org.ohdsi.webapi.util.QueryModifiers;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
 
 import static org.ohdsi.webapi.util.QueryModifiers.groupBy;
+import static org.ohdsi.webapi.util.QueryModifiers.noOrderBy;
 
 public class MappedLookupFacetValues implements FacetValuesStrategy {
 
@@ -28,7 +28,7 @@ public class MappedLookupFacetValues implements FacetValuesStrategy {
   public List<FacetValue> getFacetValues(String columnName) {
 
     PreparedStatementRenderer psr = new MappedLookupStrategy(sourcecodes).prepareStatement(source,
-            groupBy(countColumns(columnName), columnName));
+            noOrderBy.andThen(groupBy(countColumns(columnName), columnName)));
     return jdbcTemplate.query(psr.getSql(), psr.getSetter(), getFacetRowMapper(columnName));
   }
 }

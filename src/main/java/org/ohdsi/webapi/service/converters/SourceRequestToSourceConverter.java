@@ -26,6 +26,7 @@ public class SourceRequestToSourceConverter implements Converter<SourceRequest, 
         source.setSourceKey(request.getKey());
         source.setDaimons(request.getDaimons());
         source.getDaimons().forEach(d -> d.setSource(source));
+        source.setKeytabName(request.getKeytabName());
         source.setKrbAdminServer(request.getKrbAdminServer());
         source.setKrbAuthMethod(KerberosAuthMechanism.getByName(request.getKrbAuthMethod()));
         return source;

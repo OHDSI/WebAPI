@@ -3,17 +3,17 @@ package org.ohdsi.webapi.source;
 public class SourceDetails extends SourceInfo {
 
     private String connectionString;
-    private String keytabName;
-    private String authType;
     private String username;
     private String password;
+    private String krbAuthMethod;
+    private String keytabName;
     private String krbAdminServer;
 
     public SourceDetails(Source s) {
         super(s);
         setConnectionString(s.getSourceConnection());
         setKeytabName(s.getKeytabName());
-        setAuthType(s.getKrbAuthMethod().toString().toLowerCase());
+        setKrbAuthMethod(s.getKrbAuthMethod().toString().toLowerCase());
         setUsername(s.getUsername());
         setPassword(s.getPassword());
         setKrbAdminServer(s.getKrbAdminServer());
@@ -37,12 +37,12 @@ public class SourceDetails extends SourceInfo {
         this.keytabName = keytabName;
     }
 
-    public String getAuthType() {
-        return authType;
+    public String getKrbAuthMethod() {
+        return krbAuthMethod;
     }
 
-    public void setAuthType(String authType) {
-        this.authType = authType;
+    public void setKrbAuthMethod(String krbAuthMethod) {
+        this.krbAuthMethod = krbAuthMethod;
     }
 
     public String getUsername() {

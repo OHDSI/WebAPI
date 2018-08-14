@@ -118,7 +118,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
 
         //replace var in R-script
         ConnectionParams connectionParams = DataSourceDTOParser.parse(source);
-        final String script = processTemplate(dto, cdmTableQualifier, resultsTableQualifier, vocabularyTableQualifier, source, connectionParams);
+        final String script = processTemplate(dto, cdmTableQualifier, resultsTableQualifier, vocabularyTableQualifier, source.getSourceDialect(), connectionParams);
         AnalysisFile inputFile = new AnalysisFile();
         inputFile.setAnalysisExecution(execution);
         inputFile.setContents(script.getBytes());
@@ -173,7 +173,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         analysisRequestDTO.setCallbackPassword(password);
         analysisRequestDTO.setRequested(new Date());
         if (IMPALA_DATASOURCE.equalsIgnoreCase(source.getSourceDialect()) && AuthMethod.KERBEROS == connectionParams.getAuthMethod()) {
-            setDataSourceParams(source, connectionParams, analysisRequestDTO.getDataSource());
+            setKerberosParams(source, connectionParams, analysisRequestDTO.getDataSource());
         }
         String executableFileName = StringGenerationUtil.generateFileName(AnalysisRequestTypeDTO.R.name().toLowerCase());
         analysisRequestDTO.setExecutableFileName(executableFileName);
@@ -192,7 +192,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         return analysisRequestDTO;
     }
 
-    private void setDataSourceParams(Source source, ConnectionParams connectionParams, DataSourceUnsecuredDTO ds) {
+    private void setKerberosParams(Source source, ConnectionParams connectionParams, DataSourceUnsecuredDTO ds) {
         ds.setUseKerberos(Boolean.TRUE);
         ds.setKrbAuthMethod(source.getKrbAuthMethod());
         ds.setKrbKeytab(source.getKrbKeytab());
@@ -283,11 +283,11 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     private String processTemplate(ExecutionRequestDTO requestDTO,
                                    String cdmTable, String resultsTable,
                                    String vocabularyTable,
-                                   Source source,
+                                   String sourceDialect,
                                    ConnectionParams connectionParams) {
 
         String serverName;
-        if (DBMS_REQUIRE_DB.stream().anyMatch(dbms -> dbms.getOhdsiDB().equalsIgnoreCase(source.getSourceDialect()))) {
+        if (DBMS_REQUIRE_DB.stream().anyMatch(dbms -> dbms.getOhdsiDB().equalsIgnoreCase(sourceDialect))) {
             serverName = connectionParams.getServer() + "/" + connectionParams.getSchema();
         } else {
             serverName = connectionParams.getServer();
@@ -312,7 +312,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
                         "cdmVersion <- \"" + requestDTO.cdmVersion + "\"")
                 .replace("<insert your " + "directory here>",
                         requestDTO.workFolder);
-        if (IMPALA_DATASOURCE.equalsIgnoreCase(source.getSourceDialect())) {
+        if (IMPALA_DATASOURCE.equalsIgnoreCase(sourceDialect)) {
             temp = temp.replace("password = \"supersecret\"", "password = \""
                     + connectionParams.getPassword() + "\", "
                     + "schema=\"" + connectionParams.getSchema() + "\", "

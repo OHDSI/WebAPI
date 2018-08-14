@@ -15,7 +15,7 @@
     <!-- Spring Boot manages spring.version as well -->
     <spring.boot.version>1.5.2.RELEASE</spring.boot.version>
     <spring.batch.version>3.0.8.RELEASE</spring.batch.version>
-    <flyway.version>3.1</flyway.version>
+    <flyway.version>4.2.0</flyway.version>
     <waffle.version>1.7.3</waffle.version>
     <start-class>org.ohdsi.webapi.WebApi</start-class>
 

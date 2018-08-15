@@ -51,7 +51,7 @@ public class PageableUtils {
 
   private static String getTablePrefix(String column) {
 
-    return INCLUDED_CONCEPTS_COUNTS_FIELDS.stream().anyMatch(f -> f.equalsIgnoreCase(column)) ? "counts" : "c";
+    return INCLUDED_CONCEPTS_COUNTS_FIELDS.stream().anyMatch(f -> f.equalsIgnoreCase(column)) ? "numbers" : "c";
   }
 
   public static String getSearchClause(PageRequest pageRequest) {

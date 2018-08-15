@@ -47,6 +47,10 @@ public class CohortAnalysisTask {
 	
 	private List<PeriodType> periods;
 
+	private boolean rollupUtilizationVisit;
+
+	private boolean rollupUtilizationDrug;
+
 	public String getSourceKey() {
 		return sourceKey;
 	}
@@ -270,7 +274,27 @@ public class CohortAnalysisTask {
 
 		this.periods = periods;
 	}
-	
+
+	public boolean getRollupUtilizationVisit() {
+
+		return rollupUtilizationVisit;
+	}
+
+	public void setRollupUtilizationVisit(boolean rollupUtilizationVisit) {
+
+		this.rollupUtilizationVisit = rollupUtilizationVisit;
+	}
+
+	public boolean getRollupUtilizationDrug() {
+
+		return rollupUtilizationDrug;
+	}
+
+	public void setRollupUtilizationDrug(boolean rollupUtilizationDrug) {
+
+		this.rollupUtilizationDrug = rollupUtilizationDrug;
+	}
+
 	@Override
 	public String toString() {
 			ObjectMapper mapper = new ObjectMapper();

@@ -210,12 +210,15 @@ public class CohortAnalysisService extends AbstractDaoService {
 		String[] params = new String[]{"CDM_schema", "results_schema", "source_name",
 				"smallcellcount", "runHERACLESHeel", "CDM_version", "cohort_definition_id", "list_of_analysis_ids",
 				"condition_concept_ids", "drug_concept_ids", "procedure_concept_ids", "observation_concept_ids",
-				"measurement_concept_ids", "cohort_period_only", "source_id", "periods"};
+				"measurement_concept_ids", "cohort_period_only", "source_id", "periods", "rollupUtilizationVisit", "rollupUtilizationDrug"};
+
 		String[] values = new String[]{cdmTableQualifier, resultsTableQualifier, task.getSource().getSourceName(),
 				String.valueOf(task.getSmallCellCount()), String.valueOf(task.runHeraclesHeel()).toUpperCase(), 
 				task.getCdmVersion(), cohortDefinitionIds, analysisIds, conditionIds, drugIds, procedureIds, 
 				observationIds, measurementIds,String.valueOf(task.isCohortPeriodOnly()), 
-				String.valueOf(task.getSource().getSourceId()), concatenatedPeriods};
+				String.valueOf(task.getSource().getSourceId()), concatenatedPeriods,
+				String.valueOf(task.getRollupUtilizationVisit()).toUpperCase(), String.valueOf(task.getRollupUtilizationDrug()).toUpperCase()
+		};
 		sql = SqlRender.renderSql(sql, params, values);
 		sql = SqlTranslate.translateSql(sql, task.getSource().getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
 

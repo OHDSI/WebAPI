@@ -41,22 +41,18 @@ public class CheckedEncryptedStringType extends AbstractEncryptedAsStringType {
     public Object nullSafeGet(ResultSet rs, String[] names, SessionImplementor session, Object owner) throws HibernateException, SQLException {
 
         checkInitialization();
-        if (rs.wasNull()){
+        final String message = rs.getString(names[0]);
+        Object result;
+        if (Objects.isNull(message)) {
             return null;
-        } else {
-            final String message = rs.getString(names[0]);
-            Object result;
-            if (Objects.isNull(message)) {
-                return null;
-            }
-            if (Objects.nonNull(this.encryptor) && !(this.encryptor instanceof NotEncrypted) && message.startsWith(ENCODED_PREFIX)) {
-                String value = message.substring(ENCODED_PREFIX.length(), message.length() - ENCODED_SUFFIX.length());
-                result = convertToObject(encryptor.decrypt(value));
-            } else {
-                result = message;
-            }
-            return result;
         }
+        if (Objects.nonNull(this.encryptor) && !(this.encryptor instanceof NotEncrypted) && message.startsWith(ENCODED_PREFIX)) {
+            String value = message.substring(ENCODED_PREFIX.length(), message.length() - ENCODED_SUFFIX.length());
+            result = convertToObject(encryptor.decrypt(value));
+        } else {
+            result = message;
+        }
+        return result;
     }
 
     @Override

@@ -638,11 +638,6 @@ public class VocabularyService extends AbstractDaoService {
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<Long> resolveConceptSetExpression(@PathParam("sourceKey") String sourceKey, ConceptSetExpression conceptSetExpression) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-//    String tqName = "vocabulary_database_schema";
-//    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
-//    ConceptSetExpressionQueryBuilder builder = new ConceptSetExpressionQueryBuilder();
-//    String query = builder.buildExpressionQuery(conceptSetExpression);
-//    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, query, tqName, tqValue);
     PreparedStatementRenderer psr = new ConceptSetStrategy(conceptSetExpression).prepareStatement(source, null);
     final ArrayList<Long> identifiers = new ArrayList<>();
     getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), new RowCallbackHandler() {

@@ -11,7 +11,7 @@ select cohort_definition_id,
 	from
 	@ohdsi_database_schema.heracles_results
 	where analysis_id in (1805)
-	and cohort_definition_id in (@cohortDefinitionId)
+	and cohort_definition_id = @cohortDefinitionId
 	and cast(stratum_1 as integer) > 0
 
 	union
@@ -25,10 +25,10 @@ select cohort_definition_id,
 	(select cohort_definition_id, sum(count_value) as count_value 
 	from @ohdsi_database_schema.heracles_results 
 	where analysis_id = 1806
-	and cohort_definition_id in (@cohortDefinitionId)
+	and cohort_definition_id = @cohortDefinitionId
 	group by cohort_definition_id) t1
 	on hr1.cohort_definition_id = t1.cohort_definition_id
 	where hr1.analysis_id in (1806)
-	and hr1.cohort_definition_id in (@cohortDefinitionId)
+	and hr1.cohort_definition_id = @cohortDefinitionId
 ) hr1,
-(select count_value from @ohdsi_database_schema.heracles_results where analysis_id = 1 and cohort_definition_id in (@cohortDefinitionId)) t1
+(select count_value from @ohdsi_database_schema.heracles_results where analysis_id = 1 and cohort_definition_id = @cohortDefinitionId) t1

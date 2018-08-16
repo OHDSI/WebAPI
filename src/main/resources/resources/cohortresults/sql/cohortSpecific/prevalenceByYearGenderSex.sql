@@ -13,7 +13,7 @@ from (select cohort_definition_id,
 	count_value 
 	from @ohdsi_database_schema.heracles_results
 	where analysis_id in (1814)
-	and cohort_definition_id in (@cohortDefinitionId)
+	and cohort_definition_id = @cohortDefinitionId
 	and cast(stratum_2 as integer) in (8507,8532)
 	and cast(stratum_3 as integer) >= 0 
 ) hr1
@@ -25,7 +25,7 @@ from (select cohort_definition_id,
 	count_value 
 	from @ohdsi_database_schema.heracles_results 
 	where analysis_id = 116
-	and cohort_definition_id in (@cohortDefinitionId)
+	and cohort_definition_id = @cohortDefinitionId
 ) t1
 on hr1.index_year = t1.index_year
 and hr1.gender_concept_id = t1.gender_concept_id

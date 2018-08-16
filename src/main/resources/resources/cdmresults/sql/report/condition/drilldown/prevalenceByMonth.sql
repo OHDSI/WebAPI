@@ -6,7 +6,7 @@ SELECT
   round(1000 * (1.0 * num.count_value / denom.count_value), 5) AS y_prevalence_1000_pp --prevalence, per 1000 persons
 FROM
   (SELECT
-     CAST(stratum_1 AS INT) stratum_1,
+     CAST(stratum_1 AS BIGINT) stratum_1,
      CAST(stratum_2 AS INT) stratum_2,
      count_value
    FROM

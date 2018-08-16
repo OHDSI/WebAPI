@@ -8,13 +8,12 @@ FROM (
          count_value
        FROM @OHDSI_schema.ACHILLES_results
        WHERE analysis_id = 402 AND stratum_1 = '@conceptId'
-     ) num
-  INNER JOIN (
-               SELECT
-                 stratum_1,
-                 count_value
-               FROM @OHDSI_schema.ACHILLES_results
-               WHERE analysis_id = 117
-             ) denom
-    ON num.stratum_2 = denom.stratum_1
+) num
+INNER JOIN (
+	SELECT
+		 stratum_1,
+		 count_value
+	 FROM @OHDSI_schema.ACHILLES_results
+	 WHERE analysis_id = 117
+) denom ON num.stratum_2 = denom.stratum_1
 ORDER BY cast(num.stratum_2 AS INT)

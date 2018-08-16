@@ -32,7 +32,7 @@ from @ohdsi_database_schema.heracles_results hr1
        ) c2
        on hr1.stratum_2 = CAST(c2.concept_id as VARCHAR(255))
 where hr1.analysis_id = 405
-and hr1.cohort_definition_id in (@cohortDefinitionId)
+and hr1.cohort_definition_id = @cohortDefinitionId
   and c1.concept_id = @conceptId
 group by c1.concept_id, 
        c1.concept_name,

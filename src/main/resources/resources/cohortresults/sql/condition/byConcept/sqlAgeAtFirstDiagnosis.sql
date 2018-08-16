@@ -15,5 +15,5 @@
   	@cdm_database_schema.concept c2
   	on CAST(hrd1.stratum_2 AS INT) = c2.concept_id
   where hrd1.analysis_id = 406
-  and hrd1.cohort_definition_id in (@cohortDefinitionId)
+  and hrd1.cohort_definition_id = @cohortDefinitionId
   and c1.concept_id = @conceptId

@@ -9,5 +9,5 @@
   0 as concept_id
 from @ohdsi_database_schema.heracles_results_dist hrd1
 where hrd1.analysis_id = 107
-and cohort_definition_id in (@cohortDefinitionId)
+and cohort_definition_id = @cohortDefinitionId
 order by cast(hrd1.stratum_1 as int) asc

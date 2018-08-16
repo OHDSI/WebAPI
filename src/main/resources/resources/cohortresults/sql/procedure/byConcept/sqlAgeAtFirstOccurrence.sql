@@ -16,4 +16,4 @@ from @ohdsi_database_schema.heracles_results_dist hrd1
 	on hrd1.stratum_2 = CAST(c2.concept_id as VARCHAR)
 where hrd1.analysis_id = 606
  and c1.concept_id = @conceptId
-and cohort_definition_id in (@cohortDefinitionId)
+and cohort_definition_id = @cohortDefinitionId

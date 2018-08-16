@@ -12,8 +12,8 @@ WITH denominator AS (
 				outcome_cohort_definition_id,
 				ROW_NUMBER() OVER (ORDER BY analysis_id) AS stratum_1, 0 AS count_value
 			FROM @ohdsi_database_schema.penelope_results
-			WHERE exposure_cohort_definition_id in ( @exposure_cohort_definition_id )
-			AND outcome_cohort_definition_id in ( @outcome_cohort_definition_id )
+			WHERE exposure_cohort_definition_id = @exposure_cohort_definition_id
+			AND outcome_cohort_definition_id = @outcome_cohort_definition_id
 			AND analysis_id = 1805
 
 			UNION
@@ -22,8 +22,8 @@ WITH denominator AS (
 				outcome_cohort_definition_id,
 				cast(stratum_2 AS INTEGER) as stratum_1, sum(count_value) as count_value
 			FROM @ohdsi_database_schema.penelope_results
-			WHERE exposure_cohort_definition_id in ( @exposure_cohort_definition_id )
-			AND outcome_cohort_definition_id in ( @outcome_cohort_definition_id )
+			WHERE exposure_cohort_definition_id = @exposure_cohort_definition_id
+			AND outcome_cohort_definition_id = @outcome_cohort_definition_id
 			AND analysis_id = 1805
 			GROUP BY exposure_cohort_definition_id, 
 				outcome_cohort_definition_id,
@@ -49,8 +49,8 @@ WITH denominator AS (
 				outcome_cohort_definition_id,
 				ROW_NUMBER() OVER (ORDER BY analysis_id) AS stratum_1, 0 AS count_value
 			FROM @ohdsi_database_schema.penelope_results
-			WHERE exposure_cohort_definition_id in ( @exposure_cohort_definition_id )
-			AND outcome_cohort_definition_id in ( @outcome_cohort_definition_id )
+			WHERE exposure_cohort_definition_id = @exposure_cohort_definition_id
+			AND outcome_cohort_definition_id = @outcome_cohort_definition_id
 			AND analysis_id = 1806
 
 			UNION
@@ -59,8 +59,8 @@ WITH denominator AS (
 				outcome_cohort_definition_id,
 				cast(stratum_2 AS INTEGER) as stratum_1, sum(count_value) as count_value
 			FROM @ohdsi_database_schema.penelope_results
-			WHERE exposure_cohort_definition_id in ( @exposure_cohort_definition_id )
-			AND outcome_cohort_definition_id in ( @outcome_cohort_definition_id )
+			WHERE exposure_cohort_definition_id = @exposure_cohort_definition_id
+			AND outcome_cohort_definition_id = @outcome_cohort_definition_id
 			AND analysis_id = 1806
 			GROUP BY exposure_cohort_definition_id, 
 				outcome_cohort_definition_id,
@@ -75,8 +75,8 @@ WITH denominator AS (
 				outcome_cohort_definition_id,
 				sum(count_value) as count_value
 			FROM @ohdsi_database_schema.penelope_results
-			WHERE exposure_cohort_definition_id in ( @exposure_cohort_definition_id )
-			AND outcome_cohort_definition_id in ( @outcome_cohort_definition_id )
+			WHERE exposure_cohort_definition_id = @exposure_cohort_definition_id
+			AND outcome_cohort_definition_id = @outcome_cohort_definition_id
 			AND analysis_id = 1
 			GROUP BY exposure_cohort_definition_id, 
 				outcome_cohort_definition_id
@@ -91,8 +91,8 @@ numerator_first as
 		CAST(stratum_1 AS INTEGER)*30 AS duration, 
 		count_value
 	FROM @ohdsi_database_schema.penelope_results
-	WHERE exposure_cohort_definition_id in ( @exposure_cohort_definition_id )
-	AND outcome_cohort_definition_id in ( @outcome_cohort_definition_id )
+	WHERE exposure_cohort_definition_id = @exposure_cohort_definition_id
+	AND outcome_cohort_definition_id = @outcome_cohort_definition_id
 	AND analysis_id = 12
 ),
 numerator_all as
@@ -102,8 +102,8 @@ numerator_all as
 		CAST(stratum_1 AS INTEGER)*30 AS duration, 
 		count_value
 	FROM @ohdsi_database_schema.penelope_results
-	WHERE exposure_cohort_definition_id in ( @exposure_cohort_definition_id )
-	AND outcome_cohort_definition_id in ( @outcome_cohort_definition_id )
+	WHERE exposure_cohort_definition_id = @exposure_cohort_definition_id
+	AND outcome_cohort_definition_id = @outcome_cohort_definition_id
 	AND analysis_id = 13
 )
 SELECT denominator.exposure_cohort_definition_id,

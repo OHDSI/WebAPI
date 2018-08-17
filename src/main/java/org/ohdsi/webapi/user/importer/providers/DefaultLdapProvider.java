@@ -134,6 +134,16 @@ public class DefaultLdapProvider implements LdapProvider {
     return new OpenLdapAttributesMapper<>(attributesMapper);
   }
 
+  @Override
+  public String getPrincipal() {
+    return systemUsername;
+  }
+
+  @Override
+  public String getPassword() {
+    return systemPassword;
+  }
+
   public static class OpenLdapAttributesMapper<T> extends CollectingNameClassPairCallbackHandler<T> {
 
     private AttributesMapper<T> mapper;

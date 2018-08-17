@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.cohort_characterizations
   created_at         TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT (now()),
   updated_by         INTEGER,
   updated_at         TIMESTAMP WITH TIME ZONE,
+  hash_code          INTEGER                  NULL
 );
 
 ALTER TABLE ${ohdsiSchema}.cohort_characterizations
@@ -49,59 +50,65 @@ CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.fe_analyses
 
 
 
-CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.cohort_characterization_generations
-(
-  id                          BIGSERIAL              PRIMARY KEY,
-  cohort_characterization_id  BIGINT                 NOT NULL,
-  source_id                   BIGINT                 NOT NULL,
-  date                        TIMESTAMP              WITH TIME ZONE,
-  status                      VARCHAR(255)
-);
+-- CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.cohort_characterization_generations
+-- (
+--   id                          BIGSERIAL              PRIMARY KEY,
+--   cohort_characterization_id  BIGINT                 NOT NULL,
+--   source_id                   BIGINT                 NOT NULL,
+--   date                        TIMESTAMP              WITH TIME ZONE,
+--   status                      VARCHAR(255)
+-- );
 
-ALTER TABLE ${ohdsiSchema}.cohort_characterization_generations
-  ADD CONSTRAINT fk_ccg_cohort_characterizations FOREIGN KEY (cohort_characterization_id)
-REFERENCES ${ohdsiSchema}.cohort_characterizations (id)
-ON UPDATE NO ACTION ON DELETE CASCADE;
+-- ALTER TABLE ${ohdsiSchema}.cohort_characterization_generations
+--   ADD CONSTRAINT fk_ccg_cohort_characterizations FOREIGN KEY (cohort_characterization_id)
+-- REFERENCES ${ohdsiSchema}.cohort_characterizations (id)
+-- ON UPDATE NO ACTION ON DELETE CASCADE;
+-- 
+-- ALTER TABLE ${ohdsiSchema}.cohort_characterization_generations
+--   ADD CONSTRAINT fk_ccg_source FOREIGN KEY (source_id)
+-- REFERENCES ${ohdsiSchema}.source(source_id)
+-- ON UPDATE NO ACTION ON DELETE NO ACTION;
 
-ALTER TABLE ${ohdsiSchema}.cohort_characterization_generations
-  ADD CONSTRAINT fk_ccg_source FOREIGN KEY (source_id)
-REFERENCES ${ohdsiSchema}.source(source_id)
-ON UPDATE NO ACTION ON DELETE NO ACTION;
 
 
+-- CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.cohort_characterization_results
+-- (
+--   id BIGSERIAL PRIMARY KEY,
+--   type VARCHAR(255) NOT NULL,
+--   cohort_characterization_generation_id BIGINT NOT NULL,
+--   analysis_id INTEGER,
+--   analysis_name VARCHAR(1000),
+--   covariate_id BIGINT,
+--   covariate_name VARCHAR(1000),
+--   time_window VARCHAR(255),
+--   concept_id INTEGER,
+--   count_value BIGINT,
+--   avg_value DOUBLE PRECISION,
+--   stdev_value DOUBLE PRECISION,
+--   min_value DOUBLE PRECISION,
+--   p10_value DOUBLE PRECISION,
+--   p25_value DOUBLE PRECISION,
+--   median_value DOUBLE PRECISION,
+--   p75_value DOUBLE PRECISION,
+--   p90_value DOUBLE PRECISION,
+--   max_value DOUBLE PRECISION,
+--   cohort_definition_id BIGINT
+-- );
 
-CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.cohort_characterization_results
-(
-  id BIGSERIAL PRIMARY KEY,
-  type VARCHAR(255),
-  cohort_characterization_generation_id BIGINT NOT NULL,
-  analysis_id BIGINT,
-  covariate_id BIGINT,
-  covariate_name VARCHAR(255),
-  time_window VARCHAR(255),
-  concept_id BIGINT,
-  count_value BIGINT,
-  avg_value DOUBLE PRECISION,
-  stdev_value DOUBLE PRECISION,
-  min_value DOUBLE PRECISION,
-  p10_value DOUBLE PRECISION,
-  p25_value DOUBLE PRECISION,
-  median_value DOUBLE PRECISION,
-  p75_value DOUBLE PRECISION,
-  p90_value DOUBLE PRECISION,
-  max_value DOUBLE PRECISION
-);
+-- ALTER TABLE ${ohdsiSchema}.cohort_characterization_results
+--   ADD CONSTRAINT fk_ccr_cohort_char_gen FOREIGN KEY (cohort_characterization_generation_id)
+-- REFERENCES ${ohdsiSchema}.cohort_characterization_generations(id)
+-- ON UPDATE NO ACTION ON DELETE NO ACTION;
 
-ALTER TABLE ${ohdsiSchema}.cohort_characterization_results
-  ADD CONSTRAINT fk_ccr_cohort_char_gen FOREIGN KEY (cohort_characterization_generation_id)
-REFERENCES ${ohdsiSchema}.cohort_characterization_generations(id)
-ON UPDATE NO ACTION ON DELETE NO ACTION;
-
-ALTER TABLE ${ohdsiSchema}.cohort_characterization_results
-  ADD CONSTRAINT fk_ccr_fe_analyses FOREIGN KEY (cohort_characterization_generation_id)
-REFERENCES ${ohdsiSchema}.cohort_characterization_generations(id)
-ON UPDATE NO ACTION ON DELETE NO ACTION;
-
+-- ALTER TABLE ${ohdsiSchema}.cohort_characterization_results
+--   ADD CONSTRAINT fk_ccr_fe_analyses FOREIGN KEY (analysis_id)
+-- REFERENCES ${ohdsiSchema}.fe_analyses(id)
+-- ON UPDATE NO ACTION ON DELETE NO ACTION;
+-- 
+-- ALTER TABLE ${ohdsiSchema}.cohort_characterization_results
+--   ADD CONSTRAINT fk_ccr_coh_def FOREIGN KEY (cohort_definition_id)
+-- REFERENCES ${ohdsiSchema}.cohort_definition(id)
+-- ON UPDATE NO ACTION ON DELETE NO ACTION;
 
 
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description) VALUES(nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohortcharacterization:POST', 'Create cohort characterization');
@@ -287,5 +294,18 @@ INSERT INTO ${ohdsiSchema}.fe_analyses (type, name, domain, descr, value, design
 INSERT INTO ${ohdsiSchema}.fe_analyses (type, name, domain, descr, value, design, is_locked) VALUES ('PRESET', 'Occurrence Primary Inpatient', 'CONDITION', 'One covariate per condition observed  as a primary diagnosis in an inpatient setting in the condition_occurrence table starting in the short term window.', null, 'ConditionOccurrencePrimaryInpatientShortTerm', true);
 INSERT INTO ${ohdsiSchema}.fe_analyses (type, name, domain, descr, value, design, is_locked) VALUES ('PRESET', 'Count', 'VISIT', 'The number of visits observed in the long term window.', null, 'VisitCountLongTerm', true);
 INSERT INTO ${ohdsiSchema}.fe_analyses (type, name, domain, descr, value, design, is_locked) VALUES ('PRESET', 'Occurrence Primary Inpatient', 'CONDITION', 'One covariate per condition observed  as a primary diagnosis in an inpatient setting in the condition_occurrence table starting in the medium term window.', null, 'ConditionOccurrencePrimaryInpatientMediumTerm', true);
+
+CREATE VIEW ${ohdsiSchema}.cohort_characterization_generations as
+  (SELECT params.job_execution_id,
+          MAX(CASE WHEN params.key_name = 'hash_code' THEN params.string_val END)                  hash_code,
+          MAX(CASE WHEN params.key_name = 'cohort_characterization_id' THEN params.string_val END) cohort_characterization_id,
+          MAX(CASE WHEN params.key_name = 'source_id' THEN params.string_val END)                  source_id
+   FROM ${ohdsiSchema}.batch_job_execution job
+          JOIN ${ohdsiSchema}.batch_job_execution_params params
+            ON job.job_execution_id = params.job_execution_id
+                 AND (params.key_name = 'hash_code' OR
+                      params.key_name = 'cohort_characterization_id' OR
+                      params.key_name = 'source_id')
+   GROUP BY params.job_execution_id);
 
 -- TODO indexes

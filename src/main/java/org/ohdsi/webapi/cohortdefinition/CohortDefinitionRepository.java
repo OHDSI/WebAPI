@@ -15,7 +15,7 @@
 package org.ohdsi.webapi.cohortdefinition;
 
 import java.util.List;
-import org.ohdsi.webapi.cohortcharacterization.CohortCharacterizationEntity;
+import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;

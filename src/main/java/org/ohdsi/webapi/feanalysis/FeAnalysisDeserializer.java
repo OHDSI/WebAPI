@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.feanalysis;
 
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.ObjectCodec;
@@ -15,6 +14,8 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 import org.ohdsi.standardized_analysis_api.cohortcharacterization.design.StandardFeatureAnalysisDomain;
 import org.ohdsi.standardized_analysis_api.cohortcharacterization.design.StandardFeatureAnalysisType;
+import org.ohdsi.webapi.feanalysis.dto.FeAnalysisCriteriaDTO;
+import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
 
 public class FeAnalysisDeserializer extends JsonDeserializer<FeAnalysisDTO> {
     

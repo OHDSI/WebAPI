@@ -45,7 +45,7 @@ import javax.persistence.Table;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.standardized_analysis_api.cohortcharacterization.design.Cohort;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisGenerationInfo;
-import org.ohdsi.webapi.cohortcharacterization.CohortCharacterizationEntity;
+import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 
 /**
  * JPA Entity for Cohort Definitions

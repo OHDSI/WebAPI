@@ -4,7 +4,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.ohdsi.webapi.cohortcharacterization.CohortCharacterizationEntity;
+import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisCriteriaEntity;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
+import org.ohdsi.webapi.feanalysis.repository.FeAnalysisCriteriaRepository;
+import org.ohdsi.webapi.feanalysis.repository.FeAnalysisEntityRepository;
+import org.ohdsi.webapi.feanalysis.repository.FeAnalysisWithStringEntityRepository;
 import org.springframework.stereotype.Service;
 
 @Service

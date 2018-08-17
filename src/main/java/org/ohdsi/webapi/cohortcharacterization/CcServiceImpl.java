@@ -1,8 +1,21 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
+import static org.ohdsi.webapi.Constants.GENERATE_COHORT_CHARACTERIZATION;
+import static org.ohdsi.webapi.Constants.Params.CDM_DATABASE_SCHEMA;
+import static org.ohdsi.webapi.Constants.Params.COHORT_CHARACTERIZATION_ID;
+import static org.ohdsi.webapi.Constants.Params.COHORT_DEFINITION_ID;
+import static org.ohdsi.webapi.Constants.Params.GENERATE_STATS;
+import static org.ohdsi.webapi.Constants.Params.HASH_CODE;
+import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
+import static org.ohdsi.webapi.Constants.Params.RESULTS_DATABASE_SCHEMA;
+import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
+import static org.ohdsi.webapi.Constants.Params.TARGET_DATABASE_SCHEMA;
+import static org.ohdsi.webapi.Constants.Params.TARGET_DIALECT;
+import static org.ohdsi.webapi.Constants.Params.TARGET_TABLE;
+import static org.ohdsi.webapi.Constants.Params.VOCABULARY_DATABASE_SCHEMA;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -17,17 +30,32 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.standardized_analysis_api.Utils;
 import org.ohdsi.standardized_analysis_api.cohortcharacterization.design.StandardFeatureAnalysisType;
+import org.ohdsi.webapi.cohortcharacterization.domain.CcParamEntity;
+import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
+import org.ohdsi.webapi.cohortcharacterization.repository.CcParamRepository;
+import org.ohdsi.webapi.cohortcharacterization.repository.CcRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetailsRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
-import org.ohdsi.webapi.feanalysis.FeAnalysisEntity;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
-import org.ohdsi.webapi.feanalysis.FeAnalysisWithCriteriaEntity;
-import org.ohdsi.webapi.feanalysis.FeAnalysisWithCriteriaEntityRepository;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
+import org.ohdsi.webapi.job.JobExecutionResource;
+import org.ohdsi.webapi.job.JobTemplate;
+import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
+import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceDaimon;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobParameters;
+import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
+import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -35,7 +63,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
-public class CcServiceImpl implements CcService {
+public class CcServiceImpl extends AbstractDaoService implements CcService {
     
     private CcRepository repository;
     private Security security;
@@ -44,6 +72,9 @@ public class CcServiceImpl implements CcService {
     private FeAnalysisService analysisService;
     private CohortDefinitionRepository cohortRepository;
     private CohortDefinitionDetailsRepository detailsRepository;
+    private StepBuilderFactory stepBuilderFactory;
+    private JobBuilderFactory jobBuilders;
+    private JobTemplate jobTemplate;
     
     public CcServiceImpl(
             final CcRepository ccRepository,
@@ -52,7 +83,10 @@ public class CcServiceImpl implements CcService {
             final CcParamRepository paramRepository,
             final FeAnalysisService analysisService,
             final CohortDefinitionRepository cohortRepository,
-            final CohortDefinitionDetailsRepository detailsRepository) {
+            final CohortDefinitionDetailsRepository detailsRepository,
+            final StepBuilderFactory stepBuilderFactory,
+            final JobBuilderFactory jobBuilders, 
+            final JobTemplate jobTemplate) {
         this.repository = ccRepository;
         this.security = security;
         this.userRepository = userRepository;
@@ -60,6 +94,9 @@ public class CcServiceImpl implements CcService {
         this.analysisService = analysisService;
         this.cohortRepository = cohortRepository;
         this.detailsRepository = detailsRepository;
+        this.stepBuilderFactory = stepBuilderFactory;
+        this.jobBuilders = jobBuilders;
+        this.jobTemplate = jobTemplate;
     }
     
     @Override
@@ -208,7 +245,51 @@ public class CcServiceImpl implements CcService {
     public Page<CohortCharacterizationEntity> getPage(final Pageable pageable) {
         return repository.findAll(pageable);
     }
-    
+
+    @Override
+    public String generateCc(final Long id, final String sourceKey) {
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+        String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+        String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+        String vocabularyTableQualifier = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
+
+        JobParametersBuilder builder = new JobParametersBuilder();
+        builder.addString(JOB_NAME, String.format("Generating cohort characterization %d : %s (%s)", id, source.getSourceName(), source.getSourceKey()));
+        builder.addString(CDM_DATABASE_SCHEMA, cdmTableQualifier);
+        builder.addString(RESULTS_DATABASE_SCHEMA, resultsTableQualifier);
+        builder.addString(TARGET_DATABASE_SCHEMA, resultsTableQualifier);
+        
+        if (vocabularyTableQualifier != null) {
+            builder.addString(VOCABULARY_DATABASE_SCHEMA, vocabularyTableQualifier);
+        }
+        
+        builder.addString(TARGET_DIALECT, source.getSourceDialect());
+        builder.addString(TARGET_TABLE, "cohort");
+        builder.addString(COHORT_CHARACTERIZATION_ID, String.valueOf(id));
+        builder.addString(SOURCE_ID, String.valueOf(source.getSourceId()));
+        builder.addString(GENERATE_STATS, Boolean.TRUE.toString());
+        builder.addString(HASH_CODE, String.valueOf(
+                repository.findById(id)
+                        .orElseThrow(() -> new IllegalArgumentException("CC cannot be found by id " + id)).getHashCode())
+        );
+        
+        final JobParameters jobParameters = builder.toJobParameters();
+
+        GenerateCohortCharacterizationTasklet generateCcTasklet =
+                new GenerateCohortCharacterizationTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), this);
+
+        Step generateCohortFeaturesStep = stepBuilderFactory.get("cohortCharacterizations.generate")
+                .tasklet(generateCcTasklet)
+                .build();
+
+        SimpleJobBuilder generateJobBuilder = jobBuilders.get(GENERATE_COHORT_CHARACTERIZATION)
+                .start(generateCohortFeaturesStep);
+        
+        Job generateCohortJob = generateJobBuilder.build();
+        JobExecutionResource jobExec = this.jobTemplate.launch(generateCohortJob, jobParameters);
+        return null;
+    }
+
 
     private void importAnalyses(final CohortCharacterizationEntity entity, final CohortCharacterizationEntity persistedEntity) {
         final Map<String, FeAnalysisEntity> presetAnalysesMap = buildPresetAnalysisMap(entity);

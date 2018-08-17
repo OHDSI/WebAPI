@@ -1,0 +1,122 @@
+package org.ohdsi.webapi.cohortcharacterization.domain;
+
+import javax.persistence.Column;
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import org.ohdsi.standardized_analysis_api.cohortcharacterization.result.DistributionStat;
+
+@Entity
+@Table(name = "cohort_characterization_results")
+@DiscriminatorValue("DISTRIBUTION")
+public class CcDistributionStat extends CcPrevalenceStat implements DistributionStat {
+
+    @Column
+    private Double avg;
+    @Column
+    private Double stdDev;
+    @Column
+    private Double min;
+    @Column
+    private Double p10;
+    @Column
+    private Double p25;
+    @Column
+    private Double median;
+    @Column
+    private Double p75;
+    @Column
+    private Double p90;
+    @Column
+    private Double max;
+    
+    @Override
+    public Double getAvg() {
+        return avg;
+    }
+
+    @Override
+    public Double getStdDev() {
+        return stdDev;
+    }
+
+    @Override
+    public Double getMin() {
+        return min;
+    }
+
+    @Override
+    public Double getP10() {
+        return p10;
+    }
+
+    @Override
+    public Double getP25() {
+        return p25;
+    }
+
+    @Override
+    public Double getMedian() {
+        return median;
+    }
+
+    @Override
+    public Double getP75() {
+        return p75;
+    }
+
+    @Override
+    public Double getP90() {
+        return p90;
+    }
+
+    @Override
+    public Double getMax() {
+        return max;
+    }
+
+    public void setAvg(final Double avg) {
+
+        this.avg = avg;
+    }
+
+    public void setStdDev(final Double stdDev) {
+
+        this.stdDev = stdDev;
+    }
+
+    public void setMin(final Double min) {
+
+        this.min = min;
+    }
+
+    public void setP10(final Double p10) {
+
+        this.p10 = p10;
+    }
+
+    public void setP25(final Double p25) {
+
+        this.p25 = p25;
+    }
+
+    public void setMedian(final Double median) {
+
+        this.median = median;
+    }
+
+    public void setP75(final Double p75) {
+
+        this.p75 = p75;
+    }
+
+    public void setP90(final Double p90) {
+
+        this.p90 = p90;
+    }
+
+    public void setMax(final Double max) {
+
+        this.max = max;
+    }
+}

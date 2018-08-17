@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
+import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -21,4 +22,6 @@ public interface CcService {
     Page<CohortCharacterizationEntity> getPageWithLinkedEntities(Pageable pageable);
 
     Page<CohortCharacterizationEntity> getPage(Pageable pageable);
+
+    String generateCc(Long id, final String sourceKey);
 }

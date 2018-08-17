@@ -1,33 +1,17 @@
-package org.ohdsi.webapi.cohortcharacterization.domain;
+package org.ohdsi.webapi.cohortcharacterization.dto;
 
-import javax.persistence.Column;
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-import javax.persistence.Table;
 import org.ohdsi.standardized_analysis_api.cohortcharacterization.result.DistributionStat;
 
-@Entity
-@Table(name = "cohort_characterization_results")
-@DiscriminatorValue("DISTRIBUTION")
 public class CcDistributionStat extends CcPrevalenceStat implements DistributionStat {
 
-    @Column
     private Double avg;
-    @Column
     private Double stdDev;
-    @Column
     private Double min;
-    @Column
     private Double p10;
-    @Column
     private Double p25;
-    @Column
     private Double median;
-    @Column
     private Double p75;
-    @Column
     private Double p90;
-    @Column
     private Double max;
     
     @Override

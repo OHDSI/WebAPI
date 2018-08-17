@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
+import java.util.List;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -12,6 +13,8 @@ import javax.ws.rs.core.MediaType;
 import org.ohdsi.webapi.Pagination;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcCreateDTO;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcGenerationDTO;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcShortDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
 import org.springframework.core.convert.ConversionService;
@@ -25,6 +28,7 @@ public class CcController {
     
     private CcService service;
     private ConversionService conversionService;
+    private ConverterUtils converterUtils;
     
     CcController(
             final CcService service,
@@ -32,6 +36,7 @@ public class CcController {
             final ConverterUtils converterUtils) {
         this.service = service;
         this.conversionService = conversionService;
+        this.converterUtils = converterUtils;
     }
 
     @POST
@@ -117,5 +122,23 @@ public class CcController {
     @Consumes(MediaType.APPLICATION_JSON)
     public String generate(@PathParam("id") final Long id, @PathParam("sourceKey") final String sourceKey) {
         return service.generateCc(id, sourceKey);
+    }
+    
+    @GET
+    @Path("/{id}/generations")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public List<CcGenerationDTO> getGenerations(@PathParam("id") final Long id) {
+        return converterUtils.convertList(service.findGenerationsByCcId(id), CcGenerationDTO.class);
+    }
+
+    @GET
+    @Path("/{id}/generations/{generationId}/results")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public List<CcResult> getGenerationsBySource(
+            @PathParam("id") final Long id, 
+            @PathParam("generationId") final Long generationId) {
+        return converterUtils.convertList(service.findResults(generationId), CcResult.class);
     }
 }

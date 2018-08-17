@@ -22,6 +22,7 @@ import org.hibernate.annotations.DiscriminatorFormula;
 import org.ohdsi.standardized_analysis_api.cohortcharacterization.design.FeatureAnalysis;
 import org.ohdsi.standardized_analysis_api.cohortcharacterization.design.StandardFeatureAnalysisDomain;
 import org.ohdsi.standardized_analysis_api.cohortcharacterization.design.StandardFeatureAnalysisType;
+import org.ohdsi.webapi.cohortcharacterization.CcResultType;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 
 @Entity
@@ -74,6 +75,10 @@ public class FeAnalysisEntity implements FeatureAnalysis, Comparable<FeAnalysisE
             inverseJoinColumns = @JoinColumn(name = "cohort_characterization_id", referencedColumnName = "id"))
     private Set<CohortCharacterizationEntity> cohortCharacterizations = new HashSet<>();
 
+    @Column(name = "stat_type")
+    @Enumerated(value = EnumType.STRING)
+    private CcResultType statType;
+    
     public Long getId() {
         return id;
     }
@@ -169,6 +174,16 @@ public class FeAnalysisEntity implements FeatureAnalysis, Comparable<FeAnalysisE
     @Override
     public int compareTo(final FeAnalysisEntity o) {
         return this.name.compareTo(o.name);
+    }
+
+    public CcResultType getStatType() {
+
+        return statType;
+    }
+
+    public void setStatType(final CcResultType statType) {
+
+        this.statType = statType;
     }
 }
 

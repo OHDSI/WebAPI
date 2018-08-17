@@ -160,7 +160,7 @@ public class FeatureExtractionService extends AbstractDaoService {
 		return clauses;
 	}
 
-	private String getTimeWindow(String analysisName)
+	public String getTimeWindow(String analysisName)
 	{
 		if (analysisName.endsWith("LongTerm")) return "Long Term";
 		if (analysisName.endsWith("MediumTerm")) return "Medium Term";

@@ -47,6 +47,7 @@ public class DDLService {
 		"/ddl/results/cohort_inclusion_result.sql",
 		"/ddl/results/cohort_inclusion_stats.sql",
 		"/ddl/results/cohort_summary_stats.sql",
+		"/ddl/results/concept_heirarchy.sql",
 		"/ddl/results/feas_study_inclusion_stats.sql",
 		"/ddl/results/feas_study_index_stats.sql",
 		"/ddl/results/feas_study_result.sql",
@@ -63,7 +64,8 @@ public class DDLService {
 
 	public static final Collection<String> RESULT_INIT_FILE_PATHS = Arrays.asList(
 		"/ddl/results/init_heracles_analysis.sql",
-		"/ddl/results/init_heracles_periods.sql"
+		"/ddl/results/init_heracles_periods.sql",
+		"/ddl/results/init_concept_hierarchy.sql"
 	);
 
 	private static final Collection<String> RESULT_INDEX_FILE_PATHS = Arrays.asList(

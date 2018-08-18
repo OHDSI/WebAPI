@@ -13,4 +13,4 @@ from @ohdsi_database_schema.heracles_results_dist hrd1
 where hrd1.analysis_id = 1316
 and hrd1.count_value > 0
   and c1.concept_id = @conceptId
-and cohort_definition_id in (@cohortDefinitionId)
+and cohort_definition_id = @cohortDefinitionId

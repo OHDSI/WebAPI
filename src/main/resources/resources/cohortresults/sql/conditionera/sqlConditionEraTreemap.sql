@@ -3,9 +3,9 @@ select 	concept_hierarchy.concept_id,
 	hr1.count_value as num_persons, 
 	ROUND(1.0*hr1.count_value / denom.count_value,5) as percent_persons,
 	ROUND(hr2.avg_value,5) as length_of_era
-from (select * from @ohdsi_database_schema.heracles_results where analysis_id = 1000 and cohort_definition_id in (@cohortDefinitionId)) hr1
+from (select * from @ohdsi_database_schema.heracles_results where analysis_id = 1000 and cohort_definition_id = @cohortDefinitionId) hr1
 	inner join
-	(select stratum_1, avg_value from @ohdsi_database_schema.heracles_results_dist where analysis_id = 1007 and cohort_definition_id in (@cohortDefinitionId)) hr2
+	(select stratum_1, avg_value from @ohdsi_database_schema.heracles_results_dist where analysis_id = 1007 and cohort_definition_id = @cohortDefinitionId) hr2
 	on hr1.stratum_1 = hr2.stratum_1
 	inner join
   (
@@ -97,5 +97,5 @@ from (select * from @ohdsi_database_schema.heracles_results where analysis_id = 
 	) concept_hierarchy
 	on hr1.stratum_1 = CAST(concept_hierarchy.concept_id as VARCHAR(255))
 	,
-	(select count_value from @ohdsi_database_schema.heracles_results where analysis_id = 1 and cohort_definition_id in (@cohortDefinitionId)) denom
+	(select count_value from @ohdsi_database_schema.heracles_results where analysis_id = 1 and cohort_definition_id = @cohortDefinitionId) denom
 order by hr1.count_value desc

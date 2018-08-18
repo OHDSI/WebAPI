@@ -48,6 +48,8 @@ import javax.sql.DataSource;
 import java.util.Map;
 import java.util.Set;
 
+import static org.ohdsi.webapi.util.QuoteUtils.dequote;
+
 @Component
 @ConditionalOnProperty(name = "security.provider", havingValue = "AtlasRegularSecurity")
 @DependsOn("flyway")
@@ -234,9 +236,9 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
     private JndiLdapRealm ldapRealm() {
         JndiLdapRealm realm = new LdapRealm();
-        realm.setUserDnTemplate(userDnTemplate);
+        realm.setUserDnTemplate(dequote(userDnTemplate));
         JndiLdapContextFactory contextFactory = new JndiLdapContextFactory();
-        contextFactory.setUrl(ldapUrl);
+        contextFactory.setUrl(dequote(ldapUrl));
         contextFactory.setPoolingEnabled(false);
         contextFactory.getEnvironment().put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
         realm.setContextFactory(contextFactory);
@@ -245,11 +247,11 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
     private ActiveDirectoryRealm activeDirectoryRealm() {
         ActiveDirectoryRealm realm = new ADRealm(getLdapTemplate(), adSearchFilter);
-        realm.setUrl(adUrl);
-        realm.setSearchBase(adSearchBase);
-        realm.setPrincipalSuffix(adPrincipalSuffix);
-        realm.setSystemUsername(adSystemUsername);
-        realm.setSystemPassword(adSystemPassword);
+        realm.setUrl(dequote(adUrl));
+        realm.setSearchBase(dequote(adSearchBase));
+        realm.setPrincipalSuffix(dequote(adPrincipalSuffix));
+        realm.setSystemUsername(dequote(adSystemUsername));
+        realm.setSystemPassword(dequote(adSystemPassword));
         return realm;
     }
 

@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.user.importer.providers.OhdsiLdapUtils.valueAsList;
+import static org.ohdsi.webapi.util.QuoteUtils.dequote;
 
 @Component
 @ConditionalOnProperty("security.ad.url")
@@ -49,21 +50,21 @@ public class ActiveDirectoryProvider implements LdapProvider {
   @Override
   public LdapTemplate getLdapTemplate() {
     LdapContextSource contextSource = new LdapContextSource();
-    contextSource.setUrl(adUrl);
-    contextSource.setBase(adSearchBase);
-    contextSource.setUserDn(adSystemUsername);
-    contextSource.setPassword(adSystemPassword);
+    contextSource.setUrl(dequote(adUrl));
+    contextSource.setBase(dequote(adSearchBase));
+    contextSource.setUserDn(dequote(adSystemUsername));
+    contextSource.setPassword(dequote(adSystemPassword));
     contextSource.setCacheEnvironmentProperties(false);
     contextSource.setAuthenticationStrategy(new SimpleDirContextAuthenticationStrategy());
     contextSource.setAuthenticationSource(new AuthenticationSource() {
       @Override
       public String getPrincipal() {
-        return StringUtils.isNotBlank(adPrincipalSuffix) ? adSystemUsername + adPrincipalSuffix : adSystemUsername;
+        return StringUtils.isNotBlank(adPrincipalSuffix) ? dequote(adSystemUsername) + dequote(adPrincipalSuffix) : dequote(adSystemUsername);
       }
 
       @Override
       public String getCredentials() {
-        return adSystemPassword;
+        return dequote(adSystemPassword);
       }
     });
     LdapTemplate ldapTemplate = new LdapTemplate(contextSource);

@@ -15,11 +15,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.*;
 import org.springframework.ldap.filter.AndFilter;
+import org.springframework.ldap.filter.EqualsFilter;
 import org.springframework.ldap.filter.WhitespaceWildcardsFilter;
 import org.springframework.ldap.support.LdapUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.naming.directory.DirContext;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -180,6 +182,17 @@ public class DefaultUserImporter implements UserImporter {
   public List<RoleGroupMappingEntity> getRoleGroupMapping(LdapProviderType providerType) {
 
     return roleGroupMappingRepository.findByProvider(providerType);
+  }
+
+  @Override
+  public void testConnection(LdapProviderType providerType) {
+
+    LdapProvider provider = getProvider(providerType).orElseThrow(IllegalArgumentException::new);
+    LdapTemplate ldapTemplate = provider.getLdapTemplate();
+    AndFilter filter = new AndFilter();
+    filter.and(getCriteria(OBJECTCLASS_ATTR, getProvider(providerType).orElseThrow(IllegalArgumentException::new).getGroupClasses()))
+            .and(new EqualsFilter(provider.getLoginAttributeName(), provider.getPrincipal()));
+    ldapTemplate.authenticate(LdapUtils.emptyLdapName(), filter.toString(), provider.getPassword());
   }
 
   private LdapUserImportStatus getStatus(AtlasUserRoles atlasUser) {

@@ -59,12 +59,12 @@ public class ActiveDirectoryProvider implements LdapProvider {
     contextSource.setAuthenticationSource(new AuthenticationSource() {
       @Override
       public String getPrincipal() {
-        return StringUtils.isNotBlank(adPrincipalSuffix) ? dequote(adSystemUsername) + dequote(adPrincipalSuffix) : dequote(adSystemUsername);
+        return ActiveDirectoryProvider.this.getPrincipal();
       }
 
       @Override
       public String getCredentials() {
-        return dequote(adSystemPassword);
+        return ActiveDirectoryProvider.this.getPassword();
       }
     });
     LdapTemplate ldapTemplate = new LdapTemplate(contextSource);
@@ -115,5 +115,15 @@ public class ActiveDirectoryProvider implements LdapProvider {
   public CollectingNameClassPairCallbackHandler<LdapUser> getUserSearchCallbackHandler(AttributesMapper<LdapUser> attributesMapper) {
 
     return new AttributesMapperCallbackHandler<>(attributesMapper);
+  }
+
+  @Override
+  public String getPrincipal() {
+      return StringUtils.isNotBlank(adPrincipalSuffix) ? dequote(adSystemUsername) + dequote(adPrincipalSuffix) : dequote(adSystemUsername);
+  }
+
+  @Override
+  public String getPassword() {
+      return dequote(adSystemPassword);
   }
 }

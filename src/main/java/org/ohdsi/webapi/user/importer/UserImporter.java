@@ -22,4 +22,6 @@ public interface UserImporter {
   void saveRoleGroupMapping(LdapProviderType providerType, List<RoleGroupMappingEntity> mappingEntities);
 
   List<RoleGroupMappingEntity> getRoleGroupMapping(LdapProviderType providerType);
+
+  void testConnection(LdapProviderType provider);
 }

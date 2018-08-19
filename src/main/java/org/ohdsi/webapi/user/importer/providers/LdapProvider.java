@@ -29,4 +29,8 @@ public interface LdapProvider {
   String getDisplayNameAttributeName();
 
   CollectingNameClassPairCallbackHandler<LdapUser> getUserSearchCallbackHandler(AttributesMapper<LdapUser> attributesMapper);
+
+  String getPrincipal();
+
+  String getPassword();
 }

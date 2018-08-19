@@ -6,6 +6,8 @@ import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.user.importer.RoleGroupMappingEntity;
 import org.ohdsi.webapi.user.importer.model.*;
 import org.ohdsi.webapi.user.importer.UserImporter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -13,6 +15,8 @@ import org.springframework.stereotype.Component;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -20,6 +24,8 @@ import java.util.stream.Collectors;
 @Component
 @Path("/")
 public class UserImportService {
+
+  private static final Logger logger = LoggerFactory.getLogger(UserImportService.class);
 
   @Autowired
   private UserImporter userImporter;
@@ -38,6 +44,29 @@ public class UserImportService {
     providers.setAdUrl(adUrl);
     providers.setLdapUrl(ldapUrl);
     return providers;
+  }
+
+  @GET
+  @Path("user/import/{type}/test")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response testConnection(@PathParam("type") String type) {
+    LdapProviderType provider = LdapProviderType.fromValue(type);
+    ConnectionInfo result = new ConnectionInfo();
+    try {
+      userImporter.testConnection(provider);
+      result.setState(ConnectionInfo.ConnectionState.SUCCESS);
+      result.setMessage("Connection success");
+    } catch(Exception e) {
+      logger.error("LDAP connection failed.", e);
+      result.setMessage("Connection failed. " + e.getMessage());
+      StringWriter out = new StringWriter();
+      try(PrintWriter writer = new PrintWriter(out)) {
+        e.printStackTrace(writer);
+        result.setDetails(out.toString());
+      }
+      result.setState(ConnectionInfo.ConnectionState.FAILED);
+    }
+    return Response.ok().entity(result).build();
   }
 
   @GET

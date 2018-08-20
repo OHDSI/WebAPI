@@ -298,7 +298,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         final JobParameters jobParameters = builder.toJobParameters();
 
         GenerateCohortCharacterizationTasklet generateCcTasklet =
-                new GenerateCohortCharacterizationTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), this);
+                new GenerateCohortCharacterizationTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), this, analysisService);
 
         Step generateCohortFeaturesStep = stepBuilderFactory.get("cohortCharacterizations.generate")
                 .tasklet(generateCcTasklet)
@@ -330,11 +330,15 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         final String resultSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
         String generationResults = SqlRender.renderSql(
                 QUERY_RESULTS,
-                new String[]{"cdm_results_schema", "cohort_definition_id",},
+                new String[]{"cdm_results_schema", "cohort_characterization_generation_id"},
                 new String[]{resultSchema, String.valueOf(generationId)}
         );
         String translatedSql = SqlTranslate.translateSql(generationResults, source.getSourceDialect(), SessionUtils.sessionId(), resultSchema);
-        final List<CcResult> results = this.getSourceJdbcTemplate(source).query(translatedSql, (rs, rowNum) -> {
+        return getGenerationResults(source, translatedSql);
+    }
+
+    private List<CcResult> getGenerationResults(final Source source, final String translatedSql) {
+        return this.getSourceJdbcTemplate(source).query(translatedSql, (rs, rowNum) -> {
             final String type = rs.getString("type");
             if (StringUtils.equals(type, CcResultType.DISTRIBUTION.toString())) {
                 final CcDistributionStat distributionStat = new CcDistributionStat();
@@ -348,9 +352,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
             }
             return null;
         });
-        return results;
     }
-    
+
     private void gatherForPrevalence(final CcPrevalenceStat stat, final ResultSet rs) throws SQLException {
         stat.setCovariateId(rs.getLong("covariate_id"));
         stat.setCovariateName(rs.getString("covariate_name"));

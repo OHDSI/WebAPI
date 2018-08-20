@@ -25,10 +25,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringJoiner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,6 +42,7 @@ import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
+import org.ohdsi.webapi.feanalysis.FeAnalysisService;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.StepContribution;
@@ -63,16 +66,19 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
     private final ExecutorService taskExecutor;
     private final JdbcTemplate jdbcTemplate;
     private final CcService ccService;
+    private final FeAnalysisService feAnalysisService;
     
     
     public GenerateCohortCharacterizationTasklet(
-            final JdbcTemplate jdbcTemplate, 
+            final JdbcTemplate jdbcTemplate,
             final TransactionTemplate transactionTemplate,
-            final CcService ccService
-    ) {
+            final CcService ccService,
+            final FeAnalysisService feAnalysisService
+            ) {
         this.jdbcTemplate = jdbcTemplate;
         this.transactionTemplate = transactionTemplate;
         this.ccService = ccService;
+        this.feAnalysisService = feAnalysisService;
         
         this.taskExecutor = Executors.newSingleThreadExecutor();
     }
@@ -272,24 +278,19 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
         }
         
         private String buildSettings() {
-            StringWriter stringWriter = new StringWriter();
-            JSONWriter jsonWriter = new JSONWriter(stringWriter);
-            jsonWriter.object();
-            jsonWriter.key("temporal");
-            jsonWriter.value(Boolean.FALSE);
-            cohortCharacterization.getParameters().forEach(param -> {
-                jsonWriter.key(param.getName());
-                jsonWriter.value(param.getValue());
-            });
+
+            final JSONObject defaultSettings = new JSONObject(FeatureExtraction.getDefaultPrespecAnalyses());
+
+            // here we remove default analyses and i can't sure if it's correct
+            feAnalysisService.findAllPresetAnalyses().forEach(v -> defaultSettings.remove(v.getDesign()));
+            
+            cohortCharacterization.getParameters().forEach(param -> defaultSettings.put(param.getName(), param.getValue()));
             cohortCharacterization.getFeatureAnalyses()
                     .stream()
                     .filter(FeAnalysisEntity::isPreset)
-                    .forEach(analysis -> {
-                        jsonWriter.key(analysis.getDesign());
-                        jsonWriter.value(Boolean.TRUE);
-                    });
-            jsonWriter.endObject();
-            return stringWriter.toString();
+                    .forEach(analysis -> defaultSettings.put(analysis.getDesign(), Boolean.TRUE));
+            
+            return defaultSettings.toString();
         }
         
     }

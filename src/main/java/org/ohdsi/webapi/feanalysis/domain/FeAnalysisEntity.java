@@ -29,7 +29,8 @@ import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEnti
 @Table(name = "fe_analyses")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorFormula("type")
-public class FeAnalysisEntity implements FeatureAnalysis, Comparable<FeAnalysisEntity> {
+public class 
+FeAnalysisEntity implements FeatureAnalysis, Comparable<FeAnalysisEntity> {
 
     public FeAnalysisEntity() {
     }

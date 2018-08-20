@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.ohdsi.standardized_analysis_api.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisCriteriaEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
@@ -58,5 +59,10 @@ public class FeAnalysisServiceImpl implements FeAnalysisService {
     @Override
     public Set<FeAnalysisEntity> findByCohortCharacterization(final CohortCharacterizationEntity cohortCharacterization) {
         return analysisRepository.findAllByCohortCharacterizations(cohortCharacterization);
+    }
+    
+    @Override
+    public List<FeAnalysisEntity> findAllPresetAnalyses() {
+        return analysisRepository.findAllByType(StandardFeatureAnalysisType.PRESET);
     }
 }

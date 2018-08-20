@@ -16,4 +16,6 @@ public interface FeAnalysisService {
     FeAnalysisWithCriteriaEntity createCriteriaAnalysis(FeAnalysisWithCriteriaEntity analysis);
 
     Set<FeAnalysisEntity> findByCohortCharacterization(CohortCharacterizationEntity cohortCharacterization);
+
+    List<FeAnalysisEntity> findAllPresetAnalyses();
 }

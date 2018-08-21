@@ -147,7 +147,7 @@ public class ScriptExecutionCallbackController {
         String script = IOUtils.toString(contents, "UTF-8");
         return script
                 .replaceAll("user\\s*=\\s*\".*\"", "user = \"database_user\"")
-                .replaceAll("password\\s*=\\s*\".*\"","password = \"database_password\"")
+                .replaceAll("password\\s*=\\s*\".*?\"","password = \"database_password\"")
                 .getBytes();
     }
 }

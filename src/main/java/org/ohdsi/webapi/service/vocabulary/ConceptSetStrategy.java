@@ -27,14 +27,12 @@ public class ConceptSetStrategy implements StatementPrepareStrategy {
       sql = queryModifier.apply(sql);
     }
     String tqName = "vocabulary_database_schema";
-    String resultTableQualifierName = "resultTableQualifier";
     String vocabularyTableQualifierName = "vocabularyTableQualifier";
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
-    String resultTableQualifierValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
     String vocabularyTableQualifierValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
 
-    String[] tableQualifierNames = {tqName, resultTableQualifierName, vocabularyTableQualifierName};
-    String[] tableQualifierValues = {tqValue, resultTableQualifierValue, vocabularyTableQualifierValue};
+    String[] tableQualifierNames = {tqName, vocabularyTableQualifierName};
+    String[] tableQualifierValues = {tqValue, vocabularyTableQualifierValue};
     sql = SqlRender.renderSql(sql, tableQualifierNames, tableQualifierValues);
     return new PreparedStatementRenderer(source, sql, tableQualifierNames, tableQualifierValues, null);
   }

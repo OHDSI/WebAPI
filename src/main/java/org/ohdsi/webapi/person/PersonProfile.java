@@ -30,6 +30,7 @@ public class PersonProfile {
   
   public String gender;
   public int yearOfBirth;
+	public int ageAtIndex;
 
   public PersonProfile() {
     records = new ArrayList<>();

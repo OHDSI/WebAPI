@@ -17,7 +17,6 @@ package org.ohdsi.webapi.service;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
@@ -31,10 +30,10 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import org.apache.shiro.SecurityUtils;
-import org.ohdsi.webapi.person.ObservationPeriod;
-import org.ohdsi.webapi.person.PersonRecord;
 import org.ohdsi.webapi.person.CohortPerson;
+import org.ohdsi.webapi.person.ObservationPeriod;
 import org.ohdsi.webapi.person.PersonProfile;
+import org.ohdsi.webapi.person.PersonRecord;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
@@ -137,6 +136,10 @@ public class PersonService extends AbstractDaoService {
     cohortStartDate = cohort.map(c -> c.startDate.toLocalDateTime()).orElseGet(() ->
       profile.records.stream().min(Comparator.comparing(c -> c.startDate))
         .map(r -> r.startDate.toLocalDateTime()).orElse(null));
+
+    if (cohortStartDate != null && profile.yearOfBirth > 0) {
+      profile.ageAtIndex = cohortStartDate.getYear() - profile.yearOfBirth;
+    }
 
     for(PersonRecord record : profile.records){
       record.startDay = Math.toIntExact(ChronoUnit.DAYS.between(cohortStartDate, record.startDate.toLocalDateTime()));

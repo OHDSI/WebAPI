@@ -20,12 +20,9 @@ import static org.ohdsi.webapi.Constants.Params.COHORT_CHARACTERIZATION_ID;
 import static org.ohdsi.webapi.Constants.Params.RESULTS_DATABASE_SCHEMA;
 import static org.ohdsi.webapi.Constants.Params.TARGET_DIALECT;
 
-import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.StringJoiner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -35,7 +32,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
-import org.json.JSONWriter;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.featureExtraction.FeatureExtraction;
 import org.ohdsi.sql.SqlRender;
@@ -85,7 +81,7 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
 
     private int[] doTask(ChunkContext chunkContext) {
         initTx();
-        new CcRunner(chunkContext).run();
+        new CcTask(chunkContext).run();
         return null;
     }
 
@@ -96,15 +92,16 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
         this.transactionTemplate.getTransactionManager().commit(initStatus);
     }
     
-    private class CcRunner {
+    private class CcTask {
 
-        final String prevalenceRetrievingQuery = "with " +
+        final String prevalenceRetrievingQuery = "\n" +
+                " with " +
                 "     features as (%1$s), " +
                 "     feature_refs as (%2$s), " +
                 "     analysis_refs as(%3$s) " +
-                "insert into @results_database_schema.cohort_characterization_results " +
-                "(type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id, count_value, avg_value, cohort_definition_id, cohort_characterization_generation_id) " +
-                "select 'PREVALENCE' as type, " +
+                " insert into @results_database_schema.cohort_characterization_results " +
+                " (type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id, count_value, avg_value, cohort_definition_id, cohort_characterization_generation_id) " +
+                " select 'PREVALENCE' as type, " +
                 "       f.covariate_id, " +
                 "       fr.covariate_name, " +
                 "       ar.analysis_id, " +
@@ -114,43 +111,108 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
                 "       f.average_value as stat_value, " +
                 "       %4$d as cohort_definition_id, " +
                 "       %5$d as cohort_characterization_generation_id " +
-                "from features f " +
+                " from features f " +
                 "       join feature_refs fr on fr.covariate_id = f.covariate_id and fr.cohort_definition_id = f.cohort_definition_id " +
                 "       JOIN analysis_refs ar " +
                 "         on ar.analysis_id = fr.analysis_id and ar.cohort_definition_id = fr.cohort_definition_id " +
                 "       LEFT JOIN @cdm_database_schema.concept c on c.concept_id = fr.concept_id;";
         
-        final String distributionRetrievingQuery = "with " +
-                "     features as (%1$s),\n" +
-                "     feature_refs as (%2$s),\n" +
-                "     analysis_refs as (%3$s)\n" +
-                "insert into five_three_plus_results.cohort_characterization_results\n" +
-                "    (type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id,\n" +
-                "     count_value, min_value, max_value, avg_value, stdev_value, median_value,\n" +
-                "     p10_value, p25_value, p75_value, p90_value, cohort_definition_id, cohort_characterization_generation_id)\n" +
-                "select 'DISTRIBUTION',\n" +
-                "       f.covariate_id,\n" +
-                "       fr.covariate_name,\n" +
-                "       ar.analysis_id,\n" +
-                "       ar.analysis_name,\n" +
-                "       fr.concept_id,\n" +
-                "       f.count_value,\n" +
-                "       f.min_value,\n" +
-                "       f.max_value,\n" +
-                "       f.average_value,\n" +
-                "       f.standard_deviation,\n" +
-                "       f.median_value,\n" +
-                "       f.p10_value,\n" +
-                "       f.p25_value,\n" +
-                "       f.p75_value,\n" +
-                "       f.p90_value,\n" +
+        final String distributionRetrievingQuery = "\n" +
+                " with " +
+                "     features as (%1$s), " +
+                "     feature_refs as (%2$s), " +
+                "     analysis_refs as (%3$s) " +
+                " insert into @results_database_schema.cohort_characterization_results " +
+                "    (type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id, " +
+                "     count_value, min_value, max_value, avg_value, stdev_value, median_value, " +
+                "     p10_value, p25_value, p75_value, p90_value, cohort_definition_id, cohort_characterization_generation_id) " +
+                " select 'DISTRIBUTION', " +
+                "       f.covariate_id, " +
+                "       fr.covariate_name, " +
+                "       ar.analysis_id, " +
+                "       ar.analysis_name, " +
+                "       fr.concept_id, " +
+                "       f.count_value, " +
+                "       f.min_value, " +
+                "       f.max_value, " +
+                "       f.average_value, " +
+                "       f.standard_deviation, " +
+                "       f.median_value, " +
+                "       f.p10_value, " +
+                "       f.p25_value, " +
+                "       f.p75_value, " +
+                "       f.p90_value, " +
                 "       %4$d as cohort_definition_id, " +
                 "       %5$d as cohort_characterization_generation_id " +
-                "from features f\n" +
-                "       join feature_refs fr on fr.covariate_id = f.covariate_id and fr.cohort_definition_id = f.cohort_definition_id\n" +
-                "       JOIN analysis_refs ar\n" +
-                "         on ar.analysis_id = fr.analysis_id and ar.cohort_definition_id = fr.cohort_definition_id\n" +
-                "       LEFT JOIN five_three_plus.concept c on c.concept_id = fr.concept_id;";
+                " from features f " +
+                "       join feature_refs fr on fr.covariate_id = f.covariate_id and fr.cohort_definition_id = f.cohort_definition_id " +
+                "       JOIN analysis_refs ar " +
+                "         on ar.analysis_id = fr.analysis_id and ar.cohort_definition_id = fr.cohort_definition_id " +
+                "       LEFT JOIN @cdm_database_schema.concept c on c.concept_id = fr.concept_id;";
+        
+        final String customDistributionQueryWrapper = "\n" +
+                "insert into " +
+                " @results_database_schema.cohort_characterization_results (type, " +
+                "     covariate_id, " +
+                "     covariate_name, " +
+                "     analysis_id, " +
+                "     analysis_name, " +
+                "     concept_id, " +
+                "     count_value, " +
+                "     min_value, " +
+                "     max_value, " +
+                "     avg_value, " +
+                "     stdev_value, " +
+                "     median_value, " +
+                "     p10_value, " +
+                "     p25_value, " +
+                "     p75_value, " +
+                "     p90_value, " +
+                "     cohort_definition_id, " +
+                "     cohort_characterization_generation_id) " +
+                " select 'DISTRIBUTION', " +
+                "        covariate_id, " +
+                "        covariate_name, " +
+                "        %1$d as analysis_id, " +
+                "        %2$s as analysis_name, " +
+                "        concept_id, " +
+                "        count_value, " +
+                "        min_value, " +
+                "        max_value, " +
+                "        average_value, " +
+                "        standard_deviation, " +
+                "        median_value, " +
+                "        p10_value, " +
+                "        p25_value, " +
+                "        p75_value, " +
+                "        p90_value, " +
+                "        %3$d as cohort_definition_id, " +
+                "        %4$d as cohort_characterization_generation_id " +
+                " from (%5$s) subquery;";
+        
+        final String customPrevalenceQueryWrapper = "\n" +
+                "insert into five_three_plus_results.cohort_characterization_results ( " +
+                "     type, " +
+                "     covariate_id, " +
+                "     covariate_name, " +
+                "     analysis_id, " +
+                "     analysis_name, " +
+                "     concept_id, " +
+                "     count_value, " +
+                "     avg_value, " +
+                "     cohort_definition_id, " +
+                "     cohort_characterization_generation_id) " +
+                "select 'PREVALENCE'    as type, " +
+                "        covariate_id, " +
+                "        covariate_name, " +
+                "        %1$d as analysis_id, " +
+                "        %2$s as analysis_name, " +
+                "        concept_id, " +
+                "        sum_value       as count_value, " +
+                "        average_value   as stat_value, " +
+                "        %3$d            as cohort_definition_id, " +
+                "        %4$d            as cohort_characterization_generation_id " +
+                "from (%5$s) subquery;";
         
         final CohortCharacterizationEntity cohortCharacterization;
         final String resultSchema;
@@ -161,7 +223,7 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
         
         private final Long jobId;
 
-        CcRunner(final ChunkContext context) {
+        CcTask(final ChunkContext context) {
             this.jobParams = context.getStepContext().getJobParameters();
             this.targetDialect = jobParams.get(TARGET_DIALECT).toString();
             this.cohortCharacterization = ccService.findByIdWithLinkedEntities(
@@ -175,10 +237,10 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
         
         private void run() {
             cohortCharacterization.getCohortDefinitions()
-                    .forEach(definition -> runSql(definition.getId()));
+                    .forEach(definition -> runAnalysisOnCohort(definition.getId()));
         }
 
-        private int[] runSql(final Integer cohortDefinitionId) {
+        private int[] runAnalysisOnCohort(final Integer cohortDefinitionId) {
             FutureTask<int[]> batchUpdateTask = new FutureTask<>(
                     () -> jdbcTemplate.batchUpdate(
                             getSqlQueriesToRun(
@@ -205,7 +267,25 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
             }
         }
         
-        private List<String> retrieveResults(final JSONObject jsonObject, final Integer cohortId) {
+        private List<String> getQueriesForCustomDistributionAnalyses(final Integer cohortId) {
+            return cohortCharacterization.getFeatureAnalyses()
+                    .stream()
+                    .filter(FeAnalysisEntity::isCustom)
+                    .filter(v -> v.getStatType() == CcResultType.DISTRIBUTION)
+                    .map(v -> String.format(customDistributionQueryWrapper, v.getId(), org.springframework.util.StringUtils.quote(v.getName()), cohortId, jobId, v.getDesign()))
+                    .collect(Collectors.toList());
+        }
+        
+        private List<String> getQueriesForCustomPrevalenceAnalyses(final Integer cohortId) {
+            return cohortCharacterization.getFeatureAnalyses()
+                    .stream()
+                    .filter(FeAnalysisEntity::isCustom)
+                    .filter(v -> v.getStatType() == CcResultType.PREVALENCE)
+                    .map(v -> String.format(customPrevalenceQueryWrapper, v.getId(), org.springframework.util.StringUtils.quote(v.getName()), cohortId, jobId, v.getDesign()))
+                    .collect(Collectors.toList());
+        }
+        
+        private List<String> getQueriesForResultsRetrieving(final JSONObject jsonObject, final Integer cohortId) {
             final String cohortWrapper = "select %1$d as %2$s from (%3$s) W";
             
             final String featureRefColumns = "cohort_definition_id, covariate_id, covariate_name, analysis_id, concept_id";
@@ -218,14 +298,14 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
             
             final List<String> queries = new ArrayList<>();
             
-            if (ccHasDistributionAnalyses()) {
+            if (ccHasPresetDistributionAnalyses()) {
                 final String distColumns = "cohort_definition_id, covariate_id, count_value, min_value, max_value, average_value, "
                         + "standard_deviation, median_value, p10_value, p25_value, p75_value, p90_value";
                 final String distFeatures = String.format(cohortWrapper, cohortId, distColumns,
                         StringUtils.stripEnd(jsonObject.getString("sqlQueryContinuousFeatures"), ";"));
                 queries.add(String.format(distributionRetrievingQuery, distFeatures, featureRefs, analysisRefs, cohortCharacterization.getId(), jobId));
             }
-            if (ccHasPrevalenceAnalyses()) {
+            if (ccHasPresetPrevalenceAnalyses()) {
                 final String featureColumns = "cohort_definition_id, covariate_id, sum_value, average_value";
                 final String features = String.format(cohortWrapper, cohortId, featureColumns,
                         StringUtils.stripEnd(jsonObject.getString("sqlQueryFeatures"), ";"));
@@ -235,16 +315,16 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
             return queries;
         }
         
-        private boolean ccHasPrevalenceAnalyses() {
+        private boolean ccHasPresetPrevalenceAnalyses() {
             return cohortCharacterization.getFeatureAnalyses()
                     .stream()
-                    .anyMatch(analysis -> analysis.getStatType() == CcResultType.PREVALENCE);
+                    .anyMatch(analysis -> analysis.isPreset() && analysis.getStatType() == CcResultType.PREVALENCE);
         }
         
-        private boolean ccHasDistributionAnalyses() {
+        private boolean ccHasPresetDistributionAnalyses() {
             return cohortCharacterization.getFeatureAnalyses()
                     .stream()
-                    .anyMatch(analysis -> analysis.getStatType() == CcResultType.DISTRIBUTION);
+                    .anyMatch(analysis -> analysis.isPreset() && analysis.getStatType() == CcResultType.DISTRIBUTION);
         }
         
         private CohortExpressionQueryBuilder.BuildExpressionQueryOptions createDefaultOptions(final Integer id) {
@@ -256,10 +336,14 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
         }
 
         private String[] getSqlQueriesToRun(final JSONObject jsonObject, final Integer cohortDefinitionId) {
-            final StringJoiner joiner = new StringJoiner("\r\n ---- \r\n");
+            final StringJoiner joiner = new StringJoiner("\r  ---- \r ");
             
             joiner.add(jsonObject.getString("sqlConstruction"));
-            retrieveResults(jsonObject,cohortDefinitionId).forEach(joiner::add);
+            
+            getQueriesForResultsRetrieving(jsonObject,cohortDefinitionId).forEach(joiner::add);
+            getQueriesForCustomDistributionAnalyses(cohortDefinitionId).forEach(joiner::add);
+            getQueriesForCustomPrevalenceAnalyses(cohortDefinitionId).forEach(joiner::add);
+            
             joiner.add(jsonObject.getString("sqlCleanup"));
             
             final String sql = SqlRender.renderSql(joiner.toString(),
@@ -281,7 +365,6 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
 
             final JSONObject defaultSettings = new JSONObject(FeatureExtraction.getDefaultPrespecAnalyses());
 
-            // here we remove default analyses and i can't sure if it's correct
             feAnalysisService.findAllPresetAnalyses().forEach(v -> defaultSettings.remove(v.getDesign()));
             
             cohortCharacterization.getParameters().forEach(param -> defaultSettings.put(param.getName(), param.getValue()));

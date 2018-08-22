@@ -112,6 +112,14 @@ FeAnalysisEntity implements FeatureAnalysis, Comparable<FeAnalysisEntity> {
     public boolean isPreset() {
         return this.type == StandardFeatureAnalysisType.PRESET;
     }
+    
+    public boolean isCustom() {
+        return this.type == StandardFeatureAnalysisType.CUSTOM_FE;
+    }
+    
+    public boolean isCriteria() {
+        return this.type == StandardFeatureAnalysisType.CRITERIA_SET;
+    }
 
     public void setId(final Long id) {
         this.id = id;

@@ -13,37 +13,41 @@ import java.math.BigDecimal;
  */
 @JsonInclude(Include.NON_NULL)
 public class DrugHoiEvidence {
-	  @JsonProperty("evidenceSource")
+
+    @JsonProperty("evidenceSource")
     public String evidenceSource;
-    
+
     @JsonProperty("relationshipType")
     public String relationshipType;
-    
+
+    @JsonProperty("mappingType")
+    public String mappingType;
+
     @JsonProperty("statisticType")
     public String statisticType;
-		
+
     @JsonProperty("statisticValue")
     public BigDecimal statisticValue;
 
     @JsonProperty("drugConceptId")
-    public String drugConceptId;	
-    
+    public String drugConceptId;
+
     @JsonProperty("drugConceptName")
-    public String drugConceptName;	
-		
+    public String drugConceptName;
+
     @JsonProperty("hoiConceptId")
-    public String hoiConceptId;	
-    
+    public String hoiConceptId;
+
     @JsonProperty("hoiConceptName")
-    public String hoiConceptName;	
-    
+    public String hoiConceptName;
+
     @JsonProperty("uniqueIdentifier")
     public String uniqueIdentifier;
-		
+
     @JsonProperty("uniqueIdentifierType")
     public String uniqueIdentifierType;
-		
+
     @JsonProperty("count")
-    public Integer count;	
+    public Integer count;
 
 }

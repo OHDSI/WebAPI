@@ -1,8 +1,8 @@
 WITH total_exposed_w_outcome AS (
 	SELECT exposure_cohort_definition_id, outcome_cohort_definition_id, count_value
 	FROM @ohdsi_database_schema.penelope_results 
-	WHERE exposure_cohort_definition_id in ( @exposure_cohort_definition_id )
-		AND outcome_cohort_definition_id in ( @outcome_cohort_definition_id )
+	WHERE exposure_cohort_definition_id = @exposure_cohort_definition_id
+		AND outcome_cohort_definition_id = @outcome_cohort_definition_id
 		AND analysis_id = 1
 		AND stratum_1 = 'Outcome post-exposure'
 ),
@@ -10,8 +10,8 @@ total_exposed AS (
 	SELECT exposure_cohort_definition_id, outcome_cohort_definition_id, 
 		sum(count_value) as count_value
 	FROM @ohdsi_database_schema.penelope_results 
-	WHERE exposure_cohort_definition_id in ( @exposure_cohort_definition_id )
-		AND outcome_cohort_definition_id in ( @outcome_cohort_definition_id )
+	WHERE exposure_cohort_definition_id = @exposure_cohort_definition_id
+		AND outcome_cohort_definition_id = @outcome_cohort_definition_id
 		AND analysis_id = 1
 		AND stratum_1 IN ('Exposure with no outcome','Outcome post-exposure')
 	GROUP BY exposure_cohort_definition_id, outcome_cohort_definition_id 
@@ -21,8 +21,8 @@ concept_w_outcome AS (
 		stratum_2 as concept_id,
 		count_value as count_value
 	FROM @ohdsi_database_schema.penelope_results
-	WHERE exposure_cohort_definition_id in ( @exposure_cohort_definition_id )
-		AND outcome_cohort_definition_id in ( @outcome_cohort_definition_id )
+	WHERE exposure_cohort_definition_id = @exposure_cohort_definition_id
+		AND outcome_cohort_definition_id = @outcome_cohort_definition_id
 		AND analysis_id in (1822, 1832, 1852, 1872, 1882)
 		AND stratum_1 = 'Outcome post-exposure'
 		AND stratum_3 = '-1'
@@ -33,8 +33,8 @@ concept_total AS (
 		stratum_2 as concept_id,
 		SUM(count_value) as count_value
 	FROM @ohdsi_database_schema.penelope_results
-	WHERE exposure_cohort_definition_id in ( @exposure_cohort_definition_id )
-		AND outcome_cohort_definition_id in ( @outcome_cohort_definition_id )
+	WHERE exposure_cohort_definition_id = @exposure_cohort_definition_id
+		AND outcome_cohort_definition_id = @outcome_cohort_definition_id
 		AND analysis_id in (1822, 1832, 1852, 1872, 1882)
 		AND stratum_1 in ('Exposure with no outcome','Outcome post-exposure')
 		AND stratum_3 = '-1'

@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.service.converters;
 
+import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMechanism;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRequest;
 import org.springframework.core.convert.converter.Converter;
@@ -25,6 +26,9 @@ public class SourceRequestToSourceConverter implements Converter<SourceRequest, 
         source.setSourceKey(request.getKey());
         source.setDaimons(request.getDaimons());
         source.getDaimons().forEach(d -> d.setSource(source));
+        source.setKeytabName(request.getKeytabName());
+        source.setKrbAdminServer(request.getKrbAdminServer());
+        source.setKrbAuthMethod(KerberosAuthMechanism.getByName(request.getKrbAuthMethod()));
         return source;
     }
 }

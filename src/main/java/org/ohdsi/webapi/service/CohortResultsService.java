@@ -1373,7 +1373,7 @@ public class CohortResultsService extends AbstractDaoService {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String sqlPath = "/resources/cohortresults/sql/raw/getMembers.sql";
     String tqName = "tableQualifier";
-    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
     String[] names = new String[]{"cohortDefinitionId", "min", "max"};
     Object[] values = new Object[]{whitelist(id), whitelist(min), whitelist(max)};
     PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sqlPath, tqName, tqValue, names, values, SessionUtils.sessionId());

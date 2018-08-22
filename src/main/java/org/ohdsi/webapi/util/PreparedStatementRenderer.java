@@ -8,6 +8,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+
+import com.odysseusinc.arachne.commons.types.DBMSType;
 import org.apache.commons.lang.ArrayUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
@@ -269,7 +271,7 @@ public class PreparedStatementRenderer {
 
   public String getSql() {
     String translatedSql = SqlTranslate.translateSql(sql, targetDialect, sessionId, null);
-    return translatedSql;
+    return DBMSType.ORACLE.getOhdsiDB().equals(targetDialect) ? translatedSql.replaceAll(";$", "") : translatedSql;
   }
 
   public PreparedStatementSetter getSetter() {

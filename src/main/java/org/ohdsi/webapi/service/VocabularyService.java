@@ -6,13 +6,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.Consumes;
@@ -37,6 +31,7 @@ import org.ohdsi.webapi.activity.Activity.ActivityType;
 import org.ohdsi.webapi.activity.Tracker;
 import org.ohdsi.webapi.conceptset.ConceptSetComparison;
 import org.ohdsi.webapi.conceptset.ConceptSetOptimizationResult;
+import org.ohdsi.webapi.service.vocabulary.ConceptSetStrategy;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
@@ -643,11 +638,7 @@ public class VocabularyService extends AbstractDaoService {
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<Long> resolveConceptSetExpression(@PathParam("sourceKey") String sourceKey, ConceptSetExpression conceptSetExpression) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    String tqName = "vocabulary_database_schema";
-    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
-    ConceptSetExpressionQueryBuilder builder = new ConceptSetExpressionQueryBuilder();
-    String query = builder.buildExpressionQuery(conceptSetExpression);
-    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, query, tqName, tqValue);
+    PreparedStatementRenderer psr = new ConceptSetStrategy(conceptSetExpression).prepareStatement(source, null);
     final ArrayList<Long> identifiers = new ArrayList<>();
     getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), new RowCallbackHandler() {
       @Override
@@ -671,6 +662,31 @@ public class VocabularyService extends AbstractDaoService {
 
     return resolveConceptSetExpression(defaultSourceKey, conceptSetExpression);
   }
+
+  @POST
+  @Path("{sourceKey}/included-concepts/count")
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Integer countIncludedConceptSets(@PathParam("sourceKey") String sourceKey, ConceptSetExpression conceptSetExpression) {
+
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String query = new ConceptSetStrategy(conceptSetExpression).prepareStatement(source, sql -> "select count(*) from (" + sql + ") Q;").getSql();
+    return getSourceJdbcTemplate(source).query(query, rs -> rs.next() ? rs.getInt(1) : 0);
+  }
+
+  @POST
+  @Path("included-concepts/count")
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Integer countIncludedConcepSets(ConceptSetExpression conceptSetExpression) {
+
+    String defaultSourceKey = getDefaultVocabularySourceKey();
+    if (Objects.isNull(defaultSourceKey)) {
+      throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."), Response.Status.SERVICE_UNAVAILABLE);
+    }
+    return countIncludedConceptSets(defaultSourceKey, conceptSetExpression);
+  }
+
 
   @POST
   @Path("conceptSetExpressionSQL")

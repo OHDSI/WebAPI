@@ -13,6 +13,10 @@ public final class DataSourceDTOParser {
 
     public static DataSourceUnsecuredDTO parseDTO(Source source) {
         ConnectionParams params = parse(source);
+        return parseDTO(source, params);
+    }
+
+    public static DataSourceUnsecuredDTO parseDTO(Source source, ConnectionParams params) {
         DataSourceUnsecuredDTO dto = new DataSourceUnsecuredDTO();
         dto.setType(getDbmsType(source));
         dto.setConnectionString(params.getConnectionString());

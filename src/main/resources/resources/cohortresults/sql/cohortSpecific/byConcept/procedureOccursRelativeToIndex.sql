@@ -23,7 +23,7 @@ FROM   (SELECT cohort_definition_id,
                count_value 
         FROM   @ohdsi_database_schema.heracles_results 
         WHERE  analysis_id IN ( 1830 ) 
-               AND cohort_definition_id IN ( @cohortDefinitionId )) hr1 
+               AND cohort_definition_id = @cohortDefinitionId) hr1 
        INNER JOIN (SELECT cohort_definition_id, 
                           -1 * Cast(stratum_1 AS INTEGER) * 30                AS 
               duration, 
@@ -34,7 +34,7 @@ FROM   (SELECT cohort_definition_id,
               count_value 
                    FROM   @ohdsi_database_schema.heracles_results 
                    WHERE  analysis_id IN ( 1805 ) 
-                          AND cohort_definition_id IN ( @cohortDefinitionId ) 
+                          AND cohort_definition_id = @cohortDefinitionId 
                           AND Cast(stratum_1 AS INTEGER) > 0 
                    UNION 
                    SELECT hr1.cohort_definition_id, 
@@ -53,8 +53,7 @@ FROM   (SELECT cohort_definition_id,
                                       FROM 
                           @ohdsi_database_schema.heracles_results 
                                       WHERE  analysis_id = 1806 
-                                             AND cohort_definition_id IN ( 
-                                                 @cohortDefinitionId ) 
+                                             AND cohort_definition_id = @cohortDefinitionId 
                                       GROUP  BY cohort_definition_id) t1 
                                   ON hr1.cohort_definition_id = 
                                      t1.cohort_definition_id 
@@ -68,7 +67,7 @@ FROM   (SELECT cohort_definition_id,
                           Sum(count_value)           AS count_value 
                    FROM   @ohdsi_database_schema.heracles_results 
                    WHERE  analysis_id IN ( 1830 ) 
-                          AND cohort_definition_id IN ( @cohortDefinitionId ) 
+                          AND cohort_definition_id = @cohortDefinitionId 
                    GROUP  BY cohort_definition_id, 
                              Cast(stratum_1 AS INTEGER) 
                    HAVING Sum(count_value) > @minCovariatePersonCount) ct1 
@@ -95,7 +94,7 @@ FROM   (SELECT cohort_definition_id,
                count_value 
         FROM   @ohdsi_database_schema.heracles_results 
         WHERE  analysis_id IN ( 1831 ) 
-               AND cohort_definition_id IN ( @cohortDefinitionId )) hr1 
+               AND cohort_definition_id = @cohortDefinitionId) hr1 
        INNER JOIN (SELECT cohort_definition_id, 
                           -1 * Cast(stratum_1 AS INTEGER) * 30                AS 
               duration, 
@@ -106,7 +105,7 @@ FROM   (SELECT cohort_definition_id,
               count_value 
                    FROM   @ohdsi_database_schema.heracles_results 
                    WHERE  analysis_id IN ( 1805 ) 
-                          AND cohort_definition_id IN ( @cohortDefinitionId ) 
+                          AND cohort_definition_id = @cohortDefinitionId 
                           AND Cast(stratum_1 AS INTEGER) > 0 
                    UNION 
                    SELECT hr1.cohort_definition_id, 
@@ -125,8 +124,7 @@ FROM   (SELECT cohort_definition_id,
                                       FROM 
                           @ohdsi_database_schema.heracles_results 
                                       WHERE  analysis_id = 1806 
-                                             AND cohort_definition_id IN ( 
-                                                 @cohortDefinitionId ) 
+                                             AND cohort_definition_id = @cohortDefinitionId 
                                       GROUP  BY cohort_definition_id) t1 
                                   ON hr1.cohort_definition_id = 
                                      t1.cohort_definition_id 
@@ -140,7 +138,7 @@ FROM   (SELECT cohort_definition_id,
                           Sum(count_value)           AS count_value 
                    FROM   @ohdsi_database_schema.heracles_results 
                    WHERE  analysis_id IN ( 1831 ) 
-                          AND cohort_definition_id IN ( @cohortDefinitionId ) 
+                          AND cohort_definition_id = @cohortDefinitionId 
                    GROUP  BY cohort_definition_id, 
                              Cast(stratum_1 AS INTEGER) 
                    HAVING Sum(count_value) > @minCovariatePersonCount) ct1 

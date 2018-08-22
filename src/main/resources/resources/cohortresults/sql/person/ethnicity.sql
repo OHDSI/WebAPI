@@ -6,4 +6,4 @@ from @ohdsi_database_schema.heracles_results hr1
 	@cdm_database_schema.concept c1
 	on hr1.stratum_1 = CAST(c1.concept_id as VARCHAR(255))
 where hr1.analysis_id = 5
-and cohort_definition_id in (@cohortDefinitionId)
+and cohort_definition_id = @cohortDefinitionId

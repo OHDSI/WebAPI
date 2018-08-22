@@ -15,11 +15,16 @@
  */
 package org.ohdsi.webapi.source;
 
+import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMechanism;
+import org.hibernate.annotations.Type;
+import org.ohdsi.webapi.source.SourceDaimon.DaimonType;
 import java.io.Serializable;
 import java.util.Collection;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -41,22 +46,22 @@ public class Source implements Serializable {
   public static final String MASQUERADED_PASSWORD = "<password>";
 
   @Id
-  @GeneratedValue  
-  @Column(name="SOURCE_ID")  
+  @GeneratedValue
+  @Column(name="SOURCE_ID")
   private int sourceId;
 
   @OneToMany(fetch= FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "source")
   private Collection<SourceDaimon> daimons;
-    
-  @Column(name="SOURCE_NAME")  
+
+  @Column(name="SOURCE_NAME")
   private String sourceName;
-  
+
   @Column(name="SOURCE_DIALECT")
   private String sourceDialect;
- 
+
   @Column(name="SOURCE_CONNECTION")
   private String sourceConnection;
-  
+
   @Column(name="SOURCE_KEY")
   private String sourceKey;
 
@@ -68,23 +73,35 @@ public class Source implements Serializable {
   @Type(type = "encryptedString")
   private String password;
 
-  
+    @Column(name = "krb_keytab")
+    private byte[] krbKeytab;
+
+    @Column(name = "keytab_name")
+    private String keytabName;
+
+    @Column(name = "krb_admin_server")
+    private String krbAdminServer;
+
+    @Column(name = "krb_auth_method")
+    @Enumerated(EnumType.STRING)
+    private KerberosAuthMechanism krbAuthMethod;
+
   public String getTableQualifier(DaimonType daimonType) {
 		String result = getTableQualifierOrNull(daimonType);
 		if (result == null)
 			throw new RuntimeException("DaimonType (" + daimonType + ") not found in Source");
 		return result;
   }
-	
+
 	  public String getTableQualifierOrNull(DaimonType daimonType) {
     for (SourceDaimon sourceDaimon : this.getDaimons()) {
       if (sourceDaimon.getDaimonType() == daimonType) {
         return sourceDaimon.getTableQualifier();
-      } 
+      }
     }
 		return null;
   }
-  
+
   public String getSourceKey() {
     return sourceKey;
   }
@@ -100,7 +117,7 @@ public class Source implements Serializable {
   public void setSourceKey(String sourceKey) {
     this.sourceKey = sourceKey;
   }
-  
+
   public int getSourceId() {
     return sourceId;
   }
@@ -124,14 +141,14 @@ public class Source implements Serializable {
   public void setSourceDialect(String sourceDialect) {
     this.sourceDialect = sourceDialect;
   }
-  
+
   public String getSourceConnection() {
     return sourceConnection;
   }
 
   public void setSourceConnection(String sourceConnection) {
     this.sourceConnection = sourceConnection;
-  } 
+  }
 
   public SourceInfo getSourceInfo() {
     return new SourceInfo(this);
@@ -152,4 +169,36 @@ public class Source implements Serializable {
   public void setPassword(String password) {
     this.password = password;
   }
+
+    public byte[] getKrbKeytab() {
+        return krbKeytab;
+    }
+
+    public void setKrbKeytab(byte[] krbKeytab) {
+        this.krbKeytab = krbKeytab;
+    }
+
+    public String getKeytabName() {
+        return keytabName;
+    }
+
+    public void setKeytabName(String keytabName) {
+        this.keytabName = keytabName;
+    }
+
+    public KerberosAuthMechanism getKrbAuthMethod() {
+        return krbAuthMethod;
+    }
+
+    public void setKrbAuthMethod(KerberosAuthMechanism krbAuthMethod) {
+        this.krbAuthMethod = krbAuthMethod;
+    }
+
+    public String getKrbAdminServer() {
+        return krbAdminServer;
+    }
+
+    public void setKrbAdminServer(String krbAdminServer) {
+        this.krbAdminServer = krbAdminServer;
+    }
 }

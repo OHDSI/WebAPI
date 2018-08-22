@@ -1,6 +1,8 @@
 SELECT
-  cast(cast(num.stratum_3 AS INT) * 10 AS VARCHAR) + '-' +
-  cast((cast(num.stratum_3 AS INT) + 1) * 10 - 1 AS VARCHAR)   AS trellis_Name,
+  CONCAT(
+    cast(cast(num.stratum_3 AS INT) * 10 AS VARCHAR(11)), '-',
+    cast((cast(num.stratum_3 AS INT) + 1) * 10 - 1 AS VARCHAR(11))
+  ) AS trellis_Name,
   --age decile
   c2.concept_name                                              AS series_Name,
   --gender
@@ -8,15 +10,20 @@ SELECT
   -- calendar year, note, there could be blanks
   ROUND(1000 * (1.0 * num.count_value / denom.count_value), 5) AS y_Prevalence_1000Pp --prevalence, per 1000 persons
 FROM
-  (SELECT *
-   FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 504) num
-  INNER JOIN
-  (SELECT *
-   FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 116) denom
-    ON num.stratum_1 = denom.stratum_1  --calendar year
+  (SELECT stratum_1, stratum_2, stratum_3, count_value
+		FROM @results_database_schema.ACHILLES_results 
+		WHERE analysis_id = 504
+		GROUP BY stratum_1, stratum_2, stratum_3, count_value
+	) num
+  INNER JOIN (
+		SELECT stratum_1, stratum_2, stratum_3, count_value
+		FROM @results_database_schema.ACHILLES_results 
+		WHERE analysis_id = 116
+		GROUP BY stratum_1, stratum_2, stratum_3, count_value
+	) denom ON num.stratum_1 = denom.stratum_1  --calendar year
        AND num.stratum_2 = denom.stratum_2 --gender
        AND num.stratum_3 = denom.stratum_3
   --age decile
-  INNER JOIN @vocab_database_schema.concept c2 ON CAST(num.stratum_2 AS INT) = c2.concept_id
+  INNER JOIN @vocab_database_schema.concept c2 ON CAST(num.stratum_2 AS BIGINT) = c2.concept_id
 WHERE c2.concept_id IN (8507, 8532)
 

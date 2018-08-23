@@ -45,7 +45,7 @@ public class CcController {
     @Consumes(MediaType.APPLICATION_JSON)
     public CcCreateDTO create(final CcCreateDTO dto) {
         final CohortCharacterizationEntity createdEntity = service.createCc(conversionService.convert(dto, CohortCharacterizationEntity.class));
-        return conversionService.convert(createdEntity, CcCreateDTO.class);
+        return conversionService.convert(createdEntity, CcShortDTO.class);
     }
 
     @GET

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.apache.commons.collections.CollectionUtils;
 import org.ohdsi.standardized_analysis_api.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcParamEntity;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcParameterDTO;
@@ -38,9 +39,11 @@ public class CcDTOToCcConverter extends CcCreateDTOToCcConverter<CohortCharacter
         cohortCharacterization.setCreatedAt(source.getCreatedAt());
         
         cohortCharacterization.setId(source.getId());
-        
-        final List<CohortDefinition> convertedCohortDefinitions = converterUtils.convertList(new ArrayList<>(source.getCohorts()), CohortDefinition.class);
-        cohortCharacterization.setCohortDefinitions(convertedCohortDefinitions);
+
+        if (!CollectionUtils.isEmpty(source.getCohorts())) {
+            final List<CohortDefinition> convertedCohortDefinitions = converterUtils.convertList(new ArrayList<>(source.getCohorts()), CohortDefinition.class);
+            cohortCharacterization.setCohortDefinitions(convertedCohortDefinitions);
+        }
 
         final Set<FeAnalysisEntity> convertedFeatureAnalyses = source.getFeatureAnalyses().stream().map(this::convertFeAnalysisAccordingToType).collect(Collectors.toSet());
         cohortCharacterization.setFeatureAnalyses(convertedFeatureAnalyses);

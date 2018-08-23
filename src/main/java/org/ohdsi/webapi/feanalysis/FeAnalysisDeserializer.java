@@ -35,28 +35,47 @@ public class FeAnalysisDeserializer extends JsonDeserializer<FeAnalysisDTO> {
 
         ObjectCodec codec = parser.getCodec();
         JsonNode node = codec.readTree(parser);
-        
-        dto.setName(node.get("name").textValue());
-        dto.setDescription(node.get("description").textValue());
-        dto.setId(node.get("id").longValue());        
 
-        final String domainString = node.get("domain").textValue();
-        dto.setDomain(StandardFeatureAnalysisDomain.valueOf(domainString));
-
-        final String typeString = node.get("type").textValue();
-        final StandardFeatureAnalysisType analysisType = StandardFeatureAnalysisType.valueOf(typeString);
-        dto.setType(analysisType);
-
-        final JsonNode design = node.get("design");
-        if (analysisType == StandardFeatureAnalysisType.CRITERIA_SET) {
-            final List<FeAnalysisCriteriaDTO> list = new ArrayList<>();
-            for (final JsonNode jsonNode : design) {
-                list.add(convert(jsonNode));
-            }
-            dto.setDesign(list);
-        } else {
-            dto.setDesign(design.textValue());
+        final JsonNode name = node.get("name");
+        if (name != null) {
+            dto.setName(name.textValue());    
         }
+
+        final JsonNode description = node.get("description");
+        if (description != null) {
+            dto.setDescription(description.textValue());    
+        }
+
+        final JsonNode id = node.get("id");
+        if (id != null) {
+            dto.setId(id.longValue());
+        }
+
+        final JsonNode domain = node.get("domain");
+        if (domain != null) {
+            final String domainString = domain.textValue();
+            dto.setDomain(StandardFeatureAnalysisDomain.valueOf(domainString));
+        }
+
+
+        final JsonNode type = node.get("type");
+        if (type != null) {
+            final String typeString = type.textValue();
+            final StandardFeatureAnalysisType analysisType = StandardFeatureAnalysisType.valueOf(typeString);
+            dto.setType(analysisType);
+
+            final JsonNode design = node.get("design");
+            if (analysisType == StandardFeatureAnalysisType.CRITERIA_SET) {
+                final List<FeAnalysisCriteriaDTO> list = new ArrayList<>();
+                for (final JsonNode jsonNode : design) {
+                    list.add(convert(jsonNode));
+                }
+                dto.setDesign(list);
+            } else {
+                dto.setDesign(design.textValue());
+            }
+        }
+
         return dto;
     }
     

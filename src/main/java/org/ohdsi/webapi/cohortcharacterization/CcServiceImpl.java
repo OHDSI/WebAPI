@@ -20,9 +20,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
@@ -138,7 +140,6 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         
         return repository.save(savedEntity);
     }
-
     private void sortInnerEntities(final CohortCharacterizationEntity savedEntity) {
         savedEntity.setFeatureAnalyses(new TreeSet<>(savedEntity.getFeatureAnalyses()));
     }

@@ -15,6 +15,7 @@
 package org.ohdsi.webapi.cohortdefinition;
 
 import java.io.Serializable;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -45,6 +46,9 @@ public class CohortDefinitionDetails implements Serializable {
   @Lob
   @Type(type = "org.hibernate.type.TextType")  
   private String expression;
+  
+  @Column(name = "hash_code")
+  private Integer hashCode;
 
   public String getExpression() {
     return expression;
@@ -55,8 +59,20 @@ public class CohortDefinitionDetails implements Serializable {
     return this;
   }
   
+  public CohortDefinition getCohortDefinition() {
+    return this.definition;
+  }
+  
   public CohortDefinitionDetails setCohortDefinition(CohortDefinition definition) {
     this.definition = definition;
     return this;
+  }
+
+  public Integer getHashCode() {
+    return hashCode;
+  }
+
+  public void setHashCode(final Integer hashCode) {
+    this.hashCode = hashCode;
   }
 }

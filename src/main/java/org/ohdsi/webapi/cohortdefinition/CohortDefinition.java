@@ -15,9 +15,11 @@
 package org.ohdsi.webapi.cohortdefinition;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -31,6 +33,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.NamedAttributeNode;
 import javax.persistence.NamedEntityGraph;
 import javax.persistence.NamedSubgraph;
@@ -38,7 +42,10 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import org.ohdsi.circe.cohortdefinition.CohortExpression;
+import org.ohdsi.standardized_analysis_api.cohortcharacterization.design.Cohort;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisGenerationInfo;
+import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 
 /**
  * JPA Entity for Cohort Definitions
@@ -51,7 +58,8 @@ import org.ohdsi.webapi.cohortanalysis.CohortAnalysisGenerationInfo;
     attributeNodes = { @NamedAttributeNode(value = "details", subgraph = "detailsGraph") },
     subgraphs = {@NamedSubgraph(name = "detailsGraph", type = CohortDefinitionDetails.class, attributeNodes = { @NamedAttributeNode(value="expression")})}
 )
-public class CohortDefinition implements Serializable{
+public class 
+CohortDefinition implements Serializable, Cohort {
 
   private static final long serialVersionUID = 1L;
     
@@ -90,6 +98,12 @@ public class CohortDefinition implements Serializable{
     
   @Column(name="modified_date")
   private Date modifiedDate;
+
+  @ManyToMany(targetEntity = CohortCharacterizationEntity.class, fetch = FetchType.LAZY)
+  @JoinTable(name = "cohort_characterizations_cohorts",
+          joinColumns = @JoinColumn(name = "cohort_id", referencedColumnName = "id"),
+          inverseJoinColumns = @JoinColumn(name = "cohort_characterization_id", referencedColumnName = "id"))
+  private List<CohortCharacterizationEntity> cohortCharacterizations = new ArrayList<>();
 
   public Integer getId() {
     return id;
@@ -180,12 +194,41 @@ public class CohortDefinition implements Serializable{
     return this;
   }
 
-	public Set<CohortAnalysisGenerationInfo> getCohortAnalysisGenerationInfoList() {
+  @Override
+  public boolean equals(final Object o) {
+
+    if (this == o) return true;
+    if (!(o instanceof CohortDefinition)) return false;
+    final CohortDefinition that = (CohortDefinition) o;
+    return Objects.equals(getId(), that.getId());
+  }
+
+  @Override
+  public int hashCode() {
+
+    return Objects.hash(getId(), super.hashCode());
+  }
+
+  public Set<CohortAnalysisGenerationInfo> getCohortAnalysisGenerationInfoList() {
 		return cohortAnalysisGenerationInfoList;
 	}
 
 	public void setCohortAnalysisGenerationInfoList(Set<CohortAnalysisGenerationInfo> cohortAnalysisGenerationInfoList) {
 		this.cohortAnalysisGenerationInfoList = cohortAnalysisGenerationInfoList;
 	}
-	
+
+    @Override
+    public CohortExpression getCohortExpression() {
+        return CohortExpression.fromJson(details.getExpression());
+    }
+
+  public List<CohortCharacterizationEntity> getCohortCharacterizations() {
+
+    return cohortCharacterizations;
+  }
+
+  public void setCohortCharacterizations(final List<CohortCharacterizationEntity> cohortCharacterizations) {
+
+    this.cohortCharacterizations = cohortCharacterizations;
+  }
 }

@@ -1,5 +1,4 @@
 select
-       r.id,
        r.type,
        r.cohort_characterization_generation_id,
        r.analysis_id,

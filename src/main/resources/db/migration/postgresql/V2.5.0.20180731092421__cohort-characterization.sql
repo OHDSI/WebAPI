@@ -50,68 +50,6 @@ CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.fe_analyses
 );
 
 
-
--- CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.cohort_characterization_generations
--- (
---   id                          BIGSERIAL              PRIMARY KEY,
---   cohort_characterization_id  BIGINT                 NOT NULL,
---   source_id                   BIGINT                 NOT NULL,
---   date                        TIMESTAMP              WITH TIME ZONE,
---   status                      VARCHAR(255)
--- );
-
--- ALTER TABLE ${ohdsiSchema}.cohort_characterization_generations
---   ADD CONSTRAINT fk_ccg_cohort_characterizations FOREIGN KEY (cohort_characterization_id)
--- REFERENCES ${ohdsiSchema}.cohort_characterizations (id)
--- ON UPDATE NO ACTION ON DELETE CASCADE;
--- 
--- ALTER TABLE ${ohdsiSchema}.cohort_characterization_generations
---   ADD CONSTRAINT fk_ccg_source FOREIGN KEY (source_id)
--- REFERENCES ${ohdsiSchema}.source(source_id)
--- ON UPDATE NO ACTION ON DELETE NO ACTION;
-
-
-
--- CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.cohort_characterization_results
--- (
---   id BIGSERIAL PRIMARY KEY,
---   type VARCHAR(255) NOT NULL,
---   cohort_characterization_generation_id BIGINT NOT NULL,
---   analysis_id INTEGER,
---   analysis_name VARCHAR(1000),
---   covariate_id BIGINT,
---   covariate_name VARCHAR(1000),
---   time_window VARCHAR(255),
---   concept_id INTEGER,
---   count_value BIGINT,
---   avg_value DOUBLE PRECISION,
---   stdev_value DOUBLE PRECISION,
---   min_value DOUBLE PRECISION,
---   p10_value DOUBLE PRECISION,
---   p25_value DOUBLE PRECISION,
---   median_value DOUBLE PRECISION,
---   p75_value DOUBLE PRECISION,
---   p90_value DOUBLE PRECISION,
---   max_value DOUBLE PRECISION,
---   cohort_definition_id BIGINT
--- );
-
--- ALTER TABLE ${ohdsiSchema}.cohort_characterization_results
---   ADD CONSTRAINT fk_ccr_cohort_char_gen FOREIGN KEY (cohort_characterization_generation_id)
--- REFERENCES ${ohdsiSchema}.cohort_characterization_generations(id)
--- ON UPDATE NO ACTION ON DELETE NO ACTION;
-
--- ALTER TABLE ${ohdsiSchema}.cohort_characterization_results
---   ADD CONSTRAINT fk_ccr_fe_analyses FOREIGN KEY (analysis_id)
--- REFERENCES ${ohdsiSchema}.fe_analyses(id)
--- ON UPDATE NO ACTION ON DELETE NO ACTION;
--- 
--- ALTER TABLE ${ohdsiSchema}.cohort_characterization_results
---   ADD CONSTRAINT fk_ccr_coh_def FOREIGN KEY (cohort_definition_id)
--- REFERENCES ${ohdsiSchema}.cohort_definition(id)
--- ON UPDATE NO ACTION ON DELETE NO ACTION;
-
-
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description) VALUES(nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohortcharacterization:POST', 'Create cohort characterization');
 INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
 SELECT sr.id, sp.id
@@ -189,12 +127,6 @@ ON UPDATE NO ACTION ON DELETE CASCADE;
 
 
 ALTER TABLE ${ohdsiSchema}.cohort_definition_details ADD hash_code int null;
-
-Chads2
-Dcsi
-Chads2Vasc
-CharlsonIndex
-
 
 INSERT INTO ${ohdsiSchema}.fe_analyses (type, name, domain, descr, value, design, is_locked, stat_type) VALUES ('PRESET', 'Measurement Range Group', NULL, 'Covariates indicating whether measurements are below, within, or above normal range in the short term window.', null, 'MeasurementRangeGroupShortTerm', true, 'PREVALENCE');
 INSERT INTO ${ohdsiSchema}.fe_analyses (type, name, domain, descr, value, design, is_locked, stat_type) VALUES ('PRESET', 'Group Era Start', 'CONDITION', 'One covariate per condition era rolled up to groups in the condition_era table starting in the long term window.', null, 'ConditionGroupEraStartLongTerm', true, 'PREVALENCE');

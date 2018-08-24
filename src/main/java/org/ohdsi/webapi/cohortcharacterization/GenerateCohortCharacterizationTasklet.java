@@ -191,7 +191,7 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
                 " from (%5$s) subquery;";
         
         final String customPrevalenceQueryWrapper = "\n" +
-                "insert into five_three_plus_results.cohort_characterization_results ( " +
+                "insert into @results_database_schema.cohort_characterization_results ( " +
                 "     type, " +
                 "     covariate_id, " +
                 "     covariate_name, " +

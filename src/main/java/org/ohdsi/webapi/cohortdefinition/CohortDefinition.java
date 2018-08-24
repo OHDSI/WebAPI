@@ -100,7 +100,7 @@ CohortDefinition implements Serializable, Cohort {
   private Date modifiedDate;
 
   @ManyToMany(targetEntity = CohortCharacterizationEntity.class, fetch = FetchType.LAZY)
-  @JoinTable(name = "cohort_characterizations_cohorts",
+  @JoinTable(name = "cc_cohorts",
           joinColumns = @JoinColumn(name = "cohort_id", referencedColumnName = "id"),
           inverseJoinColumns = @JoinColumn(name = "cohort_characterization_id", referencedColumnName = "id"))
   private List<CohortCharacterizationEntity> cohortCharacterizations = new ArrayList<>();

@@ -18,7 +18,7 @@ import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEnti
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.source.Source;
 @Entity
-@Table(name = "cohort_characterization_generations")
+@Table(name = "cc_generations")
 public class CcGenerationEntity {
     @Id
     @Column

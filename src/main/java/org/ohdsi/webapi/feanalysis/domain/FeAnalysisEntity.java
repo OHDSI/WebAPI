@@ -46,7 +46,7 @@ FeAnalysisEntity implements FeatureAnalysis, Comparable<FeAnalysisEntity> {
     }
     
     @Id
-    @SequenceGenerator(name = "fe_analyses_pk_sequence", sequenceName = "fe_analyses_id_seq", allocationSize = 1)
+    @SequenceGenerator(name = "fe_analyses_pk_sequence", sequenceName = "fe_analyses_sequence", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "fe_analyses_pk_sequence")
     private Long id;
 
@@ -71,7 +71,7 @@ FeAnalysisEntity implements FeatureAnalysis, Comparable<FeAnalysisEntity> {
     private Boolean isLocked;
 
     @ManyToMany(targetEntity = CohortCharacterizationEntity.class, fetch = FetchType.LAZY)
-    @JoinTable(name = "cohort_characterizations_analyses",
+    @JoinTable(name = "cc_analyses",
             joinColumns = @JoinColumn(name = "fe_analysis_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "cohort_characterization_id", referencedColumnName = "id"))
     private Set<CohortCharacterizationEntity> cohortCharacterizations = new HashSet<>();

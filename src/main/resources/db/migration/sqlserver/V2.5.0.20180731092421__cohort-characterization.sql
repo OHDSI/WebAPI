@@ -1,7 +1,7 @@
 CREATE SEQUENCE ${ohdsiSchema}.cohort_characterizations_sequence;
-CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.cohort_characterizations
+CREATE TABLE ${ohdsiSchema}.cohort_characterizations
 (
-  id                 BIGINT                PRIMARY KEY DEFAULT NEXTVAL('cohort_characterizations_sequence'),
+  id                 BIGINT                PRIMARY KEY DEFAULT NEXT VALUE FOR 'cohort_characterizations_sequence',
   name               VARCHAR(255)   NOT NULL,
   created_by         INTEGER                  NOT NULL,
   created_at         TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT (now()),
@@ -23,9 +23,9 @@ ON UPDATE NO ACTION ON DELETE NO ACTION;
 
 
 CREATE SEQUENCE ${ohdsiSchema}.cc_params_sequence;
-CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.cc_params
+CREATE TABLE ${ohdsiSchema}.cc_params
 (
-  id                          BIGINT               PRIMARY KEY DEFAULT NEXTVAL('cc_params_sequence'),
+  id                          BIGINT               PRIMARY KEY DEFAULT NEXT VALUE FOR 'cc_params_sequence',
   cohort_characterization_id  BIGINT                  NOT NULL,
   name                        VARCHAR(255),
   value                       VARCHAR(255)
@@ -39,9 +39,9 @@ ON UPDATE NO ACTION ON DELETE CASCADE;
 
 
 CREATE SEQUENCE ${ohdsiSchema}.fe_analyses_sequence;
-CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.fe_analyses
+CREATE TABLE ${ohdsiSchema}.fe_analyses
 (
-  id         BIGINT               PRIMARY KEY DEFAULT NEXTVAL('fe_analyses_sequence'),
+  id         BIGINT               PRIMARY KEY DEFAULT NEXT VALUE FOR 'fe_analyses_sequence',
   type       VARCHAR(255),
   name       VARCHAR(255),
   domain     VARCHAR(255),
@@ -53,25 +53,25 @@ CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.fe_analyses
 );
 
 
-INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description) VALUES(nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohortcharacterization:POST', 'Create cohort characterization');
+INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description) VALUES(NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'cohortcharacterization:POST', 'Create cohort characterization');
 INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
 SELECT sr.id, sp.id
 FROM ${ohdsiSchema}.sec_permission SP, ${ohdsiSchema}.sec_role sr
 WHERE sp."value" = 'cohortcharacterization:post' AND sr.name IN ('admin');
 
-INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description) VALUES(nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohortcharacterization:*:GET', 'Get cohort characterization');
+INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description) VALUES(NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'cohortcharacterization:*:GET', 'Get cohort characterization');
 INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
 SELECT sr.id, sp.id
 FROM ${ohdsiSchema}.sec_permission SP, ${ohdsiSchema}.sec_role sr
 WHERE sp."value" = 'cohortcharacterization:*:get' AND sr.name IN ('admin');
 
-INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description) VALUES(nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohortcharacterization:*:UPDATE', 'Update cohort characterization');
+INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description) VALUES(NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'cohortcharacterization:*:UPDATE', 'Update cohort characterization');
 INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
 SELECT sr.id, sp.id
 FROM ${ohdsiSchema}.sec_permission SP, ${ohdsiSchema}.sec_role sr
 WHERE sp."value" = 'cohortcharacterization:*:update' AND sr.name IN ('admin');
 
-INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description) VALUES(nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohortcharacterization:*:DELETE', 'Delete cohort characterization');
+INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description) VALUES(NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'cohortcharacterization:*:DELETE', 'Delete cohort characterization');
 INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
 SELECT sr.id, sp.id
 FROM ${ohdsiSchema}.sec_permission SP, ${ohdsiSchema}.sec_role sr
@@ -79,7 +79,7 @@ WHERE sp."value" = 'cohortcharacterization:*:delete' AND sr.name IN ('admin');
 
 
 
-CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.cc_analyses
+CREATE TABLE ${ohdsiSchema}.cc_analyses
 (
   cohort_characterization_id BIGINT NOT NULL,
   fe_analysis_id BIGINT NOT NULL
@@ -98,9 +98,9 @@ ON UPDATE NO ACTION ON DELETE CASCADE;
 
 
 CREATE SEQUENCE ${ohdsiSchema}.fe_analysis_criteria_sequence;
-CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.fe_analysis_criteria
+CREATE TABLE ${ohdsiSchema}.fe_analysis_criteria
 (
-  id BIGINT PRIMARY KEY DEFAULT NEXTVAL('fe_analysis_criteria_sequence'),
+  id BIGINT PRIMARY KEY DEFAULT NEXT VALUE FOR 'fe_analysis_criteria_sequence',
   name VARCHAR(255),
   expression Text,
   fe_analysis_id BIGINT
@@ -113,7 +113,7 @@ ON UPDATE NO ACTION ON DELETE CASCADE;
 
 
 
-CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.cc_cohorts
+CREATE TABLE ${ohdsiSchema}.cc_cohorts
 (
   cohort_characterization_id BIGINT NOT NULL,
   cohort_id BIGINT NOT NULL
@@ -246,9 +246,7 @@ CREATE OR REPLACE VIEW ${ohdsiSchema}.cc_generations as
           MAX(CASE WHEN params.key_name = 'source_id' THEN params.string_val END)                  source_id
    FROM ${ohdsiSchema}.batch_job_execution job
           JOIN ${ohdsiSchema}.batch_job_execution_params params ON job.job_execution_id = params.job_execution_id
-                                                             AND (params.key_name = 'hash_code' OR
-                                                                  params.key_name = 'cohort_characterization_id' OR
-                                                                  params.key_name = 'source_id')
+                                                                     AND (params.key_name = 'hash_code' OR
+                                                                          params.key_name = 'cohort_characterization_id' OR
+                                                                          params.key_name = 'source_id')
    GROUP BY job.job_execution_id);
-
--- TODO indexes

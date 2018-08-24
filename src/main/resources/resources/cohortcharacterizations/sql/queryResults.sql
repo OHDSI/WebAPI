@@ -18,5 +18,5 @@ select
        r.p90_value,
        r.max_value,
        r.cohort_definition_id
-from @cdm_results_schema.cohort_characterization_results r
+from @cdm_results_schema.cc_results r
 where r.cohort_characterization_generation_id = @cohort_characterization_generation_id

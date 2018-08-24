@@ -30,7 +30,7 @@ import org.ohdsi.webapi.shiro.Entities.UserEntity;
 public class CohortCharacterizationEntity implements CohortCharacterization {
 
     @Id
-    @SequenceGenerator(name = "cohort_characterizations_pk_sequence", sequenceName = "cohort_characterizations_id_seq", allocationSize = 1)
+    @SequenceGenerator(name = "cohort_characterizations_pk_sequence", sequenceName = "cohort_characterizations_sequence", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "cohort_characterizations_pk_sequence")
     private Long id;
     
@@ -54,13 +54,13 @@ public class CohortCharacterizationEntity implements CohortCharacterization {
     private Date updatedAt;
 
     @ManyToMany(targetEntity = CohortDefinition.class, fetch = FetchType.LAZY)
-    @JoinTable(name = "cohort_characterizations_cohorts",
+    @JoinTable(name = "cc_cohorts",
             joinColumns = @JoinColumn(name = "cohort_characterization_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "cohort_id", referencedColumnName = "id"))
     private List<CohortDefinition> cohortDefinitions = new ArrayList<>();
     
     @ManyToMany(targetEntity = FeAnalysisEntity.class, fetch = FetchType.LAZY)
-    @JoinTable(name = "cohort_characterizations_analyses",
+    @JoinTable(name = "cc_analyses",
             joinColumns = @JoinColumn(name = "cohort_characterization_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "fe_analysis_id", referencedColumnName = "id"))
     private Set<FeAnalysisEntity> featureAnalyses = new HashSet<>();

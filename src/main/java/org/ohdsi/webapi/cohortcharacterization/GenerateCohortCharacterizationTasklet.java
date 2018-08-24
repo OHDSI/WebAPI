@@ -99,7 +99,7 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
                 "     features as (%1$s), " +
                 "     feature_refs as (%2$s), " +
                 "     analysis_refs as(%3$s) " +
-                " insert into @results_database_schema.cohort_characterization_results " +
+                " insert into @results_database_schema.cc_results " +
                 " (type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id, count_value, avg_value, cohort_definition_id, cohort_characterization_generation_id) " +
                 " select 'PREVALENCE' as type, " +
                 "       f.covariate_id, " +
@@ -122,7 +122,7 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
                 "     features as (%1$s), " +
                 "     feature_refs as (%2$s), " +
                 "     analysis_refs as (%3$s) " +
-                " insert into @results_database_schema.cohort_characterization_results " +
+                " insert into @results_database_schema.cc_results " +
                 "    (type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id, " +
                 "     count_value, min_value, max_value, avg_value, stdev_value, median_value, " +
                 "     p10_value, p25_value, p75_value, p90_value, cohort_definition_id, cohort_characterization_generation_id) " +
@@ -152,7 +152,7 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
         
         final String customDistributionQueryWrapper = "\n" +
                 "insert into " +
-                " @results_database_schema.cohort_characterization_results (type, " +
+                " @results_database_schema.cc_results (type, " +
                 "     covariate_id, " +
                 "     covariate_name, " +
                 "     analysis_id, " +
@@ -191,7 +191,7 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
                 " from (%5$s) subquery;";
         
         final String customPrevalenceQueryWrapper = "\n" +
-                "insert into @results_database_schema.cohort_characterization_results ( " +
+                "insert into @results_database_schema.cc_results ( " +
                 "     type, " +
                 "     covariate_id, " +
                 "     covariate_name, " +

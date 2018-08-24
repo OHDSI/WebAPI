@@ -1,4 +1,4 @@
-CREATE TABLE @results_schema.cohort_characterization_results
+CREATE TABLE @results_schema.cc_results
 (
   type VARCHAR(255) NOT NULL,
   cohort_characterization_generation_id BIGINT NOT NULL,

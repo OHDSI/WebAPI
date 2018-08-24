@@ -22,7 +22,7 @@ import org.ohdsi.standardized_analysis_api.cohortcharacterization.design.Criteri
 public class FeAnalysisCriteriaEntity implements CriteriaFeature {
     
     @Id
-    @SequenceGenerator(name = "fe_analysis_criteria_pk_sequence", sequenceName = "fe_analysis_criteria_id_seq", allocationSize = 1)
+    @SequenceGenerator(name = "fe_analysis_criteria_pk_sequence", sequenceName = "fe_analysis_criteria_sequence", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "fe_analysis_criteria_pk_sequence")
     private Long id;
 

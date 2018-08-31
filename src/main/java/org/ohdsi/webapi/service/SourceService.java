@@ -16,6 +16,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.odysseusinc.logging.event.AddDataSourceEvent;
+import com.odysseusinc.logging.event.ChangeDataSourceEvent;
+import com.odysseusinc.logging.event.DeleteDataSourceEvent;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -203,6 +206,7 @@ public class SourceService extends AbstractDaoService {
     Source source = conversionService.convert(request, Source.class);
     setImpalaKrbData(source, new Source(), file);
     Source saved = sourceRepository.save(source);
+    publisher.publishEvent(new AddDataSourceEvent(this));
     String sourceKey = saved.getSourceKey();
     cachedSources = null;
     securityManager.addSourceRole(sourceKey);
@@ -236,6 +240,7 @@ public class SourceService extends AbstractDaoService {
               .collect(Collectors.toList());
       sourceDaimonRepository.delete(removed);
       Source result = sourceRepository.save(updated);
+      publisher.publishEvent(new ChangeDataSourceEvent(this));
       cachedSources = null;
       return new SourceInfo(result);
     } else {
@@ -270,6 +275,7 @@ public class SourceService extends AbstractDaoService {
     if (source != null) {
       final String sourceKey = source.getSourceKey();
       sourceRepository.delete(source);
+      publisher.publishEvent(new DeleteDataSourceEvent(this));
       cachedSources = null;
       securityManager.removeSourceRole(sourceKey);
       return Response.ok().build();

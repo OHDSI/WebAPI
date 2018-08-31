@@ -36,6 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.stereotype.Component;
@@ -120,6 +121,9 @@ public class AtlasRegularSecurity extends AtlasSecurity {
     @Qualifier("authDataSource")
     private DataSource jdbcDataSource;
 
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
+
     @Value("${security.oid.redirectUrl}")
     private String redirectUrl;
 
@@ -128,15 +132,15 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
         Map<String, Filter> filters = super.getFilters();
 
-        filters.put("logout", new LogoutFilter());
+        filters.put("logout", new LogoutFilter(eventPublisher));
         filters.put("updateToken", new UpdateAccessTokenFilter(this.authorizer, this.defaultRoles, this.tokenExpirationIntervalInSeconds));
         filters.put("invalidateToken", new InvalidateAccessTokenFilter());
 
         filters.put("jwtAuthc", new AtlasJwtAuthFilter());
-        filters.put("jdbcFilter", new JdbcAuthFilter());
+        filters.put("jdbcFilter", new JdbcAuthFilter(eventPublisher));
         filters.put("kerberosFilter", new KerberosAuthFilter());
-        filters.put("ldapFilter", new LdapAuthFilter());
-        filters.put("adFilter", new ActiveDirectoryAuthFilter());
+        filters.put("ldapFilter", new LdapAuthFilter(eventPublisher));
+        filters.put("adFilter", new ActiveDirectoryAuthFilter(eventPublisher));
         filters.put("negotiateAuthc", new NegotiateAuthenticationFilter());
 
         filters.put("sendTokenInUrl", new SendTokenInUrlFilter(this.oauthUiCallback));

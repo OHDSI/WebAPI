@@ -1,5 +1,10 @@
 package org.ohdsi.webapi.service;
 
+import com.odysseusinc.logging.event.AddPermissionEvent;
+import com.odysseusinc.logging.event.AddRoleEvent;
+import com.odysseusinc.logging.event.AssignRoleEvent;
+import com.odysseusinc.logging.event.DeletePermissionEvent;
+import com.odysseusinc.logging.event.UnassignRoleEvent;
 import org.eclipse.collections.impl.block.factory.Comparators;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,6 +21,7 @@ import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 /**
@@ -29,6 +35,9 @@ public class UserService {
 
   @Autowired
   private PermissionManager authorizer;
+
+  @Autowired
+  private ApplicationEventPublisher eventPublisher;
 
   private Map<String, String> roleCreatorPermissionsTemplate = new LinkedHashMap<>();
 
@@ -163,6 +172,7 @@ public class UserService {
             this.roleCreatorPermissionsTemplate,
             String.valueOf(roleEntity.getId()));
     Role newRole = new Role(roleEntity);
+    eventPublisher.publishEvent(new AddRoleEvent(this));
     return newRole;
   }
 
@@ -223,6 +233,7 @@ public class UserService {
       Long permissionId = Long.parseLong(permissionIdString);
       this.authorizer.addPermission(roleId, permissionId);
     }
+    eventPublisher.publishEvent(new AddPermissionEvent(this));
   }
 
   @DELETE
@@ -232,6 +243,7 @@ public class UserService {
       Long permissionId = Long.parseLong(permissionIdString);
       this.authorizer.removePermission(permissionId, roleId);
     }
+    eventPublisher.publishEvent(new DeletePermissionEvent(this));
   }
 
   @GET
@@ -251,6 +263,7 @@ public class UserService {
       Long userId = Long.parseLong(userIdString);
       this.authorizer.addUser(userId, roleId);
     }
+    eventPublisher.publishEvent(new AssignRoleEvent(this));
   }
 
   @DELETE
@@ -260,6 +273,7 @@ public class UserService {
       Long userId = Long.parseLong(userIdString);
       this.authorizer.removeUser(userId, roleId);
     }
+    eventPublisher.publishEvent(new UnassignRoleEvent(this));
   }
 
   @GET

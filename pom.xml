@@ -110,7 +110,7 @@
     <server.ssl.key-store-password></server.ssl.key-store-password>
     <server.ssl.key-password></server.ssl.key-password>
 
-    <arachne.version>1.13.0-QA</arachne.version>
+    <arachne.version>1.14.0-SNAPSHOT</arachne.version>
     <jersey-media-multipart.version>2.25.1</jersey-media-multipart.version>
     <execution.invalidation.maxage>4</execution.invalidation.maxage>
     <execution.invalidation.period>10000</execution.invalidation.period>
@@ -609,6 +609,16 @@
     <dependency>
       <groupId>com.odysseusinc.arachne</groupId>
       <artifactId>execution-engine-commons</artifactId>
+      <version>${arachne.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.odysseusinc</groupId>
+      <artifactId>logging</artifactId>
+      <version>${arachne.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.odysseusinc</groupId>
+      <artifactId>logging</artifactId>
       <version>${arachne.version}</version>
     </dependency>
     <dependency>

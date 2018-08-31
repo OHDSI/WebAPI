@@ -12,15 +12,14 @@ import org.ohdsi.webapi.shiro.lockout.LockoutPolicy;
 import org.ohdsi.webapi.shiro.lockout.LockoutStrategy;
 import org.ohdsi.webapi.shiro.lockout.LockoutWebSecurityManager;
 import org.ohdsi.webapi.shiro.lockout.NoLockoutPolicy;
-import org.ohdsi.webapi.shiro.management.AtlasSecurity;
-import org.ohdsi.webapi.shiro.management.DisabledSecurity;
 import org.ohdsi.webapi.shiro.management.Security;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
 
 /**
  * Created by GMalikov on 20.08.2015.
@@ -36,6 +35,8 @@ public class ShiroConfiguration {
   private long initialDuration;
   @Value("${security.duration.increment}")
   private long increment;
+  @Autowired
+  protected ApplicationEventPublisher eventPublisher;
 
   @Bean
   public ShiroFilterFactoryBean shiroFilter(Security security, LockoutPolicy lockoutPolicy){
@@ -50,7 +51,7 @@ public class ShiroConfiguration {
 
   @Bean
   public DefaultWebSecurityManager securityManager(Security security, LockoutPolicy lockoutPolicy){
-    final DefaultWebSecurityManager securityManager = new LockoutWebSecurityManager(lockoutPolicy);
+    final DefaultWebSecurityManager securityManager = new LockoutWebSecurityManager(lockoutPolicy, eventPublisher);
 
     securityManager.setAuthenticator(security.getAuthenticator());
 

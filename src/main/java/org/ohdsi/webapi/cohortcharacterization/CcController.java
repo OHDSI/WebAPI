@@ -3,6 +3,7 @@ package org.ohdsi.webapi.cohortcharacterization;
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import java.util.List;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -22,7 +23,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 
-@Path("/cohortcharacterization")
+@Path("/cohort-characterizations")
 @Controller
 public class CcController {
     
@@ -43,41 +44,50 @@ public class CcController {
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public CcCreateDTO create(final CcCreateDTO dto) {
+    public CcCreateDTO create(final CohortCharacterizationDTO dto) {
         final CohortCharacterizationEntity createdEntity = service.createCc(conversionService.convert(dto, CohortCharacterizationEntity.class));
-        return conversionService.convert(createdEntity, CcShortDTO.class);
+        return conversionService.convert(createdEntity, CohortCharacterizationDTO.class);
     }
 
     @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Page<CohortCharacterizationDTO> list(@Pagination Pageable pageable) {
-        return service.getPageWithLinkedEntities(pageable).map(this::convertCcToDto);
+    public Page<CcShortDTO> list(@Pagination Pageable pageable) {
+        return service.getPageWithLinkedEntities(pageable).map(this::convertCcToShortDto);
     }
 
+    // TODO: return with "short" cohorts & features
     @GET
     @Path("/design")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Page<CcShortDTO> listDesign(@Pagination Pageable pageable) {
-        return service.getPageWithLinkedEntities(pageable).map(this::convertCcToShortDto);
+    public Page<CohortCharacterizationDTO> listDesign(@Pagination Pageable pageable) {
+        return service.getPageWithLinkedEntities(pageable).map(this::convertCcToDto);
     }
 
     @GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public CohortCharacterizationDTO get(@PathParam("id") final Long id) {
-        return convertCcToDto(service.findByIdWithLinkedEntities(id));
+    public CcShortDTO get(@PathParam("id") final Long id) {
+        return convertCcToShortDto(service.findById(id));
     }
 
     @GET
-    @Path("/design/{id}")
+    @Path("/{id}/design")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public CcShortDTO getDesign(@PathParam("id") final Long id) {
-        return convertCcToShortDto(service.findById(id));
+    public CohortCharacterizationDTO getDesign(@PathParam("id") final Long id) {
+        return convertCcToDto(service.findByIdWithLinkedEntities(id));
+    }
+
+    @DELETE
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public void deleteCc(@PathParam("id") final Long id) {
+        service.deleteCc(id);
     }
     
     private CohortCharacterizationDTO convertCcToDto(final CohortCharacterizationEntity entity) {
@@ -128,16 +138,32 @@ public class CcController {
     @Path("/{id}/generations")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public List<CcGenerationDTO> getGenerations(@PathParam("id") final Long id) {
+    public List<CcGenerationDTO> getGenerationList(@PathParam("id") final Long id) {
         return converterUtils.convertList(service.findGenerationsByCcId(id), CcGenerationDTO.class);
     }
 
     @GET
-    @Path("/{id}/generation/{generationId}/results")
+    @Path("/generations/{generationId}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public List<CcResult> getGenerationsBySource(
-            @PathParam("id") final Long id, 
+    public CcGenerationDTO getGeneration(@PathParam("generationId") final Long generationId) {
+        return conversionService.convert(service.findGenerationById(generationId), CcGenerationDTO.class);
+    }
+
+    @GET
+    @Path("/generations/{generationId}/design")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public CohortCharacterizationDTO getGenerationDesign(
+            @PathParam("generationId") final Long generationId) {
+        return conversionService.convert(service.findDesignByGenerationId(generationId), CohortCharacterizationDTO.class);
+    }
+
+    @GET
+    @Path("/generations/{generationId}/results")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public List<CcResult> getGenerationsResults(
             @PathParam("generationId") final Long generationId) {
         return converterUtils.convertList(service.findResults(generationId), CcResult.class);
     }

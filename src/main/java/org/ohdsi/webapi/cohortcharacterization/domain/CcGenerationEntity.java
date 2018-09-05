@@ -1,22 +1,21 @@
-package org.ohdsi.webapi.cohortcharacterization.dto;
+package org.ohdsi.webapi.cohortcharacterization.domain;
 
 import java.util.Date;
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+
 import org.ohdsi.standardized_analysis_api.cohortcharacterization.design.CohortCharacterization;
-import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConverter;
 import org.ohdsi.webapi.source.Source;
+
 @Entity
 @Table(name = "cc_generations")
 public class CcGenerationEntity {
@@ -29,9 +28,17 @@ public class CcGenerationEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "source_id")
     private Source source;
-    @Column(name = "date")
+    @Column(name = "design", updatable= false)
+    @Convert(converter = SerializedCcToCcConverter.class)
+    private CohortCharacterization design;
+    @Column(name = "hash_code")
+    private Integer hashCode;
+    @Column(name = "start_time")
     @Temporal(TemporalType.TIMESTAMP)
-    private Date date;
+    private Date startTime;
+    @Column(name = "end_time")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date endTime;
     @Column
     private String status;
 
@@ -59,12 +66,39 @@ public class CcGenerationEntity {
         this.source = source;
     }
 
-    public Date getDate() {
-        return date;
+    public CohortCharacterization getDesign() {
+
+        return design;
     }
 
-    public void setDate(final Date date) {
-        this.date = date;
+    public Integer getHashCode() {
+
+        return hashCode;
+    }
+
+    public void setHashCode(Integer hashCode) {
+
+        this.hashCode = hashCode;
+    }
+
+    public Date getStartTime() {
+
+        return startTime;
+    }
+
+    public void setStartTime(Date startTime) {
+
+        this.startTime = startTime;
+    }
+
+    public Date getEndTime() {
+
+        return endTime;
+    }
+
+    public void setEndTime(Date endTime) {
+
+        this.endTime = endTime;
     }
 
     public String getStatus() {

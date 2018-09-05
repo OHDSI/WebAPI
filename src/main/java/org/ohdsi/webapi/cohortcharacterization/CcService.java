@@ -1,7 +1,9 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
 import java.util.List;
-import org.ohdsi.webapi.cohortcharacterization.dto.CcGenerationEntity;
+
+import org.ohdsi.standardized_analysis_api.cohortcharacterization.design.CohortCharacterization;
+import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
 import org.springframework.data.domain.Page;
@@ -12,6 +14,8 @@ public interface CcService {
 
     CohortCharacterizationEntity updateCc(CohortCharacterizationEntity entity);
 
+    void deleteCc(Long ccId);
+
     CohortCharacterizationEntity importCc(CohortCharacterizationEntity entity);
 
     String serializeCc(Long id);
@@ -21,6 +25,8 @@ public interface CcService {
     CohortCharacterizationEntity findById(Long id);
 
     CohortCharacterizationEntity findByIdWithLinkedEntities(Long id);
+
+    CohortCharacterization findDesignByGenerationId(final Long id);
     
     Page<CohortCharacterizationEntity> getPageWithLinkedEntities(Pageable pageable);
 
@@ -29,6 +35,8 @@ public interface CcService {
     String generateCc(Long id, final String sourceKey);
 
     List<CcGenerationEntity> findGenerationsByCcId(Long id);
+
+    CcGenerationEntity findGenerationById(final Long id);
 
     List<CcGenerationEntity> findGenerationsByCcIdAndSource(Long id, String sourceKey);
 

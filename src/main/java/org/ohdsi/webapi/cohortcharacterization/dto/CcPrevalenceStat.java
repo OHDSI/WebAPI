@@ -7,6 +7,7 @@ public class CcPrevalenceStat extends CcResult implements PrevalenceStat {
     private String timeWindow;
     private Long value;
     private Double proportion;
+    private Double avg;
     private Long covariateId;
     private String covariateName;
     private Long conceptId;
@@ -59,5 +60,20 @@ public class CcPrevalenceStat extends CcResult implements PrevalenceStat {
 
     public void setTimeWindow(final String timeWindow) {
         this.timeWindow = timeWindow;
+    }
+
+    public void setProportion(Double proportion) {
+
+        this.proportion = proportion;
+    }
+
+    public Double getAvg() {
+
+        return avg;
+    }
+
+    public void setAvg(Double avg) {
+
+        this.avg = avg;
     }
 }

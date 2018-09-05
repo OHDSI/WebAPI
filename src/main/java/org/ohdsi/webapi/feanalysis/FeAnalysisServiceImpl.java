@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.ohdsi.standardized_analysis_api.cohortcharacterization.design.StandardFeatureAnalysisType;
+import org.ohdsi.webapi.Pagination;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisCriteriaEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
@@ -13,6 +14,8 @@ import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisCriteriaRepository;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisEntityRepository;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisWithStringEntityRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -29,6 +32,11 @@ public class FeAnalysisServiceImpl implements FeAnalysisService {
         this.analysisRepository = analysisRepository;
         this.criteriaRepository = criteriaRepository;
         this.stringAnalysisRepository = stringAnalysisRepository;
+    }
+
+    @Override
+    public Page<FeAnalysisEntity> getPage(final Pageable pageable) {
+        return analysisRepository.findAll(pageable);
     }
     
     @Override

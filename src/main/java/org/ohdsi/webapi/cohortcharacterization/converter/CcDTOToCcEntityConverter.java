@@ -21,7 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CcDTOToCcConverter extends CcCreateDTOToCcConverter<CohortCharacterizationDTO> {
+public class CcDTOToCcEntityConverter extends CcCreateDTOToCcConverter<CohortCharacterizationDTO> {
     
     @Autowired
     private ConverterUtils converterUtils;

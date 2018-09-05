@@ -303,13 +303,13 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
                         + "standard_deviation, median_value, p10_value, p25_value, p75_value, p90_value";
                 final String distFeatures = String.format(cohortWrapper, cohortId, distColumns,
                         StringUtils.stripEnd(jsonObject.getString("sqlQueryContinuousFeatures"), ";"));
-                queries.add(String.format(distributionRetrievingQuery, distFeatures, featureRefs, analysisRefs, cohortCharacterization.getId(), jobId));
+                queries.add(String.format(distributionRetrievingQuery, distFeatures, featureRefs, analysisRefs, cohortId, jobId));
             }
             if (ccHasPresetPrevalenceAnalyses()) {
                 final String featureColumns = "cohort_definition_id, covariate_id, sum_value, average_value";
                 final String features = String.format(cohortWrapper, cohortId, featureColumns,
                         StringUtils.stripEnd(jsonObject.getString("sqlQueryFeatures"), ";"));
-                queries.add(String.format(prevalenceRetrievingQuery, features, featureRefs, analysisRefs, cohortCharacterization.getId(), jobId));
+                queries.add(String.format(prevalenceRetrievingQuery, features, featureRefs, analysisRefs, cohortId, jobId));
             }
             
             return queries;

@@ -3,6 +3,7 @@ package org.ohdsi.webapi.cohortcharacterization;
 import static org.ohdsi.webapi.Constants.GENERATE_COHORT_CHARACTERIZATION;
 import static org.ohdsi.webapi.Constants.Params.CDM_DATABASE_SCHEMA;
 import static org.ohdsi.webapi.Constants.Params.COHORT_CHARACTERIZATION_ID;
+import static org.ohdsi.webapi.Constants.Params.DESIGN;
 import static org.ohdsi.webapi.Constants.Params.GENERATE_STATS;
 import static org.ohdsi.webapi.Constants.Params.HASH_CODE;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
@@ -14,17 +15,14 @@ import static org.ohdsi.webapi.Constants.Params.TARGET_TABLE;
 import static org.ohdsi.webapi.Constants.Params.VOCABULARY_DATABASE_SCHEMA;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
@@ -37,9 +35,11 @@ import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.standardized_analysis_api.Utils;
+import org.ohdsi.standardized_analysis_api.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.standardized_analysis_api.cohortcharacterization.design.StandardFeatureAnalysisType;
+import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConverter;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcDistributionStat;
-import org.ohdsi.webapi.cohortcharacterization.dto.CcGenerationEntity;
+import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcParamEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcPrevalenceStat;
@@ -72,6 +72,7 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -95,7 +96,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
     private JobTemplate jobTemplate;
     private CcGenerationEntityRepository ccGenerationRepository;
     private FeatureExtractionService featureExtractionService;
-    
+
     public CcServiceImpl(
             final CcRepository ccRepository,
             final Security security,
@@ -108,7 +109,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
             final JobBuilderFactory jobBuilders,
             final JobTemplate jobTemplate,
             final CcGenerationEntityRepository ccGenerationRepository, 
-            final FeatureExtractionService featureExtractionService) {
+            final FeatureExtractionService featureExtractionService,
+            final ConversionService conversionService) {
         this.repository = ccRepository;
         this.security = security;
         this.userRepository = userRepository;
@@ -121,6 +123,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         this.jobTemplate = jobTemplate;
         this.ccGenerationRepository = ccGenerationRepository;
         this.featureExtractionService = featureExtractionService;
+        SerializedCcToCcConverter.setConversionService(conversionService);
     }
     
     @Override
@@ -131,8 +134,9 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
     }
 
     private CohortCharacterizationEntity saveCc(final CohortCharacterizationEntity entity) {
-        final CohortCharacterizationEntity savedEntity = repository.save(entity);
-        
+        final CohortCharacterizationEntity savedEntity = repository.saveAndFlush(entity);
+
+        gatherLinkedEntities(savedEntity);
         sortInnerEntities(savedEntity);
         
         final String serialized = this.serializeCc(savedEntity);
@@ -140,12 +144,17 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         
         return repository.save(savedEntity);
     }
+
+    public void deleteCc(Long ccId) {
+        repository.delete(ccId);
+    }
+
     private void sortInnerEntities(final CohortCharacterizationEntity savedEntity) {
         savedEntity.setFeatureAnalyses(new TreeSet<>(savedEntity.getFeatureAnalyses()));
     }
 
-    private UserEntity getCurrentUser() { //TODO fix after security check
-        return userRepository.findByLogin("admin@example.com"/*security.getSubject()*/);
+    private UserEntity getCurrentUser() {
+        return userRepository.findByLogin(security.getSubject());
     }
 
     @Override
@@ -252,6 +261,11 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         return gatherLinkedEntities(findById(id));
     }
 
+    @Override
+    public CohortCharacterization findDesignByGenerationId(final Long id) {
+        return ccGenerationRepository.findById(id).map(gen -> gen.getDesign()).orElse(null);
+    }
+
     private CohortCharacterizationEntity gatherLinkedEntities(final CohortCharacterizationEntity mainEntity) {
         mainEntity.setParameters(paramRepository.findAllByCohortCharacterization(mainEntity));
         mainEntity.setCohortDefinitions(cohortRepository.findAllByCohortCharacterizations(mainEntity));
@@ -271,7 +285,11 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
 
     @Override
     public String generateCc(final Long id, final String sourceKey) {
+
+        SerializedCcToCcConverter designConverter = new SerializedCcToCcConverter();
+
         Source source = getSourceRepository().findBySourceKey(sourceKey);
+        CohortCharacterizationEntity cc = repository.findById(id).orElseThrow(() -> new IllegalArgumentException("CC cannot be found by id " + id));
         String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
         String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
         String vocabularyTableQualifier = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
@@ -291,10 +309,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         builder.addString(COHORT_CHARACTERIZATION_ID, String.valueOf(id));
         builder.addString(SOURCE_ID, String.valueOf(source.getSourceId()));
         builder.addString(GENERATE_STATS, Boolean.TRUE.toString());
-        builder.addString(HASH_CODE, String.valueOf(
-                repository.findById(id)
-                        .orElseThrow(() -> new IllegalArgumentException("CC cannot be found by id " + id)).getHashCode())
-        );
+        builder.addString(DESIGN, designConverter.convertToDatabaseColumn(cc));
+        builder.addString(HASH_CODE, String.valueOf(cc.getHashCode()));
         
         final JobParameters jobParameters = builder.toJobParameters();
 
@@ -316,6 +332,11 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
     @Override
     public List<CcGenerationEntity> findGenerationsByCcId(final Long id) {
         return ccGenerationRepository.findByCohortCharacterizationIdOrderByIdDesc(id, EntityUtils.fromAttributePaths("source"));
+    }
+
+    @Override
+    public CcGenerationEntity findGenerationById(final Long id) {
+        return ccGenerationRepository.findById(id, EntityUtils.fromAttributePaths("source"));
     }
 
     @Override
@@ -356,15 +377,24 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
     }
 
     private void gatherForPrevalence(final CcPrevalenceStat stat, final ResultSet rs) throws SQLException {
+        Long generationId = rs.getLong("cohort_characterization_generation_id");
+        CcGenerationEntity ccGeneration = ccGenerationRepository.findOne(generationId);
+
+        stat.setSourceKey(ccGeneration.getSource().getSourceKey());
+        stat.setCohortId(rs.getInt("cohort_definition_id"));
+        stat.setAnalysisId(rs.getInt("analysis_id"));
+        stat.setAnalysisName(rs.getString("analysis_name"));
+        stat.setResultType(CcResultType.PREVALENCE);
         stat.setCovariateId(rs.getLong("covariate_id"));
         stat.setCovariateName(rs.getString("covariate_name"));
         stat.setTimeWindow(featureExtractionService.getTimeWindow(rs.getString("analysis_name")));
         stat.setConceptId(rs.getLong("concept_id"));
+        stat.setAvg(rs.getDouble("avg_value"));
         stat.setCount(rs.getLong("count_value"));
     }
 
     private void gatherForDistribution(final CcDistributionStat stat, final ResultSet rs) throws SQLException {
-        stat.setAnalysisName(rs.getString("analysis_name"));
+        stat.setResultType(CcResultType.DISTRIBUTION);
         stat.setAvg(rs.getDouble("avg_value"));
         stat.setStdDev(rs.getDouble("stdev_value"));
         stat.setMin(rs.getDouble("min_value"));

@@ -21,6 +21,7 @@ public interface Constants {
     String TARGET_TABLE = "target_table";
     String GENERATE_STATS = "generate_stats";
     String JOB_START_TIME = "time";
+    String DESIGN = "design";
     String HASH_CODE = "hash_code";
   }
 }

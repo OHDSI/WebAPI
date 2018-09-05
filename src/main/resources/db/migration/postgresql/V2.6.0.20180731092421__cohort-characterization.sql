@@ -52,30 +52,37 @@ CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.fe_analyses
   stat_type  VARCHAR(255)
 );
 
+INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
+VALUES
+  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterizations:post', 'Create cohort characterization'),
+  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterizations:import:post', 'Import cohort characterization'),
+  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterizations:get', 'Get cohort characterizations list'),
+  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterizations:*:get', 'Get cohort characterization'),
+  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterizations:*:generations:get', 'Get cohort characterization generations'),
+  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterizations:*:export', 'Export cohort characterization'),
 
-INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description) VALUES(nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohortcharacterization:POST', 'Create cohort characterization');
+  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'feature-analyses:get', 'Get feature analyses list'),
+  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'feature-analyses:*:get', 'Get feature analysis'),
+  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'feature-analyses:post', 'Create feature analysis');
+
 INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
 SELECT sr.id, sp.id
 FROM ${ohdsiSchema}.sec_permission SP, ${ohdsiSchema}.sec_role sr
-WHERE sp."value" = 'cohortcharacterization:post' AND sr.name IN ('admin');
+WHERE sp."value" IN (
+  'cohort-characterizations:post',
+  'cohort-characterizations:import:post',
+  'cohort-characterizations:get',
+  'cohort-characterizations:*:get',
+  'cohort-characterizations:*:generations:get',
+  'cohort-characterizations:*:export',
 
-INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description) VALUES(nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohortcharacterization:*:GET', 'Get cohort characterization');
-INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
-SELECT sr.id, sp.id
-FROM ${ohdsiSchema}.sec_permission SP, ${ohdsiSchema}.sec_role sr
-WHERE sp."value" = 'cohortcharacterization:*:get' AND sr.name IN ('admin');
+  -- TODO: add SOURCE based permissions
 
-INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description) VALUES(nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohortcharacterization:*:UPDATE', 'Update cohort characterization');
-INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
-SELECT sr.id, sp.id
-FROM ${ohdsiSchema}.sec_permission SP, ${ohdsiSchema}.sec_role sr
-WHERE sp."value" = 'cohortcharacterization:*:update' AND sr.name IN ('admin');
-
-INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description) VALUES(nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohortcharacterization:*:DELETE', 'Delete cohort characterization');
-INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
-SELECT sr.id, sp.id
-FROM ${ohdsiSchema}.sec_permission SP, ${ohdsiSchema}.sec_role sr
-WHERE sp."value" = 'cohortcharacterization:*:delete' AND sr.name IN ('admin');
+  'feature-analyses:get',
+  'feature-analyses:*:get',
+  'feature-analyses:post'
+)
+AND sr.name IN ('Atlas users');
 
 
 
@@ -238,17 +245,24 @@ INSERT INTO ${ohdsiSchema}.fe_analyses (type, name, domain, descr, value, design
 INSERT INTO ${ohdsiSchema}.fe_analyses (type, name, domain, descr, value, design, is_locked, stat_type) VALUES ('PRESET', 'Occurrence Primary Inpatient', 'CONDITION', 'One covariate per condition observed  as a primary diagnosis in an inpatient setting in the condition_occurrence table starting in the medium term window.', null, 'ConditionOccurrencePrimaryInpatientMediumTerm', true, 'PREVALENCE');
 
 CREATE OR REPLACE VIEW ${ohdsiSchema}.cc_generations as
-  (SELECT job.job_execution_id,
-          MAX(job.create_time)                                                                     date,
-          MAX(job.status)                                                                          status,
-          MAX(CASE WHEN params.key_name = 'hash_code' THEN params.string_val END)                  hash_code,
-          MAX(CASE WHEN params.key_name = 'cohort_characterization_id' THEN params.string_val END) cohort_characterization_id,
-          MAX(CASE WHEN params.key_name = 'source_id' THEN params.string_val END)                  source_id
-   FROM ${ohdsiSchema}.batch_job_execution job
-          JOIN ${ohdsiSchema}.batch_job_execution_params params ON job.job_execution_id = params.job_execution_id
-                                                             AND (params.key_name = 'hash_code' OR
-                                                                  params.key_name = 'cohort_characterization_id' OR
-                                                                  params.key_name = 'source_id')
-   GROUP BY job.job_execution_id);
+  (SELECT
+  job.job_execution_id                     id,
+  job.create_time                          start_time,
+  job.end_time                             end_time,
+  job.status                               status,
+  design_param.string_val                  design,
+  hash_code_param.string_val               hash_code,
+  CAST(cc_id_param.string_val AS INTEGER)  cohort_characterization_id,
+  CAST(source_param.string_val AS INTEGER) source_id
+FROM ${ohdsiSchema}.batch_job_execution job
+  JOIN ${ohdsiSchema}.batch_job_execution_params design_param
+    ON job.job_execution_id = design_param.job_execution_id AND design_param.key_name = 'design'
+  JOIN ${ohdsiSchema}.batch_job_execution_params hash_code_param
+    ON job.job_execution_id = hash_code_param.job_execution_id AND hash_code_param.key_name = 'hash_code'
+  JOIN ${ohdsiSchema}.batch_job_execution_params cc_id_param
+    ON job.job_execution_id = cc_id_param.job_execution_id AND cc_id_param.key_name = 'cohort_characterization_id'
+  JOIN ${ohdsiSchema}.batch_job_execution_params source_param
+    ON job.job_execution_id = source_param.job_execution_id AND source_param.key_name = 'source_id'
+ORDER BY start_time DESC);
 
 -- TODO indexes

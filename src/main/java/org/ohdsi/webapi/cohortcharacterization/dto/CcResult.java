@@ -5,6 +5,9 @@ import org.ohdsi.webapi.cohortcharacterization.CcResultType;
 public class CcResult {
     
     private Long id;
+    private String sourceKey;
+    private Integer cohortId;
+    private Integer analysisId;
     private String analysisName;
     private CcResultType resultType;
 
@@ -19,6 +22,16 @@ public class CcResult {
         this.id = id;
     }
 
+    public String getSourceKey() {
+
+        return sourceKey;
+    }
+
+    public void setSourceKey(String sourceKey) {
+
+        this.sourceKey = sourceKey;
+    }
+
     public CcResultType getResultType() {
 
         return resultType;
@@ -27,6 +40,26 @@ public class CcResult {
     public void setResultType(final CcResultType resultType) {
 
         this.resultType = resultType;
+    }
+
+    public Integer getCohortId() {
+
+        return cohortId;
+    }
+
+    public void setCohortId(Integer cohortId) {
+
+        this.cohortId = cohortId;
+    }
+
+    public Integer getAnalysisId() {
+
+        return analysisId;
+    }
+
+    public void setAnalysisId(Integer analysisId) {
+
+        this.analysisId = analysisId;
     }
 
     public String getAnalysisName() {

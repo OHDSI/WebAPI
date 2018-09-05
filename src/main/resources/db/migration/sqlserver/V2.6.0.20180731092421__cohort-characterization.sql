@@ -52,32 +52,23 @@ CREATE TABLE ${ohdsiSchema}.fe_analyses
   stat_type  VARCHAR(255)
 );
 
+INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
+VALUES
+  (NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'cohort-characterizations:post', 'Create cohort characterization'),
+  (NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'cohort-characterizations:import:post', 'Import cohort characterization'),
+  (NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'cohort-characterizations:*:get', 'Get cohort characterization'),
+  (NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'cohort-characterizations:get', 'Get cohort characterizations list');
 
-INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description) VALUES(NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'cohortcharacterization:POST', 'Create cohort characterization');
 INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
 SELECT sr.id, sp.id
 FROM ${ohdsiSchema}.sec_permission SP, ${ohdsiSchema}.sec_role sr
-WHERE sp."value" = 'cohortcharacterization:post' AND sr.name IN ('admin');
-
-INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description) VALUES(NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'cohortcharacterization:*:GET', 'Get cohort characterization');
-INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
-SELECT sr.id, sp.id
-FROM ${ohdsiSchema}.sec_permission SP, ${ohdsiSchema}.sec_role sr
-WHERE sp."value" = 'cohortcharacterization:*:get' AND sr.name IN ('admin');
-
-INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description) VALUES(NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'cohortcharacterization:*:UPDATE', 'Update cohort characterization');
-INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
-SELECT sr.id, sp.id
-FROM ${ohdsiSchema}.sec_permission SP, ${ohdsiSchema}.sec_role sr
-WHERE sp."value" = 'cohortcharacterization:*:update' AND sr.name IN ('admin');
-
-INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description) VALUES(NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'cohortcharacterization:*:DELETE', 'Delete cohort characterization');
-INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
-SELECT sr.id, sp.id
-FROM ${ohdsiSchema}.sec_permission SP, ${ohdsiSchema}.sec_role sr
-WHERE sp."value" = 'cohortcharacterization:*:delete' AND sr.name IN ('admin');
-
-
+WHERE sp."value" IN (
+  'cohort-characterizations:post',
+  'cohort-characterizations:get',
+  'cohort-characterizations:import:post',
+  'cohort-characterizations:*:get'
+)
+AND sr.name IN ('Atlas users');
 
 CREATE TABLE ${ohdsiSchema}.cc_analyses
 (

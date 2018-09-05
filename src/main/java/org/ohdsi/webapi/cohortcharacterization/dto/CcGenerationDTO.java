@@ -1,9 +1,14 @@
 package org.ohdsi.webapi.cohortcharacterization.dto;
 
+import java.util.Date;
+
 public class CcGenerationDTO {
     private Long id;
     private String status;
     private String sourceKey;
+    private Integer hashCode;
+    private Date startTime;
+    private Date endTime;
 
     public Long getId() {
 
@@ -33,5 +38,35 @@ public class CcGenerationDTO {
     public void setSourceKey(final String sourceKey) {
 
         this.sourceKey = sourceKey;
+    }
+
+    public Integer getHashCode() {
+
+        return hashCode;
+    }
+
+    public void setHashCode(Integer hashCode) {
+
+        this.hashCode = hashCode;
+    }
+
+    public Date getStartTime() {
+
+        return startTime;
+    }
+
+    public void setStartTime(Date startTime) {
+
+        this.startTime = startTime;
+    }
+
+    public Date getEndTime() {
+
+        return endTime;
+    }
+
+    public void setEndTime(Date endTime) {
+
+        this.endTime = endTime;
     }
 }

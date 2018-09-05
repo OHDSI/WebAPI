@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.feanalysis.dto;
 
-import org.ohdsi.standardized_analysis_api.cohortcharacterization.design.StandardFeatureAnalysisDomain;
-import org.ohdsi.standardized_analysis_api.cohortcharacterization.design.StandardFeatureAnalysisType;
+import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
+import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 
 public class FeAnalysisShortDTO {
     

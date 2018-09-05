@@ -15,7 +15,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import org.hibernate.annotations.Type;
 import org.ohdsi.circe.cohortdefinition.CriteriaGroup;
-import org.ohdsi.standardized_analysis_api.cohortcharacterization.design.CriteriaFeature;
+import org.ohdsi.analysis.cohortcharacterization.design.CriteriaFeature;
 
 @Entity
 @Table(name = "fe_analysis_criteria")

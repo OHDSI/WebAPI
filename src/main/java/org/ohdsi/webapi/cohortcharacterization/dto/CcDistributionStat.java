@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.cohortcharacterization.dto;
 
-import org.ohdsi.standardized_analysis_api.cohortcharacterization.result.DistributionStat;
+import org.ohdsi.analysis.cohortcharacterization.result.DistributionStat;
 
 public class CcDistributionStat extends CcPrevalenceStat implements DistributionStat {
 

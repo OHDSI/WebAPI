@@ -11,8 +11,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import org.ohdsi.standardized_analysis_api.cohortcharacterization.design.CohortCharacterization;
-import org.ohdsi.standardized_analysis_api.cohortcharacterization.design.CohortCharacterizationParam;
+import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
+import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterizationParam;
 
 @Entity
 @Table(name = "cc_params")

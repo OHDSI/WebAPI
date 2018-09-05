@@ -2,7 +2,7 @@ package org.ohdsi.webapi.cohortcharacterization;
 
 import java.util.List;
 
-import org.ohdsi.standardized_analysis_api.cohortcharacterization.design.CohortCharacterization;
+import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;

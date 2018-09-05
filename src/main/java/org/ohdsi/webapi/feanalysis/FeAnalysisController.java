@@ -1,10 +1,9 @@
 package org.ohdsi.webapi.feanalysis;
 
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
-import org.ohdsi.standardized_analysis_api.cohortcharacterization.design.FeatureAnalysis;
+import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysis;
 import org.ohdsi.webapi.Pagination;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
-import org.ohdsi.webapi.feanalysis.dto.FeAnalysisShortDTO;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

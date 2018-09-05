@@ -47,7 +47,7 @@ import javax.persistence.Table;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
-import org.ohdsi.standardized_analysis_api.cohortcharacterization.design.Cohort;
+import org.ohdsi.standardized_analysis_api.Cohort;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisGenerationInfo;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 

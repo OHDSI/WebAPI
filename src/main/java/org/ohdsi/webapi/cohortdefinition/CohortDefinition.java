@@ -222,7 +222,7 @@ CohortDefinition implements Serializable, Cohort {
 	}
 
     @Override
-    public CohortExpression getCohortExpression() {
+    public CohortExpression getExpression() {
 
       try {
         return new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).readValue(details.getExpression(), CohortExpression.class);

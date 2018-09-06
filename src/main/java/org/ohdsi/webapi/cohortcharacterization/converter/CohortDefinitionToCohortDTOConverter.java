@@ -14,7 +14,7 @@ public class CohortDefinitionToCohortDTOConverter extends BaseConversionServiceA
         dto.setName(source.getName());
         dto.setId(source.getId());
         dto.setExpressionType(source.getExpressionType());
-        dto.setExpression(source.getCohortExpression());
+        dto.setExpression(source.getExpression());
         return dto;
     }
 }

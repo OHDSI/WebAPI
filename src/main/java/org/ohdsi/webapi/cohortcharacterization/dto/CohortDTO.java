@@ -1,9 +1,10 @@
 package org.ohdsi.webapi.cohortcharacterization.dto;
 
+import org.ohdsi.analysis.Cohort;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.cohortdefinition.ExpressionType;
 
-public class CohortDTO {
+public class CohortDTO implements Cohort {
     
     private Integer id;
     private String name;

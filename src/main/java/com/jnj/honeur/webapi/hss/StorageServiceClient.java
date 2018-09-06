@@ -23,7 +23,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.net.ssl.SSLContext;
@@ -34,10 +34,7 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Component
 public class StorageServiceClient {
@@ -50,10 +47,10 @@ public class StorageServiceClient {
     private HSSServiceUserRepository hssServiceUserRepository;
 
     @Value("${datasource.hss.url}")
-    private String STORAGE_SERVICE_API;
+    private String storageServiceApi;
 
     @Value("${webapi.central}")
-    private boolean WEBAPI_CENTRAL;
+    private boolean webapiCentral;
 
     @Value("${security.token.expiration}")
     private int EXPIRATION_TIME;
@@ -79,33 +76,44 @@ public class StorageServiceClient {
         restTemplate = new RestTemplate(requestFactory);
     }
 
-    public void saveResults(String token, File results, String uuid) {
-        if (!WEBAPI_CENTRAL) {
+    public void setStorageServiceApi(String storageServiceApi) {
+        this.storageServiceApi = storageServiceApi;
+    }
+    public void setWebapiCentral(boolean webapiCentral) {
+        this.webapiCentral = webapiCentral;
+    }
+    public void setHssServiceUserRepository(HSSServiceUserRepository hssServiceUserRepository) {
+        this.hssServiceUserRepository = hssServiceUserRepository;
+    }
+
+    public String saveResults(String token, File results, String uuid) {
+        if (!webapiCentral) {
             token = getStorageServiceToken();
         }
         String endpoint = "/cohort-results/" + uuid;
         try {
             HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = createHttpEntity(token, results);
 
-            restTemplate.exchange(STORAGE_SERVICE_API + endpoint,
-                    HttpMethod.POST, requestEntity, String.class).getBody();
-        } catch (HttpStatusCodeException e) {
+            return restTemplate.exchange(storageServiceApi + endpoint,
+                    HttpMethod.POST, requestEntity, String.class).getHeaders().getLocation().getPath();
+        } catch (RestClientException e) {
             LOGGER.error(e.getMessage(), e);
+            return null;
         }
     }
 
     public String saveCohort(String token, File results, final UUID groupKey) {
-        if (!WEBAPI_CENTRAL) {
+        if (!webapiCentral) {
             token = getStorageServiceToken();
         }
         String endpoint = "/cohort-definitions/" + groupKey;
         try {
             HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = createHttpEntity(token, results);
 
-            return restTemplate.exchange(STORAGE_SERVICE_API + endpoint,
+            return restTemplate.exchange(storageServiceApi + endpoint,
                     HttpMethod.POST, requestEntity, StorageInformationItem.class).getHeaders()
                     .getLocation().getPath().replace("/cohort-definitions/", "");
-        } catch (HttpStatusCodeException e) {
+        } catch (RestClientException e) {
             LOGGER.error(e.getMessage(), e);
             return null;
         }
@@ -122,43 +130,47 @@ public class StorageServiceClient {
     }
 
     public List<CohortDefinitionStorageInformationItem> getCohortDefinitionImportList(String token) {
-        if (!WEBAPI_CENTRAL) {
+        if (!webapiCentral) {
             token = getStorageServiceToken();
         }
         String endpoint = "/cohort-definitions/list";
 
-        return Arrays.asList(restTemplate.exchange(STORAGE_SERVICE_API + endpoint, HttpMethod.GET,
+        return Arrays.asList(restTemplate.exchange(storageServiceApi + endpoint, HttpMethod.GET,
                 getTokenHeader(token), CohortDefinitionStorageInformationItem[].class).getBody());
     }
 
     public CohortDefinitionService.CohortDefinitionDTO getCohortDefinition(String token, String uuid) {
-        if (!WEBAPI_CENTRAL) {
+        if (!webapiCentral) {
             token = getStorageServiceToken();
         }
         String endpoint = "/cohort-definitions/" + uuid;
         return restTemplate
-                .exchange(STORAGE_SERVICE_API + endpoint, HttpMethod.GET, getTokenHeader(token), CohortDefinitionService.CohortDefinitionDTO.class)
+                .exchange(storageServiceApi + endpoint, HttpMethod.GET, getTokenHeader(token), CohortDefinitionService.CohortDefinitionDTO.class)
                 .getBody();
     }
 
     public List<StorageInformationItem> getCohortDefinitionResultsImportList(String token, UUID uuid) {
-        if (!WEBAPI_CENTRAL) {
+        if (!webapiCentral) {
             token = getStorageServiceToken();
         }
-        String endpoint = "/cohort-results/list/" + uuid + "?reverseOrder=true";
-        return Arrays.asList(restTemplate
-                .exchange(STORAGE_SERVICE_API + endpoint, HttpMethod.GET, getTokenHeader(token),
-                        StorageInformationItem[].class).getBody());
+        try {
+            String endpoint = "/cohort-results/list/" + uuid + "?reverseOrder=true";
+            return Arrays.asList(restTemplate
+                    .exchange(storageServiceApi + endpoint, HttpMethod.GET, getTokenHeader(token),
+                            StorageInformationItem[].class).getBody());
+        } catch (RestClientException e) {
+            LOGGER.error(e.getMessage(), e);
+            return Collections.emptyList();
+        }
     }
 
-    public CohortGenerationResults getCohortGenerationResults(String token, String definitionUuid, String resultsUuid)
-            throws IOException {
-        if (!WEBAPI_CENTRAL) {
+    public CohortGenerationResults getCohortGenerationResults(String token, String definitionUuid, String resultsUuid) throws IOException {
+        if (!webapiCentral) {
             token = getStorageServiceToken();
         }
         String endpoint = "/cohort-results/" + definitionUuid + "/" + resultsUuid;
         String response = restTemplate
-                .exchange(STORAGE_SERVICE_API + endpoint, HttpMethod.GET, getTokenHeader(token), String.class)
+                .exchange(storageServiceApi + endpoint, HttpMethod.GET, getTokenHeader(token), String.class)
                 .getBody();
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(response, CohortGenerationResults.class);
@@ -166,9 +178,20 @@ public class StorageServiceClient {
 
     public String getStorageServiceToken() {
         JsonNode tokenResponse = restTemplate
-                .exchange(STORAGE_SERVICE_API + "/login", HttpMethod.GET, getBasicAuthenticationHeader(),
+                .exchange(storageServiceApi + "/login", HttpMethod.GET, getBasicAuthenticationHeader(),
                         JsonNode.class).getBody();
         return tokenResponse.path("token").asText();
+    }
+
+    boolean deleteStorageFile(String token, String uuid) {
+        try {
+            String serviceUrl = storageServiceApi + "/" + uuid;
+            restTemplate.exchange(serviceUrl, HttpMethod.DELETE, getTokenHeader(token), String.class);
+            return true;
+        } catch (RestClientException e) {
+            LOGGER.error(e.getMessage(), e);
+            return false;
+        }
     }
 
     private HttpEntity getTokenHeader(String token) {

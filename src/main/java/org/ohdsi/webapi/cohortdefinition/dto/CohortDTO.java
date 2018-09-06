@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.cohortcharacterization.dto;
+package org.ohdsi.webapi.cohortdefinition.dto;
 
 import org.ohdsi.analysis.Cohort;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;

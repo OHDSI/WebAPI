@@ -1,6 +1,6 @@
-package org.ohdsi.webapi.cohortcharacterization.converter;
+package org.ohdsi.webapi.cohortdefinition.converter;
 
-import org.ohdsi.webapi.cohortcharacterization.dto.CohortDTO;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.converter.BaseConversionServiceAwareConverter;
 import org.springframework.stereotype.Component;

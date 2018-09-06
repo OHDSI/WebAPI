@@ -2,6 +2,8 @@ package org.ohdsi.webapi.cohortcharacterization.dto;
 
 import java.util.ArrayList;
 import java.util.Collection;
+
+import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
 
 public class CohortCharacterizationDTO extends CcShortDTO {

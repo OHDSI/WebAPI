@@ -1,10 +1,10 @@
-package org.ohdsi.webapi.cohortcharacterization.converter;
+package org.ohdsi.webapi.cohortdefinition.converter;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javax.annotation.PostConstruct;
-import org.ohdsi.webapi.cohortcharacterization.dto.CohortDTO;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.converter.BaseConversionServiceAwareConverter;

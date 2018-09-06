@@ -1,6 +1,8 @@
 package org.ohdsi.webapi.cohortcharacterization.dto;
 
-public class CcParameterDTO {
+import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterizationParam;
+
+public class CcParameterDTO implements CohortCharacterizationParam {
     
     private Long id;
     private String name;

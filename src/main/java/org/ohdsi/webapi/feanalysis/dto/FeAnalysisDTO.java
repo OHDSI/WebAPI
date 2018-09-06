@@ -1,10 +1,11 @@
 package org.ohdsi.webapi.feanalysis.dto;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysis;
 import org.ohdsi.webapi.feanalysis.FeAnalysisDeserializer;
 
 @JsonDeserialize(using = FeAnalysisDeserializer.class)
-public class FeAnalysisDTO extends FeAnalysisShortDTO {
+public class FeAnalysisDTO extends FeAnalysisShortDTO implements FeatureAnalysis {
     
     private String description;
     private String value;
@@ -38,5 +39,11 @@ public class FeAnalysisDTO extends FeAnalysisShortDTO {
     public void setDesign(final Object design) {
 
         this.design = design;
+    }
+
+    @Override
+    public String getDescr() {
+
+        return description;
     }
 }

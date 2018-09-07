@@ -9,7 +9,9 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringJoiner;
 import java.util.regex.Pattern;
 import javax.ws.rs.GET;
@@ -158,7 +160,7 @@ public class FeatureExtractionService extends AbstractDaoService {
 		return clauses;
 	}
 
-	private String getTimeWindow(String analysisName)
+	public String getTimeWindow(String analysisName)
 	{
 		if (analysisName.endsWith("LongTerm")) return "Long Term";
 		if (analysisName.endsWith("MediumTerm")) return "Medium Term";
@@ -201,7 +203,7 @@ public class FeatureExtractionService extends AbstractDaoService {
 			new String[]{"cdm_database_schema", "cdm_results_schema", "cohort_definition_id", "criteria_clauses"},
 			new String[]{cdmSchema, resultsSchema, Long.toString(cohortId), criteriaClauses.isEmpty() ? "" : " AND\n" + StringUtils.join(criteriaClauses, "\n AND ")}
 		);
-
+		
 		translatedSql = SqlTranslate.translateSql(categoricalQuery, source.getSourceDialect(), SessionUtils.sessionId(), resultsSchema);
 		List<PrevalenceStat> prevalenceStats = this.getSourceJdbcTemplate(source).query(translatedSql, (rs, rowNum) -> {
 			PrevalenceStat mappedRow = new PrevalenceStat() {
@@ -220,10 +222,11 @@ public class FeatureExtractionService extends AbstractDaoService {
 			};
 			return mappedRow;
 		});
-
+		
 		return prevalenceStats;
 	}
-
+	
+	
 	@GET
 	@Path("query/distributions/{cohortId}/{sourceKey}")
 	@Produces(MediaType.APPLICATION_JSON)

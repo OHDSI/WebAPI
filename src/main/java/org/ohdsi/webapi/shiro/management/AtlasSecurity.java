@@ -184,10 +184,10 @@ public abstract class AtlasSecurity extends Security {
       .addProtectedRestPath("/cohort-characterizations/import", "createPermissionsOnCreateCohortCharacterization")
       .addProtectedRestPath("/cohort-characterizations/*")
 // TODO:
-//      .addProtectedRestPath("/cohort-characterizations/*/generate/*")
+      .addProtectedRestPath("/cohort-characterizations/*/generate/*")
       .addProtectedRestPath("/cohort-characterizations/*/generations")
 // TODO:
-//      .addProtectedRestPath("/cohort-characterizations/*/generations/*")
+      .addProtectedRestPath("/cohort-characterizations/generations/*/results")
       .addProtectedRestPath("/cohort-characterizations/*/export")
 
       // feature analyses

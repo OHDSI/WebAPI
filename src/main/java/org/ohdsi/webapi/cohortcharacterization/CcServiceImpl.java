@@ -28,9 +28,11 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.SecurityUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
@@ -289,6 +291,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         SerializedCcToCcConverter designConverter = new SerializedCcToCcConverter();
 
         Source source = getSourceRepository().findBySourceKey(sourceKey);
+        checkSourceAccess(source);
+
         CohortCharacterizationEntity cc = repository.findById(id).orElseThrow(() -> new IllegalArgumentException("CC cannot be found by id " + id));
         String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
         String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
@@ -329,6 +333,12 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         return "todo";
     }
 
+    protected void checkSourceAccess(Source source) {
+        if (!SecurityUtils.getSubject().isPermitted(String.format("cohortdefinition:*:generate:%s:get", source.getSourceKey()))){
+            throw new ForbiddenException();
+        }
+    }
+
     @Override
     public List<CcGenerationEntity> findGenerationsByCcId(final Long id) {
         return ccGenerationRepository.findByCohortCharacterizationIdOrderByIdDesc(id, EntityUtils.fromAttributePaths("source"));
@@ -349,6 +359,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         final CcGenerationEntity generationEntity = ccGenerationRepository.findById(generationId)
                 .orElseThrow(() -> new IllegalArgumentException("generation cannot be found by id " + generationId));
         final Source source = generationEntity.getSource();
+        checkSourceAccess(source);
         final String resultSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
         String generationResults = SqlRender.renderSql(
                 QUERY_RESULTS,

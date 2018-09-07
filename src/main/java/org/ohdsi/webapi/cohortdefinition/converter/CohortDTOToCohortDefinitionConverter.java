@@ -11,7 +11,7 @@ import org.ohdsi.webapi.converter.BaseConversionServiceAwareConverter;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CohortDTOToCohortDefinitionConverter extends BaseConversionServiceAwareConverter<CohortDTO, CohortDefinition> {
+public class CohortDTOToCohortDefinitionConverter extends BaseCohortDTOToCohortDefinitionConverter<CohortDTO>{
     
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -22,12 +22,9 @@ public class CohortDTOToCohortDefinitionConverter extends BaseConversionServiceA
     
     @Override
     public CohortDefinition convert(final CohortDTO source) {
-        final CohortDefinition cohortDefinition = new CohortDefinition();
-        
-        cohortDefinition.setId(source.getId());
-        cohortDefinition.setName(source.getName());
-        cohortDefinition.setExpressionType(source.getExpressionType());
+        final CohortDefinition cohortDefinition = super.convert(source);
 
+        cohortDefinition.setExpressionType(source.getExpressionType());
         if (source.getExpression() != null) {
             final CohortDefinitionDetails details = new CohortDefinitionDetails();
             final String expression = convertExpression(source);

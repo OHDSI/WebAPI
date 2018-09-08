@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.cohortcharacterization.dto;
+package org.ohdsi.webapi.user.dto;
 
 public class UserDTO {
     

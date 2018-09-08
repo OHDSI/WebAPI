@@ -190,6 +190,9 @@ public abstract class AtlasSecurity extends Security {
 //      .addProtectedRestPath("/cohort-characterizations/*/generations/*")
       .addProtectedRestPath("/cohort-characterizations/*/export")
 
+      // Pathways Analyses
+      .addProtectedRestPath("/pathway-analyses")
+
       // feature analyses
       .addProtectedRestPath("/feature-analyses")
       .addProtectedRestPath("/feature-analyses/*")

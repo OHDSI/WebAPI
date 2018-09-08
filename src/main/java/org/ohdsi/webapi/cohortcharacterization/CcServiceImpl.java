@@ -85,8 +85,6 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
     private final String QUERY_RESULTS = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/queryResults.sql");
     
     private CcRepository repository;
-    private Security security;
-    private UserRepository userRepository;
     private CcParamRepository paramRepository;
     private FeAnalysisService analysisService;
     private CohortDefinitionRepository cohortRepository;
@@ -112,8 +110,6 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
             final FeatureExtractionService featureExtractionService,
             final ConversionService conversionService) {
         this.repository = ccRepository;
-        this.security = security;
-        this.userRepository = userRepository;
         this.paramRepository = paramRepository;
         this.analysisService = analysisService;
         this.cohortRepository = cohortRepository;
@@ -151,10 +147,6 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
 
     private void sortInnerEntities(final CohortCharacterizationEntity savedEntity) {
         savedEntity.setFeatureAnalyses(new TreeSet<>(savedEntity.getFeatureAnalyses()));
-    }
-
-    private UserEntity getCurrentUser() {
-        return userRepository.findByLogin(security.getSubject());
     }
 
     @Override

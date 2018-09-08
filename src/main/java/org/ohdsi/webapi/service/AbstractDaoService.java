@@ -13,6 +13,9 @@ import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisExecutionRepos
 import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetItemRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetRepository;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.shiro.Entities.UserRepository;
+import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
@@ -55,6 +58,12 @@ public abstract class AbstractDaoService {
 
   @Autowired 
   ConceptSetItemRepository conceptSetItemRepository;
+
+  @Autowired
+  private Security security;
+
+  @Autowired
+  private UserRepository userRepository;
 
   public static final List<GenerationStatus> INVALIDATE_STATUSES = new ArrayList<GenerationStatus>() {{
     add(GenerationStatus.PENDING);
@@ -242,6 +251,10 @@ public abstract class AbstractDaoService {
   protected void invalidateExecutions(List<? extends IExecutionInfo> executionInfoList) {
 
     executionInfoList.forEach(this::invalidateExecution);
+  }
+
+  protected UserEntity getCurrentUser() {
+    return userRepository.findByLogin(security.getSubject());
   }
 
 }

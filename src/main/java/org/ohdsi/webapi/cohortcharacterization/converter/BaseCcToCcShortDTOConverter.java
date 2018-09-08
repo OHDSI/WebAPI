@@ -2,11 +2,17 @@ package org.ohdsi.webapi.cohortcharacterization.converter;
 
 import org.ohdsi.webapi.cohortcharacterization.dto.CcShortDTO;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
-import org.ohdsi.webapi.cohortcharacterization.dto.UserDTO;
+import org.ohdsi.webapi.user.dto.UserDTO;
 import org.ohdsi.webapi.converter.BaseConversionServiceAwareConverter;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.ConversionService;
 
 public abstract class BaseCcToCcShortDTOConverter<T extends CcShortDTO> extends BaseConversionServiceAwareConverter<CohortCharacterizationEntity, T> {
+
+    @Autowired
+    protected ConversionService conversionService;
+
     @Override
     public T convert(final CohortCharacterizationEntity source) {
         final T dto = createResultObject();
@@ -17,20 +23,9 @@ public abstract class BaseCcToCcShortDTOConverter<T extends CcShortDTO> extends 
 
         dto.setCreatedAt(source.getCreatedAt());
         dto.setUpdatedAt(source.getUpdatedAt());
-        dto.setCreatedBy(convertUser(source.getCreatedBy()));
-        dto.setUpdatedBy(convertUser(source.getUpdatedBy()));
+        dto.setCreatedBy(conversionService.convert(source.getCreatedBy(), UserDTO.class));
+        dto.setUpdatedBy(conversionService.convert(source.getUpdatedBy(), UserDTO.class));
 
-        return dto;
-    }
-
-    private UserDTO convertUser(final UserEntity userEntity) {
-        if (userEntity == null) {
-            return null;
-        }
-        final UserDTO dto = new UserDTO();
-        dto.setId(userEntity.getId());
-        dto.setName(userEntity.getName());
-        dto.setLogin(userEntity.getLogin());
         return dto;
     }
 }

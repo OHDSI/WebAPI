@@ -21,7 +21,7 @@ public class PathwayAnalysisEntity {
     @Id
     @SequenceGenerator(name = "pathways_analyses_pk_sequence", sequenceName = "pathway_analyses_sequence", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pathways_analyses_pk_sequence")
-    private Long id;
+    private Integer id;
 
     @Column
     private String name;
@@ -55,12 +55,12 @@ public class PathwayAnalysisEntity {
     @Column(name = "updated_at")
     private Date updatedAt;
 
-    public Long getId() {
+    public Integer getId() {
 
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
 
         this.id = id;
     }

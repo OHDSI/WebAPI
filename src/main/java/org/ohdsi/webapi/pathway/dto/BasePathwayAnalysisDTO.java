@@ -1,14 +1,14 @@
 package org.ohdsi.webapi.pathway.dto;
 
+import org.ohdsi.analysis.CohortMetadata;
 import org.ohdsi.webapi.user.dto.UserDTO;
-import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataDTO;
 
 import java.util.Date;
 import java.util.List;
 
-public abstract class BasePathwayAnalysisDTO<T extends CohortMetadataDTO> {
+public abstract class BasePathwayAnalysisDTO<T extends CohortMetadata> {
 
-    private Long id;
+    private Integer id;
     private String name;
     private List<T> targetCohorts;
     private List<T> eventCohorts;
@@ -20,12 +20,12 @@ public abstract class BasePathwayAnalysisDTO<T extends CohortMetadataDTO> {
     private UserDTO updatedBy;
     private Date updatedAt;
 
-    public Long getId() {
+    public Integer getId() {
 
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
 
         this.id = id;
     }

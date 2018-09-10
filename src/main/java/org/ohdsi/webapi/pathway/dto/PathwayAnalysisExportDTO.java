@@ -1,7 +1,8 @@
 package org.ohdsi.webapi.pathway.dto;
 
 import org.ohdsi.analysis.pathway.design.PathwayAnalysis;
-import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
+import org.springframework.stereotype.Component;
 
-public class PathwayAnalysisExportDTO extends BasePathwayAnalysisDTO<CohortDTO> implements PathwayAnalysis {
+@Component
+public class PathwayAnalysisExportDTO extends BasePathwayAnalysisDTO<PathwayCohortExportDTO> implements PathwayAnalysis {
 }

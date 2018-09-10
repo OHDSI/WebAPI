@@ -1,0 +1,1 @@
+SELECT @event_cohort_id AS event_cohort_id, @event_cohort_index AS event_cohort_index

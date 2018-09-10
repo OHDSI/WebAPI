@@ -2,7 +2,6 @@ package org.ohdsi.webapi.pathway.domain;
 
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;

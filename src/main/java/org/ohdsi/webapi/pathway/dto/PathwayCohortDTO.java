@@ -4,15 +4,26 @@ import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataDTO;
 
 public class PathwayCohortDTO extends CohortMetadataDTO {
 
-    private Integer cohortDefinitionId;
+    private Integer code;
+    private Integer pathwayCohortId;
 
-    public Integer getCohortDefinitionId() {
+    public Integer getCode() {
 
-        return cohortDefinitionId;
+        return code;
     }
 
-    public void setCohortDefinitionId(Integer cohortDefinitionId) {
+    public void setCode(Integer code) {
 
-        this.cohortDefinitionId = cohortDefinitionId;
+        this.code = code;
+    }
+
+    public Integer getPathwayCohortId() {
+
+        return pathwayCohortId;
+    }
+
+    public void setPathwayCohortId(Integer pathwayCohortId) {
+
+        this.pathwayCohortId = pathwayCohortId;
     }
 }

@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface PathwayTargetCohortRepository extends EntityGraphJpaRepository<PathwayTargetCohort, Long> {
 
-    List<PathwayTargetCohort> findAllByPathwayAnalysisId(Long pathwayAnalysisId, EntityGraph source);
+    List<PathwayTargetCohort> findAllByPathwayAnalysisId(Integer pathwayAnalysisId, EntityGraph source);
 }

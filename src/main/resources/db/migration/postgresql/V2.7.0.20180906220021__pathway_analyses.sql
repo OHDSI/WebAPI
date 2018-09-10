@@ -27,7 +27,8 @@ CREATE TABLE ${ohdsiSchema}.pathway_event_cohorts
   id                   INTEGER PRIMARY KEY DEFAULT NEXTVAL('pathway_cohorts_sequence'),
   name                 VARCHAR NOT NULL,
   cohort_definition_id INTEGER NOT NULL REFERENCES ${ohdsiSchema}.cohort_definition (id),
-  pathway_analysis_id  INTEGER NOT NULL REFERENCES ${ohdsiSchema}.pathway_analyses (id)
+  pathway_analysis_id  INTEGER NOT NULL REFERENCES ${ohdsiSchema}.pathway_analyses (id),
+  is_deleted           BOOLEAN DEFAULT FALSE
 );
 
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)

@@ -39,6 +39,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.annotation.PostConstruct;
@@ -73,11 +75,14 @@ import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisRepository;
 import org.ohdsi.webapi.ircalc.PerformAnalysisTasklet;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.ohdsi.webapi.util.UserUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -119,6 +124,9 @@ public class IRAnalysisService extends AbstractDaoService {
 
   @Autowired
   private JobTemplate jobTemplate;
+
+  @Autowired
+  private UserRepository userRepository;
 
   @Autowired
   private Security security;
@@ -293,9 +301,9 @@ public class IRAnalysisService extends AbstractDaoService {
     aDTO.id = analysis.getId();
     aDTO.name = analysis.getName();
     aDTO.description = analysis.getDescription();
-    aDTO.createdBy = analysis.getCreatedBy();
+    aDTO.createdBy = UserUtils.nullSafeLogin(analysis.getCreatedBy());
     aDTO.createdDate = analysis.getCreatedDate();
-    aDTO.modifiedBy = analysis.getModifiedBy();
+    aDTO.modifiedBy = UserUtils.nullSafeLogin(analysis.getModifiedBy());
     aDTO.modifiedDate = analysis.getModifiedDate();
     aDTO.expression = analysis.getDetails() != null ? analysis.getDetails().getExpression() : null;
 
@@ -311,20 +319,21 @@ public class IRAnalysisService extends AbstractDaoService {
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
   public List<IRAnalysisService.IRAnalysisListItem> getIRAnalysisList() {
-    ArrayList<IRAnalysisService.IRAnalysisListItem> result = new ArrayList<>();
-    Iterable<IncidenceRateAnalysis> analysisList = this.irAnalysisRepository.findAll();
-    for (IncidenceRateAnalysis p : analysisList) {
-      IRAnalysisService.IRAnalysisListItem item = new IRAnalysisService.IRAnalysisListItem();
-      item.id = p.getId();
-      item.name = p.getName();
-      item.description = p.getDescription();
-      item.createdBy = p.getCreatedBy();
-      item.createdDate = p.getCreatedDate();
-      item.modifiedBy = p.getModifiedBy();
-      item.modifiedDate = p.getModifiedDate();
-      result.add(item);
-    }
-    return result;
+
+    return getTransactionTemplate().execute(transactionStatus -> {
+      Iterable<IncidenceRateAnalysis> analysisList = this.irAnalysisRepository.findAll();
+      return StreamSupport.stream(analysisList.spliterator(), false).map(p -> {
+        IRAnalysisService.IRAnalysisListItem item = new IRAnalysisService.IRAnalysisListItem();
+        item.id = p.getId();
+        item.name = p.getName();
+        item.description = p.getDescription();
+        item.createdBy = UserUtils.nullSafeLogin(p.getCreatedBy());
+        item.createdDate = p.getCreatedDate();
+        item.modifiedBy = UserUtils.nullSafeLogin(p.getModifiedBy());
+        item.modifiedDate = p.getModifiedDate();
+        return item;
+      }).collect(Collectors.toList());
+    });
   }
 
   /**
@@ -341,15 +350,16 @@ public class IRAnalysisService extends AbstractDaoService {
   public IRAnalysisDTO createAnalysis(IRAnalysisDTO analysis) {
     Date currentTime = Calendar.getInstance().getTime();
 
+    UserEntity user = userRepository.findByLogin(security.getSubject());
     // it might be possible to leverage saveAnalysis() but not sure how to pull the auto ID from
     // the DB to pass it into saveAnalysis (since saveAnalysis does a findOne() at the start).
     // If there's a way to get the Entity into the persistence manager so findOne() returns this newly created entity
     // then we could create the entity here (wihtout persist) and then call saveAnalysis within the sasme Tx.
     IncidenceRateAnalysis newAnalysis = new IncidenceRateAnalysis();
     newAnalysis.setName(analysis.name)
-            .setDescription(analysis.description)
-            .setCreatedBy(security.getSubject())
-            .setCreatedDate(currentTime);
+            .setDescription(analysis.description);
+    newAnalysis.setCreatedBy(user);
+    newAnalysis.setCreatedDate(currentTime);
     if (analysis.expression != null) {
       IncidenceRateAnalysisDetails details = new IncidenceRateAnalysisDetails(newAnalysis);
       newAnalysis.setDetails(details);
@@ -368,8 +378,11 @@ public class IRAnalysisService extends AbstractDaoService {
   @Consumes(MediaType.APPLICATION_JSON)
   @Transactional(readOnly = true)
   public IRAnalysisDTO getAnalysis(@PathParam("id") final int id) {
-    IncidenceRateAnalysis a = this.irAnalysisRepository.findOne(id);
-    return analysisToDTO(a);
+
+    return getTransactionTemplate().execute(transactionStatus -> {
+      IncidenceRateAnalysis a = this.irAnalysisRepository.findOne(id);
+      return analysisToDTO(a);
+    });
   }
 
   @PUT
@@ -379,11 +392,12 @@ public class IRAnalysisService extends AbstractDaoService {
   public IRAnalysisDTO saveAnalysis(@PathParam("id") final int id, IRAnalysisDTO analysis) {
     Date currentTime = Calendar.getInstance().getTime();
 
+    UserEntity user = userRepository.findByLogin(security.getSubject());
     IncidenceRateAnalysis updatedAnalysis = this.irAnalysisRepository.findOne(id);
     updatedAnalysis.setName(analysis.name)
-            .setDescription(analysis.description)
-            .setModifiedBy(security.getSubject())
-            .setModifiedDate(currentTime);
+            .setDescription(analysis.description);
+    updatedAnalysis.setModifiedBy(user);
+    updatedAnalysis.setModifiedDate(currentTime);
     
     if (analysis.expression != null) {
       

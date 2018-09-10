@@ -15,24 +15,14 @@
  */
 package org.ohdsi.webapi.ircalc;
 
+import org.ohdsi.webapi.model.CommonEntity;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
+
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  *
@@ -41,7 +31,7 @@ import javax.persistence.Table;
 
 @Entity(name = "IncidenceRateAnalysis")
 @Table(name="ir_analysis")
-public class IncidenceRateAnalysis implements Serializable {
+public class IncidenceRateAnalysis extends CommonEntity implements Serializable {
   private static final long serialVersionUID = 1L;
   
   @Id
@@ -56,19 +46,7 @@ public class IncidenceRateAnalysis implements Serializable {
   
   @Column(name="description")
   private String description;
-  
-  @Column(name="created_by")
-  private String createdBy;
-  
-  @Column(name="created_date")
-  private Date createdDate;
 
-  @Column(name="modified_by")
-  private String modifiedBy;
-    
-  @Column(name="modified_date")
-  private Date modifiedDate;
-  
   @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional=true, orphanRemoval = true)
   @JoinColumn(name="id")
   private IncidenceRateAnalysisDetails details;
@@ -109,42 +87,6 @@ public class IncidenceRateAnalysis implements Serializable {
   
   public IncidenceRateAnalysis setDetails(IncidenceRateAnalysisDetails details) {
     this.details = details;
-    return this;
-  }
-
-  public String getCreatedBy() {
-    return createdBy;
-  }
-
-  public IncidenceRateAnalysis setCreatedBy(String createdBy) {
-    this.createdBy = createdBy;
-    return this;
-  }
-
-  public Date getCreatedDate() {
-    return createdDate;
-  }
-
-  public IncidenceRateAnalysis setCreatedDate(Date createdDate) {
-    this.createdDate = createdDate;
-    return this;
-  }
-
-  public String getModifiedBy() {
-    return modifiedBy;
-  }
-
-  public IncidenceRateAnalysis setModifiedBy(String modifiedBy) {
-    this.modifiedBy = modifiedBy;
-    return this;
-  }
-
-  public Date getModifiedDate() {
-    return modifiedDate;
-  }
-
-  public IncidenceRateAnalysis setModifiedDate(Date modifiedDate) {
-    this.modifiedDate = modifiedDate;
     return this;
   }
 

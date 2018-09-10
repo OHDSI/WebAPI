@@ -19,26 +19,11 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.NamedAttributeNode;
-import javax.persistence.NamedEntityGraph;
-import javax.persistence.NamedSubgraph;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
+import javax.persistence.*;
+
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisGenerationInfo;
+import org.ohdsi.webapi.model.CommonEntity;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
 
 /**
  * JPA Entity for Cohort Definitions
@@ -51,7 +36,7 @@ import org.ohdsi.webapi.cohortanalysis.CohortAnalysisGenerationInfo;
     attributeNodes = { @NamedAttributeNode(value = "details", subgraph = "detailsGraph") },
     subgraphs = {@NamedSubgraph(name = "detailsGraph", type = CohortDefinitionDetails.class, attributeNodes = { @NamedAttributeNode(value="expression")})}
 )
-public class CohortDefinition implements Serializable{
+public class CohortDefinition extends CommonEntity implements Serializable{
 
   private static final long serialVersionUID = 1L;
     
@@ -78,18 +63,6 @@ public class CohortDefinition implements Serializable{
 
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "cohortDefinition")
 	private Set<CohortAnalysisGenerationInfo> cohortAnalysisGenerationInfoList = new HashSet<>();
-	
-  @Column(name="created_by")
-  private String createdBy;
-  
-  @Column(name="created_date")
-  private Date createdDate;
-
-  @Column(name="modified_by")
-  private String modifiedBy;
-    
-  @Column(name="modified_date")
-  private Date modifiedDate;
 
   public Integer getId() {
     return id;
@@ -125,43 +98,7 @@ public class CohortDefinition implements Serializable{
     this.expressionType = expressionType;
     return this;
   }
-  
-  public String getCreatedBy() {
-    return createdBy;
-  }
 
-  public CohortDefinition setCreatedBy(String createdBy) {
-    this.createdBy = createdBy;
-    return this;
-  }
-
-  public Date getCreatedDate() {
-    return createdDate;
-  }
-
-  public CohortDefinition setCreatedDate(Date createdDate) {
-    this.createdDate = createdDate;
-    return this;
-  }
-
-  public String getModifiedBy() {
-    return modifiedBy;
-  }
-
-  public CohortDefinition setModifiedBy(String modifiedBy) {
-    this.modifiedBy = modifiedBy;
-    return this;
-  }
-
-  public Date getModifiedDate() {
-    return modifiedDate;
-  }
-
-  public CohortDefinition setModifiedDate(Date modifiedDate) {
-    this.modifiedDate = modifiedDate;
-    return this;
-  }
-  
   public CohortDefinitionDetails getDetails() {
     return this.details;
   }

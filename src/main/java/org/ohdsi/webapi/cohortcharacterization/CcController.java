@@ -13,11 +13,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import org.ohdsi.webapi.Pagination;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
-import org.ohdsi.webapi.cohortcharacterization.dto.CcCreateDTO;
-import org.ohdsi.webapi.cohortcharacterization.dto.CcGenerationDTO;
-import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
-import org.ohdsi.webapi.cohortcharacterization.dto.CcShortDTO;
-import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
+import org.ohdsi.webapi.cohortcharacterization.dto.*;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -44,7 +40,7 @@ public class CcController {
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public CcCreateDTO create(final CohortCharacterizationDTO dto) {
+    public CohortCharacterizationDTO create(final CohortCharacterizationDTO dto) {
         final CohortCharacterizationEntity createdEntity = service.createCc(conversionService.convert(dto, CohortCharacterizationEntity.class));
         return conversionService.convert(createdEntity, CohortCharacterizationDTO.class);
     }
@@ -57,7 +53,6 @@ public class CcController {
         return service.getPageWithLinkedEntities(pageable).map(this::convertCcToShortDto);
     }
 
-    // TODO: return with "short" cohorts & features
     @GET
     @Path("/design")
     @Produces(MediaType.APPLICATION_JSON)
@@ -154,9 +149,9 @@ public class CcController {
     @Path("/generations/{generationId}/design")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public CohortCharacterizationDTO getGenerationDesign(
+    public CcExportDTO getGenerationDesign(
             @PathParam("generationId") final Long generationId) {
-        return conversionService.convert(service.findDesignByGenerationId(generationId), CohortCharacterizationDTO.class);
+        return conversionService.convert(service.findDesignByGenerationId(generationId), CcExportDTO.class);
     }
 
     @GET

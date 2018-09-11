@@ -30,7 +30,7 @@ import org.ohdsi.webapi.shiro.Entities.UserEntity;
 public class CohortCharacterizationEntity implements CohortCharacterization {
 
     @Id
-    @SequenceGenerator(name = "cohort_characterizations_pk_sequence", sequenceName = "cohort_characterizations_sequence", allocationSize = 1)
+    @SequenceGenerator(name = "cohort_characterizations_pk_sequence", sequenceName = "cohort_characterizations_seq", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "cohort_characterizations_pk_sequence")
     private Long id;
     

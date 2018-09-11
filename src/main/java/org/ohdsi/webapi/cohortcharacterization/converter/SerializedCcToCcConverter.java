@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
-import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcExportDTO;
 import org.springframework.core.convert.ConversionService;
 
 import javax.persistence.AttributeConverter;
@@ -28,7 +28,7 @@ public class SerializedCcToCcConverter implements AttributeConverter<CohortChara
 
         String value = "";
         try {
-            CohortCharacterizationDTO cohortCharacterizationDTO = conversionService.convert(data, CohortCharacterizationDTO.class);
+            CcExportDTO cohortCharacterizationDTO = conversionService.convert(data, CcExportDTO.class);
             value = mapper.writeValueAsString(cohortCharacterizationDTO);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
@@ -40,7 +40,7 @@ public class SerializedCcToCcConverter implements AttributeConverter<CohortChara
     public CohortCharacterizationEntity convertToEntityAttribute(String data) {
 
         CohortCharacterizationEntity cc = new CohortCharacterizationEntity();
-        TypeReference<CohortCharacterizationDTO> typeRef = new TypeReference<CohortCharacterizationDTO>() {};
+        TypeReference<CcExportDTO> typeRef = new TypeReference<CcExportDTO>() {};
         try {
             cc = conversionService.convert(mapper.readValue(data, typeRef), CohortCharacterizationEntity.class);
         } catch (IOException e) {

@@ -1,10 +1,10 @@
 CREATE SEQUENCE ${ohdsiSchema}.cohort_characterizations_seq;
-CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.cohort_characterizations
+CREATE TABLE ${ohdsiSchema}.cohort_characterizations
 (
-  id                 BIGINT                PRIMARY KEY DEFAULT NEXTVAL('cohort_characterizations_seq'),
+  id                 NUMBER(19)     PRIMARY KEY,
   name               VARCHAR(255)   NOT NULL,
-  created_by         INTEGER                  NOT NULL,
-  created_at         TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT (now()),
+  created_by         INTEGER        NOT NULL,
+  created_at         TIMESTAMP WITH TIME ZONE DEFAULT sysdate NOT NULL,
   updated_by         INTEGER,
   updated_at         TIMESTAMP WITH TIME ZONE,
   hash_code          INTEGER                  NULL
@@ -12,73 +12,69 @@ CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.cohort_characterizations
 
 ALTER TABLE ${ohdsiSchema}.cohort_characterizations
   ADD CONSTRAINT fk_cc_ser_user_creator FOREIGN KEY (created_by)
-REFERENCES ${ohdsiSchema}.sec_user (id)
-ON UPDATE NO ACTION ON DELETE NO ACTION;
+REFERENCES ${ohdsiSchema}.sec_user (id);
 
 ALTER TABLE ${ohdsiSchema}.cohort_characterizations
   ADD CONSTRAINT fk_cc_ser_user_updater FOREIGN KEY (updated_by)
-REFERENCES ${ohdsiSchema}.sec_user (id)
-ON UPDATE NO ACTION ON DELETE NO ACTION;
+REFERENCES ${ohdsiSchema}.sec_user (id);
 
 
 
 CREATE SEQUENCE ${ohdsiSchema}.cc_params_sequence;
-CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.cc_params
+CREATE TABLE ${ohdsiSchema}.cc_params
 (
-  id                          BIGINT               PRIMARY KEY DEFAULT NEXTVAL('cc_params_sequence'),
-  cohort_characterization_id  BIGINT                  NOT NULL,
+  id                          NUMBER(19)               PRIMARY KEY,
+  cohort_characterization_id  NUMBER(19)                  NOT NULL,
   name                        VARCHAR(255),
   value                       VARCHAR(255)
 );
 
 ALTER TABLE ${ohdsiSchema}.cc_params
   ADD CONSTRAINT fk_ccp_cc FOREIGN KEY (cohort_characterization_id)
-REFERENCES ${ohdsiSchema}.cohort_characterizations (id)
-ON UPDATE NO ACTION ON DELETE CASCADE;
+REFERENCES ${ohdsiSchema}.cohort_characterizations (id);
 
 
 
 CREATE SEQUENCE ${ohdsiSchema}.fe_analyses_sequence;
-CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.fe_analyses
+CREATE TABLE ${ohdsiSchema}.fe_analyses
 (
-  id         BIGINT               PRIMARY KEY DEFAULT NEXTVAL('fe_analyses_sequence'),
+  id         NUMBER(19)               PRIMARY KEY,
   type       VARCHAR(255),
   name       VARCHAR(255),
   domain     VARCHAR(255),
   descr      VARCHAR(1000),
   value      VARCHAR(255),
-  design     Text,
-  is_locked  BOOLEAN,
+  design     CLOB,
+  is_locked  NUMBER(1),
   stat_type  VARCHAR(255)
 );
 
-INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
-VALUES
-  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterizations:post', 'Create cohort characterization'),
-  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterizations:import:post', 'Import cohort characterization'),
-  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterizations:get', 'Get cohort characterizations list'),
-  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterizations:*:get', 'Get cohort characterization'),
-  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterizations:*:generations:get', 'Get cohort characterization generations'),
-  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterizations:generations:*:results:get', 'Get cohort characterization generation results'),
-  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterizations:*:export', 'Export cohort characterization'),
 
-  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'feature-analyses:get', 'Get feature analyses list'),
-  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'feature-analyses:*:get', 'Get feature analysis'),
-  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'feature-analyses:post', 'Create feature analysis');
+INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
+  SELECT (${ohdsiSchema}.sec_permission_id_seq.nextval, 'cohort-characterizations:post', 'Create cohort characterization') FROM dual
+  UNION SELECT (${ohdsiSchema}.sec_permission_id_seq.nextval, 'cohort-characterizations:import:post', 'Import cohort characterization') FROM dual
+  UNION SELECT (${ohdsiSchema}.sec_permission_id_seq.nextval, 'cohort-characterizations:*:get', 'Get cohort characterization') FROM dual
+  UNION SELECT (${ohdsiSchema}.sec_permission_id_seq.nextval, 'cohort-characterizations:get', 'Get cohort characterizations list') FROM dual
+  UNION SELECT (${ohdsiSchema}.sec_permission_id_seq.nextval, 'cohort-characterizations:*:generations:get', 'Get cohort characterization generations') FROM dual
+  UNION SELECT (${ohdsiSchema}.sec_permission_id_seq.nextval, 'cohort-characterizations:generations:*:results:get', 'Get cohort characterization generation results') FROM dual
+  UNION SELECT (${ohdsiSchema}.sec_permission_id_seq.nextval, 'cohort-characterizations:*:export', 'Export cohort characterization') FROM dual
+
+  UNION SELECT (${ohdsiSchema}.sec_permission_id_seq.nextval, 'feature-analyses:get', 'Get feature analyses list') FROM dual
+  UNION SELECT (${ohdsiSchema}.sec_permission_id_seq.nextval, 'feature-analyses:*:get', 'Get feature analysis') FROM dual
+  UNION SELECT (${ohdsiSchema}.sec_permission_id_seq.nextval, 'feature-analyses:post', 'Create feature analysis') FROM dual;
+
 
 INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
 SELECT sr.id, sp.id
 FROM ${ohdsiSchema}.sec_permission SP, ${ohdsiSchema}.sec_role sr
 WHERE sp."value" IN (
   'cohort-characterizations:post',
-  'cohort-characterizations:import:post',
   'cohort-characterizations:get',
+  'cohort-characterizations:import:post',
   'cohort-characterizations:*:get',
   'cohort-characterizations:*:generations:get',
   'cohort-characterizations:generations:*:results:get',
   'cohort-characterizations:*:export',
-
-  -- TODO: add SOURCE based permissions
 
   'feature-analyses:get',
   'feature-analyses:*:get',
@@ -86,77 +82,70 @@ WHERE sp."value" IN (
 )
 AND sr.name IN ('Atlas users');
 
-
 -- SOURCE based permissions
 
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
-  SELECT nextval('${ohdsiSchema}.sec_permission_id_seq') AS id,
+  SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval AS id,
          'cohort-characterizations:*:generate:' || source_key || ':post' AS value,
          'Generate Cohort Characterization on Source with SourceKey = ' || source_key AS description
   FROM ${ohdsiSchema}.source UNION
-  SELECT nextval('${ohdsiSchema}.sec_permission_id_seq') AS id,
-          'source:' || source_key || ':access' AS value,
-          'Access to Source with SourceKey = ' || source_key AS description
+  SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval AS id,
+         'source:' || source_key || ':access' AS value,
+         'Access to Source with SourceKey = ' || source_key AS description
   FROM ${ohdsiSchema}.source;
 
 INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
-  SELECT sr.id, sp.id 
-	FROM ${ohdsiSchema}.source 
-	join ${ohdsiSchema}.sec_permission sp ON sp.value IN ('cohort-characterizations:*:generate:' || source_key || ':post', 'source:' || source_key || ':access')
-  join ${ohdsiSchema}.sec_role sr ON sr.name = 'Source user (' || source_key || ')';
+  SELECT sr.id, sp.id FROM source join
+    sec_permission sp ON sp.value IN ('cohort-characterizations:*:generate:' || source_key || ':post', 'source:' || source_key || ':access')
+    join sec_role sr ON sr.name = 'Source user (' || source_key || ')';
 
-CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.cc_analyses
+CREATE TABLE ${ohdsiSchema}.cc_analyses
 (
-  cohort_characterization_id BIGINT NOT NULL,
-  fe_analysis_id BIGINT NOT NULL
+  cohort_characterization_id NUMBER(19) NOT NULL,
+  fe_analysis_id NUMBER(19) NOT NULL
 );
 
 ALTER TABLE ${ohdsiSchema}.cc_analyses
   ADD CONSTRAINT fk_c_char_a_fe_analyses FOREIGN KEY (fe_analysis_id)
-REFERENCES ${ohdsiSchema}.fe_analyses(id)
-ON UPDATE NO ACTION ON DELETE CASCADE;
+REFERENCES ${ohdsiSchema}.fe_analyses(id);
 
 ALTER TABLE ${ohdsiSchema}.cc_analyses
   ADD CONSTRAINT fk_c_char_a_cc FOREIGN KEY (cohort_characterization_id)
-REFERENCES ${ohdsiSchema}.cohort_characterizations(id)
-ON UPDATE NO ACTION ON DELETE CASCADE;
+REFERENCES ${ohdsiSchema}.cohort_characterizations(id);
 
 
 
 CREATE SEQUENCE ${ohdsiSchema}.fe_analysis_criteria_sequence;
-CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.fe_analysis_criteria
+CREATE TABLE ${ohdsiSchema}.fe_analysis_criteria
 (
-  id BIGINT PRIMARY KEY DEFAULT NEXTVAL('fe_analysis_criteria_sequence'),
+  id NUMBER(19) PRIMARY KEY,
   name VARCHAR(255),
-  expression Text,
-  fe_analysis_id BIGINT
+  expression CLOB,
+  fe_analysis_id NUMBER(19)
 );
 
 ALTER TABLE ${ohdsiSchema}.fe_analysis_criteria
   ADD CONSTRAINT fk_fec_fe_analyses FOREIGN KEY (fe_analysis_id)
-REFERENCES ${ohdsiSchema}.fe_analyses(id)
-ON UPDATE NO ACTION ON DELETE CASCADE;
+REFERENCES ${ohdsiSchema}.fe_analyses(id);
 
 
 
-CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.cc_cohorts
+CREATE TABLE ${ohdsiSchema}.cc_cohorts
 (
-  cohort_characterization_id BIGINT NOT NULL,
-  cohort_id INT NOT NULL
+  cohort_characterization_id NUMBER(19) NOT NULL,
+  cohort_id NUMBER(19) NOT NULL
 );
 
 ALTER TABLE ${ohdsiSchema}.cc_cohorts
   ADD CONSTRAINT fk_c_char_c_fe_analyses FOREIGN KEY (cohort_id)
-REFERENCES ${ohdsiSchema}.cohort_definition(id)
-ON UPDATE NO ACTION ON DELETE CASCADE;
+REFERENCES ${ohdsiSchema}.cohort_definition(id);
 
 ALTER TABLE ${ohdsiSchema}.cc_cohorts
   ADD CONSTRAINT fk_c_char_c_cc FOREIGN KEY (cohort_characterization_id)
-REFERENCES ${ohdsiSchema}.cohort_characterizations(id)
-ON UPDATE NO ACTION ON DELETE CASCADE;
+REFERENCES ${ohdsiSchema}.cohort_characterizations(id);
 
 
-ALTER TABLE ${ohdsiSchema}.cohort_definition_details ADD hash_code int null;
+ALTER TABLE ${ohdsiSchema}.cohort_definition_details ADD hash_code NUMBER(10) null;
 
 INSERT INTO ${ohdsiSchema}.fe_analyses (type, name, domain, descr, value, design, is_locked, stat_type) VALUES ('PRESET', 'Measurement Range Group Short Term', NULL, 'Covariates indicating whether measurements are below, within, or above normal range in the short term window.', null, 'MeasurementRangeGroupShortTerm', true, 'PREVALENCE');
 INSERT INTO ${ohdsiSchema}.fe_analyses (type, name, domain, descr, value, design, is_locked, stat_type) VALUES ('PRESET', 'Condition Group Era Start Long Term', 'CONDITION', 'One covariate per condition era rolled up to groups in the condition_era table starting in the long term window.', null, 'ConditionGroupEraStartLongTerm', true, 'PREVALENCE');
@@ -263,4 +252,18 @@ INSERT INTO ${ohdsiSchema}.fe_analyses (type, name, domain, descr, value, design
 INSERT INTO ${ohdsiSchema}.fe_analyses (type, name, domain, descr, value, design, is_locked, stat_type) VALUES ('PRESET', 'Visit Count Long Term', 'VISIT', 'The number of visits observed in the long term window.', null, 'VisitCountLongTerm', true, 'PREVALENCE');
 INSERT INTO ${ohdsiSchema}.fe_analyses (type, name, domain, descr, value, design, is_locked, stat_type) VALUES ('PRESET', 'Occurrence Primary Inpatient Medium Term', 'CONDITION', 'One covariate per condition observed  as a primary diagnosis in an inpatient setting in the condition_occurrence table starting in the medium term window.', null, 'ConditionOccurrencePrimaryInpatientMediumTerm', true, 'PREVALENCE');
 
--- TODO indexes
+ALTER TABLE ${ohdsiSchema}.batch_job_execution_params ALTER string_val TYPE VARCHAR;
+
+CREATE OR REPLACE VIEW ${ohdsiSchema}.cc_generations as
+  (SELECT job.job_execution_id,
+          MAX(job.create_time)                                                                     date,
+          MAX(job.status)                                                                          status,
+          MAX(CASE WHEN params.key_name = 'hash_code' THEN params.string_val END)                  hash_code,
+          MAX(CASE WHEN params.key_name = 'cohort_characterization_id' THEN params.string_val END) cohort_characterization_id,
+          MAX(CASE WHEN params.key_name = 'source_id' THEN params.string_val END)                  source_id
+   FROM ${ohdsiSchema}.batch_job_execution job
+          JOIN ${ohdsiSchema}.batch_job_execution_params params ON job.job_execution_id = params.job_execution_id
+                                                                     AND (params.key_name = 'hash_code' OR
+                                                                          params.key_name = 'cohort_characterization_id' OR
+                                                                          params.key_name = 'source_id')
+   GROUP BY job.job_execution_id);

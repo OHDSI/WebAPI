@@ -3,7 +3,7 @@ package org.ohdsi.webapi.feanalysis;
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysis;
 import org.ohdsi.webapi.Pagination;
-import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
+import org.ohdsi.webapi.feanalysis.dto.FeAnalysisShortDTO;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,11 +36,11 @@ public class FeAnalysisController {
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Page<FeAnalysisDTO> list(@Pagination Pageable pageable) { // TODO: FeAnalysisShortDTO
+    public Page<FeAnalysisShortDTO> list(@Pagination Pageable pageable) {
         return service.getPage(pageable).map(this::convertFeAnaysisToShortDto);
     }
 
-    private FeAnalysisDTO convertFeAnaysisToShortDto(final FeatureAnalysis entity) {
-        return conversionService.convert(entity, FeAnalysisDTO.class);
+    private FeAnalysisShortDTO convertFeAnaysisToShortDto(final FeatureAnalysis entity) {
+        return conversionService.convert(entity, FeAnalysisShortDTO.class);
     }
 }

@@ -4,7 +4,8 @@ import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisD
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 
 public class FeAnalysisShortDTO {
-    
+
+    protected String description;
     private Long id;
     private String name;
     private StandardFeatureAnalysisType type;
@@ -44,5 +45,15 @@ public class FeAnalysisShortDTO {
 
     public void setDomain(final StandardFeatureAnalysisDomain domain) {
         this.domain = domain;
+    }
+
+    public String getDescription() {
+
+        return description;
+    }
+
+    public void setDescription(final String description) {
+
+        this.description = description;
     }
 }

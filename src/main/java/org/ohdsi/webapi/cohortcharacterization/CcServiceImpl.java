@@ -334,7 +334,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
     }
 
     protected void checkSourceAccess(Source source) {
-        if (!SecurityUtils.getSubject().isPermitted(String.format("cohortdefinition:*:generate:%s:get", source.getSourceKey()))){
+        if (!SecurityUtils.getSubject().isPermitted(String.format(Security.SOURCE_ACCESS_PERMISSION, source.getSourceKey()))){
             throw new ForbiddenException();
         }
     }

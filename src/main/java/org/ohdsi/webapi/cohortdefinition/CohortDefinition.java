@@ -225,7 +225,8 @@ CohortDefinition implements Serializable, Cohort {
     public CohortExpression getExpression() {
 
       try {
-        return new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).readValue(details.getExpression(), CohortExpression.class);
+        return (details != null && details.getExpression() != null) ?
+                new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).readValue(details.getExpression(), CohortExpression.class) : null;
       } catch (IOException e) {
         return null;
       }

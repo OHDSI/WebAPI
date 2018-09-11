@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import java.util.Date;
 import org.ohdsi.webapi.cohortcharacterization.CcConst;
 
-public class CcShortDTO extends CcCreateDTO {
+public class CcShortDTO {
     
     private Long id;
     private UserDTO createdBy;
@@ -14,6 +14,7 @@ public class CcShortDTO extends CcCreateDTO {
     @JsonFormat(pattern = CcConst.dateFormat)
     private Date updatedAt;
     private Integer hashCode;
+    private String name;
 
     public Long getId() {
         return id;
@@ -61,5 +62,13 @@ public class CcShortDTO extends CcCreateDTO {
 
     public void setHashCode(final Integer hashCode) {
         this.hashCode = hashCode;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(final String name) {
+        this.name = name;
     }
 }

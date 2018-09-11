@@ -91,11 +91,15 @@ INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
   SELECT NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq AS id,
     'cohort-characterizations:*:generate:' + source_key + ':post' AS value,
     'Generate Cohort Characterization on Source with SourceKey = ' + source_key AS description
-FROM ${ohdsiSchema}.source;
+  FROM ${ohdsiSchema}.source UNION
+  SELECT NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq AS id,
+    'source:' + source_key + ':access' AS value,
+    'Access to Source with SourceKey = ' + source_key AS description
+  FROM ${ohdsiSchema}.source;
 
 INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
-  SELECT sr.id, sp.id FROM source join
-    sec_permission sp ON sp.value = 'cohort-characterizations:*:generate:' + source_key + ':post'
+  SELECT sr.id, sp.id FROM ${ohdsiSchema}.source join
+    sec_permission sp ON sp.value IN ('cohort-characterizations:*:generate:' + source_key + ':post', 'source:' + source_key + ':access')
   join sec_role sr ON sr.name = 'Source user (' + source_key + ')';
 
 

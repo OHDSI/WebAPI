@@ -1,17 +1,21 @@
-DROP TABLE #raw_events;
+DELETE FROM @target_database_schema.pathway_analysis_events WHERE pathway_analysis_generation_id = @generation_id;
 
 /*
 * Filter out events which do not fall into a person's target period
 */
+
 WITH event_cohorts AS (
+  /*
+  * e.g.:
+  * SELECT 1 AS cohort_definition_id, 1 AS cohort_index UNION ALL ...
+  */
   @event_cohort_id_index_map
 )
-select id, event_cohort_id, event_cohort_index, subject_id, cohort_start_date, cohort_end_date
+select id, event_cohort_index, subject_id, cohort_start_date, cohort_end_date
 INTO #raw_events
 FROM (
-	SELECT ROW_NUMBER() OVER (ORDER BY e.cohort_start_date) as id,
-	  ec.id event_cohort_id,
-	  ec.cohort_index event_cohort_index,
+	SELECT ROW_NUMBER() OVER (ORDER BY e.cohort_start_date) AS id,
+	  ec.cohort_index AS event_cohort_index,
 	  e.subject_id,
 	  e.cohort_start_date,
 	  e.cohort_end_date
@@ -21,12 +25,10 @@ FROM (
 	WHERE t.cohort_definition_id IN (@pathway_target_cohort_id_list)
 ) RE;
 
--- SELECT * FROM #raw_events;
+/*
+* Find closely located dates, which need to be collapsed, based on collapse_window
+*/
 
--- DROP TABLE #date_replacements;
-
--- Find closely located dates, which need to be collapsed, based on collapse_window
--- cknoll1: replaced date subtraction with datediff()
 WITH person_dates AS (
   SELECT subject_id, cohort_start_date cohort_date FROM #raw_events
   UNION
@@ -52,14 +54,12 @@ INTO #date_replacements
 FROM replacements
 WHERE cohort_date <> replacement_date;
 
--- SELECT * FROM #date_replacements;
+/*
+* Collapse dates
+*/
 
--- DROP TABLE #collapsed_dates_events;
-
--- Collapse dates
 SELECT
   event.id,
-  event.event_cohort_id,
   event.event_cohort_index,
   event.subject_id,
   COALESCE(start_dr.replacement_date, event.cohort_start_date) cohort_start_date,
@@ -70,26 +70,25 @@ FROM #raw_events event
   LEFT JOIN #date_replacements end_dr ON end_dr.subject_id = event.subject_id AND end_dr.cohort_date = event.cohort_end_date
 ORDER BY event.cohort_start_date, event.cohort_end_date;
 
-SELECT subject_id, event_cohort_id, event_cohort_index, cohort_start_date, cohort_end_date
+SELECT subject_id, event_cohort_index, cohort_start_date, cohort_end_date
 FROM #collapsed_dates_events
 ORDER BY subject_id, cohort_start_date, cohort_end_date;
 
-DROP TABLE #split_overlapping_events;
+/*
+Split partially overlapping events into a set of events which either do not overlap or fully overlap (for later GROUP BY start_date, end_date)
 
--- Split partially overlapping events into a set of events which either do not overlap or fully overlap (for later GROUP BY start_date, end_date)
---
--- e.g.
---    |A------|
---        |B-----|
--- into
---
---    |A--|A--|
---        |B--|B--|
+e.g.
+  |A------|
+      |B-----|
+into
+
+  |A--|A--|
+      |B--|B--|
+*/
 
 SELECT
 	CASE WHEN ordinal < 3 THEN first.id ELSE second.id END as id,
-	CASE WHEN ordinal < 3 THEN first.event_cohort_id ELSE second.event_cohort_id END event_cohort_id,
-	CASE WHEN ordinal < 3 THEN first.event_cohort_id ELSE second.event_cohort_id END event_cohort_index,
+	CASE WHEN ordinal < 3 THEN first.event_cohort_index ELSE second.event_cohort_index END event_cohort_index,
 	CASE WHEN ordinal < 3 THEN first.subject_id ELSE second.subject_id END subject_id,
 
 	CASE ordinal
@@ -122,26 +121,10 @@ JOIN #collapsed_dates_events second ON first.subject_id = second.subject_id
 CROSS JOIN (SELECT 1 ordinal UNION SELECT 2 UNION SELECT 3 UNION SELECT 4) multiplier;
 
 /*
-WITH events AS (
-  SELECT *
-  FROM #collapsed_dates_events cde
-  WHERE NOT EXISTS(SELECT id FROM #split_overlapping_events WHERE #split_overlapping_events.id = cde.id)
-
-  UNION ALL
-
-  SELECT *
-  FROM #split_overlapping_events
-)
-SELECT subject_id, event_cohort_id, cohort_start_date, cohort_end_date
-FROM events
-ORDER BY subject_id, cohort_start_date, cohort_end_date;
+* Group fully overlapping events into combinations (e.g. two separate events A and B with same start and end dates -> single A+B event)
+* We'll use bitwise addition with SUM() to combine events instead of LIST_AGG(), replacing 'name' column with 'combo_id'.
 */
 
--- Group fully overlapping events into combinations (e.g. two separate events A and B with same start and end dates -> single A+B event)
--- cknoll1: we'll use bitwise addition with SUM() to combine events instead of LIST_AGG(), replacing 'name' column with 'combo_id'
-
--- DROP TABLE #combo_events;
-
 WITH events AS (
   SELECT *
   FROM #collapsed_dates_events cde
@@ -152,21 +135,16 @@ WITH events AS (
   SELECT *
   FROM #split_overlapping_events
 )
-SELECT SUM(POWER(2,ec.cohort_index)) as combo_id, subject_id, cohort_start_date, cohort_end_date
+SELECT SUM(POWER(2, e.event_cohort_index)) as combo_id, subject_id, cohort_start_date, cohort_end_date
 INTO #combo_events
 FROM events e
-JOIN #event_cohorts ec ON ec.id = e.event_cohort_id
 GROUP BY subject_id, cohort_start_date, cohort_end_date;
 
-
 /*
-SELECT subject_id, combo_id, cohort_start_date, cohort_end_date
-FROM #combo_events
-ORDER BY subject_id, cohort_start_date, cohort_end_date;
+* Remove repetitive events (e.g. A-A-A into A) and persist results
 */
 
--- Remove repetetive events (e.g. A-A-A into A)
--- cknoll1: from here forward: combo_id is replacing 'name'
+INSERT INTO @target_database_schema.pathway_analysis_events
 WITH marked_repetitive_events AS (
   SELECT
     *,
@@ -177,29 +155,10 @@ WITH marked_repetitive_events AS (
   FROM #combo_events
 )
 SELECT
+  @generation_id,
   combo_id,
   subject_id,
   cohort_start_date,
   cohort_end_date
-INTO #non_repetetive_combo_events
 FROM marked_repetitive_events
 WHERE repetitive_event = 0;
-
--- From here we proceed as normal, but creating a chain of combo_ids instead of 'name'
--- using whatever
-
--- Now, Some magic:  give me the cohort names that belong in each combo event:
-
-select * from #event_cohorts;
-
-select nre.combo_id, nre.subject_id, nre.cohort_start_date, ec.cohort_name
-FROM  #non_repetetive_combo_events nre
-JOIN #event_cohorts ec on nre.combo_id & POWER(2,ec.cohort_index) > 0
-ORDER BY subject_id, cohort_start_date;
-
--- This would be left to the client to parse out the treatment pathway into the names of the members of the combo:
-select * from #non_repetetive_combo_events ORDER BY subject_id, cohort_start_date;
-
--- 2->1->6->1->3->2
--- In javascript, if you have an array of event cohorts with form [ {name, cohort_index) ...] you can get the cohorts in the combo_id like:
--- cohort_events.filter((item) -> pow(2,item.cohort_index) & combo_id > 0); // returns cohorts which match the combo_id

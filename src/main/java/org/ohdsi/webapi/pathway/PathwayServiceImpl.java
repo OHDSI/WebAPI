@@ -1,12 +1,13 @@
 package org.ohdsi.webapi.pathway;
 
-import com.odysseusinc.arachne.commons.types.DBMSType;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.domain.PathwayEventCohort;
 import org.ohdsi.webapi.pathway.domain.PathwayTargetCohort;
+import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
+import org.ohdsi.webapi.pathway.dto.internal.PersonPathwayEvent;
 import org.ohdsi.webapi.pathway.repository.PathwayAnalysisEntityRepository;
 import org.ohdsi.webapi.pathway.repository.PathwayEventCohortRepository;
 import org.ohdsi.webapi.pathway.repository.PathwayTargetCohortRepository;
@@ -15,6 +16,7 @@ import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.EntityUtils;
+import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,11 +24,16 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.summingInt;
 
 @Service
 public class PathwayServiceImpl extends AbstractDaoService implements PathwayService {
@@ -92,11 +99,13 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
     @Override
     public Page<PathwayAnalysisEntity> getPage(final Pageable pageable) {
+
         return pathwayAnalysisRepository.findAll(pageable).map(this::gatherLinkedEntities);
     }
 
     @Override
     public PathwayAnalysisEntity getById(Integer id) {
+
         return gatherLinkedEntities(pathwayAnalysisRepository.findOne(id));
     }
 
@@ -125,6 +134,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
     @Override
     public Map<Integer, Integer> getEventCohortCodes(Integer pathwayAnalysisId) {
+
         Map<Integer, Integer> map = new HashMap<>();
         Query q = entityManager.createNativeQuery(
                 "SELECT id, ROW_NUMBER() OVER (ORDER BY id) AS event_index " +
@@ -141,7 +151,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     }
 
     @Override
-    public String buildAnalysisSql(Integer pathwayAnalysisId, String sourceKey) {
+    public String buildAnalysisSql(Integer generationId, Integer pathwayAnalysisId, String sourceKey) {
 
         PathwayAnalysisEntity pathwayAnalysis = getById(pathwayAnalysisId);
         Map<Integer, Integer> eventCohortCodes = getEventCohortCodes(pathwayAnalysisId);
@@ -155,19 +165,21 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         String eventCohortIdIndexSql = pathwayAnalysis.getEventCohorts()
                 .stream()
                 .map(ec -> {
-                    String[] params = new String[]{"event_cohort_id", "event_cohort_index"};
+                    String[] params = new String[]{"cohort_definition_id", "event_cohort_index"};
                     String[] values = new String[]{ec.getCohortDefinition().getId().toString(), eventCohortCodes.get(ec.getId()).toString()};
                     return SqlRender.renderSql(eventCohortInputSql, params, values);
                 })
                 .collect(Collectors.joining(" UNION ALL "));
 
         String[] params = new String[]{
+                "generation_id",
                 "event_cohort_id_index_map",
                 "target_database_schema",
                 "target_cohort_table",
                 "pathway_target_cohort_id_list"
         };
         String[] values = new String[]{
+               generationId.toString() ,
                 eventCohortIdIndexSql,
                 resultsTableQualifier,
                 "cohort",
@@ -175,9 +187,64 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         };
 
         String renderedSql = SqlRender.renderSql(analysisSql, params, values);
-        String translatedSql = SqlTranslate.translateSql(renderedSql, DBMSType.POSTGRESQL.getOhdsiDB());
+        String translatedSql = SqlTranslate.translateSql(renderedSql, source.getSourceDialect());
 
         return translatedSql;
+    }
+
+    @Override
+    public PathwayAnalysisResult getResultingPathways(final Integer id) {
+
+        PathwayAnalysisResult result = new PathwayAnalysisResult();
+        result.setCodes(new HashSet<>());
+
+        // TODO:
+        String sourceKey = "BCBS_Synpuf";
+        Source source = sourceService.findBySourceKey(sourceKey);
+
+        PreparedStatementRenderer pathwayEventsPsr = new PreparedStatementRenderer(
+                source,
+                "/resources/pathway/getPersonLevelPathwayResults.sql",
+                new String[] {"target_database_schema"},
+                new String[] {source.getTableQualifier(SourceDaimon.DaimonType.Results)},
+                "pathway_analysis_generation_id",
+                id
+        );
+
+        List<PersonPathwayEvent> events = getSourceJdbcTemplate(source).query(pathwayEventsPsr.getSql(), pathwayEventsPsr.getSetter(), (rs, rowNum) -> {
+            PersonPathwayEvent event = new PersonPathwayEvent();
+            event.setComboId(rs.getInt("combo_id"));
+            event.setSubjectId(rs.getInt("subject_id"));
+            event.setStartDate(rs.getDate("cohort_start_date"));
+            event.setEndDate(rs.getDate("cohort_end_date"));
+
+            result.getCodes().add(event.getComboId());
+
+            return event;
+        });
+
+        Map<String, Integer> chains = events.stream()
+                .collect(Collectors.groupingBy(PersonPathwayEvent::getSubjectId))
+                .entrySet()
+                .stream()
+                .map(entry -> {
+                    entry.getValue().sort(Comparator.comparing(PersonPathwayEvent::getStartDate));
+                    return entry.getValue().stream().map(e -> e.getComboId().toString()).collect(Collectors.joining("-"));
+                })
+                .collect(Collectors.groupingBy(Function.identity(), summingInt(x -> 1)));
+
+        result.setPathwaysCounts(chains);
+
+        return result;
+    }
+
+    @Override
+    public List<PathwayEventCohort> getEventCohortsByComboCode(PathwayAnalysisEntity pathwayAnalysis, Map<Integer, Integer> eventCodes, Integer comboCode) {
+
+        return pathwayAnalysis.getEventCohorts()
+                .stream()
+                .filter(ec -> ((int) Math.pow(2, Double.valueOf(eventCodes.get(ec.getId()))) & comboCode) > 0)
+                .collect(Collectors.toList());
     }
 
     private PathwayAnalysisEntity gatherLinkedEntities(PathwayAnalysisEntity pathwayAnalysis) {

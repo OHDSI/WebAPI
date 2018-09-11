@@ -2,8 +2,13 @@ package org.ohdsi.webapi.pathway;
 
 import org.ohdsi.webapi.Pagination;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
+import org.ohdsi.webapi.pathway.domain.PathwayEventCohort;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisExportDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
+import org.ohdsi.webapi.pathway.dto.PathwayCodeDTO;
+import org.ohdsi.webapi.pathway.dto.PathwayPopulationEventDTO;
+import org.ohdsi.webapi.pathway.dto.PathwayPopulationResultsDTO;
+import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
@@ -20,7 +25,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Path("/pathway-analyses")
 @Controller
@@ -121,7 +128,7 @@ public class PathwayController {
     @Consumes(MediaType.APPLICATION_JSON)
     public String getAnalysisSql(@PathParam("id") final Integer id, @PathParam("sourceKey") final String sourceKey) {
 
-        return pathwayService.buildAnalysisSql(id, sourceKey);
+        return pathwayService.buildAnalysisSql(-1, id, sourceKey);
     }
 
     @DELETE
@@ -131,6 +138,52 @@ public class PathwayController {
     public void delete(@PathParam("id") final Integer id) {
 
         pathwayService.delete(id);
+    }
+
+    @GET
+    @Path("/{pathwayAnalysisId}/generations/results/{generationId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public PathwayPopulationResultsDTO getGenerationResults(
+            @PathParam("pathwayAnalysisId") final Integer pathwayAnalysisId,
+            @PathParam("generationId") final Integer generationId
+    ) {
+
+        PathwayAnalysisResult resultingPathways = pathwayService.getResultingPathways(generationId);
+        List<PathwayPopulationEventDTO> pathwayDtos = resultingPathways.getPathwaysCounts().entrySet()
+                .stream()
+                .map(entry -> {
+                    PathwayPopulationEventDTO dto = new PathwayPopulationEventDTO();
+                    dto.setPath(entry.getKey());
+                    dto.setPersonCount(entry.getValue());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
+
+        PathwayAnalysisEntity pathwayAnalysis = pathwayService.getById(pathwayAnalysisId);
+        Map<Integer, Integer> eventCodes = pathwayService.getEventCohortCodes(pathwayAnalysisId);
+
+        List<PathwayCodeDTO> eventCodeDtos = resultingPathways.getCodes()
+                .stream()
+                .map(code -> {
+                    PathwayCodeDTO codeDto = new PathwayCodeDTO();
+                    codeDto.setName(
+                            pathwayService.getEventCohortsByComboCode(pathwayAnalysis, eventCodes, code)
+                                    .stream()
+                                    .map(PathwayEventCohort::getName)
+                                    .collect(Collectors.joining(","))
+                    );
+                    codeDto.setCode(code);
+                    return codeDto;
+                })
+                .collect(Collectors.toList());
+
+        PathwayPopulationResultsDTO dto = new PathwayPopulationResultsDTO();
+        dto.setEventCodes(eventCodeDtos);
+        dto.setPathways(pathwayDtos);
+
+        return dto;
     }
 
     /*@GET

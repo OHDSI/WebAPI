@@ -1,8 +1,5 @@
 
-/*********************************************************************/
-/***** Create hierarchy lookup table for the treemap hierarchies *****/
-/*********************************************************************/
-
+IF OBJECT_ID('@results_schema.concept_hierarchy', 'U') IS NULL
 CREATE TABLE @results_database_schema.concept_hierarchy
 (
   concept_id             INT,

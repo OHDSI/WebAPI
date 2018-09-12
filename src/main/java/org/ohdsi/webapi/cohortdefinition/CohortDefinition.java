@@ -50,6 +50,8 @@ import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.analysis.Cohort;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisGenerationInfo;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
+import org.ohdsi.webapi.model.CommonEntity;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
 
 /**
  * JPA Entity for Cohort Definitions
@@ -62,8 +64,7 @@ import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEnti
     attributeNodes = { @NamedAttributeNode(value = "details", subgraph = "detailsGraph") },
     subgraphs = {@NamedSubgraph(name = "detailsGraph", type = CohortDefinitionDetails.class, attributeNodes = { @NamedAttributeNode(value="expression")})}
 )
-public class 
-CohortDefinition implements Serializable, Cohort {
+public class CohortDefinition extends CommonEntity implements Serializable, Cohort{
 
   private static final long serialVersionUID = 1L;
     
@@ -90,18 +91,6 @@ CohortDefinition implements Serializable, Cohort {
 
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "cohortDefinition")
 	private Set<CohortAnalysisGenerationInfo> cohortAnalysisGenerationInfoList = new HashSet<>();
-	
-  @Column(name="created_by")
-  private String createdBy;
-  
-  @Column(name="created_date")
-  private Date createdDate;
-
-  @Column(name="modified_by")
-  private String modifiedBy;
-    
-  @Column(name="modified_date")
-  private Date modifiedDate;
 
   @ManyToMany(targetEntity = CohortCharacterizationEntity.class, fetch = FetchType.LAZY)
   @JoinTable(name = "cc_cohorts",
@@ -143,43 +132,7 @@ CohortDefinition implements Serializable, Cohort {
     this.expressionType = expressionType;
     return this;
   }
-  
-  public String getCreatedBy() {
-    return createdBy;
-  }
 
-  public CohortDefinition setCreatedBy(String createdBy) {
-    this.createdBy = createdBy;
-    return this;
-  }
-
-  public Date getCreatedDate() {
-    return createdDate;
-  }
-
-  public CohortDefinition setCreatedDate(Date createdDate) {
-    this.createdDate = createdDate;
-    return this;
-  }
-
-  public String getModifiedBy() {
-    return modifiedBy;
-  }
-
-  public CohortDefinition setModifiedBy(String modifiedBy) {
-    this.modifiedBy = modifiedBy;
-    return this;
-  }
-
-  public Date getModifiedDate() {
-    return modifiedDate;
-  }
-
-  public CohortDefinition setModifiedDate(Date modifiedDate) {
-    this.modifiedDate = modifiedDate;
-    return this;
-  }
-  
   public CohortDefinitionDetails getDetails() {
     return this.details;
   }

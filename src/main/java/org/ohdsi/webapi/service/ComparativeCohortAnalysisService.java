@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -45,6 +47,9 @@ import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.rsb.RSBTasklet;
 import org.ohdsi.webapi.service.CohortDefinitionService.CohortDefinitionDTO;
+import org.ohdsi.webapi.service.dto.ComparativeCohortAnalysisDTO;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
@@ -56,6 +61,7 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -87,6 +93,12 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
     private StepBuilderFactory stepFactory;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private GenericConversionService conversionService;
+
+    @Autowired
     private Environment env;
 
     @Autowired
@@ -94,47 +106,55 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Iterable<ComparativeCohortAnalysis> getComparativeCohortAnalyses() {
-        return getComparativeCohortAnalysisRepository().findAll();
+    public Collection<ComparativeCohortAnalysisDTO> getComparativeCohortAnalyses() {
+      return  getTransactionTemplate().execute(transactionStatus ->
+              StreamSupport.stream(getComparativeCohortAnalysisRepository().findAll().spliterator(), false)
+              .map(cca -> conversionService.convert(cca, ComparativeCohortAnalysisDTO.class))
+              .collect(Collectors.toList())
+      );
     }
 
    
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ComparativeCohortAnalysis createComparativeCohortAnalysis(ComparativeCohortAnalysis comparativeCohortAnalysis) {
+    public ComparativeCohortAnalysisDTO createComparativeCohortAnalysis(ComparativeCohortAnalysis comparativeCohortAnalysis) {
 
       Date d = new Date();
       comparativeCohortAnalysis.setAnalysisId(null);
       comparativeCohortAnalysis.setCreatedDate(d);
       comparativeCohortAnalysis.setModifiedDate(d);
-      String author = security.getSubject();
+      UserEntity author = userRepository.findByLogin(security.getSubject());
       comparativeCohortAnalysis.setCreatedBy(author);
       comparativeCohortAnalysis.setModifiedBy(author);
       comparativeCohortAnalysis = this.getComparativeCohortAnalysisRepository().save(comparativeCohortAnalysis);
-      return comparativeCohortAnalysis;
+      return conversionService.convert(comparativeCohortAnalysis, ComparativeCohortAnalysisDTO.class);
     }
 
     @Path("/{id}")
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ComparativeCohortAnalysis updateComparativeCohortAnalysis(@PathParam("id") final int id, ComparativeCohortAnalysis comparativeCohortAnalysis) throws Exception {
+    public ComparativeCohortAnalysisDTO updateComparativeCohortAnalysis(@PathParam("id") final int id, ComparativeCohortAnalysis comparativeCohortAnalysis) throws Exception {
 
         // TODO:
         // Back-end should not persist all the data coming from UI. There should be white list of attributes
+
+      return getTransactionTemplate().execute(transactionStatus -> {
+        UserEntity user = userRepository.findByLogin(security.getSubject());
 
         ComparativeCohortAnalysis exist = getComparativeCohortAnalysisRepository().findOne(id);
 
         Date d = new Date();
         comparativeCohortAnalysis.setModifiedDate(d);
-        comparativeCohortAnalysis.setModifiedBy(security.getSubject());
+        comparativeCohortAnalysis.setModifiedBy(user);
 
         comparativeCohortAnalysis.setCreatedBy(exist.getCreatedBy());
         comparativeCohortAnalysis.setCreatedDate(exist.getCreatedDate());
-        
-        comparativeCohortAnalysis = this.getComparativeCohortAnalysisRepository().save(comparativeCohortAnalysis);
-        return comparativeCohortAnalysis;
+
+        ComparativeCohortAnalysis updatedAnalysis = this.getComparativeCohortAnalysisRepository().save(comparativeCohortAnalysis);
+        return conversionService.convert(updatedAnalysis, ComparativeCohortAnalysisDTO.class);
+      });
     }
     
     /**
@@ -370,86 +390,89 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public ComparativeCohortAnalysisInfo getComparativeCohortAnalysis(@PathParam("id") int id) {
+
+      return getTransactionTemplate().execute(transactionStatus -> {
         ComparativeCohortAnalysis analysis = this.getComparativeCohortAnalysisRepository().findOne(id);
-        ComparativeCohortAnalysisInfo info = new ComparativeCohortAnalysisInfo(analysis);
+        ComparativeCohortAnalysisInfo info = conversionService.convert(analysis, ComparativeCohortAnalysisInfo.class);
 
         if (analysis.getComparatorId() > 0) {
-            try {
-                CohortDefinitionDTO cd = cohortDefinitionService.getCohortDefinition(analysis.getComparatorId());
-                info.setComparatorCaption(cd.name);
-                info.setComparatorCohortDefinition(cd.expression);
-            } catch (Exception e) {
-                // Cohort definition no longer exists 
-                log.debug("Cohort definition id = " + info.getComparatorId() + " no longer exists");
-            }
+          try {
+            CohortDefinitionDTO cd = cohortDefinitionService.getCohortDefinition(analysis.getComparatorId());
+            info.setComparatorCaption(cd.name);
+            info.setComparatorCohortDefinition(cd.expression);
+          } catch (Exception e) {
+            // Cohort definition no longer exists
+            log.debug("Cohort definition id = " + info.getComparatorId() + " no longer exists");
+          }
         }
         if (analysis.getTreatmentId() > 0) {
-            try {
-                CohortDefinitionDTO cd = cohortDefinitionService.getCohortDefinition(analysis.getTreatmentId());
-                info.setTreatmentCaption(cd.name);
-                info.setTreatmentCohortDefinition(cd.expression);
-            } catch (Exception e) {
-                // Cohort definition no longer exists 
-                log.debug("Cohort definition id = " + info.getTreatmentId() + " no longer exists");
-            }
+          try {
+            CohortDefinitionDTO cd = cohortDefinitionService.getCohortDefinition(analysis.getTreatmentId());
+            info.setTreatmentCaption(cd.name);
+            info.setTreatmentCohortDefinition(cd.expression);
+          } catch (Exception e) {
+            // Cohort definition no longer exists
+            log.debug("Cohort definition id = " + info.getTreatmentId() + " no longer exists");
+          }
         }
         if (analysis.getOutcomeId() > 0) {
-            try {
-                CohortDefinitionDTO cd = cohortDefinitionService.getCohortDefinition(analysis.getOutcomeId());
-                info.setOutcomeCaption(cd.name);
-                info.setOutcomeCohortDefinition(cd.expression);            
-            } catch (Exception e) {
-                // Cohort definition no longer exists 
-                log.debug("Cohort definition id = " + info.getOutcomeId() + " no longer exists");
-            }
+          try {
+            CohortDefinitionDTO cd = cohortDefinitionService.getCohortDefinition(analysis.getOutcomeId());
+            info.setOutcomeCaption(cd.name);
+            info.setOutcomeCohortDefinition(cd.expression);
+          } catch (Exception e) {
+            // Cohort definition no longer exists
+            log.debug("Cohort definition id = " + info.getOutcomeId() + " no longer exists");
+          }
         }
         if (analysis.getPsInclusionId() > 0) {
-            try {
-                info.setPsInclusionCaption(conceptSetService.getConceptSet(analysis.getPsInclusionId()).getName());
-                info.setPsInclusionConceptSet(conceptSetService.getConceptSetExpression(analysis.getPsInclusionId()));
-                info.setPsInclusionConceptSetSql(vocabularyService.getConceptSetExpressionSQL(info.getPsInclusionConceptSet()));                
-            } catch (Exception e) {
-                log.debug("Concept set id = " + info.getPsInclusionId() + " no longer exists");
-            }
+          try {
+            info.setPsInclusionCaption(conceptSetService.getConceptSet(analysis.getPsInclusionId()).getName());
+            info.setPsInclusionConceptSet(conceptSetService.getConceptSetExpression(analysis.getPsInclusionId()));
+            info.setPsInclusionConceptSetSql(vocabularyService.getConceptSetExpressionSQL(info.getPsInclusionConceptSet()));
+          } catch (Exception e) {
+            log.debug("Concept set id = " + info.getPsInclusionId() + " no longer exists");
+          }
         }
         if (analysis.getPsExclusionId() > 0) {
-            try {
-                info.setPsExclusionCaption(conceptSetService.getConceptSet(analysis.getPsExclusionId()).getName());
-                info.setPsExclusionConceptSet(conceptSetService.getConceptSetExpression(analysis.getPsExclusionId()));
-                info.setPsExclusionConceptSetSql(vocabularyService.getConceptSetExpressionSQL(info.getPsExclusionConceptSet()));                
-            } catch (Exception e) {
-                log.debug("Concept set id = " + info.getPsExclusionId() + " no longer exists");
-            }
+          try {
+            info.setPsExclusionCaption(conceptSetService.getConceptSet(analysis.getPsExclusionId()).getName());
+            info.setPsExclusionConceptSet(conceptSetService.getConceptSetExpression(analysis.getPsExclusionId()));
+            info.setPsExclusionConceptSetSql(vocabularyService.getConceptSetExpressionSQL(info.getPsExclusionConceptSet()));
+          } catch (Exception e) {
+            log.debug("Concept set id = " + info.getPsExclusionId() + " no longer exists");
+          }
         }
         if (analysis.getOmInclusionId() > 0) {
-            try {
-                info.setOmInclusionCaption(conceptSetService.getConceptSet(analysis.getOmInclusionId()).getName());
-                info.setOmInclusionConceptSet(conceptSetService.getConceptSetExpression(analysis.getOmInclusionId()));
-                info.setOmInclusionConceptSetSql(vocabularyService.getConceptSetExpressionSQL(info.getOmInclusionConceptSet()));                
-            } catch (Exception e) {
-                log.debug("Concept set id = " + info.getOmInclusionId() + " no longer exists");               
-            }
+          try {
+            info.setOmInclusionCaption(conceptSetService.getConceptSet(analysis.getOmInclusionId()).getName());
+            info.setOmInclusionConceptSet(conceptSetService.getConceptSetExpression(analysis.getOmInclusionId()));
+            info.setOmInclusionConceptSetSql(vocabularyService.getConceptSetExpressionSQL(info.getOmInclusionConceptSet()));
+          } catch (Exception e) {
+            log.debug("Concept set id = " + info.getOmInclusionId() + " no longer exists");
+          }
         }
         if (analysis.getOmExclusionId() > 0) {
-            try {
-                info.setOmExclusionCaption(conceptSetService.getConceptSet(analysis.getOmExclusionId()).getName());
-                info.setOmExclusionConceptSet(conceptSetService.getConceptSetExpression(analysis.getOmExclusionId()));
-                info.setOmExclusionConceptSetSql(vocabularyService.getConceptSetExpressionSQL(info.getOmExclusionConceptSet()));                
-            } catch (Exception e) {
-                log.debug("Concept set id = " + info.getOmExclusionId() + " no longer exists");               
-            }
+          try {
+            info.setOmExclusionCaption(conceptSetService.getConceptSet(analysis.getOmExclusionId()).getName());
+            info.setOmExclusionConceptSet(conceptSetService.getConceptSetExpression(analysis.getOmExclusionId()));
+            info.setOmExclusionConceptSetSql(vocabularyService.getConceptSetExpressionSQL(info.getOmExclusionConceptSet()));
+          } catch (Exception e) {
+            log.debug("Concept set id = " + info.getOmExclusionId() + " no longer exists");
+          }
         }
         if (analysis.getNegativeControlId() > 0) {
-            try {
-                info.setNegativeControlCaption(conceptSetService.getConceptSet(analysis.getNegativeControlId()).getName());
-                info.setNegativeControlConceptSet(conceptSetService.getConceptSetExpression(analysis.getNegativeControlId()));
-                info.setNegativeControlConceptSetSql(vocabularyService.getConceptSetExpressionSQL(info.getNegativeControlConceptSet()));
-            } catch (Exception e) {
-                log.debug("Concept set id = " + info.getNegativeControlId() + " no longer exists");               
-            }
+          try {
+            info.setNegativeControlCaption(conceptSetService.getConceptSet(analysis.getNegativeControlId()).getName());
+            info.setNegativeControlConceptSet(conceptSetService.getConceptSetExpression(analysis.getNegativeControlId()));
+            info.setNegativeControlConceptSetSql(vocabularyService.getConceptSetExpressionSQL(info.getNegativeControlConceptSet()));
+          } catch (Exception e) {
+            log.debug("Concept set id = " + info.getNegativeControlId() + " no longer exists");
+          }
         }
-      
+
         return info;
+      });
     }
 
     @GET

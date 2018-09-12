@@ -255,15 +255,22 @@ INSERT INTO ${ohdsiSchema}.fe_analyses (type, name, domain, descr, value, design
 ALTER TABLE ${ohdsiSchema}.batch_job_execution_params ALTER string_val TYPE VARCHAR;
 
 CREATE OR REPLACE VIEW ${ohdsiSchema}.cc_generations as
-  (SELECT job.job_execution_id,
-          MAX(job.create_time)                                                                     date,
-          MAX(job.status)                                                                          status,
-          MAX(CASE WHEN params.key_name = 'hash_code' THEN params.string_val END)                  hash_code,
-          MAX(CASE WHEN params.key_name = 'cohort_characterization_id' THEN params.string_val END) cohort_characterization_id,
-          MAX(CASE WHEN params.key_name = 'source_id' THEN params.string_val END)                  source_id
+  (SELECT
+     job.job_execution_id                     id,
+     job.create_time                          start_time,
+     job.end_time                             end_time,
+     job.status                               status,
+     design_param.string_val                  design,
+     hash_code_param.string_val               hash_code,
+     CAST(cc_id_param.string_val AS NUMBER(10))  cohort_characterization_id,
+     CAST(source_param.string_val AS NUMBER(10)) source_id
    FROM ${ohdsiSchema}.batch_job_execution job
-          JOIN ${ohdsiSchema}.batch_job_execution_params params ON job.job_execution_id = params.job_execution_id
-                                                                     AND (params.key_name = 'hash_code' OR
-                                                                          params.key_name = 'cohort_characterization_id' OR
-                                                                          params.key_name = 'source_id')
-   GROUP BY job.job_execution_id);
+     JOIN ${ohdsiSchema}.batch_job_execution_params design_param
+       ON job.job_execution_id = design_param.job_execution_id AND design_param.key_name = 'design'
+     JOIN ${ohdsiSchema}.batch_job_execution_params hash_code_param
+       ON job.job_execution_id = hash_code_param.job_execution_id AND hash_code_param.key_name = 'hash_code'
+     JOIN ${ohdsiSchema}.batch_job_execution_params cc_id_param
+       ON job.job_execution_id = cc_id_param.job_execution_id AND cc_id_param.key_name = 'cohort_characterization_id'
+     JOIN ${ohdsiSchema}.batch_job_execution_params source_param
+       ON job.job_execution_id = source_param.job_execution_id AND source_param.key_name = 'source_id'
+   ORDER BY start_time DESC);

@@ -14,6 +14,7 @@ import javax.ws.rs.core.MediaType;
 import org.ohdsi.webapi.Pagination;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.dto.*;
+import org.ohdsi.webapi.job.JobExecutionResource;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -125,7 +126,7 @@ public class CcController {
     @Path("/{id}/generate/{sourceKey}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public String generate(@PathParam("id") final Long id, @PathParam("sourceKey") final String sourceKey) {
+    public JobExecutionResource generate(@PathParam("id") final Long id, @PathParam("sourceKey") final String sourceKey) {
         return service.generateCc(id, sourceKey);
     }
     

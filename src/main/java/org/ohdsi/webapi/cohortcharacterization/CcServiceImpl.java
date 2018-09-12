@@ -469,7 +469,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
     private CohortDefinition persistCohortOrLinkWithExisting(final CohortDefinition cohort) {
         final CohortDefinitionDetails details = cohort.getDetails();
         return findCohortByExpressionHashcode(details).orElseGet(() -> {
-            cohort.setCreatedBy("admin@example.com"/* TODO security.getSubject()*/);
+            cohort.setCreatedBy(security.getSubject());
             cohort.setCreatedDate(new Date());
             cohort.setDetails(null);
             final CohortDefinition savedCohort = cohortRepository.save(cohort);

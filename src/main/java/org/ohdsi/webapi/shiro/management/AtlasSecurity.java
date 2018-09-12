@@ -87,7 +87,6 @@ public abstract class AtlasSecurity extends Security {
     this.sourcePermissionTemplates.put("cohortdefinition:*:generate:%s:get", "Generate Cohort on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("cohort-characterizations:*:generate:%s:post", "Generate Cohort Characterization on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put(SOURCE_ACCESS_PERMISSION, "Access to Source with SourceKey = %s");
-    // TODO: add permission check into CC service for a user who tries to retrieve cohort generation results
 
     this.cohortCharacterizationCreatorPermissionTemplates.put("cohort-characterizations:%s:put", "Update Cohort Characterization with ID = %s");
     this.cohortCharacterizationCreatorPermissionTemplates.put("cohort-characterizations:%s:delete", "Delete Cohort Characterization with ID = %s");
@@ -184,10 +183,8 @@ public abstract class AtlasSecurity extends Security {
       .addProtectedRestPath("/cohort-characterizations", "createPermissionsOnCreateCohortCharacterization")
       .addProtectedRestPath("/cohort-characterizations/import", "createPermissionsOnCreateCohortCharacterization")
       .addProtectedRestPath("/cohort-characterizations/*")
-// TODO:
       .addProtectedRestPath("/cohort-characterizations/*/generate/*")
       .addProtectedRestPath("/cohort-characterizations/*/generations")
-// TODO:
       .addProtectedRestPath("/cohort-characterizations/generations/*/results")
       .addProtectedRestPath("/cohort-characterizations/*/export")
 

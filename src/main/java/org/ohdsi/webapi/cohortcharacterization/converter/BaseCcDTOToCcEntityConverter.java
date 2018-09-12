@@ -35,14 +35,6 @@ public abstract class BaseCcDTOToCcEntityConverter<T extends BaseCcDTO<? extends
 
     cohortCharacterization.setName(source.getName());
 
-    if (source.getCreatedBy() != null) {
-      final UserEntity createdBy = new UserEntity();
-      createdBy.setId(source.getCreatedBy().getId());
-      cohortCharacterization.setCreatedBy(createdBy);
-    }
-
-    cohortCharacterization.setCreatedAt(source.getCreatedAt());
-
     cohortCharacterization.setId(source.getId());
 
     if (!CollectionUtils.isEmpty(source.getCohorts())) {

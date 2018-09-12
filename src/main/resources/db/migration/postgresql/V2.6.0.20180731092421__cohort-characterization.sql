@@ -100,9 +100,10 @@ INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
   FROM ${ohdsiSchema}.source;
 
 INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
-  SELECT sr.id, sp.id FROM ${ohdsiSchema}.source join
-    sec_permission sp ON sp.value IN ('cohort-characterizations:*:generate:' || source_key || ':post', 'source:' || source_key || ':access')
-    join sec_role sr ON sr.name = 'Source user (' || source_key || ')';
+  SELECT sr.id, sp.id 
+	FROM ${ohdsiSchema}.source 
+	join ${ohdsiSchema}.sec_permission sp ON sp.value IN ('cohort-characterizations:*:generate:' || source_key || ':post', 'source:' || source_key || ':access')
+  join ${ohdsiSchema}.sec_role sr ON sr.name = 'Source user (' || source_key || ')';
 
 CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.cc_analyses
 (
@@ -141,7 +142,7 @@ ON UPDATE NO ACTION ON DELETE CASCADE;
 CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.cc_cohorts
 (
   cohort_characterization_id BIGINT NOT NULL,
-  cohort_id BIGINT NOT NULL
+  cohort_id INT NOT NULL
 );
 
 ALTER TABLE ${ohdsiSchema}.cc_cohorts
@@ -261,26 +262,5 @@ INSERT INTO ${ohdsiSchema}.fe_analyses (type, name, domain, descr, value, design
 INSERT INTO ${ohdsiSchema}.fe_analyses (type, name, domain, descr, value, design, is_locked, stat_type) VALUES ('PRESET', 'Occurrence Primary Inpatient Short Term', 'CONDITION', 'One covariate per condition observed  as a primary diagnosis in an inpatient setting in the condition_occurrence table starting in the short term window.', null, 'ConditionOccurrencePrimaryInpatientShortTerm', true, 'PREVALENCE');
 INSERT INTO ${ohdsiSchema}.fe_analyses (type, name, domain, descr, value, design, is_locked, stat_type) VALUES ('PRESET', 'Visit Count Long Term', 'VISIT', 'The number of visits observed in the long term window.', null, 'VisitCountLongTerm', true, 'PREVALENCE');
 INSERT INTO ${ohdsiSchema}.fe_analyses (type, name, domain, descr, value, design, is_locked, stat_type) VALUES ('PRESET', 'Occurrence Primary Inpatient Medium Term', 'CONDITION', 'One covariate per condition observed  as a primary diagnosis in an inpatient setting in the condition_occurrence table starting in the medium term window.', null, 'ConditionOccurrencePrimaryInpatientMediumTerm', true, 'PREVALENCE');
-
-CREATE OR REPLACE VIEW ${ohdsiSchema}.cc_generations as
-  (SELECT
-  job.job_execution_id                     id,
-  job.create_time                          start_time,
-  job.end_time                             end_time,
-  job.status                               status,
-  design_param.string_val                  design,
-  hash_code_param.string_val               hash_code,
-  CAST(cc_id_param.string_val AS INTEGER)  cohort_characterization_id,
-  CAST(source_param.string_val AS INTEGER) source_id
-FROM ${ohdsiSchema}.batch_job_execution job
-  JOIN ${ohdsiSchema}.batch_job_execution_params design_param
-    ON job.job_execution_id = design_param.job_execution_id AND design_param.key_name = 'design'
-  JOIN ${ohdsiSchema}.batch_job_execution_params hash_code_param
-    ON job.job_execution_id = hash_code_param.job_execution_id AND hash_code_param.key_name = 'hash_code'
-  JOIN ${ohdsiSchema}.batch_job_execution_params cc_id_param
-    ON job.job_execution_id = cc_id_param.job_execution_id AND cc_id_param.key_name = 'cohort_characterization_id'
-  JOIN ${ohdsiSchema}.batch_job_execution_params source_param
-    ON job.job_execution_id = source_param.job_execution_id AND source_param.key_name = 'source_id'
-ORDER BY start_time DESC);
 
 -- TODO indexes

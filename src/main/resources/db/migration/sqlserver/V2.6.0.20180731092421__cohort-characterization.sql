@@ -88,20 +88,22 @@ AND sr.name IN ('Atlas users');
 -- SOURCE based permissions
 
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
-  SELECT NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq AS id,
-    'cohort-characterizations:*:generate:' + source_key + ':post' AS value,
-    'Generate Cohort Characterization on Source with SourceKey = ' + source_key AS description
-  FROM ${ohdsiSchema}.source UNION
-  SELECT NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq AS id,
-    'source:' + source_key + ':access' AS value,
-    'Access to Source with SourceKey = ' + source_key AS description
-  FROM ${ohdsiSchema}.source;
+SELECT NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq AS id,
+	'cohort-characterizations:*:generate:' + source_key + ':post' AS value,
+	'Generate Cohort Characterization on Source with SourceKey = ' + source_key AS description
+FROM ${ohdsiSchema}.source;
+
+INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
+SELECT NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq AS id,
+	'source:' + source_key + ':access' AS value,
+	'Access to Source with SourceKey = ' + source_key AS description
+FROM ${ohdsiSchema}.source;
 
 INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
-  SELECT sr.id, sp.id 
-	FROM ${ohdsiSchema}.source 
-	join ${ohdsiSchema}.sec_permission sp ON sp.value = 'cohort-characterizations:*:generate:' + source_key + ':post'
-  join ${ohdsiSchema}.sec_role sr ON sr.name = 'Source user (' + source_key + ')';
+SELECT sr.id, sp.id 
+FROM ${ohdsiSchema}.source 
+join ${ohdsiSchema}.sec_permission sp ON sp.value = 'cohort-characterizations:*:generate:' + source_key + ':post'
+join ${ohdsiSchema}.sec_role sr ON sr.name = 'Source user (' + source_key + ')';
 
 
 CREATE TABLE ${ohdsiSchema}.cc_analyses
@@ -119,8 +121,6 @@ ALTER TABLE ${ohdsiSchema}.cc_analyses
   ADD CONSTRAINT fk_c_char_a_cc FOREIGN KEY (cohort_characterization_id)
 REFERENCES ${ohdsiSchema}.cohort_characterizations(id)
 ON UPDATE NO ACTION ON DELETE CASCADE;
-
-
 
 CREATE SEQUENCE ${ohdsiSchema}.fe_analysis_criteria_sequence;
 CREATE TABLE ${ohdsiSchema}.fe_analysis_criteria
@@ -153,7 +153,6 @@ ALTER TABLE ${ohdsiSchema}.cc_cohorts
   ADD CONSTRAINT fk_c_char_c_cc FOREIGN KEY (cohort_characterization_id)
 REFERENCES ${ohdsiSchema}.cohort_characterizations(id)
 ON UPDATE NO ACTION ON DELETE CASCADE;
-
 
 ALTER TABLE ${ohdsiSchema}.cohort_definition_details ADD hash_code int null;
 

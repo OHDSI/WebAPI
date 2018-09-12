@@ -1,12 +1,11 @@
 package org.ohdsi.webapi.pathway;
 
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
-import org.ohdsi.webapi.pathway.domain.PathwayEventCohort;
+import org.ohdsi.webapi.pathway.domain.PathwayAnalysisGeneration;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 import java.util.Map;
 
 public interface PathwayService {
@@ -21,11 +20,13 @@ public interface PathwayService {
 
     void delete(Integer id);
 
-    Map<Integer, Integer> getEventCohortCodes(Integer pathwayAnalysisId);
+    Map<Integer, Integer> getEventCohortCodes(PathwayAnalysisEntity pathwayAnalysis);
 
-    String buildAnalysisSql(Integer generationId, Integer pathwayAnalysisId, String sourceKey);
+    String buildAnalysisSql(Long generationId, PathwayAnalysisEntity pathwayAnalysis, Integer sourceId);
 
-    PathwayAnalysisResult getResultingPathways(final Integer id);
+    void generatePathways(final Integer pathwayAnalysisId, final Integer sourceId);
 
-    List<PathwayEventCohort> getEventCohortsByComboCode(PathwayAnalysisEntity pathwayAnalysis, Map<Integer, Integer> eventCodes, Integer comboCode);
+    PathwayAnalysisGeneration getGeneration(Long generationId);
+
+    PathwayAnalysisResult getResultingPathways(final Long generationId);
 }

@@ -3,6 +3,7 @@ package org.ohdsi.webapi.pathway.domain;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 
 import javax.persistence.Column;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -22,11 +23,11 @@ public abstract class PathwayCohort {
     @Column
     protected String name;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cohort_definition_id")
     protected CohortDefinition cohortDefinition;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pathway_analysis_id")
     protected PathwayAnalysisEntity pathwayAnalysis;
 

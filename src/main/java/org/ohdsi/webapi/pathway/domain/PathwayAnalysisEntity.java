@@ -12,6 +12,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -26,11 +27,11 @@ public class PathwayAnalysisEntity {
     @Column
     private String name;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "pathwayAnalysis", orphanRemoval = true)
-    private List<PathwayTargetCohort> targetCohorts;
+    @OneToMany(mappedBy = "pathwayAnalysis", cascade = CascadeType.ALL)
+    private List<PathwayTargetCohort> targetCohorts = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "pathwayAnalysis", orphanRemoval = true)
-    private List<PathwayEventCohort> eventCohorts;
+    @OneToMany(mappedBy = "pathwayAnalysis", cascade = CascadeType.ALL)
+    private List<PathwayEventCohort> eventCohorts = new ArrayList<>();
 
     @Column(name = "combination_window")
     private Integer combinationWindow;
@@ -54,6 +55,9 @@ public class PathwayAnalysisEntity {
 
     @Column(name = "updated_at")
     private Date updatedAt;
+
+    @Column(name = "hash_code")
+    private Integer hashCode;
 
     public Integer getId() {
 
@@ -163,5 +167,15 @@ public class PathwayAnalysisEntity {
     public void setUpdatedAt(Date updatedAt) {
 
         this.updatedAt = updatedAt;
+    }
+
+    public Integer getHashCode() {
+
+        return hashCode;
+    }
+
+    public void setHashCode(Integer hashCode) {
+
+        this.hashCode = hashCode;
     }
 }

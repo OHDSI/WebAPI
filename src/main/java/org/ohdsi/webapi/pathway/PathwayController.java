@@ -2,7 +2,6 @@ package org.ohdsi.webapi.pathway;
 
 import org.ohdsi.webapi.Pagination;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
-import org.ohdsi.webapi.pathway.domain.PathwayEventCohort;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisExportDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayCodeDTO;
@@ -104,7 +103,7 @@ public class PathwayController {
     public PathwayAnalysisDTO get(@PathParam("id") final Integer id) {
 
         PathwayAnalysisEntity pathwayAnalysis = pathwayService.getById(id);
-        Map<Integer, Integer> eventCodes = pathwayService.getEventCohortCodes(id);
+        Map<Integer, Integer> eventCodes = pathwayService.getEventCohortCodes(pathwayAnalysis);
 
         PathwayAnalysisDTO dto = conversionService.convert(pathwayAnalysis, PathwayAnalysisDTO.class);
         dto.getEventCohorts().forEach(ec -> ec.setCode(eventCodes.get(ec.getPathwayCohortId())));
@@ -123,12 +122,12 @@ public class PathwayController {
     }
 
     @GET
-    @Path("/{id}/sql/{sourceKey}")
+    @Path("/{id}/sql/{sourceId}")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     @Consumes(MediaType.APPLICATION_JSON)
-    public String getAnalysisSql(@PathParam("id") final Integer id, @PathParam("sourceKey") final String sourceKey) {
+    public String getAnalysisSql(@PathParam("id") final Integer id, @PathParam("sourceId") final Integer sourceId) {
 
-        return pathwayService.buildAnalysisSql(-1, id, sourceKey);
+        return pathwayService.buildAnalysisSql(-1L, pathwayService.getById(id), sourceId);
     }
 
     @DELETE
@@ -140,16 +139,39 @@ public class PathwayController {
         pathwayService.delete(id);
     }
 
+    @POST
+    @Path("/{id}/generations/{sourceId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public void generatePathways(
+            @PathParam("id") final Integer pathwayAnalysisId,
+            @PathParam("sourceId") final Integer sourceId
+    ) {
+
+        pathwayService.generatePathways(pathwayAnalysisId, sourceId);
+    }
+
     @GET
-    @Path("/{pathwayAnalysisId}/generations/results/{generationId}")
+    @Path("/generations/{generationId}/results")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public PathwayPopulationResultsDTO getGenerationResults(
-            @PathParam("pathwayAnalysisId") final Integer pathwayAnalysisId,
-            @PathParam("generationId") final Integer generationId
+            @PathParam("generationId") final Long generationId
     ) {
 
         PathwayAnalysisResult resultingPathways = pathwayService.getResultingPathways(generationId);
+
+        List<PathwayCodeDTO> eventCodeDtos = resultingPathways.getCodes()
+                .entrySet()
+                .stream()
+                .map(entry -> {
+                    PathwayCodeDTO dto = new PathwayCodeDTO();
+                    dto.setCode(entry.getKey());
+                    dto.setName(entry.getValue());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
         List<PathwayPopulationEventDTO> pathwayDtos = resultingPathways.getPathwaysCounts().entrySet()
                 .stream()
                 .map(entry -> {
@@ -157,25 +179,6 @@ public class PathwayController {
                     dto.setPath(entry.getKey());
                     dto.setPersonCount(entry.getValue());
                     return dto;
-                })
-                .collect(Collectors.toList());
-
-
-        PathwayAnalysisEntity pathwayAnalysis = pathwayService.getById(pathwayAnalysisId);
-        Map<Integer, Integer> eventCodes = pathwayService.getEventCohortCodes(pathwayAnalysisId);
-
-        List<PathwayCodeDTO> eventCodeDtos = resultingPathways.getCodes()
-                .stream()
-                .map(code -> {
-                    PathwayCodeDTO codeDto = new PathwayCodeDTO();
-                    codeDto.setName(
-                            pathwayService.getEventCohortsByComboCode(pathwayAnalysis, eventCodes, code)
-                                    .stream()
-                                    .map(PathwayEventCohort::getName)
-                                    .collect(Collectors.joining(","))
-                    );
-                    codeDto.setCode(code);
-                    return codeDto;
                 })
                 .collect(Collectors.toList());
 

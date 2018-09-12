@@ -13,6 +13,7 @@ import static org.ohdsi.webapi.Constants.Params.TARGET_DATABASE_SCHEMA;
 import static org.ohdsi.webapi.Constants.Params.TARGET_DIALECT;
 import static org.ohdsi.webapi.Constants.Params.TARGET_TABLE;
 import static org.ohdsi.webapi.Constants.Params.VOCABULARY_DATABASE_SCHEMA;
+import static org.ohdsi.webapi.common.GenerationUtils.checkSourceAccess;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -323,12 +324,6 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         Job generateCohortJob = generateJobBuilder.build();
         JobExecutionResource jobExec = this.jobTemplate.launch(generateCohortJob, jobParameters);
         return "todo";
-    }
-
-    protected void checkSourceAccess(Source source) {
-        if (!SecurityUtils.getSubject().isPermitted(String.format(Security.SOURCE_ACCESS_PERMISSION, source.getSourceKey()))){
-            throw new ForbiddenException();
-        }
     }
 
     @Override

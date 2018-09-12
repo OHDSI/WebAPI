@@ -1,19 +1,20 @@
 package org.ohdsi.webapi.pathway.dto.internal;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 public class PathwayAnalysisResult {
 
-    private Set<Integer> codes;
+    private Map<Integer, String> codes = new HashMap<>();
     private Map<String, Integer> pathwaysCounts;
 
-    public Set<Integer> getCodes() {
+    public Map<Integer, String> getCodes() {
 
         return codes;
     }
 
-    public void setCodes(Set<Integer> codes) {
+    public void setCodes(Map<Integer, String> codes) {
 
         this.codes = codes;
     }

@@ -4,7 +4,6 @@ import com.jnj.honeur.webapi.cohortdefinition.CohortGenerationResults;
 import com.jnj.honeur.webapi.hssserviceuser.HSSServiceUserEntity;
 import com.jnj.honeur.webapi.hssserviceuser.HSSServiceUserRepository;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.ohdsi.webapi.service.CohortDefinitionService;
 
@@ -63,17 +62,26 @@ public class StorageServiceClientIT {
     }
 
     @Test
-    @Ignore // TODO: JsonMappingException, check with Sander
     public void getCohortDefinition() {
         List<CohortDefinitionStorageInformationItem> cohortDefinitionInfoList = storageServiceClient.getCohortDefinitionImportList(token);
         assertNotNull(cohortDefinitionInfoList);
         assertTrue(cohortDefinitionInfoList.size() > 0);
 
-        String uuid = cohortDefinitionInfoList.get(cohortDefinitionInfoList.size()-1).getUuid();
+        boolean succes = false;
 
-        CohortDefinitionService.CohortDefinitionDTO cohortDefinition = storageServiceClient.getCohortDefinition(token, uuid);
-        assertNotNull(cohortDefinition);
-        assertEquals(UUID.fromString(uuid), cohortDefinition.uuid);
+        for (CohortDefinitionStorageInformationItem cohortDefinitionStorageInformationItem: cohortDefinitionInfoList) {
+            try {
+                String uuid = cohortDefinitionStorageInformationItem.getUuid();
+                CohortDefinitionService.CohortDefinitionDTO cohortDefinition =
+                        storageServiceClient.getCohortDefinition(token, uuid);
+                assertNotNull(cohortDefinition);
+                assertEquals(UUID.fromString(uuid), cohortDefinition.uuid);
+                succes = true;
+            } catch (Exception e) {
+                //Loop for finding correct data amongst legacy data.
+            }
+        }
+        assertTrue("No correct data found, user may not have access to correct data.", succes);
     }
 
     @Test

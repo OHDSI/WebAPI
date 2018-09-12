@@ -22,7 +22,7 @@ public class LiferayApiClientIT {
         liferayApiClient.setLiferayBaseUrl("https://portaldev71.honeur.org");
         liferayApiClient.setLiferayServiceUser("test@liferay.com");
         liferayApiClient.setLiferayServicePassword("test");
-        liferayApiClient.initializeLiferayUrl();
+        liferayApiClient.initializeLiferayUrlAndCompanyId();
     }
 
     @Test

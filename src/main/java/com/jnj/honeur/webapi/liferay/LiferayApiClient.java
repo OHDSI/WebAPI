@@ -20,6 +20,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.annotation.PostConstruct;
 import java.nio.charset.Charset;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 @ConditionalOnProperty(value="webapi.central", matchIfMissing = true)
@@ -28,7 +29,11 @@ public class LiferayApiClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(LiferayApiClient.class);
 
     private static final String STANDARD_ROLE = "1";
-    private static final String COMPANY_ID = "20116";
+    private static String COMPANY_ID;
+
+
+    @Value("${datasource.liferay.company.web.id}")
+    private String companyWebId;
 
     @Value("${datasource.liferay.url}")
     private String liferayBaseUrl;
@@ -37,6 +42,7 @@ public class LiferayApiClient {
     @Value("${datasource.liferay.password}")
     private String liferayServicePassword;
 
+    private String companyId;
     private String liferayWebApi;
     private RestTemplate restTemplate;
 
@@ -55,12 +61,34 @@ public class LiferayApiClient {
     }
 
     @PostConstruct
-    void initializeLiferayUrl(){
+    void initializeLiferayUrlAndCompanyId(){
         liferayWebApi = liferayBaseUrl +"/api/jsonws";
+        companyId = getCompanyId();
+    }
+
+    private String getCompanyId(){
+        String companyEndPoint = "/company/get-companies";
+        String companyId;
+        try {
+            List<LinkedHashMap<String, String>> companies = restTemplate.exchange(liferayWebApi + companyEndPoint,
+                    HttpMethod.GET, new HttpEntity<>(createHeaders()),
+                    List.class).getBody();
+
+            if (companies.size() == 1) {
+                companyId = companies.get(0).get("companyId");
+            } else {
+                List<LinkedHashMap<String, String>> filteredCompanies = companies.stream().filter(company -> company.get("webId").equals(companyWebId)).collect(Collectors.toList());
+                companyId = filteredCompanies.get(0).get("companyId");
+            }
+        } catch (HttpStatusCodeException e) {
+            LOGGER.error(e.getMessage());
+            return null;
+        }
+        return companyId;
     }
 
     public UserEntity findUserByLogin(String login) {
-        String userIdEndpoint = "/user/get-user-id-by-email-address/company-id/"+COMPANY_ID+"/email-address/"+login;
+        String userIdEndpoint = "/user/get-user-id-by-email-address/company-id/"+ companyId +"/email-address/"+login;
         String id;
         try {
             id = restTemplate.exchange(liferayWebApi + userIdEndpoint,
@@ -235,7 +263,7 @@ public class LiferayApiClient {
     }
 
     public List<String> getRoleNames(){
-        String endpoint = "/role/get-roles/company-id/"+COMPANY_ID+"/types/"+STANDARD_ROLE;
+        String endpoint = "/role/get-roles/company-id/"+ companyId +"/types/"+STANDARD_ROLE;
         try {
             JsonNode response = restTemplate.exchange(liferayWebApi + endpoint,
                     HttpMethod.GET, new HttpEntity<>(createHeaders()),
@@ -262,7 +290,7 @@ public class LiferayApiClient {
     }
 
     public List<Organization> getOrganizations() {
-        String endpoint = "/organization/get-organizations/company-id/" + COMPANY_ID + "/parent-organization-id/-1";
+        String endpoint = "/organization/get-organizations/company-id/" + companyId + "/parent-organization-id/-1";
         try {
             return Arrays.asList(restTemplate.exchange(liferayWebApi + endpoint,
                     HttpMethod.GET, new HttpEntity<>(createHeaders()),
@@ -311,7 +339,7 @@ public class LiferayApiClient {
     }
 
     String getRoleId(RoleEntity role) {
-        String endpoint = "/role/get-role/company-id/"+COMPANY_ID+"/name/Atlas "+role.getName();
+        String endpoint = "/role/get-role/company-id/"+ companyId +"/name/Atlas "+role.getName();
         try {
             JsonNode response = restTemplate.exchange(liferayWebApi + endpoint,
                     HttpMethod.GET, new HttpEntity<>(createHeaders()),

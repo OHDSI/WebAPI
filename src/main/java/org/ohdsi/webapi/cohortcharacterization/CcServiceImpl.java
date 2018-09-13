@@ -19,19 +19,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
@@ -279,7 +271,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
     }
 
     @Override
-    public String generateCc(final Long id, final String sourceKey) {
+    public JobExecutionResource generateCc(final Long id, final String sourceKey) {
 
         SerializedCcToCcConverter designConverter = new SerializedCcToCcConverter();
 
@@ -300,14 +292,15 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         if (vocabularyTableQualifier != null) {
             builder.addString(VOCABULARY_DATABASE_SCHEMA, vocabularyTableQualifier);
         }
-        
+
+        final String design = designConverter.convertToDatabaseColumn(cc);
         builder.addString(TARGET_DIALECT, source.getSourceDialect());
         builder.addString(TARGET_TABLE, "cohort");
         builder.addString(COHORT_CHARACTERIZATION_ID, String.valueOf(id));
         builder.addString(SOURCE_ID, String.valueOf(source.getSourceId()));
         builder.addString(GENERATE_STATS, Boolean.TRUE.toString());
-        builder.addString(DESIGN, designConverter.convertToDatabaseColumn(cc));
-        builder.addString(HASH_CODE, String.valueOf(cc.getHashCode()));
+        builder.addString(DESIGN, design);
+        builder.addString(HASH_CODE, String.valueOf(design.hashCode()));
         
         final JobParameters jobParameters = builder.toJobParameters();
 
@@ -323,7 +316,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         
         Job generateCohortJob = generateJobBuilder.build();
         JobExecutionResource jobExec = this.jobTemplate.launch(generateCohortJob, jobParameters);
-        return "todo";
+        return jobExec;
     }
 
     @Override
@@ -455,8 +448,9 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
 
     private CohortDefinition persistCohortOrLinkWithExisting(final CohortDefinition cohort) {
         final CohortDefinitionDetails details = cohort.getDetails();
+        final UserEntity user = userRepository.findByLogin(security.getSubject());
         return findCohortByExpressionHashcode(details).orElseGet(() -> {
-            cohort.setCreatedBy("admin@example.com"/* TODO security.getSubject()*/);
+            cohort.setCreatedBy(user);
             cohort.setCreatedDate(new Date());
             cohort.setDetails(null);
             final CohortDefinition savedCohort = cohortRepository.save(cohort);
@@ -470,7 +464,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         List<CohortDefinitionDetails> detailsFromDb = detailsRepository.findByHashCode(details.getHashCode());
         return detailsFromDb
                 .stream()
-                .filter(v -> ObjectUtils.equals(v.getExpression(), details.getExpression()))
+                .filter(v -> Objects.equals(v.getExpression(), details.getExpression()))
                 .findFirst()
                 .map(CohortDefinitionDetails::getCohortDefinition);
     }

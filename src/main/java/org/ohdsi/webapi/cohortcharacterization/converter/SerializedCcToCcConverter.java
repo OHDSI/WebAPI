@@ -17,7 +17,6 @@ public class SerializedCcToCcConverter implements AttributeConverter<CohortChara
 
     private static ConversionService conversionService;
 
-    // TODO: cleaner way
     public static void setConversionService(ConversionService conversionService) {
 
         SerializedCcToCcConverter.conversionService = conversionService;

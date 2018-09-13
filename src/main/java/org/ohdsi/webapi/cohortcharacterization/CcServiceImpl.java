@@ -151,6 +151,9 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         
         updateLinkedFields(entity, foundEntity);
 
+        entity.setCreatedBy(foundEntity.getCreatedBy());
+        entity.setCreatedDate(foundEntity.getCreatedDate());
+
         entity.setModifiedDate(new Date());
         entity.setModifiedBy(getCurrentUser());
         

@@ -102,20 +102,18 @@ public class StorageServiceClient {
         }
     }
 
-    public String saveCohort(String token, File results, final UUID groupKey) {
+    public void saveCohort(String token, File results, final UUID groupKey, final UUID uuid) {
         if (!webapiCentral) {
             token = getStorageServiceToken();
         }
-        String endpoint = "/cohort-definitions/" + groupKey;
+        String endpoint = "/cohort-definitions/" + groupKey + "/" + uuid;
         try {
             HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = createHttpEntity(token, results);
 
-            return restTemplate.exchange(storageServiceApi + endpoint,
-                    HttpMethod.POST, requestEntity, StorageInformationItem.class).getHeaders()
-                    .getLocation().getPath().replace("/cohort-definitions/", "");
+            restTemplate.exchange(storageServiceApi + endpoint,
+                    HttpMethod.POST, requestEntity, StorageInformationItem.class);
         } catch (RestClientException e) {
             LOGGER.error(e.getMessage(), e);
-            return null;
         }
     }
 

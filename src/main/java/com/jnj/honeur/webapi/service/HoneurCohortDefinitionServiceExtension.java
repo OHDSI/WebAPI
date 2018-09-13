@@ -283,18 +283,18 @@ public class HoneurCohortDefinitionServiceExtension {
 //        String expression = cohortDefinition.getDetails().getExpression();
 
         String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+        UUID uuid = UUID.randomUUID();
+        cohortDefinition.setUuid(uuid);
         File file = createFile(cohortDefinition.getName()+"-"+timeStamp+".cohort", this.cohortDefinitionService.cohortDefinitionToDTO(cohortDefinition));
         if(toCloud){
             if(file != null) {
-                String uuid;
                 if (cohortDefinition.getGroupKey() == null) {
                     UUID groupKey = UUID.randomUUID();
-                    uuid = storageServiceClient.saveCohort(token, file, groupKey);
+                    storageServiceClient.saveCohort(token, file, groupKey, uuid);
                     cohortDefinition.setGroupKey(groupKey);
                 } else {
-                    uuid = storageServiceClient.saveCohort(token, file, cohortDefinition.getGroupKey());
+                    storageServiceClient.saveCohort(token, file, cohortDefinition.getGroupKey(), uuid);
                 }
-                cohortDefinition.setUuid(UUID.fromString(uuid));
                 this.cohortDefinitionRepository.save(cohortDefinition);
             }
 

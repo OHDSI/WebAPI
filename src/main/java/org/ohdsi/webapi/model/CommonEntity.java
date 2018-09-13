@@ -9,12 +9,12 @@ import javax.persistence.*;
 @MappedSuperclass
 public abstract class CommonEntity implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by_id")
+    @JoinColumn(name = "created_by_id", updatable = false)
     private UserEntity createdBy;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "modified_by_id")
     private UserEntity modifiedBy;
-    @Column(name = "created_date")
+    @Column(name = "created_date", updatable = false)
     private Date createdDate;
     @Column(name = "modified_date")
     private Date modifiedDate;

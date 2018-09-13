@@ -151,13 +151,18 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         
         updateLinkedFields(entity, foundEntity);
 
-        entity.setCreatedBy(foundEntity.getCreatedBy());
-        entity.setCreatedDate(foundEntity.getCreatedDate());
+        if (StringUtils.isNotEmpty(entity.getName())) {
+            foundEntity.setName(entity.getName());
+        }
 
-        entity.setModifiedDate(new Date());
-        entity.setModifiedBy(getCurrentUser());
+        foundEntity.setFeatureAnalyses(entity.getFeatureAnalyses());
+        foundEntity.setCohortDefinitions(entity.getCohortDefinitions());
+        foundEntity.setParameters(entity.getParameters());
+
+        foundEntity.setModifiedDate(new Date());
+        foundEntity.setModifiedBy(getCurrentUser());
         
-        return saveCc(entity);
+        return saveCc(foundEntity);
     }
 
     private void updateLinkedFields(final CohortCharacterizationEntity entity, final CohortCharacterizationEntity foundEntity) {

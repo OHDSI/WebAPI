@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.cohort_characterizations
 (
   id                 BIGINT PRIMARY KEY DEFAULT NEXTVAL('cohort_characterizations_seq'),
   name               VARCHAR(255) NOT NULL,
-  created_by_id      INTEGER NOT NULL,
+  created_by_id      INTEGER,
   created_date       TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT (now()),
   modified_by_id     INTEGER,
   modified_date      TIMESTAMP WITH TIME ZONE,

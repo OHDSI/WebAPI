@@ -3,7 +3,7 @@ CREATE TABLE ${ohdsiSchema}.cohort_characterizations
 (
   id                 BIGINT PRIMARY KEY DEFAULT NEXT VALUE FOR ${ohdsiSchema}.cohort_characterizations_seq,
   name               VARCHAR(255) NOT NULL,
-  created_by_id      INTEGER NOT NULL,
+  created_by_id      INTEGER,
   created_date       DATETIME NOT NULL DEFAULT (GETDATE()),
   modified_by_id     INTEGER,
   modified_date      DATETIME,

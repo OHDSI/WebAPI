@@ -1,22 +1,22 @@
 CREATE SEQUENCE ${ohdsiSchema}.cohort_characterizations_seq;
 CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.cohort_characterizations
 (
-  id                 BIGINT                PRIMARY KEY DEFAULT NEXTVAL('cohort_characterizations_seq'),
-  name               VARCHAR(255)   NOT NULL,
-  created_by         INTEGER                  NOT NULL,
-  created_at         TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT (now()),
-  updated_by         INTEGER,
-  updated_at         TIMESTAMP WITH TIME ZONE,
-  hash_code          INTEGER                  NULL
+  id                 BIGINT PRIMARY KEY DEFAULT NEXTVAL('cohort_characterizations_seq'),
+  name               VARCHAR(255) NOT NULL,
+  created_by_id      INTEGER NOT NULL,
+  created_date       TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT (now()),
+  modified_by_id     INTEGER,
+  modified_date      TIMESTAMP WITH TIME ZONE,
+  hash_code          INTEGER NULL
 );
 
 ALTER TABLE ${ohdsiSchema}.cohort_characterizations
-  ADD CONSTRAINT fk_cc_ser_user_creator FOREIGN KEY (created_by)
+  ADD CONSTRAINT fk_cc_ser_user_creator FOREIGN KEY (created_by_id)
 REFERENCES ${ohdsiSchema}.sec_user (id)
 ON UPDATE NO ACTION ON DELETE NO ACTION;
 
 ALTER TABLE ${ohdsiSchema}.cohort_characterizations
-  ADD CONSTRAINT fk_cc_ser_user_updater FOREIGN KEY (updated_by)
+  ADD CONSTRAINT fk_cc_ser_user_updater FOREIGN KEY (modified_by_id)
 REFERENCES ${ohdsiSchema}.sec_user (id)
 ON UPDATE NO ACTION ON DELETE NO ACTION;
 
@@ -25,8 +25,8 @@ ON UPDATE NO ACTION ON DELETE NO ACTION;
 CREATE SEQUENCE ${ohdsiSchema}.cc_params_sequence;
 CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.cc_params
 (
-  id                          BIGINT               PRIMARY KEY DEFAULT NEXTVAL('cc_params_sequence'),
-  cohort_characterization_id  BIGINT                  NOT NULL,
+  id                          BIGINT PRIMARY KEY DEFAULT NEXTVAL('cc_params_sequence'),
+  cohort_characterization_id  BIGINT NOT NULL,
   name                        VARCHAR(255),
   value                       VARCHAR(255)
 );
@@ -41,7 +41,7 @@ ON UPDATE NO ACTION ON DELETE CASCADE;
 CREATE SEQUENCE ${ohdsiSchema}.fe_analyses_sequence;
 CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.fe_analyses
 (
-  id         BIGINT               PRIMARY KEY DEFAULT NEXTVAL('fe_analyses_sequence'),
+  id         BIGINT PRIMARY KEY DEFAULT NEXTVAL('fe_analyses_sequence'),
   type       VARCHAR(255),
   name       VARCHAR(255),
   domain     VARCHAR(255),

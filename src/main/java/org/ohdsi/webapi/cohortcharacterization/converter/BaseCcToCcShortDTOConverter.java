@@ -21,10 +21,10 @@ public abstract class BaseCcToCcShortDTOConverter<T extends CcShortDTO> extends 
         dto.setId(source.getId());
         dto.setHashCode(source.getHashCode());
 
-        dto.setCreatedAt(source.getCreatedAt());
-        dto.setUpdatedAt(source.getUpdatedAt());
         dto.setCreatedBy(conversionService.convert(source.getCreatedBy(), UserDTO.class));
-        dto.setUpdatedBy(conversionService.convert(source.getUpdatedBy(), UserDTO.class));
+        dto.setUpdatedBy(conversionService.convert(source.getModifiedBy(), UserDTO.class));
+        dto.setCreatedAt(source.getCreatedDate());
+        dto.setUpdatedAt(source.getModifiedDate());
 
         return dto;
     }

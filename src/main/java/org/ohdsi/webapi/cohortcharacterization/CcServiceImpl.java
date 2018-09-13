@@ -120,7 +120,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
     @Override
     public CohortCharacterizationEntity createCc(final CohortCharacterizationEntity entity) {
         entity.setCreatedBy(getCurrentUser());
-        entity.setCreatedAt(new Date());
+        entity.setCreatedDate(new Date());
         return saveCc(entity);
     }
 
@@ -151,8 +151,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         
         updateLinkedFields(entity, foundEntity);
 
-        entity.setUpdatedAt(new Date());
-        entity.setUpdatedBy(getCurrentUser());
+        entity.setModifiedDate(new Date());
+        entity.setModifiedBy(getCurrentUser());
         
         return saveCc(entity);
     }

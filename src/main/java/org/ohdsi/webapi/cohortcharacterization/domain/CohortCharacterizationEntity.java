@@ -1,7 +1,6 @@
 package org.ohdsi.webapi.cohortcharacterization.domain;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -14,20 +13,17 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.model.CommonEntity;
 
 @Entity
 @Table(name = "cohort_characterizations")
-public class CohortCharacterizationEntity implements CohortCharacterization {
+public class CohortCharacterizationEntity extends CommonEntity implements CohortCharacterization {
 
     @Id
     @SequenceGenerator(name = "cohort_characterizations_pk_sequence", sequenceName = "cohort_characterizations_seq", allocationSize = 1)
@@ -37,22 +33,6 @@ public class CohortCharacterizationEntity implements CohortCharacterization {
     @Column
     private String name;
     
-    @ManyToOne
-    @JoinColumn(name="created_by")
-    private UserEntity createdBy;
-    
-    @Column(name = "created_at")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createdAt = new Date();
-    
-    @ManyToOne
-    @JoinColumn(name="updated_by")
-    private UserEntity updatedBy;
-    
-    @Column(name = "updated_at")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date updatedAt;
-
     @ManyToMany(targetEntity = CohortDefinition.class, fetch = FetchType.LAZY)
     @JoinTable(name = "cc_cohorts",
             joinColumns = @JoinColumn(name = "cohort_characterization_id", referencedColumnName = "id"),
@@ -101,39 +81,6 @@ public class CohortCharacterizationEntity implements CohortCharacterization {
     public void setName(final String name) {
         this.name = name;
     }
-
-    public UserEntity getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(final UserEntity createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(final Date createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public UserEntity getUpdatedBy() {
-        return updatedBy;
-    }
-
-    public void setUpdatedBy(final UserEntity updatedBy) {
-        this.updatedBy = updatedBy;
-    }
-
-    public Date getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(final Date updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
 
     public void setParameters(final Set<CcParamEntity> parameters) {
         this.parameters = parameters;

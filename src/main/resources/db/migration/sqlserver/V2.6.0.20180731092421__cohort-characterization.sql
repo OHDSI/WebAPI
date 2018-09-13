@@ -1,28 +1,28 @@
-CREATE SEQUENCE ${ohdsiSchema}.cohort_characterizations_seq;
+CREATE SEQUENCE ${ohdsiSchema}.cohort_characterizations_seq START WITH 1;
 CREATE TABLE ${ohdsiSchema}.cohort_characterizations
 (
   id                 BIGINT                PRIMARY KEY DEFAULT NEXT VALUE FOR ${ohdsiSchema}.cohort_characterizations_seq,
   name               VARCHAR(255)   NOT NULL,
-  created_by         INTEGER                  NOT NULL,
-  created_at         DATETIME NOT NULL DEFAULT (GETDATE()),
-  updated_by         INTEGER,
-  updated_at         DATETIME,
+  created_by_id      INTEGER                  NOT NULL,
+  created_date       DATETIME NOT NULL DEFAULT (GETDATE()),
+  modified_by_id     INTEGER,
+  modified_date      DATETIME,
   hash_code          INTEGER                  NULL
 );
 
 ALTER TABLE ${ohdsiSchema}.cohort_characterizations
-  ADD CONSTRAINT fk_cc_ser_user_creator FOREIGN KEY (created_by)
+  ADD CONSTRAINT fk_cc_ser_user_creator FOREIGN KEY (created_by_id)
 REFERENCES ${ohdsiSchema}.sec_user (id)
 ON UPDATE NO ACTION ON DELETE NO ACTION;
 
 ALTER TABLE ${ohdsiSchema}.cohort_characterizations
-  ADD CONSTRAINT fk_cc_ser_user_updater FOREIGN KEY (updated_by)
+  ADD CONSTRAINT fk_cc_ser_user_updater FOREIGN KEY (modified_by_id)
 REFERENCES ${ohdsiSchema}.sec_user (id)
 ON UPDATE NO ACTION ON DELETE NO ACTION;
 
 
 
-CREATE SEQUENCE ${ohdsiSchema}.cc_params_sequence;
+CREATE SEQUENCE ${ohdsiSchema}.cc_params_sequence START WITH 1;
 CREATE TABLE ${ohdsiSchema}.cc_params
 (
   id                          BIGINT               PRIMARY KEY DEFAULT NEXT VALUE FOR ${ohdsiSchema}.cc_params_sequence,
@@ -38,7 +38,7 @@ ON UPDATE NO ACTION ON DELETE CASCADE;
 
 
 
-CREATE SEQUENCE ${ohdsiSchema}.fe_analyses_sequence;
+CREATE SEQUENCE ${ohdsiSchema}.fe_analyses_sequence START WITH 1;
 CREATE TABLE ${ohdsiSchema}.fe_analyses
 (
   id         BIGINT               PRIMARY KEY DEFAULT NEXT VALUE FOR ${ohdsiSchema}.fe_analyses_sequence,
@@ -58,6 +58,7 @@ VALUES
   (NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'cohort-characterizations:import:post', 'Import cohort characterization'),
   (NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'cohort-characterizations:*:get', 'Get cohort characterization'),
   (NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'cohort-characterizations:get', 'Get cohort characterizations list'),
+  (NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'cohort-characterizations:*:generations:get', 'Get cohort characterization generations'),
   (NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'cohort-characterizations:generations:*:results:get', 'Get cohort characterization generation results'),
   (NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'cohort-characterizations:*:export', 'Export cohort characterization'),
 
@@ -260,3 +261,5 @@ INSERT INTO ${ohdsiSchema}.fe_analyses (type, name, domain, descr, value, design
 INSERT INTO ${ohdsiSchema}.fe_analyses (type, name, domain, descr, value, design, is_locked, stat_type) VALUES ('PRESET', 'Occurrence Primary Inpatient Short Term', 'CONDITION', 'One covariate per condition observed  as a primary diagnosis in an inpatient setting in the condition_occurrence table starting in the short term window.', null, 'ConditionOccurrencePrimaryInpatientShortTerm', 1, 'PREVALENCE');
 INSERT INTO ${ohdsiSchema}.fe_analyses (type, name, domain, descr, value, design, is_locked, stat_type) VALUES ('PRESET', 'Visit Count Long Term', 'VISIT', 'The number of visits observed in the long term window.', null, 'VisitCountLongTerm', 1, 'PREVALENCE');
 INSERT INTO ${ohdsiSchema}.fe_analyses (type, name, domain, descr, value, design, is_locked, stat_type) VALUES ('PRESET', 'Occurrence Primary Inpatient Medium Term', 'CONDITION', 'One covariate per condition observed  as a primary diagnosis in an inpatient setting in the condition_occurrence table starting in the medium term window.', null, 'ConditionOccurrencePrimaryInpatientMediumTerm', 1, 'PREVALENCE');
+
+ALTER TABLE ${ohdsiSchema}.batch_job_execution_params alter column string_val varchar(max);

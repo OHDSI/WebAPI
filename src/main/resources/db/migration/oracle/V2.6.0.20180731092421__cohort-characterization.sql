@@ -3,19 +3,19 @@ CREATE TABLE ${ohdsiSchema}.cohort_characterizations
 (
   id                 NUMBER(19)     PRIMARY KEY,
   name               VARCHAR(255)   NOT NULL,
-  created_by         INTEGER        NOT NULL,
-  created_at         TIMESTAMP WITH TIME ZONE DEFAULT sysdate NOT NULL,
-  updated_by         INTEGER,
-  updated_at         TIMESTAMP WITH TIME ZONE,
+  created_by_id      INTEGER        NOT NULL,
+  created_date       TIMESTAMP WITH TIME ZONE DEFAULT sysdate NOT NULL,
+  modified_by_id     INTEGER,
+  modified_date      TIMESTAMP WITH TIME ZONE,
   hash_code          INTEGER                  NULL
 );
 
 ALTER TABLE ${ohdsiSchema}.cohort_characterizations
-  ADD CONSTRAINT fk_cc_ser_user_creator FOREIGN KEY (created_by)
+  ADD CONSTRAINT fk_cc_ser_user_creator FOREIGN KEY (created_by_id)
 REFERENCES ${ohdsiSchema}.sec_user (id);
 
 ALTER TABLE ${ohdsiSchema}.cohort_characterizations
-  ADD CONSTRAINT fk_cc_ser_user_updater FOREIGN KEY (updated_by)
+  ADD CONSTRAINT fk_cc_ser_user_updater FOREIGN KEY (modified_by_id)
 REFERENCES ${ohdsiSchema}.sec_user (id);
 
 

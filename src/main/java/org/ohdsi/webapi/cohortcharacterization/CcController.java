@@ -19,9 +19,11 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 
 @Path("/cohort-characterizations")
 @Controller
+@Transactional
 public class CcController {
     
     private CcService service;

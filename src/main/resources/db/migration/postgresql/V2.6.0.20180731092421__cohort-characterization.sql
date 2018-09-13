@@ -3,20 +3,20 @@ CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.cohort_characterizations
 (
   id                 BIGINT                PRIMARY KEY DEFAULT NEXTVAL('cohort_characterizations_seq'),
   name               VARCHAR(255)   NOT NULL,
-  created_by         INTEGER                  NOT NULL,
-  created_at         TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT (now()),
-  updated_by         INTEGER,
-  updated_at         TIMESTAMP WITH TIME ZONE,
+  created_by_id      INTEGER                  NOT NULL,
+  created_date       TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT (now()),
+  modified_by_id     INTEGER,
+  modified_date      TIMESTAMP WITH TIME ZONE,
   hash_code          INTEGER                  NULL
 );
 
 ALTER TABLE ${ohdsiSchema}.cohort_characterizations
-  ADD CONSTRAINT fk_cc_ser_user_creator FOREIGN KEY (created_by)
+  ADD CONSTRAINT fk_cc_ser_user_creator FOREIGN KEY (created_by_id)
 REFERENCES ${ohdsiSchema}.sec_user (id)
 ON UPDATE NO ACTION ON DELETE NO ACTION;
 
 ALTER TABLE ${ohdsiSchema}.cohort_characterizations
-  ADD CONSTRAINT fk_cc_ser_user_updater FOREIGN KEY (updated_by)
+  ADD CONSTRAINT fk_cc_ser_user_updater FOREIGN KEY (modified_by_id)
 REFERENCES ${ohdsiSchema}.sec_user (id)
 ON UPDATE NO ACTION ON DELETE NO ACTION;
 

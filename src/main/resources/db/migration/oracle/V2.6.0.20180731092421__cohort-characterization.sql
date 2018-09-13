@@ -3,7 +3,7 @@ CREATE TABLE ${ohdsiSchema}.cohort_characterizations
 (
   id                 NUMBER(19) PRIMARY KEY,
   name               VARCHAR(255) NOT NULL,
-  created_by_id      INTEGER NOT NULL,
+  created_by_id      INTEGER,
   created_date       TIMESTAMP WITH TIME ZONE DEFAULT sysdate NOT NULL,
   modified_by_id     INTEGER,
   modified_date      TIMESTAMP WITH TIME ZONE,

@@ -6,6 +6,8 @@ import com.jnj.honeur.webapi.hssserviceuser.HSSServiceUserRepository;
 import org.junit.Before;
 import org.junit.Test;
 import org.ohdsi.webapi.service.CohortDefinitionService;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.client.RestClientException;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,8 +40,8 @@ public class StorageServiceClientIT {
 
     private HSSServiceUserRepository mockHSSServiceUserRepository() {
         HSSServiceUserEntity serviceUser = new HSSServiceUserEntity();
-        serviceUser.setUsername("pmoorth1@its.jnj.com");
-        serviceUser.setPlainTextPassword("test");
+        serviceUser.setUsername("honeur-demo@its.jnj.com");
+        serviceUser.setPlainTextPassword("demo");
 
         HSSServiceUserRepository repo = mock(HSSServiceUserRepository.class);
         when(repo.findAll()).thenReturn(Collections.singleton(serviceUser));
@@ -67,30 +69,40 @@ public class StorageServiceClientIT {
         assertNotNull(cohortDefinitionInfoList);
         assertTrue(cohortDefinitionInfoList.size() > 0);
 
-        boolean succes = false;
+        String uuid = null;
+        CohortDefinitionService.CohortDefinitionDTO cohortDefinition = null;
 
         for (CohortDefinitionStorageInformationItem cohortDefinitionStorageInformationItem: cohortDefinitionInfoList) {
             try {
-                String uuid = cohortDefinitionStorageInformationItem.getUuid();
-                CohortDefinitionService.CohortDefinitionDTO cohortDefinition =
-                        storageServiceClient.getCohortDefinition(token, uuid);
-                assertNotNull(cohortDefinition);
-                assertEquals(UUID.fromString(uuid), cohortDefinition.uuid);
-                succes = true;
-            } catch (Exception e) {
+                uuid = cohortDefinitionStorageInformationItem.getUuid();
+                cohortDefinition = storageServiceClient.getCohortDefinition(token, uuid);
+                if(cohortDefinition != null) {
+                    System.out.println("Valid cohort definition retrieved!");
+                    break;
+                }
+            } catch (HttpMessageNotReadableException e) {
                 //Loop for finding correct data amongst legacy data.
+                System.err.println("Legacy cohort definition with UUID: " + uuid);
+            } catch (RestClientException e) {
+                //Loop for finding correct data amongst legacy data.
+                System.err.println("Error on cohort definition with UUID " + uuid + ": " + e.getMessage());
             }
         }
-        assertTrue("No correct data found, user may not have access to correct data.", succes);
+
+        assertNotNull("No correct data found or test user has no access to correct data", cohortDefinition);
+        assertNotNull("No correct data found or test user has no access to correct data", uuid);
+        assertNotNull(cohortDefinition.name);
+        assertNotNull(cohortDefinition.expression);
+        assertEquals(UUID.fromString(uuid), cohortDefinition.uuid);
     }
 
     @Test
     public void saveCohort() throws URISyntaxException {
+        UUID groupKey = UUID.randomUUID();
         UUID uuid = UUID.randomUUID();
         File cohortFile = new File(getClass().getClassLoader().getResource("hypertension.cohort").toURI());
-        String newPath = storageServiceClient.saveCohort(token, cohortFile, uuid);
-        assertNotNull(newPath);
-        assertTrue(storageServiceClient.deleteStorageFile(token, parseUuid(newPath)));
+        assertTrue(storageServiceClient.saveCohort(token, cohortFile, groupKey, uuid));
+        assertTrue(storageServiceClient.deleteStorageFile(token, uuid.toString()));
     }
 
     @Test

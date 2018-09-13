@@ -102,7 +102,7 @@ public class StorageServiceClient {
         }
     }
 
-    public void saveCohort(String token, File results, final UUID groupKey, final UUID uuid) {
+    public boolean saveCohort(String token, File results, final UUID groupKey, final UUID uuid) {
         if (!webapiCentral) {
             token = getStorageServiceToken();
         }
@@ -112,8 +112,10 @@ public class StorageServiceClient {
 
             restTemplate.exchange(storageServiceApi + endpoint,
                     HttpMethod.POST, requestEntity, StorageInformationItem.class);
+            return true;
         } catch (RestClientException e) {
             LOGGER.error(e.getMessage(), e);
+            return false;
         }
     }
 

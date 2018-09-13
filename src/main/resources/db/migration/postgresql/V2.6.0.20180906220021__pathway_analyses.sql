@@ -6,10 +6,10 @@ CREATE TABLE ${ohdsiSchema}.pathway_analyses
   combination_window INTEGER,
   min_cell_count     INTEGER,
   max_depth          INTEGER,
-  created_by         INTEGER,
-  created_at         TIMESTAMP,
-  updated_by         INTEGER,
-  updated_at         TIMESTAMP,
+  created_by_id      INTEGER,
+  created_date       TIMESTAMP,
+  modified_by_id     INTEGER,
+  modified_date      TIMESTAMP,
   hash_code          INTEGER
 );
 

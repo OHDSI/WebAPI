@@ -60,10 +60,10 @@ public abstract class AbstractDaoService {
   ConceptSetItemRepository conceptSetItemRepository;
 
   @Autowired
-  private Security security;
+  protected Security security;
 
   @Autowired
-  private UserRepository userRepository;
+  protected UserRepository userRepository;
 
   public static final List<GenerationStatus> INVALIDATE_STATUSES = new ArrayList<GenerationStatus>() {{
     add(GenerationStatus.PENDING);

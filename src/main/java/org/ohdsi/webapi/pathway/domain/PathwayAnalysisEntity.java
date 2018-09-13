@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.pathway.domain;
 
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.model.CommonEntity;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -8,16 +8,13 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Entity(name = "pathway_analyses")
-public class PathwayAnalysisEntity {
+public class PathwayAnalysisEntity extends CommonEntity {
 
     @Id
     @SequenceGenerator(name = "pathways_analyses_pk_sequence", sequenceName = "pathway_analyses_sequence", allocationSize = 1)
@@ -41,20 +38,6 @@ public class PathwayAnalysisEntity {
 
     @Column(name = "max_depth")
     private Integer maxDepth;
-
-    @ManyToOne
-    @JoinColumn(name="created_by")
-    private UserEntity createdBy;
-
-    @Column(name = "created_at")
-    private Date createdAt = new Date();
-
-    @ManyToOne
-    @JoinColumn(name="updated_by")
-    private UserEntity updatedBy;
-
-    @Column(name = "updated_at")
-    private Date updatedAt;
 
     @Column(name = "hash_code")
     private Integer hashCode;
@@ -127,46 +110,6 @@ public class PathwayAnalysisEntity {
     public void setMaxDepth(Integer maxDepth) {
 
         this.maxDepth = maxDepth;
-    }
-
-    public UserEntity getCreatedBy() {
-
-        return createdBy;
-    }
-
-    public void setCreatedBy(UserEntity createdBy) {
-
-        this.createdBy = createdBy;
-    }
-
-    public Date getCreatedAt() {
-
-        return createdAt;
-    }
-
-    public void setCreatedAt(Date createdAt) {
-
-        this.createdAt = createdAt;
-    }
-
-    public UserEntity getUpdatedBy() {
-
-        return updatedBy;
-    }
-
-    public void setUpdatedBy(UserEntity updatedBy) {
-
-        this.updatedBy = updatedBy;
-    }
-
-    public Date getUpdatedAt() {
-
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Date updatedAt) {
-
-        this.updatedAt = updatedAt;
     }
 
     public Integer getHashCode() {

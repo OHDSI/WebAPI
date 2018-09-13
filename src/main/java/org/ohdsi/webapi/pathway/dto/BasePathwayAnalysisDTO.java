@@ -16,9 +16,9 @@ public abstract class BasePathwayAnalysisDTO<T extends CohortMetadata> {
     private Integer minCellCount;
     private Integer maxDepth;
     private UserDTO createdBy;
-    private Date createdAt;
-    private UserDTO updatedBy;
-    private Date updatedAt;
+    private Date createdDate;
+    private UserDTO modifiedBy;
+    private Date modifiedDate;
 
     public Integer getId() {
 
@@ -100,33 +100,33 @@ public abstract class BasePathwayAnalysisDTO<T extends CohortMetadata> {
         this.createdBy = createdBy;
     }
 
-    public Date getCreatedAt() {
+    public Date getCreatedDate() {
 
-        return createdAt;
+        return createdDate;
     }
 
-    public void setCreatedAt(Date createdAt) {
+    public void setCreatedDate(Date createdDate) {
 
-        this.createdAt = createdAt;
+        this.createdDate = createdDate;
     }
 
-    public UserDTO getUpdatedBy() {
+    public UserDTO getModifiedBy() {
 
-        return updatedBy;
+        return modifiedBy;
     }
 
-    public void setUpdatedBy(UserDTO updatedBy) {
+    public void setModifiedBy(UserDTO modifiedBy) {
 
-        this.updatedBy = updatedBy;
+        this.modifiedBy = modifiedBy;
     }
 
-    public Date getUpdatedAt() {
+    public Date getModifiedDate() {
 
-        return updatedAt;
+        return modifiedDate;
     }
 
-    public void setUpdatedAt(Date updatedAt) {
+    public void setModifiedDate(Date modifiedDate) {
 
-        this.updatedAt = updatedAt;
+        this.modifiedDate = modifiedDate;
     }
 }

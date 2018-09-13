@@ -110,7 +110,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         newAnalysis.setCombinationWindow(toSave.getCombinationWindow());
 
         newAnalysis.setCreatedBy(getCurrentUser());
-        newAnalysis.setCreatedAt(new Date());
+        newAnalysis.setCreatedDate(new Date());
 
         return save(newAnalysis);
     }
@@ -132,8 +132,8 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
         PathwayAnalysisEntity existing = pathwayAnalysisRepository.findOne(forUpdate.getId());
 
-        existing.setUpdatedBy(getCurrentUser());
-        existing.setUpdatedAt(new Date());
+        existing.setModifiedBy(getCurrentUser());
+        existing.setModifiedDate(new Date());
 
         existing.setName(forUpdate.getName());
         existing.setMaxDepth(forUpdate.getMaxDepth());

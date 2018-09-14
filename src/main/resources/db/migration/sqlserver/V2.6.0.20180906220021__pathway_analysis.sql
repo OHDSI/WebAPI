@@ -49,14 +49,26 @@ CREATE TABLE ${ohdsiSchema}.pathway_event_cohort
 
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
 VALUES
-  (NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'pathway-analyses:post', 'Create Pathways Analysis'),
-  (NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'pathway-analyses:get', 'Get Pathways Analyses list');
+  (NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'pathway-analysis:post', 'Create Pathways Analysis'),
+  (NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'pathway-analysis:import:post', 'Import Pathways Analysis'),
+  (NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'pathway-analysis:get', 'Get Pathways Analyses list'),
+  (NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'pathway-analysis:*:get', 'Get Pathways Analysis instance'),
+  (NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'pathway-analysis:*:generation:get', 'Get Pathways Analysis generations list'),
+  (NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'pathway-analysis:generation:*:get', 'Get Pathways Analysis generation instance'),
+  (NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'pathway-analysis:generation:*:result:get', 'Get Pathways Analysis generation results'),
+  (NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'pathway-analysis:*:export:get', 'Export Pathways Analysis');
 
 INSERT INTO ${ohdsiSchema}.sec_role_permission(id, role_id, permission_id)
 SELECT NEXT VALUE FOR ${ohdsiSchema}.SEC_ROLE_PERMISSION_SEQUENCE, sr.id, sp.id 
 FROM ${ohdsiSchema}.sec_permission SP, ${ohdsiSchema}.sec_role sr
 WHERE sp.value IN (
-  'pathway-analyses:post',
-  'pathway-analyses:get'
+  'pathway-analysis:post',
+  'pathway-analysis:import:post',
+  'pathway-analysis:get',
+  'pathway-analysis:*:get',
+  'pathway-analysis:*:generation:get',
+  'pathway-analysis:generation:*:get',
+  'pathway-analysis:generation:*:result:get',
+  'pathway-analysis:*:export:get'
 )
 AND sr.name IN ('Atlas users');

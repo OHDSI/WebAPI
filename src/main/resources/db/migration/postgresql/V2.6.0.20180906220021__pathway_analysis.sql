@@ -53,7 +53,7 @@ WHERE sp."value" IN (
   'pathway-analysis:*:get',
   'pathway-analysis:*:generation:get',
   'pathway-analysis:generation:*:get',
-  'pathway-analysis:generation:*:result:get'
+  'pathway-analysis:generation:*:result:get',
   'pathway-analysis:*:export:get'
 )
 AND sr.name IN ('Atlas users');

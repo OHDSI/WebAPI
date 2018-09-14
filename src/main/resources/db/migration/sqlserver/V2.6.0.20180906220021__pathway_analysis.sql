@@ -1,5 +1,5 @@
-CREATE SEQUENCE ${ohdsiSchema}.pathway_analyses_sequence;
-CREATE TABLE ${ohdsiSchema}.pathway_analyses
+CREATE SEQUENCE ${ohdsiSchema}.pathway_analysis_sequence;
+CREATE TABLE ${ohdsiSchema}.pathway_analysis
 (
   id                 INTEGER NOT NULL,
   name               VARCHAR(255) NOT NULL,
@@ -11,40 +11,40 @@ CREATE TABLE ${ohdsiSchema}.pathway_analyses
   modified_by_id     INTEGER,
   modified_date      datetime,
   hash_code          INTEGER,
-	CONSTRAINT [PK_pathway_analyses] PRIMARY KEY (id)
+	CONSTRAINT [PK_pathway_analysis] PRIMARY KEY (id)
 );
 
-CREATE SEQUENCE ${ohdsiSchema}.pathway_cohorts_sequence;
+CREATE SEQUENCE ${ohdsiSchema}.pathway_cohort_sequence;
 
-CREATE TABLE ${ohdsiSchema}.pathway_target_cohorts
+CREATE TABLE ${ohdsiSchema}.pathway_target_cohort
 (
   id                   INTEGER NOT NULL,
   name                 VARCHAR(255) NOT NULL,
   cohort_definition_id INTEGER NOT NULL,
   pathway_analysis_id  INTEGER NOT NULL ,
-	CONSTRAINT [PK_pathway_target_cohorts] PRIMARY KEY (id),
+	CONSTRAINT [PK_pathway_target_cohort] PRIMARY KEY (id),
 	CONSTRAINT FK_ptc_cd_id
 		FOREIGN KEY (cohort_definition_id)
 		REFERENCES ${ohdsiSchema}.cohort_definition(id),
 	CONSTRAINT FK_ptc_pa_id
 		FOREIGN KEY (pathway_analysis_id)
-		REFERENCES ${ohdsiSchema}.pathway_analyses(id)
+		REFERENCES ${ohdsiSchema}.pathway_analysis(id)
 );
 
-CREATE TABLE ${ohdsiSchema}.pathway_event_cohorts
+CREATE TABLE ${ohdsiSchema}.pathway_event_cohort
 (
   id                   INTEGER,
   name                 VARCHAR(255) NOT NULL,
   cohort_definition_id INTEGER NOT NULL,
   pathway_analysis_id  INTEGER NOT NULL,
   is_deleted           INTEGER DEFAULT 0,
-	CONSTRAINT [PK_pathway_event_cohorts] PRIMARY KEY (id),
+	CONSTRAINT [PK_pathway_event_cohort] PRIMARY KEY (id),
 	CONSTRAINT FK_pec_cd_id
 		FOREIGN KEY (cohort_definition_id)
 		REFERENCES ${ohdsiSchema}.cohort_definition(id),
 	CONSTRAINT FK_pec_pa_id
 		FOREIGN KEY (pathway_analysis_id)
-		REFERENCES ${ohdsiSchema}.pathway_analyses(id)
+		REFERENCES ${ohdsiSchema}.pathway_analysis(id)
 );
 
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)

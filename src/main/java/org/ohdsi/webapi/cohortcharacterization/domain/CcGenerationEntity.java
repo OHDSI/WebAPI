@@ -14,7 +14,7 @@ import org.ohdsi.webapi.common.CommonGeneration;
 import org.ohdsi.webapi.source.Source;
 
 @Entity
-@Table(name = "cc_generations")
+@Table(name = "cc_generation")
 public class CcGenerationEntity extends CommonGeneration {
 
     @ManyToOne(targetEntity = CohortCharacterizationEntity.class, fetch = FetchType.LAZY)

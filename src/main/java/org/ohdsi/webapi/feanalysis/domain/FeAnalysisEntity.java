@@ -26,7 +26,7 @@ import org.ohdsi.webapi.cohortcharacterization.CcResultType;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 
 @Entity
-@Table(name = "fe_analyses")
+@Table(name = "fe_analysis")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorFormula("type")
 public class 
@@ -46,8 +46,8 @@ FeAnalysisEntity implements FeatureAnalysis, Comparable<FeAnalysisEntity> {
     }
     
     @Id
-    @SequenceGenerator(name = "fe_analyses_pk_sequence", sequenceName = "fe_analyses_sequence", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "fe_analyses_pk_sequence")
+    @SequenceGenerator(name = "fe_analysis_pk_sequence", sequenceName = "fe_analysis_sequence", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "fe_analysis_pk_sequence")
     private Long id;
 
     @Column
@@ -71,7 +71,7 @@ FeAnalysisEntity implements FeatureAnalysis, Comparable<FeAnalysisEntity> {
     private Boolean isLocked;
 
     @ManyToMany(targetEntity = CohortCharacterizationEntity.class, fetch = FetchType.LAZY)
-    @JoinTable(name = "cc_analyses",
+    @JoinTable(name = "cc_analysis",
             joinColumns = @JoinColumn(name = "fe_analysis_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "cohort_characterization_id", referencedColumnName = "id"))
     private Set<CohortCharacterizationEntity> cohortCharacterizations = new HashSet<>();

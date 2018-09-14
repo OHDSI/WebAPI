@@ -73,7 +73,7 @@ public class CohortDefinition extends CommonEntity implements Serializable, Coho
 	private Set<CohortAnalysisGenerationInfo> cohortAnalysisGenerationInfoList = new HashSet<>();
 
   @ManyToMany(targetEntity = CohortCharacterizationEntity.class, fetch = FetchType.LAZY)
-  @JoinTable(name = "cc_cohorts",
+  @JoinTable(name = "cc_cohort",
           joinColumns = @JoinColumn(name = "cohort_id", referencedColumnName = "id"),
           inverseJoinColumns = @JoinColumn(name = "cohort_characterization_id", referencedColumnName = "id"))
   private List<CohortCharacterizationEntity> cohortCharacterizations = new ArrayList<>();

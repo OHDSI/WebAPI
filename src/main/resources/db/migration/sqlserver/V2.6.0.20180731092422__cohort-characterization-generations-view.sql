@@ -1,4 +1,4 @@
-CREATE VIEW ${ohdsiSchema}.cc_generations as
+CREATE VIEW ${ohdsiSchema}.cc_generation as
   (SELECT
      job.job_execution_id                     id,
      job.create_time                          start_time,

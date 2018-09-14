@@ -22,25 +22,25 @@ import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.model.CommonEntity;
 
 @Entity
-@Table(name = "cohort_characterizations")
+@Table(name = "cohort_characterization")
 public class CohortCharacterizationEntity extends CommonEntity implements CohortCharacterization {
 
     @Id
-    @SequenceGenerator(name = "cohort_characterizations_pk_sequence", sequenceName = "cohort_characterizations_seq", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "cohort_characterizations_pk_sequence")
+    @SequenceGenerator(name = "cohort_characterization_pk_sequence", sequenceName = "cohort_characterization_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "cohort_characterization_pk_sequence")
     private Long id;
     
     @Column
     private String name;
     
     @ManyToMany(targetEntity = CohortDefinition.class, fetch = FetchType.LAZY)
-    @JoinTable(name = "cc_cohorts",
+    @JoinTable(name = "cc_cohort",
             joinColumns = @JoinColumn(name = "cohort_characterization_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "cohort_id", referencedColumnName = "id"))
     private List<CohortDefinition> cohortDefinitions = new ArrayList<>();
     
     @ManyToMany(targetEntity = FeAnalysisEntity.class, fetch = FetchType.LAZY)
-    @JoinTable(name = "cc_analyses",
+    @JoinTable(name = "cc_analysis",
             joinColumns = @JoinColumn(name = "cohort_characterization_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "fe_analysis_id", referencedColumnName = "id"))
     private Set<FeAnalysisEntity> featureAnalyses = new HashSet<>();

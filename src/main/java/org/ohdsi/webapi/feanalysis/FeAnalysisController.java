@@ -15,7 +15,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-@Path("/feature-analyses")
+@Path("/feature-analysis")
 @Controller
 public class FeAnalysisController {
 

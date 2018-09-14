@@ -98,6 +98,20 @@ WHERE sp.value IN (
 )
 AND sr.name IN ('Atlas users');
 
+-- SOURCE based permissions
+
+INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
+SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval AS id,
+			 'source:' || source_key || ':access' AS value,
+			 'Access to Source with SourceKey = ' || source_key AS description
+FROM ${ohdsiSchema}.source;
+
+INSERT INTO ${ohdsiSchema}.sec_role_permission(id, role_id, permission_id)
+SELECT ${ohdsiSchema}.SEC_ROLE_PERMISSION_SEQUENCE.nextval, sr.id, sp.id
+FROM ${ohdsiSchema}.source
+join ${ohdsiSchema}.sec_permission sp ON sp.value IN ('source:' || source_key || ':access')
+join ${ohdsiSchema}.sec_role sr ON sr.name = 'Source user (' || source_key || ')';
+
 CREATE TABLE ${ohdsiSchema}.cc_analysis
 (
   cohort_characterization_id NUMBER(19) NOT NULL,

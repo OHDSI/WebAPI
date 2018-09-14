@@ -90,12 +90,6 @@ AND sr.name IN ('Atlas users');
 
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
 SELECT NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq AS id,
-	'cohort-characterization:*:generate:' + source_key + ':post' AS value,
-	'Generate Cohort Characterization on Source with SourceKey = ' + source_key AS description
-FROM ${ohdsiSchema}.source;
-
-INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
-SELECT NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq AS id,
 	'source:' + source_key + ':access' AS value,
 	'Access to Source with SourceKey = ' + source_key AS description
 FROM ${ohdsiSchema}.source;

@@ -10,11 +10,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
@@ -359,5 +358,19 @@ public class LiferayApiClient {
             String authHeader = "Basic " + new String( encodedAuth );
             set( "Authorization", authHeader );
         }};
+    }
+
+
+    public int healthCheck() {
+        final RestTemplate restTemplate = new RestTemplate();
+        String serviceUrl = liferayWebApi;
+
+        try {
+            ResponseEntity<String> response = restTemplate.getForEntity(serviceUrl, String.class);
+            return response.getStatusCode().value();
+        } catch (RestClientException e) {
+            LOGGER.warn(e.getMessage(), e);
+            return HttpStatus.INTERNAL_SERVER_ERROR.value();
+        }
     }
 }

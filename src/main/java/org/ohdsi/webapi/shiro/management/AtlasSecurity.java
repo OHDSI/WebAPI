@@ -309,7 +309,12 @@ public abstract class AtlasSecurity extends Security {
     }
   }
 
-  @PostConstruct
+    public Map<String, String> getPathwayAnalysisCreatorPermissionTemplate() {
+
+        return pathwayAnalysisCreatorPermissionTemplate;
+    }
+
+    @PostConstruct
   private void initRolesForSources() {
     try {
       for (Source source : sourceRepository.findAll()) {

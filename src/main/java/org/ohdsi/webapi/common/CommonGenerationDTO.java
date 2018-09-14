@@ -1,8 +1,8 @@
-package org.ohdsi.webapi.cohortcharacterization.dto;
+package org.ohdsi.webapi.common;
 
 import java.util.Date;
 
-public class CcGenerationDTO {
+public class CommonGenerationDTO {
     private Long id;
     private String status;
     private String sourceKey;

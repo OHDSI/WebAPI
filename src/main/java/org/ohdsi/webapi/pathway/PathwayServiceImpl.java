@@ -15,6 +15,8 @@ import org.ohdsi.webapi.pathway.repository.PathwayAnalysisEntityRepository;
 import org.ohdsi.webapi.pathway.repository.PathwayAnalysisGenerationRepository;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.shiro.PermissionManager;
+import org.ohdsi.webapi.shiro.management.AtlasSecurity;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.EntityUtils;
@@ -62,6 +64,8 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     private final StepBuilderFactory stepBuilderFactory;
     private final JobBuilderFactory jobBuilders;
     private final EntityManager entityManager;
+    private final PermissionManager permissionManager;
+    private final AtlasSecurity atlasSecurity;
 
     private final EntityGraph defaultEntityGraph = EntityUtils.fromAttributePaths(
             "targetCohorts.cohortDefinition",
@@ -79,7 +83,9 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
             JobTemplate jobTemplate,
             StepBuilderFactory stepBuilderFactory,
             JobBuilderFactory jobBuilders,
-            EntityManager entityManager
+            EntityManager entityManager,
+            PermissionManager permissionManager,
+            AtlasSecurity atlasSecurity
     ) {
 
         this.pathwayAnalysisRepository = pathwayAnalysisRepository;
@@ -89,6 +95,8 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         this.stepBuilderFactory = stepBuilderFactory;
         this.jobBuilders = jobBuilders;
         this.entityManager = entityManager;
+        this.permissionManager = permissionManager;
+        this.atlasSecurity = atlasSecurity;
         SerializedPathwayAnalysisToPathwayAnalysisConverter.setConversionService(conversionService);
     }
 
@@ -162,9 +170,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     @Override
     public void delete(Integer id) {
 
-        // TODO:
-        // remove permissions associated with the entity
-
+        permissionManager.removePermissionsFromTemplate(atlasSecurity.getPathwayAnalysisCreatorPermissionTemplate(), id.toString());
         pathwayAnalysisRepository.delete(id);
     }
 
@@ -264,6 +270,13 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         this.jobTemplate.launch(generateCohortJob, jobParameters);
     }
 
+    @Override
+    public List<PathwayAnalysisGeneration> getPathwayGenerations(final Integer pathwayAnalysisId) {
+
+        return pathwayAnalysisGenerationRepository.findAllByPathwayAnalysisId(pathwayAnalysisId, EntityUtils.fromAttributePaths("source"));
+    }
+
+    @Override
     public PathwayAnalysisGeneration getGeneration(Long generationId) {
 
         return pathwayAnalysisGenerationRepository.findOne(generationId, EntityUtils.fromAttributePaths("source"));

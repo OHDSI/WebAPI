@@ -1,6 +1,8 @@
 package org.ohdsi.webapi.pathway;
 
+import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.webapi.Pagination;
+import org.ohdsi.webapi.common.CommonGenerationDTO;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisExportDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
@@ -8,6 +10,8 @@ import org.ohdsi.webapi.pathway.dto.PathwayCodeDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayPopulationEventDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayPopulationResultsDTO;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
+import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.source.Source;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
@@ -33,13 +37,17 @@ import java.util.stream.Collectors;
 public class PathwayController {
 
     private ConversionService conversionService;
+    private ConverterUtils converterUtils;
     private PathwayService pathwayService;
+    private final SourceService sourceService;
 
     @Autowired
-    public PathwayController(ConversionService conversionService, PathwayService pathwayService) {
+    public PathwayController(ConversionService conversionService, ConverterUtils converterUtils, PathwayService pathwayService, SourceService sourceService) {
 
         this.conversionService = conversionService;
+        this.converterUtils = converterUtils;
         this.pathwayService = pathwayService;
+        this.sourceService = sourceService;
     }
 
     @POST
@@ -100,12 +108,13 @@ public class PathwayController {
     }
 
     @GET
-    @Path("/{id}/sql/{sourceId}")
+    @Path("/{id}/sql/{sourceKey}")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     @Consumes(MediaType.APPLICATION_JSON)
-    public String getAnalysisSql(@PathParam("id") final Integer id, @PathParam("sourceId") final Integer sourceId) {
+    public String getAnalysisSql(@PathParam("id") final Integer id, @PathParam("sourceKey") final String sourceKey) {
 
-        return pathwayService.buildAnalysisSql(-1L, pathwayService.getById(id), sourceId);
+        Source source = sourceService.findBySourceKey(sourceKey);
+        return pathwayService.buildAnalysisSql(-1L, pathwayService.getById(id), source.getSourceId());
     }
 
     @DELETE
@@ -118,15 +127,27 @@ public class PathwayController {
     }
 
     @POST
-    @Path("/{id}/generation/{sourceId}") // TODO: sourceKey
+    @Path("/{id}/generation/{sourceKey}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public void generatePathways(
             @PathParam("id") final Integer pathwayAnalysisId,
-            @PathParam("sourceId") final Integer sourceId
+            @PathParam("sourceKey") final String sourceKey
     ) {
 
-        pathwayService.generatePathways(pathwayAnalysisId, sourceId);
+        Source source = sourceService.findBySourceKey(sourceKey);
+        pathwayService.generatePathways(pathwayAnalysisId, source.getSourceId());
+    }
+
+    @GET
+    @Path("/{id}/generation")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public List<CommonGenerationDTO> getPathwayGenerations(
+            @PathParam("id") final Integer pathwayAnalysisId
+    ) {
+
+        return converterUtils.convertList(pathwayService.getPathwayGenerations(pathwayAnalysisId), CommonGenerationDTO.class);
     }
 
     @GET
@@ -169,7 +190,4 @@ public class PathwayController {
 
     // TODO:
     // endpoint for import
-
-    // TODO:
-    // endpoint for generations list
 }

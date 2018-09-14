@@ -84,12 +84,12 @@ public abstract class AtlasSecurity extends Security {
     this.conceptsetCreatorPermissionTemplates.put("conceptset:%s:delete", "Delete Concept Set with ID = %s");
 
     this.sourcePermissionTemplates.put("cohortdefinition:*:report:%s:get", "Get Inclusion Rule Report for Source with SourceKey = %s");
-    this.sourcePermissionTemplates.put("cohortdefinition:*:generate:%s:get", "Generate Cohort on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("cohortdefinition:*:generation:%s:get", "Generate Cohort on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put(SOURCE_ACCESS_PERMISSION, "Access to Source with SourceKey = %s");
 
     this.cohortCharacterizationCreatorPermissionTemplates.put("cohort-characterization:%s:put", "Update Cohort Characterization with ID = %s");
     this.cohortCharacterizationCreatorPermissionTemplates.put("cohort-characterization:%s:delete", "Delete Cohort Characterization with ID = %s");
-    this.cohortCharacterizationCreatorPermissionTemplates.put("cohort-characterization:%s:generate:*:post", "Generate Cohort Characterization with ID = %s");
+    this.cohortCharacterizationCreatorPermissionTemplates.put("cohort-characterization:%s:generation:*:post", "Generate Cohort Characterization with ID = %s");
 
     this.incidenceRatePermissionTemplates.put("ir:%s:get", "Read Incidence Rate with ID=%s");
     this.incidenceRatePermissionTemplates.put("ir:%s:execution:*:get", "Execute Incidence Rate job with ID=%s");
@@ -183,7 +183,7 @@ public abstract class AtlasSecurity extends Security {
       .addProtectedRestPath("/cohort-characterization", "createPermissionsOnCreateCohortCharacterization")
       .addProtectedRestPath("/cohort-characterization/import", "createPermissionsOnCreateCohortCharacterization")
       .addProtectedRestPath("/cohort-characterization/*")
-      .addProtectedRestPath("/cohort-characterization/*/generate/*")
+      .addProtectedRestPath("/cohort-characterization/*/generation/*")
       .addProtectedRestPath("/cohort-characterization/*/generation")
       .addProtectedRestPath("/cohort-characterization/generation/*/result")
       .addProtectedRestPath("/cohort-characterization/*/export")

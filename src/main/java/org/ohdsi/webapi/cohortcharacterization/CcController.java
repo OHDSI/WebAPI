@@ -125,7 +125,7 @@ public class CcController {
     }
     
     @POST
-    @Path("/{id}/generate/{sourceKey}")
+    @Path("/{id}/generation/{sourceKey}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public JobExecutionResource generate(@PathParam("id") final Long id, @PathParam("sourceKey") final String sourceKey) {

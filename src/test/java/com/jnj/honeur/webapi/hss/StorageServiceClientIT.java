@@ -40,8 +40,8 @@ public class StorageServiceClientIT {
 
     private HSSServiceUserRepository mockHSSServiceUserRepository() {
         HSSServiceUserEntity serviceUser = new HSSServiceUserEntity();
-        serviceUser.setUsername("honeur-demo@its.jnj.com");
-        serviceUser.setPlainTextPassword("demo");
+        serviceUser.setUsername("pmoorth1@its.jnj.com");
+        serviceUser.setPlainTextPassword("test");
 
         HSSServiceUserRepository repo = mock(HSSServiceUserRepository.class);
         when(repo.findAll()).thenReturn(Collections.singleton(serviceUser));

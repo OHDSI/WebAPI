@@ -17,6 +17,7 @@ import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.management.AtlasSecurity;
+import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.EntityUtils;
@@ -65,7 +66,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     private final JobBuilderFactory jobBuilders;
     private final EntityManager entityManager;
     private final PermissionManager permissionManager;
-    private final AtlasSecurity atlasSecurity;
+    private final Security security;
 
     private final EntityGraph defaultEntityGraph = EntityUtils.fromAttributePaths(
             "targetCohorts.cohortDefinition",
@@ -85,7 +86,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
             JobBuilderFactory jobBuilders,
             EntityManager entityManager,
             PermissionManager permissionManager,
-            AtlasSecurity atlasSecurity
+            Security security
     ) {
 
         this.pathwayAnalysisRepository = pathwayAnalysisRepository;
@@ -96,7 +97,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         this.jobBuilders = jobBuilders;
         this.entityManager = entityManager;
         this.permissionManager = permissionManager;
-        this.atlasSecurity = atlasSecurity;
+        this.security = security;
         SerializedPathwayAnalysisToPathwayAnalysisConverter.setConversionService(conversionService);
     }
 
@@ -170,7 +171,9 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     @Override
     public void delete(Integer id) {
 
-        permissionManager.removePermissionsFromTemplate(atlasSecurity.getPathwayAnalysisCreatorPermissionTemplate(), id.toString());
+        if (security instanceof AtlasSecurity) {
+            permissionManager.removePermissionsFromTemplate(((AtlasSecurity) security).getPathwayAnalysisCreatorPermissionTemplate(), id.toString());
+        }
         pathwayAnalysisRepository.delete(id);
     }
 

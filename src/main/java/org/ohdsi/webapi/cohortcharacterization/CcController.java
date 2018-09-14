@@ -21,7 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 
-@Path("/cohort-characterizations")
+@Path("/cohort-characterization")
 @Controller
 @Transactional
 public class CcController {
@@ -133,7 +133,7 @@ public class CcController {
     }
     
     @GET
-    @Path("/{id}/generations")
+    @Path("/{id}/generation")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public List<CcGenerationDTO> getGenerationList(@PathParam("id") final Long id) {
@@ -141,7 +141,7 @@ public class CcController {
     }
 
     @GET
-    @Path("/generations/{generationId}")
+    @Path("/generation/{generationId}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public CcGenerationDTO getGeneration(@PathParam("generationId") final Long generationId) {
@@ -149,7 +149,7 @@ public class CcController {
     }
 
     @GET
-    @Path("/generations/{generationId}/design")
+    @Path("/generation/{generationId}/design")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public CcExportDTO getGenerationDesign(

@@ -17,7 +17,7 @@ import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConvert
 import org.ohdsi.webapi.source.Source;
 
 @Entity
-@Table(name = "cc_generations")
+@Table(name = "cc_generation")
 public class CcGenerationEntity {
     @Id
     @Column

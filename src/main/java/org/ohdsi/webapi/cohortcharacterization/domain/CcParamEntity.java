@@ -15,13 +15,13 @@ import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterizationParam;
 
 @Entity
-@Table(name = "cc_params")
+@Table(name = "cc_param")
 public class 
 CcParamEntity implements CohortCharacterizationParam {
     
     @Id
-    @SequenceGenerator(name = "cc_params_pk_sequence", sequenceName = "cc_params_sequence", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "cc_params_pk_sequence")
+    @SequenceGenerator(name = "cc_param_pk_sequence", sequenceName = "cc_param_sequence", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "cc_param_pk_sequence")
     private Long id;
     @ManyToOne(optional = false, targetEntity = CohortCharacterizationEntity.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "cohort_characterization_id")

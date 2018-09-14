@@ -158,7 +158,7 @@ public class CcController {
     }
 
     @GET
-    @Path("/generations/{generationId}/results")
+    @Path("/generation/{generationId}/result")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public List<CcResult> getGenerationsResults(

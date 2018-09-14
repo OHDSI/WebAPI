@@ -51,34 +51,34 @@ CREATE TABLE ${ohdsiSchema}.fe_analysis
 
 
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
-SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, 'cohort-characterizations:post', 'Create cohort characterization' FROM dual;
+SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, 'cohort-characterization:post', 'Create cohort characterization' FROM dual;
 
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
-SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, 'cohort-characterizations:import:post', 'Import cohort characterization' FROM dual;
+SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, 'cohort-characterization:import:post', 'Import cohort characterization' FROM dual;
 
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
-SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, 'cohort-characterizations:*:get', 'Get cohort characterization' FROM dual;
+SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, 'cohort-characterization:*:get', 'Get cohort characterization' FROM dual;
 
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
-SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, 'cohort-characterizations:get', 'Get cohort characterizations list' FROM dual;
+SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, 'cohort-characterization:get', 'Get cohort characterizations list' FROM dual;
 
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
-SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, 'cohort-characterizations:*:generations:get', 'Get cohort characterization generations' FROM dual;
+SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, 'cohort-characterization:*:generation:get', 'Get cohort characterization generations' FROM dual;
 
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
-SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, 'cohort-characterizations:generations:*:results:get', 'Get cohort characterization generation results' FROM dual;
+SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, 'cohort-characterization:generation:*:result:get', 'Get cohort characterization generation results' FROM dual;
 
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
-SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, 'cohort-characterizations:*:export', 'Export cohort characterization' FROM dual;
+SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, 'cohort-characterization:*:export', 'Export cohort characterization' FROM dual;
 
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
-SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, 'feature-analyses:get', 'Get feature analyses list' FROM dual;
+SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, 'feature-analysis:get', 'Get feature analyses list' FROM dual;
 
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
-SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, 'feature-analyses:*:get', 'Get feature analysis' FROM dual;
+SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, 'feature-analysis:*:get', 'Get feature analysis' FROM dual;
 
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
-SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, 'feature-analyses:post', 'Create feature analysis' FROM dual;
+SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, 'feature-analysis:post', 'Create feature analysis' FROM dual;
 
 INSERT INTO ${ohdsiSchema}.sec_role_permission(id, role_id, permission_id)
 SELECT ${ohdsiSchema}.SEC_ROLE_PERMISSION_SEQUENCE.nextval, sr.id, sp.id
@@ -88,8 +88,8 @@ WHERE sp.value IN (
   'cohort-characterization:get',
   'cohort-characterization:import:post',
   'cohort-characterization:*:get',
-  'cohort-characterization:*:generations:get',
-  'cohort-characterization:generations:*:results:get',
+  'cohort-characterization:*:generation:get',
+  'cohort-characterization:generation:*:result:get',
   'cohort-characterization:*:export',
 
   'feature-analysis:get',

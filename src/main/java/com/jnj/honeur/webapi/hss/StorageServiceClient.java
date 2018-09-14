@@ -16,10 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
@@ -216,4 +213,16 @@ public class StorageServiceClient {
         }});
     }
 
+    public int healthCheck() {
+        final RestTemplate restTemplate = new RestTemplate();
+        String serviceUrl = storageServiceApi + "/health-status?transitive=false";
+
+        try {
+            ResponseEntity<String> response = restTemplate.getForEntity(serviceUrl, String.class);
+            return response.getStatusCode().value();
+        } catch (RestClientException e) {
+            LOGGER.warn(e.getMessage(), e);
+            return HttpStatus.INTERNAL_SERVER_ERROR.value();
+        }
+    }
 }

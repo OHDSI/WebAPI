@@ -11,13 +11,14 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.SequenceGenerator;
+import java.util.Objects;
 
 @MappedSuperclass
 public abstract class PathwayCohort {
 
     @Id
-    @SequenceGenerator(name = "pathway_cohorts_pk_sequence", sequenceName = "pathway_cohorts_sequence", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pathway_cohorts_pk_sequence")
+    @SequenceGenerator(name = "pathway_cohort_pk_sequence", sequenceName = "pathway_cohort_sequence", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pathway_cohort_pk_sequence")
     protected Integer id;
 
     @Column
@@ -30,6 +31,27 @@ public abstract class PathwayCohort {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pathway_analysis_id")
     protected PathwayAnalysisEntity pathwayAnalysis;
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(this.getCohortDefinition().getId());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+
+        if (this == obj) {
+            return true;
+        }
+
+        if (obj == null || !(obj instanceof PathwayTargetCohort)) {
+            return false;
+        }
+
+        final PathwayTargetCohort compare = (PathwayTargetCohort) obj;
+        return Objects.equals(getCohortDefinition().getId(), compare.getCohortDefinition().getId());
+    }
 
     public Integer getId() {
 

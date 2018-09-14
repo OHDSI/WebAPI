@@ -1,7 +1,7 @@
-CREATE SEQUENCE ${ohdsiSchema}.pathway_analyses_sequence;
-CREATE TABLE ${ohdsiSchema}.pathway_analyses
+CREATE SEQUENCE ${ohdsiSchema}.pathway_analysis_sequence;
+CREATE TABLE ${ohdsiSchema}.pathway_analysis
 (
-  id                 INTEGER PRIMARY KEY DEFAULT NEXTVAL('pathway_analyses_sequence'),
+  id                 INTEGER PRIMARY KEY DEFAULT NEXTVAL('pathway_analysis_sequence'),
   name               VARCHAR NOT NULL,
   combination_window INTEGER,
   min_cell_count     INTEGER,
@@ -13,40 +13,52 @@ CREATE TABLE ${ohdsiSchema}.pathway_analyses
   hash_code          INTEGER
 );
 
-CREATE SEQUENCE ${ohdsiSchema}.pathway_cohorts_sequence;
+CREATE SEQUENCE ${ohdsiSchema}.pathway_cohort_sequence;
 
-CREATE TABLE ${ohdsiSchema}.pathway_target_cohorts
+CREATE TABLE ${ohdsiSchema}.pathway_target_cohort
 (
-  id                   INTEGER PRIMARY KEY DEFAULT NEXTVAL('pathway_cohorts_sequence'),
+  id                   INTEGER PRIMARY KEY DEFAULT NEXTVAL('pathway_cohort_sequence'),
   name                 VARCHAR NOT NULL,
   cohort_definition_id INTEGER NOT NULL REFERENCES ${ohdsiSchema}.cohort_definition (id),
-  pathway_analysis_id  INTEGER NOT NULL REFERENCES ${ohdsiSchema}.pathway_analyses (id)
+  pathway_analysis_id  INTEGER NOT NULL REFERENCES ${ohdsiSchema}.pathway_analysis (id)
 );
 
-CREATE TABLE ${ohdsiSchema}.pathway_event_cohorts
+CREATE TABLE ${ohdsiSchema}.pathway_event_cohort
 (
-  id                   INTEGER PRIMARY KEY DEFAULT NEXTVAL('pathway_cohorts_sequence'),
+  id                   INTEGER PRIMARY KEY DEFAULT NEXTVAL('pathway_cohort_sequence'),
   name                 VARCHAR NOT NULL,
   cohort_definition_id INTEGER NOT NULL REFERENCES ${ohdsiSchema}.cohort_definition (id),
-  pathway_analysis_id  INTEGER NOT NULL REFERENCES ${ohdsiSchema}.pathway_analyses (id),
+  pathway_analysis_id  INTEGER NOT NULL REFERENCES ${ohdsiSchema}.pathway_analysis (id),
   is_deleted           BOOLEAN DEFAULT FALSE
 );
 
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
 VALUES
-  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'pathway-analyses:post', 'Create Pathways Analysis'),
-  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'pathway-analyses:get', 'Get Pathways Analyses list');
+  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'pathway-analysis:post', 'Create Pathways Analysis'),
+  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'pathway-analysis:import:post', 'Import Pathways Analysis'),
+  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'pathway-analysis:get', 'Get Pathways Analyses list'),
+  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'pathway-analysis:*:get', 'Get Pathways Analysis instance'),
+  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'pathway-analysis:*:generation:get', 'Get Pathways Analysis generations list'),
+  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'pathway-analysis:generation:*:get', 'Get Pathways Analysis generation instance'),
+  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'pathway-analysis:generation:*:result:get', 'Get Pathways Analysis generation results'),
+  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'pathway-analysis:*:export:get', 'Export Pathways Analysis');
 
 INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
 SELECT sr.id, sp.id
 FROM ${ohdsiSchema}.sec_permission SP, ${ohdsiSchema}.sec_role sr
 WHERE sp."value" IN (
-  'pathway-analyses:post',
-  'pathway-analyses:get'
+  'pathway-analysis:post',
+  'pathway-analysis:import:post',
+  'pathway-analysis:get',
+  'pathway-analysis:*:get',
+  'pathway-analysis:*:generation:get',
+  'pathway-analysis:generation:*:get',
+  'pathway-analysis:generation:*:result:get'
+  'pathway-analysis:*:export:get'
 )
 AND sr.name IN ('Atlas users');
 
-CREATE OR REPLACE VIEW ${ohdsiSchema}.pathway_analysis_generations as
+CREATE OR REPLACE VIEW ${ohdsiSchema}.pathway_analysis_generation as
   (SELECT
   job.job_execution_id                     id,
   job.create_time                          start_time,

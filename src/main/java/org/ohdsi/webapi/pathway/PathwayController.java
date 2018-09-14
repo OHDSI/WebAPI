@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Path("/pathway-analyses")
+@Path("/pathway-analysis")
 @Controller
 public class PathwayController {
 
@@ -48,28 +48,6 @@ public class PathwayController {
     @Consumes(MediaType.APPLICATION_JSON)
     public PathwayAnalysisDTO create(final PathwayAnalysisDTO dto) {
 
-        /*
-        E.g. payload:
-        {
-            "name": "Diabetes type-II treatment pathways",
-            "targetCohorts": [
-                {
-                    "name": "T2DM Treatment group",
-                    "cohortDefinitionId": 100
-                }
-            ],
-            "eventCohorts": [
-                {
-                    "name": "Metformin",
-                    "cohortDefinitionId": 102
-                },
-                {
-                    "name": "Simvastatin",
-                    "cohortDefinitionId": 101
-                }
-            ]
-        }
-        */
         PathwayAnalysisEntity pathwayAnalysis = conversionService.convert(dto, PathwayAnalysisEntity.class);
         PathwayAnalysisEntity saved = pathwayService.create(pathwayAnalysis);
         return conversionService.convert(saved, PathwayAnalysisDTO.class);
@@ -140,7 +118,7 @@ public class PathwayController {
     }
 
     @POST
-    @Path("/{id}/generations/{sourceId}")
+    @Path("/{id}/generation/{sourceId}") // TODO: sourceKey
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public void generatePathways(
@@ -152,7 +130,7 @@ public class PathwayController {
     }
 
     @GET
-    @Path("/generations/{generationId}/results")
+    @Path("/generation/{generationId}/result")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public PathwayPopulationResultsDTO getGenerationResults(
@@ -189,22 +167,9 @@ public class PathwayController {
         return dto;
     }
 
-    /*@GET
-    @Path("/{id}/design")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public PathwayAnalysisExportDTO getDesign(@PathParam("id") final Long id) {
+    // TODO:
+    // endpoint for import
 
-        PathwayAnalysisExportDTO dto = new PathwayAnalysisExportDTO();
-        return dto;
-    }
-
-    @GET
-    @Path("/generations/results/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public PathwayPopulationResultsDTO getResults(@PathParam("id") final Long id) {
-
-        return null;
-    }*/
+    // TODO:
+    // endpoint for generations list
 }

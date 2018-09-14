@@ -12,7 +12,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "pathway_analysis_generations")
+@Table(name = "pathway_analysis_generation")
 public class PathwayAnalysisGeneration extends CommonGeneration {
 
     @ManyToOne(targetEntity = PathwayAnalysisEntity.class, fetch = FetchType.LAZY)

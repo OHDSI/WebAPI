@@ -8,6 +8,8 @@ import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
+
 @Component
 public class PathwayAnalysisDTOToPathwayAnalysisEntityConverter extends BasePathwayAnalysisDTOToPathwayAnalysisConverter<PathwayAnalysisDTO> {
 
@@ -17,8 +19,8 @@ public class PathwayAnalysisDTOToPathwayAnalysisEntityConverter extends BasePath
     public PathwayAnalysisEntity convert(PathwayAnalysisDTO source) {
 
         PathwayAnalysisEntity result = super.convert(source);
-        result.setEventCohorts(converterUtils.convertList(source.getEventCohorts(), PathwayEventCohort.class));
-        result.setTargetCohorts(converterUtils.convertList(source.getTargetCohorts(), PathwayTargetCohort.class));
+        result.setEventCohorts(new HashSet<>(converterUtils.convertList(source.getEventCohorts(), PathwayEventCohort.class)));
+        result.setTargetCohorts(new HashSet<>(converterUtils.convertList(source.getTargetCohorts(), PathwayTargetCohort.class)));
 
         return result;
     }

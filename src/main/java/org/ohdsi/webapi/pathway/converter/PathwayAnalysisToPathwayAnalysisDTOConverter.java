@@ -7,6 +7,8 @@ import org.ohdsi.webapi.pathway.dto.PathwayCohortDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+
 @Component
 public class PathwayAnalysisToPathwayAnalysisDTOConverter extends BasePathwayAnalysisToPathwayAnalysisDTOConverter<PathwayAnalysisDTO> {
 
@@ -18,8 +20,8 @@ public class PathwayAnalysisToPathwayAnalysisDTOConverter extends BasePathwayAna
 
         PathwayAnalysisDTO dto = super.convert(pathwayAnalysis);
 
-        dto.setEventCohorts(converterUtils.convertList(pathwayAnalysis.getEventCohorts(), PathwayCohortDTO.class));
-        dto.setTargetCohorts(converterUtils.convertList(pathwayAnalysis.getTargetCohorts(), PathwayCohortDTO.class));
+        dto.setEventCohorts(converterUtils.convertList(new ArrayList<>(pathwayAnalysis.getEventCohorts()), PathwayCohortDTO.class));
+        dto.setTargetCohorts(converterUtils.convertList(new ArrayList<>(pathwayAnalysis.getTargetCohorts()), PathwayCohortDTO.class));
 
         return dto;
     }

@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.pathway;
 
+import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
@@ -8,13 +9,10 @@ import org.ohdsi.webapi.pathway.converter.SerializedPathwayAnalysisToPathwayAnal
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisGeneration;
 import org.ohdsi.webapi.pathway.domain.PathwayEventCohort;
-import org.ohdsi.webapi.pathway.domain.PathwayTargetCohort;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
 import org.ohdsi.webapi.pathway.dto.internal.PersonPathwayEvent;
 import org.ohdsi.webapi.pathway.repository.PathwayAnalysisEntityRepository;
 import org.ohdsi.webapi.pathway.repository.PathwayAnalysisGenerationRepository;
-import org.ohdsi.webapi.pathway.repository.PathwayEventCohortRepository;
-import org.ohdsi.webapi.pathway.repository.PathwayTargetCohortRepository;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.source.Source;
@@ -35,6 +33,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -50,41 +49,46 @@ import static org.ohdsi.webapi.Constants.Params.HASH_CODE;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
 import static org.ohdsi.webapi.Constants.Params.PATHWAY_ANALYSIS_ID;
 import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
+import static org.ohdsi.webapi.common.GenerationUtils.checkSourceAccess;
 
 @Service
 @Transactional
 public class PathwayServiceImpl extends AbstractDaoService implements PathwayService {
 
     private final PathwayAnalysisEntityRepository pathwayAnalysisRepository;
-    private final PathwayTargetCohortRepository pathwayTargetCohortRepository;
-    private final PathwayEventCohortRepository pathwayEventCohortRepository;
     private final PathwayAnalysisGenerationRepository pathwayAnalysisGenerationRepository;
     private final SourceService sourceService;
     private final JobTemplate jobTemplate;
     private final StepBuilderFactory stepBuilderFactory;
     private final JobBuilderFactory jobBuilders;
+    private final EntityManager entityManager;
+
+    private final EntityGraph defaultEntityGraph = EntityUtils.fromAttributePaths(
+            "targetCohorts.cohortDefinition",
+            "eventCohorts.cohortDefinition",
+            "createdBy",
+            "modifiedBy"
+    );
 
     @Autowired
     public PathwayServiceImpl(
             PathwayAnalysisEntityRepository pathwayAnalysisRepository,
-            PathwayTargetCohortRepository pathwayTargetCohortRepository,
-            PathwayEventCohortRepository pathwayEventCohortRepository,
             PathwayAnalysisGenerationRepository pathwayAnalysisGenerationRepository,
             SourceService sourceService,
             ConversionService conversionService,
             JobTemplate jobTemplate,
             StepBuilderFactory stepBuilderFactory,
-            JobBuilderFactory jobBuilders
+            JobBuilderFactory jobBuilders,
+            EntityManager entityManager
     ) {
 
         this.pathwayAnalysisRepository = pathwayAnalysisRepository;
-        this.pathwayTargetCohortRepository = pathwayTargetCohortRepository;
-        this.pathwayEventCohortRepository = pathwayEventCohortRepository;
         this.pathwayAnalysisGenerationRepository = pathwayAnalysisGenerationRepository;
         this.sourceService = sourceService;
         this.jobTemplate = jobTemplate;
         this.stepBuilderFactory = stepBuilderFactory;
         this.jobBuilders = jobBuilders;
+        this.entityManager = entityManager;
         SerializedPathwayAnalysisToPathwayAnalysisConverter.setConversionService(conversionService);
     }
 
@@ -118,19 +122,19 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     @Override
     public Page<PathwayAnalysisEntity> getPage(final Pageable pageable) {
 
-        return pathwayAnalysisRepository.findAll(pageable).map(this::gatherLinkedEntities);
+        return pathwayAnalysisRepository.findAll(pageable, defaultEntityGraph);
     }
 
     @Override
     public PathwayAnalysisEntity getById(Integer id) {
 
-        return gatherLinkedEntities(pathwayAnalysisRepository.findOne(id));
+        return pathwayAnalysisRepository.findOne(id, defaultEntityGraph);
     }
 
     @Override
     public PathwayAnalysisEntity update(PathwayAnalysisEntity forUpdate) {
 
-        PathwayAnalysisEntity existing = pathwayAnalysisRepository.findOne(forUpdate.getId());
+        PathwayAnalysisEntity existing = getById(forUpdate.getId());
 
         existing.setModifiedBy(getCurrentUser());
         existing.setModifiedDate(new Date());
@@ -152,11 +156,14 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
             existing.getEventCohorts().add(ec);
         });
 
-        return gatherLinkedEntities(save(existing));
+        return save(existing);
     }
 
     @Override
     public void delete(Integer id) {
+
+        // TODO:
+        // remove permissions associated with the entity
 
         pathwayAnalysisRepository.delete(id);
     }
@@ -185,6 +192,8 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
         Map<Integer, Integer> eventCohortCodes = getEventCohortCodes(pathwayAnalysis);
         Source source = sourceService.findBySourceId(sourceId);
+
+        checkSourceAccess(source);
 
         String analysisSql = ResourceHelper.GetResourceAsString("/resources/pathway/runPathwayAnalysis.sql");
         String eventCohortInputSql = ResourceHelper.GetResourceAsString("/resources/pathway/eventCohortInput.sql");
@@ -227,10 +236,10 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
         SerializedPathwayAnalysisToPathwayAnalysisConverter designConverter = new SerializedPathwayAnalysisToPathwayAnalysisConverter();
 
-        Source source = getSourceRepository().findBySourceId(sourceId);
-//        checkSourceAccess(source);
-
         PathwayAnalysisEntity pathwayAnalysis = getById(pathwayAnalysisId);
+        Source source = getSourceRepository().findBySourceId(sourceId);
+
+        checkSourceAccess(source);
 
         JobParametersBuilder builder = new JobParametersBuilder();
         builder.addString(JOB_NAME, String.format("Generating Pathway Analysis %d using %s (%s)", pathwayAnalysisId, source.getSourceName(), source.getSourceKey()));
@@ -265,6 +274,8 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
         PathwayAnalysisGeneration generation = getGeneration(generationId);
         Source source = generation.getSource();
+
+        checkSourceAccess(source);
 
         PathwayAnalysisResult result = new PathwayAnalysisResult();
 
@@ -326,26 +337,11 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
     private PathwayAnalysisEntity save(PathwayAnalysisEntity pathwayAnalysis) {
 
+        pathwayAnalysis = pathwayAnalysisRepository.saveAndFlush(pathwayAnalysis);
+        entityManager.refresh(pathwayAnalysis);
+        pathwayAnalysis = getById(pathwayAnalysis.getId());
         pathwayAnalysis.setHashCode(getAnalysisHashCode(pathwayAnalysis));
-        return pathwayAnalysisRepository.saveAndFlush(pathwayAnalysis);
-    }
-
-    private PathwayAnalysisEntity gatherLinkedEntities(PathwayAnalysisEntity pathwayAnalysis) {
-
-        pathwayAnalysis.setTargetCohorts(
-                pathwayTargetCohortRepository.findAllByPathwayAnalysisId(
-                        pathwayAnalysis.getId(),
-                        EntityUtils.fromAttributePaths("cohortDefinition")
-                )
-        );
-
-        pathwayAnalysis.setEventCohorts(
-                pathwayEventCohortRepository.findAllByPathwayAnalysisId(
-                    pathwayAnalysis.getId(),
-                    EntityUtils.fromAttributePaths("cohortDefinition")
-            )
-        );
-
         return pathwayAnalysis;
     }
+
 }

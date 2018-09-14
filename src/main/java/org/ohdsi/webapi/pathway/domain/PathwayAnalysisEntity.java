@@ -10,25 +10,25 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
-@Entity(name = "pathway_analyses")
+@Entity(name = "pathway_analysis")
 public class PathwayAnalysisEntity extends CommonEntity {
 
     @Id
-    @SequenceGenerator(name = "pathways_analyses_pk_sequence", sequenceName = "pathway_analyses_sequence", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pathways_analyses_pk_sequence")
+    @SequenceGenerator(name = "pathway_analysis_pk_sequence", sequenceName = "pathway_analysis_sequence", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pathway_analysis_pk_sequence")
     private Integer id;
 
     @Column
     private String name;
 
-    @OneToMany(mappedBy = "pathwayAnalysis", cascade = CascadeType.ALL)
-    private List<PathwayTargetCohort> targetCohorts = new ArrayList<>();
+    @OneToMany(mappedBy = "pathwayAnalysis", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<PathwayTargetCohort> targetCohorts = new HashSet<>();
 
-    @OneToMany(mappedBy = "pathwayAnalysis", cascade = CascadeType.ALL)
-    private List<PathwayEventCohort> eventCohorts = new ArrayList<>();
+    @OneToMany(mappedBy = "pathwayAnalysis", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<PathwayEventCohort> eventCohorts = new HashSet<>();
 
     @Column(name = "combination_window")
     private Integer combinationWindow;
@@ -62,22 +62,22 @@ public class PathwayAnalysisEntity extends CommonEntity {
         this.name = name;
     }
 
-    public List<PathwayTargetCohort> getTargetCohorts() {
+    public Set<PathwayTargetCohort> getTargetCohorts() {
 
         return targetCohorts;
     }
 
-    public void setTargetCohorts(List<PathwayTargetCohort> targetCohorts) {
+    public void setTargetCohorts(Set<PathwayTargetCohort> targetCohorts) {
 
         this.targetCohorts = targetCohorts;
     }
 
-    public List<PathwayEventCohort> getEventCohorts() {
+    public Set<PathwayEventCohort> getEventCohorts() {
 
         return eventCohorts;
     }
 
-    public void setEventCohorts(List<PathwayEventCohort> eventCohorts) {
+    public void setEventCohorts(Set<PathwayEventCohort> eventCohorts) {
 
         this.eventCohorts = eventCohorts;
     }

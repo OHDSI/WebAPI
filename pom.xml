@@ -577,6 +577,11 @@
       <version>1.6.0</version>
     </dependency>
     <dependency>
+      <groupId>org.ohdsi</groupId>
+      <artifactId>hydra</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
       <version>20170516</version>
@@ -653,6 +658,12 @@
       <groupId>org.pac4j</groupId>
       <artifactId>pac4j-cas</artifactId>
       <version>1.9.2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+      <version>2.8.7</version>
+      <type>jar</type>
     </dependency>
   </dependencies>
   <profiles>

@@ -31,6 +31,9 @@ import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
+import org.ohdsi.webapi.cohortcharacterization.annotations.CcGenerationId;
+import org.ohdsi.webapi.cohortcharacterization.annotations.DataSourceAccess;
+import org.ohdsi.webapi.cohortcharacterization.annotations.SourceKey;
 import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConverter;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcDistributionStat;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
@@ -286,12 +289,12 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
     }
 
     @Override
-    public JobExecutionResource generateCc(final Long id, final String sourceKey) {
+    @DataSourceAccess
+    public JobExecutionResource generateCc(final Long id, @SourceKey final String sourceKey) {
 
         SerializedCcToCcConverter designConverter = new SerializedCcToCcConverter();
 
         Source source = getSourceRepository().findBySourceKey(sourceKey);
-        checkSourceAccess(source);
 
         CohortCharacterizationEntity cc = repository.findById(id).orElseThrow(() -> new IllegalArgumentException("CC cannot be found by id " + id));
         String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
@@ -334,12 +337,6 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         return jobExec;
     }
 
-    protected void checkSourceAccess(Source source) {
-        if (!SecurityUtils.getSubject().isPermitted(String.format(Security.SOURCE_ACCESS_PERMISSION, source.getSourceKey()))){
-            throw new ForbiddenException();
-        }
-    }
-
     @Override
     public List<CcGenerationEntity> findGenerationsByCcId(final Long id) {
         return ccGenerationRepository.findByCohortCharacterizationIdOrderByIdDesc(id, EntityUtils.fromAttributePaths("source"));
@@ -356,11 +353,11 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
     }
 
     @Override
-    public List<CcResult> findResults(final Long generationId) {
+    @DataSourceAccess
+    public List<CcResult> findResults(@CcGenerationId final Long generationId) {
         final CcGenerationEntity generationEntity = ccGenerationRepository.findById(generationId)
                 .orElseThrow(() -> new IllegalArgumentException("generation cannot be found by id " + generationId));
         final Source source = generationEntity.getSource();
-        checkSourceAccess(source);
         final String resultSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
         String generationResults = SqlRender.renderSql(
                 QUERY_RESULTS,

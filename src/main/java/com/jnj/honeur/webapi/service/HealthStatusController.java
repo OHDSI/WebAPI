@@ -6,6 +6,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -20,6 +21,7 @@ import java.util.HashMap;
 
 @Component("healthStatusController")
 @Path("/health-status")
+@ConditionalOnProperty(name = "webapi.central", havingValue = "true")
 public class HealthStatusController {
 
     private final Log log = LogFactory.getLog(getClass());

@@ -173,7 +173,7 @@ public class AtlasWithCasSecurity extends Security {
     this.cohortdefinitionCreatorPermissionTemplates.put("cohortdefinition:%s:delete", "Delete Cohort Definition with ID = %s");
     this.cohortdefinitionCreatorPermissionTemplates.put("cohortdefinition:%s:get", "View Cohort Definition with ID = %s");
     this.cohortdefinitionCreatorPermissionTemplates.put("cohortdefinition:%s:export:get", "Export Cohort Definition with ID = %s");
-    this.cohortdefinitionCreatorPermissionTemplates.put("cohortdefinition:hss:%s:get", "List Cohort Definition Generation Results in Amazon for Cohort Definition with ID = %s");
+    this.cohortdefinitionCreatorPermissionTemplates.put("cohortdefinition:hss:list:%s:get", "List Cohort Definition Generation Results in Amazon for Cohort Definition with ID = %s");
     this.cohortdefinitionCreatorPermissionTemplates.put("cohortdefinition:hss:%s:select:*:post", "Import Cohort Definition Generation Results for Cohort Definition with ID = %s");
 
     this.cohortdefinitionExporterPermissionTemplatesToDelete

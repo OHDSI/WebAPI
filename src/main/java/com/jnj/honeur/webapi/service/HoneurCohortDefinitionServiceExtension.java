@@ -353,25 +353,31 @@ public class HoneurCohortDefinitionServiceExtension {
         List<Organization> organizations = this.liferayApiClient.getOrganizations();
         Iterable<RoleEntity> roleEntities = this.authorizer.getRoles(false);
 
+        List<String> rolesWithPermissionToReadCohortdefinition;
         List<Organization> finalOrganizations = organizations;
-        List<String> rolesWithPermissionToReadCohortdefinition = StreamSupport.stream(roleEntities.spliterator(), false)
-                .filter(roleEntity -> {
-                    List<PermissionEntity> permissions = new ArrayList<>();
-                    try {
-                        permissions = this.authorizer.getRolePermissions(roleEntity.getId()).stream()
-                                .filter(permissionEntity -> permissionEntity.getValue().equals("cohortdefinition:"+id+":get"))
-                                .collect(Collectors.toList());
+        if (id == 0){
+            rolesWithPermissionToReadCohortdefinition = new ArrayList<>();
+        } else {
+            rolesWithPermissionToReadCohortdefinition = StreamSupport.stream(roleEntities.spliterator(), false)
+                    .filter(roleEntity -> {
+                        List<PermissionEntity> permissions = new ArrayList<>();
+                        try {
+                            permissions = this.authorizer.getRolePermissions(roleEntity.getId()).stream()
+                                    .filter(permissionEntity -> permissionEntity.getValue()
+                                            .equals("cohortdefinition:" + id + ":get"))
+                                    .collect(Collectors.toList());
 
-                    } catch (Exception e) {
-                    }
-                    return permissions.size() > 0;
-                })
-                .filter(roleEntity -> finalOrganizations.stream()
-                        .map(Organization::getName)
-                        .collect(Collectors.toList())
-                        .contains(roleEntity.getName()))
-                .map(RoleEntity::getName)
-                .collect(Collectors.toList());
+                        } catch (Exception e) {
+                        }
+                        return permissions.size() > 0;
+                    })
+                    .filter(roleEntity -> finalOrganizations.stream()
+                            .map(Organization::getName)
+                            .collect(Collectors.toList())
+                            .contains(roleEntity.getName()))
+                    .map(RoleEntity::getName)
+                    .collect(Collectors.toList());
+        }
 
         organizations = organizations.stream()
                 .map(organization -> {

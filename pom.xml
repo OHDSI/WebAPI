@@ -233,6 +233,11 @@
             </goals>
           </execution>
         </executions>
+        <configuration>
+          <customPropertiesFiles>
+            <file>${user.properties}</file>
+          </customPropertiesFiles>
+        </configuration>
       </plugin>
     </plugins>
   </build>

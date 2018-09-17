@@ -44,26 +44,6 @@
             </properties>
         </profile>
         <profile>
-            <id>amazon-dev</id>
-            <properties>
-                <datasource.password>${OHDSI_APP_USER}</datasource.password>
-                <flyway.datasource.password>${OHDSI_ADMIN_USER}</flyway.datasource.password>
-                <datasource.url>${OHDSI_DATASOURCE_URL}</datasource.url>
-                <liferay.url>${LIFERAY_SERVER_BASE_URL}</liferay.url>
-                <liferay.user>${WEBAPI_LIFERAY_USER}</liferay.user>
-                <liferay.password>${WEBAPI_LIFERAY_PASSWORD}</liferay.password>
-                <hss.url>${STORAGE_SERVER_BASE_URL}/api</hss.url>
-                <security.cas.login.url>${CAS_SERVER_LOGIN_URL}</security.cas.login.url>
-                <security.oauth.callback.ui>${ATLAS_WELCOME_URL}</security.oauth.callback.ui>
-                <security.oauth.callback.api>${ATLAS_WEBAPI_CALLBACK_URL}</security.oauth.callback.api>
-                <security.ssl.enabled>false</security.ssl.enabled> <!-- !!! Enabling this property doesn't work on AWS.  Not a real problem as SSL is already enforced on AWS !!! -->
-                <war.directory>target</war.directory>
-                <central>true</central>
-                <security.cas.tgc.domain>.honeur.org</security.cas.tgc.domain>
-                <liferay.company.web.id>liferay.com</liferay.company.web.id>
-            </properties>
-        </profile>
-        <profile>
             <id>local-dev</id>
             <properties>
                 <server.port>${honeur.port}</server.port>
@@ -71,10 +51,10 @@
                 <flyway.datasource.password>admin1</flyway.datasource.password>
                 <datasource.url>jdbc:postgresql://localhost:5432/${datasource.db}</datasource.url>
                 <liferay.url>http://localhost:8080</liferay.url>
-                <liferay.user>sander.bylemans@continuum.be</liferay.user>
+                <liferay.user>test@liferay.com</liferay.user>
                 <liferay.password>test</liferay.password>
                 <hss.url>https://dev.honeur.org/storage/api</hss.url>
-                <security.cas.login.url>https://dev.honeur.org/login</security.cas.login.url>
+                <security.cas.login.url>https://localhost:8443/cas/login</security.cas.login.url>
                 <security.oauth.callback.ui>https://localhost:${server.port}/atlas/#/welcome</security.oauth.callback.ui>
                 <security.oauth.callback.api>https://localhost:${server.port}/webapi/user/oauth/callback</security.oauth.callback.api>
                 <security.ssl.enabled>true</security.ssl.enabled>
@@ -99,6 +79,13 @@
                 <war.directory>target-local</war.directory>
                 <datasource.db>OHDSI-local</datasource.db>
                 <honeur.port>8844</honeur.port>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>honeur-test</id>
+            <properties>
+                <user.properties>${project.basedir}/src/test/resources/jmeter/test.properties</user.properties>
             </properties>
         </profile>
     </profiles>

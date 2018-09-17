@@ -1,9 +1,5 @@
 package org.ohdsi.webapi.shiro.lockout;
 
-import java.util.Date;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-
 import com.odysseusinc.logging.event.LockoutStartEvent;
 import com.odysseusinc.logging.event.LockoutStopEvent;
 import org.apache.shiro.authc.AuthenticationException;
@@ -16,6 +12,10 @@ import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
+
+import java.util.Date;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 public class LockoutWebSecurityManager extends DefaultWebSecurityManager {
 
@@ -37,7 +37,7 @@ public class LockoutWebSecurityManager extends DefaultWebSecurityManager {
         if (token instanceof UsernamePasswordToken) {
             String username = ((UsernamePasswordToken) token).getUsername();
             lockoutPolicy.loginFailed(username);
-            eventPublisher.publishEvent(new LockoutStartEvent(this));
+            eventPublisher.publishEvent(new LockoutStartEvent(this, username));
         }
     }
 
@@ -48,7 +48,7 @@ public class LockoutWebSecurityManager extends DefaultWebSecurityManager {
         if (token instanceof UsernamePasswordToken) {
             String username = ((UsernamePasswordToken) token).getUsername();
             lockoutPolicy.loginSuceeded(username);
-            eventPublisher.publishEvent(new LockoutStopEvent(this));
+            eventPublisher.publishEvent(new LockoutStopEvent(this, username));
         }
     }
 

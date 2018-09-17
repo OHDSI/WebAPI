@@ -1,13 +1,5 @@
 package org.ohdsi.webapi.shiro;
 
-import java.security.Principal;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.odysseusinc.logging.event.AddUserEvent;
 import com.odysseusinc.logging.event.DeleteUserEvent;
 import org.apache.shiro.SecurityUtils;
@@ -33,6 +25,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.security.Principal;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  *
@@ -150,7 +149,7 @@ public class PermissionManager {
     user = new UserEntity();
     user.setLogin(login);
     user = userRepository.save(user);
-    eventPublisher.publishEvent(new AddUserEvent(this));
+    eventPublisher.publishEvent(new AddUserEvent(this, user.getId(), login));
 
     RoleEntity personalRole = this.addRole(login);
     this.addUser(user, personalRole, null);
@@ -175,7 +174,7 @@ public class PermissionManager {
     if (user != null) {
       this.deleteRole(login);   // delete individual role
       userRepository.delete(user);
-      eventPublisher.publishEvent(new DeleteUserEvent(this));
+      eventPublisher.publishEvent(new DeleteUserEvent(this, user.getId(), user.getLogin()));
     }
   }
   

@@ -1,8 +1,5 @@
 package org.ohdsi.webapi.shiro.filters;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-
 import com.odysseusinc.logging.event.FailedLogoffEvent;
 import com.odysseusinc.logging.event.SuccessLogoffEvent;
 import org.apache.commons.logging.Log;
@@ -12,6 +9,9 @@ import org.apache.shiro.session.SessionException;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.servlet.AdviceFilter;
 import org.springframework.context.ApplicationEventPublisher;
+
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 
 /**
  *
@@ -34,8 +34,8 @@ public class LogoutFilter extends AdviceFilter {
         subject.logout();
         eventPublisher.publishEvent(new SuccessLogoffEvent(this));
     } catch (SessionException ise) {
-        log.debug("Encountered session exception during logout.  This can generally safely be ignored.", ise);
-      eventPublisher.publishEvent(new FailedLogoffEvent(this));
+        log.debug("Encountered session exception during logout. This can be generally safely ignored.", ise);
+        eventPublisher.publishEvent(new FailedLogoffEvent(this));
     }
 
     return false;

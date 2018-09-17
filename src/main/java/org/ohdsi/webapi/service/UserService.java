@@ -3,19 +3,11 @@ package org.ohdsi.webapi.service;
 import com.odysseusinc.logging.event.AddPermissionEvent;
 import com.odysseusinc.logging.event.AddRoleEvent;
 import com.odysseusinc.logging.event.AssignRoleEvent;
+import com.odysseusinc.logging.event.ChangeRoleEvent;
 import com.odysseusinc.logging.event.DeletePermissionEvent;
+import com.odysseusinc.logging.event.DeleteRoleEvent;
 import com.odysseusinc.logging.event.UnassignRoleEvent;
 import org.eclipse.collections.impl.block.factory.Comparators;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-
 import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
@@ -23,6 +15,25 @@ import org.ohdsi.webapi.shiro.PermissionManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  *
@@ -172,7 +183,7 @@ public class UserService {
             this.roleCreatorPermissionsTemplate,
             String.valueOf(roleEntity.getId()));
     Role newRole = new Role(roleEntity);
-    eventPublisher.publishEvent(new AddRoleEvent(this));
+    eventPublisher.publishEvent(new AddRoleEvent(this, newRole.id, newRole.role));
     return newRole;
   }
 
@@ -187,6 +198,7 @@ public class UserService {
     }
     roleEntity.setName(role.role);
     roleEntity = this.authorizer.updateRole(roleEntity);
+    eventPublisher.publishEvent(new ChangeRoleEvent(this, id, role.role));
     return new Role(roleEntity);
   }
 
@@ -214,6 +226,7 @@ public class UserService {
   public void removeRole(@PathParam("roleId") Long roleId) {
     this.authorizer.removeRole(roleId);
     this.authorizer.removePermissionsFromTemplate(this.roleCreatorPermissionsTemplate, String.valueOf(roleId));
+    eventPublisher.publishEvent(new DeleteRoleEvent(this, roleId));
   }
 
   @GET
@@ -229,21 +242,23 @@ public class UserService {
   @PUT
   @Path("role/{roleId}/permissions/{permissionIdList}")
   public void addPermissionToRole(@PathParam("roleId") Long roleId, @PathParam("permissionIdList") String permissionIdList) throws Exception {
-    for (String permissionIdString: permissionIdList.split("\\+")) {
+    String[] ids = permissionIdList.split("\\+");
+    for (String permissionIdString : ids) {
       Long permissionId = Long.parseLong(permissionIdString);
       this.authorizer.addPermission(roleId, permissionId);
+      eventPublisher.publishEvent(new AddPermissionEvent(this, permissionId, roleId));
     }
-    eventPublisher.publishEvent(new AddPermissionEvent(this));
   }
 
   @DELETE
   @Path("role/{roleId}/permissions/{permissionIdList}")
   public void removePermissionFromRole(@PathParam("roleId") Long roleId, @PathParam("permissionIdList") String permissionIdList) {
-    for (String permissionIdString: permissionIdList.split("\\+")) {
+    String[] ids = permissionIdList.split("\\+");
+    for (String permissionIdString : ids) {
       Long permissionId = Long.parseLong(permissionIdString);
       this.authorizer.removePermission(permissionId, roleId);
+      eventPublisher.publishEvent(new DeletePermissionEvent(this, permissionId, roleId));
     }
-    eventPublisher.publishEvent(new DeletePermissionEvent(this));
   }
 
   @GET
@@ -259,21 +274,23 @@ public class UserService {
   @PUT
   @Path("role/{roleId}/users/{userIdList}")
   public void addUserToRole(@PathParam("roleId") Long roleId, @PathParam("userIdList") String userIdList) throws Exception {
-    for (String userIdString: userIdList.split("\\+")) {
+    String[] ids = userIdList.split("\\+");
+    for (String userIdString : ids) {
       Long userId = Long.parseLong(userIdString);
       this.authorizer.addUser(userId, roleId);
+      eventPublisher.publishEvent(new AssignRoleEvent(this, roleId, userId));
     }
-    eventPublisher.publishEvent(new AssignRoleEvent(this));
   }
 
   @DELETE
   @Path("role/{roleId}/users/{userIdList}")
   public void removeUserFromRole(@PathParam("roleId") Long roleId, @PathParam("userIdList") String userIdList) {
-    for (String userIdString: userIdList.split("\\+")) {
+    String[] ids = userIdList.split("\\+");
+    for (String userIdString : ids) {
       Long userId = Long.parseLong(userIdString);
       this.authorizer.removeUser(userId, roleId);
+      eventPublisher.publishEvent(new UnassignRoleEvent(this, roleId, userId));
     }
-    eventPublisher.publishEvent(new UnassignRoleEvent(this));
   }
 
   @GET

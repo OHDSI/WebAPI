@@ -4,10 +4,13 @@ import io.buji.pac4j.filter.CallbackFilter;
 import io.buji.pac4j.filter.SecurityFilter;
 import io.buji.pac4j.realm.Pac4jRealm;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.realm.activedirectory.ActiveDirectoryRealm;
 import org.apache.shiro.realm.ldap.JndiLdapContextFactory;
 import org.apache.shiro.realm.ldap.JndiLdapRealm;
+import org.jasig.cas.client.validation.Cas20ServiceTicketValidator;
 import org.ohdsi.webapi.user.importer.providers.LdapProvider;
 import org.ohdsi.webapi.shiro.filters.InvalidateAccessTokenFilter;
 import org.ohdsi.webapi.shiro.filters.LogoutFilter;
@@ -24,8 +27,11 @@ import org.ohdsi.webapi.shiro.realms.LdapRealm;
 import org.ohdsi.webapi.shiro.filters.RedirectOnFailedOAuthFilter;
 import org.ohdsi.webapi.shiro.filters.SendTokenInUrlFilter;
 import org.ohdsi.webapi.shiro.filters.AtlasJwtAuthFilter;
+import org.ohdsi.webapi.shiro.filters.CasHandleFilter;
 import org.ohdsi.webapi.shiro.filters.KerberosAuthFilter;
 import org.ohdsi.webapi.shiro.realms.KerberosAuthRealm;
+import org.pac4j.cas.client.CasClient;
+import org.pac4j.cas.config.CasConfiguration;
 import org.pac4j.core.client.Clients;
 import org.pac4j.core.config.Config;
 import org.pac4j.oauth.client.FacebookClient;
@@ -45,6 +51,10 @@ import waffle.shiro.negotiate.NegotiateAuthenticationRealm;
 import javax.naming.Context;
 import javax.servlet.Filter;
 import javax.sql.DataSource;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Set;
 
@@ -54,6 +64,8 @@ import static org.ohdsi.webapi.util.QuoteUtils.dequote;
 @ConditionalOnProperty(name = "security.provider", havingValue = "AtlasRegularSecurity")
 @DependsOn("flyway")
 public class AtlasRegularSecurity extends AtlasSecurity {
+    
+    private final Log logger = LogFactory.getLog(AtlasRegularSecurity.class);
 
     @Value("${security.token.expiration}")
     private int tokenExpirationIntervalInSeconds;
@@ -122,40 +134,56 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
     @Value("${security.oid.redirectUrl}")
     private String redirectUrl;
-
+    
+    @Value("${security.cas.loginUrl}")
+    private String casLoginUrl;
+    
+    @Value("${security.cas.callbackUrl}")
+    private String casCallbackUrl;
+    
+    @Value("${security.cas.serverUrl}")
+    private String casServerUrl;
+    
+    @Value("${security.cas.cassvcs}")
+    private String casSvcs;
+    
+    @Value("${security.cas.casticket}")
+    private String casticket;
+    
     @Override
     public Map<String, Filter> getFilters() {
-
-        Map<String, Filter> filters = super.getFilters();
-
-        filters.put("logout", new LogoutFilter());
-        filters.put("updateToken", new UpdateAccessTokenFilter(this.authorizer, this.defaultRoles, this.tokenExpirationIntervalInSeconds));
-        filters.put("invalidateToken", new InvalidateAccessTokenFilter());
-
-        filters.put("jwtAuthc", new AtlasJwtAuthFilter());
-        filters.put("jdbcFilter", new JdbcAuthFilter());
-        filters.put("kerberosFilter", new KerberosAuthFilter());
-        filters.put("ldapFilter", new LdapAuthFilter());
-        filters.put("adFilter", new ActiveDirectoryAuthFilter());
-        filters.put("negotiateAuthc", new NegotiateAuthenticationFilter());
-
-        filters.put("sendTokenInUrl", new SendTokenInUrlFilter(this.oauthUiCallback));
-        filters.put("sendTokenInHeader", new SendTokenInHeaderFilter());
-        filters.put("sendTokenInRedirect", new SendTokenInRedirectFilter(redirectUrl));
-
-        // OAuth
-        //
-        Google2Client googleClient = new Google2Client(this.googleApiKey, this.googleApiSecret);
-        googleClient.setScope(Google2Client.Google2Scope.EMAIL);
-
-        FacebookClient facebookClient = new FacebookClient(this.facebookApiKey, this.facebookApiSecret);
-        facebookClient.setScope("email");
-        facebookClient.setFields("email");
-
-        OidcConfiguration configuration = oidcConfCreator.build();
-        OidcClient oidcClient = new OidcClient(configuration);
-
-        Config cfg =
+        try {
+            Map<String, Filter> filters = super.getFilters();
+            
+            filters.put("logout", new LogoutFilter());
+            filters.put("updateToken",
+                new UpdateAccessTokenFilter(this.authorizer, this.defaultRoles, this.tokenExpirationIntervalInSeconds));
+            filters.put("invalidateToken", new InvalidateAccessTokenFilter());
+            
+            filters.put("jwtAuthc", new AtlasJwtAuthFilter());
+            filters.put("jdbcFilter", new JdbcAuthFilter());
+            filters.put("kerberosFilter", new KerberosAuthFilter());
+            filters.put("ldapFilter", new LdapAuthFilter());
+            filters.put("adFilter", new ActiveDirectoryAuthFilter());
+            filters.put("negotiateAuthc", new NegotiateAuthenticationFilter());
+            
+            filters.put("sendTokenInUrl", new SendTokenInUrlFilter(this.oauthUiCallback));
+            filters.put("sendTokenInHeader", new SendTokenInHeaderFilter());
+            filters.put("sendTokenInRedirect", new SendTokenInRedirectFilter(redirectUrl));
+            
+            // OAuth
+            //
+            Google2Client googleClient = new Google2Client(this.googleApiKey, this.googleApiSecret);
+            googleClient.setScope(Google2Client.Google2Scope.EMAIL);
+            
+            FacebookClient facebookClient = new FacebookClient(this.facebookApiKey, this.facebookApiSecret);
+            facebookClient.setScope("email");
+            facebookClient.setFields("email");
+            
+            OidcConfiguration configuration = oidcConfCreator.build();
+            OidcClient oidcClient = new OidcClient(configuration);
+            
+            Config cfg =
                 new Config(
                         new Clients(
                                 this.oauthApiCallback
@@ -166,28 +194,69 @@ public class AtlasRegularSecurity extends AtlasSecurity {
                         )
                 );
 
-        // assign clients to filters
-        SecurityFilter googleOauthFilter = new SecurityFilter();
-        googleOauthFilter.setConfig(cfg);
-        googleOauthFilter.setClients("Google2Client");
-        filters.put("googleAuthc", googleOauthFilter);
-
-        SecurityFilter facebookOauthFilter = new SecurityFilter();
-        facebookOauthFilter.setConfig(cfg);
-        facebookOauthFilter.setClients("FacebookClient");
-        filters.put("facebookAuthc", facebookOauthFilter);
-
-        SecurityFilter oidcFilter = new SecurityFilter();
-        oidcFilter.setConfig(cfg);
-        oidcFilter.setClients("OidcClient");
-        filters.put("oidcAuth", oidcFilter);
-
-        CallbackFilter callbackFilter = new CallbackFilter();
-        callbackFilter.setConfig(cfg);
-        filters.put("oauthCallback", callbackFilter);
-        filters.put("handleUnsuccessfullOAuth", new RedirectOnFailedOAuthFilter(this.oauthUiCallback));
-
-        return filters;
+            // assign clients to filters
+            SecurityFilter googleOauthFilter = new SecurityFilter();
+            googleOauthFilter.setConfig(cfg);
+            googleOauthFilter.setClients("Google2Client");
+            filters.put("googleAuthc", googleOauthFilter);
+            
+            SecurityFilter facebookOauthFilter = new SecurityFilter();
+            facebookOauthFilter.setConfig(cfg);
+            facebookOauthFilter.setClients("FacebookClient");
+            filters.put("facebookAuthc", facebookOauthFilter);
+            
+            SecurityFilter oidcFilter = new SecurityFilter();
+            oidcFilter.setConfig(cfg);
+            oidcFilter.setClients("OidcClient");
+            filters.put("oidcAuth", oidcFilter);
+            
+            /**
+             * CAS config
+             */
+            CasConfiguration casConf = new CasConfiguration();
+            
+            String casLoginUrlString = "";
+            if (casSvcs != null && !"".equals(casSvcs)) {
+                casLoginUrlString = casLoginUrl + "?cassvc=" + casSvcs + "&casurl="
+                        + URLEncoder.encode(casCallbackUrl, StandardCharsets.UTF_8.name()); //+ "?client_name=CasClient";
+            } else {
+                casLoginUrlString = casLoginUrl + "?casurl="
+                        + URLEncoder.encode(casCallbackUrl, StandardCharsets.UTF_8.name());// + "?client_name=CasClient";              
+            }
+            casConf.setLoginUrl(casLoginUrlString);
+            
+            Cas20ServiceTicketValidator cas20Validator = new Cas20ServiceTicketValidator(casServerUrl);
+            casConf.setTicketValidator(cas20Validator);
+            
+            CasClient casClient = new CasClient(casConf);
+            Config casCfg = new Config(new Clients(casCallbackUrl, casClient));
+            
+            /**
+             * CAS filter
+             */
+            SecurityFilter casAuthnFilter = new SecurityFilter();
+            casAuthnFilter.setConfig(casCfg);
+            casAuthnFilter.setClients("CasClient");
+            filters.put("casAuthc", casAuthnFilter);
+            
+            CallbackFilter callbackFilter = new CallbackFilter();
+            callbackFilter.setConfig(cfg);
+            filters.put("oauthCallback", callbackFilter);
+            filters.put("handleUnsuccessfullOAuth", new RedirectOnFailedOAuthFilter(this.oauthUiCallback));
+            
+            /**
+             * CAS callback filter
+             */
+            CasHandleFilter casHandleFilter = new CasHandleFilter(casClient, casCfg, cas20Validator, casCallbackUrl,
+                    casticket);
+            filters.put("handleCas", casHandleFilter);
+            
+            return filters;
+        } catch (UnsupportedEncodingException e) {
+            this.logger.error("Atlas security filter errors:" + this.toString());
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @Override
@@ -210,7 +279,9 @@ public class AtlasRegularSecurity extends AtlasSecurity {
                 .addRestPath("/user/logout", "invalidateToken, logout")
                 .addOAuthPath("/user/oauth/google", "googleAuthc")
                 .addOAuthPath("/user/oauth/facebook", "facebookAuthc")
-                .addPath("/user/oauth/callback", "ssl, handleUnsuccessfullOAuth, oauthCallback");
+                .addPath("/user/authn/cas", "ssl, cors, forceSessionCreation, casAuthc, updateToken, sendTokenInUrl")
+                .addPath("/user/oauth/callback", "ssl, handleUnsuccessfullOAuth, oauthCallback")
+                .addPath("/user/cas/callback", "ssl, handleCas, updateToken, sendTokenInUrl");
 
         setupProtectedPaths(filterChainBuilder);
 

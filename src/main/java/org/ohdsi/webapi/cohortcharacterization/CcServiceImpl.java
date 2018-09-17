@@ -13,7 +13,7 @@ import static org.ohdsi.webapi.Constants.Params.TARGET_DATABASE_SCHEMA;
 import static org.ohdsi.webapi.Constants.Params.TARGET_DIALECT;
 import static org.ohdsi.webapi.Constants.Params.TARGET_TABLE;
 import static org.ohdsi.webapi.Constants.Params.VOCABULARY_DATABASE_SCHEMA;
-import static org.ohdsi.webapi.common.GenerationUtils.checkSourceAccess;
+import static org.ohdsi.webapi.common.generation.GenerationUtils.checkSourceAccess;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -22,10 +22,8 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.shiro.SecurityUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;

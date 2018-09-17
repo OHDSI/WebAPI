@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.common;
+package org.ohdsi.webapi.common.generation;
 
 import org.ohdsi.webapi.converter.BaseConversionServiceAwareConverter;
 import org.springframework.stereotype.Component;

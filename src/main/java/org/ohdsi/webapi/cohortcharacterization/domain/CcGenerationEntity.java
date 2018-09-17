@@ -10,7 +10,7 @@ import javax.persistence.Table;
 
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConverter;
-import org.ohdsi.webapi.common.CommonGeneration;
+import org.ohdsi.webapi.common.generation.CommonGeneration;
 import org.ohdsi.webapi.source.Source;
 
 @Entity

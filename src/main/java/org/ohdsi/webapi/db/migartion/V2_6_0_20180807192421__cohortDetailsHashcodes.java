@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.db.migartion;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.odysseusinc.arachne.commons.config.flyway.ApplicationContextAwareSpringMigration;
 import java.util.List;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
@@ -18,12 +19,12 @@ public class V2_6_0_20180807192421__cohortDetailsHashcodes implements Applicatio
     }
 
     @Override
-    public void migrate() {
+    public void migrate() throws JsonProcessingException {
 
         final List<CohortDefinitionDetails> allDetails = detailsRepository.findAll();
-        allDetails
-                .stream()
-                .peek(v -> v.setHashCode(v.getExpression().hashCode()))
-                .forEach(detailsRepository::save);
+        for (CohortDefinitionDetails details: allDetails) {
+            details.updateHashCode();
+            detailsRepository.save(details);
+        }
     }
 }

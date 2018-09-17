@@ -4,11 +4,14 @@ import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.pathway.converter.SerializedPathwayAnalysisToPathwayAnalysisConverter;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisGeneration;
 import org.ohdsi.webapi.pathway.domain.PathwayEventCohort;
+import org.ohdsi.webapi.pathway.domain.PathwayTargetCohort;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
 import org.ohdsi.webapi.pathway.dto.internal.PersonPathwayEvent;
 import org.ohdsi.webapi.pathway.repository.PathwayAnalysisEntityRepository;
@@ -44,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.summingInt;
 import static org.ohdsi.webapi.Constants.GENERATE_PATHWAY_ANALYSIS;
@@ -52,7 +56,7 @@ import static org.ohdsi.webapi.Constants.Params.HASH_CODE;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
 import static org.ohdsi.webapi.Constants.Params.PATHWAY_ANALYSIS_ID;
 import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
-import static org.ohdsi.webapi.common.GenerationUtils.checkSourceAccess;
+import static org.ohdsi.webapi.common.generation.GenerationUtils.checkSourceAccess;
 
 @Service
 @Transactional
@@ -67,6 +71,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     private final EntityManager entityManager;
     private final PermissionManager permissionManager;
     private final Security security;
+    private final DesignImportService designImportService;
 
     private final EntityGraph defaultEntityGraph = EntityUtils.fromAttributePaths(
             "targetCohorts.cohortDefinition",
@@ -86,7 +91,8 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
             JobBuilderFactory jobBuilders,
             EntityManager entityManager,
             PermissionManager permissionManager,
-            Security security
+            Security security,
+            DesignImportService designImportService
     ) {
 
         this.pathwayAnalysisRepository = pathwayAnalysisRepository;
@@ -98,6 +104,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         this.entityManager = entityManager;
         this.permissionManager = permissionManager;
         this.security = security;
+        this.designImportService = designImportService;
         SerializedPathwayAnalysisToPathwayAnalysisConverter.setConversionService(conversionService);
     }
 
@@ -106,21 +113,44 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
         PathwayAnalysisEntity newAnalysis = new PathwayAnalysisEntity();
 
-        newAnalysis.setName(toSave.getName());
+        copyProps(toSave, newAnalysis);
 
         toSave.getTargetCohorts().forEach(tc -> {
+            tc.setId(null);
             tc.setPathwayAnalysis(newAnalysis);
             newAnalysis.getTargetCohorts().add(tc);
         });
 
         toSave.getEventCohorts().forEach(ec -> {
+            ec.setId(null);
             ec.setPathwayAnalysis(newAnalysis);
             newAnalysis.getEventCohorts().add(ec);
         });
 
-        newAnalysis.setMaxDepth(toSave.getMaxDepth());
-        newAnalysis.setMinCellCount(toSave.getMinCellCount());
-        newAnalysis.setCombinationWindow(toSave.getCombinationWindow());
+        newAnalysis.setCreatedBy(getCurrentUser());
+        newAnalysis.setCreatedDate(new Date());
+
+        return save(newAnalysis);
+    }
+
+    @Override
+    public PathwayAnalysisEntity importAnalysis(PathwayAnalysisEntity toImport) {
+
+        PathwayAnalysisEntity newAnalysis = new PathwayAnalysisEntity();
+
+        copyProps(toImport, newAnalysis);
+
+        Stream.concat(toImport.getTargetCohorts().stream(), toImport.getEventCohorts().stream()).forEach(pc -> {
+            CohortDefinition cohortDefinition = designImportService.persistCohortOrGetExisting(pc.getCohortDefinition());
+            pc.setId(null);
+            pc.setCohortDefinition(cohortDefinition);
+            pc.setPathwayAnalysis(newAnalysis);
+            if (pc instanceof PathwayTargetCohort) {
+                newAnalysis.getTargetCohorts().add((PathwayTargetCohort) pc);
+            } else {
+                newAnalysis.getEventCohorts().add((PathwayEventCohort) pc);
+            }
+        });
 
         newAnalysis.setCreatedBy(getCurrentUser());
         newAnalysis.setCreatedDate(new Date());
@@ -145,13 +175,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
         PathwayAnalysisEntity existing = getById(forUpdate.getId());
 
-        existing.setModifiedBy(getCurrentUser());
-        existing.setModifiedDate(new Date());
-
-        existing.setName(forUpdate.getName());
-        existing.setMaxDepth(forUpdate.getMaxDepth());
-        existing.setMinCellCount(forUpdate.getMinCellCount());
-        existing.setCombinationWindow(forUpdate.getCombinationWindow());
+        copyProps(forUpdate, existing);
 
         existing.getTargetCohorts().clear();
         forUpdate.getTargetCohorts().forEach(tc -> {
@@ -164,6 +188,9 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
             ec.setPathwayAnalysis(existing);
             existing.getEventCohorts().add(ec);
         });
+
+        existing.setModifiedBy(getCurrentUser());
+        existing.setModifiedDate(new Date());
 
         return save(existing);
     }
@@ -334,6 +361,14 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         result.setPathwaysCounts(chains);
 
         return result;
+    }
+
+    private void copyProps(PathwayAnalysisEntity from, PathwayAnalysisEntity to) {
+
+        to.setName(from.getName());
+        to.setMaxDepth(from.getMaxDepth());
+        to.setMinCellCount(from.getMinCellCount());
+        to.setCombinationWindow(from.getCombinationWindow());
     }
 
     private List<PathwayEventCohort> getEventCohortsByComboCode(PathwayAnalysisEntity pathwayAnalysis, Integer comboCode) {

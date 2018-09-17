@@ -13,6 +13,8 @@ public interface PathwayService {
 
     PathwayAnalysisEntity create(PathwayAnalysisEntity pathwayAnalysisEntity);
 
+    PathwayAnalysisEntity importAnalysis(PathwayAnalysisEntity toImport);
+
     Page<PathwayAnalysisEntity> getPage(final Pageable pageable);
 
     PathwayAnalysisEntity getById(Integer id);

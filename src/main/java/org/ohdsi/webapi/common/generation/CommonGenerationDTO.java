@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.common;
+package org.ohdsi.webapi.common.generation;
 
 import java.util.Date;
 

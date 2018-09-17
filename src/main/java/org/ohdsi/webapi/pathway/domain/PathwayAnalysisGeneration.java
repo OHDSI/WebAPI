@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.pathway.domain;
 
-import org.ohdsi.webapi.common.CommonGeneration;
+import org.ohdsi.webapi.common.generation.CommonGeneration;
 import org.ohdsi.webapi.pathway.converter.SerializedPathwayAnalysisToPathwayAnalysisConverter;
 
 import javax.persistence.Column;

@@ -1,14 +1,14 @@
 package org.ohdsi.webapi.pathway.converter;
 
 import org.ohdsi.webapi.pathway.domain.PathwayTargetCohort;
-import org.ohdsi.webapi.pathway.dto.PathwayCohortDTO;
+import org.ohdsi.webapi.pathway.dto.PathwayCohortExportDTO;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Component;
 
 @Component
-public class PathwayCohortDTOToPathwayTargetCohortConverter extends BasePathwayCohortDTOToPathwayCohortConverter<PathwayCohortDTO, PathwayTargetCohort> {
+public class PathwayCohortExportDTOToPathwayTargetCohortConverter extends BasePathwayCohortDTOToPathwayCohortConverter<PathwayCohortExportDTO, PathwayTargetCohort> {
 
-    public PathwayCohortDTOToPathwayTargetCohortConverter(ConversionService conversionService) {
+    public PathwayCohortExportDTOToPathwayTargetCohortConverter(ConversionService conversionService) {
 
         super(conversionService);
     }

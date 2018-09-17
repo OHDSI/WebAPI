@@ -157,12 +157,7 @@ public class CohortDefinition extends CommonEntity implements Serializable, Coho
     @Override
     public CohortExpression getExpression() {
 
-      try {
-        return (details != null && details.getExpression() != null) ?
-                new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).readValue(details.getExpression(), CohortExpression.class) : null;
-      } catch (IOException e) {
-        return null;
-      }
+      return details != null ? details.getExpressionObject() : null;
       // TODO:
       // return CohortExpression.fromJson(details.getExpression());
     }

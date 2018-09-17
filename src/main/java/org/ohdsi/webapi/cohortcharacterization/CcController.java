@@ -14,7 +14,7 @@ import javax.ws.rs.core.MediaType;
 import org.ohdsi.webapi.Pagination;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.dto.*;
-import org.ohdsi.webapi.common.CommonGenerationDTO;
+import org.ohdsi.webapi.common.generation.CommonGenerationDTO;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;

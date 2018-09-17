@@ -2,7 +2,7 @@ package org.ohdsi.webapi.pathway;
 
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.webapi.Pagination;
-import org.ohdsi.webapi.common.CommonGenerationDTO;
+import org.ohdsi.webapi.common.generation.CommonGenerationDTO;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisExportDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
@@ -59,6 +59,17 @@ public class PathwayController {
         PathwayAnalysisEntity pathwayAnalysis = conversionService.convert(dto, PathwayAnalysisEntity.class);
         PathwayAnalysisEntity saved = pathwayService.create(pathwayAnalysis);
         return conversionService.convert(saved, PathwayAnalysisDTO.class);
+    }
+
+    @POST
+    @Path("/import")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public PathwayAnalysisDTO importAnalysis(final PathwayAnalysisExportDTO dto) {
+
+        PathwayAnalysisEntity pathwayAnalysis = conversionService.convert(dto, PathwayAnalysisEntity.class);
+        PathwayAnalysisEntity imported = pathwayService.importAnalysis(pathwayAnalysis);
+        return conversionService.convert(imported, PathwayAnalysisDTO.class);
     }
 
     @GET

@@ -152,111 +152,71 @@ public class AtlasRegularSecurity extends AtlasSecurity {
     
     @Override
     public Map<String, Filter> getFilters() {
-        try {
-            Map<String, Filter> filters = super.getFilters();
+        Map<String, Filter> filters = super.getFilters();
+        
+        filters.put("logout", new LogoutFilter());
+        filters.put("updateToken",
+            new UpdateAccessTokenFilter(this.authorizer, this.defaultRoles, this.tokenExpirationIntervalInSeconds));
+        filters.put("invalidateToken", new InvalidateAccessTokenFilter());
+        
+        filters.put("jwtAuthc", new AtlasJwtAuthFilter());
+        filters.put("jdbcFilter", new JdbcAuthFilter());
+        filters.put("kerberosFilter", new KerberosAuthFilter());
+        filters.put("ldapFilter", new LdapAuthFilter());
+        filters.put("adFilter", new ActiveDirectoryAuthFilter());
+        filters.put("negotiateAuthc", new NegotiateAuthenticationFilter());
+        
+        filters.put("sendTokenInUrl", new SendTokenInUrlFilter(this.oauthUiCallback));
+        filters.put("sendTokenInHeader", new SendTokenInHeaderFilter());
+        filters.put("sendTokenInRedirect", new SendTokenInRedirectFilter(redirectUrl));
+        
+        // OAuth
+        //
+        Google2Client googleClient = new Google2Client(this.googleApiKey, this.googleApiSecret);
+        googleClient.setScope(Google2Client.Google2Scope.EMAIL);
+        
+        FacebookClient facebookClient = new FacebookClient(this.facebookApiKey, this.facebookApiSecret);
+        facebookClient.setScope("email");
+        facebookClient.setFields("email");
+        
+        OidcConfiguration configuration = oidcConfCreator.build();
+        OidcClient oidcClient = new OidcClient(configuration);
             
-            filters.put("logout", new LogoutFilter());
-            filters.put("updateToken",
-                new UpdateAccessTokenFilter(this.authorizer, this.defaultRoles, this.tokenExpirationIntervalInSeconds));
-            filters.put("invalidateToken", new InvalidateAccessTokenFilter());
-            
-            filters.put("jwtAuthc", new AtlasJwtAuthFilter());
-            filters.put("jdbcFilter", new JdbcAuthFilter());
-            filters.put("kerberosFilter", new KerberosAuthFilter());
-            filters.put("ldapFilter", new LdapAuthFilter());
-            filters.put("adFilter", new ActiveDirectoryAuthFilter());
-            filters.put("negotiateAuthc", new NegotiateAuthenticationFilter());
-            
-            filters.put("sendTokenInUrl", new SendTokenInUrlFilter(this.oauthUiCallback));
-            filters.put("sendTokenInHeader", new SendTokenInHeaderFilter());
-            filters.put("sendTokenInRedirect", new SendTokenInRedirectFilter(redirectUrl));
-            
-            // OAuth
-            //
-            Google2Client googleClient = new Google2Client(this.googleApiKey, this.googleApiSecret);
-            googleClient.setScope(Google2Client.Google2Scope.EMAIL);
-            
-            FacebookClient facebookClient = new FacebookClient(this.facebookApiKey, this.facebookApiSecret);
-            facebookClient.setScope("email");
-            facebookClient.setFields("email");
-            
-            OidcConfiguration configuration = oidcConfCreator.build();
-            OidcClient oidcClient = new OidcClient(configuration);
-            
-            Config cfg =
+        Config cfg =
                 new Config(
-                        new Clients(
-                                this.oauthApiCallback
-                                , googleClient
-                                , facebookClient
-                                , oidcClient
-                                // ... put new clients here and then assign them to filters ...
+                    new Clients(
+                        this.oauthApiCallback
+                        , googleClient
+                        , facebookClient
+                        , oidcClient
+                        // ... put new clients here and then assign them to filters ...
                         )
                 );
 
-            // assign clients to filters
-            SecurityFilter googleOauthFilter = new SecurityFilter();
-            googleOauthFilter.setConfig(cfg);
-            googleOauthFilter.setClients("Google2Client");
-            filters.put("googleAuthc", googleOauthFilter);
-            
-            SecurityFilter facebookOauthFilter = new SecurityFilter();
-            facebookOauthFilter.setConfig(cfg);
-            facebookOauthFilter.setClients("FacebookClient");
-            filters.put("facebookAuthc", facebookOauthFilter);
-            
-            SecurityFilter oidcFilter = new SecurityFilter();
-            oidcFilter.setConfig(cfg);
-            oidcFilter.setClients("OidcClient");
-            filters.put("oidcAuth", oidcFilter);
-            
-            /**
-             * CAS config
-             */
-            CasConfiguration casConf = new CasConfiguration();
-            
-            String casLoginUrlString = "";
-            if (casSvcs != null && !"".equals(casSvcs)) {
-                casLoginUrlString = casLoginUrl + "?cassvc=" + casSvcs + "&casurl="
-                        + URLEncoder.encode(casCallbackUrl, StandardCharsets.UTF_8.name()); //+ "?client_name=CasClient";
-            } else {
-                casLoginUrlString = casLoginUrl + "?casurl="
-                        + URLEncoder.encode(casCallbackUrl, StandardCharsets.UTF_8.name());// + "?client_name=CasClient";              
-            }
-            casConf.setLoginUrl(casLoginUrlString);
-            
-            Cas20ServiceTicketValidator cas20Validator = new Cas20ServiceTicketValidator(casServerUrl);
-            casConf.setTicketValidator(cas20Validator);
-            
-            CasClient casClient = new CasClient(casConf);
-            Config casCfg = new Config(new Clients(casCallbackUrl, casClient));
-            
-            /**
-             * CAS filter
-             */
-            SecurityFilter casAuthnFilter = new SecurityFilter();
-            casAuthnFilter.setConfig(casCfg);
-            casAuthnFilter.setClients("CasClient");
-            filters.put("casAuthc", casAuthnFilter);
-            
-            CallbackFilter callbackFilter = new CallbackFilter();
-            callbackFilter.setConfig(cfg);
-            filters.put("oauthCallback", callbackFilter);
-            filters.put("handleUnsuccessfullOAuth", new RedirectOnFailedOAuthFilter(this.oauthUiCallback));
-            
-            /**
-             * CAS callback filter
-             */
-            CasHandleFilter casHandleFilter = new CasHandleFilter(casClient, casCfg, cas20Validator, casCallbackUrl,
-                    casticket);
-            filters.put("handleCas", casHandleFilter);
-            
-            return filters;
-        } catch (UnsupportedEncodingException e) {
-            this.logger.error("Atlas security filter errors:" + this.toString());
-            e.printStackTrace();
-            return null;
-        }
+        // assign clients to filters
+        SecurityFilter googleOauthFilter = new SecurityFilter();
+        googleOauthFilter.setConfig(cfg);
+        googleOauthFilter.setClients("Google2Client");
+        filters.put("googleAuthc", googleOauthFilter);
+        
+        SecurityFilter facebookOauthFilter = new SecurityFilter();
+        facebookOauthFilter.setConfig(cfg);
+        facebookOauthFilter.setClients("FacebookClient");
+        filters.put("facebookAuthc", facebookOauthFilter);
+        
+        SecurityFilter oidcFilter = new SecurityFilter();
+        oidcFilter.setConfig(cfg);
+        oidcFilter.setClients("OidcClient");
+        filters.put("oidcAuth", oidcFilter);
+        
+        CallbackFilter callbackFilter = new CallbackFilter();
+        callbackFilter.setConfig(cfg);
+        filters.put("oauthCallback", callbackFilter);
+        filters.put("handleUnsuccessfullOAuth", new RedirectOnFailedOAuthFilter(this.oauthUiCallback));
+        
+        this.setUpCAS(filters);
+        
+        return filters;
     }
 
     @Override
@@ -332,5 +292,49 @@ public class AtlasRegularSecurity extends AtlasSecurity {
             return adLdapProvider.getLdapTemplate();
         }
         return null;
+    }
+    
+    private void setUpCAS(Map<String, Filter> filters) {
+        try {
+            /**
+             * CAS config
+             */
+            CasConfiguration casConf = new CasConfiguration();
+            
+            String casLoginUrlString = "";
+            if (casSvcs != null && !"".equals(casSvcs)) {
+                casLoginUrlString = casLoginUrl + "?cassvc=" + casSvcs + "&casurl="
+                        + URLEncoder.encode(casCallbackUrl, StandardCharsets.UTF_8.name());
+            } else {
+                casLoginUrlString = casLoginUrl + "?casurl="
+                        + URLEncoder.encode(casCallbackUrl, StandardCharsets.UTF_8.name());              
+            }
+            casConf.setLoginUrl(casLoginUrlString);
+            
+            Cas20ServiceTicketValidator cas20Validator = new Cas20ServiceTicketValidator(casServerUrl);
+            casConf.setTicketValidator(cas20Validator);
+            
+            CasClient casClient = new CasClient(casConf);
+            Config casCfg = new Config(new Clients(casCallbackUrl, casClient));
+            
+            /**
+             * CAS filter
+             */
+            SecurityFilter casAuthnFilter = new SecurityFilter();
+            casAuthnFilter.setConfig(casCfg);
+            casAuthnFilter.setClients("CasClient");
+            filters.put("casAuthc", casAuthnFilter);
+            
+            /**
+             * CAS callback filter
+             */
+            CasHandleFilter casHandleFilter = new CasHandleFilter(casClient, casCfg, cas20Validator, casCallbackUrl,
+                    casticket);
+            filters.put("handleCas", casHandleFilter);
+            
+        } catch (UnsupportedEncodingException e) {
+            this.logger.error("Atlas security filter errors:" + this.toString());
+            e.printStackTrace();
+        }
     }
 }

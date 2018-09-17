@@ -16,6 +16,7 @@ import org.ohdsi.webapi.shiro.lockout.NoLockoutPolicy;
 import org.ohdsi.webapi.shiro.management.DataSourceAccessBeanPostProcessor;
 import org.ohdsi.webapi.shiro.management.DisabledSecurity;
 import org.ohdsi.webapi.shiro.management.Security;
+import org.ohdsi.webapi.shiro.management.datasource.DataSourceAccessParameterResolver;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -86,10 +87,9 @@ public class ShiroConfiguration {
 
   @Bean
   @ConditionalOnMissingBean(value = DisabledSecurity.class)
-  public DataSourceAccessBeanPostProcessor dataSourceAccessBeanPostProcessor(SourceRepository sourceRepository,
-                                                                             CcGenerationEntityRepository ccGenerationRepository) {
+  public DataSourceAccessBeanPostProcessor dataSourceAccessBeanPostProcessor(DataSourceAccessParameterResolver parameterResolver) {
 
-    return new DataSourceAccessBeanPostProcessor(sourceRepository, ccGenerationRepository);
+    return new DataSourceAccessBeanPostProcessor(parameterResolver);
   }
 
 }

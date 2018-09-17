@@ -1,39 +1,26 @@
 package org.ohdsi.webapi.shiro.management;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.shiro.SecurityUtils;
-import org.ohdsi.webapi.cohortcharacterization.annotations.CcGenerationId;
 import org.ohdsi.webapi.cohortcharacterization.annotations.DataSourceAccess;
-import org.ohdsi.webapi.cohortcharacterization.annotations.SourceKey;
-import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
-import org.ohdsi.webapi.cohortcharacterization.repository.CcGenerationEntityRepository;
-import org.ohdsi.webapi.source.Source;
-import org.ohdsi.webapi.source.SourceRepository;
+import org.ohdsi.webapi.shiro.management.datasource.AccessorParameterBinding;
+import org.ohdsi.webapi.shiro.management.datasource.DataSourceAccessParameterResolver;
+import org.ohdsi.webapi.shiro.management.datasource.DataSourceAccessor;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.util.ReflectionUtils;
 
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.NotFoundException;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class DataSourceAccessBeanPostProcessor implements BeanPostProcessor {
 
-  private SourceRepository sourceRepository;
+  private DataSourceAccessParameterResolver accessParameterResolver;
 
-  private CcGenerationEntityRepository ccGenerationRepository;
+  public DataSourceAccessBeanPostProcessor(DataSourceAccessParameterResolver accessParameterResolver) {
 
-  public DataSourceAccessBeanPostProcessor(SourceRepository sourceRepository, CcGenerationEntityRepository ccGenerationRepository) {
-
-    this.sourceRepository = sourceRepository;
-    this.ccGenerationRepository = ccGenerationRepository;
+    this.accessParameterResolver = accessParameterResolver;
   }
 
   @Override
@@ -48,11 +35,10 @@ public class DataSourceAccessBeanPostProcessor implements BeanPostProcessor {
         if (methods.stream().anyMatch(m -> Objects.equals(m.getName(), method.getName()))) {
           Optional<Method> targetMethod = methods.stream().filter(m -> Objects.nonNull(findMethod(m, method))).findFirst();
           if (targetMethod.isPresent()) {
-            Pair<Integer, Consumer<?>> handler = mapParameters(targetMethod.get());
-            if (Objects.nonNull(handler)) {
-              Object value = args[handler.getLeft()];
-              Consumer<Object> consumer = (Consumer<Object>) handler.getRight();
-              consumer.accept(value);
+            AccessorParameterBinding<Object> binding = accessParameterResolver.resolveParameterBinding(targetMethod.get());
+            if (Objects.nonNull(binding)) {
+              Object value = args[binding.getParameterIndex()];
+              binding.getDataSourceAccessor().checkAccess(value);
             }
           }
         }
@@ -87,44 +73,12 @@ public class DataSourceAccessBeanPostProcessor implements BeanPostProcessor {
       current = current.getSuperclass();
     }
     methods.forEach(m -> {
-      if (Objects.isNull(mapParameters(m))) {
+      if (Objects.isNull(accessParameterResolver.resolveParameterBinding(m))) {
         throw new BeanInitializationException(String.format("One of method: %s parameters should be annotated with SourceKey of CcGenerationId", m.toString()));
       }
     });
     return methods;
   }
 
-  private Pair<Integer, Consumer<?>> mapParameters(Method method){
-
-    Annotation[][] annotations = method.getParameterAnnotations();
-    for(int i = 0; i < annotations.length; i++) {
-      Consumer<?> result = null;
-      if (isAnnotated(annotations[i], SourceKey.class)) {
-        result = (Consumer<String>) sourceKey -> {
-          Source source = sourceRepository.findBySourceKey(sourceKey);
-          checkSourceAccess(source);
-        };
-      } else if (isAnnotated(annotations[i], CcGenerationId.class)) {
-        result = (Consumer<Long>) id -> {
-          CcGenerationEntity generationEntity = ccGenerationRepository.findById(id).orElseThrow(NotFoundException::new);
-          checkSourceAccess(generationEntity.getSource());
-        };
-      }
-      if (Objects.nonNull(result)) {
-        return new ImmutablePair<>(i, result);
-      }
-    }
-    return null;
-  }
-
-  private boolean isAnnotated(Annotation[] annotations, Class<? extends Annotation> annotation) {
-    return Arrays.stream(annotations).anyMatch(annotation::isInstance);
-  }
-
-  private void checkSourceAccess(Source source) {
-    if (!SecurityUtils.getSubject().isPermitted(String.format(Security.SOURCE_ACCESS_PERMISSION, source.getSourceKey()))){
-      throw new ForbiddenException();
-    }
-  }
 
 }

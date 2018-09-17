@@ -45,9 +45,9 @@ import org.ohdsi.webapi.cohortcharacterization.repository.CcGenerationEntityRepo
 import org.ohdsi.webapi.cohortcharacterization.repository.CcParamRepository;
 import org.ohdsi.webapi.cohortcharacterization.repository.CcRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetailsRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
+import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
@@ -93,6 +93,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
     private JobTemplate jobTemplate;
     private CcGenerationEntityRepository ccGenerationRepository;
     private FeatureExtractionService featureExtractionService;
+    private DesignImportService designImportService;
 
     public CcServiceImpl(
             final CcRepository ccRepository,
@@ -107,7 +108,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
             final JobTemplate jobTemplate,
             final CcGenerationEntityRepository ccGenerationRepository, 
             final FeatureExtractionService featureExtractionService,
-            final ConversionService conversionService) {
+            final ConversionService conversionService,
+            final DesignImportService designImportService) {
         this.repository = ccRepository;
         this.security = security;
         this.userRepository = userRepository;
@@ -120,6 +122,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         this.jobTemplate = jobTemplate;
         this.ccGenerationRepository = ccGenerationRepository;
         this.featureExtractionService = featureExtractionService;
+        this.designImportService = designImportService;
         SerializedCcToCcConverter.setConversionService(conversionService);
     }
     
@@ -459,32 +462,9 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
 
     private void importCohorts(final CohortCharacterizationEntity entity, final CohortCharacterizationEntity persistedEntity) {
         final List<CohortDefinition> cohortList = entity.getCohortDefinitions().stream()
-                .map(this::persistCohortOrLinkWithExisting)
+                .map(designImportService::persistCohortOrGetExisting)
                 .collect(Collectors.toList());
         persistedEntity.setCohortDefinitions(cohortList);
-    }
-
-    private CohortDefinition persistCohortOrLinkWithExisting(final CohortDefinition cohort) {
-        final CohortDefinitionDetails details = cohort.getDetails();
-        final UserEntity user = userRepository.findByLogin(security.getSubject());
-        return findCohortByExpressionHashcode(details).orElseGet(() -> {
-            cohort.setCreatedBy(user);
-            cohort.setCreatedDate(new Date());
-            cohort.setDetails(null);
-            final CohortDefinition savedCohort = cohortRepository.save(cohort);
-            details.setCohortDefinition(savedCohort);
-            savedCohort.setDetails(detailsRepository.save(details));
-            return savedCohort;
-        });
-    }
-
-    private Optional<CohortDefinition> findCohortByExpressionHashcode(final CohortDefinitionDetails details) {
-        List<CohortDefinitionDetails> detailsFromDb = detailsRepository.findByHashCode(details.getHashCode());
-        return detailsFromDb
-                .stream()
-                .filter(v -> Objects.equals(v.getExpression(), details.getExpression()))
-                .findFirst()
-                .map(CohortDefinitionDetails::getCohortDefinition);
     }
     
     private void cleanIds(final CohortCharacterizationEntity entity) {

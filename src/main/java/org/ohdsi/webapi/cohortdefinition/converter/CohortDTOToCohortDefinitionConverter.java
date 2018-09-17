@@ -29,7 +29,6 @@ public class CohortDTOToCohortDefinitionConverter extends BaseCohortDTOToCohortD
             final CohortDefinitionDetails details = new CohortDefinitionDetails();
             final String expression = convertExpression(source);
             details.setExpression(expression);
-            details.setHashCode(expression.hashCode());
             cohortDefinition.setDetails(details);
         }
         

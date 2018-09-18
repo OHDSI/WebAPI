@@ -152,44 +152,44 @@ public class AtlasRegularSecurity extends AtlasSecurity {
     
     @Override
     public Map<String, Filter> getFilters() {
+
         Map<String, Filter> filters = super.getFilters();
 
         filters.put("logout", new LogoutFilter());
-        filters.put("updateToken",
-            new UpdateAccessTokenFilter(this.authorizer, this.defaultRoles, this.tokenExpirationIntervalInSeconds));
+        filters.put("updateToken", new UpdateAccessTokenFilter(this.authorizer, this.defaultRoles, this.tokenExpirationIntervalInSeconds));
         filters.put("invalidateToken", new InvalidateAccessTokenFilter());
-        
+
         filters.put("jwtAuthc", new AtlasJwtAuthFilter());
         filters.put("jdbcFilter", new JdbcAuthFilter());
         filters.put("kerberosFilter", new KerberosAuthFilter());
         filters.put("ldapFilter", new LdapAuthFilter());
         filters.put("adFilter", new ActiveDirectoryAuthFilter());
         filters.put("negotiateAuthc", new NegotiateAuthenticationFilter());
-        
+
         filters.put("sendTokenInUrl", new SendTokenInUrlFilter(this.oauthUiCallback));
         filters.put("sendTokenInHeader", new SendTokenInHeaderFilter());
         filters.put("sendTokenInRedirect", new SendTokenInRedirectFilter(redirectUrl));
-        
+
         // OAuth
         //
         Google2Client googleClient = new Google2Client(this.googleApiKey, this.googleApiSecret);
         googleClient.setScope(Google2Client.Google2Scope.EMAIL);
-        
+
         FacebookClient facebookClient = new FacebookClient(this.facebookApiKey, this.facebookApiSecret);
         facebookClient.setScope("email");
         facebookClient.setFields("email");
-        
+
         OidcConfiguration configuration = oidcConfCreator.build();
         OidcClient oidcClient = new OidcClient(configuration);
-            
+
         Config cfg =
                 new Config(
-                    new Clients(
-                        this.oauthApiCallback
-                        , googleClient
-                        , facebookClient
-                        , oidcClient
-                        // ... put new clients here and then assign them to filters ...
+                        new Clients(
+                                this.oauthApiCallback
+                                , googleClient
+                                , facebookClient
+                                , oidcClient
+                                // ... put new clients here and then assign them to filters ...
                         )
                 );
 
@@ -198,17 +198,17 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         googleOauthFilter.setConfig(cfg);
         googleOauthFilter.setClients("Google2Client");
         filters.put("googleAuthc", googleOauthFilter);
-        
+
         SecurityFilter facebookOauthFilter = new SecurityFilter();
         facebookOauthFilter.setConfig(cfg);
         facebookOauthFilter.setClients("FacebookClient");
         filters.put("facebookAuthc", facebookOauthFilter);
-        
+
         SecurityFilter oidcFilter = new SecurityFilter();
         oidcFilter.setConfig(cfg);
         oidcFilter.setClients("OidcClient");
         filters.put("oidcAuth", oidcFilter);
-        
+
         CallbackFilter callbackFilter = new CallbackFilter();
         callbackFilter.setConfig(cfg);
         filters.put("oauthCallback", callbackFilter);

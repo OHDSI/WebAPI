@@ -336,7 +336,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
                 .build();
 
         GenerateLocalCohortTasklet generateLocalCohortTasklet = new GenerateLocalCohortTasklet(
-                cohortGenerationService, this, getSourceRepository());
+                this, getTransactionTemplate(), cohortGenerationService, getSourceRepository());
         Step generateLocalCohortStep = stepBuilderFactory.get("cohortCharacterizations.generateCohort")
                 .tasklet(generateLocalCohortTasklet)
                 .build();

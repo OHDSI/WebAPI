@@ -66,9 +66,7 @@ public class CasHandleFilter implements Filter {
      * @see javax.servlet.Filter#init(javax.servlet.FilterConfig)
      */
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
-        // TODO Auto-generated method stub
-        
+    public void init(FilterConfig filterConfig) throws ServletException {        
     }
     
     /**

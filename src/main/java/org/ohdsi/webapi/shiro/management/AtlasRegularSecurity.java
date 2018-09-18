@@ -153,7 +153,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
     @Override
     public Map<String, Filter> getFilters() {
         Map<String, Filter> filters = super.getFilters();
-        
+
         filters.put("logout", new LogoutFilter());
         filters.put("updateToken",
             new UpdateAccessTokenFilter(this.authorizer, this.defaultRoles, this.tokenExpirationIntervalInSeconds));

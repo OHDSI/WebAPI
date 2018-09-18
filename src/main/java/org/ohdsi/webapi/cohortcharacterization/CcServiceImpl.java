@@ -21,10 +21,8 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.shiro.SecurityUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
@@ -54,6 +52,7 @@ import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.service.AbstractDaoService;
+import org.ohdsi.webapi.service.CohortGenerationService;
 import org.ohdsi.webapi.service.FeatureExtractionService;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
@@ -72,6 +71,7 @@ import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -94,6 +94,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
     private CcGenerationEntityRepository ccGenerationRepository;
     private FeatureExtractionService featureExtractionService;
     private DesignImportService designImportService;
+    private CohortGenerationService cohortGenerationService;
 
     public CcServiceImpl(
             final CcRepository ccRepository,
@@ -106,10 +107,11 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
             final StepBuilderFactory stepBuilderFactory,
             final JobBuilderFactory jobBuilders,
             final JobTemplate jobTemplate,
-            final CcGenerationEntityRepository ccGenerationRepository, 
+            final CcGenerationEntityRepository ccGenerationRepository,
             final FeatureExtractionService featureExtractionService,
             final ConversionService conversionService,
-            final DesignImportService designImportService) {
+            final DesignImportService designImportService,
+            final CohortGenerationService cohortGenerationService) {
         this.repository = ccRepository;
         this.security = security;
         this.userRepository = userRepository;
@@ -123,6 +125,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         this.ccGenerationRepository = ccGenerationRepository;
         this.featureExtractionService = featureExtractionService;
         this.designImportService = designImportService;
+        this.cohortGenerationService = cohortGenerationService;
         SerializedCcToCcConverter.setConversionService(conversionService);
     }
     
@@ -314,9 +317,10 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
             builder.addString(VOCABULARY_DATABASE_SCHEMA, vocabularyTableQualifier);
         }
 
+        final String targetTable = "cohort_" + SessionUtils.sessionId();
         final String design = designConverter.convertToDatabaseColumn(cc);
         builder.addString(TARGET_DIALECT, source.getSourceDialect());
-        builder.addString(TARGET_TABLE, "cohort");
+        builder.addString(TARGET_TABLE, targetTable);
         builder.addString(COHORT_CHARACTERIZATION_ID, String.valueOf(id));
         builder.addString(SOURCE_ID, String.valueOf(source.getSourceId()));
         builder.addString(GENERATE_STATS, Boolean.TRUE.toString());
@@ -325,15 +329,33 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         
         final JobParameters jobParameters = builder.toJobParameters();
 
+        JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
+        CreateCohortTableTasklet createCohortTableTasklet = new CreateCohortTableTasklet(jdbcTemplate, getTransactionTemplate());
+        Step createCohortTableStep = stepBuilderFactory.get("cohortCharacterizations.createCohortTable")
+                .tasklet(createCohortTableTasklet)
+                .build();
+
+        GenerateLocalCohortTasklet generateLocalCohortTasklet = new GenerateLocalCohortTasklet(
+                cohortGenerationService, this, getSourceRepository());
+        Step generateLocalCohortStep = stepBuilderFactory.get("cohortCharacterizations.generateCohort")
+                .tasklet(generateLocalCohortTasklet)
+                .build();
+
         GenerateCohortCharacterizationTasklet generateCcTasklet =
-                new GenerateCohortCharacterizationTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), this, analysisService);
+                new GenerateCohortCharacterizationTasklet(jdbcTemplate, getTransactionTemplate(), this, analysisService);
+
 
         Step generateCohortFeaturesStep = stepBuilderFactory.get("cohortCharacterizations.generate")
                 .tasklet(generateCcTasklet)
                 .build();
 
+        DropCohortTableListener dropCohortTableListener = new DropCohortTableListener(jdbcTemplate, getTransactionTemplate());
+
         SimpleJobBuilder generateJobBuilder = jobBuilders.get(GENERATE_COHORT_CHARACTERIZATION)
-                .start(generateCohortFeaturesStep);
+                .start(createCohortTableStep)
+                .next(generateLocalCohortStep)
+                .next(generateCohortFeaturesStep)
+                .listener(dropCohortTableListener);
         
         Job generateCohortJob = generateJobBuilder.build();
         JobExecutionResource jobExec = this.jobTemplate.launch(generateCohortJob, jobParameters);

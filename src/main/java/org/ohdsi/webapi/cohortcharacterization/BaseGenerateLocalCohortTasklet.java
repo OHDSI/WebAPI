@@ -71,7 +71,7 @@ public abstract class BaseGenerateLocalCohortTasklet implements StoppableTasklet
 
     private JobExecutionResource generateCohort(CohortDefinition cd) {
 
-      return cohortGenerationService.generateCohort(cd, source, false, targetTable);
+      return cohortGenerationService.runGenerateCohortJob(cd, source, false, false, targetTable);
     }
 
     public void run(List<CohortDefinition> cohortDefinitions) {

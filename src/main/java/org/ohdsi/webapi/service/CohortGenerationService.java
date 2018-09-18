@@ -70,6 +70,11 @@ public class CohortGenerationService extends AbstractDaoService {
 
     cohortDefinitionRepository.save(cohortDefinition);
 
+    return runGenerateCohortJob(cohortDefinition, source, includeFeatures, true, targetTable);
+  }
+
+  public JobExecutionResource runGenerateCohortJob(CohortDefinition cohortDefinition, Source source, boolean includeFeatures, boolean updateGenerationInfo, String targetTable) {
+
     final JobParameters jobParameters = getJobParameters(source, cohortDefinition, targetTable);
 
     log.info(String.format("Beginning generate cohort for cohort definition id: \n %s", "" + cohortDefinition.getId()));
@@ -81,9 +86,12 @@ public class CohortGenerationService extends AbstractDaoService {
             .tasklet(generateTasklet)
             .build();
 
-    SimpleJobBuilder generateJobBuilder = jobBuilders.get(GENERATE_COHORT)
-            .listener(new GenerationJobExecutionListener(cohortDefinitionRepository, this.getTransactionTemplateRequiresNew(), this.getSourceJdbcTemplate(source)))
-            .start(generateCohortStep);
+    SimpleJobBuilder generateJobBuilder = jobBuilders.get(GENERATE_COHORT).start(generateCohortStep);
+
+    if (updateGenerationInfo) {
+      generateJobBuilder.listener(new GenerationJobExecutionListener(cohortDefinitionRepository, this.getTransactionTemplateRequiresNew(),
+              this.getSourceJdbcTemplate(source)));
+    }
 
     if (includeFeatures) {
       GenerateCohortFeaturesTasklet generateCohortFeaturesTasklet =

@@ -158,6 +158,17 @@ vars.put(&quot;expression&quot;, expression)</stringProp>
         <stringProp name="HTTPSampler.response_timeout">120000</stringProp>
       </ConfigTestElement>
       <hashTree/>
+      <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Status OK Assertion" enabled="true">
+        <collectionProp name="Asserion.test_strings">
+          <stringProp name="-1506288727">2..|3..</stringProp>
+        </collectionProp>
+        <stringProp name="Assertion.custom_message"></stringProp>
+        <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+        <boolProp name="Assertion.assume_success">false</boolProp>
+        <intProp name="Assertion.test_type">1</intProp>
+        <stringProp name="Assertion.scope">all</stringProp>
+      </ResponseAssertion>
+      <hashTree/>
       <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="false">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
@@ -224,7 +235,7 @@ vars.put(&quot;expression&quot;, expression)</stringProp>
         <boolProp name="useGroupName">true</boolProp>
       </ResultCollector>
       <hashTree/>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="HONEUR WebAPI" enabled="true">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="HONEUR WebAPI - Cohort definition import/export flow" enabled="true">
         <stringProp name="ThreadGroup.on_sample_error">startnextloop</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
           <boolProp name="LoopController.continue_forever">false</boolProp>
@@ -239,6 +250,54 @@ vars.put(&quot;expression&quot;, expression)</stringProp>
         <stringProp name="ThreadGroup.delay">${StartupDelay}</stringProp>
       </ThreadGroup>
       <hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET Health Status" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain"></stringProp>
+          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">${WebAPICentralHost}/health-status</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Statuscode 200 Assertion" enabled="true">
+            <stringProp name="scriptLanguage">groovy</stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="script">import groovy.json.JsonSlurper;
+import groovy.json.internal.LazyMap;
+
+def jsonSlurper = new JsonSlurper();
+
+data = jsonSlurper.parseText(prev.getResponseDataAsString());
+failed = false;
+failedKeys = [];
+
+for (d in data){
+	if(data[d.key] != &quot;200&quot;) {
+		failedKeys.push(d.key);
+		failed = true;
+	}
+}
+
+
+AssertionResult.setFailureMessage(&quot;Following components aren&apos;t up and running: ${failedKeys}&quot;);
+AssertionResult.setFailure(failed);    
+
+</stringProp>
+          </JSR223Assertion>
+          <hashTree/>
+        </hashTree>
         <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="HONEUR Central Login" enabled="true"/>
         <hashTree>
           <ModuleController guiclass="ModuleControllerGui" testclass="ModuleController" testname="GET - CAS Central Login Page" enabled="true">
@@ -273,17 +332,6 @@ vars.put(&quot;expression&quot;, expression)</stringProp>
               </elementProp>
             </collectionProp>
           </HeaderManager>
-          <hashTree/>
-          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Status OK Assertion" enabled="true">
-            <collectionProp name="Asserion.test_strings">
-              <stringProp name="-1506288727">2..|3..</stringProp>
-            </collectionProp>
-            <stringProp name="Assertion.custom_message"></stringProp>
-            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
-            <boolProp name="Assertion.assume_success">false</boolProp>
-            <intProp name="Assertion.test_type">1</intProp>
-            <stringProp name="Assertion.scope">all</stringProp>
-          </ResponseAssertion>
           <hashTree/>
           <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET organizations for cohortdefinition before creation" enabled="true">
             <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
@@ -370,13 +418,6 @@ for (d in data) {
 
 vars.put(&quot;organizations&quot;, JsonOutput.toJson(data));</stringProp>
             </JSR223PostProcessor>
-            <hashTree/>
-            <DebugPostProcessor guiclass="TestBeanGUI" testclass="DebugPostProcessor" testname="Debug PostProcessor" enabled="true">
-              <boolProp name="displayJMeterProperties">false</boolProp>
-              <boolProp name="displayJMeterVariables">true</boolProp>
-              <boolProp name="displaySamplerProperties">true</boolProp>
-              <boolProp name="displaySystemProperties">false</boolProp>
-            </DebugPostProcessor>
             <hashTree/>
           </hashTree>
           <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST cohortdefinition" enabled="true">
@@ -535,19 +576,15 @@ AssertionResult.setFailure(!correctChecked);  </stringProp>
               <stringProp name="HTTPSampler.connect_timeout"></stringProp>
               <stringProp name="HTTPSampler.response_timeout"></stringProp>
             </HTTPSamplerProxy>
-            <hashTree/>
+            <hashTree>
+              <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract UUID To Import" enabled="true">
+                <stringProp name="JSONPostProcessor.referenceNames">uuidToImport</stringProp>
+                <stringProp name="JSONPostProcessor.jsonPathExprs">$.previousVersion.uuid</stringProp>
+                <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+              </JSONPostProcessor>
+              <hashTree/>
+            </hashTree>
           </hashTree>
-        </hashTree>
-        <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Logout" enabled="false"/>
-        <hashTree>
-          <ModuleController guiclass="ModuleControllerGui" testclass="ModuleController" testname="GET - User Logout" enabled="true">
-            <collectionProp name="ModuleController.node_path">
-              <stringProp name="764597751">Test Plan</stringProp>
-              <stringProp name="2120355301">CAS SSO Tests</stringProp>
-              <stringProp name="-648438622">GET - User Logout</stringProp>
-            </collectionProp>
-          </ModuleController>
-          <hashTree/>
         </hashTree>
         <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Set service user, import cohort definition, generate and export results" enabled="true"/>
         <hashTree>
@@ -563,17 +600,6 @@ AssertionResult.setFailure(!correctChecked);  </stringProp>
               </elementProp>
             </collectionProp>
           </HeaderManager>
-          <hashTree/>
-          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Status OK Assertion" enabled="true">
-            <collectionProp name="Asserion.test_strings">
-              <stringProp name="-1506288727">2..|3..</stringProp>
-            </collectionProp>
-            <stringProp name="Assertion.custom_message"></stringProp>
-            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
-            <boolProp name="Assertion.assume_success">false</boolProp>
-            <intProp name="Assertion.test_type">1</intProp>
-            <stringProp name="Assertion.scope">all</stringProp>
-          </ResponseAssertion>
           <hashTree/>
           <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Set service user" enabled="true"/>
           <hashTree>
@@ -629,11 +655,35 @@ AssertionResult.setFailure(!correctChecked);  </stringProp>
               <stringProp name="HTTPSampler.response_timeout"></stringProp>
             </HTTPSamplerProxy>
             <hashTree>
-              <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Definition To Import" enabled="true">
-                <stringProp name="JSONPostProcessor.referenceNames">definitionToImport</stringProp>
-                <stringProp name="JSONPostProcessor.jsonPathExprs">$.[?(@.originalFilename =~ /Test Cohort Definition-[0-9]+\.cohort/)]</stringProp>
-                <stringProp name="JSONPostProcessor.match_numbers">-1</stringProp>
-              </JSONPostProcessor>
+              <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Extract Definition To Import" enabled="true">
+                <stringProp name="scriptLanguage">groovy</stringProp>
+                <stringProp name="parameters"></stringProp>
+                <stringProp name="filename"></stringProp>
+                <stringProp name="cacheKey">true</stringProp>
+                <stringProp name="script">import groovy.json.JsonSlurper;
+import groovy.json.JsonOutput;
+import groovy.json.internal.LazyMap;
+
+def jsonSlurper = new JsonSlurper();
+
+data = jsonSlurper.parseText(prev.getResponseDataAsString());
+success = false;
+
+uuidToImport = vars.get(&apos;uuidToImport&apos;);
+for (d in data) {
+	if (d.uuid == uuidToImport) {
+		vars.put(&apos;definitionToImport&apos;, JsonOutput.toJson(d));
+		success = true;
+		break;
+	}
+}
+
+
+AssertionResult.setFailureMessage(&quot;No definition found with uuid ${uuidToImport}.&quot;);
+AssertionResult.setFailure(!success);   
+
+</stringProp>
+              </JSR223PostProcessor>
               <hashTree/>
               <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Arraysize Assertion" enabled="true">
                 <stringProp name="scriptLanguage">groovy</stringProp>
@@ -659,7 +709,7 @@ AssertionResult.setFailure(data.size() &lt;= 0);
                 <collectionProp name="Arguments.arguments">
                   <elementProp name="" elementType="HTTPArgument">
                     <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                    <stringProp name="Argument.value">${definitionToImport_1}</stringProp>
+                    <stringProp name="Argument.value">${definitionToImport}</stringProp>
                     <stringProp name="Argument.metadata">=</stringProp>
                   </elementProp>
                 </collectionProp>
@@ -885,26 +935,6 @@ AssertionResult.setFailure(inValid);
             </hashTree>
           </hashTree>
         </hashTree>
-        <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="HONEUR Central Login" enabled="false"/>
-        <hashTree>
-          <ModuleController guiclass="ModuleControllerGui" testclass="ModuleController" testname="GET - CAS Central Login Page" enabled="true">
-            <collectionProp name="ModuleController.node_path">
-              <stringProp name="764597751">Test Plan</stringProp>
-              <stringProp name="2120355301">CAS SSO Tests</stringProp>
-              <stringProp name="-342087143">GET - CAS Central Login Page</stringProp>
-            </collectionProp>
-            <stringProp name="TestPlan.comments">Get the CAS Login page</stringProp>
-          </ModuleController>
-          <hashTree/>
-          <ModuleController guiclass="ModuleControllerGui" testclass="ModuleController" testname="POST - Honeur Central Login Credentials" enabled="true">
-            <collectionProp name="ModuleController.node_path">
-              <stringProp name="764597751">Test Plan</stringProp>
-              <stringProp name="2120355301">CAS SSO Tests</stringProp>
-              <stringProp name="2086949864">POST - Honeur Central Login Credentials</stringProp>
-            </collectionProp>
-          </ModuleController>
-          <hashTree/>
-        </hashTree>
         <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Import Cohort Definition generation results" enabled="true"/>
         <hashTree>
           <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
@@ -920,16 +950,19 @@ AssertionResult.setFailure(inValid);
             </collectionProp>
           </HeaderManager>
           <hashTree/>
-          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Status OK Assertion" enabled="true">
-            <collectionProp name="Asserion.test_strings">
-              <stringProp name="-1506288727">2..|3..</stringProp>
-            </collectionProp>
-            <stringProp name="Assertion.custom_message"></stringProp>
-            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
-            <boolProp name="Assertion.assume_success">false</boolProp>
-            <intProp name="Assertion.test_type">1</intProp>
-            <stringProp name="Assertion.scope">all</stringProp>
-          </ResponseAssertion>
+          <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="HTTP Request Defaults" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain"></stringProp>
+            <stringProp name="HTTPSampler.port"></stringProp>
+            <stringProp name="HTTPSampler.protocol"></stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path"></stringProp>
+            <stringProp name="HTTPSampler.concurrentPool">6</stringProp>
+            <stringProp name="HTTPSampler.connect_timeout">10000</stringProp>
+            <stringProp name="HTTPSampler.response_timeout">10000</stringProp>
+          </ConfigTestElement>
           <hashTree/>
           <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET HSS List" enabled="true">
             <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
@@ -1405,7 +1438,24 @@ while(sampler.getCookieManager().getCookieCount() &gt; 0) {
       </hashTree>
       <TestFragmentController guiclass="TestFragmentControllerGui" testclass="TestFragmentController" testname="Delete from HSS" enabled="true"/>
       <hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET HSS List" enabled="true">
+        <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+          <collectionProp name="HeaderManager.headers">
+            <elementProp name="" elementType="Header">
+              <stringProp name="Header.name">Authorization</stringProp>
+              <stringProp name="Header.value">Bearer ${token}</stringProp>
+            </elementProp>
+            <elementProp name="" elementType="Header">
+              <stringProp name="Header.name">Content-Type</stringProp>
+              <stringProp name="Header.value">application/json</stringProp>
+            </elementProp>
+            <elementProp name="" elementType="Header">
+              <stringProp name="Header.name">token</stringProp>
+              <stringProp name="Header.value">${hssToken}</stringProp>
+            </elementProp>
+          </collectionProp>
+        </HeaderManager>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET HSS Token" enabled="true">
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
@@ -1413,7 +1463,7 @@ while(sampler.getCookieManager().getCookieCount() &gt; 0) {
           <stringProp name="HTTPSampler.port"></stringProp>
           <stringProp name="HTTPSampler.protocol"></stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-          <stringProp name="HTTPSampler.path">${WebAPIHost}/cohortdefinition/hss/list/all</stringProp>
+          <stringProp name="HTTPSampler.path">${WebAPILocalHost}/hss/token</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
@@ -1424,9 +1474,35 @@ while(sampler.getCookieManager().getCookieCount() &gt; 0) {
           <stringProp name="HTTPSampler.response_timeout"></stringProp>
         </HTTPSamplerProxy>
         <hashTree>
-          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract fileKey To Delete" enabled="true">
-            <stringProp name="JSONPostProcessor.referenceNames">fileKey</stringProp>
-            <stringProp name="JSONPostProcessor.jsonPathExprs">$.[?(@.originalFilename =~ /Test Cohort Definition-[0-9]+\.cohort/)].key</stringProp>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract token" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">hssToken</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.token</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET HSS List" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain"></stringProp>
+          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">${WebAPICentralHost}/cohortdefinition/hss/list/all</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract uuid To Delete" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">uuid</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.[?(@.originalFilename =~ /Test Cohort Definition-[0-9]+\.cohort/)].uuid</stringProp>
             <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
           </JSONPostProcessor>
           <hashTree/>
@@ -1449,7 +1525,7 @@ while(sampler.getCookieManager().getCookieCount() &gt; 0) {
             <stringProp name="HTTPSampler.port"></stringProp>
             <stringProp name="HTTPSampler.protocol"></stringProp>
             <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-            <stringProp name="HTTPSampler.path">${WebAPIHost}/cohortdefinition/hss/list/all</stringProp>
+            <stringProp name="HTTPSampler.path">${WebAPICentralHost}/cohortdefinition/hss/list/all</stringProp>
             <stringProp name="HTTPSampler.method">GET</stringProp>
             <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
             <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
@@ -1460,9 +1536,9 @@ while(sampler.getCookieManager().getCookieCount() &gt; 0) {
             <stringProp name="HTTPSampler.response_timeout"></stringProp>
           </HTTPSamplerProxy>
           <hashTree>
-            <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract fileKey To Delete" enabled="true">
-              <stringProp name="JSONPostProcessor.referenceNames">fileKey</stringProp>
-              <stringProp name="JSONPostProcessor.jsonPathExprs">$.[?(@.originalFilename =~ /Test Cohort Definition-[0-9]+\.cohort/)].key</stringProp>
+            <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract uuid To Delete" enabled="true">
+              <stringProp name="JSONPostProcessor.referenceNames">uuid</stringProp>
+              <stringProp name="JSONPostProcessor.jsonPathExprs">$.[?(@.originalFilename =~ /Test Cohort Definition-[0-9]+\.cohort/)].uuid</stringProp>
               <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
             </JSONPostProcessor>
             <hashTree/>
@@ -1475,7 +1551,7 @@ while(sampler.getCookieManager().getCookieCount() &gt; 0) {
             <stringProp name="HTTPSampler.port"></stringProp>
             <stringProp name="HTTPSampler.protocol"></stringProp>
             <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-            <stringProp name="HTTPSampler.path">https://localhost:8445/file?fileKey=${fileKey}</stringProp>
+            <stringProp name="HTTPSampler.path">https://dev.honeur.org/storage/api/${uuid}</stringProp>
             <stringProp name="HTTPSampler.method">DELETE</stringProp>
             <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
             <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
@@ -1494,7 +1570,7 @@ while(sampler.getCookieManager().getCookieCount() &gt; 0) {
             <stringProp name="HTTPSampler.port"></stringProp>
             <stringProp name="HTTPSampler.protocol"></stringProp>
             <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-            <stringProp name="HTTPSampler.path">${WebAPIHost}/cohortdefinition/hss/list/all</stringProp>
+            <stringProp name="HTTPSampler.path">${WebAPICentralHost}/cohortdefinition/hss/list/all</stringProp>
             <stringProp name="HTTPSampler.method">GET</stringProp>
             <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
             <boolProp name="HTTPSampler.auto_redirects">false</boolProp>

@@ -124,6 +124,9 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Autowired
   private UserRepository userRepository;
 
+  @Autowired
+  private CohortGenerationService cohortGenerationService;
+
 	@PersistenceContext
 	protected EntityManager entityManager;
 	
@@ -472,66 +475,9 @@ public class CohortDefinitionService extends AbstractDaoService {
   public JobExecutionResource generateCohort(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey, @QueryParam("includeFeatures") final String includeFeatures) {
 
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);    
-    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);    
-    String vocabularyTableQualifier = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
-
     CohortDefinition currentDefinition = this.cohortDefinitionRepository.findOne(id);
-    CohortGenerationInfo info = findBySourceId(currentDefinition.getGenerationInfoList(), source.getSourceId());
-    if (info == null) {
-      info = new CohortGenerationInfo(currentDefinition, source.getSourceId());
-      currentDefinition.getGenerationInfoList().add(info);
-    }
-    info.setStatus(GenerationStatus.PENDING)
-      .setStartTime(Calendar.getInstance().getTime());
 
-		info.setIncludeFeatures(includeFeatures != null);
-		
-    this.cohortDefinitionRepository.save(currentDefinition);
-
-    JobParametersBuilder builder = new JobParametersBuilder();
-    builder.addString(JOB_NAME, String.format("Generating cohort %d : %s (%s)", currentDefinition.getId(), source.getSourceName(), source.getSourceKey()));
-    builder.addString(CDM_DATABASE_SCHEMA, cdmTableQualifier);
-    builder.addString(RESULTS_DATABASE_SCHEMA, resultsTableQualifier);
-    builder.addString(TARGET_DATABASE_SCHEMA, resultsTableQualifier);
-    if (vocabularyTableQualifier != null) {
-      builder.addString(VOCABULARY_DATABASE_SCHEMA, vocabularyTableQualifier);
-    }
-    builder.addString(TARGET_DIALECT, source.getSourceDialect());
-    builder.addString(TARGET_TABLE, "cohort");
-    builder.addString(COHORT_DEFINITION_ID, String.valueOf(id));
-    builder.addString(SOURCE_ID, String.valueOf(source.getSourceId()));
-    builder.addString(GENERATE_STATS, Boolean.TRUE.toString());
-    final JobParameters jobParameters = builder.toJobParameters();
-
-    log.info(String.format("Beginning generate cohort for cohort definition id: \n %s", "" + id));
-
-    GenerateCohortTasklet generateTasklet = new GenerateCohortTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), cohortDefinitionRepository,
-            getSourceRepository());
-
-    Step generateCohortStep = stepBuilders.get("cohortDefinition.generateCohort")
-      .tasklet(generateTasklet)
-    .build();
-
-		SimpleJobBuilder generateJobBuilder = jobBuilders.get(GENERATE_COHORT)
-			.listener(new GenerationJobExecutionListener(cohortDefinitionRepository, this.getTransactionTemplateRequiresNew(), this.getSourceJdbcTemplate(source)))
-			.start(generateCohortStep);
-
-		if (includeFeatures != null) {
-			GenerateCohortFeaturesTasklet generateCohortFeaturesTasklet = 
-						new GenerateCohortFeaturesTasklet(getSourceJdbcTemplate(source), getTransactionTemplate());
-
-			Step generateCohortFeaturesStep = stepBuilders.get("cohortFeatures.generateFeatures")
-					.tasklet(generateCohortFeaturesTasklet)
-					.build();
-	
-			generateJobBuilder.next(generateCohortFeaturesStep);			
-		}
-		
-		Job generateCohortJob = generateJobBuilder.build();
-
-    JobExecutionResource jobExec = this.jobTemplate.launch(generateCohortJob, jobParameters);
-    return jobExec;
+    return cohortGenerationService.generateCohort(currentDefinition, source, Objects.nonNull(includeFeatures));
   }
 
   @GET
@@ -553,12 +499,7 @@ public class CohortDefinitionService extends AbstractDaoService {
       return null;
     });
 
-    Set<JobExecution> executions = jobExplorer.findRunningJobExecutions(GENERATE_COHORT);
-    executions.stream().filter(e -> {
-      JobParameters parameters = e.getJobParameters();
-      return Objects.equals(parameters.getString(COHORT_DEFINITION_ID), Integer.toString(id))
-              && Objects.equals(parameters.getString(SOURCE_ID), Integer.toString(source.getSourceId()));
-    }).findFirst()
+    cohortGenerationService.getJobExecution(source, id)
             .ifPresent(job -> {
               try {
                 jobOperator.stop(job.getJobId());

@@ -30,6 +30,9 @@ import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
+import org.ohdsi.webapi.cohortcharacterization.annotations.CcGenerationId;
+import org.ohdsi.webapi.cohortcharacterization.annotations.DataSourceAccess;
+import org.ohdsi.webapi.cohortcharacterization.annotations.SourceKey;
 import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConverter;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcDistributionStat;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
@@ -41,15 +44,16 @@ import org.ohdsi.webapi.cohortcharacterization.repository.CcGenerationEntityRepo
 import org.ohdsi.webapi.cohortcharacterization.repository.CcParamRepository;
 import org.ohdsi.webapi.cohortcharacterization.repository.CcRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetailsRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
+import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.service.AbstractDaoService;
+import org.ohdsi.webapi.service.CohortGenerationService;
 import org.ohdsi.webapi.service.FeatureExtractionService;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
@@ -68,6 +72,7 @@ import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -87,6 +92,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
     private JobTemplate jobTemplate;
     private CcGenerationEntityRepository ccGenerationRepository;
     private FeatureExtractionService featureExtractionService;
+    private DesignImportService designImportService;
+    private CohortGenerationService cohortGenerationService;
 
     public CcServiceImpl(
             final CcRepository ccRepository,
@@ -99,9 +106,11 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
             final StepBuilderFactory stepBuilderFactory,
             final JobBuilderFactory jobBuilders,
             final JobTemplate jobTemplate,
-            final CcGenerationEntityRepository ccGenerationRepository, 
+            final CcGenerationEntityRepository ccGenerationRepository,
             final FeatureExtractionService featureExtractionService,
-            final ConversionService conversionService) {
+            final ConversionService conversionService,
+            final DesignImportService designImportService,
+            final CohortGenerationService cohortGenerationService) {
         this.repository = ccRepository;
         this.paramRepository = paramRepository;
         this.analysisService = analysisService;
@@ -112,6 +121,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         this.jobTemplate = jobTemplate;
         this.ccGenerationRepository = ccGenerationRepository;
         this.featureExtractionService = featureExtractionService;
+        this.designImportService = designImportService;
+        this.cohortGenerationService = cohortGenerationService;
         SerializedCcToCcConverter.setConversionService(conversionService);
     }
     
@@ -277,12 +288,12 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
     }
 
     @Override
-    public JobExecutionResource generateCc(final Long id, final String sourceKey) {
+    @DataSourceAccess
+    public JobExecutionResource generateCc(final Long id, @SourceKey final String sourceKey) {
 
         SerializedCcToCcConverter designConverter = new SerializedCcToCcConverter();
 
         Source source = getSourceRepository().findBySourceKey(sourceKey);
-        checkSourceAccess(source);
 
         CohortCharacterizationEntity cc = repository.findById(id).orElseThrow(() -> new IllegalArgumentException("CC cannot be found by id " + id));
         String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
@@ -299,9 +310,10 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
             builder.addString(VOCABULARY_DATABASE_SCHEMA, vocabularyTableQualifier);
         }
 
+        final String targetTable = "cohort_" + SessionUtils.sessionId();
         final String design = designConverter.convertToDatabaseColumn(cc);
         builder.addString(TARGET_DIALECT, source.getSourceDialect());
-        builder.addString(TARGET_TABLE, "cohort");
+        builder.addString(TARGET_TABLE, targetTable);
         builder.addString(COHORT_CHARACTERIZATION_ID, String.valueOf(id));
         builder.addString(SOURCE_ID, String.valueOf(source.getSourceId()));
         builder.addString(GENERATE_STATS, Boolean.TRUE.toString());
@@ -310,15 +322,33 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         
         final JobParameters jobParameters = builder.toJobParameters();
 
+        JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
+        CreateCohortTableTasklet createCohortTableTasklet = new CreateCohortTableTasklet(jdbcTemplate, getTransactionTemplate());
+        Step createCohortTableStep = stepBuilderFactory.get("cohortCharacterizations.createCohortTable")
+                .tasklet(createCohortTableTasklet)
+                .build();
+
+        GenerateLocalCohortTasklet generateLocalCohortTasklet = new GenerateLocalCohortTasklet(
+                this, getTransactionTemplate(), cohortGenerationService, getSourceRepository());
+        Step generateLocalCohortStep = stepBuilderFactory.get("cohortCharacterizations.generateCohort")
+                .tasklet(generateLocalCohortTasklet)
+                .build();
+
         GenerateCohortCharacterizationTasklet generateCcTasklet =
-                new GenerateCohortCharacterizationTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), this, analysisService);
+                new GenerateCohortCharacterizationTasklet(jdbcTemplate, getTransactionTemplate(), this, analysisService);
+
 
         Step generateCohortFeaturesStep = stepBuilderFactory.get("cohortCharacterizations.generate")
                 .tasklet(generateCcTasklet)
                 .build();
 
+        DropCohortTableListener dropCohortTableListener = new DropCohortTableListener(jdbcTemplate, getTransactionTemplate());
+
         SimpleJobBuilder generateJobBuilder = jobBuilders.get(GENERATE_COHORT_CHARACTERIZATION)
-                .start(generateCohortFeaturesStep);
+                .start(createCohortTableStep)
+                .next(generateLocalCohortStep)
+                .next(generateCohortFeaturesStep)
+                .listener(dropCohortTableListener);
         
         Job generateCohortJob = generateJobBuilder.build();
         JobExecutionResource jobExec = this.jobTemplate.launch(generateCohortJob, jobParameters);
@@ -341,11 +371,11 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
     }
 
     @Override
-    public List<CcResult> findResults(final Long generationId) {
+    @DataSourceAccess
+    public List<CcResult> findResults(@CcGenerationId final Long generationId) {
         final CcGenerationEntity generationEntity = ccGenerationRepository.findById(generationId)
                 .orElseThrow(() -> new IllegalArgumentException("generation cannot be found by id " + generationId));
         final Source source = generationEntity.getSource();
-        checkSourceAccess(source);
         final String resultSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
         String generationResults = SqlRender.renderSql(
                 QUERY_RESULTS,
@@ -447,32 +477,9 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
 
     private void importCohorts(final CohortCharacterizationEntity entity, final CohortCharacterizationEntity persistedEntity) {
         final List<CohortDefinition> cohortList = entity.getCohortDefinitions().stream()
-                .map(this::persistCohortOrLinkWithExisting)
+                .map(designImportService::persistCohortOrGetExisting)
                 .collect(Collectors.toList());
         persistedEntity.setCohortDefinitions(cohortList);
-    }
-
-    private CohortDefinition persistCohortOrLinkWithExisting(final CohortDefinition cohort) {
-        final CohortDefinitionDetails details = cohort.getDetails();
-        final UserEntity user = userRepository.findByLogin(security.getSubject());
-        return findCohortByExpressionHashcode(details).orElseGet(() -> {
-            cohort.setCreatedBy(user);
-            cohort.setCreatedDate(new Date());
-            cohort.setDetails(null);
-            final CohortDefinition savedCohort = cohortRepository.save(cohort);
-            details.setCohortDefinition(savedCohort);
-            savedCohort.setDetails(detailsRepository.save(details));
-            return savedCohort;
-        });
-    }
-
-    private Optional<CohortDefinition> findCohortByExpressionHashcode(final CohortDefinitionDetails details) {
-        List<CohortDefinitionDetails> detailsFromDb = detailsRepository.findByHashCode(details.getHashCode());
-        return detailsFromDb
-                .stream()
-                .filter(v -> Objects.equals(v.getExpression(), details.getExpression()))
-                .findFirst()
-                .map(CohortDefinitionDetails::getCohortDefinition);
     }
     
     private void cleanIds(final CohortCharacterizationEntity entity) {

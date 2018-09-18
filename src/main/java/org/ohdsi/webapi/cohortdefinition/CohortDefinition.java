@@ -158,8 +158,6 @@ public class CohortDefinition extends CommonEntity implements Serializable, Coho
     public CohortExpression getExpression() {
 
       return details != null ? details.getExpressionObject() : null;
-      // TODO:
-      // return CohortExpression.fromJson(details.getExpression());
     }
 
   public List<CohortCharacterizationEntity> getCohortCharacterizations() {

@@ -68,7 +68,7 @@ public class CohortDefinitionDetails implements Serializable {
 
   public Integer calculateHashCode() {
 
-      return getStandardizedExpression().hashCode();
+    return getStandardizedExpression().hashCode();
   }
 
   public CohortExpression getExpressionObject() {
@@ -79,8 +79,6 @@ public class CohortDefinitionDetails implements Serializable {
     } catch (IOException e) {
       return null;
     }
-    // TODO:
-    // return CohortExpression.fromJson(details.getExpression());
   }
 
   public String getExpression() {
@@ -90,9 +88,9 @@ public class CohortDefinitionDetails implements Serializable {
   public String getStandardizedExpression() {
 
     try {
-        return Utils.serialize(getExpressionObject());
+      return Utils.serialize(getExpressionObject());
     } catch (JsonProcessingException ex) {
-        throw new UncheckedIOException(ex);
+      throw new UncheckedIOException(ex);
     }
   }
 

@@ -60,7 +60,7 @@ VALUES
   (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterization:*:get', 'Get cohort characterization'),
   (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterization:*:generation:get', 'Get cohort characterization generations'),
   (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterization:generation:*:result:get', 'Get cohort characterization generation results'),
-  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterization:*:export', 'Export cohort characterization'),
+  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterization:*:export:get', 'Export cohort characterization'),
 
   (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'feature-analysis:get', 'Get feature analyses list'),
   (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'feature-analysis:*:get', 'Get feature analysis'),
@@ -76,7 +76,7 @@ WHERE sp."value" IN (
   'cohort-characterization:*:get',
   'cohort-characterization:*:generation:get',
   'cohort-characterization:generation:*:result:get',
-  'cohort-characterization:*:export',
+  'cohort-characterization:*:export:get',
 
   'feature-analysis:get',
   'feature-analysis:*:get',

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 public class V2_6_0_20180807192421__cohortDetailsHashcodes implements ApplicationContextAwareSpringMigration {
 
     private CohortDefinitionDetailsRepository detailsRepository;
-    
+
     @Autowired
     public V2_6_0_20180807192421__cohortDetailsHashcodes(final CohortDefinitionDetailsRepository detailsRepository) {
         this.detailsRepository = detailsRepository;

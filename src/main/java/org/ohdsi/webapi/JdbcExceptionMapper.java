@@ -17,7 +17,7 @@ public class JdbcExceptionMapper implements ExceptionMapper<CannotGetJdbcConnect
 
     @Override
     public Response toResponse(CannotGetJdbcConnectionException exception) {
-        eventPublisher.publishEvent(new FailedDbConnectEvent(this));
+        eventPublisher.publishEvent(new FailedDbConnectEvent(this, exception.getMessage()));
         return Response.ok().build();
     }
 }

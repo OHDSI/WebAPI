@@ -19,6 +19,7 @@ import static org.ohdsi.webapi.Constants.Params.CDM_DATABASE_SCHEMA;
 import static org.ohdsi.webapi.Constants.Params.COHORT_CHARACTERIZATION_ID;
 import static org.ohdsi.webapi.Constants.Params.RESULTS_DATABASE_SCHEMA;
 import static org.ohdsi.webapi.Constants.Params.TARGET_DIALECT;
+import static org.ohdsi.webapi.Constants.Params.TARGET_TABLE;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -95,12 +96,12 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
     private class CcTask {
 
         final String prevalenceRetrievingQuery = "\n" +
+                " insert into @results_database_schema.cc_results " +
+                " (type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id, count_value, avg_value, cohort_definition_id, cohort_characterization_generation_id) " +
                 " with " +
                 "     features as (%1$s), " +
                 "     feature_refs as (%2$s), " +
                 "     analysis_refs as(%3$s) " +
-                " insert into @results_database_schema.cc_results " +
-                " (type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id, count_value, avg_value, cohort_definition_id, cohort_characterization_generation_id) " +
                 " select 'PREVALENCE' as type, " +
                 "       f.covariate_id, " +
                 "       fr.covariate_name, " +
@@ -118,14 +119,14 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
                 "       LEFT JOIN @cdm_database_schema.concept c on c.concept_id = fr.concept_id;";
         
         final String distributionRetrievingQuery = "\n" +
-                " with " +
-                "     features as (%1$s), " +
-                "     feature_refs as (%2$s), " +
-                "     analysis_refs as (%3$s) " +
                 " insert into @results_database_schema.cc_results " +
                 "    (type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id, " +
                 "     count_value, min_value, max_value, avg_value, stdev_value, median_value, " +
                 "     p10_value, p25_value, p75_value, p90_value, cohort_definition_id, cohort_characterization_generation_id) " +
+                " with " +
+                "     features as (%1$s), " +
+                "     feature_refs as (%2$s), " +
+                "     analysis_refs as (%3$s) " +
                 " select 'DISTRIBUTION', " +
                 "       f.covariate_id, " +
                 "       fr.covariate_name, " +
@@ -217,6 +218,7 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
         final CohortCharacterizationEntity cohortCharacterization;
         final String resultSchema;
         final String cdmSchema;
+        final String cohortTable;
         
         private final Map<String, Object> jobParams;
         final String targetDialect;
@@ -231,7 +233,7 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
             );
             this.resultSchema = jobParams.get(RESULTS_DATABASE_SCHEMA).toString();
             this.cdmSchema = jobParams.get(CDM_DATABASE_SCHEMA).toString();
-            
+            this.cohortTable = jobParams.get(TARGET_TABLE).toString();
             this.jobId = context.getStepContext().getStepExecution().getJobExecution().getId();
         }
         
@@ -356,7 +358,7 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
         private JSONObject createFeJsonObject(final CohortExpressionQueryBuilder.BuildExpressionQueryOptions options) {
             FeatureExtraction.init(null);
             String settings = buildSettings();
-            String sqlJson = FeatureExtraction.createSql(settings, true, options.resultSchema + ".cohort",
+            String sqlJson = FeatureExtraction.createSql(settings, true, options.resultSchema + "." + cohortTable,
                     "subject_id", options.cohortId, options.cdmSchema);
             return new JSONObject(sqlJson);
         }

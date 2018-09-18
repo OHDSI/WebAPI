@@ -31,12 +31,6 @@ public class HoneurUserServiceExtension {
 
     @Autowired
     private PermissionManager authorizer;
-    @Autowired
-    private Security security;
-    @Autowired
-    private HSSServiceUserRepository hssServiceUserRepository;
-    @Autowired
-    private StorageServiceClient storageServiceClient;
 
     public HoneurUserServiceExtension() {
         LOGGER.info("new HoneurUserServiceExtension");
@@ -58,25 +52,6 @@ public class HoneurUserServiceExtension {
         AuthorizationInfo authorizationInfo = this.authorizer.getAuthorizationInfo(login);
         Collection<String> permissionEntities = authorizationInfo.getStringPermissions();
         return permissionEntities;
-    }
-
-    @POST
-    @Path("hss/user")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public void changeServiceUser(HSSServiceUserEntity hssServiceUserEntity) {
-        hssServiceUserRepository.deleteAll();
-        hssServiceUserRepository.save(hssServiceUserEntity);
-    }
-
-    @GET
-    @Path("hss/token")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Map getHSSToken() {
-        String token = storageServiceClient.getStorageServiceToken();
-        Map<String, String> map = new HashMap<>();
-        map.put("token", token);
-        return map;
     }
 
     private ArrayList<UserService.Permission> convertPermissions(final Iterable<PermissionEntity> permissionEntities) {

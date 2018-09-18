@@ -1,5 +1,12 @@
 package org.ohdsi.webapi.shiro;
 
+import java.security.Principal;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import com.odysseusinc.logging.event.AddUserEvent;
 import com.odysseusinc.logging.event.DeleteUserEvent;
 import org.apache.shiro.SecurityUtils;
@@ -25,13 +32,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.security.Principal;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  *

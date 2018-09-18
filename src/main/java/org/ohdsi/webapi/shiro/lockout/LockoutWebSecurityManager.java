@@ -1,5 +1,8 @@
 package org.ohdsi.webapi.shiro.lockout;
 
+import java.util.Date;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import com.odysseusinc.logging.event.LockoutStartEvent;
 import com.odysseusinc.logging.event.LockoutStopEvent;
 import org.apache.shiro.authc.AuthenticationException;
@@ -12,10 +15,6 @@ import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
-
-import java.util.Date;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 public class LockoutWebSecurityManager extends DefaultWebSecurityManager {
 

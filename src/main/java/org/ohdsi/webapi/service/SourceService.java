@@ -1,34 +1,7 @@
 package org.ohdsi.webapi.service;
 
-import com.odysseusinc.logging.event.AddDataSourceEvent;
-import com.odysseusinc.logging.event.ChangeDataSourceEvent;
-import com.odysseusinc.logging.event.DeleteDataSourceEvent;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
-import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.jasypt.encryption.pbe.PBEStringEncryptor;
-import org.jasypt.properties.PropertyValueEncryptionUtils;
-import org.ohdsi.sql.SqlTranslate;
-import org.ohdsi.webapi.shiro.management.Security;
-import org.ohdsi.webapi.source.Source;
-import org.ohdsi.webapi.source.SourceDaimon;
-import org.ohdsi.webapi.source.SourceDaimonRepository;
-import org.ohdsi.webapi.source.SourceDetails;
-import org.ohdsi.webapi.source.SourceInfo;
-import org.ohdsi.webapi.source.SourceRepository;
-import org.ohdsi.webapi.source.SourceRequest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.core.convert.support.GenericConversionService;
-import org.springframework.core.env.Environment;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
-
+import java.util.*;
+import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -42,15 +15,31 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import com.odysseusinc.logging.event.AddDataSourceEvent;
+import com.odysseusinc.logging.event.ChangeDataSourceEvent;
+import com.odysseusinc.logging.event.DeleteDataSourceEvent;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.jasypt.encryption.pbe.PBEStringEncryptor;
+import org.jasypt.properties.PropertyValueEncryptionUtils;
+import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.shiro.management.Security;
+import org.ohdsi.webapi.source.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.core.convert.support.GenericConversionService;
+import org.springframework.core.env.Environment;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Path("/source/")
 @Component
@@ -299,7 +288,7 @@ public class SourceService extends AbstractDaoService {
   @Path("connection/{key}")
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  public SourceInfo checkConnection(@PathParam("key") final String sourceKey) throws Exception {
+  public SourceInfo checkConnection(@PathParam("key") final String sourceKey) {
 
     final Source source = sourceRepository.findBySourceKey(sourceKey);
     final JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);

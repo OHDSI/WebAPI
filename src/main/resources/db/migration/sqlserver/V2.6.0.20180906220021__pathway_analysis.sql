@@ -1,4 +1,4 @@
-CREATE SEQUENCE ${ohdsiSchema}.pathway_analysis_sequence;
+CREATE SEQUENCE ${ohdsiSchema}.pathway_analysis_sequence START WITH 1;
 CREATE TABLE ${ohdsiSchema}.pathway_analysis
 (
   id                 INTEGER NOT NULL,
@@ -14,7 +14,7 @@ CREATE TABLE ${ohdsiSchema}.pathway_analysis
 	CONSTRAINT [PK_pathway_analysis] PRIMARY KEY (id)
 );
 
-CREATE SEQUENCE ${ohdsiSchema}.pathway_cohort_sequence;
+CREATE SEQUENCE ${ohdsiSchema}.pathway_cohort_sequence START WITH 1;
 
 CREATE TABLE ${ohdsiSchema}.pathway_target_cohort
 (

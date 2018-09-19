@@ -1,45 +1,22 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
-import static org.ohdsi.webapi.Constants.GENERATE_COHORT_CHARACTERIZATION;
-import static org.ohdsi.webapi.Constants.Params.CDM_DATABASE_SCHEMA;
-import static org.ohdsi.webapi.Constants.Params.COHORT_CHARACTERIZATION_ID;
-import static org.ohdsi.webapi.Constants.Params.DESIGN;
-import static org.ohdsi.webapi.Constants.Params.GENERATE_STATS;
-import static org.ohdsi.webapi.Constants.Params.HASH_CODE;
-import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
-import static org.ohdsi.webapi.Constants.Params.RESULTS_DATABASE_SCHEMA;
-import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
-import static org.ohdsi.webapi.Constants.Params.TARGET_DATABASE_SCHEMA;
-import static org.ohdsi.webapi.Constants.Params.TARGET_DIALECT;
-import static org.ohdsi.webapi.Constants.Params.TARGET_TABLE;
-import static org.ohdsi.webapi.Constants.Params.VOCABULARY_DATABASE_SCHEMA;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
-import javax.ws.rs.NotFoundException;
-
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.StringUtils;
-import org.ohdsi.circe.helper.ResourceHelper;
-import org.ohdsi.sql.SqlRender;
-import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
+import org.ohdsi.circe.helper.ResourceHelper;
+import org.ohdsi.sql.SqlRender;
+import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortcharacterization.annotations.CcGenerationId;
 import org.ohdsi.webapi.cohortcharacterization.annotations.DataSourceAccess;
 import org.ohdsi.webapi.cohortcharacterization.annotations.SourceKey;
 import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConverter;
-import org.ohdsi.webapi.cohortcharacterization.dto.CcDistributionStat;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcParamEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcDistributionStat;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcPrevalenceStat;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
 import org.ohdsi.webapi.cohortcharacterization.repository.CcGenerationEntityRepository;
@@ -49,8 +26,8 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetailsRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.common.DesignImportService;
-import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
@@ -77,12 +54,27 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PostConstruct;
+import javax.ws.rs.NotFoundException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static org.ohdsi.webapi.Constants.GENERATE_COHORT_CHARACTERIZATION;
+import static org.ohdsi.webapi.Constants.Params.*;
+
 @Service
 @Transactional
 @DependsOn({"ccExportDTOToCcEntityConverter", "cohortDTOToCohortDefinitionConverter", "feAnalysisDTOToFeAnalysisWithStringConverter"})
 public class CcServiceImpl extends AbstractDaoService implements CcService {
 
+    private static final String GENERATION_NOT_FOUND_ERROR = "generation cannot be found by id %d";
+    private static final String[] GENERATION_PARAMETERS = {"cdm_results_schema", "cohort_characterization_generation_id"};
     private final String QUERY_RESULTS = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/queryResults.sql");
+    private final String DELETE_RESULTS = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/deleteResults.sql");
+    private final String DELETE_EXECUTION = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/deleteExecution.sql");
     private final String IMPORTED_ENTITY_PREFIX = "COPY OF: ";
 
     private final static List<String> INCOMPLETE_STATUSES = ImmutableList.of(BatchStatus.STARTED, BatchStatus.STARTING, BatchStatus.STOPPING, BatchStatus.UNKNOWN)
@@ -396,16 +388,40 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
     @DataSourceAccess
     public List<CcResult> findResults(@CcGenerationId final Long generationId) {
         final CcGenerationEntity generationEntity = ccGenerationRepository.findById(generationId)
-                .orElseThrow(() -> new IllegalArgumentException("generation cannot be found by id " + generationId));
+                .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, generationId)));
         final Source source = generationEntity.getSource();
         final String resultSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
         String generationResults = SqlRender.renderSql(
                 QUERY_RESULTS,
-                new String[]{"cdm_results_schema", "cohort_characterization_generation_id"},
+                GENERATION_PARAMETERS,
                 new String[]{resultSchema, String.valueOf(generationId)}
         );
         String translatedSql = SqlTranslate.translateSql(generationResults, source.getSourceDialect(), SessionUtils.sessionId(), resultSchema);
         return getGenerationResults(source, translatedSql);
+    }
+
+    @Override
+    @DataSourceAccess
+    public void deleteCcGeneration(@CcGenerationId Long generationId) {
+        final CcGenerationEntity generationEntity = ccGenerationRepository.findById(generationId)
+                .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, generationId)));
+        final Source source = generationEntity.getSource();
+        final String resultSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+        final String sql = SqlRender.renderSql(
+                DELETE_RESULTS,
+                GENERATION_PARAMETERS,
+                new String[]{ resultSchema, String.valueOf(generationId) }
+        );
+        final String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect(), SessionUtils.sessionId(), resultSchema);
+        getSourceJdbcTemplate(source).execute(translatedSql);
+
+        final String deleteJobSql = SqlRender.renderSql(
+                DELETE_EXECUTION,
+                new String[]{ "ohdsiSchema", "execution_id" },
+                new String[]{ getOhdsiSchema(), String.valueOf(generationId) }
+        );
+        final String translatedJobSql = SqlTranslate.translateSql(deleteJobSql, getDialect());
+        getJdbcTemplate().batchUpdate(translatedJobSql.split(";"));
     }
 
     private List<CcResult> getGenerationResults(final Source source, final String translatedSql) {

@@ -148,6 +148,14 @@ public class CcController {
         return conversionService.convert(service.findGenerationById(generationId), CcGenerationDTO.class);
     }
 
+    @DELETE
+    @Path("/generation/{generationId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public void deleteGeneration(@PathParam("generationId") final Long generationId) {
+        service.deleteCcGeneration(generationId);
+    }
+
     @GET
     @Path("/generation/{generationId}/design")
     @Produces(MediaType.APPLICATION_JSON)

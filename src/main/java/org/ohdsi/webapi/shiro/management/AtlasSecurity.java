@@ -185,6 +185,7 @@ public abstract class AtlasSecurity extends Security {
       .addProtectedRestPath("/cohort-characterization/*", "deletePermissionsOnDeleteCohortCharacterization")
       .addProtectedRestPath("/cohort-characterization/*/generation/*")
       .addProtectedRestPath("/cohort-characterization/*/generation")
+      .addProtectedRestPath("/cohort-characterization/generation/*")
       .addProtectedRestPath("/cohort-characterization/generation/*/design")
       .addProtectedRestPath("/cohort-characterization/generation/*/result")
       .addProtectedRestPath("/cohort-characterization/*/export")

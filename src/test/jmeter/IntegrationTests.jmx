@@ -4,7 +4,7 @@
     <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="WebAPI Custom Endpoints Integration Tests" enabled="true">
       <stringProp name="TestPlan.comments"></stringProp>
       <boolProp name="TestPlan.functional_mode">false</boolProp>
-      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">true</boolProp>
       <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
         <collectionProp name="Arguments.arguments"/>
       </elementProp>
@@ -169,39 +169,6 @@ vars.put(&quot;expression&quot;, expression)</stringProp>
         <stringProp name="Assertion.scope">all</stringProp>
       </ResponseAssertion>
       <hashTree/>
-      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="false">
-        <boolProp name="ResultCollector.error_logging">false</boolProp>
-        <objProp>
-          <name>saveConfig</name>
-          <value class="SampleSaveConfiguration">
-            <time>true</time>
-            <latency>true</latency>
-            <timestamp>true</timestamp>
-            <success>true</success>
-            <label>true</label>
-            <code>true</code>
-            <message>true</message>
-            <threadName>true</threadName>
-            <dataType>true</dataType>
-            <encoding>false</encoding>
-            <assertions>true</assertions>
-            <subresults>true</subresults>
-            <responseData>false</responseData>
-            <samplerData>false</samplerData>
-            <xml>false</xml>
-            <fieldNames>false</fieldNames>
-            <responseHeaders>false</responseHeaders>
-            <requestHeaders>false</requestHeaders>
-            <responseDataOnError>false</responseDataOnError>
-            <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
-            <assertionsResultsToSave>0</assertionsResultsToSave>
-            <bytes>true</bytes>
-            <threadCounts>true</threadCounts>
-          </value>
-        </objProp>
-        <stringProp name="filename"></stringProp>
-      </ResultCollector>
-      <hashTree/>
       <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report" enabled="false">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
@@ -264,7 +231,7 @@ vars.put(&quot;expression&quot;, expression)</stringProp>
           <ModuleController guiclass="ModuleControllerGui" testclass="ModuleController" testname="POST - Honeur Central Login Credentials" enabled="true">
             <collectionProp name="ModuleController.node_path">
               <stringProp name="764597751">Test Plan</stringProp>
-              <stringProp name="2120355301">CAS SSO Tests</stringProp>
+              <stringProp name="-32728482">WebAPI Custom Endpoints Integration Tests</stringProp>
               <stringProp name="2086949864">POST - Honeur Central Login Credentials</stringProp>
             </collectionProp>
           </ModuleController>
@@ -278,7 +245,7 @@ vars.put(&quot;expression&quot;, expression)</stringProp>
                 <stringProp name="Header.name">Authorization</stringProp>
                 <stringProp name="Header.value">Bearer ${token}</stringProp>
               </elementProp>
-              <elementProp name="" elementType="Header">
+              <elementProp name="Content-Type" elementType="Header">
                 <stringProp name="Header.name">Content-Type</stringProp>
                 <stringProp name="Header.value">application/json</stringProp>
               </elementProp>
@@ -542,11 +509,7 @@ AssertionResult.setFailure(!correctChecked);  </stringProp>
         <hashTree>
           <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
             <collectionProp name="HeaderManager.headers">
-              <elementProp name="" elementType="Header">
-                <stringProp name="Header.name">Authorization</stringProp>
-                <stringProp name="Header.value">Bearer ${token}</stringProp>
-              </elementProp>
-              <elementProp name="" elementType="Header">
+              <elementProp name="Content-Type" elementType="Header">
                 <stringProp name="Header.name">Content-Type</stringProp>
                 <stringProp name="Header.value">application/json</stringProp>
               </elementProp>
@@ -895,26 +858,12 @@ AssertionResult.setFailure(inValid);
                 <stringProp name="Header.name">Authorization</stringProp>
                 <stringProp name="Header.value">Bearer ${token}</stringProp>
               </elementProp>
-              <elementProp name="" elementType="Header">
+              <elementProp name="Content-Type" elementType="Header">
                 <stringProp name="Header.name">Content-Type</stringProp>
                 <stringProp name="Header.value">application/json</stringProp>
               </elementProp>
             </collectionProp>
           </HeaderManager>
-          <hashTree/>
-          <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="HTTP Request Defaults" enabled="true">
-            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
-              <collectionProp name="Arguments.arguments"/>
-            </elementProp>
-            <stringProp name="HTTPSampler.domain"></stringProp>
-            <stringProp name="HTTPSampler.port"></stringProp>
-            <stringProp name="HTTPSampler.protocol"></stringProp>
-            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-            <stringProp name="HTTPSampler.path"></stringProp>
-            <stringProp name="HTTPSampler.concurrentPool">6</stringProp>
-            <stringProp name="HTTPSampler.connect_timeout">10000</stringProp>
-            <stringProp name="HTTPSampler.response_timeout">10000</stringProp>
-          </ConfigTestElement>
           <hashTree/>
           <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET HSS List" enabled="true">
             <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
@@ -1042,7 +991,7 @@ AssertionResult.setFailure(inValid);
           <ModuleController guiclass="ModuleControllerGui" testclass="ModuleController" testname="GET - User Logout" enabled="true">
             <collectionProp name="ModuleController.node_path">
               <stringProp name="764597751">Test Plan</stringProp>
-              <stringProp name="2120355301">CAS SSO Tests</stringProp>
+              <stringProp name="-32728482">WebAPI Custom Endpoints Integration Tests</stringProp>
               <stringProp name="-648438622">GET - User Logout</stringProp>
             </collectionProp>
           </ModuleController>
@@ -1147,6 +1096,15 @@ AssertionResult.setFailure(!succes);
         </hashTree>
         <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="HSS token" enabled="true"/>
         <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="Content-Type" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
           <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST service user" enabled="true">
             <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
             <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
@@ -1285,7 +1243,7 @@ AssertionResult.setFailure(!succes);
                 <stringProp name="Header.name">Authorization</stringProp>
                 <stringProp name="Header.value">Bearer ${token}</stringProp>
               </elementProp>
-              <elementProp name="" elementType="Header">
+              <elementProp name="Content-Type" elementType="Header">
                 <stringProp name="Header.name">Content-Type</stringProp>
                 <stringProp name="Header.value">application/json</stringProp>
               </elementProp>
@@ -1490,7 +1448,7 @@ AssertionResult.setFailure(!permissionsIds.containsAll(definitionIds));
                 <stringProp name="Header.name">Authorization</stringProp>
                 <stringProp name="Header.value">Bearer ${token}</stringProp>
               </elementProp>
-              <elementProp name="" elementType="Header">
+              <elementProp name="Content-Type" elementType="Header">
                 <stringProp name="Header.name">Content-Type</stringProp>
                 <stringProp name="Header.value">application/json</stringProp>
               </elementProp>
@@ -1758,7 +1716,7 @@ AssertionResult.setFailure(!correctChecked);  </stringProp>
                 <stringProp name="Header.name">Authorization</stringProp>
                 <stringProp name="Header.value">Bearer ${token}</stringProp>
               </elementProp>
-              <elementProp name="" elementType="Header">
+              <elementProp name="Content-Type" elementType="Header">
                 <stringProp name="Header.name">Content-Type</stringProp>
                 <stringProp name="Header.value">application/json</stringProp>
               </elementProp>
@@ -2105,7 +2063,7 @@ AssertionResult.setFailure(data.uuid != null || data.groupKey != null);
           <ModuleController guiclass="ModuleControllerGui" testclass="ModuleController" testname="GET - CAS Central Login Page" enabled="true">
             <collectionProp name="ModuleController.node_path">
               <stringProp name="764597751">Test Plan</stringProp>
-              <stringProp name="2120355301">CAS SSO Tests</stringProp>
+              <stringProp name="-32728482">WebAPI Custom Endpoints Integration Tests</stringProp>
               <stringProp name="-342087143">GET - CAS Central Login Page</stringProp>
             </collectionProp>
             <stringProp name="TestPlan.comments">Get the CAS Login page</stringProp>
@@ -2114,7 +2072,7 @@ AssertionResult.setFailure(data.uuid != null || data.groupKey != null);
           <ModuleController guiclass="ModuleControllerGui" testclass="ModuleController" testname="POST - Honeur Central Login Credentials" enabled="true">
             <collectionProp name="ModuleController.node_path">
               <stringProp name="764597751">Test Plan</stringProp>
-              <stringProp name="2120355301">CAS SSO Tests</stringProp>
+              <stringProp name="-32728482">WebAPI Custom Endpoints Integration Tests</stringProp>
               <stringProp name="2086949864">POST - Honeur Central Login Credentials</stringProp>
             </collectionProp>
           </ModuleController>
@@ -2123,7 +2081,7 @@ AssertionResult.setFailure(data.uuid != null || data.groupKey != null);
         <ModuleController guiclass="ModuleControllerGui" testclass="ModuleController" testname="Delete From HSS" enabled="true">
           <collectionProp name="ModuleController.node_path">
             <stringProp name="764597751">Test Plan</stringProp>
-            <stringProp name="2120355301">CAS SSO Tests</stringProp>
+            <stringProp name="-32728482">WebAPI Custom Endpoints Integration Tests</stringProp>
             <stringProp name="-1174005273">Delete from HSS</stringProp>
           </collectionProp>
         </ModuleController>
@@ -2133,7 +2091,7 @@ AssertionResult.setFailure(data.uuid != null || data.groupKey != null);
           <ModuleController guiclass="ModuleControllerGui" testclass="ModuleController" testname="GET - User Logout" enabled="true">
             <collectionProp name="ModuleController.node_path">
               <stringProp name="764597751">Test Plan</stringProp>
-              <stringProp name="2120355301">CAS SSO Tests</stringProp>
+              <stringProp name="-32728482">WebAPI Custom Endpoints Integration Tests</stringProp>
               <stringProp name="-648438622">GET - User Logout</stringProp>
             </collectionProp>
           </ModuleController>
@@ -2174,6 +2132,39 @@ AssertionResult.setFailure(data.uuid != null || data.groupKey != null);
         </ResultCollector>
         <hashTree/>
       </hashTree>
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>false</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <threadCounts>true</threadCounts>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
       <TestFragmentController guiclass="TestFragmentControllerGui" testclass="TestFragmentController" testname="GET - CAS Central Login Page" enabled="true"/>
       <hashTree>
         <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET - CAS Central Login Page" enabled="true">
@@ -2401,12 +2392,12 @@ while(sampler.getCookieManager().getCookieCount() &gt; 0) {
               <stringProp name="Header.value">Bearer ${token}</stringProp>
             </elementProp>
             <elementProp name="" elementType="Header">
-              <stringProp name="Header.name">Content-Type</stringProp>
-              <stringProp name="Header.value">application/json</stringProp>
-            </elementProp>
-            <elementProp name="" elementType="Header">
               <stringProp name="Header.name">token</stringProp>
               <stringProp name="Header.value">${hssToken}</stringProp>
+            </elementProp>
+            <elementProp name="Content-Type" elementType="Header">
+              <stringProp name="Header.name">Content-Type</stringProp>
+              <stringProp name="Header.value">application/json</stringProp>
             </elementProp>
           </collectionProp>
         </HeaderManager>

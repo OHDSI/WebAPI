@@ -237,6 +237,7 @@
           <customPropertiesFiles>
             <file>${user.properties}</file>
           </customPropertiesFiles>
+          <propertiesFilesDirectory>${properties.folder}</propertiesFilesDirectory>
         </configuration>
       </plugin>
     </plugins>

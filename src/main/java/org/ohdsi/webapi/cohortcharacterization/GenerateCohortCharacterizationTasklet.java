@@ -98,10 +98,6 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
         final String prevalenceRetrievingQuery = "\n" +
                 " insert into @results_database_schema.cc_results " +
                 " (type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id, count_value, avg_value, cohort_definition_id, cohort_characterization_generation_id) " +
-                " with " +
-                "     features as (%1$s), " +
-                "     feature_refs as (%2$s), " +
-                "     analysis_refs as(%3$s) " +
                 " select 'PREVALENCE' as type, " +
                 "       f.covariate_id, " +
                 "       fr.covariate_name, " +
@@ -112,9 +108,9 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
                 "       f.average_value as stat_value, " +
                 "       %4$d as cohort_definition_id, " +
                 "       %5$d as cohort_characterization_generation_id " +
-                " from features f " +
-                "       join feature_refs fr on fr.covariate_id = f.covariate_id and fr.cohort_definition_id = f.cohort_definition_id " +
-                "       JOIN analysis_refs ar " +
+                " from (%1$s) f " +
+                "       join (%2$s) fr on fr.covariate_id = f.covariate_id and fr.cohort_definition_id = f.cohort_definition_id " +
+                "       JOIN (%3$s) ar " +
                 "         on ar.analysis_id = fr.analysis_id and ar.cohort_definition_id = fr.cohort_definition_id " +
                 "       LEFT JOIN @cdm_database_schema.concept c on c.concept_id = fr.concept_id;";
         
@@ -123,10 +119,6 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
                 "    (type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id, " +
                 "     count_value, min_value, max_value, avg_value, stdev_value, median_value, " +
                 "     p10_value, p25_value, p75_value, p90_value, cohort_definition_id, cohort_characterization_generation_id) " +
-                " with " +
-                "     features as (%1$s), " +
-                "     feature_refs as (%2$s), " +
-                "     analysis_refs as (%3$s) " +
                 " select 'DISTRIBUTION', " +
                 "       f.covariate_id, " +
                 "       fr.covariate_name, " +
@@ -145,9 +137,9 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
                 "       f.p90_value, " +
                 "       %4$d as cohort_definition_id, " +
                 "       %5$d as cohort_characterization_generation_id " +
-                " from features f " +
-                "       join feature_refs fr on fr.covariate_id = f.covariate_id and fr.cohort_definition_id = f.cohort_definition_id " +
-                "       JOIN analysis_refs ar " +
+                " from (%1$s) f " +
+                "       join (%2$s) fr on fr.covariate_id = f.covariate_id and fr.cohort_definition_id = f.cohort_definition_id " +
+                "       JOIN (%3$s) ar " +
                 "         on ar.analysis_id = fr.analysis_id and ar.cohort_definition_id = fr.cohort_definition_id " +
                 "       LEFT JOIN @cdm_database_schema.concept c on c.concept_id = fr.concept_id;";
         

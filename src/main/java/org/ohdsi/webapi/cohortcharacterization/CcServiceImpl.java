@@ -83,6 +83,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CcServiceImpl extends AbstractDaoService implements CcService {
 
     private final String QUERY_RESULTS = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/queryResults.sql");
+    private final String IMPORTED_ENTITY_PREFIX = "COPY OF: ";
 
     private final static List<String> INCOMPLETE_STATUSES = ImmutableList.of(BatchStatus.STARTED, BatchStatus.STARTING, BatchStatus.STOPPING, BatchStatus.UNKNOWN)
             .stream().map(BatchStatus::name).collect(Collectors.toList());
@@ -241,7 +242,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         cleanIds(entity);
 
         final CohortCharacterizationEntity newCohortCharacterization = new CohortCharacterizationEntity();
-        newCohortCharacterization.setName(entity.getName());
+        newCohortCharacterization.setName(IMPORTED_ENTITY_PREFIX + entity.getName());
         final CohortCharacterizationEntity persistedCohortCharacterization = this.createCc(newCohortCharacterization);
         
         updateParams(entity, persistedCohortCharacterization);

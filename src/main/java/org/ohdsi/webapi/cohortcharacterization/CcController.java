@@ -111,7 +111,7 @@ public class CcController {
     @Path("/import")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public CohortCharacterizationDTO doImport(final CohortCharacterizationDTO dto) {
+    public CohortCharacterizationDTO doImport(final CcExportDTO dto) {
         final CohortCharacterizationEntity entity = conversionService.convert(dto, CohortCharacterizationEntity.class);
         return conversionService.convert(service.importCc(entity), CohortCharacterizationDTO.class);
     }

@@ -282,7 +282,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
     }
 
     @Override
-    public CohortCharacterization findDesignByGenerationId(final Long id) {
+    @DataSourceAccess
+    public CohortCharacterization findDesignByGenerationId(@CcGenerationId final Long id) {
         return ccGenerationRepository.findById(id).map(gen -> gen.getDesign()).orElse(null);
     }
 

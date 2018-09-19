@@ -1,47 +1,39 @@
 package org.ohdsi.webapi.shiro.filters;
 
-import java.io.IOException;
 import java.util.LinkedHashMap;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
-import org.pac4j.core.config.Config;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.servlet.ShiroHttpServletRequest;
 import org.jasig.cas.client.authentication.AttributePrincipal;
 import org.jasig.cas.client.validation.Assertion;
 import org.jasig.cas.client.validation.TicketValidationException;
 import org.jasig.cas.client.validation.TicketValidator;
-import org.pac4j.cas.client.CasClient;
 import org.pac4j.cas.profile.CasProfile;
 import org.pac4j.core.profile.CommonProfile;
 
 import io.buji.pac4j.token.Pac4jToken;
 
 /**
- *
+ * CAS authentication callback filter
  */
-public class CasHandleFilter implements Filter {
+public class CasHandleFilter extends AtlasAuthFilter {
     
     
     private final Log logger = LogFactory.getLog(CasHandleFilter.class);
     
+    /**
+     * attribute name to recognize CAS authentication. Get login UpdateAccessTokenFilter
+     * differently.
+     */
     public static final String CONST_CAS_AUTHN = "webapi.shiro.cas";
-    
-    private CasClient casClient;
-    
-    private Config config;
     
     private TicketValidator ticketValidator;
     
@@ -50,38 +42,27 @@ public class CasHandleFilter implements Filter {
     private String casticket;
     
     /**
-     * 
+     * @param ticketValidator TicketValidator for service ticket validation
+     * @param casCallbackUrl CAS callback URL
+     * @param casticket ticket for validation
      */
-    public CasHandleFilter(CasClient casClient, Config config, TicketValidator ticketValidator, String casCallbackUrl,
-        String casticket) {
+    public CasHandleFilter(TicketValidator ticketValidator, String casCallbackUrl, String casticket) {
         super();
-        this.casClient = casClient;
-        this.config = config;
         this.ticketValidator = ticketValidator;
         this.casCallbackUrl = casCallbackUrl;
         this.casticket = casticket;
     }
     
     /**
-     * @see javax.servlet.Filter#init(javax.servlet.FilterConfig)
+     * @see org.apache.shiro.web.filter.authc.AuthenticatingFilter#createToken(javax.servlet.ServletRequest,
+     *      javax.servlet.ServletResponse)
      */
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {        
-    }
-    
-    /**
-     * (non-Jsdoc)
-     * 
-     * @see javax.servlet.Filter#doFilter(javax.servlet.ServletRequest,
-     *      javax.servlet.ServletResponse, javax.servlet.FilterChain)
-     */
-    @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse,
-                         FilterChain chain) throws IOException, ServletException {
-        
+    protected AuthenticationToken createToken(ServletRequest servletRequest,
+                                              ServletResponse servletResponse) throws Exception {
         final ShiroHttpServletRequest request = (ShiroHttpServletRequest) servletRequest;
-        final HttpServletResponse response = (HttpServletResponse) servletResponse;
         HttpSession session = request.getSession();
+        Pac4jToken ct = null;
         if (session != null) {
             session.setAttribute(CONST_CAS_AUTHN, "true");
             
@@ -91,7 +72,6 @@ public class CasHandleFilter implements Filter {
                 if (ticket != null) {
                     String service = casCallbackUrl;
                     
-                    //logger.info("service here...:::::" + service);
                     try {
                         
                         final Assertion assertion = this.ticketValidator.validate(ticket, service);
@@ -103,8 +83,11 @@ public class CasHandleFilter implements Filter {
                         Subject currentUser = SecurityUtils.getSubject();
                         LinkedHashMap<String, CommonProfile> pMap = new LinkedHashMap<String, CommonProfile>();
                         pMap.put(principal.getName(), casProfile);
-                        Pac4jToken ct = new Pac4jToken(pMap, currentUser.isRemembered());
-                        currentUser.login(ct);
+                        ct = new Pac4jToken(pMap, currentUser.isRemembered());
+                        /*
+                         * let AuthenticatingFilter.executeLogin login user
+                         */
+                        //currentUser.login(ct);
                         
                     } catch (TicketValidationException e) {
                         logger.error(e);
@@ -114,14 +97,17 @@ public class CasHandleFilter implements Filter {
                 
             }
         }
-        chain.doFilter(request, response);
+        return ct;
     }
     
     /**
-     * @see javax.servlet.Filter#destroy()
+     * @see org.apache.shiro.web.filter.AccessControlFilter#onAccessDenied(javax.servlet.ServletRequest,
+     *      javax.servlet.ServletResponse)
      */
     @Override
-    public void destroy() {
-        // TODO Auto-generated method stub
+    protected boolean onAccessDenied(ServletRequest request, ServletResponse response) throws Exception {
+        boolean loggedIn = executeLogin(request, response);
+        
+        return loggedIn;
     }
 }

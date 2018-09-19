@@ -307,7 +307,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
                         + URLEncoder.encode(casCallbackUrl, StandardCharsets.UTF_8.name());
             } else {
                 casLoginUrlString = casLoginUrl + "?casurl="
-                        + URLEncoder.encode(casCallbackUrl, StandardCharsets.UTF_8.name());              
+                        + URLEncoder.encode(casCallbackUrl, StandardCharsets.UTF_8.name());
             }
             casConf.setLoginUrl(casLoginUrlString);
             
@@ -328,8 +328,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
             /**
              * CAS callback filter
              */
-            CasHandleFilter casHandleFilter = new CasHandleFilter(casClient, casCfg, cas20Validator, casCallbackUrl,
-                    casticket);
+            CasHandleFilter casHandleFilter = new CasHandleFilter(cas20Validator, casCallbackUrl, casticket);
             filters.put("handleCas", casHandleFilter);
             
         } catch (UnsupportedEncodingException e) {

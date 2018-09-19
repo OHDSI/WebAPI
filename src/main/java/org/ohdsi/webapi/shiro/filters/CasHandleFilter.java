@@ -44,7 +44,7 @@ public class CasHandleFilter extends AtlasAuthFilter {
     /**
      * @param ticketValidator TicketValidator for service ticket validation
      * @param casCallbackUrl CAS callback URL
-     * @param casticket ticket for validation
+     * @param casticket parameter name for ticket to validate
      */
     public CasHandleFilter(TicketValidator ticketValidator, String casCallbackUrl, String casticket) {
         super();

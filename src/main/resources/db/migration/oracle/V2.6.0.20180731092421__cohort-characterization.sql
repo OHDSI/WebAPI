@@ -66,6 +66,12 @@ INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
 SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, 'cohort-characterization:*:generation:get', 'Get cohort characterization generations' FROM dual;
 
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
+SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, 'cohort-characterization:generation:*:get', 'Get cohort characterization generation' FROM dual;
+
+INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
+SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, 'cohort-characterization:generation:*:delete', 'Delete cohort characterization generation and results' FROM dual;
+
+INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
 SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, 'cohort-characterization:generation:*:result:get', 'Get cohort characterization generation results' FROM dual;
 
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
@@ -92,6 +98,8 @@ WHERE sp.value IN (
   'cohort-characterization:import:post',
   'cohort-characterization:*:get',
   'cohort-characterization:*:generation:get',
+  'cohort-characterization:generation:*:get',
+  'cohort-characterization:generation:*:delete',
   'cohort-characterization:generation:*:result:get',
   'cohort-characterization:generation:*:design:get',
   'cohort-characterization:*:export',

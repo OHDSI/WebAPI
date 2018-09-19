@@ -15,7 +15,9 @@ import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -30,6 +32,8 @@ public class CohortGenerationService extends AbstractDaoService {
 
   private final CohortDefinitionRepository cohortDefinitionRepository;
 
+  private final CohortGenerationInfoRepository cohortGenerationInfoRepository;
+
   private final JobBuilderFactory jobBuilders;
 
   private final StepBuilderFactory stepBuilders;
@@ -40,11 +44,13 @@ public class CohortGenerationService extends AbstractDaoService {
 
   @Autowired
   public CohortGenerationService(CohortDefinitionRepository cohortDefinitionRepository,
+                                 CohortGenerationInfoRepository cohortGenerationInfoRepository,
                                  JobBuilderFactory jobBuilders,
                                  StepBuilderFactory stepBuilders,
                                  JobTemplate jobTemplate,
                                  JobExplorer jobExplorer) {
     this.cohortDefinitionRepository = cohortDefinitionRepository;
+    this.cohortGenerationInfoRepository = cohortGenerationInfoRepository;
     this.jobBuilders = jobBuilders;
     this.stepBuilders = stepBuilders;
     this.jobTemplate = jobTemplate;
@@ -145,4 +151,21 @@ public class CohortGenerationService extends AbstractDaoService {
     builder.addString(GENERATE_STATS, Boolean.TRUE.toString());
     return builder.toJobParameters();
   }
+
+  @PostConstruct
+  public void init(){
+
+    invalidateCohortGenerations();
+  }
+
+  private void invalidateCohortGenerations() {
+
+    getTransactionTemplateRequiresNew().execute(status -> {
+      List<CohortGenerationInfo> executions = cohortGenerationInfoRepository.findByStatusIn(INVALIDATE_STATUSES);
+      invalidateExecutions(executions);
+      cohortGenerationInfoRepository.save(executions);
+      return null;
+    });
+  }
+
 }

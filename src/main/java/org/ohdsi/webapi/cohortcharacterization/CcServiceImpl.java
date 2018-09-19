@@ -21,7 +21,10 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import javax.annotation.PostConstruct;
 import javax.ws.rs.NotFoundException;
+
+import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
@@ -61,13 +64,12 @@ import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.SessionUtils;
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobParameters;
-import org.springframework.batch.core.JobParametersBuilder;
-import org.springframework.batch.core.Step;
+import org.springframework.batch.core.*;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -77,10 +79,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
+@DependsOn({"ccExportDTOToCcEntityConverter", "cohortDTOToCohortDefinitionConverter", "feAnalysisDTOToFeAnalysisWithStringConverter"})
 public class CcServiceImpl extends AbstractDaoService implements CcService {
 
     private final String QUERY_RESULTS = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/queryResults.sql");
-    
+
+    private final static List<String> INCOMPLETE_STATUSES = ImmutableList.of(BatchStatus.STARTED, BatchStatus.STARTING, BatchStatus.STOPPING, BatchStatus.UNKNOWN)
+            .stream().map(BatchStatus::name).collect(Collectors.toList());
+
     private CcRepository repository;
     private Security security;
     private UserRepository userRepository;
@@ -95,6 +101,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
     private FeatureExtractionService featureExtractionService;
     private DesignImportService designImportService;
     private CohortGenerationService cohortGenerationService;
+
+    private final JobRepository jobRepository;
 
     public CcServiceImpl(
             final CcRepository ccRepository,
@@ -111,7 +119,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
             final FeatureExtractionService featureExtractionService,
             final ConversionService conversionService,
             final DesignImportService designImportService,
-            final CohortGenerationService cohortGenerationService) {
+            final CohortGenerationService cohortGenerationService, JobRepository jobRepository) {
         this.repository = ccRepository;
         this.security = security;
         this.userRepository = userRepository;
@@ -126,6 +134,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         this.featureExtractionService = featureExtractionService;
         this.designImportService = designImportService;
         this.cohortGenerationService = cohortGenerationService;
+        this.jobRepository = jobRepository;
         SerializedCcToCcConverter.setConversionService(conversionService);
     }
     
@@ -377,6 +386,10 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         return ccGenerationRepository.findByCohortCharacterizationIdAndSourceSourceKeyOrderByIdDesc(id, sourceKey, EntityUtils.fromAttributePaths("source"));
     }
 
+    public List<CcGenerationEntity> findAllIncompleteGenerations() {
+        return ccGenerationRepository.findByStatusIn(INCOMPLETE_STATUSES);
+    }
+
     @Override
     @DataSourceAccess
     public List<CcResult> findResults(@CcGenerationId final Long generationId) {
@@ -500,5 +513,23 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         return foundEntity.getParameters()
                 .stream()
                 .collect(Collectors.toMap(CcParamEntity::getName, Function.identity()));
+    }
+
+    @PostConstruct
+    public void init() {
+        invalidateGenerations();
+    }
+
+    private void invalidateGenerations() {
+        getTransactionTemplateRequiresNew().execute(transactionStatus -> {
+            List<CcGenerationEntity> generations = findAllIncompleteGenerations();
+            generations.forEach(gen -> {
+                JobExecution job = cohortGenerationService.getJobExecution(gen.getId());
+                job.setStatus(BatchStatus.FAILED);
+                job.setExitStatus(new ExitStatus(ExitStatus.FAILED.getExitCode(), "Invalidated by system"));
+                jobRepository.update(job);
+            });
+            return null;
+        });
     }
 }

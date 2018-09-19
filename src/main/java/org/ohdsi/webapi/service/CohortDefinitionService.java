@@ -98,9 +98,6 @@ public class CohortDefinitionService extends AbstractDaoService {
   private CohortDefinitionRepository cohortDefinitionRepository;
 
   @Autowired
-  private CohortGenerationInfoRepository cohortGenerationInfoRepository;
-
-  @Autowired
   private JobBuilderFactory jobBuilders;
 
   @Autowired
@@ -733,21 +730,4 @@ public class CohortDefinitionService extends AbstractDaoService {
       this.warnings = warnings;
     }
   }
-
-  @PostConstruct
-  public void init(){
-
-    invalidateCohortGenerations();
-  }
-
-  private void invalidateCohortGenerations() {
-
-    getTransactionTemplateRequiresNew().execute(status -> {
-      List<CohortGenerationInfo> executions = cohortGenerationInfoRepository.findByStatusIn(INVALIDATE_STATUSES);
-      invalidateExecutions(executions);
-      cohortGenerationInfoRepository.save(executions);
-      return null;
-    });
-  }
-
 }

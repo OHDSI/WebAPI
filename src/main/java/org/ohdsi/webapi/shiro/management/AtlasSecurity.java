@@ -182,7 +182,7 @@ public abstract class AtlasSecurity extends Security {
       // cohort characterization
       .addProtectedRestPath("/cohort-characterization", "createPermissionsOnCreateCohortCharacterization")
       .addProtectedRestPath("/cohort-characterization/import", "createPermissionsOnCreateCohortCharacterization")
-      .addProtectedRestPath("/cohort-characterization/*")
+      .addProtectedRestPath("/cohort-characterization/*", "deletePermissionsOnDeleteCohortCharacterization")
       .addProtectedRestPath("/cohort-characterization/*/generation/*")
       .addProtectedRestPath("/cohort-characterization/*/generation")
       .addProtectedRestPath("/cohort-characterization/generation/*/result")
@@ -226,6 +226,7 @@ public abstract class AtlasSecurity extends Security {
     filters.put("authz", new UrlBasedAuthorizingFilter());
     filters.put("createPermissionsOnCreateCohortDefinition", this.getCreatePermissionsOnCreateCohortDefinitionFilter());
     filters.put("createPermissionsOnCreateCohortCharacterization", this.getCreatePermissionsOnCreateCohortCharacterizationFilter());
+    filters.put("deletePermissionsOnDeleteCohortCharacterization", this.getDeletePermissionsOnDeleteFilter(cohortCharacterizationCreatorPermissionTemplates));
     filters.put("createPermissionsOnCreateConceptSet", this.getCreatePermissionsOnCreateConceptSetFilter());
     filters.put("deletePermissionsOnDeleteCohortDefinition", this.getDeletePermissionsOnDeleteCohortDefinitionFilter());
     filters.put("deletePermissionsOnDeleteConceptSet", this.getDeletePermissionsOnDeleteConceptSetFilter());

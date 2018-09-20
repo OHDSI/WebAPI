@@ -239,7 +239,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
                 .addRestPath("/user/logout", "invalidateToken, logout")
                 .addOAuthPath("/user/oauth/google", "googleAuthc")
                 .addOAuthPath("/user/oauth/facebook", "facebookAuthc")
-                .addPath("/user/authn/cas", "ssl, cors, forceSessionCreation, casAuthc, updateToken, sendTokenInUrl")
+                .addPath("/user/login/cas", "ssl, cors, forceSessionCreation, casAuthc, updateToken, sendTokenInUrl")
                 .addPath("/user/oauth/callback", "ssl, handleUnsuccessfullOAuth, oauthCallback")
                 .addPath("/user/cas/callback", "ssl, handleCas, updateToken, sendTokenInUrl");
 

@@ -15,31 +15,26 @@
  */
 package org.ohdsi.webapi.cohortcharacterization;
 
-import static org.ohdsi.webapi.Constants.Params.CDM_DATABASE_SCHEMA;
-import static org.ohdsi.webapi.Constants.Params.COHORT_CHARACTERIZATION_ID;
-import static org.ohdsi.webapi.Constants.Params.RESULTS_DATABASE_SCHEMA;
-import static org.ohdsi.webapi.Constants.Params.TARGET_DIALECT;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.StringJoiner;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.FutureTask;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
+import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.featureExtraction.FeatureExtraction;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.cohortcharacterization.domain.AnalysisGenerationInfoEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
+import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfoEntityRepository;
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
+import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.shiro.Entities.UserRepository;
+import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
@@ -52,8 +47,21 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.StringJoiner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
+import java.util.stream.Collectors;
+
+import static org.ohdsi.webapi.Constants.Params.*;
+
 public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
     private static final Log log = LogFactory.getLog(GenerateCohortCharacterizationTasklet.class);
+    private static final String[] CUSTOM_PARAMETERS = {"analysisId", "analysisName", "cohortId", "jobId", "design"};
+    private static final String[] RETRIEVING_PARAMETERS = {"features", "featureRefs", "analysisRefs", "cohortId", "executionId"};
 
     private volatile boolean stopped = false;
     private final long checkInterval = 1000L;
@@ -63,19 +71,26 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
     private final JdbcTemplate jdbcTemplate;
     private final CcService ccService;
     private final FeAnalysisService feAnalysisService;
-    
+    private final AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository;
+    private final SourceService sourceService;
+    private final UserRepository userRepository;
     
     public GenerateCohortCharacterizationTasklet(
             final JdbcTemplate jdbcTemplate,
             final TransactionTemplate transactionTemplate,
             final CcService ccService,
-            final FeAnalysisService feAnalysisService
-            ) {
+            final FeAnalysisService feAnalysisService,
+            final AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository,
+            final SourceService sourceService,
+            final UserRepository userRepository
+    ) {
         this.jdbcTemplate = jdbcTemplate;
         this.transactionTemplate = transactionTemplate;
         this.ccService = ccService;
         this.feAnalysisService = feAnalysisService;
-        
+        this.analysisGenerationInfoEntityRepository = analysisGenerationInfoEntityRepository;
+        this.sourceService = sourceService;
+        this.userRepository = userRepository;
         this.taskExecutor = Executors.newSingleThreadExecutor();
     }
 
@@ -94,150 +109,49 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
     
     private class CcTask {
 
-        final String prevalenceRetrievingQuery = "\n" +
-                " with " +
-                "     features as (%1$s), " +
-                "     feature_refs as (%2$s), " +
-                "     analysis_refs as(%3$s) " +
-                " insert into @results_database_schema.cc_results " +
-                " (type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id, count_value, avg_value, cohort_definition_id, cohort_characterization_generation_id) " +
-                " select 'PREVALENCE' as type, " +
-                "       f.covariate_id, " +
-                "       fr.covariate_name, " +
-                "       ar.analysis_id, " +
-                "       ar.analysis_name, " +
-                "       fr.concept_id, " +
-                "       f.sum_value     as count_value, " +
-                "       f.average_value as stat_value, " +
-                "       %4$d as cohort_definition_id, " +
-                "       %5$d as cohort_characterization_generation_id " +
-                " from features f " +
-                "       join feature_refs fr on fr.covariate_id = f.covariate_id and fr.cohort_definition_id = f.cohort_definition_id " +
-                "       JOIN analysis_refs ar " +
-                "         on ar.analysis_id = fr.analysis_id and ar.cohort_definition_id = fr.cohort_definition_id " +
-                "       LEFT JOIN @cdm_database_schema.concept c on c.concept_id = fr.concept_id;";
+        final String prevalenceRetrievingQuery = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/prevalenceRetrieving.sql");
         
-        final String distributionRetrievingQuery = "\n" +
-                " with " +
-                "     features as (%1$s), " +
-                "     feature_refs as (%2$s), " +
-                "     analysis_refs as (%3$s) " +
-                " insert into @results_database_schema.cc_results " +
-                "    (type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id, " +
-                "     count_value, min_value, max_value, avg_value, stdev_value, median_value, " +
-                "     p10_value, p25_value, p75_value, p90_value, cohort_definition_id, cohort_characterization_generation_id) " +
-                " select 'DISTRIBUTION', " +
-                "       f.covariate_id, " +
-                "       fr.covariate_name, " +
-                "       ar.analysis_id, " +
-                "       ar.analysis_name, " +
-                "       fr.concept_id, " +
-                "       f.count_value, " +
-                "       f.min_value, " +
-                "       f.max_value, " +
-                "       f.average_value, " +
-                "       f.standard_deviation, " +
-                "       f.median_value, " +
-                "       f.p10_value, " +
-                "       f.p25_value, " +
-                "       f.p75_value, " +
-                "       f.p90_value, " +
-                "       %4$d as cohort_definition_id, " +
-                "       %5$d as cohort_characterization_generation_id " +
-                " from features f " +
-                "       join feature_refs fr on fr.covariate_id = f.covariate_id and fr.cohort_definition_id = f.cohort_definition_id " +
-                "       JOIN analysis_refs ar " +
-                "         on ar.analysis_id = fr.analysis_id and ar.cohort_definition_id = fr.cohort_definition_id " +
-                "       LEFT JOIN @cdm_database_schema.concept c on c.concept_id = fr.concept_id;";
+        final String distributionRetrievingQuery = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/distributionRetrieving.sql");
         
-        final String customDistributionQueryWrapper = "\n" +
-                "insert into " +
-                " @results_database_schema.cc_results (type, " +
-                "     covariate_id, " +
-                "     covariate_name, " +
-                "     analysis_id, " +
-                "     analysis_name, " +
-                "     concept_id, " +
-                "     count_value, " +
-                "     min_value, " +
-                "     max_value, " +
-                "     avg_value, " +
-                "     stdev_value, " +
-                "     median_value, " +
-                "     p10_value, " +
-                "     p25_value, " +
-                "     p75_value, " +
-                "     p90_value, " +
-                "     cohort_definition_id, " +
-                "     cohort_characterization_generation_id) " +
-                " select 'DISTRIBUTION', " +
-                "        covariate_id, " +
-                "        covariate_name, " +
-                "        %1$d as analysis_id, " +
-                "        %2$s as analysis_name, " +
-                "        concept_id, " +
-                "        count_value, " +
-                "        min_value, " +
-                "        max_value, " +
-                "        average_value, " +
-                "        standard_deviation, " +
-                "        median_value, " +
-                "        p10_value, " +
-                "        p25_value, " +
-                "        p75_value, " +
-                "        p90_value, " +
-                "        %3$d as cohort_definition_id, " +
-                "        %4$d as cohort_characterization_generation_id " +
-                " from (%5$s) subquery;";
+        final String customDistributionQueryWrapper = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/customDistribution.sql");
         
-        final String customPrevalenceQueryWrapper = "\n" +
-                "insert into @results_database_schema.cc_results ( " +
-                "     type, " +
-                "     covariate_id, " +
-                "     covariate_name, " +
-                "     analysis_id, " +
-                "     analysis_name, " +
-                "     concept_id, " +
-                "     count_value, " +
-                "     avg_value, " +
-                "     cohort_definition_id, " +
-                "     cohort_characterization_generation_id) " +
-                "select 'PREVALENCE'    as type, " +
-                "        covariate_id, " +
-                "        covariate_name, " +
-                "        %1$d as analysis_id, " +
-                "        %2$s as analysis_name, " +
-                "        concept_id, " +
-                "        sum_value       as count_value, " +
-                "        average_value   as stat_value, " +
-                "        %3$d            as cohort_definition_id, " +
-                "        %4$d            as cohort_characterization_generation_id " +
-                "from (%5$s) subquery;";
-        
+        final String customPrevalenceQueryWrapper = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/customPrevalence.sql");
+
         final CohortCharacterizationEntity cohortCharacterization;
-        final String resultSchema;
-        final String cdmSchema;
-        
-        private final Map<String, Object> jobParams;
-        final String targetDialect;
+        final Source source;
+        final UserEntity userEntity;
+        final String cohortTable;
         
         private final Long jobId;
 
         CcTask(final ChunkContext context) {
-            this.jobParams = context.getStepContext().getJobParameters();
-            this.targetDialect = jobParams.get(TARGET_DIALECT).toString();
+            Map<String, Object> jobParams = context.getStepContext().getJobParameters();
             this.cohortCharacterization = ccService.findByIdWithLinkedEntities(
                     Long.valueOf(jobParams.get(COHORT_CHARACTERIZATION_ID).toString())
             );
-            this.resultSchema = jobParams.get(RESULTS_DATABASE_SCHEMA).toString();
-            this.cdmSchema = jobParams.get(CDM_DATABASE_SCHEMA).toString();
-            
             this.jobId = context.getStepContext().getStepExecution().getJobExecution().getId();
+            this.source = sourceService.findBySourceId(
+                    Integer.valueOf(jobParams.get(SOURCE_ID).toString())
+            );
+            this.cohortTable = jobParams.get(TARGET_TABLE).toString();
+            this.userEntity = userRepository.findByLogin(jobParams.get(JOB_AUTHOR).toString());
         }
         
         private void run() {
+
+            saveInfo(jobId, cohortCharacterization, userEntity);
             cohortCharacterization.getCohortDefinitions()
                     .forEach(definition -> runAnalysisOnCohort(definition.getId()));
+        }
+
+        private void saveInfo(Long jobId, CohortCharacterizationEntity cohortCharacterization, UserEntity userEntity) {
+
+            AnalysisGenerationInfoEntity generationInfoEntity = new AnalysisGenerationInfoEntity();
+            generationInfoEntity.setId(jobId);
+            generationInfoEntity.setDesign(cohortCharacterization);
+            generationInfoEntity.setHashCode(cohortCharacterization.getHashCode());
+            generationInfoEntity.setCreatedBy(userEntity);
+            analysisGenerationInfoEntityRepository.save(generationInfoEntity);
         }
 
         private int[] runAnalysisOnCohort(final Integer cohortDefinitionId) {
@@ -272,7 +186,9 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
                     .stream()
                     .filter(FeAnalysisEntity::isCustom)
                     .filter(v -> v.getStatType() == CcResultType.DISTRIBUTION)
-                    .map(v -> String.format(customDistributionQueryWrapper, v.getId(), org.springframework.util.StringUtils.quote(v.getName()), cohortId, jobId, v.getDesign()))
+                    .map(v -> SqlRender.renderSql(customDistributionQueryWrapper,
+                            CUSTOM_PARAMETERS,
+                            new String[] { String.valueOf(v.getId()), org.springframework.util.StringUtils.quote(v.getName()), String.valueOf(cohortId), String.valueOf(jobId), v.getDesign()} ))
                     .collect(Collectors.toList());
         }
         
@@ -281,7 +197,9 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
                     .stream()
                     .filter(FeAnalysisEntity::isCustom)
                     .filter(v -> v.getStatType() == CcResultType.PREVALENCE)
-                    .map(v -> String.format(customPrevalenceQueryWrapper, v.getId(), org.springframework.util.StringUtils.quote(v.getName()), cohortId, jobId, v.getDesign()))
+                    .map(v -> SqlRender.renderSql(customPrevalenceQueryWrapper,
+                            CUSTOM_PARAMETERS,
+                            new String[] { String.valueOf(v.getId()), org.springframework.util.StringUtils.quote(v.getName()), String.valueOf(cohortId), String.valueOf(jobId), v.getDesign()} ))
                     .collect(Collectors.toList());
         }
         
@@ -297,19 +215,23 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
                     StringUtils.stripEnd(jsonObject.getString("sqlQueryAnalysisRef"), ";"));
             
             final List<String> queries = new ArrayList<>();
-            
+
             if (ccHasPresetDistributionAnalyses()) {
                 final String distColumns = "cohort_definition_id, covariate_id, count_value, min_value, max_value, average_value, "
                         + "standard_deviation, median_value, p10_value, p25_value, p75_value, p90_value";
                 final String distFeatures = String.format(cohortWrapper, cohortId, distColumns,
                         StringUtils.stripEnd(jsonObject.getString("sqlQueryContinuousFeatures"), ";"));
-                queries.add(String.format(distributionRetrievingQuery, distFeatures, featureRefs, analysisRefs, cohortId, jobId));
+                final String query = SqlRender.renderSql(distributionRetrievingQuery, RETRIEVING_PARAMETERS,
+                        new String[] { distFeatures, featureRefs, analysisRefs, String.valueOf(cohortId), String.valueOf(jobId) });
+                queries.add(query);
             }
             if (ccHasPresetPrevalenceAnalyses()) {
                 final String featureColumns = "cohort_definition_id, covariate_id, sum_value, average_value";
                 final String features = String.format(cohortWrapper, cohortId, featureColumns,
                         StringUtils.stripEnd(jsonObject.getString("sqlQueryFeatures"), ";"));
-                queries.add(String.format(prevalenceRetrievingQuery, features, featureRefs, analysisRefs, cohortId, jobId));
+                final String query = SqlRender.renderSql(prevalenceRetrievingQuery, RETRIEVING_PARAMETERS,
+                        new String[]{ features, featureRefs, analysisRefs, String.valueOf(cohortId), String.valueOf(jobId) });
+                queries.add(query);
             }
             
             return queries;
@@ -329,14 +251,14 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
         
         private CohortExpressionQueryBuilder.BuildExpressionQueryOptions createDefaultOptions(final Integer id) {
             final CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = new CohortExpressionQueryBuilder.BuildExpressionQueryOptions();
-            options.cdmSchema = jobParams.get(CDM_DATABASE_SCHEMA).toString();
-            options.resultSchema = this.resultSchema;
+            options.cdmSchema = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+            options.resultSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
             options.cohortId = id;
             return options;
         }
 
         private String[] getSqlQueriesToRun(final JSONObject jsonObject, final Integer cohortDefinitionId) {
-            final StringJoiner joiner = new StringJoiner("\r  ---- \r ");
+            final StringJoiner joiner = new StringJoiner("\n\n");
             
             joiner.add(jsonObject.getString("sqlConstruction"));
             
@@ -348,15 +270,15 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
             
             final String sql = SqlRender.renderSql(joiner.toString(),
                     new String[]{RESULTS_DATABASE_SCHEMA, CDM_DATABASE_SCHEMA},
-                    new String[]{resultSchema, cdmSchema});
-            final String translatedSql = SqlTranslate.translateSql(sql, targetDialect, SessionUtils.sessionId(), null);
+                    new String[]{source.getTableQualifier(SourceDaimon.DaimonType.Results), source.getTableQualifier(SourceDaimon.DaimonType.CDM)});
+            final String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect(), SessionUtils.sessionId(), null);
             return SqlSplit.splitSql(translatedSql);
         }
 
         private JSONObject createFeJsonObject(final CohortExpressionQueryBuilder.BuildExpressionQueryOptions options) {
             FeatureExtraction.init(null);
             String settings = buildSettings();
-            String sqlJson = FeatureExtraction.createSql(settings, true, options.resultSchema + ".cohort",
+            String sqlJson = FeatureExtraction.createSql(settings, true, options.resultSchema + "." + cohortTable,
                     "subject_id", options.cohortId, options.cdmSchema);
             return new JSONObject(sqlJson);
         }

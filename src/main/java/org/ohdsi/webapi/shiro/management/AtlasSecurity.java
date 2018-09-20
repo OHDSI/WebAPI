@@ -188,9 +188,11 @@ public abstract class AtlasSecurity extends Security {
       // cohort characterization
       .addProtectedRestPath("/cohort-characterization", "createPermissionsOnCreateCohortCharacterization")
       .addProtectedRestPath("/cohort-characterization/import", "createPermissionsOnCreateCohortCharacterization")
-      .addProtectedRestPath("/cohort-characterization/*")
+      .addProtectedRestPath("/cohort-characterization/*", "deletePermissionsOnDeleteCohortCharacterization")
       .addProtectedRestPath("/cohort-characterization/*/generation/*")
       .addProtectedRestPath("/cohort-characterization/*/generation")
+      .addProtectedRestPath("/cohort-characterization/generation/*")
+      .addProtectedRestPath("/cohort-characterization/generation/*/design")
       .addProtectedRestPath("/cohort-characterization/generation/*/result")
       .addProtectedRestPath("/cohort-characterization/*/export")
 
@@ -243,6 +245,7 @@ public abstract class AtlasSecurity extends Security {
     filters.put("authz", new UrlBasedAuthorizingFilter());
     filters.put("createPermissionsOnCreateCohortDefinition", this.getCreatePermissionsOnCreateCohortDefinitionFilter());
     filters.put("createPermissionsOnCreateCohortCharacterization", this.getCreatePermissionsOnCreateCohortCharacterizationFilter());
+    filters.put("deletePermissionsOnDeleteCohortCharacterization", this.getDeletePermissionsOnDeleteFilter(cohortCharacterizationCreatorPermissionTemplates));
     filters.put("createPermissionsOnCreatePathwayAnalysis", this.getCreatePermissionsOnCreatePathwayAnalysisFilter());
     filters.put("createPermissionsOnCreateConceptSet", this.getCreatePermissionsOnCreateConceptSetFilter());
     filters.put("deletePermissionsOnDeleteCohortDefinition", this.getDeletePermissionsOnDeleteCohortDefinitionFilter());
@@ -309,12 +312,7 @@ public abstract class AtlasSecurity extends Security {
     }
   }
 
-    public Map<String, String> getPathwayAnalysisCreatorPermissionTemplate() {
-
-        return pathwayAnalysisCreatorPermissionTemplate;
-    }
-
-    @PostConstruct
+  @PostConstruct
   private void initRolesForSources() {
     try {
       for (Source source : sourceRepository.findAll()) {

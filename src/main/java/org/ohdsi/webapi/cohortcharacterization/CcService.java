@@ -42,4 +42,6 @@ public interface CcService {
     List<CcGenerationEntity> findGenerationsByCcIdAndSource(Long id, String sourceKey);
 
     List<CcResult> findResults(Long generationId);
+
+    void deleteCcGeneration(Long generationId);
 }

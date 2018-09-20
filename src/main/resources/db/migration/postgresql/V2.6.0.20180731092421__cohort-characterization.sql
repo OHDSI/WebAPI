@@ -59,7 +59,10 @@ VALUES
   (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterization:get', 'Get cohort characterizations list'),
   (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterization:*:get', 'Get cohort characterization'),
   (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterization:*:generation:get', 'Get cohort characterization generations'),
+  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterization:generation:*:get', 'Get cohort characterization generation'),
+  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterization:generation:*:delete', 'Delete cohort characterization generation and results'),
   (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterization:generation:*:result:get', 'Get cohort characterization generation results'),
+  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterization:generation:*:design:get', 'Get cohort characterization generation design'),
   (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterization:*:export:get', 'Export cohort characterization'),
 
   (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'feature-analysis:get', 'Get feature analyses list'),
@@ -75,7 +78,10 @@ WHERE sp."value" IN (
   'cohort-characterization:get',
   'cohort-characterization:*:get',
   'cohort-characterization:*:generation:get',
+  'cohort-characterization:generation:*:get',
+  'cohort-characterization:generation:*:delete',
   'cohort-characterization:generation:*:result:get',
+  'cohort-characterization:generation:*:design:get',
   'cohort-characterization:*:export:get',
 
   'feature-analysis:get',
@@ -257,4 +263,14 @@ INSERT INTO ${ohdsiSchema}.fe_analysis (type, name, domain, descr, value, design
 INSERT INTO ${ohdsiSchema}.fe_analysis (type, name, domain, descr, value, design, is_locked, stat_type) VALUES ('PRESET', 'Visit Count Long Term', 'VISIT', 'The number of visits observed in the long term window.', null, 'VisitCountLongTerm', true, 'PREVALENCE');
 INSERT INTO ${ohdsiSchema}.fe_analysis (type, name, domain, descr, value, design, is_locked, stat_type) VALUES ('PRESET', 'Occurrence Primary Inpatient Medium Term', 'CONDITION', 'One covariate per condition observed  as a primary diagnosis in an inpatient setting in the condition_occurrence table starting in the medium term window.', null, 'ConditionOccurrencePrimaryInpatientMediumTerm', true, 'PREVALENCE');
 
-ALTER TABLE ${ohdsiSchema}.batch_job_execution_params alter column string_val TYPE varchar;
+CREATE TABLE ${ohdsiSchema}.analysis_generation_info (
+  job_execution_id INTEGER NOT NULL,
+  design VARCHAR NOT NULL,
+  hash_code VARCHAR NOT NULL,
+  created_by_id INTEGER
+);
+
+ALTER TABLE ${ohdsiSchema}.analysis_generation_info
+  ADD CONSTRAINT fk_cgi_sec_user FOREIGN KEY (created_by_id)
+REFERENCES ${ohdsiSchema}.sec_user(id)
+ON UPDATE NO ACTION ON DELETE NO ACTION;

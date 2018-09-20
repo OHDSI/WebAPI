@@ -26,6 +26,12 @@ public class DataSourceAccessBeanPostProcessor implements BeanPostProcessor {
   @Override
   public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 
+    return bean;
+  }
+
+  @Override
+  public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+
     Class type = bean.getClass();
     final List<Method> methods = getMethodsAnnotatedWith(type);
     Object result = bean;
@@ -46,12 +52,6 @@ public class DataSourceAccessBeanPostProcessor implements BeanPostProcessor {
       });
     }
     return result;
-  }
-
-  @Override
-  public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-
-    return bean;
   }
 
   private Method findMethod(Method m1, Method m2) {

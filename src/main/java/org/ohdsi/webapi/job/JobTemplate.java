@@ -48,10 +48,12 @@ public class JobTemplate {
     public JobExecutionResource launch(final Job job, JobParameters jobParameters) throws WebApplicationException {
         JobExecution exec;
         try {
-            jobParameters = new JobParametersBuilder(jobParameters)
-                    .addLong(JOB_START_TIME, System.currentTimeMillis())
-                    .addString(JOB_AUTHOR, security.getSubject())
-                    .toJobParameters();
+            JobParametersBuilder builder = new JobParametersBuilder(jobParameters);
+            builder.addLong(JOB_START_TIME, System.currentTimeMillis());
+            if (jobParameters.getString(JOB_AUTHOR) == null) {
+                builder.addString(JOB_AUTHOR, security.getSubject());
+            }
+            jobParameters = builder.toJobParameters();
             exec = this.jobLauncher.run(job, jobParameters);
             if (log.isDebugEnabled()) {
                 log.debug("JobExecution queued: " + exec);

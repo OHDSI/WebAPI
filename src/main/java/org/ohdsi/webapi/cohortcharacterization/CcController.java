@@ -112,7 +112,7 @@ public class CcController {
     @Path("/import")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public CohortCharacterizationDTO doImport(final CohortCharacterizationDTO dto) {
+    public CohortCharacterizationDTO doImport(final CcExportDTO dto) {
         final CohortCharacterizationEntity entity = conversionService.convert(dto, CohortCharacterizationEntity.class);
         return conversionService.convert(service.importCc(entity), CohortCharacterizationDTO.class);
     }
@@ -147,6 +147,14 @@ public class CcController {
     @Consumes(MediaType.APPLICATION_JSON)
     public CommonGenerationDTO getGeneration(@PathParam("generationId") final Long generationId) {
         return conversionService.convert(service.findGenerationById(generationId), CommonGenerationDTO.class);
+    }
+
+    @DELETE
+    @Path("/generation/{generationId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public void deleteGeneration(@PathParam("generationId") final Long generationId) {
+        service.deleteCcGeneration(generationId);
     }
 
     @GET

@@ -15,10 +15,10 @@ import org.ohdsi.webapi.source.Source;
 
 @Entity
 @Table(name = "cc_generation")
-public class CcGenerationEntity extends CommonGeneration {
+public class CcGenerationEntity extends CommonGeneration implements AnalysisGenerationInfo {
 
     @ManyToOne(targetEntity = CohortCharacterizationEntity.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "cohort_characterization_id")
+    @JoinColumn(name = "cc_id")
     private CohortCharacterizationEntity cohortCharacterization;
 
     @Column(name = "design", updatable= false)

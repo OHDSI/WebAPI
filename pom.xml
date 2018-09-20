@@ -80,6 +80,7 @@
     <security.ad.system.password></security.ad.system.password>
     <security.ad.searchFilter></security.ad.searchFilter>
     <security.ad.ignore.partial.result.exception>true</security.ad.ignore.partial.result.exception>
+    <security.ad.result.count.limit>30000</security.ad.result.count.limit> <!-- 0 means no limit -->
 
     <security.db.datasource.schema>${datasource.ohdsi.schema}</security.db.datasource.schema>
     <security.db.datasource.url>${datasource.url}</security.db.datasource.url>

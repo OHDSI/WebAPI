@@ -6,9 +6,11 @@ import org.ohdsi.webapi.user.importer.model.LdapGroup;
 import org.ohdsi.webapi.user.importer.model.LdapUser;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.ldap.control.PagedResultsDirContextProcessor;
 import org.springframework.ldap.core.*;
 import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.ldap.core.support.SimpleDirContextAuthenticationStrategy;
+import org.springframework.ldap.support.LdapUtils;
 import org.springframework.stereotype.Component;
 
 import javax.naming.NamingException;
@@ -42,6 +44,12 @@ public class ActiveDirectoryProvider implements LdapProvider {
 
   @Value("${security.ad.ignore.partial.result.exception}")
   private Boolean adIgnorePartialResultException;
+
+  @Value("${security.ad.result.count.limit:30000}")
+  private Long countLimit;
+
+  @Value("${security.ad.searchFilter}")
+  private String adSearchFilter;
 
   private static final Set<String> GROUP_CLASSES = ImmutableSet.of("group");
 
@@ -83,7 +91,20 @@ public class ActiveDirectoryProvider implements LdapProvider {
   public SearchControls getUserSearchControls() {
     SearchControls searchControls = new SearchControls();
     searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+    searchControls.setCountLimit(countLimit);
     return searchControls;
+  }
+
+  @Override
+  public String getSearchUserFilter() {
+
+    return adSearchFilter;
+  }
+
+  @Override
+  public void search(String filter, CollectingNameClassPairCallbackHandler<LdapUser> handler, PagedResultsDirContextProcessor pager) {
+
+    getLdapTemplate().search(LdapUtils.emptyLdapName(), filter, getUserSearchControls(), handler, pager);
   }
 
   @Override

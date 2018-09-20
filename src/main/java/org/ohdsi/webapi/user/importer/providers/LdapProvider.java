@@ -2,6 +2,7 @@ package org.ohdsi.webapi.user.importer.providers;
 
 import org.ohdsi.webapi.user.importer.model.LdapGroup;
 import org.ohdsi.webapi.user.importer.model.LdapUser;
+import org.springframework.ldap.control.PagedResultsDirContextProcessor;
 import org.springframework.ldap.core.*;
 
 import javax.naming.NamingException;
@@ -21,6 +22,10 @@ public interface LdapProvider {
   Set<String> getGroupClasses();
 
   Set<String> getUserClass();
+
+  String getSearchUserFilter();
+
+  void search(String filter, CollectingNameClassPairCallbackHandler<LdapUser> handler, PagedResultsDirContextProcessor pager);
 
   String getLoginAttributeName();
 

@@ -1,12 +1,12 @@
 package org.ohdsi.webapi.user.importer.providers;
 
-
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.user.importer.model.LdapGroup;
 import org.ohdsi.webapi.user.importer.model.LdapUser;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.ldap.control.PagedResultsDirContextProcessor;
 import org.springframework.ldap.core.*;
 import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.ldap.filter.AndFilter;
@@ -101,6 +101,18 @@ public class DefaultLdapProvider implements LdapProvider {
     searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
     searchControls.setReturningAttributes(USER_ATTRIBUTES);
     return searchControls;
+  }
+
+  @Override
+  public String getSearchUserFilter() {
+
+    return null;
+  }
+
+  @Override
+  public void search(String filter, CollectingNameClassPairCallbackHandler<LdapUser> handler, PagedResultsDirContextProcessor pager) {
+
+    getLdapTemplate().search(LdapUtils.emptyLdapName(), filter, getUserSearchControls(), handler);
   }
 
   @Override

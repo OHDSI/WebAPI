@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcExportDTO;
 import org.springframework.core.convert.ConversionService;
@@ -27,7 +28,7 @@ public class SerializedCcToCcConverter implements AttributeConverter<CohortChara
         String value = "";
         try {
             CcExportDTO cohortCharacterizationDTO = conversionService.convert(data, CcExportDTO.class);
-            value = mapper.writeValueAsString(cohortCharacterizationDTO);
+            value = Utils.serialize(cohortCharacterizationDTO);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }

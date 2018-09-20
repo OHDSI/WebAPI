@@ -81,6 +81,12 @@
     <security.ad.searchFilter></security.ad.searchFilter>
     <security.ad.ignore.partial.result.exception>true</security.ad.ignore.partial.result.exception>
 
+    <security.cas.loginUrl></security.cas.loginUrl>
+    <security.cas.callbackUrl></security.cas.callbackUrl>
+    <security.cas.serverUrl></security.cas.serverUrl>
+    <security.cas.cassvcs></security.cas.cassvcs>
+    <security.cas.casticket>casticket</security.cas.casticket>
+
     <security.db.datasource.schema>${datasource.ohdsi.schema}</security.db.datasource.schema>
     <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
     <security.db.datasource.driverClassName>${datasource.driverClassName}</security.db.datasource.driverClassName>
@@ -621,6 +627,12 @@
       <artifactId>spring-ldap-core</artifactId>
       <version>2.3.2.RELEASE</version>
     </dependency>
+    <dependency>
+      <groupId>org.pac4j</groupId>
+      <artifactId>pac4j-cas</artifactId>
+      <version>1.9.2</version>
+    </dependency>
+
   </dependencies>
   <profiles>
     <profile>

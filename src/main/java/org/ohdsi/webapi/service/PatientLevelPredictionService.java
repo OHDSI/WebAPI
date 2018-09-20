@@ -42,6 +42,7 @@ import org.springframework.stereotype.Component;
  * @author asena5
  */
 @Component
+@Transactional
 @Path("/plp/")
 public class PatientLevelPredictionService extends AbstractDaoService {
 

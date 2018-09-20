@@ -65,6 +65,7 @@ public abstract class AtlasSecurity extends Security {
   protected final Set<String> defaultRoles = new LinkedHashSet<>();
 
   private final Map<String, String> cohortdefinitionCreatorPermissionTemplates = new LinkedHashMap<>();
+  private final Map<String, String> cohortCharacterizationCreatorPermissionTemplates = new LinkedHashMap<>();
   private final Map<String, String> conceptsetCreatorPermissionTemplates = new LinkedHashMap<>();
   private final Map<String, String> sourcePermissionTemplates = new LinkedHashMap<>();
   private final Map<String, String> incidenceRatePermissionTemplates = new LinkedHashMap<>();
@@ -84,6 +85,11 @@ public abstract class AtlasSecurity extends Security {
 
     this.sourcePermissionTemplates.put("cohortdefinition:*:report:%s:get", "Get Inclusion Rule Report for Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("cohortdefinition:*:generate:%s:get", "Generate Cohort on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put(SOURCE_ACCESS_PERMISSION, "Access to Source with SourceKey = %s");
+
+    this.cohortCharacterizationCreatorPermissionTemplates.put("cohort-characterization:%s:put", "Update Cohort Characterization with ID = %s");
+    this.cohortCharacterizationCreatorPermissionTemplates.put("cohort-characterization:%s:delete", "Delete Cohort Characterization with ID = %s");
+    this.cohortCharacterizationCreatorPermissionTemplates.put("cohort-characterization:%s:generation:*:post", "Generate Cohort Characterization with ID = %s");
 
     this.incidenceRatePermissionTemplates.put("ir:%s:get", "Read Incidence Rate with ID=%s");
     this.incidenceRatePermissionTemplates.put("ir:%s:execution:*:get", "Execute Incidence Rate job with ID=%s");
@@ -173,6 +179,21 @@ public abstract class AtlasSecurity extends Security {
       // cohort results
       .addProtectedRestPath("/cohortresults/*")
 
+      // cohort characterization
+      .addProtectedRestPath("/cohort-characterization", "createPermissionsOnCreateCohortCharacterization")
+      .addProtectedRestPath("/cohort-characterization/import", "createPermissionsOnCreateCohortCharacterization")
+      .addProtectedRestPath("/cohort-characterization/*", "deletePermissionsOnDeleteCohortCharacterization")
+      .addProtectedRestPath("/cohort-characterization/*/generation/*")
+      .addProtectedRestPath("/cohort-characterization/*/generation")
+      .addProtectedRestPath("/cohort-characterization/generation/*")
+      .addProtectedRestPath("/cohort-characterization/generation/*/design")
+      .addProtectedRestPath("/cohort-characterization/generation/*/result")
+      .addProtectedRestPath("/cohort-characterization/*/export")
+
+      // feature analyses
+      .addProtectedRestPath("/feature-analysis")
+      .addProtectedRestPath("/feature-analysis/*")
+
       // evidence
       .addProtectedRestPath("/evidence/*")
       .addProtectedRestPath("/evidence/*/negativecontrols")
@@ -206,6 +227,8 @@ public abstract class AtlasSecurity extends Security {
     filters.put("forceSessionCreation", new ForceSessionCreationFilter());
     filters.put("authz", new UrlBasedAuthorizingFilter());
     filters.put("createPermissionsOnCreateCohortDefinition", this.getCreatePermissionsOnCreateCohortDefinitionFilter());
+    filters.put("createPermissionsOnCreateCohortCharacterization", this.getCreatePermissionsOnCreateCohortCharacterizationFilter());
+    filters.put("deletePermissionsOnDeleteCohortCharacterization", this.getDeletePermissionsOnDeleteFilter(cohortCharacterizationCreatorPermissionTemplates));
     filters.put("createPermissionsOnCreateConceptSet", this.getCreatePermissionsOnCreateConceptSetFilter());
     filters.put("deletePermissionsOnDeleteCohortDefinition", this.getDeletePermissionsOnDeleteCohortDefinitionFilter());
     filters.put("deletePermissionsOnDeleteConceptSet", this.getDeletePermissionsOnDeleteConceptSetFilter());
@@ -303,6 +326,23 @@ public abstract class AtlasSecurity extends Security {
         String id = this.parseJsonField(content, "id");
         RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
         authorizer.addPermissionsFromTemplate(currentUserPersonalRole, cohortdefinitionCreatorPermissionTemplates, id);
+      }
+    };
+  }
+
+  private Filter getCreatePermissionsOnCreateCohortCharacterizationFilter() {
+    return  new ProcessResponseContentFilter() {
+      @Override
+      protected boolean shouldProcess(ServletRequest request, ServletResponse response) {
+
+        return HttpMethod.POST.equalsIgnoreCase(WebUtils.toHttp(request).getMethod());
+      }
+
+      @Override
+      protected void doProcessResponseContent(String content) throws Exception {
+        String id = this.parseJsonField(content, "id");
+        RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
+        authorizer.addPermissionsFromTemplate(currentUserPersonalRole, cohortCharacterizationCreatorPermissionTemplates, id);
       }
     };
   }

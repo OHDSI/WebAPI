@@ -1,9 +1,13 @@
 package org.ohdsi.webapi;
 
+import javax.inject.Singleton;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.EncodingFilter;
+import org.glassfish.jersey.server.spi.internal.ValueFactoryProvider;
+import org.ohdsi.webapi.cohortcharacterization.CcController;
 import org.ohdsi.webapi.executionengine.controller.ScriptExecutionCallbackController;
 import org.ohdsi.webapi.executionengine.controller.ScriptExecutionController;
 import org.ohdsi.webapi.service.ActivityService;
@@ -80,5 +84,14 @@ public class JerseyConfig extends ResourceConfig implements InitializingBean {
         register(ScriptExecutionCallbackController.class);
         register(MultiPartFeature.class);
         register(FeatureExtractionService.class);
+        register(CcController.class);
+        register(new AbstractBinder() {
+            @Override
+            protected void configure() {
+                bind(PageableValueFactoryProvider.class)
+                        .to(ValueFactoryProvider.class)
+                        .in(Singleton.class);
+            }
+        });
     }
 }

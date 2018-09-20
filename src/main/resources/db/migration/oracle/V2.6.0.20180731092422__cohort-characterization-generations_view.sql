@@ -10,7 +10,7 @@ CREATE OR REPLACE VIEW ${ohdsiSchema}.cc_generation as
           gen_info.design                          design,
           gen_info.hash_code                       hash_code,
           gen_info.created_by_id                   created_by_id
-  FROM OHDSI2.batch_job_execution job
+  FROM ${ohdsiSchema}.batch_job_execution job
     JOIN ${ohdsiSchema}.batch_job_execution_params cc_id_param
       ON job.job_execution_id = cc_id_param.job_execution_id AND cc_id_param.key_name = 'cohort_characterization_id'
     JOIN ${ohdsiSchema}.batch_job_execution_params source_param

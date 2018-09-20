@@ -22,7 +22,7 @@ import java.util.HashMap;
 @Component("healthStatusController")
 @Path("/health-status")
 @ConditionalOnProperty(name = "webapi.central", havingValue = "true")
-public class HealthStatusController {
+public class HealthStatusService {
 
     private final Log log = LogFactory.getLog(getClass());
 

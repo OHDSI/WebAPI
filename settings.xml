@@ -85,7 +85,8 @@
         <profile>
             <id>honeur-test</id>
             <properties>
-                <user.properties>${project.basedir}/src/test/resources/jmeter/test.properties</user.properties>
+                <user.properties>${properties.folder}/custom.properties</user.properties>
+                <properties.folder>${project.basedir}/src/test/resources/jmeter</properties.folder>
             </properties>
         </profile>
     </profiles>

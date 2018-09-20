@@ -91,9 +91,7 @@ public class CasHandleFilter extends AtlasAuthFilter {
                         //currentUser.login(ct);
                         
                     } catch (TicketValidationException e) {
-                        logger.error(e);
-                        e.printStackTrace();
-                        throw new AuthenticationException();
+                        throw new AuthenticationException(e);
                     }
                 }
                 

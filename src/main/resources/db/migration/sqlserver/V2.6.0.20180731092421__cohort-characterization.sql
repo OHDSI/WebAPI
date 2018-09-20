@@ -273,5 +273,3 @@ ALTER TABLE ${ohdsiSchema}.analysis_generation_info
   ADD CONSTRAINT fk_cgi_sec_user FOREIGN KEY (created_by_id)
 REFERENCES ${ohdsiSchema}.sec_user(id)
   ON UPDATE NO ACTION ON DELETE NO ACTION;
-
-ALTER TABLE ${ohdsiSchema}.batch_job_execution_params alter column string_val varchar(max);

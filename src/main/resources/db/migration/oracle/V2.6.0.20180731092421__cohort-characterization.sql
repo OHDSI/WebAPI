@@ -282,8 +282,3 @@ CREATE TABLE ${ohdsiSchema}.analysis_generation_info (
 ALTER TABLE ${ohdsiSchema}.analysis_generation_info
   ADD CONSTRAINT fk_cgi_sec_user FOREIGN KEY (created_by_id)
 REFERENCES ${ohdsiSchema}.sec_user(id);
-
-ALTER TABLE ${ohdsiSchema}.batch_job_execution_params add(string_val_clob CLOB NULL);
-UPDATE ${ohdsiSchema}.batch_job_execution_params set string_val_clob = string_val, string_val = null;
-ALTER TABLE ${ohdsiSchema}.batch_job_execution_params drop column string_val;
-ALTER TABLE ${ohdsiSchema}.batch_job_execution_params rename column string_val_clob to string_val;

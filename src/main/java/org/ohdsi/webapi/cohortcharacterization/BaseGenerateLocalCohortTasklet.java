@@ -12,6 +12,7 @@ import org.springframework.batch.core.step.tasklet.StoppableTasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -61,16 +62,20 @@ public abstract class BaseGenerateLocalCohortTasklet implements StoppableTasklet
 
     private String targetTable;
     private Source source;
+    private String jobAuthorLogin;
 
     public GenerateTask(ChunkContext chunkContext) {
       Map<String, Object> jobParameters = chunkContext.getStepContext().getJobParameters();
       targetTable = jobParameters.get(TARGET_TABLE).toString();
       source = sourceRepository.findBySourceId(Integer.valueOf(jobParameters.get(SOURCE_ID).toString()));
+      jobAuthorLogin = jobParameters.get(JOB_AUTHOR).toString();
     }
 
     private JobExecutionResource generateCohort(CohortDefinition cd) {
 
-      return cohortGenerationService.runGenerateCohortJob(cd, source, false, false, targetTable);
+      Map<String, String> extraParams = new HashMap<>();
+      extraParams.put(JOB_AUTHOR, jobAuthorLogin);
+      return cohortGenerationService.runGenerateCohortJob(cd, source, false, false, targetTable, extraParams);
     }
 
     public void run(List<CohortDefinition> cohortDefinitions) {

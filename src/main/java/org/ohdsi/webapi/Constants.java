@@ -11,7 +11,6 @@ public interface Constants {
     String COHORT_DEFINITION_ID = "cohort_definition_id";
     String COHORT_CHARACTERIZATION_ID = "cohort_characterization_id";
     String SOURCE_ID = "source_id";
-    String USER_ID = "user_id";
     String ANALYSIS_ID = "analysis_id";
     String CDM_DATABASE_SCHEMA = "cdm_database_schema";
     String JOB_NAME = "jobName";

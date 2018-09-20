@@ -134,7 +134,7 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
                     Integer.valueOf(jobParams.get(SOURCE_ID).toString())
             );
             this.cohortTable = jobParams.get(TARGET_TABLE).toString();
-            this.userEntity = userRepository.findByLogin(jobParams.get(USER_ID).toString());
+            this.userEntity = userRepository.findByLogin(jobParams.get(JOB_AUTHOR).toString());
         }
         
         private void run() {

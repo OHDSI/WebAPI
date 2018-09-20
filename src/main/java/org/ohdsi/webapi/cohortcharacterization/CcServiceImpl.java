@@ -323,7 +323,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         builder.addString(JOB_NAME, String.format("Generating cohort characterization %d : %s (%s)", id, source.getSourceName(), source.getSourceKey()));
         builder.addString(COHORT_CHARACTERIZATION_ID, String.valueOf(id));
         builder.addString(SOURCE_ID, String.valueOf(source.getSourceId()));
-        builder.addString(USER_ID, getCurrentUserLogin());
+        builder.addString(JOB_AUTHOR, getCurrentUserLogin());
         builder.addString(TARGET_TABLE, targetTable);
         
         final JobParameters jobParameters = builder.toJobParameters();

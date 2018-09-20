@@ -9,7 +9,6 @@ import org.ohdsi.webapi.cohortcharacterization.dto.CcExportDTO;
 import org.springframework.core.convert.ConversionService;
 
 import javax.persistence.AttributeConverter;
-import java.io.IOException;
 
 public class SerializedCcToCcConverter implements AttributeConverter<CohortCharacterizationEntity, String> {
 
@@ -38,13 +37,15 @@ public class SerializedCcToCcConverter implements AttributeConverter<CohortChara
     @Override
     public CohortCharacterizationEntity convertToEntityAttribute(String data) {
 
-        CohortCharacterizationEntity cc = new CohortCharacterizationEntity();
         TypeReference<CcExportDTO> typeRef = new TypeReference<CcExportDTO>() {};
+        CcExportDTO dto = new CcExportDTO();
         try {
-            cc = conversionService.convert(mapper.readValue(data, typeRef), CohortCharacterizationEntity.class);
-        } catch (IOException e) {
-            e.printStackTrace();
+            dto = mapper.readValue(data, typeRef);
+        } catch (NullPointerException ex) {
+            return null;
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
-        return cc;
+        return conversionService.convert(dto, CohortCharacterizationEntity.class);
     }
 }

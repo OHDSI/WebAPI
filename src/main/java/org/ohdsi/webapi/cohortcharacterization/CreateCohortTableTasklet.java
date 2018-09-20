@@ -3,6 +3,9 @@ package org.ohdsi.webapi.cohortcharacterization;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceDaimon;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
@@ -19,12 +22,13 @@ public class CreateCohortTableTasklet implements Tasklet {
   private final String CREATE_COHORT_SQL = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/createCohortTable.sql");
 
   private final JdbcTemplate jdbcTemplate;
-
   private final TransactionTemplate transactionTemplate;
+  private final SourceService sourceService;
 
-  public CreateCohortTableTasklet(JdbcTemplate jdbcTemplate, TransactionTemplate transactionTemplate) {
+  public CreateCohortTableTasklet(JdbcTemplate jdbcTemplate, TransactionTemplate transactionTemplate, SourceService sourceService) {
     this.jdbcTemplate = jdbcTemplate;
     this.transactionTemplate = transactionTemplate;
+    this.sourceService = sourceService;
   }
 
   @Override
@@ -37,14 +41,13 @@ public class CreateCohortTableTasklet implements Tasklet {
   private Object doTask(ChunkContext chunkContext) {
 
     Map<String, Object> jobParameters = chunkContext.getStepContext().getJobParameters();
-    String targetDialect = jobParameters.get(TARGET_DIALECT).toString();
+    Source source = sourceService.findBySourceId(Integer.valueOf(jobParameters.get(SOURCE_ID).toString()));
     String targetTable = jobParameters.get(TARGET_TABLE).toString();
-    String resultsSchema = jobParameters.get(RESULTS_DATABASE_SCHEMA).toString();
 
     String sql = SqlRender.renderSql(CREATE_COHORT_SQL,
             new String[]{ RESULTS_DATABASE_SCHEMA, TARGET_TABLE },
-            new String[] { resultsSchema, targetTable });
-    String translatedSql = SqlTranslate.translateSql(sql, targetDialect);
+            new String[] { source.getTableQualifier(SourceDaimon.DaimonType.Results), targetTable });
+    String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect());
     jdbcTemplate.execute(translatedSql);
 
     return null;

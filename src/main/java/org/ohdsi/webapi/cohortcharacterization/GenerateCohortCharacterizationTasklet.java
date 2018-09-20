@@ -25,9 +25,16 @@ import org.ohdsi.featureExtraction.FeatureExtraction;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationInfoEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
+import org.ohdsi.webapi.cohortcharacterization.repository.CcGenerationInfoEntityRepository;
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
+import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.shiro.Entities.UserRepository;
+import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
@@ -62,19 +69,26 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
     private final JdbcTemplate jdbcTemplate;
     private final CcService ccService;
     private final FeAnalysisService feAnalysisService;
-    
+    private final CcGenerationInfoEntityRepository ccGenerationInfoEntityRepository;
+    private final SourceService sourceService;
+    private final UserRepository userRepository;
     
     public GenerateCohortCharacterizationTasklet(
             final JdbcTemplate jdbcTemplate,
             final TransactionTemplate transactionTemplate,
             final CcService ccService,
-            final FeAnalysisService feAnalysisService
-            ) {
+            final FeAnalysisService feAnalysisService,
+            final CcGenerationInfoEntityRepository ccGenerationInfoEntityRepository,
+            final SourceService sourceService,
+            final UserRepository userRepository
+    ) {
         this.jdbcTemplate = jdbcTemplate;
         this.transactionTemplate = transactionTemplate;
         this.ccService = ccService;
         this.feAnalysisService = feAnalysisService;
-        
+        this.ccGenerationInfoEntityRepository = ccGenerationInfoEntityRepository;
+        this.sourceService = sourceService;
+        this.userRepository = userRepository;
         this.taskExecutor = Executors.newSingleThreadExecutor();
     }
 
@@ -162,30 +176,40 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
                 "from (%5$s) subquery;";
         
         final CohortCharacterizationEntity cohortCharacterization;
-        final String resultSchema;
-        final String cdmSchema;
+        final Source source;
+        final UserEntity userEntity;
         final String cohortTable;
-        
-        private final Map<String, Object> jobParams;
-        final String targetDialect;
         
         private final Long jobId;
 
         CcTask(final ChunkContext context) {
-            this.jobParams = context.getStepContext().getJobParameters();
-            this.targetDialect = jobParams.get(TARGET_DIALECT).toString();
+            Map<String, Object> jobParams = context.getStepContext().getJobParameters();
             this.cohortCharacterization = ccService.findByIdWithLinkedEntities(
                     Long.valueOf(jobParams.get(COHORT_CHARACTERIZATION_ID).toString())
             );
-            this.resultSchema = jobParams.get(RESULTS_DATABASE_SCHEMA).toString();
-            this.cdmSchema = jobParams.get(CDM_DATABASE_SCHEMA).toString();
-            this.cohortTable = jobParams.get(TARGET_TABLE).toString();
             this.jobId = context.getStepContext().getStepExecution().getJobExecution().getId();
+            this.source = sourceService.findBySourceId(
+                    Integer.valueOf(jobParams.get(SOURCE_ID).toString())
+            );
+            this.cohortTable = jobParams.get(TARGET_TABLE).toString();
+            this.userEntity = userRepository.findByLogin(jobParams.get(USER_ID).toString());
         }
         
         private void run() {
+
+            saveInfo(jobId, cohortCharacterization, userEntity);
             cohortCharacterization.getCohortDefinitions()
                     .forEach(definition -> runAnalysisOnCohort(definition.getId()));
+        }
+
+        private void saveInfo(Long jobId, CohortCharacterizationEntity cohortCharacterization, UserEntity userEntity) {
+
+            CcGenerationInfoEntity generationInfoEntity = new CcGenerationInfoEntity();
+            generationInfoEntity.setId(jobId);
+            generationInfoEntity.setDesign(cohortCharacterization);
+            generationInfoEntity.setHashCode(cohortCharacterization.getHashCode());
+            generationInfoEntity.setCreatedBy(userEntity);
+            ccGenerationInfoEntityRepository.save(generationInfoEntity);
         }
 
         private int[] runAnalysisOnCohort(final Integer cohortDefinitionId) {
@@ -282,14 +306,14 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
         
         private CohortExpressionQueryBuilder.BuildExpressionQueryOptions createDefaultOptions(final Integer id) {
             final CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = new CohortExpressionQueryBuilder.BuildExpressionQueryOptions();
-            options.cdmSchema = jobParams.get(CDM_DATABASE_SCHEMA).toString();
-            options.resultSchema = this.resultSchema;
+            options.cdmSchema = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+            options.resultSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
             options.cohortId = id;
             return options;
         }
 
         private String[] getSqlQueriesToRun(final JSONObject jsonObject, final Integer cohortDefinitionId) {
-            final StringJoiner joiner = new StringJoiner("\r  ---- \r ");
+            final StringJoiner joiner = new StringJoiner("\n\n");
             
             joiner.add(jsonObject.getString("sqlConstruction"));
             
@@ -301,8 +325,8 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
             
             final String sql = SqlRender.renderSql(joiner.toString(),
                     new String[]{RESULTS_DATABASE_SCHEMA, CDM_DATABASE_SCHEMA},
-                    new String[]{resultSchema, cdmSchema});
-            final String translatedSql = SqlTranslate.translateSql(sql, targetDialect, SessionUtils.sessionId(), null);
+                    new String[]{source.getTableQualifier(SourceDaimon.DaimonType.Results), source.getTableQualifier(SourceDaimon.DaimonType.CDM)});
+            final String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect(), SessionUtils.sessionId(), null);
             return SqlSplit.splitSql(translatedSql);
         }
 

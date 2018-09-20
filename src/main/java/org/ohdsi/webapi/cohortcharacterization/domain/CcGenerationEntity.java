@@ -14,16 +14,17 @@ import javax.persistence.TemporalType;
 
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConverter;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.source.Source;
 
 @Entity
 @Table(name = "cc_generation")
-public class CcGenerationEntity {
+public class CcGenerationEntity implements CcGenerationInfo {
     @Id
     @Column
     private Long id;
     @ManyToOne(targetEntity = CohortCharacterizationEntity.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "cohort_characterization_id")
+    @JoinColumn(name = "cc_id")
     private CohortCharacterizationEntity cohortCharacterization;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "source_id")
@@ -41,6 +42,11 @@ public class CcGenerationEntity {
     private Date endTime;
     @Column
     private String status;
+    @Column(name = "exit_message")
+    private String exitMessage;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by_id", updatable = false)
+    private UserEntity createdBy;
 
     public Long getId() {
         return id;
@@ -107,5 +113,25 @@ public class CcGenerationEntity {
 
     public void setStatus(final String status) {
         this.status = status;
+    }
+
+    public String getExitMessage() {
+
+        return exitMessage;
+    }
+
+    public void setExitMessage(String exitMessage) {
+
+        this.exitMessage = exitMessage;
+    }
+
+    public UserEntity getCreatedBy() {
+
+        return createdBy;
+    }
+
+    public void setCreatedBy(UserEntity createdBy) {
+
+        this.createdBy = createdBy;
     }
 }

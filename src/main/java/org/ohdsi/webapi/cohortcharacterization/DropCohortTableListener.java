@@ -2,6 +2,9 @@ package org.ohdsi.webapi.cohortcharacterization;
 
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceDaimon;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameter;
 import org.springframework.batch.core.JobParameters;
@@ -18,18 +21,21 @@ public class DropCohortTableListener extends JobExecutionListenerSupport {
   private final String DROP_TABLE_SQL = "DROP TABLE @results_database_schema.@target_table;";
   private final JdbcTemplate jdbcTemplate;
   private final TransactionTemplate transactionTemplate;
+  private final SourceService sourceService;
 
-  public DropCohortTableListener(JdbcTemplate jdbcTemplate, TransactionTemplate transactionTemplate) {
+  public DropCohortTableListener(JdbcTemplate jdbcTemplate, TransactionTemplate transactionTemplate, SourceService sourceService) {
     this.jdbcTemplate = jdbcTemplate;
     this.transactionTemplate = transactionTemplate;
+    this.sourceService = sourceService;
   }
 
   private Object doTask(JobParameters parameters) {
 
     Map<String, JobParameter> jobParameters = parameters.getParameters();
+    Source source = sourceService.findBySourceId(Integer.valueOf(jobParameters.get(SOURCE_ID).toString()));
     String targetTable = jobParameters.get(TARGET_TABLE).getValue().toString();
-    String targetDialect = jobParameters.get(TARGET_DIALECT).getValue().toString();
-    String resultsSchema = jobParameters.get(RESULTS_DATABASE_SCHEMA).getValue().toString();
+    String targetDialect = source.getSourceDialect();
+    String resultsSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 
     String sql = SqlRender.renderSql(DROP_TABLE_SQL, new String[] { RESULTS_DATABASE_SCHEMA, TARGET_TABLE },
             new String[] { resultsSchema, targetTable });

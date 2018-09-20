@@ -9,6 +9,7 @@ public class CcGenerationDTO {
     private Integer hashCode;
     private Date startTime;
     private Date endTime;
+    private String exitMessage;
 
     public Long getId() {
 
@@ -68,5 +69,15 @@ public class CcGenerationDTO {
     public void setEndTime(Date endTime) {
 
         this.endTime = endTime;
+    }
+
+    public String getExitMessage() {
+
+        return exitMessage;
+    }
+
+    public void setExitMessage(String exitMessage) {
+
+        this.exitMessage = exitMessage;
     }
 }

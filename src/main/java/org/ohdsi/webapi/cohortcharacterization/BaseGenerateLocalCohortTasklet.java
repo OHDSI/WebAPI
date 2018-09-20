@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
-import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.service.CohortGenerationService;

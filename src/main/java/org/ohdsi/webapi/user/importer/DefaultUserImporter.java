@@ -98,7 +98,7 @@ public class DefaultUserImporter implements UserImporter {
     LdapProvider provider = getProvider(providerType).orElseThrow(IllegalArgumentException::new);
     long countLimit = provider.getUserSearchControls().getCountLimit();
     CollectingNameClassPairCallbackHandler<LdapUser> handler = provider.getUserSearchCallbackHandler(getUserAttributesMapper(providerType));
-    int resultsPerPage = 1;
+    int resultsPerPage = 500;
     PagedResultsDirContextProcessor pager = new PagedResultsDirContextProcessor(resultsPerPage);
     do {
       provider.search(getUserFilter(provider), handler, pager);
@@ -108,6 +108,9 @@ public class DefaultUserImporter implements UserImporter {
             && (countLimit == 0 || handler.getList().size() < countLimit));
 
     List<LdapUser> users = handler.getList();
+    if (countLimit > 0 && countLimit < users.size()) {
+        users = users.subList(0, (int) Math.min(countLimit, users.size()));
+    }
     return users.stream()
             .map(user -> {
               AtlasUserRoles atlasUser = new AtlasUserRoles();

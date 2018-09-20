@@ -218,12 +218,18 @@ public class HoneurCohortDefinitionServiceExtension {
     @Path("/{id}/export/{sourceKey}")
     public Response exportCohortResults(@HeaderParam("Authorization") String token, @PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey, @QueryParam("toCloud") final boolean toCloud, HttpHeaders headers) {
         try {
-            CohortGenerationInfo info = this.cohortGenerationInfoRepository.findGenerationInfoByIdAndSourceId(id, sourceRepository.findBySourceKey(sourceKey).getSourceId());
+            log.info("Cohort definition id: " + id);
+            log.info("Source key: " + sourceKey);
+            log.info("toCloud: " + toCloud);
 
+            CohortGenerationInfo info = this.cohortGenerationInfoRepository.findGenerationInfoByIdAndSourceId(id, sourceRepository.findBySourceKey(sourceKey).getSourceId());
+            log.info("CohortGenerationInfo: " + info);
+
+            log.info("Set source daimon context to: " + new SourceDaimonContext(sourceKey, SourceDaimon.DaimonType.Results).getSourceDaimonContextKey());
             SourceDaimonContextHolder
                     .setCurrentSourceDaimonContext(new SourceDaimonContext(sourceKey, SourceDaimon.DaimonType.Results));
 
-            List<CohortEntity> cohorts = cohortRepository.findByCohortDefinitionId((long) id);
+            List<CohortEntity> cohorts = cohortRepository.getAllCohortsForId((long) id);
             List<CohortInclusionEntity> cohortInclusions =
                     cohortInclusionRepository.findByCohortDefinitionId((long) id);
             List<CohortInclusionResultEntity> cohortInclusionResults =
@@ -240,6 +246,7 @@ public class HoneurCohortDefinitionServiceExtension {
             results.setCohortInclusionStats(cohortInclusionStats);
             results.setCohortSummaryStats(cohortSummaryStats);
 
+            log.info("Include features? " + info.isIncludeFeatures());
             if(info.isIncludeFeatures()){
                 List<CohortFeaturesEntity> cohortFeaturesEntities = cohortFeaturesRepository.findByCohortDefinitionId((long) id);
                 List<CohortFeaturesAnalysisRefEntity> cohortFeaturesAnalysisRefEntities = cohortFeaturesAnalysisRefRepository.findByCohortDefinitionId((long) id);
@@ -260,9 +267,11 @@ public class HoneurCohortDefinitionServiceExtension {
             File file = createFile(sourceKey+"-"+timeStamp+".results", results);
 
             CohortDefinition cohortDefinition = this.cohortDefinitionRepository.findOneWithDetail(id);
+            log.info("Cohort definition with details: " + cohortDefinition);
 
-            if(toCloud && file != null){
-                storageServiceClient.saveResults(token, file,cohortDefinition.getUuid().toString());
+            if(toCloud && file != null) {
+                log.info("Export cohort results to HSS");
+                storageServiceClient.saveResults(token, file, cohortDefinition.getUuid().toString());
             }
             return getResponse(file);
         } catch(Exception e){

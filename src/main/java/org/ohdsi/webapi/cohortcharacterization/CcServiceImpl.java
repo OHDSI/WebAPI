@@ -20,7 +20,7 @@ import org.ohdsi.webapi.cohortcharacterization.dto.CcDistributionStat;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcPrevalenceStat;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
 import org.ohdsi.webapi.cohortcharacterization.repository.CcGenerationEntityRepository;
-import org.ohdsi.webapi.cohortcharacterization.repository.CcGenerationInfoEntityRepository;
+import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfoEntityRepository;
 import org.ohdsi.webapi.cohortcharacterization.repository.CcParamRepository;
 import org.ohdsi.webapi.cohortcharacterization.repository.CcRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
@@ -96,7 +96,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
     private FeatureExtractionService featureExtractionService;
     private DesignImportService designImportService;
     private CohortGenerationService cohortGenerationService;
-    private CcGenerationInfoEntityRepository ccGenerationInfoEntityRepository;
+    private AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository;
     private SourceService sourceService;
 
     private final JobRepository jobRepository;
@@ -118,7 +118,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
             final DesignImportService designImportService,
             final CohortGenerationService cohortGenerationService,
             final JobRepository jobRepository,
-            final CcGenerationInfoEntityRepository ccGenerationInfoEntityRepository,
+            final AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository,
             final SourceService sourceService
     ) {
         this.repository = ccRepository;
@@ -136,7 +136,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         this.designImportService = designImportService;
         this.cohortGenerationService = cohortGenerationService;
         this.jobRepository = jobRepository;
-        this.ccGenerationInfoEntityRepository = ccGenerationInfoEntityRepository;
+        this.analysisGenerationInfoEntityRepository = analysisGenerationInfoEntityRepository;
         this.sourceService = sourceService;
         SerializedCcToCcConverter.setConversionService(conversionService);
     }
@@ -345,7 +345,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
                 getTransactionTemplate(),
                 this,
                 analysisService,
-                ccGenerationInfoEntityRepository,
+                analysisGenerationInfoEntityRepository,
                 sourceService,
                 userRepository
         );

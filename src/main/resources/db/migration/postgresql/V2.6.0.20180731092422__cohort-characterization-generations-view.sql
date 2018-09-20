@@ -18,7 +18,7 @@ FROM ${ohdsiSchema}.batch_job_execution job
     ON job.job_execution_id = cc_id_param.job_execution_id AND cc_id_param.key_name = 'cohort_characterization_id'
   JOIN ${ohdsiSchema}.batch_job_execution_params source_param
     ON job.job_execution_id = source_param.job_execution_id AND source_param.key_name = 'source_id'
-  LEFT JOIN ${ohdsiSchema}.cc_generation_info gen_info
+  LEFT JOIN ${ohdsiSchema}.analysis_generation_info gen_info
     ON job.job_execution_id = gen_info.job_execution_id
 ORDER BY start_time DESC
 

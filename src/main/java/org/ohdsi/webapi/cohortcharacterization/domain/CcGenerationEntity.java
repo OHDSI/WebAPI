@@ -19,7 +19,7 @@ import org.ohdsi.webapi.source.Source;
 
 @Entity
 @Table(name = "cc_generation")
-public class CcGenerationEntity implements CcGenerationInfo {
+public class CcGenerationEntity implements AnalysisGenerationInfo {
     @Id
     @Column
     private Long id;

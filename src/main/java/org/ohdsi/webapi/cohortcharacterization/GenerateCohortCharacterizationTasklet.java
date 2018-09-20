@@ -25,9 +25,9 @@ import org.ohdsi.featureExtraction.FeatureExtraction;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
-import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationInfoEntity;
+import org.ohdsi.webapi.cohortcharacterization.domain.AnalysisGenerationInfoEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
-import org.ohdsi.webapi.cohortcharacterization.repository.CcGenerationInfoEntityRepository;
+import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfoEntityRepository;
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.service.SourceService;
@@ -69,7 +69,7 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
     private final JdbcTemplate jdbcTemplate;
     private final CcService ccService;
     private final FeAnalysisService feAnalysisService;
-    private final CcGenerationInfoEntityRepository ccGenerationInfoEntityRepository;
+    private final AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository;
     private final SourceService sourceService;
     private final UserRepository userRepository;
     
@@ -78,7 +78,7 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
             final TransactionTemplate transactionTemplate,
             final CcService ccService,
             final FeAnalysisService feAnalysisService,
-            final CcGenerationInfoEntityRepository ccGenerationInfoEntityRepository,
+            final AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository,
             final SourceService sourceService,
             final UserRepository userRepository
     ) {
@@ -86,7 +86,7 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
         this.transactionTemplate = transactionTemplate;
         this.ccService = ccService;
         this.feAnalysisService = feAnalysisService;
-        this.ccGenerationInfoEntityRepository = ccGenerationInfoEntityRepository;
+        this.analysisGenerationInfoEntityRepository = analysisGenerationInfoEntityRepository;
         this.sourceService = sourceService;
         this.userRepository = userRepository;
         this.taskExecutor = Executors.newSingleThreadExecutor();
@@ -204,12 +204,12 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
 
         private void saveInfo(Long jobId, CohortCharacterizationEntity cohortCharacterization, UserEntity userEntity) {
 
-            CcGenerationInfoEntity generationInfoEntity = new CcGenerationInfoEntity();
+            AnalysisGenerationInfoEntity generationInfoEntity = new AnalysisGenerationInfoEntity();
             generationInfoEntity.setId(jobId);
             generationInfoEntity.setDesign(cohortCharacterization);
             generationInfoEntity.setHashCode(cohortCharacterization.getHashCode());
             generationInfoEntity.setCreatedBy(userEntity);
-            ccGenerationInfoEntityRepository.save(generationInfoEntity);
+            analysisGenerationInfoEntityRepository.save(generationInfoEntity);
         }
 
         private int[] runAnalysisOnCohort(final Integer cohortDefinitionId) {

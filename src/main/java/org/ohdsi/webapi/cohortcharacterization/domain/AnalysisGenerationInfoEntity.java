@@ -14,8 +14,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "cc_generation_info")
-public class CcGenerationInfoEntity implements CcGenerationInfo {
+@Table(name = "analysis_generation_info")
+public class AnalysisGenerationInfoEntity implements AnalysisGenerationInfo {
 
     @Id
     @Column(name = "job_execution_id")

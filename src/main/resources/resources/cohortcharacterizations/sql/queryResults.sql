@@ -1,6 +1,6 @@
 select
        r.type,
-       r.cohort_characterization_generation_id,
+       r.cc_generation_id,
        r.analysis_id,
        r.analysis_name,
        r.covariate_id,
@@ -19,4 +19,4 @@ select
        r.max_value,
        r.cohort_definition_id
 from @cdm_results_schema.cc_results r
-where r.cohort_characterization_generation_id = @cohort_characterization_generation_id
+where r.cc_generation_id = @cohort_characterization_generation_id

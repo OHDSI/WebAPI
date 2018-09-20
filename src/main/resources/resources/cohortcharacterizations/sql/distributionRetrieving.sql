@@ -1,6 +1,6 @@
 insert into @results_database_schema.cc_results (type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id,
     count_value, min_value, max_value, avg_value, stdev_value, median_value,
-    p10_value, p25_value, p75_value, p90_value, cohort_definition_id, cohort_characterization_generation_id)
+    p10_value, p25_value, p75_value, p90_value, cohort_definition_id, cc_generation_id)
   select 'DISTRIBUTION',
     f.covariate_id,
     fr.covariate_name,
@@ -18,7 +18,7 @@ insert into @results_database_schema.cc_results (type, covariate_id, covariate_n
     f.p75_value,
     f.p90_value,
     @cohortId as cohort_definition_id,
-    @executionId as cohort_characterization_generation_id
+    @executionId as cc_generation_id
   from (@features) f
     join (@featureRefs) fr on fr.covariate_id = f.covariate_id and fr.cohort_definition_id = f.cohort_definition_id
     join (@analysisRefs) ar

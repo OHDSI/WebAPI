@@ -1,4 +1,4 @@
-insert into @results_database_schema.cc_results (type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id, count_value, avg_value, cohort_definition_id, cohort_characterization_generation_id)
+insert into @results_database_schema.cc_results (type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id, count_value, avg_value, cohort_definition_id, cc_generation_id)
   select 'PREVALENCE' as type,
     f.covariate_id,
     fr.covariate_name,
@@ -8,7 +8,7 @@ insert into @results_database_schema.cc_results (type, covariate_id, covariate_n
     f.sum_value     as count_value,
     f.average_value as stat_value,
     @cohortId as cohort_definition_id,
-    @executionId as cohort_characterization_generation_id
+    @executionId as cc_generation_id
   from (@features) f
     join (@featureRefs) fr on fr.covariate_id = f.covariate_id and fr.cohort_definition_id = f.cohort_definition_id
     join (@analysisRefs) ar

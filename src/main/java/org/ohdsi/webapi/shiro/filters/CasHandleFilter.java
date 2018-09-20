@@ -9,6 +9,7 @@ import javax.servlet.http.HttpSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.servlet.ShiroHttpServletRequest;
@@ -92,6 +93,7 @@ public class CasHandleFilter extends AtlasAuthFilter {
                     } catch (TicketValidationException e) {
                         logger.error(e);
                         e.printStackTrace();
+                        throw new AuthenticationException();
                     }
                 }
                 

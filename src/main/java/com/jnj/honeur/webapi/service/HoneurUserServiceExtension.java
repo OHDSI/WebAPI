@@ -41,7 +41,7 @@ public class HoneurUserServiceExtension {
     @GET
     @Path("user/permission")
     @Produces(MediaType.APPLICATION_JSON)
-    public Iterable<String> getPermissions(@HeaderParam("Authorization") String token) throws Exception {
+    public Iterable<String> getPermissions(@HeaderParam("Authorization") String token) {
         String login = SecurityUtils2.getSubject(token.replace("Bearer ", ""));
         AuthorizationInfo authorizationInfo = this.authorizer.getAuthorizationInfo(login);
         Collection<String> permissionEntities = authorizationInfo.getStringPermissions();

@@ -78,11 +78,7 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
                 .filter(cohortDefinition -> !previousVersionsUuids.contains(cohortDefinition.getUuid()))
                 .collect(Collectors.toList());
 
-        //TODO: Do we want this also at remote site?
-        if(isCentral) {
-            if(token == null){
-                //TODO: If token == null?
-            }
+        if(securityEnabled) {
             String permissionPattern = "cohortdefinition:([0-9]+|\\*):get";
             LiferayPermissionManager liferayPermissionManager = (LiferayPermissionManager) authorizer;
             List<Integer> definitionIds = liferayPermissionManager.getUserPermissions(SecurityUtils2.getSubject(token.replace("Bearer ", ""))).stream()
@@ -236,10 +232,5 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
         this.cohortDefinitionRepository.save(currentDefinition);
 
         return getCohortDefinition(id);
-    }
-
-    @PostConstruct
-    public void initIt() throws Exception {
-        System.out.println("HONEUR COHORT DEFINITION SERVICE CREATED");
     }
 }

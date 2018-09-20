@@ -272,6 +272,16 @@ INSERT INTO ${ohdsiSchema}.fe_analysis(id, type, name, domain, descr, value, des
 INSERT INTO ${ohdsiSchema}.fe_analysis(id, type, name, domain, descr, value, design, is_locked, stat_type) VALUES(${ohdsiSchema}.fe_analysis_sequence.nextval, 'PRESET', 'Visit Count Long Term', 'VISIT', 'The number of visits observed in the long term window.', null, 'VisitCountLongTerm', 1, 'PREVALENCE');
 INSERT INTO ${ohdsiSchema}.fe_analysis(id, type, name, domain, descr, value, design, is_locked, stat_type) VALUES(${ohdsiSchema}.fe_analysis_sequence.nextval, 'PRESET', 'Occurrence Primary Inpatient Medium Term', 'CONDITION', 'One covariate per condition observed  as a primary diagnosis in an inpatient setting in the condition_occurrence table starting in the medium term window.', null, 'ConditionOccurrencePrimaryInpatientMediumTerm', 1, 'PREVALENCE');
 
+CREATE TABLE ${ohdsiSchema}.analysis_generation_info (
+  job_execution_id NUMBER(10) NOT NULL,
+  design CLOB NOT NULL,
+  hash_code VARCHAR(16) NOT NULL,
+  created_by_id NUMBER(10)
+);
+
+ALTER TABLE ${ohdsiSchema}.analysis_generation_info
+  ADD CONSTRAINT fk_cgi_sec_user FOREIGN KEY (created_by_id)
+REFERENCES ${ohdsiSchema}.sec_user(id);
 
 ALTER TABLE ${ohdsiSchema}.batch_job_execution_params add(string_val_clob CLOB NULL);
 UPDATE ${ohdsiSchema}.batch_job_execution_params set string_val_clob = string_val, string_val = null;

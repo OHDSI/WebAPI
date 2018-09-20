@@ -262,4 +262,16 @@ INSERT INTO ${ohdsiSchema}.fe_analysis (type, name, domain, descr, value, design
 INSERT INTO ${ohdsiSchema}.fe_analysis (type, name, domain, descr, value, design, is_locked, stat_type) VALUES ('PRESET', 'Visit Count Long Term', 'VISIT', 'The number of visits observed in the long term window.', null, 'VisitCountLongTerm', 1, 'PREVALENCE');
 INSERT INTO ${ohdsiSchema}.fe_analysis (type, name, domain, descr, value, design, is_locked, stat_type) VALUES ('PRESET', 'Occurrence Primary Inpatient Medium Term', 'CONDITION', 'One covariate per condition observed  as a primary diagnosis in an inpatient setting in the condition_occurrence table starting in the medium term window.', null, 'ConditionOccurrencePrimaryInpatientMediumTerm', 1, 'PREVALENCE');
 
+CREATE TABLE ${ohdsiSchema}.analysis_generation_info (
+  job_execution_id INTEGER NOT NULL,
+  design TEXT NOT NULL,
+  hash_code VARCHAR(16) NOT NULL,
+  created_by_id INTEGER
+);
+
+ALTER TABLE ${ohdsiSchema}.analysis_generation_info
+  ADD CONSTRAINT fk_cgi_sec_user FOREIGN KEY (created_by_id)
+REFERENCES ${ohdsiSchema}.sec_user(id)
+  ON UPDATE NO ACTION ON DELETE NO ACTION;
+
 ALTER TABLE ${ohdsiSchema}.batch_job_execution_params alter column string_val varchar(max);

@@ -15,6 +15,7 @@ import org.ohdsi.webapi.conceptset.ConceptSetItemRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetRepository;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
+import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -118,7 +119,7 @@ public abstract class AbstractDaoService {
     return jdbcTemplate;
   }
 
-  public JdbcTemplate getSourceJdbcTemplate(Source source) {
+  public CancelableJdbcTemplate getSourceJdbcTemplate(Source source) {
 
     DriverManagerDataSource dataSource;
     if (source.getUsername() != null && source.getPassword() != null) {
@@ -131,7 +132,7 @@ public abstract class AbstractDaoService {
     } else {
       dataSource = new DriverManagerDataSource(source.getSourceConnection());
     }
-    return new JdbcTemplate(dataSource);
+    return new CancelableJdbcTemplate(dataSource);
   }
 
   /**

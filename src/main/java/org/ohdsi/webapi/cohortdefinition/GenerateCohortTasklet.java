@@ -26,8 +26,10 @@ import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
+import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.ohdsi.webapi.util.StatementCancel;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
@@ -59,7 +61,7 @@ public class GenerateCohortTasklet implements StoppableTasklet {
 
   private final static CohortExpressionQueryBuilder expressionQueryBuilder = new CohortExpressionQueryBuilder();
 
-  private final JdbcTemplate jdbcTemplate;
+  private final CancelableJdbcTemplate jdbcTemplate;
   private final TransactionTemplate transactionTemplate;
   private final CohortDefinitionRepository cohortDefinitionRepository;
   private final SourceRepository sourceRepository;
@@ -68,7 +70,7 @@ public class GenerateCohortTasklet implements StoppableTasklet {
   private long checkInterval = 1000;
 
   public GenerateCohortTasklet(
-          final JdbcTemplate jdbcTemplate,
+          final CancelableJdbcTemplate jdbcTemplate,
           final TransactionTemplate transactionTemplate,
           final CohortDefinitionRepository cohortDefinitionRepository,
           SourceRepository sourceRepository) {
@@ -138,7 +140,8 @@ public class GenerateCohortTasklet implements StoppableTasklet {
       expressionSql = SqlRender.renderSql(expressionSql, null, null);
       String translatedSql = SqlTranslate.translateSql(expressionSql, jobParams.get("target_dialect").toString(), sessionId, null);
       String[] sqlStatements = SqlSplit.splitSql(translatedSql);
-      FutureTask<int[]> batchUpdateTask = new FutureTask<>(() -> GenerateCohortTasklet.this.jdbcTemplate.batchUpdate(sqlStatements));
+      StatementCancel stmtCancel = new StatementCancel();
+      FutureTask<int[]> batchUpdateTask = new FutureTask<>(() -> GenerateCohortTasklet.this.jdbcTemplate.batchUpdate(stmtCancel, sqlStatements));
       taskExecutor.execute(batchUpdateTask);
       while(true) {
         Thread.sleep(checkInterval);
@@ -146,7 +149,11 @@ public class GenerateCohortTasklet implements StoppableTasklet {
           result = batchUpdateTask.get();
           break;
         } else if (stopped) {
-          batchUpdateTask.cancel(true);
+          try {
+            stmtCancel.cancel();
+          } finally {
+            batchUpdateTask.cancel(true);
+          }
           break;
         }
       }

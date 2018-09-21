@@ -1,13 +1,15 @@
 package org.ohdsi.webapi.user.importer.providers;
 
-
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.user.importer.model.LdapGroup;
 import org.ohdsi.webapi.user.importer.model.LdapUser;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.ldap.core.*;
+import org.springframework.ldap.core.AttributesMapper;
+import org.springframework.ldap.core.AuthenticationSource;
+import org.springframework.ldap.core.CollectingNameClassPairCallbackHandler;
+import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.ldap.filter.AndFilter;
 import org.springframework.ldap.filter.EqualsFilter;
@@ -29,7 +31,7 @@ import static org.ohdsi.webapi.user.importer.providers.OhdsiLdapUtils.valueAsStr
 
 @Component
 @ConditionalOnProperty("security.ldap.url")
-public class DefaultLdapProvider implements LdapProvider {
+public class DefaultLdapProvider extends AbstractLdapProvider {
 
   private static final String DN = "DN";
   private static final String[] RETURNING_ATTRS = {DN, "cn", "ou"};
@@ -101,6 +103,19 @@ public class DefaultLdapProvider implements LdapProvider {
     searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
     searchControls.setReturningAttributes(USER_ATTRIBUTES);
     return searchControls;
+  }
+
+  @Override
+  public String getSearchUserFilter() {
+
+    return null;
+  }
+
+  @Override
+  public List<LdapUser> search(String filter, CollectingNameClassPairCallbackHandler<LdapUser> handler) {
+
+    getLdapTemplate().search(LdapUtils.emptyLdapName(), filter, getUserSearchControls(), handler);
+    return handler.getList();
   }
 
   @Override

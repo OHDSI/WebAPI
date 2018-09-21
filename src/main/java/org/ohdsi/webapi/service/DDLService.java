@@ -59,7 +59,8 @@ public class DDLService {
 		"/ddl/results/ir_analysis_result.sql",
 		"/ddl/results/ir_analysis_strata_stats.sql",
 		"/ddl/results/ir_strata.sql",
-		"/ddl/results/heracles_periods.sql"
+		"/ddl/results/heracles_periods.sql",
+		"/ddl/results/cohort_characterizations.sql"
 	);
 
 	public static final Collection<String> RESULT_INIT_FILE_PATHS = Arrays.asList(

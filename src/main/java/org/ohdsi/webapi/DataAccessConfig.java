@@ -1,5 +1,6 @@
 package org.ohdsi.webapi;
 
+import com.cosium.spring.data.jpa.entity.graph.repository.support.EntityGraphJpaRepositoryFactoryBean;
 import java.sql.DriverManager;
 import java.util.Properties;
 import javax.persistence.EntityManagerFactory;
@@ -35,8 +36,8 @@ import org.springframework.transaction.support.TransactionTemplate;
  *
  */
 @Configuration
-@EnableJpaRepositories
 @EnableTransactionManagement
+@EnableJpaRepositories(repositoryFactoryBeanClass = EntityGraphJpaRepositoryFactoryBean.class)
 public class DataAccessConfig {
 
     private final Log logger = LogFactory.getLog(DataAccessConfig.class);

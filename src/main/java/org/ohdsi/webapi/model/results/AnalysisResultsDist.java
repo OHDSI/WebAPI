@@ -34,7 +34,8 @@ public class AnalysisResultsDist extends AnalysisResults {
 	
 	private double p75Value;
 	
-	private double p90Value;
+	private double p90Value
+			;
 
 	public double getMinValue() {
 		return minValue;

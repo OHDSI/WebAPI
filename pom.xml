@@ -81,6 +81,12 @@
     <security.ad.searchFilter></security.ad.searchFilter>
     <security.ad.ignore.partial.result.exception>true</security.ad.ignore.partial.result.exception>
 
+    <security.cas.loginUrl></security.cas.loginUrl>
+    <security.cas.callbackUrl></security.cas.callbackUrl>
+    <security.cas.serverUrl></security.cas.serverUrl>
+    <security.cas.cassvcs></security.cas.cassvcs>
+    <security.cas.casticket>casticket</security.cas.casticket>
+
     <security.db.datasource.schema>${datasource.ohdsi.schema}</security.db.datasource.schema>
     <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
     <security.db.datasource.driverClassName>${datasource.driverClassName}</security.db.datasource.driverClassName>
@@ -110,7 +116,7 @@
     <server.ssl.key-store-password></server.ssl.key-store-password>
     <server.ssl.key-password></server.ssl.key-password>
 
-    <arachne.version>1.13.0-QA</arachne.version>
+    <arachne.version>1.14.0-SNAPSHOT</arachne.version>
     <jersey-media-multipart.version>2.25.1</jersey-media-multipart.version>
     <execution.invalidation.maxage>4</execution.invalidation.maxage>
     <execution.invalidation.period>10000</execution.invalidation.period>
@@ -620,6 +626,21 @@
       <groupId>org.springframework.ldap</groupId>
       <artifactId>spring-ldap-core</artifactId>
       <version>2.3.2.RELEASE</version>
+    </dependency>
+    <dependency>
+      <groupId>org.ohdsi</groupId>
+      <artifactId>standardized-analysis-api</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.cosium.spring.data</groupId>
+      <artifactId>spring-data-jpa-entity-graph</artifactId>
+      <version>1.11.03</version>
+    </dependency>
+    <dependency>
+      <groupId>org.pac4j</groupId>
+      <artifactId>pac4j-cas</artifactId>
+      <version>1.9.2</version>
     </dependency>
   </dependencies>
   <profiles>

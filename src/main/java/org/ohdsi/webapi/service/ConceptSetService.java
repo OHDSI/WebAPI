@@ -16,21 +16,11 @@
 package org.ohdsi.webapi.service;
 
 import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import javax.transaction.Transactional;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.ohdsi.circe.vocabulary.Concept;
@@ -41,9 +31,13 @@ import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfo;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetItem;
 import org.ohdsi.webapi.conceptset.ExportUtil;
+import org.ohdsi.webapi.service.dto.ConceptSetDTO;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
 
@@ -51,8 +45,9 @@ import org.springframework.stereotype.Component;
  *
  * @author fdefalco
  */
-@Path("/conceptset/")
 @Component
+@Transactional
+@Path("/conceptset/")
 public class ConceptSetService extends AbstractDaoService {
 
     @Autowired
@@ -65,20 +60,34 @@ public class ConceptSetService extends AbstractDaoService {
     private SourceService sourceService;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private GenericConversionService conversionService;
+
+    @Autowired
     private Security security;
 
     @Path("{id}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public ConceptSet getConceptSet(@PathParam("id") final int id) {
-        return getConceptSetRepository().findById(id);
+    public ConceptSetDTO getConceptSet(@PathParam("id") final int id) {
+        ConceptSet conceptSet = getConceptSetRepository().findById(id);
+        if (Objects.isNull(conceptSet)) {
+            throw new NotFoundException();
+        }
+        return conversionService.convert(conceptSet, ConceptSetDTO.class);
     }
 
     @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Iterable<ConceptSet> getConceptSets() {
-        return getConceptSetRepository().findAll();
+    public Collection<ConceptSetDTO> getConceptSets() {
+        return getTransactionTemplate().execute(transactionStatus ->
+                StreamSupport.stream(getConceptSetRepository().findAll().spliterator(), false)
+                        .map(conceptSet -> conversionService.convert(conceptSet, ConceptSetDTO.class))
+                        .collect(Collectors.toList())
+        );
     }
 
     @GET
@@ -217,30 +226,37 @@ public class ConceptSetService extends AbstractDaoService {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ConceptSet createConceptSet(ConceptSet conceptSet) {
+    public ConceptSetDTO createConceptSet(ConceptSetDTO conceptSetDTO) {
+
+        UserEntity user = userRepository.findByLogin(security.getSubject());
         ConceptSet updated = new ConceptSet();
-        updated.setCreatedBy(security.getSubject());
+        updated.setCreatedBy(user);
         updated.setCreatedDate(new Date());
-        return updateConceptSet(updated, conceptSet);
+        ConceptSet conceptSet = conversionService.convert(conceptSetDTO, ConceptSet.class);
+        return conversionService.convert(updateConceptSet(updated, conceptSet), ConceptSetDTO.class);
     }
 
     @Path("/{id}")
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ConceptSet updateConceptSet(@PathParam("id") final int id, ConceptSet conceptSet) throws Exception {
-        ConceptSet updated = this.getConceptSet(id);
+    public ConceptSetDTO updateConceptSet(@PathParam("id") final int id, ConceptSetDTO conceptSetDTO) throws Exception {
+
+        ConceptSet updated = getConceptSetRepository().findById(id);
         if (updated == null) {
           throw new Exception("Concept Set does not exist.");
         }
 
-        return updateConceptSet(updated, conceptSet);
+        ConceptSet conceptSet = conversionService.convert(conceptSetDTO, ConceptSet.class);
+        return conversionService.convert(updateConceptSet(updated, conceptSet), ConceptSetDTO.class);
     }
 
     private ConceptSet updateConceptSet(ConceptSet dst, ConceptSet src) {
+
+        UserEntity user = userRepository.findByLogin(security.getSubject());
         dst.setName(src.getName());
         dst.setModifiedDate(new Date());
-        dst.setModifiedBy(security.getSubject());
+        dst.setModifiedBy(user);
         
         dst = this.getConceptSetRepository().save(dst);
         return dst;

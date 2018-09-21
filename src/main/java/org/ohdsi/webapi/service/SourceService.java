@@ -94,6 +94,11 @@ public class SourceService extends AbstractDaoService {
     return sourceRepository.findBySourceKey(sourceKey);
   }
 
+  public Source findBySourceId(final Integer sourceId) {
+
+    return sourceRepository.findBySourceId(sourceId);
+  }
+
   public class SortByKey implements Comparator<SourceInfo>
   {
     private boolean isAscending;

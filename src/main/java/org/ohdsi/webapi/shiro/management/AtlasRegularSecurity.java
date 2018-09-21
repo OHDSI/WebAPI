@@ -4,10 +4,13 @@ import io.buji.pac4j.filter.CallbackFilter;
 import io.buji.pac4j.filter.SecurityFilter;
 import io.buji.pac4j.realm.Pac4jRealm;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.realm.activedirectory.ActiveDirectoryRealm;
 import org.apache.shiro.realm.ldap.JndiLdapContextFactory;
 import org.apache.shiro.realm.ldap.JndiLdapRealm;
+import org.jasig.cas.client.validation.Cas20ServiceTicketValidator;
 import org.ohdsi.webapi.user.importer.providers.LdapProvider;
 import org.ohdsi.webapi.shiro.filters.LogoutFilter;
 import org.ohdsi.webapi.shiro.filters.SendTokenInHeaderFilter;
@@ -23,8 +26,11 @@ import org.ohdsi.webapi.shiro.realms.LdapRealm;
 import org.ohdsi.webapi.shiro.filters.RedirectOnFailedOAuthFilter;
 import org.ohdsi.webapi.shiro.filters.SendTokenInUrlFilter;
 import org.ohdsi.webapi.shiro.filters.AtlasJwtAuthFilter;
+import org.ohdsi.webapi.shiro.filters.CasHandleFilter;
 import org.ohdsi.webapi.shiro.filters.KerberosAuthFilter;
 import org.ohdsi.webapi.shiro.realms.KerberosAuthRealm;
+import org.pac4j.cas.client.CasClient;
+import org.pac4j.cas.config.CasConfiguration;
 import org.pac4j.core.client.Clients;
 import org.pac4j.core.config.Config;
 import org.pac4j.oauth.client.FacebookClient;
@@ -45,6 +51,10 @@ import waffle.shiro.negotiate.NegotiateAuthenticationRealm;
 import javax.naming.Context;
 import javax.servlet.Filter;
 import javax.sql.DataSource;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Set;
 
@@ -54,6 +64,8 @@ import static org.ohdsi.webapi.util.QuoteUtils.dequote;
 @ConditionalOnProperty(name = "security.provider", havingValue = "AtlasRegularSecurity")
 @DependsOn("flyway")
 public class AtlasRegularSecurity extends AtlasSecurity {
+    
+    private final Log logger = LogFactory.getLog(AtlasRegularSecurity.class);
 
     @Value("${security.token.expiration}")
     private int tokenExpirationIntervalInSeconds;
@@ -125,7 +137,22 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
     @Value("${security.oid.redirectUrl}")
     private String redirectUrl;
-
+    
+    @Value("${security.cas.loginUrl}")
+    private String casLoginUrl;
+    
+    @Value("${security.cas.callbackUrl}")
+    private String casCallbackUrl;
+    
+    @Value("${security.cas.serverUrl}")
+    private String casServerUrl;
+    
+    @Value("${security.cas.cassvcs}")
+    private String casSvcs;
+    
+    @Value("${security.cas.casticket}")
+    private String casticket;
+    
     @Override
     public Map<String, Filter> getFilters() {
 
@@ -188,7 +215,9 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         callbackFilter.setConfig(cfg);
         filters.put("oauthCallback", callbackFilter);
         filters.put("handleUnsuccessfullOAuth", new RedirectOnFailedOAuthFilter(this.oauthUiCallback));
-
+        
+        this.setUpCAS(filters);
+        
         return filters;
     }
 
@@ -212,7 +241,9 @@ public class AtlasRegularSecurity extends AtlasSecurity {
                 .addRestPath("/user/logout", "logout")
                 .addOAuthPath("/user/oauth/google", "googleAuthc")
                 .addOAuthPath("/user/oauth/facebook", "facebookAuthc")
-                .addPath("/user/oauth/callback", "ssl, handleUnsuccessfullOAuth, oauthCallback");
+                .addPath("/user/login/cas", "ssl, cors, forceSessionCreation, casAuthc, updateToken, sendTokenInUrl")
+                .addPath("/user/oauth/callback", "ssl, handleUnsuccessfullOAuth, oauthCallback")
+                .addPath("/user/cas/callback", "ssl, handleCas, updateToken, sendTokenInUrl");
 
         setupProtectedPaths(filterChainBuilder);
 
@@ -263,5 +294,48 @@ public class AtlasRegularSecurity extends AtlasSecurity {
             return adLdapProvider.getLdapTemplate();
         }
         return null;
+    }
+    
+    private void setUpCAS(Map<String, Filter> filters) {
+        try {
+            /**
+             * CAS config
+             */
+            CasConfiguration casConf = new CasConfiguration();
+            
+            String casLoginUrlString = "";
+            if (casSvcs != null && !"".equals(casSvcs)) {
+                casLoginUrlString = casLoginUrl + "?cassvc=" + casSvcs + "&casurl="
+                        + URLEncoder.encode(casCallbackUrl, StandardCharsets.UTF_8.name());
+            } else {
+                casLoginUrlString = casLoginUrl + "?casurl="
+                        + URLEncoder.encode(casCallbackUrl, StandardCharsets.UTF_8.name());
+            }
+            casConf.setLoginUrl(casLoginUrlString);
+            
+            Cas20ServiceTicketValidator cas20Validator = new Cas20ServiceTicketValidator(casServerUrl);
+            casConf.setTicketValidator(cas20Validator);
+            
+            CasClient casClient = new CasClient(casConf);
+            Config casCfg = new Config(new Clients(casCallbackUrl, casClient));
+            
+            /**
+             * CAS filter
+             */
+            SecurityFilter casAuthnFilter = new SecurityFilter();
+            casAuthnFilter.setConfig(casCfg);
+            casAuthnFilter.setClients("CasClient");
+            filters.put("casAuthc", casAuthnFilter);
+            
+            /**
+             * CAS callback filter
+             */
+            CasHandleFilter casHandleFilter = new CasHandleFilter(cas20Validator, casCallbackUrl, casticket);
+            filters.put("handleCas", casHandleFilter);
+            
+        } catch (UnsupportedEncodingException e) {
+            this.logger.error("Atlas security filter errors:" + this.toString());
+            e.printStackTrace();
+        }
     }
 }

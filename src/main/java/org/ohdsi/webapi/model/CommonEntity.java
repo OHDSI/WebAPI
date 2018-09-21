@@ -1,37 +1,40 @@
 package org.ohdsi.webapi.model;
 
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
+
 import java.io.Serializable;
 import java.util.Date;
-import javax.persistence.Column;
-import javax.persistence.MappedSuperclass;
+import javax.persistence.*;
 
 @MappedSuperclass
 public abstract class CommonEntity implements Serializable {
-    @Column(name = "created_by")
-    private String createdBy = "anonymous";
-    @Column(name = "modified_by")
-    private String modifiedBy;
-    @Column(name = "created_date")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by_id", updatable = false)
+    private UserEntity createdBy;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "modified_by_id")
+    private UserEntity modifiedBy;
+    @Column(name = "created_date", updatable = false)
     private Date createdDate;
     @Column(name = "modified_date")
     private Date modifiedDate;
 
-    public String getCreatedBy() {
+    public UserEntity getCreatedBy() {
 
         return createdBy;
     }
 
-    public void setCreatedBy(String createdBy) {
+    public void setCreatedBy(UserEntity createdBy) {
 
         this.createdBy = createdBy;
     }
 
-    public String getModifiedBy() {
+    public UserEntity getModifiedBy() {
 
         return modifiedBy;
     }
 
-    public void setModifiedBy(String modifiedBy) {
+    public void setModifiedBy(UserEntity modifiedBy) {
 
         this.modifiedBy = modifiedBy;
     }

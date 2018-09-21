@@ -9,6 +9,5 @@ create table @results_schema.heracles_results
 	stratum_4 varchar(255),
 	stratum_5 varchar(255),
 	count_value bigint,
-	last_update_time datetime 
-          CONSTRAINT DF_HERACLES_results_last_update DEFAULT GETDATE()
+	last_update_time datetime DEFAULT GETDATE()
 );

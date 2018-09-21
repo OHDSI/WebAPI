@@ -6,16 +6,22 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
+import org.ohdsi.webapi.cohortcharacterization.repository.CcGenerationEntityRepository;
 import org.ohdsi.webapi.shiro.lockout.DefaultLockoutPolicy;
 import org.ohdsi.webapi.shiro.lockout.ExponentLockoutStrategy;
 import org.ohdsi.webapi.shiro.lockout.LockoutPolicy;
 import org.ohdsi.webapi.shiro.lockout.LockoutStrategy;
 import org.ohdsi.webapi.shiro.lockout.LockoutWebSecurityManager;
 import org.ohdsi.webapi.shiro.lockout.NoLockoutPolicy;
+import org.ohdsi.webapi.shiro.management.DataSourceAccessBeanPostProcessor;
+import org.ohdsi.webapi.shiro.management.DisabledSecurity;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.ohdsi.webapi.shiro.management.datasource.DataSourceAccessParameterResolver;
+import org.ohdsi.webapi.source.SourceRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
@@ -81,6 +87,13 @@ public class ShiroConfiguration {
   public LockoutStrategy lockoutStrategy(){
 
     return new ExponentLockoutStrategy(initialDuration, increment, maxLoginAttempts);
+  }
+
+  @Bean
+  @ConditionalOnMissingBean(value = DisabledSecurity.class)
+  public DataSourceAccessBeanPostProcessor dataSourceAccessBeanPostProcessor(DataSourceAccessParameterResolver parameterResolver) {
+
+    return new DataSourceAccessBeanPostProcessor(parameterResolver);
   }
 
 }

@@ -43,6 +43,8 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -68,6 +70,7 @@ public class GenerateCohortTasklet implements StoppableTasklet {
   private final ExecutorService taskExecutor;
   private boolean stopped = false;
   private long checkInterval = 1000;
+  private StatementCancel stmtCancel;
 
   public GenerateCohortTasklet(
           final CancelableJdbcTemplate jdbcTemplate,
@@ -79,6 +82,7 @@ public class GenerateCohortTasklet implements StoppableTasklet {
     this.cohortDefinitionRepository = cohortDefinitionRepository;
     this.sourceRepository = sourceRepository;
     taskExecutor = Executors.newSingleThreadExecutor();
+    stmtCancel = new StatementCancel();
   }
 
   private int[] doTask(ChunkContext chunkContext) {
@@ -140,25 +144,7 @@ public class GenerateCohortTasklet implements StoppableTasklet {
       expressionSql = SqlRender.renderSql(expressionSql, null, null);
       String translatedSql = SqlTranslate.translateSql(expressionSql, jobParams.get("target_dialect").toString(), sessionId, null);
       String[] sqlStatements = SqlSplit.splitSql(translatedSql);
-      StatementCancel stmtCancel = new StatementCancel();
-      FutureTask<int[]> batchUpdateTask = new FutureTask<>(() -> GenerateCohortTasklet.this.jdbcTemplate.batchUpdate(stmtCancel, sqlStatements));
-      taskExecutor.execute(batchUpdateTask);
-      while(true) {
-        Thread.sleep(checkInterval);
-        if (batchUpdateTask.isDone()) {
-          result = batchUpdateTask.get();
-          break;
-        } else if (stopped) {
-          try {
-            stmtCancel.cancel();
-          } finally {
-            batchUpdateTask.cancel(true);
-          }
-          break;
-        }
-      }
-      taskExecutor.shutdown();
-
+      this.jdbcTemplate.batchUpdate(stmtCancel, sqlStatements);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -185,6 +171,10 @@ public class GenerateCohortTasklet implements StoppableTasklet {
 
   @Override
   public void stop() {
+    try {
+      this.stmtCancel.cancel();
+    } catch (SQLException ignored) {
+    }
     this.stopped = true;
   }
 }

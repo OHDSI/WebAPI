@@ -8,8 +8,11 @@ import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.springframework.batch.core.*;
+import org.springframework.batch.core.configuration.DuplicateJobException;
+import org.springframework.batch.core.configuration.JobRegistry;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.configuration.support.ReferenceJobFactory;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,19 +47,23 @@ public class CohortGenerationService extends AbstractDaoService {
 
   private final JobExplorer jobExplorer;
 
+  private final JobRegistry jobRegistry;
+
   @Autowired
   public CohortGenerationService(CohortDefinitionRepository cohortDefinitionRepository,
                                  CohortGenerationInfoRepository cohortGenerationInfoRepository,
                                  JobBuilderFactory jobBuilders,
                                  StepBuilderFactory stepBuilders,
                                  JobTemplate jobTemplate,
-                                 JobExplorer jobExplorer) {
+                                 JobExplorer jobExplorer,
+                                 JobRegistry jobRegistry) {
     this.cohortDefinitionRepository = cohortDefinitionRepository;
     this.cohortGenerationInfoRepository = cohortGenerationInfoRepository;
     this.jobBuilders = jobBuilders;
     this.stepBuilders = stepBuilders;
     this.jobTemplate = jobTemplate;
     this.jobExplorer = jobExplorer;
+    this.jobRegistry = jobRegistry;
   }
 
   public JobExecutionResource generateCohort(CohortDefinition cohortDefinition, Source source, boolean includeFeatures) {
@@ -110,7 +117,12 @@ public class CohortGenerationService extends AbstractDaoService {
       generateJobBuilder.next(generateCohortFeaturesStep);
     }
 
-    return generateJobBuilder.build();
+    Job job = generateJobBuilder.build();
+    try {
+      jobRegistry.register(new ReferenceJobFactory(job));
+    } catch (DuplicateJobException e) {
+    }
+    return job;
   }
 
   public JobExecutionResource runGenerateCohortJob(CohortDefinition cohortDefinition, Source source, boolean includeFeatures, boolean updateGenerationInfo, String targetTable, Map<String, String> extraJobParams) {

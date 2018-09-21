@@ -5,7 +5,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 
@@ -14,7 +13,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * will source this file).
  */
 @EnableScheduling
-@ComponentScan({"org.ohdsi.webapi","com.odysseusinc.logging"})
 @SpringBootApplication(exclude={HibernateJpaAutoConfiguration.class})
 public class WebApi extends SpringBootServletInitializer {
 

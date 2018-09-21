@@ -73,18 +73,18 @@ public class Source implements Serializable {
   @Type(type = "encryptedString")
   private String password;
 
-    @Column(name = "krb_keytab")
-    private byte[] krbKeytab;
+  @Column(name = "krb_keytab")
+  private byte[] krbKeytab;
 
-    @Column(name = "keytab_name")
-    private String keytabName;
+  @Column(name = "keytab_name")
+  private String keytabName;
 
-    @Column(name = "krb_admin_server")
-    private String krbAdminServer;
+  @Column(name = "krb_admin_server")
+  private String krbAdminServer;
 
-    @Column(name = "krb_auth_method")
-    @Enumerated(EnumType.STRING)
-    private KerberosAuthMechanism krbAuthMethod;
+  @Column(name = "krb_auth_method")
+  @Enumerated(EnumType.STRING)
+  private KerberosAuthMechanism krbAuthMethod;
 
   public String getTableQualifier(DaimonType daimonType) {
 		String result = getTableQualifierOrNull(daimonType);

@@ -1,7 +1,6 @@
 package org.ohdsi.webapi.user.importer;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.user.importer.model.*;
 import org.ohdsi.webapi.service.UserService;
 import org.ohdsi.webapi.user.importer.providers.ActiveDirectoryProvider;
@@ -14,29 +13,24 @@ import org.ohdsi.webapi.shiro.PermissionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.ldap.control.PagedResultsDirContextProcessor;
 import org.springframework.ldap.core.*;
 import org.springframework.ldap.filter.AndFilter;
 import org.springframework.ldap.filter.EqualsFilter;
-import org.springframework.ldap.filter.WhitespaceWildcardsFilter;
 import org.springframework.ldap.support.LdapUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static org.ohdsi.webapi.user.importer.providers.AbstractLdapProvider.OBJECTCLASS_ATTR;
 import static org.ohdsi.webapi.user.importer.providers.OhdsiLdapUtils.getCriteria;
-import static org.ohdsi.webapi.user.importer.providers.OhdsiLdapUtils.valueAsString;
 
 @Component
 @Transactional(readOnly = true)
 public class DefaultUserImporter implements UserImporter {
 
   private static final Logger logger = LoggerFactory.getLogger(UserImporter.class);
-  public static final String OBJECTCLASS_ATTR = "objectclass";
-  private static final String CN_ATTR = "cn";
 
   private final Map<LdapProviderType, LdapProvider> providersMap = new HashMap<>();
 
@@ -66,52 +60,18 @@ public class DefaultUserImporter implements UserImporter {
   }
 
   @Override
-  public LdapTemplate getLdapTemplate(LdapProviderType providerType) {
-
-    return getProvider(providerType).orElseThrow(IllegalArgumentException::new).getLdapTemplate();
-  }
-
-  @Override
   public List<LdapGroup> findGroups(LdapProviderType type, String searchStr) {
 
     LdapProvider provider = getProvider(type).orElseThrow(IllegalArgumentException::new);
-    LdapTemplate ldapTemplate = getLdapTemplate(type);
-    AndFilter filter = new AndFilter();
-    filter.and(getCriteria(OBJECTCLASS_ATTR, getProvider(type).orElseThrow(IllegalArgumentException::new).getGroupClasses()));
-    filter.and(new WhitespaceWildcardsFilter(CN_ATTR, searchStr));
-    return ldapTemplate.search(LdapUtils.emptyLdapName(), filter.encode(), getAttributesMapper(provider, LdapGroup::new));
-  }
-
-  private String getUserFilter (LdapProvider provider) {
-
-    if (StringUtils.isNotBlank(provider.getSearchUserFilter())) {
-      return provider.getSearchUserFilter();
-    }
-    AndFilter filter = new AndFilter();
-    filter.and(getCriteria(OBJECTCLASS_ATTR, provider.getUserClass()));
-    return filter.encode();
+    return provider.findGroups(searchStr);
   }
 
   @Override
   public List<AtlasUserRoles> findUsers(LdapProviderType providerType, RoleGroupMapping mapping) {
 
     LdapProvider provider = getProvider(providerType).orElseThrow(IllegalArgumentException::new);
-    long countLimit = provider.getUserSearchControls().getCountLimit();
-    CollectingNameClassPairCallbackHandler<LdapUser> handler = provider.getUserSearchCallbackHandler(getUserAttributesMapper(providerType));
-    int resultsPerPage = 500;
-    PagedResultsDirContextProcessor pager = new PagedResultsDirContextProcessor(resultsPerPage);
-    do {
-      provider.search(getUserFilter(provider), handler, pager);
-      pager = new PagedResultsDirContextProcessor(resultsPerPage, pager.getCookie());
 
-    } while (pager.getCookie() != null && pager.getCookie().getCookie() != null
-            && (countLimit == 0 || handler.getList().size() < countLimit));
-
-    List<LdapUser> users = handler.getList();
-    if (countLimit > 0 && countLimit < users.size()) {
-        users = users.subList(0, (int) Math.min(countLimit, users.size()));
-    }
-    return users.stream()
+    return provider.findUsers().stream()
             .map(user -> {
               AtlasUserRoles atlasUser = new AtlasUserRoles();
               atlasUser.setDisplayName(user.getDisplayName());
@@ -225,29 +185,6 @@ public class DefaultUserImporter implements UserImporter {
       result = CollectionUtils.isEqualCollection(atlasRoleIds, mappedRoleIds) ? LdapUserImportStatus.EXISTS : LdapUserImportStatus.MODIFIED;
     }
     return result;
-  }
-
-  private <T extends LdapObject> AttributesMapper<T> getAttributesMapper(LdapProvider provider, Supplier<T> supplier) {
-    return attributes -> {
-      String name = valueAsString(attributes.get(provider.getDisplayNameAttributeName()));
-      String dn = valueAsString(attributes.get(provider.getDistinguishedAttributeName()));
-      T object = supplier.get();
-      object.setDisplayName(name);
-      object.setDistinguishedName(dn);
-      return object;
-    };
-  }
-
-  private AttributesMapper<LdapUser> getUserAttributesMapper(LdapProviderType providerType) {
-
-    LdapProvider provider = getProvider(providerType).orElseThrow(IllegalArgumentException::new);
-    return attributes -> {
-      LdapUser user = getAttributesMapper(provider, LdapUser::new).mapFromAttributes(attributes);
-      user.setLogin(valueAsString(attributes.get(provider.getLoginAttributeName())));
-      List<LdapGroup> groups = provider.getLdapGroups(attributes);
-      user.setGroups(groups);
-      return user;
-    };
   }
 
 }

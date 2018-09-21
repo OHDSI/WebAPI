@@ -25,7 +25,7 @@ import static org.ohdsi.webapi.util.QuoteUtils.dequote;
 
 @Component
 @ConditionalOnProperty("security.ad.url")
-public class ActiveDirectoryProvider implements LdapProvider {
+public class ActiveDirectoryProvider extends AbstractLdapProvider {
 
   @Value("${security.ad.url}")
   private String adUrl;
@@ -102,9 +102,18 @@ public class ActiveDirectoryProvider implements LdapProvider {
   }
 
   @Override
-  public void search(String filter, CollectingNameClassPairCallbackHandler<LdapUser> handler, PagedResultsDirContextProcessor pager) {
+  public List<LdapUser> search(String filter, CollectingNameClassPairCallbackHandler<LdapUser> handler) {
 
-    getLdapTemplate().search(LdapUtils.emptyLdapName(), filter, getUserSearchControls(), handler, pager);
+    int resultsPerPage = 500;
+    PagedResultsDirContextProcessor pager = new PagedResultsDirContextProcessor(resultsPerPage);
+    do {
+        getLdapTemplate().search(LdapUtils.emptyLdapName(), filter, getUserSearchControls(), handler, pager);
+        pager = new PagedResultsDirContextProcessor(resultsPerPage, pager.getCookie());
+
+    } while (pager.getCookie() != null && pager.getCookie().getCookie() != null
+            && (countLimit == 0 || handler.getList().size() < countLimit));
+
+    return  handler.getList();
   }
 
   @Override

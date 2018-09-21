@@ -55,6 +55,8 @@ public class ActiveDirectoryProvider extends AbstractLdapProvider {
 
   private static final Set<String> USER_CLASSES = ImmutableSet.of("user");
 
+  private static final int PAGE_SIZE = 500;
+
   @Override
   public LdapTemplate getLdapTemplate() {
     LdapContextSource contextSource = new LdapContextSource();
@@ -104,11 +106,10 @@ public class ActiveDirectoryProvider extends AbstractLdapProvider {
   @Override
   public List<LdapUser> search(String filter, CollectingNameClassPairCallbackHandler<LdapUser> handler) {
 
-    int resultsPerPage = 500;
-    PagedResultsDirContextProcessor pager = new PagedResultsDirContextProcessor(resultsPerPage);
+    PagedResultsDirContextProcessor pager = new PagedResultsDirContextProcessor(PAGE_SIZE);
     do {
         getLdapTemplate().search(LdapUtils.emptyLdapName(), filter, getUserSearchControls(), handler, pager);
-        pager = new PagedResultsDirContextProcessor(resultsPerPage, pager.getCookie());
+        pager = new PagedResultsDirContextProcessor(PAGE_SIZE, pager.getCookie());
 
     } while (pager.getCookie() != null && pager.getCookie().getCookie() != null
             && (countLimit == 0 || handler.getList().size() < countLimit));

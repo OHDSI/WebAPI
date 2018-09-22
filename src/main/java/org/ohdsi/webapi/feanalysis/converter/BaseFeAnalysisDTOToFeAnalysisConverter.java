@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.feanalysis.converter;
 
-import org.ohdsi.webapi.converter.BaseConversionServiceAwareConverter;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 
@@ -10,7 +9,7 @@ public abstract class BaseFeAnalysisDTOToFeAnalysisConverter<T extends FeAnalysi
     public T convert(final FeAnalysisDTO source) {
         final T result = super.convert(source);
         
-        result.setValue(source.getValue());
+        result.setDesign(source.getDesign());
         return result;
     }
 }

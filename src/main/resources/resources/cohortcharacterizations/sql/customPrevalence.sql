@@ -1,5 +1,6 @@
 insert into @results_database_schema.cc_results (
      type,
+     fa_type,
      covariate_id,
      covariate_name,
      analysis_id,
@@ -10,6 +11,7 @@ insert into @results_database_schema.cc_results (
      cohort_definition_id,
      cc_generation_id)
 select 'PREVALENCE'    as type,
+        'CUSTOM_FE' as fa_type,
         covariate_id,
         covariate_name,
         @analysisId as analysis_id,

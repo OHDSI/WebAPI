@@ -1,0 +1,1 @@
+ALTER TABLE fe_analysis ALTER id TYPE INTEGER;

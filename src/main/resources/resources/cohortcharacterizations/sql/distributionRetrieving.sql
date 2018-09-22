@@ -1,7 +1,8 @@
-insert into @results_database_schema.cc_results (type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id,
+insert into @results_database_schema.cc_results (type, fa_type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id,
     count_value, min_value, max_value, avg_value, stdev_value, median_value,
     p10_value, p25_value, p75_value, p90_value, cohort_definition_id, cc_generation_id)
-  select 'DISTRIBUTION',
+  select 'DISTRIBUTION' as type,
+    'PRESET' as fa_type,
     f.covariate_id,
     fr.covariate_name,
     ar.analysis_id,

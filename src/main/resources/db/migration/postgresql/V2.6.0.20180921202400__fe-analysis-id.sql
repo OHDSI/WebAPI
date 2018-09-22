@@ -1,0 +1,1 @@
+ALTER TABLE ${ohdsiSchema}.fe_analysis ALTER id TYPE INTEGER;

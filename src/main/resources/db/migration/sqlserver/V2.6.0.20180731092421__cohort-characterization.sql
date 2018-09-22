@@ -1,13 +1,14 @@
 CREATE SEQUENCE ${ohdsiSchema}.cohort_characterization_seq START WITH 1;
 CREATE TABLE ${ohdsiSchema}.cohort_characterization
 (
-  id                 BIGINT PRIMARY KEY DEFAULT NEXT VALUE FOR ${ohdsiSchema}.cohort_characterization_seq,
+  id                 BIGINT NOT NULL CONSTRAINT df_cohort_characterization_id DEFAULT NEXT VALUE FOR ${ohdsiSchema}.cohort_characterization_seq,
   name               VARCHAR(255) NOT NULL,
   created_by_id      INTEGER,
   created_date       DATETIME NOT NULL DEFAULT (GETDATE()),
   modified_by_id     INTEGER,
   modified_date      DATETIME,
-  hash_code          INTEGER NULL
+  hash_code          INTEGER NULL,
+	CONSTRAINT PK_cc PRIMARY KEY (id)
 );
 
 ALTER TABLE ${ohdsiSchema}.cohort_characterization
@@ -20,15 +21,14 @@ ALTER TABLE ${ohdsiSchema}.cohort_characterization
 REFERENCES ${ohdsiSchema}.sec_user (id)
 ON UPDATE NO ACTION ON DELETE NO ACTION;
 
-
-
 CREATE SEQUENCE ${ohdsiSchema}.cc_param_sequence START WITH 1;
 CREATE TABLE ${ohdsiSchema}.cc_param
 (
-  id                          BIGINT PRIMARY KEY DEFAULT NEXT VALUE FOR ${ohdsiSchema}.cc_param_sequence,
+  id                          BIGINT NOT NULL CONSTRAINT df_cc_param_id DEFAULT NEXT VALUE FOR ${ohdsiSchema}.cc_param_sequence,
   cohort_characterization_id  BIGINT NOT NULL,
   name                        VARCHAR(255),
-  value                       VARCHAR(255)
+  value                       VARCHAR(255),
+	CONSTRAINT PK_ccp PRIMARY KEY (id)
 );
 
 ALTER TABLE ${ohdsiSchema}.cc_param
@@ -41,7 +41,7 @@ ON UPDATE NO ACTION ON DELETE CASCADE;
 CREATE SEQUENCE ${ohdsiSchema}.fe_analysis_sequence START WITH 1;
 CREATE TABLE ${ohdsiSchema}.fe_analysis
 (
-  id         BIGINT PRIMARY KEY DEFAULT NEXT VALUE FOR ${ohdsiSchema}.fe_analysis_sequence,
+  id         BIGINT NOT NULL CONSTRAINT df_fe_analysis_id DEFAULT NEXT VALUE FOR ${ohdsiSchema}.fe_analysis_sequence,
   type       VARCHAR(255),
   name       VARCHAR(255),
   domain     VARCHAR(255),
@@ -49,7 +49,8 @@ CREATE TABLE ${ohdsiSchema}.fe_analysis
   value      VARCHAR(255),
   design     Text,
   is_locked  BIT,
-  stat_type  VARCHAR(255)
+  stat_type  VARCHAR(255),
+	CONSTRAINT PK_fe PRIMARY KEY (id)
 );
 
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
@@ -126,10 +127,11 @@ ON UPDATE NO ACTION ON DELETE CASCADE;
 CREATE SEQUENCE ${ohdsiSchema}.fe_analysis_criteria_sequence;
 CREATE TABLE ${ohdsiSchema}.fe_analysis_criteria
 (
-  id BIGINT PRIMARY KEY DEFAULT NEXT VALUE FOR ${ohdsiSchema}.fe_analysis_criteria_sequence,
+  id BIGINT CONSTRAINT df_fe_analysis_criteria_id DEFAULT NEXT VALUE FOR ${ohdsiSchema}.fe_analysis_criteria_sequence,
   name VARCHAR(255),
   expression varchar(max),
-  fe_analysis_id BIGINT
+  fe_analysis_id BIGINT,
+	CONSTRAINT PK_fea_c PRIMARY KEY (id)
 );
 
 ALTER TABLE ${ohdsiSchema}.fe_analysis_criteria

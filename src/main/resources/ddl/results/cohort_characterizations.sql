@@ -1,6 +1,7 @@
 CREATE TABLE @results_schema.cc_results
 (
   type VARCHAR(255) NOT NULL,
+  fa_type VARCHAR(255) NOT NULL,
   cc_generation_id BIGINT NOT NULL,
   analysis_id INTEGER,
   analysis_name VARCHAR(1000),

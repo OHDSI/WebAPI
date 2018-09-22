@@ -5,6 +5,7 @@ import org.ohdsi.webapi.cohortcharacterization.CcResultType;
 public class CcResult {
     
     private Long id;
+    private String faType;
     private String sourceKey;
     private Integer cohortId;
     private Integer analysisId;
@@ -20,6 +21,16 @@ public class CcResult {
     public void setId(final Long id) {
 
         this.id = id;
+    }
+
+    public String getFaType() {
+
+        return faType;
+    }
+
+    public void setFaType(String faType) {
+
+        this.faType = faType;
     }
 
     public String getSourceKey() {

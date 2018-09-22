@@ -1,1 +1,1 @@
-ALTER TABLE fe_analysis modify (id INTEGER);
+ALTER TABLE ${ohdsiSchema}.fe_analysis modify (id INTEGER);

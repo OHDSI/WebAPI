@@ -1,0 +1,1 @@
+ALTER TABLE fe_analysis modify (id INTEGER);

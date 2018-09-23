@@ -37,14 +37,12 @@ public class CommonGeneration {
     @Column
     protected String status;
 
+    @Column(name = "exit_message")
+    private String exitMessage;
+
     public Long getId() {
 
         return id;
-    }
-
-    public void setId(Long id) {
-
-        this.id = id;
     }
 
     public Source getSource() {
@@ -95,5 +93,15 @@ public class CommonGeneration {
     public void setStatus(String status) {
 
         this.status = status;
+    }
+
+    public String getExitMessage() {
+
+        return exitMessage;
+    }
+
+    public void setExitMessage(String exitMessage) {
+
+        this.exitMessage = exitMessage;
     }
 }

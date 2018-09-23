@@ -1,48 +1,42 @@
 package org.ohdsi.webapi.cohortcharacterization.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConverter;
+import org.ohdsi.webapi.common.generation.AnalysisGenerationInfo;
 import org.ohdsi.webapi.common.generation.CommonGeneration;
-import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
 
 @Entity
 @Table(name = "cc_generation")
-public class CcGenerationEntity extends CommonGeneration implements AnalysisGenerationInfo {
+public class CcGenerationEntity extends CommonGeneration {
 
     @ManyToOne(targetEntity = CohortCharacterizationEntity.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "cc_id")
     private CohortCharacterizationEntity cohortCharacterization;
 
-    @Column(name = "design", updatable= false)
-    @Convert(converter = SerializedCcToCcConverter.class)
-    private CohortCharacterization design;
+    @Embedded
+    private AnalysisGenerationInfo info;
 
     public CohortCharacterizationEntity getCohortCharacterization() {
         return cohortCharacterization;
     }
 
-    public void setCohortCharacterization(final CohortCharacterizationEntity cohortCharacterization) {
-        this.cohortCharacterization = cohortCharacterization;
+    public CohortCharacterizationEntity getDesign() {
+            return info != null ? new SerializedCcToCcConverter().convertToEntityAttribute(info.getDesign()) : null;
     }
 
-    public Source getSource() {
-        return source;
+    public Integer getHashCode() {
+        return this.getDesign() != null ? this.getDesign().hashCode() : null;
     }
 
-    public void setSource(final Source source) {
-        this.source = source;
-    }
+    public UserEntity getCreatedBy() {
 
-    public CohortCharacterization getDesign() {
-
-        return design;
+        return this.info.getCreatedBy();
     }
 }

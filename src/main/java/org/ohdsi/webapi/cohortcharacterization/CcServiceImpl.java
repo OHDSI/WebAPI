@@ -1,9 +1,7 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.StringUtils;
-import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.circe.helper.ResourceHelper;
@@ -36,7 +34,6 @@ import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.CohortGenerationService;
 import org.ohdsi.webapi.service.FeatureExtractionService;
 import org.ohdsi.webapi.service.SourceService;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
@@ -258,11 +255,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
     
     @Override
     public String serializeCc(final CohortCharacterizationEntity cohortCharacterizationEntity) {
-        try {
-            return Utils.serialize(cohortCharacterizationEntity);
-        } catch (JsonProcessingException e) {
-            throw new IllegalArgumentException(e);
-        }
+        return new SerializedCcToCcConverter().convertToDatabaseColumn(cohortCharacterizationEntity);
     }
 
     @Override

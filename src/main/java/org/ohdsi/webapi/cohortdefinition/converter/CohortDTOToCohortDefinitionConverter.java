@@ -1,7 +1,5 @@
 package org.ohdsi.webapi.cohortdefinition.converter;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 import org.ohdsi.analysis.Cohort;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
@@ -26,10 +24,6 @@ public class CohortDTOToCohortDefinitionConverter extends BaseCohortDTOToCohortD
     }
 
     private String convertExpression(final Cohort source) {
-        try {
-            return Utils.serialize(source.getExpression());
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+        return Utils.serialize(source.getExpression());
     }
 }

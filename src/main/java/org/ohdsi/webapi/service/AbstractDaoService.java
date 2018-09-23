@@ -254,7 +254,11 @@ public abstract class AbstractDaoService {
   }
 
   protected UserEntity getCurrentUser() {
-    return userRepository.findByLogin(security.getSubject());
+    return userRepository.findByLogin(getCurrentUserLogin());
+  }
+
+  protected String getCurrentUserLogin() {
+    return security.getSubject();
   }
 
 }

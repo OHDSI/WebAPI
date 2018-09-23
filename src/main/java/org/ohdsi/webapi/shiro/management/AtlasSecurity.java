@@ -247,6 +247,7 @@ public abstract class AtlasSecurity extends Security {
     filters.put("createPermissionsOnCreateCohortCharacterization", this.getCreatePermissionsOnCreateCohortCharacterizationFilter());
     filters.put("deletePermissionsOnDeleteCohortCharacterization", this.getDeletePermissionsOnDeleteFilter(cohortCharacterizationCreatorPermissionTemplates));
     filters.put("createPermissionsOnCreatePathwayAnalysis", this.getCreatePermissionsOnCreatePathwayAnalysisFilter());
+    filters.put("deletePermissionsOnDeletePathwayAnalysis", this.getDeletePermissionsOnDeleteFilter(pathwayAnalysisCreatorPermissionTemplate));
     filters.put("createPermissionsOnCreateConceptSet", this.getCreatePermissionsOnCreateConceptSetFilter());
     filters.put("deletePermissionsOnDeleteCohortDefinition", this.getDeletePermissionsOnDeleteCohortDefinitionFilter());
     filters.put("deletePermissionsOnDeleteConceptSet", this.getDeletePermissionsOnDeleteConceptSetFilter());

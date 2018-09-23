@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.pathway;
 
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
-import org.ohdsi.webapi.pathway.domain.PathwayAnalysisGeneration;
+import org.ohdsi.webapi.pathway.domain.PathwayAnalysisGenerationEntity;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,9 +29,9 @@ public interface PathwayService {
 
     void generatePathways(final Integer pathwayAnalysisId, final Integer sourceId);
 
-    List<PathwayAnalysisGeneration> getPathwayGenerations(final Integer pathwayAnalysisId);
+    List<PathwayAnalysisGenerationEntity> getPathwayGenerations(final Integer pathwayAnalysisId);
 
-    PathwayAnalysisGeneration getGeneration(Long generationId);
+    PathwayAnalysisGenerationEntity getGeneration(Long generationId);
 
     PathwayAnalysisResult getResultingPathways(final Long generationId);
 }

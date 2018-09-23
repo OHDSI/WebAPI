@@ -3,6 +3,7 @@ package org.ohdsi.webapi.pathway;
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.webapi.Pagination;
 import org.ohdsi.webapi.common.generation.CommonGenerationDTO;
+import org.ohdsi.webapi.pathway.converter.SerializedPathwayAnalysisToPathwayAnalysisConverter;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisExportDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
@@ -112,10 +113,10 @@ public class PathwayController {
     @Path("/{id}/export")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public PathwayAnalysisExportDTO export(@PathParam("id") final Integer id) {
+    public String export(@PathParam("id") final Integer id) {
 
         PathwayAnalysisEntity pathwayAnalysis = pathwayService.getById(id);
-        return conversionService.convert(pathwayAnalysis, PathwayAnalysisExportDTO.class);
+        return new SerializedPathwayAnalysisToPathwayAnalysisConverter().convertToDatabaseColumn(pathwayAnalysis);
     }
 
     @GET

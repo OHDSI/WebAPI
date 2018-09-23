@@ -1,10 +1,11 @@
 package org.ohdsi.webapi.pathway.domain;
 
+import org.ohdsi.webapi.common.generation.AnalysisGenerationInfo;
 import org.ohdsi.webapi.common.generation.CommonGeneration;
 import org.ohdsi.webapi.pathway.converter.SerializedPathwayAnalysisToPathwayAnalysisConverter;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -13,33 +14,30 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "pathway_analysis_generation")
-public class PathwayAnalysisGeneration extends CommonGeneration {
+public class PathwayAnalysisGenerationEntity extends CommonGeneration {
 
     @ManyToOne(targetEntity = PathwayAnalysisEntity.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "pathway_analysis_id")
     private PathwayAnalysisEntity pathwayAnalysis;
 
-    @Column(name = "design", updatable= false)
-    @Convert(converter = SerializedPathwayAnalysisToPathwayAnalysisConverter.class)
-    private PathwayAnalysisEntity design;
+    @Embedded
+    private AnalysisGenerationInfo info;
 
     public PathwayAnalysisEntity getPathwayAnalysis() {
 
         return pathwayAnalysis;
     }
 
-    public void setPathwayAnalysis(PathwayAnalysisEntity pathwayAnalysis) {
-
-        this.pathwayAnalysis = pathwayAnalysis;
-    }
-
     public PathwayAnalysisEntity getDesign() {
-
-        return design;
+        return new SerializedPathwayAnalysisToPathwayAnalysisConverter().convertToEntityAttribute(info.getDesign());
     }
 
-    public void setDesign(PathwayAnalysisEntity design) {
+    public Integer getHashCode() {
+        return this.getDesign().hashCode();
+    }
 
-        this.design = design;
+    public UserEntity getCreatedBy() {
+
+        return this.info.getCreatedBy();
     }
 }

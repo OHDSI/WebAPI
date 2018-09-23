@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import javax.transaction.Transactional;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -71,6 +72,7 @@ import org.springframework.stereotype.Component;
  * @author Frank DeFalco <fdefalco@ohdsi.org>
  */
 @Component
+@Transactional
 @Path("/comparativecohortanalysis/")
 public class ComparativeCohortAnalysisService extends AbstractDaoService {
 

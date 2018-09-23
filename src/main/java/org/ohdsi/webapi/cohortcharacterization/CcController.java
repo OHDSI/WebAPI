@@ -2,6 +2,8 @@ package org.ohdsi.webapi.cohortcharacterization;
 
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -11,9 +13,13 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+
+import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.webapi.Pagination;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.dto.*;
+import org.ohdsi.webapi.feanalysis.FeAnalysisService;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.common.generation.CommonGenerationDTO;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.springframework.core.convert.ConversionService;
@@ -28,14 +34,17 @@ import org.springframework.transaction.annotation.Transactional;
 public class CcController {
     
     private CcService service;
+    private FeAnalysisService feAnalysisService;
     private ConversionService conversionService;
     private ConverterUtils converterUtils;
     
     CcController(
             final CcService service,
-            final ConversionService conversionService, 
+            final FeAnalysisService feAnalysisService,
+            final ConversionService conversionService,
             final ConverterUtils converterUtils) {
         this.service = service;
+        this.feAnalysisService = feAnalysisService;
         this.conversionService = conversionService;
         this.converterUtils = converterUtils;
     }
@@ -172,6 +181,16 @@ public class CcController {
     @Consumes(MediaType.APPLICATION_JSON)
     public List<CcResult> getGenerationsResults(
             @PathParam("generationId") final Long generationId) {
-        return converterUtils.convertList(service.findResults(generationId), CcResult.class);
+        List<CcResult> ccResults = service.findResults(generationId);
+        List<FeAnalysisEntity> presetFeAnalyses = feAnalysisService.findPresetAnalysisByFeAnalysisName(ccResults.stream().map(CcResult::getAnalysisName).distinct().collect(Collectors.toList()));
+        ccResults.forEach(res -> {
+            if (Objects.equals(res.getFaType(), StandardFeatureAnalysisType.PRESET.name())) {
+                presetFeAnalyses.stream().filter(fa -> fa.getDesign().equals(res.getAnalysisName())).findFirst().ifPresent(fa -> {
+                    res.setAnalysisId(fa.getId());
+                    res.setAnalysisName(fa.getName());
+                });
+            }
+        });
+        return ccResults;
     }
 }

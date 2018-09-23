@@ -1,5 +1,6 @@
 select
        r.type,
+       r.fa_type,
        r.cc_generation_id,
        r.analysis_id,
        r.analysis_name,

@@ -1,5 +1,6 @@
 insert into
  @results_database_schema.cc_results (type,
+     fa_type,
      covariate_id,
      covariate_name,
      analysis_id,
@@ -17,7 +18,8 @@ insert into
      p90_value,
      cohort_definition_id,
      cc_generation_id)
- select 'DISTRIBUTION',
+ select 'DISTRIBUTION' as type,
+        'CUSTOM_FE' as fa_type,
         covariate_id,
         covariate_name,
         @analysisId as analysis_id,

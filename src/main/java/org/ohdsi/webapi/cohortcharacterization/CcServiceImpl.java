@@ -428,6 +428,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         Long generationId = rs.getLong("cc_generation_id");
         CcGenerationEntity ccGeneration = ccGenerationRepository.findOne(generationId);
 
+        stat.setFaType(rs.getString("fa_type"));
         stat.setSourceKey(ccGeneration.getSource().getSourceKey());
         stat.setCohortId(rs.getInt("cohort_definition_id"));
         stat.setAnalysisId(rs.getInt("analysis_id"));

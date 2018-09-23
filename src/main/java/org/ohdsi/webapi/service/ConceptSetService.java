@@ -45,8 +45,9 @@ import org.springframework.stereotype.Component;
  *
  * @author fdefalco
  */
-@Path("/conceptset/")
 @Component
+@Transactional
+@Path("/conceptset/")
 public class ConceptSetService extends AbstractDaoService {
 
     @Autowired

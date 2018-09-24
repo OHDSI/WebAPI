@@ -94,7 +94,6 @@ public class LiferayApiClient {
                     HttpMethod.GET, new HttpEntity<>(createHeaders()),
                     JsonNode.class).getBody().asText();
         } catch (HttpStatusCodeException e) {
-            LOGGER.error(userIdEndpoint);
             LOGGER.error(e.getMessage());
             return null;
         }

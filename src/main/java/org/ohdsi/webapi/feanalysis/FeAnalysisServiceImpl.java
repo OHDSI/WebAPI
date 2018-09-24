@@ -42,12 +42,7 @@ public class FeAnalysisServiceImpl implements FeAnalysisService {
         return analysisRepository.findAll(pageable);
     }
 
-    @Override
-    public List<FeAnalysisEntity> findPresetAnalysisByFeAnalysisName(List<String> analysisNames) {
-        return analysisRepository.findAllByTypeAndRawDesignIn(StandardFeatureAnalysisType.PRESET, analysisNames);
-    }
-
-    @Override
+  @Override
     public List<FeAnalysisWithStringEntity> findPresetAnalysesBySystemNames(Collection<String> names) {
         return stringAnalysisRepository.findByDesignIn(names);
     }

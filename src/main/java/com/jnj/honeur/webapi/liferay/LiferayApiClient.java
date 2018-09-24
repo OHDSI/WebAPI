@@ -352,7 +352,6 @@ public class LiferayApiClient {
     }
 
     private HttpHeaders createHeaders(){
-        LOGGER.error(liferayServiceUser + ":" + liferayServicePassword);
         return new HttpHeaders() {{
             String auth = liferayServiceUser + ":" + liferayServicePassword;
             byte[] encodedAuth = Base64.encodeBase64(

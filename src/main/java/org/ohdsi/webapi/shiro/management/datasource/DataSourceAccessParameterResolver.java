@@ -1,7 +1,9 @@
 package org.ohdsi.webapi.shiro.management.datasource;
 
-import org.ohdsi.webapi.cohortcharacterization.annotations.CcGenerationId;
-import org.ohdsi.webapi.cohortcharacterization.annotations.SourceKey;
+import org.ohdsi.webapi.shiro.annotations.CcGenerationId;
+import org.ohdsi.webapi.shiro.annotations.PathwayAnalysisGenerationId;
+import org.ohdsi.webapi.shiro.annotations.SourceId;
+import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.source.Source;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -18,7 +20,13 @@ public class DataSourceAccessParameterResolver {
   private SourceKeyAccessor sourceKeyAccessor;
 
   @Autowired
+  private SourceIdAccessor sourceIdAccessor;
+
+  @Autowired
   private CcGenerationIdAccessor generationIdAccessor;
+
+  @Autowired
+  private PathwayAnalysisGenerationIdAccessor pathwayAnalysisGenerationIdAccessor;
 
   @Autowired
   private SourceAccessor sourceAccessor;
@@ -29,8 +37,12 @@ public class DataSourceAccessParameterResolver {
       DataSourceAccessor<?> result = null;
       if (isAnnotated(annotations[i], SourceKey.class)) {
         result = sourceKeyAccessor;
+      } else if (isAnnotated(annotations[i], SourceId.class)) {
+        result = sourceIdAccessor;
       } else if (isAnnotated(annotations[i], CcGenerationId.class)) {
         result = generationIdAccessor;
+      } else if (isAnnotated(annotations[i], PathwayAnalysisGenerationId.class)) {
+        result = pathwayAnalysisGenerationIdAccessor;
       }
       if (Objects.nonNull(result)) {
         return new AccessorParameterBinding(i, result);

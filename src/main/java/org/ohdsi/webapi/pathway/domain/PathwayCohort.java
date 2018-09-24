@@ -45,11 +45,11 @@ public abstract class PathwayCohort {
             return true;
         }
 
-        if (obj == null || !(obj instanceof PathwayTargetCohort)) {
+        if (!(obj instanceof PathwayCohort)) {
             return false;
         }
 
-        final PathwayTargetCohort compare = (PathwayTargetCohort) obj;
+        final PathwayCohort compare = (PathwayCohort) obj;
         return Objects.equals(getCohortDefinition().getId(), compare.getCohortDefinition().getId());
     }
 

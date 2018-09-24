@@ -7,9 +7,9 @@ import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisT
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
-import org.ohdsi.webapi.cohortcharacterization.annotations.CcGenerationId;
-import org.ohdsi.webapi.cohortcharacterization.annotations.DataSourceAccess;
-import org.ohdsi.webapi.cohortcharacterization.annotations.SourceKey;
+import org.ohdsi.webapi.shiro.annotations.CcGenerationId;
+import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
+import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConverter;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcParamEntity;

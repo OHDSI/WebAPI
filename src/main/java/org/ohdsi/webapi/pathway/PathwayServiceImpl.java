@@ -11,16 +11,23 @@ import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.pathway.converter.SerializedPathwayAnalysisToPathwayAnalysisConverter;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisGenerationEntity;
+import org.ohdsi.webapi.pathway.domain.PathwayCohort;
 import org.ohdsi.webapi.pathway.domain.PathwayEventCohort;
 import org.ohdsi.webapi.pathway.domain.PathwayTargetCohort;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
 import org.ohdsi.webapi.pathway.dto.internal.PersonPathwayEvent;
 import org.ohdsi.webapi.pathway.repository.PathwayAnalysisEntityRepository;
 import org.ohdsi.webapi.pathway.repository.PathwayAnalysisGenerationRepository;
+import org.ohdsi.webapi.pathway.repository.PathwayEventCohortRepository;
+import org.ohdsi.webapi.pathway.repository.PathwayTargetCohortRepository;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.PermissionManager;
+import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
+import org.ohdsi.webapi.shiro.annotations.PathwayAnalysisGenerationId;
+import org.ohdsi.webapi.shiro.annotations.SourceId;
+import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
@@ -46,6 +53,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -56,7 +64,6 @@ import static org.ohdsi.webapi.Constants.Params.JOB_AUTHOR;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
 import static org.ohdsi.webapi.Constants.Params.PATHWAY_ANALYSIS_ID;
 import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
-import static org.ohdsi.webapi.common.generation.GenerationUtils.checkSourceAccess;
 
 @Service
 @Transactional
@@ -74,6 +81,8 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     private final DesignImportService designImportService;
     private final AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository;
     private final UserRepository userRepository;
+    private final PathwayEventCohortRepository eventCohortRepository;
+    private final PathwayTargetCohortRepository targetCohortRepository;
 
     private final EntityGraph defaultEntityGraph = EntityUtils.fromAttributePaths(
             "targetCohorts.cohortDefinition",
@@ -96,7 +105,9 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
             Security security,
             DesignImportService designImportService,
             AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository,
-            UserRepository userRepository
+            UserRepository userRepository,
+            PathwayEventCohortRepository eventCohortRepository,
+            PathwayTargetCohortRepository targetCohortRepository
     ) {
 
         this.pathwayAnalysisRepository = pathwayAnalysisRepository;
@@ -111,6 +122,10 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         this.designImportService = designImportService;
         this.analysisGenerationInfoEntityRepository = analysisGenerationInfoEntityRepository;
         this.userRepository = userRepository;
+        this.targetCohortRepository = targetCohortRepository;
+        this.eventCohortRepository = eventCohortRepository;
+
+        SerializedPathwayAnalysisToPathwayAnalysisConverter.setConversionService(conversionService);
     }
 
     @Override
@@ -181,23 +196,35 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         PathwayAnalysisEntity existing = getById(forUpdate.getId());
 
         copyProps(forUpdate, existing);
-
-        existing.getTargetCohorts().clear();
-        forUpdate.getTargetCohorts().forEach(tc -> {
-            tc.setPathwayAnalysis(existing);
-            existing.getTargetCohorts().add(tc);
-        });
-
-        existing.getEventCohorts().clear();
-        forUpdate.getEventCohorts().forEach(ec -> {
-            ec.setPathwayAnalysis(existing);
-            existing.getEventCohorts().add(ec);
-        });
+        updateCohorts(existing, existing.getTargetCohorts(), forUpdate.getTargetCohorts());
+        updateCohorts(existing, existing.getEventCohorts(), forUpdate.getEventCohorts());
 
         existing.setModifiedBy(getCurrentUser());
         existing.setModifiedDate(new Date());
 
         return save(existing);
+    }
+
+    private <T extends PathwayCohort> void updateCohorts(PathwayAnalysisEntity analysis, Set<T> existing, Set<T> forUpdate) {
+
+        Set<PathwayCohort> removedCohorts = existing
+                .stream()
+                .filter(ec -> !forUpdate.contains(ec))
+                .collect(Collectors.toSet());
+        existing.removeAll(removedCohorts);
+        forUpdate.forEach(updatedCohort -> existing.stream()
+                .filter(ec -> ec.equals(updatedCohort))
+                .findFirst()
+                .map(ec -> {
+                    ec.setName(updatedCohort.getName());
+                    return ec;
+                })
+                .orElseGet(() -> {
+                    updatedCohort.setId(null);
+                    updatedCohort.setPathwayAnalysis(analysis);
+                    existing.add(updatedCohort);
+                    return updatedCohort;
+                }));
     }
 
     @Override
@@ -226,12 +253,11 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     }
 
     @Override
-    public String buildAnalysisSql(Long generationId, PathwayAnalysisEntity pathwayAnalysis, Integer sourceId) {
+    @DataSourceAccess
+    public String buildAnalysisSql(Long generationId, PathwayAnalysisEntity pathwayAnalysis, @SourceId Integer sourceId) {
 
         Map<Integer, Integer> eventCohortCodes = getEventCohortCodes(pathwayAnalysis);
         Source source = sourceService.findBySourceId(sourceId);
-
-        checkSourceAccess(source);
 
         String analysisSql = ResourceHelper.GetResourceAsString("/resources/pathway/runPathwayAnalysis.sql");
         String eventCohortInputSql = ResourceHelper.GetResourceAsString("/resources/pathway/eventCohortInput.sql");
@@ -270,12 +296,11 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
 
     @Override
-    public void generatePathways(final Integer pathwayAnalysisId, final Integer sourceId) {
+    @DataSourceAccess
+    public void generatePathways(final Integer pathwayAnalysisId, final @SourceId Integer sourceId) {
 
         PathwayAnalysisEntity pathwayAnalysis = getById(pathwayAnalysisId);
         Source source = getSourceRepository().findBySourceId(sourceId);
-
-        checkSourceAccess(source);
 
         JobParametersBuilder builder = new JobParametersBuilder();
         builder.addString(JOB_NAME, String.format("Generating Pathway Analysis %d using %s (%s)", pathwayAnalysisId, source.getSourceName(), source.getSourceKey()));
@@ -317,12 +342,11 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     }
 
     @Override
-    public PathwayAnalysisResult getResultingPathways(final Long generationId) {
+    @DataSourceAccess
+    public PathwayAnalysisResult getResultingPathways(final @PathwayAnalysisGenerationId Long generationId) {
 
         PathwayAnalysisGenerationEntity generation = getGeneration(generationId);
         Source source = generation.getSource();
-
-        checkSourceAccess(source);
 
         PathwayAnalysisResult result = new PathwayAnalysisResult();
 

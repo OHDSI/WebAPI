@@ -23,6 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.GenerationStatus;
+import org.ohdsi.webapi.service.CohortGenerationService;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobExecutionListener;
@@ -39,14 +40,17 @@ import org.springframework.transaction.support.TransactionTemplate;
  */
 public class GenerationJobExecutionListener implements JobExecutionListener {
 
+	private final CohortGenerationService cohortGenerationService;
 	private final CohortDefinitionRepository cohortDefinitionRepository;
   private final TransactionTemplate transactionTemplate;
 	private final JdbcTemplate sourceTemplate;
 	
-	public GenerationJobExecutionListener(CohortDefinitionRepository cohortDefinitionRepository, 
-		TransactionTemplate transactionTemplate,
-		JdbcTemplate sourceTemplate)
+	public GenerationJobExecutionListener(CohortGenerationService cohortGenerationService,
+																				CohortDefinitionRepository cohortDefinitionRepository,
+																				TransactionTemplate transactionTemplate,
+																				JdbcTemplate sourceTemplate)
 	{
+		this.cohortGenerationService = cohortGenerationService;
 		this.cohortDefinitionRepository = cohortDefinitionRepository;
 		this.transactionTemplate = transactionTemplate;
 		this.sourceTemplate = sourceTemplate;
@@ -98,7 +102,7 @@ public class GenerationJobExecutionListener implements JobExecutionListener {
 		
 		this.cohortDefinitionRepository.save(df);
 		this.transactionTemplate.getTransactionManager().commit(completeStatus);
-		
+		cohortGenerationService.removeJob(je.getJobId());
 	}	
 
 	@Override

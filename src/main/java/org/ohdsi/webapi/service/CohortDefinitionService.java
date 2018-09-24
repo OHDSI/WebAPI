@@ -75,6 +75,12 @@ import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.batch.core.launch.JobExecutionNotRunningException;
 import org.springframework.batch.core.launch.JobOperator;
 import org.springframework.batch.core.launch.NoSuchJobExecutionException;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.scope.context.StepSynchronizationManager;
+import org.springframework.batch.core.step.StepLocator;
+import org.springframework.batch.core.step.tasklet.StoppableTasklet;
+import org.springframework.batch.core.step.tasklet.Tasklet;
+import org.springframework.batch.core.step.tasklet.TaskletStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -123,6 +129,8 @@ public class CohortDefinitionService extends AbstractDaoService {
 
   @Autowired
   private CohortGenerationService cohortGenerationService;
+
+  private JobRepository jobRepository;
 
 	@PersistenceContext
 	protected EntityManager entityManager;
@@ -497,9 +505,25 @@ public class CohortDefinitionService extends AbstractDaoService {
     });
 
     cohortGenerationService.getJobExecution(source, id)
-            .ifPresent(job -> {
+            .ifPresent(jobExecution -> {
               try {
-                jobOperator.stop(job.getJobId());
+                Job job = cohortGenerationService.getRunningJob(jobExecution.getJobId());
+                if (Objects.nonNull(job)) {
+                  jobExecution.getStepExecutions().stream()
+                          .filter(step -> step.getStatus().isRunning())
+                          .forEach(stepExec -> {
+                            Step step = ((StepLocator) job).getStep(stepExec.getStepName());
+                            if (step instanceof TaskletStep) {
+                              Tasklet tasklet = ((TaskletStep) step).getTasklet();
+                              if (tasklet instanceof StoppableTasklet) {
+                                StepSynchronizationManager.register(stepExec);
+                                ((StoppableTasklet) tasklet).stop();
+                                StepSynchronizationManager.release();
+                              }
+                            }
+                          });
+                }
+                jobOperator.stop(jobExecution.getJobId());
               } catch (NoSuchJobExecutionException | JobExecutionNotRunningException ignored) {
               }
             });

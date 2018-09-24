@@ -2,15 +2,9 @@ DELETE FROM @target_database_schema.pathway_analysis_events WHERE pathway_analys
 
 /*
 * Filter out events which do not fall into a person's target period
+* e.g. of event_cohorts:
+* SELECT 1 AS cohort_definition_id, 1 AS cohort_index UNION ALL ...
 */
-
-WITH event_cohorts AS (
-  /*
-  * e.g.:
-  * SELECT 1 AS cohort_definition_id, 1 AS cohort_index UNION ALL ...
-  */
-  @event_cohort_id_index_map
-)
 select id, event_cohort_index, subject_id, cohort_start_date, cohort_end_date
 INTO #raw_events
 FROM (
@@ -20,7 +14,7 @@ FROM (
 	  e.cohort_start_date,
 	  e.cohort_end_date
 	FROM @target_database_schema.@target_cohort_table e
-	  JOIN event_cohorts ec ON e.cohort_definition_id = ec.cohort_definition_id
+	  JOIN ( @event_cohort_id_index_map ) ec ON e.cohort_definition_id = ec.cohort_definition_id
 	  JOIN @target_database_schema.@target_cohort_table t ON t.cohort_start_date <= e.cohort_start_date AND e.cohort_end_date <= t.cohort_end_date AND t.subject_id = e.subject_id
 	WHERE t.cohort_definition_id IN (@pathway_target_cohort_id_list)
 ) RE;

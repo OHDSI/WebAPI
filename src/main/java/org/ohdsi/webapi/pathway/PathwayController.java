@@ -199,7 +199,4 @@ public class PathwayController {
 
         return dto;
     }
-
-    // TODO:
-    // endpoint for import
 }

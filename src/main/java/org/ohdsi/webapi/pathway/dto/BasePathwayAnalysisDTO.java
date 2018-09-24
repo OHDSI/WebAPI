@@ -19,6 +19,7 @@ public abstract class BasePathwayAnalysisDTO<T extends CohortMetadata> {
     private Date createdDate;
     private UserDTO modifiedBy;
     private Date modifiedDate;
+    private Integer hashCode;
 
     public Integer getId() {
 
@@ -128,5 +129,15 @@ public abstract class BasePathwayAnalysisDTO<T extends CohortMetadata> {
     public void setModifiedDate(Date modifiedDate) {
 
         this.modifiedDate = modifiedDate;
+    }
+
+    public Integer getHashCode() {
+
+        return hashCode;
+    }
+
+    public void setHashCode(Integer hashCode) {
+
+        this.hashCode = hashCode;
     }
 }

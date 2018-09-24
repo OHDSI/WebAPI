@@ -26,6 +26,7 @@ public abstract class BasePathwayAnalysisToPathwayAnalysisDTOConverter<T extends
         dto.setCreatedDate(source.getCreatedDate());
         dto.setModifiedBy(conversionService.convert(source.getModifiedBy(), UserDTO.class));
         dto.setModifiedDate(source.getModifiedDate());
+        dto.setHashCode(source.getHashCode());
 
         return dto;
     }

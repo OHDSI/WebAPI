@@ -1,8 +1,8 @@
 CREATE SEQUENCE ${ohdsiSchema}.pathway_analysis_sequence;
 CREATE TABLE ${ohdsiSchema}.pathway_analysis
 (
-  id                 INTEGER DEFAULT NEXTVAL('pathway_analysis_sequence'),
-  name               VARCHAR NOT NULL,
+  id                 NUMBER(19),
+  name               VARCHAR(255) NOT NULL,
   combination_window INTEGER,
   min_cell_count     INTEGER,
   max_depth          INTEGER,
@@ -18,7 +18,7 @@ CREATE SEQUENCE ${ohdsiSchema}.pathway_cohort_sequence;
 
 CREATE TABLE ${ohdsiSchema}.pathway_target_cohort
 (
-  id                   INTEGER DEFAULT NEXTVAL('pathway_cohort_sequence'),
+  id                   NUMBER(19),
   name                 VARCHAR(255) NOT NULL,
   cohort_definition_id INTEGER NOT NULL,
   pathway_analysis_id  INTEGER NOT NULL,
@@ -33,8 +33,8 @@ CREATE TABLE ${ohdsiSchema}.pathway_target_cohort
 
 CREATE TABLE ${ohdsiSchema}.pathway_event_cohort
 (
-  id                   INTEGER DEFAULT NEXTVAL('pathway_cohort_sequence'),
-  name                 VARCHAR NOT NULL,
+  id                   NUMBER(19),
+  name                 VARCHAR(255) NOT NULL,
   cohort_definition_id INTEGER NOT NULL,
   pathway_analysis_id  INTEGER NOT NULL,
   CONSTRAINT PK_pathway_event_cohort PRIMARY KEY (id),
@@ -47,18 +47,24 @@ CREATE TABLE ${ohdsiSchema}.pathway_event_cohort
 );
 
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
-VALUES
-  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'pathway-analysis:post', 'Create Pathways Analysis'),
-  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'pathway-analysis:import:post', 'Import Pathways Analysis'),
-  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'pathway-analysis:get', 'Get Pathways Analyses list'),
-  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'pathway-analysis:*:get', 'Get Pathways Analysis instance'),
-  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'pathway-analysis:*:generation:get', 'Get Pathways Analysis generations list'),
-  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'pathway-analysis:generation:*:get', 'Get Pathways Analysis generation instance'),
-  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'pathway-analysis:generation:*:result:get', 'Get Pathways Analysis generation results'),
-  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'pathway-analysis:*:export:get', 'Export Pathways Analysis');
+SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, 'pathway-analysis:post', 'Create Pathways Analysis' FROM dual;
+INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
+SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, 'pathway-analysis:import:post', 'Import Pathways Analysis' FROM dual;
+INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
+SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, 'pathway-analysis:get', 'Get Pathways Analyses list' FROM dual;
+INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
+SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, 'pathway-analysis:*:get', 'Get Pathways Analysis instance' FROM dual;
+INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
+SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, 'pathway-analysis:*:generation:get', 'Get Pathways Analysis generations list' FROM dual;
+INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
+SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, 'pathway-analysis:generation:*:get', 'Get Pathways Analysis generation instance' FROM dual;
+INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
+SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, 'pathway-analysis:generation:*:result:get', 'Get Pathways Analysis generation results' FROM dual;
+INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
+SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, 'pathway-analysis:*:export:get', 'Export Pathways Analysis' FROM dual;
 
-INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
-SELECT sr.id, sp.id
+INSERT INTO ${ohdsiSchema}.sec_role_permission(id, role_id, permission_id)
+SELECT ${ohdsiSchema}.SEC_ROLE_PERMISSION_SEQUENCE.nextval, sr.id, sp.id
 FROM ${ohdsiSchema}.sec_permission SP, ${ohdsiSchema}.sec_role sr
 WHERE sp."value" IN (
   'pathway-analysis:post',

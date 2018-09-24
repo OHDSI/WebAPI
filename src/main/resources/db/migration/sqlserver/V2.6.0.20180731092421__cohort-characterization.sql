@@ -47,7 +47,7 @@ CREATE TABLE ${ohdsiSchema}.fe_analysis
   domain     VARCHAR(255),
   descr      VARCHAR(1000),
   value      VARCHAR(255),
-  design     Text,
+  design     VARCHAR(MAX),
   is_locked  BIT,
   stat_type  VARCHAR(255),
 	CONSTRAINT PK_fe PRIMARY KEY (id)

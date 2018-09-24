@@ -3,16 +3,15 @@ package org.ohdsi.webapi.feanalysis;
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysis;
 import org.ohdsi.webapi.Pagination;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
+import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisShortDTO;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 @Path("/feature-analysis")
@@ -40,7 +39,47 @@ public class FeAnalysisController {
         return service.getPage(pageable).map(this::convertFeAnaysisToShortDto);
     }
 
+    @POST
+    @Path("/")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public FeAnalysisDTO createAnalysis(final FeAnalysisDTO dto) {
+        final FeAnalysisEntity createdEntity = service.createAnalysis(conversionService.convert(dto, FeAnalysisEntity.class));
+        return convertFeAnalysisToDto(createdEntity);
+    }
+
+    @PUT
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public FeAnalysisDTO updateAnalysis(@PathParam("id") final Long feAnalysisId, final FeAnalysisDTO dto) {
+        final FeAnalysisEntity updatedEntity = service.updateAnalysis(feAnalysisId, conversionService.convert(dto, FeAnalysisEntity.class));
+        return convertFeAnalysisToDto(updatedEntity);
+    }
+
+    @DELETE
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public void deleteAnalysis(@PathParam("id") final Long feAnalysisId) {
+        final FeAnalysisEntity entity = service.findById(feAnalysisId).orElseThrow(NotFoundException::new);
+        service.deleteAnalysis(entity);
+    }
+
+    @GET
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public FeAnalysisDTO getFeAnalysis(@PathParam("id") final Long feAnalysisId) {
+        final FeAnalysisEntity feAnalysis = service.findById(feAnalysisId)
+                .orElseThrow(NotFoundException::new);
+        return convertFeAnalysisToDto(feAnalysis);
+    }
+
     private FeAnalysisShortDTO convertFeAnaysisToShortDto(final FeatureAnalysis entity) {
         return conversionService.convert(entity, FeAnalysisShortDTO.class);
     }
+
+    private FeAnalysisDTO convertFeAnalysisToDto(final FeatureAnalysis entity) {
+        return conversionService.convert(entity, FeAnalysisDTO.class);
+    }
+
 }

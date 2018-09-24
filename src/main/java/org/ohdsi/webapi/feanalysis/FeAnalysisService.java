@@ -2,6 +2,7 @@ package org.ohdsi.webapi.feanalysis;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
@@ -20,9 +21,15 @@ public interface FeAnalysisService {
 
     FeAnalysisEntity createAnalysis(FeAnalysisEntity analysis);
 
+    Optional<FeAnalysisEntity> findById(Long id);
+
     FeAnalysisWithCriteriaEntity createCriteriaAnalysis(FeAnalysisWithCriteriaEntity analysis);
 
     Set<FeAnalysisEntity> findByCohortCharacterization(CohortCharacterizationEntity cohortCharacterization);
 
     List<FeAnalysisEntity> findAllPresetAnalyses();
+
+    FeAnalysisEntity updateAnalysis(Long feAnalysisId, FeAnalysisEntity convert);
+
+    void deleteAnalysis(FeAnalysisEntity entity);
 }

@@ -3,7 +3,7 @@ package org.ohdsi.webapi.shiro.management;
 import org.ohdsi.webapi.cohortcharacterization.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.management.datasource.AccessorParameterBinding;
 import org.ohdsi.webapi.shiro.management.datasource.DataSourceAccessParameterResolver;
-import org.ohdsi.webapi.shiro.management.datasource.DataSourceAccessor;
+import org.ohdsi.webapi.util.AnnotationReflectionUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -12,7 +12,6 @@ import org.springframework.util.ReflectionUtils;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class DataSourceAccessBeanPostProcessor implements BeanPostProcessor {
 
@@ -64,14 +63,7 @@ public class DataSourceAccessBeanPostProcessor implements BeanPostProcessor {
   }
 
   private List<Method> getMethodsAnnotatedWith(final Class<?> type) {
-    List<Method> methods = new ArrayList<>();
-    Class<?> current = type;
-    while(Objects.nonNull(current) && current != Object.class) {
-      methods.addAll(Arrays.stream(current.getMethods())
-              .filter(method -> method.isAnnotationPresent(DataSourceAccess.class))
-              .collect(Collectors.toList()));
-      current = current.getSuperclass();
-    }
+    List<Method> methods = AnnotationReflectionUtils.getMethodsAnnotatedWith(type, DataSourceAccess.class);
     methods.forEach(m -> {
       if (Objects.isNull(accessParameterResolver.resolveParameterBinding(m))) {
         throw new BeanInitializationException(String.format("One of method: %s parameters should be annotated with SourceKey of CcGenerationId", m.toString()));

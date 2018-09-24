@@ -9,10 +9,13 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
 @Embeddable
-public class AnalysisGenerationInfo {
+public class  AnalysisGenerationInfo {
 
     @Column(name = "design")
     protected String design;
+
+    @Column(name = "hash_code")
+    protected Integer hashCode;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_id", updatable = false)
@@ -21,6 +24,11 @@ public class AnalysisGenerationInfo {
     public String getDesign() {
 
         return design;
+    }
+
+    public Integer getHashCode() {
+
+        return hashCode;
     }
 
     public UserEntity getCreatedBy() {

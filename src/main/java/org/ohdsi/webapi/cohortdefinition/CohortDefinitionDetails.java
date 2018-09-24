@@ -25,6 +25,8 @@ import javax.persistence.OneToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
+
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.hibernate.annotations.Type;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;

@@ -27,6 +27,7 @@ public class AnalysisGenerationInfoEntity {
     public void setDesign(String serializedDesign) {
 
         this.info.design = serializedDesign;
+        this.info.hashCode = serializedDesign.hashCode();
     }
 
     public void setCreatedBy(UserEntity createdBy) {

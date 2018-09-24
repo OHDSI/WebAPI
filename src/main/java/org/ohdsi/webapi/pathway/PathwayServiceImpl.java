@@ -7,6 +7,7 @@ import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfoEntityRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.common.DesignImportService;
+import org.ohdsi.webapi.common.generation.GenerationUtils;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.pathway.converter.SerializedPathwayAnalysisToPathwayAnalysisConverter;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
@@ -27,7 +28,6 @@ import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.PathwayAnalysisGenerationId;
 import org.ohdsi.webapi.shiro.annotations.SourceId;
-import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
@@ -36,14 +36,13 @@ import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
-import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
-import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,6 +63,7 @@ import static org.ohdsi.webapi.Constants.Params.JOB_AUTHOR;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
 import static org.ohdsi.webapi.Constants.Params.PATHWAY_ANALYSIS_ID;
 import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
+import static org.ohdsi.webapi.Constants.Params.TARGET_TABLE;
 
 @Service
 @Transactional
@@ -73,16 +73,11 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     private final PathwayAnalysisGenerationRepository pathwayAnalysisGenerationRepository;
     private final SourceService sourceService;
     private final JobTemplate jobTemplate;
-    private final StepBuilderFactory stepBuilderFactory;
-    private final JobBuilderFactory jobBuilders;
     private final EntityManager entityManager;
-    private final PermissionManager permissionManager;
-    private final Security security;
     private final DesignImportService designImportService;
     private final AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository;
     private final UserRepository userRepository;
-    private final PathwayEventCohortRepository eventCohortRepository;
-    private final PathwayTargetCohortRepository targetCohortRepository;
+    private final GenerationUtils generationUtils;
 
     private final EntityGraph defaultEntityGraph = EntityUtils.fromAttributePaths(
             "targetCohorts.cohortDefinition",
@@ -98,32 +93,24 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
             SourceService sourceService,
             ConversionService conversionService,
             JobTemplate jobTemplate,
-            StepBuilderFactory stepBuilderFactory,
-            JobBuilderFactory jobBuilders,
             EntityManager entityManager,
-            PermissionManager permissionManager,
             Security security,
             DesignImportService designImportService,
             AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository,
             UserRepository userRepository,
-            PathwayEventCohortRepository eventCohortRepository,
-            PathwayTargetCohortRepository targetCohortRepository
+            GenerationUtils generationUtils
     ) {
 
         this.pathwayAnalysisRepository = pathwayAnalysisRepository;
         this.pathwayAnalysisGenerationRepository = pathwayAnalysisGenerationRepository;
         this.sourceService = sourceService;
         this.jobTemplate = jobTemplate;
-        this.stepBuilderFactory = stepBuilderFactory;
-        this.jobBuilders = jobBuilders;
         this.entityManager = entityManager;
-        this.permissionManager = permissionManager;
         this.security = security;
         this.designImportService = designImportService;
         this.analysisGenerationInfoEntityRepository = analysisGenerationInfoEntityRepository;
         this.userRepository = userRepository;
-        this.targetCohortRepository = targetCohortRepository;
-        this.eventCohortRepository = eventCohortRepository;
+        this.generationUtils = generationUtils;
 
         SerializedPathwayAnalysisToPathwayAnalysisConverter.setConversionService(conversionService);
     }
@@ -254,7 +241,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
     @Override
     @DataSourceAccess
-    public String buildAnalysisSql(Long generationId, PathwayAnalysisEntity pathwayAnalysis, @SourceId Integer sourceId) {
+    public String buildAnalysisSql(Long generationId, PathwayAnalysisEntity pathwayAnalysis, @SourceId Integer sourceId, String cohortTable) {
 
         Map<Integer, Integer> eventCohortCodes = getEventCohortCodes(pathwayAnalysis);
         Source source = sourceService.findBySourceId(sourceId);
@@ -284,7 +271,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
                 generationId.toString(),
                 eventCohortIdIndexSql,
                 resultsTableQualifier,
-                "cohort",
+                cohortTable,
                 pathwayAnalysis.getTargetCohorts().stream().map(tc -> tc.getCohortDefinition().getId().toString()).collect(Collectors.joining(", "))
         };
 
@@ -294,10 +281,18 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         return translatedSql;
     }
 
+    @Override
+    public String buildAnalysisSql(Long generationId, PathwayAnalysisEntity pathwayAnalysis, Integer sourceId) {
+
+        return buildAnalysisSql(generationId, pathwayAnalysis, sourceId, "cohort");
+    }
+
 
     @Override
     @DataSourceAccess
     public void generatePathways(final Integer pathwayAnalysisId, final @SourceId Integer sourceId) {
+
+        PathwayService pathwayService = this;
 
         PathwayAnalysisEntity pathwayAnalysis = getById(pathwayAnalysisId);
         Source source = getSourceRepository().findBySourceId(sourceId);
@@ -307,26 +302,32 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         builder.addString(SOURCE_ID, String.valueOf(source.getSourceId()));
         builder.addString(PATHWAY_ANALYSIS_ID, pathwayAnalysis.getId().toString());
         builder.addString(JOB_AUTHOR, getCurrentUserLogin());
+        builder.addString(TARGET_TABLE, GenerationUtils.getTempCohortTableName());
 
         final JobParameters jobParameters = builder.toJobParameters();
 
-        GeneratePathwayAnalysisTasklet generateCcTasklet = new GeneratePathwayAnalysisTasklet(
-                getSourceJdbcTemplate(source),
-                getTransactionTemplate(),
-                this,
-                analysisGenerationInfoEntityRepository,
-                userRepository
+        JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
+
+        Job generateAnalysisJob = generationUtils.buildJobForCohortBasedAnalysisTasklet(
+                GENERATE_PATHWAY_ANALYSIS,
+                jdbcTemplate,
+                chunkContext -> {
+                    Integer analysisId = Integer.valueOf(chunkContext.getStepContext().getJobParameters().get(PATHWAY_ANALYSIS_ID).toString());
+                    PathwayAnalysisEntity analysis = pathwayService.getById(analysisId);
+                    return Stream.concat(analysis.getTargetCohorts().stream(), analysis.getEventCohorts().stream())
+                            .map(PathwayCohort::getCohortDefinition)
+                            .collect(Collectors.toList());
+                },
+                new GeneratePathwayAnalysisTasklet(
+                        getSourceJdbcTemplate(source),
+                        getTransactionTemplate(),
+                        pathwayService,
+                        analysisGenerationInfoEntityRepository,
+                        userRepository
+                )
         );
 
-        Step generatePathwayAnalysisStep = stepBuilderFactory.get("cohortCharacterizations.generate")
-                .tasklet(generateCcTasklet)
-                .build();
-
-        SimpleJobBuilder generateJobBuilder = jobBuilders.get(GENERATE_PATHWAY_ANALYSIS)
-                .start(generatePathwayAnalysisStep);
-
-        Job generateCohortJob = generateJobBuilder.build();
-        this.jobTemplate.launch(generateCohortJob, jobParameters);
+        this.jobTemplate.launch(generateAnalysisJob, jobParameters);
     }
 
     @Override

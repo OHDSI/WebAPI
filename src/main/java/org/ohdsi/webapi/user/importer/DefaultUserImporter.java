@@ -10,6 +10,7 @@ import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.PermissionManager;
+import org.ohdsi.webapi.util.UserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,7 +76,7 @@ public class DefaultUserImporter implements UserImporter {
             .map(user -> {
               AtlasUserRoles atlasUser = new AtlasUserRoles();
               atlasUser.setDisplayName(user.getDisplayName());
-              atlasUser.setLogin(user.getLogin());
+              atlasUser.setLogin(user.getLogin().toLowerCase());
               List<UserService.Role> roles = user.getGroups().stream()
                       .flatMap(g -> mapping.getRoleGroups()
                               .stream()
@@ -96,10 +97,11 @@ public class DefaultUserImporter implements UserImporter {
   public void importUsers(List<AtlasUserRoles> users) {
 
     users.forEach(user -> {
+      String login = UserUtils.toLowerCase(user.getLogin());
       Set<String> roles = user.getRoles().stream().map(role -> role.role).collect(Collectors.toSet());
       try {
         UserEntity userEntity;
-        if (LdapUserImportStatus.MODIFIED.equals(user.getStatus()) && Objects.nonNull(userEntity = userRepository.findByLogin(user.getLogin()))) {
+        if (LdapUserImportStatus.MODIFIED.equals(user.getStatus()) && Objects.nonNull(userEntity = userRepository.findByLogin(login))) {
           Set<RoleEntity> userRoles = userManager.getUserRoles(userEntity.getId());
           userRoles.forEach(r -> {
             try {
@@ -116,10 +118,10 @@ public class DefaultUserImporter implements UserImporter {
             }
           });
         } else {
-          userManager.registerUser(user.getLogin(), roles);
+          userManager.registerUser(login, roles);
         }
       } catch (Exception e) {
-        logger.error("Failed to register user {}", user.getLogin(), e);
+        logger.error("Failed to register user {}", login, e);
       }
     });
   }

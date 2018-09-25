@@ -619,6 +619,16 @@
       <version>${arachne.version}</version>
     </dependency>
     <dependency>
+      <groupId>com.odysseusinc</groupId>
+      <artifactId>logging</artifactId>
+      <version>${arachne.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.odysseusinc</groupId>
+      <artifactId>logging</artifactId>
+      <version>${arachne.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.glassfish.jersey.media</groupId>
       <artifactId>jersey-media-multipart</artifactId>
       <version>${jersey-media-multipart.version}</version>

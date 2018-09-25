@@ -16,6 +16,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.odysseusinc.logging.event.AddDataSourceEvent;
+import com.odysseusinc.logging.event.ChangeDataSourceEvent;
+import com.odysseusinc.logging.event.DeleteDataSourceEvent;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -211,7 +214,9 @@ public class SourceService extends AbstractDaoService {
     String sourceKey = saved.getSourceKey();
     cachedSources = null;
     securityManager.addSourceRole(sourceKey);
-    return new SourceInfo(saved);
+      SourceInfo sourceInfo = new SourceInfo(saved);
+      publisher.publishEvent(new AddDataSourceEvent(this, source.getSourceId(), source.getSourceName()));
+      return sourceInfo;
   }
 
   @Path("{sourceId}")
@@ -241,6 +246,7 @@ public class SourceService extends AbstractDaoService {
               .collect(Collectors.toList());
       sourceDaimonRepository.delete(removed);
       Source result = sourceRepository.save(updated);
+        publisher.publishEvent(new ChangeDataSourceEvent(this, updated.getSourceId(), updated.getSourceName()));
       cachedSources = null;
       return new SourceInfo(result);
     } else {
@@ -275,6 +281,7 @@ public class SourceService extends AbstractDaoService {
     if (source != null) {
       final String sourceKey = source.getSourceKey();
       sourceRepository.delete(source);
+        publisher.publishEvent(new DeleteDataSourceEvent(this, sourceId, source.getSourceName()));
       cachedSources = null;
       securityManager.removeSourceRole(sourceKey);
       return Response.ok().build();
@@ -286,7 +293,7 @@ public class SourceService extends AbstractDaoService {
   @Path("connection/{key}")
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  public SourceInfo checkConnection(@PathParam("key") final String sourceKey) throws Exception {
+  public SourceInfo checkConnection(@PathParam("key") final String sourceKey) {
 
     final Source source = sourceRepository.findBySourceKey(sourceKey);
     final JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);

@@ -221,7 +221,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     @Override
     public Map<Integer, Integer> getEventCohortCodes(PathwayAnalysisEntity pathwayAnalysis) {
 
-        Integer index = 1;
+        Integer index = 0;
 
         List<PathwayEventCohort> sortedEventCohortsCopy = pathwayAnalysis.getEventCohorts()
                 .stream()

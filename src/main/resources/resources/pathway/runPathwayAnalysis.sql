@@ -125,7 +125,7 @@ WITH events AS (
   SELECT *
   FROM #split_overlapping_events
 )
-SELECT SUM(POWER(2, e.event_cohort_index)) as combo_id, subject_id, cohort_start_date, cohort_end_date
+SELECT SUM(DISTINCT POWER(2, e.event_cohort_index)) as combo_id, subject_id, cohort_start_date, cohort_end_date
 INTO #combo_events
 FROM events e
 GROUP BY subject_id, cohort_start_date, cohort_end_date;

@@ -4,6 +4,6 @@ CREATE TABLE @results_schema.pathway_analysis_events
 	pathway_analysis_generation_id BIGINT NOT NULL,
 	combo_id INTEGER NOT NULL,
 	subject_id INTEGER NOT NULL,
-	cohort_start_date TIMESTAMP NOT NULL,
-	cohort_end_date TIMESTAMP NOT NULL
+	cohort_start_date DATETIME NOT NULL,
+	cohort_end_date DATETIME NOT NULL
 );

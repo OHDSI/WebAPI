@@ -44,28 +44,6 @@
             </properties>
         </profile>
         <profile>
-            <id>integration-test</id>
-            <properties>
-                <datasource.password>${OHDSI_APP_USER}</datasource.password>
-                <flyway.datasource.password>${OHDSI_ADMIN_USER}</flyway.datasource.password>
-                <datasource.ohdsi.schema>webapi_remote</datasource.ohdsi.schema>
-                <datasource.url>${OHDSI_DATASOURCE_URL}</datasource.url>
-                <liferay.url>${LIFERAY_SERVER_BASE_URL}</liferay.url>
-                <liferay.user>${WEBAPI_LIFERAY_USER}</liferay.user>
-                <liferay.password>${WEBAPI_LIFERAY_PASSWORD}</liferay.password>
-                <hss.url>${STORAGE_SERVER_BASE_URL}/api</hss.url>
-                <security.enabled>false</security.enabled>
-                <security.cas.login.url>${CAS_SERVER_LOGIN_URL}</security.cas.login.url>
-                <security.oauth.callback.ui>${ATLAS_WELCOME_URL}</security.oauth.callback.ui>
-                <security.oauth.callback.api>${ATLAS_WEBAPI_CALLBACK_URL}</security.oauth.callback.api>
-                <security.ssl.enabled>false</security.ssl.enabled> <!-- !!! Enabling this property doesn't work on AWS.  Not a real problem as SSL is already enforced on AWS !!! -->
-                <war.directory>target</war.directory>
-                <central>false</central>
-                <security.cas.tgc.domain>.honeur.org</security.cas.tgc.domain>
-                <liferay.company.web.id>liferay.com</liferay.company.web.id>
-            </properties>
-        </profile>
-        <profile>
             <id>local-dev</id>
             <properties>
                 <server.port>${honeur.port}</server.port>

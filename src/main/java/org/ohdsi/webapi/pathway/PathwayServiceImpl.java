@@ -1,6 +1,8 @@
 package org.ohdsi.webapi.pathway;
 
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
@@ -261,14 +263,20 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
                 "event_cohort_id_index_map",
                 "target_database_schema",
                 "target_cohort_table",
-                "pathway_target_cohort_id_list"
+                "pathway_target_cohort_id_list",
+                "max_depth",
+                "combo_window",
+                "allow_repeats"
         };
         String[] values = new String[]{
                 generationId.toString(),
                 eventCohortIdIndexSql,
                 resultsTableQualifier,
                 cohortTable,
-                pathwayAnalysis.getTargetCohorts().stream().map(tc -> tc.getCohortDefinition().getId().toString()).collect(Collectors.joining(", "))
+                pathwayAnalysis.getTargetCohorts().stream().map(tc -> tc.getCohortDefinition().getId().toString()).collect(Collectors.joining(", ")),
+                pathwayAnalysis.getMaxDepth().toString(),
+                MoreObjects.firstNonNull(pathwayAnalysis.getCombinationWindow(), 1).toString(),
+                String.valueOf(pathwayAnalysis.isAllowRepeats())
         };
 
         String renderedSql = SqlRender.renderSql(analysisSql, params, values);

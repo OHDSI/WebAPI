@@ -6,6 +6,7 @@ CREATE TABLE ${ohdsiSchema}.pathway_analysis
   combination_window INTEGER,
   min_cell_count     INTEGER,
   max_depth          INTEGER,
+  allow_repeats      BOOLEAN DEFAULT TRUE,
   created_by_id      INTEGER,
   created_date       datetime,
   modified_by_id     INTEGER,

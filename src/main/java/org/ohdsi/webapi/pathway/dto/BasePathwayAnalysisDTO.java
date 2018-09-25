@@ -15,6 +15,7 @@ public abstract class BasePathwayAnalysisDTO<T extends CohortMetadata> {
     private Integer combinationWindow;
     private Integer minCellCount;
     private Integer maxDepth;
+    private boolean allowRepeats;
     private UserDTO createdBy;
     private Date createdDate;
     private UserDTO modifiedBy;
@@ -89,6 +90,16 @@ public abstract class BasePathwayAnalysisDTO<T extends CohortMetadata> {
     public void setMaxDepth(Integer maxDepth) {
 
         this.maxDepth = maxDepth;
+    }
+
+    public boolean isAllowRepeats() {
+
+        return allowRepeats;
+    }
+
+    public void setAllowRepeats(boolean allowRepeats) {
+
+        this.allowRepeats = allowRepeats;
     }
 
     public UserDTO getCreatedBy() {

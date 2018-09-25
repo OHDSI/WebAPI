@@ -39,6 +39,9 @@ public class PathwayAnalysisEntity extends CommonEntity {
     @Column(name = "max_depth")
     private Integer maxDepth;
 
+    @Column(name = "allow_repeats")
+    private boolean allowRepeats;
+
     @Column(name = "hash_code")
     private Integer hashCode;
 
@@ -110,6 +113,16 @@ public class PathwayAnalysisEntity extends CommonEntity {
     public void setMaxDepth(Integer maxDepth) {
 
         this.maxDepth = maxDepth;
+    }
+
+    public boolean isAllowRepeats() {
+
+        return allowRepeats;
+    }
+
+    public void setAllowRepeats(boolean allowRepeats) {
+
+        this.allowRepeats = allowRepeats;
     }
 
     public Integer getHashCode() {

@@ -16,6 +16,7 @@ import org.ohdsi.webapi.pathway.domain.PathwayCohort;
 import org.ohdsi.webapi.pathway.domain.PathwayEventCohort;
 import org.ohdsi.webapi.pathway.domain.PathwayTargetCohort;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
+import org.ohdsi.webapi.pathway.dto.internal.PathwayCode;
 import org.ohdsi.webapi.pathway.dto.internal.PersonPathwayEvent;
 import org.ohdsi.webapi.pathway.repository.PathwayAnalysisEntityRepository;
 import org.ohdsi.webapi.pathway.repository.PathwayAnalysisGenerationRepository;
@@ -225,13 +226,13 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
                 .sorted(Comparator.comparing(PathwayEventCohort::getName))
                 .collect(Collectors.toList());
 
-        Map<Integer, Integer> idToIndexMap = new HashMap<>();
+        Map<Integer, Integer> cohortDefIdToIndexMap = new HashMap<>();
 
         for (PathwayEventCohort eventCohort : sortedEventCohortsCopy) {
-            idToIndexMap.put(eventCohort.getId(), index++);
+            cohortDefIdToIndexMap.put(eventCohort.getCohortDefinition().getId(), index++);
         }
 
-        return idToIndexMap;
+        return cohortDefIdToIndexMap;
     }
 
     @Override
@@ -246,11 +247,11 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
         String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 
-        String eventCohortIdIndexSql = pathwayAnalysis.getEventCohorts()
+        String eventCohortIdIndexSql = eventCohortCodes.entrySet()
                 .stream()
                 .map(ec -> {
                     String[] params = new String[]{"cohort_definition_id", "event_cohort_index"};
-                    String[] values = new String[]{ec.getCohortDefinition().getId().toString(), eventCohortCodes.get(ec.getId()).toString()};
+                    String[] values = new String[]{ec.getKey().toString(), ec.getValue().toString()};
                     return SqlRender.renderSql(eventCohortInputSql, params, values);
                 })
                 .collect(Collectors.joining(" UNION ALL "));
@@ -369,7 +370,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
             String names = eventCohorts.stream()
                     .map(PathwayEventCohort::getName)
                     .collect(Collectors.joining(","));
-            result.getCodes().put(code, names);
+            result.getCodes().add(new PathwayCode(code, names, eventCohorts.size() > 1));
         });
 
         Map<String, Integer> chains = events.stream()
@@ -400,7 +401,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         Map<Integer, Integer> eventCodes = getEventCohortCodes(pathwayAnalysis);
         return pathwayAnalysis.getEventCohorts()
                 .stream()
-                .filter(ec -> ((int) Math.pow(2, Double.valueOf(eventCodes.get(ec.getId()))) & comboCode) > 0)
+                .filter(ec -> ((int) Math.pow(2, Double.valueOf(eventCodes.get(ec.getCohortDefinition().getId()))) & comboCode) > 0)
                 .collect(Collectors.toList());
     }
 

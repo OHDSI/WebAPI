@@ -104,7 +104,7 @@ public class PathwayController {
         Map<Integer, Integer> eventCodes = pathwayService.getEventCohortCodes(pathwayAnalysis);
 
         PathwayAnalysisDTO dto = conversionService.convert(pathwayAnalysis, PathwayAnalysisDTO.class);
-        dto.getEventCohorts().forEach(ec -> ec.setCode(eventCodes.get(ec.getPathwayCohortId())));
+        dto.getEventCohorts().forEach(ec -> ec.setCode(eventCodes.get(ec.getId())));
 
         return dto;
     }
@@ -173,12 +173,12 @@ public class PathwayController {
         PathwayAnalysisResult resultingPathways = pathwayService.getResultingPathways(generationId);
 
         List<PathwayCodeDTO> eventCodeDtos = resultingPathways.getCodes()
-                .entrySet()
                 .stream()
                 .map(entry -> {
                     PathwayCodeDTO dto = new PathwayCodeDTO();
-                    dto.setCode(entry.getKey());
-                    dto.setName(entry.getValue());
+                    dto.setCode(entry.getCode());
+                    dto.setName(entry.getName());
+                    dto.setIsCombo(entry.isCombo());
                     return dto;
                 })
                 .collect(Collectors.toList());

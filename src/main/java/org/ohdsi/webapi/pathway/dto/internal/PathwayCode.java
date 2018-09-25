@@ -1,14 +1,18 @@
-package org.ohdsi.webapi.pathway.dto;
+package org.ohdsi.webapi.pathway.dto.internal;
 
-import org.ohdsi.analysis.pathway.result.PathwayCode;
-
-public class PathwayCodeDTO implements PathwayCode {
+public class PathwayCode {
 
     private Integer code;
     private String name;
     private boolean isCombo = false;
 
-    @Override
+    public PathwayCode(Integer code, String name, boolean isCombo) {
+
+        this.code = code;
+        this.name = name;
+        this.isCombo = isCombo;
+    }
+
     public Integer getCode() {
 
         return code;
@@ -19,7 +23,6 @@ public class PathwayCodeDTO implements PathwayCode {
         this.code = code;
     }
 
-    @Override
     public String getName() {
 
         return name;
@@ -30,12 +33,12 @@ public class PathwayCodeDTO implements PathwayCode {
         this.name = name;
     }
 
-    public boolean getIsCombo() {
+    public boolean isCombo() {
 
         return isCombo;
     }
 
-    public void setIsCombo(boolean combo) {
+    public void setCombo(boolean combo) {
 
         isCombo = combo;
     }

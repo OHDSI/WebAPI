@@ -135,7 +135,13 @@ GROUP BY subject_id, cohort_start_date, cohort_end_date;
 */
 
 INSERT INTO @target_database_schema.pathway_analysis_events
-WITH marked_repetitive_events AS (
+SELECT
+  @generation_id,
+  combo_id,
+  subject_id,
+  cohort_start_date,
+  cohort_end_date
+FROM (
   SELECT
     *,
     CASE WHEN (combo_id = LAG(combo_id) OVER (PARTITION BY subject_id ORDER BY subject_id, cohort_start_date ASC))
@@ -143,12 +149,5 @@ WITH marked_repetitive_events AS (
       ELSE 0
     END repetitive_event
   FROM #combo_events
-)
-SELECT
-  @generation_id,
-  combo_id,
-  subject_id,
-  cohort_start_date,
-  cohort_end_date
-FROM marked_repetitive_events
+) AS marked_repetitive_events
 WHERE repetitive_event = 0;

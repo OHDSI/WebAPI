@@ -108,7 +108,14 @@
             <id>honeur-test</id>
             <properties>
                 <user.properties>${properties.folder}/custom.properties</user.properties>
-                <properties.folder>${project.basedir}/src/test/resources/jmeter</properties.folder>
+                <properties.folder>${project.basedir}/src/test/resources/jmeter/local</properties.folder>
+            </properties>
+        </profile>
+        <profile>
+            <id>honeur-test-dev</id>
+            <properties>
+                <user.properties>${properties.folder}/custom.properties</user.properties>
+                <properties.folder>${project.basedir}/src/test/resources/jmeter/dev</properties.folder>
             </properties>
         </profile>
     </profiles>

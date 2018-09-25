@@ -62,7 +62,7 @@ INTO #collapsed_dates_events
 FROM #raw_events event
   LEFT JOIN #date_replacements start_dr ON start_dr.subject_id = event.subject_id AND start_dr.cohort_date = event.cohort_start_date
   LEFT JOIN #date_replacements end_dr ON end_dr.subject_id = event.subject_id AND end_dr.cohort_date = event.cohort_end_date
-ORDER BY event.cohort_start_date, event.cohort_end_date;
+;
 
 /*
 Split partially overlapping events into a set of events which either do not overlap or fully overlap (for later GROUP BY start_date, end_date)

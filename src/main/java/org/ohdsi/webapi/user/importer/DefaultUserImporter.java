@@ -76,7 +76,7 @@ public class DefaultUserImporter implements UserImporter {
             .map(user -> {
               AtlasUserRoles atlasUser = new AtlasUserRoles();
               atlasUser.setDisplayName(user.getDisplayName());
-              atlasUser.setLogin(user.getLogin().toLowerCase());
+              atlasUser.setLogin(UserUtils.toLowerCase(user.getLogin()));
               List<UserService.Role> roles = user.getGroups().stream()
                       .flatMap(g -> mapping.getRoleGroups()
                               .stream()

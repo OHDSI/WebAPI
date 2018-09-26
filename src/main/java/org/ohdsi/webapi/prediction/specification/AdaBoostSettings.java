@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * Specification for a Ada Boost Model 
  */
-public class AdaBoost   {
+public class AdaBoostSettings   {
   @JsonProperty("nEstimators")
   private Integer nEstimators = 50;
 
@@ -16,7 +16,7 @@ public class AdaBoost   {
   @JsonProperty("seed")
   private Float seed = null;
 
-  public AdaBoost nEstimators(Integer nEstimators) {
+  public AdaBoostSettings nEstimators(Integer nEstimators) {
     this.nEstimators = nEstimators;
     return this;
   }
@@ -34,7 +34,7 @@ public class AdaBoost   {
     this.nEstimators = nEstimators;
   }
 
-  public AdaBoost learningRate(Integer learningRate) {
+  public AdaBoostSettings learningRate(Integer learningRate) {
     this.learningRate = learningRate;
     return this;
   }
@@ -52,7 +52,7 @@ public class AdaBoost   {
     this.learningRate = learningRate;
   }
 
-  public AdaBoost seed(Float seed) {
+  public AdaBoostSettings seed(Float seed) {
     this.seed = seed;
     return this;
   }
@@ -79,7 +79,7 @@ public class AdaBoost   {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    AdaBoost adaBoost = (AdaBoost) o;
+    AdaBoostSettings adaBoost = (AdaBoostSettings) o;
     return Objects.equals(this.nEstimators, adaBoost.nEstimators) &&
         Objects.equals(this.learningRate, adaBoost.learningRate) &&
         Objects.equals(this.seed, adaBoost.seed);

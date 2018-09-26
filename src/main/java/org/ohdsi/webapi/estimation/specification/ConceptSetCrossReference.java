@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.prediction.specification;
+package org.ohdsi.webapi.estimation.specification;
 
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;

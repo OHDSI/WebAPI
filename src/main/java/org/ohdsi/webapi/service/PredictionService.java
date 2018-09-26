@@ -1,9 +1,12 @@
 package org.ohdsi.webapi.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -19,8 +22,11 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import org.ohdsi.analysis.Utils;
+import org.ohdsi.hydra.Hydra;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.prediction.PredictionAnalysis;
 import org.ohdsi.webapi.prediction.PredictionListItem;
 import org.ohdsi.webapi.prediction.PredictionAnalysisRepository;
@@ -31,6 +37,7 @@ import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.support.GenericConversionService;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -45,6 +52,12 @@ public class PredictionService  extends AbstractDaoService {
 
     @PersistenceContext
     protected EntityManager entityManager;
+
+    @Autowired
+    private ConceptSetService conceptSetService;
+    
+    @Autowired
+    private VocabularyService vocabularyService;
     
     @Autowired
     private UserRepository userRepository;
@@ -53,8 +66,10 @@ public class PredictionService  extends AbstractDaoService {
     private GenericConversionService conversionService;
     
     @Autowired
-    private CohortDefinitionService cohortDefinitionService;
+    private CohortDefinitionRepository cohortDefinitionRepository;
     
+    @Autowired
+    private Environment env;
 
     @GET
     @Path("/")
@@ -158,14 +173,66 @@ public class PredictionService  extends AbstractDaoService {
             throw new RuntimeException(e);
         }
         
-        ArrayList<CohortDefinitionService.CohortDefinitionDTO> detailedList = new ArrayList<CohortDefinitionService.CohortDefinitionDTO>();
-        for (CohortDefinitionService.CohortDefinitionDTO c : expression.getCohortDefinitions()) {
-            System.out.println(c.id);
-            CohortDefinitionService.CohortDefinitionDTO cd = cohortDefinitionService.getCohortDefinition(c.id);
-            detailedList.add(cd);
+        // Set the root properties
+        expression.setId(pred.getId());
+        expression.setName(pred.getName());
+        expression.setDescription(pred.getDescription());
+        expression.setOrganizationName(env.getRequiredProperty("organization.name"));
+        
+        // Retrieve the cohort definition details
+        ArrayList<PredictionCohortDefinition> detailedList = new ArrayList<>();
+        for (PredictionCohortDefinition c : expression.getCohortDefinitions()) {
+            System.out.println(c.getId());
+            CohortDefinition cd = cohortDefinitionRepository.findOneWithDetail(c.getId());
+            detailedList.add(new PredictionCohortDefinition(cd));
         }
         expression.setCohortDefinitions(detailedList);
         
+        // Retrieve the concept set expressions
+        ArrayList<PredictionConceptSet> pcsList = new ArrayList<>();
+        HashMap<Integer, ArrayList<Long>> conceptIdentifiers = new HashMap<Integer, ArrayList<Long>>();
+        for (PredictionConceptSet pcs : expression.getConceptSets()) {
+            System.out.println(pcs.id);
+            pcs.expression = conceptSetService.getConceptSetExpression(pcs.id);
+            pcsList.add(pcs);
+            conceptIdentifiers.put(pcs.id, new ArrayList(vocabularyService.resolveConceptSetExpression(pcs.expression)));
+        }
+        expression.setConceptSets(pcsList);
+        
+        // Resolve all ConceptSetCrossReferences
+        for (ConceptSetCrossReference xref : expression.getConceptSetCrossReference()) {
+            if (xref.getTargetName().equalsIgnoreCase("covariateSettings")) {
+                if (xref.getPropertyName().equalsIgnoreCase("includedCovariateConceptIds")) {
+                    expression.getCovariateSettings().get(xref.getTargetIndex()).includedCovariateConceptIds(conceptIdentifiers.get(xref.getConceptSetId()));
+                } else if (xref.getPropertyName().equalsIgnoreCase("excludedCovariateConceptIds")) {
+                    expression.getCovariateSettings().get(xref.getTargetIndex()).excludedCovariateConceptIds(conceptIdentifiers.get(xref.getConceptSetId()));
+                }
+            }
+        }
+        
         return expression;
     }
+    
+    @GET
+    @Path("{id}/download")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response downloadPackage(@PathParam("id") int id) throws IOException {
+        PatientLevelPredictionAnalysis plpa = this.exportAnalysis(id);
+        String studySpecs = Utils.serialize(plpa);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        
+        Hydra h = new Hydra(studySpecs);
+        h.hydrate(baos);
+        
+        
+        Response response = Response
+                .ok(baos)
+                .type(MediaType.APPLICATION_OCTET_STREAM)
+                .header("Content-Disposition", String.format("attachment; filename=\"prediction_study_%d_export.zip\"", id))
+                .build();
+
+        return response;        
+    }
+    
 }

@@ -336,13 +336,13 @@ public class CovariateSettings {
   private Integer endDays = 0;
 
   @JsonProperty("includedCovariateConceptIds")
-  private List<Integer> includedCovariateConceptIds = null;
+  private List<Long> includedCovariateConceptIds = null;
 
   @JsonProperty("addDescendantsToInclude")
   private Boolean addDescendantsToInclude = false;
 
   @JsonProperty("excludedCovariateConceptIds")
-  private List<Integer> excludedCovariateConceptIds = null;
+  private List<Long> excludedCovariateConceptIds = null;
 
   @JsonProperty("addDescendantsToExclude")
   private Boolean addDescendantsToExclude = false;
@@ -2318,14 +2318,14 @@ public class CovariateSettings {
     this.endDays = endDays;
   }
 
-  public CovariateSettings includedCovariateConceptIds(List<Integer> includedCovariateConceptIds) {
+  public CovariateSettings includedCovariateConceptIds(List<Long> includedCovariateConceptIds) {
     this.includedCovariateConceptIds = includedCovariateConceptIds;
     return this;
   }
 
-  public CovariateSettings addIncludedCovariateConceptIdsItem(Integer includedCovariateConceptIdsItem) {
+  public CovariateSettings addIncludedCovariateConceptIdsItem(Long includedCovariateConceptIdsItem) {
     if (this.includedCovariateConceptIds == null) {
-      this.includedCovariateConceptIds = new ArrayList<Integer>();
+      this.includedCovariateConceptIds = new ArrayList<Long>();
     }
     this.includedCovariateConceptIds.add(includedCovariateConceptIdsItem);
     return this;
@@ -2336,11 +2336,11 @@ public class CovariateSettings {
    * @return includedCovariateConceptIds
    **/
   @JsonProperty("includedCovariateConceptIds")
-  public List<Integer> getIncludedCovariateConceptIds() {
+  public List<Long> getIncludedCovariateConceptIds() {
     return includedCovariateConceptIds;
   }
 
-  public void setIncludedCovariateConceptIds(List<Integer> includedCovariateConceptIds) {
+  public void setIncludedCovariateConceptIds(List<Long> includedCovariateConceptIds) {
     this.includedCovariateConceptIds = includedCovariateConceptIds;
   }
 
@@ -2362,14 +2362,14 @@ public class CovariateSettings {
     this.addDescendantsToInclude = addDescendantsToInclude;
   }
 
-  public CovariateSettings excludedCovariateConceptIds(List<Integer> excludedCovariateConceptIds) {
+  public CovariateSettings excludedCovariateConceptIds(List<Long> excludedCovariateConceptIds) {
     this.excludedCovariateConceptIds = excludedCovariateConceptIds;
     return this;
   }
 
-  public CovariateSettings addExcludedCovariateConceptIdsItem(Integer excludedCovariateConceptIdsItem) {
+  public CovariateSettings addExcludedCovariateConceptIdsItem(Long excludedCovariateConceptIdsItem) {
     if (this.excludedCovariateConceptIds == null) {
-      this.excludedCovariateConceptIds = new ArrayList<Integer>();
+      this.excludedCovariateConceptIds = new ArrayList<Long>();
     }
     this.excludedCovariateConceptIds.add(excludedCovariateConceptIdsItem);
     return this;
@@ -2380,11 +2380,11 @@ public class CovariateSettings {
    * @return excludedCovariateConceptIds
    **/
   @JsonProperty("excludedCovariateConceptIds")
-  public List<Integer> getExcludedCovariateConceptIds() {
+  public List<Long> getExcludedCovariateConceptIds() {
     return excludedCovariateConceptIds;
   }
 
-  public void setExcludedCovariateConceptIds(List<Integer> excludedCovariateConceptIds) {
+  public void setExcludedCovariateConceptIds(List<Long> excludedCovariateConceptIds) {
     this.excludedCovariateConceptIds = excludedCovariateConceptIds;
   }
 

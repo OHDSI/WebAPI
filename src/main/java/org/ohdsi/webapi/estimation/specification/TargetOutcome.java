@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.prediction.specification;
+package org.ohdsi.webapi.estimation.specification;
 
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -6,14 +6,14 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.validation.constraints.*;
 
-public class TargetOutcomes {
+public class TargetOutcome {
   @JsonProperty("targetId")
-  private String targetId = null;
+  private Long targetId = null;
 
   @JsonProperty("outcomeIds")
-  private List<String> outcomeIds = new ArrayList<String>();
+  private List<Long> outcomeIds = new ArrayList<Long>();
 
-  public TargetOutcomes targetId(String targetId) {
+  public TargetOutcome targetId(Long targetId) {
     this.targetId = targetId;
     return this;
   }
@@ -24,20 +24,20 @@ public class TargetOutcomes {
    **/
   @JsonProperty("targetId")
   @NotNull
-  public String getTargetId() {
+  public Long getTargetId() {
     return targetId;
   }
 
-  public void setTargetId(String targetId) {
+  public void setTargetId(Long targetId) {
     this.targetId = targetId;
   }
 
-  public TargetOutcomes outcomeIds(List<String> outcomeIds) {
+  public TargetOutcome outcomeIds(List<Long> outcomeIds) {
     this.outcomeIds = outcomeIds;
     return this;
   }
 
-  public TargetOutcomes addOutcomeIdsItem(String outcomeIdsItem) {
+  public TargetOutcome addOutcomeIdsItem(Long outcomeIdsItem) {
     this.outcomeIds.add(outcomeIdsItem);
     return this;
   }
@@ -48,11 +48,11 @@ public class TargetOutcomes {
    **/
   @JsonProperty("outcomeIds")
   @NotNull
-  public List<String> getOutcomeIds() {
+  public List<Long> getOutcomeIds() {
     return outcomeIds;
   }
 
-  public void setOutcomeIds(List<String> outcomeIds) {
+  public void setOutcomeIds(List<Long> outcomeIds) {
     this.outcomeIds = outcomeIds;
   }
 
@@ -65,9 +65,9 @@ public class TargetOutcomes {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    TargetOutcomes targetOutcomes = (TargetOutcomes) o;
-    return Objects.equals(this.targetId, targetOutcomes.targetId) &&
-        Objects.equals(this.outcomeIds, targetOutcomes.outcomeIds);
+    TargetOutcome targetOutcome = (TargetOutcome) o;
+    return Objects.equals(this.targetId, targetOutcome.targetId) &&
+        Objects.equals(this.outcomeIds, targetOutcome.outcomeIds);
   }
 
   @Override
@@ -79,7 +79,7 @@ public class TargetOutcomes {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class TargetOutcomes {\n");
+    sb.append("class TargetOutcome {\n");
     
     sb.append("    targetId: ").append(toIndentedString(targetId)).append("\n");
     sb.append("    outcomeIds: ").append(toIndentedString(outcomeIds)).append("\n");

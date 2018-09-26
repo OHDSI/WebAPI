@@ -1,23 +1,54 @@
-package org.ohdsi.webapi.prediction.specification;
+package org.ohdsi.webapi.estimation.specification;
 
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 
-/**
- * Create a parameter object for the function createStudyPopulation 
- */
-public class CreateStudyPopulationArgs   {
-  @JsonProperty("binary")
-  private Boolean binary = true;
-
-  @JsonProperty("includeAllOutcomes")
-  private Boolean includeAllOutcomes = true;
-
+public class CreateStudyPopulationArgs {
   @JsonProperty("firstExposureOnly")
   private Boolean firstExposureOnly = false;
 
+  @JsonProperty("restrictToCommonPeriod")
+  private Boolean restrictToCommonPeriod = false;
+
   @JsonProperty("washoutPeriod")
   private Integer washoutPeriod = 0;
+
+  /**
+   * Remove subjects that are in both the target and comparator cohort? 
+   */
+  public enum RemoveDuplicateSubjectsEnum {
+    KEEP_ALL("keep all"),
+    
+    KEEP_FIRST("keep first"),
+    
+    REMOVE_ALL("remove all");
+
+    private String value;
+
+    RemoveDuplicateSubjectsEnum(String value) {
+      this.value = value;
+    }
+
+    @Override
+    @JsonValue
+    public String toString() {
+      return String.valueOf(value);
+    }
+
+    @JsonCreator
+    public static RemoveDuplicateSubjectsEnum fromValue(String text) {
+      for (RemoveDuplicateSubjectsEnum b : RemoveDuplicateSubjectsEnum.values()) {
+        if (String.valueOf(b.value).equals(text)) {
+          return b;
+        }
+      }
+      return null;
+    }
+  }
+  @JsonProperty("removeDuplicateSubjects")
+  private RemoveDuplicateSubjectsEnum removeDuplicateSubjects = RemoveDuplicateSubjectsEnum.KEEP_ALL;
 
   @JsonProperty("removeSubjectsWithPriorOutcome")
   private Boolean removeSubjectsWithPriorOutcome = false;
@@ -25,11 +56,8 @@ public class CreateStudyPopulationArgs   {
   @JsonProperty("priorOutcomeLookback")
   private Integer priorOutcomeLookback = 99999;
 
-  @JsonProperty("requireTimeAtRisk")
-  private Boolean requireTimeAtRisk = true;
-
-  @JsonProperty("minTimeAtRisk")
-  private Integer minTimeAtRisk = 365;
+  @JsonProperty("minDaysAtRisk")
+  private Integer minDaysAtRisk = 1;
 
   @JsonProperty("riskWindowStart")
   private Integer riskWindowStart = 0;
@@ -38,49 +66,16 @@ public class CreateStudyPopulationArgs   {
   private Boolean addExposureDaysToStart = false;
 
   @JsonProperty("riskWindowEnd")
-  private Integer riskWindowEnd = 365;
+  private Integer riskWindowEnd = 0;
 
   @JsonProperty("addExposureDaysToEnd")
   private Boolean addExposureDaysToEnd = true;
-  
+
+  @JsonProperty("censorAtNewRiskWindow")
+  private Boolean censorAtNewRiskWindow = null;
+
   @JsonProperty("attr_class")
-  private String attrClass = "populationSettings";
-
-  public CreateStudyPopulationArgs binary(Boolean binary) {
-    this.binary = binary;
-    return this;
-  }
-
-  /**
-   * Forces the outcomeCount to be 0 or 1 (use for binary prediction problems) 
-   * @return binary
-   **/
-  @JsonProperty("binary")
-  public Boolean isisBinary() {
-    return binary;
-  }
-
-  public void setBinary(Boolean binary) {
-    this.binary = binary;
-  }
-
-  public CreateStudyPopulationArgs includeAllOutcomes(Boolean includeAllOutcomes) {
-    this.includeAllOutcomes = includeAllOutcomes;
-    return this;
-  }
-
-  /**
-   * (binary) indicating whether to include people with outcomes who are not observed for the whole at risk period 
-   * @return includeAllOutcomes
-   **/
-  @JsonProperty("includeAllOutcomes")
-  public Boolean isisIncludeAllOutcomes() {
-    return includeAllOutcomes;
-  }
-
-  public void setIncludeAllOutcomes(Boolean includeAllOutcomes) {
-    this.includeAllOutcomes = includeAllOutcomes;
-  }
+  private String attrClass = "args";
 
   public CreateStudyPopulationArgs firstExposureOnly(Boolean firstExposureOnly) {
     this.firstExposureOnly = firstExposureOnly;
@@ -100,6 +95,24 @@ public class CreateStudyPopulationArgs   {
     this.firstExposureOnly = firstExposureOnly;
   }
 
+  public CreateStudyPopulationArgs restrictToCommonPeriod(Boolean restrictToCommonPeriod) {
+    this.restrictToCommonPeriod = restrictToCommonPeriod;
+    return this;
+  }
+
+  /**
+   * Restrict the analysis to the period when both exposures are observed? 
+   * @return restrictToCommonPeriod
+   **/
+  @JsonProperty("restrictToCommonPeriod")
+  public Boolean isisRestrictToCommonPeriod() {
+    return restrictToCommonPeriod;
+  }
+
+  public void setRestrictToCommonPeriod(Boolean restrictToCommonPeriod) {
+    this.restrictToCommonPeriod = restrictToCommonPeriod;
+  }
+
   public CreateStudyPopulationArgs washoutPeriod(Integer washoutPeriod) {
     this.washoutPeriod = washoutPeriod;
     return this;
@@ -116,6 +129,24 @@ public class CreateStudyPopulationArgs   {
 
   public void setWashoutPeriod(Integer washoutPeriod) {
     this.washoutPeriod = washoutPeriod;
+  }
+
+  public CreateStudyPopulationArgs removeDuplicateSubjects(RemoveDuplicateSubjectsEnum removeDuplicateSubjects) {
+    this.removeDuplicateSubjects = removeDuplicateSubjects;
+    return this;
+  }
+
+  /**
+   * Remove subjects that are in both the target and comparator cohort? 
+   * @return removeDuplicateSubjects
+   **/
+  @JsonProperty("removeDuplicateSubjects")
+  public RemoveDuplicateSubjectsEnum getRemoveDuplicateSubjects() {
+    return removeDuplicateSubjects;
+  }
+
+  public void setRemoveDuplicateSubjects(RemoveDuplicateSubjectsEnum removeDuplicateSubjects) {
+    this.removeDuplicateSubjects = removeDuplicateSubjects;
   }
 
   public CreateStudyPopulationArgs removeSubjectsWithPriorOutcome(Boolean removeSubjectsWithPriorOutcome) {
@@ -154,40 +185,22 @@ public class CreateStudyPopulationArgs   {
     this.priorOutcomeLookback = priorOutcomeLookback;
   }
 
-  public CreateStudyPopulationArgs requireTimeAtRisk(Boolean requireTimeAtRisk) {
-    this.requireTimeAtRisk = requireTimeAtRisk;
+  public CreateStudyPopulationArgs minDaysAtRisk(Integer minDaysAtRisk) {
+    this.minDaysAtRisk = minDaysAtRisk;
     return this;
   }
 
   /**
-   * Should subjects without time at risk be removed? 
-   * @return requireTimeAtRisk
+   * The minimum required number of days at risk. 
+   * @return minDaysAtRisk
    **/
-  @JsonProperty("requireTimeAtRisk")
-  public Boolean isisRequireTimeAtRisk() {
-    return requireTimeAtRisk;
+  @JsonProperty("minDaysAtRisk")
+  public Integer getMinDaysAtRisk() {
+    return minDaysAtRisk;
   }
 
-  public void setRequireTimeAtRisk(Boolean requireTimeAtRisk) {
-    this.requireTimeAtRisk = requireTimeAtRisk;
-  }
-
-  public CreateStudyPopulationArgs minTimeAtRisk(Integer minTimeAtRisk) {
-    this.minTimeAtRisk = minTimeAtRisk;
-    return this;
-  }
-
-  /**
-   * The miminum time at risk in days 
-   * @return minTimeAtRisk
-   **/
-  @JsonProperty("minTimeAtRisk")
-  public Integer getMinTimeAtRisk() {
-    return minTimeAtRisk;
-  }
-
-  public void setMinTimeAtRisk(Integer minTimeAtRisk) {
-    this.minTimeAtRisk = minTimeAtRisk;
+  public void setMinDaysAtRisk(Integer minDaysAtRisk) {
+    this.minDaysAtRisk = minDaysAtRisk;
   }
 
   public CreateStudyPopulationArgs riskWindowStart(Integer riskWindowStart) {
@@ -262,6 +275,24 @@ public class CreateStudyPopulationArgs   {
     this.addExposureDaysToEnd = addExposureDaysToEnd;
   }
 
+  public CreateStudyPopulationArgs censorAtNewRiskWindow(Boolean censorAtNewRiskWindow) {
+    this.censorAtNewRiskWindow = censorAtNewRiskWindow;
+    return this;
+  }
+
+  /**
+   * If a subject is in multiple cohorts, should time-at-risk be censored when the new time-at-risk start to prevent overlap? 
+   * @return censorAtNewRiskWindow
+   **/
+  @JsonProperty("censorAtNewRiskWindow")
+  public Boolean isisCensorAtNewRiskWindow() {
+    return censorAtNewRiskWindow;
+  }
+
+  public void setCensorAtNewRiskWindow(Boolean censorAtNewRiskWindow) {
+    this.censorAtNewRiskWindow = censorAtNewRiskWindow;
+  }
+
   public CreateStudyPopulationArgs attrClass(String attrClass) {
     this.attrClass = attrClass;
     return this;
@@ -280,6 +311,7 @@ public class CreateStudyPopulationArgs   {
     this.attrClass = attrClass;
   }
 
+
   @Override
   public boolean equals(java.lang.Object o) {
     if (this == o) {
@@ -289,23 +321,24 @@ public class CreateStudyPopulationArgs   {
       return false;
     }
     CreateStudyPopulationArgs createStudyPopulationArgs = (CreateStudyPopulationArgs) o;
-    return Objects.equals(this.binary, createStudyPopulationArgs.binary) &&
-        Objects.equals(this.includeAllOutcomes, createStudyPopulationArgs.includeAllOutcomes) &&
-        Objects.equals(this.firstExposureOnly, createStudyPopulationArgs.firstExposureOnly) &&
+    return Objects.equals(this.firstExposureOnly, createStudyPopulationArgs.firstExposureOnly) &&
+        Objects.equals(this.restrictToCommonPeriod, createStudyPopulationArgs.restrictToCommonPeriod) &&
         Objects.equals(this.washoutPeriod, createStudyPopulationArgs.washoutPeriod) &&
+        Objects.equals(this.removeDuplicateSubjects, createStudyPopulationArgs.removeDuplicateSubjects) &&
         Objects.equals(this.removeSubjectsWithPriorOutcome, createStudyPopulationArgs.removeSubjectsWithPriorOutcome) &&
         Objects.equals(this.priorOutcomeLookback, createStudyPopulationArgs.priorOutcomeLookback) &&
-        Objects.equals(this.requireTimeAtRisk, createStudyPopulationArgs.requireTimeAtRisk) &&
-        Objects.equals(this.minTimeAtRisk, createStudyPopulationArgs.minTimeAtRisk) &&
+        Objects.equals(this.minDaysAtRisk, createStudyPopulationArgs.minDaysAtRisk) &&
         Objects.equals(this.riskWindowStart, createStudyPopulationArgs.riskWindowStart) &&
         Objects.equals(this.addExposureDaysToStart, createStudyPopulationArgs.addExposureDaysToStart) &&
         Objects.equals(this.riskWindowEnd, createStudyPopulationArgs.riskWindowEnd) &&
-        Objects.equals(this.addExposureDaysToEnd, createStudyPopulationArgs.addExposureDaysToEnd);
+        Objects.equals(this.addExposureDaysToEnd, createStudyPopulationArgs.addExposureDaysToEnd) &&
+        Objects.equals(this.censorAtNewRiskWindow, createStudyPopulationArgs.censorAtNewRiskWindow) &&
+        Objects.equals(this.attrClass, createStudyPopulationArgs.attrClass);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(binary, includeAllOutcomes, firstExposureOnly, washoutPeriod, removeSubjectsWithPriorOutcome, priorOutcomeLookback, requireTimeAtRisk, minTimeAtRisk, riskWindowStart, addExposureDaysToStart, riskWindowEnd, addExposureDaysToEnd);
+    return Objects.hash(firstExposureOnly, restrictToCommonPeriod, washoutPeriod, removeDuplicateSubjects, removeSubjectsWithPriorOutcome, priorOutcomeLookback, minDaysAtRisk, riskWindowStart, addExposureDaysToStart, riskWindowEnd, addExposureDaysToEnd, censorAtNewRiskWindow, attrClass);
   }
 
 
@@ -314,18 +347,19 @@ public class CreateStudyPopulationArgs   {
     StringBuilder sb = new StringBuilder();
     sb.append("class CreateStudyPopulationArgs {\n");
     
-    sb.append("    binary: ").append(toIndentedString(binary)).append("\n");
-    sb.append("    includeAllOutcomes: ").append(toIndentedString(includeAllOutcomes)).append("\n");
     sb.append("    firstExposureOnly: ").append(toIndentedString(firstExposureOnly)).append("\n");
+    sb.append("    restrictToCommonPeriod: ").append(toIndentedString(restrictToCommonPeriod)).append("\n");
     sb.append("    washoutPeriod: ").append(toIndentedString(washoutPeriod)).append("\n");
+    sb.append("    removeDuplicateSubjects: ").append(toIndentedString(removeDuplicateSubjects)).append("\n");
     sb.append("    removeSubjectsWithPriorOutcome: ").append(toIndentedString(removeSubjectsWithPriorOutcome)).append("\n");
     sb.append("    priorOutcomeLookback: ").append(toIndentedString(priorOutcomeLookback)).append("\n");
-    sb.append("    requireTimeAtRisk: ").append(toIndentedString(requireTimeAtRisk)).append("\n");
-    sb.append("    minTimeAtRisk: ").append(toIndentedString(minTimeAtRisk)).append("\n");
+    sb.append("    minDaysAtRisk: ").append(toIndentedString(minDaysAtRisk)).append("\n");
     sb.append("    riskWindowStart: ").append(toIndentedString(riskWindowStart)).append("\n");
     sb.append("    addExposureDaysToStart: ").append(toIndentedString(addExposureDaysToStart)).append("\n");
     sb.append("    riskWindowEnd: ").append(toIndentedString(riskWindowEnd)).append("\n");
     sb.append("    addExposureDaysToEnd: ").append(toIndentedString(addExposureDaysToEnd)).append("\n");
+    sb.append("    censorAtNewRiskWindow: ").append(toIndentedString(censorAtNewRiskWindow)).append("\n");
+    sb.append("    attrClass: ").append(toIndentedString(attrClass)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -339,5 +373,5 @@ public class CreateStudyPopulationArgs   {
       return "null";
     }
     return o.toString().replace("\n", "\n    ");
-  }
+  }    
 }

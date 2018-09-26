@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GradientBoostingMachine {
+public class GradientBoostingMachineSettings {
   @JsonProperty("ntrees")
   private List<BigDecimal> ntrees = null;
 
@@ -25,12 +25,12 @@ public class GradientBoostingMachine {
   @JsonProperty("seed")
   private Float seed = null;
 
-  public GradientBoostingMachine ntrees(List<BigDecimal> ntrees) {
+  public GradientBoostingMachineSettings ntrees(List<BigDecimal> ntrees) {
     this.ntrees = ntrees;
     return this;
   }
 
-  public GradientBoostingMachine addNtreesItem(BigDecimal ntreesItem) {
+  public GradientBoostingMachineSettings addNtreesItem(BigDecimal ntreesItem) {
     if (this.ntrees == null) {
       this.ntrees = new ArrayList<BigDecimal>();
     }
@@ -51,7 +51,7 @@ public class GradientBoostingMachine {
     this.ntrees = ntrees;
   }
 
-  public GradientBoostingMachine nthread(Integer nthread) {
+  public GradientBoostingMachineSettings nthread(Integer nthread) {
     this.nthread = nthread;
     return this;
   }
@@ -69,12 +69,12 @@ public class GradientBoostingMachine {
     this.nthread = nthread;
   }
 
-  public GradientBoostingMachine maxDepth(List<BigDecimal> maxDepth) {
+  public GradientBoostingMachineSettings maxDepth(List<BigDecimal> maxDepth) {
     this.maxDepth = maxDepth;
     return this;
   }
 
-  public GradientBoostingMachine addMaxDepthItem(BigDecimal maxDepthItem) {
+  public GradientBoostingMachineSettings addMaxDepthItem(BigDecimal maxDepthItem) {
     if (this.maxDepth == null) {
       this.maxDepth = new ArrayList<BigDecimal>();
     }
@@ -95,7 +95,7 @@ public class GradientBoostingMachine {
     this.maxDepth = maxDepth;
   }
 
-  public GradientBoostingMachine minRows(Integer minRows) {
+  public GradientBoostingMachineSettings minRows(Integer minRows) {
     this.minRows = minRows;
     return this;
   }
@@ -113,12 +113,12 @@ public class GradientBoostingMachine {
     this.minRows = minRows;
   }
 
-  public GradientBoostingMachine learnRate(List<Float> learnRate) {
+  public GradientBoostingMachineSettings learnRate(List<Float> learnRate) {
     this.learnRate = learnRate;
     return this;
   }
 
-  public GradientBoostingMachine addLearnRateItem(Float learnRateItem) {
+  public GradientBoostingMachineSettings addLearnRateItem(Float learnRateItem) {
     if (this.learnRate == null) {
       this.learnRate = new ArrayList<Float>();
     }
@@ -139,7 +139,7 @@ public class GradientBoostingMachine {
     this.learnRate = learnRate;
   }
 
-  public GradientBoostingMachine seed(Float seed) {
+  public GradientBoostingMachineSettings seed(Float seed) {
     this.seed = seed;
     return this;
   }
@@ -166,7 +166,7 @@ public class GradientBoostingMachine {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    GradientBoostingMachine gradientBoostingMachine = (GradientBoostingMachine) o;
+    GradientBoostingMachineSettings gradientBoostingMachine = (GradientBoostingMachineSettings) o;
     return Objects.equals(this.ntrees, gradientBoostingMachine.ntrees) &&
         Objects.equals(this.nthread, gradientBoostingMachine.nthread) &&
         Objects.equals(this.maxDepth, gradientBoostingMachine.maxDepth) &&

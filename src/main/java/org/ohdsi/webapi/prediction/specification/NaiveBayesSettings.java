@@ -2,7 +2,7 @@ package org.ohdsi.webapi.prediction.specification;
 
 import java.util.Objects;
 
-public class NaiveBayes {
+public class NaiveBayesSettings {
   @Override
   public boolean equals(java.lang.Object o) {
     if (this == o) {

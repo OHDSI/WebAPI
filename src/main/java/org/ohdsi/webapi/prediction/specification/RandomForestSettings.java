@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RandomForest {
+public class RandomForestSettings {
   @JsonProperty("mtries")
   private Integer mtries = -1;
 
@@ -22,7 +22,7 @@ public class RandomForest {
   @JsonProperty("seed")
   private Float seed = null;
 
-  public RandomForest mtries(Integer mtries) {
+  public RandomForestSettings mtries(Integer mtries) {
     this.mtries = mtries;
     return this;
   }
@@ -40,7 +40,7 @@ public class RandomForest {
     this.mtries = mtries;
   }
 
-  public RandomForest ntrees(Integer ntrees) {
+  public RandomForestSettings ntrees(Integer ntrees) {
     this.ntrees = ntrees;
     return this;
   }
@@ -58,12 +58,12 @@ public class RandomForest {
     this.ntrees = ntrees;
   }
 
-  public RandomForest maxDepth(List<BigDecimal> maxDepth) {
+  public RandomForestSettings maxDepth(List<BigDecimal> maxDepth) {
     this.maxDepth = maxDepth;
     return this;
   }
 
-  public RandomForest addMaxDepthItem(BigDecimal maxDepthItem) {
+  public RandomForestSettings addMaxDepthItem(BigDecimal maxDepthItem) {
     if (this.maxDepth == null) {
       this.maxDepth = new ArrayList<BigDecimal>();
     }
@@ -84,7 +84,7 @@ public class RandomForest {
     this.maxDepth = maxDepth;
   }
 
-  public RandomForest varImp(Boolean varImp) {
+  public RandomForestSettings varImp(Boolean varImp) {
     this.varImp = varImp;
     return this;
   }
@@ -102,7 +102,7 @@ public class RandomForest {
     this.varImp = varImp;
   }
 
-  public RandomForest seed(Float seed) {
+  public RandomForestSettings seed(Float seed) {
     this.seed = seed;
     return this;
   }
@@ -129,7 +129,7 @@ public class RandomForest {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    RandomForest randomForest = (RandomForest) o;
+    RandomForestSettings randomForest = (RandomForestSettings) o;
     return Objects.equals(this.mtries, randomForest.mtries) &&
         Objects.equals(this.ntrees, randomForest.ntrees) &&
         Objects.equals(this.maxDepth, randomForest.maxDepth) &&

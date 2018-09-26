@@ -5,11 +5,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonValue;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.webapi.featureextraction.specification.CovariateSettings;
-import org.ohdsi.webapi.service.CohortDefinitionService;
 
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class PatientLevelPredictionAnalysis {
@@ -19,8 +18,14 @@ public class PatientLevelPredictionAnalysis {
   @JsonProperty("name")
   private String name = null;
 
+  @JsonProperty("description")
+  private String description = null;
+
   @JsonProperty("version")
   private String version = null;
+
+  @JsonProperty("organizationName")
+  private String organizationName = null;
 
   @JsonProperty("packageName")
   private String packageName = null;
@@ -29,7 +34,7 @@ public class PatientLevelPredictionAnalysis {
    * The base skeleton R package 
    */
   public enum SkeletonTypeEnum {
-    PATIENTLEVELPREDICTION("PatientLevelPrediction");
+    PATIENTLEVELPREDICTIONSTUDY("PatientLevelPredictionStudy");
 
     private String value;
 
@@ -54,7 +59,7 @@ public class PatientLevelPredictionAnalysis {
     }
   }
   @JsonProperty("skeletonType")
-  private SkeletonTypeEnum skeletonType = SkeletonTypeEnum.PATIENTLEVELPREDICTION;
+  private SkeletonTypeEnum skeletonType = SkeletonTypeEnum.PATIENTLEVELPREDICTIONSTUDY;
 
   @JsonProperty("skeletonVersion")
   private String skeletonVersion = "v0.0.1";
@@ -72,16 +77,19 @@ public class PatientLevelPredictionAnalysis {
   private String modifiedDate = null;
 
   @JsonProperty("cohortDefinitions")
-  private List<CohortDefinitionService.CohortDefinitionDTO> cohortDefinitions = null;
+  private List<PredictionCohortDefinition> cohortDefinitions = null;
 
   @JsonProperty("conceptSets")
-  private List<ConceptSetExpression> conceptSets = null;
+  private List<PredictionConceptSet> conceptSets = null;
 
   @JsonProperty("conceptSetCrossReference")
   private List<ConceptSetCrossReference> conceptSetCrossReference = null;
 
-  @JsonProperty("targetOutcomes")
-  private List<TargetOutcomes> targetOutcomes = null;
+  @JsonProperty("targetIds")
+  private List<BigDecimal> targetIds = null;
+
+  @JsonProperty("outcomeIds")
+  private List<BigDecimal> outcomeIds = null;
 
   @JsonProperty("covariateSettings")
   private List<CovariateSettings> covariateSettings = null;
@@ -134,6 +142,24 @@ public class PatientLevelPredictionAnalysis {
     this.name = name;
   }
 
+  public PatientLevelPredictionAnalysis description(String description) {
+    this.description = description;
+    return this;
+  }
+
+  /**
+   * The description of the study
+   * @return description
+   **/
+  @JsonProperty("description")
+  public String getDescription() {
+    return description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
   public PatientLevelPredictionAnalysis version(String version) {
     this.version = version;
     return this;
@@ -150,6 +176,23 @@ public class PatientLevelPredictionAnalysis {
 
   public void setVersion(String version) {
     this.version = version;
+  }
+
+  public PatientLevelPredictionAnalysis organizationName(String organizationName) {
+    this.organizationName = organizationName;
+    return this;
+  }
+  /**
+   * The organization that produced the specification
+   * @return organizationName
+   **/
+  @JsonProperty("organizationName")
+  public String getOrganizationName() {
+    return organizationName;
+  }
+
+  public void setOrganizationName(String organizationName) {
+    this.organizationName = organizationName;
   }
 
   public PatientLevelPredictionAnalysis packageName(String packageName) {
@@ -278,14 +321,14 @@ public class PatientLevelPredictionAnalysis {
     this.modifiedDate = modifiedDate;
   }
   
-  public PatientLevelPredictionAnalysis cohortDefinitions(List<CohortDefinitionService.CohortDefinitionDTO> cohortDefinitions) {
+  public PatientLevelPredictionAnalysis cohortDefinitions(List<PredictionCohortDefinition> cohortDefinitions) {
     this.cohortDefinitions = cohortDefinitions;
     return this;
   }
 
-  public PatientLevelPredictionAnalysis addCohortDefinitionsItem(CohortDefinitionService.CohortDefinitionDTO cohortDefinitionsItem) {
+  public PatientLevelPredictionAnalysis addCohortDefinitionsItem(PredictionCohortDefinition cohortDefinitionsItem) {
     if (this.cohortDefinitions == null) {
-      this.cohortDefinitions = new ArrayList<CohortDefinitionService.CohortDefinitionDTO>();
+      this.cohortDefinitions = new ArrayList<PredictionCohortDefinition>();
     }
     this.cohortDefinitions.add(cohortDefinitionsItem);
     return this;
@@ -296,22 +339,22 @@ public class PatientLevelPredictionAnalysis {
    * @return cohortDefinitions
    **/
   @JsonProperty("cohortDefinitions")
-  public List<CohortDefinitionService.CohortDefinitionDTO> getCohortDefinitions() {
+  public List<PredictionCohortDefinition> getCohortDefinitions() {
     return cohortDefinitions;
   }
 
-  public void setCohortDefinitions(List<CohortDefinitionService.CohortDefinitionDTO> cohortDefinitions) {
+  public void setCohortDefinitions(List<PredictionCohortDefinition> cohortDefinitions) {
     this.cohortDefinitions = cohortDefinitions;
   }
   
-  public PatientLevelPredictionAnalysis conceptSets(List<ConceptSetExpression> conceptSets) {
+  public PatientLevelPredictionAnalysis conceptSets(List<PredictionConceptSet> conceptSets) {
     this.conceptSets = conceptSets;
     return this;
   }
 
-  public PatientLevelPredictionAnalysis addConceptSetsItem(ConceptSetExpression conceptSetsItem) {
+  public PatientLevelPredictionAnalysis addConceptSetsItem(PredictionConceptSet conceptSetsItem) {
     if (this.conceptSets == null) {
-      this.conceptSets = new ArrayList<ConceptSetExpression>();
+      this.conceptSets = new ArrayList<PredictionConceptSet>();
     }
     this.conceptSets.add(conceptSetsItem);
     return this;
@@ -322,11 +365,11 @@ public class PatientLevelPredictionAnalysis {
    * @return conceptSets
    **/
   @JsonProperty("conceptSets")
-  public List<ConceptSetExpression> getConceptSets() {
+  public List<PredictionConceptSet> getConceptSets() {
     return conceptSets;
   }
 
-  public void setConceptSets(List<ConceptSetExpression> conceptSets) {
+  public void setConceptSets(List<PredictionConceptSet> conceptSets) {
     this.conceptSets = conceptSets;
   }
   
@@ -343,30 +386,57 @@ public class PatientLevelPredictionAnalysis {
     this.conceptSetCrossReference = conceptSetCrossReference;
   }
 
-  public PatientLevelPredictionAnalysis targetOutcomes(List<TargetOutcomes> targetOutcomes) {
-    this.targetOutcomes = targetOutcomes;
+  public PatientLevelPredictionAnalysis targetIds(List<BigDecimal> targetIds) {
+    this.targetIds = targetIds;
     return this;
   }
 
-  public PatientLevelPredictionAnalysis addTargetOutcomesItem(TargetOutcomes targetOutcomesItem) {
-    if (this.targetOutcomes == null) {
-      this.targetOutcomes = new ArrayList<TargetOutcomes>();
+  public PatientLevelPredictionAnalysis addTargetIdsItem(BigDecimal targetIdsItem) {
+    if (this.targetIds == null) {
+      this.targetIds = new ArrayList<BigDecimal>();
     }
-    this.targetOutcomes.add(targetOutcomesItem);
+    this.targetIds.add(targetIdsItem);
     return this;
   }
 
   /**
-   * The target and outcome  cohort identifiers 
-   * @return targetOutcomes
+   * A list of the cohort IDs from the cohortDefinition collection for use as targets in the prediction 
+   * @return targetIds
    **/
-  @JsonProperty("targetOutcomes")
-  public List<TargetOutcomes> getTargetOutcomes() {
-    return targetOutcomes;
+  @JsonProperty("targetIds")
+  public List<BigDecimal> getTargetIds() {
+    return targetIds;
   }
 
-  public void setTargetOutcomes(List<TargetOutcomes> targetOutcomes) {
-    this.targetOutcomes = targetOutcomes;
+  public void setTargetIds(List<BigDecimal> targetIds) {
+    this.targetIds = targetIds;
+  }
+
+
+  public PatientLevelPredictionAnalysis outcomeIds(List<BigDecimal> outcomeIds) {
+    this.outcomeIds = outcomeIds;
+    return this;
+  }
+
+  public PatientLevelPredictionAnalysis addOutcomeIdsItem(BigDecimal outcomeIdsItem) {
+    if (this.outcomeIds == null) {
+      this.outcomeIds = new ArrayList<BigDecimal>();
+    }
+    this.outcomeIds.add(outcomeIdsItem);
+    return this;
+  }
+
+  /**
+   * A list of the cohort IDs from the cohortDefinition collection for use as outcomes in the prediction 
+   * @return outcomeIds
+   **/
+  @JsonProperty("outcomeIds")
+  public List<BigDecimal> getOutcomeIds() {
+    return outcomeIds;
+  }
+
+  public void setOutcomeIds(List<BigDecimal> outcomeIds) {
+    this.outcomeIds = outcomeIds;
   }
 
   public PatientLevelPredictionAnalysis covariateSettings(List<CovariateSettings> covariateSettings) {
@@ -495,7 +565,9 @@ public class PatientLevelPredictionAnalysis {
     PatientLevelPredictionAnalysis patientLevelPredictionAnalysis = (PatientLevelPredictionAnalysis) o;
     return Objects.equals(this.id, patientLevelPredictionAnalysis.id) &&
         Objects.equals(this.name, patientLevelPredictionAnalysis.name) &&
+        Objects.equals(this.description, patientLevelPredictionAnalysis.description) &&
         Objects.equals(this.version, patientLevelPredictionAnalysis.version) &&
+        Objects.equals(this.organizationName, patientLevelPredictionAnalysis.organizationName) &&
         Objects.equals(this.packageName, patientLevelPredictionAnalysis.packageName) &&
         Objects.equals(this.skeletonType, patientLevelPredictionAnalysis.skeletonType) &&
         Objects.equals(this.skeletonVersion, patientLevelPredictionAnalysis.skeletonVersion) &&
@@ -506,7 +578,7 @@ public class PatientLevelPredictionAnalysis {
         Objects.equals(this.cohortDefinitions, patientLevelPredictionAnalysis.cohortDefinitions) &&
         Objects.equals(this.conceptSets, patientLevelPredictionAnalysis.conceptSets) &&
         Objects.equals(this.conceptSetCrossReference, patientLevelPredictionAnalysis.conceptSetCrossReference) &&
-        Objects.equals(this.targetOutcomes, patientLevelPredictionAnalysis.targetOutcomes) &&
+        Objects.equals(this.outcomeIds, patientLevelPredictionAnalysis.outcomeIds) &&
         Objects.equals(this.covariateSettings, patientLevelPredictionAnalysis.covariateSettings) &&
         Objects.equals(this.populationSettings, patientLevelPredictionAnalysis.populationSettings) &&
         Objects.equals(this.modelSettings, patientLevelPredictionAnalysis.modelSettings) &&
@@ -516,7 +588,7 @@ public class PatientLevelPredictionAnalysis {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, version, packageName, skeletonType, skeletonVersion, createdBy, createdDate, modifiedBy, modifiedDate, cohortDefinitions, conceptSets, conceptSetCrossReference, targetOutcomes, covariateSettings, populationSettings, modelSettings, getPlpDataArgs, runPlpArgs);
+    return Objects.hash(id, name, description, version, organizationName, packageName, skeletonType, skeletonVersion, createdBy, createdDate, modifiedBy, modifiedDate, cohortDefinitions, conceptSets, conceptSetCrossReference, targetIds, outcomeIds, covariateSettings, populationSettings, modelSettings, getPlpDataArgs, runPlpArgs);
   }
 
 
@@ -527,7 +599,9 @@ public class PatientLevelPredictionAnalysis {
     
     sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
+    sb.append("    description: ").append(toIndentedString(description)).append("\n");
     sb.append("    version: ").append(toIndentedString(version)).append("\n");
+    sb.append("    organizationName: ").append(toIndentedString(organizationName)).append("\n");
     sb.append("    packageName: ").append(toIndentedString(packageName)).append("\n");
     sb.append("    skeletonType: ").append(toIndentedString(skeletonType)).append("\n");
     sb.append("    skeletonVersion: ").append(toIndentedString(skeletonVersion)).append("\n");
@@ -538,7 +612,8 @@ public class PatientLevelPredictionAnalysis {
     sb.append("    cohortDefinitions: ").append(toIndentedString(cohortDefinitions)).append("\n");
     sb.append("    conceptSets: ").append(toIndentedString(conceptSets)).append("\n");
     sb.append("    conceptSetCrossReference: ").append(toIndentedString(conceptSetCrossReference)).append("\n");
-    sb.append("    targetOutcomes: ").append(toIndentedString(targetOutcomes)).append("\n");
+    sb.append("    targetIds: ").append(toIndentedString(targetIds)).append("\n");
+    sb.append("    outcomeIds: ").append(toIndentedString(outcomeIds)).append("\n");
     sb.append("    covariateSettings: ").append(toIndentedString(covariateSettings)).append("\n");
     sb.append("    populationSettings: ").append(toIndentedString(populationSettings)).append("\n");
     sb.append("    modelSettings: ").append(toIndentedString(modelSettings)).append("\n");

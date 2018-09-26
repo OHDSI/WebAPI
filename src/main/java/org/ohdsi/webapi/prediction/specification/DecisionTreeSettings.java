@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * Specification for a Decision Tree Model 
  */
-public class DecisionTree   {
+public class DecisionTreeSettings   {
   @JsonProperty("maxDepth")
   private Integer maxDepth = 10;
 
@@ -28,7 +28,7 @@ public class DecisionTree   {
   @JsonProperty("plot")
   private Boolean plot = false;
 
-  public DecisionTree maxDepth(Integer maxDepth) {
+  public DecisionTreeSettings maxDepth(Integer maxDepth) {
     this.maxDepth = maxDepth;
     return this;
   }
@@ -46,7 +46,7 @@ public class DecisionTree   {
     this.maxDepth = maxDepth;
   }
 
-  public DecisionTree minSampleSplit(Integer minSampleSplit) {
+  public DecisionTreeSettings minSampleSplit(Integer minSampleSplit) {
     this.minSampleSplit = minSampleSplit;
     return this;
   }
@@ -64,7 +64,7 @@ public class DecisionTree   {
     this.minSampleSplit = minSampleSplit;
   }
 
-  public DecisionTree minSampleLeaf(Integer minSampleLeaf) {
+  public DecisionTreeSettings minSampleLeaf(Integer minSampleLeaf) {
     this.minSampleLeaf = minSampleLeaf;
     return this;
   }
@@ -82,7 +82,7 @@ public class DecisionTree   {
     this.minSampleLeaf = minSampleLeaf;
   }
 
-  public DecisionTree minImpurityDecrease(Float minImpurityDecrease) {
+  public DecisionTreeSettings minImpurityDecrease(Float minImpurityDecrease) {
     this.minImpurityDecrease = minImpurityDecrease;
     return this;
   }
@@ -100,7 +100,7 @@ public class DecisionTree   {
     this.minImpurityDecrease = minImpurityDecrease;
   }
 
-  public DecisionTree seed(Float seed) {
+  public DecisionTreeSettings seed(Float seed) {
     this.seed = seed;
     return this;
   }
@@ -118,7 +118,7 @@ public class DecisionTree   {
     this.seed = seed;
   }
 
-  public DecisionTree classWeight(String classWeight) {
+  public DecisionTreeSettings classWeight(String classWeight) {
     this.classWeight = classWeight;
     return this;
   }
@@ -136,7 +136,7 @@ public class DecisionTree   {
     this.classWeight = classWeight;
   }
 
-  public DecisionTree plot(Boolean plot) {
+  public DecisionTreeSettings plot(Boolean plot) {
     this.plot = plot;
     return this;
   }
@@ -163,7 +163,7 @@ public class DecisionTree   {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    DecisionTree decisionTree = (DecisionTree) o;
+    DecisionTreeSettings decisionTree = (DecisionTreeSettings) o;
     return Objects.equals(this.maxDepth, decisionTree.maxDepth) &&
         Objects.equals(this.minSampleSplit, decisionTree.minSampleSplit) &&
         Objects.equals(this.minSampleLeaf, decisionTree.minSampleLeaf) &&

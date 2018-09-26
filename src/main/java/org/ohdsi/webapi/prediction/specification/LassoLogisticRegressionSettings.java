@@ -3,14 +3,14 @@ package org.ohdsi.webapi.prediction.specification;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class LassoLogisticRegression {
+public class LassoLogisticRegressionSettings {
   @JsonProperty("variance")
   private Float variance = 0.01f;
 
   @JsonProperty("seed")
   private Float seed = null;
 
-  public LassoLogisticRegression variance(Float variance) {
+  public LassoLogisticRegressionSettings variance(Float variance) {
     this.variance = variance;
     return this;
   }
@@ -28,7 +28,7 @@ public class LassoLogisticRegression {
     this.variance = variance;
   }
 
-  public LassoLogisticRegression seed(Float seed) {
+  public LassoLogisticRegressionSettings seed(Float seed) {
     this.seed = seed;
     return this;
   }
@@ -55,7 +55,7 @@ public class LassoLogisticRegression {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    LassoLogisticRegression lassoLogisticRegression = (LassoLogisticRegression) o;
+    LassoLogisticRegressionSettings lassoLogisticRegression = (LassoLogisticRegressionSettings) o;
     return Objects.equals(this.variance, lassoLogisticRegression.variance) &&
         Objects.equals(this.seed, lassoLogisticRegression.seed);
   }

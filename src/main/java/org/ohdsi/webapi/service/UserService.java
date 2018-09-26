@@ -1,6 +1,15 @@
 package org.ohdsi.webapi.service;
 
+import com.odysseusinc.logging.event.AddPermissionEvent;
+import com.odysseusinc.logging.event.AddRoleEvent;
+import com.odysseusinc.logging.event.AssignRoleEvent;
+import com.odysseusinc.logging.event.ChangeRoleEvent;
+import com.odysseusinc.logging.event.DeletePermissionEvent;
+import com.odysseusinc.logging.event.DeleteRoleEvent;
+import com.odysseusinc.logging.event.UnassignRoleEvent;
 import org.eclipse.collections.impl.block.factory.Comparators;
+import org.springframework.context.ApplicationEventPublisher;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -29,6 +38,9 @@ public class UserService {
 
   @Autowired
   private PermissionManager authorizer;
+
+  @Autowired
+  private ApplicationEventPublisher eventPublisher;
 
   private Map<String, String> roleCreatorPermissionsTemplate = new LinkedHashMap<>();
 
@@ -163,6 +175,7 @@ public class UserService {
             this.roleCreatorPermissionsTemplate,
             String.valueOf(roleEntity.getId()));
     Role newRole = new Role(roleEntity);
+    eventPublisher.publishEvent(new AddRoleEvent(this, newRole.id, newRole.role));
     return newRole;
   }
 
@@ -177,6 +190,7 @@ public class UserService {
     }
     roleEntity.setName(role.role);
     roleEntity = this.authorizer.updateRole(roleEntity);
+    eventPublisher.publishEvent(new ChangeRoleEvent(this, id, role.role));
     return new Role(roleEntity);
   }
 
@@ -204,6 +218,7 @@ public class UserService {
   public void removeRole(@PathParam("roleId") Long roleId) {
     this.authorizer.removeRole(roleId);
     this.authorizer.removePermissionsFromTemplate(this.roleCreatorPermissionsTemplate, String.valueOf(roleId));
+    eventPublisher.publishEvent(new DeleteRoleEvent(this, roleId));
   }
 
   @GET
@@ -219,18 +234,22 @@ public class UserService {
   @PUT
   @Path("role/{roleId}/permissions/{permissionIdList}")
   public void addPermissionToRole(@PathParam("roleId") Long roleId, @PathParam("permissionIdList") String permissionIdList) throws Exception {
-    for (String permissionIdString: permissionIdList.split("\\+")) {
+    String[] ids = permissionIdList.split("\\+");
+    for (String permissionIdString : ids) {
       Long permissionId = Long.parseLong(permissionIdString);
       this.authorizer.addPermission(roleId, permissionId);
+      eventPublisher.publishEvent(new AddPermissionEvent(this, permissionId, roleId));
     }
   }
 
   @DELETE
   @Path("role/{roleId}/permissions/{permissionIdList}")
   public void removePermissionFromRole(@PathParam("roleId") Long roleId, @PathParam("permissionIdList") String permissionIdList) {
-    for (String permissionIdString: permissionIdList.split("\\+")) {
+    String[] ids = permissionIdList.split("\\+");
+    for (String permissionIdString : ids) {
       Long permissionId = Long.parseLong(permissionIdString);
       this.authorizer.removePermission(permissionId, roleId);
+      eventPublisher.publishEvent(new DeletePermissionEvent(this, permissionId, roleId));
     }
   }
 
@@ -247,18 +266,22 @@ public class UserService {
   @PUT
   @Path("role/{roleId}/users/{userIdList}")
   public void addUserToRole(@PathParam("roleId") Long roleId, @PathParam("userIdList") String userIdList) throws Exception {
-    for (String userIdString: userIdList.split("\\+")) {
+    String[] ids = userIdList.split("\\+");
+    for (String userIdString : ids) {
       Long userId = Long.parseLong(userIdString);
       this.authorizer.addUser(userId, roleId);
+      eventPublisher.publishEvent(new AssignRoleEvent(this, roleId, userId));
     }
   }
 
   @DELETE
   @Path("role/{roleId}/users/{userIdList}")
   public void removeUserFromRole(@PathParam("roleId") Long roleId, @PathParam("userIdList") String userIdList) {
-    for (String userIdString: userIdList.split("\\+")) {
+    String[] ids = userIdList.split("\\+");
+    for (String userIdString : ids) {
       Long userId = Long.parseLong(userIdString);
       this.authorizer.removeUser(userId, roleId);
+      eventPublisher.publishEvent(new UnassignRoleEvent(this, roleId, userId));
     }
   }
 

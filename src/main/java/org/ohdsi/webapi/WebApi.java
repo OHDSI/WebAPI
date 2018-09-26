@@ -20,8 +20,8 @@ public class WebApi extends SpringBootServletInitializer {
     protected SpringApplicationBuilder configure(final SpringApplicationBuilder application) {
         return application.sources(WebApi.class);
     }
-   
-    public static void main(final String[] args) throws Exception 
+
+    public static void main(final String[] args) throws Exception
     {
         TomcatURLStreamHandlerFactory.disable();
         new SpringApplicationBuilder(WebApi.class).run(args);

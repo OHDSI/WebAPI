@@ -380,7 +380,11 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
                         entry.getValue().sort(Comparator.comparing(PersonPathwayEvent::getStartDate));
                         return entry.getValue().stream().map(e -> e.getComboId().toString()).collect(Collectors.joining("-"));
                     })
-                    .collect(Collectors.groupingBy(Function.identity(), summingInt(x -> 1)));
+                    .collect(Collectors.groupingBy(Function.identity(), summingInt(x -> 1)))
+                    .entrySet()
+                    .stream()
+                    .filter(entry -> entry.getValue() > generation.getDesign().getMinCellCount())
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
             cohortPathways.setPathwaysCounts(chains);
 

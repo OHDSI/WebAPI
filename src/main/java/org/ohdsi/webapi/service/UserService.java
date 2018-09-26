@@ -25,6 +25,7 @@ import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -41,6 +42,9 @@ public class UserService {
 
   @Autowired
   private ApplicationEventPublisher eventPublisher;
+
+  @Value("${security.ad.default.import.group}#{T(java.util.Collections).emptyList()}")
+  private List<String> defaultRoles;
 
   private Map<String, String> roleCreatorPermissionsTemplate = new LinkedHashMap<>();
 
@@ -99,12 +103,18 @@ public class UserService {
   public static class Role implements Comparable<Role> {
     public Long id;
     public String role;
+    public boolean defaultImported;
 
     public Role() {}
 
     public Role (RoleEntity roleEntity) {
       this.id = roleEntity.getId();
       this.role = roleEntity.getName();
+    }
+
+    public Role (RoleEntity roleEntity, boolean defaultImported) {
+      this(roleEntity);
+      this.defaultImported = defaultImported;
     }
 
     @Override
@@ -295,7 +305,7 @@ public class UserService {
   }
 
   private ArrayList<Permission> convertPermissions(final Iterable<PermissionEntity> permissionEntities) {
-    ArrayList<Permission> permissions = new ArrayList<Permission>();
+    ArrayList<Permission> permissions = new ArrayList<>();
     for (PermissionEntity permissionEntity : permissionEntities) {
       Permission permission = new Permission(permissionEntity);
       permissions.add(permission);
@@ -305,9 +315,9 @@ public class UserService {
   }
 
   private ArrayList<Role> convertRoles(final Iterable<RoleEntity> roleEntities) {
-    ArrayList<Role> roles = new ArrayList<Role>();
+    ArrayList<Role> roles = new ArrayList<>();
     for (RoleEntity roleEntity : roleEntities) {
-      Role role = new Role(roleEntity);
+      Role role = new Role(roleEntity, defaultRoles.contains(roleEntity.getName()));
       roles.add(role);
     }
 
@@ -315,7 +325,7 @@ public class UserService {
   }
 
   private ArrayList<User> convertUsers(final Iterable<UserEntity> userEntities) {
-    ArrayList<User> users = new ArrayList<User>();
+    ArrayList<User> users = new ArrayList<>();
     for (UserEntity userEntity : userEntities) {
       User user = new User(userEntity);
       users.add(user);

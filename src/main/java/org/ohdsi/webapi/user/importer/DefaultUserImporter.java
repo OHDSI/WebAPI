@@ -94,16 +94,18 @@ public class DefaultUserImporter implements UserImporter {
 
   @Override
   @Transactional
-  public void importUsers(List<AtlasUserRoles> users) {
+  public void importUsers(List<AtlasUserRoles> users, List<String> defaultRoles) {
 
     users.forEach(user -> {
       String login = UserUtils.toLowerCase(user.getLogin());
       Set<String> roles = user.getRoles().stream().map(role -> role.role).collect(Collectors.toSet());
+      roles.addAll(defaultRoles);
       try {
         UserEntity userEntity;
-        if (LdapUserImportStatus.MODIFIED.equals(user.getStatus()) && Objects.nonNull(userEntity = userRepository.findByLogin(login))) {
+        if (Objects.nonNull(userEntity = userRepository.findByLogin(login)) &&
+                LdapUserImportStatus.MODIFIED.equals(getStatus(userEntity, user.getRoles()))) {
           Set<RoleEntity> userRoles = userManager.getUserRoles(userEntity.getId());
-          userRoles.forEach(r -> {
+          userRoles.stream().filter(role -> !role.getName().equalsIgnoreCase(login)).forEach(r -> {
             try {
               userManager.removeUserFromRole(r.getName(), userEntity.getLogin());
             } catch (Exception e) {
@@ -179,11 +181,17 @@ public class DefaultUserImporter implements UserImporter {
 
   private LdapUserImportStatus getStatus(AtlasUserRoles atlasUser) {
 
-    LdapUserImportStatus result = LdapUserImportStatus.NEW_USER;
     UserEntity userEntity = userRepository.findByLogin(atlasUser.getLogin());
+    return getStatus(userEntity, atlasUser.getRoles());
+  }
+
+  private LdapUserImportStatus getStatus(UserEntity userEntity,  List<UserService.Role> atlasUserRoles) {
+
+    LdapUserImportStatus result = LdapUserImportStatus.NEW_USER;
+
     if (Objects.nonNull(userEntity)) {
       List<Long> atlasRoleIds = userEntity.getUserRoles().stream().map(userRole -> userRole.getRole().getId()).collect(Collectors.toList());
-      List<Long> mappedRoleIds = atlasUser.getRoles().stream().map(role -> role.id).collect(Collectors.toList());
+      List<Long> mappedRoleIds = atlasUserRoles.stream().map(role -> role.id).collect(Collectors.toList());
       result = CollectionUtils.isEqualCollection(atlasRoleIds, mappedRoleIds) ? LdapUserImportStatus.EXISTS : LdapUserImportStatus.MODIFIED;
     }
     return result;

@@ -5,7 +5,13 @@ import java.util.List;
 public class PathwayPopulationResultsDTO {
 
     private List<PathwayCodeDTO> eventCodes;
-    private List<PathwayPopulationEventDTO> pathways;
+    private List<TargetCohortPathwaysDTO> pathwayGroups;
+
+    public PathwayPopulationResultsDTO(List<PathwayCodeDTO> eventCodes, List<TargetCohortPathwaysDTO> pathwayGroups) {
+
+        this.eventCodes = eventCodes;
+        this.pathwayGroups = pathwayGroups;
+    }
 
     public List<PathwayCodeDTO> getEventCodes() {
 
@@ -17,13 +23,13 @@ public class PathwayPopulationResultsDTO {
         this.eventCodes = eventCodes;
     }
 
-    public List<PathwayPopulationEventDTO> getPathways() {
+    public List<TargetCohortPathwaysDTO> getPathwayGroups() {
 
-        return pathways;
+        return pathwayGroups;
     }
 
-    public void setPathways(List<PathwayPopulationEventDTO> pathways) {
+    public void setPathwayGroups(List<TargetCohortPathwaysDTO> pathwayGroups) {
 
-        this.pathways = pathways;
+        this.pathwayGroups = pathwayGroups;
     }
 }

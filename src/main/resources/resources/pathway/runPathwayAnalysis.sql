@@ -1,10 +1,16 @@
-DELETE FROM @target_database_schema.pathway_analysis_events WHERE pathway_analysis_generation_id = @generation_id;
+DELETE
+FROM @target_database_schema.pathway_analysis_events
+WHERE pathway_analysis_generation_id = @generation_id AND target_cohort_id = @pathway_target_cohort_id;
 
 /*
 * Filter out events which do not fall into a person's target period
 * e.g. of event_cohorts:
 * SELECT 1 AS cohort_definition_id, 1 AS cohort_index UNION ALL ...
 */
+
+IF OBJECT_ID('tempdb..#raw_events', 'U') IS NOT NULL
+DROP TABLE raw_events;
+
 select id, event_cohort_index, subject_id, cohort_start_date, cohort_end_date
 INTO #raw_events
 FROM (
@@ -16,12 +22,15 @@ FROM (
 	FROM @target_database_schema.@target_cohort_table e
 	  JOIN ( @event_cohort_id_index_map ) ec ON e.cohort_definition_id = ec.cohort_definition_id
 	  JOIN @target_database_schema.@target_cohort_table t ON t.cohort_start_date <= e.cohort_start_date AND e.cohort_end_date <= t.cohort_end_date AND t.subject_id = e.subject_id
-	WHERE t.cohort_definition_id IN (@pathway_target_cohort_id_list)
+	WHERE t.cohort_definition_id = @pathway_target_cohort_id
 ) RE;
 
 /*
 * Find closely located dates, which need to be collapsed, based on collapse_window
 */
+
+IF OBJECT_ID('tempdb..#date_replacements', 'U') IS NOT NULL
+DROP TABLE date_replacements;
 
 WITH person_dates AS (
   SELECT subject_id, cohort_start_date cohort_date FROM #raw_events
@@ -52,6 +61,9 @@ WHERE cohort_date <> replacement_date;
 * Collapse dates
 */
 
+IF OBJECT_ID('tempdb..#collapsed_dates_events', 'U') IS NOT NULL
+DROP TABLE collapsed_dates_events;
+
 SELECT
   event.id,
   event.event_cohort_index,
@@ -75,6 +87,9 @@ into
   |A--|A--|
       |B--|B--|
 */
+
+IF OBJECT_ID('tempdb..#split_overlapping_events', 'U') IS NOT NULL
+DROP TABLE split_overlapping_events;
 
 SELECT
 	CASE WHEN ordinal < 3 THEN first.id ELSE second.id END as id,
@@ -115,6 +130,9 @@ CROSS JOIN (SELECT 1 ordinal UNION SELECT 2 UNION SELECT 3 UNION SELECT 4) multi
 * We'll use bitwise addition with SUM() to combine events instead of LIST_AGG(), replacing 'name' column with 'combo_id'.
 */
 
+IF OBJECT_ID('tempdb..#combo_events', 'U') IS NOT NULL
+DROP TABLE combo_events;
+
 WITH events AS (
   SELECT *
   FROM #collapsed_dates_events cde
@@ -133,6 +151,9 @@ GROUP BY subject_id, cohort_start_date, cohort_end_date;
 /*
 * Remove repetitive events (e.g. A-A-A into A)
 */
+
+IF OBJECT_ID('tempdb..#non_repetetive_events', 'U') IS NOT NULL
+DROP TABLE non_repetetive_events;
 
 SELECT
   ROW_NUMBER() OVER (PARTITION BY subject_id ORDER BY cohort_start_date) ordinal,
@@ -156,11 +177,14 @@ WHERE repetitive_event = 0 {@allow_repeats == 'false'}?{ AND is_repeat = 0 };
 /*
 * Persist results
 */
-INSERT INTO @target_database_schema.pathway_analysis_events (pathway_analysis_generation_id, combo_id, subject_id, cohort_start_date, cohort_end_date)
+
+INSERT INTO @target_database_schema.pathway_analysis_events (pathway_analysis_generation_id, target_cohort_id, combo_id, subject_id, ordinal, cohort_start_date, cohort_end_date)
 SELECT
   @generation_id as pathway_analysis_generation_id,
+  @pathway_target_cohort_id as target_cohort_id,
   combo_id,
   subject_id,
+  ROW_NUMBER() OVER (PARTITION BY subject_id ORDER BY cohort_start_date) AS ordinal,
   cohort_start_date,
   cohort_end_date
 FROM #non_repetetive_events

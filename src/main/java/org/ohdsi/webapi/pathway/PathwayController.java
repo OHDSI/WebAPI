@@ -5,11 +5,13 @@ import org.ohdsi.webapi.Pagination;
 import org.ohdsi.webapi.common.generation.CommonGenerationDTO;
 import org.ohdsi.webapi.pathway.converter.SerializedPathwayAnalysisToPathwayAnalysisConverter;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
+import org.ohdsi.webapi.pathway.domain.PathwayAnalysisGenerationEntity;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisExportDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayCodeDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayPopulationEventDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayPopulationResultsDTO;
+import org.ohdsi.webapi.pathway.dto.TargetCohortPathwaysDTO;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.source.Source;
@@ -163,6 +165,19 @@ public class PathwayController {
     }
 
     @GET
+    @Path("/generation/{generationId}/design")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public String getGenerationDesign(
+            @PathParam("generationId") final Long generationId
+    ) {
+
+        PathwayAnalysisGenerationEntity generation = pathwayService.getGeneration(generationId);
+        return new SerializedPathwayAnalysisToPathwayAnalysisConverter().convertToDatabaseColumn(generation.getDesign());
+
+    }
+
+    @GET
     @Path("/generation/{generationId}/result")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
@@ -183,20 +198,18 @@ public class PathwayController {
                 })
                 .collect(Collectors.toList());
 
-        List<PathwayPopulationEventDTO> pathwayDtos = resultingPathways.getPathwaysCounts().entrySet()
+        List<TargetCohortPathwaysDTO> pathwayDtos = resultingPathways.getCohortPathwaysList()
                 .stream()
-                .map(entry -> {
-                    PathwayPopulationEventDTO dto = new PathwayPopulationEventDTO();
-                    dto.setPath(entry.getKey());
-                    dto.setPersonCount(entry.getValue());
-                    return dto;
+                .map(cohortResults -> {
+                    List<PathwayPopulationEventDTO> eventDTOs = cohortResults.getPathwaysCounts()
+                            .entrySet()
+                            .stream()
+                            .map(entry -> new PathwayPopulationEventDTO(entry.getKey(), entry.getValue()))
+                            .collect(Collectors.toList());
+                    return new TargetCohortPathwaysDTO(cohortResults.getCohortId(), eventDTOs);
                 })
                 .collect(Collectors.toList());
 
-        PathwayPopulationResultsDTO dto = new PathwayPopulationResultsDTO();
-        dto.setEventCodes(eventCodeDtos);
-        dto.setPathways(pathwayDtos);
-
-        return dto;
+        return new PathwayPopulationResultsDTO(eventCodeDtos, pathwayDtos);
     }
 }

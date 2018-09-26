@@ -4,9 +4,14 @@ import org.ohdsi.analysis.pathway.result.PathwayPopulationEvent;
 
 public class PathwayPopulationEventDTO implements PathwayPopulationEvent {
 
-
     private String path;
     private Integer personCount;
+
+    public PathwayPopulationEventDTO(String path, Integer personCount) {
+
+        this.path = path;
+        this.personCount = personCount;
+    }
 
     public String getPath() {
 

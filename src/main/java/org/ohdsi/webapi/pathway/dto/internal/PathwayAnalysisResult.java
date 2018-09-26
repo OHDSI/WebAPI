@@ -2,12 +2,11 @@ package org.ohdsi.webapi.pathway.dto.internal;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class PathwayAnalysisResult {
 
     private List<PathwayCode> codes = new ArrayList<>();
-    private Map<String, Integer> pathwaysCounts;
+    private List<CohortPathways> cohortPathwaysList = new ArrayList<>();
 
     public List<PathwayCode> getCodes() {
 
@@ -19,13 +18,13 @@ public class PathwayAnalysisResult {
         this.codes = codes;
     }
 
-    public Map<String, Integer> getPathwaysCounts() {
+    public List<CohortPathways> getCohortPathwaysList() {
 
-        return pathwaysCounts;
+        return cohortPathwaysList;
     }
 
-    public void setPathwaysCounts(Map<String, Integer> pathwaysCounts) {
+    public void setCohortPathwaysList(List<CohortPathways> cohortPathwaysList) {
 
-        this.pathwaysCounts = pathwaysCounts;
+        this.cohortPathwaysList = cohortPathwaysList;
     }
 }

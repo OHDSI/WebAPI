@@ -23,6 +23,7 @@ import org.apache.shiro.web.servlet.ShiroHttpServletRequest;
 import org.apache.shiro.web.util.WebUtils;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.TokenManager;
+import org.ohdsi.webapi.util.UserUtils;
 
 /**
  *
@@ -80,9 +81,7 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
       throw new Exception("Unknown type of principal");
     }
 
-    if (login != null) {
-      login = login.toLowerCase();
-    }
+    login = UserUtils.toLowerCase(login);
 
     // stop session to make logout of OAuth users possible
     Session session = SecurityUtils.getSubject().getSession(false);

@@ -13,7 +13,7 @@ public interface UserImporter {
 
   List<AtlasUserRoles> findUsers(LdapProviderType providerType, RoleGroupMapping mapping);
 
-  void importUsers(List<AtlasUserRoles> users);
+  void importUsers(List<AtlasUserRoles> users, List<String> defaultRoles);
 
   void saveRoleGroupMapping(LdapProviderType providerType, List<RoleGroupMappingEntity> mappingEntities);
 

@@ -81,6 +81,7 @@
     <security.ad.searchFilter></security.ad.searchFilter>
     <security.ad.ignore.partial.result.exception>true</security.ad.ignore.partial.result.exception>
     <security.ad.result.count.limit>30000</security.ad.result.count.limit> <!-- 0 means no limit -->
+    <security.ad.default.import.group>public</security.ad.default.import.group>
 
     <security.cas.loginUrl></security.cas.loginUrl>
     <security.cas.callbackUrl></security.cas.callbackUrl>

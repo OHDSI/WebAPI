@@ -10,6 +10,7 @@ import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.PermissionManager;
+import org.ohdsi.webapi.util.UserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,7 +76,7 @@ public class DefaultUserImporter implements UserImporter {
             .map(user -> {
               AtlasUserRoles atlasUser = new AtlasUserRoles();
               atlasUser.setDisplayName(user.getDisplayName());
-              atlasUser.setLogin(user.getLogin());
+              atlasUser.setLogin(UserUtils.toLowerCase(user.getLogin()));
               List<UserService.Role> roles = user.getGroups().stream()
                       .flatMap(g -> mapping.getRoleGroups()
                               .stream()
@@ -93,15 +94,18 @@ public class DefaultUserImporter implements UserImporter {
 
   @Override
   @Transactional
-  public void importUsers(List<AtlasUserRoles> users) {
+  public void importUsers(List<AtlasUserRoles> users, List<String> defaultRoles) {
 
     users.forEach(user -> {
+      String login = UserUtils.toLowerCase(user.getLogin());
       Set<String> roles = user.getRoles().stream().map(role -> role.role).collect(Collectors.toSet());
+      roles.addAll(defaultRoles);
       try {
         UserEntity userEntity;
-        if (LdapUserImportStatus.MODIFIED.equals(user.getStatus()) && Objects.nonNull(userEntity = userRepository.findByLogin(user.getLogin()))) {
+        if (Objects.nonNull(userEntity = userRepository.findByLogin(login)) &&
+                LdapUserImportStatus.MODIFIED.equals(getStatus(userEntity, user.getRoles()))) {
           Set<RoleEntity> userRoles = userManager.getUserRoles(userEntity.getId());
-          userRoles.forEach(r -> {
+          userRoles.stream().filter(role -> !role.getName().equalsIgnoreCase(login)).forEach(r -> {
             try {
               userManager.removeUserFromRole(r.getName(), userEntity.getLogin());
             } catch (Exception e) {
@@ -116,10 +120,10 @@ public class DefaultUserImporter implements UserImporter {
             }
           });
         } else {
-          userManager.registerUser(user.getLogin(), roles);
+          userManager.registerUser(login, roles);
         }
       } catch (Exception e) {
-        logger.error("Failed to register user {}", user.getLogin(), e);
+        logger.error("Failed to register user {}", login, e);
       }
     });
   }
@@ -177,11 +181,17 @@ public class DefaultUserImporter implements UserImporter {
 
   private LdapUserImportStatus getStatus(AtlasUserRoles atlasUser) {
 
-    LdapUserImportStatus result = LdapUserImportStatus.NEW_USER;
     UserEntity userEntity = userRepository.findByLogin(atlasUser.getLogin());
+    return getStatus(userEntity, atlasUser.getRoles());
+  }
+
+  private LdapUserImportStatus getStatus(UserEntity userEntity,  List<UserService.Role> atlasUserRoles) {
+
+    LdapUserImportStatus result = LdapUserImportStatus.NEW_USER;
+
     if (Objects.nonNull(userEntity)) {
       List<Long> atlasRoleIds = userEntity.getUserRoles().stream().map(userRole -> userRole.getRole().getId()).collect(Collectors.toList());
-      List<Long> mappedRoleIds = atlasUser.getRoles().stream().map(role -> role.id).collect(Collectors.toList());
+      List<Long> mappedRoleIds = atlasUserRoles.stream().map(role -> role.id).collect(Collectors.toList());
       result = CollectionUtils.isEqualCollection(atlasRoleIds, mappedRoleIds) ? LdapUserImportStatus.EXISTS : LdapUserImportStatus.MODIFIED;
     }
     return result;

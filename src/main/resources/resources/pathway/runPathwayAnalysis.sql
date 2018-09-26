@@ -135,9 +135,7 @@ GROUP BY subject_id, cohort_start_date, cohort_end_date;
 */
 
 SELECT
-  @generation_id,
   ROW_NUMBER() OVER (PARTITION BY subject_id ORDER BY cohort_start_date) ordinal,
-  ROW_NUMBER() OVER (PARTITION BY subject_id, combo_id ORDER BY cohort_start_date) > 1 is_repeat,
   combo_id,
   subject_id,
   cohort_start_date,
@@ -149,26 +147,21 @@ FROM (
     CASE WHEN (combo_id = LAG(combo_id) OVER (PARTITION BY subject_id ORDER BY subject_id, cohort_start_date ASC))
       THEN 1
       ELSE 0
-    END repetitive_event
+    END repetitive_event, 
+		case when ROW_NUMBER() OVER (PARTITION BY subject_id, combo_id ORDER BY cohort_start_date) > 1 then 1 else 0 end is_repeat
   FROM #combo_events
 ) AS marked_repetitive_events
-WHERE repetitive_event = 0;
+WHERE repetitive_event = 0 {@allow_repeats == 'false'}?{ AND is_repeat = 0 };
 
 /*
 * Persist results
 */
-INSERT INTO @target_database_schema.pathway_analysis_events
+INSERT INTO @target_database_schema.pathway_analysis_events (pathway_analysis_generation_id, combo_id, subject_id, cohort_start_date, cohort_end_date)
 SELECT
-  @generation_id,
+  @generation_id as pathway_analysis_generation_id,
   combo_id,
   subject_id,
   cohort_start_date,
   cohort_end_date
 FROM #non_repetetive_events
-WHERE 1 = 1
-{@max_depth != ''}?{
-  AND ordinal <= @max_depth
-}
-{@allow_repeats == 'false'}?{
-  AND is_repeat = FALSE
-};
+WHERE 1 = 1 {@max_depth != ''}?{ AND ordinal <= @max_depth }

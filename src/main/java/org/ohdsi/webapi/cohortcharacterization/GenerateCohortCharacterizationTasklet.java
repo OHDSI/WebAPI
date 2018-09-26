@@ -109,132 +109,50 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
         this.transactionTemplate.getTransactionManager().commit(initStatus);
     }
 
-    interface CriteriaVisitor<T extends Criteria> {
+    @FunctionalInterface
+    interface CriteriaAdaptor<T extends Criteria> {
         Integer getConceptSetId(T criteria);
     }
 
-    class DrugEraVisitor implements CriteriaVisitor<DrugEra> {
-
-        @Override
-        public Integer getConceptSetId(DrugEra drugEra) {
-            return drugEra.codesetId;
-        }
-    }
-
-    class ConditionEraVisitor implements CriteriaVisitor<ConditionEra> {
-
-        @Override
-        public Integer getConceptSetId(ConditionEra conditionEra) {
-            return conditionEra.codesetId;
-        }
-    }
-
-    class ConditionOccurrenceVisitor implements CriteriaVisitor<ConditionOccurrence> {
-
-        @Override
-        public Integer getConceptSetId(ConditionOccurrence conditionOccurrence) {
-            return conditionOccurrence.codesetId;
-        }
-    }
-
-    class DeathVisitor implements CriteriaVisitor<Death> {
-
-        @Override
-        public Integer getConceptSetId(Death death) {
-            return death.codesetId;
-        }
-    }
-
-    class DeviceExposureVisitor implements CriteriaVisitor<DeviceExposure> {
-
-        @Override
-        public Integer getConceptSetId(DeviceExposure deviceExposure) {
-            return deviceExposure.codesetId;
-        }
-    }
-
-    class DoseEraVisitor implements CriteriaVisitor<DoseEra> {
-
-        @Override
-        public Integer getConceptSetId(DoseEra doseEra) {
-            return doseEra.codesetId;
-        }
-    }
-
-    class DrugExposureVisitor implements CriteriaVisitor<DrugExposure> {
-
-        @Override
-        public Integer getConceptSetId(DrugExposure drugExposure) {
-            return drugExposure.codesetId;
-        }
-    }
-
-    class MeasurementVisitor implements CriteriaVisitor<Measurement> {
-
-        @Override
-        public Integer getConceptSetId(Measurement measurement) {
-            return measurement.codesetId;
-        }
-    }
-
-    class ObservationVisitor implements CriteriaVisitor<Observation> {
-
-        @Override
-        public Integer getConceptSetId(Observation observation) {
-            return observation.codesetId;
-        }
-    }
-
-    class ProcedureOccurrenceVisitor implements CriteriaVisitor<ProcedureOccurrence> {
-
-        @Override
-        public Integer getConceptSetId(ProcedureOccurrence procedureOccurrence) {
-            return procedureOccurrence.codesetId;
-        }
-    }
-
-    class SpecimenVisitor implements CriteriaVisitor<Specimen> {
-
-        @Override
-        public Integer getConceptSetId(Specimen specimen) {
-            return specimen.codesetId;
-        }
-    }
-
-    class VisitOccurrenceVisitor implements CriteriaVisitor<VisitOccurrence> {
-
-        @Override
-        public Integer getConceptSetId(VisitOccurrence visitOccurrence) {
-            return visitOccurrence.codesetId;
-        }
-    }
+    private CriteriaAdaptor<DrugEra> drugEraCriteriaAdaptor = drugEra -> drugEra.codesetId;
+    private CriteriaAdaptor<ConditionEra> conditionEraCriteriaAdaptor = conditionEra -> conditionEra.codesetId;
+    private CriteriaAdaptor<ConditionOccurrence> conditionOccurrenceCriteriaAdaptor = conditionOccurrence -> conditionOccurrence.codesetId;
+    private CriteriaAdaptor<Death> deathCriteriaAdaptor = death -> death.codesetId;
+    private CriteriaAdaptor<DeviceExposure> deviceExposureCriteriaAdaptor = deviceExposure -> deviceExposure.codesetId;
+    private CriteriaAdaptor<DoseEra> doseEraCriteriaAdaptor = doseEra -> doseEra.codesetId;
+    private CriteriaAdaptor<DrugExposure> drugExposureCriteriaAdaptor = drugExposure -> drugExposure.codesetId;
+    private CriteriaAdaptor<Measurement> measurementCriteriaAdaptor = measurement -> measurement.codesetId;
+    private CriteriaAdaptor<Observation> observationCriteriaAdaptor = observation -> observation.codesetId;
+    private CriteriaAdaptor<ProcedureOccurrence> procedureOccurrenceCriteriaAdaptor = procedureOccurrence -> procedureOccurrence.codesetId;
+    private CriteriaAdaptor<Specimen> specimenCriteriaAdaptor = specimen -> specimen.codesetId;
+    private CriteriaAdaptor<VisitOccurrence> visitOccurrenceCriteriaAdaptor = visitOccurrence -> visitOccurrence.codesetId;
 
     private Integer visitCriteria(Criteria criteria) {
         Integer result = 0;
         if (criteria instanceof DrugEra) {
-            result = new DrugEraVisitor().getConceptSetId((DrugEra) criteria);
+            result = drugEraCriteriaAdaptor.getConceptSetId((DrugEra) criteria);
         } else if (criteria instanceof ConditionEra) {
-            result = new ConditionEraVisitor().getConceptSetId((ConditionEra) criteria);
+            result = conditionEraCriteriaAdaptor.getConceptSetId((ConditionEra) criteria);
         } else if (criteria instanceof ConditionOccurrence) {
-            result = new ConditionOccurrenceVisitor().getConceptSetId((ConditionOccurrence) criteria);
+            result = conditionOccurrenceCriteriaAdaptor.getConceptSetId((ConditionOccurrence) criteria);
         } else if (criteria instanceof Death) {
-            result = new DeathVisitor().getConceptSetId((Death) criteria);
+            result = deathCriteriaAdaptor.getConceptSetId((Death) criteria);
         } else if (criteria instanceof DeviceExposure) {
-            result = new DeviceExposureVisitor().getConceptSetId((DeviceExposure) criteria);
+            result = deviceExposureCriteriaAdaptor.getConceptSetId((DeviceExposure) criteria);
         } else if (criteria instanceof DoseEra) {
-            result = new DoseEraVisitor().getConceptSetId((DoseEra) criteria);
+            result = doseEraCriteriaAdaptor.getConceptSetId((DoseEra) criteria);
         } else if (criteria instanceof DrugExposure) {
-            result = new DrugExposureVisitor().getConceptSetId((DrugExposure) criteria);
+            result = drugExposureCriteriaAdaptor.getConceptSetId((DrugExposure) criteria);
         } else if (criteria instanceof Measurement) {
-            result = new MeasurementVisitor().getConceptSetId((Measurement) criteria);
+            result = measurementCriteriaAdaptor.getConceptSetId((Measurement) criteria);
         } else if (criteria instanceof Observation) {
-            result = new ObservationVisitor().getConceptSetId((Observation) criteria);
+            result = observationCriteriaAdaptor.getConceptSetId((Observation) criteria);
         } else if (criteria instanceof ProcedureOccurrence) {
-            result = new ProcedureOccurrenceVisitor().getConceptSetId((ProcedureOccurrence) criteria);
+            result = procedureOccurrenceCriteriaAdaptor.getConceptSetId((ProcedureOccurrence) criteria);
         } else if (criteria instanceof Specimen) {
-            result = new SpecimenVisitor().getConceptSetId((Specimen) criteria);
+            result = specimenCriteriaAdaptor.getConceptSetId((Specimen) criteria);
         } else if (criteria instanceof VisitOccurrence) {
-            result = new VisitOccurrenceVisitor().getConceptSetId((VisitOccurrence) criteria);
+            result = visitOccurrenceCriteriaAdaptor.getConceptSetId((VisitOccurrence) criteria);
         }
         return result;
     }

@@ -238,7 +238,6 @@
             <file>${user.properties}</file>
           </customPropertiesFiles>
           <propertiesFilesDirectory>${properties.folder}</propertiesFilesDirectory>
-          <overrideRootLogLevel>debug</overrideRootLogLevel>
         </configuration>
       </plugin>
     </plugins>

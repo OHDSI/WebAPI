@@ -13,6 +13,11 @@
     <hashTree>
       <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
         <collectionProp name="Arguments.arguments">
+          <elementProp name="ConfigPath" elementType="Argument">
+            <stringProp name="Argument.name">ConfigPath</stringProp>
+            <stringProp name="Argument.value">${__BeanShell(import org.apache.jmeter.services.FileServer; FileServer.getFileServer().getBaseDir();)} </stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
           <elementProp name="ThreadCount" elementType="Argument">
             <stringProp name="Argument.name">ThreadCount</stringProp>
             <stringProp name="Argument.value">${__P(thread.count,1)}</stringProp>
@@ -60,12 +65,6 @@
             <stringProp name="Argument.desc">Service Provider url</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
-          <elementProp name="ResourcesDirectory" elementType="Argument">
-            <stringProp name="Argument.name">ResourcesDirectory</stringProp>
-            <stringProp name="Argument.value">${__P(resources.dir,C:\Users\Sander - Continuum\Documents\HONEUR\OHDSI\WebAPI2.0\src\test\jmeter\resources)}</stringProp>
-            <stringProp name="Argument.desc">JMeter resources location</stringProp>
-            <stringProp name="Argument.metadata">=</stringProp>
-          </elementProp>
           <elementProp name="WebAPICentralHost" elementType="Argument">
             <stringProp name="Argument.name">WebAPICentralHost</stringProp>
             <stringProp name="Argument.value">${__P(webapi.central.url,https://localhost:8444/WebAPI)}</stringProp>
@@ -96,16 +95,17 @@
         <stringProp name="script">import groovy.json.JsonSlurper;
 import groovy.json.StringEscapeUtils;
 import groovy.json.JsonOutput;
+import org.apache.jmeter.services.FileServer;
 
 def jsonSlurper = new JsonSlurper()
 
-directory = vars.get(&quot;ResourcesDirectory&quot;)
+directory = FileServer.getFileServer().getBaseDir() + File.separator + &quot;resources&quot; + File.separator;
 file = vars.get(&quot;ExpressionFile&quot;)
 
 //String content = new File(directory+&quot;/&quot;+file).getText(&apos;UTF-8&apos;).replaceAll(/\r\n( )*/, &quot;&quot;);
 //String expression = StringEscapeUtils.escapeJava(content);
 
-def reader = new BufferedReader(new InputStreamReader(new FileInputStream(directory + &quot;/&quot; + file),&quot;UTF-8&quot;))
+def reader = new BufferedReader(new InputStreamReader(new FileInputStream(directory + file),&quot;UTF-8&quot;))
 data = jsonSlurper.parse(reader)
 
 expression = StringEscapeUtils.escapeJava(JsonOutput.toJson(data));
@@ -115,7 +115,7 @@ vars.put(&quot;expression&quot;, expression)</stringProp>
       </JSR223PostProcessor>
       <hashTree/>
       <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV Get Honeur Central Users/Passwords" enabled="true">
-        <stringProp name="filename">${ResourcesDirectory}\honeur-central-cas-users.csv</stringProp>
+        <stringProp name="filename">resources\honeur-central-cas-users.csv</stringProp>
         <stringProp name="fileEncoding"></stringProp>
         <stringProp name="variableNames">UserCentral,PasswordCentral</stringProp>
         <stringProp name="delimiter">,</stringProp>
@@ -127,7 +127,7 @@ vars.put(&quot;expression&quot;, expression)</stringProp>
       </CSVDataSet>
       <hashTree/>
       <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV Get Honeur Local Users/Passwords" enabled="true">
-        <stringProp name="filename">${ResourcesDirectory}\honeur-local-cas-users.csv</stringProp>
+        <stringProp name="filename">resources\honeur-local-cas-users.csv</stringProp>
         <stringProp name="fileEncoding"></stringProp>
         <stringProp name="variableNames">UserLocal,PasswordLocal</stringProp>
         <stringProp name="delimiter">,</stringProp>

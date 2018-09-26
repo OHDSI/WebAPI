@@ -178,13 +178,13 @@ WHERE repetitive_event = 0 {@allow_repeats == 'false'}?{ AND is_repeat = 0 };
 * Persist results
 */
 
-INSERT INTO @target_database_schema.pathway_analysis_events (pathway_analysis_generation_id, target_cohort_id, combo_id, subject_id, ordinal, cohort_start_date, cohort_end_date)
+INSERT INTO @target_database_schema.pathway_analysis_events (pathway_analysis_generation_id, target_cohort_id, subject_id, ordinal, combo_id, cohort_start_date, cohort_end_date)
 SELECT
   @generation_id as pathway_analysis_generation_id,
   @pathway_target_cohort_id as target_cohort_id,
-  combo_id,
   subject_id,
-  ROW_NUMBER() OVER (PARTITION BY subject_id ORDER BY cohort_start_date) AS ordinal,
+	ordinal,
+  combo_id,
   cohort_start_date,
   cohort_end_date
 FROM #non_repetetive_events

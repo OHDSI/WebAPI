@@ -165,6 +165,17 @@ public class PathwayController {
     }
 
     @GET
+    @Path("/generation/{generationId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public CommonGenerationDTO getPathwayGenerations(
+            @PathParam("generationId") final Long generationId
+    ) {
+
+        return conversionService.convert(pathwayService.getGeneration(generationId), CommonGenerationDTO.class);
+    }
+
+    @GET
     @Path("/generation/{generationId}/design")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)

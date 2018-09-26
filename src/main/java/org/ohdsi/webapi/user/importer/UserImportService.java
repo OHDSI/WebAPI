@@ -36,6 +36,9 @@ public class UserImportService {
   @Value("${security.ldap.url}")
   private String ldapUrl;
 
+  @Value("${security.ad.default.import.group}#{T(java.util.Collections).emptyList()}")
+  private List<String> defaultRoles;
+
   @GET
   @Path("user/providers")
   @Produces(MediaType.APPLICATION_JSON)
@@ -90,7 +93,7 @@ public class UserImportService {
   @Path("user/import")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response importUsers(List<AtlasUserRoles> users) {
-    userImporter.importUsers(users);
+    userImporter.importUsers(users, defaultRoles);
     return Response.ok().build();
   }
 

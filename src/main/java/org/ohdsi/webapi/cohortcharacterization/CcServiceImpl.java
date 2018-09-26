@@ -32,10 +32,7 @@ import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
-import org.ohdsi.webapi.service.AbstractDaoService;
-import org.ohdsi.webapi.service.CohortGenerationService;
-import org.ohdsi.webapi.service.FeatureExtractionService;
-import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.service.*;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
@@ -98,6 +95,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
     private CohortGenerationService cohortGenerationService;
     private AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository;
     private SourceService sourceService;
+    private ConceptSetService conceptSetService;
 
     private final JobRepository jobRepository;
 
@@ -119,7 +117,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
             final CohortGenerationService cohortGenerationService,
             final JobRepository jobRepository,
             final AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository,
-            final SourceService sourceService
+            final SourceService sourceService,
+            final ConceptSetService conceptSetService
     ) {
         this.repository = ccRepository;
         this.security = security;
@@ -138,6 +137,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         this.jobRepository = jobRepository;
         this.analysisGenerationInfoEntityRepository = analysisGenerationInfoEntityRepository;
         this.sourceService = sourceService;
+        this.conceptSetService = conceptSetService;
         SerializedCcToCcConverter.setConversionService(conversionService);
     }
     
@@ -347,8 +347,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
                 analysisService,
                 analysisGenerationInfoEntityRepository,
                 sourceService,
-                userRepository
-        );
+                userRepository,
+                conceptSetService);
 
         Step generateCohortFeaturesStep = stepBuilderFactory.get("cohortCharacterizations.generate")
                 .tasklet(generateCcTasklet)

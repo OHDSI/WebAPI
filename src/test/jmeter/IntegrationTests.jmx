@@ -116,7 +116,7 @@ vars.put(&quot;ResourcesDirectory&quot;, directory);</stringProp>
       </JSR223PostProcessor>
       <hashTree/>
       <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV Get Honeur Central Users/Passwords" enabled="true">
-        <stringProp name="filename">resources\honeur-central-cas-users.csv</stringProp>
+        <stringProp name="filename">${ConfigPath}\resources\honeur-central-cas-users.csv</stringProp>
         <stringProp name="fileEncoding"></stringProp>
         <stringProp name="variableNames">UserCentral,PasswordCentral</stringProp>
         <stringProp name="delimiter">,</stringProp>
@@ -128,7 +128,7 @@ vars.put(&quot;ResourcesDirectory&quot;, directory);</stringProp>
       </CSVDataSet>
       <hashTree/>
       <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV Get Honeur Local Users/Passwords" enabled="true">
-        <stringProp name="filename">resources\honeur-local-cas-users.csv</stringProp>
+        <stringProp name="filename">${ConfigPath}\resources\honeur-local-cas-users.csv</stringProp>
         <stringProp name="fileEncoding"></stringProp>
         <stringProp name="variableNames">UserLocal,PasswordLocal</stringProp>
         <stringProp name="delimiter">,</stringProp>
@@ -2217,6 +2217,13 @@ AssertionResult.setFailure(data.uuid != null || data.groupKey != null);
           </XPathExtractor>
           <hashTree/>
         </hashTree>
+        <DebugPostProcessor guiclass="TestBeanGUI" testclass="DebugPostProcessor" testname="Debug PostProcessor" enabled="true">
+          <boolProp name="displayJMeterProperties">false</boolProp>
+          <boolProp name="displayJMeterVariables">true</boolProp>
+          <boolProp name="displaySamplerProperties">true</boolProp>
+          <boolProp name="displaySystemProperties">false</boolProp>
+        </DebugPostProcessor>
+        <hashTree/>
       </hashTree>
       <TestFragmentController guiclass="TestFragmentControllerGui" testclass="TestFragmentController" testname="POST - Honeur Central Login Credentials" enabled="true"/>
       <hashTree>

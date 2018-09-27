@@ -116,7 +116,7 @@ vars.put(&quot;ResourcesDirectory&quot;, directory);</stringProp>
       </JSR223PostProcessor>
       <hashTree/>
       <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV Get Honeur Central Users/Passwords" enabled="true">
-        <stringProp name="filename">${ConfigPath}\resources\honeur-central-cas-users.csv</stringProp>
+        <stringProp name="filename">resources\honeur-central-cas-users.csv</stringProp>
         <stringProp name="fileEncoding"></stringProp>
         <stringProp name="variableNames">UserCentral,PasswordCentral</stringProp>
         <stringProp name="delimiter">,</stringProp>
@@ -128,7 +128,7 @@ vars.put(&quot;ResourcesDirectory&quot;, directory);</stringProp>
       </CSVDataSet>
       <hashTree/>
       <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV Get Honeur Local Users/Passwords" enabled="true">
-        <stringProp name="filename">${ConfigPath}\resources\honeur-local-cas-users.csv</stringProp>
+        <stringProp name="filename">resources\honeur-local-cas-users.csv</stringProp>
         <stringProp name="fileEncoding"></stringProp>
         <stringProp name="variableNames">UserLocal,PasswordLocal</stringProp>
         <stringProp name="delimiter">,</stringProp>

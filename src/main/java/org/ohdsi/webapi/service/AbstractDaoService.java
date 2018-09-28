@@ -163,7 +163,7 @@ public abstract class AbstractDaoService {
     KrbConfig krbConfig = new KrbConfig();
     try {
       krbConfig = kerberosService.runKinit(dto, RuntimeServiceMode.SINGLE, temporaryDir);
-    } catch (IOException e) {
+    } catch (RuntimeException | IOException e) {
       log.error("Login to kerberos failed", e);
     }
     try {

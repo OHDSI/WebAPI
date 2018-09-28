@@ -32,6 +32,7 @@ import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfo
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
 import org.ohdsi.webapi.service.ConceptSetService;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
@@ -246,7 +247,7 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
                     .filter(v -> v.getStatType() == CcResultType.DISTRIBUTION)
                     .map(v -> SqlRender.renderSql(customDistributionQueryWrapper,
                             CUSTOM_PARAMETERS,
-                            new String[] { String.valueOf(v.getId()), org.springframework.util.StringUtils.quote(v.getName()), String.valueOf(cohortId), String.valueOf(jobId), v.getDesign()} ))
+                            new String[] { String.valueOf(v.getId()), org.springframework.util.StringUtils.quote(v.getName()), String.valueOf(cohortId), String.valueOf(jobId), ((FeAnalysisWithStringEntity) v).getDesign()} ))
                     .collect(Collectors.toList());
         }
         
@@ -257,7 +258,7 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
                     .filter(v -> v.getStatType() == CcResultType.PREVALENCE)
                     .map(v -> SqlRender.renderSql(customPrevalenceQueryWrapper,
                             CUSTOM_PARAMETERS,
-                            new String[] { String.valueOf(v.getId()), org.springframework.util.StringUtils.quote(v.getName()), String.valueOf(cohortId), String.valueOf(jobId), v.getDesign()} ))
+                            new String[] { String.valueOf(v.getId()), org.springframework.util.StringUtils.quote(v.getName()), String.valueOf(cohortId), String.valueOf(jobId), ((FeAnalysisWithStringEntity) v).getDesign()} ))
                     .collect(Collectors.toList());
         }
 
@@ -390,7 +391,7 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
             cohortCharacterization.getFeatureAnalyses()
                     .stream()
                     .filter(FeAnalysisEntity::isPreset)
-                    .forEach(analysis -> defaultSettings.put(analysis.getDesign(), Boolean.TRUE));
+                    .forEach(analysis -> defaultSettings.put(((FeAnalysisWithStringEntity) analysis).getDesign(), Boolean.TRUE));
             
             return defaultSettings.toString();
         }

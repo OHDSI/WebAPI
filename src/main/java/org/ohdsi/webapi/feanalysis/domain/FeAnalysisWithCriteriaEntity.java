@@ -9,7 +9,7 @@ import javax.persistence.OneToMany;
 
 @Entity
 @DiscriminatorValue(value = "CRITERIA_SET")
-public class FeAnalysisWithCriteriaEntity extends FeAnalysisEntity {
+public class FeAnalysisWithCriteriaEntity extends FeAnalysisEntity<List<FeAnalysisCriteriaEntity>> {
     
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "featureAnalysis", cascade = CascadeType.ALL)
     private List<FeAnalysisCriteriaEntity> design;
@@ -27,7 +27,8 @@ public class FeAnalysisWithCriteriaEntity extends FeAnalysisEntity {
         return design;
     }
 
-    public void setDesign(final List<FeAnalysisCriteriaEntity> criterias) {
-        this.design = criterias;
+    @Override
+    public void setDesign(List<FeAnalysisCriteriaEntity> design) {
+        this.design = design;
     }
 }

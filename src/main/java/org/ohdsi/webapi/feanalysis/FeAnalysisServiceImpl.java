@@ -54,7 +54,7 @@ public class FeAnalysisServiceImpl implements FeAnalysisService {
     }
 
     @Override
-    public Optional<FeAnalysisEntity> findById(Long id) {
+    public Optional<FeAnalysisEntity> findById(Integer id) {
         return analysisRepository.findById(id);
     }
 
@@ -80,13 +80,13 @@ public class FeAnalysisServiceImpl implements FeAnalysisService {
     }
     
     @Override
-    public List<FeAnalysisEntity> findAllPresetAnalyses() {
-        return analysisRepository.findAllByType(StandardFeatureAnalysisType.PRESET);
+    public List<FeAnalysisWithStringEntity> findAllPresetAnalyses() {
+        return analysisRepository.findAllByType(StandardFeatureAnalysisType.PRESET).stream().map(a -> (FeAnalysisWithStringEntity) a).collect(Collectors.toList());
     }
 
     @Override
     @Transactional
-    public FeAnalysisEntity updateAnalysis(Long feAnalysisId, FeAnalysisEntity updatedEntity) {
+    public FeAnalysisEntity updateAnalysis(Integer feAnalysisId, FeAnalysisEntity updatedEntity) {
 
         FeAnalysisEntity savedEntity = findById(feAnalysisId).orElseThrow(NotFoundException::new);
         checkEntityLocked(savedEntity);
@@ -115,7 +115,7 @@ public class FeAnalysisServiceImpl implements FeAnalysisService {
     }
 
     private void checkEntityLocked(FeAnalysisEntity entity) {
-        if (entity.getLocked()){
+        if (entity.getLocked() == Boolean.TRUE) {
             throw new IllegalArgumentException(String.format("Feature analysis %s is locked.", entity.getName()));
         }
     }

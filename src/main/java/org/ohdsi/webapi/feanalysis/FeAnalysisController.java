@@ -2,7 +2,9 @@ package org.ohdsi.webapi.feanalysis;
 
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysis;
+import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
 import org.ohdsi.webapi.Pagination;
+import org.ohdsi.webapi.common.OptionDTO;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisShortDTO;
@@ -13,6 +15,8 @@ import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
+import java.util.List;
 
 @Path("/feature-analysis")
 @Controller
@@ -39,6 +43,19 @@ public class FeAnalysisController {
         return service.getPage(pageable).map(this::convertFeAnaysisToShortDto);
     }
 
+    @GET
+    @Path("/domains")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public List<OptionDTO> listDomains() {
+
+        List<OptionDTO> options = new ArrayList<>();
+        for(StandardFeatureAnalysisDomain enumEntry: StandardFeatureAnalysisDomain.values()) {
+            options.add(new OptionDTO(enumEntry.name(), enumEntry.getName()));
+        }
+        return options;
+    }
+
     @POST
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
@@ -52,7 +69,7 @@ public class FeAnalysisController {
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public FeAnalysisDTO updateAnalysis(@PathParam("id") final Long feAnalysisId, final FeAnalysisDTO dto) {
+    public FeAnalysisDTO updateAnalysis(@PathParam("id") final Integer feAnalysisId, final FeAnalysisDTO dto) {
         final FeAnalysisEntity updatedEntity = service.updateAnalysis(feAnalysisId, conversionService.convert(dto, FeAnalysisEntity.class));
         return convertFeAnalysisToDto(updatedEntity);
     }
@@ -60,7 +77,7 @@ public class FeAnalysisController {
     @DELETE
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public void deleteAnalysis(@PathParam("id") final Long feAnalysisId) {
+    public void deleteAnalysis(@PathParam("id") final Integer feAnalysisId) {
         final FeAnalysisEntity entity = service.findById(feAnalysisId).orElseThrow(NotFoundException::new);
         service.deleteAnalysis(entity);
     }
@@ -68,7 +85,7 @@ public class FeAnalysisController {
     @GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public FeAnalysisDTO getFeAnalysis(@PathParam("id") final Long feAnalysisId) {
+    public FeAnalysisDTO getFeAnalysis(@PathParam("id") final Integer feAnalysisId) {
         final FeAnalysisEntity feAnalysis = service.findById(feAnalysisId)
                 .orElseThrow(NotFoundException::new);
         return convertFeAnalysisToDto(feAnalysis);

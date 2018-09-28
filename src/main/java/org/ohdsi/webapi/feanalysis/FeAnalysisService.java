@@ -19,15 +19,15 @@ public interface FeAnalysisService {
 
     FeAnalysisEntity createAnalysis(FeAnalysisEntity analysis);
 
-    Optional<FeAnalysisEntity> findById(Long id);
+    Optional<FeAnalysisEntity> findById(Integer id);
 
     FeAnalysisWithCriteriaEntity createCriteriaAnalysis(FeAnalysisWithCriteriaEntity analysis);
 
     Set<FeAnalysisEntity> findByCohortCharacterization(CohortCharacterizationEntity cohortCharacterization);
 
-    List<FeAnalysisEntity> findAllPresetAnalyses();
+    List<FeAnalysisWithStringEntity> findAllPresetAnalyses();
 
-    FeAnalysisEntity updateAnalysis(Long feAnalysisId, FeAnalysisEntity convert);
+    FeAnalysisEntity updateAnalysis(Integer feAnalysisId, FeAnalysisEntity convert);
 
     void deleteAnalysis(FeAnalysisEntity entity);
 }

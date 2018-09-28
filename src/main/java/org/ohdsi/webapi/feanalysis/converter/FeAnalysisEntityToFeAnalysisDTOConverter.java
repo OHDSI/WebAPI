@@ -1,18 +1,15 @@
 package org.ohdsi.webapi.feanalysis.converter;
 
-import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisCriteriaDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.stream.Collectors;
 
 @Component
 public class FeAnalysisEntityToFeAnalysisDTOConverter extends BaseFeAnalysisEntityToFeAnalysisDTOConverter<FeAnalysisDTO> {
-    
-    @Autowired
-    private ConverterUtils converterUtils;
     
     @Override
     public FeAnalysisDTO convert(final FeAnalysisEntity source) {
@@ -22,14 +19,17 @@ public class FeAnalysisEntityToFeAnalysisDTOConverter extends BaseFeAnalysisEnti
     }
 
     @Override
-    protected FeAnalysisDTO getReturnObject() {
+    protected FeAnalysisDTO createResultObject() {
         return new FeAnalysisDTO();
     }
 
     private Object convertDesignToJson(final FeAnalysisEntity source) {
         switch (source.getType()) {
             case CRITERIA_SET:
-                return converterUtils.convertList(((FeAnalysisWithCriteriaEntity) source).getDesign(), FeAnalysisCriteriaDTO.class);
+                return ((FeAnalysisWithCriteriaEntity) source).getDesign()
+                        .stream()
+                        .map(c -> new FeAnalysisCriteriaDTO(c.getName(), c.getExpression()))
+                        .collect(Collectors.toList());
             default:
                 return source.getDesign();
         }

@@ -66,7 +66,7 @@ import static org.ohdsi.webapi.Constants.Params.*;
 
 @Service
 @Transactional
-@DependsOn({"ccExportDTOToCcEntityConverter", "cohortDTOToCohortDefinitionConverter", "feAnalysisDTOToFeAnalysisWithStringConverter"})
+@DependsOn({"ccExportDTOToCcEntityConverter", "cohortDTOToCohortDefinitionConverter", "feAnalysisDTOToFeAnalysisConverter"})
 public class CcServiceImpl extends AbstractDaoService implements CcService {
 
     private static final String GENERATION_NOT_FOUND_ERROR = "generation cannot be found by id %d";

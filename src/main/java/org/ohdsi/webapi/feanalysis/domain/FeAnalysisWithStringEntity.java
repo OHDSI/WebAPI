@@ -7,7 +7,7 @@ import org.hibernate.annotations.Type;
 
 @Entity
 @DiscriminatorValue("not null")
-public class FeAnalysisWithStringEntity extends FeAnalysisEntity {
+public class FeAnalysisWithStringEntity extends FeAnalysisEntity<String> {
     
     @Lob
     @Type(type = "org.hibernate.type.TextType")

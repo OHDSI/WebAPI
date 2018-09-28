@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 public class FeAnalysisEntityToFeAnalysisShortDTOConverter extends BaseFeAnalysisEntityToFeAnalysisDTOConverter<FeAnalysisShortDTO> {
 
   @Override
-  protected FeAnalysisShortDTO getReturnObject() {
+  protected FeAnalysisShortDTO createResultObject() {
     return new FeAnalysisShortDTO();
   }
 }

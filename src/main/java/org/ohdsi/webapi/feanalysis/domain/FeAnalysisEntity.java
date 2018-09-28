@@ -31,13 +31,12 @@ import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEnti
 @Table(name = "fe_analysis")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorFormula("type")
-public class 
-FeAnalysisEntity implements FeatureAnalysis, Comparable<FeAnalysisEntity> {
+public abstract class FeAnalysisEntity<T> implements FeatureAnalysis, Comparable<FeAnalysisEntity> {
 
     public FeAnalysisEntity() {
     }
 
-    public FeAnalysisEntity(final FeAnalysisEntity entityForCopy) {
+    public FeAnalysisEntity(final FeAnalysisEntity<T> entityForCopy) {
         this.id = entityForCopy.id;
         this.type = entityForCopy.type;
         this.name = entityForCopy.name;
@@ -109,12 +108,9 @@ FeAnalysisEntity implements FeatureAnalysis, Comparable<FeAnalysisEntity> {
     }
 
     @Override
-    public <T> T getDesign() {
-        return null;
-    }
+    public abstract T getDesign();
 
-    public <T> void setDesign(T design) {
-    }
+    public abstract void setDesign(T design);
     
     public boolean isPreset() {
         return this.type == StandardFeatureAnalysisType.PRESET;

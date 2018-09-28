@@ -6,6 +6,16 @@ public class FeAnalysisCriteriaDTO {
     private String name;
     private CriteriaGroup expression;
 
+    public FeAnalysisCriteriaDTO() {
+
+    }
+
+    public FeAnalysisCriteriaDTO(String name, CriteriaGroup expression) {
+
+        this.name = name;
+        this.expression = expression;
+    }
+
     public String getName() {
         return name;
     }

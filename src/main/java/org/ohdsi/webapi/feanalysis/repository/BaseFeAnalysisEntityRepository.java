@@ -10,8 +10,8 @@ import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.springframework.data.repository.NoRepositoryBean;
 
 @NoRepositoryBean
-public interface BaseFeAnalysisEntityRepository<T extends FeAnalysisEntity> extends EntityGraphJpaRepository<T, Long> {
+public interface BaseFeAnalysisEntityRepository<T extends FeAnalysisEntity> extends EntityGraphJpaRepository<T, Integer> {
     Set<T> findAllByCohortCharacterizations(CohortCharacterizationEntity cohortCharacterization);
     List<T> findAllByType(StandardFeatureAnalysisType preset);
-    Optional<T> findById(Long id);
+    Optional<T> findById(Integer id);
 }

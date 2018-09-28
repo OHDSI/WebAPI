@@ -643,7 +643,7 @@
     </dependency>
     <dependency>
       <groupId>com.odysseusinc</groupId>
-      <artifactId>krb-login</artifactId>
+      <artifactId>data-source-manager</artifactId>
       <version>${arachne.version}</version>
     </dependency>
     <dependency>

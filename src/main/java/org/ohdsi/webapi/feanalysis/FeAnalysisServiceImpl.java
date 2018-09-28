@@ -95,7 +95,10 @@ public class FeAnalysisServiceImpl implements FeAnalysisService {
         savedEntity.setDescr(updatedEntity.getDescr());
         savedEntity.setCohortCharacterizations(updatedEntity.getCohortCharacterizations());
         if (savedEntity instanceof FeAnalysisWithCriteriaEntity && updatedEntity instanceof FeAnalysisWithCriteriaEntity) {
-          removeFeAnalysisCriteriaEntities((FeAnalysisWithCriteriaEntity) savedEntity, (FeAnalysisWithCriteriaEntity) updatedEntity);
+          FeAnalysisWithCriteriaEntity updatedWithCriteriaEntity = (FeAnalysisWithCriteriaEntity) updatedEntity,
+                  savedWithCriteria = (FeAnalysisWithCriteriaEntity) savedEntity;
+          removeFeAnalysisCriteriaEntities(savedWithCriteria, updatedWithCriteriaEntity);
+          updatedWithCriteriaEntity.getDesign().forEach(criteria -> criteria.setFeatureAnalysis(savedWithCriteria));
         }
         savedEntity.setDesign(updatedEntity.getDesign());
         if (Objects.nonNull(updatedEntity.getDomain())) {

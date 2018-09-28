@@ -50,11 +50,7 @@ public class FeAnalysisServiceImpl implements FeAnalysisService {
     @Override
     @Transactional
     public FeAnalysisEntity createAnalysis(final FeAnalysisEntity analysis) {
-      if (analysis instanceof FeAnalysisWithCriteriaEntity) {
-        return createCriteriaAnalysis((FeAnalysisWithCriteriaEntity) analysis);
-      } else {
         return analysisRepository.save(analysis);
-      }
     }
 
     @Override

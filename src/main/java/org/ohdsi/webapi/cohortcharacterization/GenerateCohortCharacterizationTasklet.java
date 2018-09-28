@@ -29,6 +29,7 @@ import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortcharacterization.domain.AnalysisGenerationInfoEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfoEntityRepository;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
@@ -64,6 +65,8 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
     private static final String[] CUSTOM_PARAMETERS = {"analysisId", "analysisName", "cohortId", "jobId", "design"};
     private static final String[] RETRIEVING_PARAMETERS = {"features", "featureRefs", "analysisRefs", "cohortId", "executionId"};
 
+    private static final String PRIMARY_COHORT_EVENTS = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/primaryCohortEvents.sql");
+
     private volatile boolean stopped = false;
     private final long checkInterval = 1000L;
     
@@ -76,6 +79,7 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
     private final SourceService sourceService;
     private final UserRepository userRepository;
     private final ConceptSetService conceptSetService;
+    private final CohortExpressionQueryBuilder queryBuilder;
     
     public GenerateCohortCharacterizationTasklet(
             final JdbcTemplate jdbcTemplate,
@@ -95,6 +99,7 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
         this.userRepository = userRepository;
         this.conceptSetService = conceptSetService;
         this.taskExecutor = Executors.newSingleThreadExecutor();
+        this.queryBuilder = new CohortExpressionQueryBuilder();
     }
 
     private int[] doTask(ChunkContext chunkContext) {
@@ -272,7 +277,6 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
 
         private List<String> getQueriesForCodeset(List<FeAnalysisWithCriteriaEntity> analysesWithCriteria) {
 
-            CohortExpressionQueryBuilder queryBuilder = new CohortExpressionQueryBuilder();
             String codesetInsertsQuery = queryBuilder.getCodesetQuery(analysesWithCriteria.stream()
                     .map(FeAnalysisWithCriteriaEntity::getDesign)
                     .flatMap(Collection::stream)
@@ -284,9 +288,46 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
             return Collections.singletonList(codesetInsertsQuery);
         }
 
+        private Optional<String> getQueriesForPrimaryCohortEvents(final Integer cohortId) {
+
+            String query = PRIMARY_COHORT_EVENTS;
+            CohortDefinition cohort = cohortCharacterization.getCohortDefinitions().stream()
+                    .filter(cd -> Objects.equals(cd.getId(), cohortId))
+                    .findFirst().orElseThrow(IllegalArgumentException::new);
+            String primaryEventsQuery = queryBuilder.getPrimaryEventsQuery(cohort.getExpression().primaryCriteria);
+            query = StringUtils.replace(query, "@primaryEventsQuery", primaryEventsQuery);
+            String additionalQuery = getAdditionalCriteriaQuery(cohort.getExpression().additionalCriteria, "primary_events")
+//                    .map(q -> StringUtils.replace(q,"@indexId", "" + 0))
+                    .map(q -> "\nJOIN (\n" + q + ") AC on AC.person_id = pe.person_id and AC.event_id = pe.event_id\n")
+                    .orElse("");
+            query = StringUtils.replace(query, "@additionalCriteriaQuery", additionalQuery);
+            query = StringUtils.replace(query, "@QualifiedEventSort", (cohort.getExpression().qualifiedLimit.type != null &&
+                    cohort.getExpression().qualifiedLimit.type.equalsIgnoreCase("LAST")) ? "DESC" : "ASC");
+
+            if (cohort.getExpression().additionalCriteria != null
+                    && cohort.getExpression().qualifiedLimit.type != null
+                    && !cohort.getExpression().qualifiedLimit.type.equalsIgnoreCase("ALL"))
+            {
+                query = StringUtils.replace(query, "@QualifiedLimitFilter","WHERE QE.ordinal = 1");
+            }
+            else {
+                query = StringUtils.replace(query, "@QualifiedLimitFilter", "");
+            }
+
+            return Optional.of(query);
+        }
+
+        private Optional<String> getAdditionalCriteriaQuery(CriteriaGroup criteriaGroup, String eventsTable) {
+            String result = null;
+            if (Objects.nonNull(criteriaGroup) && !criteriaGroup.isEmpty()) {
+                result = queryBuilder.getCriteriaGroupQuery(criteriaGroup, eventsTable);
+                StringUtils.replace(result, "@indexId", "0");
+            }
+            return Optional.ofNullable(result);
+        }
+
         private List<String> getQueriesForCriteriaAnalyses(final Integer cohortId, List<FeAnalysisWithCriteriaEntity> analysesWithCriteria) {
 
-            CohortExpressionQueryBuilder queryBuilder = new CohortExpressionQueryBuilder();
             return analysesWithCriteria.stream()
                     .map(FeAnalysisWithCriteriaEntity::getDesign)
                     .flatMap(Collection::stream)
@@ -360,7 +401,8 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
             List<FeAnalysisWithCriteriaEntity> analysesWithCriteria = getFeAnalysesWithCriteria();
             if (!analysesWithCriteria.isEmpty()) {
                 getQueriesForCodeset(analysesWithCriteria).forEach(joiner::add);
-                getQueriesForCriteriaAnalyses(cohortDefinitionId, analysesWithCriteria).forEach(joiner::add);
+                getQueriesForPrimaryCohortEvents(cohortDefinitionId).ifPresent(joiner::add);
+//                getQueriesForCriteriaAnalyses(cohortDefinitionId, analysesWithCriteria).forEach(joiner::add);
             }
 
             joiner.add(jsonObject.getString("sqlCleanup"));

@@ -1,0 +1,3 @@
+ALTER SEQUENCE ${ohdsiSchema}.fe_analysis_sequence MINVALUE 0 MAXVALUE 2147483647;
+
+ALTER SEQUENCE ${ohdsiSchema}.fe_analysis_criteria_sequence RESTART WITH 1000 MINVALUE 0 MAXVALUE 2147483647;

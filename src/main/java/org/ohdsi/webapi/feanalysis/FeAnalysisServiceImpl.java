@@ -50,7 +50,11 @@ public class FeAnalysisServiceImpl implements FeAnalysisService {
     @Override
     @Transactional
     public FeAnalysisEntity createAnalysis(final FeAnalysisEntity analysis) {
+      if (analysis instanceof FeAnalysisWithCriteriaEntity) {
+        return createCriteriaAnalysis((FeAnalysisWithCriteriaEntity) analysis);
+      } else {
         return analysisRepository.save(analysis);
+      }
     }
 
     @Override
@@ -61,7 +65,9 @@ public class FeAnalysisServiceImpl implements FeAnalysisService {
     @Override
     @Transactional
     public FeAnalysisWithCriteriaEntity createCriteriaAnalysis(final FeAnalysisWithCriteriaEntity analysis) {
-        final FeAnalysisWithCriteriaEntity entityWithMainFields = analysisRepository.save(new FeAnalysisWithCriteriaEntity(analysis));
+        FeAnalysisWithCriteriaEntity newAnalysis = new FeAnalysisWithCriteriaEntity(analysis);
+        newAnalysis.setDesign(Collections.emptyList());
+        final FeAnalysisWithCriteriaEntity entityWithMainFields = analysisRepository.save(newAnalysis);
         final List<FeAnalysisCriteriaEntity> criteriaList = createCriteriaListForAnalysis(entityWithMainFields, analysis.getDesign());
         entityWithMainFields.setDesign(criteriaList);
         return entityWithMainFields;
@@ -92,6 +98,9 @@ public class FeAnalysisServiceImpl implements FeAnalysisService {
         checkEntityLocked(savedEntity);
         savedEntity.setDescr(updatedEntity.getDescr());
         savedEntity.setCohortCharacterizations(updatedEntity.getCohortCharacterizations());
+        if (savedEntity instanceof FeAnalysisWithCriteriaEntity && updatedEntity instanceof FeAnalysisWithCriteriaEntity) {
+          removeFeAnalysisCriteriaEntities((FeAnalysisWithCriteriaEntity) savedEntity, (FeAnalysisWithCriteriaEntity) updatedEntity);
+        }
         savedEntity.setDesign(updatedEntity.getDesign());
         if (Objects.nonNull(updatedEntity.getDomain())) {
             savedEntity.setDomain(updatedEntity.getDomain());
@@ -105,6 +114,14 @@ public class FeAnalysisServiceImpl implements FeAnalysisService {
             savedEntity.setType(updatedEntity.getType());
         }
         return analysisRepository.save(savedEntity);
+    }
+
+    private void removeFeAnalysisCriteriaEntities(FeAnalysisWithCriteriaEntity original, FeAnalysisWithCriteriaEntity updated) {
+
+      List<FeAnalysisCriteriaEntity> removed = original.getDesign().stream()
+              .filter(c -> updated.getDesign().stream().noneMatch(u -> Objects.equals(c.getId(), u.getId())))
+              .collect(Collectors.toList());
+      criteriaRepository.delete(removed);
     }
 
     @Override

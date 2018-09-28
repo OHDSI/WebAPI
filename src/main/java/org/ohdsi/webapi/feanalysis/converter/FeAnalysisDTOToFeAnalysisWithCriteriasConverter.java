@@ -1,11 +1,8 @@
 package org.ohdsi.webapi.feanalysis.converter;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.PostConstruct;
 
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisCriteriaDTO;
@@ -41,6 +38,7 @@ public class FeAnalysisDTOToFeAnalysisWithCriteriasConverter extends BaseFeAnaly
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException(e);
                     }
+                    criteriaEntity.setId(typifiedCriteria.getId());
                     criteriaEntity.setName(typifiedCriteria.getName());
                     result.add(criteriaEntity);
                 }

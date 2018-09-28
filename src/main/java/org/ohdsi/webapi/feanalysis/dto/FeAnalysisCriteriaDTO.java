@@ -3,6 +3,7 @@ package org.ohdsi.webapi.feanalysis.dto;
 import org.ohdsi.circe.cohortdefinition.CriteriaGroup;
 
 public class FeAnalysisCriteriaDTO {
+    private Long id;
     private String name;
     private CriteriaGroup expression;
 
@@ -10,10 +11,19 @@ public class FeAnalysisCriteriaDTO {
 
     }
 
-    public FeAnalysisCriteriaDTO(String name, CriteriaGroup expression) {
+    public FeAnalysisCriteriaDTO(Long id, String name, CriteriaGroup expression) {
 
+        this.id = id;
         this.name = name;
         this.expression = expression;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getName() {

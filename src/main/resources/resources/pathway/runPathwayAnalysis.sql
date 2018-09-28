@@ -9,7 +9,7 @@ WHERE pathway_analysis_generation_id = @generation_id AND target_cohort_id = @pa
 */
 
 IF OBJECT_ID('tempdb..#raw_events', 'U') IS NOT NULL
-DROP TABLE raw_events;
+DROP TABLE #raw_events;
 
 select id, event_cohort_index, subject_id, cohort_start_date, cohort_end_date
 INTO #raw_events
@@ -30,7 +30,7 @@ FROM (
 */
 
 IF OBJECT_ID('tempdb..#date_replacements', 'U') IS NOT NULL
-DROP TABLE date_replacements;
+DROP TABLE #date_replacements;
 
 WITH person_dates AS (
   SELECT subject_id, cohort_start_date cohort_date FROM #raw_events
@@ -62,7 +62,7 @@ WHERE cohort_date <> replacement_date;
 */
 
 IF OBJECT_ID('tempdb..#collapsed_dates_events', 'U') IS NOT NULL
-DROP TABLE collapsed_dates_events;
+DROP TABLE #collapsed_dates_events;
 
 SELECT
   event.id,
@@ -89,7 +89,7 @@ into
 */
 
 IF OBJECT_ID('tempdb..#split_overlapping_events', 'U') IS NOT NULL
-DROP TABLE split_overlapping_events;
+DROP TABLE #split_overlapping_events;
 
 SELECT
 	CASE WHEN ordinal < 3 THEN first.id ELSE second.id END as id,
@@ -131,7 +131,7 @@ CROSS JOIN (SELECT 1 ordinal UNION SELECT 2 UNION SELECT 3 UNION SELECT 4) multi
 */
 
 IF OBJECT_ID('tempdb..#combo_events', 'U') IS NOT NULL
-DROP TABLE combo_events;
+DROP TABLE #combo_events;
 
 WITH events AS (
   SELECT *
@@ -153,7 +153,7 @@ GROUP BY subject_id, cohort_start_date, cohort_end_date;
 */
 
 IF OBJECT_ID('tempdb..#non_repetetive_events', 'U') IS NOT NULL
-DROP TABLE non_repetetive_events;
+DROP TABLE #non_repetetive_events;
 
 SELECT
   ROW_NUMBER() OVER (PARTITION BY subject_id ORDER BY cohort_start_date) ordinal,

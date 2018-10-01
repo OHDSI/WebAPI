@@ -46,6 +46,11 @@ public class FeAnalysisDeserializer extends JsonDeserializer<FeAnalysisDTO> {
             dto.setDescription(description.textValue());    
         }
 
+        final JsonNode descr = node.get("descr");
+        if (descr != null) {
+            dto.setDescription(descr.textValue());
+        }
+
         final JsonNode id = node.get("id");
         if (id != null) {
             dto.setId(id.intValue());

@@ -347,8 +347,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
                 analysisService,
                 analysisGenerationInfoEntityRepository,
                 sourceService,
-                userRepository,
-                conceptSetService);
+                userRepository
+        );
 
         Step generateCohortFeaturesStep = stepBuilderFactory.get("cohortCharacterizations.generate")
                 .tasklet(generateCcTasklet)

@@ -145,11 +145,16 @@ public abstract class AtlasSecurity extends Security {
       // comparative cohort analysis (estimation)
       .addProtectedRestPath("/comparativecohortanalysis", "createPermissionsOnCreateEstimation")
       .addProtectedRestPath("/comparativecohortanalysis/*", "deletePermissionsOnDeleteEstimation")
+      .addProtectedRestPath("/estimation", "createPermissionsOnCreateEstimation")
+      .addProtectedRestPath("/estimation/*", "deletePermissionsOnDeleteEstimation")
 
       // population level prediction
       .addProtectedRestPath("/plp", "createPermissionsOnCreatePlp")
       .addProtectedRestPath("/plp/*/copy", "createPermissionsOnCopyPlp")
       .addProtectedRestPath("/plp/*", "deletePermissionsOnDeletePlp")
+      .addProtectedRestPath("/prediction", "createPermissionsOnCreatePlp")
+      .addProtectedRestPath("/prediction/*/copy", "createPermissionsOnCopyPlp")
+      .addProtectedRestPath("/prediction/*", "deletePermissionsOnDeletePlp")
 
       // cohort definition
       .addProtectedRestPath("/cohortdefinition", "createPermissionsOnCreateCohortDefinition")

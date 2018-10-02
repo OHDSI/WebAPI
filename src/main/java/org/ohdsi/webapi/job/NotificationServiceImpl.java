@@ -5,19 +5,20 @@ import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobInstance;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class NotificationServiceImpl implements NotificationService {
     private static final int MAX_SIZE = 20;
-    private static final List<Object> WHITE_LIST = Arrays.asList("generateCohort");
+    private static final List<Object> WHITE_LIST = new ArrayList<>();
 
     private final SearchableJobExecutionDao jobExecutionDao;
 
-    public NotificationServiceImpl(SearchableJobExecutionDao jobExecutionDao) {
+    public NotificationServiceImpl(SearchableJobExecutionDao jobExecutionDao, List<GeneratesNotification> whiteList) {
         this.jobExecutionDao = jobExecutionDao;
+        whiteList.forEach(g -> WHITE_LIST.add(g.getJobName()));
     }
 
     @Override

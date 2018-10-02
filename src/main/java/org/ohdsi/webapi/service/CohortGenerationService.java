@@ -3,6 +3,7 @@ package org.ohdsi.webapi.service;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.cohortdefinition.*;
 import org.ohdsi.webapi.cohortfeatures.GenerateCohortFeaturesTasklet;
+import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.source.Source;
@@ -27,7 +28,7 @@ import static org.ohdsi.webapi.Constants.GENERATE_COHORT;
 import static org.ohdsi.webapi.Constants.Params.*;
 
 @Component
-public class CohortGenerationService extends AbstractDaoService {
+public class CohortGenerationService extends AbstractDaoService implements GeneratesNotification {
 
 
   private static final String DEFAULT_COHORT_TABLE = "cohort";
@@ -177,4 +178,8 @@ public class CohortGenerationService extends AbstractDaoService {
     });
   }
 
+  @Override
+  public String getJobName() {
+    return GENERATE_COHORT;
+  }
 }

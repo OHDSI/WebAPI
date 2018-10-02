@@ -21,6 +21,11 @@ public class JobInstanceResource {
         this.instanceId = instanceId;
     }
     
+    public JobInstanceResource(final Long instanceId, final String name) {
+        this.instanceId = instanceId;
+        this.name = name;
+    }
+
     /**
      * @return the name
      */

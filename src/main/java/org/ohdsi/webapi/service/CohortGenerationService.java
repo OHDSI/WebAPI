@@ -182,4 +182,9 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
   public String getJobName() {
     return GENERATE_COHORT;
   }
+
+  @Override
+  public String getExecutinFoldingKey() {
+    return COHORT_DEFINITION_ID;
+  }
 }

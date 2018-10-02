@@ -217,7 +217,7 @@ public class PathwayController {
                             .stream()
                             .map(entry -> new PathwayPopulationEventDTO(entry.getKey(), entry.getValue()))
                             .collect(Collectors.toList());
-                    return new TargetCohortPathwaysDTO(cohortResults.getCohortId(), eventDTOs);
+                    return new TargetCohortPathwaysDTO(cohortResults.getCohortId(), cohortResults.getTargetCohortCount(), cohortResults.getTotalPathwaysCount(), eventDTOs);
                 })
                 .collect(Collectors.toList());
 

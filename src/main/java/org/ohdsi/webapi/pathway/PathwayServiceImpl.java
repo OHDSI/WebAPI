@@ -19,6 +19,7 @@ import org.ohdsi.webapi.pathway.domain.PathwayTargetCohort;
 import org.ohdsi.webapi.pathway.dto.internal.CohortPathways;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayCode;
+import org.ohdsi.webapi.pathway.dto.internal.PathwayGenerationStats;
 import org.ohdsi.webapi.pathway.dto.internal.PersonPathwayEvent;
 import org.ohdsi.webapi.pathway.repository.PathwayAnalysisEntityRepository;
 import org.ohdsi.webapi.pathway.repository.PathwayAnalysisGenerationRepository;
@@ -51,6 +52,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.function.Function;
@@ -364,10 +366,20 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
         PathwayAnalysisResult result = new PathwayAnalysisResult();
 
+        List<PathwayGenerationStats> targetCohortStatsList = queryGenerationStats(source, generationId);
+
         generation.getDesign().getTargetCohorts().forEach(tc -> {
 
             CohortPathways cohortPathways = new CohortPathways();
             cohortPathways.setCohortId(tc.getCohortDefinition().getId());
+
+            targetCohortStatsList.stream()
+                    .filter(s -> Objects.equals(s.getTargetCohortId(), cohortPathways.getCohortId()))
+                    .findFirst()
+                    .ifPresent(targetCohortStats -> {
+                        cohortPathways.setTargetCohortCount(targetCohortStats.getTargetCohortCount());
+                        cohortPathways.setTotalPathwaysCount(targetCohortStats.getPathwaysCount());
+                    });
 
             List<PersonPathwayEvent> events = queryGenerationResults(source, generationId, tc.getCohortDefinition().getId());
             events.forEach(e -> comboCodes.add(e.getComboId()));
@@ -420,6 +432,26 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
             event.setStartDate(rs.getDate("cohort_start_date"));
             event.setEndDate(rs.getDate("cohort_end_date"));
             return event;
+        });
+    }
+
+    private List<PathwayGenerationStats> queryGenerationStats(Source source, Long generationId) {
+
+        PreparedStatementRenderer pathwayStatsPsr = new PreparedStatementRenderer(
+                source,
+                "/resources/pathway/getStats.sql",
+                new String[]{"target_database_schema"},
+                new String[]{source.getTableQualifier(SourceDaimon.DaimonType.Results)},
+                new String[] { "generation_id" },
+                new Object[] { generationId }
+        );
+
+        return getSourceJdbcTemplate(source).query(pathwayStatsPsr.getSql(), pathwayStatsPsr.getSetter(), (rs, rowNum) -> {
+            PathwayGenerationStats stats = new PathwayGenerationStats();
+            stats.setTargetCohortId(rs.getInt("target_cohort_id"));
+            stats.setTargetCohortCount(rs.getInt("target_cohort_count"));
+            stats.setPathwaysCount(rs.getInt("pathways_count"));
+            return stats;
         });
     }
 

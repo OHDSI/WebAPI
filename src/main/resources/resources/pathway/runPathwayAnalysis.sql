@@ -188,4 +188,22 @@ SELECT
   cohort_start_date,
   cohort_end_date
 FROM #non_repetetive_events
-WHERE 1 = 1 {@max_depth != ''}?{ AND ordinal <= @max_depth }
+WHERE 1 = 1 {@max_depth != ''}?{ AND ordinal <= @max_depth };
+
+INSERT INTO @target_database_schema.pathway_analysis_stats (pathway_analysis_generation_id, target_cohort_id, target_cohort_count, pathways_count)
+SELECT
+  @generation_id as pathway_analysis_generation_id,
+  @pathway_target_cohort_id as target_cohort_id,
+  target_count.cnt AS target_cohort_count,
+  pathway_count.cnt AS pathways_count
+FROM (
+  SELECT COUNT(*) cnt
+  FROM @target_database_schema.@target_cohort_table
+  WHERE cohort_definition_id = @pathway_target_cohort_id
+) target_count,
+(
+  SELECT COUNT(DISTINCT subject_id) cnt
+  FROM @target_database_schema.pathway_analysis_events
+  WHERE pathway_analysis_generation_id = @generation_id
+  AND target_cohort_id = @pathway_target_cohort_id
+) pathway_count;

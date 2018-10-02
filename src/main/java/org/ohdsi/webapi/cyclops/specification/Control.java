@@ -161,6 +161,12 @@ public class Control {
   @JsonProperty("maxBoundCount")
   private BigDecimal maxBoundCount = new BigDecimal(5);
 
+  @JsonProperty("autoSearch")
+  private Boolean autoSearch = true;
+
+  @JsonProperty("algorithm")
+  private String algorithm = "ccd";
+
   @JsonProperty("attr_class")
   private String attrClass = "cyclopsControl";
 
@@ -524,6 +530,42 @@ public class Control {
     this.maxBoundCount = maxBoundCount;
   }
 
+  public Control autoSearch(Boolean autoSearch) {
+    this.autoSearch = autoSearch;
+    return this;
+  }
+
+  /**
+   * The auto search setting 
+   * @return autoSearch
+   **/
+  @JsonProperty("autoSearch")
+  public Boolean isisAutoSearch() {
+    return autoSearch;
+  }
+
+  public void setAutoSearch(Boolean autoSearch) {
+    this.autoSearch = autoSearch;
+  }
+
+  public Control algorithm(String algorithm) {
+    this.algorithm = algorithm;
+    return this;
+  }
+
+  /**
+   * The algorithm setting 
+   * @return algorithm
+   **/
+  @JsonProperty("algorithm")
+  public String getAlgorithm() {
+    return algorithm;
+  }
+
+  public void setAlgorithm(String algorithm) {
+    this.algorithm = algorithm;
+  }
+
   public Control attrClass(String attrClass) {
     this.attrClass = attrClass;
     return this;
@@ -572,12 +614,14 @@ public class Control {
         Objects.equals(this.selectorType, control.selectorType) &&
         Objects.equals(this.initialBound, control.initialBound) &&
         Objects.equals(this.maxBoundCount, control.maxBoundCount) &&
+        Objects.equals(this.autoSearch, control.autoSearch) &&
+        Objects.equals(this.algorithm, control.algorithm) &&
         Objects.equals(this.attrClass, control.attrClass);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(maxIterations, tolerance, convergenceType, cvType, fold, lowerLimit, upperLimit, gridSteps, cvRepetitions, minCVData, noiseLevel, threads, seed, resetCoefficients, startingVariance, useKKTSwindle, tuneSwindle, selectorType, initialBound, maxBoundCount, attrClass);
+    return Objects.hash(maxIterations, tolerance, convergenceType, cvType, fold, lowerLimit, upperLimit, gridSteps, cvRepetitions, minCVData, noiseLevel, threads, seed, resetCoefficients, startingVariance, useKKTSwindle, tuneSwindle, selectorType, initialBound, maxBoundCount, autoSearch, algorithm, attrClass);
   }
 
 
@@ -606,6 +650,8 @@ public class Control {
     sb.append("    selectorType: ").append(toIndentedString(selectorType)).append("\n");
     sb.append("    initialBound: ").append(toIndentedString(initialBound)).append("\n");
     sb.append("    maxBoundCount: ").append(toIndentedString(maxBoundCount)).append("\n");
+    sb.append("    autoSearch: ").append(toIndentedString(autoSearch)).append("\n");
+    sb.append("    algorithm: ").append(toIndentedString(algorithm)).append("\n");
     sb.append("    attrClass: ").append(toIndentedString(attrClass)).append("\n");
     sb.append("}");
     return sb.toString();

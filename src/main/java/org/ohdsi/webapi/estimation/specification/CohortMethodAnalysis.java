@@ -61,9 +61,6 @@ public class CohortMethodAnalysis extends Analysis {
   @JsonProperty("stratifyByPsAndCovariatesArgs")
   private StratifyByPsAndCovariatesArgs stratifyByPsAndCovariatesArgs = null;
 
-  @JsonProperty("computeCovariateBalance")
-  private String computeCovariateBalance = "false";
-
   @JsonProperty("fitOutcomeModel")
   private Boolean fitOutcomeModel = false;
 
@@ -397,24 +394,6 @@ public class CohortMethodAnalysis extends Analysis {
     this.stratifyByPsAndCovariatesArgs = stratifyByPsAndCovariatesArgs;
   }
 
-  public CohortMethodAnalysis computeCovariateBalance(String computeCovariateBalance) {
-    this.computeCovariateBalance = computeCovariateBalance;
-    return this;
-  }
-
-  /**
-   * Should the computeCovariateBalance function be used in this analysis? 
-   * @return computeCovariateBalance
-   **/
-  @JsonProperty("computeCovariateBalance")
-  public String getComputeCovariateBalance() {
-    return computeCovariateBalance;
-  }
-
-  public void setComputeCovariateBalance(String computeCovariateBalance) {
-    this.computeCovariateBalance = computeCovariateBalance;
-  }
-
   public CohortMethodAnalysis fitOutcomeModel(Boolean fitOutcomeModel) {
     this.fitOutcomeModel = fitOutcomeModel;
     return this;
@@ -497,7 +476,6 @@ public class CohortMethodAnalysis extends Analysis {
         Objects.equals(this.stratifyByPsArgs, cohortMethodAnalysis.stratifyByPsArgs) &&
         Objects.equals(this.stratifyByPsAndCovariates, cohortMethodAnalysis.stratifyByPsAndCovariates) &&
         Objects.equals(this.stratifyByPsAndCovariatesArgs, cohortMethodAnalysis.stratifyByPsAndCovariatesArgs) &&
-        Objects.equals(this.computeCovariateBalance, cohortMethodAnalysis.computeCovariateBalance) &&
         Objects.equals(this.fitOutcomeModel, cohortMethodAnalysis.fitOutcomeModel) &&
         Objects.equals(this.fitOutcomeModelArgs, cohortMethodAnalysis.fitOutcomeModelArgs) &&
         Objects.equals(this.attrClass, cohortMethodAnalysis.attrClass) &&
@@ -506,7 +484,7 @@ public class CohortMethodAnalysis extends Analysis {
 
   @Override
   public int hashCode() {
-    return Objects.hash(targetType, comparatorType, getDbCohortMethodDataArgs, createStudyPopArgs, createPs, createPsArgs, trimByPs, trimByPsArgs, trimByPsToEquipoise, trimByPsToEquipoiseArgs, matchOnPs, matchOnPsArgs, matchOnPsAndCovariates, matchOnPsAndCovariatesArgs, stratifyByPs, stratifyByPsArgs, stratifyByPsAndCovariates, stratifyByPsAndCovariatesArgs, computeCovariateBalance, fitOutcomeModel, fitOutcomeModelArgs, attrClass, super.hashCode());
+    return Objects.hash(targetType, comparatorType, getDbCohortMethodDataArgs, createStudyPopArgs, createPs, createPsArgs, trimByPs, trimByPsArgs, trimByPsToEquipoise, trimByPsToEquipoiseArgs, matchOnPs, matchOnPsArgs, matchOnPsAndCovariates, matchOnPsAndCovariatesArgs, stratifyByPs, stratifyByPsArgs, stratifyByPsAndCovariates, stratifyByPsAndCovariatesArgs, fitOutcomeModel, fitOutcomeModelArgs, attrClass, super.hashCode());
   }
 
 
@@ -533,7 +511,6 @@ public class CohortMethodAnalysis extends Analysis {
     sb.append("    stratifyByPsArgs: ").append(toIndentedString(stratifyByPsArgs)).append("\n");
     sb.append("    stratifyByPsAndCovariates: ").append(toIndentedString(stratifyByPsAndCovariates)).append("\n");
     sb.append("    stratifyByPsAndCovariatesArgs: ").append(toIndentedString(stratifyByPsAndCovariatesArgs)).append("\n");
-    sb.append("    computeCovariateBalance: ").append(toIndentedString(computeCovariateBalance)).append("\n");
     sb.append("    fitOutcomeModel: ").append(toIndentedString(fitOutcomeModel)).append("\n");
     sb.append("    fitOutcomeModelArgs: ").append(toIndentedString(fitOutcomeModelArgs)).append("\n");
     sb.append("    attrClass: ").append(toIndentedString(attrClass)).append("\n");

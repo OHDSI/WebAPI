@@ -263,8 +263,7 @@ public class EstimationService extends AbstractDaoService {
         if (target == null) {
             target = "package";
         }
-
-        //String studySpecs = new String(Files.readAllBytes(Paths.get("C:\\Git\\anthonysena\\HydraTestApp\\src\\main\\java\\org\\anthonysena\\hydratestapp\\ExampleStudySpecs.json")));
+        
         EstimationAnalysis analysis = this.exportAnalysis(id);
         String studySpecs = Utils.serialize(analysis);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -275,7 +274,7 @@ public class EstimationService extends AbstractDaoService {
         Response response = Response
                 .ok(baos)
                 .type(MediaType.APPLICATION_OCTET_STREAM)
-                .header("Content-Disposition", String.format("attachment; filename=\"estimation_%d_export.zip\"", 1))
+                .header("Content-Disposition", String.format("attachment; filename=\"estimation_%d.zip\"", id))
                 .build();
         
         return response;

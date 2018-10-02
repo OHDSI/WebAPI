@@ -3,7 +3,7 @@ package org.ohdsi.webapi.prediction.specification;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class MultilayerPerceptionModelSettings {
+public class MLPSettings {
   @JsonProperty("size")
   private Integer size = 4;
 
@@ -13,7 +13,7 @@ public class MultilayerPerceptionModelSettings {
   @JsonProperty("seed")
   private Float seed = null;
 
-  public MultilayerPerceptionModelSettings size(Integer size) {
+  public MLPSettings size(Integer size) {
     this.size = size;
     return this;
   }
@@ -31,7 +31,7 @@ public class MultilayerPerceptionModelSettings {
     this.size = size;
   }
 
-  public MultilayerPerceptionModelSettings alpha(Float alpha) {
+  public MLPSettings alpha(Float alpha) {
     this.alpha = alpha;
     return this;
   }
@@ -49,7 +49,7 @@ public class MultilayerPerceptionModelSettings {
     this.alpha = alpha;
   }
 
-  public MultilayerPerceptionModelSettings seed(Float seed) {
+  public MLPSettings seed(Float seed) {
     this.seed = seed;
     return this;
   }
@@ -76,7 +76,7 @@ public class MultilayerPerceptionModelSettings {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    MultilayerPerceptionModelSettings multilayerPerceptionModel = (MultilayerPerceptionModelSettings) o;
+    MLPSettings multilayerPerceptionModel = (MLPSettings) o;
     return Objects.equals(this.size, multilayerPerceptionModel.size) &&
         Objects.equals(this.alpha, multilayerPerceptionModel.alpha) &&
         Objects.equals(this.seed, multilayerPerceptionModel.seed);

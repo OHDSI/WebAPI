@@ -3,14 +3,14 @@ package org.ohdsi.webapi.prediction.specification;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class KNearestNeighborsSettings {
+public class KNNSettings {
   @JsonProperty("k")
   private Integer k = 1000;
 
   @JsonProperty("indexFolder")
   private String indexFolder = null;
 
-  public KNearestNeighborsSettings k(Integer k) {
+  public KNNSettings k(Integer k) {
     this.k = k;
     return this;
   }
@@ -28,7 +28,7 @@ public class KNearestNeighborsSettings {
     this.k = k;
   }
 
-  public KNearestNeighborsSettings indexFolder(String indexFolder) {
+  public KNNSettings indexFolder(String indexFolder) {
     this.indexFolder = indexFolder;
     return this;
   }
@@ -55,7 +55,7 @@ public class KNearestNeighborsSettings {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    KNearestNeighborsSettings knearestNeighbors = (KNearestNeighborsSettings) o;
+    KNNSettings knearestNeighbors = (KNNSettings) o;
     return Objects.equals(this.k, knearestNeighbors.k) &&
         Objects.equals(this.indexFolder, knearestNeighbors.indexFolder);
   }

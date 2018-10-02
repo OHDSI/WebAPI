@@ -130,7 +130,8 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Autowired
   private CohortGenerationService cohortGenerationService;
 
-  private JobRepository jobRepository;
+  @Autowired
+  private JobService jobService;
 
 	@PersistenceContext
 	protected EntityManager entityManager;
@@ -506,26 +507,8 @@ public class CohortDefinitionService extends AbstractDaoService {
 
     cohortGenerationService.getJobExecution(source, id)
             .ifPresent(jobExecution -> {
-              try {
-                Job job = cohortGenerationService.getRunningJob(jobExecution.getJobId());
-                if (Objects.nonNull(job)) {
-                  jobExecution.getStepExecutions().stream()
-                          .filter(step -> step.getStatus().isRunning())
-                          .forEach(stepExec -> {
-                            Step step = ((StepLocator) job).getStep(stepExec.getStepName());
-                            if (step instanceof TaskletStep) {
-                              Tasklet tasklet = ((TaskletStep) step).getTasklet();
-                              if (tasklet instanceof StoppableTasklet) {
-                                StepSynchronizationManager.register(stepExec);
-                                ((StoppableTasklet) tasklet).stop();
-                                StepSynchronizationManager.release();
-                              }
-                            }
-                          });
-                }
-                jobOperator.stop(jobExecution.getJobId());
-              } catch (NoSuchJobExecutionException | JobExecutionNotRunningException ignored) {
-              }
+              Job job = cohortGenerationService.getRunningJob(jobExecution.getJobId());
+              jobService.stopJob(jobExecution, job);
             });
     return Response.status(Response.Status.OK).build();
   }

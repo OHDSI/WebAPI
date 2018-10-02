@@ -28,7 +28,7 @@ public class FeAnalysisEntityToFeAnalysisDTOConverter extends BaseFeAnalysisEnti
             case CRITERIA_SET:
                 return ((FeAnalysisWithCriteriaEntity) source).getDesign()
                         .stream()
-                        .map(c -> new FeAnalysisCriteriaDTO(c.getId(), c.getName(), c.getExpression()))
+                        .map(c -> new FeAnalysisCriteriaDTO(c.getId(), c.getName(), c.getExpression(), c.getConceptSets()))
                         .collect(Collectors.toList());
             default:
                 return source.getDesign();

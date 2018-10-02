@@ -35,6 +35,7 @@ public class FeAnalysisDTOToFeAnalysisWithCriteriasConverter extends BaseFeAnaly
                     final FeAnalysisCriteriaEntity criteriaEntity = new FeAnalysisCriteriaEntity();
                     try {
                         criteriaEntity.setExpressionString(Utils.serialize(typifiedCriteria.getExpression()));
+                        criteriaEntity.setConceptsetsString(Utils.serialize(typifiedCriteria.getConceptSets()));
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException(e);
                     }

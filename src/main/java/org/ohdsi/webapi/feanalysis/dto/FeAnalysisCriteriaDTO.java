@@ -1,21 +1,26 @@
 package org.ohdsi.webapi.feanalysis.dto;
 
+import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.circe.cohortdefinition.CriteriaGroup;
+
+import java.util.List;
 
 public class FeAnalysisCriteriaDTO {
     private Long id;
     private String name;
     private CriteriaGroup expression;
+    private List<ConceptSet> conceptSets;
 
     public FeAnalysisCriteriaDTO() {
 
     }
 
-    public FeAnalysisCriteriaDTO(Long id, String name, CriteriaGroup expression) {
+    public FeAnalysisCriteriaDTO(Long id, String name, CriteriaGroup expression, List<ConceptSet> conceptSets) {
 
         this.id = id;
         this.name = name;
         this.expression = expression;
+        this.conceptSets = conceptSets;
     }
 
     public Long getId() {
@@ -40,5 +45,13 @@ public class FeAnalysisCriteriaDTO {
 
     public void setExpression(final CriteriaGroup expression) {
         this.expression = expression;
+    }
+
+    public List<ConceptSet> getConceptSets() {
+        return conceptSets;
+    }
+
+    public void setConceptSets(List<ConceptSet> conceptSets) {
+        this.conceptSets = conceptSets;
     }
 }

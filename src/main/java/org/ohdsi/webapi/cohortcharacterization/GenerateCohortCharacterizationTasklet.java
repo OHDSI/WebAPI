@@ -15,8 +15,13 @@
  */
 package org.ohdsi.webapi.cohortcharacterization;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
@@ -36,7 +41,6 @@ import org.ohdsi.webapi.feanalysis.domain.FeAnalysisCriteriaEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
-import org.ohdsi.webapi.service.ConceptSetService;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
@@ -55,11 +59,11 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.Params.*;
@@ -116,9 +120,98 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
         this.transactionTemplate.getTransactionManager().commit(initStatus);
     }
 
-    @FunctionalInterface
-    interface CriteriaAdaptor<T extends Criteria> {
-        Integer getConceptSetId(T criteria);
+    private class CohortExpressionBuilder {
+        private String json;
+        private int conceptSetIndex;
+        private ObjectMapper objectMapper = new ObjectMapper();
+
+        CohortExpressionBuilder(CohortDefinition cohortDefinition, FeAnalysisCriteriaEntity feature) throws IOException {
+
+            objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.PUBLIC_ONLY);
+            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            objectMapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
+            json = objectMapper.writeValueAsString(cohortDefinition.getExpression());
+            initConceptSets(feature);
+        }
+
+        private void initConceptSets(FeAnalysisCriteriaEntity feature) throws IOException {
+
+            CohortExpression expression = objectMapper.readValue(this.json, CohortExpression.class);
+            this.conceptSetIndex = expression.conceptSets.length;
+            List<org.ohdsi.circe.cohortdefinition.ConceptSet> conceptSets = new ArrayList<>(Arrays.asList(expression.conceptSets));
+            conceptSets.addAll(feature.getConceptSets().stream()
+                    .map(this::cloneConceptSet)
+                    .peek(conceptSet -> conceptSet.id += conceptSetIndex)
+                    .collect(Collectors.toList()));
+            expression.conceptSets = conceptSets.toArray(new org.ohdsi.circe.cohortdefinition.ConceptSet[0]);
+            this.json = objectMapper.writeValueAsString(expression);
+        }
+
+        private org.ohdsi.circe.cohortdefinition.ConceptSet cloneConceptSet(org.ohdsi.circe.cohortdefinition.ConceptSet conceptSet) {
+            org.ohdsi.circe.cohortdefinition.ConceptSet result = new org.ohdsi.circe.cohortdefinition.ConceptSet();
+            result.id = conceptSet.id;
+            result.name = conceptSet.name;
+            result.expression = conceptSet.expression;
+            return result;
+        }
+
+        CohortExpression withCriteria(CorelatedCriteria criteria) {
+
+            try {
+                CohortExpression expression = objectMapper.readValue(json, CohortExpression.class);
+                CriteriaGroup group = newCriteriaGroup();
+                CorelatedCriteria copy = copy(criteria, CorelatedCriteria.class);
+                mapCodesetId(copy.criteria);
+                group.criteriaList = new CorelatedCriteria[]{copy};
+
+                expression.inclusionRules.add(newRule(group));
+                return expression;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        CohortExpression withCriteria(DemographicCriteria criteria) {
+
+            try {
+                CohortExpression expression = objectMapper.readValue(json, CohortExpression.class);
+                DemographicCriteria copy;
+                copy = copy(criteria, DemographicCriteria.class);
+                CriteriaGroup group = newCriteriaGroup();
+                group.demographicCriteriaList = new DemographicCriteria[]{copy};
+
+                expression.inclusionRules.add(newRule(group));
+                return expression;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        private <T> T copy(T object, Class<T> objectClass) throws IOException {
+            final String json = objectMapper.writeValueAsString(object);
+            return objectMapper.readValue(json, objectClass);
+        }
+
+        private void mapCodesetId(Criteria criteria) throws IllegalAccessException {
+            if (criteria instanceof ObservationPeriod || criteria instanceof PayerPlanPeriod) {
+                return;
+            }
+            Integer codesetId = (Integer) FieldUtils.readDeclaredField(criteria, "codesetId");
+            FieldUtils.writeDeclaredField(criteria, "codesetId", codesetId + conceptSetIndex);
+        }
+
+        private InclusionRule newRule(CriteriaGroup group) {
+            InclusionRule rule = new InclusionRule();
+            rule.expression = group;
+            return rule;
+        }
+
+        private CriteriaGroup newCriteriaGroup() {
+            CriteriaGroup group = new CriteriaGroup();
+            group.type = "ALL";
+            return group;
+        }
     }
 
     private class CcTask {
@@ -282,31 +375,31 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
         private List<String> getCohortWithCriteriaQueries(CohortDefinition cohortDefinition, FeAnalysisWithCriteriaEntity analysis, FeAnalysisCriteriaEntity feature) {
 
             try {
-                StringWriter writer = new StringWriter();
-                new ObjectMapper().writeValue(writer, cohortDefinition.getExpression());
-                String json = writer.toString();
+                CohortExpressionBuilder builder = new CohortExpressionBuilder(cohortDefinition, feature);
                 CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = createDefaultOptions(cohortDefinition.getId());
-                return Arrays.stream(feature.getExpression().demographicCriteriaList)
-                        .map(criteria -> {
-                            options.generateStats = true;
-                            options.targetTable = options.resultSchema + ".cohort";
-                            CohortExpression expr = CohortExpression.fromJson(json);
-                            CriteriaGroup group = new CriteriaGroup();
-                            group.type = "ALL";
-                            group.criteriaList = new CorelatedCriteria[0];
-                            group.groups = new CriteriaGroup[0];
-                            group.demographicCriteriaList = new DemographicCriteria[] { criteria };
+                options.generateStats = true;
+                options.targetTable = options.resultSchema + ".cohort";
+                List<String> queries = new ArrayList<>();
+                CriteriaGroup expression = feature.getExpression();
 
-                            InclusionRule rule = new InclusionRule();
-                            rule.expression = group;
-                            expr.inclusionRules.add(rule);
+                Function<CohortExpression, List<String>> expressionQueries = (expr) -> {
+                    String exprQuery = queryBuilder.buildExpressionQuery(expr, options);
+                    String statsQuery = getCriteriaStatsQuery(cohortDefinition, analysis, feature);
+                    return Arrays.asList(exprQuery, statsQuery);
+                };
 
-                            String exprQuery = queryBuilder.buildExpressionQuery(expr, options);
-                            String statsQuery = getCriteriaStatsQuery(cohortDefinition, analysis, feature);
-                            return Arrays.asList(exprQuery, statsQuery);
-                        }).flatMap(Collection::stream)
-                        .collect(Collectors.toList());
+                queries.addAll(Arrays.stream(expression.demographicCriteriaList)
+                        .map(builder::withCriteria)
+                        .map(expressionQueries)
+                        .flatMap(Collection::stream)
+                        .collect(Collectors.toList()));
 
+                queries.addAll(Arrays.stream(expression.criteriaList)
+                        .map(builder::withCriteria)
+                        .map(expressionQueries)
+                        .flatMap(Collection::stream)
+                        .collect(Collectors.toList()));
+                return queries;
             }catch (IOException e){
                 throw new RuntimeException(e);
             }

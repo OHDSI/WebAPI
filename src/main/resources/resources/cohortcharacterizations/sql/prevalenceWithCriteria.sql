@@ -16,7 +16,11 @@ from (select @covariateId as covariate_id,
         '@analysisName' as analysis_name,
         @conceptId as concept_id,
         final_count as sum_value,
-        (final_count * 1.0 / base_count * 1.0) as percentage_value from @results_database_schema.cohort_summary_stats
+        case
+          when base_count > 0 then (final_count * 1.0 / base_count * 1.0)
+          else 0.0
+        end as percentage_value
+    from @results_database_schema.cohort_summary_stats
     where
         cohort_definition_id = @cohortId
 ) f;

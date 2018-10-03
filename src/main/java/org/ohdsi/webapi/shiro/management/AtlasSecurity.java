@@ -204,6 +204,7 @@ public abstract class AtlasSecurity extends Security {
       .addProtectedRestPath("/pathway-analysis/*/generation/*")
       .addProtectedRestPath("/pathway-analysis/*/generation")
       .addProtectedRestPath("/pathway-analysis/generation/*")
+      .addProtectedRestPath("/pathway-analysis/generation/*/design")
       .addProtectedRestPath("/pathway-analysis/generation/*/result")
       .addProtectedRestPath("/pathway-analysis/*/export")
 

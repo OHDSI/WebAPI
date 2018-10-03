@@ -56,6 +56,7 @@ VALUES
   (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'pathway-analysis:*:generation:get', 'Get Pathways Analysis generations list'),
   (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'pathway-analysis:generation:*:get', 'Get Pathways Analysis generation instance'),
   (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'pathway-analysis:generation:*:result:get', 'Get Pathways Analysis generation results'),
+  (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'pathway-analysis:generation:*:design:get', 'Get Pathways Analysis generation design'),
   (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'pathway-analysis:*:export:get', 'Export Pathways Analysis');
 
 INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
@@ -69,6 +70,7 @@ WHERE sp."value" IN (
   'pathway-analysis:*:generation:get',
   'pathway-analysis:generation:*:get',
   'pathway-analysis:generation:*:result:get',
+  'pathway-analysis:generation:*:design:get',
   'pathway-analysis:*:export:get'
 )
 AND sr.name IN ('Atlas users');

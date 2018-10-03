@@ -63,7 +63,6 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.Params.*;
@@ -74,6 +73,8 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
     private static final String[] RETRIEVING_PARAMETERS = {"features", "featureRefs", "analysisRefs", "cohortId", "executionId"};
 
     private static final String COHORT_STATS_QUERY = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/prevalenceWithCriteria.sql");
+    private static final String CREATE_COHORT_SQL = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/createCohortTable.sql");
+    private static final String DROP_TABLE_SQL = "DROP TABLE @results_database_schema.@target_table;";
 
     private volatile boolean stopped = false;
     private final long checkInterval = 1000L;
@@ -140,10 +141,13 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
             CohortExpression expression = objectMapper.readValue(this.json, CohortExpression.class);
             this.conceptSetIndex = expression.conceptSets.length;
             List<org.ohdsi.circe.cohortdefinition.ConceptSet> conceptSets = new ArrayList<>(Arrays.asList(expression.conceptSets));
-            conceptSets.addAll(feature.getConceptSets().stream()
-                    .map(this::cloneConceptSet)
-                    .peek(conceptSet -> conceptSet.id += conceptSetIndex)
-                    .collect(Collectors.toList()));
+            List<ConceptSet> featureConceptSets = feature.getConceptSets();
+            if (Objects.nonNull(featureConceptSets)) {
+                conceptSets.addAll(feature.getConceptSets().stream()
+                        .map(this::cloneConceptSet)
+                        .peek(conceptSet -> conceptSet.id += conceptSetIndex)
+                        .collect(Collectors.toList()));
+            }
             expression.conceptSets = conceptSets.toArray(new org.ohdsi.circe.cohortdefinition.ConceptSet[0]);
             this.json = objectMapper.writeValueAsString(expression);
         }
@@ -156,34 +160,17 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
             return result;
         }
 
-        CohortExpression withCriteria(CorelatedCriteria criteria) {
-
-            try {
+        CohortExpression withCriteria(CriteriaGroup group) {
+            try{
                 CohortExpression expression = objectMapper.readValue(json, CohortExpression.class);
-                CriteriaGroup group = newCriteriaGroup();
-                CorelatedCriteria copy = copy(criteria, CorelatedCriteria.class);
-                mapCodesetId(copy.criteria);
-                group.criteriaList = new CorelatedCriteria[]{copy};
+                CriteriaGroup copy = copy(group, CriteriaGroup.class);
+                Arrays.stream(copy.criteriaList)
+                        .map(cc -> cc.criteria)
+                        .forEach(this::mapCodesetId);
 
-                expression.inclusionRules.add(newRule(group));
+                expression.inclusionRules.add(newRule(copy));
                 return expression;
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        CohortExpression withCriteria(DemographicCriteria criteria) {
-
-            try {
-                CohortExpression expression = objectMapper.readValue(json, CohortExpression.class);
-                DemographicCriteria copy;
-                copy = copy(criteria, DemographicCriteria.class);
-                CriteriaGroup group = newCriteriaGroup();
-                group.demographicCriteriaList = new DemographicCriteria[]{copy};
-
-                expression.inclusionRules.add(newRule(group));
-                return expression;
-            } catch (Exception e) {
+            }catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
@@ -193,12 +180,16 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
             return objectMapper.readValue(json, objectClass);
         }
 
-        private void mapCodesetId(Criteria criteria) throws IllegalAccessException {
+        private void mapCodesetId(Criteria criteria) {
             if (criteria instanceof ObservationPeriod || criteria instanceof PayerPlanPeriod) {
                 return;
             }
-            Integer codesetId = (Integer) FieldUtils.readDeclaredField(criteria, "codesetId");
-            FieldUtils.writeDeclaredField(criteria, "codesetId", codesetId + conceptSetIndex);
+            try {
+                Integer codesetId = (Integer) FieldUtils.readDeclaredField(criteria, "codesetId");
+                FieldUtils.writeDeclaredField(criteria, "codesetId", codesetId + conceptSetIndex);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         private InclusionRule newRule(CriteriaGroup group) {
@@ -378,38 +369,42 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
                 CohortExpressionBuilder builder = new CohortExpressionBuilder(cohortDefinition, feature);
                 CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = createDefaultOptions(cohortDefinition.getId());
                 options.generateStats = true;
-                options.targetTable = options.resultSchema + ".cohort";
+                String targetTable = "cohort_" + SessionUtils.sessionId();
+                options.targetTable = options.resultSchema + "." + targetTable;
                 List<String> queries = new ArrayList<>();
                 CriteriaGroup expression = feature.getExpression();
 
-                Function<CohortExpression, List<String>> expressionQueries = (expr) -> {
-                    String exprQuery = queryBuilder.buildExpressionQuery(expr, options);
-                    String statsQuery = getCriteriaStatsQuery(cohortDefinition, analysis, feature);
-                    return Arrays.asList(exprQuery, statsQuery);
-                };
+                String createCohortSql = SqlRender.renderSql(CREATE_COHORT_SQL,
+                        new String[]{ RESULTS_DATABASE_SCHEMA, TARGET_TABLE },
+                        new String[] { source.getTableQualifier(SourceDaimon.DaimonType.Results), targetTable });
 
-                queries.addAll(Arrays.stream(expression.demographicCriteriaList)
-                        .map(builder::withCriteria)
-                        .map(expressionQueries)
-                        .flatMap(Collection::stream)
-                        .collect(Collectors.toList()));
+                String exprQuery = queryBuilder.buildExpressionQuery(builder.withCriteria(expression), options);
+                String statsQuery = getCriteriaStatsQuery(cohortDefinition, analysis, feature, targetTable);
+                String dropTableSql = SqlRender.renderSql(DROP_TABLE_SQL, new String[]{ RESULTS_DATABASE_SCHEMA, TARGET_TABLE },
+                        new String[] { source.getTableQualifier(SourceDaimon.DaimonType.Results), targetTable });
+                queries.add(createCohortSql);
+                queries.add(exprQuery);
+                queries.add(statsQuery);
+                queries.add(dropTableSql);
 
-                queries.addAll(Arrays.stream(expression.criteriaList)
-                        .map(builder::withCriteria)
-                        .map(expressionQueries)
-                        .flatMap(Collection::stream)
-                        .collect(Collectors.toList()));
                 return queries;
             }catch (IOException e){
                 throw new RuntimeException(e);
             }
         }
 
-        private String getCriteriaStatsQuery(CohortDefinition cohortDefinition, FeAnalysisWithCriteriaEntity analysis, FeAnalysisCriteriaEntity feature) {
+        private String getCriteriaStatsQuery(CohortDefinition cohortDefinition, FeAnalysisWithCriteriaEntity analysis, FeAnalysisCriteriaEntity feature, String targetTable) {
+            Long conceptId = 0L;
+            if (feature.getExpression().demographicCriteriaList.length > 0 && feature.getExpression().demographicCriteriaList[0].gender.length > 0) {
+                conceptId = feature.getExpression().demographicCriteriaList[0].gender[0].conceptId;
+            }
+            String resultSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
             return SqlRender.renderSql(COHORT_STATS_QUERY,
-                    new String[]{ RESULTS_DATABASE_SCHEMA, "cohortId", "executionId", "analysisId", "analysisName", "covariateName", "conceptId", "covariateId" },
+                    new String[]{ RESULTS_DATABASE_SCHEMA, "cohortId", "executionId", "analysisId", "analysisName", "covariateName", "conceptId",
+                            "covariateId", "targetTable", "totalsTable" },
                     new String[]{ source.getTableQualifier(SourceDaimon.DaimonType.Results), String.valueOf(cohortDefinition.getId()),
-                        String.valueOf(jobId), String.valueOf(analysis.getId()), analysis.getName(), feature.getName(), String.valueOf(0), String.valueOf(feature.getId()) }
+                        String.valueOf(jobId), String.valueOf(analysis.getId()), analysis.getName(), feature.getName(), String.valueOf(conceptId),
+                            String.valueOf(feature.getId()), resultSchema + "." + targetTable, resultSchema + "." + cohortTable }
                     );
         }
 
@@ -428,6 +423,7 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
             getQueriesForResultsRetrieving(jsonObject,cohortDefinitionId).forEach(joiner::add);
             getQueriesForCustomDistributionAnalyses(cohortDefinitionId).forEach(joiner::add);
             getQueriesForCustomPrevalenceAnalyses(cohortDefinitionId).forEach(joiner::add);
+            joiner.add(jsonObject.getString("sqlCleanup"));
 
             List<FeAnalysisWithCriteriaEntity> analysesWithCriteria = getFeAnalysesWithCriteria();
             if (!analysesWithCriteria.isEmpty()) {
@@ -439,8 +435,6 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
                         .flatMap(Collection::stream)
                         .forEach(joiner::add);
             }
-
-            joiner.add(jsonObject.getString("sqlCleanup"));
 
             final String sql = SqlRender.renderSql(joiner.toString(),
                     new String[]{RESULTS_DATABASE_SCHEMA, CDM_DATABASE_SCHEMA, VOCABULARY_DATABASE_SCHEMA},

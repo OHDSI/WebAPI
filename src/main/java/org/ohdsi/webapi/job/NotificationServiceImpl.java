@@ -59,8 +59,8 @@ public class NotificationServiceImpl implements NotificationService {
         final JobInstance instance = entity.getJobInstance();
         final JobInstanceResource instanceResource = new JobInstanceResource(instance.getInstanceId(), instance.getJobName());
         final JobExecutionResource result = new JobExecutionResource(instanceResource, entity.getJobId());
-        final Long executionId = entity.getJobParameters().getLong("engineAnalysisExecutionId");
-        if(executionId != null) {
+        final Long executionId = entity.getJobParameters().getLong("engineAnalysisExecutionId", -1);
+        if(executionId != -1) {
             //get status from ScriptExecutionService
             result.setStatus(scriptExecutionService.getExecutionStatus(executionId));
         } else {

@@ -199,7 +199,7 @@ public abstract class AtlasSecurity extends Security {
       // Pathways Analyses
       .addProtectedRestPath("/pathway-analysis", "createPermissionsOnCreatePathwayAnalysis")
       .addProtectedRestPath("/pathway-analysis/import", "createPermissionsOnCreatePathwayAnalysis")
-      .addProtectedRestPath("/pathway-analysis/*")
+      .addProtectedRestPath("/pathway-analysis/*", "deletePermissionsOnDeletePathwayAnalysis")
       .addProtectedRestPath("/pathway-analysis/*/sql/*")
       .addProtectedRestPath("/pathway-analysis/*/generation/*")
       .addProtectedRestPath("/pathway-analysis/*/generation")

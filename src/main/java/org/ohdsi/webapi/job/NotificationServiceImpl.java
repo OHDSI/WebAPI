@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.job;
 
+import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
 import org.springframework.batch.admin.service.SearchableJobExecutionDao;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobInstance;
@@ -19,9 +20,11 @@ public class NotificationServiceImpl implements NotificationService {
     private static final List<String> FOLDING_KEYS = new ArrayList<>();
 
     private final SearchableJobExecutionDao jobExecutionDao;
+    private final ScriptExecutionService scriptExecutionService;
 
-    public NotificationServiceImpl(SearchableJobExecutionDao jobExecutionDao, List<GeneratesNotification> whiteList) {
+    public NotificationServiceImpl(SearchableJobExecutionDao jobExecutionDao, ScriptExecutionService scriptExecutionService, List<GeneratesNotification> whiteList) {
         this.jobExecutionDao = jobExecutionDao;
+        this.scriptExecutionService = scriptExecutionService;
         whiteList.forEach(g -> {
             WHITE_LIST.add(g.getJobName());
             FOLDING_KEYS.add(g.getExecutinFoldingKey());
@@ -35,7 +38,7 @@ public class NotificationServiceImpl implements NotificationService {
                 .collect(Collectors.toMap(NotificationServiceImpl::getFoldingKey, t -> t, getLatest()))
                 .values().stream()
                 .limit(MAX_SIZE)
-                .map(NotificationServiceImpl::toDTO)
+                .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
@@ -52,11 +55,17 @@ public class NotificationServiceImpl implements NotificationService {
         return WHITE_LIST.contains(entity.getJobInstance().getJobName());
     }
 
-    private static JobExecutionResource toDTO(JobExecution entity) {
+    private JobExecutionResource toDTO(JobExecution entity) {
         final JobInstance instance = entity.getJobInstance();
         final JobInstanceResource instanceResource = new JobInstanceResource(instance.getInstanceId(), instance.getJobName());
         final JobExecutionResource result = new JobExecutionResource(instanceResource, entity.getJobId());
-        result.setStatus(entity.getStatus().name());
+        final Long executionId = entity.getJobParameters().getLong("engineAnalysisExecutionId");
+        if(executionId != null) {
+            //get status from ScriptExecutionService
+            result.setStatus(scriptExecutionService.getExecutionStatus(executionId));
+        } else {
+            result.setStatus(entity.getStatus().name());
+        }
         result.setExitStatus(entity.getExitStatus().getExitCode());
         result.setStartDate(entity.getStartTime());
         result.setEndDate(entity.getEndTime());

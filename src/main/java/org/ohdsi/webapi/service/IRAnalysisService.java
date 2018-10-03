@@ -73,6 +73,7 @@ import org.ohdsi.webapi.ircalc.IncidenceRateAnalysis;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisDetails;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisRepository;
 import org.ohdsi.webapi.ircalc.PerformAnalysisTasklet;
+import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
@@ -104,11 +105,12 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 @Path("/ir/")
 @Component
-public class IRAnalysisService extends AbstractDaoService {
+public class IRAnalysisService extends AbstractDaoService implements GeneratesNotification {
 
   private static final Log log = LogFactory.getLog(IRAnalysisService.class);
-  private final static String STRATA_STATS_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/incidencerate/sql/strata_stats.sql"); 
-  
+  private final static String STRATA_STATS_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/incidencerate/sql/strata_stats.sql");
+  private static final String NAME = "irAnalysis";
+
 
   @Autowired
   private IncidenceRateAnalysisRepository irAnalysisRepository;
@@ -474,7 +476,7 @@ public class IRAnalysisService extends AbstractDaoService {
       .tasklet(analysisTasklet)
     .build();
 
-    Job executeAnalysis = jobBuilders.get("irAnalysis")
+    Job executeAnalysis = jobBuilders.get(NAME)
       .start(irAnalysisStep)
       .build();
 
@@ -739,6 +741,16 @@ public class IRAnalysisService extends AbstractDaoService {
   public void init() {
 
     invalidateIRExecutions();
+  }
+
+  @Override
+  public String getJobName() {
+    return NAME;
+  }
+
+  @Override
+  public String getExecutinFoldingKey() {
+    return ANALYSIS_ID;
   }
 
   private void invalidateIRExecutions() {

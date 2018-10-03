@@ -27,7 +27,7 @@ public class NotificationServiceImpl implements NotificationService {
         this.scriptExecutionService = scriptExecutionService;
         whiteList.forEach(g -> {
             WHITE_LIST.add(g.getJobName());
-            FOLDING_KEYS.add(g.getExecutinFoldingKey());
+            FOLDING_KEYS.add(g.getExecutionFoldingKey());
         });
     }
 

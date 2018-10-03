@@ -184,7 +184,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
   }
 
   @Override
-  public String getExecutinFoldingKey() {
+  public String getExecutionFoldingKey() {
     return COHORT_DEFINITION_ID;
   }
 }

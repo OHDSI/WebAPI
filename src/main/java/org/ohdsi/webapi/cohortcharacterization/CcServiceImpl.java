@@ -30,6 +30,7 @@ import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
+import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.service.AbstractDaoService;
@@ -70,7 +71,7 @@ import static org.ohdsi.webapi.Constants.Params.*;
 @Service
 @Transactional
 @DependsOn({"ccExportDTOToCcEntityConverter", "cohortDTOToCohortDefinitionConverter", "feAnalysisDTOToFeAnalysisWithStringConverter"})
-public class CcServiceImpl extends AbstractDaoService implements CcService {
+public class CcServiceImpl extends AbstractDaoService implements CcService, GeneratesNotification {
 
     private static final String GENERATION_NOT_FOUND_ERROR = "generation cannot be found by id %d";
     private static final String[] GENERATION_PARAMETERS = {"cdm_results_schema", "cohort_characterization_generation_id"};
@@ -424,6 +425,16 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         );
         final String translatedJobSql = SqlTranslate.translateSql(deleteJobSql, getDialect());
         getJdbcTemplate().batchUpdate(translatedJobSql.split(";"));
+    }
+
+    @Override
+    public String getJobName() {
+        return GENERATE_COHORT_CHARACTERIZATION;
+    }
+
+    @Override
+    public String getExecutionFoldingKey() {
+        return COHORT_CHARACTERIZATION_ID;
     }
 
     private List<CcResult> getGenerationResults(final Source source, final String translatedSql) {

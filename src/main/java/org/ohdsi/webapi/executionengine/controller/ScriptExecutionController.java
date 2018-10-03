@@ -185,7 +185,7 @@ public class ScriptExecutionController implements GeneratesNotification {
     }
 
     @Override
-    public String getExecutinFoldingKey() {
+    public String getExecutionFoldingKey() {
         return null;//every job is unique?
     }
 

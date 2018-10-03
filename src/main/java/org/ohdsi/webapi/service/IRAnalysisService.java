@@ -749,7 +749,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   }
 
   @Override
-  public String getExecutinFoldingKey() {
+  public String getExecutionFoldingKey() {
     return ANALYSIS_ID;
   }
 

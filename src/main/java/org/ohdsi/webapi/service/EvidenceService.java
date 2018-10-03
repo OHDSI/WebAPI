@@ -79,7 +79,7 @@ import org.springframework.stereotype.Component;
 public class EvidenceService extends AbstractDaoService implements GeneratesNotification {
 
     private static final String NAME = "negativeControlsAnalysisJob";
-    
+
     @Autowired
     private JobTemplate jobTemplate;
 
@@ -748,7 +748,7 @@ public class EvidenceService extends AbstractDaoService implements GeneratesNoti
     }
 
     @Override
-    public String getExecutinFoldingKey() {
+    public String getExecutionFoldingKey() {
         return "concept_set_id";
     }
 

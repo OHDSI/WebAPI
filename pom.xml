@@ -580,7 +580,7 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>circe</artifactId>
-      <version>1.6.0-SNAPSHOT</version>
+      <version>1.7.0</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
@@ -636,11 +636,6 @@
       <version>${arachne.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.odysseusinc</groupId>
-      <artifactId>logging</artifactId>
-      <version>${arachne.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.glassfish.jersey.media</groupId>
       <artifactId>jersey-media-multipart</artifactId>
       <version>${jersey-media-multipart.version}</version>
@@ -658,7 +653,7 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>standardized-analysis-api</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>1.0.0</version>
     </dependency>
     <dependency>
       <groupId>com.cosium.spring.data</groupId>

@@ -93,7 +93,6 @@ public class FeAnalysisServiceImpl implements FeAnalysisService {
         FeAnalysisEntity savedEntity = findById(feAnalysisId).orElseThrow(NotFoundException::new);
         checkEntityLocked(savedEntity);
         savedEntity.setDescr(updatedEntity.getDescr());
-        savedEntity.setCohortCharacterizations(updatedEntity.getCohortCharacterizations());
         if (savedEntity instanceof FeAnalysisWithCriteriaEntity && updatedEntity instanceof FeAnalysisWithCriteriaEntity) {
           FeAnalysisWithCriteriaEntity updatedWithCriteriaEntity = (FeAnalysisWithCriteriaEntity) updatedEntity,
                   savedWithCriteria = (FeAnalysisWithCriteriaEntity) savedEntity;

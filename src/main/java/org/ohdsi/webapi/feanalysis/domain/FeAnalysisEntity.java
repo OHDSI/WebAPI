@@ -44,6 +44,7 @@ public abstract class FeAnalysisEntity<T> implements FeatureAnalysis, Comparable
         this.domain = entityForCopy.domain;
         this.descr = entityForCopy.descr;
         this.isLocked = entityForCopy.isLocked;
+        this.statType = entityForCopy.statType;
     }
     
     @Id

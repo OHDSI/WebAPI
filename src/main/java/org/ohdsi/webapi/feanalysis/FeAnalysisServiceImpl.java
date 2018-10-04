@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
+import org.ohdsi.webapi.cohortcharacterization.CcResultType;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisCriteriaEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
@@ -50,6 +51,9 @@ public class FeAnalysisServiceImpl implements FeAnalysisService {
     @Override
     @Transactional
     public FeAnalysisEntity createAnalysis(final FeAnalysisEntity analysis) {
+        if (analysis.getStatType() == null) {
+            analysis.setStatType(CcResultType.PREVALENCE);
+        }
         return analysisRepository.save(analysis);
     }
 
@@ -107,7 +111,9 @@ public class FeAnalysisServiceImpl implements FeAnalysisService {
         if (StringUtils.isNotEmpty(updatedEntity.getName())) {
             savedEntity.setName(updatedEntity.getName());
         }
-        savedEntity.setStatType(updatedEntity.getStatType());
+        if (updatedEntity.getStatType() != null) {
+            savedEntity.setStatType(updatedEntity.getStatType());
+        }
         if (Objects.nonNull(updatedEntity.getType())) {
             savedEntity.setType(updatedEntity.getType());
         }

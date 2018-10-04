@@ -15,69 +15,59 @@
  */
 package org.ohdsi.webapi.ircalc;
 
-import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.GenerationStatus;
+import org.ohdsi.webapi.common.generation.CancelableTasklet;
 import org.ohdsi.webapi.source.Source;
-import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
-import org.springframework.batch.core.step.tasklet.Tasklet;
-import org.springframework.batch.repeat.RepeatStatus;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
-import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
+
+import java.util.*;
 
 /**
  *
  * @author Chris Knoll <cknoll@ohdsi.org>
  */
-public class PerformAnalysisTasklet implements Tasklet {
+public class PerformAnalysisTasklet extends CancelableTasklet {
 
-  private static final Log log = LogFactory.getLog(PerformAnalysisTasklet.class);
   private static final int MAX_MESSAGE_LENGTH = 2000;
   
   private final static IRAnalysisQueryBuilder analysisQueryBuilder = new IRAnalysisQueryBuilder();
 
-  private final JdbcTemplate jdbcTemplate;
   private final TransactionTemplate transactionTemplate;
   private final IncidenceRateAnalysisRepository incidenceRateAnalysisRepository;
+  private ExecutionInfo analysisInfo;
+  private Date startTime;
 
   public PerformAnalysisTasklet(
-          final JdbcTemplate jdbcTemplate, 
+          final CancelableJdbcTemplate jdbcTemplate,
           final TransactionTemplate transactionTemplate,
           final IncidenceRateAnalysisRepository incidenceRateAnalysisRepository) {
-    this.jdbcTemplate = jdbcTemplate;
+
+    super(LogFactory.getLog(PerformAnalysisTasklet.class), jdbcTemplate, transactionTemplate);
     this.transactionTemplate = transactionTemplate;
     this.incidenceRateAnalysisRepository = incidenceRateAnalysisRepository;
   }
 
-  private ExecutionInfo findExecutionInfoBySourceId(Collection<ExecutionInfo> infoList, Integer sourceId)
+  private Optional<ExecutionInfo> findExecutionInfoBySourceId(Collection<ExecutionInfo> infoList, Integer sourceId)
   {
-    for (ExecutionInfo info : infoList) {
-      if (sourceId.equals(info.getId().getSourceId()))
-        return info;
-    }
-    return null;
+    return infoList.stream()
+            .filter(info -> Objects.equals(info.getId().getSourceId(), sourceId))
+            .findFirst();
   }
   
-  private int[] doTask(ChunkContext chunkContext) {
+  protected String[] prepareQueries(ChunkContext chunkContext, CancelableJdbcTemplate jdbcTemplate) {
     ObjectMapper mapper = new ObjectMapper();
     
     Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
@@ -86,7 +76,6 @@ public class PerformAnalysisTasklet implements Tasklet {
     source.setSourceDialect(jobParams.get("target_dialect").toString());
 
     Integer analysisId = Integer.valueOf(jobParams.get("analysis_id").toString());
-    int[] result;
     try {
       String sessionId = SessionUtils.sessionId();
       IncidenceRateAnalysis analysis = this.incidenceRateAnalysisRepository.findOne(analysisId);
@@ -116,69 +105,60 @@ public class PerformAnalysisTasklet implements Tasklet {
       
       String expressionSql = analysisQueryBuilder.buildAnalysisQuery(analysis, options);
       String translatedSql = SqlTranslate.translateSql(expressionSql, jobParams.get("target_dialect").toString(), sessionId, null);
-      String[] sqlStatements = SqlSplit.splitSql(translatedSql);
-      result = PerformAnalysisTasklet.this.jdbcTemplate.batchUpdate(sqlStatements);
+      return SqlSplit.splitSql(translatedSql);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-    return result;
   }
 
   @Override
-  public RepeatStatus execute(final StepContribution contribution, final ChunkContext chunkContext) throws Exception {
-    Date startTime = Calendar.getInstance().getTime();
+  protected void doBefore(ChunkContext chunkContext) {
+    startTime = Calendar.getInstance().getTime();
     Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
     Integer analysisId = Integer.valueOf(jobParams.get("analysis_id").toString());
     Integer sourceId = Integer.valueOf(jobParams.get("source_id").toString());
-    boolean isValid = false;
-    String statusMessage = "OK";
 
     DefaultTransactionDefinition requresNewTx = new DefaultTransactionDefinition();
     requresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-    
+
     TransactionStatus initStatus = this.transactionTemplate.getTransactionManager().getTransaction(requresNewTx);
     IncidenceRateAnalysis analysis = this.incidenceRateAnalysisRepository.findOne(analysisId);
-    
-    ExecutionInfo analysisInfo = findExecutionInfoBySourceId(analysis.getExecutionInfoList(), sourceId);
-    analysisInfo.setIsValid(false);
-    analysisInfo.setStartTime(startTime);
-    analysisInfo.setStatus(GenerationStatus.RUNNING);
-    
+
+    findExecutionInfoBySourceId(analysis.getExecutionInfoList(), sourceId).ifPresent(analysisInfo -> {
+      analysisInfo.setIsValid(false);
+      analysisInfo.setStartTime(startTime);
+      analysisInfo.setStatus(GenerationStatus.RUNNING);
+    });
+
     this.incidenceRateAnalysisRepository.save(analysis);
     this.transactionTemplate.getTransactionManager().commit(initStatus);
-    
-    try {
-      final int[] ret = this.transactionTemplate.execute(new TransactionCallback<int[]>() {
+  }
 
-        @Override
-        public int[] doInTransaction(final TransactionStatus status) {
-          return doTask(chunkContext);
-        }
-      });
-      log.debug("Update count: " + ret.length);
-      isValid = true;
-    } catch (final Exception e) {
-      isValid = false;
-      statusMessage = e.getMessage();
-      log.error(e.getMessage(), e);
-      throw e;//FAIL job status
-    }
-    finally {
-      TransactionStatus completeStatus = this.transactionTemplate.getTransactionManager().getTransaction(requresNewTx);
-      Date endTime = Calendar.getInstance().getTime();
-      analysis = this.incidenceRateAnalysisRepository.findOne(analysisId);
-      
-      analysisInfo = findExecutionInfoBySourceId(analysis.getExecutionInfoList(), sourceId);
+  @Override
+  protected void doAfter(StepContribution contribution, ChunkContext chunkContext) {
+
+    boolean isValid = !Constants.FAILED.equals(contribution.getExitStatus().getExitCode());
+    String statusMessage = contribution.getExitStatus().getExitDescription();
+
+    Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
+    Integer analysisId = Integer.valueOf(jobParams.get("analysis_id").toString());
+    Integer sourceId = Integer.valueOf(jobParams.get("source_id").toString());
+
+    DefaultTransactionDefinition requresNewTx = new DefaultTransactionDefinition();
+    requresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+    TransactionStatus completeStatus = this.transactionTemplate.getTransactionManager().getTransaction(requresNewTx);
+    Date endTime = Calendar.getInstance().getTime();
+    IncidenceRateAnalysis analysis = this.incidenceRateAnalysisRepository.findOne(analysisId);
+
+    findExecutionInfoBySourceId(analysis.getExecutionInfoList(), sourceId).ifPresent(analysisInfo -> {
       analysisInfo.setIsValid(isValid);
-      analysisInfo.setExecutionDuration((int)(endTime.getTime() - startTime.getTime()));
+      analysisInfo.setExecutionDuration((int) (endTime.getTime() - startTime.getTime()));
       analysisInfo.setStatus(GenerationStatus.COMPLETE);
       analysisInfo.setMessage(statusMessage.substring(0, Math.min(MAX_MESSAGE_LENGTH, statusMessage.length())));
-      
-      this.incidenceRateAnalysisRepository.save(analysis);
-      this.transactionTemplate.getTransactionManager().commit(completeStatus);
-    }
+    });
 
-    return RepeatStatus.FINISHED;
+    this.incidenceRateAnalysisRepository.save(analysis);
+    this.transactionTemplate.getTransactionManager().commit(completeStatus);
   }
 
 }

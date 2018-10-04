@@ -15,79 +15,59 @@
  */
 package org.ohdsi.webapi.cohortdefinition;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.InclusionRule;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.Constants;
+import org.ohdsi.webapi.common.generation.CancelableTasklet;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
-import org.ohdsi.webapi.util.StatementCancel;
-import org.springframework.batch.core.ExitStatus;
-import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.StoppableTasklet;
-import org.springframework.batch.repeat.RepeatStatus;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
-import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.FutureTask;
-
-import org.ohdsi.sql.SqlRender;
 
 /**
  *
  * @author Chris Knoll <cknoll@ohdsi.org>
  */
-public class GenerateCohortTasklet implements StoppableTasklet {
+public class GenerateCohortTasklet extends CancelableTasklet implements StoppableTasklet {
 
   private static final Log log = LogFactory.getLog(GenerateCohortTasklet.class);
 
   private final static CohortExpressionQueryBuilder expressionQueryBuilder = new CohortExpressionQueryBuilder();
 
-  private final CancelableJdbcTemplate jdbcTemplate;
-  private final TransactionTemplate transactionTemplate;
   private final CohortDefinitionRepository cohortDefinitionRepository;
   private final SourceRepository sourceRepository;
-  private final ExecutorService taskExecutor;
-  private boolean stopped = false;
-  private long checkInterval = 1000;
-  private StatementCancel stmtCancel;
 
   public GenerateCohortTasklet(
           final CancelableJdbcTemplate jdbcTemplate,
           final TransactionTemplate transactionTemplate,
           final CohortDefinitionRepository cohortDefinitionRepository,
           SourceRepository sourceRepository) {
-    this.jdbcTemplate = jdbcTemplate;
-    this.transactionTemplate = transactionTemplate;
+    super(LogFactory.getLog(GenerateCohortTasklet.class), jdbcTemplate, transactionTemplate);
     this.cohortDefinitionRepository = cohortDefinitionRepository;
     this.sourceRepository = sourceRepository;
-    taskExecutor = Executors.newSingleThreadExecutor();
-    stmtCancel = new StatementCancel();
   }
 
-  private int[] doTask(ChunkContext chunkContext) {
-    int[] result = new int[0];
-    
+  @Override
+  protected String[] prepareQueries(ChunkContext chunkContext, CancelableJdbcTemplate jdbcTemplate) {
+    String[] result = new String[0];
+
     Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
     Integer defId = Integer.valueOf(jobParams.get(Constants.Params.COHORT_DEFINITION_ID).toString());
     String sessionId = SessionUtils.sessionId();
@@ -97,19 +77,19 @@ public class GenerateCohortTasklet implements StoppableTasklet {
 
       DefaultTransactionDefinition requresNewTx = new DefaultTransactionDefinition();
       requresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-    
+
       TransactionStatus initStatus = this.transactionTemplate.getTransactionManager().getTransaction(requresNewTx);
       CohortDefinition def = this.cohortDefinitionRepository.findOne(defId);
       CohortExpression expression = mapper.readValue(def.getDetails().getExpression(), CohortExpression.class);
       this.transactionTemplate.getTransactionManager().commit(initStatus);
-      
+
       CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = new CohortExpressionQueryBuilder.BuildExpressionQueryOptions();
       options.cohortId = defId;
       options.cdmSchema = jobParams.get(Constants.Params.CDM_DATABASE_SCHEMA).toString();
       options.targetTable = jobParams.get(Constants.Params.TARGET_DATABASE_SCHEMA).toString() + "." + jobParams.get(Constants.Params.TARGET_TABLE).toString();
       options.resultSchema = jobParams.get(Constants.Params.RESULTS_DATABASE_SCHEMA).toString();
       if (jobParams.get(Constants.Params.VOCABULARY_DATABASE_SCHEMA) != null)
-				options.vocabularySchema = jobParams.get(Constants.Params.VOCABULARY_DATABASE_SCHEMA).toString();
+        options.vocabularySchema = jobParams.get(Constants.Params.VOCABULARY_DATABASE_SCHEMA).toString();
       options.generateStats = Boolean.valueOf(jobParams.get(Constants.Params.GENERATE_STATS).toString());
 
       Integer sourceId = Integer.parseInt(jobParams.get(Constants.Params.SOURCE_ID).toString());
@@ -117,8 +97,8 @@ public class GenerateCohortTasklet implements StoppableTasklet {
 
       String deleteSql = "DELETE FROM @tableQualifier.cohort_inclusion WHERE cohort_definition_id = @cohortDefinitionId;";
       PreparedStatementRenderer psr = new PreparedStatementRenderer(source, deleteSql, "tableQualifier",
-        options.resultSchema, "cohortDefinitionId", options.cohortId);
-      if (stopped) {
+              options.resultSchema, "cohortDefinitionId", options.cohortId);
+      if (isStopped()) {
         return result;
       }
       jdbcTemplate.update(psr.getSql(), psr.getSetter());
@@ -126,7 +106,7 @@ public class GenerateCohortTasklet implements StoppableTasklet {
 //      String insertSql = "INSERT INTO @results_schema.cohort_inclusion (cohort_definition_id, rule_sequence, name, description)  VALUES (@cohortId,@iteration,'@ruleName','@ruleDescription');";
       String insertSql = "INSERT INTO @results_schema.cohort_inclusion (cohort_definition_id, rule_sequence, name, description) SELECT @cohortId as cohort_definition_id, @iteration as rule_sequence, CAST('@ruleName' as VARCHAR(255)) as name, CAST('@ruleDescription' as VARCHAR(1000)) as description;";
 
-			String tqName = "results_schema";
+      String tqName = "results_schema";
       String tqValue = options.resultSchema;
       String[] names = new String[]{"cohortId", "iteration", "ruleName", "ruleDescription"};
       List<InclusionRule> inclusionRules = expression.inclusionRules;
@@ -134,47 +114,19 @@ public class GenerateCohortTasklet implements StoppableTasklet {
         InclusionRule r = inclusionRules.get(i);
         Object[] values = new Object[]{options.cohortId, i, r.name, r.description};
         psr = new PreparedStatementRenderer(source, insertSql, tqName, tqValue, names, values, sessionId);
-        if (stopped) {
+        if (isStopped()) {
           return result;
         }
         jdbcTemplate.update(psr.getSql(), psr.getSetter());
       }
-      
+
       String expressionSql = expressionQueryBuilder.buildExpressionQuery(expression, options);
       expressionSql = SqlRender.renderSql(expressionSql, null, null);
       String translatedSql = SqlTranslate.translateSql(expressionSql, jobParams.get("target_dialect").toString(), sessionId, null);
-      String[] sqlStatements = SqlSplit.splitSql(translatedSql);
-      this.jdbcTemplate.batchUpdate(stmtCancel, sqlStatements);
+      return SqlSplit.splitSql(translatedSql);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-
-    return result;
   }
 
-  @Override
-  public RepeatStatus execute(final StepContribution contribution, final ChunkContext chunkContext) throws Exception {
-   
-		final int[] ret = this.transactionTemplate.execute(new TransactionCallback<int[]>() {
-			@Override
-			public int[] doInTransaction(final TransactionStatus status) {
-				return doTask(chunkContext);
-			}
-		});
-
-		if (this.stopped) {
-		  contribution.setExitStatus(ExitStatus.STOPPED);
-    }
-
-    return RepeatStatus.FINISHED;
-  }
-
-  @Override
-  public void stop() {
-    try {
-      this.stmtCancel.cancel();
-    } catch (SQLException ignored) {
-    }
-    this.stopped = true;
-  }
 }

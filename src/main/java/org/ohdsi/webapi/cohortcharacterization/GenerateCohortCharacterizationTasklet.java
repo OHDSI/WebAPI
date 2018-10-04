@@ -35,9 +35,9 @@ import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.scope.context.ChunkContext;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
@@ -56,14 +56,14 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
     private static final String[] CUSTOM_PARAMETERS = {"analysisId", "analysisName", "cohortId", "jobId", "design"};
     private static final String[] RETRIEVING_PARAMETERS = {"features", "featureRefs", "analysisRefs", "cohortId", "executionId"};
 
-    private final JdbcTemplate jdbcTemplate;
+    private final CancelableJdbcTemplate jdbcTemplate;
     private final CcService ccService;
     private final FeAnalysisService feAnalysisService;
     private final SourceService sourceService;
     private final UserRepository userRepository;
-    
+
     public GenerateCohortCharacterizationTasklet(
-            final JdbcTemplate jdbcTemplate,
+            final CancelableJdbcTemplate jdbcTemplate,
             final TransactionTemplate transactionTemplate,
             final CcService ccService,
             final FeAnalysisService feAnalysisService,
@@ -71,7 +71,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             final SourceService sourceService,
             final UserRepository userRepository
     ) {
-        super(LogFactory.getLog(GenerateCohortCharacterizationTasklet.class), transactionTemplate, analysisGenerationInfoEntityRepository);
+        super(LogFactory.getLog(GenerateCohortCharacterizationTasklet.class), jdbcTemplate, transactionTemplate, analysisGenerationInfoEntityRepository);
         this.jdbcTemplate = jdbcTemplate;
         this.ccService = ccService;
         this.feAnalysisService = feAnalysisService;
@@ -83,6 +83,11 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
         initTx();
         new CcTask(chunkContext).run();
         return null;
+    }
+
+    @Override
+    protected String[] prepareQueries(ChunkContext chunkContext, CancelableJdbcTemplate jdbcTemplate) {
+        return new String[0];
     }
 
     private void initTx() {
@@ -132,6 +137,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
         private int[] runAnalysisOnCohort(final Integer cohortDefinitionId) {
             FutureTask<int[]> batchUpdateTask = new FutureTask<>(
                     () -> jdbcTemplate.batchUpdate(
+                            stmtCancel,
                             getSqlQueriesToRun(
                                     createFeJsonObject(
                                             createDefaultOptions(cohortDefinitionId)

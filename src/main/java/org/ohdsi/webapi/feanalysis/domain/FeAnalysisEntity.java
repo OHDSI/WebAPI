@@ -15,10 +15,12 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
+import javax.persistence.Lob;
 import javax.persistence.ManyToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import org.hibernate.annotations.DiscriminatorFormula;
+import org.hibernate.annotations.Type;
 import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysis;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
@@ -39,7 +41,7 @@ FeAnalysisEntity implements FeatureAnalysis, Comparable<FeAnalysisEntity> {
         this.id = entityForCopy.id;
         this.type = entityForCopy.type;
         this.name = entityForCopy.name;
-        this.value = entityForCopy.value;
+        this.setDesign(entityForCopy.getDesign());
         this.domain = entityForCopy.domain;
         this.descr = entityForCopy.descr;
         this.isLocked = entityForCopy.isLocked;
@@ -48,7 +50,7 @@ FeAnalysisEntity implements FeatureAnalysis, Comparable<FeAnalysisEntity> {
     @Id
     @SequenceGenerator(name = "fe_analysis_pk_sequence", sequenceName = "fe_analysis_sequence", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "fe_analysis_pk_sequence")
-    private Long id;
+    private Integer id;
 
     @Column
     @Enumerated(EnumType.STRING)
@@ -57,8 +59,10 @@ FeAnalysisEntity implements FeatureAnalysis, Comparable<FeAnalysisEntity> {
     @Column
     private String name;
 
-    @Column
-    private String value;
+    @Lob
+    @Type(type = "org.hibernate.type.TextType")
+    @Column(name = "design", insertable = false, updatable = false)
+    private String rawDesign;
     
     @Column
     @Enumerated(EnumType.STRING)
@@ -80,7 +84,7 @@ FeAnalysisEntity implements FeatureAnalysis, Comparable<FeAnalysisEntity> {
     @Enumerated(value = EnumType.STRING)
     private CcResultType statType;
     
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
@@ -108,6 +112,9 @@ FeAnalysisEntity implements FeatureAnalysis, Comparable<FeAnalysisEntity> {
     public <T> T getDesign() {
         return null;
     }
+
+    public <T> void setDesign(T design) {
+    }
     
     public boolean isPreset() {
         return this.type == StandardFeatureAnalysisType.PRESET;
@@ -121,7 +128,7 @@ FeAnalysisEntity implements FeatureAnalysis, Comparable<FeAnalysisEntity> {
         return this.type == StandardFeatureAnalysisType.CRITERIA_SET;
     }
 
-    public void setId(final Long id) {
+    public void setId(final Integer id) {
         this.id = id;
     }
 
@@ -141,12 +148,8 @@ FeAnalysisEntity implements FeatureAnalysis, Comparable<FeAnalysisEntity> {
         this.descr = descr;
     }
 
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(final String value) {
-        this.value = value;
+    public String getRawDesign() {
+        return rawDesign;
     }
 
     @Override

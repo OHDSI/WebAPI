@@ -27,4 +27,9 @@ public class UserUtils {
     return Objects.nonNull(user) ? user.getLogin() : "";
   }
 
+  public static String toLowerCase(String input) {
+
+    return Objects.nonNull(input) ? input.toLowerCase() : input;
+  }
+
 }

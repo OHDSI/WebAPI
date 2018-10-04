@@ -27,17 +27,22 @@ import javax.servlet.ServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 
 public class JdbcAuthFilter extends AuthenticatingPropagationFilter {
 
     private static final Logger log = LoggerFactory.getLogger(JdbcAuthFilter.class);
+
+    public JdbcAuthFilter(ApplicationEventPublisher eventPublisher){
+        super(eventPublisher);
+    }
 
     @Override
     protected AuthenticationToken createToken(ServletRequest servletRequest, ServletResponse servletResponse) throws Exception {
         final String name = servletRequest.getParameter("login");
         final String password = servletRequest.getParameter("password");
         UsernamePasswordToken token;
-        if (name!=null && password!=null){
+        if (name != null && password != null) {
             token = new UsernamePasswordToken(name, password);
         } else {
             throw new AuthenticationException("Empty credentials");

@@ -1,19 +1,33 @@
 package org.ohdsi.webapi.service;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.*;
 
+import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AuthMethod;
+import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.DataSourceUnsecuredDTO;
+import com.odysseusinc.arachne.execution_engine_common.util.ConnectionParams;
+import com.odysseusinc.datasourcemanager.krblogin.KerberosService;
+import com.odysseusinc.datasourcemanager.krblogin.KrbConfig;
+import com.odysseusinc.datasourcemanager.krblogin.RuntimeServiceMode;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.IExecutionInfo;
+import org.ohdsi.webapi.KerberosUtils;
 import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisExecutionRepository;
 import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetItemRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetRepository;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.shiro.Entities.UserRepository;
+import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
@@ -32,6 +46,7 @@ import java.sql.Connection;
 public abstract class AbstractDaoService {
 
   protected final Log log = LogFactory.getLog(getClass());
+  private static final String IMPALA_DATASOURCE = "impala";
 
   @Value("${datasource.ohdsi.schema}")
   private String ohdsiSchema;
@@ -56,6 +71,12 @@ public abstract class AbstractDaoService {
 
   @Autowired 
   ConceptSetItemRepository conceptSetItemRepository;
+
+  @Autowired
+  protected Security security;
+
+  @Autowired
+  protected UserRepository userRepository;
 
   public static final List<GenerationStatus> INVALIDATE_STATUSES = new ArrayList<GenerationStatus>() {{
     add(GenerationStatus.PENDING);
@@ -94,6 +115,9 @@ public abstract class AbstractDaoService {
 	@Autowired
   private TransactionTemplate transactionTemplateNoTransaction;
 
+  @Autowired
+  private KerberosService kerberosService;
+
   public SourceRepository getSourceRepository() {
     return sourceRepository;
   }
@@ -121,6 +145,10 @@ public abstract class AbstractDaoService {
 
   public CancelableJdbcTemplate getSourceJdbcTemplate(Source source) {
 
+    ConnectionParams connectionParams = DataSourceDTOParser.parse(source);
+    if (IMPALA_DATASOURCE.equalsIgnoreCase(source.getSourceDialect()) && AuthMethod.KERBEROS == connectionParams.getAuthMethod()) {
+      loginToKerberos(source, connectionParams);
+    }
     DriverManagerDataSource dataSource;
     if (source.getUsername() != null && source.getPassword() != null) {
       // NOTE: jdbc link should NOT include username and password, because they have higher priority than separate ones
@@ -133,6 +161,26 @@ public abstract class AbstractDaoService {
       dataSource = new DriverManagerDataSource(source.getSourceConnection());
     }
     return new CancelableJdbcTemplate(dataSource);
+  }
+
+  private void loginToKerberos(Source source, ConnectionParams connectionParams) {
+
+    DataSourceUnsecuredDTO dto = DataSourceDTOParser.parseDTO(source, connectionParams);
+    dto.setCdmSchema(source.getTableQualifier(SourceDaimon.DaimonType.CDM));
+    KerberosUtils.setKerberosParams(source, connectionParams, dto);
+    File temporaryDir = com.google.common.io.Files.createTempDir();
+    KrbConfig krbConfig = new KrbConfig();
+    try {
+      krbConfig = kerberosService.runKinit(dto, RuntimeServiceMode.SINGLE, temporaryDir);
+    } catch (RuntimeException | IOException e) {
+      log.error("Login to kerberos failed", e);
+    }
+    try {
+      FileUtils.forceDelete(temporaryDir);
+      FileUtils.forceDelete(krbConfig.getKeytabPath().toFile());
+    } catch (IOException e) {
+      log.warn(e);
+    }
   }
 
   /**
@@ -243,6 +291,14 @@ public abstract class AbstractDaoService {
   protected void invalidateExecutions(List<? extends IExecutionInfo> executionInfoList) {
 
     executionInfoList.forEach(this::invalidateExecution);
+  }
+
+  protected UserEntity getCurrentUser() {
+    return userRepository.findByLogin(getCurrentUserLogin());
+  }
+
+  protected String getCurrentUserLogin() {
+    return security.getSubject();
   }
 
 }

@@ -37,7 +37,12 @@ public class FeAnalysisServiceImpl implements FeAnalysisService {
     public Page<FeAnalysisEntity> getPage(final Pageable pageable) {
         return analysisRepository.findAll(pageable);
     }
-    
+
+    @Override
+    public List<FeAnalysisEntity> findPresetAnalysisByFeAnalysisName(List<String> analysisNames) {
+        return analysisRepository.findAllByTypeAndRawDesignIn(StandardFeatureAnalysisType.PRESET, analysisNames);
+    }
+
     @Override
     public List<FeAnalysisWithStringEntity> findPresetAnalysesBySystemNames(Collection<String> names) {
         return stringAnalysisRepository.findByDesignIn(names);

@@ -6,17 +6,17 @@ import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisT
 public class FeAnalysisShortDTO {
 
     protected String description;
-    private Long id;
+    private Integer id;
     private String name;
     private StandardFeatureAnalysisType type;
     private StandardFeatureAnalysisDomain domain;
 
-    public Long getId() {
+    public Integer getId() {
 
         return id;
     }
 
-    public void setId(final Long id) {
+    public void setId(final Integer id) {
 
         this.id = id;
     }

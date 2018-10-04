@@ -14,9 +14,7 @@
  */
 package org.ohdsi.webapi.cohortdefinition;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.io.UncheckedIOException;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -28,9 +26,7 @@ import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.hibernate.annotations.Type;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
@@ -73,12 +69,7 @@ public class CohortDefinitionDetails implements Serializable {
 
   public CohortExpression getExpressionObject() {
 
-    try {
-      return (getExpression() != null) ?
-              new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).readValue(getExpression(), CohortExpression.class) : null;
-    } catch (IOException e) {
-      return null;
-    }
+    return (getExpression() != null) ? Utils.deserialize(getExpression(), new TypeReference<CohortExpression>() {}) : null;
   }
 
   public String getExpression() {
@@ -86,12 +77,7 @@ public class CohortDefinitionDetails implements Serializable {
   }
 
   public String getStandardizedExpression() {
-
-    try {
-      return Utils.serialize(getExpressionObject());
-    } catch (JsonProcessingException ex) {
-      throw new UncheckedIOException(ex);
-    }
+    return Utils.serialize(getExpressionObject());
   }
 
   public CohortDefinitionDetails setExpression(String expression) {

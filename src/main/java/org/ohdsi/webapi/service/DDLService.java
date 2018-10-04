@@ -60,7 +60,9 @@ public class DDLService {
 		"/ddl/results/ir_analysis_strata_stats.sql",
 		"/ddl/results/ir_strata.sql",
 		"/ddl/results/heracles_periods.sql",
-		"/ddl/results/cohort_characterizations.sql"
+		"/ddl/results/cohort_characterizations.sql",
+		"/ddl/results/pathway_analysis_events.sql",
+		"/ddl/results/pathway_analysis_stats.sql"
 	);
 
 	public static final Collection<String> RESULT_INIT_FILE_PATHS = Arrays.asList(
@@ -70,7 +72,8 @@ public class DDLService {
 	);
 
 	private static final Collection<String> RESULT_INDEX_FILE_PATHS = Arrays.asList(
-		"/ddl/results/create_index.sql"
+		"/ddl/results/create_index.sql",
+		"/ddl/results/pathway_analysis_events_indexes.sql"
 	);
         
 	private static final Collection<String> CEMRESULT_DDL_FILE_PATHS = Arrays.asList(

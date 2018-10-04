@@ -1,6 +1,15 @@
 package org.ohdsi.webapi.service;
 
+import com.odysseusinc.logging.event.AddPermissionEvent;
+import com.odysseusinc.logging.event.AddRoleEvent;
+import com.odysseusinc.logging.event.AssignRoleEvent;
+import com.odysseusinc.logging.event.ChangeRoleEvent;
+import com.odysseusinc.logging.event.DeletePermissionEvent;
+import com.odysseusinc.logging.event.DeleteRoleEvent;
+import com.odysseusinc.logging.event.UnassignRoleEvent;
 import org.eclipse.collections.impl.block.factory.Comparators;
+import org.springframework.context.ApplicationEventPublisher;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -16,6 +25,7 @@ import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -29,6 +39,12 @@ public class UserService {
 
   @Autowired
   private PermissionManager authorizer;
+
+  @Autowired
+  private ApplicationEventPublisher eventPublisher;
+
+  @Value("${security.ad.default.import.group}#{T(java.util.Collections).emptyList()}")
+  private List<String> defaultRoles;
 
   private Map<String, String> roleCreatorPermissionsTemplate = new LinkedHashMap<>();
 
@@ -87,12 +103,18 @@ public class UserService {
   public static class Role implements Comparable<Role> {
     public Long id;
     public String role;
+    public boolean defaultImported;
 
     public Role() {}
 
     public Role (RoleEntity roleEntity) {
       this.id = roleEntity.getId();
       this.role = roleEntity.getName();
+    }
+
+    public Role (RoleEntity roleEntity, boolean defaultImported) {
+      this(roleEntity);
+      this.defaultImported = defaultImported;
     }
 
     @Override
@@ -163,6 +185,7 @@ public class UserService {
             this.roleCreatorPermissionsTemplate,
             String.valueOf(roleEntity.getId()));
     Role newRole = new Role(roleEntity);
+    eventPublisher.publishEvent(new AddRoleEvent(this, newRole.id, newRole.role));
     return newRole;
   }
 
@@ -177,6 +200,7 @@ public class UserService {
     }
     roleEntity.setName(role.role);
     roleEntity = this.authorizer.updateRole(roleEntity);
+    eventPublisher.publishEvent(new ChangeRoleEvent(this, id, role.role));
     return new Role(roleEntity);
   }
 
@@ -204,6 +228,7 @@ public class UserService {
   public void removeRole(@PathParam("roleId") Long roleId) {
     this.authorizer.removeRole(roleId);
     this.authorizer.removePermissionsFromTemplate(this.roleCreatorPermissionsTemplate, String.valueOf(roleId));
+    eventPublisher.publishEvent(new DeleteRoleEvent(this, roleId));
   }
 
   @GET
@@ -219,18 +244,22 @@ public class UserService {
   @PUT
   @Path("role/{roleId}/permissions/{permissionIdList}")
   public void addPermissionToRole(@PathParam("roleId") Long roleId, @PathParam("permissionIdList") String permissionIdList) throws Exception {
-    for (String permissionIdString: permissionIdList.split("\\+")) {
+    String[] ids = permissionIdList.split("\\+");
+    for (String permissionIdString : ids) {
       Long permissionId = Long.parseLong(permissionIdString);
       this.authorizer.addPermission(roleId, permissionId);
+      eventPublisher.publishEvent(new AddPermissionEvent(this, permissionId, roleId));
     }
   }
 
   @DELETE
   @Path("role/{roleId}/permissions/{permissionIdList}")
   public void removePermissionFromRole(@PathParam("roleId") Long roleId, @PathParam("permissionIdList") String permissionIdList) {
-    for (String permissionIdString: permissionIdList.split("\\+")) {
+    String[] ids = permissionIdList.split("\\+");
+    for (String permissionIdString : ids) {
       Long permissionId = Long.parseLong(permissionIdString);
       this.authorizer.removePermission(permissionId, roleId);
+      eventPublisher.publishEvent(new DeletePermissionEvent(this, permissionId, roleId));
     }
   }
 
@@ -247,18 +276,22 @@ public class UserService {
   @PUT
   @Path("role/{roleId}/users/{userIdList}")
   public void addUserToRole(@PathParam("roleId") Long roleId, @PathParam("userIdList") String userIdList) throws Exception {
-    for (String userIdString: userIdList.split("\\+")) {
+    String[] ids = userIdList.split("\\+");
+    for (String userIdString : ids) {
       Long userId = Long.parseLong(userIdString);
       this.authorizer.addUser(userId, roleId);
+      eventPublisher.publishEvent(new AssignRoleEvent(this, roleId, userId));
     }
   }
 
   @DELETE
   @Path("role/{roleId}/users/{userIdList}")
   public void removeUserFromRole(@PathParam("roleId") Long roleId, @PathParam("userIdList") String userIdList) {
-    for (String userIdString: userIdList.split("\\+")) {
+    String[] ids = userIdList.split("\\+");
+    for (String userIdString : ids) {
       Long userId = Long.parseLong(userIdString);
       this.authorizer.removeUser(userId, roleId);
+      eventPublisher.publishEvent(new UnassignRoleEvent(this, roleId, userId));
     }
   }
 
@@ -272,7 +305,7 @@ public class UserService {
   }
 
   private ArrayList<Permission> convertPermissions(final Iterable<PermissionEntity> permissionEntities) {
-    ArrayList<Permission> permissions = new ArrayList<Permission>();
+    ArrayList<Permission> permissions = new ArrayList<>();
     for (PermissionEntity permissionEntity : permissionEntities) {
       Permission permission = new Permission(permissionEntity);
       permissions.add(permission);
@@ -282,9 +315,9 @@ public class UserService {
   }
 
   private ArrayList<Role> convertRoles(final Iterable<RoleEntity> roleEntities) {
-    ArrayList<Role> roles = new ArrayList<Role>();
+    ArrayList<Role> roles = new ArrayList<>();
     for (RoleEntity roleEntity : roleEntities) {
-      Role role = new Role(roleEntity);
+      Role role = new Role(roleEntity, defaultRoles.contains(roleEntity.getName()));
       roles.add(role);
     }
 
@@ -292,7 +325,7 @@ public class UserService {
   }
 
   private ArrayList<User> convertUsers(final Iterable<UserEntity> userEntities) {
-    ArrayList<User> users = new ArrayList<User>();
+    ArrayList<User> users = new ArrayList<>();
     for (UserEntity userEntity : userEntities) {
       User user = new User(userEntity);
       users.add(user);

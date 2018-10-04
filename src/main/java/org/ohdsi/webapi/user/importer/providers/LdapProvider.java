@@ -22,6 +22,12 @@ public interface LdapProvider {
 
   Set<String> getUserClass();
 
+  String getSearchUserFilter();
+
+  List<LdapUser> findUsers();
+
+  List<LdapGroup> findGroups(String searchStr);
+
   String getLoginAttributeName();
 
   String getDistinguishedAttributeName();

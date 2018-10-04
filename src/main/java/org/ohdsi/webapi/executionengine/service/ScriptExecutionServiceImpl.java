@@ -13,6 +13,7 @@ import org.apache.commons.logging.LogFactory;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
+import org.ohdsi.webapi.KerberosUtils;
 import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysis;
 import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisExecutionRepository;
 import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisRepository;
@@ -172,7 +173,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         analysisRequestDTO.setCallbackPassword(password);
         analysisRequestDTO.setRequested(new Date());
         if (IMPALA_DATASOURCE.equalsIgnoreCase(source.getSourceDialect()) && AuthMethod.KERBEROS == connectionParams.getAuthMethod()) {
-            setKerberosParams(source, connectionParams, analysisRequestDTO.getDataSource());
+            KerberosUtils.setKerberosParams(source, connectionParams, analysisRequestDTO.getDataSource());
         }
         String executableFileName = StringGenerationUtil.generateFileName(AnalysisRequestTypeDTO.R.name().toLowerCase());
         analysisRequestDTO.setExecutableFileName(executableFileName);
@@ -190,22 +191,6 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
                         "{", "}"));
         return analysisRequestDTO;
     }
-
-    private void setKerberosParams(Source source, ConnectionParams connectionParams, DataSourceUnsecuredDTO ds) {
-        ds.setUseKerberos(Boolean.TRUE);
-        ds.setKrbAuthMethod(source.getKrbAuthMethod());
-        ds.setKrbKeytab(source.getKrbKeytab());
-        if (source.getKrbAdminServer() != null) {
-            ds.setKrbAdminFQDN(source.getKrbAdminServer());
-        } else {
-            ds.setKrbAdminFQDN(connectionParams.getKrbFQDN());
-        }
-        ds.setKrbFQDN(connectionParams.getKrbFQDN());
-        ds.setKrbRealm(connectionParams.getKrbRealm());
-        ds.setKrbPassword(connectionParams.getPassword());
-        ds.setKrbUser(connectionParams.getUser());
-    }
-
 
     @Override
     public AnalysisExecution createAnalysisExecution(ExecutionRequestDTO dto, Source source, String password) {

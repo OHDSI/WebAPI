@@ -4,6 +4,7 @@ import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
 import org.springframework.batch.admin.service.SearchableJobExecutionDao;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobInstance;
+import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -21,10 +22,12 @@ public class NotificationServiceImpl implements NotificationService {
 
     private final SearchableJobExecutionDao jobExecutionDao;
     private final ScriptExecutionService scriptExecutionService;
+    private final JobExplorer jobExplorer;
 
-    public NotificationServiceImpl(SearchableJobExecutionDao jobExecutionDao, ScriptExecutionService scriptExecutionService, List<GeneratesNotification> whiteList) {
+    public NotificationServiceImpl(SearchableJobExecutionDao jobExecutionDao, JobExplorer jobExplorer, ScriptExecutionService scriptExecutionService, List<GeneratesNotification> whiteList) {
         this.jobExecutionDao = jobExecutionDao;
         this.scriptExecutionService = scriptExecutionService;
+        this.jobExplorer = jobExplorer;
         whiteList.forEach(g -> {
             WHITE_LIST.add(g.getJobName());
             FOLDING_KEYS.add(g.getExecutionFoldingKey());
@@ -59,10 +62,12 @@ public class NotificationServiceImpl implements NotificationService {
         final JobInstance instance = entity.getJobInstance();
         final JobInstanceResource instanceResource = new JobInstanceResource(instance.getInstanceId(), instance.getJobName());
         final JobExecutionResource result = new JobExecutionResource(instanceResource, entity.getJobId());
-        final Long executionId = entity.getJobParameters().getLong("engineAnalysisExecutionId", -1);
-        if(executionId != -1) {
-            //get status from ScriptExecutionService
-            result.setStatus(scriptExecutionService.getExecutionStatus(executionId));
+        final Long isScriptExecution = entity.getJobParameters().getLong("isScriptExecution", -1);
+        if(isScriptExecution != -1) {
+            final JobExecution e = jobExplorer.getJobExecution(entity.getJobId());
+            final Object executionId = e.getExecutionContext().get("scriptId");
+            assert executionId instanceof Long;
+            result.setStatus(scriptExecutionService.getExecutionStatus((long) executionId));
         } else {
             result.setStatus(entity.getStatus().name());
         }

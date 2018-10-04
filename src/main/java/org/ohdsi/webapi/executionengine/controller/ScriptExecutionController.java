@@ -100,7 +100,9 @@ public class ScriptExecutionController implements GeneratesNotification {
         JobParametersBuilder parametersBuilder = new JobParametersBuilder();
         parametersBuilder.addString(JOB_NAME, String.format("Generate %s %d: %s (%s)", dto.analysisType, dto.cohortId,
                 source.getSourceName(), dto.sourceKey));
+        parametersBuilder.addString("foldingKey", dto.analysisType.name() + dto.cohortId);
         parametersBuilder.addString("cohortId", String.valueOf(dto.cohortId));
+        parametersBuilder.addLong("isScriptExecution", 1L);
         final JobParameters jobParameters = parametersBuilder.toJobParameters();
 
         RunExecutionEngineTasklet runExecutionEngineTasklet = new RunExecutionEngineTasklet(scriptExecutionService, dto);
@@ -186,7 +188,7 @@ public class ScriptExecutionController implements GeneratesNotification {
 
     @Override
     public String getExecutionFoldingKey() {
-        return null;//every job is unique?
+        return "foldingKey";
     }
 
     private class StatusResponse {

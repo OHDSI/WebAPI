@@ -22,9 +22,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
+import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.circe.cohortdefinition.*;
 import org.ohdsi.circe.helper.ResourceHelper;
@@ -35,8 +35,8 @@ import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConverter;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfoEntityRepository;
-import org.ohdsi.webapi.common.generation.AnalysisTasklet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.common.generation.AnalysisTasklet;
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisCriteriaEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
@@ -72,10 +72,6 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
     private static final String CREATE_COHORT_SQL = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/createCohortTable.sql");
     private static final String DROP_TABLE_SQL = "DROP TABLE @results_database_schema.@target_table;";
 
-    private volatile boolean stopped = false;
-    private final long checkInterval = 1000L;
-    
-    private final TransactionTemplate transactionTemplate;
     private final ExecutorService taskExecutor;
     private final JdbcTemplate jdbcTemplate;
     private final CcService ccService;
@@ -94,7 +90,6 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             final UserRepository userRepository
     ) {
         super(LogFactory.getLog(GenerateCohortCharacterizationTasklet.class), transactionTemplate, analysisGenerationInfoEntityRepository);
-            final UserRepository userRepository) {
         this.jdbcTemplate = jdbcTemplate;
         this.ccService = ccService;
         this.feAnalysisService = feAnalysisService;
@@ -128,7 +123,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.PUBLIC_ONLY);
             objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             objectMapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
-            json = objectMapper.writeValueAsString(cohortDefinition.getExpression());
+            json = Utils.serialize(cohortDefinition.getExpression());
             initConceptSets(feature);
         }
 

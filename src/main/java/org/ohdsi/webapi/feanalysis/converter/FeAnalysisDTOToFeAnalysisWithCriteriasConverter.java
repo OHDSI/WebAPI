@@ -1,15 +1,14 @@
 package org.ohdsi.webapi.feanalysis.converter;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import org.ohdsi.analysis.Utils;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisCriteriaEntity;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
+import org.ohdsi.webapi.feanalysis.dto.FeAnalysisCriteriaDTO;
+import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
+import org.springframework.stereotype.Component;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import org.ohdsi.analysis.Utils;
-import org.ohdsi.webapi.feanalysis.dto.FeAnalysisCriteriaDTO;
-import org.ohdsi.webapi.feanalysis.domain.FeAnalysisCriteriaEntity;
-import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
-import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
-import org.springframework.stereotype.Component;
 
 @Component
 public class FeAnalysisDTOToFeAnalysisWithCriteriasConverter extends BaseFeAnalysisDTOToFeAnalysisConverter<FeAnalysisDTO, FeAnalysisWithCriteriaEntity> {
@@ -33,12 +32,8 @@ public class FeAnalysisDTOToFeAnalysisWithCriteriasConverter extends BaseFeAnaly
                 } else {
                     final FeAnalysisCriteriaDTO typifiedCriteria = (FeAnalysisCriteriaDTO) criteria;
                     final FeAnalysisCriteriaEntity criteriaEntity = new FeAnalysisCriteriaEntity();
-                    try {
-                        criteriaEntity.setExpressionString(Utils.serialize(typifiedCriteria.getExpression()));
-                        criteriaEntity.setConceptsetsString(Utils.serialize(typifiedCriteria.getConceptSets()));
-                    } catch (JsonProcessingException e) {
-                        throw new RuntimeException(e);
-                    }
+                    criteriaEntity.setExpressionString(Utils.serialize(typifiedCriteria.getExpression()));
+                    criteriaEntity.setConceptsetsString(Utils.serialize(typifiedCriteria.getConceptSets()));
                     criteriaEntity.setId(typifiedCriteria.getId());
                     criteriaEntity.setName(typifiedCriteria.getName());
                     result.add(criteriaEntity);

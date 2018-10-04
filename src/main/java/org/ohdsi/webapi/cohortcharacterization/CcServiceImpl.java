@@ -7,10 +7,6 @@ import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisT
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
-import org.ohdsi.webapi.common.generation.GenerationUtils;
-import org.ohdsi.webapi.shiro.annotations.CcGenerationId;
-import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
-import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConverter;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcParamEntity;
@@ -18,13 +14,14 @@ import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEnti
 import org.ohdsi.webapi.cohortcharacterization.dto.CcDistributionStat;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcPrevalenceStat;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
-import org.ohdsi.webapi.cohortcharacterization.repository.CcGenerationEntityRepository;
 import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfoEntityRepository;
+import org.ohdsi.webapi.cohortcharacterization.repository.CcGenerationEntityRepository;
 import org.ohdsi.webapi.cohortcharacterization.repository.CcParamRepository;
 import org.ohdsi.webapi.cohortcharacterization.repository.CcRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.common.DesignImportService;
+import org.ohdsi.webapi.common.generation.GenerationUtils;
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
@@ -34,10 +31,9 @@ import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.CohortGenerationService;
 import org.ohdsi.webapi.service.FeatureExtractionService;
 import org.ohdsi.webapi.service.SourceService;
-import org.ohdsi.webapi.service.*;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
-import org.ohdsi.webapi.shiro.Entities.UserRepository;
-import org.ohdsi.webapi.shiro.management.Security;
+import org.ohdsi.webapi.shiro.annotations.CcGenerationId;
+import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
+import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.EntityUtils;
@@ -90,14 +86,11 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
     private AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository;
     private SourceService sourceService;
     private GenerationUtils generationUtils;
-    private ConceptSetService conceptSetService;
 
     private final JobRepository jobRepository;
 
     public CcServiceImpl(
             final CcRepository ccRepository,
-            final Security security,
-            final UserRepository userRepository,
             final CcParamRepository paramRepository,
             final FeAnalysisService analysisService,
             final CohortDefinitionRepository cohortRepository,
@@ -111,8 +104,6 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
             final AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository,
             final SourceService sourceService,
             final GenerationUtils generationUtils
-            final SourceService sourceService,
-            final ConceptSetService conceptSetService
     ) {
         this.repository = ccRepository;
         this.paramRepository = paramRepository;
@@ -126,7 +117,6 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         this.jobRepository = jobRepository;
         this.analysisGenerationInfoEntityRepository = analysisGenerationInfoEntityRepository;
         this.sourceService = sourceService;
-        this.conceptSetService = conceptSetService;
         this.generationUtils = generationUtils;
         SerializedCcToCcConverter.setConversionService(conversionService);
     }

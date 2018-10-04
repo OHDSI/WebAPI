@@ -1,5 +1,3 @@
-with sum as (select count(*) as sum_value from @targetTable),
-    totals as (select count(*) as total from @totalsTable where cohort_definition_id = @cohortId)
 insert into @results_database_schema.cc_results (type, fa_type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id, count_value, avg_value, cohort_definition_id, cc_generation_id)
   select 'PREVALENCE' as type,
          'CRITERIA' as fa_type,
@@ -15,5 +13,6 @@ insert into @results_database_schema.cc_results (type, fa_type, covariate_id, co
     end as stat_value,
     @cohortId as cohort_definition_id,
     @executionId as cc_generation_id
-from sum, totals
+from (select count(*) as sum_value from @targetTable) sum,
+  (select count(*) as total from @totalsTable where cohort_definition_id = @cohortId) totals
 ;

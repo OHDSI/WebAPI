@@ -15,11 +15,7 @@
  */
 package org.ohdsi.webapi.cohortcharacterization;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.logging.LogFactory;
@@ -115,21 +111,18 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
     private class CohortExpressionBuilder {
         private String json;
         private int conceptSetIndex;
-        private ObjectMapper objectMapper = new ObjectMapper();
+        private TypeReference<CohortExpression> cohortExpressionTypeRef;
 
-        CohortExpressionBuilder(CohortDefinition cohortDefinition, FeAnalysisCriteriaEntity feature) throws IOException {
+        CohortExpressionBuilder(CohortDefinition cohortDefinition, FeAnalysisCriteriaEntity feature) {
 
-            objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-            objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.PUBLIC_ONLY);
-            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-            objectMapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
+            cohortExpressionTypeRef = new TypeReference<CohortExpression>() {};
             json = Utils.serialize(cohortDefinition.getExpression());
             initConceptSets(feature);
         }
 
-        private void initConceptSets(FeAnalysisCriteriaEntity feature) throws IOException {
+        private void initConceptSets(FeAnalysisCriteriaEntity feature) {
 
-            CohortExpression expression = objectMapper.readValue(this.json, CohortExpression.class);
+            CohortExpression expression = Utils.deserialize(this.json, cohortExpressionTypeRef);
             this.conceptSetIndex = expression.conceptSets.length;
             List<org.ohdsi.circe.cohortdefinition.ConceptSet> conceptSets = new ArrayList<>(Arrays.asList(expression.conceptSets));
             List<ConceptSet> featureConceptSets = feature.getConceptSets();
@@ -140,7 +133,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
                         .collect(Collectors.toList()));
             }
             expression.conceptSets = conceptSets.toArray(new org.ohdsi.circe.cohortdefinition.ConceptSet[0]);
-            this.json = objectMapper.writeValueAsString(expression);
+            this.json = Utils.serialize(expression);
         }
 
         private org.ohdsi.circe.cohortdefinition.ConceptSet cloneConceptSet(org.ohdsi.circe.cohortdefinition.ConceptSet conceptSet) {
@@ -152,23 +145,20 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
         }
 
         CohortExpression withCriteria(CriteriaGroup group) {
-            try{
-                CohortExpression expression = objectMapper.readValue(json, CohortExpression.class);
-                CriteriaGroup copy = copy(group, CriteriaGroup.class);
+
+                CohortExpression expression = Utils.deserialize(json, cohortExpressionTypeRef);
+                CriteriaGroup copy = copy(group, new TypeReference<CriteriaGroup>() {});
                 Arrays.stream(copy.criteriaList)
                         .map(cc -> cc.criteria)
                         .forEach(this::mapCodesetId);
 
                 expression.inclusionRules.add(newRule(copy));
                 return expression;
-            }catch (Exception e) {
-                throw new RuntimeException(e);
-            }
         }
 
-        private <T> T copy(T object, Class<T> objectClass) throws IOException {
-            final String json = objectMapper.writeValueAsString(object);
-            return objectMapper.readValue(json, objectClass);
+        private <T> T copy(T object, TypeReference<T> typeRef) {
+            final String json = Utils.serialize(object);
+            return Utils.deserialize(json, typeRef);
         }
 
         private void mapCodesetId(Criteria criteria) {
@@ -189,11 +179,6 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             return rule;
         }
 
-        private CriteriaGroup newCriteriaGroup() {
-            CriteriaGroup group = new CriteriaGroup();
-            group.type = "ALL";
-            return group;
-        }
     }
 
     private class CcTask {
@@ -334,32 +319,28 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
 
         private List<String> getCohortWithCriteriaQueries(CohortDefinition cohortDefinition, FeAnalysisWithCriteriaEntity analysis, FeAnalysisCriteriaEntity feature) {
 
-            try {
-                CohortExpressionBuilder builder = new CohortExpressionBuilder(cohortDefinition, feature);
-                CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = createDefaultOptions(cohortDefinition.getId());
-                options.generateStats = true;
-                String targetTable = "cohort_" + SessionUtils.sessionId();
-                options.targetTable = options.resultSchema + "." + targetTable;
-                List<String> queries = new ArrayList<>();
-                CriteriaGroup expression = feature.getExpression();
+            CohortExpressionBuilder builder = new CohortExpressionBuilder(cohortDefinition, feature);
+            CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = createDefaultOptions(cohortDefinition.getId());
+            options.generateStats = true;
+            String targetTable = "cohort_" + SessionUtils.sessionId();
+            options.targetTable = options.resultSchema + "." + targetTable;
+            List<String> queries = new ArrayList<>();
+            CriteriaGroup expression = feature.getExpression();
 
-                String createCohortSql = SqlRender.renderSql(CREATE_COHORT_SQL,
-                        new String[]{ RESULTS_DATABASE_SCHEMA, TARGET_TABLE },
-                        new String[] { source.getTableQualifier(SourceDaimon.DaimonType.Results), targetTable });
+            String createCohortSql = SqlRender.renderSql(CREATE_COHORT_SQL,
+                    new String[]{ RESULTS_DATABASE_SCHEMA, TARGET_TABLE },
+                    new String[] { source.getTableQualifier(SourceDaimon.DaimonType.Results), targetTable });
 
-                String exprQuery = queryBuilder.buildExpressionQuery(builder.withCriteria(expression), options);
-                String statsQuery = getCriteriaStatsQuery(cohortDefinition, analysis, feature, targetTable);
-                String dropTableSql = SqlRender.renderSql(DROP_TABLE_SQL, new String[]{ RESULTS_DATABASE_SCHEMA, TARGET_TABLE },
-                        new String[] { source.getTableQualifier(SourceDaimon.DaimonType.Results), targetTable });
-                queries.add(createCohortSql);
-                queries.add(exprQuery);
-                queries.add(statsQuery);
-                queries.add(dropTableSql);
+            String exprQuery = queryBuilder.buildExpressionQuery(builder.withCriteria(expression), options);
+            String statsQuery = getCriteriaStatsQuery(cohortDefinition, analysis, feature, targetTable);
+            String dropTableSql = SqlRender.renderSql(DROP_TABLE_SQL, new String[]{ RESULTS_DATABASE_SCHEMA, TARGET_TABLE },
+                    new String[] { source.getTableQualifier(SourceDaimon.DaimonType.Results), targetTable });
+            queries.add(createCohortSql);
+            queries.add(exprQuery);
+            queries.add(statsQuery);
+            queries.add(dropTableSql);
 
-                return queries;
-            }catch (IOException e){
-                throw new RuntimeException(e);
-            }
+            return queries;
         }
 
         private String getCriteriaStatsQuery(CohortDefinition cohortDefinition, FeAnalysisWithCriteriaEntity analysis, FeAnalysisCriteriaEntity feature, String targetTable) {

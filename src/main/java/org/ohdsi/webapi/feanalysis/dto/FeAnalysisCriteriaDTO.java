@@ -1,14 +1,19 @@
 package org.ohdsi.webapi.feanalysis.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.circe.cohortdefinition.CriteriaGroup;
 
 import java.util.List;
 
 public class FeAnalysisCriteriaDTO {
+    @JsonProperty("id")
     private Long id;
+    @JsonProperty("name")
     private String name;
+    @JsonProperty("expression")
     private CriteriaGroup expression;
+    @JsonProperty("conceptSets")
     private List<ConceptSet> conceptSets;
 
     public FeAnalysisCriteriaDTO() {

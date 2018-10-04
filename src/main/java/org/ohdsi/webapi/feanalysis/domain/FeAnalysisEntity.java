@@ -73,10 +73,7 @@ public abstract class FeAnalysisEntity<T> implements FeatureAnalysis, Comparable
     @Column(name = "is_locked")
     private Boolean isLocked;
 
-    @ManyToMany(targetEntity = CohortCharacterizationEntity.class, fetch = FetchType.LAZY)
-    @JoinTable(name = "cc_analysis",
-            joinColumns = @JoinColumn(name = "fe_analysis_id", referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(name = "cohort_characterization_id", referencedColumnName = "id"))
+    @ManyToMany(targetEntity = CohortCharacterizationEntity.class, fetch = FetchType.LAZY, mappedBy = "featureAnalyses")
     private Set<CohortCharacterizationEntity> cohortCharacterizations = new HashSet<>();
 
     @Column(name = "stat_type")

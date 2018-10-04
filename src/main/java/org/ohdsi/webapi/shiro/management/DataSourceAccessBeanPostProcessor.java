@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.shiro.management;
 
-import org.ohdsi.webapi.cohortcharacterization.annotations.DataSourceAccess;
+import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.management.datasource.AccessorParameterBinding;
 import org.ohdsi.webapi.shiro.management.datasource.DataSourceAccessParameterResolver;
 import org.ohdsi.webapi.util.AnnotationReflectionUtils;

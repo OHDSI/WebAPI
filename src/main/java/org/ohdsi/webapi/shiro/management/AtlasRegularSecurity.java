@@ -12,7 +12,6 @@ import org.apache.shiro.realm.ldap.JndiLdapContextFactory;
 import org.apache.shiro.realm.ldap.JndiLdapRealm;
 import org.jasig.cas.client.validation.Cas20ServiceTicketValidator;
 import org.ohdsi.webapi.user.importer.providers.LdapProvider;
-import org.ohdsi.webapi.shiro.filters.InvalidateAccessTokenFilter;
 import org.ohdsi.webapi.shiro.filters.LogoutFilter;
 import org.ohdsi.webapi.shiro.filters.SendTokenInHeaderFilter;
 import org.ohdsi.webapi.shiro.filters.SendTokenInRedirectFilter;
@@ -29,7 +28,6 @@ import org.ohdsi.webapi.shiro.filters.SendTokenInUrlFilter;
 import org.ohdsi.webapi.shiro.filters.AtlasJwtAuthFilter;
 import org.ohdsi.webapi.shiro.filters.CasHandleFilter;
 import org.ohdsi.webapi.shiro.filters.KerberosAuthFilter;
-import org.ohdsi.webapi.shiro.realms.KerberosAuthRealm;
 import org.pac4j.cas.client.CasClient;
 import org.pac4j.cas.config.CasConfiguration;
 import org.pac4j.core.client.Clients;
@@ -42,6 +40,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.stereotype.Component;
@@ -88,12 +87,6 @@ public class AtlasRegularSecurity extends AtlasSecurity {
     @Value("${security.oauth.facebook.apiSecret}")
     private String facebookApiSecret;
 
-    @Value("${security.kerberos.spn}")
-    private String kerberosSpn;
-
-    @Value("${security.kerberos.keytabPath}")
-    private String kerberosKeytabPath;
-
     @Value("${security.ldap.dn}")
     private String userDnTemplate;
 
@@ -132,6 +125,9 @@ public class AtlasRegularSecurity extends AtlasSecurity {
     @Qualifier("authDataSource")
     private DataSource jdbcDataSource;
 
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
+
     @Value("${security.oid.redirectUrl}")
     private String redirectUrl;
     
@@ -155,15 +151,14 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
         Map<String, Filter> filters = super.getFilters();
 
-        filters.put("logout", new LogoutFilter());
+        filters.put("logout", new LogoutFilter(eventPublisher));
         filters.put("updateToken", new UpdateAccessTokenFilter(this.authorizer, this.defaultRoles, this.tokenExpirationIntervalInSeconds));
-        filters.put("invalidateToken", new InvalidateAccessTokenFilter());
 
         filters.put("jwtAuthc", new AtlasJwtAuthFilter());
-        filters.put("jdbcFilter", new JdbcAuthFilter());
+        filters.put("jdbcFilter", new JdbcAuthFilter(eventPublisher));
         filters.put("kerberosFilter", new KerberosAuthFilter());
-        filters.put("ldapFilter", new LdapAuthFilter());
-        filters.put("adFilter", new ActiveDirectoryAuthFilter());
+        filters.put("ldapFilter", new LdapAuthFilter(eventPublisher));
+        filters.put("adFilter", new ActiveDirectoryAuthFilter(eventPublisher));
         filters.put("negotiateAuthc", new NegotiateAuthenticationFilter());
 
         filters.put("sendTokenInUrl", new SendTokenInUrlFilter(this.oauthUiCallback));
@@ -236,7 +231,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
                 .addRestPath("/user/login/ldap", "ldapFilter, updateToken, sendTokenInHeader")
                 .addRestPath("/user/login/ad", "adFilter, updateToken, sendTokenInHeader")
                 .addRestPath("/user/refresh", "jwtAuthc, updateToken, sendTokenInHeader")
-                .addRestPath("/user/logout", "invalidateToken, logout")
+                .addRestPath("/user/logout", "logout")
                 .addOAuthPath("/user/oauth/google", "googleAuthc")
                 .addOAuthPath("/user/oauth/facebook", "facebookAuthc")
                 .addPath("/user/login/cas", "ssl, cors, forceSessionCreation, casAuthc, updateToken, sendTokenInUrl")
@@ -258,7 +253,6 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         if (jdbcDataSource != null) {
             realms.add(new JdbcAuthRealm(jdbcDataSource, jdbcAuthenticationQuery));
         }
-        realms.add(new KerberosAuthRealm(kerberosSpn, kerberosKeytabPath));
         realms.add(ldapRealm());
         realms.add(activeDirectoryRealm());
 

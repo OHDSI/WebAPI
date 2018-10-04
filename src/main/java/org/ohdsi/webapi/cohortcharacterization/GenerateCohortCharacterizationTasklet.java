@@ -32,9 +32,10 @@ import org.ohdsi.featureExtraction.FeatureExtraction;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
-import org.ohdsi.webapi.cohortcharacterization.domain.AnalysisGenerationInfoEntity;
+import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConverter;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfoEntityRepository;
+import org.ohdsi.webapi.common.generation.AnalysisTasklet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisCriteriaEntity;
@@ -47,13 +48,9 @@ import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.SessionUtils;
-import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
-import org.springframework.batch.core.step.tasklet.StoppableTasklet;
-import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -67,8 +64,7 @@ import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.Params.*;
 
-public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
-    private static final Log log = LogFactory.getLog(GenerateCohortCharacterizationTasklet.class);
+public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
     private static final String[] CUSTOM_PARAMETERS = {"analysisId", "analysisName", "cohortId", "jobId", "design"};
     private static final String[] RETRIEVING_PARAMETERS = {"features", "featureRefs", "analysisRefs", "cohortId", "executionId"};
 
@@ -84,11 +80,10 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
     private final JdbcTemplate jdbcTemplate;
     private final CcService ccService;
     private final FeAnalysisService feAnalysisService;
-    private final AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository;
     private final SourceService sourceService;
     private final UserRepository userRepository;
     private final CohortExpressionQueryBuilder queryBuilder;
-    
+
     public GenerateCohortCharacterizationTasklet(
             final JdbcTemplate jdbcTemplate,
             final TransactionTemplate transactionTemplate,
@@ -96,19 +91,20 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
             final FeAnalysisService feAnalysisService,
             final AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository,
             final SourceService sourceService,
+            final UserRepository userRepository
+    ) {
+        super(LogFactory.getLog(GenerateCohortCharacterizationTasklet.class), transactionTemplate, analysisGenerationInfoEntityRepository);
             final UserRepository userRepository) {
         this.jdbcTemplate = jdbcTemplate;
-        this.transactionTemplate = transactionTemplate;
         this.ccService = ccService;
         this.feAnalysisService = feAnalysisService;
-        this.analysisGenerationInfoEntityRepository = analysisGenerationInfoEntityRepository;
         this.sourceService = sourceService;
         this.userRepository = userRepository;
         this.taskExecutor = Executors.newSingleThreadExecutor();
         this.queryBuilder = new CohortExpressionQueryBuilder();
     }
 
-    private int[] doTask(ChunkContext chunkContext) {
+    protected int[] doTask(ChunkContext chunkContext) {
         initTx();
         new CcTask(chunkContext).run();
         return null;
@@ -237,19 +233,9 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
         
         private void run() {
 
-            saveInfo(jobId, cohortCharacterization, userEntity);
+            saveInfo(jobId, new SerializedCcToCcConverter().convertToDatabaseColumn(cohortCharacterization), userEntity);
             cohortCharacterization.getCohortDefinitions()
                     .forEach(definition -> runAnalysisOnCohort(definition.getId()));
-        }
-
-        private void saveInfo(Long jobId, CohortCharacterizationEntity cohortCharacterization, UserEntity userEntity) {
-
-            AnalysisGenerationInfoEntity generationInfoEntity = new AnalysisGenerationInfoEntity();
-            generationInfoEntity.setId(jobId);
-            generationInfoEntity.setDesign(cohortCharacterization);
-            generationInfoEntity.setHashCode(cohortCharacterization.getHashCode());
-            generationInfoEntity.setCreatedBy(userEntity);
-            analysisGenerationInfoEntityRepository.save(generationInfoEntity);
         }
 
         private int[] runAnalysisOnCohort(final Integer cohortDefinitionId) {
@@ -264,19 +250,7 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
                     )
             );
             taskExecutor.execute(batchUpdateTask);
-            try {
-                while (true) {
-                    Thread.sleep(checkInterval);
-                    if (batchUpdateTask.isDone()) {
-                        return batchUpdateTask.get();
-                    } else if (stopped) {
-                        batchUpdateTask.cancel(true);
-                        return null;
-                    }
-                }
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+            return waitForFuture(batchUpdateTask);
         }
 
         private List<String> getQueriesForCustomDistributionAnalyses(final Integer cohortId) {
@@ -466,24 +440,6 @@ public class GenerateCohortCharacterizationTasklet implements StoppableTasklet {
             
             return defaultSettings.toString();
         }
-        
-    }
-    
-    @Override
-    public RepeatStatus execute(final StepContribution contribution, final ChunkContext chunkContext) throws Exception {
-        try {
-            this.transactionTemplate.execute(status -> doTask(chunkContext));
-        } catch (final TransactionException e) {
-            log.error(e.getMessage(), e);
-            throw e;
-        } finally {
-            taskExecutor.shutdown();
-        }
-        return RepeatStatus.FINISHED;
-    }
 
-    @Override
-    public void stop() {
-        this.stopped = true;
     }
 }

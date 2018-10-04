@@ -24,8 +24,13 @@ import javax.servlet.ServletResponse;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.UsernamePasswordToken;
+import org.springframework.context.ApplicationEventPublisher;
 
 public abstract class AbstractLdapAuthFilter<T extends UsernamePasswordToken> extends AuthenticatingPropagationFilter {
+    protected AbstractLdapAuthFilter(ApplicationEventPublisher eventPublisher) {
+        super(eventPublisher);
+    }
+
     @Override
     protected AuthenticationToken createToken(ServletRequest request, ServletResponse response) throws Exception {
 

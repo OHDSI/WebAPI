@@ -66,6 +66,7 @@ public abstract class AtlasSecurity extends Security {
 
   private final Map<String, String> cohortdefinitionCreatorPermissionTemplates = new LinkedHashMap<>();
   private final Map<String, String> cohortCharacterizationCreatorPermissionTemplates = new LinkedHashMap<>();
+  private final Map<String, String> pathwayAnalysisCreatorPermissionTemplate = new LinkedHashMap<>();
   private final Map<String, String> conceptsetCreatorPermissionTemplates = new LinkedHashMap<>();
   private final Map<String, String> sourcePermissionTemplates = new LinkedHashMap<>();
   private final Map<String, String> incidenceRatePermissionTemplates = new LinkedHashMap<>();
@@ -91,6 +92,11 @@ public abstract class AtlasSecurity extends Security {
     this.cohortCharacterizationCreatorPermissionTemplates.put("cohort-characterization:%s:put", "Update Cohort Characterization with ID = %s");
     this.cohortCharacterizationCreatorPermissionTemplates.put("cohort-characterization:%s:delete", "Delete Cohort Characterization with ID = %s");
     this.cohortCharacterizationCreatorPermissionTemplates.put("cohort-characterization:%s:generation:*:post", "Generate Cohort Characterization with ID = %s");
+
+    this.pathwayAnalysisCreatorPermissionTemplate.put("pathway-analysis:%s:put", "Update Pathway Analysis with ID = %s");
+    this.pathwayAnalysisCreatorPermissionTemplate.put("pathway-analysis:%s:sql:*:get", "Get analysis sql for Pathway Analysis with ID = %s");
+    this.pathwayAnalysisCreatorPermissionTemplate.put("pathway-analysis:%s:generation:*:post", "Generate Pathway Analysis with ID = %s");
+    this.pathwayAnalysisCreatorPermissionTemplate.put("pathway-analysis:%s:delete", "Delete Pathway Analysis with ID = %s");
 
     this.featureAnalysisPermissionTemplates.put("feature-analysis:%s:put", "Update Feature Analysis with ID = %s");
     this.featureAnalysisPermissionTemplates.put("feature-analysis:%s:delete", "Delete Feature Analysis with ID = %s");
@@ -194,6 +200,18 @@ public abstract class AtlasSecurity extends Security {
       .addProtectedRestPath("/cohort-characterization/generation/*/result")
       .addProtectedRestPath("/cohort-characterization/*/export")
 
+      // Pathways Analyses
+      .addProtectedRestPath("/pathway-analysis", "createPermissionsOnCreatePathwayAnalysis")
+      .addProtectedRestPath("/pathway-analysis/import", "createPermissionsOnCreatePathwayAnalysis")
+      .addProtectedRestPath("/pathway-analysis/*", "deletePermissionsOnDeletePathwayAnalysis")
+      .addProtectedRestPath("/pathway-analysis/*/sql/*")
+      .addProtectedRestPath("/pathway-analysis/*/generation/*")
+      .addProtectedRestPath("/pathway-analysis/*/generation")
+      .addProtectedRestPath("/pathway-analysis/generation/*")
+      .addProtectedRestPath("/pathway-analysis/generation/*/design")
+      .addProtectedRestPath("/pathway-analysis/generation/*/result")
+      .addProtectedRestPath("/pathway-analysis/*/export")
+
       // feature analyses
       .addProtectedRestPath("/feature-analysis", "createPermissionsOnCreateFeatureAnalysis")
       .addProtectedRestPath("/feature-analysis/*", "deletePermissionsOnDeleteFeatureAnalysis")
@@ -233,6 +251,8 @@ public abstract class AtlasSecurity extends Security {
     filters.put("createPermissionsOnCreateCohortDefinition", this.getCreatePermissionsOnCreateCohortDefinitionFilter());
     filters.put("createPermissionsOnCreateCohortCharacterization", this.getCreatePermissionsOnCreateCohortCharacterizationFilter());
     filters.put("deletePermissionsOnDeleteCohortCharacterization", this.getDeletePermissionsOnDeleteFilter(cohortCharacterizationCreatorPermissionTemplates));
+    filters.put("createPermissionsOnCreatePathwayAnalysis", this.getCreatePermissionsOnCreatePathwayAnalysisFilter());
+    filters.put("deletePermissionsOnDeletePathwayAnalysis", this.getDeletePermissionsOnDeleteFilter(pathwayAnalysisCreatorPermissionTemplate));
     filters.put("createPermissionsOnCreateFeatureAnalysis", this.getCreatePermissionsOnCreateFilter(featureAnalysisPermissionTemplates, "id"));
     filters.put("deletePermissionsOnDeleteFeatureAnalysis", this.getDeletePermissionsOnDeleteFilter(featureAnalysisPermissionTemplates));
     filters.put("createPermissionsOnCreateConceptSet", this.getCreatePermissionsOnCreateConceptSetFilter());
@@ -349,6 +369,23 @@ public abstract class AtlasSecurity extends Security {
         String id = this.parseJsonField(content, "id");
         RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
         authorizer.addPermissionsFromTemplate(currentUserPersonalRole, cohortCharacterizationCreatorPermissionTemplates, id);
+      }
+    };
+  }
+
+  private Filter getCreatePermissionsOnCreatePathwayAnalysisFilter() {
+    return  new ProcessResponseContentFilter() {
+      @Override
+      protected boolean shouldProcess(ServletRequest request, ServletResponse response) {
+
+        return HttpMethod.POST.equalsIgnoreCase(WebUtils.toHttp(request).getMethod());
+      }
+
+      @Override
+      protected void doProcessResponseContent(String content) throws Exception {
+        String id = this.parseJsonField(content, "id");
+        RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
+        authorizer.addPermissionsFromTemplate(currentUserPersonalRole, pathwayAnalysisCreatorPermissionTemplate, id);
       }
     };
   }

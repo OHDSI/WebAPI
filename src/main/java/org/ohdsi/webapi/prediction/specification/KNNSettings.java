@@ -7,9 +7,6 @@ public class KNNSettings {
   @JsonProperty("k")
   private Integer k = 1000;
 
-  @JsonProperty("indexFolder")
-  private String indexFolder = null;
-
   public KNNSettings k(Integer k) {
     this.k = k;
     return this;
@@ -28,25 +25,6 @@ public class KNNSettings {
     this.k = k;
   }
 
-  public KNNSettings indexFolder(String indexFolder) {
-    this.indexFolder = indexFolder;
-    return this;
-  }
-
-  /**
-   * The directory where the results and intermediate steps are output 
-   * @return indexFolder
-   **/
-  @JsonProperty("indexFolder")
-  public String getIndexFolder() {
-    return indexFolder;
-  }
-
-  public void setIndexFolder(String indexFolder) {
-    this.indexFolder = indexFolder;
-  }
-
-
   @Override
   public boolean equals(java.lang.Object o) {
     if (this == o) {
@@ -56,13 +34,12 @@ public class KNNSettings {
       return false;
     }
     KNNSettings knearestNeighbors = (KNNSettings) o;
-    return Objects.equals(this.k, knearestNeighbors.k) &&
-        Objects.equals(this.indexFolder, knearestNeighbors.indexFolder);
+    return Objects.equals(this.k, knearestNeighbors.k);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(k, indexFolder);
+    return Objects.hash(k);
   }
 
 
@@ -72,7 +49,6 @@ public class KNNSettings {
     sb.append("class KNearestNeighbors {\n");
     
     sb.append("    k: ").append(toIndentedString(k)).append("\n");
-    sb.append("    indexFolder: ").append(toIndentedString(indexFolder)).append("\n");
     sb.append("}");
     return sb.toString();
   }

@@ -2,6 +2,7 @@ package org.ohdsi.webapi.feanalysis;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
@@ -14,15 +15,19 @@ public interface FeAnalysisService {
 
     Page<FeAnalysisEntity> getPage(final Pageable pageable);
 
-    List<FeAnalysisEntity> findPresetAnalysisByFeAnalysisName(List<String> analysisNames);
-
     List<FeAnalysisWithStringEntity> findPresetAnalysesBySystemNames(Collection<String> names);
 
     FeAnalysisEntity createAnalysis(FeAnalysisEntity analysis);
+
+    Optional<FeAnalysisEntity> findById(Integer id);
 
     FeAnalysisWithCriteriaEntity createCriteriaAnalysis(FeAnalysisWithCriteriaEntity analysis);
 
     Set<FeAnalysisEntity> findByCohortCharacterization(CohortCharacterizationEntity cohortCharacterization);
 
-    List<FeAnalysisEntity> findAllPresetAnalyses();
+    List<FeAnalysisWithStringEntity> findAllPresetAnalyses();
+
+    FeAnalysisEntity updateAnalysis(Integer feAnalysisId, FeAnalysisEntity convert);
+
+    void deleteAnalysis(FeAnalysisEntity entity);
 }

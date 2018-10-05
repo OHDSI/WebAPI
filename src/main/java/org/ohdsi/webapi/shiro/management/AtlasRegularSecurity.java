@@ -28,7 +28,6 @@ import org.ohdsi.webapi.shiro.filters.SendTokenInUrlFilter;
 import org.ohdsi.webapi.shiro.filters.AtlasJwtAuthFilter;
 import org.ohdsi.webapi.shiro.filters.CasHandleFilter;
 import org.ohdsi.webapi.shiro.filters.KerberosAuthFilter;
-import org.ohdsi.webapi.shiro.realms.KerberosAuthRealm;
 import org.pac4j.cas.client.CasClient;
 import org.pac4j.cas.config.CasConfiguration;
 import org.pac4j.core.client.Clients;
@@ -87,12 +86,6 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
     @Value("${security.oauth.facebook.apiSecret}")
     private String facebookApiSecret;
-
-    @Value("${security.kerberos.spn}")
-    private String kerberosSpn;
-
-    @Value("${security.kerberos.keytabPath}")
-    private String kerberosKeytabPath;
 
     @Value("${security.ldap.dn}")
     private String userDnTemplate;
@@ -260,7 +253,6 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         if (jdbcDataSource != null) {
             realms.add(new JdbcAuthRealm(jdbcDataSource, jdbcAuthenticationQuery));
         }
-        realms.add(new KerberosAuthRealm(kerberosSpn, kerberosKeytabPath));
         realms.add(ldapRealm());
         realms.add(activeDirectoryRealm());
 

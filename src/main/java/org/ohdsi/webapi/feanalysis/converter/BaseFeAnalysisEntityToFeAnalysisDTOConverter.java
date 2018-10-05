@@ -8,7 +8,7 @@ public abstract class BaseFeAnalysisEntityToFeAnalysisDTOConverter<T extends FeA
 
   @Override
   public T convert(FeAnalysisEntity source) {
-    T dto = getReturnObject();
+    T dto = createResultObject(source);
     dto.setType(source.getType());
     dto.setName(source.getName());
     dto.setId(source.getId());
@@ -17,6 +17,4 @@ public abstract class BaseFeAnalysisEntityToFeAnalysisDTOConverter<T extends FeA
 
     return dto;
   }
-
-  protected abstract T getReturnObject();
 }

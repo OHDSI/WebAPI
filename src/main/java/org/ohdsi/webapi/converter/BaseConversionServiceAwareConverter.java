@@ -13,6 +13,11 @@ public abstract class BaseConversionServiceAwareConverter<From, To> implements C
         return null;
     }
 
+    protected To createResultObject(From from) {
+
+        return createResultObject();
+    }
+
     @Autowired
     protected GenericConversionService conversionService;
 

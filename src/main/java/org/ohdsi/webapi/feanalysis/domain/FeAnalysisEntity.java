@@ -31,13 +31,12 @@ import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEnti
 @Table(name = "fe_analysis")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorFormula("type")
-public class 
-FeAnalysisEntity implements FeatureAnalysis, Comparable<FeAnalysisEntity> {
+public abstract class FeAnalysisEntity<T> implements FeatureAnalysis, Comparable<FeAnalysisEntity> {
 
     public FeAnalysisEntity() {
     }
 
-    public FeAnalysisEntity(final FeAnalysisEntity entityForCopy) {
+    public FeAnalysisEntity(final FeAnalysisEntity<T> entityForCopy) {
         this.id = entityForCopy.id;
         this.type = entityForCopy.type;
         this.name = entityForCopy.name;
@@ -45,6 +44,7 @@ FeAnalysisEntity implements FeatureAnalysis, Comparable<FeAnalysisEntity> {
         this.domain = entityForCopy.domain;
         this.descr = entityForCopy.descr;
         this.isLocked = entityForCopy.isLocked;
+        this.statType = entityForCopy.statType;
     }
     
     @Id
@@ -74,10 +74,7 @@ FeAnalysisEntity implements FeatureAnalysis, Comparable<FeAnalysisEntity> {
     @Column(name = "is_locked")
     private Boolean isLocked;
 
-    @ManyToMany(targetEntity = CohortCharacterizationEntity.class, fetch = FetchType.LAZY)
-    @JoinTable(name = "cc_analysis",
-            joinColumns = @JoinColumn(name = "fe_analysis_id", referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(name = "cohort_characterization_id", referencedColumnName = "id"))
+    @ManyToMany(targetEntity = CohortCharacterizationEntity.class, fetch = FetchType.LAZY, mappedBy = "featureAnalyses")
     private Set<CohortCharacterizationEntity> cohortCharacterizations = new HashSet<>();
 
     @Column(name = "stat_type")
@@ -109,12 +106,9 @@ FeAnalysisEntity implements FeatureAnalysis, Comparable<FeAnalysisEntity> {
     }
 
     @Override
-    public <T> T getDesign() {
-        return null;
-    }
+    public abstract T getDesign();
 
-    public <T> void setDesign(T design) {
-    }
+    public abstract void setDesign(T design);
     
     public boolean isPreset() {
         return this.type == StandardFeatureAnalysisType.PRESET;

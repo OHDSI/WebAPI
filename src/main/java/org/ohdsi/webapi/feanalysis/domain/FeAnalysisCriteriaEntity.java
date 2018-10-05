@@ -15,6 +15,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.Type;
+import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.cohortdefinition.CriteriaGroup;
 import org.ohdsi.analysis.cohortcharacterization.design.CriteriaFeature;
 
@@ -49,12 +50,7 @@ public class FeAnalysisCriteriaEntity implements CriteriaFeature {
     }
     
     private CriteriaGroup getCriteriaGroup() {
-        final ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            return objectMapper.readValue(this.expressionString, CriteriaGroup.class);
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Cohort group cannot be parsed", e);
-        }
+        return Utils.deserialize(this.expressionString, CriteriaGroup.class);
     }
 
     public void setName(final String name) {

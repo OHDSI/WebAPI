@@ -3,6 +3,7 @@ package org.ohdsi.webapi.feanalysis.domain;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hibernate.annotations.Type;
+import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
 
 import javax.persistence.*;
@@ -55,12 +56,7 @@ public class FeAnalysisConcepsetEntity {
   }
 
   public List<ConceptSet> getConceptSets() {
-    final ObjectMapper objectMapper = new ObjectMapper();
-    try {
-      JavaType type = objectMapper.getTypeFactory().constructCollectionType(List.class, ConceptSet.class);
-      return Objects.nonNull(this.rawExpression) ? objectMapper.readValue(this.rawExpression, type) : null;
-    } catch (IOException e) {
-      throw new IllegalArgumentException("Concept set cannot be parsed", e);
-    }
+    return Objects.nonNull(this.rawExpression) ?
+            Utils.deserialize(this.rawExpression, typeFactory -> typeFactory.constructCollectionType(List.class, ConceptSet.class)) : null;
   }
 }

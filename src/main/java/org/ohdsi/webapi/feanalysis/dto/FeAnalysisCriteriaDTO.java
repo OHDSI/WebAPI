@@ -1,10 +1,7 @@
 package org.ohdsi.webapi.feanalysis.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.circe.cohortdefinition.CriteriaGroup;
-
-import java.util.List;
 
 public class FeAnalysisCriteriaDTO {
     @JsonProperty("id")
@@ -13,19 +10,16 @@ public class FeAnalysisCriteriaDTO {
     private String name;
     @JsonProperty("expression")
     private CriteriaGroup expression;
-    @JsonProperty("conceptSets")
-    private List<ConceptSet> conceptSets;
 
     public FeAnalysisCriteriaDTO() {
 
     }
 
-    public FeAnalysisCriteriaDTO(Long id, String name, CriteriaGroup expression, List<ConceptSet> conceptSets) {
+    public FeAnalysisCriteriaDTO(Long id, String name, CriteriaGroup expression) {
 
         this.id = id;
         this.name = name;
         this.expression = expression;
-        this.conceptSets = conceptSets;
     }
 
     public Long getId() {
@@ -52,11 +46,4 @@ public class FeAnalysisCriteriaDTO {
         this.expression = expression;
     }
 
-    public List<ConceptSet> getConceptSets() {
-        return conceptSets;
-    }
-
-    public void setConceptSets(List<ConceptSet> conceptSets) {
-        this.conceptSets = conceptSets;
-    }
 }

@@ -11,11 +11,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.PostConstruct;
+
+import com.fasterxml.jackson.databind.type.CollectionType;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
+import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisCriteriaDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
+import org.ohdsi.webapi.feanalysis.dto.FeAnalysisWithConceptSetDTO;
 
 public class FeAnalysisDeserializer extends JsonDeserializer<FeAnalysisDTO> {
     
@@ -31,10 +36,11 @@ public class FeAnalysisDeserializer extends JsonDeserializer<FeAnalysisDTO> {
     
     @Override
     public FeAnalysisDTO deserialize(final JsonParser parser, final DeserializationContext ctxt) throws IOException, JsonProcessingException {
-        FeAnalysisDTO dto = new FeAnalysisDTO();
 
         ObjectCodec codec = parser.getCodec();
         JsonNode node = codec.readTree(parser);
+
+        FeAnalysisDTO dto = createDto(node);
 
         final JsonNode name = node.get("name");
         if (name != null) {
@@ -62,11 +68,8 @@ public class FeAnalysisDeserializer extends JsonDeserializer<FeAnalysisDTO> {
             dto.setDomain(StandardFeatureAnalysisDomain.valueOf(domainString));
         }
 
-
-        final JsonNode type = node.get("type");
-        if (type != null) {
-            final String typeString = type.textValue();
-            final StandardFeatureAnalysisType analysisType = StandardFeatureAnalysisType.valueOf(typeString);
+        final StandardFeatureAnalysisType analysisType = getType(node);
+        if (analysisType != null) {
             dto.setType(analysisType);
 
             final JsonNode design = node.get("design");
@@ -76,12 +79,39 @@ public class FeAnalysisDeserializer extends JsonDeserializer<FeAnalysisDTO> {
                     list.add(convert(jsonNode));
                 }
                 dto.setDesign(list);
+
+                final JsonNode conceptSets = node.get("conceptSets");
+                if (Objects.nonNull(conceptSets)) {
+                    CollectionType typeRef = objectMapper.getTypeFactory().constructCollectionType(List.class, ConceptSet.class);
+                    List<ConceptSet> conceptSetList = objectMapper.readValue(conceptSets.traverse(), typeRef);
+                    ((FeAnalysisWithConceptSetDTO)dto).setConceptSets(conceptSetList);
+                }
             } else {
                 dto.setDesign(design.textValue());
             }
         }
 
         return dto;
+    }
+
+    private StandardFeatureAnalysisType getType(JsonNode jsonNode) {
+        final JsonNode type = jsonNode.get("type");
+        StandardFeatureAnalysisType result = null;
+        if (Objects.nonNull(type)) {
+            result = StandardFeatureAnalysisType.valueOf(type.textValue());
+        }
+        return result;
+    }
+
+    private FeAnalysisDTO createDto(JsonNode jsonNode) {
+        final StandardFeatureAnalysisType type = getType(jsonNode);
+        FeAnalysisDTO analysisDTO;
+        if (Objects.equals(StandardFeatureAnalysisType.CRITERIA_SET, type)) {
+            analysisDTO = new FeAnalysisWithConceptSetDTO();
+        } else {
+            analysisDTO = new FeAnalysisDTO();
+        }
+        return analysisDTO;
     }
     
     private FeAnalysisCriteriaDTO convert(final JsonNode node) {

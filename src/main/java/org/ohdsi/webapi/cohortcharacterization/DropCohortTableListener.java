@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.service.SourceService;
@@ -19,7 +20,8 @@ import static org.ohdsi.webapi.Constants.Params.*;
 
 public class DropCohortTableListener extends JobExecutionListenerSupport {
 
-  private final String DROP_TABLE_SQL = "DROP TABLE @results_database_schema.@target_table;";
+  private final String DROP_TABLE_SQL = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/dropCohortTable.sql");
+  
   private final JdbcTemplate jdbcTemplate;
   private final TransactionTemplate transactionTemplate;
   private final SourceService sourceService;

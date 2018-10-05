@@ -80,7 +80,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
 
     private static final String COHORT_STATS_QUERY = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/prevalenceWithCriteria.sql");
     private static final String CREATE_COHORT_SQL = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/createCohortTable.sql");
-    private static final String DROP_TABLE_SQL = "DROP TABLE @temp_database_schema.@target_table;";
+    private static final String DROP_TABLE_SQL = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/dropCohortTable.sql");
 
     private final ExecutorService taskExecutor;
     private final JdbcTemplate jdbcTemplate;

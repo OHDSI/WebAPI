@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
@@ -44,10 +45,12 @@ public class CreateCohortTableTasklet implements Tasklet {
     Source source = sourceService.findBySourceId(Integer.valueOf(jobParameters.get(SOURCE_ID).toString()));
     String targetTable = jobParameters.get(TARGET_TABLE).toString();
 
+    final String resultsQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    final String tempQualifier =ObjectUtils.firstNonNull( source.getTableQualifierOrNull(SourceDaimon.DaimonType.Temp), resultsQualifier);
     String sql = SqlRender.renderSql(CREATE_COHORT_SQL,
-            new String[]{ RESULTS_DATABASE_SCHEMA, TARGET_TABLE },
-            new String[] { source.getTableQualifier(SourceDaimon.DaimonType.Results), targetTable });
-    String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect());
+            new String[]{ RESULTS_DATABASE_SCHEMA, TEMP_DATABASE_SCHEMA, TARGET_TABLE },
+            new String[] {resultsQualifier, tempQualifier, targetTable });
+    String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect(), null, tempQualifier);
     jdbcTemplate.execute(translatedSql);
 
     return null;

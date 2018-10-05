@@ -1,4 +1,4 @@
-create table @results_database_schema.@target_table
+create table @temp_database_schema.@target_table
 (
   COHORT_DEFINITION_ID int NOT NULL,
   SUBJECT_ID bigint NOT NULL,

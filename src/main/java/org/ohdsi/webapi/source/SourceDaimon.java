@@ -16,8 +16,7 @@
 package org.ohdsi.webapi.source;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.io.Serializable;
-import java.util.Objects;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -27,6 +26,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import java.io.Serializable;
+import java.util.Objects;
 
 /**
  *
@@ -35,7 +36,7 @@ import javax.persistence.Table;
 @Entity(name = "SourceDaimon")
 @Table(name="source_daimon")
 public class SourceDaimon implements Serializable {
-  public enum DaimonType { CDM, Vocabulary, Results, CEM, CEMResults };
+  public enum DaimonType { CDM, Vocabulary, Results, CEM, CEMResults, Temp };
   
   public SourceDaimon() {
   

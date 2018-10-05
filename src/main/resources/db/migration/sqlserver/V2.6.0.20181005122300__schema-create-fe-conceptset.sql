@@ -15,3 +15,5 @@ ALTER TABLE ${ohdsiSchema}.fe_analysis_conceptset
 ALTER TABLE ${ohdsiSchema}.fe_analysis_conceptset
     ADD CONSTRAINT fk_fe_conceptset_fe_analysis FOREIGN KEY (fe_analysis_id)
       REFERENCES ${ohdsiSchema}.fe_analysis(id) ON UPDATE NO ACTION ON DELETE CASCADE;
+
+ALTER TABLE ${ohdsiSchema}.fe_analysis_criteria DROP COLUMN conceptsets;

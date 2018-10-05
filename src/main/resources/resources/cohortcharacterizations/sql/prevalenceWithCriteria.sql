@@ -1,4 +1,4 @@
-insert into @results_database_schema.cc_results (type, fa_type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id, count_value, avg_value, cohort_definition_id, cc_generation_id)
+insert into @temp_database_schema.cc_results (type, fa_type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id, count_value, avg_value, cohort_definition_id, cc_generation_id)
   select 'PREVALENCE' as type,
          'CRITERIA' as fa_type,
     @covariateId as covariate_id,

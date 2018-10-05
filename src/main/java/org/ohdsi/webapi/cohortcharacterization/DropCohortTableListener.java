@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.service.SourceService;
@@ -35,10 +36,11 @@ public class DropCohortTableListener extends JobExecutionListenerSupport {
     Source source = sourceService.findBySourceId(Integer.valueOf(jobParameters.get(SOURCE_ID).toString()));
     String targetTable = jobParameters.get(TARGET_TABLE).getValue().toString();
     String targetDialect = source.getSourceDialect();
-    String resultsSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 
-    String sql = SqlRender.renderSql(DROP_TABLE_SQL, new String[] { RESULTS_DATABASE_SCHEMA, TARGET_TABLE },
-            new String[] { resultsSchema, targetTable });
+    final String resultsQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    final String tempQualifier = ObjectUtils.firstNonNull( source.getTableQualifierOrNull(SourceDaimon.DaimonType.Temp), resultsQualifier);
+    String sql = SqlRender.renderSql(DROP_TABLE_SQL, new String[] { RESULTS_DATABASE_SCHEMA, TEMP_DATABASE_SCHEMA, TARGET_TABLE },
+            new String[] { resultsQualifier, tempQualifier, targetTable });
     String translatedSql = SqlTranslate.translateSql(sql, targetDialect);
     jdbcTemplate.execute(translatedSql);
 

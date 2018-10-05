@@ -102,7 +102,7 @@ public class ScriptExecutionController implements GeneratesNotification {
                 source.getSourceName(), dto.sourceKey));
         parametersBuilder.addString("foldingKey", dto.analysisType.name() + dto.cohortId);
         parametersBuilder.addString("cohortId", String.valueOf(dto.cohortId));
-        parametersBuilder.addLong("isScriptExecution", 1L);
+        parametersBuilder.addString("scriptType", dto.analysisType.name());
         final JobParameters jobParameters = parametersBuilder.toJobParameters();
 
         RunExecutionEngineTasklet runExecutionEngineTasklet = new RunExecutionEngineTasklet(scriptExecutionService, dto);

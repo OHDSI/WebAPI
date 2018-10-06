@@ -47,7 +47,7 @@ public class Prior {
   private Integer variance = null;
 
   @JsonProperty("exclude")
-  private String exclude = null;
+  private Integer exclude = null;
 
   @JsonProperty("graph")
   private String graph = null;
@@ -100,7 +100,7 @@ public class Prior {
     this.variance = variance;
   }
 
-  public Prior exclude(String exclude) {
+  public Prior exclude(Integer exclude) {
     this.exclude = exclude;
     return this;
   }
@@ -110,11 +110,11 @@ public class Prior {
    * @return exclude
    **/
   @JsonProperty("exclude")
-  public String getExclude() {
+  public Integer getExclude() {
     return exclude;
   }
 
-  public void setExclude(String exclude) {
+  public void setExclude(Integer exclude) {
     this.exclude = exclude;
   }
 

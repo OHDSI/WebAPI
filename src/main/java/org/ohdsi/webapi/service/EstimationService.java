@@ -1,6 +1,10 @@
 package org.ohdsi.webapi.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -265,7 +269,11 @@ public class EstimationService extends AbstractDaoService {
         }
         
         EstimationAnalysis analysis = this.exportAnalysis(id);
-        String studySpecs = Utils.serialize(analysis);
+        // Cannot use Utils.serialize(analysis) since it removes
+        // properties with null values which are required in the
+        // specification
+        //String studySpecs = Utils.serialize(analysis);
+        String studySpecs = this.seralizeAnalysis(analysis);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         
         Hydra h = new Hydra(studySpecs);
@@ -278,5 +286,26 @@ public class EstimationService extends AbstractDaoService {
                 .build();
         
         return response;
+    }
+    
+    // NOTE: This should be replaced with SSA.serialize once issue
+    // noted in the download function is addressed.
+    private String seralizeAnalysis(EstimationAnalysis estimationAnalysis) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.disable(
+                MapperFeature.AUTO_DETECT_CREATORS,
+                MapperFeature.AUTO_DETECT_GETTERS,
+                MapperFeature.AUTO_DETECT_IS_GETTERS
+        );
+
+        objectMapper.disable(
+                SerializationFeature.FAIL_ON_EMPTY_BEANS
+        );
+
+        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+
+        //objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        
+        return objectMapper.writeValueAsString(estimationAnalysis);
     }
 }

@@ -148,7 +148,7 @@ CREATE TABLE ${ohdsiSchema}.fe_analysis_criteria
 );
 
 ALTER TABLE ${ohdsiSchema}.fe_analysis_criteria
-  ADD CONSTRAINT fk_fec_fe_analysisFOREIGN KEY (fe_analysis_id)
+  ADD CONSTRAINT fk_fec_fe_analysis FOREIGN KEY (fe_analysis_id)
 REFERENCES ${ohdsiSchema}.fe_analysis(id);
 
 CREATE TABLE ${ohdsiSchema}.cc_cohort

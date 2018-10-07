@@ -136,6 +136,9 @@
     <jasypt.encryptor.enabled>false</jasypt.encryptor.enabled>
     <jasypt.encryptor.password></jasypt.encryptor.password>
 		<jasypt.encryptor.algorithm>PBEWithMD5AndDES</jasypt.encryptor.algorithm>
+                
+    <!-- ORGANIZATION SETTINGS -->
+    <organization.name>OHDSI</organization.name>
 
     <spring.batch.taskExecutor.corePoolSize>10</spring.batch.taskExecutor.corePoolSize>
     <spring.batch.taskExecutor.maxPoolSize>20</spring.batch.taskExecutor.maxPoolSize>
@@ -577,7 +580,12 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>circe</artifactId>
-      <version>1.6.0</version>
+      <version>1.7.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.ohdsi</groupId>
+      <artifactId>hydra</artifactId>
+      <version>0.0.1</version>
     </dependency>
     <dependency>
       <groupId>org.json</groupId>
@@ -628,11 +636,6 @@
       <version>${arachne.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.odysseusinc</groupId>
-      <artifactId>logging</artifactId>
-      <version>${arachne.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.glassfish.jersey.media</groupId>
       <artifactId>jersey-media-multipart</artifactId>
       <version>${jersey-media-multipart.version}</version>
@@ -650,7 +653,7 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>standardized-analysis-api</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>1.0.0</version>
     </dependency>
     <dependency>
       <groupId>com.cosium.spring.data</groupId>
@@ -661,6 +664,12 @@
       <groupId>org.pac4j</groupId>
       <artifactId>pac4j-cas</artifactId>
       <version>1.9.2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+      <version>2.8.7</version>
+      <type>jar</type>
     </dependency>
   </dependencies>
   <profiles>

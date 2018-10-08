@@ -368,20 +368,26 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   public List<CohortDefinitionListItem> getCohortDefinitionList() {
 
-    return getTransactionTemplate().execute(transactionStatus ->
-      StreamSupport.stream(cohortDefinitionRepository.findAll().spliterator(), false).map(def -> {
-        CohortDefinitionListItem item = new CohortDefinitionListItem();
-        item.id = def.getId();
-        item.name = def.getName();
-        item.description = def.getDescription();
-        item.expressionType = def.getExpressionType();
-        item.createdBy = UserUtils.nullSafeLogin(def.getCreatedBy());
-        item.createdDate = def.getCreatedDate();
-        item.modifiedBy = UserUtils.nullSafeLogin(def.getModifiedBy());
-        item.modifiedDate = def.getModifiedDate();
-        return item;
-      }).collect(Collectors.toList())
-    );
+		ArrayList<CohortDefinitionListItem> result = new ArrayList<>();
+		// we use a direct query here because using repository.findAll leads to N+1 query performance (because the One-To-One mapping to 
+		// CohortDefinitionDetails is not lazy loaded when using JPA to fetch data.
+		String query = "SELECT cd.id, cd.name, cd.description, cd.expressionType, cu.login, cd.createdDate, mu.login, cd.modifiedDate FROM CohortDefinition cd"
+						+	" LEFT JOIN cd.createdBy cu LEFT JOIN cd.modifiedBy mu";
+		
+		List<Object[]> defs = entityManager.createQuery(query).getResultList();
+		for (Object[] d : defs) {
+			CohortDefinitionListItem item = new CohortDefinitionListItem();
+			item.id = (Integer)d[0];
+			item.name = (String)d[1];
+			item.description = (String)d[2];
+			item.expressionType = (ExpressionType)d[3];
+			item.createdBy = (String)d[4];
+			item.createdDate = (Date)d[5];
+			item.modifiedBy = (String)d[6];
+			item.modifiedDate = (Date)d[7];
+			result.add(item);
+		}
+		return result;
   }
 
   /**

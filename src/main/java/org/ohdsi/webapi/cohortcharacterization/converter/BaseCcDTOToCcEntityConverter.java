@@ -42,7 +42,7 @@ public abstract class BaseCcDTOToCcEntityConverter<T extends BaseCcDTO<? extends
       cohortCharacterization.setCohortDefinitions(convertedCohortDefinitions);
     }
 
-    final Set<FeAnalysisEntity> convertedFeatureAnalyses = source.getFeatureAnalyses().stream().map(this::convertFeAnalysisAccordingToType).collect(Collectors.toSet());
+    final Set<FeAnalysisEntity> convertedFeatureAnalyses = source.getFeatureAnalyses().stream().map(fa -> conversionService.convert(fa, FeAnalysisEntity.class)).collect(Collectors.toSet());
     cohortCharacterization.setFeatureAnalyses(convertedFeatureAnalyses);
 
     final Set<CcParamEntity> convertedParameters = source.getParameters().stream().map(this::convertParameter).collect(Collectors.toSet());
@@ -53,16 +53,6 @@ public abstract class BaseCcDTOToCcEntityConverter<T extends BaseCcDTO<? extends
 
   protected CcParamEntity convertParameter(final CcParameterDTO dto) {
     return conversionService.convert(dto, CcParamEntity.class);
-  }
-
-  protected FeAnalysisEntity convertFeAnalysisAccordingToType(final FeAnalysisShortDTO dto) {
-    if (dto.getType() == null) {
-      return conversionService.convert(dto, FeAnalysisEntity.class);
-    } else if (StandardFeatureAnalysisType.CRITERIA_SET.equals(dto.getType())) {
-      return conversionService.convert(dto, FeAnalysisWithCriteriaEntity.class);
-    } else {
-      return conversionService.convert(dto, FeAnalysisWithStringEntity.class);
-    }
   }
 
 

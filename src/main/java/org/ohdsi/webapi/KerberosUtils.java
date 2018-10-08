@@ -19,7 +19,5 @@ public final class KerberosUtils {
         }
         ds.setKrbFQDN(connectionParams.getKrbFQDN());
         ds.setKrbRealm(connectionParams.getKrbRealm());
-        ds.setKrbPassword(connectionParams.getPassword());
-        ds.setKrbUser(connectionParams.getUser());
     }
 }

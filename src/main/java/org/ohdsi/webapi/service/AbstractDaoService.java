@@ -1,12 +1,5 @@
 package org.ohdsi.webapi.service;
 
-import java.io.File;
-import java.io.IOException;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.util.*;
-
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AuthMethod;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.DataSourceUnsecuredDTO;
 import com.odysseusinc.arachne.execution_engine_common.util.ConnectionParams;
@@ -14,8 +7,6 @@ import com.odysseusinc.datasourcemanager.krblogin.KerberosService;
 import com.odysseusinc.datasourcemanager.krblogin.KrbConfig;
 import com.odysseusinc.datasourcemanager.krblogin.RuntimeServiceMode;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.IExecutionInfo;
 import org.ohdsi.webapi.KerberosUtils;
@@ -31,6 +22,8 @@ import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.util.DataSourceDTOParser;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -38,14 +31,22 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.sql.Connection;
+import java.io.File;
+import java.io.IOException;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
  */
 public abstract class AbstractDaoService {
 
-  protected final Log log = LogFactory.getLog(getClass());
+  protected final Logger log = LoggerFactory.getLogger(getClass());
   private static final String IMPALA_DATASOURCE = "impala";
 
   @Value("${datasource.ohdsi.schema}")
@@ -179,7 +180,7 @@ public abstract class AbstractDaoService {
       FileUtils.forceDelete(temporaryDir);
       FileUtils.forceDelete(krbConfig.getKeytabPath().toFile());
     } catch (IOException e) {
-      log.warn(e);
+      log.warn(e.getMessage(), e);
     }
   }
 

@@ -578,7 +578,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 
 		final JobParameters jobParameters = builder.toJobParameters();
 
-		log.info(String.format("Beginning cohort cleanup for cohort definition id: \n %s", "" + id));
+		log.info("Beginning cohort cleanup for cohort definition id: \n {}", "" + id);
 
 		CleanupCohortTasklet cleanupTasklet = new CleanupCohortTasklet(this.getTransactionTemplateNoTransaction(),this.getSourceRepository());
 
@@ -675,7 +675,7 @@ public class CohortDefinitionService extends AbstractDaoService {
           CohortExpression cohortExpression = mapper.readValue(expression, CohortExpression.class);
           result = runChecks(id, cohortExpression);
       } catch (IOException e) {
-          log.error(String.format("Failed to parse cohort:%d expression", id), e);
+          log.error("Failed to parse cohort:{} expression", id, e);
           result = new CheckResultDTO(id, Stream.of(new DefaultWarning(WarningSeverity.INFO,"Failed to check expression"))
                   .collect(Collectors.toList()));
       }

@@ -15,12 +15,11 @@
  */
 package org.ohdsi.webapi.cohortdefinition;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.InclusionRule;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.Constants;
@@ -28,6 +27,8 @@ import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
@@ -40,14 +41,11 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
-
-import org.ohdsi.sql.SqlRender;
 
 /**
  *
@@ -55,7 +53,7 @@ import org.ohdsi.sql.SqlRender;
  */
 public class GenerateCohortTasklet implements StoppableTasklet {
 
-  private static final Log log = LogFactory.getLog(GenerateCohortTasklet.class);
+  private static final Logger log = LoggerFactory.getLogger(GenerateCohortTasklet.class);
 
   private final static CohortExpressionQueryBuilder expressionQueryBuilder = new CohortExpressionQueryBuilder();
 
@@ -153,6 +151,7 @@ public class GenerateCohortTasklet implements StoppableTasklet {
       taskExecutor.shutdown();
 
     } catch (Exception e) {
+      log.error("Failed to generate cohort: {}", defId, e);
       throw new RuntimeException(e);
     }
 

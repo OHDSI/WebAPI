@@ -12,8 +12,6 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.HttpMethod;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.Authenticator;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
@@ -33,6 +31,8 @@ import org.ohdsi.webapi.shiro.filters.SkipFurtherFilteringFilter;
 import org.ohdsi.webapi.shiro.filters.UrlBasedAuthorizingFilter;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import waffle.shiro.negotiate.NegotiateAuthenticationStrategy;
@@ -45,7 +45,7 @@ public abstract class AtlasSecurity extends Security {
   public static final String TOKEN_ATTRIBUTE = "TOKEN";
   public static final String AUTH_FILTER_ATTRIBUTE = "AuthenticatingFilter";
   public static final String PERMISSIONS_ATTRIBUTE = "PERMISSIONS";
-  private final Log log = LogFactory.getLog(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   @Autowired
   protected PermissionManager authorizer;
@@ -333,7 +333,7 @@ public abstract class AtlasSecurity extends Security {
       }
     }
     catch (Exception e) {
-      log.error(e);
+      log.error(e.getMessage(), e);
     }
   }
 

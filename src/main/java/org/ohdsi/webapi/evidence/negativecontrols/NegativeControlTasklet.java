@@ -4,13 +4,13 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfo;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationType;
 import org.ohdsi.webapi.service.EvidenceService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
@@ -25,7 +25,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 public class NegativeControlTasklet implements Tasklet {
 
-    private static final Log log = LogFactory.getLog(NegativeControlTasklet.class);
+    private static final Logger log = LoggerFactory.getLogger(NegativeControlTasklet.class);
 
     private final NegativeControlTaskParameters task;
 
@@ -95,7 +95,7 @@ public class NegativeControlTasklet implements Tasklet {
                     log.debug("entering tasklet");
 
                     String negativeControlSql = EvidenceService.getNegativeControlSql(task);
-                    log.debug("process negative controls with: \n\t" + negativeControlSql);
+                    log.debug("process negative controls with: \n\t{}", negativeControlSql);
                     NegativeControlTasklet.this.evidenceJdbcTemplate.execute(negativeControlSql);
 
                     return result;

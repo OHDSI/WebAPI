@@ -1,8 +1,8 @@
 package org.ohdsi.webapi.common.generation;
 
-import org.apache.commons.logging.Log;
 import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfoEntityRepository;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.slf4j.Logger;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.StoppableTasklet;
@@ -16,7 +16,7 @@ import java.util.concurrent.FutureTask;
 
 public abstract class AnalysisTasklet implements StoppableTasklet {
 
-    protected final Log log;
+    protected final Logger log;
     protected final ExecutorService taskExecutor;
     protected final TransactionTemplate transactionTemplate;
     protected final AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository;
@@ -24,7 +24,7 @@ public abstract class AnalysisTasklet implements StoppableTasklet {
     protected volatile boolean stopped = false;
     protected final long checkInterval = 1000L;
 
-    public AnalysisTasklet(Log log, TransactionTemplate transactionTemplate, AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository) {
+    public AnalysisTasklet(Logger log, TransactionTemplate transactionTemplate, AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository) {
 
         this.log = log;
         this.transactionTemplate = transactionTemplate;

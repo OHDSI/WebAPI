@@ -15,17 +15,14 @@
  */
 package org.ohdsi.webapi.cdmresults;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.HashMap;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.webapi.cache.ResultsCache;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
@@ -33,6 +30,10 @@ import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.HashMap;
 
 /**
  * @author fdefalco
@@ -42,7 +43,7 @@ public class CDMResultsCacheTasklet implements Tasklet {
     private final JdbcTemplate jdbcTemplate;
     private final Source source;
     private final CDMResultsCache cdmResultsCache;
-	private static final Log log = LogFactory.getLog(CDMResultsCacheTasklet.class);
+	  private static final Logger log = LoggerFactory.getLogger(CDMResultsCacheTasklet.class);
 
     public CDMResultsCacheTasklet(final JdbcTemplate t, final Source s) {
         jdbcTemplate = t;
@@ -77,7 +78,7 @@ public class CDMResultsCacheTasklet implements Tasklet {
 							}
 					});
 				} catch (Exception e) {
-					log.error("Failed to warm cache for " + source.getSourceKey() + ". Exception: " + e.getLocalizedMessage());
+					log.error("Failed to warm cache for {}. Exception: {}", source.getSourceKey(), e.getLocalizedMessage());
 					throw e;
 				} finally {
 					return newCache;

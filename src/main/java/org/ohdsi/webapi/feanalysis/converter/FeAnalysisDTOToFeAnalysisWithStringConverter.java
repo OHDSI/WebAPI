@@ -6,7 +6,7 @@ import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
 import org.springframework.stereotype.Component;
 
 @Component
-public class FeAnalysisDTOToFeAnalysisWithStringConverter extends BaseFeAnalysisDTOToFeAnalysisConverter<FeAnalysisWithStringEntity> {
+public class FeAnalysisDTOToFeAnalysisWithStringConverter extends BaseFeAnalysisDTOToFeAnalysisConverter<FeAnalysisDTO, FeAnalysisWithStringEntity> {
     @Override
     public FeAnalysisWithStringEntity convert(final FeAnalysisDTO source) {
         if (source.getType() != StandardFeatureAnalysisType.CUSTOM_FE && source.getType() != StandardFeatureAnalysisType.PRESET) {

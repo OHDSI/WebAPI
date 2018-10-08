@@ -2,6 +2,7 @@ package org.ohdsi.webapi.feanalysis.dto;
 
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
+import org.ohdsi.webapi.cohortcharacterization.CcResultType;
 
 public class FeAnalysisShortDTO {
 
@@ -10,6 +11,7 @@ public class FeAnalysisShortDTO {
     private String name;
     private StandardFeatureAnalysisType type;
     private StandardFeatureAnalysisDomain domain;
+    private CcResultType statType;
 
     public Integer getId() {
 
@@ -55,5 +57,15 @@ public class FeAnalysisShortDTO {
     public void setDescription(final String description) {
 
         this.description = description;
+    }
+
+    public CcResultType getStatType() {
+
+        return statType;
+    }
+
+    public void setStatType(CcResultType statType) {
+
+        this.statType = statType;
     }
 }

@@ -10,6 +10,7 @@ import static org.ohdsi.webapi.executionengine.job.CreateAnalysisTasklet.ANALYSI
 
 public class RunExecutionEngineTasklet extends BaseExecutionTasklet {
 
+    public static final String SCRIPT_ID = "scriptId";
     private final ScriptExecutionService executionService;
     private final ExecutionRequestDTO executionRequest;
 
@@ -23,7 +24,7 @@ public class RunExecutionEngineTasklet extends BaseExecutionTasklet {
     public RepeatStatus execute(StepContribution stepContribution, ChunkContext chunkContext) throws Exception {
 
         final int analysisExecutionId = getInt(ANALYSIS_EXECUTION_ID);
-        put("scriptId", executionService.runScript(executionRequest, analysisExecutionId));
+        put(SCRIPT_ID, executionService.runScript(executionRequest, analysisExecutionId));
         return RepeatStatus.FINISHED;
     }
 }

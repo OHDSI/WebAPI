@@ -50,8 +50,9 @@ import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
 @Path("/executionservice")
 public class ScriptExecutionController implements GeneratesNotification {
 
-    private static final String NAME = "executionEngine";
     public static final String SCRIPT_TYPE = "scriptType";
+    private static final String FOLDING_KEY = "foldingKey";
+    private static final String NAME = "executionEngine";
     private final Log logger = LogFactory.getLog(ScriptExecutionController.class);
 
     @Value("${executionengine.resultCallback}")
@@ -101,8 +102,7 @@ public class ScriptExecutionController implements GeneratesNotification {
         JobParametersBuilder parametersBuilder = new JobParametersBuilder();
         parametersBuilder.addString(JOB_NAME, String.format("Generate %s %d: %s (%s)", dto.analysisType, dto.cohortId,
                 source.getSourceName(), dto.sourceKey));
-        parametersBuilder.addString("foldingKey", dto.analysisType.name() + dto.cohortId);
-        parametersBuilder.addString("cohortId", String.valueOf(dto.cohortId));
+        parametersBuilder.addString(FOLDING_KEY, dto.analysisType.name() + dto.cohortId);
         parametersBuilder.addString(SCRIPT_TYPE, dto.analysisType.name());
         final JobParameters jobParameters = parametersBuilder.toJobParameters();
 
@@ -189,7 +189,7 @@ public class ScriptExecutionController implements GeneratesNotification {
 
     @Override
     public String getExecutionFoldingKey() {
-        return "foldingKey";
+        return FOLDING_KEY;
     }
 
     private class StatusResponse {

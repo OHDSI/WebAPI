@@ -1,6 +1,6 @@
 UPDATE ${ohdsiSchema}.fe_analysis
 SET stat_type = 'DISTRIBUTION'
-WHERE type = 'PRESET' and design IN (
+WHERE type = 'PRESET' and TO_CHAR(design) IN (
   -- DemographicsAge.sql
   'DemographicsAge',
   -- DemographicsTime.sql

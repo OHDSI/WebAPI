@@ -1,15 +1,11 @@
 package org.ohdsi.webapi.job;
 
-import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
 import org.springframework.batch.admin.service.SearchableJobExecutionDao;
 import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.JobInstance;
-import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
@@ -21,13 +17,9 @@ public class NotificationServiceImpl implements NotificationService {
     private static final List<String> FOLDING_KEYS = new ArrayList<>();
 
     private final SearchableJobExecutionDao jobExecutionDao;
-    private final ScriptExecutionService scriptExecutionService;
-    private final JobExplorer jobExplorer;
 
-    public NotificationServiceImpl(SearchableJobExecutionDao jobExecutionDao, JobExplorer jobExplorer, ScriptExecutionService scriptExecutionService, List<GeneratesNotification> whiteList) {
+    public NotificationServiceImpl(SearchableJobExecutionDao jobExecutionDao, List<GeneratesNotification> whiteList) {
         this.jobExecutionDao = jobExecutionDao;
-        this.scriptExecutionService = scriptExecutionService;
-        this.jobExplorer = jobExplorer;
         whiteList.forEach(g -> {
             WHITE_LIST.add(g.getJobName());
             FOLDING_KEYS.add(g.getExecutionFoldingKey());
@@ -35,13 +27,12 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public List<JobExecutionResource> findAll() {
+    public List<JobExecution> findAll() {
         return jobExecutionDao.getJobExecutions(0, Integer.MAX_VALUE).stream()
                 .filter(NotificationServiceImpl::whiteList)
                 .collect(Collectors.toMap(NotificationServiceImpl::getFoldingKey, t -> t, getLatest()))
                 .values().stream()
                 .limit(MAX_SIZE)
-                .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
@@ -57,26 +48,4 @@ public class NotificationServiceImpl implements NotificationService {
     private static boolean whiteList(JobExecution entity) {
         return WHITE_LIST.contains(entity.getJobInstance().getJobName());
     }
-
-    private JobExecutionResource toDTO(JobExecution entity) {
-        final JobInstance instance = entity.getJobInstance();
-        final JobInstanceResource instanceResource = new JobInstanceResource(instance.getInstanceId(), instance.getJobName());
-        final JobExecutionResource result = new JobExecutionResource(instanceResource, entity.getJobId());
-        final boolean isScriptExecution = entity.getJobParameters().getString("scriptType") != null;
-        if(isScriptExecution) {
-            final JobExecution e = jobExplorer.getJobExecution(entity.getJobId());
-            final Object executionId = e.getExecutionContext().get("scriptId");
-            assert executionId instanceof Long;
-            result.setStatus(scriptExecutionService.getExecutionStatus((long) executionId));
-        } else {
-            result.setStatus(entity.getStatus().name());
-        }
-        result.setExitStatus(entity.getExitStatus().getExitCode());
-        result.setStartDate(entity.getStartTime());
-        result.setEndDate(entity.getEndTime());
-        result.setJobParametersResource(entity.getJobParameters().getParameters().entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getValue())));
-        return result;
-    }
-
 }

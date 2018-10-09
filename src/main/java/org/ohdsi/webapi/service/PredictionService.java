@@ -27,6 +27,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import org.hibernate.Hibernate;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.hydra.Hydra;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
@@ -34,6 +36,7 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.prediction.PredictionAnalysis;
 import org.ohdsi.webapi.prediction.PredictionListItem;
 import org.ohdsi.webapi.prediction.PredictionAnalysisRepository;
+import org.ohdsi.webapi.prediction.dto.PredictionAnalysisDTO;
 import org.ohdsi.webapi.prediction.specification.*;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
@@ -106,17 +109,16 @@ public class PredictionService  extends AbstractDaoService {
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public PredictionAnalysis createAnalysis(PredictionAnalysis pred) {
+    public PredictionAnalysisDTO createAnalysis(PredictionAnalysis pred) {
         return getTransactionTemplate().execute(transactionStatus -> {
             Date currentTime = Calendar.getInstance().getTime();
 
-            UserEntity user = userRepository.findByLogin(security.getSubject());
-            pred.setCreatedBy(user);
+            pred.setCreatedBy(getCurrentUser());
             pred.setCreatedDate(currentTime);
 
             PredictionAnalysis predWithId = this.predictionAnalysisRepository.save(pred);
 
-            return conversionService.convert(predWithId, PredictionAnalysis.class);
+            return conversionService.convert(predWithId, PredictionAnalysisDTO.class);
         });
     }
 
@@ -124,13 +126,12 @@ public class PredictionService  extends AbstractDaoService {
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public PredictionAnalysis updateAnalysis(@PathParam("id") final int id, PredictionAnalysis pred) {
+    public PredictionAnalysisDTO updateAnalysis(@PathParam("id") final int id, PredictionAnalysis pred) {
         return getTransactionTemplate().execute(transactionStatus -> {
             PredictionAnalysis predFromDB = predictionAnalysisRepository.findOne(id);
             Date currentTime = Calendar.getInstance().getTime();
 
-            UserEntity user = userRepository.findByLogin(security.getSubject());
-            pred.setModifiedBy(user);
+            pred.setModifiedBy(getCurrentUser());
             pred.setModifiedDate(currentTime);
             // Prevent any updates to protected fields like created/createdBy
             pred.setCreatedDate(predFromDB.getCreatedDate());
@@ -138,7 +139,7 @@ public class PredictionService  extends AbstractDaoService {
 
             PredictionAnalysis updatedPred = this.predictionAnalysisRepository.save(pred);
 
-            return conversionService.convert(updatedPred, PredictionAnalysis.class);
+            return conversionService.convert(updatedPred, PredictionAnalysisDTO.class);
         });
     }
     
@@ -146,7 +147,7 @@ public class PredictionService  extends AbstractDaoService {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/copy")
     @Transactional
-    public PredictionAnalysis copy(@PathParam("id") final int id) {
+    public PredictionAnalysisDTO copy(@PathParam("id") final int id) {
             PredictionAnalysis analysis = this.predictionAnalysisRepository.findOne(id);
             entityManager.detach(analysis); // Detach from the persistance context in order to save a copy
             analysis.setId(null);
@@ -157,10 +158,10 @@ public class PredictionService  extends AbstractDaoService {
     @GET
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public PredictionAnalysis getAnalysis(@PathParam("id") int id) {
+    public PredictionAnalysisDTO getAnalysis(@PathParam("id") int id) {
         return getTransactionTemplate().execute(transactionStatus -> {
             PredictionAnalysis analysis = this.predictionAnalysisRepository.findOne(id);
-            return analysis;
+            return conversionService.convert(analysis, PredictionAnalysisDTO.class);
         });
     }    
     
@@ -168,7 +169,7 @@ public class PredictionService  extends AbstractDaoService {
     @Path("{id}/export")
     @Produces(MediaType.APPLICATION_JSON)
     public PatientLevelPredictionAnalysis exportAnalysis(@PathParam("id") int id) {
-        PredictionAnalysis pred = this.getAnalysis(id);
+        PredictionAnalysis pred = predictionAnalysisRepository.findOne(id);
         ObjectMapper mapper = new ObjectMapper();
         PatientLevelPredictionAnalysis expression = new PatientLevelPredictionAnalysis();
         try {

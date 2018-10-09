@@ -70,8 +70,10 @@ public abstract class AtlasSecurity extends Security {
   private final Map<String, String> conceptsetCreatorPermissionTemplates = new LinkedHashMap<>();
   private final Map<String, String> sourcePermissionTemplates = new LinkedHashMap<>();
   private final Map<String, String> incidenceRatePermissionTemplates = new LinkedHashMap<>();
-  private final Map<String, String> estimationPermissionTemplates = new LinkedHashMap<>();
+  private final Map<String, String> plePermissionTemplates = new LinkedHashMap<>();
   private final Map<String, String> plpPermissionTemplate = new LinkedHashMap<>();
+  private final Map<String, String> estimationPermissionTemplates = new LinkedHashMap<>();
+  private final Map<String, String> predictionPermissionTemplates = new LinkedHashMap<>();
   private final Map<String, String> dataSourcePermissionTemplates = new LinkedHashMap<>();
   private final Map<String, String> featureAnalysisPermissionTemplates = new LinkedHashMap<>();
 
@@ -111,9 +113,11 @@ public abstract class AtlasSecurity extends Security {
     this.incidenceRatePermissionTemplates.put("ir:%s:delete", "Delete Incidence Rate with ID=%s");
     this.incidenceRatePermissionTemplates.put("ir:%s:info:*:delete", "Delete Incidence Rate info with ID=%s");
 
-    this.estimationPermissionTemplates.put("comparativecohortanalysis:%s:put", "Edit Estimation with ID=%s");
-    this.estimationPermissionTemplates.put("comparativecohortanalysis:%s:delete", "Delete Estimation with ID=%s");
+    // TODO: to be removed together with old PLE controller
+    this.plePermissionTemplates.put("comparativecohortanalysis:%s:put", "Edit Estimation with ID=%s");
+    this.plePermissionTemplates.put("comparativecohortanalysis:%s:delete", "Delete Estimation with ID=%s");
 
+    // TODO: to be removed together with old PLP controller
     this.plpPermissionTemplate.put("plp:%s:put", "Edit Population Level Prediction with ID=%s");
     this.plpPermissionTemplate.put("plp:%s:delete", "Delete Population Level Prediction with ID=%s");
     this.plpPermissionTemplate.put("plp:%s:get", "Read Population Level Prediction with ID=%s");
@@ -122,6 +126,12 @@ public abstract class AtlasSecurity extends Security {
     this.dataSourcePermissionTemplates.put("source:%s:put", "Edit Source with sourceKey=%s");
     this.dataSourcePermissionTemplates.put("source:%s:get", "Read Source with sourceKey=%s");
     this.dataSourcePermissionTemplates.put("source:%s:delete", "Delete Source with sourceKey=%s");
+
+    this.estimationPermissionTemplates.put("estimation:%s:put", "Edit Estimation with ID=%s");
+    this.estimationPermissionTemplates.put("estimation:%s:delete", "Delete Estimation with ID=%s");
+
+    this.predictionPermissionTemplates.put("prediction:%s:put", "Edit Estimation with ID=%s");
+    this.predictionPermissionTemplates.put("prediction:%s:delete", "Delete Estimation with ID=%s");
   }
 
   @Override
@@ -153,18 +163,27 @@ public abstract class AtlasSecurity extends Security {
       .addProtectedRestPath("/ir/*/execute/*")
 
       // comparative cohort analysis (estimation)
-      .addProtectedRestPath("/comparativecohortanalysis", "createPermissionsOnCreateEstimation")
-      .addProtectedRestPath("/comparativecohortanalysis/*", "deletePermissionsOnDeleteEstimation")
+      .addProtectedRestPath("/comparativecohortanalysis", "createPermissionsOnCreatePle")
+      .addProtectedRestPath("/comparativecohortanalysis/*", "deletePermissionsOnDeletePle")
+
+      // new estimation
       .addProtectedRestPath("/estimation", "createPermissionsOnCreateEstimation")
+      .addProtectedRestPath("/estimation/*/copy", "createPermissionsOnCreateEstimation")
       .addProtectedRestPath("/estimation/*", "deletePermissionsOnDeleteEstimation")
+      .addProtectedRestPath("/estimation/*/export")
+      .addProtectedRestPath("/estimation/*/download")
 
       // population level prediction
       .addProtectedRestPath("/plp", "createPermissionsOnCreatePlp")
       .addProtectedRestPath("/plp/*/copy", "createPermissionsOnCopyPlp")
       .addProtectedRestPath("/plp/*", "deletePermissionsOnDeletePlp")
-      .addProtectedRestPath("/prediction", "createPermissionsOnCreatePlp")
-      .addProtectedRestPath("/prediction/*/copy", "createPermissionsOnCopyPlp")
-      .addProtectedRestPath("/prediction/*", "deletePermissionsOnDeletePlp")
+
+      // new prediction
+      .addProtectedRestPath("/prediction", "createPermissionsOnCreatePrediction")
+      .addProtectedRestPath("/prediction/*/copy", "createPermissionsOnCreatePrediction")
+      .addProtectedRestPath("/prediction/*", "deletePermissionsOnDeletePrediction")
+      .addProtectedRestPath("/prediction/*/export")
+      .addProtectedRestPath("/prediction/*/download")
 
       // cohort definition
       .addProtectedRestPath("/cohortdefinition", "createPermissionsOnCreateCohortDefinition")
@@ -263,11 +282,11 @@ public abstract class AtlasSecurity extends Security {
     filters.put("createPermissionsOnCreateConceptSet", this.getCreatePermissionsOnCreateConceptSetFilter());
     filters.put("deletePermissionsOnDeleteCohortDefinition", this.getDeletePermissionsOnDeleteCohortDefinitionFilter());
     filters.put("deletePermissionsOnDeleteConceptSet", this.getDeletePermissionsOnDeleteConceptSetFilter());
-    filters.put("deletePermissionsOnDeleteEstimation", this.getDeletePermissionsOnDeleteFilter(estimationPermissionTemplates));
+    filters.put("deletePermissionsOnDeletePle", this.getDeletePermissionsOnDeleteFilter(plePermissionTemplates));
     filters.put("deletePermissionsOnDeletePlp", this.getDeletePermissionsOnDeleteFilter(plpPermissionTemplate));
     filters.put("createPermissionsOnCreateIR", this.getCreatePermissionsOnCreateIncidenceRateFilter());
     filters.put("createPermissionsOnCopyIR", this.getCreatePermissionsOnCopyIncidenceRateFilter());
-    filters.put("createPermissionsOnCreateEstimation", this.getCreatePermissionsOnCreateFilter(estimationPermissionTemplates, "analysisId"));
+    filters.put("createPermissionsOnCreatePle", this.getCreatePermissionsOnCreateFilter(estimationPermissionTemplates, "analysisId"));
     filters.put("createPermissionsOnCreatePlp", this.getCreatePermissionsOnCreateFilter(plpPermissionTemplate, "analysisId"));
     filters.put("createPermissionsOnCopyPlp", this.getCreatePermissionsOnCopyFilter(plpPermissionTemplate, ".*plp/.*/copy", "analysisId"));
     filters.put("createPermissionsOnCreateSource", this.getCreatePermissionsOnCreateFilter(dataSourcePermissionTemplates, "sourceKey"));
@@ -278,6 +297,11 @@ public abstract class AtlasSecurity extends Security {
     filters.put("skipFurtherFiltersIfNotPutOrPost", this.getskipFurtherFiltersIfNotPutOrPostFilter());
     filters.put("skipFurtherFiltersIfNotPutOrDelete", this.getskipFurtherFiltersIfNotPutOrDeleteFilter());
     filters.put("ssl", this.getSslFilter());
+
+    filters.put("createPermissionsOnCreatePrediction", this.getCreatePermissionsOnCreateFilter(predictionPermissionTemplates, "id"));
+    filters.put("deletePermissionsOnDeletePrediction", this.getDeletePermissionsOnDeleteFilter(predictionPermissionTemplates));
+    filters.put("createPermissionsOnCreateEstimation", this.getCreatePermissionsOnCreateFilter(estimationPermissionTemplates, "id"));
+    filters.put("deletePermissionsOnDeleteEstimation", this.getDeletePermissionsOnDeleteFilter(estimationPermissionTemplates));
 
     return filters;
   }

@@ -9,6 +9,7 @@ public interface Constants {
   String WARM_CACHE = "warmCache";
 
   String FAILED = ExitStatus.FAILED.getExitCode();
+  String CANCELED = "CANCELED";
 
   interface Params {
 

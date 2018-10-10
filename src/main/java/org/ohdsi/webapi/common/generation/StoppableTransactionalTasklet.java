@@ -1,6 +1,10 @@
 package org.ohdsi.webapi.common.generation;
 
 import org.apache.commons.logging.Log;
+import org.ohdsi.webapi.Constants;
+import org.springframework.batch.core.ExitStatus;
+import org.springframework.batch.core.StepContribution;
+import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.StoppableTasklet;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -33,6 +37,14 @@ public abstract class StoppableTransactionalTasklet<T> extends TransactionalTask
 
   protected boolean isStopped() {
     return stopped;
+  }
+
+  @Override
+  protected void doAfter(StepContribution stepContribution, ChunkContext chunkContext) {
+
+    if (isStopped()) {
+      stepContribution.setExitStatus(new ExitStatus(Constants.CANCELED, "Canceled by user request"));
+    }
   }
 
   @Override

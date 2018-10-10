@@ -137,6 +137,7 @@ public class PerformAnalysisTasklet extends CancelableTasklet {
   @Override
   protected void doAfter(StepContribution contribution, ChunkContext chunkContext) {
 
+    super.doAfter(contribution, chunkContext);
     boolean isValid = !Constants.FAILED.equals(contribution.getExitStatus().getExitCode());
     String statusMessage = contribution.getExitStatus().getExitDescription();
 
@@ -152,6 +153,7 @@ public class PerformAnalysisTasklet extends CancelableTasklet {
 
     findExecutionInfoBySourceId(analysis.getExecutionInfoList(), sourceId).ifPresent(analysisInfo -> {
       analysisInfo.setIsValid(isValid);
+      analysisInfo.setCanceled(Objects.equals(Constants.CANCELED, contribution.getExitStatus().getExitCode()));
       analysisInfo.setExecutionDuration((int) (endTime.getTime() - startTime.getTime()));
       analysisInfo.setStatus(GenerationStatus.COMPLETE);
       analysisInfo.setMessage(statusMessage.substring(0, Math.min(MAX_MESSAGE_LENGTH, statusMessage.length())));

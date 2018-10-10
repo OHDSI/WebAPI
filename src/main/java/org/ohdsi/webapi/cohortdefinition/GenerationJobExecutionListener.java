@@ -15,13 +15,12 @@
  */
 package org.ohdsi.webapi.cohortdefinition;
 
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
+
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.service.CohortGenerationService;
 import org.springframework.batch.core.BatchStatus;
@@ -86,6 +85,7 @@ public class GenerationJobExecutionListener implements JobExecutionListener {
 			info.setIsValid(false);
 			info.setRecordCount(null);
 			info.setPersonCount(null);
+			info.setCanceled(je.getStepExecutions().stream().anyMatch(se -> Objects.equals(Constants.CANCELED, se.getExitStatus().getExitCode())));
 			info.setFailMessage(StringUtils.left(je.getAllFailureExceptions().get(0).getMessage(),2000));
 		} else {
 			info.setIsValid(true);

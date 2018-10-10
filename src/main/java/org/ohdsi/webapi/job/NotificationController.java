@@ -1,11 +1,7 @@
 package org.ohdsi.webapi.job;
 
-import org.ohdsi.webapi.executionengine.controller.ScriptExecutionController;
-import org.ohdsi.webapi.executionengine.job.RunExecutionEngineTasklet;
-import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
 import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.JobInstance;
-import org.springframework.batch.core.explore.JobExplorer;
+import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,7 +10,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Path("/notifications")
@@ -23,13 +18,11 @@ import java.util.stream.Collectors;
 public class NotificationController {
 
     private final NotificationService service;
-    private final ScriptExecutionService scriptExecutionService;
-    private final JobExplorer jobExplorer;
+    private final GenericConversionService conversionService;
 
-    NotificationController(final NotificationService service, ScriptExecutionService scriptExecutionService, JobExplorer jobExplorer) {
+    NotificationController(final NotificationService service, GenericConversionService conversionService) {
         this.service = service;
-        this.scriptExecutionService = scriptExecutionService;
-        this.jobExplorer = jobExplorer;
+        this.conversionService = conversionService;
     }
 
     @GET
@@ -40,25 +33,6 @@ public class NotificationController {
     }
 
     private JobExecutionResource toDTO(JobExecution entity) {
-        final JobInstance instance = entity.getJobInstance();
-        final JobInstanceResource instanceResource = new JobInstanceResource(instance.getInstanceId(), instance.getJobName());
-        final JobExecutionResource result = new JobExecutionResource(instanceResource, entity.getJobId());
-        final boolean isScriptExecution = entity.getJobParameters().getString(ScriptExecutionController.SCRIPT_TYPE) != null;
-        if(isScriptExecution) {
-            final JobExecution e = jobExplorer.getJobExecution(entity.getJobId());
-            final Object executionId = e.getExecutionContext().get(RunExecutionEngineTasklet.SCRIPT_ID);
-            assert executionId instanceof Long;
-            result.setStatus(scriptExecutionService.getExecutionStatus((long) executionId));
-        } else {
-            result.setStatus(entity.getStatus().name());
-        }
-        result.setExitStatus(entity.getExitStatus().getExitCode());
-        result.setStartDate(entity.getStartTime());
-        result.setEndDate(entity.getEndTime());
-        result.setJobParametersResource(entity.getJobParameters().getParameters().entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getValue())));
-        return result;
+        return conversionService.convert(entity, JobExecutionResource.class);
     }
-
-
 }

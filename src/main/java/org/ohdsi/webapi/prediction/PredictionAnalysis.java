@@ -36,14 +36,6 @@ public class PredictionAnalysis extends CommonEntity {
     @Lob
     @Type(type = "org.hibernate.type.TextType")
     private String specification;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by_id", updatable = false)
-    private UserEntity createdBy;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "modified_by_id")
-    private UserEntity modifiedBy;
 
     /**
      * @return the id
@@ -99,33 +91,5 @@ public class PredictionAnalysis extends CommonEntity {
      */
     public void setSpecification(String specification) {
         this.specification = specification;
-    }
-
-    /**
-     * @return the createdBy
-     */
-    public UserEntity getCreatedBy() {
-        return createdBy;
-    }
-
-    /**
-     * @param createdBy the createdBy to set
-     */
-    public void setCreatedBy(UserEntity createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    /**
-     * @return the modifiedBy
-     */
-    public UserEntity getModifiedBy() {
-        return modifiedBy;
-    }
-
-    /**
-     * @param modifiedBy the modifiedBy to set
-     */
-    public void setModifiedBy(UserEntity modifiedBy) {
-        this.modifiedBy = modifiedBy;
     }
 }

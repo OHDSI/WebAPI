@@ -401,7 +401,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
                             "covariateId", "targetTable", "totalsTable" },
                     new String[]{ resultsQualifier,  tempQualifier, String.valueOf(cohortDefinition.getId()),
                         String.valueOf(jobId), String.valueOf(analysis.getId()), analysis.getName(), feature.getName(), String.valueOf(conceptId),
-                            String.valueOf(feature.getId()), resultsQualifier + "." + targetTable, resultsQualifier + "." + cohortTable }
+                            String.valueOf(feature.getId()), tempQualifier + "." + targetTable, resultsQualifier + "." + cohortTable }
                     );
         }
 

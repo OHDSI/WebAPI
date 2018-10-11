@@ -6,7 +6,6 @@ import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -17,17 +16,21 @@ import java.util.Calendar;
 @Component
 public class JobInvalidator {
 
-    @Autowired
     private JobExplorer jobExplorer;
-    @Autowired
     private JobRepository jobRepository;
+    private TransactionTemplate transactionTemplateRequiresNew;
+
     @Autowired
-    private PlatformTransactionManager transactionManager;
+    public JobInvalidator(JobExplorer explorer, JobRepository repository, TransactionTemplate transactionTemplateRequiresNew) {
+
+        this.jobExplorer = explorer;
+        this.jobRepository = repository;
+        this.transactionTemplateRequiresNew = transactionTemplateRequiresNew;
+    }
 
     @PostConstruct
     private void invalidateGenerations() {
-        TransactionTemplate template = new TransactionTemplate(transactionManager);
-        template.execute(new TransactionCallbackWithoutResult() {
+        transactionTemplateRequiresNew.execute(new TransactionCallbackWithoutResult() {
             @Override
             protected void doInTransactionWithoutResult(TransactionStatus status) {
                 jobExplorer.getJobNames().forEach(

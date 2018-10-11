@@ -6,14 +6,15 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.function.BinaryOperator;
-import java.util.stream.Collectors;
 
 @Service
 public class NotificationServiceImpl implements NotificationService {
     private static final int MAX_SIZE = 20;
+    private static final int PAGE_SIZE = MAX_SIZE * 10;
     private static final List<String> WHITE_LIST = new ArrayList<>();
     private static final List<String> FOLDING_KEYS = new ArrayList<>();
 
@@ -29,20 +30,21 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public List<JobExecution> findAll() {
-        return jobExecutionDao.getJobExecutions(0, Integer.MAX_VALUE).stream()
-                .filter(NotificationServiceImpl::whiteList)
-                .collect(Collectors.toMap(NotificationServiceImpl::getFoldingKey, t -> t, getLatest()))
-                .values().stream()
-                .limit(MAX_SIZE)
-                .collect(Collectors.toList());
-    }
-
-    private static BinaryOperator<JobExecution> getLatest() {
-        return (x, y) -> {
-            final Date xStartTime = x.getStartTime();
-            final Date yStartTime = y.getStartTime();
-            return xStartTime != null ?  yStartTime != null ? xStartTime.compareTo(yStartTime) > 0 ? x : y : x: y;
-        };
+        final Map<String, JobExecution> result = new HashMap<>();
+        for (int start = 0; result.size() < MAX_SIZE; start += PAGE_SIZE) {
+            final List<JobExecution> page = jobExecutionDao.getJobExecutions(start, PAGE_SIZE);
+            if(page.size() == 0) {
+                break;
+            }
+            page.stream().filter(NotificationServiceImpl::whiteList).forEach(entity -> {
+                result.merge(getFoldingKey(entity), entity, (key, old) -> {
+                    final Date xStartTime = old.getStartTime();
+                    final Date yStartTime = entity.getStartTime();
+                    return xStartTime != null ?  yStartTime != null ? xStartTime.compareTo(yStartTime) > 0 ? old : entity : old: entity;
+                });
+            });
+        }
+        return new ArrayList<>(result.values());
     }
 
     private static String getFoldingKey(JobExecution entity) {

@@ -16,9 +16,9 @@ import java.util.Calendar;
 @Component
 public class JobInvalidator {
 
-    private JobExplorer jobExplorer;
-    private JobRepository jobRepository;
-    private TransactionTemplate transactionTemplateRequiresNew;
+    private final JobExplorer jobExplorer;
+    private final JobRepository jobRepository;
+    private final TransactionTemplate transactionTemplateRequiresNew;
 
     @Autowired
     public JobInvalidator(JobExplorer explorer, JobRepository repository, TransactionTemplate transactionTemplateRequiresNew) {
@@ -30,18 +30,16 @@ public class JobInvalidator {
 
     @PostConstruct
     private void invalidateGenerations() {
-        transactionTemplateRequiresNew.execute(new TransactionCallbackWithoutResult() {
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
-                jobExplorer.getJobNames().forEach(
-                        name -> jobExplorer.findRunningJobExecutions(name)
-                                .forEach(job -> {
-                                    job.setStatus(BatchStatus.FAILED);
-                                    job.setExitStatus(new ExitStatus(ExitStatus.FAILED.getExitCode(), "Invalidated by system"));
-                                    job.setEndTime(Calendar.getInstance().getTime());
-                                    jobRepository.update(job);
-                                }));
-            }
+        transactionTemplateRequiresNew.execute(s -> {
+            jobExplorer.getJobNames().forEach(
+                    name -> jobExplorer.findRunningJobExecutions(name)
+                            .forEach(job -> {
+                                job.setStatus(BatchStatus.FAILED);
+                                job.setExitStatus(new ExitStatus(ExitStatus.FAILED.getExitCode(), "Invalidated by system"));
+                                job.setEndTime(Calendar.getInstance().getTime());
+                                jobRepository.update(job);
+                            }));
+            return null;
         });
     }
 }

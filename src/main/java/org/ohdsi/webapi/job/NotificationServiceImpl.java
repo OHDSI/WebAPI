@@ -5,7 +5,7 @@ import org.springframework.batch.core.JobExecution;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
@@ -38,7 +38,11 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     private static BinaryOperator<JobExecution> getLatest() {
-        return (x, y) -> Comparator.nullsLast(Comparator.comparing(JobExecution::getStartTime)).compare(x, y) > 0 ? x : y;
+        return (x, y) -> {
+            final Date xStartTime = x.getStartTime();
+            final Date yStartTime = y.getStartTime();
+            return xStartTime != null ?  yStartTime != null ? xStartTime.compareTo(yStartTime) > 0 ? x : y : x: y;
+        };
     }
 
     private static String getFoldingKey(JobExecution entity) {

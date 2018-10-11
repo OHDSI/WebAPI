@@ -91,8 +91,12 @@ public class StorageServiceClient {
         try {
             HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = createHttpEntity(token, results);
 
-            return restTemplate.exchange(storageServiceApi + endpoint,
+            String result = restTemplate.exchange(storageServiceApi + endpoint,
                     HttpMethod.POST, requestEntity, String.class).getHeaders().getLocation().getPath();
+
+            LOGGER.info(String.format("Cohort results posted to HSS @ %s: %s", (storageServiceApi + endpoint), result));
+
+            return result;
         } catch (RestClientException e) {
             LOGGER.error(e.getMessage(), e);
             return null;
@@ -100,15 +104,22 @@ public class StorageServiceClient {
     }
 
     public boolean saveCohort(String token, File results, final UUID groupKey, final UUID uuid) {
-        if (!webapiCentral) {
-            token = getStorageServiceToken();
-        }
-        String endpoint = "/cohort-definitions/" + groupKey + "/" + uuid;
+        final String endpoint = "/cohort-definitions/" + groupKey + "/" + uuid;
+
         try {
+            if (!webapiCentral) {
+                token = getStorageServiceToken();
+            }
+
             HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = createHttpEntity(token, results);
 
-            restTemplate.exchange(storageServiceApi + endpoint,
+            final ResponseEntity<StorageInformationItem> response = restTemplate.exchange(storageServiceApi + endpoint,
                     HttpMethod.POST, requestEntity, StorageInformationItem.class);
+
+            LOGGER.info("Response status code: " + response.getStatusCode());
+            LOGGER.info("Response body: " + response.getBody());
+            LOGGER.info(String.format("Cohort definition posted to HSS @ %s: %s", (storageServiceApi + endpoint), response));
+
             return true;
         } catch (RestClientException e) {
             LOGGER.error(e.getMessage(), e);

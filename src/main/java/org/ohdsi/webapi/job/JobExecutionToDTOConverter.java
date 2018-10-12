@@ -36,8 +36,7 @@ public class JobExecutionToDTOConverter extends BaseConversionServiceAwareConver
         if(isScriptExecution) {
             final JobExecution e = jobExplorer.getJobExecution(entity.getJobId());
             final Object executionId = e.getExecutionContext().get(RunExecutionEngineTasklet.SCRIPT_ID);
-            assert executionId instanceof Long;
-            result.setStatus(scriptExecutionService.getExecutionStatus((long) executionId));
+            result.setStatus(executionId instanceof Long ? scriptExecutionService.getExecutionStatus((long) executionId) : entity.getStatus().name());
         } else {
             result.setStatus(entity.getStatus().name());
         }

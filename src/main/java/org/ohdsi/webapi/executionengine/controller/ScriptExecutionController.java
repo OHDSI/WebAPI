@@ -53,6 +53,7 @@ public class ScriptExecutionController implements GeneratesNotification {
     public static final String SCRIPT_TYPE = "scriptType";
     private static final String FOLDING_KEY = "foldingKey";
     private static final String NAME = "executionEngine";
+    private static final String COHORT_ID = "cohortId";
     private final Log logger = LogFactory.getLog(ScriptExecutionController.class);
 
     @Value("${executionengine.resultCallback}")
@@ -103,6 +104,7 @@ public class ScriptExecutionController implements GeneratesNotification {
         parametersBuilder.addString(JOB_NAME, String.format("Generate %s %d: %s (%s)", dto.analysisType, dto.cohortId,
                 source.getSourceName(), dto.sourceKey));
         parametersBuilder.addString(FOLDING_KEY, dto.analysisType.name() + dto.cohortId);
+        parametersBuilder.addString(COHORT_ID, String.valueOf(dto.cohortId));
         parametersBuilder.addString(SCRIPT_TYPE, dto.analysisType.name());
         final JobParameters jobParameters = parametersBuilder.toJobParameters();
 

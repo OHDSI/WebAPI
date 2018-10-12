@@ -37,10 +37,10 @@ public class NotificationServiceImpl implements NotificationService {
                 break;
             }
             page.stream().filter(NotificationServiceImpl::whiteList).forEach(entity -> {
-                result.merge(getFoldingKey(entity), entity, (key, old) -> {
-                    final Date xStartTime = old.getStartTime();
-                    final Date yStartTime = entity.getStartTime();
-                    return xStartTime != null ?  yStartTime != null ? xStartTime.compareTo(yStartTime) > 0 ? old : entity : old: entity;
+                result.merge(getFoldingKey(entity), entity, (x, y) -> {
+                    final Date xStartTime = x.getStartTime();
+                    final Date yStartTime = y.getStartTime();
+                    return xStartTime != null ?  yStartTime != null ? xStartTime.after(yStartTime) ? x : y : x: y;
                 });
             });
         }

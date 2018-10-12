@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * PLEASE NOTE: PatientLevelPredictionService will be deprecated in 
+ * the next major release of WebAPI so please do not extend the functionality
+ * in this service. Instead please review the new PredictionService.java
  */
 package org.ohdsi.webapi.service;
 

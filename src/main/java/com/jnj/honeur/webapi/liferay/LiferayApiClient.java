@@ -28,7 +28,6 @@ public class LiferayApiClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(LiferayApiClient.class);
 
     private static final String STANDARD_ROLE = "1";
-    private static String COMPANY_ID;
 
 
     @Value("${datasource.liferay.company.web.id}")

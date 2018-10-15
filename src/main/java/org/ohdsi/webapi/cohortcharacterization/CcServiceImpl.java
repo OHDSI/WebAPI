@@ -31,11 +31,14 @@ import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.CohortGenerationService;
 import org.ohdsi.webapi.service.FeatureExtractionService;
 import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.annotations.CcGenerationId;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
+import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.*;
@@ -44,7 +47,6 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -296,7 +298,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
 
         final JobParameters jobParameters = builder.toJobParameters();
 
-        JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
+        CancelableJdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
 
         Job generateCohortJob = generationUtils.buildJobForCohortBasedAnalysisTasklet(
                 GENERATE_COHORT_CHARACTERIZATION,

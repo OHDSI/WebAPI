@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 import static org.ohdsi.webapi.Constants.Params.*;
 
 public class GenerateLocalCohortTasklet implements StoppableTasklet {
+  String GENERATE_LOCAL_COHORT = "generateLocalCohort";
 
   protected TransactionTemplate transactionTemplate;
   protected final CohortGenerationService cohortGenerationService;
@@ -77,7 +78,7 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
 
       Map<String, String> extraParams = new HashMap<>();
       extraParams.put(JOB_AUTHOR, jobAuthorLogin);
-      return cohortGenerationService.runGenerateCohortJob(cd, source, false, false, targetTable, extraParams);
+      return cohortGenerationService.runGenerateCohortJob(cd, source, false, false, targetTable, extraParams, GENERATE_LOCAL_COHORT);
     }
 
     public void run(List<CohortDefinition> cohortDefinitions) {

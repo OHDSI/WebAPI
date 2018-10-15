@@ -5,11 +5,13 @@ import org.springframework.batch.core.JobExecution;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class NotificationServiceImpl implements NotificationService {
@@ -44,7 +46,7 @@ public class NotificationServiceImpl implements NotificationService {
                 });
             });
         }
-        return new ArrayList<>(result.values());
+        return result.values().stream().sorted(Comparator.comparing(JobExecution::getStartTime).reversed()).collect(Collectors.toList());
     }
 
     private static String getFoldingKey(JobExecution entity) {

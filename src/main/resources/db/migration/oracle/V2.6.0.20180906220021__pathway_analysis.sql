@@ -1,16 +1,16 @@
 CREATE SEQUENCE ${ohdsiSchema}.pathway_analysis_sequence;
 CREATE TABLE ${ohdsiSchema}.pathway_analysis
 (
-  id                 NUMBER(19),
+  id                 NUMBER(19) NOT NULL,
   name               VARCHAR(255) NOT NULL,
   combination_window INTEGER,
   min_cell_count     INTEGER,
   max_depth          INTEGER,
-  allow_repeats      BOOLEAN DEFAULT FALSE,
+  allow_repeats			 Number(1) DEFAULT 0,
   created_by_id      INTEGER,
-  created_date       TIMESTAMP,
+  created_date       Timestamp(3),
   modified_by_id     INTEGER,
-  modified_date      TIMESTAMP,
+  modified_date      Timestamp(3),
   hash_code          INTEGER,
   CONSTRAINT PK_pathway_analysis PRIMARY KEY (id)
 );
@@ -69,7 +69,7 @@ SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, 'pathway-analysis:*:export:
 INSERT INTO ${ohdsiSchema}.sec_role_permission(id, role_id, permission_id)
 SELECT ${ohdsiSchema}.SEC_ROLE_PERMISSION_SEQUENCE.nextval, sr.id, sp.id
 FROM ${ohdsiSchema}.sec_permission SP, ${ohdsiSchema}.sec_role sr
-WHERE sp."value" IN (
+WHERE sp.value IN (
   'pathway-analysis:post',
   'pathway-analysis:import:post',
   'pathway-analysis:get',
@@ -83,14 +83,14 @@ WHERE sp."value" IN (
 AND sr.name IN ('Atlas users');
 
 CREATE OR REPLACE VIEW ${ohdsiSchema}.pathway_analysis_generation as
-  (SELECT
+SELECT
   job.job_execution_id                     id,
   job.create_time                          start_time,
   job.end_time                             end_time,
   job.status                               status,
   job.exit_message                         exit_message,
-  CAST(pa_id_param.string_val AS INTEGER)  pathway_analysis_id,
-  CAST(source_param.string_val AS INTEGER) source_id,
+  CAST(CAST(pa_id_param.string_val AS VARCHAR2(50)) AS NUMBER(10))  pathway_analysis_id,
+  CAST(CAST(source_param.string_val AS VARCHAR2(50)) AS NUMBER(10)) source_id,
   -- Generation info based
   gen_info.design                          design,
   gen_info.hash_code                       hash_code,
@@ -102,4 +102,4 @@ FROM ${ohdsiSchema}.batch_job_execution job
     ON job.job_execution_id = source_param.job_execution_id AND source_param.key_name = 'source_id'
   LEFT JOIN ${ohdsiSchema}.analysis_generation_info gen_info
     ON job.job_execution_id = gen_info.job_execution_id
-ORDER BY start_time DESC);
+ORDER BY start_time DESC;

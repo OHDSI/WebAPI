@@ -180,6 +180,30 @@ public class FeatureExtractionService extends AbstractDaoService {
 		return finalName;
 	}
 	
+        @GET
+        @Path("defaultcovariatesettings")
+        @Produces(MediaType.APPLICATION_JSON)
+        public String getDefaultCovariateSettings(@QueryParam("temporal") final String temporal) {
+            boolean getTemporal = false;
+            try {
+                if (temporal != null && !temporal.isEmpty()) {
+                    getTemporal = Boolean.parseBoolean(temporal);
+                }
+            } catch (Exception e) {
+                throw new IllegalArgumentException("The parameter temporal must be a string of true or false.");
+            }
+            
+            FeatureExtraction.init(null);
+            String settings = "";
+            if (getTemporal) {
+                settings = FeatureExtraction.getDefaultPrespecTemporalAnalyses();
+            } else {
+                settings = FeatureExtraction.getDefaultPrespecAnalyses();
+            }
+            
+            return settings;
+        }
+        
 	@GET
 	@Path("query/prevalence/{cohortId}/{sourceKey}")
 	@Produces(MediaType.APPLICATION_JSON)

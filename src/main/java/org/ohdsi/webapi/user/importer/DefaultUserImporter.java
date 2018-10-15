@@ -10,6 +10,7 @@ import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.PermissionManager;
+import org.ohdsi.webapi.user.importer.repository.RoleGroupMappingRepository;
 import org.ohdsi.webapi.util.UserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

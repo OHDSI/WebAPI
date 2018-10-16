@@ -75,6 +75,12 @@ import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.batch.core.launch.JobExecutionNotRunningException;
 import org.springframework.batch.core.launch.JobOperator;
 import org.springframework.batch.core.launch.NoSuchJobExecutionException;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.scope.context.StepSynchronizationManager;
+import org.springframework.batch.core.step.StepLocator;
+import org.springframework.batch.core.step.tasklet.StoppableTasklet;
+import org.springframework.batch.core.step.tasklet.Tasklet;
+import org.springframework.batch.core.step.tasklet.TaskletStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -123,6 +129,9 @@ public class CohortDefinitionService extends AbstractDaoService {
 
   @Autowired
   private CohortGenerationService cohortGenerationService;
+
+  @Autowired
+  private JobService jobService;
 
 	@PersistenceContext
 	protected EntityManager entityManager;
@@ -503,11 +512,9 @@ public class CohortDefinitionService extends AbstractDaoService {
     });
 
     cohortGenerationService.getJobExecution(source, id)
-            .ifPresent(job -> {
-              try {
-                jobOperator.stop(job.getJobId());
-              } catch (NoSuchJobExecutionException | JobExecutionNotRunningException ignored) {
-              }
+            .ifPresent(jobExecution -> {
+              Job job = cohortGenerationService.getRunningJob(jobExecution.getJobId());
+              jobService.stopJob(jobExecution, job);
             });
     return Response.status(Response.Status.OK).build();
   }

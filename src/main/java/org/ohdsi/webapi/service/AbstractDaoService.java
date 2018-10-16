@@ -20,6 +20,7 @@ import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceRepository;
+import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.DataSourceDTOParser;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.slf4j.Logger;
@@ -144,7 +145,7 @@ public abstract class AbstractDaoService {
     return jdbcTemplate;
   }
 
-  public JdbcTemplate getSourceJdbcTemplate(Source source) {
+  public CancelableJdbcTemplate getSourceJdbcTemplate(Source source) {
 
     ConnectionParams connectionParams = DataSourceDTOParser.parse(source);
     if (IMPALA_DATASOURCE.equalsIgnoreCase(source.getSourceDialect()) && AuthMethod.KERBEROS == connectionParams.getAuthMethod()) {
@@ -161,7 +162,7 @@ public abstract class AbstractDaoService {
     } else {
       dataSource = new DriverManagerDataSource(source.getSourceConnection());
     }
-    return new JdbcTemplate(dataSource);
+    return new CancelableJdbcTemplate(dataSource);
   }
 
   private void loginToKerberos(Source source, ConnectionParams connectionParams) {

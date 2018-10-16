@@ -40,6 +40,7 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.estimation.Estimation;
 import org.ohdsi.webapi.estimation.EstimationListItem;
 import org.ohdsi.webapi.estimation.EstimationRepository;
+import org.ohdsi.webapi.estimation.dto.EstimationDTO;
 import org.ohdsi.webapi.estimation.specification.*;
 import org.ohdsi.webapi.estimation.specification.EstimationAnalysis;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
@@ -118,7 +119,7 @@ public class EstimationService extends AbstractDaoService {
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Estimation createEstimation(Estimation est) {
+    public EstimationDTO createEstimation(Estimation est) {
         return getTransactionTemplate().execute(transactionStatus -> {
             Date currentTime = Calendar.getInstance().getTime();
 
@@ -128,7 +129,7 @@ public class EstimationService extends AbstractDaoService {
 
             Estimation estWithId = this.estimationRepository.save(est);
 
-            return conversionService.convert(estWithId, Estimation.class);
+            return conversionService.convert(estWithId, EstimationDTO.class);
         });
     }
 
@@ -136,7 +137,7 @@ public class EstimationService extends AbstractDaoService {
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Estimation updateEstimation(@PathParam("id") final int id, Estimation est) {
+    public EstimationDTO updateEstimation(@PathParam("id") final int id, Estimation est) {
         return getTransactionTemplate().execute(transactionStatus -> {
             Estimation estFromDB = estimationRepository.findOne(id);
             Date currentTime = Calendar.getInstance().getTime();
@@ -150,7 +151,7 @@ public class EstimationService extends AbstractDaoService {
 
             Estimation updatedEst = this.estimationRepository.save(est);
 
-            return conversionService.convert(updatedEst, Estimation.class);
+            return conversionService.convert(updatedEst, EstimationDTO.class);
         });
     }
     
@@ -158,7 +159,7 @@ public class EstimationService extends AbstractDaoService {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/copy")
     @Transactional
-    public Estimation copy(@PathParam("id") final int id) {
+    public EstimationDTO copy(@PathParam("id") final int id) {
             Estimation est = this.estimationRepository.findOne(id);
             entityManager.detach(est); // Detach from the persistance context in order to save a copy
             est.setId(null);
@@ -169,10 +170,10 @@ public class EstimationService extends AbstractDaoService {
     @GET
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Estimation getAnalysis(@PathParam("id") int id) {
+    public EstimationDTO getAnalysis(@PathParam("id") int id) {
         return getTransactionTemplate().execute(transactionStatus -> {
             Estimation est = this.estimationRepository.findOne(id);
-            return est;
+            return conversionService.convert(est, EstimationDTO.class);
         });
     }
     
@@ -180,7 +181,7 @@ public class EstimationService extends AbstractDaoService {
     @Path("{id}/export")
     @Produces(MediaType.APPLICATION_JSON)
     public EstimationAnalysis exportAnalysis(@PathParam("id") int id) {
-        Estimation est = this.getAnalysis(id);
+        Estimation est = estimationRepository.findOne(id);
         ObjectMapper mapper = new ObjectMapper();
         EstimationAnalysis expression = new EstimationAnalysis();
         try {

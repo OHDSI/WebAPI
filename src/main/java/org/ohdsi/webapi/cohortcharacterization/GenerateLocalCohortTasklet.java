@@ -12,6 +12,7 @@ import org.springframework.batch.core.step.tasklet.StoppableTasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +26,7 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
 
   protected TransactionTemplate transactionTemplate;
   protected final CohortGenerationService cohortGenerationService;
-  protected final Function<ChunkContext, List<CohortDefinition>> cohortGetter;
+  protected final Function<ChunkContext, Collection<CohortDefinition>> cohortGetter;
 
   protected final SourceService sourceService;
   private long checkInterval = 3000L;
@@ -34,7 +35,7 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
   public GenerateLocalCohortTasklet(TransactionTemplate transactionTemplate,
                                     CohortGenerationService cohortGenerationService,
                                     SourceService sourceService,
-                                    Function<ChunkContext, List<CohortDefinition>> cohortGetter) {
+                                    Function<ChunkContext, Collection<CohortDefinition>> cohortGetter) {
     this.transactionTemplate = transactionTemplate;
 
     this.cohortGenerationService = cohortGenerationService;
@@ -80,7 +81,7 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
       return cohortGenerationService.runGenerateCohortJob(cd, source, false, false, targetTable, extraParams);
     }
 
-    public void run(List<CohortDefinition> cohortDefinitions) {
+    public void run(Collection<CohortDefinition> cohortDefinitions) {
       List<Long> executionIds = cohortDefinitions.stream()
               .map(this::generateCohort)
               .map(JobExecutionResource::getExecutionId)

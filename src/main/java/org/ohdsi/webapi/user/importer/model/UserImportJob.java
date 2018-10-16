@@ -21,6 +21,9 @@ public class UserImportJob extends ArachneJob {
   @Enumerated(EnumType.STRING)
   private LdapProviderType providerType;
 
+  @OneToMany(mappedBy = "userImportJob")
+  private List<RoleGroupEntity> roleGroupMapping;
+
   @Override
   public List<DayOfWeek> getWeekDays() {
 
@@ -38,5 +41,13 @@ public class UserImportJob extends ArachneJob {
 
   public void setProviderType(LdapProviderType providerType) {
     this.providerType = providerType;
+  }
+
+  public List<RoleGroupEntity> getRoleGroupMapping() {
+    return roleGroupMapping;
+  }
+
+  public void setRoleGroupMapping(List<RoleGroupEntity> roleGroupMapping) {
+    this.roleGroupMapping = roleGroupMapping;
   }
 }

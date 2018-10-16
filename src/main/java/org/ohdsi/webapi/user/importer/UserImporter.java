@@ -1,9 +1,6 @@
 package org.ohdsi.webapi.user.importer;
 
-import org.ohdsi.webapi.user.importer.model.AtlasUserRoles;
-import org.ohdsi.webapi.user.importer.model.LdapGroup;
-import org.ohdsi.webapi.user.importer.model.LdapProviderType;
-import org.ohdsi.webapi.user.importer.model.RoleGroupMapping;
+import org.ohdsi.webapi.user.importer.model.*;
 
 import java.util.List;
 
@@ -15,9 +12,9 @@ public interface UserImporter {
 
   void importUsers(List<AtlasUserRoles> users, List<String> defaultRoles);
 
-  void saveRoleGroupMapping(LdapProviderType providerType, List<RoleGroupMappingEntity> mappingEntities);
+  void saveRoleGroupMapping(LdapProviderType providerType, List<RoleGroupEntity> mappingEntities);
 
-  List<RoleGroupMappingEntity> getRoleGroupMapping(LdapProviderType providerType);
+  List<RoleGroupEntity> getRoleGroupMapping(LdapProviderType providerType);
 
   void testConnection(LdapProviderType provider);
 }

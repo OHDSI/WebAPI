@@ -2,6 +2,7 @@ package org.ohdsi.webapi.user.importer;
 
 import com.odysseusinc.scheduler.exception.JobNotFoundException;
 import org.ohdsi.webapi.user.importer.dto.UserImportJobDTO;
+import org.ohdsi.webapi.user.importer.dto.UserImportJobMappingDTO;
 import org.ohdsi.webapi.user.importer.exception.JobAlreadyExistException;
 import org.ohdsi.webapi.user.importer.model.UserImportJob;
 import org.ohdsi.webapi.user.importer.service.UserImportJobService;
@@ -75,9 +76,9 @@ public class UserImportJobController {
   @GET
   @Path("/{id}")
   @Produces(MediaType.APPLICATION_JSON)
-  public UserImportJobDTO getJob(@PathParam("id") Long id) {
+  public UserImportJobMappingDTO getJob(@PathParam("id") Long id) {
 
-    return jobService.getJob(id).map(job -> conversionService.convert(job, UserImportJobDTO.class))
+    return jobService.getJob(id).map(job -> conversionService.convert(job, UserImportJobMappingDTO.class))
             .orElseThrow(NotFoundException::new);
   }
 

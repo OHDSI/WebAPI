@@ -10,7 +10,7 @@ import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.PermissionManager;
-import org.ohdsi.webapi.user.importer.repository.RoleGroupMappingRepository;
+import org.ohdsi.webapi.user.importer.repository.RoleGroupRepository;
 import org.ohdsi.webapi.util.UserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,13 +40,13 @@ public class DefaultUserImporter implements UserImporter {
 
   private final PermissionManager userManager;
 
-  private final RoleGroupMappingRepository roleGroupMappingRepository;
+  private final RoleGroupRepository roleGroupMappingRepository;
 
   public DefaultUserImporter(@Autowired(required = false) ActiveDirectoryProvider activeDirectoryProvider,
                              @Autowired(required = false) DefaultLdapProvider ldapProvider,
                              UserRepository userRepository,
                              PermissionManager userManager,
-                             RoleGroupMappingRepository roleGroupMappingRepository) {
+                             RoleGroupRepository roleGroupMappingRepository) {
 
     this.userRepository = userRepository;
     this.userManager = userManager;
@@ -131,14 +131,14 @@ public class DefaultUserImporter implements UserImporter {
 
   @Override
   @Transactional
-  public void saveRoleGroupMapping(LdapProviderType providerType, List<RoleGroupMappingEntity> mappingEntities) {
+  public void saveRoleGroupMapping(LdapProviderType providerType, List<RoleGroupEntity> mappingEntities) {
 
-    List<RoleGroupMappingEntity> exists = roleGroupMappingRepository.findByProvider(providerType);
-    List<RoleGroupMappingEntity> deleted = exists
+    List<RoleGroupEntity> exists = roleGroupMappingRepository.findByProviderAndUserImportJobNull(providerType);
+    List<RoleGroupEntity> deleted = exists
             .stream()
             .filter(e -> mappingEntities.stream().noneMatch(m -> equalsRoleGroupMapping(e, m)))
             .collect(Collectors.toList());
-    List<RoleGroupMappingEntity> created = mappingEntities
+    List<RoleGroupEntity> created = mappingEntities
             .stream()
             .filter(m -> exists.stream().noneMatch(e -> equalsRoleGroupMapping(e, m)))
             .collect(Collectors.toList());
@@ -150,7 +150,7 @@ public class DefaultUserImporter implements UserImporter {
     }
   }
 
-  private boolean equalsRoleGroupMapping(RoleGroupMappingEntity a, RoleGroupMappingEntity b) {
+  private boolean equalsRoleGroupMapping(RoleGroupEntity a, RoleGroupEntity b) {
     if (Objects.isNull(a) && Objects.isNull(b)) {
       return true;
     }
@@ -164,9 +164,9 @@ public class DefaultUserImporter implements UserImporter {
 
 
   @Override
-  public List<RoleGroupMappingEntity> getRoleGroupMapping(LdapProviderType providerType) {
+  public List<RoleGroupEntity> getRoleGroupMapping(LdapProviderType providerType) {
 
-    return roleGroupMappingRepository.findByProvider(providerType);
+    return roleGroupMappingRepository.findByProviderAndUserImportJobNull(providerType);
   }
 
   @Override

@@ -3,9 +3,8 @@ package org.ohdsi.webapi.user.importer;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.ohdsi.webapi.service.UserService;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
-import org.ohdsi.webapi.user.importer.RoleGroupMappingEntity;
+import org.ohdsi.webapi.user.importer.converter.RoleGroupMappingConverter;
 import org.ohdsi.webapi.user.importer.model.*;
-import org.ohdsi.webapi.user.importer.UserImporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,7 +101,7 @@ public class UserImportService {
   @Consumes(MediaType.APPLICATION_JSON)
   public Response saveMapping(@PathParam("type") String type, RoleGroupMapping mapping) {
     LdapProviderType providerType = LdapProviderType.fromValue(type);
-    List<RoleGroupMappingEntity> mappingEntities = convertRoleGroupMapping(mapping);
+    List<RoleGroupEntity> mappingEntities = RoleGroupMappingConverter.convertRoleGroupMapping(mapping);
     userImporter.saveRoleGroupMapping(providerType, mappingEntities);
     return Response.ok().build();
   }
@@ -112,57 +111,8 @@ public class UserImportService {
   @Produces(MediaType.APPLICATION_JSON)
   public RoleGroupMapping getMapping(@PathParam("type") String type) {
     LdapProviderType providerType = LdapProviderType.fromValue(type);
-    List<RoleGroupMappingEntity> mappingEntities = userImporter.getRoleGroupMapping(providerType);
-    return convertRoleGroupMapping(type, mappingEntities);
-  }
-
-  private RoleGroupMapping convertRoleGroupMapping(String provider, List<RoleGroupMappingEntity> mappingEntities) {
-
-    RoleGroupMapping roleGroupMapping = new RoleGroupMapping();
-    roleGroupMapping.setProvider(provider);
-    Map<Long, List<RoleGroupMappingEntity>> entityMap = mappingEntities.stream()
-            .collect(Collectors.groupingBy(r -> r.getRole().getId()));
-    Map<Long, RoleEntity> roleMap = entityMap.entrySet().stream().map(e -> new ImmutablePair<>(e.getKey(), e.getValue().iterator().next().getRole()))
-            .collect(Collectors.toMap(ImmutablePair::getKey, ImmutablePair::getValue));
-
-    List<RoleGroupsMap> roleGroups = entityMap
-            .entrySet().stream().map(entry -> {
-              RoleGroupsMap roleGroupsMap = new RoleGroupsMap();
-              roleGroupsMap.setRole(new UserService.Role(roleMap.get(entry.getKey())));
-              List<LdapGroup> groups = entry
-                      .getValue()
-                      .stream()
-                      .map(role -> new LdapGroup(role.getGroupName(), role.getGroupDn()))
-                      .collect(Collectors.toList());
-              roleGroupsMap.setGroups(groups);
-              return roleGroupsMap;
-            }).collect(Collectors.toList());
-    roleGroupMapping.setRoleGroups(roleGroups);
-    return roleGroupMapping;
-  }
-
-  private List<RoleGroupMappingEntity> convertRoleGroupMapping(RoleGroupMapping mapping) {
-
-    final String providerTypeName = mapping.getProvider();
-    final LdapProviderType providerTyper = LdapProviderType.fromValue(providerTypeName);
-    return mapping.getRoleGroups().stream().flatMap(m -> {
-      RoleEntity roleEntity = convertRole(m.getRole());
-      return m.getGroups().stream().map(g -> {
-        RoleGroupMappingEntity entity = new RoleGroupMappingEntity();
-        entity.setGroupDn(g.getDistinguishedName());
-        entity.setGroupName(g.getDisplayName());
-        entity.setRole(roleEntity);
-        entity.setProvider(providerTyper);
-        return entity;
-      });
-    }).collect(Collectors.toList());
-  }
-
-  private RoleEntity convertRole(UserService.Role role) {
-    RoleEntity roleEntity = new RoleEntity();
-    roleEntity.setName(role.role);
-    roleEntity.setId(role.id);
-    return roleEntity;
+    List<RoleGroupEntity> mappingEntities = userImporter.getRoleGroupMapping(providerType);
+    return RoleGroupMappingConverter.convertRoleGroupMapping(type, mappingEntities);
   }
 
 }

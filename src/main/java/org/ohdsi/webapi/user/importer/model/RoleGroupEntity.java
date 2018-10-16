@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.user.importer;
+package org.ohdsi.webapi.user.importer.model;
 
 import org.ohdsi.webapi.user.importer.model.LdapProviderType;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
@@ -7,7 +7,7 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "sec_role_group")
-public class RoleGroupMappingEntity {
+public class RoleGroupEntity {
 
   @Id
   @SequenceGenerator(name = "sec_role_group_seq", sequenceName = "sec_role_group_seq", allocationSize = 1)
@@ -28,6 +28,10 @@ public class RoleGroupMappingEntity {
   @ManyToOne
   @JoinColumn(name = "role_id")
   private RoleEntity role;
+
+  @ManyToOne()
+  @JoinColumn(name = "job_id")
+  private UserImportJob userImportJob;
 
   public int getId() {
     return id;
@@ -67,5 +71,13 @@ public class RoleGroupMappingEntity {
 
   public void setRole(RoleEntity role) {
     this.role = role;
+  }
+
+  public UserImportJob getUserImportJob() {
+    return userImportJob;
+  }
+
+  public void setUserImportJob(UserImportJob userImportJob) {
+    this.userImportJob = userImportJob;
   }
 }

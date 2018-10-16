@@ -43,10 +43,7 @@ import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfo
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.common.generation.AnalysisTasklet;
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
-import org.ohdsi.webapi.feanalysis.domain.FeAnalysisCriteriaEntity;
-import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
-import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
-import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
+import org.ohdsi.webapi.feanalysis.domain.*;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
@@ -139,9 +136,9 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             CohortExpression expression = Utils.deserialize(this.json, cohortExpressionTypeRef);
             this.conceptSetIndex = expression.conceptSets.length;
             List<org.ohdsi.circe.cohortdefinition.ConceptSet> conceptSets = new ArrayList<>(Arrays.asList(expression.conceptSets));
-            List<ConceptSet> featureConceptSets = feature.getConceptSets();
+            List<ConceptSet> featureConceptSets = feature.getFeatureAnalysis().getConceptSets();
             if (Objects.nonNull(featureConceptSets)) {
-                conceptSets.addAll(feature.getConceptSets().stream()
+                conceptSets.addAll(feature.getFeatureAnalysis().getConceptSets().stream()
                         .map(this::cloneConceptSet)
                         .peek(conceptSet -> conceptSet.id += conceptSetIndex)
                         .collect(Collectors.toList()));

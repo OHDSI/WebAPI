@@ -7,10 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.webapi.cohortcharacterization.CcResultType;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
-import org.ohdsi.webapi.feanalysis.domain.FeAnalysisCriteriaEntity;
-import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
-import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
-import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
+import org.ohdsi.webapi.feanalysis.domain.*;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisCriteriaRepository;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisEntityRepository;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisWithStringEntityRepository;
@@ -102,6 +99,13 @@ public class FeAnalysisServiceImpl implements FeAnalysisService {
                   savedWithCriteria = (FeAnalysisWithCriteriaEntity) savedEntity;
           removeFeAnalysisCriteriaEntities(savedWithCriteria, updatedWithCriteriaEntity);
           updatedWithCriteriaEntity.getDesign().forEach(criteria -> criteria.setFeatureAnalysis(savedWithCriteria));
+          if (Objects.nonNull(updatedWithCriteriaEntity.getConceptSetEntity())) {
+            FeAnalysisConcepsetEntity concepsetEntity = Optional.ofNullable(((FeAnalysisWithCriteriaEntity) savedEntity).getConceptSetEntity())
+                    .orElseGet(FeAnalysisConcepsetEntity::new);
+            concepsetEntity.setFeatureAnalysis(savedWithCriteria);
+            concepsetEntity.setRawExpression(updatedWithCriteriaEntity.getConceptSetEntity().getRawExpression());
+            savedWithCriteria.setConceptSetEntity(concepsetEntity);
+          }
         }
         savedEntity.setDesign(updatedEntity.getDesign());
         if (Objects.nonNull(updatedEntity.getDomain())) {

@@ -1,12 +1,11 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.source.Source;
-import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.util.SourceUtils;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
@@ -45,8 +44,8 @@ public class CreateCohortTableTasklet implements Tasklet {
     Source source = sourceService.findBySourceId(Integer.valueOf(jobParameters.get(SOURCE_ID).toString()));
     String targetTable = jobParameters.get(TARGET_TABLE).toString();
 
-    final String resultsQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-    final String tempQualifier =ObjectUtils.firstNonNull( source.getTableQualifierOrNull(SourceDaimon.DaimonType.Temp), resultsQualifier);
+    final String resultsQualifier = SourceUtils.getResultsQualifier(source);
+    final String tempQualifier = SourceUtils.getTempQualifier(source, resultsQualifier);
     String sql = SqlRender.renderSql(CREATE_COHORT_SQL,
             new String[]{ RESULTS_DATABASE_SCHEMA, TEMP_DATABASE_SCHEMA, TARGET_TABLE },
             new String[] {resultsQualifier, tempQualifier, targetTable });

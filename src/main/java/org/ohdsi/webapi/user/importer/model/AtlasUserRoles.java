@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.user.importer.model;
 
-import org.ohdsi.webapi.service.UserService;
+import org.ohdsi.webapi.model.Role;
 
 import java.util.List;
 
@@ -8,7 +8,7 @@ public class AtlasUserRoles {
 
   private String login;
   private String displayName;
-  private List<UserService.Role> roles;
+  private List<Role> roles;
   private LdapUserImportStatus status;
 
   public String getLogin() {
@@ -27,11 +27,11 @@ public class AtlasUserRoles {
     this.displayName = displayName;
   }
 
-  public List<UserService.Role> getRoles() {
+  public List<Role> getRoles() {
     return roles;
   }
 
-  public void setRoles(List<UserService.Role> roles) {
+  public void setRoles(List<Role> roles) {
     this.roles = roles;
   }
 

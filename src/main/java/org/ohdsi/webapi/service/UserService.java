@@ -8,6 +8,7 @@ import com.odysseusinc.logging.event.DeletePermissionEvent;
 import com.odysseusinc.logging.event.DeleteRoleEvent;
 import com.odysseusinc.logging.event.UnassignRoleEvent;
 import org.eclipse.collections.impl.block.factory.Comparators;
+import org.ohdsi.webapi.model.Role;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.ArrayList;
@@ -98,34 +99,6 @@ public class UserService {
       else
         return c.compare(this.id, o.id);
     }
-  }
-
-  public static class Role implements Comparable<Role> {
-    public Long id;
-    public String role;
-    public boolean defaultImported;
-
-    public Role() {}
-
-    public Role (RoleEntity roleEntity) {
-      this.id = roleEntity.getId();
-      this.role = roleEntity.getName();
-    }
-
-    public Role (RoleEntity roleEntity, boolean defaultImported) {
-      this(roleEntity);
-      this.defaultImported = defaultImported;
-    }
-
-    @Override
-    public int compareTo(Role o) {
-      Comparator c = Comparators.naturalOrder();
-      if (this.id == null && o.id == null)
-        return c.compare(this.role, o.role);
-      else
-        return c.compare(this.id, o.id);
-    }
-
   }
 
   @GET

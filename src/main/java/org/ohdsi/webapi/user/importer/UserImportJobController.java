@@ -50,13 +50,13 @@ public class UserImportJobController {
   @Path("/{id}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public UserImportJobDTO updateJob(@PathParam("id") Long jobId, UserImportJobDTO jobDTO) {
+  public UserImportJobMappingDTO updateJob(@PathParam("id") Long jobId, UserImportJobMappingDTO jobDTO) {
 
     UserImportJob job = conversionService.convert(jobDTO, UserImportJob.class);
     try {
       job.setId(jobId);
       UserImportJob updated = jobService.updateJob(job);
-      return conversionService.convert(updated, UserImportJobDTO.class);
+      return conversionService.convert(updated, UserImportJobMappingDTO.class);
     } catch (JobNotFoundException e) {
       throw new NotFoundException();
     }

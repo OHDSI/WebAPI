@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.user.importer.converter;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.ohdsi.webapi.service.UserService;
+import org.ohdsi.webapi.model.Role;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.user.importer.model.*;
 
@@ -23,7 +23,7 @@ public class RoleGroupMappingConverter {
     List<RoleGroupsMap> roleGroups = entityMap
             .entrySet().stream().map(entry -> {
               RoleGroupsMap roleGroupsMap = new RoleGroupsMap();
-              roleGroupsMap.setRole(new UserService.Role(roleMap.get(entry.getKey())));
+              roleGroupsMap.setRole(new Role(roleMap.get(entry.getKey())));
               List<LdapGroup> groups = entry
                       .getValue()
                       .stream()
@@ -53,7 +53,7 @@ public class RoleGroupMappingConverter {
     }).collect(Collectors.toList());
   }
 
-  private static RoleEntity convertRole(UserService.Role role) {
+  private static RoleEntity convertRole(Role role) {
     RoleEntity roleEntity = new RoleEntity();
     roleEntity.setName(role.role);
     roleEntity.setId(role.id);

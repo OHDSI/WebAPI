@@ -1,8 +1,9 @@
 package org.ohdsi.webapi.user.importer;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Predicate;
+import org.ohdsi.webapi.model.Role;
 import org.ohdsi.webapi.user.importer.model.*;
-import org.ohdsi.webapi.service.UserService;
 import org.ohdsi.webapi.user.importer.providers.ActiveDirectoryProvider;
 import org.ohdsi.webapi.user.importer.providers.DefaultLdapProvider;
 import org.ohdsi.webapi.user.importer.providers.LdapProvider;
@@ -11,6 +12,7 @@ import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.user.importer.repository.RoleGroupRepository;
+import org.ohdsi.webapi.user.importer.utils.RoleGroupUtils;
 import org.ohdsi.webapi.util.UserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,7 +80,7 @@ public class DefaultUserImporter implements UserImporter {
               AtlasUserRoles atlasUser = new AtlasUserRoles();
               atlasUser.setDisplayName(user.getDisplayName());
               atlasUser.setLogin(UserUtils.toLowerCase(user.getLogin()));
-              List<UserService.Role> roles = user.getGroups().stream()
+              List<Role> roles = user.getGroups().stream()
                       .flatMap(g -> mapping.getRoleGroups()
                               .stream()
                               .filter(m -> m.getGroups().stream().anyMatch(group -> Objects.equals(g.getDistinguishedName(), group.getDistinguishedName())))
@@ -134,14 +136,8 @@ public class DefaultUserImporter implements UserImporter {
   public void saveRoleGroupMapping(LdapProviderType providerType, List<RoleGroupEntity> mappingEntities) {
 
     List<RoleGroupEntity> exists = roleGroupMappingRepository.findByProviderAndUserImportJobNull(providerType);
-    List<RoleGroupEntity> deleted = exists
-            .stream()
-            .filter(e -> mappingEntities.stream().noneMatch(m -> equalsRoleGroupMapping(e, m)))
-            .collect(Collectors.toList());
-    List<RoleGroupEntity> created = mappingEntities
-            .stream()
-            .filter(m -> exists.stream().noneMatch(e -> equalsRoleGroupMapping(e, m)))
-            .collect(Collectors.toList());
+    List<RoleGroupEntity> deleted = RoleGroupUtils.findDeleted(exists, mappingEntities);
+    List<RoleGroupEntity> created = RoleGroupUtils.findCreated(exists, mappingEntities);
     if (!deleted.isEmpty()) {
       roleGroupMappingRepository.delete(deleted);
     }
@@ -149,19 +145,6 @@ public class DefaultUserImporter implements UserImporter {
       roleGroupMappingRepository.save(created);
     }
   }
-
-  private boolean equalsRoleGroupMapping(RoleGroupEntity a, RoleGroupEntity b) {
-    if (Objects.isNull(a) && Objects.isNull(b)) {
-      return true;
-    }
-    if (Objects.nonNull(a) && Objects.nonNull(b)) {
-      return Objects.equals(a.getProvider(), b.getProvider())
-              && Objects.equals(a.getGroupDn(), b.getGroupDn())
-              && Objects.equals(a.getRole().getId(), b.getRole().getId());
-    }
-    return false;
-  }
-
 
   @Override
   public List<RoleGroupEntity> getRoleGroupMapping(LdapProviderType providerType) {
@@ -186,7 +169,7 @@ public class DefaultUserImporter implements UserImporter {
     return getStatus(userEntity, atlasUser.getRoles());
   }
 
-  private LdapUserImportStatus getStatus(UserEntity userEntity,  List<UserService.Role> atlasUserRoles) {
+  private LdapUserImportStatus getStatus(UserEntity userEntity,  List<Role> atlasUserRoles) {
 
     LdapUserImportStatus result = LdapUserImportStatus.NEW_USER;
 

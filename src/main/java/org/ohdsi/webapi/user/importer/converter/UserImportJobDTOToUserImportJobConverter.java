@@ -7,21 +7,10 @@ import org.ohdsi.webapi.user.importer.model.UserImportJob;
 import org.springframework.stereotype.Component;
 
 @Component
-public class UserImportJobDTOToUserImportJobConverter extends BaseArachneJobDTOToArachneJobConverter<UserImportJobDTO, UserImportJob> {
+public class UserImportJobDTOToUserImportJobConverter extends BaseUserImportJobDTOToUserImportJobConverter<UserImportJobDTO> {
 
   public UserImportJobDTOToUserImportJobConverter(CronDefinition cronDefinition) {
     super(cronDefinition);
   }
 
-  @Override
-  protected void convertJob(UserImportJobDTO source, UserImportJob target) {
-
-    target.setProviderType(source.getProviderType());
-  }
-
-  @Override
-  protected UserImportJob createResultObject(UserImportJobDTO userImportJobDTO) {
-
-    return new UserImportJob();
-  }
 }

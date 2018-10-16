@@ -2,12 +2,14 @@ package org.ohdsi.webapi.user.importer.service;
 
 import com.cronutils.model.definition.CronDefinition;
 import com.odysseusinc.scheduler.model.ScheduledTask;
-import com.odysseusinc.scheduler.repository.ArachneJobRepository;
 import com.odysseusinc.scheduler.service.BaseJobServiceImpl;
 import org.ohdsi.webapi.user.importer.UserImportService;
 import org.ohdsi.webapi.user.importer.exception.JobAlreadyExistException;
+import org.ohdsi.webapi.user.importer.model.RoleGroupEntity;
 import org.ohdsi.webapi.user.importer.model.UserImportJob;
+import org.ohdsi.webapi.user.importer.repository.RoleGroupRepository;
 import org.ohdsi.webapi.user.importer.repository.UserImportJobRepository;
+import org.ohdsi.webapi.user.importer.utils.RoleGroupUtils;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,15 +24,18 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
 
   private final UserImportService userImportService;
   private final UserImportJobRepository jobRepository;
+  private final RoleGroupRepository roleGroupRepository;
 
   public UserImportJobServiceImpl(TaskScheduler taskScheduler,
                                   CronDefinition cronDefinition,
                                   UserImportJobRepository jobRepository,
-                                  UserImportService userImportService) {
+                                  UserImportService userImportService,
+                                  RoleGroupRepository roleGroupRepository) {
 
     super(taskScheduler, cronDefinition, jobRepository);
     this.userImportService = userImportService;
     this.jobRepository = jobRepository;
+    this.roleGroupRepository = roleGroupRepository;
   }
 
   @Override
@@ -46,6 +51,17 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
   protected void updateAdditionalFields(UserImportJob exists, UserImportJob updated) {
 
     exists.setProviderType(updated.getProviderType());
+    List<RoleGroupEntity> existMapping = exists.getRoleGroupMapping();
+    List<RoleGroupEntity> updatedMapping = updated.getRoleGroupMapping();
+    List<RoleGroupEntity> deleted = RoleGroupUtils.findDeleted(existMapping, updatedMapping);
+    List<RoleGroupEntity> created = RoleGroupUtils.findCreated(existMapping, updatedMapping);
+    created.forEach(c -> c.setUserImportJob(exists));
+    if (!deleted.isEmpty()) {
+      roleGroupRepository.delete(deleted);
+    }
+    if (!created.isEmpty()) {
+      existMapping.addAll(roleGroupRepository.save(created));
+    }
   }
 
   @Override

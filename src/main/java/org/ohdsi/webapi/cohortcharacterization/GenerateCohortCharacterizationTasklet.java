@@ -246,8 +246,8 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
 
         private String renderCustomAnalysisDesign(FeAnalysisWithStringEntity fa, Integer cohortId) {
             Map<String, String> params = cohortCharacterization.getParameters().stream().collect(Collectors.toMap(CcParamEntity::getName, CcParamEntity::getValue));
-            params.put("cdm_database_schema", source.getTableQualifier(SourceDaimon.DaimonType.CDM));
-            params.put("cohort_table", source.getTableQualifier(SourceDaimon.DaimonType.Results) + "." + cohortTable);
+            params.put("cdm_database_schema", getCdmQualifier());
+            params.put("cohort_table", getResultsQualifier() + "." + cohortTable);
             params.put("cohort_id", cohortId.toString());
             params.put("analysis_id", fa.getId().toString());
 
@@ -351,8 +351,8 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
 
         private CohortExpressionQueryBuilder.BuildExpressionQueryOptions createDefaultOptions(final Integer id) {
             final CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = new CohortExpressionQueryBuilder.BuildExpressionQueryOptions();
-            options.cdmSchema = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
-            options.resultSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+            options.cdmSchema = getCdmQualifier();
+            options.resultSchema = getResultsQualifier();
             options.cohortId = id;
             return options;
         }
@@ -367,8 +367,8 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             List<String> queries = new ArrayList<>();
             CriteriaGroup expression = feature.getExpression();
 
-            final String resultsQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-            final String tempQualifier = ObjectUtils.firstNonNull( source.getTableQualifierOrNull(SourceDaimon.DaimonType.Temp), resultsQualifier);
+            final String resultsQualifier = getResultsQualifier();
+            final String tempQualifier = getTempQualifier(resultsQualifier);
             String createCohortSql = SqlRender.renderSql(CREATE_COHORT_SQL,
                     new String[]{ RESULTS_DATABASE_SCHEMA, TEMP_DATABASE_SCHEMA, TARGET_TABLE },
                     new String[] {resultsQualifier, tempQualifier, targetTable });
@@ -391,8 +391,8 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             if (feature.getExpression().demographicCriteriaList.length > 0 && feature.getExpression().demographicCriteriaList[0].gender.length > 0) {
                 conceptId = feature.getExpression().demographicCriteriaList[0].gender[0].conceptId;
             }
-            final String resultsQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-            final String tempQualifier = ObjectUtils.firstNonNull( source.getTableQualifierOrNull(SourceDaimon.DaimonType.Temp), resultsQualifier);
+            final String resultsQualifier = getResultsQualifier();
+            final String tempQualifier = getTempQualifier(resultsQualifier);
             return SqlRender.renderSql(COHORT_STATS_QUERY,
                     new String[]{ RESULTS_DATABASE_SCHEMA, TEMP_DATABASE_SCHEMA, "cohortId", "executionId", "analysisId", "analysisName", "covariateName", "conceptId",
                             "covariateId", "targetTable", "totalsTable" },
@@ -421,14 +421,29 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
 
             joiner.add(jsonObject.getString("sqlCleanup"));
 
-            final String resultsQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-            final String tempQualifier = ObjectUtils.firstNonNull( source.getTableQualifierOrNull(SourceDaimon.DaimonType.Temp), resultsQualifier);
+            final String resultsQualifier = getResultsQualifier();
+            final String tempQualifier = getTempQualifier(resultsQualifier);
             final String sql = SqlRender.renderSql(joiner.toString(),
                     new String[]{RESULTS_DATABASE_SCHEMA, TEMP_DATABASE_SCHEMA, CDM_DATABASE_SCHEMA, VOCABULARY_DATABASE_SCHEMA},
-                    new String[]{resultsQualifier, tempQualifier, source.getTableQualifier(SourceDaimon.DaimonType.CDM),
-                        source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary)});
+                    new String[]{resultsQualifier, tempQualifier, getCdmQualifier(), getVocabularyQualifier()});
             final String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect(), SessionUtils.sessionId(), tempQualifier);
             return SqlSplit.splitSql(translatedSql);
+        }
+
+        private String getVocabularyQualifier() {
+            return source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
+        }
+
+        private String getCdmQualifier() {
+            return source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+        }
+
+        private String getTempQualifier(String backup) {
+            return ObjectUtils.firstNonNull( source.getTableQualifierOrNull(SourceDaimon.DaimonType.Temp), backup);
+        }
+
+        private String getResultsQualifier() {
+            return source.getTableQualifier(SourceDaimon.DaimonType.Results);
         }
 
         private JSONObject createFeJsonObject(final CohortExpressionQueryBuilder.BuildExpressionQueryOptions options) {

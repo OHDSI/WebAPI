@@ -1,8 +1,8 @@
 package org.ohdsi.webapi.common.generation;
 
-import org.apache.commons.logging.Log;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.StatementCancel;
+import org.slf4j.Logger;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.StoppableTasklet;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -15,7 +15,7 @@ public abstract class CancelableTasklet extends StoppableTransactionalTasklet<in
   protected final StatementCancel stmtCancel;
   private final CancelableJdbcTemplate jdbcTemplate;
 
-  public CancelableTasklet(Log log,
+  public CancelableTasklet(Logger log,
                            CancelableJdbcTemplate jdbcTemplate,
                            TransactionTemplate transactionTemplate) {
     super(log, transactionTemplate);

@@ -3,8 +3,6 @@ package org.ohdsi.webapi;
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.ohdsi.webapi.common.generation.CancelJobListener;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.shiro.management.Security;
@@ -38,9 +36,6 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
-
-import javax.annotation.PostConstruct;
-import javax.sql.DataSource;
 
 /**
  * Had to copy DefaultBatchConfigurer and include within because jobLauncher config is private.

@@ -1,16 +1,6 @@
 package org.ohdsi.webapi.service;
 
-import com.odysseusinc.logging.event.AddDataSourceEvent;
-import com.odysseusinc.logging.event.ChangeDataSourceEvent;
-import com.odysseusinc.logging.event.DeleteDataSourceEvent;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ws.rs.Consumes;
@@ -25,6 +15,10 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import com.odysseusinc.logging.event.AddDataSourceEvent;
+import com.odysseusinc.logging.event.ChangeDataSourceEvent;
+import com.odysseusinc.logging.event.DeleteDataSourceEvent;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -33,13 +27,7 @@ import org.jasypt.encryption.pbe.PBEStringEncryptor;
 import org.jasypt.properties.PropertyValueEncryptionUtils;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.shiro.management.Security;
-import org.ohdsi.webapi.source.Source;
-import org.ohdsi.webapi.source.SourceDaimon;
-import org.ohdsi.webapi.source.SourceDaimonRepository;
-import org.ohdsi.webapi.source.SourceDetails;
-import org.ohdsi.webapi.source.SourceInfo;
-import org.ohdsi.webapi.source.SourceRepository;
-import org.ohdsi.webapi.source.SourceRequest;
+import org.ohdsi.webapi.source.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
@@ -50,6 +38,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import java.io.IOException;
+import java.io.InputStream;
 
 @Path("/source/")
 @Component
@@ -291,7 +281,7 @@ public class SourceService extends AbstractDaoService {
     if (source != null) {
       final String sourceKey = source.getSourceKey();
       sourceRepository.delete(source);
-      publisher.publishEvent(new DeleteDataSourceEvent(this, sourceId, source.getSourceName()));
+        publisher.publishEvent(new DeleteDataSourceEvent(this, sourceId, source.getSourceName()));
       cachedSources = null;
       securityManager.removeSourceRole(sourceKey);
       return Response.ok().build();

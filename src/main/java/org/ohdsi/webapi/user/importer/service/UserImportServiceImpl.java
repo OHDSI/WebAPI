@@ -16,11 +16,12 @@ import org.ohdsi.webapi.util.UserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ldap.core.*;
 import org.springframework.ldap.filter.AndFilter;
 import org.springframework.ldap.filter.EqualsFilter;
 import org.springframework.ldap.support.LdapUtils;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
@@ -29,11 +30,11 @@ import java.util.stream.Collectors;
 import static org.ohdsi.webapi.user.importer.providers.AbstractLdapProvider.OBJECTCLASS_ATTR;
 import static org.ohdsi.webapi.user.importer.providers.OhdsiLdapUtils.getCriteria;
 
-@Component
+@Service
 @Transactional(readOnly = true)
-public class DefaultUserImporter implements UserImporter {
+public class UserImportServiceImpl implements UserImportService {
 
-  private static final Logger logger = LoggerFactory.getLogger(UserImporter.class);
+  private static final Logger logger = LoggerFactory.getLogger(UserImportService.class);
 
   private final Map<LdapProviderType, LdapProvider> providersMap = new HashMap<>();
 
@@ -43,11 +44,14 @@ public class DefaultUserImporter implements UserImporter {
 
   private final RoleGroupRepository roleGroupMappingRepository;
 
-  public DefaultUserImporter(@Autowired(required = false) ActiveDirectoryProvider activeDirectoryProvider,
-                             @Autowired(required = false) DefaultLdapProvider ldapProvider,
-                             UserRepository userRepository,
-                             PermissionManager userManager,
-                             RoleGroupRepository roleGroupMappingRepository) {
+  @Value("${security.ad.default.import.group}#{T(java.util.Collections).emptyList()}")
+  private List<String> defaultRoles;
+
+  public UserImportServiceImpl(@Autowired(required = false) ActiveDirectoryProvider activeDirectoryProvider,
+                               @Autowired(required = false) DefaultLdapProvider ldapProvider,
+                               UserRepository userRepository,
+                               PermissionManager userManager,
+                               RoleGroupRepository roleGroupMappingRepository) {
 
     this.userRepository = userRepository;
     this.userManager = userManager;
@@ -96,15 +100,16 @@ public class DefaultUserImporter implements UserImporter {
 
   @Override
   @Transactional
-  public void importUsers(List<AtlasUserRoles> users, List<String> defaultRoles) {
+  public UserImportResult importUsers(List<AtlasUserRoles> users) {
 
-    importUsers(users, defaultRoles, true);
+    return importUsers(users, true);
   }
 
   @Override
   @Transactional
-  public void importUsers(List<AtlasUserRoles> users, List<String> defaultRoles, boolean preserveRoles) {
+  public UserImportResult importUsers(List<AtlasUserRoles> users, boolean preserveRoles) {
 
+    UserImportResult result = new UserImportResult();
     users.forEach(user -> {
       String login = UserUtils.toLowerCase(user.getLogin());
       Set<String> roles = user.getRoles().stream().map(role -> role.role).collect(Collectors.toSet());
@@ -136,13 +141,21 @@ public class DefaultUserImporter implements UserImporter {
               logger.error("Failed to add user {} to role {}", userEntity.getLogin(), r, e);
             }
           });
+          result.incUpdated();
         } else {
           userManager.registerUser(login, roles);
+          result.incCreated();
         }
       } catch (Exception e) {
         logger.error("Failed to register user {}", login, e);
       }
     });
+    return result;
+  }
+
+  @Override
+  public void runImportUsersTask(List<AtlasUserRoles> users, boolean preserveRoles) {
+
   }
 
   @Override

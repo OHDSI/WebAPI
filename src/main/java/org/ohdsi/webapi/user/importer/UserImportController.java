@@ -2,12 +2,12 @@ package org.ohdsi.webapi.user.importer;
 
 import org.ohdsi.webapi.user.importer.converter.RoleGroupMappingConverter;
 import org.ohdsi.webapi.user.importer.model.*;
-import org.ohdsi.webapi.user.importer.service.UserImporter;
+import org.ohdsi.webapi.user.importer.service.UserImportService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -16,23 +16,20 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
 
-@Component
+@Controller
 @Path("/")
-public class UserImportService {
+public class UserImportController {
 
-  private static final Logger logger = LoggerFactory.getLogger(UserImportService.class);
+  private static final Logger logger = LoggerFactory.getLogger(UserImportController.class);
 
   @Autowired
-  private UserImporter userImporter;
+  private UserImportService userImportService;
 
   @Value("${security.ad.url}")
   private String adUrl;
 
   @Value("${security.ldap.url}")
   private String ldapUrl;
-
-  @Value("${security.ad.default.import.group}#{T(java.util.Collections).emptyList()}")
-  private List<String> defaultRoles;
 
   @GET
   @Path("user/providers")
@@ -51,7 +48,7 @@ public class UserImportService {
     LdapProviderType provider = LdapProviderType.fromValue(type);
     ConnectionInfo result = new ConnectionInfo();
     try {
-      userImporter.testConnection(provider);
+      userImportService.testConnection(provider);
       result.setState(ConnectionInfo.ConnectionState.SUCCESS);
       result.setMessage("Connection success");
     } catch(Exception e) {
@@ -72,7 +69,7 @@ public class UserImportService {
   @Produces(MediaType.APPLICATION_JSON)
   public List<LdapGroup> findGroups(@PathParam("type") String type, @QueryParam("search") String searchStr) {
     LdapProviderType provider = LdapProviderType.fromValue(type);
-    return userImporter.findGroups(provider, searchStr);
+    return userImportService.findGroups(provider, searchStr);
   }
 
   @POST
@@ -81,14 +78,15 @@ public class UserImportService {
   @Produces(MediaType.APPLICATION_JSON)
   public List<AtlasUserRoles> findDirectoryUsers(@PathParam("type") String type, RoleGroupMapping mapping){
     LdapProviderType provider = LdapProviderType.fromValue(type);
-    return userImporter.findUsers(provider, mapping);
+    return userImportService.findUsers(provider, mapping);
   }
 
   @POST
   @Path("user/import")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response importUsers(List<AtlasUserRoles> users) {
-    userImporter.importUsers(users, defaultRoles);
+  public Response importUsers(List<AtlasUserRoles> users,
+                              @DefaultValue("TRUE") @QueryParam("preserve") Boolean preserveRoles) {
+    userImportService.importUsers(users, preserveRoles);
     return Response.ok().build();
   }
 
@@ -98,7 +96,7 @@ public class UserImportService {
   public Response saveMapping(@PathParam("type") String type, RoleGroupMapping mapping) {
     LdapProviderType providerType = LdapProviderType.fromValue(type);
     List<RoleGroupEntity> mappingEntities = RoleGroupMappingConverter.convertRoleGroupMapping(mapping);
-    userImporter.saveRoleGroupMapping(providerType, mappingEntities);
+    userImportService.saveRoleGroupMapping(providerType, mappingEntities);
     return Response.ok().build();
   }
 
@@ -107,7 +105,7 @@ public class UserImportService {
   @Produces(MediaType.APPLICATION_JSON)
   public RoleGroupMapping getMapping(@PathParam("type") String type) {
     LdapProviderType providerType = LdapProviderType.fromValue(type);
-    List<RoleGroupEntity> mappingEntities = userImporter.getRoleGroupMapping(providerType);
+    List<RoleGroupEntity> mappingEntities = userImportService.getRoleGroupMapping(providerType);
     return RoleGroupMappingConverter.convertRoleGroupMapping(type, mappingEntities);
   }
 

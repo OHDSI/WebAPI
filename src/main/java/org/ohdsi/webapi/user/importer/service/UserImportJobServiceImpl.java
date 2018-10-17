@@ -3,16 +3,26 @@ package org.ohdsi.webapi.user.importer.service;
 import com.cronutils.model.definition.CronDefinition;
 import com.odysseusinc.scheduler.model.ScheduledTask;
 import com.odysseusinc.scheduler.service.BaseJobServiceImpl;
-import org.ohdsi.webapi.user.importer.UserImportService;
+import org.apache.tomcat.util.bcel.Const;
+import org.ohdsi.analysis.Utils;
+import org.ohdsi.webapi.Constants;
+import org.ohdsi.webapi.job.JobTemplate;
+import org.ohdsi.webapi.user.importer.converter.RoleGroupMappingConverter;
 import org.ohdsi.webapi.user.importer.exception.JobAlreadyExistException;
-import org.ohdsi.webapi.user.importer.model.RoleGroupEntity;
-import org.ohdsi.webapi.user.importer.model.UserImportJob;
+import org.ohdsi.webapi.user.importer.model.*;
 import org.ohdsi.webapi.user.importer.repository.RoleGroupRepository;
 import org.ohdsi.webapi.user.importer.repository.UserImportJobRepository;
 import org.ohdsi.webapi.user.importer.utils.RoleGroupUtils;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobParameters;
+import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
+import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.List;
 import java.util.Objects;
@@ -25,17 +35,29 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
   private final UserImportService userImportService;
   private final UserImportJobRepository jobRepository;
   private final RoleGroupRepository roleGroupRepository;
+  private final TransactionTemplate transactionTemplate;
+  private final StepBuilderFactory stepBuilderFactory;
+  private final JobBuilderFactory jobBuilders;
+  private final JobTemplate jobTemplate;
 
   public UserImportJobServiceImpl(TaskScheduler taskScheduler,
                                   CronDefinition cronDefinition,
                                   UserImportJobRepository jobRepository,
                                   UserImportService userImportService,
-                                  RoleGroupRepository roleGroupRepository) {
+                                  RoleGroupRepository roleGroupRepository,
+                                  TransactionTemplate transactionTemplate,
+                                  StepBuilderFactory stepBuilderFactory,
+                                  JobBuilderFactory jobBuilders,
+                                  JobTemplate jobTemplate) {
 
     super(taskScheduler, cronDefinition, jobRepository);
     this.userImportService = userImportService;
     this.jobRepository = jobRepository;
     this.roleGroupRepository = roleGroupRepository;
+    this.transactionTemplate = transactionTemplate;
+    this.stepBuilderFactory = stepBuilderFactory;
+    this.jobBuilders = jobBuilders;
+    this.jobTemplate = jobTemplate;
   }
 
   @Override
@@ -82,6 +104,34 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
     return Optional.ofNullable(jobRepository.findOne(id));
   }
 
+  public void runImportUsersTask(List<AtlasUserRoles> userRoles, boolean preserveRoles) {
+
+  }
+
+  Job buildJobForManualUserImport() {
+
+    UserImportTasklet userImportTasklet = new UserImportTasklet(transactionTemplate, userImportService);
+
+  }
+
+  Job buildJobForUserImportTasklet() {
+
+    FindUsersToImportTasklet findUsersTasklet = new FindUsersToImportTasklet(transactionTemplate, userImportService);
+    Step findUsersStep = stepBuilderFactory.get("findUsersForImport")
+            .tasklet(findUsersTasklet)
+            .build();
+
+    UserImportTasklet userImportTasklet = new UserImportTasklet(transactionTemplate, userImportService);
+    Step userImportStep = stepBuilderFactory.get("importUsers")
+            .tasklet(userImportTasklet)
+            .build();
+
+    return jobBuilders.get(Constants.USERS_IMPORT)
+            .start(findUsersStep)
+            .next(userImportStep)
+            .build();
+  }
+
   private class UserImportScheduledTask extends ScheduledTask<UserImportJob> {
 
     UserImportScheduledTask(UserImportJob job) {
@@ -90,7 +140,30 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
 
     @Override
     public void run() {
+      List<RoleGroupEntity> roleGroupEntities = job.getRoleGroupMapping();
+      RoleGroupMapping roleGroupMapping = RoleGroupMappingConverter.convertRoleGroupMapping(job.getProviderType().getValue(), roleGroupEntities);
 
+      JobParameters jobParameters = new JobParametersBuilder()
+              .addString(Constants.Params.JOB_NAME, String.format("Users import for %s", getProviderName(job.getProviderType())))
+              .addString(Constants.Params.JOB_AUTHOR, "system")
+              .addString(Constants.Params.LDAP_PROVIDER, job.getProviderType().getValue())
+              .addString(Constants.Params.PRESERVE_ROLES, job.getPreserveRoles().toString())
+              .addString(Constants.Params.ROLE_GROUP_MAPPING, Utils.serialize(roleGroupMapping))
+              .toJobParameters();
+
+      Job batchJob = buildJobForUserImportTasklet();
+      jobTemplate.launch(batchJob, jobParameters);
+    }
+  }
+
+  private String getProviderName(LdapProviderType providerType) {
+    switch (providerType){
+      case ACTIVE_DIRECTORY:
+        return "Active Directory";
+      case LDAP:
+        return "LDAP Server";
+      default:
+        return "Unknown";
     }
   }
 }

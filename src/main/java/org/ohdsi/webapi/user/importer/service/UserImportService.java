@@ -4,15 +4,17 @@ import org.ohdsi.webapi.user.importer.model.*;
 
 import java.util.List;
 
-public interface UserImporter {
+public interface UserImportService {
 
   List<LdapGroup> findGroups(LdapProviderType providerType, String searchStr);
 
   List<AtlasUserRoles> findUsers(LdapProviderType providerType, RoleGroupMapping mapping);
 
-  void importUsers(List<AtlasUserRoles> users, List<String> defaultRoles);
+  UserImportResult importUsers(List<AtlasUserRoles> users);
 
-  void importUsers(List<AtlasUserRoles> users, List<String> defaultRoles, boolean preserveRoles);
+  UserImportResult importUsers(List<AtlasUserRoles> users, boolean preserveRoles);
+
+  void runImportUsersTask(List<AtlasUserRoles> users, boolean preserveRoles);
 
   void saveRoleGroupMapping(LdapProviderType providerType, List<RoleGroupEntity> mappingEntities);
 

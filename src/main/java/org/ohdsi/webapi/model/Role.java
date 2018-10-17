@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.collections.impl.block.factory.Comparators;
 import org.ohdsi.webapi.service.UserService;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
@@ -7,8 +8,11 @@ import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import java.util.Comparator;
 
 public class Role implements Comparable<Role> {
+  @JsonProperty("id")
   public Long id;
+  @JsonProperty("role")
   public String role;
+  @JsonProperty("defaultImported")
   public boolean defaultImported;
 
   public Role() {}

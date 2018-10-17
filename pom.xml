@@ -140,6 +140,14 @@
     <!-- ORGANIZATION SETTINGS -->
     <organization.name>OHDSI</organization.name>
 
+    <!-- Logging -->
+    <spring.jpa.show-sql>false</spring.jpa.show-sql>
+    <logging.level.root>info</logging.level.root>
+    <logging.level.org.ohdsi>info</logging.level.org.ohdsi>
+    <logging.level.org.springframework.orm>info</logging.level.org.springframework.orm>
+    <logging.level.org.springframework.jdbc>info</logging.level.org.springframework.jdbc>
+    <logging.level.org.apache.shiro>warn</logging.level.org.apache.shiro>
+
     <spring.batch.taskExecutor.corePoolSize>10</spring.batch.taskExecutor.corePoolSize>
     <spring.batch.taskExecutor.maxPoolSize>20</spring.batch.taskExecutor.maxPoolSize>
   </properties>
@@ -151,6 +159,7 @@
         <filtering>true</filtering>
         <includes>
           <include>**/*.properties</include>
+          <include>log4j.xml</include>
         </includes>
       </resource>
       <resource>
@@ -161,6 +170,7 @@
         </includes>
         <excludes>
           <exclude>**/*.properties</exclude>
+          <exclude>log4j.xml</exclude>
         </excludes>
       </resource>
       <resource>

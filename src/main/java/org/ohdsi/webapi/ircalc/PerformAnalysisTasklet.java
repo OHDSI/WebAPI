@@ -16,7 +16,6 @@
 package org.ohdsi.webapi.ircalc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.logging.LogFactory;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.Constants;
@@ -26,6 +25,8 @@ import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.transaction.TransactionDefinition;
@@ -55,7 +56,7 @@ public class PerformAnalysisTasklet extends CancelableTasklet {
           final TransactionTemplate transactionTemplate,
           final IncidenceRateAnalysisRepository incidenceRateAnalysisRepository) {
 
-    super(LogFactory.getLog(PerformAnalysisTasklet.class), jdbcTemplate, transactionTemplate);
+    super(LoggerFactory.getLogger(PerformAnalysisTasklet.class), jdbcTemplate, transactionTemplate);
     this.transactionTemplate = transactionTemplate;
     this.incidenceRateAnalysisRepository = incidenceRateAnalysisRepository;
   }

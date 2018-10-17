@@ -8,8 +8,6 @@ import jersey.repackaged.com.google.common.collect.ImmutableMap;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.apache.commons.lang3.time.DateUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
@@ -32,6 +30,8 @@ import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.DataSourceDTOParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +56,8 @@ import static com.odysseusinc.arachne.commons.types.DBMSType.IMPALA;
 @Service
 class ScriptExecutionServiceImpl implements ScriptExecutionService {
 
-    private static final Log logger = LogFactory.getLog(ScriptExecutionServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScriptExecutionServiceImpl.class);
+    private static final String IMPALA_DATASOURCE = "impala";
 
     @Autowired
     private HttpClient client;

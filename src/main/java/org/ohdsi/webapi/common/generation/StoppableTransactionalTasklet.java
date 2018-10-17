@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.common.generation;
 
-import org.apache.commons.logging.Log;
 import org.ohdsi.webapi.Constants;
+import org.slf4j.Logger;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
@@ -15,7 +15,7 @@ public abstract class StoppableTransactionalTasklet<T> extends TransactionalTask
   protected final long checkInterval = 1000L;
   private volatile boolean stopped = false;
 
-  public StoppableTransactionalTasklet(Log log, TransactionTemplate transactionTemplate) {
+  public StoppableTransactionalTasklet(Logger log, TransactionTemplate transactionTemplate) {
     super(log, transactionTemplate);
   }
 

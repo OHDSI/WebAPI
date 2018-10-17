@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.pathway;
 
-import org.apache.commons.logging.LogFactory;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfoEntityRepository;
 import org.ohdsi.webapi.common.generation.AnalysisTasklet;
@@ -9,6 +8,7 @@ import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -32,7 +32,7 @@ public class GeneratePathwayAnalysisTasklet extends AnalysisTasklet {
             UserRepository userRepository
     ) {
 
-        super(LogFactory.getLog(GeneratePathwayAnalysisTasklet.class), jdbcTemplate, transactionTemplate, analysisGenerationInfoEntityRepository);
+        super(LoggerFactory.getLogger(GeneratePathwayAnalysisTasklet.class), jdbcTemplate, transactionTemplate, analysisGenerationInfoEntityRepository);
         this.pathwayService = pathwayService;
         this.userRepository = userRepository;
     }

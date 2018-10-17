@@ -1,36 +1,31 @@
 package org.ohdsi.webapi.job;
 
-import static org.ohdsi.webapi.Constants.Params.JOB_AUTHOR;
-import static org.ohdsi.webapi.Constants.Params.JOB_START_TIME;
-import static org.ohdsi.webapi.Constants.WARM_CACHE;
-import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
-
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.shiro.management.Security;
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.JobParameters;
-import org.springframework.batch.core.JobParametersBuilder;
-import org.springframework.batch.core.Step;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.batch.core.*;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
 import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
 import org.springframework.batch.core.step.tasklet.Tasklet;
-import org.springframework.util.ObjectUtils;
+
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+
+import static org.ohdsi.webapi.Constants.Params.JOB_AUTHOR;
+import static org.ohdsi.webapi.Constants.Params.JOB_START_TIME;
+import static org.ohdsi.webapi.Constants.WARM_CACHE;
+import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 /**
  *
  */
 public class JobTemplate {
 
-    private static final Log log = LogFactory.getLog(JobTemplate.class);
+    private static final Logger log = LoggerFactory.getLogger(JobTemplate.class);
 
     private final JobLauncher jobLauncher;
     private final JobBuilderFactory jobBuilders;
@@ -56,7 +51,7 @@ public class JobTemplate {
             jobParameters = builder.toJobParameters();
             exec = this.jobLauncher.run(job, jobParameters);
             if (log.isDebugEnabled()) {
-                log.debug("JobExecution queued: " + exec);
+                log.debug("JobExecution queued: {}", exec);
             }
         } catch (final JobExecutionAlreadyRunningException e) {
             throw new WebApplicationException(Response.status(Status.CONFLICT).entity(whitelist(e)).build());

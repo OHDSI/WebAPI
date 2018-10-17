@@ -69,6 +69,7 @@ import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.UserUtils;
@@ -587,7 +588,7 @@ public class FeasibilityService extends AbstractDaoService {
     builder.addString("generate_stats", Boolean.TRUE.toString());
 
     final JobParameters jobParameters = builder.toJobParameters();
-    final JdbcTemplate sourceJdbcTemplate = getSourceJdbcTemplate(source);
+    final CancelableJdbcTemplate sourceJdbcTemplate = getSourceJdbcTemplate(source);
 
     GenerateCohortTasklet indexRuleTasklet = new GenerateCohortTasklet(sourceJdbcTemplate, getTransactionTemplate(), cohortDefinitionRepository, getSourceRepository());
 

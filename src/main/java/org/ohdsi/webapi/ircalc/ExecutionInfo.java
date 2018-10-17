@@ -65,6 +65,9 @@ public class ExecutionInfo implements Serializable, IExecutionInfo {
   
   @Column(name="is_valid")
   private boolean isValid;
+
+  @Column(name = "is_canceled")
+  private boolean isCanceled;
   
   @Column(name="message")
   private String message;
@@ -122,6 +125,19 @@ public class ExecutionInfo implements Serializable, IExecutionInfo {
   public ExecutionInfo setIsValid(boolean isValid) {
     this.isValid = isValid;
     return this;
+  }
+
+  @Override
+  public boolean getIsCanceled() {
+    return isCanceled();
+  }
+
+  public boolean isCanceled() {
+    return isCanceled;
+  }
+
+  public void setCanceled(boolean canceled) {
+    isCanceled = canceled;
   }
 
   public String getMessage() {

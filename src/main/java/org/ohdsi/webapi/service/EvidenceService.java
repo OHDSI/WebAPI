@@ -682,7 +682,7 @@ public class EvidenceService extends AbstractDaoService {
 
         final String taskString = task.toString();
         final JobParameters jobParameters = builder.toJobParameters();
-        log.info("Beginning run for negative controls analysis task: \n {}", taskString);
+        log.info("Beginning run for negative controls analysis task: {}", taskString);
 
         NegativeControlTasklet tasklet = new NegativeControlTasklet(task, getSourceJdbcTemplate(task.getSource()), task.getJdbcTemplate(),
                 getTransactionTemplate(), this.conceptSetGenerationInfoRepository, this.getSourceDialect());

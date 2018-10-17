@@ -368,7 +368,7 @@ public class FeatureExtractionService extends AbstractDaoService {
 
 		final JobParameters jobParameters = builder.toJobParameters();
 
-		log.info("Beginning generate cohort features for cohort definition id: \n {}", id);
+		log.info("Beginning generate cohort features for cohort definition id: {}", id);
 
 		GenerateCohortFeaturesTasklet generateCohortFeaturesTasklet
 			= new GenerateCohortFeaturesTasklet(getSourceJdbcTemplate(source), getTransactionTemplate());

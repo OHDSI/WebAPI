@@ -65,6 +65,9 @@ public class StudyGenerationInfo implements Serializable {
   
   @Column(name="is_valid")
   private boolean isValid;
+
+  @Column(name = "is_canceled")
+  private boolean isCanceled;
   
   public  StudyGenerationInfo()
   {    
@@ -119,6 +122,14 @@ public class StudyGenerationInfo implements Serializable {
   public StudyGenerationInfo setIsValid(boolean isValid) {
     this.isValid = isValid;
     return this;
+  }
+
+  public boolean isCanceled() {
+    return isCanceled;
+  }
+
+  public void setCanceled(boolean canceled) {
+    isCanceled = canceled;
   }
 
   public FeasibilityStudy getStudy() {

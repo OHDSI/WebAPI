@@ -45,6 +45,8 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
 
   private final JobExplorer jobExplorer;
 
+  private Map<Long, Job> jobMap = new HashMap<>();
+
   @Autowired
   public CohortGenerationService(CohortDefinitionRepository cohortDefinitionRepository,
                                  CohortGenerationInfoRepository cohortGenerationInfoRepository,
@@ -96,7 +98,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     SimpleJobBuilder generateJobBuilder = jobBuilders.get(jobName).start(generateCohortStep);
 
     if (updateGenerationInfo) {
-      generateJobBuilder.listener(new GenerationJobExecutionListener(cohortDefinitionRepository, this.getTransactionTemplateRequiresNew(),
+      generateJobBuilder.listener(new GenerationJobExecutionListener(this, cohortDefinitionRepository, this.getTransactionTemplateRequiresNew(),
               this.getSourceJdbcTemplate(source)));
     }
 
@@ -118,7 +120,9 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     Job job = buildGenerateCohortJob(cohortDefinition, source, includeFeatures, updateGenerationInfo, jobName);
     final JobParametersBuilder jobParametersBuilder = getJobParametersBuilder(source, cohortDefinition, targetTable);
     extraJobParams.forEach(jobParametersBuilder::addString);
-    return this.jobTemplate.launch(job, jobParametersBuilder.toJobParameters());
+    JobExecutionResource jobExecution = this.jobTemplate.launch(job, jobParametersBuilder.toJobParameters());
+    jobMap.put(jobExecution.getExecutionId(), job);
+    return jobExecution;
   }
 
   public JobExecutionResource runGenerateCohortJob(CohortDefinition cohortDefinition, Source source, boolean includeFeatures, boolean updateGenerationInfo, String targetTable) {
@@ -138,6 +142,16 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
   public JobExecution getJobExecution(Long jobExecutionId) {
 
     return jobExplorer.getJobExecution(jobExecutionId);
+  }
+
+  public Job getRunningJob(Long jobExecutionId) {
+
+    return jobMap.get(jobExecutionId);
+  }
+
+  public void removeJob(Long jobExecutionId) {
+
+    jobMap.remove(jobExecutionId);
   }
 
   public JobParametersBuilder getJobParametersBuilder(Source source, CohortDefinition cohortDefinition, String targetTable) {

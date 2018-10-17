@@ -1,5 +1,8 @@
 package org.ohdsi.webapi.job;
 
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.shiro.Entities.UserRepository;
+import org.ohdsi.webapi.shiro.PermissionManager;
 import org.springframework.batch.admin.service.SearchableJobExecutionDao;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.stereotype.Service;
@@ -21,9 +24,13 @@ public class NotificationServiceImpl implements NotificationService {
     private static final List<String> FOLDING_KEYS = new ArrayList<>();
 
     private final SearchableJobExecutionDao jobExecutionDao;
+    private final PermissionManager permissionManager;
+    private final UserRepository userRepository;
 
-    public NotificationServiceImpl(SearchableJobExecutionDao jobExecutionDao, List<GeneratesNotification> whiteList) {
+    public NotificationServiceImpl(SearchableJobExecutionDao jobExecutionDao, List<GeneratesNotification> whiteList, PermissionManager permissionManager, UserRepository userRepository) {
         this.jobExecutionDao = jobExecutionDao;
+        this.permissionManager = permissionManager;
+        this.userRepository = userRepository;
         whiteList.forEach(g -> {
             WHITE_LIST.add(g.getJobName());
             FOLDING_KEYS.add(g.getExecutionFoldingKey());
@@ -47,6 +54,19 @@ public class NotificationServiceImpl implements NotificationService {
             });
         }
         return result.values().stream().sorted(Comparator.comparing(JobExecution::getStartTime).reversed()).collect(Collectors.toList());
+    }
+
+    @Override
+    public Date getLastViewedTime() throws Exception {
+        final UserEntity user = permissionManager.getCurrentUser();
+        return user != null ? user.getLastViewedNotificationsTime() : null;
+    }
+
+    @Override
+    public void setLastViewedTime(Date stamp) throws Exception {
+        final UserEntity user = permissionManager.getCurrentUser();
+        user.setLastViewedNotificationsTime(stamp);
+        userRepository.save(user);
     }
 
     private static String getFoldingKey(JobExecution entity) {

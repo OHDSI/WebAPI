@@ -6,9 +6,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,8 +30,32 @@ public class NotificationController {
     @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
+    @Transactional(readOnly = true)
     public List<JobExecutionResource> list() {
         return service.findAll().stream().map(this::toDTO).collect(Collectors.toList());
+    }
+
+    @GET
+    @Path("/viewed")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional(readOnly = true)
+    public Date getLastViewedTime() {
+        try {
+            return service.getLastViewedTime();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @POST
+    @Path("/viewed")
+    @Produces(MediaType.APPLICATION_JSON)
+    public void setLastViewedTime(Date stamp) {
+        try {
+            service.setLastViewedTime(stamp);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private JobExecutionResource toDTO(JobExecution entity) {

@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.user.importer;
+package org.ohdsi.webapi.user.importer.service;
 
 import org.ohdsi.webapi.user.importer.model.*;
 
@@ -11,6 +11,8 @@ public interface UserImporter {
   List<AtlasUserRoles> findUsers(LdapProviderType providerType, RoleGroupMapping mapping);
 
   void importUsers(List<AtlasUserRoles> users, List<String> defaultRoles);
+
+  void importUsers(List<AtlasUserRoles> users, List<String> defaultRoles, boolean preserveRoles);
 
   void saveRoleGroupMapping(LdapProviderType providerType, List<RoleGroupEntity> mappingEntities);
 

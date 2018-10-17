@@ -24,6 +24,9 @@ public class UserImportJob extends ArachneJob {
   @OneToMany(mappedBy = "userImportJob")
   private List<RoleGroupEntity> roleGroupMapping;
 
+  @Column(name = "preserve_roles")
+  private Boolean preserveRoles;
+
   @Override
   public List<DayOfWeek> getWeekDays() {
 
@@ -49,5 +52,13 @@ public class UserImportJob extends ArachneJob {
 
   public void setRoleGroupMapping(List<RoleGroupEntity> roleGroupMapping) {
     this.roleGroupMapping = roleGroupMapping;
+  }
+
+  public Boolean getPreserveRoles() {
+    return preserveRoles;
+  }
+
+  public void setPreserveRoles(Boolean preserveRoles) {
+    this.preserveRoles = preserveRoles;
   }
 }

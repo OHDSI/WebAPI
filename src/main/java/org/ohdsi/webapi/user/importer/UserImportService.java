@@ -1,10 +1,8 @@
 package org.ohdsi.webapi.user.importer;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.ohdsi.webapi.service.UserService;
-import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.user.importer.converter.RoleGroupMappingConverter;
 import org.ohdsi.webapi.user.importer.model.*;
+import org.ohdsi.webapi.user.importer.service.UserImporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +15,6 @@ import javax.ws.rs.core.Response;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Component
 @Path("/")

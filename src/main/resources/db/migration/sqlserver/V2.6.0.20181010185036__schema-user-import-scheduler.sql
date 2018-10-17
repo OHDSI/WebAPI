@@ -12,6 +12,7 @@ CREATE TABLE ${ohdsiSchema}.user_import_job(
   executed_times INTEGER DEFAULT 0 NOT NULL,
   is_closed BIT DEFAULT 0 NOT NULL,
   provider_type VARCHAR(100) NOT NULL,
+  preserve_roles BIT NOT NULL DEFAULT 1,
   CONSTRAINT pk_user_import_job PRIMARY KEY(id)
 );
 

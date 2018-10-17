@@ -1,7 +1,6 @@
-package org.ohdsi.webapi.user.importer;
+package org.ohdsi.webapi.user.importer.service;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Predicate;
 import org.ohdsi.webapi.model.Role;
 import org.ohdsi.webapi.user.importer.model.*;
 import org.ohdsi.webapi.user.importer.providers.ActiveDirectoryProvider;
@@ -99,6 +98,13 @@ public class DefaultUserImporter implements UserImporter {
   @Transactional
   public void importUsers(List<AtlasUserRoles> users, List<String> defaultRoles) {
 
+    importUsers(users, defaultRoles, true);
+  }
+
+  @Override
+  @Transactional
+  public void importUsers(List<AtlasUserRoles> users, List<String> defaultRoles, boolean preserveRoles) {
+
     users.forEach(user -> {
       String login = UserUtils.toLowerCase(user.getLogin());
       Set<String> roles = user.getRoles().stream().map(role -> role.role).collect(Collectors.toSet());
@@ -108,13 +114,21 @@ public class DefaultUserImporter implements UserImporter {
         if (Objects.nonNull(userEntity = userRepository.findByLogin(login)) &&
                 LdapUserImportStatus.MODIFIED.equals(getStatus(userEntity, user.getRoles()))) {
           Set<RoleEntity> userRoles = userManager.getUserRoles(userEntity.getId());
-          userRoles.stream().filter(role -> !role.getName().equalsIgnoreCase(login)).forEach(r -> {
-            try {
-              userManager.removeUserFromRole(r.getName(), userEntity.getLogin());
-            } catch (Exception e) {
-              logger.warn("Failed to remove user {} from role {}", userEntity.getLogin(), r.getName(), e);
-            }
-          });
+          if (!preserveRoles) {
+            //Overrides assigned roles
+            userRoles.stream().filter(role -> !role.getName().equalsIgnoreCase(login)).forEach(r -> {
+              try {
+                userManager.removeUserFromRole(r.getName(), userEntity.getLogin());
+              } catch (Exception e) {
+                logger.warn("Failed to remove user {} from role {}", userEntity.getLogin(), r.getName(), e);
+              }
+            });
+          } else {
+            //Filter roles that is already assigned
+            roles = roles.stream()
+                    .filter(role -> userRoles.stream().noneMatch(ur -> Objects.equals(ur.getName(), role)))
+                    .collect(Collectors.toSet());
+          }
           roles.forEach(r -> {
             try {
               userManager.addUserToRole(r, userEntity.getLogin());

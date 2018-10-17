@@ -15,6 +15,7 @@ public abstract class BaseUserImportJobDTOToUserImportJobConverter<T extends Use
   protected void convertJob(T source, UserImportJob target) {
 
     target.setProviderType(source.getProviderType());
+    target.setPreserveRoles(source.getPreserveRoles());
   }
 
   @Override
@@ -22,6 +23,4 @@ public abstract class BaseUserImportJobDTOToUserImportJobConverter<T extends Use
 
     return new UserImportJob();
   }
-
-
 }

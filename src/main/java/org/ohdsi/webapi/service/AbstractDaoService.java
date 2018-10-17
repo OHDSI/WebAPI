@@ -12,8 +12,6 @@ import com.odysseusinc.datasourcemanager.krblogin.KerberosService;
 import com.odysseusinc.datasourcemanager.krblogin.KrbConfig;
 import com.odysseusinc.datasourcemanager.krblogin.RuntimeServiceMode;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.IExecutionInfo;
 import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisExecutionRepository;
@@ -28,6 +26,8 @@ import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.DataSourceDTOParser;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -40,7 +40,8 @@ import org.springframework.transaction.support.TransactionTemplate;
  */
 public abstract class AbstractDaoService {
 
-  protected final Log log = LogFactory.getLog(getClass());
+  protected final Logger log = LoggerFactory.getLogger(getClass());
+  private static final String IMPALA_DATASOURCE = "impala";
 
   @Value("${datasource.ohdsi.schema}")
   private String ohdsiSchema;
@@ -170,7 +171,7 @@ public abstract class AbstractDaoService {
       FileUtils.forceDelete(temporaryDir);
       FileUtils.forceDelete(krbConfig.getComponents().getKeytabPath().toFile());
     } catch (IOException e) {
-      log.warn(e);
+      log.warn(e.getMessage(), e);
     }
   }
 
@@ -238,7 +239,7 @@ public abstract class AbstractDaoService {
       });
 
     } catch (Exception e) {
-      log.error("error loading in result set", e);
+      log.error("Result set loading error", e);
     }
     return results;
   }

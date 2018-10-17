@@ -532,7 +532,7 @@ public class VocabularyService extends AbstractDaoService {
     try {
       concept = getSourceJdbcTemplate(source).queryForObject(psr.getSql(), psr.getOrderedParams(), this.rowMapper);
     } catch (EmptyResultDataAccessException e) {
-      log.debug(String.format("Request for conceptId=%s resulted in 0 results", id));
+      log.error("Request for conceptId={} resulted in 0 results", id);
       throw new WebApplicationException(Response.Status.RESET_CONTENT); // http 205
     }
     return concept;

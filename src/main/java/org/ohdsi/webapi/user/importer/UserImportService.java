@@ -55,7 +55,7 @@ public class UserImportService {
       result.setState(ConnectionInfo.ConnectionState.SUCCESS);
       result.setMessage("Connection success");
     } catch(Exception e) {
-      logger.error("LDAP connection failed.", e);
+      logger.error("LDAP connection failed", e);
       result.setMessage("Connection failed. " + e.getMessage());
       StringWriter out = new StringWriter();
       try(PrintWriter writer = new PrintWriter(out)) {

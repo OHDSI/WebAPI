@@ -3,11 +3,11 @@ package org.ohdsi.webapi;
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.ohdsi.webapi.common.generation.CancelJobListener;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.shiro.management.Security;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.admin.service.JdbcSearchableJobExecutionDao;
 import org.springframework.batch.admin.service.JdbcSearchableJobInstanceDao;
 import org.springframework.batch.admin.service.SearchableJobExecutionDao;
@@ -45,7 +45,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 @EnableBatchProcessing
 public class JobConfig {
     
-    private static final Log log = LogFactory.getLog(CustomBatchConfigurer.class);
+    private static final Logger log = LoggerFactory.getLogger(CustomBatchConfigurer.class);
     
     @Value("${spring.batch.repository.tableprefix}")
     private String tablePrefix;
@@ -114,7 +114,7 @@ public class JobConfig {
             }
         };
     }
-    
+
     class CustomBatchConfigurer implements BatchConfigurer {
         
         private DataSource dataSource;

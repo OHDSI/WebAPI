@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class NotificationServiceImpl implements NotificationService {
-    private static final int MAX_SIZE = 20;
+    private static final int MAX_SIZE = 10;
     private static final int PAGE_SIZE = MAX_SIZE * 10;
     private static final List<String> WHITE_LIST = new ArrayList<>();
     private static final List<String> FOLDING_KEYS = new ArrayList<>();
@@ -45,13 +45,18 @@ public class NotificationServiceImpl implements NotificationService {
             if(page.size() == 0) {
                 break;
             }
-            page.stream().filter(NotificationServiceImpl::whiteList).forEach(entity -> {
-                result.merge(getFoldingKey(entity), entity, (x, y) -> {
-                    final Date xStartTime = x.getStartTime();
-                    final Date yStartTime = y.getStartTime();
-                    return xStartTime != null ?  yStartTime != null ? xStartTime.after(yStartTime) ? x : y : x: y;
-                });
-            });
+            for (JobExecution jobExec: page) {
+                if (whiteList(jobExec)) {
+                    result.merge(getFoldingKey(jobExec), jobExec, (x, y) -> {
+                        final Date xStartTime = x.getStartTime();
+                        final Date yStartTime = y.getStartTime();
+                        return xStartTime != null ?  yStartTime != null ? xStartTime.after(yStartTime) ? x : y : x: y;
+                    });
+                }
+                if (result.size() >= MAX_SIZE) {
+                    break;
+                }
+            }
         }
         return result.values().stream().sorted(Comparator.comparing(JobExecution::getStartTime).reversed()).collect(Collectors.toList());
     }

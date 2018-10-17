@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
+import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
@@ -31,11 +32,14 @@ import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.CohortGenerationService;
 import org.ohdsi.webapi.service.FeatureExtractionService;
 import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.annotations.CcGenerationId;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
+import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.*;
@@ -44,11 +48,11 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
+import javax.persistence.EntityManager;
 import javax.ws.rs.NotFoundException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -74,6 +78,14 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
     private final static List<String> INCOMPLETE_STATUSES = ImmutableList.of(BatchStatus.STARTED, BatchStatus.STARTING, BatchStatus.STOPPING, BatchStatus.UNKNOWN)
             .stream().map(BatchStatus::name).collect(Collectors.toList());
 
+    private final EntityGraph defaultEntityGraph = EntityUtils.fromAttributePaths(
+            "cohortDefinitions",
+            "featureAnalyses",
+            "parameters",
+            "createdBy",
+            "modifiedBy"
+    );
+
     private CcRepository repository;
     private CcParamRepository paramRepository;
     private FeAnalysisService analysisService;
@@ -86,6 +98,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
     private AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository;
     private SourceService sourceService;
     private GenerationUtils generationUtils;
+    private EntityManager entityManager;
 
     private final JobRepository jobRepository;
 
@@ -103,7 +116,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
             final JobRepository jobRepository,
             final AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository,
             final SourceService sourceService,
-            final GenerationUtils generationUtils
+            final GenerationUtils generationUtils,
+            final EntityManager entityManager
     ) {
         this.repository = ccRepository;
         this.paramRepository = paramRepository;
@@ -118,6 +132,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         this.analysisGenerationInfoEntityRepository = analysisGenerationInfoEntityRepository;
         this.sourceService = sourceService;
         this.generationUtils = generationUtils;
+        this.entityManager = entityManager;
         SerializedCcToCcConverter.setConversionService(conversionService);
     }
 
@@ -129,9 +144,10 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
     }
 
     private CohortCharacterizationEntity saveCc(final CohortCharacterizationEntity entity) {
-        final CohortCharacterizationEntity savedEntity = repository.saveAndFlush(entity);
+        CohortCharacterizationEntity savedEntity = repository.saveAndFlush(entity);
+        entityManager.refresh(savedEntity);
+        savedEntity = findByIdWithLinkedEntities(savedEntity.getId());
 
-        gatherLinkedEntities(savedEntity);
         sortInnerEntities(savedEntity);
 
         final String serialized = this.serializeCc(savedEntity);
@@ -253,7 +269,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
 
     @Override
     public CohortCharacterizationEntity findByIdWithLinkedEntities(final Long id) {
-        return gatherLinkedEntities(findById(id));
+        return repository.findOne(id, defaultEntityGraph);
     }
 
     @Override
@@ -262,16 +278,9 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         return ccGenerationRepository.findById(id).map(gen -> gen.getDesign()).orElse(null);
     }
 
-    private CohortCharacterizationEntity gatherLinkedEntities(final CohortCharacterizationEntity mainEntity) {
-        mainEntity.setParameters(paramRepository.findAllByCohortCharacterization(mainEntity));
-        mainEntity.setCohortDefinitions(cohortRepository.findAllByCohortCharacterizations(mainEntity));
-        mainEntity.setFeatureAnalyses(analysisService.findByCohortCharacterization(mainEntity));
-        return mainEntity;
-    }
-
     @Override
     public Page<CohortCharacterizationEntity> getPageWithLinkedEntities(final Pageable pageable) {
-        return this.getPage(pageable).map(this::gatherLinkedEntities);
+        return repository.findAll(pageable, defaultEntityGraph);
     }
 
     @Override
@@ -296,7 +305,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
 
         final JobParameters jobParameters = builder.toJobParameters();
 
-        JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
+        CancelableJdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
 
         Job generateCohortJob = generationUtils.buildJobForCohortBasedAnalysisTasklet(
                 GENERATE_COHORT_CHARACTERIZATION,
@@ -469,9 +478,9 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
 
 
     private void importCohorts(final CohortCharacterizationEntity entity, final CohortCharacterizationEntity persistedEntity) {
-        final List<CohortDefinition> cohortList = entity.getCohortDefinitions().stream()
+        final Set<CohortDefinition> cohortList = entity.getCohortDefinitions().stream()
                 .map(designImportService::persistCohortOrGetExisting)
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
         persistedEntity.setCohortDefinitions(cohortList);
     }
 

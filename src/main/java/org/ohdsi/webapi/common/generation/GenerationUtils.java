@@ -17,6 +17,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
@@ -46,7 +47,7 @@ public class GenerationUtils {
     public Job buildJobForCohortBasedAnalysisTasklet(
             String analysisTypeName,
             JdbcTemplate jdbcTemplate,
-            Function<ChunkContext, List<CohortDefinition>> cohortGetter,
+            Function<ChunkContext, Collection<CohortDefinition>> cohortGetter,
             AnalysisTasklet analysisTasklet
     ) {
 

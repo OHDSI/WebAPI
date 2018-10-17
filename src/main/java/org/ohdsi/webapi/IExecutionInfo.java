@@ -7,6 +7,7 @@ public interface IExecutionInfo<T extends IExecutionInfo> {
     Integer getExecutionDuration();
     GenerationStatus getStatus();
     boolean getIsValid();
+    boolean getIsCanceled();
     String getMessage();
     T setStartTime(Date startTime);
     T setExecutionDuration(Integer executionDuration);

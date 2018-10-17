@@ -6,10 +6,6 @@ import org.ohdsi.webapi.cohortcharacterization.dto.BaseCcDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcParameterDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 public abstract class BaseCcToCcDTOConverter<T extends BaseCcDTO> extends BaseCcToCcShortDTOConverter<T> {
 
   @Autowired
@@ -19,12 +15,8 @@ public abstract class BaseCcToCcDTOConverter<T extends BaseCcDTO> extends BaseCc
   public T convert(CohortCharacterizationEntity source) {
 
     final T cohortCharacterizationDTO = super.convert(source);
-    cohortCharacterizationDTO.setParameters(converterUtils.convertList(toList(source.getParameters()), CcParameterDTO.class));
+    cohortCharacterizationDTO.setParameters(converterUtils.convertSet(source.getParameters(), CcParameterDTO.class));
     return cohortCharacterizationDTO;
-  }
-
-  protected List<?> toList(final Set<?> analyses) {
-    return new ArrayList<>(analyses);
   }
 
 }

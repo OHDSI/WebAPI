@@ -56,7 +56,7 @@ public abstract class WebApiIT {
     public void assertOK(ResponseEntity entity){
         assertEquals(HttpStatus.OK, entity.getStatusCode());
         if (log.isDebugEnabled()) {
-            log.debug("Body:" + entity.getBody());
+            log.debug("Body: {}", entity.getBody());
         }
     }
 }

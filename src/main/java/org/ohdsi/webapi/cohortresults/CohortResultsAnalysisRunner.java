@@ -1363,14 +1363,14 @@ public class CohortResultsAnalysisRunner {
 
 	private void saveEntity(int cohortDefinitionId, int sourceId, String visualizationKey, Object dataObject) {
 		if (dataObject == null) {
-			log.error("cannot store null entity {}", visualizationKey);
+			log.error("Cannot store null entity {}", visualizationKey);
 			return;
 		}
 		
 		if (dataObject instanceof List) {
 			List<?> listObject = (List<?>) dataObject;
 			if (listObject.size() == 0) {
-				log.warn("no need to store empty list for {}", visualizationKey);
+				log.warn("No need to store empty list for {}", visualizationKey);
 				return;
 			}
 		}
@@ -1412,14 +1412,14 @@ public class CohortResultsAnalysisRunner {
 
 	private void saveEntityDrilldown(int cohortDefinitionId, int sourceId, String visualizationKey, int drilldownId, Object dataObject) {
 		if (dataObject == null) {
-			log.error("cannot store null entity {}", visualizationKey);
+			log.error("Cannot store null entity {}", visualizationKey);
 			return;
 		}
 		
 		if (dataObject instanceof List) {
 			List<?> listObject = (List<?>) dataObject;
 			if (listObject.size() == 0) {
-				log.warn("no need to store empty list for {}",  visualizationKey);
+				log.warn("No need to store empty list for {}",  visualizationKey);
 				return;
 			}
 		}

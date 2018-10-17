@@ -92,10 +92,10 @@ public class NegativeControlTasklet implements Tasklet {
                 @Override
                 public int[] doInTransaction(final TransactionStatus status) {
                     int[] result = new int[0];
-                    log.debug("entering tasklet");
+                    log.debug("Entering tasklet");
 
                     String negativeControlSql = EvidenceService.getNegativeControlSql(task);
-                    log.debug("process negative controls with: \n\t{}", negativeControlSql);
+                    log.debug("Processing negative controls with: \n\t{}", negativeControlSql);
                     NegativeControlTasklet.this.evidenceJdbcTemplate.execute(negativeControlSql);
 
                     return result;

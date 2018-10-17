@@ -8,7 +8,6 @@ import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.media.multipart.BodyPartEntity;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
-import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisExecutionRepository;
 import org.ohdsi.webapi.executionengine.entity.AnalysisExecution;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFile;
 import org.ohdsi.webapi.executionengine.exception.ScriptCallbackException;
@@ -37,20 +36,15 @@ public class ScriptExecutionCallbackController {
 
     private static final Logger log = LoggerFactory.getLogger(ScriptExecutionCallbackController.class);
 
-    private final ComparativeCohortAnalysisExecutionRepository comparativeCohortAnalysisExecutionRepository;
-
     private final AnalysisExecutionRepository analysisExecutionRepository;
 
     private final OutputFileRepository outputFileRepository;
 
 
     @Autowired
-    public ScriptExecutionCallbackController(ComparativeCohortAnalysisExecutionRepository
-                                                     comparativeCohortAnalysisExecutionRepository,
-                                             AnalysisExecutionRepository analysisExecutionRepository,
+    public ScriptExecutionCallbackController(AnalysisExecutionRepository analysisExecutionRepository,
                                              OutputFileRepository outputFileRepository) {
 
-        this.comparativeCohortAnalysisExecutionRepository = comparativeCohortAnalysisExecutionRepository;
         this.analysisExecutionRepository = analysisExecutionRepository;
         this.outputFileRepository = outputFileRepository;
     }
@@ -63,8 +57,7 @@ public class ScriptExecutionCallbackController {
                              @PathParam("password") String password,
                              AnalysisExecutionStatusDTO status) {
 
-        log.info("Accepted an updateSubmission request. \n "
-                                + "ID:{}, Update date:{} Log:\n" + "{}",
+        log.info("Accepted an updateSubmission request. ID:{}, Update date:{} Log: {}",
                         status.getId(), status.getStdoutDate(), status.getStdout());
             AnalysisExecution analysisExecution = analysisExecutionRepository.findOne(id);
             if (analysisExecution != null
@@ -84,7 +77,7 @@ public class ScriptExecutionCallbackController {
                                @PathParam("password") String password,
                                FormDataMultiPart multiPart) {
 
-        log.info("Accepted an analysisResult request.\n ID:{}", id);
+        log.info("Accepted an analysisResult request. ID:{}", id);
         AnalysisExecution analysisExecution = analysisExecutionRepository.findOne(id);
         if (Objects.nonNull(analysisExecution) && Objects.equals(password, analysisExecution.getUpdatePassword())) {
             Date timestamp = new Date();
@@ -96,7 +89,7 @@ public class ScriptExecutionCallbackController {
             try {
                 saveFiles(multiPart, analysisExecution, analysisResultDTO);
             }catch (Exception e){
-                log.warn("Failed to save files for execution id: {}", id, e);
+                log.warn("Failed to save files for execution ID:{}", id, e);
             }
 
             AnalysisResultStatusDTO status = analysisResultDTO.getStatus();
@@ -108,7 +101,7 @@ public class ScriptExecutionCallbackController {
             }
             analysisExecutionRepository.save(analysisExecution);
         } else {
-            log.error("Update password not matched for execution id={}", id);
+            log.error("Update password not matched for execution ID:{}", id);
         }
     }
 

@@ -20,7 +20,6 @@ import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfo;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
@@ -57,17 +56,14 @@ public class PerformFeasibilityTasklet implements Tasklet {
   private final JdbcTemplate jdbcTemplate;
   private final TransactionTemplate transactionTemplate;
   private final FeasibilityStudyRepository feasibilityStudyRepository;
-  private final CohortDefinitionRepository cohortDefinitionRepository;
 
   public PerformFeasibilityTasklet(
-          final JdbcTemplate jdbcTemplate, 
+          final JdbcTemplate jdbcTemplate,
           final TransactionTemplate transactionTemplate,
-          final FeasibilityStudyRepository feasibilityStudyRepository,
-          final CohortDefinitionRepository cohortDefinitionRepository) {
+          final FeasibilityStudyRepository feasibilityStudyRepository) {
     this.jdbcTemplate = jdbcTemplate;
     this.transactionTemplate = transactionTemplate;
     this.feasibilityStudyRepository = feasibilityStudyRepository;
-    this.cohortDefinitionRepository = cohortDefinitionRepository;
   }
 
   private StudyGenerationInfo findStudyGenerationInfoBySourceId(Collection<StudyGenerationInfo> infoList, Integer sourceId)
@@ -179,7 +175,7 @@ public class PerformFeasibilityTasklet implements Tasklet {
           return doTask(chunkContext);
         }
       });
-      log.debug("Update count: " + ret.length);
+      log.debug("Update count: {}", ret.length);
       isValid = true;
     } catch (final TransactionException e) {
       isValid = false;

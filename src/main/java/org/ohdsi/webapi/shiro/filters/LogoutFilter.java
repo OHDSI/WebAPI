@@ -53,7 +53,7 @@ public class LogoutFilter extends AdviceFilter {
         subject.logout();
         eventPublisher.publishEvent(new SuccessLogoffEvent(this, principal));
     } catch (SessionException ise) {
-        log.warn("Encountered session exception during logout. This can be generally safely ignored.", ise);
+        log.warn("Encountered session exception during logout. This can be generally safely ignored", ise);
         eventPublisher.publishEvent(new FailedLogoffEvent(this, principal));
     }
     return false;

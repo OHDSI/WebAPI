@@ -498,7 +498,7 @@ public class IRAnalysisService extends AbstractDaoService {
       }
       catch (Exception e)
       {
-        log.error("Error getting IR Analysis summary list.", e);
+        log.error("Error getting IR Analysis summary list", e);
       }
       result.add(info);
     }

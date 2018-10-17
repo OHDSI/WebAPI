@@ -99,11 +99,11 @@ public class CohortAnalysisTasklet implements Tasklet {
 						});
 						if (log.isDebugEnabled()) {
 							log.debug("Update count: {}", ret.length);
-							log.debug("warm up visualizations");
+							log.debug("Warming up visualizations");
 						}
 						final int count = this.analysisRunner.warmupData(jdbcTemplate, task);
 						if (log.isDebugEnabled()) {
-							log.debug("warmed up {} visualizations", count);
+							log.debug("Warmed up {} visualizations", count);
 						}
 						successful = true;
         } catch (final TransactionException | DataAccessException e) {

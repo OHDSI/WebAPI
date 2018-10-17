@@ -28,14 +28,11 @@ public class CDMResultsAnalysisRunner {
     private static final String[] DRILLDOWN_COLUMNS = new String[]{"conceptId"};
     private static final String[] DRILLDOWN_TABLE = new String[]{"results_database_schema", "vocab_database_schema"};
 
-    private ObjectMapper mapper;
-
     private String sourceDialect;
 
     public CDMResultsAnalysisRunner(String sourceDialect) {
 
         this.sourceDialect = sourceDialect;
-        mapper = new ObjectMapper();
     }
 
     public CDMDashboard getDashboard(JdbcTemplate jdbcTemplate,

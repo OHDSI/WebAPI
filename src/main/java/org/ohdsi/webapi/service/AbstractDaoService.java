@@ -239,7 +239,7 @@ public abstract class AbstractDaoService {
       });
 
     } catch (Exception e) {
-      log.error("error loading in result set", e);
+      log.error("Result set loading error", e);
     }
     return results;
   }

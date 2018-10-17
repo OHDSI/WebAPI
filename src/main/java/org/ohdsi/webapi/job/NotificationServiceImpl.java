@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.job;
 
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.PermissionManager;
@@ -13,6 +14,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -46,7 +48,7 @@ public class NotificationServiceImpl implements NotificationService {
                 break;
             }
             for (JobExecution jobExec: page) {
-                if (whiteList(jobExec)) {
+                if (isInWhiteList(jobExec) && isMine(jobExec)) {
                     result.merge(getFoldingKey(jobExec), jobExec, (x, y) -> {
                         final Date xStartTime = x.getStartTime();
                         final Date yStartTime = y.getStartTime();
@@ -79,7 +81,13 @@ public class NotificationServiceImpl implements NotificationService {
         return key.isPresent() ? entity.getJobParameters().getString(key.get()) : String.valueOf(entity.getId());
     }
 
-    private static boolean whiteList(JobExecution entity) {
+    private static boolean isInWhiteList(JobExecution entity) {
         return WHITE_LIST.contains(entity.getJobInstance().getJobName());
+    }
+    
+    private boolean isMine(JobExecution jobExec) {
+        final String login = permissionManager.getSubjectName();
+        final String jobAuthor = jobExec.getJobParameters().getString(Constants.Params.JOB_AUTHOR);
+        return jobAuthor == null || Objects.equals(login, jobAuthor);
     }
 }

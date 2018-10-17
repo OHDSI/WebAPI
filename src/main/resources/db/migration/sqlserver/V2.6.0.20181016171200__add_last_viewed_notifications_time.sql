@@ -3,7 +3,8 @@ ALTER TABLE ${ohdsiSchema}.sec_user ADD last_viewed_notifications_time DATETIMEO
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
 VALUES
   (NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'notifications:viewed:post', 'Remember last viewed notification timestamp'),
-  (NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'notifications:viewed:get', 'Get last viewed notification timestamp');
+  (NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'notifications:viewed:get', 'Get last viewed notification timestamp'),
+  (NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'notifications:get', 'Get notifications');
 
 
 INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)

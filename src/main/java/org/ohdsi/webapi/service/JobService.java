@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -19,11 +20,21 @@ import org.ohdsi.webapi.job.JobUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.batch.admin.service.SearchableJobExecutionDao;
 import org.springframework.batch.admin.service.SearchableJobInstanceDao;
+import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobInstance;
+import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.JobLocator;
 import org.springframework.batch.core.explore.JobExplorer;
+import org.springframework.batch.core.launch.JobExecutionNotRunningException;
+import org.springframework.batch.core.launch.JobOperator;
 import org.springframework.batch.core.launch.NoSuchJobException;
+import org.springframework.batch.core.launch.NoSuchJobExecutionException;
+import org.springframework.batch.core.scope.context.StepSynchronizationManager;
+import org.springframework.batch.core.step.StepLocator;
+import org.springframework.batch.core.step.tasklet.StoppableTasklet;
+import org.springframework.batch.core.step.tasklet.Tasklet;
+import org.springframework.batch.core.step.tasklet.TaskletStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
@@ -53,6 +64,9 @@ public class JobService extends AbstractDaoService {
 
   @Autowired
   private SearchableJobInstanceDao jobInstanceDao;
+
+  @Autowired
+  private JobOperator jobOperator;
 
   @GET
   @Path("{jobId}")
@@ -157,5 +171,27 @@ public class JobService extends AbstractDaoService {
               this.jobExecutionDao.countJobExecutions());
     }
 
+  }
+
+  public void stopJob(JobExecution jobExecution, Job job) {
+    try {
+      if (Objects.nonNull(job)) {
+        jobExecution.getStepExecutions().stream()
+          .filter(step -> step.getStatus().isRunning())
+          .forEach(stepExec -> {
+            Step step = ((StepLocator) job).getStep(stepExec.getStepName());
+            if (step instanceof TaskletStep) {
+              Tasklet tasklet = ((TaskletStep) step).getTasklet();
+              if (tasklet instanceof StoppableTasklet) {
+                StepSynchronizationManager.register(stepExec);
+                ((StoppableTasklet) tasklet).stop();
+                StepSynchronizationManager.release();
+              }
+            }
+          });
+      }
+      jobOperator.stop(jobExecution.getJobId());
+    } catch (NoSuchJobExecutionException | JobExecutionNotRunningException ignored) {
+    }
   }
 }

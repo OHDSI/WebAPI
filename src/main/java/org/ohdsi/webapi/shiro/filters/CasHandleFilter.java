@@ -1,13 +1,6 @@
 package org.ohdsi.webapi.shiro.filters;
 
-import java.util.LinkedHashMap;
-
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpSession;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import io.buji.pac4j.token.Pac4jToken;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -19,8 +12,13 @@ import org.jasig.cas.client.validation.TicketValidationException;
 import org.jasig.cas.client.validation.TicketValidator;
 import org.pac4j.cas.profile.CasProfile;
 import org.pac4j.core.profile.CommonProfile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import io.buji.pac4j.token.Pac4jToken;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpSession;
+import java.util.LinkedHashMap;
 
 /**
  * CAS authentication callback filter
@@ -28,7 +26,7 @@ import io.buji.pac4j.token.Pac4jToken;
 public class CasHandleFilter extends AtlasAuthFilter {
     
     
-    private final Log logger = LogFactory.getLog(CasHandleFilter.class);
+    private final Logger logger = LoggerFactory.getLogger(CasHandleFilter.class);
     
     /**
      * attribute name to recognize CAS authentication. Get login UpdateAccessTokenFilter
@@ -68,7 +66,7 @@ public class CasHandleFilter extends AtlasAuthFilter {
             session.setAttribute(CONST_CAS_AUTHN, "true");
             
             if (!SecurityUtils.getSubject().isAuthenticated()) {
-                String ticket = (String) request.getParameter(this.casticket);
+                String ticket = request.getParameter(this.casticket);
                 
                 if (ticket != null) {
                     String service = casCallbackUrl;

@@ -1,21 +1,9 @@
 package org.ohdsi.webapi.cohortcharacterization.domain;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
+import javax.persistence.*;
+
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
@@ -37,7 +25,7 @@ public class CohortCharacterizationEntity extends CommonEntity implements Cohort
     @JoinTable(name = "cc_cohort",
             joinColumns = @JoinColumn(name = "cohort_characterization_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "cohort_id", referencedColumnName = "id"))
-    private List<CohortDefinition> cohortDefinitions = new ArrayList<>();
+    private Set<CohortDefinition> cohortDefinitions = new HashSet<>();
     
     @ManyToMany(targetEntity = FeAnalysisEntity.class, fetch = FetchType.LAZY)
     @JoinTable(name = "cc_analysis",
@@ -52,7 +40,7 @@ public class CohortCharacterizationEntity extends CommonEntity implements Cohort
     private Integer hashCode;
     
     @Override
-    public List<CohortDefinition> getCohorts() {
+    public Set<CohortDefinition> getCohorts() {
         return cohortDefinitions;
     }
 
@@ -90,11 +78,11 @@ public class CohortCharacterizationEntity extends CommonEntity implements Cohort
         this.featureAnalyses = featureAnalyses;
     }
 
-    public List<CohortDefinition> getCohortDefinitions() {
+    public Set<CohortDefinition> getCohortDefinitions() {
         return cohortDefinitions;
     }
 
-    public void setCohortDefinitions(final List<CohortDefinition> cohortDefinitions) {
+    public void setCohortDefinitions(final Set<CohortDefinition> cohortDefinitions) {
         this.cohortDefinitions = cohortDefinitions;
     }
 

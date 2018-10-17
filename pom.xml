@@ -9,7 +9,7 @@
   <version>1.0.0-SNAPSHOT</version>
   <name>WebAPI</name>
   <properties>
-    <webapi.version>2.5.0</webapi.version>
+    <webapi.version>2.6.0</webapi.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jersey.version>2.14</jersey.version>
     <!-- Spring Boot manages spring.version as well -->
@@ -124,7 +124,7 @@
     <arachne.version>1.14.0-SNAPSHOT</arachne.version>
     <jersey-media-multipart.version>2.25.1</jersey-media-multipart.version>
     <execution.invalidation.maxage>4</execution.invalidation.maxage>
-    <execution.invalidation.period>10000</execution.invalidation.period>
+    <execution.invalidation.period>600000</execution.invalidation.period>
     <execution.status.period>10000</execution.status.period>
 		<executionengine.url>https://localhost:8888/api/v1/analyze</executionengine.url>
 		<executionengine.token>Basic YWRtaW5Ab2R5c3NldXNpbmMuY29tOnBhc3N3b3Jk</executionengine.token>
@@ -136,6 +136,17 @@
     <jasypt.encryptor.enabled>false</jasypt.encryptor.enabled>
     <jasypt.encryptor.password></jasypt.encryptor.password>
 		<jasypt.encryptor.algorithm>PBEWithMD5AndDES</jasypt.encryptor.algorithm>
+                
+    <!-- ORGANIZATION SETTINGS -->
+    <organization.name>OHDSI</organization.name>
+
+    <!-- Logging -->
+    <spring.jpa.show-sql>false</spring.jpa.show-sql>
+    <logging.level.root>info</logging.level.root>
+    <logging.level.org.ohdsi>info</logging.level.org.ohdsi>
+    <logging.level.org.springframework.orm>info</logging.level.org.springframework.orm>
+    <logging.level.org.springframework.jdbc>info</logging.level.org.springframework.jdbc>
+    <logging.level.org.apache.shiro>warn</logging.level.org.apache.shiro>
 
     <spring.batch.taskExecutor.corePoolSize>10</spring.batch.taskExecutor.corePoolSize>
     <spring.batch.taskExecutor.maxPoolSize>20</spring.batch.taskExecutor.maxPoolSize>
@@ -148,6 +159,7 @@
         <filtering>true</filtering>
         <includes>
           <include>**/*.properties</include>
+          <include>log4j.xml</include>
         </includes>
       </resource>
       <resource>
@@ -158,6 +170,7 @@
         </includes>
         <excludes>
           <exclude>**/*.properties</exclude>
+          <exclude>log4j.xml</exclude>
         </excludes>
       </resource>
       <resource>
@@ -577,7 +590,12 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>circe</artifactId>
-      <version>1.6.0</version>
+      <version>1.7.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.ohdsi</groupId>
+      <artifactId>hydra</artifactId>
+      <version>0.0.1</version>
     </dependency>
     <dependency>
       <groupId>org.json</groupId>
@@ -628,11 +646,6 @@
       <version>${arachne.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.odysseusinc</groupId>
-      <artifactId>logging</artifactId>
-      <version>${arachne.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.glassfish.jersey.media</groupId>
       <artifactId>jersey-media-multipart</artifactId>
       <version>${jersey-media-multipart.version}</version>
@@ -650,7 +663,7 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>standardized-analysis-api</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>1.0.0</version>
     </dependency>
     <dependency>
       <groupId>com.cosium.spring.data</groupId>
@@ -661,6 +674,12 @@
       <groupId>org.pac4j</groupId>
       <artifactId>pac4j-cas</artifactId>
       <version>1.9.2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+      <version>2.8.7</version>
+      <type>jar</type>
     </dependency>
   </dependencies>
   <profiles>

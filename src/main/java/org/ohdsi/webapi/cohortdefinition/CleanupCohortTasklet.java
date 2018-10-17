@@ -19,8 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
@@ -28,6 +26,8 @@ import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
@@ -45,7 +45,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 public class CleanupCohortTasklet implements Tasklet {
 
 
-  private static final Log log = LogFactory.getLog(CleanupCohortTasklet.class);
+  private static final Logger log = LoggerFactory.getLogger(CleanupCohortTasklet.class);
 	
 	private final TransactionTemplate transactionTemplate;
 	private final SourceRepository sourceRepository;
@@ -84,7 +84,7 @@ public class CleanupCohortTasklet implements Tasklet {
 				getSourceJdbcTemplate(source).batchUpdate(deleteSql.split(";")); // use batch update since SQL translation may produce multiple statements
 				sourcesUpdated++;
 			} catch (Exception e) {
-				log.error(String.format("Error deleting results for cohort: %d", cohortId));
+				log.error("Error deleting results for cohort: {}", cohortId);
 			}
 		}
     return sourcesUpdated;

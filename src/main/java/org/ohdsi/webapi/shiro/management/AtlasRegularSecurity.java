@@ -4,8 +4,6 @@ import io.buji.pac4j.filter.CallbackFilter;
 import io.buji.pac4j.filter.SecurityFilter;
 import io.buji.pac4j.realm.Pac4jRealm;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.realm.activedirectory.ActiveDirectoryRealm;
 import org.apache.shiro.realm.ldap.JndiLdapContextFactory;
@@ -36,6 +34,8 @@ import org.pac4j.oauth.client.FacebookClient;
 import org.pac4j.oauth.client.Google2Client;
 import org.pac4j.oidc.client.OidcClient;
 import org.pac4j.oidc.config.OidcConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -64,7 +64,7 @@ import static org.ohdsi.webapi.util.QuoteUtils.dequote;
 @DependsOn("flyway")
 public class AtlasRegularSecurity extends AtlasSecurity {
     
-    private final Log logger = LogFactory.getLog(AtlasRegularSecurity.class);
+    private final Logger logger = LoggerFactory.getLogger(AtlasRegularSecurity.class);
 
     @Value("${security.token.expiration}")
     private int tokenExpirationIntervalInSeconds;
@@ -326,8 +326,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
             filters.put("handleCas", casHandleFilter);
             
         } catch (UnsupportedEncodingException e) {
-            this.logger.error("Atlas security filter errors:" + this.toString());
-            e.printStackTrace();
+            this.logger.error("Atlas security filter errors: {}", e);
         }
     }
 }

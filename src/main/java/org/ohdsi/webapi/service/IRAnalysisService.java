@@ -61,8 +61,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.collections4.Predicate;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.GenerationStatus;
@@ -83,6 +81,8 @@ import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.UserUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -106,7 +106,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 @Component
 public class IRAnalysisService extends AbstractDaoService {
 
-  private static final Log log = LogFactory.getLog(IRAnalysisService.class);
+  private static final Logger log = LoggerFactory.getLogger(IRAnalysisService.class);
   private final static String STRATA_STATS_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/incidencerate/sql/strata_stats.sql"); 
   
 
@@ -498,7 +498,7 @@ public class IRAnalysisService extends AbstractDaoService {
       }
       catch (Exception e)
       {
-        log.error("Error getting IR Analysis summary list.", e);
+        log.error("Error getting IR Analysis summary list", e);
       }
       result.add(info);
     }

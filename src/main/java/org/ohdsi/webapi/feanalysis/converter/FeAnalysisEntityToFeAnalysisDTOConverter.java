@@ -1,35 +1,48 @@
 package org.ohdsi.webapi.feanalysis.converter;
 
-import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisCriteriaDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.ohdsi.webapi.feanalysis.dto.FeAnalysisWithConceptSetDTO;
 import org.springframework.stereotype.Component;
+
+import java.util.stream.Collectors;
+
+import static org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType.CRITERIA_SET;
 
 @Component
 public class FeAnalysisEntityToFeAnalysisDTOConverter extends BaseFeAnalysisEntityToFeAnalysisDTOConverter<FeAnalysisDTO> {
-    
-    @Autowired
-    private ConverterUtils converterUtils;
     
     @Override
     public FeAnalysisDTO convert(final FeAnalysisEntity source) {
         final FeAnalysisDTO dto = super.convert(source);
         dto.setDesign(convertDesignToJson(source));
+        if (CRITERIA_SET.equals(source.getType())){
+            FeAnalysisWithConceptSetDTO dtoWithConceptSet = (FeAnalysisWithConceptSetDTO) dto;
+            FeAnalysisWithCriteriaEntity sourceWithCriteria = (FeAnalysisWithCriteriaEntity) source;
+            dtoWithConceptSet.setConceptSets(sourceWithCriteria.getConceptSets());
+        }
         return dto;
     }
 
     @Override
-    protected FeAnalysisDTO getReturnObject() {
-        return new FeAnalysisDTO();
+    protected FeAnalysisDTO createResultObject(FeAnalysisEntity feAnalysisEntity) {
+        switch (feAnalysisEntity.getType()){
+            case CRITERIA_SET:
+              return new FeAnalysisWithConceptSetDTO();
+            default:
+              return new FeAnalysisDTO();
+        }
     }
 
     private Object convertDesignToJson(final FeAnalysisEntity source) {
         switch (source.getType()) {
             case CRITERIA_SET:
-                return converterUtils.convertList(((FeAnalysisWithCriteriaEntity) source).getDesign(), FeAnalysisCriteriaDTO.class);
+                return ((FeAnalysisWithCriteriaEntity) source).getDesign()
+                        .stream()
+                        .map(c -> new FeAnalysisCriteriaDTO(c.getId(), c.getName(), c.getExpression()))
+                        .collect(Collectors.toList());
             default:
                 return source.getDesign();
         }

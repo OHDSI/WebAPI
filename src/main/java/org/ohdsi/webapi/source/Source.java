@@ -171,35 +171,35 @@ public class Source implements Serializable {
     this.password = password;
   }
 
-    public byte[] getKrbKeytab() {
+  public byte[] getKrbKeytab() {
         return krbKeytab;
     }
 
-    public void setKrbKeytab(byte[] krbKeytab) {
+  public void setKrbKeytab(byte[] krbKeytab) {
         this.krbKeytab = krbKeytab;
     }
 
-    public String getKeytabName() {
+  public String getKeytabName() {
         return keytabName;
     }
 
-    public void setKeytabName(String keytabName) {
+  public void setKeytabName(String keytabName) {
         this.keytabName = keytabName;
     }
 
-    public KerberosAuthMechanism getKrbAuthMethod() {
+  public KerberosAuthMechanism getKrbAuthMethod() {
         return krbAuthMethod;
     }
 
-    public void setKrbAuthMethod(KerberosAuthMechanism krbAuthMethod) {
+  public void setKrbAuthMethod(KerberosAuthMechanism krbAuthMethod) {
         this.krbAuthMethod = krbAuthMethod;
     }
 
-    public String getKrbAdminServer() {
+  public String getKrbAdminServer() {
         return krbAdminServer;
     }
 
-    public void setKrbAdminServer(String krbAdminServer) {
+  public void setKrbAdminServer(String krbAdminServer) {
         this.krbAdminServer = krbAdminServer;
     }
 }

@@ -57,6 +57,9 @@ public class ConceptSetGenerationInfo implements Serializable {
 
     @Column(name = "is_valid")
     private boolean isValid;
+
+    @Column(name = "is_canceled")
+    private boolean isCanceled;
 		
 		@Lob
 		@Type(type = "org.hibernate.type.TextType")  
@@ -103,6 +106,14 @@ public class ConceptSetGenerationInfo implements Serializable {
      */
     public boolean isIsValid() {
         return isValid;
+    }
+
+    public boolean isCanceled() {
+        return isCanceled;
+    }
+
+    public void setCanceled(boolean canceled) {
+        isCanceled = canceled;
     }
 
     /**

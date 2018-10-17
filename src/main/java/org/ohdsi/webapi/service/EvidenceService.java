@@ -665,7 +665,7 @@ public class EvidenceService extends AbstractDaoService {
                 csExpression = conceptSetService.getConceptSetExpression(task.getCsToInclude());
                 csSQL = csBuilder.buildExpressionQuery(csExpression);
             } catch (Exception e) {
-                log.debug(e);
+                log.warn("Failed to build Inclusion expression query", e);
             }
         }
         task.setCsToIncludeSQL(csSQL);
@@ -675,14 +675,14 @@ public class EvidenceService extends AbstractDaoService {
                 csExpression = conceptSetService.getConceptSetExpression(task.getCsToExclude());
                 csSQL = csBuilder.buildExpressionQuery(csExpression);
             } catch (Exception e) {
-                log.debug(e);
+                log.warn("Failed to build Exclusion expression query", e);
             }
         }
         task.setCsToExcludeSQL(csSQL);
 
         final String taskString = task.toString();
         final JobParameters jobParameters = builder.toJobParameters();
-        log.info(String.format("Beginning run for negative controls analysis task: \n %s", taskString));
+        log.info("Beginning run for negative controls analysis task: {}", taskString);
 
         NegativeControlTasklet tasklet = new NegativeControlTasklet(task, getSourceJdbcTemplate(task.getSource()), task.getJdbcTemplate(),
                 getTransactionTemplate(), this.conceptSetGenerationInfoRepository, this.getSourceDialect());

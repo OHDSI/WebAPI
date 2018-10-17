@@ -37,32 +37,16 @@ public abstract class BaseCcDTOToCcEntityConverter<T extends BaseCcDTO<? extends
 
     cohortCharacterization.setId(source.getId());
 
-    if (!CollectionUtils.isEmpty(source.getCohorts())) {
-      final List<CohortDefinition> convertedCohortDefinitions = converterUtils.convertList(new ArrayList<>(source.getCohorts()), CohortDefinition.class);
-      cohortCharacterization.setCohortDefinitions(convertedCohortDefinitions);
-    }
+    final Set<CohortDefinition> convertedCohorts = converterUtils.convertSet(source.getCohorts(), CohortDefinition.class);
+    cohortCharacterization.setCohortDefinitions(convertedCohorts);
 
-    final Set<FeAnalysisEntity> convertedFeatureAnalyses = source.getFeatureAnalyses().stream().map(this::convertFeAnalysisAccordingToType).collect(Collectors.toSet());
+    final Set<FeAnalysisEntity> convertedFeatureAnalyses = converterUtils.convertSet(source.getFeatureAnalyses(), FeAnalysisEntity.class);
     cohortCharacterization.setFeatureAnalyses(convertedFeatureAnalyses);
 
-    final Set<CcParamEntity> convertedParameters = source.getParameters().stream().map(this::convertParameter).collect(Collectors.toSet());
+    final Set<CcParamEntity> convertedParameters = converterUtils.convertSet(source.getParameters(), CcParamEntity.class);
     cohortCharacterization.setParameters(convertedParameters);
 
     return cohortCharacterization;
-  }
-
-  protected CcParamEntity convertParameter(final CcParameterDTO dto) {
-    return conversionService.convert(dto, CcParamEntity.class);
-  }
-
-  protected FeAnalysisEntity convertFeAnalysisAccordingToType(final FeAnalysisShortDTO dto) {
-    if (dto.getType() == null) {
-      return conversionService.convert(dto, FeAnalysisEntity.class);
-    } else if (StandardFeatureAnalysisType.CRITERIA_SET.equals(dto.getType())) {
-      return conversionService.convert(dto, FeAnalysisWithCriteriaEntity.class);
-    } else {
-      return conversionService.convert(dto, FeAnalysisWithStringEntity.class);
-    }
   }
 
 

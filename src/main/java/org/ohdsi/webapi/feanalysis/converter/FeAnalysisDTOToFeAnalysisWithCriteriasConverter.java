@@ -1,36 +1,38 @@
 package org.ohdsi.webapi.feanalysis.converter;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.ArrayList;
-import java.util.List;
-import javax.annotation.PostConstruct;
-import org.ohdsi.webapi.feanalysis.dto.FeAnalysisCriteriaDTO;
+import org.ohdsi.analysis.Utils;
+import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisConcepsetEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisCriteriaEntity;
-import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
+import org.ohdsi.webapi.feanalysis.dto.FeAnalysisCriteriaDTO;
+import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
+import org.ohdsi.webapi.feanalysis.dto.FeAnalysisWithConceptSetDTO;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
 @Component
-public class FeAnalysisDTOToFeAnalysisWithCriteriasConverter extends BaseFeAnalysisDTOToFeAnalysisConverter<FeAnalysisWithCriteriaEntity> {
-    
-    private ObjectMapper objectMapper = new ObjectMapper();
-    
-    @PostConstruct
-    private void init() {
-        objectMapper.disable(
-                MapperFeature.AUTO_DETECT_CREATORS,
-                MapperFeature.AUTO_DETECT_GETTERS,
-                MapperFeature.AUTO_DETECT_IS_GETTERS
-        );
-    }
-    
+public class FeAnalysisDTOToFeAnalysisWithCriteriasConverter extends BaseFeAnalysisDTOToFeAnalysisConverter<FeAnalysisDTO, FeAnalysisWithCriteriaEntity> {
+
     @Override
     public FeAnalysisWithCriteriaEntity convert(final FeAnalysisDTO source) {
         final FeAnalysisWithCriteriaEntity baseEntity = super.convert(source);
         baseEntity.setDesign(buildCriteriaList(source.getDesign()));
+        baseEntity.getDesign().forEach(c -> c.setFeatureAnalysis(baseEntity));
+        if (Objects.equals(StandardFeatureAnalysisType.CRITERIA_SET, source.getType())){
+            convert(baseEntity, (FeAnalysisWithConceptSetDTO) source);
+        }
         return baseEntity;
+    }
+
+    private void convert(FeAnalysisWithCriteriaEntity baseEntity, FeAnalysisWithConceptSetDTO source) {
+        FeAnalysisConcepsetEntity concepsetEntity = new FeAnalysisConcepsetEntity();
+        concepsetEntity.setFeatureAnalysis(baseEntity);
+        concepsetEntity.setRawExpression(Utils.serialize(source.getConceptSets()));
+        baseEntity.setConceptSetEntity(concepsetEntity);
     }
 
     private List<FeAnalysisCriteriaEntity> buildCriteriaList(final Object design) {
@@ -42,23 +44,16 @@ public class FeAnalysisDTOToFeAnalysisWithCriteriasConverter extends BaseFeAnaly
                 if (!(criteria instanceof FeAnalysisCriteriaDTO)) {
                     throw new IllegalArgumentException("Object " + criteria.toString() + " cannot be converted to Criteria");
                 } else {
-                    final FeAnalysisCriteriaDTO convertedCriteria = (FeAnalysisCriteriaDTO) criteria;
+                    final FeAnalysisCriteriaDTO typifiedCriteria = (FeAnalysisCriteriaDTO) criteria;
                     final FeAnalysisCriteriaEntity criteriaEntity = new FeAnalysisCriteriaEntity();
-                    criteriaEntity.setExpressionString(convertExpressionToString(convertedCriteria));
-                    criteriaEntity.setName(convertedCriteria.getName());
+                    criteriaEntity.setExpressionString(Utils.serialize(typifiedCriteria.getExpression()));
+                    criteriaEntity.setId(typifiedCriteria.getId());
+                    criteriaEntity.setName(typifiedCriteria.getName());
                     result.add(criteriaEntity);
                 }
             }
         }
         return result;
-    }
-
-    private String convertExpressionToString(final FeAnalysisCriteriaDTO convertedCriteria) {
-        try {
-            return objectMapper.writeValueAsString(convertedCriteria.getExpression());
-        } catch (JsonProcessingException e) {
-            throw new IllegalArgumentException(e);
-        }
     }
 
 

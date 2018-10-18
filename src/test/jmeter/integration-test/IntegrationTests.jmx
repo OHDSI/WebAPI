@@ -570,7 +570,24 @@ AssertionResult.setFailure(!correctChecked);  </stringProp>
               <stringProp name="HTTPSampler.response_timeout"></stringProp>
             </HTTPSamplerProxy>
             <hashTree>
-              <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Extract Definition To Import" enabled="true">
+              <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Arraysize Assertion" enabled="true">
+                <stringProp name="scriptLanguage">groovy</stringProp>
+                <stringProp name="parameters"></stringProp>
+                <stringProp name="filename"></stringProp>
+                <stringProp name="cacheKey">true</stringProp>
+                <stringProp name="script">import groovy.json.JsonSlurper;
+import groovy.json.internal.LazyMap;
+
+def jsonSlurper = new JsonSlurper();
+
+data = jsonSlurper.parseText(prev.getResponseDataAsString());
+
+AssertionResult.setFailureMessage(&quot;Wrong response for &apos;GET HSS List&apos; (Arraysize=${data.size()})&quot;);
+AssertionResult.setFailure(data.size() &lt;= 0);    
+</stringProp>
+              </JSR223Assertion>
+              <hashTree/>
+              <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Extract Definition To Import" enabled="true">
                 <stringProp name="scriptLanguage">groovy</stringProp>
                 <stringProp name="parameters"></stringProp>
                 <stringProp name="filename"></stringProp>
@@ -597,23 +614,6 @@ for (d in data) {
 AssertionResult.setFailureMessage(&quot;No definition found with uuid ${uuidToImport}.&quot;);
 AssertionResult.setFailure(!success);   
 
-</stringProp>
-              </JSR223PostProcessor>
-              <hashTree/>
-              <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Arraysize Assertion" enabled="true">
-                <stringProp name="scriptLanguage">groovy</stringProp>
-                <stringProp name="parameters"></stringProp>
-                <stringProp name="filename"></stringProp>
-                <stringProp name="cacheKey">true</stringProp>
-                <stringProp name="script">import groovy.json.JsonSlurper;
-import groovy.json.internal.LazyMap;
-
-def jsonSlurper = new JsonSlurper();
-
-data = jsonSlurper.parseText(prev.getResponseDataAsString());
-
-AssertionResult.setFailureMessage(&quot;Wrong response for &apos;GET HSS List&apos; (Arraysize=${data.size()})&quot;);
-AssertionResult.setFailure(data.size() &lt;= 0);    
 </stringProp>
               </JSR223Assertion>
               <hashTree/>
@@ -865,7 +865,7 @@ AssertionResult.setFailure(inValid);
             </collectionProp>
           </HeaderManager>
           <hashTree/>
-          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET HSS List" enabled="true">
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET HSS List Definition" enabled="true">
             <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
               <collectionProp name="Arguments.arguments"/>
             </elementProp>
@@ -1777,7 +1777,24 @@ AssertionResult.setFailure(!correctChecked);  </stringProp>
               <stringProp name="HTTPSampler.response_timeout"></stringProp>
             </HTTPSamplerProxy>
             <hashTree>
-              <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Extract Definition To Import" enabled="true">
+              <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Arraysize Assertion" enabled="true">
+                <stringProp name="scriptLanguage">groovy</stringProp>
+                <stringProp name="parameters"></stringProp>
+                <stringProp name="filename"></stringProp>
+                <stringProp name="cacheKey">true</stringProp>
+                <stringProp name="script">import groovy.json.JsonSlurper;
+import groovy.json.internal.LazyMap;
+
+def jsonSlurper = new JsonSlurper();
+
+data = jsonSlurper.parseText(prev.getResponseDataAsString());
+
+AssertionResult.setFailureMessage(&quot;Wrong response for &apos;GET HSS List&apos; (Arraysize=${data.size()})&quot;);
+AssertionResult.setFailure(data.size() &lt;= 0);    
+</stringProp>
+              </JSR223Assertion>
+              <hashTree/>
+              <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Extract Definition To Import" enabled="true">
                 <stringProp name="scriptLanguage">groovy</stringProp>
                 <stringProp name="parameters"></stringProp>
                 <stringProp name="filename"></stringProp>
@@ -1804,23 +1821,6 @@ for (d in data) {
 AssertionResult.setFailureMessage(&quot;No definition found with uuid ${uuidToImport}.&quot;);
 AssertionResult.setFailure(!success);   
 
-</stringProp>
-              </JSR223PostProcessor>
-              <hashTree/>
-              <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Arraysize Assertion" enabled="true">
-                <stringProp name="scriptLanguage">groovy</stringProp>
-                <stringProp name="parameters"></stringProp>
-                <stringProp name="filename"></stringProp>
-                <stringProp name="cacheKey">true</stringProp>
-                <stringProp name="script">import groovy.json.JsonSlurper;
-import groovy.json.internal.LazyMap;
-
-def jsonSlurper = new JsonSlurper();
-
-data = jsonSlurper.parseText(prev.getResponseDataAsString());
-
-AssertionResult.setFailureMessage(&quot;Wrong response for &apos;GET HSS List&apos; (Arraysize=${data.size()})&quot;);
-AssertionResult.setFailure(data.size() &lt;= 0);    
 </stringProp>
               </JSR223Assertion>
               <hashTree/>

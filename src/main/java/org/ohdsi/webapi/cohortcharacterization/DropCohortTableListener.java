@@ -1,10 +1,10 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
 import org.ohdsi.circe.helper.ResourceHelper;
-import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.sqlrender.SourceAwareSqlRender;
 import org.ohdsi.webapi.util.SourceUtils;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameter;
@@ -15,7 +15,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Map;
 
-import static org.ohdsi.webapi.Constants.Params.*;
+import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
+import static org.ohdsi.webapi.Constants.Params.TARGET_TABLE;
 
 public class DropCohortTableListener extends JobExecutionListenerSupport {
 
@@ -24,26 +25,26 @@ public class DropCohortTableListener extends JobExecutionListenerSupport {
   private final JdbcTemplate jdbcTemplate;
   private final TransactionTemplate transactionTemplate;
   private final SourceService sourceService;
+  private final SourceAwareSqlRender sourceAwareSqlRender;
 
-  public DropCohortTableListener(JdbcTemplate jdbcTemplate, TransactionTemplate transactionTemplate, SourceService sourceService) {
+  public DropCohortTableListener(JdbcTemplate jdbcTemplate, TransactionTemplate transactionTemplate, SourceService sourceService, SourceAwareSqlRender sourceAwareSqlRender) {
     this.jdbcTemplate = jdbcTemplate;
     this.transactionTemplate = transactionTemplate;
     this.sourceService = sourceService;
+    this.sourceAwareSqlRender = sourceAwareSqlRender;
   }
 
   private Object doTask(JobParameters parameters) {
 
-    Map<String, JobParameter> jobParameters = parameters.getParameters();
-    Source source = sourceService.findBySourceId(Integer.valueOf(jobParameters.get(SOURCE_ID).toString()));
-    String targetTable = jobParameters.get(TARGET_TABLE).getValue().toString();
-    String targetDialect = source.getSourceDialect();
+    final Map<String, JobParameter> jobParameters = parameters.getParameters();
+    final Integer sourceId = Integer.valueOf(jobParameters.get(SOURCE_ID).toString());
+    final String targetTable = jobParameters.get(TARGET_TABLE).getValue().toString();
+    final String sql = sourceAwareSqlRender.renderSql(sourceId, DROP_TABLE_SQL, TARGET_TABLE, targetTable );
 
+    final Source source = sourceService.findBySourceId(sourceId);
     final String resultsQualifier = SourceUtils.getResultsQualifier(source);
     final String tempQualifier = SourceUtils.getTempQualifier(source, resultsQualifier);
-    String sql = SqlRender.renderSql(DROP_TABLE_SQL, new String[] { RESULTS_DATABASE_SCHEMA, TEMP_DATABASE_SCHEMA, TARGET_TABLE },
-            new String[] { resultsQualifier, tempQualifier, targetTable });
-    String translatedSql = SqlTranslate.translateSql(sql, targetDialect);
-    jdbcTemplate.execute(translatedSql);
+    jdbcTemplate.execute(SqlTranslate.translateSql(sql, source.getSourceDialect(), null, tempQualifier));
 
     return null;
   }

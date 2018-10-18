@@ -6,6 +6,7 @@ import org.ohdsi.webapi.cohortcharacterization.GenerateLocalCohortTasklet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.service.CohortGenerationService;
 import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.sqlrender.SourceAwareSqlRender;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -28,14 +29,16 @@ public class GenerationUtils {
     private CohortGenerationService cohortGenerationService;
     private SourceService sourceService;
     private JobBuilderFactory jobBuilders;
+    private final SourceAwareSqlRender sourceAwareSqlRender;
 
-    public GenerationUtils(StepBuilderFactory stepBuilderFactory, TransactionTemplate transactionTemplate, CohortGenerationService cohortGenerationService, SourceService sourceService, JobBuilderFactory jobBuilders) {
+    public GenerationUtils(StepBuilderFactory stepBuilderFactory, TransactionTemplate transactionTemplate, CohortGenerationService cohortGenerationService, SourceService sourceService, JobBuilderFactory jobBuilders, SourceAwareSqlRender sourceAwareSqlRender) {
 
         this.stepBuilderFactory = stepBuilderFactory;
         this.transactionTemplate = transactionTemplate;
         this.cohortGenerationService = cohortGenerationService;
         this.sourceService = sourceService;
         this.jobBuilders = jobBuilders;
+        this.sourceAwareSqlRender = sourceAwareSqlRender;
     }
 
     public static String getTempCohortTableName() {
@@ -50,7 +53,7 @@ public class GenerationUtils {
             AnalysisTasklet analysisTasklet
     ) {
 
-        CreateCohortTableTasklet createCohortTableTasklet = new CreateCohortTableTasklet(jdbcTemplate, transactionTemplate, sourceService);
+        CreateCohortTableTasklet createCohortTableTasklet = new CreateCohortTableTasklet(jdbcTemplate, transactionTemplate, sourceService, sourceAwareSqlRender);
         Step createCohortTableStep = stepBuilderFactory.get(analysisTypeName + ".createCohortTable")
                 .tasklet(createCohortTableTasklet)
                 .build();
@@ -69,7 +72,7 @@ public class GenerationUtils {
                 .tasklet(analysisTasklet)
                 .build();
 
-        DropCohortTableListener dropCohortTableListener = new DropCohortTableListener(jdbcTemplate, transactionTemplate, sourceService);
+        DropCohortTableListener dropCohortTableListener = new DropCohortTableListener(jdbcTemplate, transactionTemplate, sourceService, sourceAwareSqlRender);
 
         SimpleJobBuilder generateJobBuilder = jobBuilders.get(analysisTypeName)
                 .start(createCohortTableStep)

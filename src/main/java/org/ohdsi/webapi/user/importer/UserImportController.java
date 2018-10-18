@@ -2,6 +2,7 @@ package org.ohdsi.webapi.user.importer;
 
 import org.ohdsi.webapi.user.importer.converter.RoleGroupMappingConverter;
 import org.ohdsi.webapi.user.importer.model.*;
+import org.ohdsi.webapi.user.importer.service.UserImportJobService;
 import org.ohdsi.webapi.user.importer.service.UserImportService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,9 @@ public class UserImportController {
 
   @Autowired
   private UserImportService userImportService;
+
+  @Autowired
+  private UserImportJobService userImportJobService;
 
   @Value("${security.ad.url}")
   private String adUrl;
@@ -85,8 +89,11 @@ public class UserImportController {
   @Path("user/import")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response importUsers(List<AtlasUserRoles> users,
+                              @QueryParam("provider") String provider,
                               @DefaultValue("TRUE") @QueryParam("preserve") Boolean preserveRoles) {
-    userImportService.importUsers(users, preserveRoles);
+
+    LdapProviderType providerType = LdapProviderType.fromValue(provider);
+    userImportJobService.runImportUsersTask(providerType, users, preserveRoles);
     return Response.ok().build();
   }
 

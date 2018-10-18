@@ -54,7 +54,7 @@ public class UserImportTasklet extends BaseUserImportTasklet<UserImportResult> i
   @Override
   public void beforeStep(StepExecution stepExecution) {
 
-    String userRolesJson = stepExecution.getJobExecution().getExecutionContext().getString(Constants.Params.USER_ROLES);
+    String userRolesJson = stepExecution.getJobExecution().getExecutionContext().getString(Constants.Params.USER_ROLES, null);
     if (Objects.nonNull(userRolesJson)){
       users = Utils.deserialize(userRolesJson, factory -> factory.constructCollectionType(List.class, AtlasUserRoles.class));
     }

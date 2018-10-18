@@ -3,7 +3,6 @@ package org.ohdsi.webapi.user.importer.service;
 import com.cronutils.model.definition.CronDefinition;
 import com.odysseusinc.scheduler.model.ScheduledTask;
 import com.odysseusinc.scheduler.service.BaseJobServiceImpl;
-import org.apache.tomcat.util.bcel.Const;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.job.JobTemplate;
@@ -11,6 +10,7 @@ import org.ohdsi.webapi.user.importer.converter.RoleGroupMappingConverter;
 import org.ohdsi.webapi.user.importer.exception.JobAlreadyExistException;
 import org.ohdsi.webapi.user.importer.model.*;
 import org.ohdsi.webapi.user.importer.repository.RoleGroupRepository;
+import org.ohdsi.webapi.user.importer.repository.UserImportJobHistoryItemRepository;
 import org.ohdsi.webapi.user.importer.repository.UserImportJobRepository;
 import org.ohdsi.webapi.user.importer.utils.RoleGroupUtils;
 import org.springframework.batch.core.Job;
@@ -24,9 +24,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Service
 @Transactional
@@ -35,6 +37,7 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
   private final UserImportService userImportService;
   private final UserImportJobRepository jobRepository;
   private final RoleGroupRepository roleGroupRepository;
+  private final UserImportJobHistoryItemRepository jobHistoryItemRepository;
   private final TransactionTemplate transactionTemplate;
   private final StepBuilderFactory stepBuilderFactory;
   private final JobBuilderFactory jobBuilders;
@@ -45,6 +48,7 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
                                   UserImportJobRepository jobRepository,
                                   UserImportService userImportService,
                                   RoleGroupRepository roleGroupRepository,
+                                  UserImportJobHistoryItemRepository jobHistoryItemRepository,
                                   TransactionTemplate transactionTemplate,
                                   StepBuilderFactory stepBuilderFactory,
                                   JobBuilderFactory jobBuilders,
@@ -54,10 +58,20 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
     this.userImportService = userImportService;
     this.jobRepository = jobRepository;
     this.roleGroupRepository = roleGroupRepository;
+    this.jobHistoryItemRepository = jobHistoryItemRepository;
     this.transactionTemplate = transactionTemplate;
     this.stepBuilderFactory = stepBuilderFactory;
     this.jobBuilders = jobBuilders;
     this.jobTemplate = jobTemplate;
+  }
+
+  @PostConstruct
+  public void initializeJobs() {
+
+    transactionTemplate.execute(transactionStatus -> {
+      reassignAllJobs();
+      return null;
+    });
   }
 
   @Override
@@ -104,14 +118,32 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
     return Optional.ofNullable(jobRepository.findOne(id));
   }
 
-  public void runImportUsersTask(List<AtlasUserRoles> userRoles, boolean preserveRoles) {
+  public void runImportUsersTask(LdapProviderType providerType, List<AtlasUserRoles> userRoles, boolean preserveRoles) {
 
+    JobParameters jobParameters = new JobParametersBuilder()
+            .addString(Constants.Params.JOB_NAME, String.format("Users import for %s ran by user request", getProviderName(providerType)))
+            .addString(Constants.Params.LDAP_PROVIDER, providerType.getValue())
+            .addString(Constants.Params.PRESERVE_ROLES, Boolean.valueOf(preserveRoles).toString())
+            .addString(Constants.Params.USER_ROLES, Utils.serialize(userRoles))
+            .toJobParameters();
+    Job job = jobBuilders.get(Constants.USERS_IMPORT)
+            .start(userImportStep())
+            .build();
+    jobTemplate.launch(job, jobParameters);
   }
 
-  Job buildJobForManualUserImport() {
+  @Override
+  public Stream<UserImportJobHistoryItem> getJobHistoryItems(LdapProviderType providerType) {
+
+    return jobHistoryItemRepository.findByProviderType(providerType);
+  }
+
+  Step userImportStep() {
 
     UserImportTasklet userImportTasklet = new UserImportTasklet(transactionTemplate, userImportService);
-
+    return stepBuilderFactory.get("importUsers")
+            .tasklet(userImportTasklet)
+            .build();
   }
 
   Job buildJobForUserImportTasklet() {
@@ -121,14 +153,9 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
             .tasklet(findUsersTasklet)
             .build();
 
-    UserImportTasklet userImportTasklet = new UserImportTasklet(transactionTemplate, userImportService);
-    Step userImportStep = stepBuilderFactory.get("importUsers")
-            .tasklet(userImportTasklet)
-            .build();
-
     return jobBuilders.get(Constants.USERS_IMPORT)
             .start(findUsersStep)
-            .next(userImportStep)
+            .next(userImportStep())
             .build();
   }
 

@@ -85,7 +85,7 @@ public class CohortGenerationService extends AbstractDaoService {
 
   public Job buildGenerateCohortJob(CohortDefinition cohortDefinition, Source source, boolean includeFeatures, boolean updateGenerationInfo) {
 
-    log.info("Beginning generate cohort for cohort definition id: \n {}", cohortDefinition.getId());
+    log.info("Beginning generate cohort for cohort definition id: {}", cohortDefinition.getId());
 
     GenerateCohortTasklet generateTasklet = new GenerateCohortTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), cohortDefinitionRepository,
             getSourceRepository());

@@ -566,7 +566,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 
 		final JobParameters jobParameters = builder.toJobParameters();
 
-		log.info("Beginning cohort cleanup for cohort definition id: \n {}", "" + id);
+		log.info("Beginning cohort cleanup for cohort definition id: {}", "" + id);
 
 		CleanupCohortTasklet cleanupTasklet = new CleanupCohortTasklet(this.getTransactionTemplateNoTransaction(),this.getSourceRepository());
 

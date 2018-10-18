@@ -324,7 +324,7 @@ public class CohortAnalysisService extends AbstractDaoService {
 		//TODO consider analysisId
 		final String taskString = task.toString();
 		final JobParameters jobParameters = builder.toJobParameters();
-		log.info("Beginning run for cohort analysis task: \n {}", taskString);
+		log.info("Beginning run for cohort analysis task: {}", taskString);
 
 		CohortAnalysisTasklet tasklet = new CohortAnalysisTasklet(task, getSourceJdbcTemplate(task.getSource()), 
 				getTransactionTemplate(), getTransactionTemplateRequiresNew(), this.getSourceDialect(), this.visualizationDataRepository, this.cohortDefinitionRepository);

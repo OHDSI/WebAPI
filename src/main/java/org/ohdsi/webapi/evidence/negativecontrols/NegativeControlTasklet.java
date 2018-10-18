@@ -95,7 +95,7 @@ public class NegativeControlTasklet implements Tasklet {
                     log.debug("Entering tasklet");
 
                     String negativeControlSql = EvidenceService.getNegativeControlSql(task);
-                    log.debug("Processing negative controls with: \n\t{}", negativeControlSql);
+                    log.debug("Processing negative controls with: {}", negativeControlSql);
                     NegativeControlTasklet.this.evidenceJdbcTemplate.execute(negativeControlSql);
 
                     return result;

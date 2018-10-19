@@ -23,9 +23,8 @@ import org.apache.shiro.web.filter.session.NoSessionCreationFilter;
 import org.apache.shiro.web.servlet.AdviceFilter;
 import org.apache.shiro.web.util.WebUtils;
 import org.ohdsi.webapi.OidcConfCreator;
-import org.ohdsi.webapi.shiro.*;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.filters.CorsFilter;
 import org.ohdsi.webapi.shiro.filters.ForceSessionCreationFilter;
 import org.ohdsi.webapi.shiro.filters.ProcessResponseContentFilter;
@@ -263,10 +262,7 @@ public abstract class AtlasSecurity extends Security {
     if (this.authorizer.roleExists(roleName)) {
       RoleEntity role = this.authorizer.getRoleByName(roleName);
       this.authorizer.removePermissionsFromTemplate(this.sourcePermissionTemplates, sourceKey);
-      Set<UserEntity> roleUsers = this.authorizer.getRoleUsers(role.getId());
-      for(UserEntity user : roleUsers) {
-        this.authorizer.removeUserFromRole(roleName, user.getLogin());
-      }
+      this.authorizer.removePermissionsFromTemplate(this.dataSourcePermissionTemplates, sourceKey);
       this.authorizer.removeRole(role.getId());
     }
   }

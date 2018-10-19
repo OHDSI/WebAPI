@@ -29,10 +29,7 @@ import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.batch.core.ExitStatus;
-import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.StoppableTasklet;
 import org.springframework.transaction.TransactionDefinition;
@@ -85,8 +82,11 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
 
       CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = new CohortExpressionQueryBuilder.BuildExpressionQueryOptions();
       options.cohortId = defId;
+      final String targetTable = jobParams.get(Constants.Params.TARGET_TABLE).toString();
+      final int skipSchema = targetTable.indexOf('.');
+      final String targetSchema = skipSchema == -1 ? jobParams.get(Constants.Params.TARGET_DATABASE_SCHEMA).toString() : targetTable.substring(0, skipSchema);
+      options.targetTable = skipSchema == -1 ? targetSchema + "." + targetTable : targetTable;
       options.cdmSchema = jobParams.get(Constants.Params.CDM_DATABASE_SCHEMA).toString();
-      options.targetTable = jobParams.get(Constants.Params.TARGET_DATABASE_SCHEMA).toString() + "." + jobParams.get(Constants.Params.TARGET_TABLE).toString();
       options.resultSchema = jobParams.get(Constants.Params.RESULTS_DATABASE_SCHEMA).toString();
       if (jobParams.get(Constants.Params.VOCABULARY_DATABASE_SCHEMA) != null)
         options.vocabularySchema = jobParams.get(Constants.Params.VOCABULARY_DATABASE_SCHEMA).toString();
@@ -95,25 +95,23 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
       Integer sourceId = Integer.parseInt(jobParams.get(Constants.Params.SOURCE_ID).toString());
       Source source = sourceRepository.findBySourceId(sourceId);
 
-      String deleteSql = "DELETE FROM @tableQualifier.cohort_inclusion WHERE cohort_definition_id = @cohortDefinitionId;";
-      PreparedStatementRenderer psr = new PreparedStatementRenderer(source, deleteSql, "tableQualifier",
-              options.resultSchema, "cohortDefinitionId", options.cohortId);
+      String deleteSql = "DELETE FROM @target_database_schema.cohort_inclusion WHERE cohort_definition_id = @cohortDefinitionId;";
+      PreparedStatementRenderer psr = new PreparedStatementRenderer(source, deleteSql, "target_database_schema",
+              targetSchema, "cohortDefinitionId", options.cohortId);
       if (isStopped()) {
         return result;
       }
       jdbcTemplate.update(psr.getSql(), psr.getSetter());
 
 //      String insertSql = "INSERT INTO @results_schema.cohort_inclusion (cohort_definition_id, rule_sequence, name, description)  VALUES (@cohortId,@iteration,'@ruleName','@ruleDescription');";
-      String insertSql = "INSERT INTO @results_schema.cohort_inclusion (cohort_definition_id, rule_sequence, name, description) SELECT @cohortId as cohort_definition_id, @iteration as rule_sequence, CAST('@ruleName' as VARCHAR(255)) as name, CAST('@ruleDescription' as VARCHAR(1000)) as description;";
+      String insertSql = "INSERT INTO @target_database_schema.cohort_inclusion (cohort_definition_id, rule_sequence, name, description) SELECT @cohortId as cohort_definition_id, @iteration as rule_sequence, CAST('@ruleName' as VARCHAR(255)) as name, CAST('@ruleDescription' as VARCHAR(1000)) as description;";
 
-      String tqName = "results_schema";
-      String tqValue = options.resultSchema;
       String[] names = new String[]{"cohortId", "iteration", "ruleName", "ruleDescription"};
       List<InclusionRule> inclusionRules = expression.inclusionRules;
       for (int i = 0; i < inclusionRules.size(); i++) {
         InclusionRule r = inclusionRules.get(i);
         Object[] values = new Object[]{options.cohortId, i, r.name, r.description};
-        psr = new PreparedStatementRenderer(source, insertSql, tqName, tqValue, names, values, sessionId);
+        psr = new PreparedStatementRenderer(source, insertSql, "target_database_schema", targetSchema, names, values, sessionId);
         if (isStopped()) {
           return result;
         }

@@ -343,7 +343,8 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
         private CohortExpressionQueryBuilder.BuildExpressionQueryOptions createDefaultOptions(final Integer id) {
             final CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = new CohortExpressionQueryBuilder.BuildExpressionQueryOptions();
             options.cdmSchema = SourceUtils.getCdmQualifier(source);
-            options.resultSchema = SourceUtils.getResultsQualifier(source);
+            // Target schema
+            options.resultSchema = SourceUtils.getTempQualifier(source);
             options.cohortId = id;
             return options;
         }
@@ -404,8 +405,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             joiner.add(jsonObject.getString("sqlCleanup"));
 
             final String sql = sourceAwareSqlRender.renderSql(sourceId, joiner.toString(), new String[]{}, new String[]{});
-            final String resultsQualifier = SourceUtils.getResultsQualifier(source);
-            final String tempQualifier = SourceUtils.getTempQualifier(source, resultsQualifier);
+            final String tempQualifier = SourceUtils.getTempQualifier(source);
             final String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect(), SessionUtils.sessionId(), tempQualifier);
             return SqlSplit.splitSql(translatedSql);
         }

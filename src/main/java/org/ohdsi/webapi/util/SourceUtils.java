@@ -17,6 +17,10 @@ public class SourceUtils {
         return ObjectUtils.firstNonNull( source.getTableQualifierOrNull(SourceDaimon.DaimonType.Temp), backup);
     }
 
+    public static String getTempQualifier(Source source) {
+        return ObjectUtils.firstNonNull( source.getTableQualifierOrNull(SourceDaimon.DaimonType.Temp), getResultsQualifier(source));
+    }
+
     public static String getResultsQualifier(Source source) {
         return source.getTableQualifier(SourceDaimon.DaimonType.Results);
     }

@@ -72,7 +72,7 @@
                 <datasource.password>app1</datasource.password>
                 <flyway.datasource.password>admin1</flyway.datasource.password>
                 <datasource.url>jdbc:postgresql://localhost:5432/${datasource.db}</datasource.url>
-                <liferay.url>http://localhost:8080</liferay.url>
+                <liferay.url>https://localhost:8443</liferay.url>
                 <liferay.user>test@liferay.com</liferay.user>
                 <liferay.password>test</liferay.password>
                 <hss.url>https://dev.honeur.org/storage/api</hss.url>
@@ -116,6 +116,42 @@
             <properties>
                 <user.properties>${properties.folder}/custom.properties</user.properties>
                 <properties.folder>${project.basedir}/src/test/resources/jmeter/dev</properties.folder>
+            </properties>
+        </profile>
+        <profile>
+            <id>agunva</id>
+            <properties>
+                <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
+                <datasource.url>jdbc:postgresql://localhost:5432/honeur</datasource.url>
+                <datasource.username>postgres</datasource.username>
+                <datasource.password>ec2Admin</datasource.password>
+                <datasource.dialect>postgresql</datasource.dialect>
+                <datasource.ohdsi.schema>webapi</datasource.ohdsi.schema>
+                <hibernate.dialect>org.hibernate.dialect.PostgreSQL9Dialect</hibernate.dialect>
+                <honeur.enabled>true</honeur.enabled>
+                <hss.url>https://storage-uat.honeur.org/api</hss.url>
+                <liferay.company.web.id>liferay.com</liferay.company.web.id>
+                <security.cas.tgc.domain>.honeur.org</security.cas.tgc.domain>
+                <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
+                <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
+                <flyway.datasource.username>postgres</flyway.datasource.username>
+                <flyway.datasource.password>ec2Admin</flyway.datasource.password>
+                <flyway.locations>classpath:db/migration/postgresql,classpath:db/extension/honeur</flyway.locations>
+                <security.enabled>false</security.enabled>
+                <security.cas>false</security.cas>
+                <security.cas.login.url>https://cas-uat.honeur.org/login</security.cas.login.url>
+                <security.token.expiration>43200</security.token.expiration>
+                <security.origin>*</security.origin>
+                <security.ssl.enabled>false</security.ssl.enabled>
+                <security.oauth.callback.ui>http://awsagunva1008.jnj.com/Atlas/#/welcome</security.oauth.callback.ui>
+                <security.oauth.callback.api>http://awsagunva1008.jnj.com:8080/WebAPI/user/oauth/callback</security.oauth.callback.api>
+                <security.oauth.google.apiKey></security.oauth.google.apiKey>
+                <security.oauth.google.apiSecret></security.oauth.google.apiSecret>
+                <security.oauth.facebook.apiKey></security.oauth.facebook.apiKey>
+                <security.oauth.facebook.apiSecret></security.oauth.facebook.apiSecret>
+                <central>false</central>
+                <jersey.resources.additional.packages>com.jnj.honeur.webapi</jersey.resources.additional.packages>
+                <war.directory>target-agunva</war.directory>
             </properties>
         </profile>
     </profiles>

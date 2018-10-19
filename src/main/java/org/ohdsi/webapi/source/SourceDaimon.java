@@ -16,8 +16,7 @@
 package org.ohdsi.webapi.source;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.io.Serializable;
-import java.util.Objects;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -29,6 +28,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
+import java.io.Serializable;
+import java.util.Objects;
 
 /**
  *
@@ -39,7 +40,7 @@ import org.hibernate.annotations.Where;
 @SQLDelete(sql = "UPDATE {h-schema}source_daimon SET priority = -1 WHERE SOURCE_DAIMON_ID = ?")
 @Where(clause = "priority >= 0")
 public class SourceDaimon implements Serializable {
-  public enum DaimonType { CDM, Vocabulary, Results, CEM, CEMResults };
+  public enum DaimonType { CDM, Vocabulary, Results, CEM, CEMResults, Temp };
   
   public SourceDaimon() {
   

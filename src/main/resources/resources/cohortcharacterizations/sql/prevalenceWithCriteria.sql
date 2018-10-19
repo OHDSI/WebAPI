@@ -13,6 +13,6 @@ insert into @results_database_schema.cc_results (type, fa_type, covariate_id, co
     end as stat_value,
     @cohortId as cohort_definition_id,
     @executionId as cc_generation_id
-from (select count(*) as sum_value from @targetTable) sum,
-  (select count(*) as total from @totalsTable where cohort_definition_id = @cohortId) totals
+from (select count(*) as sum_value from @temp_database_schema.@targetTable) sum,
+  (select count(*) as total from  @temp_database_schema.@totalsTable where cohort_definition_id = @cohortId) totals
 ;

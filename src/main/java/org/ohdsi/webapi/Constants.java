@@ -25,6 +25,7 @@ public interface Constants {
     String JOB_AUTHOR = "jobAuthor";
     String RESULTS_DATABASE_SCHEMA = "results_database_schema";
     String TARGET_DATABASE_SCHEMA = "target_database_schema";
+    String TEMP_DATABASE_SCHEMA = "temp_database_schema";
     String TARGET_DIALECT = "target_dialect";
     String TARGET_TABLE = "target_table";
     String GENERATE_STATS = "generate_stats";

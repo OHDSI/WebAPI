@@ -20,7 +20,7 @@ public class ModifiedDateFacetProvider implements FacetProvider {
 
     @Override
     public String getName() {
-        return "Modified";
+        return "Updated";
     }
 
     @Override

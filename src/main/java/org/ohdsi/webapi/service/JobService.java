@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -14,6 +15,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobInstanceResource;
 import org.ohdsi.webapi.job.JobUtils;
@@ -42,6 +44,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  *
@@ -51,19 +54,10 @@ import org.springframework.stereotype.Component;
 public class JobService extends AbstractDaoService {
 
   @Autowired
-  private String batchTablePrefix;
-
-  @Autowired
   private JobExplorer jobExplorer;
 
   @Autowired
-  private JobLocator jobLocator;
-
-  @Autowired
   private SearchableJobExecutionDao jobExecutionDao;
-
-  @Autowired
-  private SearchableJobInstanceDao jobInstanceDao;
 
   @Autowired
   private JobOperator jobOperator;
@@ -78,6 +72,16 @@ public class JobService extends AbstractDaoService {
     }
     return JobUtils.toJobInstanceResource(job);
   }
+
+    @GET
+    @Path("/type/{jobType}/name/{jobName}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public JobExecutionResource findJobByName(@PathParam("jobName") final String jobName, @PathParam("jobType") final String jobType) {
+            final Optional<JobExecution> jobExecution = jobExplorer.findRunningJobExecutions(jobType).stream()
+                    .filter(job -> jobName.equals(job.getJobParameters().getString(Constants.Params.JOB_NAME)))
+                    .findFirst();
+            return jobExecution.isPresent() ? JobUtils.toJobExecutionResource(jobExecution.get()) : null;
+    }
 
   @GET
   @Path("{jobId}/execution/{executionId}")

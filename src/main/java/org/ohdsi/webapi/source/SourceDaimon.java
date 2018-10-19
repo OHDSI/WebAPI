@@ -36,7 +36,7 @@ import org.hibernate.annotations.Where;
  */
 @Entity(name = "SourceDaimon")
 @Table(name="source_daimon")
-@SQLDelete(sql = "UPDATE source_daimon SET priority = -1 WHERE SOURCE_DAIMON_ID = ?")
+@SQLDelete(sql = "UPDATE {h-schema}source_daimon SET priority = -1 WHERE SOURCE_DAIMON_ID = ?")
 @Where(clause = "priority >= 0")
 public class SourceDaimon implements Serializable {
   public enum DaimonType { CDM, Vocabulary, Results, Evidence };

@@ -19,26 +19,14 @@
     <waffle.version>1.7.3</waffle.version>
     <start-class>org.ohdsi.webapi.WebApi</start-class>
 
-    <!-- Primary DataSource -->
-    <!-- default sql server - TODO How about making postgres the default (e.g. in line with open source tech)? -alexfranken -->
-    <datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</datasource.driverClassName>
-    <datasource.url>jdbc:sqlserver://serverName;databaseName=databaseName</datasource.url>
-    <datasource.username>user</datasource.username>
-    <datasource.password>password</datasource.password>
-    <!--<datasource.validationQuery>SELECT 1</datasource.validationQuery>-->
-    <datasource.dialect>sql server</datasource.dialect>
-    <datasource.ohdsi.schema>dbo</datasource.ohdsi.schema>
-    <datasource.dialect.source>sql server</datasource.dialect.source>
-    <!-- DB Change Management / Migration -->
-    <flyway.datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</flyway.datasource.driverClassName>
-    <flyway.datasource.url>jdbc:sqlserver://serverName</flyway.datasource.url>
-    <flyway.datasource.username>userWithWritePrivs</flyway.datasource.username>
-    <flyway.datasource.password>password</flyway.datasource.password>
-    <flyway.locations>classpath:db/migration/sqlserver</flyway.locations>
-    <!-- Note: Schema name is case-sensitive. -->
-    <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
-    <flyway.validateOnMigrate>false</flyway.validateOnMigrate>
-    <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>
+    <!-- Primary DBMS Settings (Default: postgreSQL) -->
+    <!-- if you use postgresql, use P option or change activeByDefault tag false to true -->
+    <primary.datasource.address>IP:PORT</primary.datasource.address>
+    <primary.datasource.dbName>DBNAME</primary.datasource.dbName>
+    <primary.datasource.username>USERNAME</primary.datasource.username>
+    <primary.datasource.password>PASSWORD</primary.datasource.password>
+    <primary.datasource.ohdsi.shcema>SCHEMA</primary.datasource.ohdsi.shcema>
+
     <!-- CDM properties -->
     <source.name>CDM_NAME</source.name>
     <cdm.version>5</cdm.version>
@@ -716,16 +704,20 @@
           <version>14</version>
         </dependency>
       </dependencies>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
     </profile>
     <profile>
       <id>webapi-postgresql</id>
       <properties>
         <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
-        <datasource.url>jdbc:postgresql://54.209.111.128:5432/vocabularyv5</datasource.url>
-        <datasource.username>USER</datasource.username>
-        <datasource.password>PASS</datasource.password>
+        <datasource.url>jdbc:postgresql://${primary.datasource.address}/${primary.datasource.dbName}</datasource.url>
+        <datasource.username>${primary.datasource.username}</datasource.username>
+        <datasource.password>${primary.datasource.password}</datasource.password>
+        <datasource.ohdsi.schema>${primary.datasource.ohdsi.shcema}</datasource.ohdsi.schema>
         <datasource.dialect>postgresql</datasource.dialect>
-        <datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>
+        <datasource.dialect.source>${datasource.dialect}</datasource.dialect.source>
         <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
         <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
         <flyway.datasource.username>userWithWritesToOhdsiSchema</flyway.datasource.username>
@@ -733,6 +725,7 @@
         <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
         <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>
         <flyway.locations>classpath:db/migration/postgresql</flyway.locations>
+        <flyway.validateOnMigrate>false</flyway.validateOnMigrate>
         <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
         <hibernate.dialect>org.hibernate.dialect.PostgreSQL9Dialect</hibernate.dialect>
         <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
@@ -742,23 +735,28 @@
         <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.users_data where \
           lower(email) = lower(?)</security.db.datasource.authenticationQuery>
       </properties>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
     </profile>
     <profile>
       <id>webapi-mssql</id>
       <properties>
         <datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</datasource.driverClassName>
-        <datasource.url>jdbc:sqlserver://server</datasource.url>
-        <datasource.username>USER</datasource.username>
-        <datasource.password>PASS</datasource.password>
+        <datasource.url>jdbc:sqlserver://${primary.datasource.address};databaseName=${primary.datasource.dbName}</datasource.url>
+        <datasource.username>${primary.datasource.username}</datasource.username>
+        <datasource.password>${primary.datasource.password}</datasource.password>
+        <datasource.ohdsi.schema>dbo</datasource.ohdsi.schema>
         <datasource.dialect>sql server</datasource.dialect>
-        <datasource.ohdsi.schema>OHDSI_schema</datasource.ohdsi.schema>
+        <datasource.dialect.source>${datasource.dialect}</datasource.dialect.source>
         <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
         <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
-        <flyway.datasource.username>FLYWAY_USER</flyway.datasource.username>
-        <flyway.datasource.password>FLYWAY_PASS</flyway.datasource.password>
+        <flyway.datasource.username>${datasource.username}</flyway.datasource.username>
+        <flyway.datasource.password>${datasource.password}</flyway.datasource.password>
         <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
         <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>
         <flyway.locations>classpath:db/migration/sqlserver</flyway.locations>
+        <flyway.validateOnMigrate>false</flyway.validateOnMigrate>
         <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
         <hibernate.dialect>org.hibernate.dialect.SQLServer2012Dialect</hibernate.dialect>
         <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
@@ -768,6 +766,9 @@
         <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.user where \
           lower(email) = lower(?)</security.db.datasource.authenticationQuery>
       </properties>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
     </profile>
     <profile>
       <id>webapi-netezza</id>
@@ -806,6 +807,9 @@
           </plugin>
         </plugins>
       </build>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
     </profile>
     <profile>
       <id>webapi-impala</id>
@@ -966,6 +970,9 @@
           </plugin>
         </plugins>
       </build>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
     </profile>
   </profiles>
 </project>

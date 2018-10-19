@@ -18,7 +18,6 @@ package org.ohdsi.webapi.cohortcharacterization;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
@@ -51,25 +50,18 @@ import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.sqlrender.SourceAwareSqlRender;
+import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.SourceUtils;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.scope.context.ChunkContext;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.StringJoiner;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.FutureTask;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.Params.*;
@@ -82,8 +74,6 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
     private static final String CREATE_COHORT_SQL = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/createCohortTable.sql");
     private static final String DROP_TABLE_SQL = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/dropCohortTable.sql");
 
-    private final ExecutorService taskExecutor;
-    private final JdbcTemplate jdbcTemplate;
     private final CcService ccService;
     private final FeAnalysisService feAnalysisService;
     private final SourceService sourceService;
@@ -92,29 +82,32 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
     private final SourceAwareSqlRender sourceAwareSqlRender;
 
     public GenerateCohortCharacterizationTasklet(
-            final JdbcTemplate jdbcTemplate,
+            final CancelableJdbcTemplate jdbcTemplate,
             final TransactionTemplate transactionTemplate,
             final CcService ccService,
             final FeAnalysisService feAnalysisService,
             final AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository,
             final SourceService sourceService,
             final UserRepository userRepository,
-            final SourceAwareSqlRender sourceAwareSqlRender) {
-        super(LogFactory.getLog(GenerateCohortCharacterizationTasklet.class), transactionTemplate, analysisGenerationInfoEntityRepository);
-        this.jdbcTemplate = jdbcTemplate;
+            final SourceAwareSqlRender sourceAwareSqlRender
+    ) {
+        super(LoggerFactory.getLogger(GenerateCohortCharacterizationTasklet.class), jdbcTemplate, transactionTemplate, analysisGenerationInfoEntityRepository);
         this.ccService = ccService;
         this.feAnalysisService = feAnalysisService;
         this.sourceService = sourceService;
         this.userRepository = userRepository;
         this.sourceAwareSqlRender = sourceAwareSqlRender;
-        this.taskExecutor = Executors.newSingleThreadExecutor();
         this.queryBuilder = new CohortExpressionQueryBuilder();
     }
 
-    protected int[] doTask(ChunkContext chunkContext) {
+    @Override
+    protected void doBefore(ChunkContext chunkContext) {
         initTx();
-        new CcTask(chunkContext).run();
-        return null;
+    }
+
+    @Override
+    protected String[] prepareQueries(ChunkContext chunkContext, CancelableJdbcTemplate jdbcTemplate) {
+        return new CcTask(chunkContext).run();
     }
 
     private void initTx() {
@@ -227,26 +220,19 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             this.userEntity = userRepository.findByLogin(jobParams.get(JOB_AUTHOR).toString());
         }
         
-        private void run() {
+        private String[] run() {
 
             saveInfo(jobId, new SerializedCcToCcConverter().convertToDatabaseColumn(cohortCharacterization), userEntity);
-            cohortCharacterization.getCohortDefinitions()
-                    .forEach(definition -> runAnalysisOnCohort(definition.getId()));
+            return cohortCharacterization.getCohortDefinitions()
+                    .stream()
+                    .map(def -> getAnalysisQueriesOnCohort(def.getId()))
+                    .flatMap(Arrays::stream)
+                    .toArray(String[]::new);
         }
 
-        private int[] runAnalysisOnCohort(final Integer cohortDefinitionId) {
-            FutureTask<int[]> batchUpdateTask = new FutureTask<>(
-                    () -> jdbcTemplate.batchUpdate(
-                            getSqlQueriesToRun(
-                                    createFeJsonObject(
-                                            createDefaultOptions(cohortDefinitionId)
-                                    ), 
-                                    cohortDefinitionId
-                            )
-                    )
-            );
-            taskExecutor.execute(batchUpdateTask);
-            return waitForFuture(batchUpdateTask);
+        private String[] getAnalysisQueriesOnCohort(final Integer cohortDefinitionId) {
+
+            return getSqlQueriesToRun(createFeJsonObject(createDefaultOptions(cohortDefinitionId)), cohortDefinitionId);
         }
 
         private String renderCustomAnalysisDesign(FeAnalysisWithStringEntity fa, Integer cohortId) {

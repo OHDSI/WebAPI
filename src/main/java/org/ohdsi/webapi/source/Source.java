@@ -16,8 +16,6 @@
 package org.ohdsi.webapi.source;
 
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMechanism;
-import org.hibernate.annotations.Type;
-import org.ohdsi.webapi.source.SourceDaimon.DaimonType;
 import java.io.Serializable;
 import java.util.Collection;
 import javax.persistence.CascadeType;
@@ -30,8 +28,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Type;
+import org.hibernate.annotations.Where;
 import org.ohdsi.webapi.source.SourceDaimon.DaimonType;
 
 /**
@@ -40,6 +39,8 @@ import org.ohdsi.webapi.source.SourceDaimon.DaimonType;
  */
 @Entity(name = "Source")
 @Table(name="source")
+@SQLDelete(sql = "UPDATE source SET deleted_date = current_timestamp WHERE SOURCE_ID = ?")
+@Where(clause = "deleted_date IS NULL")
 public class Source implements Serializable {
 
   public static final String MASQUERADED_USERNAME = "<username>";
@@ -170,35 +171,35 @@ public class Source implements Serializable {
     this.password = password;
   }
 
-    public byte[] getKrbKeytab() {
+  public byte[] getKrbKeytab() {
         return krbKeytab;
     }
 
-    public void setKrbKeytab(byte[] krbKeytab) {
+  public void setKrbKeytab(byte[] krbKeytab) {
         this.krbKeytab = krbKeytab;
     }
 
-    public String getKeytabName() {
+  public String getKeytabName() {
         return keytabName;
     }
 
-    public void setKeytabName(String keytabName) {
+  public void setKeytabName(String keytabName) {
         this.keytabName = keytabName;
     }
 
-    public KerberosAuthMechanism getKrbAuthMethod() {
+  public KerberosAuthMechanism getKrbAuthMethod() {
         return krbAuthMethod;
     }
 
-    public void setKrbAuthMethod(KerberosAuthMechanism krbAuthMethod) {
+  public void setKrbAuthMethod(KerberosAuthMechanism krbAuthMethod) {
         this.krbAuthMethod = krbAuthMethod;
     }
 
-    public String getKrbAdminServer() {
+  public String getKrbAdminServer() {
         return krbAdminServer;
     }
 
-    public void setKrbAdminServer(String krbAdminServer) {
+  public void setKrbAdminServer(String krbAdminServer) {
         this.krbAdminServer = krbAdminServer;
     }
 }

@@ -103,7 +103,7 @@ public class CohortResultsService extends AbstractDaoService {
         minIntervalPersonCountParam, sqlPath, source);
       return genericResultSetLoader(psr, source);
     } catch (Exception e) {
-      log.error(String.format("Unable to translate sql for analysis %s", analysisName), e);
+      log.error("Unable to translate sql for analysis {}", analysisName, e);
       return null;
     }
   }
@@ -1665,7 +1665,7 @@ public class CohortResultsService extends AbstractDaoService {
           try {
               attrs = mapper.readValue(data.getData(), new TypeReference<List<CohortAttribute>>(){});
           } catch (Exception e) {
-              log.error(e);
+              log.error(e.getMessage());
           }
       }
 

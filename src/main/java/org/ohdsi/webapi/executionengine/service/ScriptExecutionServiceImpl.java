@@ -8,8 +8,6 @@ import jersey.repackaged.com.google.common.collect.ImmutableMap;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.apache.commons.lang3.time.DateUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
@@ -32,6 +30,8 @@ import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.DataSourceDTOParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,11 +49,14 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
+
+import static com.odysseusinc.arachne.commons.types.DBMSType.IMPALA;
 
 @Service
 class ScriptExecutionServiceImpl implements ScriptExecutionService {
 
-    private static final Log logger = LogFactory.getLog(ScriptExecutionServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScriptExecutionServiceImpl.class);
     private static final String IMPALA_DATASOURCE = "impala";
 
     @Autowired
@@ -117,8 +120,8 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         String name = getAnalysisName(dto);
 
         //replace var in R-script
-        ConnectionParams connectionParams = DataSourceDTOParser.parse(source);
-        final String script = processTemplate(dto, cdmTableQualifier, resultsTableQualifier, vocabularyTableQualifier, source.getSourceDialect(), connectionParams);
+        DataSourceUnsecuredDTO dataSourceData = DataSourceDTOParser.parseDTO(source);
+        final String script = processTemplate(dto, dataSourceData);
         AnalysisFile inputFile = new AnalysisFile();
         inputFile.setAnalysisExecution(execution);
         inputFile.setContents(script.getBytes());
@@ -127,7 +130,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
 
         final String analysisExecutionUrl = "/analyze";
         WebTarget webTarget = client.target(executionEngineURL + analysisExecutionUrl);
-        MultiPart multiPart = buildRequest(buildAnalysisRequest(execution, source, execution.getUpdatePassword(), connectionParams), script);
+        MultiPart multiPart = buildRequest(buildAnalysisRequest(execution, dataSourceData, execution.getUpdatePassword()), script);
         try {
                 webTarget
                     .request(MediaType.MULTIPART_FORM_DATA_TYPE)
@@ -165,16 +168,13 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         return multiPart;
     }
 
-    private AnalysisRequestDTO buildAnalysisRequest(AnalysisExecution execution, Source source, String password, ConnectionParams connectionParams) {
+    private AnalysisRequestDTO buildAnalysisRequest(AnalysisExecution execution, DataSourceUnsecuredDTO dataSourceData, String password) {
         AnalysisRequestDTO analysisRequestDTO = new AnalysisRequestDTO();
         Long executionId = execution.getId().longValue();
         analysisRequestDTO.setId(executionId);
-        analysisRequestDTO.setDataSource(makeDataSourceDTO(source, connectionParams));
+        analysisRequestDTO.setDataSource(dataSourceData);
         analysisRequestDTO.setCallbackPassword(password);
         analysisRequestDTO.setRequested(new Date());
-        if (IMPALA_DATASOURCE.equalsIgnoreCase(source.getSourceDialect()) && AuthMethod.KERBEROS == connectionParams.getAuthMethod()) {
-            KerberosUtils.setKerberosParams(source, connectionParams, analysisRequestDTO.getDataSource());
-        }
         String executableFileName = StringGenerationUtil.generateFileName(AnalysisRequestTypeDTO.R.name().toLowerCase());
         analysisRequestDTO.setExecutableFileName(executableFileName);
         analysisRequestDTO.setResultCallback(
@@ -265,27 +265,21 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     }
 
     private String processTemplate(ExecutionRequestDTO requestDTO,
-                                   String cdmTable, String resultsTable,
-                                   String vocabularyTable,
-                                   String sourceDialect,
-                                   ConnectionParams connectionParams) {
-
-        String serverName;
-        if (DBMS_REQUIRE_DB.stream().anyMatch(dbms -> dbms.getOhdsiDB().equalsIgnoreCase(sourceDialect))) {
-            serverName = connectionParams.getServer() + "/" + connectionParams.getSchema();
-        } else {
-            serverName = connectionParams.getServer();
-        }
+                                   DataSourceUnsecuredDTO dataSourceData) {
 
         String temp = requestDTO.template
-                .replace("dbms = \"postgresql\"", "dbms = \"" + connectionParams.getDbms() + "\"")
-                .replace("server = \"localhost/ohdsi\"", "server = \"" + serverName + "\"")
-                .replace("user = \"joe\"", "user = \"" + connectionParams.getUser() + "\"")
-                .replace("my_cdm_data", cdmTable)
-                .replace("my_vocabulary_data", vocabularyTable)
-                .replace("my_results", resultsTable)
-                .replace("exposure_database_schema", resultsTable)
-                .replace("outcome_database_schema", resultsTable)
+                .replace("dbms = \"postgresql\"", "dbms = \"" + dataSourceData.getType().getOhdsiDB() + "\"")
+                .replace(
+                        "server = \"localhost/ohdsi\"",
+                        "connectionString = \"" + dataSourceData.getConnectionString() + "\", schema = \"" + dataSourceData.getCdmSchema() + "\""
+                )
+                .replace( "port = 5432,", "")
+                .replace("user = \"joe\"", "user = \"" + dataSourceData.getUsername() + "\"")
+                .replace("my_cdm_data", dataSourceData.getCdmSchema())
+                .replace("my_vocabulary_data", dataSourceData.getVocabularySchema())
+                .replace("my_results", dataSourceData.getResultSchema())
+                .replace("exposure_database_schema", dataSourceData.getResultSchema())
+                .replace("outcome_database_schema", dataSourceData.getResultSchema())
                 .replace("exposure_table", "cohort")
                 .replace("outcome_table", "cohort")
                 .replace("cohort_table", "cohort")
@@ -296,33 +290,19 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
                         "cdmVersion <- \"" + requestDTO.cdmVersion + "\"")
                 .replace("<insert your " + "directory here>",
                         requestDTO.workFolder);
-        if (IMPALA_DATASOURCE.equalsIgnoreCase(sourceDialect)) {
+        if (Objects.equals(IMPALA, dataSourceData.getType())) {
             temp = temp.replace("password = \"supersecret\"", "password = \""
-                    + connectionParams.getPassword() + "\", "
-                    + "schema=\"" + connectionParams.getSchema() + "\", "
-                    + "extraSettings=\"" + connectionParams.getExtraSettings() + "\", "
+                    + dataSourceData.getPassword() + "\", "
                     + "pathToDriver=\"/impala/\"");
 
         } else {
-            temp = temp.replace("password = \"supersecret\"", "password = \"" + connectionParams.getPassword() + "\"");
+            temp = temp.replace("password = \"supersecret\"", "password = \"" + dataSourceData.getPassword() + "\"");
         }
 
-        if (connectionParams.getPort() != null) {
-            temp = temp.replace("port = 5432", "port = " + connectionParams.getPort());
-        } else {
-            temp = temp.replace( "port = 5432,", "");
-        }
         //uncommenting package installation
         return temp
                 .replace("true", "TRUE")
                 .replace("false", "FALSE");
-    }
-
-    private DataSourceUnsecuredDTO makeDataSourceDTO(Source source, ConnectionParams connectionParams) {
-
-        DataSourceUnsecuredDTO dto = DataSourceDTOParser.parseDTO(source, connectionParams);
-        dto.setCdmSchema(source.getTableQualifier(SourceDaimon.DaimonType.CDM));
-        return dto;
     }
 
 }

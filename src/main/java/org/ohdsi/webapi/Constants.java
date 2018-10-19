@@ -1,10 +1,15 @@
 package org.ohdsi.webapi;
 
+import org.springframework.batch.core.ExitStatus;
+
 public interface Constants {
   String GENERATE_COHORT = "generateCohort";
   String GENERATE_COHORT_CHARACTERIZATION = "generateCohortCharacterization";
   String GENERATE_PATHWAY_ANALYSIS = "generatePathwayAnalysis";
   String WARM_CACHE = "warmCache";
+
+  String FAILED = ExitStatus.FAILED.getExitCode();
+  String CANCELED = "CANCELED";
 
   interface Params {
 

@@ -404,7 +404,7 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
             info.setComparatorCohortDefinition(cd.expression);
           } catch (Exception e) {
             // Cohort definition no longer exists
-            log.debug("Cohort definition id = " + info.getComparatorId() + " no longer exists");
+            log.warn("Cohort definition id = {} no longer exists", info.getComparatorId());
           }
         }
         if (analysis.getTreatmentId() > 0) {
@@ -414,7 +414,7 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
             info.setTreatmentCohortDefinition(cd.expression);
           } catch (Exception e) {
             // Cohort definition no longer exists
-            log.debug("Cohort definition id = " + info.getTreatmentId() + " no longer exists");
+            log.warn("Cohort definition id = {} no longer exists", info.getTreatmentId());
           }
         }
         if (analysis.getOutcomeId() > 0) {
@@ -424,7 +424,7 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
             info.setOutcomeCohortDefinition(cd.expression);
           } catch (Exception e) {
             // Cohort definition no longer exists
-            log.debug("Cohort definition id = " + info.getOutcomeId() + " no longer exists");
+            log.warn("Cohort definition id = {} no longer exists", info.getOutcomeId());
           }
         }
         if (analysis.getPsInclusionId() > 0) {
@@ -433,7 +433,7 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
             info.setPsInclusionConceptSet(conceptSetService.getConceptSetExpression(analysis.getPsInclusionId()));
             info.setPsInclusionConceptSetSql(vocabularyService.getConceptSetExpressionSQL(info.getPsInclusionConceptSet()));
           } catch (Exception e) {
-            log.debug("Concept set id = " + info.getPsInclusionId() + " no longer exists");
+            log.warn("Concept set id = {} no longer exists", info.getPsInclusionId());
           }
         }
         if (analysis.getPsExclusionId() > 0) {
@@ -442,7 +442,7 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
             info.setPsExclusionConceptSet(conceptSetService.getConceptSetExpression(analysis.getPsExclusionId()));
             info.setPsExclusionConceptSetSql(vocabularyService.getConceptSetExpressionSQL(info.getPsExclusionConceptSet()));
           } catch (Exception e) {
-            log.debug("Concept set id = " + info.getPsExclusionId() + " no longer exists");
+            log.warn("Concept set id = {} no longer exists", info.getPsExclusionId());
           }
         }
         if (analysis.getOmInclusionId() > 0) {
@@ -451,7 +451,7 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
             info.setOmInclusionConceptSet(conceptSetService.getConceptSetExpression(analysis.getOmInclusionId()));
             info.setOmInclusionConceptSetSql(vocabularyService.getConceptSetExpressionSQL(info.getOmInclusionConceptSet()));
           } catch (Exception e) {
-            log.debug("Concept set id = " + info.getOmInclusionId() + " no longer exists");
+            log.warn("Concept set id = {} no longer exists", info.getOmInclusionId());
           }
         }
         if (analysis.getOmExclusionId() > 0) {
@@ -460,7 +460,7 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
             info.setOmExclusionConceptSet(conceptSetService.getConceptSetExpression(analysis.getOmExclusionId()));
             info.setOmExclusionConceptSetSql(vocabularyService.getConceptSetExpressionSQL(info.getOmExclusionConceptSet()));
           } catch (Exception e) {
-            log.debug("Concept set id = " + info.getOmExclusionId() + " no longer exists");
+            log.warn("Concept set id = {} no longer exists", info.getOmExclusionId());
           }
         }
         if (analysis.getNegativeControlId() > 0) {
@@ -469,7 +469,7 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
             info.setNegativeControlConceptSet(conceptSetService.getConceptSetExpression(analysis.getNegativeControlId()));
             info.setNegativeControlConceptSetSql(vocabularyService.getConceptSetExpressionSQL(info.getNegativeControlConceptSet()));
           } catch (Exception e) {
-            log.debug("Concept set id = " + info.getNegativeControlId() + " no longer exists");
+            log.warn("Concept set id = {} no longer exists", info.getNegativeControlId());
           }
         }
 

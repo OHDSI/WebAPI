@@ -16,8 +16,6 @@
 package org.ohdsi.webapi.source;
 
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMechanism;
-import org.hibernate.annotations.Type;
-import org.ohdsi.webapi.source.SourceDaimon.DaimonType;
 import java.io.Serializable;
 import java.util.Collection;
 import javax.persistence.CascadeType;
@@ -30,8 +28,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Type;
+import org.hibernate.annotations.Where;
 import org.ohdsi.webapi.source.SourceDaimon.DaimonType;
 
 /**
@@ -40,6 +39,8 @@ import org.ohdsi.webapi.source.SourceDaimon.DaimonType;
  */
 @Entity(name = "Source")
 @Table(name="source")
+@SQLDelete(sql = "UPDATE source SET deleted_date = current_timestamp WHERE SOURCE_ID = ?")
+@Where(clause = "deleted_date IS NULL")
 public class Source implements Serializable {
 
   public static final String MASQUERADED_USERNAME = "<username>";

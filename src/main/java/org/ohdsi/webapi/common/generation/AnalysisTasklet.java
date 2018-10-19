@@ -1,9 +1,9 @@
 package org.ohdsi.webapi.common.generation;
 
-import org.apache.commons.logging.Log;
 import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfoEntityRepository;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
+import org.slf4j.Logger;
 import org.springframework.batch.core.step.tasklet.StoppableTasklet;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -11,7 +11,7 @@ public abstract class AnalysisTasklet extends CancelableTasklet implements Stopp
 
     protected final AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository;
 
-    public AnalysisTasklet(Log log,
+    public AnalysisTasklet(Logger log,
                            CancelableJdbcTemplate jdbcTemplate,
                            TransactionTemplate transactionTemplate,
                            AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository) {

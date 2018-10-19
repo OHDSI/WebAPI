@@ -243,7 +243,7 @@ public class CohortAnalysisService extends AbstractDaoService implements Generat
 
 				stmts = SqlSplit.splitSql(sql);
 				for (int x = 0; x < stmts.length; x++) {
-					log.debug(String.format("Split SQL %s : %s", x, stmts[x]));
+					log.debug("Split SQL {} : {}", x, stmts[x]);
 				}
 			}
 			return stmts;
@@ -327,7 +327,7 @@ public class CohortAnalysisService extends AbstractDaoService implements Generat
 		//TODO consider analysisId
 		final String taskString = task.toString();
 		final JobParameters jobParameters = builder.toJobParameters();
-		log.info(String.format("Beginning run for cohort analysis task: \n %s", taskString));
+		log.info("Beginning run for cohort analysis task: {}", taskString);
 
 		CohortAnalysisTasklet tasklet = new CohortAnalysisTasklet(task, getSourceJdbcTemplate(task.getSource()), 
 				getTransactionTemplate(), getTransactionTemplateRequiresNew(), this.getSourceDialect(), this.visualizationDataRepository, this.cohortDefinitionRepository);

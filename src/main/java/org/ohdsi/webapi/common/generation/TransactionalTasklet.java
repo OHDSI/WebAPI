@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.common.generation;
 
-import org.apache.commons.logging.Log;
 import org.ohdsi.webapi.Constants;
+import org.slf4j.Logger;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
@@ -15,10 +15,10 @@ import java.util.concurrent.Executors;
 
 public abstract class TransactionalTasklet<T> implements Tasklet {
   protected final ExecutorService taskExecutor;
-  protected final Log log;
+  protected final Logger log;
   protected final TransactionTemplate transactionTemplate;
 
-  public TransactionalTasklet(Log log, TransactionTemplate transactionTemplate) {
+  public TransactionalTasklet(Logger log, TransactionTemplate transactionTemplate) {
     this.taskExecutor = Executors.newSingleThreadExecutor();
     this.log = log;
     this.transactionTemplate = transactionTemplate;

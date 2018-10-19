@@ -1,27 +1,14 @@
 package org.ohdsi.webapi.exampleapplication;
 
-import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.persistence.EntityManager;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-
 import org.apache.commons.lang.RandomStringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.ohdsi.circe.vocabulary.Concept;
 import org.ohdsi.webapi.exampleapplication.model.Widget;
 import org.ohdsi.webapi.exampleapplication.repository.WidgetRepository;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.service.AbstractDaoService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.StepContribution;
@@ -35,6 +22,14 @@ import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
+
+import javax.persistence.EntityManager;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 /**
  *
@@ -60,7 +55,7 @@ public class ExampleApplicationWithJobService extends AbstractDaoService {
     
     public static class ExampleApplicationTasklet implements Tasklet {
         
-        private static final Log log = LogFactory.getLog(ExampleApplicationTasklet.class);
+        private static final Logger log = LoggerFactory.getLogger(ExampleApplicationTasklet.class);
         
         private final List<Concept> concepts;
         
@@ -144,7 +139,7 @@ public class ExampleApplicationWithJobService extends AbstractDaoService {
                 return null;
             }
         });
-        log.info(String.format("Persisted %s widgets", widgets.size()));
+        log.info("Persisted {} widgets", widgets.size());
     }
     
     @POST
@@ -152,7 +147,7 @@ public class ExampleApplicationWithJobService extends AbstractDaoService {
     public void writeWidgets() {
         final List<Widget> widgets = createWidgets();
         this.widgetRepository.save(widgets);
-        log.info(String.format("Persisted %s widgets", widgets.size()));
+        log.info("Persisted {} widgets", widgets.size());
     }
     
     @POST

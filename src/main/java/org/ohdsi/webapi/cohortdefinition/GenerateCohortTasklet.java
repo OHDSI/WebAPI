@@ -16,8 +16,6 @@
 package org.ohdsi.webapi.cohortdefinition;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.InclusionRule;
@@ -31,6 +29,10 @@ import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.batch.core.ExitStatus;
+import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.StoppableTasklet;
 import org.springframework.transaction.TransactionDefinition;
@@ -47,8 +49,6 @@ import java.util.Map;
  */
 public class GenerateCohortTasklet extends CancelableTasklet implements StoppableTasklet {
 
-  private static final Log log = LogFactory.getLog(GenerateCohortTasklet.class);
-
   private final static CohortExpressionQueryBuilder expressionQueryBuilder = new CohortExpressionQueryBuilder();
 
   private final CohortDefinitionRepository cohortDefinitionRepository;
@@ -59,7 +59,7 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
           final TransactionTemplate transactionTemplate,
           final CohortDefinitionRepository cohortDefinitionRepository,
           SourceRepository sourceRepository) {
-    super(LogFactory.getLog(GenerateCohortTasklet.class), jdbcTemplate, transactionTemplate);
+    super(LoggerFactory.getLogger(GenerateCohortTasklet.class), jdbcTemplate, transactionTemplate);
     this.cohortDefinitionRepository = cohortDefinitionRepository;
     this.sourceRepository = sourceRepository;
   }
@@ -125,6 +125,7 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
       String translatedSql = SqlTranslate.translateSql(expressionSql, jobParams.get("target_dialect").toString(), sessionId, null);
       return SqlSplit.splitSql(translatedSql);
     } catch (Exception e) {
+      log.error("Failed to generate cohort: {}", defId, e);
       throw new RuntimeException(e);
     }
   }

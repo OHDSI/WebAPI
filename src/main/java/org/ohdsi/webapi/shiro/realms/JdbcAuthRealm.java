@@ -19,8 +19,6 @@
 package org.ohdsi.webapi.shiro.realms;
 
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.shiro.authc.AccountException;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
@@ -31,6 +29,8 @@ import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.jdbc.JdbcRealm;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import javax.sql.DataSource;
@@ -41,7 +41,7 @@ import java.sql.SQLException;
 
 public class JdbcAuthRealm extends JdbcRealm {
 
-    private static final Log log = LogFactory.getLog(JdbcAuthRealm.class);
+    private static final Logger log = LoggerFactory.getLogger(JdbcAuthRealm.class);
     private BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
     public JdbcAuthRealm(DataSource dataSource, String authenticationQuery) {

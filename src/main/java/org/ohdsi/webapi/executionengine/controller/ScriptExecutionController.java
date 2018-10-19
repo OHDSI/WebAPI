@@ -55,7 +55,6 @@ public class ScriptExecutionController implements GeneratesNotification {
     private static final String FOLDING_KEY = "foldingKey";
     private static final String NAME = "executionEngine";
     private static final String COHORT_ID = "cohortId";
-    private static final String NAME = "irAnalysis";
     private final Logger logger = LoggerFactory.getLogger(ScriptExecutionController.class);
 
     @Value("${executionengine.resultCallback}")

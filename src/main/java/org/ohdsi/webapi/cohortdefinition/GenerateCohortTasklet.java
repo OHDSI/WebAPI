@@ -40,6 +40,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.util.List;
 import java.util.Map;
 
+import static org.ohdsi.webapi.Constants.Params.TARGET_DATABASE_SCHEMA;
+
 /**
  *
  * @author Chris Knoll <cknoll@ohdsi.org>
@@ -82,11 +84,9 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
 
       CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = new CohortExpressionQueryBuilder.BuildExpressionQueryOptions();
       options.cohortId = defId;
-      final String targetTable = jobParams.get(Constants.Params.TARGET_TABLE).toString();
-      final int skipSchema = targetTable.indexOf('.');
-      final String targetSchema = skipSchema == -1 ? jobParams.get(Constants.Params.TARGET_DATABASE_SCHEMA).toString() : targetTable.substring(0, skipSchema);
-      options.targetTable = skipSchema == -1 ? targetSchema + "." + targetTable : targetTable;
+      final String targetSchema = jobParams.get(TARGET_DATABASE_SCHEMA).toString();
       options.cdmSchema = jobParams.get(Constants.Params.CDM_DATABASE_SCHEMA).toString();
+      options.targetTable = targetSchema + "." + jobParams.get(Constants.Params.TARGET_TABLE).toString();
       options.resultSchema = jobParams.get(Constants.Params.RESULTS_DATABASE_SCHEMA).toString();
       if (jobParams.get(Constants.Params.VOCABULARY_DATABASE_SCHEMA) != null)
         options.vocabularySchema = jobParams.get(Constants.Params.VOCABULARY_DATABASE_SCHEMA).toString();

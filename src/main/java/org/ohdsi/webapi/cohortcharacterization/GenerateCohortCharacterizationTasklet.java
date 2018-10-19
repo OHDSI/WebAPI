@@ -238,7 +238,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
         private String renderCustomAnalysisDesign(FeAnalysisWithStringEntity fa, Integer cohortId) {
             Map<String, String> params = cohortCharacterization.getParameters().stream().collect(Collectors.toMap(CcParamEntity::getName, CcParamEntity::getValue));
             params.put("cdm_database_schema", SourceUtils.getCdmQualifier(source));
-            params.put("cohort_table", SourceUtils.getResultsQualifier(source) + "." + cohortTable);
+            params.put("cohort_table", SourceUtils.getTempQualifier(source) + "." + cohortTable);
             params.put("cohort_id", cohortId.toString());
             params.put("analysis_id", fa.getId().toString());
 

@@ -39,7 +39,7 @@ import org.ohdsi.webapi.source.SourceDaimon.DaimonType;
  */
 @Entity(name = "Source")
 @Table(name="source")
-@SQLDelete(sql = "UPDATE source SET deleted_date = current_timestamp WHERE SOURCE_ID = ?")
+@SQLDelete(sql = "UPDATE {h-schema}source SET deleted_date = current_timestamp WHERE SOURCE_ID = ?")
 @Where(clause = "deleted_date IS NULL")
 public class Source implements Serializable {
 

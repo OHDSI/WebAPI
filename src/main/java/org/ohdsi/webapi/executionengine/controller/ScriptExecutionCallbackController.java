@@ -3,41 +3,38 @@ package org.ohdsi.webapi.executionengine.controller;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisExecutionStatusDTO;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisResultDTO;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisResultStatusDTO;
-import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.MediaType;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.glassfish.jersey.media.multipart.BodyPartEntity;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
-import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisExecutionRepository;
 import org.ohdsi.webapi.executionengine.entity.AnalysisExecution;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFile;
 import org.ohdsi.webapi.executionengine.exception.ScriptCallbackException;
 import org.ohdsi.webapi.executionengine.repository.AnalysisExecutionRepository;
 import org.ohdsi.webapi.executionengine.repository.OutputFileRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.core.MediaType;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 
 @Component
 @Path("/executionservice/callbacks")
 public class ScriptExecutionCallbackController {
 
-    private static final Log log = LogFactory.getLog(ScriptExecutionCallbackController.class);
-
-    private final ComparativeCohortAnalysisExecutionRepository comparativeCohortAnalysisExecutionRepository;
+    private static final Logger log = LoggerFactory.getLogger(ScriptExecutionCallbackController.class);
 
     private final AnalysisExecutionRepository analysisExecutionRepository;
 
@@ -45,12 +42,9 @@ public class ScriptExecutionCallbackController {
 
 
     @Autowired
-    public ScriptExecutionCallbackController(ComparativeCohortAnalysisExecutionRepository
-                                                     comparativeCohortAnalysisExecutionRepository,
-                                             AnalysisExecutionRepository analysisExecutionRepository,
+    public ScriptExecutionCallbackController(AnalysisExecutionRepository analysisExecutionRepository,
                                              OutputFileRepository outputFileRepository) {
 
-        this.comparativeCohortAnalysisExecutionRepository = comparativeCohortAnalysisExecutionRepository;
         this.analysisExecutionRepository = analysisExecutionRepository;
         this.outputFileRepository = outputFileRepository;
     }
@@ -63,11 +57,8 @@ public class ScriptExecutionCallbackController {
                              @PathParam("password") String password,
                              AnalysisExecutionStatusDTO status) {
 
-        log.info(MessageFormat
-                .format("Accepted an updateSubmission request. \n "
-                                + "ID:{0}, Update date:{1} Log:\n" + "{2}",
-                        status.getId(), status.getStdoutDate(),
-                        status.getStdout()));
+        log.info("Accepted an updateSubmission request. ID:{}, Update date:{} Log: {}",
+                        status.getId(), status.getStdoutDate(), status.getStdout());
             AnalysisExecution analysisExecution = analysisExecutionRepository.findOne(id);
             if (analysisExecution != null
                     && Objects.equals(password, analysisExecution.getUpdatePassword())
@@ -86,7 +77,7 @@ public class ScriptExecutionCallbackController {
                                @PathParam("password") String password,
                                FormDataMultiPart multiPart) {
 
-        log.info(MessageFormat.format("Accepted an analysisResult request. \n " + "ID:{0}", id));
+        log.info("Accepted an analysisResult request. ID:{}", id);
         AnalysisExecution analysisExecution = analysisExecutionRepository.findOne(id);
         if (Objects.nonNull(analysisExecution) && Objects.equals(password, analysisExecution.getUpdatePassword())) {
             Date timestamp = new Date();
@@ -98,7 +89,7 @@ public class ScriptExecutionCallbackController {
             try {
                 saveFiles(multiPart, analysisExecution, analysisResultDTO);
             }catch (Exception e){
-                log.warn("Failed to save files for execution id: " + id, e);
+                log.warn("Failed to save files for execution ID:{}", id, e);
             }
 
             AnalysisResultStatusDTO status = analysisResultDTO.getStatus();
@@ -110,7 +101,7 @@ public class ScriptExecutionCallbackController {
             }
             analysisExecutionRepository.save(analysisExecution);
         } else {
-            log.error(String.format("Update password not matched for execution id=%d", id));
+            log.error("Update password not matched for execution ID:{}", id);
         }
     }
 

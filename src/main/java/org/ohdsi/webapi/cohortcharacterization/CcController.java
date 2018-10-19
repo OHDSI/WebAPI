@@ -21,6 +21,7 @@ import org.ohdsi.webapi.cohortcharacterization.dto.*;
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.common.generation.CommonGenerationDTO;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
@@ -63,7 +64,7 @@ public class CcController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Page<CcShortDTO> list(@Pagination Pageable pageable) {
-        return service.getPageWithLinkedEntities(pageable).map(this::convertCcToShortDto);
+        return service.getPage(pageable).map(this::convertCcToShortDto);
     }
 
     @GET
@@ -182,7 +183,7 @@ public class CcController {
     public List<CcResult> getGenerationsResults(
             @PathParam("generationId") final Long generationId) {
         List<CcResult> ccResults = service.findResults(generationId);
-        List<FeAnalysisEntity> presetFeAnalyses = feAnalysisService.findPresetAnalysisByFeAnalysisName(ccResults.stream().map(CcResult::getAnalysisName).distinct().collect(Collectors.toList()));
+        List<FeAnalysisWithStringEntity> presetFeAnalyses = feAnalysisService.findPresetAnalysesBySystemNames(ccResults.stream().map(CcResult::getAnalysisName).distinct().collect(Collectors.toList()));
         ccResults.forEach(res -> {
             if (Objects.equals(res.getFaType(), StandardFeatureAnalysisType.PRESET.name())) {
                 presetFeAnalyses.stream().filter(fa -> fa.getDesign().equals(res.getAnalysisName())).findFirst().ifPresent(fa -> {

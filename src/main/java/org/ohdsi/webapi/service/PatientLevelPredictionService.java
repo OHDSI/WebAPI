@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * PLEASE NOTE: PatientLevelPredictionService will be deprecated in 
+ * the next major release of WebAPI so please do not extend the functionality
+ * in this service. Instead please review the new PredictionService.java
  */
 package org.ohdsi.webapi.service;
 
@@ -172,7 +172,7 @@ public class PatientLevelPredictionService extends AbstractDaoService {
           info.setTreatmentCohortDefinition(cd.expression);
         } catch (Exception e) {
           // Cohort definition no longer exists
-          log.debug("Cohort definition id = " + info.getTreatmentId() + " no longer exists");
+          log.warn("Cohort definition id = {} no longer exists", info.getTreatmentId());
         }
       }
       if (analysis.getOutcomeId() > 0) {
@@ -182,7 +182,7 @@ public class PatientLevelPredictionService extends AbstractDaoService {
           info.setOutcomeCohortDefinition(cd.expression);
         } catch (Exception e) {
           // Cohort definition no longer exists
-          log.debug("Cohort definition id = " + info.getOutcomeId() + " no longer exists");
+          log.warn("Cohort definition id = {} no longer exists", info.getOutcomeId());
         }
       }
       if (analysis.getCvInclusionId() > 0) {
@@ -191,7 +191,7 @@ public class PatientLevelPredictionService extends AbstractDaoService {
           info.setCvInclusionConceptSet(conceptSetService.getConceptSetExpression(analysis.getCvInclusionId()));
           info.setCvInclusionConceptSetSql(vocabularyService.getConceptSetExpressionSQL(info.getCvInclusionConceptSet()));
         } catch (Exception e) {
-          log.debug("Concept set id = " + info.getCvInclusionId() + " no longer exists");
+          log.warn("Concept set id = {} no longer exists", info.getCvInclusionId());
         }
       }
       if (analysis.getCvExclusionId() > 0) {
@@ -200,7 +200,7 @@ public class PatientLevelPredictionService extends AbstractDaoService {
           info.setCvExclusionConceptSet(conceptSetService.getConceptSetExpression(analysis.getCvExclusionId()));
           info.setCvExclusionConceptSetSql(vocabularyService.getConceptSetExpressionSQL(info.getCvExclusionConceptSet()));
         } catch (Exception e) {
-          log.debug("Concept set id = " + info.getCvExclusionId() + " no longer exists");
+          log.warn("Concept set id = {} no longer exists", info.getCvExclusionId());
         }
       }
 

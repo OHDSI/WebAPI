@@ -9,16 +9,19 @@
 	</appender>
 
 	<logger name="org.ohdsi">
-		<level value="debug" />
+		<level value="${logging.level.org.ohdsi}" />
 	</logger>
 	<logger name="org.springframework.orm">
-		<level value="debug" />
+		<level value="${logging.level.org.springframework.orm}" />
 	</logger>
 	<logger name="org.springframework.jdbc">
-		<level value="debug" />
+		<level value="${logging.level.org.springframework.jdbc}" />
+	</logger>
+	<logger name="org.apache.shiro">
+		<level value="${logging.level.org.apache.shiro}" />
 	</logger>
 	<root>
-		<level value="info" />
+		<level value="${logging.level.root}" />
 		<appender-ref ref="stdout" />
 	</root>
 </log4j:configuration>

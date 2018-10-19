@@ -14,8 +14,8 @@ public class CcToCcExportDTOConverter extends BaseCcToCcDTOConverter<CcExportDTO
 
     final CcExportDTO exportDTO = super.convert(source);
 
-    exportDTO.setCohorts(converterUtils.convertList(source.getCohortDefinitions(), CohortDTO.class));
-    exportDTO.setFeatureAnalyses(converterUtils.convertList(toList(source.getFeatureAnalyses()), FeAnalysisDTO.class));
+    exportDTO.setCohorts(converterUtils.convertSet(source.getCohortDefinitions(), CohortDTO.class));
+    exportDTO.setFeatureAnalyses(converterUtils.convertSet(source.getFeatureAnalyses(), FeAnalysisDTO.class));
     return exportDTO;
   }
 

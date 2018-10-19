@@ -25,8 +25,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Type;
+import org.hibernate.annotations.Where;
 import org.ohdsi.webapi.source.SourceDaimon.DaimonType;
 
 /**
@@ -35,28 +36,30 @@ import org.ohdsi.webapi.source.SourceDaimon.DaimonType;
  */
 @Entity(name = "Source")
 @Table(name="source")
+@SQLDelete(sql = "UPDATE {h-schema}source SET deleted_date = current_timestamp WHERE SOURCE_ID = ?")
+@Where(clause = "deleted_date IS NULL")
 public class Source implements Serializable {
 
   public static final String MASQUERADED_USERNAME = "<username>";
   public static final String MASQUERADED_PASSWORD = "<password>";
 
   @Id
-  @GeneratedValue  
-  @Column(name="SOURCE_ID")  
+  @GeneratedValue
+  @Column(name="SOURCE_ID")
   private int sourceId;
 
   @OneToMany(fetch= FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "source")
   private Collection<SourceDaimon> daimons;
-    
-  @Column(name="SOURCE_NAME")  
+
+  @Column(name="SOURCE_NAME")
   private String sourceName;
-  
+
   @Column(name="SOURCE_DIALECT")
   private String sourceDialect;
- 
+
   @Column(name="SOURCE_CONNECTION")
   private String sourceConnection;
-  
+
   @Column(name="SOURCE_KEY")
   private String sourceKey;
 
@@ -68,23 +71,23 @@ public class Source implements Serializable {
   @Type(type = "encryptedString")
   private String password;
 
-  
+
   public String getTableQualifier(DaimonType daimonType) {
 		String result = getTableQualifierOrNull(daimonType);
 		if (result == null)
 			throw new RuntimeException("DaimonType (" + daimonType + ") not found in Source");
 		return result;
   }
-	
+
 	  public String getTableQualifierOrNull(DaimonType daimonType) {
     for (SourceDaimon sourceDaimon : this.getDaimons()) {
       if (sourceDaimon.getDaimonType() == daimonType) {
         return sourceDaimon.getTableQualifier();
-      } 
+      }
     }
 		return null;
   }
-  
+
   public String getSourceKey() {
     return sourceKey;
   }
@@ -100,7 +103,7 @@ public class Source implements Serializable {
   public void setSourceKey(String sourceKey) {
     this.sourceKey = sourceKey;
   }
-  
+
   public int getSourceId() {
     return sourceId;
   }
@@ -124,14 +127,14 @@ public class Source implements Serializable {
   public void setSourceDialect(String sourceDialect) {
     this.sourceDialect = sourceDialect;
   }
-  
+
   public String getSourceConnection() {
     return sourceConnection;
   }
 
   public void setSourceConnection(String sourceConnection) {
     this.sourceConnection = sourceConnection;
-  } 
+  }
 
   public SourceInfo getSourceInfo() {
     return new SourceInfo(this);

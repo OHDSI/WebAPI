@@ -3,9 +3,7 @@ package org.ohdsi.webapi.user.importer;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.ohdsi.webapi.service.UserService;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
-import org.ohdsi.webapi.user.importer.RoleGroupMappingEntity;
 import org.ohdsi.webapi.user.importer.model.*;
-import org.ohdsi.webapi.user.importer.UserImporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +58,7 @@ public class UserImportService {
       result.setState(ConnectionInfo.ConnectionState.SUCCESS);
       result.setMessage("Connection success");
     } catch(Exception e) {
-      logger.error("LDAP connection failed.", e);
+      logger.error("LDAP connection failed", e);
       result.setMessage("Connection failed. " + e.getMessage());
       StringWriter out = new StringWriter();
       try(PrintWriter writer = new PrintWriter(out)) {

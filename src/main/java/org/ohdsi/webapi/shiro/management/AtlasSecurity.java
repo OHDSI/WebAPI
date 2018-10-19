@@ -12,8 +12,6 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.HttpMethod;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.Authenticator;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
@@ -23,9 +21,8 @@ import org.apache.shiro.web.filter.session.NoSessionCreationFilter;
 import org.apache.shiro.web.servlet.AdviceFilter;
 import org.apache.shiro.web.util.WebUtils;
 import org.ohdsi.webapi.OidcConfCreator;
-import org.ohdsi.webapi.shiro.*;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.filters.CorsFilter;
 import org.ohdsi.webapi.shiro.filters.ForceSessionCreationFilter;
 import org.ohdsi.webapi.shiro.filters.ProcessResponseContentFilter;
@@ -33,6 +30,8 @@ import org.ohdsi.webapi.shiro.filters.SkipFurtherFilteringFilter;
 import org.ohdsi.webapi.shiro.filters.UrlBasedAuthorizingFilter;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import waffle.shiro.negotiate.NegotiateAuthenticationStrategy;
@@ -45,7 +44,7 @@ public abstract class AtlasSecurity extends Security {
   public static final String TOKEN_ATTRIBUTE = "TOKEN";
   public static final String AUTH_FILTER_ATTRIBUTE = "AuthenticatingFilter";
   public static final String PERMISSIONS_ATTRIBUTE = "PERMISSIONS";
-  private final Log log = LogFactory.getLog(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   @Autowired
   protected PermissionManager authorizer;
@@ -341,10 +340,7 @@ public abstract class AtlasSecurity extends Security {
     if (this.authorizer.roleExists(roleName)) {
       RoleEntity role = this.authorizer.getRoleByName(roleName);
       this.authorizer.removePermissionsFromTemplate(this.sourcePermissionTemplates, sourceKey);
-      Set<UserEntity> roleUsers = this.authorizer.getRoleUsers(role.getId());
-      for(UserEntity user : roleUsers) {
-        this.authorizer.removeUserFromRole(roleName, user.getLogin());
-      }
+      this.authorizer.removePermissionsFromTemplate(this.dataSourcePermissionTemplates, sourceKey);
       this.authorizer.removeRole(role.getId());
     }
   }
@@ -357,7 +353,7 @@ public abstract class AtlasSecurity extends Security {
       }
     }
     catch (Exception e) {
-      log.error(e);
+      log.error(e.getMessage(), e);
     }
   }
 

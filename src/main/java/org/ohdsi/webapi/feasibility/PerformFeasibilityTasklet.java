@@ -15,25 +15,16 @@
  */
 package org.ohdsi.webapi.feasibility;
 
-import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
-
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
-import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfo;
 import org.ohdsi.webapi.GenerationStatus;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfo;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
@@ -46,13 +37,17 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.util.*;
+
+import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
+
 /**
  *
  * @author Chris Knoll <cknoll@ohdsi.org>
  */
 public class PerformFeasibilityTasklet implements Tasklet {
 
-  private static final Log log = LogFactory.getLog(PerformFeasibilityTasklet.class);
+  private static final Logger log = LoggerFactory.getLogger(PerformFeasibilityTasklet.class);
 
   private final static FeasibilityStudyQueryBuilder studyQueryBuilder = new FeasibilityStudyQueryBuilder();
   private final static String CREATE_TEMP_TABLES_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/feasibility/sql/inclusionRuleTable_CREATE.sql"); 
@@ -61,17 +56,14 @@ public class PerformFeasibilityTasklet implements Tasklet {
   private final JdbcTemplate jdbcTemplate;
   private final TransactionTemplate transactionTemplate;
   private final FeasibilityStudyRepository feasibilityStudyRepository;
-  private final CohortDefinitionRepository cohortDefinitionRepository;
 
   public PerformFeasibilityTasklet(
-          final JdbcTemplate jdbcTemplate, 
+          final JdbcTemplate jdbcTemplate,
           final TransactionTemplate transactionTemplate,
-          final FeasibilityStudyRepository feasibilityStudyRepository,
-          final CohortDefinitionRepository cohortDefinitionRepository) {
+          final FeasibilityStudyRepository feasibilityStudyRepository) {
     this.jdbcTemplate = jdbcTemplate;
     this.transactionTemplate = transactionTemplate;
     this.feasibilityStudyRepository = feasibilityStudyRepository;
-    this.cohortDefinitionRepository = cohortDefinitionRepository;
   }
 
   private StudyGenerationInfo findStudyGenerationInfoBySourceId(Collection<StudyGenerationInfo> infoList, Integer sourceId)
@@ -183,7 +175,7 @@ public class PerformFeasibilityTasklet implements Tasklet {
           return doTask(chunkContext);
         }
       });
-      log.debug("Update count: " + ret.length);
+      log.debug("Update count: {}", ret.length);
       isValid = true;
     } catch (final TransactionException e) {
       isValid = false;

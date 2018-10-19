@@ -1,0 +1,1 @@
+ALTER TABLE ${ohdsiSchema}.source ADD deleted_date datetime;

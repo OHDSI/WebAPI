@@ -15,20 +15,23 @@
  */
 package org.ohdsi.webapi.cohortfeatures;
 
-import java.util.ArrayList;
+import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
-
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.ohdsi.featureExtraction.FeatureExtraction;
+import org.ohdsi.sql.SqlRender;
+import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionCallback;
@@ -39,13 +42,6 @@ import java.util.StringJoiner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
-import org.apache.commons.lang3.StringUtils;
-import org.ohdsi.sql.SqlRender;
-import org.springframework.transaction.TransactionException;
-
-import org.json.JSONObject;
-import org.ohdsi.featureExtraction.FeatureExtraction;
-import org.ohdsi.sql.SqlSplit;
 
 /**
  *
@@ -54,7 +50,7 @@ import org.ohdsi.sql.SqlSplit;
  */
 public class GenerateCohortFeaturesTasklet implements Tasklet 
 {
-    private static final Log log = LogFactory.getLog(GenerateCohortFeaturesTasklet.class);
+    private static final Logger log = LoggerFactory.getLogger(GenerateCohortFeaturesTasklet.class);
     private final TransactionTemplate transactionTemplate;
 
 		private final ExecutorService taskExecutor;

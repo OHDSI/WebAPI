@@ -20,26 +20,19 @@ package org.ohdsi.webapi;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Properties;
 
 @Configuration("authDataSourceConfig")
 @ConditionalOnProperty(name = "security.provider", havingValue = "AtlasRegularSecurity")
 public class AuthDataSource {
-    private final Log logger = LogFactory.getLog(AuthDataSource.class);
+    private final Logger logger = LoggerFactory.getLogger(AuthDataSource.class);
 
     @Value("${security.db.datasource.driverClassName}")
     private String driverClassName;
@@ -76,7 +69,7 @@ public class AuthDataSource {
             config.setValidationTimeout(validationTimeout);
             return new HikariDataSource(config);
         } catch (Exception ex) {
-            logger.error("Failed to initialize connection to DB used for authentication: " + ex.getMessage());
+            logger.error("Failed to initialize connection to DB used for authentication: {}", ex.getMessage());
             return null;
         }
     }

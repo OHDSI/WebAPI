@@ -29,6 +29,8 @@ import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.DataSourceDTOParser;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -41,7 +43,8 @@ import org.springframework.transaction.support.TransactionTemplate;
  */
 public abstract class AbstractDaoService {
 
-  protected final Log log = LogFactory.getLog(getClass());
+  protected final Logger log = LoggerFactory.getLogger(getClass());
+  private static final String IMPALA_DATASOURCE = "impala";
 
   @Value("${datasource.ohdsi.schema}")
   private String ohdsiSchema;
@@ -173,7 +176,7 @@ public abstract class AbstractDaoService {
         FileUtils.forceDelete(krbConfig.getComponents().getKeytabPath().toFile());
       }
     } catch (IOException e) {
-      log.warn(e);
+      log.warn(e.getMessage(), e);
     }
   }
 
@@ -241,7 +244,7 @@ public abstract class AbstractDaoService {
       });
 
     } catch (Exception e) {
-      log.error("error loading in result set", e);
+      log.error("Result set loading error", e);
     }
     return results;
   }

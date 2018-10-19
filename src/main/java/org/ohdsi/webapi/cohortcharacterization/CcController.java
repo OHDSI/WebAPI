@@ -64,7 +64,7 @@ public class CcController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Page<CcShortDTO> list(@Pagination Pageable pageable) {
-        return service.getPageWithLinkedEntities(pageable).map(this::convertCcToShortDto);
+        return service.getPage(pageable).map(this::convertCcToShortDto);
     }
 
     @GET

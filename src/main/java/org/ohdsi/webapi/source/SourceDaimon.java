@@ -115,15 +115,13 @@ public class SourceDaimon implements Serializable {
         if (this == o) return true;
         if (!(o instanceof SourceDaimon)) return false;
         SourceDaimon that = (SourceDaimon) o;
-        return sourceDaimonId == that.sourceDaimonId &&
-                daimonType == that.daimonType &&
-                Objects.equals(tableQualifier, that.tableQualifier) &&
-                Objects.equals(priority, that.priority);
+        return Objects.equals(getSource(), that.getSource()) &&
+                Objects.equals(getDaimonType(), that.getDaimonType());
     }
 
     @Override
     public int hashCode() {
 
-        return Objects.hash(sourceDaimonId, daimonType, tableQualifier, priority);
+        return Objects.hash(getSource(), getDaimonType());
     }
 }

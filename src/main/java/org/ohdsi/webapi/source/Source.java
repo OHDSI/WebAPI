@@ -17,6 +17,7 @@ package org.ohdsi.webapi.source;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -49,6 +50,7 @@ public class Source implements Serializable {
   private int sourceId;
 
   @OneToMany(fetch= FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "source")
+  @Where(clause = "priority >= 0")
   private Collection<SourceDaimon> daimons;
 
   @Column(name="SOURCE_NAME")
@@ -155,4 +157,19 @@ public class Source implements Serializable {
   public void setPassword(String password) {
     this.password = password;
   }
+
+    @Override
+    public boolean equals(Object o) {
+
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Source source = (Source) o;
+        return sourceId == source.sourceId;
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(sourceId);
+    }
 }

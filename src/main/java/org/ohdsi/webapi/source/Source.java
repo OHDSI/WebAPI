@@ -16,8 +16,11 @@
 package org.ohdsi.webapi.source;
 
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMechanism;
-import java.io.Serializable;
-import java.util.Collection;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.Where;
+import org.ohdsi.webapi.source.SourceDaimon.DaimonType;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -28,10 +31,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.Where;
-import org.ohdsi.webapi.source.SourceDaimon.DaimonType;
+import java.io.Serializable;
+import java.util.Collection;
 
 /**
  *
@@ -52,6 +53,7 @@ public class Source implements Serializable {
   private int sourceId;
 
   @OneToMany(fetch= FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "source")
+  @Where(clause = "priority >= 0")
   private Collection<SourceDaimon> daimons;
 
   @Column(name="SOURCE_NAME")

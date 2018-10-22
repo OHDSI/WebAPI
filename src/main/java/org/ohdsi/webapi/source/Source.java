@@ -18,6 +18,7 @@ package org.ohdsi.webapi.source;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMechanism;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -52,6 +53,7 @@ public class Source implements Serializable {
   private int sourceId;
 
   @OneToMany(fetch= FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "source")
+  @Where(clause = "priority >= 0")
   private Collection<SourceDaimon> daimons;
 
   @Column(name="SOURCE_NAME")
@@ -171,35 +173,50 @@ public class Source implements Serializable {
     this.password = password;
   }
 
-    public byte[] getKrbKeytab() {
+  public byte[] getKrbKeytab() {
         return krbKeytab;
     }
 
-    public void setKrbKeytab(byte[] krbKeytab) {
+  public void setKrbKeytab(byte[] krbKeytab) {
         this.krbKeytab = krbKeytab;
     }
 
-    public String getKeytabName() {
+  public String getKeytabName() {
         return keytabName;
     }
 
-    public void setKeytabName(String keytabName) {
+  public void setKeytabName(String keytabName) {
         this.keytabName = keytabName;
     }
 
-    public KerberosAuthMechanism getKrbAuthMethod() {
+  public KerberosAuthMechanism getKrbAuthMethod() {
         return krbAuthMethod;
     }
 
-    public void setKrbAuthMethod(KerberosAuthMechanism krbAuthMethod) {
+  public void setKrbAuthMethod(KerberosAuthMechanism krbAuthMethod) {
         this.krbAuthMethod = krbAuthMethod;
     }
 
-    public String getKrbAdminServer() {
+  public String getKrbAdminServer() {
         return krbAdminServer;
     }
 
-    public void setKrbAdminServer(String krbAdminServer) {
+  public void setKrbAdminServer(String krbAdminServer) {
         this.krbAdminServer = krbAdminServer;
     }
+
+  @Override
+  public boolean equals(Object o) {
+
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Source source = (Source) o;
+    return sourceId == source.sourceId;
+  }
+
+  @Override
+  public int hashCode() {
+
+    return Objects.hash(sourceId);
+  }
 }

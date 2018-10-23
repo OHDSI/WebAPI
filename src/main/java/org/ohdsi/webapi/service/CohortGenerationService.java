@@ -164,12 +164,20 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     builder.addString(JOB_NAME, String.format("Generating cohort %d : %s (%s)", cohortDefinition.getId(), source.getSourceName(), source.getSourceKey()));
     builder.addString(CDM_DATABASE_SCHEMA, cdmTableQualifier);
     builder.addString(RESULTS_DATABASE_SCHEMA, resultsTableQualifier);
-    builder.addString(TARGET_DATABASE_SCHEMA, resultsTableQualifier);
+
+    if (targetTable.indexOf('.') != -1) {
+      String[] targetParts = targetTable.split("\\.");
+      builder.addString(TARGET_DATABASE_SCHEMA, targetParts[0]);
+      builder.addString(TARGET_TABLE, targetParts[1]);
+    } else {
+      builder.addString(TARGET_DATABASE_SCHEMA, resultsTableQualifier);
+      builder.addString(TARGET_TABLE, targetTable);
+    }
+
     if (vocabularyTableQualifier != null) {
       builder.addString(VOCABULARY_DATABASE_SCHEMA, vocabularyTableQualifier);
     }
     builder.addString(TARGET_DIALECT, source.getSourceDialect());
-    builder.addString(TARGET_TABLE, targetTable);
     builder.addString(COHORT_DEFINITION_ID, String.valueOf(cohortDefinition.getId()));
     builder.addString(SOURCE_ID, String.valueOf(source.getSourceId()));
     builder.addString(GENERATE_STATS, Boolean.TRUE.toString());

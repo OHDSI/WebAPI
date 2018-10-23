@@ -40,10 +40,16 @@ import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.sqlrender.SourceAwareSqlRender;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.SessionUtils;
-import org.springframework.batch.core.*;
+import org.springframework.batch.core.BatchStatus;
+import org.springframework.batch.core.ExitStatus;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobExecution;
+import org.springframework.batch.core.JobParameters;
+import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.convert.ConversionService;
@@ -57,7 +63,13 @@ import javax.persistence.EntityManager;
 import javax.ws.rs.NotFoundException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -70,7 +82,7 @@ import static org.ohdsi.webapi.Constants.Params.*;
 public class CcServiceImpl extends AbstractDaoService implements CcService, GeneratesNotification {
 
     private static final String GENERATION_NOT_FOUND_ERROR = "generation cannot be found by id %d";
-    private static final String[] GENERATION_PARAMETERS = {"cdm_results_schema", "cohort_characterization_generation_id"};
+    private static final String[] GENERATION_PARAMETERS = {"cohort_characterization_generation_id"};
     private final String QUERY_RESULTS = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/queryResults.sql");
     private final String DELETE_RESULTS = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/deleteResults.sql");
     private final String DELETE_EXECUTION = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/deleteExecution.sql");
@@ -102,6 +114,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     private EntityManager entityManager;
 
     private final JobRepository jobRepository;
+    private final SourceAwareSqlRender sourceAwareSqlRender;
 
     public CcServiceImpl(
             final CcRepository ccRepository,
@@ -118,6 +131,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
             final AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository,
             final SourceService sourceService,
             final GenerationUtils generationUtils,
+            SourceAwareSqlRender sourceAwareSqlRender,
             final EntityManager entityManager
     ) {
         this.repository = ccRepository;
@@ -133,6 +147,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         this.analysisGenerationInfoEntityRepository = analysisGenerationInfoEntityRepository;
         this.sourceService = sourceService;
         this.generationUtils = generationUtils;
+        this.sourceAwareSqlRender = sourceAwareSqlRender;
         this.entityManager = entityManager;
         SerializedCcToCcConverter.setConversionService(conversionService);
     }
@@ -322,8 +337,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                         analysisService,
                         analysisGenerationInfoEntityRepository,
                         sourceService,
-                        userRepository
-                )
+                        userRepository,
+                        sourceAwareSqlRender)
         );
 
         return this.jobTemplate.launch(generateCohortJob, jobParameters);
@@ -354,12 +369,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         final CcGenerationEntity generationEntity = ccGenerationRepository.findById(generationId)
                 .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, generationId)));
         final Source source = generationEntity.getSource();
+        String generationResults = sourceAwareSqlRender.renderSql(source.getSourceId(), QUERY_RESULTS, GENERATION_PARAMETERS, new String[]{String.valueOf(generationId)});
         final String resultSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-        String generationResults = SqlRender.renderSql(
-                QUERY_RESULTS,
-                GENERATION_PARAMETERS,
-                new String[]{resultSchema, String.valueOf(generationId)}
-        );
         String translatedSql = SqlTranslate.translateSql(generationResults, source.getSourceDialect(), SessionUtils.sessionId(), resultSchema);
         return getGenerationResults(source, translatedSql);
     }
@@ -370,17 +381,12 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         final CcGenerationEntity generationEntity = ccGenerationRepository.findById(generationId)
                 .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, generationId)));
         final Source source = generationEntity.getSource();
+        final String sql = sourceAwareSqlRender.renderSql(source.getSourceId(), DELETE_RESULTS,GENERATION_PARAMETERS, new String[]{ String.valueOf(generationId) });
         final String resultSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-        final String sql = SqlRender.renderSql(
-                DELETE_RESULTS,
-                GENERATION_PARAMETERS,
-                new String[]{ resultSchema, String.valueOf(generationId) }
-        );
         final String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect(), SessionUtils.sessionId(), resultSchema);
         getSourceJdbcTemplate(source).execute(translatedSql);
 
-        final String deleteJobSql = SqlRender.renderSql(
-                DELETE_EXECUTION,
+        final String deleteJobSql = sourceAwareSqlRender.renderSql(source.getSourceId(), DELETE_EXECUTION,
                 new String[]{ "ohdsiSchema", "execution_id" },
                 new String[]{ getOhdsiSchema(), String.valueOf(generationId) }
         );

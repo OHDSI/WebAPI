@@ -1,0 +1,1 @@
+DROP TABLE @temp_database_schema.@target_table;

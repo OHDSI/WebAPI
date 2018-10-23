@@ -279,8 +279,7 @@ public class LiferayPermissionManager extends PermissionManager {
         return userRoleEntities;
     }
 
-
-    private RoleEntity getRoleByName(String roleName) {
+    public RoleEntity getRoleByName(String roleName) {
         final RoleEntity roleEntity = this.roleRepository.findByName(roleName);
         if (roleEntity == null)
             throw new RuntimeException(String.format("Role %s doesn't exist", roleName));

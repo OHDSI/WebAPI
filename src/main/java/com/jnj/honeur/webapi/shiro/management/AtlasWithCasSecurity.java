@@ -22,11 +22,9 @@ import org.apache.shiro.web.filter.session.NoSessionCreationFilter;
 import org.apache.shiro.web.servlet.AdviceFilter;
 import org.apache.shiro.web.util.WebUtils;
 import org.ohdsi.webapi.OidcConfCreator;
-import org.ohdsi.webapi.shiro.*;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.filters.KerberosAuthFilter;
-import org.ohdsi.webapi.shiro.management.Security;
-import org.ohdsi.webapi.shiro.realms.KerberosAuthRealm;
+import org.ohdsi.webapi.shiro.management.AtlasSecurity;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.pac4j.cas.client.CasClient;
@@ -41,6 +39,9 @@ import org.pac4j.oidc.config.OidcConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.stereotype.Component;
 import waffle.shiro.negotiate.NegotiateAuthenticationFilter;
 import waffle.shiro.negotiate.NegotiateAuthenticationRealm;
 import waffle.shiro.negotiate.NegotiateAuthenticationStrategy;
@@ -56,11 +57,10 @@ import javax.sql.DataSource;
 import javax.ws.rs.HttpMethod;
 import java.util.*;
 
-/**
- *
- * @author gennadiy.anisimov
- */
-public class AtlasWithCasSecurity extends Security {
+@Component
+@ConditionalOnProperty(name = "security.provider", havingValue = "AtlasCustomSecurity")
+@DependsOn("flyway")
+public class AtlasWithCasSecurity extends AtlasSecurity {
   public static final String TOKEN_ATTRIBUTE = "TOKEN";
   public static final String AUTH_FILTER_ATTRIBUTE = "AuthenticatingFilter";
   public static final String PERMISSIONS_ATTRIBUTE = "PERMISSIONS";

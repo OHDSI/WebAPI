@@ -168,7 +168,9 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
     @Override
     public void run() {
       List<RoleGroupEntity> roleGroupEntities = job.getRoleGroupMapping();
-      RoleGroupMapping roleGroupMapping = RoleGroupMappingConverter.convertRoleGroupMapping(job.getProviderType().getValue(), roleGroupEntities);
+
+      RoleGroupMapping roleGroupMapping = transactionTemplate.execute(transactionStatus ->
+              RoleGroupMappingConverter.convertRoleGroupMapping(job.getProviderType().getValue(), roleGroupEntities));
 
       JobParameters jobParameters = new JobParametersBuilder()
               .addString(Constants.Params.JOB_NAME, String.format("Users import for %s", getProviderName(job.getProviderType())))

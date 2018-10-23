@@ -21,7 +21,14 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 import org.json.JSONObject;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
-import org.ohdsi.circe.cohortdefinition.*;
+import org.ohdsi.circe.cohortdefinition.CohortExpression;
+import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
+import org.ohdsi.circe.cohortdefinition.ConceptSet;
+import org.ohdsi.circe.cohortdefinition.Criteria;
+import org.ohdsi.circe.cohortdefinition.CriteriaGroup;
+import org.ohdsi.circe.cohortdefinition.InclusionRule;
+import org.ohdsi.circe.cohortdefinition.ObservationPeriod;
+import org.ohdsi.circe.cohortdefinition.PayerPlanPeriod;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.featureExtraction.FeatureExtraction;
 import org.ohdsi.sql.SqlRender;
@@ -42,9 +49,11 @@ import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.sqlrender.SourceAwareSqlRender;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.ohdsi.webapi.util.SourceUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.transaction.TransactionDefinition;
@@ -63,13 +72,14 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
 
     private static final String COHORT_STATS_QUERY = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/prevalenceWithCriteria.sql");
     private static final String CREATE_COHORT_SQL = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/createCohortTable.sql");
-    private static final String DROP_TABLE_SQL = "DROP TABLE @results_database_schema.@target_table;";
+    private static final String DROP_TABLE_SQL = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/dropCohortTable.sql");
 
     private final CcService ccService;
     private final FeAnalysisService feAnalysisService;
     private final SourceService sourceService;
     private final UserRepository userRepository;
     private final CohortExpressionQueryBuilder queryBuilder;
+    private final SourceAwareSqlRender sourceAwareSqlRender;
 
     public GenerateCohortCharacterizationTasklet(
             final CancelableJdbcTemplate jdbcTemplate,
@@ -78,13 +88,15 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             final FeAnalysisService feAnalysisService,
             final AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository,
             final SourceService sourceService,
-            final UserRepository userRepository
+            final UserRepository userRepository,
+            final SourceAwareSqlRender sourceAwareSqlRender
     ) {
         super(LoggerFactory.getLogger(GenerateCohortCharacterizationTasklet.class), jdbcTemplate, transactionTemplate, analysisGenerationInfoEntityRepository);
         this.ccService = ccService;
         this.feAnalysisService = feAnalysisService;
         this.sourceService = sourceService;
         this.userRepository = userRepository;
+        this.sourceAwareSqlRender = sourceAwareSqlRender;
         this.queryBuilder = new CohortExpressionQueryBuilder();
     }
 
@@ -194,6 +206,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
         final String cohortTable;
         
         private final Long jobId;
+        private final Integer sourceId;
 
         CcTask(final ChunkContext context) {
             Map<String, Object> jobParams = context.getStepContext().getJobParameters();
@@ -201,9 +214,8 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
                     Long.valueOf(jobParams.get(COHORT_CHARACTERIZATION_ID).toString())
             );
             this.jobId = context.getStepContext().getStepExecution().getJobExecution().getId();
-            this.source = sourceService.findBySourceId(
-                    Integer.valueOf(jobParams.get(SOURCE_ID).toString())
-            );
+            sourceId = Integer.valueOf(jobParams.get(SOURCE_ID).toString());
+            this.source = sourceService.findBySourceId(sourceId);
             this.cohortTable = jobParams.get(TARGET_TABLE).toString();
             this.userEntity = userRepository.findByLogin(jobParams.get(JOB_AUTHOR).toString());
         }
@@ -225,8 +237,8 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
 
         private String renderCustomAnalysisDesign(FeAnalysisWithStringEntity fa, Integer cohortId) {
             Map<String, String> params = cohortCharacterization.getParameters().stream().collect(Collectors.toMap(CcParamEntity::getName, CcParamEntity::getValue));
-            params.put("cdm_database_schema", source.getTableQualifier(SourceDaimon.DaimonType.CDM));
-            params.put("cohort_table", source.getTableQualifier(SourceDaimon.DaimonType.Results) + "." + cohortTable);
+            params.put("cdm_database_schema", SourceUtils.getCdmQualifier(source));
+            params.put("cohort_table", SourceUtils.getTempQualifier(source) + "." + cohortTable);
             params.put("cohort_id", cohortId.toString());
             params.put("analysis_id", fa.getId().toString());
 
@@ -330,8 +342,9 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
 
         private CohortExpressionQueryBuilder.BuildExpressionQueryOptions createDefaultOptions(final Integer id) {
             final CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = new CohortExpressionQueryBuilder.BuildExpressionQueryOptions();
-            options.cdmSchema = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
-            options.resultSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+            options.cdmSchema = SourceUtils.getCdmQualifier(source);
+            // Target schema
+            options.resultSchema = SourceUtils.getTempQualifier(source);
             options.cohortId = id;
             return options;
         }
@@ -346,14 +359,11 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             List<String> queries = new ArrayList<>();
             CriteriaGroup expression = feature.getExpression();
 
-            String createCohortSql = SqlRender.renderSql(CREATE_COHORT_SQL,
-                    new String[]{ RESULTS_DATABASE_SCHEMA, TARGET_TABLE },
-                    new String[] { source.getTableQualifier(SourceDaimon.DaimonType.Results), targetTable });
+            String createCohortSql = sourceAwareSqlRender.renderSql(sourceId, CREATE_COHORT_SQL, TARGET_TABLE, targetTable);
 
             String exprQuery = queryBuilder.buildExpressionQuery(builder.withCriteria(expression), options);
             String statsQuery = getCriteriaStatsQuery(cohortDefinition, analysis, feature, targetTable);
-            String dropTableSql = SqlRender.renderSql(DROP_TABLE_SQL, new String[]{ RESULTS_DATABASE_SCHEMA, TARGET_TABLE },
-                    new String[] { source.getTableQualifier(SourceDaimon.DaimonType.Results), targetTable });
+            String dropTableSql = sourceAwareSqlRender.renderSql(sourceId, DROP_TABLE_SQL, TARGET_TABLE, targetTable);
             queries.add(createCohortSql);
             queries.add(exprQuery);
             queries.add(statsQuery);
@@ -367,13 +377,11 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             if (feature.getExpression().demographicCriteriaList.length > 0 && feature.getExpression().demographicCriteriaList[0].gender.length > 0) {
                 conceptId = feature.getExpression().demographicCriteriaList[0].gender[0].conceptId;
             }
-            String resultSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-            return SqlRender.renderSql(COHORT_STATS_QUERY,
-                    new String[]{ RESULTS_DATABASE_SCHEMA, "cohortId", "executionId", "analysisId", "analysisName", "covariateName", "conceptId",
-                            "covariateId", "targetTable", "totalsTable" },
-                    new String[]{ source.getTableQualifier(SourceDaimon.DaimonType.Results), String.valueOf(cohortDefinition.getId()),
+            return sourceAwareSqlRender.renderSql(sourceId, COHORT_STATS_QUERY,
+                    new String[]{ "cohortId", "executionId", "analysisId", "analysisName", "covariateName", "conceptId", "covariateId", "targetTable", "totalsTable" },
+                    new String[]{ String.valueOf(cohortDefinition.getId()),
                         String.valueOf(jobId), String.valueOf(analysis.getId()), analysis.getName(), feature.getName(), String.valueOf(conceptId),
-                            String.valueOf(feature.getId()), resultSchema + "." + targetTable, resultSchema + "." + cohortTable }
+                        String.valueOf(feature.getId()), targetTable, cohortTable }
                     );
         }
 
@@ -396,15 +404,13 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
 
             joiner.add(jsonObject.getString("sqlCleanup"));
 
-            final String sql = SqlRender.renderSql(joiner.toString(),
-                    new String[]{RESULTS_DATABASE_SCHEMA, CDM_DATABASE_SCHEMA, VOCABULARY_DATABASE_SCHEMA},
-                    new String[]{source.getTableQualifier(SourceDaimon.DaimonType.Results), source.getTableQualifier(SourceDaimon.DaimonType.CDM),
-                        source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary)});
-            final String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect(), SessionUtils.sessionId(), null);
+            final String sql = sourceAwareSqlRender.renderSql(sourceId, joiner.toString(), new String[]{}, new String[]{});
+            final String tempQualifier = SourceUtils.getTempQualifier(source);
+            final String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect(), SessionUtils.sessionId(), tempQualifier);
             return SqlSplit.splitSql(translatedSql);
         }
 
-        private JSONObject createFeJsonObject(final CohortExpressionQueryBuilder.BuildExpressionQueryOptions options) {
+         private JSONObject createFeJsonObject(final CohortExpressionQueryBuilder.BuildExpressionQueryOptions options) {
             FeatureExtraction.init(null);
             String settings = buildSettings();
             String sqlJson = FeatureExtraction.createSql(settings, true, options.resultSchema + "." + cohortTable,

@@ -1,1 +1,1 @@
-select distinct @values_column from @table
+select @values_column, count(*) from @table GROUP BY @values_column

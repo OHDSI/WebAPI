@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.facets;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
 import javax.ws.rs.Consumes;
@@ -13,9 +14,11 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Path("/facets")
 @Controller
+@Transactional(readOnly = true)
 public class FacetController {
     private final Collection<FacetProvider> providers;
     private final Map<String, FacetProvider> providersByFacet = new HashMap<>();
@@ -34,12 +37,21 @@ public class FacetController {
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public List<Object> getValues(@QueryParam("facet") String facet, @QueryParam("entityName") String entityName) {
+    public List<KeyValuePair> getValues(@QueryParam("facet") String facet, @QueryParam("entityName") String entityName) {
         final FacetProvider facetProvider = providersByFacet.get(facet);
         if(facetProvider == null) {
             throw new IllegalArgumentException("unknown facet");
         }
-        return facetProvider.getValues(entityName);
+        return facetProvider.getValues(entityName).stream().map(p -> new KeyValuePair(p.getKey(), p.getValue())).collect(Collectors.toList());
     }
 
+    public static class KeyValuePair {
+        public Object key;
+        public Integer value;
+
+        KeyValuePair(Object key, Integer value) {
+            this.key = key;
+            this.value = value;
+        }
+    }
 }

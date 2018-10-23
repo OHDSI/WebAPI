@@ -1,10 +1,11 @@
 package org.ohdsi.webapi.facets;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import java.util.List;
 
 public interface FacetProvider {
     String getName();
-    String getColumn();
 
-    List<Object> getValues(String entityName);
+    List<Pair<Object, Integer>> getValues(String entityName);
 }

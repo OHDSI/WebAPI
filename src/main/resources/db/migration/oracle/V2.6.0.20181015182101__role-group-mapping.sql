@@ -1,4 +1,4 @@
-ALTER TABLE ${ohdsiSchema}.sec_role_group ADD job_id BIGINT;
+ALTER TABLE ${ohdsiSchema}.sec_role_group ADD job_id NUMBER(19);
 
 ALTER TABLE ${ohdsiSchema}.sec_role_group
     ADD CONSTRAINT fk_role_group_job FOREIGN KEY(job_id)

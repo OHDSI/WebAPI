@@ -12,6 +12,7 @@ import com.odysseusinc.datasourcemanager.krblogin.KerberosService;
 import com.odysseusinc.datasourcemanager.krblogin.KrbConfig;
 import com.odysseusinc.datasourcemanager.krblogin.RuntimeServiceMode;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.IExecutionInfo;
 import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisExecutionRepository;
@@ -169,7 +170,9 @@ public abstract class AbstractDaoService {
     }
     try {
       FileUtils.forceDelete(temporaryDir);
-      FileUtils.forceDelete(krbConfig.getComponents().getKeytabPath().toFile());
+      if (StringUtils.isNotBlank(krbConfig.getComponents().getKeytabPath().toString())){
+        FileUtils.forceDelete(krbConfig.getComponents().getKeytabPath().toFile());
+      }
     } catch (IOException e) {
       log.warn(e.getMessage(), e);
     }

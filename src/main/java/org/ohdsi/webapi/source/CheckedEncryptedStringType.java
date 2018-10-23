@@ -2,6 +2,7 @@ package org.ohdsi.webapi.source;
 
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.jasypt.hibernate4.type.AbstractEncryptedAsStringType;
 
 import java.sql.PreparedStatement;
@@ -22,7 +23,7 @@ public class CheckedEncryptedStringType extends AbstractEncryptedAsStringType {
     }
 
     @Override
-    public void nullSafeSet(PreparedStatement st, Object value, int index, SessionImplementor session) throws HibernateException, SQLException {
+    public void nullSafeSet(PreparedStatement st, Object value, int index, SharedSessionContractImplementor session) throws HibernateException, SQLException {
 
         checkInitialization();
         if (Objects.nonNull(value)){
@@ -38,7 +39,7 @@ public class CheckedEncryptedStringType extends AbstractEncryptedAsStringType {
     }
 
     @Override
-    public Object nullSafeGet(ResultSet rs, String[] names, SessionImplementor session, Object owner) throws HibernateException, SQLException {
+    public Object nullSafeGet(ResultSet rs, String[] names, SharedSessionContractImplementor session, Object owner) throws HibernateException, SQLException {
 
         checkInitialization();
         final String message = rs.getString(names[0]);

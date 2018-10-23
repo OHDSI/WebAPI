@@ -261,7 +261,11 @@ public abstract class AtlasSecurity extends Security {
       .addProtectedRestPath("/cdmresults/*")
 
       // profiles
-      .addProtectedRestPath("/*/person/*");
+      .addProtectedRestPath("/*/person/*")
+
+      // notifications
+      .addProtectedRestPath("/notifications/viewed")
+      .addProtectedRestPath("/notifications");
   }
 
   @Override

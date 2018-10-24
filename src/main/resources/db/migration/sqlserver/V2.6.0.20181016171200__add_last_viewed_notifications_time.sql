@@ -1,4 +1,4 @@
-ALTER TABLE ${ohdsiSchema}.sec_user ADD last_viewed_notifications_time DATETIMEOFFSET I;
+ALTER TABLE ${ohdsiSchema}.sec_user ADD last_viewed_notifications_time DATETIMEOFFSET;
 
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
 VALUES

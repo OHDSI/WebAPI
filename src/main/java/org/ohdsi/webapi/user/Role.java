@@ -1,8 +1,7 @@
-package org.ohdsi.webapi.model;
+package org.ohdsi.webapi.user;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.collections.impl.block.factory.Comparators;
-import org.ohdsi.webapi.service.UserService;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 
 import java.util.Comparator;

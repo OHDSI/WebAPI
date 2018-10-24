@@ -8,7 +8,7 @@ import com.odysseusinc.logging.event.DeletePermissionEvent;
 import com.odysseusinc.logging.event.DeleteRoleEvent;
 import com.odysseusinc.logging.event.UnassignRoleEvent;
 import org.eclipse.collections.impl.block.factory.Comparators;
-import org.ohdsi.webapi.model.Role;
+import org.ohdsi.webapi.user.Role;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.ArrayList;

@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.user.importer.service;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.ohdsi.webapi.model.Role;
+import org.ohdsi.webapi.user.Role;
 import org.ohdsi.webapi.user.importer.model.*;
 import org.ohdsi.webapi.user.importer.providers.ActiveDirectoryProvider;
 import org.ohdsi.webapi.user.importer.providers.DefaultLdapProvider;

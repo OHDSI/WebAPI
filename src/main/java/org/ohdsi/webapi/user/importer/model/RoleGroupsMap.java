@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.user.importer.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.ohdsi.webapi.model.Role;
+import org.ohdsi.webapi.user.Role;
 
 import java.util.List;
 

@@ -74,9 +74,7 @@ public class UserImportJobController {
     return jobService.getJobs().stream()
             .map(job -> conversionService.convert(job, UserImportJobDTO.class))
             .peek(job -> jobService.getLatestHistoryItem(job.getProviderType())
-                    .ifPresent(item -> {
-                      job.setLastExecuted(item.getEndTime());
-                    }))
+                    .ifPresent(item -> job.setLastExecuted(item.getEndTime())))
             .collect(Collectors.toList());
   }
 

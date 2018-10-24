@@ -60,16 +60,17 @@ public class PermissionManager {
   private ApplicationEventPublisher eventPublisher;
 
 
-  public RoleEntity addRole(String roleName) throws Exception {
+  public RoleEntity addRole(String roleName, boolean isSystem) throws Exception {
     Guard.checkNotEmpty(roleName);
     
-    RoleEntity role = this.roleRepository.findByName(roleName);
+    RoleEntity role = this.roleRepository.findByNameAndSystemRole(roleName, isSystem);
     if (role != null) {
       throw new Exception("Can't create role - it already exists");
     }
     
     role = new RoleEntity();
     role.setName(roleName);
+    role.setSystemRole(isSystem);
     role = this.roleRepository.save(role);
     
     return role;
@@ -102,20 +103,12 @@ public class PermissionManager {
   }
 
   public Iterable<RoleEntity> getRoles(boolean includePersonalRoles) {
-    Iterable<RoleEntity> roles = this.roleRepository.findAll();
+
     if (includePersonalRoles) {
-      return roles;
+      return this.roleRepository.findAll();
+    } else {
+      return this.roleRepository.findAllBySystemRoleTrue();
     }
-
-    Set<String> logins = this.userRepository.getUserLogins();
-    HashSet<RoleEntity> filteredRoles = new HashSet<>();
-    for (RoleEntity role : roles) {
-      if (!logins.contains(role.getName())) {
-        filteredRoles.add(role);
-      }
-    }
-
-    return filteredRoles;
   }
 
   public AuthorizationInfo getAuthorizationInfo(final String login) {
@@ -151,7 +144,7 @@ public class PermissionManager {
     user = userRepository.save(user);
     eventPublisher.publishEvent(new AddUserEvent(this, user.getId(), login));
 
-    RoleEntity personalRole = this.addRole(login);
+    RoleEntity personalRole = this.addRole(login, false);
     this.addUser(user, personalRole, null);
 
     if (defaultRoles != null) {

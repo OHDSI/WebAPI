@@ -104,12 +104,14 @@ public class UserService {
     public Long id;
     public String role;
     public boolean defaultImported;
+    public boolean systemRole;
 
     public Role() {}
 
     public Role (RoleEntity roleEntity) {
       this.id = roleEntity.getId();
       this.role = roleEntity.getName();
+      this.systemRole = roleEntity.isSystemRole();
     }
 
     public Role (RoleEntity roleEntity, boolean defaultImported) {
@@ -178,7 +180,7 @@ public class UserService {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Role createRole(Role role) throws Exception {
-    RoleEntity roleEntity = this.authorizer.addRole(role.role);
+    RoleEntity roleEntity = this.authorizer.addRole(role.role, true);
     RoleEntity personalRole = this.authorizer.getCurrentUserPersonalRole();
     this.authorizer.addPermissionsFromTemplate(
             personalRole,

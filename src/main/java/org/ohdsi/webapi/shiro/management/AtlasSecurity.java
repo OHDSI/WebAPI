@@ -334,7 +334,7 @@ public abstract class AtlasSecurity extends Security {
       return;
     }
 
-    RoleEntity role = this.authorizer.addRole(roleName);
+    RoleEntity role = this.authorizer.addRole(roleName, true);
     this.authorizer.addPermissionsFromTemplate(role, this.sourcePermissionTemplates, sourceKey);
   }
 

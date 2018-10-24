@@ -14,7 +14,7 @@ SELECT ${ohdsiSchema}.SEC_ROLE_PERMISSION_SEQUENCE.nextval, sr.id, sp.id
 FROM ${ohdsiSchema}.sec_permission SP, ${ohdsiSchema}.sec_role sr
 WHERE sp.value IN (
   'notifications:viewed:post',
-  'notifications:viewed:get'
+  'notifications:viewed:get',
   'notifications:get'
 )
 AND sr.name IN ('Atlas users');

@@ -19,4 +19,6 @@ public interface UserImportJobService extends BaseJobService<UserImportJob> {
   void runImportUsersTask(LdapProviderType providerType, List<AtlasUserRoles> userRoles, boolean preserveRoles);
 
   Stream<UserImportJobHistoryItem> getJobHistoryItems(LdapProviderType providerType);
+
+  Optional<UserImportJobHistoryItem> getLatestHistoryItem(LdapProviderType providerType);
 }

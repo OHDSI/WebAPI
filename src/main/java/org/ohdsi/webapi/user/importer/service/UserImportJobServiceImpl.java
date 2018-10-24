@@ -138,6 +138,12 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
     return jobHistoryItemRepository.findByProviderType(providerType);
   }
 
+  @Override
+  public Optional<UserImportJobHistoryItem> getLatestHistoryItem(LdapProviderType providerType) {
+
+    return jobHistoryItemRepository.findFirstByProviderTypeOrderByEndTimeDesc(providerType);
+  }
+
   Step userImportStep() {
 
     UserImportTasklet userImportTasklet = new UserImportTasklet(transactionTemplate, userImportService);

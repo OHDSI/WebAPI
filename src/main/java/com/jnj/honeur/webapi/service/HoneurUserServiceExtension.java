@@ -38,23 +38,23 @@ public class HoneurUserServiceExtension {
         return this.authorizer.addPermission(permissionEntity.getValue(), permissionEntity.getDescription());
     }
 
-    @GET
-    @Path("user/permission")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Iterable<String> getPermissions(@HeaderParam("Authorization") String token) {
-        String login = SecurityUtils2.getSubject(token.replace("Bearer ", ""));
-        AuthorizationInfo authorizationInfo = this.authorizer.getAuthorizationInfo(login);
-        Collection<String> permissionEntities = authorizationInfo.getStringPermissions();
-        return permissionEntities;
-    }
-
-    private ArrayList<UserService.Permission> convertPermissions(final Iterable<PermissionEntity> permissionEntities) {
-        ArrayList<UserService.Permission> permissions = new ArrayList<UserService.Permission>();
-        for (PermissionEntity permissionEntity : permissionEntities) {
-            UserService.Permission permission = new UserService.Permission(permissionEntity);
-            permissions.add(permission);
-        }
-
-        return permissions;
-    }
+//    @GET
+//    @Path("user/permission")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public Iterable<String> getPermissions(@HeaderParam("Authorization") String token) {
+//        String login = SecurityUtils2.getSubject(token.replace("Bearer ", ""));
+//        AuthorizationInfo authorizationInfo = this.authorizer.getAuthorizationInfo(login);
+//        Collection<String> permissionEntities = authorizationInfo.getStringPermissions();
+//        return permissionEntities;
+//    }
+//
+//    private ArrayList<UserService.Permission> convertPermissions(final Iterable<PermissionEntity> permissionEntities) {
+//        ArrayList<UserService.Permission> permissions = new ArrayList<UserService.Permission>();
+//        for (PermissionEntity permissionEntity : permissionEntities) {
+//            UserService.Permission permission = new UserService.Permission(permissionEntity);
+//            permissions.add(permission);
+//        }
+//
+//        return permissions;
+//    }
 }

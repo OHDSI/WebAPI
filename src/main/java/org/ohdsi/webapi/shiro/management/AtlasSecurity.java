@@ -51,10 +51,10 @@ public abstract class AtlasSecurity extends Security {
   protected PermissionManager authorizer;
 
   @Autowired
-  SourceRepository sourceRepository;
+  protected SourceRepository sourceRepository;
 
   @Autowired
-  OidcConfCreator oidcConfCreator;
+  protected OidcConfCreator oidcConfCreator;
 
   @Value("${server.port}")
   private int sslPort;
@@ -609,7 +609,7 @@ public abstract class AtlasSecurity extends Security {
       return "anonymous";
   }
 
-  class FilterChainBuilder {
+  public class FilterChainBuilder {
 
     private Map<String, String> filterChain = new LinkedHashMap<>();
     private String restFilters;

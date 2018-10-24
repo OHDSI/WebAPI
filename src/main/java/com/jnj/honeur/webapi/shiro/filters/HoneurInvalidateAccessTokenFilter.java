@@ -1,8 +1,8 @@
-package com.jnj.honeur.webapi.shiro;
+package com.jnj.honeur.webapi.shiro.filters;
 
+import com.jnj.honeur.webapi.shiro.HoneurTokenManager;
 import org.apache.shiro.web.servlet.AdviceFilter;
 import org.apache.shiro.web.util.WebUtils;
-import org.ohdsi.webapi.shiro.TokenManager;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;

@@ -1,7 +1,6 @@
-package com.jnj.honeur.webapi.shiro;
+package com.jnj.honeur.webapi.shiro.filters;
 
-import com.jnj.honeur.security.SecurityUtils2;
-import io.buji.pac4j.subject.Pac4jPrincipal;
+import com.jnj.honeur.webapi.shiro.HoneurTokenManager;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.session.Session;
@@ -9,13 +8,11 @@ import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.web.servlet.AdviceFilter;
 import org.apache.shiro.web.util.WebUtils;
 import org.ohdsi.webapi.shiro.PermissionManager;
-import org.ohdsi.webapi.shiro.TokenManager;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 import java.security.Principal;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Set;

@@ -19,6 +19,7 @@ import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +29,7 @@ import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -49,6 +51,7 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
                                   UserImportService userImportService,
                                   RoleGroupRepository roleGroupRepository,
                                   UserImportJobHistoryItemRepository jobHistoryItemRepository,
+                                  @Qualifier("transactionTemplateRequiresNew")
                                   TransactionTemplate transactionTemplate,
                                   StepBuilderFactory stepBuilderFactory,
                                   JobBuilderFactory jobBuilders,
@@ -109,13 +112,13 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
   @Override
   public List<UserImportJob> getJobs() {
 
-    return jobRepository.findAll();
+    return jobRepository.findUserImportJobsBy().map(this::assignNextExecution).collect(Collectors.toList());
   }
 
   @Override
   public Optional<UserImportJob> getJob(Long id) {
 
-    return Optional.ofNullable(jobRepository.findOne(id));
+    return Optional.ofNullable(jobRepository.findOne(id)).map(this::assignNextExecution);
   }
 
   public void runImportUsersTask(LdapProviderType providerType, List<AtlasUserRoles> userRoles, boolean preserveRoles) {

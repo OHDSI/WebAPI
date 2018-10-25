@@ -1,7 +1,5 @@
 package org.ohdsi.webapi.facets;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -20,12 +18,14 @@ public abstract class AbstractColumnBasedFacetProvider implements FacetProvider 
     }
 
     @Override
-    public List<Pair<Object, Integer>> getValues(String entityName) {
+    public List<FilterItem> getValues(String entityName) {
         final String query = SqlRender.renderSql(getValuesQuery, GET_VALUES_PARAMS, new String[]{ getColumn(), entityName });
-        return jdbcTemplate.query(query, (resultSet, i) -> new ImmutablePair<>(getValue(resultSet), resultSet.getInt(2)));
+        return jdbcTemplate.query(query, (resultSet, i) -> new FilterItem(getText(resultSet),getKey(resultSet),  resultSet.getInt(2)));
     }
+
+    protected abstract String getKey(ResultSet resultSet) throws SQLException;
 
     protected abstract String getColumn();
 
-    protected abstract Object getValue(ResultSet resultSet) throws SQLException;
+    protected abstract String getText(ResultSet resultSet) throws SQLException;
 }

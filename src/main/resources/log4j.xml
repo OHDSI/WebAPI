@@ -21,7 +21,7 @@
 		<level value="${logging.level.org.apache.shiro}" />
 	</logger>
 	<root>
-		<level value="${logging.level.root}" />
+		<level value="DEBUG" />
 		<appender-ref ref="stdout" />
 	</root>
 </log4j:configuration>

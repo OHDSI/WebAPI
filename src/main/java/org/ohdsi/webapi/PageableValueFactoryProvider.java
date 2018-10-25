@@ -14,21 +14,35 @@
  */
 package org.ohdsi.webapi;
 
-import java.util.ArrayList;
-import java.util.List;
-import javax.inject.Inject;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.QueryParam;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.server.internal.inject.AbstractContainerRequestValueFactory;
 import org.glassfish.jersey.server.model.Parameter;
 import org.glassfish.jersey.server.spi.internal.ValueFactoryProvider;
+import org.ohdsi.webapi.facets.Filter;
+import org.ohdsi.webapi.facets.FilteredPageRequest;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
+import javax.inject.Inject;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.QueryParam;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 public class PageableValueFactoryProvider implements ValueFactoryProvider {
+
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
+    static {
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
 
     private final ServiceLocator locator;
 
@@ -55,9 +69,16 @@ public class PageableValueFactoryProvider implements ValueFactoryProvider {
     private static class PageableValueFactory
             extends AbstractContainerRequestValueFactory<Pageable> {
 
-        @QueryParam("page") @DefaultValue("0") Integer page;
-        @QueryParam("size") @DefaultValue("10") Integer size;
-        @QueryParam("sort") List<String> sort;
+        @QueryParam("page")
+        @DefaultValue("0")
+        Integer page;
+        @QueryParam("size")
+        @DefaultValue("10")
+        Integer size;
+        @QueryParam("sort")
+        List<String> sort;
+        @QueryParam("filter")
+        String filters;
 
         private final ServiceLocator locator;
 
@@ -70,7 +91,7 @@ public class PageableValueFactoryProvider implements ValueFactoryProvider {
             locator.inject(this);
 
             List<Sort.Order> orders = new ArrayList<>();
-            for (String propOrder: sort) {
+            for (String propOrder : sort) {
                 String[] propOrderSplit = propOrder.split(",");
                 String property = propOrderSplit[0];
                 if (propOrderSplit.length == 1) {
@@ -82,8 +103,17 @@ public class PageableValueFactoryProvider implements ValueFactoryProvider {
                 }
             }
 
-            return new PageRequest(page, size,
-                    orders.isEmpty() ? null : new Sort(orders));
+            if (filters != null && !"[]".equals(filters)) {
+                try {
+                    final List<Filter> f = objectMapper.readValue(filters, new TypeReference<List<Filter>>() {});
+                    return new FilteredPageRequest(page, size, orders.isEmpty() ? null : new Sort(orders), f);
+                } catch (IOException e) {
+                    LoggerFactory.getLogger(getClass()).error("while parsing filters", e);
+                    return null;
+                }
+            } else {
+                return new PageRequest(page, size, orders.isEmpty() ? null : new Sort(orders));
+            }
         }
     }
 }

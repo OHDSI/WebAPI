@@ -23,6 +23,8 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
+import org.ohdsi.webapi.facets.FacetedSearchService;
+import org.ohdsi.webapi.facets.FilteredPageRequest;
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
@@ -32,17 +34,20 @@ import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.CohortGenerationService;
 import org.ohdsi.webapi.service.FeatureExtractionService;
 import org.ohdsi.webapi.service.SourceService;
-import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.annotations.CcGenerationId;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
-import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.SessionUtils;
-import org.springframework.batch.core.*;
+import org.springframework.batch.core.BatchStatus;
+import org.springframework.batch.core.ExitStatus;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobExecution;
+import org.springframework.batch.core.JobParameters;
+import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.convert.ConversionService;
@@ -56,7 +61,13 @@ import javax.persistence.EntityManager;
 import javax.ws.rs.NotFoundException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -101,6 +112,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
     private EntityManager entityManager;
 
     private final JobRepository jobRepository;
+    private final FacetedSearchService facetedSearchService;
 
     public CcServiceImpl(
             final CcRepository ccRepository,
@@ -117,8 +129,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
             final AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository,
             final SourceService sourceService,
             final GenerationUtils generationUtils,
-            final EntityManager entityManager
-    ) {
+            final EntityManager entityManager,
+            final FacetedSearchService facetedSearchService) {
         this.repository = ccRepository;
         this.paramRepository = paramRepository;
         this.analysisService = analysisService;
@@ -133,6 +145,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         this.sourceService = sourceService;
         this.generationUtils = generationUtils;
         this.entityManager = entityManager;
+        this.facetedSearchService = facetedSearchService;
         SerializedCcToCcConverter.setConversionService(conversionService);
     }
 
@@ -285,7 +298,9 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
 
     @Override
     public Page<CohortCharacterizationEntity> getPage(final Pageable pageable) {
-        return repository.findAll(pageable);
+        return pageable instanceof FilteredPageRequest
+                ? facetedSearchService.getPage((FilteredPageRequest) pageable, repository)
+                : repository.findAll(pageable);
     }
 
     @Override

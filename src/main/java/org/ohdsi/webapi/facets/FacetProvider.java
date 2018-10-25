@@ -1,11 +1,14 @@
 package org.ohdsi.webapi.facets;
 
-import org.apache.commons.lang3.tuple.Pair;
-
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.util.List;
 
 public interface FacetProvider {
     String getName();
 
-    List<Pair<Object, Integer>> getValues(String entityName);
+    List<FilterItem> getValues(String entityName);
+
+    Predicate createPredicate(List<FilterItem> items, CriteriaBuilder criteriaBuilder, Root root);
 }

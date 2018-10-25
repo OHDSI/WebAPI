@@ -3,14 +3,16 @@ package org.ohdsi.webapi.facets;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 @Component
-public class ModifiedDateFacetProvider extends AbstractColumnBasedFacetProvider {
+public class ModifiedDateFacetProvider extends AbstractDateColumnBasedFacetProvider {
 
     public ModifiedDateFacetProvider(JdbcTemplate jdbcTemplate) {
         super(jdbcTemplate);
+    }
+
+    @Override
+    protected String getField() {
+        return "modifiedDate";
     }
 
     @Override
@@ -20,11 +22,7 @@ public class ModifiedDateFacetProvider extends AbstractColumnBasedFacetProvider 
 
     @Override
     protected String getColumn() {
-        return "created_date";
+        return "modified_date";
     }
 
-    @Override
-    protected Object getValue(ResultSet resultSet) throws SQLException {
-        return resultSet.getDate(1);
-    }
 }

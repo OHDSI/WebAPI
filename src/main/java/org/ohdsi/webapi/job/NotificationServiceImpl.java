@@ -60,7 +60,7 @@ public class NotificationServiceImpl implements NotificationService {
                 }
             }
         }
-        return result.values().stream().sorted(Comparator.comparing(JobExecution::getStartTime).reversed()).collect(Collectors.toList());
+        return new ArrayList<>(result.values());
     }
 
     @Override

@@ -151,7 +151,7 @@ public class UserService {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Role createRole(Role role) throws Exception {
-    RoleEntity roleEntity = this.authorizer.addRole(role.role);
+    RoleEntity roleEntity = this.authorizer.addRole(role.role, true);
     RoleEntity personalRole = this.authorizer.getCurrentUserPersonalRole();
     this.authorizer.addPermissionsFromTemplate(
             personalRole,

@@ -13,6 +13,8 @@ public class Role implements Comparable<Role> {
   public String role;
   @JsonProperty("defaultImported")
   public boolean defaultImported;
+  @JsonProperty("systemRole")
+  public boolean systemRole;
 
   public Role() {}
 
@@ -23,6 +25,7 @@ public class Role implements Comparable<Role> {
   public Role(RoleEntity roleEntity) {
     this.id = roleEntity.getId();
     this.role = roleEntity.getName();
+    this.systemRole = roleEntity.isSystemRole();
   }
 
   public Role(RoleEntity roleEntity, boolean defaultImported) {

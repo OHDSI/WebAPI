@@ -20,6 +20,7 @@ public class FeAnalysisDTOToFeAnalysisWithCriteriasConverter extends BaseFeAnaly
     @Override
     public FeAnalysisWithCriteriaEntity convert(final FeAnalysisDTO source) {
         final FeAnalysisWithCriteriaEntity baseEntity = super.convert(source);
+        baseEntity.setStatType(source.getStatType());
         baseEntity.setDesign(buildCriteriaList(source.getDesign()));
         baseEntity.getDesign().forEach(c -> c.setFeatureAnalysis(baseEntity));
         if (Objects.equals(StandardFeatureAnalysisType.CRITERIA_SET, source.getType())){

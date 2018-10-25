@@ -30,6 +30,7 @@ import org.ohdsi.webapi.shiro.filters.CasHandleFilter;
 import org.ohdsi.webapi.shiro.filters.KerberosAuthFilter;
 import org.pac4j.cas.client.CasClient;
 import org.pac4j.cas.config.CasConfiguration;
+import org.pac4j.core.client.Client;
 import org.pac4j.core.client.Clients;
 import org.pac4j.core.config.Config;
 import org.pac4j.oauth.client.FacebookClient;
@@ -308,7 +309,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
             Cas20ServiceTicketValidator cas20Validator = new Cas20ServiceTicketValidator(casServerUrl);
             casConf.setTicketValidator(cas20Validator);
             
-            CasClient casClient = new CasClient(casConf);
+            Client casClient = new CasClient(casConf);
             Config casCfg = new Config(new Clients(casCallbackUrl, casClient));
             
             /**

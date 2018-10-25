@@ -16,12 +16,7 @@ package org.ohdsi.webapi.cohortdefinition;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import javax.persistence.*;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -77,6 +72,16 @@ public class CohortDefinition extends CommonEntity implements Serializable, Coho
           joinColumns = @JoinColumn(name = "cohort_id", referencedColumnName = "id"),
           inverseJoinColumns = @JoinColumn(name = "cohort_characterization_id", referencedColumnName = "id"))
   private List<CohortCharacterizationEntity> cohortCharacterizations = new ArrayList<>();
+
+  @Column(name = "uuid")
+  private UUID uuid;
+
+  @OneToOne
+  @JoinColumn(name = "previous_version", referencedColumnName = "uuid")
+  private CohortDefinition previousVersion;
+
+  @Column(name = "group_key")
+  private UUID groupKey;
 
   public Integer getId() {
     return id;
@@ -168,5 +173,32 @@ public class CohortDefinition extends CommonEntity implements Serializable, Coho
   public void setCohortCharacterizations(final List<CohortCharacterizationEntity> cohortCharacterizations) {
 
     this.cohortCharacterizations = cohortCharacterizations;
+  }
+
+  public UUID getUuid() {
+    return uuid;
+  }
+
+  public CohortDefinition setUuid(UUID uuid) {
+    this.uuid = uuid;
+    return this;
+  }
+
+  public CohortDefinition getPreviousVersion() {
+    return previousVersion;
+  }
+
+  public CohortDefinition setPreviousVersion(CohortDefinition previousVersion) {
+    this.previousVersion = previousVersion;
+    return this;
+  }
+
+  public UUID getGroupKey() {
+    return groupKey;
+  }
+
+  public CohortDefinition setGroupKey(UUID groupKey) {
+    this.groupKey = groupKey;
+    return this;
   }
 }

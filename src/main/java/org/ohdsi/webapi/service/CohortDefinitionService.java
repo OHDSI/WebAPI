@@ -40,6 +40,8 @@ import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+
+import com.jnj.honeur.webapi.liferay.model.Organization;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.circe.check.Checker;
 import org.ohdsi.circe.check.Warning;
@@ -76,6 +78,7 @@ import org.springframework.batch.core.launch.JobExecutionNotRunningException;
 import org.springframework.batch.core.launch.JobOperator;
 import org.springframework.batch.core.launch.NoSuchJobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionStatus;
@@ -86,7 +89,8 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
  * @author cknoll1
  */
 @Path("/cohortdefinition")
-@Component
+@Component("cohortDefinitionService")
+@ConditionalOnProperty(value = "datasource.honeur.enabled", havingValue = "false")
 public class CohortDefinitionService extends AbstractDaoService {
 
   private static final CohortExpressionQueryBuilder queryBuilder = new CohortExpressionQueryBuilder();
@@ -311,6 +315,10 @@ public class CohortDefinitionService extends AbstractDaoService {
   public static class CohortDefinitionDTO extends CohortDefinitionListItem {
 
     public String expression;
+    public List<Organization> organizations;
+    public UUID uuid;
+    public CohortDefinitionDTO previousVersion;
+    public UUID groupKey;
   }
 
   public CohortDefinitionDTO cohortDefinitionToDTO(CohortDefinition def) {
@@ -325,6 +333,12 @@ public class CohortDefinitionService extends AbstractDaoService {
     result.modifiedBy = UserUtils.nullSafeLogin(def.getModifiedBy());
     result.modifiedDate = def.getModifiedDate();
     result.name = def.getName();
+    result.groupKey = def.getGroupKey();
+    result.uuid = def.getUuid();
+
+    if(def.getPreviousVersion() != null){
+      result.previousVersion = cohortDefinitionToDTO(def.getPreviousVersion());
+    }
 
     return result;
   }
@@ -357,7 +371,7 @@ public class CohortDefinitionService extends AbstractDaoService {
   @GET
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
-  public List<CohortDefinitionListItem> getCohortDefinitionList() {
+  public List<CohortDefinitionListItem> getCohortDefinitionList(@HeaderParam("Authorization") String token) {
 
 		ArrayList<CohortDefinitionListItem> result = new ArrayList<>();
 		// we use a direct query here because using repository.findAll leads to N+1 query performance (because the One-To-One mapping to 

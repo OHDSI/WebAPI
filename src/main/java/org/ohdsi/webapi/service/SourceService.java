@@ -30,6 +30,7 @@ import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.core.env.Environment;
@@ -44,6 +45,7 @@ import java.io.InputStream;
 @Path("/source/")
 @Component
 @Transactional
+@ConditionalOnProperty(value = "datasource.honeur.enabled", havingValue = "false")
 public class SourceService extends AbstractDaoService {
 
     public static final String SECURE_MODE_ERROR = "This feature requires the administrator to enable security for the application";

@@ -6,6 +6,8 @@ import com.jnj.honeur.webapi.source.SourceDaimonContext;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.lookup.DataSourceLookupFailureException;
 import org.springframework.stereotype.Component;
@@ -24,6 +26,7 @@ import java.util.Map;
  * Date: 02/feb/2018
  */
 @Component
+@ConditionalOnExpression("${datasource.honeur.enabled}")
 public class DataSourceLookup implements org.springframework.jdbc.datasource.lookup.DataSourceLookup {
 
     private static final Log LOG = LogFactory.getLog(DataSourceLookup.class);

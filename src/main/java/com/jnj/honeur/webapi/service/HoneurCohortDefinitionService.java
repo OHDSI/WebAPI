@@ -14,7 +14,10 @@ import org.ohdsi.webapi.service.CohortDefinitionService;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.PermissionManager;
+import org.ohdsi.webapi.shiro.management.DisabledSecurity;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
@@ -23,7 +26,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import javax.ws.rs.HeaderParam;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -49,8 +51,11 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
     @Autowired
     private SourceService sourceService;
 
-    @Value("${security.enabled}")
-    private boolean securityEnabled;
+    @Autowired
+    private UserRepository userRepository;
+
+    @Value("${security.provider}")
+    private String securityProvider;
 
     @Value("${webapi.central}")
     private boolean isCentral;
@@ -78,7 +83,7 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
                 .filter(cohortDefinition -> !previousVersionsUuids.contains(cohortDefinition.getUuid()))
                 .collect(Collectors.toList());
 
-        if(securityEnabled) {
+        if(!securityProvider.equals(DisabledSecurity.class.getSimpleName())) {
             String permissionPattern = "cohortdefinition:([0-9]+|\\*):get";
             LiferayPermissionManager liferayPermissionManager = (LiferayPermissionManager) authorizer;
             List<Integer> definitionIds = liferayPermissionManager.getUserPermissions(SecurityUtils2.getSubject(token.replace("Bearer ", ""))).stream()
@@ -99,9 +104,9 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
             item.name = d.getName();
             item.description = d.getDescription();
             item.expressionType = d.getExpressionType();
-            item.createdBy = d.getCreatedBy();
+            item.createdBy = d.getCreatedBy().getLogin();
             item.createdDate = d.getCreatedDate();
-            item.modifiedBy = d.getModifiedBy();
+            item.modifiedBy = d.getModifiedBy().getLogin();
             item.modifiedDate = d.getModifiedDate();
 
             item.uuid = d.getUuid();
@@ -145,39 +150,44 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
      */
     @Override
     public CohortDefinitionDTO createCohortDefinition(CohortDefinitionDTO def) {
-        Date currentTime = Calendar.getInstance().getTime();
 
-        //create definition in 2 saves, first to get the generated ID for the new def
-        // then to associate the details with the definition
-        CohortDefinition newDef = new CohortDefinition();
-        newDef.setName(def.name)
-                .setDescription(def.description)
-                .setCreatedBy(security.getSubject())
-                .setCreatedDate(currentTime)
-                .setExpressionType(def.expressionType)
-                .setPreviousVersion(def.previousVersion == null ? null : cohortDefinitionRepository.findByUuid(def.previousVersion.uuid))
-                .setUuid(def.uuid)
-                .setGroupKey(def.groupKey);
 
-        newDef = this.cohortDefinitionRepository.save(newDef);
+        return getTransactionTemplate().execute(transactionStatus -> {
+            Date currentTime = Calendar.getInstance().getTime();
 
-        // associate details
-        CohortDefinitionDetails details = new CohortDefinitionDetails();
-        details.setCohortDefinition(newDef)
-                .setExpression(def.expression);
+            UserEntity user = userRepository.findByLogin(security.getSubject());
+            //create definition in 2 saves, first to get the generated ID for the new def
+            // then to associate the details with the definition
+            CohortDefinition newDef = new CohortDefinition();
+            newDef.setName(def.name)
+                    .setDescription(def.description)
+                    .setExpressionType(def.expressionType)
+                    .setPreviousVersion(def.previousVersion == null ? null : cohortDefinitionRepository.findByUuid(def.previousVersion.uuid))
+                    .setUuid(def.uuid)
+                    .setGroupKey(def.groupKey);
+            newDef.setCreatedBy(user);
+            newDef.setCreatedDate(currentTime);
 
-        newDef.setDetails(details);
+            newDef = this.cohortDefinitionRepository.save(newDef);
 
-        CohortDefinition createdDefinition = this.cohortDefinitionRepository.save(newDef);
+            // associate details
+            CohortDefinitionDetails details = new CohortDefinitionDetails();
+            details.setCohortDefinition(newDef)
+                    .setExpression(def.expression);
 
-        // Add generation permission if the source daimons are there
-        addGenerationPermissions(createdDefinition);
+            newDef.setDetails(details);
 
-        return cohortDefinitionToDTO(createdDefinition);
+            CohortDefinition createdDefinition = this.cohortDefinitionRepository.save(newDef);
+
+            // Add generation permission if the source daimons are there
+            addGenerationPermissions(createdDefinition);
+
+            return cohortDefinitionToDTO(createdDefinition);
+        });
     }
 
     private void addGenerationPermissions(CohortDefinition createdDefinition) {
-        if(securityEnabled) {
+        if(!securityProvider.equals(DisabledSecurity.class.getSimpleName())) {
             Collection<SourceInfo> sources = sourceService.getSources();
             for (SourceInfo sourceInfo : sources) {
                 HashMap<String, String> map = new HashMap<>();
@@ -215,14 +225,15 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
     public CohortDefinitionDTO saveCohortDefinition(final int id, CohortDefinitionDTO def) {
         Date currentTime = Calendar.getInstance().getTime();
 
-        CohortDefinition currentDefinition = this.cohortDefinitionRepository.findOneWithDetail(id);
+    CohortDefinition currentDefinition = this.cohortDefinitionRepository.findOneWithDetail(id);
+    UserEntity modifier = userRepository.findByLogin(security.getSubject());
 
         currentDefinition.setName(def.name)
                 .setDescription(def.description)
                 .setExpressionType(def.expressionType)
-                .setModifiedBy(security.getSubject())
-                .setModifiedDate(currentTime)
                 .getDetails().setExpression(def.expression);
+        currentDefinition.setModifiedBy(modifier);
+        currentDefinition.setModifiedDate(currentTime);
 
         if(!isCentral){
             currentDefinition.setGroupKey(null);

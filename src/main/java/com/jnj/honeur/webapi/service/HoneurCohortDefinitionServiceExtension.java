@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.jnj.honeur.security.SecurityUtils2;
 import com.jnj.honeur.webapi.SourceDaimonContextHolder;
-import com.jnj.honeur.webapi.cohortdefinition.CohortGenerationInfoRepository;
 import com.jnj.honeur.webapi.cohortdefinition.CohortGenerationResults;
 import com.jnj.honeur.webapi.cohortfeatures.CohortFeaturesEntity;
 import com.jnj.honeur.webapi.cohortfeatures.CohortFeaturesRepository;
@@ -36,6 +35,7 @@ import org.ohdsi.webapi.cohort.CohortRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfo;
+import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfoRepository;
 import org.ohdsi.webapi.service.CohortDefinitionService;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
@@ -133,9 +133,6 @@ public class HoneurCohortDefinitionServiceExtension {
     private RoleRepository roleRepository;
 
     private final ObjectMapper mapper = new ObjectMapper();
-
-    @Value("${security.enabled}")
-    private boolean securityEnabled;
 
 
     /**

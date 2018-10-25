@@ -1,6 +1,7 @@
 package com.jnj.honeur.webapi.shiro.filters;
 
 import com.jnj.honeur.webapi.shiro.HoneurTokenManager;
+import io.buji.pac4j.subject.Pac4jPrincipal;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.session.Session;
@@ -53,6 +54,8 @@ public class HoneurUpdateAccessTokenFilter extends AdviceFilter {
 
     if (principal instanceof Principal) {
       login = ((Principal)principal).getName();
+    } else if (principal instanceof Pac4jPrincipal){
+      login = ((Pac4jPrincipal)principal).getProfile().getId();
     } else if (principal instanceof String) {
       login = (String)principal;
     } else {

@@ -1,27 +1,20 @@
-package org.ohdsi.webapi;
+package com.jnj.honeur.webapi;
 
 import com.cosium.spring.data.jpa.entity.graph.repository.support.EntityGraphJpaRepositoryFactoryBean;
-import java.sql.DriverManager;
-import java.util.Properties;
-import javax.persistence.EntityManagerFactory;
-import javax.servlet.Filter;
-import javax.sql.DataSource;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.hibernate.MultiTenancyStrategy;
 import org.jasypt.encryption.pbe.PBEStringEncryptor;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import org.jasypt.hibernate4.encryptor.HibernatePBEEncryptorRegistry;
+import org.ohdsi.webapi.DataAccessConfig;
 import org.ohdsi.webapi.source.NotEncrypted;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
-import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -33,22 +26,24 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.support.TransactionTemplate;
 
-/**
- *
- */
+import javax.persistence.EntityManagerFactory;
+import javax.sql.DataSource;
+import java.util.Properties;
+
 @Configuration
 @EnableTransactionManagement
-@EnableJpaRepositories(repositoryFactoryBeanClass = EntityGraphJpaRepositoryFactoryBean.class)
-@ConditionalOnProperty(value = "datasource.honeur.enabled", havingValue = "false")
-public class DataAccessConfig {
+@EnableJpaRepositories(basePackages = {"com.jnj.honeur.webapi", "org.ohdsi.webapi"}, repositoryFactoryBeanClass = EntityGraphJpaRepositoryFactoryBean.class)
+@ConditionalOnProperty(value = "datasource.honeur.enabled", havingValue = "true")
+public class HoneurDataAccessConfig {
 
-    private final Log logger = LogFactory.getLog(DataAccessConfig.class);
-	
+    private final Log log = LogFactory.getLog(HoneurDataAccessConfig.class);
+
     @Autowired
     private Environment env;
-    @Value("${jasypt.encryptor.enabled}")
-    private boolean encryptorEnabled;
-  
+
+    @Autowired
+    private DataSource primaryDataSource;
+
     private Properties getJPAProperties() {
         Properties properties = new Properties();
         properties.setProperty("hibernate.default_schema", this.env.getProperty("spring.jpa.properties.hibernate.default_schema"));
@@ -56,10 +51,42 @@ public class DataAccessConfig {
         properties.setProperty("hibernate.id.new_generator_mappings", "false");
         return properties;
     }
-      
+
     @Bean
-		@DependsOn("defaultStringEncryptor")
-    @Primary    
+    DataSourceLookup dataSourceLookup() {
+        return new DataSourceLookup();
+    }
+
+
+    @Bean
+    public EntityManagerFactory entityManagerFactory() {
+        final DataSourceLookup dataSourceLookup = dataSourceLookup();
+
+        HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+        vendorAdapter.setGenerateDdl(false);
+        vendorAdapter.setShowSql(Boolean.valueOf(this.env.getRequiredProperty("spring.jpa.show-sql")));
+        //hibernate.dialect is resolved based on driver
+        //vendorAdapter.setDatabasePlatform(hibernateDialect);
+
+        LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
+        factory.setJpaVendorAdapter(vendorAdapter);
+        factory.setJpaProperties(getJPAProperties());
+        factory.setPackagesToScan("org.ohdsi.webapi","com.jnj.honeur.webapi");
+        factory.setDataSource(primaryDataSource);
+        factory.getJpaPropertyMap().put(org.hibernate.cfg.Environment.MULTI_TENANT, MultiTenancyStrategy.DATABASE);
+        factory.getJpaPropertyMap().put(org.hibernate.cfg.Environment.MULTI_TENANT_CONNECTION_PROVIDER, new MultiTenantConnectionProviderImpl(dataSourceLookup));
+        factory.getJpaPropertyMap().put(org.hibernate.cfg.Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, new CurrentTenantIdentifierResolverImpl());
+        factory.afterPropertiesSet();
+
+        return factory.getObject();
+    }
+
+    @Value("${jasypt.encryptor.enabled}")
+    private boolean encryptorEnabled;
+
+    @Bean
+    @DependsOn("defaultStringEncryptor")
+    @Primary
     public DataSource primaryDataSource() {
         String driver = this.env.getRequiredProperty("datasource.driverClassName");
         String url = this.env.getRequiredProperty("datasource.url");
@@ -67,7 +94,7 @@ public class DataAccessConfig {
         String pass = this.env.getRequiredProperty("datasource.password");
         boolean autoCommit = false;
 
-				//pooling - currently issues with (at least) oracle with use of temp tables and "on commit preserve rows" instead of "on commit delete rows";
+        //pooling - currently issues with (at least) oracle with use of temp tables and "on commit preserve rows" instead of "on commit delete rows";
         //http://forums.ohdsi.org/t/transaction-vs-session-scope-for-global-temp-tables-statements/333/2
         /*final PoolConfiguration pc = new org.apache.tomcat.jdbc.pool.PoolProperties();
      pc.setDriverClassName(driver);
@@ -103,9 +130,9 @@ public class DataAccessConfig {
             encryptor.setProvider(new BouncyCastleProvider());
             encryptor.setProviderName("BC");
             encryptor.setAlgorithm(env.getRequiredProperty("jasypt.encryptor.algorithm"));
-						if ("PBEWithMD5AndDES".equals(env.getRequiredProperty("jasypt.encryptor.algorithm"))) {
-							logger.warn("Warning:  encryption algorithm set to PBEWithMD5AndDES, which is not considered a strong encryption algorithm.  You may use PBEWITHSHA256AND128BITAES-CBC-BC, but will require special JVM configuration to support these stronger methods.");
-						}
+            if ("PBEWithMD5AndDES".equals(env.getRequiredProperty("jasypt.encryptor.algorithm"))) {
+                log.warn("Warning:  encryption algorithm set to PBEWithMD5AndDES, which is not considered a strong encryption algorithm.  You may use PBEWITHSHA256AND128BITAES-CBC-BC, but will require special JVM configuration to support these stronger methods.");
+            }
             encryptor.setKeyObtentionIterations(1000);
             String password = env.getRequiredProperty("jasypt.encryptor.password");
             if (StringUtils.isNotEmpty(password)) {
@@ -118,25 +145,6 @@ public class DataAccessConfig {
         HibernatePBEEncryptorRegistry.getInstance()
                 .registerPBEStringEncryptor("defaultStringEncryptor", stringEncryptor);
         return stringEncryptor;
-    }
-
-    @Bean
-    public EntityManagerFactory entityManagerFactory() {
-
-        HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
-        vendorAdapter.setGenerateDdl(false);
-        vendorAdapter.setShowSql(Boolean.valueOf(this.env.getRequiredProperty("spring.jpa.show-sql")));
-        //hibernate.dialect is resolved based on driver
-        //vendorAdapter.setDatabasePlatform(hibernateDialect);
-
-        LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
-        factory.setJpaVendorAdapter(vendorAdapter);
-        factory.setJpaProperties(getJPAProperties());
-        factory.setPackagesToScan("org.ohdsi.webapi");
-        factory.setDataSource(primaryDataSource());
-        factory.afterPropertiesSet();
-
-        return factory.getObject();
     }
 
     @Bean
@@ -163,19 +171,12 @@ public class DataAccessConfig {
         transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         return transactionTemplate;
     }
-		
+
     @Bean
     public TransactionTemplate transactionTemplateNoTransaction(PlatformTransactionManager transactionManager) {
         TransactionTemplate transactionTemplate = new TransactionTemplate();
         transactionTemplate.setTransactionManager(transactionManager);
         transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_NOT_SUPPORTED);
         return transactionTemplate;
-    }		
-  
-  /*
-  public String getSparqlEndpoint()
-  {
-	  String sparqlEndpoint = this.env.getRequiredProperty("sparql.endpoint");
-	  return sparqlEndpoint;
-  }*/
+    }
 }

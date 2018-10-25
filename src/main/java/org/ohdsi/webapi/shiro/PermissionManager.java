@@ -29,6 +29,7 @@ import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.Entities.UserRoleEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Component
 @Transactional
+@ConditionalOnExpression("${datasource.honeur.enabled} and !${webapi.central}")
 public class PermissionManager {
   
   @Autowired

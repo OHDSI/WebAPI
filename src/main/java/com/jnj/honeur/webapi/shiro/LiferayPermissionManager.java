@@ -10,12 +10,19 @@ import org.ohdsi.webapi.shiro.PermissionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Component
 @Transactional
+@ConditionalOnExpression("${datasource.honeur.enabled} and ${webapi.central}")
 public class LiferayPermissionManager extends PermissionManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LiferayPermissionManager.class);

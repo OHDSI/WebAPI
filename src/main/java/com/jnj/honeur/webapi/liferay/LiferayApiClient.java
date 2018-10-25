@@ -102,7 +102,7 @@ public class LiferayApiClient {
                 HttpMethod.GET, new HttpEntity<>(createHeaders()),
                 JsonNode.class).getBody();
         UserEntity u = new UserEntity();
-        u.setPassword(response.path("password").asText());
+//        u.setPassword(response.path("password").asText());
         u.setName(response.path("firstName").asText());
         u.setLogin(response.path("emailAddress").asText());
         u.setId(response.path("userId").asLong());

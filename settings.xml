@@ -12,10 +12,12 @@
                 <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
                 <flyway.datasource.username>ohdsi_admin_user</flyway.datasource.username>
                 <flyway.locations>classpath:db/migration/postgresql,classpath:db/extension/honeur</flyway.locations>
-                <security.provider>AtlasRegularSecurity</security.provider>
+                <security.provider>AtlasCustomSecurity</security.provider>
                 <security.cas.loginUrl>https://localhost:8443/cas/login</security.cas.loginUrl>
-                <security.cas.callbackUrl>https://localhost:8444/webapi/user/oauth/cas?cas_client=CasClient</security.cas.callbackUrl>
+                <security.cas.callbackUrl>https://localhost:8444/webapi/user/cas/callback?client_name=CasClient</security.cas.callbackUrl>
                 <security.cas.serverUrl>https://localhost:8443/cas</security.cas.serverUrl>
+                <security.cas.casticket>ticket</security.cas.casticket>
+                <security.cas.cassvcs></security.cas.cassvcs>
                 <!--<security.cas>true</security.cas>-->
                 <!--<security.token.expiration>1200</security.token.expiration>-->
                 <security.origin>*</security.origin>

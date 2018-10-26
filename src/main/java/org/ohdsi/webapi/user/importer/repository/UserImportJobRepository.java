@@ -4,7 +4,6 @@ import com.odysseusinc.scheduler.repository.ArachneJobRepository;
 import org.ohdsi.webapi.user.importer.model.LdapProviderType;
 import org.ohdsi.webapi.user.importer.model.UserImportJob;
 
-import java.util.Optional;
 import java.util.stream.Stream;
 
 public interface UserImportJobRepository extends ArachneJobRepository<UserImportJob> {

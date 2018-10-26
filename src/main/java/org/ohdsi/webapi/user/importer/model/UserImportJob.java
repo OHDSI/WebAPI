@@ -9,6 +9,8 @@ import java.util.List;
 @Entity
 @Table(name = "user_import_job")
 @SequenceGenerator(name = "arachne_job_generator", sequenceName = "user_import_job_seq", allocationSize = 1)
+@NamedEntityGraph(name = "jobWithMapping",
+  attributeNodes = @NamedAttributeNode("roleGroupMapping"))
 public class UserImportJob extends ArachneJob {
 
   @ElementCollection(fetch = FetchType.EAGER)

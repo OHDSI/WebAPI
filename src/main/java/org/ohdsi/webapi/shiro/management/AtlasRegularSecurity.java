@@ -307,7 +307,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
             casConf.setLoginUrl(casLoginUrlString);
             
             Cas20ServiceTicketValidator cas20Validator = new Cas20ServiceTicketValidator(casServerUrl);
-            casConf.setTicketValidator(cas20Validator);
+            casConf.setDefaultTicketValidator(cas20Validator);
             
             Client casClient = new CasClient(casConf);
             Config casCfg = new Config(new Clients(casCallbackUrl, casClient));

@@ -17,6 +17,8 @@
     <spring.batch.version>3.0.8.RELEASE</spring.batch.version>
     <flyway.version>4.2.0</flyway.version>
     <waffle.version>1.7.3</waffle.version>
+    <pac4j.version>2.2.1</pac4j.version>
+    <buji.version>3.2.0</buji.version>
     <start-class>org.ohdsi.webapi.WebApi</start-class>
 
     <!-- Primary DataSource -->
@@ -565,17 +567,17 @@
     <dependency>
       <groupId>io.buji</groupId>
       <artifactId>buji-pac4j</artifactId>
-      <version>2.0.2</version>
+      <version>${buji.version}</version>
     </dependency>
     <dependency>
       <groupId>org.pac4j</groupId>
       <artifactId>pac4j-oauth</artifactId>
-      <version>1.9.2</version>
+      <version>${pac4j.version}</version>
     </dependency>
     <dependency>
       <groupId>org.pac4j</groupId>
       <artifactId>pac4j-oidc</artifactId>
-      <version>1.9.2</version>
+      <version>${pac4j.version}</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
@@ -663,7 +665,7 @@
     <dependency>
       <groupId>org.pac4j</groupId>
       <artifactId>pac4j-cas</artifactId>
-      <version>1.9.2</version>
+      <version>${pac4j.version}</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>

@@ -40,7 +40,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public List<JobExecution> find10() {
+    public List<JobExecution> findLast10() {
         final Map<String, JobExecution> result = new HashMap<>();
         for (int start = 0; result.size() < MAX_SIZE; start += PAGE_SIZE) {
             final List<JobExecution> page = jobExecutionDao.getJobExecutions(start, PAGE_SIZE);

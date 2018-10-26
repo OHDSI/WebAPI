@@ -60,9 +60,12 @@ public class FacetedSearchService {
                 if(!filter.selectedItems.isEmpty()) {
                     final FacetProvider provider = providersByFacet.get(filter.name);
                     if (provider == null) {
-                        throw new IllegalArgumentException("unknown facet");
+                        assert  filter.selectedItems.size() == 1;
+                        final String text = filter.selectedItems.get(0).text;
+                        predicates.add(criteriaBuilder.like(root.get(filter.name), text + '%'));
+                    } else {
+                        predicates.add(provider.createPredicate(filter.selectedItems, criteriaBuilder, root));
                     }
-                    predicates.add(provider.createPredicate(filter.selectedItems, criteriaBuilder, root));
                 }
             });
             return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));

@@ -1,8 +1,10 @@
 package org.ohdsi.webapi.facets;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.query.QueryUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -40,11 +42,19 @@ public class FacetedSearchService {
     }
 
     public <T> Page<T> getPage(FilteredPageRequest pageable, JpaSpecificationExecutor<T> repository) {
-        return repository.findAll(createFilter(pageable), pageable);
+        try {
+            return repository.findAll(createFilter(pageable), pageable);
+        } catch (Exception e) {
+            LoggerFactory.getLogger(getClass()).error("getting page", e);
+            throw e;
+        }
     }
 
-    private Specification createFilter(FilteredPageRequest request) {
+    private <T> Specification<T> createFilter(FilteredPageRequest request) {
         return (root, criteriaQuery, criteriaBuilder) -> {
+            if(request.getSort() != null) {
+                criteriaQuery.orderBy(QueryUtils.toOrders(request.getSort(), root, criteriaBuilder));
+            }
             final List<Predicate> predicates = new ArrayList<>();
             request.getFilters().forEach(filter -> {
                 if(!filter.selectedItems.isEmpty()) {

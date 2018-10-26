@@ -7,12 +7,13 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 
 public abstract class AbstractDateColumnBasedFacetProvider extends AbstractColumnBasedFacetProvider {
-    public static final int DAY = 24 * 60 * 60;
+    private static final int SECONDS_IN_DAY = 24 * 60 * 60;
 
     public AbstractDateColumnBasedFacetProvider(JdbcTemplate jdbcTemplate) {
         super(jdbcTemplate);
@@ -45,7 +46,7 @@ public abstract class AbstractDateColumnBasedFacetProvider extends AbstractColum
                     return criteriaBuilder.lessThanOrEqualTo(root.get(getField()), criteriaBuilder.literal(from));
                 }
                 case "Just Now": {
-                    final Date from = Date.from(Instant.now().minusSeconds(DAY / 100));
+                    final Date from = Date.from(Instant.now().minusSeconds(SECONDS_IN_DAY / 100));
                     return criteriaBuilder.lessThanOrEqualTo(root.get(getField()), criteriaBuilder.literal(from));
                 }
             }
@@ -56,15 +57,31 @@ public abstract class AbstractDateColumnBasedFacetProvider extends AbstractColum
 
     @Override
     protected String getKey(ResultSet resultSet) throws SQLException {
-        return String.valueOf(resultSet.getDate(1));
+        final java.sql.Date date = resultSet.getDate(1);
+        return date != null ? new SimpleDateFormat().format(date) : "";
     }
 
     @Override
     protected String getText(ResultSet resultSet) throws SQLException {
-        return getKey(resultSet);
+        final java.sql.Date date = resultSet.getDate(1);
+        if(date == null) {
+            return "2+ Weeks Ago";
+        }
+        double daysSinceCreated = (new Date().getTime() - date.getTime()) / 1000.0 / 60 / 60 / 24;
+        if (daysSinceCreated < .01) {
+            return "Just Now";
+        } else if (daysSinceCreated < 1) {
+            return "Within 24 Hours";
+        } else if (daysSinceCreated < 7) {
+            return "This Week";
+        } else if (daysSinceCreated < 14) {
+            return "Last Week";
+        } else {
+            return "2+ Weeks Ago";
+        }
     }
 
     private Date getDaysFromNow(int days) {
-        return Date.from(Instant.now().minusSeconds(days * 24 * 60 * 60));
+        return Date.from(Instant.now().minusSeconds(days * SECONDS_IN_DAY));
     }
 }

@@ -40,7 +40,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public List<JobExecution> findAll() {
+    public List<JobExecution> findLast10() {
         final Map<String, JobExecution> result = new HashMap<>();
         for (int start = 0; result.size() < MAX_SIZE; start += PAGE_SIZE) {
             final List<JobExecution> page = jobExecutionDao.getJobExecutions(start, PAGE_SIZE);
@@ -60,7 +60,7 @@ public class NotificationServiceImpl implements NotificationService {
                 }
             }
         }
-        return result.values().stream().sorted(Comparator.comparing(JobExecution::getStartTime).reversed()).collect(Collectors.toList());
+        return new ArrayList<>(result.values());
     }
 
     @Override

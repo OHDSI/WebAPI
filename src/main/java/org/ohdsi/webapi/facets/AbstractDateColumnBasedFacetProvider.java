@@ -3,6 +3,7 @@ package org.ohdsi.webapi.facets;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.sql.ResultSet;
@@ -23,31 +24,32 @@ public abstract class AbstractDateColumnBasedFacetProvider extends AbstractColum
 
     @Override
     @SuppressWarnings("unchecked")
-    public Predicate createPredicate(List<FilterItem> items, CriteriaBuilder criteriaBuilder, Root root) {
+    public Predicate createPredicate(List<FilterItem> items, CriteriaBuilder cb, Root root) {
         assert items != null && !items.isEmpty();
         if(items.size() == 1) {
             final FilterItem item = items.get(0);
+            final Path field = root.get(getField());
             switch (item.text) {
                 case "2+ Weeks Ago": {
                     final Date from = getDaysFromNow(14);
-                    return criteriaBuilder.lessThanOrEqualTo(root.get(getField()), criteriaBuilder.literal(from));
+                    return cb.or(cb.lessThanOrEqualTo(field, cb.literal(from)), cb.isNull(field));
                 }
                 case "Last Week": {
                     final Date from = getDaysFromNow(14);
                     final Date to = getDaysFromNow(7);
-                    return criteriaBuilder.between(root.get(getField()), criteriaBuilder.literal(from), criteriaBuilder.literal(to));
+                    return cb.between(field, cb.literal(from), cb.literal(to));
                 }
                 case "This Week": {
                     final Date from = getDaysFromNow(7);
-                    return criteriaBuilder.lessThanOrEqualTo(root.get(getField()), criteriaBuilder.literal(from));
+                    return cb.lessThanOrEqualTo(field, cb.literal(from));
                 }
                 case "Within 24 Hours": {
                     final Date from = getDaysFromNow(1);
-                    return criteriaBuilder.lessThanOrEqualTo(root.get(getField()), criteriaBuilder.literal(from));
+                    return cb.lessThanOrEqualTo(field, cb.literal(from));
                 }
                 case "Just Now": {
                     final Date from = Date.from(Instant.now().minusSeconds(SECONDS_IN_DAY / 100));
-                    return criteriaBuilder.lessThanOrEqualTo(root.get(getField()), criteriaBuilder.literal(from));
+                    return cb.lessThanOrEqualTo(field, cb.literal(from));
                 }
             }
         }

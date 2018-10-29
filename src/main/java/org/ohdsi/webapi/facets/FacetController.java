@@ -25,7 +25,7 @@ public class FacetController {
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public List<FilterItem> getValues(@QueryParam("facet") String facet, @QueryParam("entityName") String entityName) {
+    public List<FacetItem> getValues(@QueryParam("facet") String facet, @QueryParam("entityName") String entityName) {
         return searchService.getValues(facet,  entityName);
      }
 }

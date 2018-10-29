@@ -14,7 +14,6 @@
  */
 package org.ohdsi.webapi;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.glassfish.hk2.api.Factory;
@@ -103,9 +102,9 @@ public class PageableValueFactoryProvider implements ValueFactoryProvider {
                 }
             }
 
-            if (filters != null && !"[]".equals(filters)) {
+            if (filters != null) {
                 try {
-                    final List<Filter> f = objectMapper.readValue(filters, new TypeReference<List<Filter>>() {});
+                    final Filter f = objectMapper.readValue(filters, Filter.class);
                     return new FilteredPageRequest(page, size, orders.isEmpty() ? null : new Sort(orders), f);
                 } catch (IOException e) {
                     LoggerFactory.getLogger(getClass()).error("while parsing filters", e);

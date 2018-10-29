@@ -8,7 +8,9 @@ import java.util.List;
 public interface FacetProvider {
     String getName();
 
-    List<FilterItem> getValues(String entityName);
+    List<FacetItem> getValues(String entityName);
 
-    Predicate createPredicate(List<FilterItem> items, CriteriaBuilder criteriaBuilder, Root root);
+    <T> Predicate createFacetPredicate(List<FacetItem> items, CriteriaBuilder criteriaBuilder, Root<T> root);
+
+    <T> Predicate createTextSearchPredicate(String field, String text, CriteriaBuilder criteriaBuilder, Root<T> root);
 }

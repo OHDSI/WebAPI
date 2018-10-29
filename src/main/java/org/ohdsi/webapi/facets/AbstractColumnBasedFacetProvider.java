@@ -18,9 +18,9 @@ public abstract class AbstractColumnBasedFacetProvider implements FacetProvider 
     }
 
     @Override
-    public List<FilterItem> getValues(String entityName) {
+    public List<FacetItem> getValues(String entityName) {
         final String query = SqlRender.renderSql(getValuesQuery, GET_VALUES_PARAMS, new String[]{ getColumn(), entityName });
-        return jdbcTemplate.query(query, (resultSet, i) -> new FilterItem(getText(resultSet),getKey(resultSet),  resultSet.getInt(2)));
+        return jdbcTemplate.query(query, (resultSet, i) -> new FacetItem(getText(resultSet),getKey(resultSet),  resultSet.getInt(2)));
     }
 
     protected abstract String getKey(ResultSet resultSet) throws SQLException;

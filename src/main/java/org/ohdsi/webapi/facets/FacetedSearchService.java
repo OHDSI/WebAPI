@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.facets;
 
+import com.google.common.base.Strings;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
@@ -7,8 +8,9 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.query.QueryUtils;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
+import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -19,22 +21,17 @@ import java.util.Map;
 
 @Service
 public class FacetedSearchService {
-    private final Collection<FacetProvider> providers;
     private final Map<String, FacetProvider> providersByFacet = new HashMap<>();
 
-    @PostConstruct
-    private void init() {
-        providers.forEach(p -> providersByFacet.put(p.getName(), p));
-    }
-
-
     public FacetedSearchService(Collection<FacetProvider> providers) {
-        this.providers = providers;
+        providers.forEach(p -> {
+            providersByFacet.put(p.getName(), p);
+        });
     }
 
-    public List<FilterItem> getValues(String facet, String entityName) {
+    public List<FacetItem> getValues(String facet, String entityName) {
         final FacetProvider facetProvider = providersByFacet.get(facet);
-        if(facetProvider == null) {
+        if (facetProvider == null) {
             throw new IllegalArgumentException("unknown facet");
         }
         return facetProvider.getValues(entityName);
@@ -52,24 +49,42 @@ public class FacetedSearchService {
 
     private <T> Specification<T> createFilter(FilteredPageRequest request) {
         return (root, criteriaQuery, criteriaBuilder) -> {
-            if(request.getSort() != null) {
+            if (request.getSort() != null) {
                 criteriaQuery.orderBy(QueryUtils.toOrders(request.getSort(), root, criteriaBuilder));
             }
-            final List<Predicate> predicates = new ArrayList<>();
-            request.getFilters().forEach(filter -> {
-                if(!filter.selectedItems.isEmpty()) {
-                    final FacetProvider provider = providersByFacet.get(filter.name);
-                    if (provider == null) {
-                        assert  filter.selectedItems.size() == 1;
-                        final String text = filter.selectedItems.get(0).text;
-                        predicates.add(criteriaBuilder.like(root.get(filter.name), text + '%'));
-                    } else {
-                        predicates.add(provider.createPredicate(filter.selectedItems, criteriaBuilder, root));
-                    }
-                }
-            });
-            return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+            final Predicate facetSearch = createFacetSearchPredicate(root, criteriaBuilder, request.getFilter());
+            return !Strings.isNullOrEmpty(request.getFilter().getText())
+                    ? criteriaBuilder.and(facetSearch, createTextSearchPredicate(root, criteriaBuilder, request.getFilter()))
+                    : facetSearch;
         };
+    }
+
+    private <T> Predicate createTextSearchPredicate(Root<T> root, CriteriaBuilder criteriaBuilder, Filter filter) {
+        final List<Predicate> textSearch = new ArrayList<>();
+        filter.getSearchableFields().forEach(field -> {
+            final FacetProvider provider = providersByFacet.get(field);
+            if (provider != null) {
+                textSearch.add(provider.createTextSearchPredicate(field, filter.getText(), criteriaBuilder, root));
+            } else {
+                throw new IllegalArgumentException("unknown facet: " + field);
+            }
+        });
+        return criteriaBuilder.or(textSearch.toArray(new Predicate[0]));
+    }
+
+    private <T> Predicate createFacetSearchPredicate(Root<T> root, CriteriaBuilder criteriaBuilder, Filter filter) {
+        final List<Predicate> predicates = new ArrayList<>();
+        filter.getFacets().forEach(facet -> {
+            if (!facet.selectedItems.isEmpty()) {
+                final FacetProvider provider = providersByFacet.get(facet.name);
+                if (provider != null) {
+                    predicates.add(provider.createFacetPredicate(facet.selectedItems, criteriaBuilder, root));
+                } else {
+                    throw new IllegalArgumentException("unknown facet: " + facet.name);
+                }
+            }
+        });
+        return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
     }
 
 

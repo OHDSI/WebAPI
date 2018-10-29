@@ -23,15 +23,20 @@ public abstract class AbstractDateColumnBasedFacetProvider extends AbstractColum
     protected abstract String getField();
 
     @Override
-    public Predicate createPredicate(List<FilterItem> items, CriteriaBuilder cb, Root root) {
+    public <T> Predicate createFacetPredicate(List<FacetItem> items, CriteriaBuilder cb, Root<T> root) {
         assert items != null && !items.isEmpty();
         return items.size() == 1
                 ? createItemPredicate(items.get(0), cb, root)
-                : cb.or(items.stream().map(item -> createPredicate(items, cb, root)).toArray(Predicate[]::new));
+                : cb.or(items.stream().map(item -> createFacetPredicate(items, cb, root)).toArray(Predicate[]::new));
+    }
+
+    @Override
+    public <T> Predicate createTextSearchPredicate(String field, String text, CriteriaBuilder criteriaBuilder, Root<T> root) {
+        throw new IllegalStateException("text search on date columns not supported");
     }
 
     @SuppressWarnings("unchecked")
-    private Predicate createItemPredicate(FilterItem item, CriteriaBuilder cb, Root root) {
+    private Predicate createItemPredicate(FacetItem item, CriteriaBuilder cb, Root root) {
         final Path field = root.get(getField());
         switch (item.text) {
             case "2+ Weeks Ago": {

@@ -27,7 +27,7 @@ public abstract class AbstractDateColumnBasedFacetProvider extends AbstractColum
         assert items != null && !items.isEmpty();
         return items.size() == 1
                 ? createItemPredicate(items.get(0), cb, root)
-                : cb.or(items.stream().map(item -> createFacetPredicate(items, cb, root)).toArray(Predicate[]::new));
+                : cb.or(items.stream().map(item -> createItemPredicate(item, cb, root)).toArray(Predicate[]::new));
     }
 
     @Override
@@ -50,15 +50,15 @@ public abstract class AbstractDateColumnBasedFacetProvider extends AbstractColum
             }
             case "This Week": {
                 final Date from = getDaysFromNow(7);
-                return cb.lessThanOrEqualTo(field, cb.literal(from));
+                return cb.greaterThanOrEqualTo(field, cb.literal(from));
             }
             case "Within 24 Hours": {
                 final Date from = getDaysFromNow(1);
-                return cb.lessThanOrEqualTo(field, cb.literal(from));
+                return cb.greaterThanOrEqualTo(field, cb.literal(from));
             }
             case "Just Now": {
                 final Date from = Date.from(Instant.now().minusSeconds(SECONDS_IN_DAY / 100));
-                return cb.lessThanOrEqualTo(field, cb.literal(from));
+                return cb.greaterThanOrEqualTo(field, cb.literal(from));
             }
             default:
                 throw new IllegalArgumentException("unknown date facet value");

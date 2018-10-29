@@ -190,7 +190,7 @@ public class AtlasCustomSecurity extends AtlasSecurity {
 
     FilterChainBuilder filterChainBuilder = new FilterChainBuilder()
             .setOAuthFilters("ssl, cors, forceSessionCreation", "updateToken, sendTokenInUrl")
-            .setRestFilters("ssl, noSessionCreation, cors")
+            .setRestFilters("ssl, noSessionCreation, cors, casSessionFilter")
             .setAuthcFilter("jwtAuthc")
             .setAuthzFilter("authz")
             // login/logout

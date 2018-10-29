@@ -1,5 +1,7 @@
 package org.ohdsi.webapi.facets;
 
+import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
+import com.cosium.spring.data.jpa.entity.graph.repository.EntityGraphJpaSpecificationExecutor;
 import com.google.common.base.Strings;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -41,6 +43,15 @@ public class FacetedSearchService {
     public <T> Page<T> getPage(FilteredPageRequest pageable, JpaSpecificationExecutor<T> repository) {
         try {
             return repository.findAll(createFilter(pageable), pageable);
+        } catch (Exception e) {
+            LoggerFactory.getLogger(getClass()).error("getting page", e);
+            throw e;
+        }
+    }
+
+    public <T> Page<T> getPage(FilteredPageRequest pageable, EntityGraphJpaSpecificationExecutor<T> repository, EntityGraph defaultEntityGraph) {
+        try {
+            return repository.findAll(createFilter(pageable), pageable, defaultEntityGraph);
         } catch (Exception e) {
             LoggerFactory.getLogger(getClass()).error("getting page", e);
             throw e;

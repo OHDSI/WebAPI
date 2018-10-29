@@ -9,6 +9,8 @@ import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfo
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
+import org.ohdsi.webapi.facets.FacetedSearchService;
+import org.ohdsi.webapi.facets.FilteredPageRequest;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.pathway.converter.SerializedPathwayAnalysisToPathwayAnalysisConverter;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
@@ -61,11 +63,7 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.summingInt;
 import static org.ohdsi.webapi.Constants.GENERATE_PATHWAY_ANALYSIS;
-import static org.ohdsi.webapi.Constants.Params.JOB_AUTHOR;
-import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
-import static org.ohdsi.webapi.Constants.Params.PATHWAY_ANALYSIS_ID;
-import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
-import static org.ohdsi.webapi.Constants.Params.TARGET_TABLE;
+import static org.ohdsi.webapi.Constants.Params.*;
 
 @Service
 @Transactional
@@ -80,6 +78,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     private final AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository;
     private final UserRepository userRepository;
     private final GenerationUtils generationUtils;
+    private final FacetedSearchService facetedSearchService;
 
     private final EntityGraph defaultEntityGraph = EntityUtils.fromAttributePaths(
             "targetCohorts.cohortDefinition",
@@ -100,14 +99,15 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
             DesignImportService designImportService,
             AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository,
             UserRepository userRepository,
-            GenerationUtils generationUtils
-    ) {
+            GenerationUtils generationUtils,
+            FacetedSearchService facetedSearchService) {
 
         this.pathwayAnalysisRepository = pathwayAnalysisRepository;
         this.pathwayAnalysisGenerationRepository = pathwayAnalysisGenerationRepository;
         this.sourceService = sourceService;
         this.jobTemplate = jobTemplate;
         this.entityManager = entityManager;
+        this.facetedSearchService = facetedSearchService;
         this.security = security;
         this.designImportService = designImportService;
         this.analysisGenerationInfoEntityRepository = analysisGenerationInfoEntityRepository;
@@ -169,8 +169,9 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
     @Override
     public Page<PathwayAnalysisEntity> getPage(final Pageable pageable) {
-
-        return pathwayAnalysisRepository.findAll(pageable, defaultEntityGraph);
+        return pageable instanceof FilteredPageRequest
+                ? facetedSearchService.getPage((FilteredPageRequest) pageable, pathwayAnalysisRepository, defaultEntityGraph)
+                : pathwayAnalysisRepository.findAll(pageable, defaultEntityGraph);
     }
 
     @Override

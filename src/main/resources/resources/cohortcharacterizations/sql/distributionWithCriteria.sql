@@ -12,10 +12,10 @@ where
 group by v.person_id;
 
 with
-  t1 as (
+  events_max_value as (
     select max(value_as_int) as max_value from #events_count
   ),
-  t2 as (
+  event_stat_values as (
     select
       count(*) as count_value,
       min(value_as_int) as min_value,
@@ -24,20 +24,20 @@ with
       stdev(value_as_int) as sdtev_value
     from #events_count
   ),
-  t3 as (
-    select count(*) as p10 from #events_count, t1 where value_as_int < 0.1 * t1.max_value
+  events_p10_value as (
+    select count(*) as p10 from #events_count, events_max_value where value_as_int < 0.1 * events_max_value.max_value
   ),
-  t4 as (
-    select count(*) as p25 from #events_count, t1 where value_as_int < 0.25 * t1.max_value
+  events_p25_value as (
+    select count(*) as p25 from #events_count, events_max_value where value_as_int < 0.25 * events_max_value.max_value
   ),
-  t5 as (
-    select count(*) as median_value from #events_count, t1 where value_as_int < 0.5 * t1.max_value
+  events_median_value as (
+    select count(*) as median_value from #events_count, events_max_value where value_as_int < 0.5 * events_max_value.max_value
   ),
-  t6 as (
-    select count(*) as p75 from #events_count, t1 where value_as_int < 0.75 * t1.max_value
+  events_p75_value as (
+    select count(*) as p75 from #events_count, events_max_value where value_as_int < 0.75 * events_max_value.max_value
   ),
-  t7 as (
-    select count(*) as p90 from #events_count, t1 where value_as_int < 0.9 * t1.max_value
+  events_p90_value as (
+    select count(*) as p90 from #events_count, events_max_value where value_as_int < 0.9 * events_max_value.max_value
   )
 insert into @results_database_schema.cc_results(type, fa_type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id,
   cohort_definition_id, cc_generation_id, count_value, min_value, max_value, avg_value, stdev_value, p10_value, p25_value, median_value, p75_value, p90_value)
@@ -51,17 +51,17 @@ select
   @conceptId as concept_id,
   @cohortId as cohort_definition_id,
   @executionId as cc_generation_id,
-  t2.count_value,
-  t2.min_value,
-  t2.max_value,
-  t2.avg_value,
-  t2.sdtev_value,
-  t3.p10 as p10_value,
-  t4.p25 as p25_value,
-  t5.median_value,
-  t6.p75 as p75_value,
-  t7.p90 as p90_value
-from t1, t2, t3, t4, t5, t6, t7;
+  event_stat_values.count_value,
+  event_stat_values.min_value,
+  event_stat_values.max_value,
+  event_stat_values.avg_value,
+  event_stat_values.sdtev_value,
+  events_p10_value.p10 as p10_value,
+  events_p25_value.p25 as p25_value,
+  events_median_value.median_value,
+  events_p75_value.p75 as p75_value,
+  events_p90_value.p90 as p90_value
+from events_max_value, event_stat_values, events_p10_value, events_p25_value, events_median_value, events_p75_value, events_p90_value;
 
 truncate table #events_count;
 drop table #events_count;

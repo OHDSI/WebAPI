@@ -1,6 +1,10 @@
 package org.ohdsi.webapi;
 
+import com.google.common.collect.ImmutableMap;
+import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
 import org.springframework.batch.core.ExitStatus;
+
+import java.util.Map;
 
 public interface Constants {
   String GENERATE_COHORT = "generateCohort";
@@ -31,4 +35,14 @@ public interface Constants {
     String GENERATE_STATS = "generate_stats";
     String JOB_START_TIME = "time";
   }
+
+  Map<StandardFeatureAnalysisDomain, String> DOMAIN_TABLES = ImmutableMap.<StandardFeatureAnalysisDomain, String>builder()
+          .put(StandardFeatureAnalysisDomain.CONDITION, "condition_occurrence")
+          .put(StandardFeatureAnalysisDomain.DEVICE, "device_exposure")
+          .put(StandardFeatureAnalysisDomain.DRUG, "drug_exposure")
+          .put(StandardFeatureAnalysisDomain.MEASUREMENT, "measurement")
+          .put(StandardFeatureAnalysisDomain.OBSERVATION, "observation")
+          .put(StandardFeatureAnalysisDomain.PROCEDURE, "procedure_occurrence")
+          .put(StandardFeatureAnalysisDomain.VISIT, "visit_occurrence")
+          .build();
 }

@@ -16,8 +16,11 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.tomcat.util.bcel.Const;
+import org.eclipse.collections.impl.factory.Lists;
 import org.json.JSONObject;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
@@ -34,6 +37,7 @@ import org.ohdsi.featureExtraction.FeatureExtraction;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConverter;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcParamEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
@@ -71,8 +75,17 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
     private static final String[] RETRIEVING_PARAMETERS = {"features", "featureRefs", "analysisRefs", "cohortId", "executionId"};
 
     private static final String COHORT_STATS_QUERY = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/prevalenceWithCriteria.sql");
+    private static final String COHORT_DIST_QUERY = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/distributionWithCriteria.sql");
     private static final String CREATE_COHORT_SQL = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/createCohortTable.sql");
     private static final String DROP_TABLE_SQL = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/dropCohortTable.sql");
+
+    private static final Collection<String> PREVALENCE_PARAM_NAMES = ImmutableList.<String>builder()
+            .add("cohortId", "executionId", "analysisId", "analysisName", "covariateName", "conceptId", "covariateId", "targetTable", "totalsTable")
+            .build();
+    private static final Collection<String> DISTRIBUTION_PARAM_NAMES = ImmutableList.<String>builder()
+            .addAll(PREVALENCE_PARAM_NAMES)
+            .add("domain_table")
+            .build();
 
     private final CcService ccService;
     private final FeAnalysisService feAnalysisService;
@@ -362,7 +375,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             String createCohortSql = sourceAwareSqlRender.renderSql(sourceId, CREATE_COHORT_SQL, TARGET_TABLE, targetTable);
 
             String exprQuery = queryBuilder.buildExpressionQuery(builder.withCriteria(expression), options);
-            String statsQuery = getCriteriaStatsQuery(cohortDefinition, analysis, feature, targetTable);
+            String statsQuery = getCriteriaStatsQuery(getStatQueryFile(analysis), cohortDefinition, analysis, feature, targetTable);
             String dropTableSql = sourceAwareSqlRender.renderSql(sourceId, DROP_TABLE_SQL, TARGET_TABLE, targetTable);
             queries.add(createCohortSql);
             queries.add(exprQuery);
@@ -372,17 +385,41 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             return queries;
         }
 
-        private String getCriteriaStatsQuery(CohortDefinition cohortDefinition, FeAnalysisWithCriteriaEntity analysis, FeAnalysisCriteriaEntity feature, String targetTable) {
+        private String getStatQueryFile(FeAnalysisWithCriteriaEntity analysis) {
+            String result;
+            switch (analysis.getStatType()) {
+                case PREVALENCE:
+                    result = COHORT_STATS_QUERY;
+                    break;
+                case DISTRIBUTION:
+                    result = COHORT_DIST_QUERY;
+                    break;
+                default:
+                    throw new IllegalArgumentException(String.format("Stat type %s is not supported", analysis.getStatType()));
+            }
+            return result;
+        }
+
+        private String getDomainTable(FeAnalysisEntity analysis) {
+
+            return Optional.ofNullable(Constants.DOMAIN_TABLES.get(analysis.getDomain()))
+                    .orElseThrow(() -> new IllegalArgumentException(String.format("Domain %s is not supported", analysis.getDomain())));
+        }
+
+        private String getCriteriaStatsQuery(String queryFile, CohortDefinition cohortDefinition, FeAnalysisWithCriteriaEntity analysis, FeAnalysisCriteriaEntity feature, String targetTable) {
+
             Long conceptId = 0L;
             if (feature.getExpression().demographicCriteriaList.length > 0 && feature.getExpression().demographicCriteriaList[0].gender.length > 0) {
                 conceptId = feature.getExpression().demographicCriteriaList[0].gender[0].conceptId;
             }
-            return sourceAwareSqlRender.renderSql(sourceId, COHORT_STATS_QUERY,
-                    new String[]{ "cohortId", "executionId", "analysisId", "analysisName", "covariateName", "conceptId", "covariateId", "targetTable", "totalsTable" },
-                    new String[]{ String.valueOf(cohortDefinition.getId()),
-                        String.valueOf(jobId), String.valueOf(analysis.getId()), analysis.getName(), feature.getName(), String.valueOf(conceptId),
-                        String.valueOf(feature.getId()), targetTable, cohortTable }
-                    );
+            String[] paramNames = (CcResultType.PREVALENCE.equals(analysis.getStatType()) ? PREVALENCE_PARAM_NAMES : DISTRIBUTION_PARAM_NAMES).toArray(new String[0]);
+            Collection<String> paramValues = Lists.mutable.with(String.valueOf(cohortDefinition.getId()),
+                    String.valueOf(jobId), String.valueOf(analysis.getId()), analysis.getName(), feature.getName(), String.valueOf(conceptId),
+                    String.valueOf(feature.getId()), targetTable, cohortTable);
+            if (CcResultType.DISTRIBUTION.equals(analysis.getStatType())) {
+                paramValues.add(getDomainTable(analysis));
+            }
+            return sourceAwareSqlRender.renderSql(sourceId, queryFile, paramNames, paramValues.toArray(new String[0]));
         }
 
         private List<String> getCohortWithCriteriaFeaturesQueries(CohortDefinition cohortDefinition, FeAnalysisWithCriteriaEntity analysis) {

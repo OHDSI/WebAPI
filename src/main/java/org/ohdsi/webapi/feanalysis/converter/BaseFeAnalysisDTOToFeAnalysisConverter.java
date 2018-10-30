@@ -12,7 +12,7 @@ public abstract class BaseFeAnalysisDTOToFeAnalysisConverter<D extends FeAnalysi
     final T result = createResultObject(source);
 
     result.setId(source.getId());
-    result.setDescr(source.getDescription());
+    result.setDescr(source.getDescr());
     result.setDomain(source.getDomain());
     result.setName(source.getName());
     result.setType(source.getType());

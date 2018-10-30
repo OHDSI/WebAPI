@@ -29,10 +29,4 @@ public class FeAnalysisDTO extends FeAnalysisShortDTO implements FeatureAnalysis
 
         this.design = design;
     }
-
-    @Override
-    public String getDescr() {
-
-        return getDescription();
-    }
 }

@@ -13,7 +13,7 @@ public abstract class BaseFeAnalysisEntityToFeAnalysisDTOConverter<T extends FeA
     dto.setName(source.getName());
     dto.setId(source.getId());
     dto.setDomain(source.getDomain());
-    dto.setDescription(source.getDescr());
+    dto.setDescr(source.getDescr());
 
     return dto;
   }

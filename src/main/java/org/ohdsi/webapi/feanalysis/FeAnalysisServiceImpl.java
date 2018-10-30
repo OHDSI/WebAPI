@@ -1,13 +1,16 @@
 package org.ohdsi.webapi.feanalysis;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.webapi.cohortcharacterization.CcResultType;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
-import org.ohdsi.webapi.feanalysis.domain.*;
+import org.ohdsi.webapi.facets.FacetedSearchService;
+import org.ohdsi.webapi.facets.FilteredPageRequest;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisConcepsetEntity;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisCriteriaEntity;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisCriteriaRepository;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisEntityRepository;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisWithStringEntityRepository;
@@ -17,27 +20,39 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.ws.rs.NotFoundException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
 public class FeAnalysisServiceImpl implements FeAnalysisService {
     
-    private FeAnalysisEntityRepository analysisRepository;
-    private FeAnalysisCriteriaRepository criteriaRepository;
-    private FeAnalysisWithStringEntityRepository stringAnalysisRepository;
-    
+    private final FeAnalysisEntityRepository analysisRepository;
+    private final FeAnalysisCriteriaRepository criteriaRepository;
+    private final FeAnalysisWithStringEntityRepository stringAnalysisRepository;
+    private final FacetedSearchService facetedSearchService;
+
     public FeAnalysisServiceImpl(
             final FeAnalysisEntityRepository analysisRepository,
-            final FeAnalysisCriteriaRepository criteriaRepository, 
-            final FeAnalysisWithStringEntityRepository stringAnalysisRepository) {
+            final FeAnalysisCriteriaRepository criteriaRepository,
+            final FeAnalysisWithStringEntityRepository stringAnalysisRepository,
+            final FacetedSearchService facetedSearchService) {
         this.analysisRepository = analysisRepository;
         this.criteriaRepository = criteriaRepository;
         this.stringAnalysisRepository = stringAnalysisRepository;
+        this.facetedSearchService = facetedSearchService;
     }
 
     @Override
     public Page<FeAnalysisEntity> getPage(final Pageable pageable) {
-        return analysisRepository.findAll(pageable);
+        return pageable instanceof FilteredPageRequest
+                ? facetedSearchService.getPage((FilteredPageRequest) pageable, analysisRepository)
+                : analysisRepository.findAll(pageable);
     }
 
   @Override

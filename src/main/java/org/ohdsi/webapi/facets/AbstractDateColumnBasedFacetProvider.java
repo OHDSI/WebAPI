@@ -36,7 +36,7 @@ public abstract class AbstractDateColumnBasedFacetProvider extends AbstractColum
     }
 
     @SuppressWarnings("unchecked")
-    private Predicate createItemPredicate(FacetItem item, CriteriaBuilder cb, Root root) {
+    private <T> Predicate createItemPredicate(FacetItem item, CriteriaBuilder cb, Root<T> root) {
         final Path field = root.get(getField());
         switch (item.text) {
             case "2+ Weeks Ago": {

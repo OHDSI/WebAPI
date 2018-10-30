@@ -8,12 +8,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import javax.annotation.PostConstruct;
-
 import com.fasterxml.jackson.databind.type.CollectionType;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
@@ -21,6 +15,12 @@ import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisCriteriaDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisWithConceptSetDTO;
+
+import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 public class FeAnalysisDeserializer extends JsonDeserializer<FeAnalysisDTO> {
     
@@ -49,12 +49,12 @@ public class FeAnalysisDeserializer extends JsonDeserializer<FeAnalysisDTO> {
 
         final JsonNode description = node.get("description");
         if (description != null) {
-            dto.setDescription(description.textValue());    
+            dto.setDescr(description.textValue());
         }
 
         final JsonNode descr = node.get("descr");
         if (descr != null) {
-            dto.setDescription(descr.textValue());
+            dto.setDescr(descr.textValue());
         }
 
         final JsonNode id = node.get("id");

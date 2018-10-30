@@ -6,7 +6,7 @@ import org.ohdsi.webapi.cohortcharacterization.CcResultType;
 
 public class FeAnalysisShortDTO {
 
-    protected String description;
+    protected String descr;
     private Integer id;
     private String name;
     private StandardFeatureAnalysisType type;
@@ -49,14 +49,14 @@ public class FeAnalysisShortDTO {
         this.domain = domain;
     }
 
-    public String getDescription() {
+    public String getDescr() {
 
-        return description;
+        return descr;
     }
 
-    public void setDescription(final String description) {
+    public void setDescr(final String descr) {
 
-        this.description = description;
+        this.descr = descr;
     }
 
     public CcResultType getStatType() {

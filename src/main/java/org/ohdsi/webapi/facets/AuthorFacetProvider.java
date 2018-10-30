@@ -36,7 +36,12 @@ public class AuthorFacetProvider extends AbstractColumnBasedFacetProvider {
     public <T> Predicate createFacetPredicate(List<FacetItem> items, CriteriaBuilder criteriaBuilder, Root<T> root) {
         assert items != null && !items.isEmpty();
         final List<Long> ids = items.stream().map(item -> Long.valueOf(item.key)).collect(Collectors.toList());
-        return root.get(FIELD_NAME).in(ids);
+        final Path<Object> path = root.get(FIELD_NAME);
+        if(ids.contains(0L)) {
+            return criteriaBuilder.or(path.in(ids), path.isNull());
+        } else {
+            return path.in(ids);
+        }
     }
 
     @Override
@@ -57,7 +62,8 @@ public class AuthorFacetProvider extends AbstractColumnBasedFacetProvider {
 
     @Override
     protected String getText(ResultSet resultSet) throws SQLException {
-        return userRepository.getUserLoginById((long) resultSet.getInt(1));
+        final String login = userRepository.getUserLoginById((long) resultSet.getInt(1));
+        return login != null ? login : "anonymous";
     }
 }
 

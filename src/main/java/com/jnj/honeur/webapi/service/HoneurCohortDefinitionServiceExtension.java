@@ -228,7 +228,6 @@ public class HoneurCohortDefinitionServiceExtension {
             log.info("Set source daimon context to: " + new SourceDaimonContext(sourceKey, SourceDaimon.DaimonType.Results).getSourceDaimonContextKey());
             SourceDaimonContextHolder
                     .setCurrentSourceDaimonContext(new SourceDaimonContext(sourceKey, SourceDaimon.DaimonType.Results));
-            log.info("Changed to " + SourceDaimonContextHolder.getCurrentSourceDaimonContextKey());
 
             List<CohortEntity> cohorts = cohortRepository.getAllCohortsForId((long) id);
             List<CohortInclusionEntity> cohortInclusions =

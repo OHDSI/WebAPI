@@ -8,4 +8,4 @@ INSERT INTO ${ohdsiSchema}.SEC_ROLE_PERMISSION (ID, ROLE_ID, PERMISSION_ID, STAT
       SELECT p.id FROM ${ohdsiSchema}.SEC_PERMISSION p WHERE p.value = 'cohortdefinition:uuids:get'
     ),
     NULL
-  ) ON CONFLICT DO NOTHING;
+  );

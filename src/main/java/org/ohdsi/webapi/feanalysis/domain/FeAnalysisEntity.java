@@ -1,8 +1,14 @@
 package org.ohdsi.webapi.feanalysis.domain;
 
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import org.hibernate.annotations.DiscriminatorFormula;
+import org.hibernate.annotations.Type;
+import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysis;
+import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
+import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
+import org.ohdsi.webapi.cohortcharacterization.CcResultType;
+import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
+import org.ohdsi.webapi.model.CommonEntity;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -13,25 +19,19 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.Lob;
 import javax.persistence.ManyToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import org.hibernate.annotations.DiscriminatorFormula;
-import org.hibernate.annotations.Type;
-import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysis;
-import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
-import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
-import org.ohdsi.webapi.cohortcharacterization.CcResultType;
-import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Table(name = "fe_analysis")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorFormula("type")
-public abstract class FeAnalysisEntity<T> implements FeatureAnalysis, Comparable<FeAnalysisEntity> {
+public abstract class FeAnalysisEntity<T> extends CommonEntity implements FeatureAnalysis, Comparable<FeAnalysisEntity> {
 
     public FeAnalysisEntity() {
     }

@@ -70,7 +70,6 @@ public class DataSourceLookup implements org.springframework.jdbc.datasource.loo
         if(dataSource != null) {
             return dataSource;
         }
-        LOG.info("No such datasource: " + sourceDaimonContext.getSourceDaimonContextKey());
         return getPrimaryDataSource();
     }
 

@@ -112,7 +112,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   private static final String NAME = "irAnalysis";
 
 
-    @Autowired
+  @Autowired
   private IncidenceRateAnalysisRepository irAnalysisRepository;
 
   @Autowired
@@ -488,10 +488,11 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   @Produces(MediaType.APPLICATION_JSON)
   @Transactional(readOnly = true)
   public List<AnalysisInfoDTO> getAnalysisInfo(@PathParam("id") final int id) {
-    IncidenceRateAnalysis analysis = this.irAnalysisRepository.findOne(id);
+    IncidenceRateAnalysis analysis = irAnalysisRepository.findOneWithExecutions(id);
 
     List<AnalysisInfoDTO> result = new ArrayList<>();
-    for (ExecutionInfo executionInfo : analysis.getExecutionInfoList()) {
+    Set<ExecutionInfo> executionInfoList = analysis.getExecutionInfoList();
+    for (ExecutionInfo executionInfo : executionInfoList) {
       AnalysisInfoDTO info = new AnalysisInfoDTO();
       info.executionInfo = executionInfo;
       try {

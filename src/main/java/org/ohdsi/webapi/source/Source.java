@@ -63,28 +63,23 @@ public class Source implements Serializable {
   @Column(name="SOURCE_DIALECT")
   private String sourceDialect;
 
-  @JsonIgnore
   @Column(name="SOURCE_CONNECTION")
   private String sourceConnection;
 
   @Column(name="SOURCE_KEY")
   private String sourceKey;
 
-  @JsonIgnore
   @Column
   @Type(type = "encryptedString")
   private String username;
 
-  @JsonIgnore
   @Column
   @Type(type = "encryptedString")
   private String password;
 
-  @JsonIgnore
   @Column(name = "krb_keytab")
   private byte[] krbKeytab;
 
-  @JsonIgnore
   @Column(name = "keytab_name")
   private String keytabName;
 
@@ -224,5 +219,11 @@ public class Source implements Serializable {
   public int hashCode() {
 
     return Objects.hash(sourceId);
+  }
+
+  @Override
+  public String toString(){
+      return String.format("sourceId = %d, daimons = %s, sourceName = %s, sourceDialect = %s, sourceKey = %s, krbAdminServer = %s, krbAuthMethod = %s",
+              sourceId, daimons, sourceName, sourceDialect, sourceKey, krbAdminServer, krbAuthMethod);
   }
 }

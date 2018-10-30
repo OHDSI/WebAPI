@@ -13,37 +13,21 @@ import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 public class CohortAnalysisTask {
 
 	private static final Logger log = LoggerFactory.getLogger(CohortAnalysisTasklet.class);
-
 	private String jobName;
-
 	private Source source;
-
 	private String sourceKey;
-
 	private int smallCellCount;
-
 	private boolean runHeraclesHeel;
-
 	private boolean cohortPeriodOnly;
-	
 	private String cdmVersion = "5";  // Default to CDM V5
-	
 	private List<String> visualizations;
-
 	private List<String> cohortDefinitionIds;
-
 	private List<String> analysisIds;
-
 	private List<String> conditionConceptIds;
-
 	private List<String> drugConceptIds;
-
 	private List<String> procedureConceptIds;
-
 	private List<String> observationConceptIds;
-
 	private List<String> measurementConceptIds;
-	
 	private List<PeriodType> periods;
 
 	private boolean rollupUtilizationVisit;
@@ -296,13 +280,13 @@ public class CohortAnalysisTask {
 
 	@Override
 	public String toString() {
-			ObjectMapper mapper = new ObjectMapper();
-			try {
-				return mapper.writeValueAsString(this);
-			} catch (Exception e) {
-				log.error(whitelist(e));
-			}
-		return super.toString();
+			return String.format("jobName = %s, source = %s, smallCellCount = %d, runHeraclesHeel = %s, " +
+					"cohortPeriodOnly = %s, cdmVersion = %s, visualizations = %s, cohortDefinitionIds = %s, " +
+					"analysisIds = %s, conditionConceptIds = %s, drugConceptIds = %s, procedureConceptIds = %s, " +
+					"observationConceptIds = %s, measurementConceptIds = %s, periods = %s",
+					jobName, source, smallCellCount, runHeraclesHeel, cohortPeriodOnly, cdmVersion,
+					visualizations, cohortDefinitionIds, analysisIds, conditionConceptIds, drugConceptIds,
+					procedureConceptIds, observationConceptIds, measurementConceptIds, periods);
 
 	}
 }

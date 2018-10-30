@@ -1,7 +1,7 @@
 package com.jnj.honeur.webapi.shiro.management;
 
 import com.jnj.honeur.webapi.cas.filter.CASSessionFilter;
-import com.jnj.honeur.webapi.shiro.filters.HoneurInvalidateAccessTokenFilter;
+import com.jnj.honeur.webapi.shiro.filters.HoneurLogoutFilter;
 import com.jnj.honeur.webapi.shiro.filters.HoneurJwtAuthFilter;
 import com.jnj.honeur.webapi.shiro.filters.HoneurUpdateAccessTokenFilter;
 import io.buji.pac4j.filter.CallbackFilter;
@@ -19,7 +19,6 @@ import org.apache.shiro.web.util.WebUtils;
 import org.jasig.cas.client.validation.Cas20ServiceTicketValidator;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.filters.*;
-import org.ohdsi.webapi.shiro.management.AtlasRegularSecurity;
 import org.ohdsi.webapi.shiro.management.AtlasSecurity;
 import org.ohdsi.webapi.shiro.realms.ADRealm;
 import org.ohdsi.webapi.shiro.realms.JdbcAuthRealm;
@@ -221,10 +220,10 @@ public class AtlasCustomSecurity extends AtlasSecurity {
 
       Map<String, Filter> filters = super.getFilters();
 
-      filters.put("logout", new LogoutFilter(eventPublisher));
-      filters.put("updateToken", new UpdateAccessTokenFilter(this.authorizer, this.defaultRoles, this.tokenExpirationIntervalInSeconds));
+      filters.put("logout", new HoneurLogoutFilter());
+      filters.put("updateToken", new HoneurUpdateAccessTokenFilter(this.authorizer, this.defaultRoles, this.tokenExpirationIntervalInSeconds));
 
-      filters.put("jwtAuthc", new AtlasJwtAuthFilter());
+      filters.put("jwtAuthc", new HoneurJwtAuthFilter());
       filters.put("jdbcFilter", new JdbcAuthFilter(eventPublisher));
       filters.put("kerberosFilter", new KerberosAuthFilter());
       filters.put("ldapFilter", new LdapAuthFilter(eventPublisher));
@@ -235,9 +234,6 @@ public class AtlasCustomSecurity extends AtlasSecurity {
       filters.put("sendTokenInHeader", new SendTokenInHeaderFilter());
       filters.put("sendTokenInRedirect", new SendTokenInRedirectFilter(redirectUrl));
 
-      filters.put("jwtAuthc", new HoneurJwtAuthFilter());
-      filters.put("updateToken", new HoneurUpdateAccessTokenFilter(this.authorizer, this.defaultRoles, this.tokenExpirationIntervalInSeconds));
-      filters.put("invalidateToken", new HoneurInvalidateAccessTokenFilter());
       filters.put("createPermissionsOnImportCohortDefinition", this.getCreatePermissionsOnImportCohortDefinitionFilter());
       filters.put("deletePermissionsOnExportCohortDefinition", this.getDeletePermissionsOnExportCohortDefinitionFilter());
       filters.put("createPermissionsOnCreateCohortDefinition", this.getCreatePermissionsOnCreateCohortDefinitionFilter());

@@ -45,4 +45,54 @@ public interface Constants {
           .put(StandardFeatureAnalysisDomain.PROCEDURE, "procedure_occurrence")
           .put(StandardFeatureAnalysisDomain.VISIT, "visit_occurrence")
           .build();
+
+  Map<StandardFeatureAnalysisDomain, String> DOMAIN_ID_FIELDS = ImmutableMap.<StandardFeatureAnalysisDomain, String>builder()
+          .put(StandardFeatureAnalysisDomain.CONDITION, "condition_occurrence_id")
+          .put(StandardFeatureAnalysisDomain.DEVICE, "device_exposure_id")
+          .put(StandardFeatureAnalysisDomain.DRUG, "drug_exposure_id")
+          .put(StandardFeatureAnalysisDomain.MEASUREMENT, "measurement_id")
+          .put(StandardFeatureAnalysisDomain.OBSERVATION, "observation_id")
+          .put(StandardFeatureAnalysisDomain.PROCEDURE, "procedure_occurrence_id")
+          .put(StandardFeatureAnalysisDomain.VISIT, "visit_occurrence_id")
+          .build();
+
+  Map<StandardFeatureAnalysisDomain, DomainMetadata> DOMAIN_METADATA = ImmutableMap.<StandardFeatureAnalysisDomain, DomainMetadata>builder()
+          .put(StandardFeatureAnalysisDomain.CONDITION, new DomainMetadata("condition_occurrence", "condition_occurrence_id", "condition_start_date", "condition_end_date"))
+          .put(StandardFeatureAnalysisDomain.DEVICE, new DomainMetadata("device_exposure", "device_exposure_id", "device_exposure_start_date", "device_exposure_end_date"))
+          .put(StandardFeatureAnalysisDomain.DRUG, new DomainMetadata("drug_exposure", "drug_exposure_id", "drug_exposure_start_date", "drug_exposure_end_date"))
+          .put(StandardFeatureAnalysisDomain.MEASUREMENT, new DomainMetadata("measurement", "measurement_id", "measurement_date", "NULL"))
+          .put(StandardFeatureAnalysisDomain.OBSERVATION, new DomainMetadata("observation", "observation_id", "observation_date", "NULL"))
+          .put(StandardFeatureAnalysisDomain.PROCEDURE, new DomainMetadata("procedure_occurrence", "procedure_occurrence_id", "procedure_date", "NULL"))
+          .put(StandardFeatureAnalysisDomain.VISIT, new DomainMetadata("visit_occurrence", "visit_occurrence_id", "visit_start_date", "visit_end_date"))
+          .build();
+
+  public static class DomainMetadata {
+    private String tableName;
+    private String idField;
+    private String startDateField;
+    private String endDateField;
+
+    public DomainMetadata(String tableName, String idField, String startDateField, String endDateField) {
+      this.tableName = tableName;
+      this.idField = idField;
+      this.startDateField = startDateField;
+      this.endDateField = endDateField;
+    }
+
+    public String getTableName() {
+      return tableName;
+    }
+
+    public String getIdField() {
+      return idField;
+    }
+
+    public String getStartDateField() {
+      return startDateField;
+    }
+
+    public String getEndDateField() {
+      return endDateField;
+    }
+  }
 }

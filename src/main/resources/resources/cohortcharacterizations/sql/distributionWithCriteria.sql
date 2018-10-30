@@ -1,12 +1,31 @@
 IF OBJECT_ID('tempdb..#events_count', 'U') IS NOT NULL
   DROP TABLE #events_count;
 
+IF OBJECT_ID('tempdb..#people_events', 'U') IS NOT NULL
+  DROP TABLE #people_events;
+
+IF OBJECT_ID('tempdb..#criteria_events', 'U') IS NOT NULL
+  DROP TABLE #criteria_events;
+
+select
+  person_id,
+  @domain_id_field as event_id,
+  @domain_start_date as op_start_date,
+  COALESCE(@domain_end_date, DATEADD(day, 1, @domain_start_date)) as op_end_date
+into #people_events
+from @cdm_database_schema.@domain_table dt
+join @temp_database_schema.@targetTable c on dt.person_id = c.subject_id;
+
+select person_id, event_id
+into #criteria_events
+from (@events_criteria) ec;
+
 select
   v.person_id as person_id,
   count(*) as value_as_int
 into #events_count
 from @temp_database_schema.@targetTable c
-  join @cdm_database_schema.@domain_table v on v.person_id = c.subject_id
+  join #criteria_events v on v.person_id = c.subject_id
 where
   cohort_definition_id = @cohortId
 group by v.person_id;
@@ -62,6 +81,12 @@ select
   events_p75_value.p75 as p75_value,
   events_p90_value.p90 as p90_value
 from events_max_value, event_stat_values, events_p10_value, events_p25_value, events_median_value, events_p75_value, events_p90_value;
+
+truncate table #people_events;
+drop table #people_events;
+
+truncate table #criteria_events;
+drop table #criteria_events;
 
 truncate table #events_count;
 drop table #events_count;

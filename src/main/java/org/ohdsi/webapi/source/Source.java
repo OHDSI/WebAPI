@@ -15,6 +15,7 @@
  */
 package org.ohdsi.webapi.source;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMechanism;
 import java.io.Serializable;
 import java.util.Collection;
@@ -62,32 +63,37 @@ public class Source implements Serializable {
   @Column(name="SOURCE_DIALECT")
   private String sourceDialect;
 
+  @JsonIgnore
   @Column(name="SOURCE_CONNECTION")
   private String sourceConnection;
 
   @Column(name="SOURCE_KEY")
   private String sourceKey;
 
+  @JsonIgnore
   @Column
   @Type(type = "encryptedString")
   private String username;
 
+  @JsonIgnore
   @Column
   @Type(type = "encryptedString")
   private String password;
 
-    @Column(name = "krb_keytab")
-    private byte[] krbKeytab;
+  @JsonIgnore
+  @Column(name = "krb_keytab")
+  private byte[] krbKeytab;
 
-    @Column(name = "keytab_name")
-    private String keytabName;
+  @JsonIgnore
+  @Column(name = "keytab_name")
+  private String keytabName;
 
-    @Column(name = "krb_admin_server")
-    private String krbAdminServer;
+  @Column(name = "krb_admin_server")
+  private String krbAdminServer;
 
-    @Column(name = "krb_auth_method")
-    @Enumerated(EnumType.STRING)
-    private KerberosAuthMechanism krbAuthMethod;
+  @Column(name = "krb_auth_method")
+  @Enumerated(EnumType.STRING)
+  private KerberosAuthMechanism krbAuthMethod;
 
   public String getTableQualifier(DaimonType daimonType) {
 		String result = getTableQualifierOrNull(daimonType);

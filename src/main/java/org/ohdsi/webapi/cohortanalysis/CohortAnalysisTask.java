@@ -25,9 +25,9 @@ public class CohortAnalysisTask {
 	private boolean runHeraclesHeel;
 
 	private boolean cohortPeriodOnly;
-
+	
 	private String cdmVersion = "5";  // Default to CDM V5
-
+	
 	private List<String> visualizations;
 
 	private List<String> cohortDefinitionIds;
@@ -43,7 +43,7 @@ public class CohortAnalysisTask {
 	private List<String> observationConceptIds;
 
 	private List<String> measurementConceptIds;
-
+	
 	private List<PeriodType> periods;
 
 	private boolean rollupUtilizationVisit;

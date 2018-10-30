@@ -11,6 +11,7 @@ import org.ohdsi.webapi.executionengine.repository.AnalysisExecutionRepository;
 import org.ohdsi.webapi.executionengine.service.ExecutionEngineStatus;
 import org.ohdsi.webapi.executionengine.service.ExecutionEngineStatusService;
 import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
+import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.source.Source;
@@ -28,7 +29,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
@@ -43,8 +49,12 @@ import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
 
 @Component
 @Path("/executionservice")
-public class ScriptExecutionController {
+public class ScriptExecutionController implements GeneratesNotification {
 
+    public static final String SCRIPT_TYPE = "scriptType";
+    private static final String FOLDING_KEY = "foldingKey";
+    private static final String NAME = "executionEngine";
+    private static final String COHORT_ID = "cohortId";
     private final Logger logger = LoggerFactory.getLogger(ScriptExecutionController.class);
 
     @Value("${executionengine.resultCallback}")
@@ -94,11 +104,13 @@ public class ScriptExecutionController {
         JobParametersBuilder parametersBuilder = new JobParametersBuilder();
         parametersBuilder.addString(JOB_NAME, String.format("Generate %s %d: %s (%s)", dto.analysisType, dto.cohortId,
                 source.getSourceName(), dto.sourceKey));
+        parametersBuilder.addString(FOLDING_KEY, dto.analysisType.name() + dto.cohortId);
+        parametersBuilder.addString(COHORT_ID, String.valueOf(dto.cohortId));
+        parametersBuilder.addString(SCRIPT_TYPE, dto.analysisType.name());
         final JobParameters jobParameters = parametersBuilder.toJobParameters();
 
         RunExecutionEngineTasklet runExecutionEngineTasklet = new RunExecutionEngineTasklet(scriptExecutionService, dto);
         ExecutionEngineCallbackTasklet callbackTasklet = new ExecutionEngineCallbackTasklet(analysisExecutionRepository, entityManager);
-
         CreateAnalysisTasklet createAnalysisTasklet = new CreateAnalysisTasklet(scriptExecutionService, dto);
 
         Step analysisCreationStep = stepBuilderFactory.get("executionEngine.create-analysis")
@@ -113,7 +125,7 @@ public class ScriptExecutionController {
                 .tasklet(callbackTasklet)
                 .build();
 
-        Job runExecutionJob = jobBuilders.get("executionEngine")
+        Job runExecutionJob = jobBuilders.get(NAME)
                 .start(analysisCreationStep)
                 .next(runExecutionStep)
                 .next(waitCallbackStep)
@@ -171,6 +183,16 @@ public class ScriptExecutionController {
     public StatusResponse getExecutionEngineStatus(){
 
         return new StatusResponse(executionEngineStatusService.getExecutionEngineStatus());
+    }
+
+    @Override
+    public String getJobName() {
+        return NAME;
+    }
+
+    @Override
+    public String getExecutionFoldingKey() {
+        return FOLDING_KEY;
     }
 
     private class StatusResponse {

@@ -54,6 +54,7 @@ import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlDTO;
 import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlMapper;
 import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlTaskParameters;
 import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlTasklet;
+import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.source.Source;
@@ -75,7 +76,9 @@ import org.springframework.stereotype.Component;
  */
 @Path("/evidence")
 @Component
-public class EvidenceService extends AbstractDaoService {
+public class EvidenceService extends AbstractDaoService implements GeneratesNotification {
+
+    private static final String NAME = "negativeControlsAnalysisJob";
 
     @Autowired
     private JobTemplate jobTemplate;
@@ -687,7 +690,7 @@ public class EvidenceService extends AbstractDaoService {
         NegativeControlTasklet tasklet = new NegativeControlTasklet(task, getSourceJdbcTemplate(task.getSource()), task.getJdbcTemplate(),
                 getTransactionTemplate(), this.conceptSetGenerationInfoRepository, this.getSourceDialect());
 
-        return this.jobTemplate.launchTasklet("negativeControlsAnalysisJob", "negativeControlsAnalysisStep", tasklet, jobParameters);
+        return this.jobTemplate.launchTasklet(NAME, "negativeControlsAnalysisStep", tasklet, jobParameters);
     }
 
     /**
@@ -739,13 +742,22 @@ public class EvidenceService extends AbstractDaoService {
         return getNegativeControlSql(task);
     }
 
+    @Override
+    public String getJobName() {
+        return NAME;
+    }
+
+    @Override
+    public String getExecutionFoldingKey() {
+        return "concept_set_id";
+    }
+
     /**
      * Retrieve the SQL used to generate negative controls
      *
      * @summary Get negative control SQL
      * @param task The task containing the parameters for generating negative
      * controls
-     * @param jobId The job Id for capturing the negative controls
      * @return The SQL script for generating negative controls
      */
     public static String getNegativeControlSql(NegativeControlTaskParameters task) {
@@ -966,7 +978,6 @@ public class EvidenceService extends AbstractDaoService {
      * ids
      *
      * @summary SQL for obtaining evidence for a drug/hoi pair by source
-     * @param key The drug-hoi conceptId pair
      * @param source The source that contains the CEM daimon
      * @return A prepared SQL statement
      */

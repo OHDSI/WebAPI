@@ -16,8 +16,7 @@
 package org.ohdsi.webapi.source;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.io.Serializable;
-import java.util.Objects;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -29,6 +28,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
+import java.io.Serializable;
+import java.util.Objects;
 
 /**
  *
@@ -36,10 +37,10 @@ import org.hibernate.annotations.Where;
  */
 @Entity(name = "SourceDaimon")
 @Table(name="source_daimon")
-@SQLDelete(sql = "UPDATE source_daimon SET priority = -1 WHERE SOURCE_DAIMON_ID = ?")
+@SQLDelete(sql = "UPDATE {h-schema}source_daimon SET priority = -1 WHERE SOURCE_DAIMON_ID = ?")
 @Where(clause = "priority >= 0")
 public class SourceDaimon implements Serializable {
-  public enum DaimonType { CDM, Vocabulary, Results, CEM, CEMResults };
+  public enum DaimonType { CDM, Vocabulary, Results, CEM, CEMResults, Temp };
   
   public SourceDaimon() {
   
@@ -115,15 +116,13 @@ public class SourceDaimon implements Serializable {
         if (this == o) return true;
         if (!(o instanceof SourceDaimon)) return false;
         SourceDaimon that = (SourceDaimon) o;
-        return sourceDaimonId == that.sourceDaimonId &&
-                daimonType == that.daimonType &&
-                Objects.equals(tableQualifier, that.tableQualifier) &&
-                Objects.equals(priority, that.priority);
+        return Objects.equals(getSource(), that.getSource()) &&
+                Objects.equals(getDaimonType(), that.getDaimonType());
     }
 
     @Override
     public int hashCode() {
 
-        return Objects.hash(sourceDaimonId, daimonType, tableQualifier, priority);
+        return Objects.hash(getSource(), getDaimonType());
     }
 }

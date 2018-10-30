@@ -5,6 +5,7 @@ import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.service.CohortGenerationService;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.util.SourceUtils;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 import static org.ohdsi.webapi.Constants.Params.*;
 
 public class GenerateLocalCohortTasklet implements StoppableTasklet {
+  String GENERATE_LOCAL_COHORT = "generateLocalCohort";
 
   protected TransactionTemplate transactionTemplate;
   protected final CohortGenerationService cohortGenerationService;
@@ -63,14 +65,16 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
 
   class GenerateTask {
 
-    private String targetTable;
-    private Source source;
-    private String jobAuthorLogin;
+    private final String targetTable;
+    private final String targetSchema;
+    private final Source source;
+    private final String jobAuthorLogin;
 
     public GenerateTask(ChunkContext chunkContext) {
       Map<String, Object> jobParameters = chunkContext.getStepContext().getJobParameters();
-      targetTable = jobParameters.get(TARGET_TABLE).toString();
       source = sourceService.findBySourceId(Integer.valueOf(jobParameters.get(SOURCE_ID).toString()));
+      targetTable = jobParameters.get(TARGET_TABLE).toString();
+      targetSchema = SourceUtils.getTempQualifier(source);
       jobAuthorLogin = jobParameters.get(JOB_AUTHOR).toString();
     }
 
@@ -78,7 +82,7 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
 
       Map<String, String> extraParams = new HashMap<>();
       extraParams.put(JOB_AUTHOR, jobAuthorLogin);
-      return cohortGenerationService.runGenerateCohortJob(cd, source, false, false, targetTable, extraParams);
+      return cohortGenerationService.runGenerateCohortJob(cd, source, false, false, targetSchema + '.' + targetTable, extraParams, GENERATE_LOCAL_COHORT);
     }
 
     public void run(Collection<CohortDefinition> cohortDefinitions) {

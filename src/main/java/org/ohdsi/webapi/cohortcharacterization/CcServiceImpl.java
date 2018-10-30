@@ -28,6 +28,7 @@ import org.ohdsi.webapi.facets.FilteredPageRequest;
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
+import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.service.AbstractDaoService;
@@ -39,6 +40,7 @@ import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.sqlrender.SourceAwareSqlRender;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.SessionUtils;
@@ -77,10 +79,10 @@ import static org.ohdsi.webapi.Constants.Params.*;
 @Service
 @Transactional
 @DependsOn({"ccExportDTOToCcEntityConverter", "cohortDTOToCohortDefinitionConverter", "feAnalysisDTOToFeAnalysisConverter"})
-public class CcServiceImpl extends AbstractDaoService implements CcService {
+public class CcServiceImpl extends AbstractDaoService implements CcService, GeneratesNotification {
 
     private static final String GENERATION_NOT_FOUND_ERROR = "generation cannot be found by id %d";
-    private static final String[] GENERATION_PARAMETERS = {"cdm_results_schema", "cohort_characterization_generation_id"};
+    private static final String[] GENERATION_PARAMETERS = {"cohort_characterization_generation_id"};
     private final String QUERY_RESULTS = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/queryResults.sql");
     private final String DELETE_RESULTS = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/deleteResults.sql");
     private final String DELETE_EXECUTION = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/deleteExecution.sql");
@@ -112,6 +114,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
     private EntityManager entityManager;
 
     private final JobRepository jobRepository;
+    private final SourceAwareSqlRender sourceAwareSqlRender;
     private final FacetedSearchService facetedSearchService;
 
     public CcServiceImpl(
@@ -129,6 +132,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
             final AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository,
             final SourceService sourceService,
             final GenerationUtils generationUtils,
+            SourceAwareSqlRender sourceAwareSqlRender,
             final EntityManager entityManager,
             final FacetedSearchService facetedSearchService) {
         this.repository = ccRepository;
@@ -144,6 +148,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         this.analysisGenerationInfoEntityRepository = analysisGenerationInfoEntityRepository;
         this.sourceService = sourceService;
         this.generationUtils = generationUtils;
+        this.sourceAwareSqlRender = sourceAwareSqlRender;
         this.entityManager = entityManager;
         this.facetedSearchService = facetedSearchService;
         SerializedCcToCcConverter.setConversionService(conversionService);
@@ -336,8 +341,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
                         analysisService,
                         analysisGenerationInfoEntityRepository,
                         sourceService,
-                        userRepository
-                )
+                        userRepository,
+                        sourceAwareSqlRender)
         );
 
         return this.jobTemplate.launch(generateCohortJob, jobParameters);
@@ -368,12 +373,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         final CcGenerationEntity generationEntity = ccGenerationRepository.findById(generationId)
                 .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, generationId)));
         final Source source = generationEntity.getSource();
+        String generationResults = sourceAwareSqlRender.renderSql(source.getSourceId(), QUERY_RESULTS, GENERATION_PARAMETERS, new String[]{String.valueOf(generationId)});
         final String resultSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-        String generationResults = SqlRender.renderSql(
-                QUERY_RESULTS,
-                GENERATION_PARAMETERS,
-                new String[]{resultSchema, String.valueOf(generationId)}
-        );
         String translatedSql = SqlTranslate.translateSql(generationResults, source.getSourceDialect(), SessionUtils.sessionId(), resultSchema);
         return getGenerationResults(source, translatedSql);
     }
@@ -384,22 +385,27 @@ public class CcServiceImpl extends AbstractDaoService implements CcService {
         final CcGenerationEntity generationEntity = ccGenerationRepository.findById(generationId)
                 .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, generationId)));
         final Source source = generationEntity.getSource();
+        final String sql = sourceAwareSqlRender.renderSql(source.getSourceId(), DELETE_RESULTS,GENERATION_PARAMETERS, new String[]{ String.valueOf(generationId) });
         final String resultSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-        final String sql = SqlRender.renderSql(
-                DELETE_RESULTS,
-                GENERATION_PARAMETERS,
-                new String[]{ resultSchema, String.valueOf(generationId) }
-        );
         final String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect(), SessionUtils.sessionId(), resultSchema);
         getSourceJdbcTemplate(source).execute(translatedSql);
 
-        final String deleteJobSql = SqlRender.renderSql(
-                DELETE_EXECUTION,
+        final String deleteJobSql = sourceAwareSqlRender.renderSql(source.getSourceId(), DELETE_EXECUTION,
                 new String[]{ "ohdsiSchema", "execution_id" },
                 new String[]{ getOhdsiSchema(), String.valueOf(generationId) }
         );
         final String translatedJobSql = SqlTranslate.translateSql(deleteJobSql, getDialect());
         getJdbcTemplate().batchUpdate(translatedJobSql.split(";"));
+    }
+
+    @Override
+    public String getJobName() {
+        return GENERATE_COHORT_CHARACTERIZATION;
+    }
+
+    @Override
+    public String getExecutionFoldingKey() {
+        return COHORT_CHARACTERIZATION_ID;
     }
 
     private List<CcResult> getGenerationResults(final Source source, final String translatedSql) {

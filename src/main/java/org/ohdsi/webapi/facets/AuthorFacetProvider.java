@@ -15,16 +15,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-public class AuthorFacetProvider extends AbstractColumnBasedFacetProvider {
+public class AuthorFacetProvider extends AbstractUserFacetProvider {
     private static final String FACET_NAME = "Author";
     private static final String FIELD_NAME = "createdBy";
     private static final String COLUMN_NAME = "created_by_id";
 
-    private final UserRepository userRepository;
-
     public AuthorFacetProvider(JdbcTemplate jdbcTemplate, UserRepository userRepository) {
-        super(jdbcTemplate);
-        this.userRepository = userRepository;
+        super(jdbcTemplate, userRepository);
     }
 
     @Override
@@ -33,21 +30,8 @@ public class AuthorFacetProvider extends AbstractColumnBasedFacetProvider {
     }
 
     @Override
-    public <T> Predicate createFacetPredicate(List<FacetItem> items, CriteriaBuilder criteriaBuilder, Root<T> root) {
-        assert items != null && !items.isEmpty();
-        final List<Long> ids = items.stream().map(item -> Long.valueOf(item.key)).collect(Collectors.toList());
-        final Path<Object> path = root.get(FIELD_NAME);
-        if(ids.contains(0L)) {
-            return criteriaBuilder.or(path.in(ids), path.isNull());
-        } else {
-            return path.in(ids);
-        }
-    }
-
-    @Override
-    public <T> Predicate createTextSearchPredicate(String field, String text, CriteriaBuilder criteriaBuilder, Root<T> root) {
-        final Path<String> userName = root.get(FIELD_NAME).get("name");
-        return criteriaBuilder.like(userName, '%' + text + '%');
+    protected String getField() {
+        return FIELD_NAME;
     }
 
     @Override
@@ -55,15 +39,5 @@ public class AuthorFacetProvider extends AbstractColumnBasedFacetProvider {
         return COLUMN_NAME;
     }
 
-    @Override
-    protected String getKey(ResultSet resultSet) throws SQLException {
-        return String.valueOf(resultSet.getInt(1));
-    }
-
-    @Override
-    protected String getText(ResultSet resultSet) throws SQLException {
-        final String login = userRepository.getUserLoginById((long) resultSet.getInt(1));
-        return login != null ? login : "anonymous";
-    }
 }
 

@@ -12,9 +12,15 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public abstract class AbstractDateColumnBasedFacetProvider extends AbstractColumnBasedFacetProvider {
-    private static final int SECONDS_IN_DAY = 24 * 60 * 60;
+    private static final long SECONDS_IN_DAY = TimeUnit.DAYS.toSeconds(1);
+    private static final String TWO_WEEKS_AGO = "2+ Weeks Ago";
+    private static final String LAST_WEEK = "Last Week";
+    private static final String THIS_WEEK = "This Week";
+    private static final String WITHIN_24_HOURS = "Within 24 Hours";
+    private static final String JUST_NOW = "Just Now";
 
     public AbstractDateColumnBasedFacetProvider(JdbcTemplate jdbcTemplate) {
         super(jdbcTemplate);
@@ -39,24 +45,24 @@ public abstract class AbstractDateColumnBasedFacetProvider extends AbstractColum
     private <T> Predicate createItemPredicate(FacetItem item, CriteriaBuilder cb, Root<T> root) {
         final Path field = root.get(getField());
         switch (item.text) {
-            case "2+ Weeks Ago": {
+            case TWO_WEEKS_AGO: {
                 final Date from = getDaysFromNow(14);
                 return cb.or(cb.lessThanOrEqualTo(field, cb.literal(from)), cb.isNull(field));
             }
-            case "Last Week": {
+            case LAST_WEEK: {
                 final Date from = getDaysFromNow(14);
                 final Date to = getDaysFromNow(7);
                 return cb.between(field, cb.literal(from), cb.literal(to));
             }
-            case "This Week": {
+            case THIS_WEEK: {
                 final Date from = getDaysFromNow(7);
                 return cb.greaterThanOrEqualTo(field, cb.literal(from));
             }
-            case "Within 24 Hours": {
+            case WITHIN_24_HOURS: {
                 final Date from = getDaysFromNow(1);
                 return cb.greaterThanOrEqualTo(field, cb.literal(from));
             }
-            case "Just Now": {
+            case JUST_NOW: {
                 final Date from = Date.from(Instant.now().minusSeconds(SECONDS_IN_DAY / 100));
                 return cb.greaterThanOrEqualTo(field, cb.literal(from));
             }
@@ -76,17 +82,17 @@ public abstract class AbstractDateColumnBasedFacetProvider extends AbstractColum
     @Override
     protected String getText(ResultSet resultSet) throws SQLException {
         final java.sql.Date date = resultSet.getDate(1);
-        double days = date != null ? (new Date().getTime() - date.getTime()) / 1000.0 / 60 / 60 / 24 : 100500;
+        double days = date != null ? (Instant.now().toEpochMilli() - date.getTime()) / 1000.0 / SECONDS_IN_DAY : 100500;
         if (days < .01) {
-            return "Just Now";
+            return JUST_NOW;
         } else if (days < 1) {
-            return "Within 24 Hours";
+            return WITHIN_24_HOURS;
         } else if (days < 7) {
-            return "This Week";
+            return THIS_WEEK;
         } else if (days < 14) {
-            return "Last Week";
+            return LAST_WEEK;
         } else {
-            return "2+ Weeks Ago";
+            return TWO_WEEKS_AGO;
         }
     }
 

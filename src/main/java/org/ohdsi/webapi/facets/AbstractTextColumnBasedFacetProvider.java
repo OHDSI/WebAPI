@@ -31,7 +31,7 @@ public abstract class AbstractTextColumnBasedFacetProvider extends AbstractColum
 
     @Override
     public <T> Predicate createTextSearchPredicate(String field, String text, CriteriaBuilder criteriaBuilder, Root<T> root) {
-        return criteriaBuilder.like(root.get(getField()), text + '%');
+        return criteriaBuilder.like(root.get(getField()), '%' + text + '%');
     }
 
     public abstract String getField();

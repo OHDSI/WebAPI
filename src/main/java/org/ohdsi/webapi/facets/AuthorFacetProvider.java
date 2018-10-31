@@ -47,7 +47,7 @@ public class AuthorFacetProvider extends AbstractColumnBasedFacetProvider {
     @Override
     public <T> Predicate createTextSearchPredicate(String field, String text, CriteriaBuilder criteriaBuilder, Root<T> root) {
         final Path<String> userName = root.get(FIELD_NAME).get("name");
-        return criteriaBuilder.like(userName, text + '%');
+        return criteriaBuilder.like(userName, '%' + text + '%');
     }
 
     @Override

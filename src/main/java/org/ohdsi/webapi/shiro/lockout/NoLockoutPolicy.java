@@ -8,6 +8,12 @@ public class NoLockoutPolicy implements LockoutPolicy {
     }
 
     @Override
+    public boolean isLockedOut(LockEntry entry) {
+
+        return true;
+    }
+
+    @Override
     public long getLockExpiration(String principal) {
 
         return 0;
@@ -19,7 +25,7 @@ public class NoLockoutPolicy implements LockoutPolicy {
     }
 
     @Override
-    public void loginSuceeded(String principal) {
+    public void loginSucceeded(String principal) {
 
     }
 }

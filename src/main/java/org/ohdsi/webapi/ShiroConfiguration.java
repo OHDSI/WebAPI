@@ -48,7 +48,7 @@ public class ShiroConfiguration {
 
   @Bean
   public DefaultWebSecurityManager securityManager(Security security, LockoutPolicy lockoutPolicy){
-    final DefaultWebSecurityManager securityManager = new LockoutWebSecurityManager(lockoutPolicy, eventPublisher);
+    final DefaultWebSecurityManager securityManager = new LockoutWebSecurityManager(lockoutPolicy);
 
     securityManager.setAuthenticator(security.getAuthenticator());
 
@@ -70,7 +70,7 @@ public class ShiroConfiguration {
   @ConditionalOnProperty(name = "security.provider", havingValue = "AtlasRegularSecurity")
   public LockoutPolicy lockoutPolicy(){
 
-    return new DefaultLockoutPolicy(lockoutStrategy(), maxLoginAttempts);
+    return new DefaultLockoutPolicy(lockoutStrategy(), maxLoginAttempts, eventPublisher);
   }
 
   @Bean

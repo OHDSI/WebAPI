@@ -7,6 +7,7 @@ public interface Constants {
   String GENERATE_COHORT_CHARACTERIZATION = "generateCohortCharacterization";
   String GENERATE_PATHWAY_ANALYSIS = "generatePathwayAnalysis";
   String WARM_CACHE = "warmCache";
+  String USERS_IMPORT = "usersImport";
 
   String FAILED = ExitStatus.FAILED.getExitCode();
   String CANCELED = "CANCELED";
@@ -30,5 +31,9 @@ public interface Constants {
     String TARGET_TABLE = "target_table";
     String GENERATE_STATS = "generate_stats";
     String JOB_START_TIME = "time";
+    String USER_ROLES = "userRoles";
+    String LDAP_PROVIDER = "provider";
+    String ROLE_GROUP_MAPPING = "roleGroupMapping";
+    String PRESERVE_ROLES = "preserveRoles";
   }
 }

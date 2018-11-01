@@ -3,8 +3,8 @@ package org.ohdsi.webapi.shiro.filters;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
-import com.odysseusinc.logging.event.FailedLogonEvent;
-import com.odysseusinc.logging.event.SuccessLogonEvent;
+import com.odysseusinc.logging.event.FailedLoginEvent;
+import com.odysseusinc.logging.event.SuccessLoginEvent;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.LockedAccountException;
@@ -29,7 +29,7 @@ public abstract class AuthenticatingPropagationFilter extends AuthenticatingFilt
 
         request.setAttribute(AtlasSecurity.AUTH_FILTER_ATTRIBUTE, this.getClass().getName());
         String username = ((UsernamePasswordToken) token).getUsername();
-        eventPublisher.publishEvent(new SuccessLogonEvent(this, username));
+        eventPublisher.publishEvent(new SuccessLoginEvent(this, username));
         return true;
     }
 
@@ -43,7 +43,7 @@ public abstract class AuthenticatingPropagationFilter extends AuthenticatingFilt
         }
         String username = ((UsernamePasswordToken) token).getUsername();
         boolean result = super.onLoginFailure(token, e, request, response);
-        eventPublisher.publishEvent(new FailedLogonEvent(this, username));
+        eventPublisher.publishEvent(new FailedLoginEvent(this, username));
         return result;
     }
 }

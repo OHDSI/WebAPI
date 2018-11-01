@@ -1,7 +1,11 @@
 package org.ohdsi.webapi.user.importer.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public abstract class LdapObject {
+  @JsonProperty("displayName")
   private String displayName;
+  @JsonProperty("distinguishedName")
   private String distinguishedName;
 
   public LdapObject() {

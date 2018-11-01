@@ -4,8 +4,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.webapi.cohortcharacterization.CcResultType;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
+import org.ohdsi.webapi.facets.AuthorFacetProvider;
+import org.ohdsi.webapi.facets.CreatedDateFacetProvider;
 import org.ohdsi.webapi.facets.FacetedSearchService;
 import org.ohdsi.webapi.facets.FilteredPageRequest;
+import org.ohdsi.webapi.facets.ModifiedDateFacetProvider;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisConcepsetEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisCriteriaEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
@@ -31,7 +34,8 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(readOnly = true)
 public class FeAnalysisServiceImpl implements FeAnalysisService {
-    
+    private static final String ENTITY_NAME = "fe_analysis";
+
     private final FeAnalysisEntityRepository analysisRepository;
     private final FeAnalysisCriteriaRepository criteriaRepository;
     private final FeAnalysisWithStringEntityRepository stringAnalysisRepository;
@@ -46,6 +50,8 @@ public class FeAnalysisServiceImpl implements FeAnalysisService {
         this.criteriaRepository = criteriaRepository;
         this.stringAnalysisRepository = stringAnalysisRepository;
         this.facetedSearchService = facetedSearchService;
+
+        facetedSearchService.registerFacets(ENTITY_NAME,  TypeFacetProvider.FACET_NAME, AuthorFacetProvider.FACET_NAME, CreatedDateFacetProvider.FACET_NAME, ModifiedDateFacetProvider.FACET_NAME);
     }
 
     @Override

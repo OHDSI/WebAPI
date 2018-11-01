@@ -6,7 +6,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.circe.helper.ResourceHelper;
-import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConverter;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
@@ -23,8 +22,11 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
+import org.ohdsi.webapi.facets.AuthorFacetProvider;
+import org.ohdsi.webapi.facets.CreatedDateFacetProvider;
 import org.ohdsi.webapi.facets.FacetedSearchService;
 import org.ohdsi.webapi.facets.FilteredPageRequest;
+import org.ohdsi.webapi.facets.ModifiedDateFacetProvider;
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
@@ -64,6 +66,7 @@ import javax.ws.rs.NotFoundException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -80,6 +83,7 @@ import static org.ohdsi.webapi.Constants.Params.*;
 @Transactional
 @DependsOn({"ccExportDTOToCcEntityConverter", "cohortDTOToCohortDefinitionConverter", "feAnalysisDTOToFeAnalysisConverter"})
 public class CcServiceImpl extends AbstractDaoService implements CcService, GeneratesNotification {
+    public static final String ENTITY_NAME = "cohort_characterization";
 
     private static final String GENERATION_NOT_FOUND_ERROR = "generation cannot be found by id %d";
     private static final String[] GENERATION_PARAMETERS = {"cohort_characterization_generation_id"};
@@ -152,6 +156,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         this.entityManager = entityManager;
         this.facetedSearchService = facetedSearchService;
         SerializedCcToCcConverter.setConversionService(conversionService);
+
+        facetedSearchService.registerFacets(ENTITY_NAME, AuthorFacetProvider.FACET_NAME, CreatedDateFacetProvider.FACET_NAME, ModifiedDateFacetProvider.FACET_NAME);
     }
 
     @Override

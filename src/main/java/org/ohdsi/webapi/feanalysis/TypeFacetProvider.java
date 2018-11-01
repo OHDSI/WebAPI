@@ -22,7 +22,7 @@ import static org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAn
 
 @Component
 public class TypeFacetProvider extends AbstractTextColumnBasedFacetProvider {
-    private static final String FACET_NAME = "Type";
+    public static final String FACET_NAME = "Type";
     private static final String FIELD_NAME = "type";
     private static final String COLUMN_NAME = "type";
     private static final Map<StandardFeatureAnalysisType, String> TYPE_NAMES = new HashMap<>();

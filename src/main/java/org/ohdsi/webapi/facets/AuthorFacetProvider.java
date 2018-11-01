@@ -16,7 +16,8 @@ import java.util.stream.Collectors;
 
 @Component
 public class AuthorFacetProvider extends AbstractUserFacetProvider {
-    private static final String FACET_NAME = "Author";
+    public static final String FACET_NAME = "Author";
+
     private static final String FIELD_NAME = "createdBy";
     private static final String COLUMN_NAME = "created_by_id";
 

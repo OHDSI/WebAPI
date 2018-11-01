@@ -14,10 +14,12 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 ;
 
@@ -25,6 +27,7 @@ import java.util.Map;
 public class FacetedSearchService {
     private final Map<String, FacetProvider> providersByFacet = new HashMap<>();
     private final Map<String, ColumnFilterProvider> providersByColumn = new HashMap<>();
+    private final Map<String, Collection<String>> facetsByEntity = new HashMap<>();
 
     public FacetedSearchService(Collection<FacetProvider> facetProviders, Collection<ColumnFilterProvider> columnFilterProviders) {
         facetProviders.forEach(p -> {
@@ -35,8 +38,12 @@ public class FacetedSearchService {
         });
     }
 
-    public List<FacetItem> getValues(String facet, String entityName) {
-        return getFacetProvider(facet).getValues(entityName);
+    public List<Facet> getFacets(String entityName) {
+        final Collection<String> facetNames = facetsByEntity.get(entityName);
+        if(facetNames == null) {
+            throw new IllegalArgumentException("unknown entity name");
+        }
+        return facetNames.stream().map(f -> new Facet(f, getFacetProvider(f).getValues(entityName))).collect(Collectors.toList());
     }
 
     public <T> Page<T> getPage(FilteredPageRequest pageable, JpaSpecificationExecutor<T> repository) {
@@ -99,4 +106,7 @@ public class FacetedSearchService {
     }
 
 
+    public void registerFacets(String entityName, String... facetNames) {
+        facetsByEntity.put(entityName, Arrays.asList(facetNames));
+    }
 }

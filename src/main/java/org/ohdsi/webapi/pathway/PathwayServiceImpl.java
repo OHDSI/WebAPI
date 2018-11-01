@@ -9,8 +9,11 @@ import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfo
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
+import org.ohdsi.webapi.facets.AuthorFacetProvider;
+import org.ohdsi.webapi.facets.CreatedDateFacetProvider;
 import org.ohdsi.webapi.facets.FacetedSearchService;
 import org.ohdsi.webapi.facets.FilteredPageRequest;
+import org.ohdsi.webapi.facets.ModifiedDateFacetProvider;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.pathway.converter.SerializedPathwayAnalysisToPathwayAnalysisConverter;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
@@ -69,6 +72,7 @@ import static org.ohdsi.webapi.Constants.Params.*;
 @Transactional
 public class PathwayServiceImpl extends AbstractDaoService implements PathwayService {
 
+    private static final String ENTITY_NAME = "pathway_analysis";
     private final PathwayAnalysisEntityRepository pathwayAnalysisRepository;
     private final PathwayAnalysisGenerationRepository pathwayAnalysisGenerationRepository;
     private final SourceService sourceService;
@@ -115,6 +119,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         this.generationUtils = generationUtils;
 
         SerializedPathwayAnalysisToPathwayAnalysisConverter.setConversionService(conversionService);
+        facetedSearchService.registerFacets(ENTITY_NAME, AuthorFacetProvider.FACET_NAME, CreatedDateFacetProvider.FACET_NAME, ModifiedDateFacetProvider.FACET_NAME);
     }
 
     @Override

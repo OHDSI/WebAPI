@@ -265,7 +265,10 @@ public abstract class AtlasSecurity extends Security {
 
       // notifications
       .addProtectedRestPath("/notifications/viewed")
-      .addProtectedRestPath("/notifications");
+      .addProtectedRestPath("/notifications")
+
+       //facets
+      .addProtectedRestPath("/facets");
   }
 
   @Override

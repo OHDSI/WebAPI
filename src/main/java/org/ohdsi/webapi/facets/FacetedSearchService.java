@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.query.QueryUtils;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.util.Collection;
@@ -59,14 +60,14 @@ public class FacetedSearchService {
             }
             final Predicate facetSearch = createFacetSearchPredicate(root, criteriaBuilder, request.getFilter());
             return StringUtils.isNotBlank(request.getFilter().getText())
-                    ? criteriaBuilder.and(facetSearch, createTextSearchPredicate(root, criteriaBuilder, request.getFilter()))
+                    ? criteriaBuilder.and(facetSearch, createTextSearchPredicate(root, criteriaQuery, criteriaBuilder, request.getFilter()))
                     : facetSearch;
         };
     }
 
-    private <T> Predicate createTextSearchPredicate(Root<T> root, CriteriaBuilder criteriaBuilder, Filter filter) {
+    private <T> Predicate createTextSearchPredicate(Root<T> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder, Filter filter) {
         return criteriaBuilder.or(filter.getSearchableFields().stream()
-                .map(field -> getFacetProvider(field).createTextSearchPredicate(field, filter.getText(), criteriaBuilder, root))
+                .map(field -> getFacetProvider(field).createTextSearchPredicate(field, filter.getText(), root, query, criteriaBuilder))
                 .toArray(Predicate[]::new));
     }
 

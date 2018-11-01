@@ -1,19 +1,23 @@
 package org.ohdsi.webapi.facets;
 
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.persistence.criteria.Subquery;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public abstract class AbstractUserFacetProvider extends AbstractColumnBasedFacetProvider {
-    protected final UserRepository userRepository;
+    private static final String ANONYMOUS = "anonymous";
+    private final UserRepository userRepository;
 
     public AbstractUserFacetProvider(JdbcTemplate jdbcTemplate, UserRepository userRepository) {
         super(jdbcTemplate);
@@ -33,9 +37,16 @@ public abstract class AbstractUserFacetProvider extends AbstractColumnBasedFacet
     }
 
     @Override
-    public <T> Predicate createTextSearchPredicate(String field, String text, CriteriaBuilder criteriaBuilder, Root<T> root) {
-        final Path<String> userName = root.get(getField()).get("name");
-        return criteriaBuilder.like(userName, '%' + text + '%');
+    public <T> Predicate createTextSearchPredicate(String field, String text, Root<T> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+        final Subquery<UserEntity> checkUser = query.subquery(UserEntity.class);
+        final Root<UserEntity> subRoot = checkUser.from(UserEntity.class);
+        final Path<Object> userIdField = root.get(getField());
+        final Predicate userNameLike = userIdField.in(checkUser.select(subRoot).where(criteriaBuilder.like(subRoot.get("name"), '%' + text + '%')));
+        if(ANONYMOUS.contains(text)) {
+            return criteriaBuilder.or(userNameLike, userIdField.isNull());
+        } else {
+            return userNameLike;
+        }
     }
 
     protected abstract String getField();
@@ -48,6 +59,6 @@ public abstract class AbstractUserFacetProvider extends AbstractColumnBasedFacet
     @Override
     protected String getText(ResultSet resultSet) throws SQLException {
         final String login = userRepository.getUserLoginById((long) resultSet.getInt(1));
-        return login != null ? login : "anonymous";
+        return login != null ? login : ANONYMOUS;
     }
 }

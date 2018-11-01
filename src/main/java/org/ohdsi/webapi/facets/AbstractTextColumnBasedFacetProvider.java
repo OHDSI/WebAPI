@@ -3,6 +3,7 @@ package org.ohdsi.webapi.facets;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.sql.ResultSet;
@@ -30,7 +31,7 @@ public abstract class AbstractTextColumnBasedFacetProvider extends AbstractColum
     }
 
     @Override
-    public <T> Predicate createTextSearchPredicate(String field, String text, CriteriaBuilder criteriaBuilder, Root<T> root) {
+    public <T> Predicate createTextSearchPredicate(String field, String text, Root<T> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
         return criteriaBuilder.like(root.get(getField()), '%' + text + '%');
     }
 

@@ -27,6 +27,6 @@ public interface IncidenceRateAnalysisRepository extends CrudRepository<Incidenc
   @Query("select ira from IncidenceRateAnalysis AS ira LEFT JOIN FETCH ira.details as d")          
   Iterable<IncidenceRateAnalysis> findAll();
 
-  @Query("SELECT ira FROM IncidenceRateAnalysis AS ira JOIN FETCH ira.executionInfoList WHERE ira.id = ?1")
+  @Query("SELECT ira FROM IncidenceRateAnalysis AS ira LEFT JOIN FETCH ira.executionInfoList WHERE ira.id = ?1")
   IncidenceRateAnalysis findOneWithExecutions(int id);  
 }

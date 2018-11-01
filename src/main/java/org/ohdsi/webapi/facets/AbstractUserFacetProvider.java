@@ -15,7 +15,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public abstract class AbstractUserFacetProvider extends AbstractColumnBasedFacetProvider {
+public abstract class AbstractUserFacetProvider extends AbstractColumnBasedFacetProvider implements ColumnFilterProvider {
     private static final String ANONYMOUS = "anonymous";
     private final UserRepository userRepository;
 

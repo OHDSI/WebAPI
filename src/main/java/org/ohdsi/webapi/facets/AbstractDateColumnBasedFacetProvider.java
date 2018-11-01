@@ -3,7 +3,6 @@ package org.ohdsi.webapi.facets;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
@@ -35,11 +34,6 @@ public abstract class AbstractDateColumnBasedFacetProvider extends AbstractColum
         return items.size() == 1
                 ? createItemPredicate(items.get(0), cb, root)
                 : cb.or(items.stream().map(item -> createItemPredicate(item, cb, root)).toArray(Predicate[]::new));
-    }
-
-    @Override
-    public <T> Predicate createTextSearchPredicate(String field, String text, Root<T> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
-        throw new IllegalStateException("text search on date columns not supported");
     }
 
     @SuppressWarnings("unchecked")

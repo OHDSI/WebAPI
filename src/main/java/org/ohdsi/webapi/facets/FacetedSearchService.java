@@ -24,10 +24,14 @@ import java.util.Map;
 @Service
 public class FacetedSearchService {
     private final Map<String, FacetProvider> providersByFacet = new HashMap<>();
+    private final Map<String, ColumnFilterProvider> providersByColumn = new HashMap<>();
 
-    public FacetedSearchService(Collection<FacetProvider> providers) {
-        providers.forEach(p -> {
+    public FacetedSearchService(Collection<FacetProvider> facetProviders, Collection<ColumnFilterProvider> columnFilterProviders) {
+        facetProviders.forEach(p -> {
             providersByFacet.put(p.getName(), p);
+        });
+        columnFilterProviders.forEach(p -> {
+            providersByColumn.put(p.getName(), p);
         });
     }
 
@@ -67,7 +71,7 @@ public class FacetedSearchService {
 
     private <T> Predicate createTextSearchPredicate(Root<T> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder, Filter filter) {
         return criteriaBuilder.or(filter.getSearchableFields().stream()
-                .map(field -> getFacetProvider(field).createTextSearchPredicate(field, filter.getText(), root, query, criteriaBuilder))
+                .map(field -> getColumnFilterProvider(field).createTextSearchPredicate(field, filter.getText(), root, query, criteriaBuilder))
                 .toArray(Predicate[]::new));
     }
 
@@ -76,6 +80,14 @@ public class FacetedSearchService {
                 .filter(facet -> !facet.selectedItems.isEmpty())
                 .map(facet -> getFacetProvider(facet.name).createFacetPredicate(facet.selectedItems, criteriaBuilder, root))
                 .toArray(Predicate[]::new));
+    }
+
+    private ColumnFilterProvider getColumnFilterProvider(String column) {
+        final ColumnFilterProvider columnFilterProvider = providersByColumn.get(column);
+        if (columnFilterProvider == null) {
+            throw new IllegalArgumentException("unknown column: " + column);
+        }
+        return columnFilterProvider;
     }
 
     private FacetProvider getFacetProvider(String facet) {

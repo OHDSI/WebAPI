@@ -37,13 +37,14 @@ public abstract class AbstractUserFacetProvider extends AbstractColumnBasedFacet
     }
 
     @Override
-    public <T> Predicate createTextSearchPredicate(String field, String text, Root<T> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+    public <T> Predicate createTextSearchPredicate(String field, String text, Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
         final Subquery<UserEntity> checkUser = query.subquery(UserEntity.class);
         final Root<UserEntity> subRoot = checkUser.from(UserEntity.class);
         final Path<Object> userIdField = root.get(getField());
-        final Predicate userNameLike = userIdField.in(checkUser.select(subRoot).where(criteriaBuilder.like(subRoot.get("name"), '%' + text + '%')));
-        if(ANONYMOUS.contains(text)) {
-            return criteriaBuilder.or(userNameLike, userIdField.isNull());
+        final Path<String> userNameField = subRoot.get("name");
+        final Predicate userNameLike = userIdField.in(checkUser.select(subRoot).where(cb.like(cb.lower(userNameField), '%' + text.toLowerCase() + '%')));
+        if(ANONYMOUS.contains(text.toLowerCase())) {
+            return cb.or(userNameLike, userIdField.isNull());
         } else {
             return userNameLike;
         }

@@ -56,6 +56,7 @@ public class PredictionCohortDefinition implements Cohort {
   public PredictionCohortDefinition() {
   }
   
+  @Override
   public Integer getId() {
     return id;
   }
@@ -64,6 +65,7 @@ public class PredictionCohortDefinition implements Cohort {
     this.id = id;
   }
 
+  @Override
   public String getName() {
     return name;
   }
@@ -73,6 +75,7 @@ public class PredictionCohortDefinition implements Cohort {
     return this;
   }
 
+  @Override
   public String getDescription() {
     return description;
   }
@@ -91,7 +94,7 @@ public class PredictionCohortDefinition implements Cohort {
     return this;
   }
   
-  
+  @Override
   public CohortExpression getExpression() {
       return expression;
   }

@@ -12,6 +12,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import javax.persistence.EntityManager;
@@ -25,6 +27,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -33,6 +36,7 @@ import org.ohdsi.analysis.Utils;
 import org.ohdsi.hydra.Hydra;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.conceptset.ConceptSetCrossReferenceImpl;
 import org.ohdsi.webapi.prediction.PredictionAnalysis;
 import org.ohdsi.webapi.prediction.PredictionListItem;
 import org.ohdsi.webapi.prediction.PredictionAnalysisRepository;
@@ -168,12 +172,12 @@ public class PredictionService  extends AbstractDaoService {
     @GET
     @Path("{id}/export")
     @Produces(MediaType.APPLICATION_JSON)
-    public PatientLevelPredictionAnalysis exportAnalysis(@PathParam("id") int id) {
+    public PatientLevelPredictionAnalysisImpl exportAnalysis(@PathParam("id") int id) {
         PredictionAnalysis pred = predictionAnalysisRepository.findOne(id);
         ObjectMapper mapper = new ObjectMapper();
-        PatientLevelPredictionAnalysis expression = new PatientLevelPredictionAnalysis();
+        PatientLevelPredictionAnalysisImpl expression = new PatientLevelPredictionAnalysisImpl();
         try {
-            expression = mapper.readValue(pred.getSpecification(), PatientLevelPredictionAnalysis.class);
+            expression = mapper.readValue(pred.getSpecification(), PatientLevelPredictionAnalysisImpl.class);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -187,7 +191,6 @@ public class PredictionService  extends AbstractDaoService {
         // Retrieve the cohort definition details
         ArrayList<PredictionCohortDefinition> detailedList = new ArrayList<>();
         for (PredictionCohortDefinition c : expression.getCohortDefinitions()) {
-            System.out.println(c.getId());
             CohortDefinition cd = cohortDefinitionRepository.findOneWithDetail(c.getId());
             detailedList.add(new PredictionCohortDefinition(cd));
         }
@@ -197,7 +200,6 @@ public class PredictionService  extends AbstractDaoService {
         ArrayList<PredictionConceptSet> pcsList = new ArrayList<>();
         HashMap<Integer, ArrayList<Long>> conceptIdentifiers = new HashMap<Integer, ArrayList<Long>>();
         for (PredictionConceptSet pcs : expression.getConceptSets()) {
-            System.out.println(pcs.id);
             pcs.expression = conceptSetService.getConceptSetExpression(pcs.id);
             pcsList.add(pcs);
             conceptIdentifiers.put(pcs.id, new ArrayList(vocabularyService.resolveConceptSetExpression(pcs.expression)));
@@ -205,12 +207,12 @@ public class PredictionService  extends AbstractDaoService {
         expression.setConceptSets(pcsList);
         
         // Resolve all ConceptSetCrossReferences
-        for (ConceptSetCrossReference xref : expression.getConceptSetCrossReference()) {
+        for (ConceptSetCrossReferenceImpl xref : expression.getConceptSetCrossReference()) {
             if (xref.getTargetName().equalsIgnoreCase("covariateSettings")) {
                 if (xref.getPropertyName().equalsIgnoreCase("includedCovariateConceptIds")) {
-                    expression.getCovariateSettings().get(xref.getTargetIndex()).includedCovariateConceptIds(conceptIdentifiers.get(xref.getConceptSetId()));
+                    expression.getCovariateSettings().get(xref.getTargetIndex()).setIncludedCovariateConceptIds(conceptIdentifiers.get(xref.getConceptSetId()));
                 } else if (xref.getPropertyName().equalsIgnoreCase("excludedCovariateConceptIds")) {
-                    expression.getCovariateSettings().get(xref.getTargetIndex()).excludedCovariateConceptIds(conceptIdentifiers.get(xref.getConceptSetId()));
+                    expression.getCovariateSettings().get(xref.getTargetIndex()).setExcludedCovariateConceptIds(conceptIdentifiers.get(xref.getConceptSetId()));
                 }
             }
         }
@@ -222,13 +224,16 @@ public class PredictionService  extends AbstractDaoService {
     @Path("{id}/download")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response downloadPackage(@PathParam("id") int id) throws IOException {
-        PatientLevelPredictionAnalysis plpa = this.exportAnalysis(id);
-        // Cannot use Utils.serialize(analysis) since it removes
-        // properties with null values which are required in the
-        // specification
-        //String studySpecs = Utils.serialize(analysis);        
-        String studySpecs = this.seralizeAnalysis(plpa);
+    public Response downloadPackage(@PathParam("id") int id, @QueryParam("packageName") String packageName) throws IOException {
+        if (packageName == null) {
+            packageName = "prediction" + String.valueOf(id);
+        }
+        if (!Utils.isAlphaNumeric(packageName)) {
+            throw new IllegalArgumentException("The package name must be alphanumeric only.");
+        }
+        PatientLevelPredictionAnalysisImpl plpa = this.exportAnalysis(id);
+        plpa.setPackageName(packageName);
+        String studySpecs = Utils.serialize(plpa);        
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         
         Hydra h = new Hydra(studySpecs);
@@ -241,28 +246,6 @@ public class PredictionService  extends AbstractDaoService {
                 .header("Content-Disposition", String.format("attachment; filename=\"prediction_study_%d_export.zip\"", id))
                 .build();
 
-        return response;        
+        return response;     
     }
-    
-    // NOTE: This should be replaced with SSA.serialize once issue
-    // noted in the download function is addressed.
-    private String seralizeAnalysis(PatientLevelPredictionAnalysis predictionAnalysis) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.disable(
-                MapperFeature.AUTO_DETECT_CREATORS,
-                MapperFeature.AUTO_DETECT_GETTERS,
-                MapperFeature.AUTO_DETECT_IS_GETTERS
-        );
-
-        objectMapper.disable(
-                SerializationFeature.FAIL_ON_EMPTY_BEANS
-        );
-
-        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-
-        //objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        
-        return objectMapper.writeValueAsString(predictionAnalysis);
-    }
-    
 }

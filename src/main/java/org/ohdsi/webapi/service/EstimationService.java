@@ -1,20 +1,15 @@
 package org.ohdsi.webapi.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import javax.persistence.EntityManager;
@@ -31,29 +26,33 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
 import org.ohdsi.analysis.Utils;
+import org.ohdsi.analysis.estimation.design.NegativeControlTypeEnum;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression.ConceptSetItem;
 import org.ohdsi.hydra.Hydra;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.conceptset.ConceptSetCrossReferenceImpl;
 import org.ohdsi.webapi.estimation.Estimation;
 import org.ohdsi.webapi.estimation.EstimationListItem;
 import org.ohdsi.webapi.estimation.EstimationRepository;
 import org.ohdsi.webapi.estimation.dto.EstimationDTO;
 import org.ohdsi.webapi.estimation.specification.*;
-import org.ohdsi.webapi.estimation.specification.EstimationAnalysis;
+import org.ohdsi.webapi.estimation.specification.EstimationAnalysisImpl;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
 
+@Controller
 @Path("/estimation/")
-@Component
 public class EstimationService extends AbstractDaoService {
     
     private static final String CONCEPT_SET_XREF_KEY_TARGET_COMPARATOR_OUTCOME = "estimationAnalysisSettings.analysisSpecification.targetComparatorOutcomes";
@@ -87,6 +86,9 @@ public class EstimationService extends AbstractDaoService {
 
     @Autowired
     private Environment env;
+    
+    @Value("${organization.name}")
+    private String organizationName;
     
     @GET
     @Path("/")
@@ -180,12 +182,11 @@ public class EstimationService extends AbstractDaoService {
     @GET
     @Path("{id}/export")
     @Produces(MediaType.APPLICATION_JSON)
-    public EstimationAnalysis exportAnalysis(@PathParam("id") int id) {
+    public EstimationAnalysisImpl exportAnalysis(@PathParam("id") int id) {
         Estimation est = estimationRepository.findOne(id);
-        ObjectMapper mapper = new ObjectMapper();
-        EstimationAnalysis expression = new EstimationAnalysis();
+        EstimationAnalysisImpl expression = new EstimationAnalysisImpl();
         try {
-            expression = mapper.readValue(est.getSpecification(), EstimationAnalysis.class);
+            expression = Utils.deserialize(est.getSpecification(), EstimationAnalysisImpl.class);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -194,12 +195,11 @@ public class EstimationService extends AbstractDaoService {
         expression.setId(est.getId());
         expression.setName(est.getName());
         expression.setDescription(est.getDescription());
-        expression.setOrganizationName(env.getRequiredProperty("organization.name"));
+        expression.setOrganizationName(this.organizationName);
         
         // Retrieve the cohort definition details
         ArrayList<EstimationCohortDefinition> detailedList = new ArrayList<>();
         for (EstimationCohortDefinition c : expression.getCohortDefinitions()) {
-            System.out.println(c.getId());
             CohortDefinition cd = cohortDefinitionRepository.findOneWithDetail(c.getId());
             detailedList.add(new EstimationCohortDefinition(cd));
         }
@@ -210,7 +210,6 @@ public class EstimationService extends AbstractDaoService {
         HashMap<Integer, ArrayList<Long>> conceptIdentifiers = new HashMap<>();
         HashMap<Integer, ConceptSetExpression> csExpressionList = new HashMap<>();
         for (EstimationConceptSet pcs : expression.getConceptSets()) {
-            System.out.println(pcs.id);
             pcs.expression = conceptSetService.getConceptSetExpression(pcs.id);
             csExpressionList.put(pcs.id, pcs.expression);
             ecsList.add(pcs);
@@ -219,7 +218,7 @@ public class EstimationService extends AbstractDaoService {
         expression.setConceptSets(ecsList);
         
         // Resolve all ConceptSetCrossReferences
-        for (ConceptSetCrossReference xref : expression.getConceptSetCrossReference()) {
+        for (ConceptSetCrossReferenceImpl xref : expression.getConceptSetCrossReference()) {
             // TODO: Make this conditional on the expression.getEstimationAnalysisSettings().getEstimationType() vs
             // hard coded to always use a comparative cohort analysis once we have implemented the other
             // estimation types
@@ -234,12 +233,12 @@ public class EstimationService extends AbstractDaoService {
                 LinkedHashMap tco = tcoList.get(xref.getTargetIndex());
                 ConceptSetExpression e = csExpressionList.get(xref.getConceptSetId());
                 for(ConceptSetItem csi : e.items) {
-                    NegativeControl nc = new NegativeControl();
+                    NegativeControlImpl nc = new NegativeControlImpl();
                     nc.setTargetId(Long.valueOf((int) tco.get("targetId")));
                     nc.setComparatorId(Long.valueOf((int) tco.get("comparatorId")));
                     nc.setOutcomeId(csi.concept.conceptId);
                     nc.setOutcomeName(csi.concept.conceptName);
-                    nc.setType(NegativeControl.TypeEnum.OUTCOME);
+                    nc.setType(NegativeControlTypeEnum.OUTCOME);
                     expression.addNegativeControlsItem(nc);
                 }
             } else if (xref.getTargetName().equalsIgnoreCase(CONCEPT_SET_XREF_KEY_COHORT_METHOD_COVAR)) {
@@ -249,9 +248,9 @@ public class EstimationService extends AbstractDaoService {
                 dbCohortMethodCovarSettings.put(xref.getPropertyName(), conceptIdentifiers.get(xref.getConceptSetId()));
             } else if (xref.getTargetName().equalsIgnoreCase(CONCEPT_SET_XREF_KEY_POS_CONTROL_COVAR)) {
                 if (xref.getPropertyName().equalsIgnoreCase("includedCovariateConceptIds")) {
-                    expression.getPositiveControlSynthesisArgs().getCovariateSettings().includedCovariateConceptIds(conceptIdentifiers.get(xref.getConceptSetId()));
+                    expression.getPositiveControlSynthesisArgs().getCovariateSettings().setIncludedCovariateConceptIds(conceptIdentifiers.get(xref.getConceptSetId()));
                 } else if (xref.getPropertyName().equalsIgnoreCase("excludedCovariateConceptIds")) {
-                    expression.getPositiveControlSynthesisArgs().getCovariateSettings().excludedCovariateConceptIds(conceptIdentifiers.get(xref.getConceptSetId()));
+                    expression.getPositiveControlSynthesisArgs().getCovariateSettings().setExcludedCovariateConceptIds(conceptIdentifiers.get(xref.getConceptSetId()));
                 }
             }
         }
@@ -264,17 +263,17 @@ public class EstimationService extends AbstractDaoService {
     @Path("{id}/download")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response download(@PathParam("id") int id, @QueryParam("target") String target) throws IOException {
-        if (target == null) {
-            target = "package";
+    public Response download(@PathParam("id") int id, @QueryParam("packageName") String packageName) throws IOException {
+        if (packageName == null) {
+            packageName = "estimation" + String.valueOf(id);
+        }
+        if (!Utils.isAlphaNumeric(packageName)) {
+            throw new IllegalArgumentException("The package name must be alphanumeric only.");
         }
         
-        EstimationAnalysis analysis = this.exportAnalysis(id);
-        // Cannot use Utils.serialize(analysis) since it removes
-        // properties with null values which are required in the
-        // specification
-        //String studySpecs = Utils.serialize(analysis);
-        String studySpecs = this.seralizeAnalysis(analysis);
+        EstimationAnalysisImpl analysis = this.exportAnalysis(id);
+        analysis.setPackageName(packageName);
+        String studySpecs = Utils.serialize(analysis);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         
         Hydra h = new Hydra(studySpecs);
@@ -287,26 +286,5 @@ public class EstimationService extends AbstractDaoService {
                 .build();
         
         return response;
-    }
-    
-    // NOTE: This should be replaced with SSA.serialize once issue
-    // noted in the download function is addressed.
-    private String seralizeAnalysis(EstimationAnalysis estimationAnalysis) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.disable(
-                MapperFeature.AUTO_DETECT_CREATORS,
-                MapperFeature.AUTO_DETECT_GETTERS,
-                MapperFeature.AUTO_DETECT_IS_GETTERS
-        );
-
-        objectMapper.disable(
-                SerializationFeature.FAIL_ON_EMPTY_BEANS
-        );
-
-        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-
-        //objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        
-        return objectMapper.writeValueAsString(estimationAnalysis);
     }
 }

@@ -13,8 +13,11 @@ insert into @results_database_schema.cc_results (type, fa_type, covariate_id, co
     end as stat_value,
     @cohortId as cohort_definition_id,
     @executionId as cc_generation_id
-from (select count(*) as sum_value from(select person_id from ( @groupQuery ) pi
-    join @temp_database_schema.@targetTable tt on
-      tt.subject_id = pi.person_id where tt.cohort_definition_id = @cohortId group by pi.person_id) pci) sum,
+from (select count(*) as sum_value from(
+         WITH qualified_events AS (
+             SELECT ROW_NUMBER() OVER () AS event_id, subject_id AS person_id, cohort_start_date AS OP_START_DATE, cohort_start_date AS start_date, cohort_end_date AS OP_END_DATE, cohort_end_date AS end_date
+             FROM @temp_database_schema.@targetTable where cohort_definition_id = @cohortId
+         )
+         select person_id from ( @groupQuery ) pi group by pi.person_id) pci) sum,
   (select count(*) as total from  @temp_database_schema.@totalsTable where cohort_definition_id = @cohortId) totals
 ;

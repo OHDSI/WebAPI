@@ -67,6 +67,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.ohdsi.webapi.Constants.Params.*;
 
@@ -401,8 +402,9 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
         private String getCriteriaStatsQuery(String queryFile, CohortDefinition cohortDefinition, FeAnalysisWithCriteriaEntity analysis, FeAnalysisCriteriaEntity feature, String targetTable) {
 
             Long conceptId = 0L;
+            CohortExpressionBuilder expressionBuilder = new CohortExpressionBuilder(cohortDefinition, feature);
             String[] paramNames = (CcResultType.PREVALENCE.equals(analysis.getStatType()) ? PREVALENCE_PARAM_NAMES : DISTRIBUTION_PARAM_NAMES).toArray(new String[0]);
-            String groupQuery = queryBuilder.getCriteriaGroupQuery(feature.getExpression(), "#qualified_events");
+            String groupQuery = queryBuilder.getCriteriaGroupQuery(expressionBuilder.reindexCriteria(feature.getExpression()), "#qualified_events");
             Collection<String> paramValues = Lists.mutable.with(groupQuery, "0", String.valueOf(cohortDefinition.getId()),
                     String.valueOf(jobId), String.valueOf(analysis.getId()), analysis.getName(), feature.getName(), String.valueOf(conceptId),
                     String.valueOf(feature.getId()), targetTable, cohortTable);
@@ -428,16 +430,19 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             options.targetTable = options.resultSchema + "." + targetTable;
             List<String> queries = new ArrayList<>();
             String createCohortSql = sourceAwareSqlRender.renderSql(sourceId, CREATE_COHORT_SQL, TARGET_TABLE, targetTable);
-            String exprQuery = queryBuilder.buildExpressionQueryInserts(cohortDefinition.getExpression(), options);
-            String cleanupExprQuery = queryBuilder.buildCohortExpressionCleanup(cohortDefinition.getExpression(), options);
+            String exprQuery = queryBuilder.buildExpressionQuery(cohortDefinition.getExpression(), options);
+            ConceptSet[] conceptSets = Stream.concat(
+                Arrays.stream(cohortDefinition.getExpression().conceptSets),
+                analysis.getConceptSets().stream()).toArray(ConceptSet[]::new);
+            String codesetQuery = queryBuilder.getCodesetQuery(conceptSets);
             String dropTableSql = sourceAwareSqlRender.renderSql(sourceId, DROP_TABLE_SQL, TARGET_TABLE, targetTable);
 
             queries.add(createCohortSql);
             queries.add(exprQuery);
+            queries.add(codesetQuery);
             queries.addAll(analysis.getDesign().stream()
                     .map(feature -> getCriteriaStatsQuery(getStatQueryFile(analysis), cohortDefinition, analysis, feature, targetTable))
                     .collect(Collectors.toList())); // statistics queries
-            queries.add(cleanupExprQuery);
             queries.add(dropTableSql);
             return queries;
         }

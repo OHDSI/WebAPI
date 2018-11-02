@@ -28,6 +28,7 @@ public class FacetedSearchService {
     private final Map<String, FacetProvider> providersByFacet = new HashMap<>();
     private final Map<String, ColumnFilterProvider> providersByColumn = new HashMap<>();
     private final Map<String, Collection<String>> facetsByEntity = new HashMap<>();
+    private final Map<String, Collection<String>> columnsByEntity = new HashMap<>();
 
     public FacetedSearchService(Collection<FacetProvider> facetProviders, Collection<ColumnFilterProvider> columnFilterProviders) {
         facetProviders.forEach(p -> {
@@ -46,40 +47,48 @@ public class FacetedSearchService {
         return facetNames.stream().map(f -> new Facet(f, getFacetProvider(f).getValues(entityName))).collect(Collectors.toList());
     }
 
-    public <T> Page<T> getPage(FilteredPageRequest pageable, JpaSpecificationExecutor<T> repository) {
+    public <T> Page<T> getPage(FilteredPageRequest pageable, JpaSpecificationExecutor<T> repository, String entityName) {
         try {
-            return repository.findAll(createFilter(pageable), pageable);
+            return repository.findAll(createFilter(pageable, entityName), pageable);
         } catch (Exception e) {
             LoggerFactory.getLogger(getClass()).error("getting page", e);
             throw e;
         }
     }
 
-    public <T> Page<T> getPage(FilteredPageRequest pageable, EntityGraphJpaSpecificationExecutor<T> repository, EntityGraph defaultEntityGraph) {
+    public <T> Page<T> getPage(FilteredPageRequest pageable, EntityGraphJpaSpecificationExecutor<T> repository, EntityGraph defaultEntityGraph, String entityName) {
         try {
-            return repository.findAll(createFilter(pageable), pageable, defaultEntityGraph);
+            return repository.findAll(createFilter(pageable, entityName), pageable, defaultEntityGraph);
         } catch (Exception e) {
             LoggerFactory.getLogger(getClass()).error("getting page", e);
             throw e;
         }
     }
 
-    private <T> Specification<T> createFilter(FilteredPageRequest request) {
+    private <T> Specification<T> createFilter(FilteredPageRequest request, String entityName) {
         return (root, criteriaQuery, criteriaBuilder) -> {
             if (request.getSort() != null) {
                 criteriaQuery.orderBy(QueryUtils.toOrders(request.getSort(), root, criteriaBuilder));
             }
             final Predicate facetSearch = createFacetSearchPredicate(root, criteriaBuilder, request.getFilter());
             return StringUtils.isNotBlank(request.getFilter().getText())
-                    ? criteriaBuilder.and(facetSearch, createTextSearchPredicate(root, criteriaQuery, criteriaBuilder, request.getFilter()))
+                    ? criteriaBuilder.and(facetSearch, createTextSearchPredicate(root, criteriaQuery, criteriaBuilder, request.getFilter(), entityName))
                     : facetSearch;
         };
     }
 
-    private <T> Predicate createTextSearchPredicate(Root<T> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder, Filter filter) {
-        return criteriaBuilder.or(filter.getSearchableFields().stream()
+    private <T> Predicate createTextSearchPredicate(Root<T> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder, Filter filter, String entityName) {
+        return criteriaBuilder.or(getColumns(entityName).stream()
                 .map(field -> getColumnFilterProvider(field).createTextSearchPredicate(field, filter.getText(), root, query, criteriaBuilder))
                 .toArray(Predicate[]::new));
+    }
+
+    private Collection<String> getColumns(String entityName) {
+        final Collection<String> columns = columnsByEntity.get(entityName);
+        if (columns == null) {
+            throw new IllegalArgumentException("unknown entity: " + entityName);
+        }
+        return columns;
     }
 
     private <T> Predicate createFacetSearchPredicate(Root<T> root, CriteriaBuilder criteriaBuilder, Filter filter) {
@@ -108,5 +117,9 @@ public class FacetedSearchService {
 
     public void registerFacets(String entityName, String... facetNames) {
         facetsByEntity.put(entityName, Arrays.asList(facetNames));
+    }
+
+    public void registerColumns(String entityName, String... columnNames) {
+        columnsByEntity.put(entityName,  Arrays.asList(columnNames));
     }
 }

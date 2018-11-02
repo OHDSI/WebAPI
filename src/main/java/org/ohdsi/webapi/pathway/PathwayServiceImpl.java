@@ -14,6 +14,7 @@ import org.ohdsi.webapi.facets.CreatedDateFacetProvider;
 import org.ohdsi.webapi.facets.FacetedSearchService;
 import org.ohdsi.webapi.facets.FilteredPageRequest;
 import org.ohdsi.webapi.facets.ModifiedDateFacetProvider;
+import org.ohdsi.webapi.facets.NameFilterProvider;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.pathway.converter.SerializedPathwayAnalysisToPathwayAnalysisConverter;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
@@ -120,6 +121,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
         SerializedPathwayAnalysisToPathwayAnalysisConverter.setConversionService(conversionService);
         facetedSearchService.registerFacets(ENTITY_NAME, AuthorFacetProvider.FACET_NAME, CreatedDateFacetProvider.FACET_NAME, ModifiedDateFacetProvider.FACET_NAME);
+        facetedSearchService.registerColumns(ENTITY_NAME, AuthorFacetProvider.FACET_NAME, NameFilterProvider.COLUMN_NAME);
     }
 
     @Override
@@ -175,7 +177,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     @Override
     public Page<PathwayAnalysisEntity> getPage(final Pageable pageable) {
         return pageable instanceof FilteredPageRequest
-                ? facetedSearchService.getPage((FilteredPageRequest) pageable, pathwayAnalysisRepository, defaultEntityGraph)
+                ? facetedSearchService.getPage((FilteredPageRequest) pageable, pathwayAnalysisRepository, defaultEntityGraph, ENTITY_NAME)
                 : pathwayAnalysisRepository.findAll(pageable, defaultEntityGraph);
     }
 

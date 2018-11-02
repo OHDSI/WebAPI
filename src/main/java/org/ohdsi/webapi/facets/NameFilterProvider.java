@@ -4,12 +4,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class NameFilterProvider extends AbstractTextColumnFilterProvider {
-    private static final String FACET_NAME = "Name";
+    public static final String COLUMN_NAME = "Name";
     private static final String FIELD_NAME = "name";
 
     @Override
     public String getName() {
-        return FACET_NAME;
+        return COLUMN_NAME;
     }
 
     @Override

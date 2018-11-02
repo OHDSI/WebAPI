@@ -27,6 +27,7 @@ import org.ohdsi.webapi.facets.CreatedDateFacetProvider;
 import org.ohdsi.webapi.facets.FacetedSearchService;
 import org.ohdsi.webapi.facets.FilteredPageRequest;
 import org.ohdsi.webapi.facets.ModifiedDateFacetProvider;
+import org.ohdsi.webapi.facets.NameFilterProvider;
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
@@ -66,7 +67,6 @@ import javax.ws.rs.NotFoundException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -158,6 +158,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         SerializedCcToCcConverter.setConversionService(conversionService);
 
         facetedSearchService.registerFacets(ENTITY_NAME, AuthorFacetProvider.FACET_NAME, CreatedDateFacetProvider.FACET_NAME, ModifiedDateFacetProvider.FACET_NAME);
+        facetedSearchService.registerColumns(ENTITY_NAME, AuthorFacetProvider.FACET_NAME, NameFilterProvider.COLUMN_NAME);
     }
 
     @Override
@@ -310,7 +311,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     @Override
     public Page<CohortCharacterizationEntity> getPage(final Pageable pageable) {
         return pageable instanceof FilteredPageRequest
-                ? facetedSearchService.getPage((FilteredPageRequest) pageable, repository)
+                ? facetedSearchService.getPage((FilteredPageRequest) pageable, repository, ENTITY_NAME)
                 : repository.findAll(pageable);
     }
 

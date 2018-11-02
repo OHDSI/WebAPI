@@ -9,6 +9,7 @@ import org.ohdsi.webapi.facets.CreatedDateFacetProvider;
 import org.ohdsi.webapi.facets.FacetedSearchService;
 import org.ohdsi.webapi.facets.FilteredPageRequest;
 import org.ohdsi.webapi.facets.ModifiedDateFacetProvider;
+import org.ohdsi.webapi.facets.NameFilterProvider;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisConcepsetEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisCriteriaEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
@@ -52,12 +53,13 @@ public class FeAnalysisServiceImpl implements FeAnalysisService {
         this.facetedSearchService = facetedSearchService;
 
         facetedSearchService.registerFacets(ENTITY_NAME,  TypeFacetProvider.FACET_NAME, AuthorFacetProvider.FACET_NAME, CreatedDateFacetProvider.FACET_NAME, ModifiedDateFacetProvider.FACET_NAME);
+        facetedSearchService.registerColumns(ENTITY_NAME, AuthorFacetProvider.FACET_NAME, NameFilterProvider.COLUMN_NAME, DescriptionFilterProvider.COLUMN_NAME);
     }
 
     @Override
     public Page<FeAnalysisEntity> getPage(final Pageable pageable) {
         return pageable instanceof FilteredPageRequest
-                ? facetedSearchService.getPage((FilteredPageRequest) pageable, analysisRepository)
+                ? facetedSearchService.getPage((FilteredPageRequest) pageable, analysisRepository, ENTITY_NAME)
                 : analysisRepository.findAll(pageable);
     }
 

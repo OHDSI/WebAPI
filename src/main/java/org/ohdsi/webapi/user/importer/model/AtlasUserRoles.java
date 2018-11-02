@@ -1,14 +1,19 @@
 package org.ohdsi.webapi.user.importer.model;
 
-import org.ohdsi.webapi.service.UserService;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.ohdsi.webapi.user.Role;
 
 import java.util.List;
 
 public class AtlasUserRoles {
 
+  @JsonProperty("login")
   private String login;
+  @JsonProperty("displayName")
   private String displayName;
-  private List<UserService.Role> roles;
+  @JsonProperty("roles")
+  private List<Role> roles;
+  @JsonProperty("status")
   private LdapUserImportStatus status;
 
   public String getLogin() {
@@ -27,11 +32,11 @@ public class AtlasUserRoles {
     this.displayName = displayName;
   }
 
-  public List<UserService.Role> getRoles() {
+  public List<Role> getRoles() {
     return roles;
   }
 
-  public void setRoles(List<UserService.Role> roles) {
+  public void setRoles(List<Role> roles) {
     this.roles = roles;
   }
 

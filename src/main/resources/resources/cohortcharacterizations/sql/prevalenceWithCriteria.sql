@@ -6,13 +6,15 @@ insert into @results_database_schema.cc_results (type, fa_type, covariate_id, co
     @analysisId as analysis_id,
     '@analysisName' as analysis_name,
     @conceptId as concept_id,
-    sum.sum_value     as count_value,
+    sum.sum_value as count_value,
     case
       when totals.total > 0 then (sum.sum_value * 1.0 / totals.total * 1.0)
       else 0.0
     end as stat_value,
     @cohortId as cohort_definition_id,
     @executionId as cc_generation_id
-from (select count(*) as sum_value from @temp_database_schema.@targetTable) sum,
+from (select count(*) as sum_value from(select person_id from ( @groupQuery ) pi
+    join @temp_database_schema.@targetTable tt on
+      tt.subject_id = pi.person_id where tt.cohort_definition_id = @cohortId group by pi.person_id) pci) sum,
   (select count(*) as total from  @temp_database_schema.@totalsTable where cohort_definition_id = @cohortId) totals
 ;

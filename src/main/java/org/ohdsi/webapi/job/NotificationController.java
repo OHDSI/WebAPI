@@ -32,7 +32,7 @@ public class NotificationController {
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional(readOnly = true)
     public List<JobExecutionResource> list() {
-        return service.findAll().stream().map(this::toDTO).collect(Collectors.toList());
+        return service.findLast10().stream().map(this::toDTO).collect(Collectors.toList());
     }
 
     @GET

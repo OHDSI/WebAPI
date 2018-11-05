@@ -283,6 +283,7 @@ public class HoneurCohortDefinitionServiceExtension {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/export")
+    @Transactional
     public CohortDefinitionService.CohortDefinitionDTO exportCohortDefinition(@HeaderParam("Authorization") String token, @Context HttpServletRequest request, @PathParam("id") final int id, @QueryParam("toCloud") final boolean toCloud) {
         CohortDefinition cohortDefinition = this.cohortDefinitionRepository.findOneWithDetail(id);
 

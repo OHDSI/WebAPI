@@ -46,7 +46,10 @@ public class JerseyConfig extends ResourceConfig implements InitializingBean {
     
     @Value("${jersey.resources.root.package}")
     private String rootPackage;
-    
+
+    @Value("${jersey.resources.additional.packages}")
+    private String[] additionalPackages;
+
     public JerseyConfig() {
        EncodingFilter.enableFor(this, GZipEncoder.class);
     }
@@ -56,7 +59,10 @@ public class JerseyConfig extends ResourceConfig implements InitializingBean {
      */
     @Override
     public void afterPropertiesSet() throws Exception {
-        packages(this.rootPackage);
+        String[] packages = new String[this.additionalPackages.length+1];
+        packages[0] = rootPackage;
+        System.arraycopy(additionalPackages, 0, packages, 1, additionalPackages.length);
+        packages(packages);
         register(ActivityService.class);
         register(CDMResultsService.class);
         register(CohortAnalysisService.class);

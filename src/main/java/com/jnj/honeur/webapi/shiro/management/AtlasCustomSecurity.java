@@ -208,6 +208,7 @@ public class AtlasCustomSecurity extends AtlasSecurity {
             .addPath("/user/cas/callback", "ssl, handleCas, updateToken, sendTokenInUrl")
 
             .addProtectedRestPath("/cohortdefinition/hss/select", "createPermissionsOnImportCohortDefinition")
+            .addProtectedRestPath("/cohortdefinition/", "createPermissionsOnCreateCohortDefinition")
             .addProtectedRestPath("/cohortdefinition/*", "deletePermissionsOnDeleteCohortDefinition");
 
     setupProtectedPaths(filterChainBuilder);

@@ -21,11 +21,13 @@ import org.ohdsi.webapi.shiro.management.DisabledSecurity;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
+import org.ohdsi.webapi.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+import javax.transaction.Transactional;
 import javax.ws.rs.HeaderParam;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -68,6 +70,7 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
      * @return List of cohort_definition
      */
     @Override
+    @Transactional
     public List<CohortDefinitionListItem> getCohortDefinitionList(@HeaderParam("Authorization") String token) {
         ArrayList<CohortDefinitionListItem> result = new ArrayList<>();
         Iterable<CohortDefinition> defs = cohortDefinitionRepository.findAll();
@@ -104,13 +107,14 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
             item.name = d.getName();
             item.description = d.getDescription();
             item.expressionType = d.getExpressionType();
-            item.createdBy = d.getCreatedBy().getLogin();
+            item.createdBy = UserUtils.nullSafeLogin(d.getCreatedBy());
             item.createdDate = d.getCreatedDate();
-            item.modifiedBy = d.getModifiedBy().getLogin();
+            item.modifiedBy = UserUtils.nullSafeLogin(d.getModifiedBy());
             item.modifiedDate = d.getModifiedDate();
 
             item.uuid = d.getUuid();
             item.groupKey = d.getGroupKey();
+
             List<CohortDefinitionDTO> groupedPreviousVersions =
                     StreamSupport.stream(defs.spliterator(), false)
                             .filter(cohortDefinition -> (cohortDefinition.getGroupKey() == null || cohortDefinition.getGroupKey().equals(item.groupKey)) && !cohortDefinition.getId().equals(item.id))
@@ -225,8 +229,8 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
     public CohortDefinitionDTO saveCohortDefinition(final int id, CohortDefinitionDTO def) {
         Date currentTime = Calendar.getInstance().getTime();
 
-    CohortDefinition currentDefinition = this.cohortDefinitionRepository.findOneWithDetail(id);
-    UserEntity modifier = userRepository.findByLogin(security.getSubject());
+        CohortDefinition currentDefinition = this.cohortDefinitionRepository.findOneWithDetail(id);
+        UserEntity modifier = userRepository.findByLogin(security.getSubject());
 
         currentDefinition.setName(def.name)
                 .setDescription(def.description)

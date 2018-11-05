@@ -9,6 +9,7 @@ import org.ohdsi.webapi.shiro.Entities.UserRoleEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
@@ -22,7 +23,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
-@ConditionalOnProperty(value="webapi.central", matchIfMissing = true)
+@ConditionalOnExpression("${datasource.honeur.enabled} and ${webapi.central}")
 public class LiferayApiClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LiferayApiClient.class);

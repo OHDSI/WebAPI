@@ -58,10 +58,8 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -214,7 +212,7 @@ public class HoneurCohortDefinitionServiceExtension {
      * @return information about the Cohort Analysis Job
      */
     @GET
-    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/export/{sourceKey}")
     public Response exportCohortResults(@HeaderParam("Authorization") String token, @PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey, @QueryParam("toCloud") final boolean toCloud, HttpHeaders headers) {
         try {
@@ -271,13 +269,16 @@ public class HoneurCohortDefinitionServiceExtension {
 
             if(toCloud && file != null) {
                 log.info("Export cohort results to HSS");
+                if(cohortDefinition.getUuid() == null) {
+                    log.error("Unable to export a cohort definition without a UUID!");
+                    return Response.serverError().build();
+                }
                 storageServiceClient.saveResults(token, file, cohortDefinition.getUuid().toString());
             }
             return getResponse(file);
         } catch(Exception e){
             log.error(e.getMessage(), e);
-            // TODO: beter return
-            throw new RuntimeException(e);
+            return Response.serverError().build();
         } finally {
             SourceDaimonContextHolder.clear();
         }
@@ -661,19 +662,9 @@ public class HoneurCohortDefinitionServiceExtension {
         return tempFile;
     }
 
-    private Response getResponse(File file) {
-        ByteArrayOutputStream exportStream = null;
-        try {
-            byte[] bytes = Files.readAllBytes(file.toPath());
-            exportStream = new ByteArrayOutputStream(bytes.length);
-            exportStream.write(bytes, 0, bytes.length);
-        } catch (IOException e){
-            log.error(e.getMessage(), e);
-        }
-
+    private Response getResponse(final File file) {
         return Response
-                .ok(exportStream)
-                .type(MediaType.APPLICATION_OCTET_STREAM)
+                .ok(file)
                 .header("Content-Disposition", String.format("attachment; filename=\"%s\"", file.getName()))
                 .build();
     }

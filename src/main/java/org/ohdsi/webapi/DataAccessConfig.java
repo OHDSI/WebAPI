@@ -1,9 +1,5 @@
 package org.ohdsi.webapi;
 
-import java.util.Properties;
-import javax.persistence.EntityManagerFactory;
-import javax.sql.DataSource;
-
 import com.jnj.honeur.webapi.CurrentTenantIdentifierResolverImpl;
 import com.jnj.honeur.webapi.DataSourceLookup;
 import com.jnj.honeur.webapi.MultiTenantConnectionProviderImpl;
@@ -26,6 +22,10 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import javax.persistence.EntityManagerFactory;
+import javax.sql.DataSource;
+import java.util.Properties;
+
 /**
  *
  */
@@ -41,7 +41,8 @@ public class DataAccessConfig {
   
     private Properties getJPAProperties() {
         Properties properties = new Properties();
-        properties.setProperty(org.hibernate.cfg.Environment.DEFAULT_SCHEMA, this.env.getProperty("spring.jpa.properties.hibernate.default_schema"));
+        // !!! Do not set the DEFAULT schema, otherwise the schema switching (see SourceDaimonContextHolder) will not work properly !!!
+        //properties.setProperty(org.hibernate.cfg.Environment.DEFAULT_SCHEMA, this.env.getProperty("spring.jpa.properties.hibernate.default_schema"));
         properties.setProperty(org.hibernate.cfg.Environment.DIALECT, this.env.getProperty("spring.jpa.properties.hibernate.dialect"));
         properties.setProperty(org.hibernate.cfg.Environment.SHOW_SQL, env.getProperty("spring.jpa.show-sql"));
         properties.setProperty(org.hibernate.cfg.Environment.USE_NEW_ID_GENERATOR_MAPPINGS, "false");

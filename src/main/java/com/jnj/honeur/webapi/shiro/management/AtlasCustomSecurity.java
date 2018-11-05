@@ -209,7 +209,9 @@ public class AtlasCustomSecurity extends AtlasSecurity {
 
             .addProtectedRestPath("/cohortdefinition/hss/select", "createPermissionsOnImportCohortDefinition")
             .addProtectedRestPath("/cohortdefinition/", "createPermissionsOnCreateCohortDefinition")
-            .addProtectedRestPath("/cohortdefinition/*", "deletePermissionsOnDeleteCohortDefinition");
+            .addProtectedRestPath("/cohortdefinition/*", "deletePermissionsOnDeleteCohortDefinition")
+            .addProtectedRestPath("/cohortdefinition/*/export", "deletePermissionsOnExportCohortDefinition, createPermissionsOnCreateCohortDefinition")
+            .addProtectedRestPath("/cohortdefinition/hss/select", "createPermissionsOnImportCohortDefinition");
 
     setupProtectedPaths(filterChainBuilder);
 

@@ -10,6 +10,6 @@ public interface FacetProvider {
 
     List<FacetItem> getValues(String entityName);
 
-    <T> Predicate createFacetPredicate(List<FacetItem> items, CriteriaBuilder criteriaBuilder, Root<T> root);
+    <T> Predicate createFacetPredicate(List<String> items, CriteriaBuilder criteriaBuilder, Root<T> root);
 
 }

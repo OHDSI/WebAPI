@@ -25,9 +25,9 @@ public abstract class AbstractUserFacetProvider extends AbstractColumnBasedFacet
     }
 
     @Override
-    public <T> Predicate createFacetPredicate(List<FacetItem> items, CriteriaBuilder criteriaBuilder, Root<T> root) {
+    public <T> Predicate createFacetPredicate(List<String> items, CriteriaBuilder criteriaBuilder, Root<T> root) {
         assert items != null && !items.isEmpty();
-        final List<Long> ids = items.stream().map(item -> Long.valueOf(item.key)).collect(Collectors.toList());
+        final List<Long> ids = items.stream().map(Long::valueOf).collect(Collectors.toList());
         final Path<Object> path = root.get(getField());
         if(ids.contains(0L)) {
             return criteriaBuilder.or(path.in(ids), path.isNull());

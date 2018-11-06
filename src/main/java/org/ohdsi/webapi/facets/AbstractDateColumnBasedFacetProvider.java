@@ -8,7 +8,6 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
@@ -29,7 +28,7 @@ public abstract class AbstractDateColumnBasedFacetProvider extends AbstractColum
     protected abstract String getField();
 
     @Override
-    public <T> Predicate createFacetPredicate(List<FacetItem> items, CriteriaBuilder cb, Root<T> root) {
+    public <T> Predicate createFacetPredicate(List<String> items, CriteriaBuilder cb, Root<T> root) {
         assert items != null && !items.isEmpty();
         return items.size() == 1
                 ? createItemPredicate(items.get(0), cb, root)
@@ -37,9 +36,9 @@ public abstract class AbstractDateColumnBasedFacetProvider extends AbstractColum
     }
 
     @SuppressWarnings("unchecked")
-    private <T> Predicate createItemPredicate(FacetItem item, CriteriaBuilder cb, Root<T> root) {
+    private <T> Predicate createItemPredicate(String item, CriteriaBuilder cb, Root<T> root) {
         final Path field = root.get(getField());
-        switch (item.text) {
+        switch (item) {
             case TWO_WEEKS_AGO: {
                 final Date from = getDaysFromNow(14);
                 return cb.or(cb.lessThanOrEqualTo(field, cb.literal(from)), cb.isNull(field));
@@ -70,8 +69,7 @@ public abstract class AbstractDateColumnBasedFacetProvider extends AbstractColum
 
     @Override
     protected String getKey(ResultSet resultSet) throws SQLException {
-        final java.sql.Date date = resultSet.getDate(1);
-        return date != null ? new SimpleDateFormat().format(date) : "";
+        return getText(resultSet);
     }
 
     @Override

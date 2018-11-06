@@ -92,9 +92,9 @@ public class FacetedSearchService {
     }
 
     private <T> Predicate createFacetSearchPredicate(Root<T> root, CriteriaBuilder criteriaBuilder, Filter filter) {
-        return criteriaBuilder.and(filter.getFacets().stream()
-                .filter(facet -> !facet.selectedItems.isEmpty())
-                .map(facet -> getFacetProvider(facet.name).createFacetPredicate(facet.selectedItems, criteriaBuilder, root))
+        return criteriaBuilder.and(filter.getFacets().entrySet().stream()
+                .filter(f -> !f.getValue().isEmpty())
+                .map(facet -> getFacetProvider(facet.getKey()).createFacetPredicate(facet.getValue(), criteriaBuilder, root))
                 .toArray(Predicate[]::new));
     }
 

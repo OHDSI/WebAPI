@@ -1,15 +1,14 @@
 package org.ohdsi.webapi.facets;
 
 import java.util.List;
+import java.util.Map;
 
 public class Filter {
     private String text;
-    private List<String> searchableFields;
-    private List<Facet> facets;
+    private Map<String, List<String>> facets;
 
-    public Filter(String text, List<String> searchableFields, List<Facet> facets) {
+    public Filter(String text, Map<String, List<String>> facets) {
         this.text = text;
-        this.searchableFields = searchableFields;
         this.facets = facets;
     }
 
@@ -20,11 +19,7 @@ public class Filter {
         return text;
     }
 
-    public List<Facet> getFacets() {
+    public Map<String, List<String>> getFacets() {
         return facets;
-    }
-
-    public List<String> getSearchableFields() {
-        return searchableFields;
     }
 }

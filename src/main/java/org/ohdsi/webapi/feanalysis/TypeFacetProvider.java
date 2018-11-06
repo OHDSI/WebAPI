@@ -2,7 +2,6 @@ package org.ohdsi.webapi.feanalysis;
 
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.webapi.facets.AbstractTextColumnBasedFacetProvider;
-import org.ohdsi.webapi.facets.FacetItem;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
@@ -59,15 +58,15 @@ public class TypeFacetProvider extends AbstractTextColumnBasedFacetProvider {
     }
 
     @Override
-    public <T> Predicate createFacetPredicate(List<FacetItem> items, CriteriaBuilder cb, Root<T> root) {
+    public <T> Predicate createFacetPredicate(List<String> items, CriteriaBuilder cb, Root<T> root) {
         assert items != null && !items.isEmpty();
         return items.size() == 1
                 ? createItemPredicate(items.get(0), cb, root)
                 : cb.or(items.stream().map(item -> createItemPredicate(item, cb, root)).toArray(Predicate[]::new));
     }
 
-    private <T> Predicate createItemPredicate(FacetItem item, CriteriaBuilder cb, Root<T> root) {
+    private <T> Predicate createItemPredicate(String item, CriteriaBuilder cb, Root<T> root) {
         final Path field = root.get(getField());
-        return cb.equal(field, cb.literal(StandardFeatureAnalysisType.valueOf(item.key)));
+        return cb.equal(field, cb.literal(StandardFeatureAnalysisType.valueOf(item)));
     }
 }

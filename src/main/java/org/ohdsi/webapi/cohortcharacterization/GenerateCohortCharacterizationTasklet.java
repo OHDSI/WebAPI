@@ -136,76 +136,6 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
         this.transactionTemplate.getTransactionManager().commit(initStatus);
     }
 
-    private class CohortExpressionBuilder {
-        private String json;
-        private int conceptSetIndex;
-        private TypeReference<CohortExpression> cohortExpressionTypeRef;
-
-        CohortExpressionBuilder(CohortDefinition cohortDefinition, FeAnalysisCriteriaEntity feature) {
-
-            cohortExpressionTypeRef = new TypeReference<CohortExpression>() {};
-            json = Utils.serialize(cohortDefinition.getExpression());
-            initConceptSets(feature);
-        }
-
-        private void initConceptSets(FeAnalysisCriteriaEntity feature) {
-
-            CohortExpression expression = Utils.deserialize(this.json, cohortExpressionTypeRef);
-            this.conceptSetIndex = expression.conceptSets.length;
-            List<org.ohdsi.circe.cohortdefinition.ConceptSet> conceptSets = new ArrayList<>(Arrays.asList(expression.conceptSets));
-            List<ConceptSet> featureConceptSets = feature.getFeatureAnalysis().getConceptSets();
-            if (Objects.nonNull(featureConceptSets)) {
-                conceptSets.addAll(feature.getFeatureAnalysis().getConceptSets().stream()
-                        .map(this::cloneConceptSet)
-                        .peek(conceptSet -> conceptSet.id += conceptSetIndex)
-                        .collect(Collectors.toList()));
-            }
-            expression.conceptSets = conceptSets.toArray(new org.ohdsi.circe.cohortdefinition.ConceptSet[0]);
-            this.json = Utils.serialize(expression);
-        }
-
-        private org.ohdsi.circe.cohortdefinition.ConceptSet cloneConceptSet(org.ohdsi.circe.cohortdefinition.ConceptSet conceptSet) {
-            org.ohdsi.circe.cohortdefinition.ConceptSet result = new org.ohdsi.circe.cohortdefinition.ConceptSet();
-            result.id = conceptSet.id;
-            result.name = conceptSet.name;
-            result.expression = conceptSet.expression;
-            return result;
-        }
-
-        CriteriaGroup reindexCriteria(CriteriaGroup group) {
-
-            CriteriaGroup copy = copy(group, new TypeReference<CriteriaGroup>() {});
-            Arrays.stream(copy.criteriaList)
-                    .map(cc -> cc.criteria)
-                    .forEach(this::mapCodesetId);
-            return copy;
-        }
-
-        private <T> T copy(T object, TypeReference<T> typeRef) {
-            final String json = Utils.serialize(object);
-            return Utils.deserialize(json, typeRef);
-        }
-
-        private void mapCodesetId(Criteria criteria) {
-            if (criteria instanceof ObservationPeriod || criteria instanceof PayerPlanPeriod) {
-                return;
-            }
-            try {
-                Integer codesetId = (Integer) FieldUtils.readDeclaredField(criteria, "codesetId");
-                FieldUtils.writeDeclaredField(criteria, "codesetId", codesetId + conceptSetIndex);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        private InclusionRule newRule(CriteriaGroup group) {
-            InclusionRule rule = new InclusionRule();
-            rule.expression = group;
-            return rule;
-        }
-
-    }
-
     private class CcTask {
 
         final String prevalenceRetrievingQuery = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/prevalenceRetrieving.sql");
@@ -393,9 +323,8 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
         private String getCriteriaStatsQuery(String queryFile, CohortDefinition cohortDefinition, FeAnalysisWithCriteriaEntity analysis, FeAnalysisCriteriaEntity feature, String targetTable) {
 
             Long conceptId = 0L;
-            CohortExpressionBuilder expressionBuilder = new CohortExpressionBuilder(cohortDefinition, feature);
             String[] paramNames = (CcResultType.PREVALENCE.equals(analysis.getStatType()) ? PREVALENCE_PARAM_NAMES : DISTRIBUTION_PARAM_NAMES).toArray(new String[0]);
-            String groupQuery = queryBuilder.getCriteriaGroupQuery(expressionBuilder.reindexCriteria(feature.getExpression()), "#qualified_events");
+            String groupQuery = queryBuilder.getCriteriaGroupQuery(feature.getExpression(), "#qualified_events");
             Collection<String> paramValues = Lists.mutable.with(groupQuery, "0", String.valueOf(cohortDefinition.getId()),
                     String.valueOf(jobId), String.valueOf(analysis.getId()), analysis.getName(), feature.getName(), String.valueOf(conceptId),
                     String.valueOf(feature.getId()), targetTable, cohortTable);
@@ -422,10 +351,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             List<String> queries = new ArrayList<>();
             String createCohortSql = sourceAwareSqlRender.renderSql(sourceId, CREATE_COHORT_SQL, TARGET_TABLE, targetTable);
             String exprQuery = queryBuilder.buildExpressionQuery(cohortDefinition.getExpression(), options);
-            ConceptSet[] conceptSets = Stream.concat(
-                Arrays.stream(cohortDefinition.getExpression().conceptSets),
-                analysis.getConceptSets().stream()).toArray(ConceptSet[]::new);
-            String codesetQuery = queryBuilder.getCodesetQuery(conceptSets);
+            String codesetQuery = queryBuilder.getCodesetQuery(analysis.getConceptSets().toArray(new ConceptSet[0]));
             String dropTableSql = sourceAwareSqlRender.renderSql(sourceId, DROP_TABLE_SQL, TARGET_TABLE, targetTable);
 
             queries.add(createCohortSql);

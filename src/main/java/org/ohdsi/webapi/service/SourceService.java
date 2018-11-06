@@ -26,6 +26,8 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.jasypt.encryption.pbe.PBEStringEncryptor;
 import org.jasypt.properties.PropertyValueEncryptionUtils;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.ircalc.ExecutionInfo;
+import org.ohdsi.webapi.ircalc.IRExecutionInfoRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +61,8 @@ public class SourceService extends AbstractDaoService {
   private Environment env;
   @Autowired
   private ApplicationEventPublisher publisher;
+  @Autowired
+  private IRExecutionInfoRepository irExecutionInfoRepository;
   @Value("${datasource.ohdsi.schema}")
   private String schema;
 
@@ -280,8 +284,10 @@ public class SourceService extends AbstractDaoService {
     Source source = sourceRepository.findBySourceId(sourceId);
     if (source != null) {
       final String sourceKey = source.getSourceKey();
+      List<ExecutionInfo> executions = irExecutionInfoRepository.findBySource(source);
+      irExecutionInfoRepository.delete(executions);
       sourceRepository.delete(source);
-        publisher.publishEvent(new DeleteDataSourceEvent(this, sourceId, source.getSourceName()));
+      publisher.publishEvent(new DeleteDataSourceEvent(this, sourceId, source.getSourceName()));
       cachedSources = null;
       securityManager.removeSourceRole(sourceKey);
       return Response.ok().build();

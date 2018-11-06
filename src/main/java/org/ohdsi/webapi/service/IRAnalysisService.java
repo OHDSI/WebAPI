@@ -44,6 +44,7 @@ import java.util.stream.StreamSupport;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.annotation.PostConstruct;
+import javax.inject.Singleton;
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -104,6 +105,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @author Chris Knoll <cknoll@ohdsi.org>
  */
 @Path("/ir/")
+@Singleton
 @Component
 public class IRAnalysisService extends AbstractDaoService implements GeneratesNotification {
 

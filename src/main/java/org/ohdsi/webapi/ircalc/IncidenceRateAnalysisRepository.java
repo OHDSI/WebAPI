@@ -24,7 +24,7 @@ import org.springframework.data.repository.CrudRepository;
  */
 public interface IncidenceRateAnalysisRepository extends CrudRepository<IncidenceRateAnalysis, Integer> {
   
-  @Query("select ira from IncidenceRateAnalysis AS ira LEFT JOIN FETCH ira.details as d")          
+  @Query("SELECT ira FROM IncidenceRateAnalysis AS ira LEFT JOIN FETCH ira.details AS d")          
   Iterable<IncidenceRateAnalysis> findAll();
 
   @Query("SELECT ira FROM IncidenceRateAnalysis AS ira LEFT JOIN FETCH ira.executionInfoList WHERE ira.id = ?1")

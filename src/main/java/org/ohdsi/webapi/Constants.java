@@ -41,26 +41,6 @@ public interface Constants {
     String PRESERVE_ROLES = "preserveRoles";
   }
 
-  Map<StandardFeatureAnalysisDomain, String> DOMAIN_TABLES = ImmutableMap.<StandardFeatureAnalysisDomain, String>builder()
-          .put(StandardFeatureAnalysisDomain.CONDITION, "condition_occurrence")
-          .put(StandardFeatureAnalysisDomain.DEVICE, "device_exposure")
-          .put(StandardFeatureAnalysisDomain.DRUG, "drug_exposure")
-          .put(StandardFeatureAnalysisDomain.MEASUREMENT, "measurement")
-          .put(StandardFeatureAnalysisDomain.OBSERVATION, "observation")
-          .put(StandardFeatureAnalysisDomain.PROCEDURE, "procedure_occurrence")
-          .put(StandardFeatureAnalysisDomain.VISIT, "visit_occurrence")
-          .build();
-
-  Map<StandardFeatureAnalysisDomain, String> DOMAIN_ID_FIELDS = ImmutableMap.<StandardFeatureAnalysisDomain, String>builder()
-          .put(StandardFeatureAnalysisDomain.CONDITION, "condition_occurrence_id")
-          .put(StandardFeatureAnalysisDomain.DEVICE, "device_exposure_id")
-          .put(StandardFeatureAnalysisDomain.DRUG, "drug_exposure_id")
-          .put(StandardFeatureAnalysisDomain.MEASUREMENT, "measurement_id")
-          .put(StandardFeatureAnalysisDomain.OBSERVATION, "observation_id")
-          .put(StandardFeatureAnalysisDomain.PROCEDURE, "procedure_occurrence_id")
-          .put(StandardFeatureAnalysisDomain.VISIT, "visit_occurrence_id")
-          .build();
-
   Map<StandardFeatureAnalysisDomain, DomainMetadata> DOMAIN_METADATA = ImmutableMap.<StandardFeatureAnalysisDomain, DomainMetadata>builder()
           .put(StandardFeatureAnalysisDomain.CONDITION, new DomainMetadata("condition_occurrence", "condition_occurrence_id", "condition_start_date", "condition_end_date"))
           .put(StandardFeatureAnalysisDomain.DEVICE, new DomainMetadata("device_exposure", "device_exposure_id", "device_exposure_start_date", "device_exposure_end_date"))

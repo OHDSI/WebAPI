@@ -172,15 +172,6 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             return result;
         }
 
-        CohortExpression withCriteria(CriteriaGroup group) {
-
-                CohortExpression expression = Utils.deserialize(json, cohortExpressionTypeRef);
-                CriteriaGroup copy = reindexCriteria(group);
-
-                expression.inclusionRules.add(newRule(copy));
-                return expression;
-        }
-
         CriteriaGroup reindexCriteria(CriteriaGroup group) {
 
             CriteriaGroup copy = copy(group, new TypeReference<CriteriaGroup>() {});

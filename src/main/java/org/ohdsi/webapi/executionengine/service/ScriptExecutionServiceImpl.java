@@ -57,7 +57,6 @@ import static com.odysseusinc.arachne.commons.types.DBMSType.IMPALA;
 class ScriptExecutionServiceImpl implements ScriptExecutionService {
 
     private static final Logger logger = LoggerFactory.getLogger(ScriptExecutionServiceImpl.class);
-    private static final String IMPALA_DATASOURCE = "impala";
 
     @Autowired
     private HttpClient client;

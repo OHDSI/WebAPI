@@ -47,6 +47,7 @@ public class Source implements Serializable {
 
   public static final String MASQUERADED_USERNAME = "<username>";
   public static final String MASQUERADED_PASSWORD = "<password>";
+  public static final String IMPALA_DATASOURCE = "impala";
 
   @Id
   @GeneratedValue
@@ -222,8 +223,17 @@ public class Source implements Serializable {
   }
 
   @Override
-  public String toString(){
-      return String.format("sourceId = %d, daimons = %s, sourceName = %s, sourceDialect = %s, sourceKey = %s, krbAdminServer = %s, krbAuthMethod = %s",
-              sourceId, daimons, sourceName, sourceDialect, sourceKey, krbAdminServer, krbAuthMethod);
+  public String toString() {
+    String source = "sourceId=" + sourceId +
+                    ", daimons=" + daimons +
+                    ", sourceName='" + sourceName + '\'' +
+                    ", sourceDialect='" + sourceDialect + '\'' +
+                    ", sourceKey='" + sourceKey;
+    if (IMPALA_DATASOURCE.equalsIgnoreCase(sourceDialect)){
+      source += '\'' +
+              ", krbAdminServer='" + krbAdminServer + '\'' +
+              ", krbAuthMethod=" + krbAuthMethod;
+    }
+    return source;
   }
 }

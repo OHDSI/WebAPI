@@ -1,19 +1,22 @@
 package org.ohdsi.webapi.user.importer.model;
 
-import org.ohdsi.webapi.service.UserService;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.ohdsi.webapi.user.Role;
 
 import java.util.List;
 
 public class RoleGroupsMap {
-  private UserService.Role role;
+  @JsonProperty("role")
+  private Role role;
 
+  @JsonProperty("groups")
   private List<LdapGroup> groups;
 
-  public UserService.Role getRole() {
+  public Role getRole() {
     return role;
   }
 
-  public void setRole(UserService.Role role) {
+  public void setRole(Role role) {
     this.role = role;
   }
 

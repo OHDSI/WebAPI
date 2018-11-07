@@ -18,6 +18,7 @@ package org.ohdsi.webapi.source;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMechanism;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -75,6 +76,9 @@ public class Source implements Serializable {
   @Column
   @Type(type = "encryptedString")
   private String password;
+
+  @Column(name = "deleted_date")
+  private Date deletedDate;
 
     @Column(name = "krb_keytab")
     private byte[] krbKeytab;

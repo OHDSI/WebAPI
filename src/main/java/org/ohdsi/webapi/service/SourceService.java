@@ -284,8 +284,6 @@ public class SourceService extends AbstractDaoService {
     Source source = sourceRepository.findBySourceId(sourceId);
     if (source != null) {
       final String sourceKey = source.getSourceKey();
-      List<ExecutionInfo> executions = irExecutionInfoRepository.findBySource(source);
-      irExecutionInfoRepository.delete(executions);
       sourceRepository.delete(source);
       publisher.publishEvent(new DeleteDataSourceEvent(this, sourceId, source.getSourceName()));
       cachedSources = null;

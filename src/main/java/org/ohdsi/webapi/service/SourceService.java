@@ -41,13 +41,14 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static org.ohdsi.webapi.source.Source.IMPALA_DATASOURCE;
+
 @Path("/source/")
 @Component
 @Transactional
 public class SourceService extends AbstractDaoService {
 
     public static final String SECURE_MODE_ERROR = "This feature requires the administrator to enable security for the application";
-    private static final String IMPALA_DATASOURCE = "impala";
     private static final String KRB_REALM = "KrbRealm";
     private static final String KRB_FQDN = "KrbHostFQDN";
 

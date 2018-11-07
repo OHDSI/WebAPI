@@ -42,7 +42,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 public abstract class AbstractDaoService {
 
   protected final Logger log = LoggerFactory.getLogger(getClass());
-  private static final String IMPALA_DATASOURCE = "impala";
 
   @Value("${datasource.ohdsi.schema}")
   private String ohdsiSchema;

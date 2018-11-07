@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.*;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -92,6 +93,8 @@ public class HoneurDataAccessConfig {
         String url = this.env.getRequiredProperty("datasource.url");
         String user = this.env.getRequiredProperty("datasource.username");
         String pass = this.env.getRequiredProperty("datasource.password");
+        String schema = this.env.getRequiredProperty("datasource.ohdsi.schema");
+
         boolean autoCommit = false;
 
         //pooling - currently issues with (at least) oracle with use of temp tables and "on commit preserve rows" instead of "on commit delete rows";
@@ -105,6 +108,7 @@ public class HoneurDataAccessConfig {
         //non-pooling
         DriverManagerDataSource ds = new DriverManagerDataSource(url, user, pass);
         ds.setDriverClassName(driver);
+        ds.setSchema(schema);
         //note autocommit defaults vary across vendors. use provided @Autowired TransactionTemplate
 
         String[] supportedDrivers;
@@ -150,6 +154,7 @@ public class HoneurDataAccessConfig {
     @Bean
     @Primary
     //This is needed so that JpaTransactionManager is used for autowiring, instead of DataSourceTransactionManager
+    @Order(Integer.MIN_VALUE+1)
     public PlatformTransactionManager jpaTransactionManager() {//EntityManagerFactory entityManagerFactory) {
 
         JpaTransactionManager txManager = new JpaTransactionManager();

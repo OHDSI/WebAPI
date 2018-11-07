@@ -17,6 +17,9 @@
 	<logger name="org.springframework.jdbc">
 		<level value="debug" />
 	</logger>
+	<logger name="com.jnj.honeur">
+		<level value="debug" />
+	</logger>
 	<root>
 		<level value="info" />
 		<appender-ref ref="stdout" />

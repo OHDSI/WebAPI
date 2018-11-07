@@ -1,8 +1,8 @@
 package com.jnj.honeur.webapi;
 
+import com.jnj.honeur.webapi.source.SourceDaimonContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import com.jnj.honeur.webapi.source.SourceDaimonContext;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,16 +51,29 @@ public class DataSourceLookup implements org.springframework.jdbc.datasource.loo
         for(Source source:sources) {
             for(SourceDaimon sourceDaimon: source.getDaimons()) {
                 final DataSource dataSource = createDataSource(source, sourceDaimon.getDaimonType());
-                dataSourceMap.put(new SourceDaimonContext(source.getSourceKey(), sourceDaimon.getDaimonType()), dataSource);
+                if(dataSource != null) {
+                    dataSourceMap.put(new SourceDaimonContext(source.getSourceKey(), sourceDaimon.getDaimonType()), dataSource);
+                }
             }
          }
+
+         LOG.debug("# Data sources: " + dataSourceMap.size());
     }
 
     private DataSource createDataSource(Source source, SourceDaimon.DaimonType daimonType) {
         LOG.debug(String.format("Create datasource for source '%s' and daimon type '%s'", source.getSourceKey(), daimonType.name()));
         final DriverManagerDataSource ds = new DriverManagerDataSource(source.getSourceConnection());
-        ds.setDriverClassName(databaseDriverMapping.get(source.getSourceDialect()));
-        ds.setSchema(source.getTableQualifier(daimonType));
+        String driverClassName = databaseDriverMapping.get(source.getSourceDialect());
+        LOG.debug(String.format("Driver class name %s", driverClassName));
+        if(driverClassName == null) {
+            LOG.warn(String.format("No driver class found for dialect %s", source.getSourceDialect()));
+            return null;
+        }
+        ds.setDriverClassName(driverClassName);
+
+        final String schema = source.getTableQualifier(daimonType);
+        LOG.debug(String.format("Schema %s", schema));
+        ds.setSchema(schema);
 
         return ds;
     }
@@ -70,6 +83,7 @@ public class DataSourceLookup implements org.springframework.jdbc.datasource.loo
         if(dataSource != null) {
             return dataSource;
         }
+        LOG.debug("return primary data source");
         return getPrimaryDataSource();
     }
 
@@ -83,8 +97,20 @@ public class DataSourceLookup implements org.springframework.jdbc.datasource.loo
             SourceDaimonContext sourceDaimonContext = new SourceDaimonContext(tenantIdentifier);
             return getDataSource(sourceDaimonContext);
         } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
             throw new DataSourceLookupFailureException(String.format("Invalid Source Daimon Context key %s", tenantIdentifier), e);
         }
+    }
+
+    public String getSchema(final String tenantIdentifier) {
+        if(PRIMARY_DATA_SOURCE_KEY.equals(tenantIdentifier)) {
+            return tenantIdentifier;
+        }
+        DataSource dataSource = getDataSource(tenantIdentifier);
+        if(dataSource instanceof DriverManagerDataSource) {
+            return ((DriverManagerDataSource)dataSource).getSchema();
+        }
+        return tenantIdentifier;
     }
 
     public DataSource getPrimaryDataSource() {

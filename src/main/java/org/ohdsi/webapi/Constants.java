@@ -1,10 +1,6 @@
 package org.ohdsi.webapi;
 
-import com.google.common.collect.ImmutableMap;
-import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
 import org.springframework.batch.core.ExitStatus;
-
-import java.util.Map;
 
 public interface Constants {
   String GENERATE_COHORT = "generateCohort";
@@ -40,24 +36,4 @@ public interface Constants {
     String ROLE_GROUP_MAPPING = "roleGroupMapping";
     String PRESERVE_ROLES = "preserveRoles";
   }
-
-  Map<StandardFeatureAnalysisDomain, String> DOMAIN_TABLES = ImmutableMap.<StandardFeatureAnalysisDomain, String>builder()
-          .put(StandardFeatureAnalysisDomain.CONDITION, "condition_occurrence")
-          .put(StandardFeatureAnalysisDomain.DEVICE, "device_exposure")
-          .put(StandardFeatureAnalysisDomain.DRUG, "drug_exposure")
-          .put(StandardFeatureAnalysisDomain.MEASUREMENT, "measurement")
-          .put(StandardFeatureAnalysisDomain.OBSERVATION, "observation")
-          .put(StandardFeatureAnalysisDomain.PROCEDURE, "procedure_occurrence")
-          .put(StandardFeatureAnalysisDomain.VISIT, "visit_occurrence")
-          .build();
-
-  Map<StandardFeatureAnalysisDomain, String> DOMAIN_ID_FIELDS = ImmutableMap.<StandardFeatureAnalysisDomain, String>builder()
-          .put(StandardFeatureAnalysisDomain.CONDITION, "condition_occurrence_id")
-          .put(StandardFeatureAnalysisDomain.DEVICE, "device_exposure_id")
-          .put(StandardFeatureAnalysisDomain.DRUG, "drug_exposure_id")
-          .put(StandardFeatureAnalysisDomain.MEASUREMENT, "measurement_id")
-          .put(StandardFeatureAnalysisDomain.OBSERVATION, "observation_id")
-          .put(StandardFeatureAnalysisDomain.PROCEDURE, "procedure_occurrence_id")
-          .put(StandardFeatureAnalysisDomain.VISIT, "visit_occurrence_id")
-          .build();
 }

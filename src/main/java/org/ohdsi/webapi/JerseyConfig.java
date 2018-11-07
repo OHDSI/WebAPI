@@ -36,19 +36,18 @@ import org.ohdsi.webapi.service.UserService;
 import org.ohdsi.webapi.service.VocabularyService;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 
 /**
  *
  */
 @Component
+@ConditionalOnExpression("!${datasource.honeur.enabled}")
 public class JerseyConfig extends ResourceConfig implements InitializingBean {
     
     @Value("${jersey.resources.root.package}")
     private String rootPackage;
-
-    @Value("${jersey.resources.additional.packages}")
-    private String[] additionalPackages;
 
     public JerseyConfig() {
        EncodingFilter.enableFor(this, GZipEncoder.class);
@@ -59,10 +58,7 @@ public class JerseyConfig extends ResourceConfig implements InitializingBean {
      */
     @Override
     public void afterPropertiesSet() throws Exception {
-        String[] packages = new String[this.additionalPackages.length+1];
-        packages[0] = rootPackage;
-        System.arraycopy(additionalPackages, 0, packages, 1, additionalPackages.length);
-        packages(packages);
+        packages(this.rootPackage);
         register(ActivityService.class);
         register(CDMResultsService.class);
         register(CohortAnalysisService.class);

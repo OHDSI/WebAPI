@@ -8,6 +8,7 @@ import com.odysseusinc.logging.event.DeletePermissionEvent;
 import com.odysseusinc.logging.event.DeleteRoleEvent;
 import com.odysseusinc.logging.event.UnassignRoleEvent;
 import org.eclipse.collections.impl.block.factory.Comparators;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.ArrayList;
@@ -34,7 +35,8 @@ import org.springframework.stereotype.Component;
  */
 
 @Path("/")
-@Component
+@Component("userService")
+@ConditionalOnProperty(value = "datasource.honeur.enabled", havingValue = "false")
 public class UserService {
 
   @Autowired

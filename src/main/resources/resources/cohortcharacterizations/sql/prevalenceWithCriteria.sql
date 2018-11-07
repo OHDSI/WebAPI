@@ -1,5 +1,5 @@
 WITH qualified_events AS (
-    SELECT ROW_NUMBER() OVER () AS event_id, subject_id AS person_id, cohort_start_date AS OP_START_DATE, cohort_start_date AS start_date, cohort_end_date AS OP_END_DATE, cohort_end_date AS end_date
+    SELECT ROW_NUMBER() OVER () AS event_id, subject_id AS person_id, cohort_start_date AS start_date, cohort_end_date AS end_date
     FROM @temp_database_schema.@targetTable where cohort_definition_id = @cohortId
 )
 insert into @results_database_schema.cc_results (type, fa_type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id, count_value, avg_value, cohort_definition_id, cc_generation_id)

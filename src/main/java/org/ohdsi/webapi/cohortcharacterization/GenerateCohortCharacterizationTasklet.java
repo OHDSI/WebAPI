@@ -15,29 +15,19 @@
  */
 package org.ohdsi.webapi.cohortcharacterization;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.reflect.FieldUtils;
 import org.eclipse.collections.impl.factory.Lists;
 import org.json.JSONObject;
-import org.ohdsi.analysis.Utils;
-import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
-import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
-import org.ohdsi.circe.cohortdefinition.Criteria;
-import org.ohdsi.circe.cohortdefinition.CriteriaGroup;
-import org.ohdsi.circe.cohortdefinition.InclusionRule;
-import org.ohdsi.circe.cohortdefinition.ObservationPeriod;
-import org.ohdsi.circe.cohortdefinition.PayerPlanPeriod;
+import org.ohdsi.circe.cohortdefinition.WindowedCriteria;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.featureExtraction.FeatureExtraction;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
-import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConverter;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcParamEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
@@ -65,9 +55,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.*;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.ohdsi.webapi.Constants.Params.*;
 
@@ -80,17 +68,8 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
     private static final String CREATE_COHORT_SQL = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/createCohortTable.sql");
     private static final String DROP_TABLE_SQL = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/dropCohortTable.sql");
 
-    private static final Collection<String> PREVALENCE_PARAM_NAMES = ImmutableList.<String>builder()
+    private static final Collection<String> CRITERIA_PARAM_NAMES = ImmutableList.<String>builder()
             .add("groupQuery", "indexId", "cohortId", "executionId", "analysisId", "analysisName", "covariateName", "conceptId", "covariateId", "targetTable", "totalsTable")
-            .build();
-    private static final Collection<String> DISTRIBUTION_PARAM_NAMES = ImmutableList.<String>builder()
-            .addAll(PREVALENCE_PARAM_NAMES)
-            .add("domain_table")
-            .add("domain_id_field")
-            .add("domain_start_date")
-            .add("domain_end_date")
-            .add("events_criteria")
-            .add("indexId")
             .build();
 
     private final CcService ccService;
@@ -295,50 +274,28 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             return options;
         }
 
-        private String getStatQueryFile(FeAnalysisWithCriteriaEntity analysis) {
-            String result;
-            switch (analysis.getStatType()) {
-                case PREVALENCE:
-                    result = COHORT_STATS_QUERY;
-                    break;
-                case DISTRIBUTION:
-                    result = COHORT_DIST_QUERY;
-                    break;
-                default:
-                    throw new IllegalArgumentException(String.format("Stat type %s is not supported", analysis.getStatType()));
-            }
-            return result;
-        }
-
-        private Supplier<? extends RuntimeException> raiseDomainNotSupported(StandardFeatureAnalysisDomain domain) {
-            return () -> new IllegalArgumentException(String.format("Domain %s is not supported", domain));
-        }
-
-        private Constants.DomainMetadata getDomainMetadata(StandardFeatureAnalysisDomain domain) {
-
-            return Optional.ofNullable(Constants.DOMAIN_METADATA.get(domain))
-                    .orElseThrow(raiseDomainNotSupported(domain));
-        }
-
-        private String getCriteriaStatsQuery(String queryFile, CohortDefinition cohortDefinition, FeAnalysisWithCriteriaEntity analysis, FeAnalysisCriteriaEntity feature, String targetTable) {
+        private String getCriteriaStatsQuery(CohortDefinition cohortDefinition, FeAnalysisWithCriteriaEntity analysis, FeAnalysisCriteriaEntity feature, String targetTable) {
 
             Long conceptId = 0L;
-            String[] paramNames = (CcResultType.PREVALENCE.equals(analysis.getStatType()) ? PREVALENCE_PARAM_NAMES : DISTRIBUTION_PARAM_NAMES).toArray(new String[0]);
-            String groupQuery = queryBuilder.getCriteriaGroupQuery(feature.getExpression(), "#qualified_events");
+            String queryFile;
+            String groupQuery;
+            String[] paramNames = CRITERIA_PARAM_NAMES.toArray(new String[0]);
+
+            if (CcResultType.PREVALENCE.equals(analysis.getStatType())) {
+                // TODO: criteria.ignoreObservationPeriod = true;
+                queryFile = COHORT_STATS_QUERY;
+                groupQuery = queryBuilder.getCriteriaGroupQuery(feature.getExpression(), "#qualified_events");
+            } else if (CcResultType.DISTRIBUTION.equals(analysis.getStatType())) {
+                queryFile = COHORT_DIST_QUERY;
+                WindowedCriteria criteria = feature.getExpression().criteriaList[0];
+                criteria.ignoreObservationPeriod = true;
+                groupQuery = queryBuilder.getWindowedCriteriaQuery(criteria, "#qualified_events");
+            } else {
+                throw new IllegalArgumentException(String.format("Stat type %s is not supported", analysis.getStatType()));
+            }
             Collection<String> paramValues = Lists.mutable.with(groupQuery, "0", String.valueOf(cohortDefinition.getId()),
                     String.valueOf(jobId), String.valueOf(analysis.getId()), analysis.getName(), feature.getName(), String.valueOf(conceptId),
                     String.valueOf(feature.getId()), targetTable, cohortTable);
-            if (CcResultType.DISTRIBUTION.equals(analysis.getStatType())) {
-                Constants.DomainMetadata domainMetadata = getDomainMetadata(analysis.getDomain());
-                String domainTable = domainMetadata.getTableName();
-                String domainIdField = domainMetadata.getIdField();
-                paramValues.add(domainTable);
-                paramValues.add(domainIdField);
-                paramValues.add(domainMetadata.getStartDateField());
-                paramValues.add(domainMetadata.getEndDateField());
-                paramValues.add(queryBuilder.getCriteriaGroupQuery(feature.getExpression(), "#people_events"));
-                paramValues.add("0");
-            }
             return sourceAwareSqlRender.renderSql(sourceId, queryFile, paramNames, paramValues.toArray(new String[0]));
         }
 
@@ -358,7 +315,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             queries.add(exprQuery);
             queries.add(codesetQuery);
             queries.addAll(analysis.getDesign().stream()
-                    .map(feature -> getCriteriaStatsQuery(getStatQueryFile(analysis), cohortDefinition, analysis, feature, targetTable))
+                    .map(feature -> getCriteriaStatsQuery(cohortDefinition, analysis, feature, targetTable))
                     .collect(Collectors.toList())); // statistics queries
             queries.add(dropTableSql);
             return queries;

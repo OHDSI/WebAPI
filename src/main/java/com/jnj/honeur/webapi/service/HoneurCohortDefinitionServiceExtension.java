@@ -211,7 +211,7 @@ public class HoneurCohortDefinitionServiceExtension {
      * @return information about the Cohort Analysis Job
      */
     @GET
-    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/export/{sourceKey}")
     public Response exportCohortResults(@HeaderParam("Authorization") String token, @PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey, @QueryParam("toCloud") final boolean toCloud, HttpHeaders headers) {
         try {
@@ -226,13 +226,18 @@ public class HoneurCohortDefinitionServiceExtension {
             SourceDaimonContextHolder
                     .setCurrentSourceDaimonContext(new SourceDaimonContext(sourceKey, SourceDaimon.DaimonType.Results));
 
+            log.debug("cohortRepository.getAllCohortsForId: " + id);
             List<CohortEntity> cohorts = cohortRepository.getAllCohortsForId((long) id);
+            log.debug("cohortInclusionRepository.findByCohortDefinitionId: " + id);
             List<CohortInclusionEntity> cohortInclusions =
                     cohortInclusionRepository.findByCohortDefinitionId((long) id);
+            log.debug("cohortInclusionResultRepository.findByCohortDefinitionId: " + id);
             List<CohortInclusionResultEntity> cohortInclusionResults =
                     cohortInclusionResultRepository.findByCohortDefinitionId((long) id);
+            log.debug("cohortInclusionStatsRepository.findByCohortDefinitionId: " + id);
             List<CohortInclusionStatsEntity> cohortInclusionStats =
                     cohortInclusionStatsRepository.findByCohortDefinitionId((long) id);
+            log.debug("cohortSummaryStatsRepository.findByCohortDefinitionId: " + id);
             List<CohortSummaryStatsEntity> cohortSummaryStats =
                     cohortSummaryStatsRepository.findByCohortDefinitionId((long) id);
 
@@ -263,18 +268,22 @@ public class HoneurCohortDefinitionServiceExtension {
             String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
             File file = createFile(sourceKey+"-"+timeStamp+".results", results);
 
+            log.debug("cohortDefinitionRepository.findOneWithDetail: " + id);
             CohortDefinition cohortDefinition = this.cohortDefinitionRepository.findOneWithDetail(id);
-            log.info("Cohort definition with details: " + cohortDefinition);
+            log.debug("Cohort definition with details: " + cohortDefinition);
 
             if(toCloud && file != null) {
-                log.info("Export cohort results to HSS");
+                log.debug("Export cohort results to HSS");
+                if(cohortDefinition.getUuid() == null) {
+                    log.error("Unable to export a cohort definition without a UUID!");
+                    return Response.serverError().build();
+                }
                 storageServiceClient.saveResults(token, file, cohortDefinition.getUuid().toString());
             }
             return getResponse(file);
-        } catch(Exception e){
+        } catch(Throwable e) {
             log.error(e.getMessage(), e);
-            // TODO: beter return
-            throw new RuntimeException(e);
+            return Response.serverError().build();
         } finally {
             SourceDaimonContextHolder.clear();
         }
@@ -659,19 +668,9 @@ public class HoneurCohortDefinitionServiceExtension {
         return tempFile;
     }
 
-    private Response getResponse(File file) {
-        ByteArrayOutputStream exportStream = null;
-        try {
-            byte[] bytes = Files.readAllBytes(file.toPath());
-            exportStream = new ByteArrayOutputStream(bytes.length);
-            exportStream.write(bytes, 0, bytes.length);
-        } catch (IOException e){
-            log.error(e.getMessage(), e);
-        }
-
+    private Response getResponse(final File file) {
         return Response
-                .ok(exportStream)
-                .type(MediaType.APPLICATION_OCTET_STREAM)
+                .ok(file)
                 .header("Content-Disposition", String.format("attachment; filename=\"%s\"", file.getName()))
                 .build();
     }

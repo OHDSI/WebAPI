@@ -4,6 +4,7 @@ import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 import org.apache.shiro.web.servlet.AdviceFilter;
 import org.apache.shiro.web.util.WebUtils;
+import org.springframework.beans.factory.annotation.Value;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -23,6 +24,9 @@ public class CASSessionFilter extends AdviceFilter {
 
     private boolean casEnabled;
     private String domain;
+
+    @Value("${security.token.expiration}")
+    private int tokenExpirationIntervalInSeconds;
 
     public CASSessionFilter(boolean casEnabled, String domain) {
         this.casEnabled = casEnabled;
@@ -53,7 +57,8 @@ public class CASSessionFilter extends AdviceFilter {
                 ArrayList<String> setCookieHeader = new ArrayList<>();
 
                 setCookieHeader.add(tgcCookie);
-                setCookieHeader.add("Max-Age=900");
+                //TODO Do not harcode.
+                setCookieHeader.add("Max-Age="+tokenExpirationIntervalInSeconds);
                 setCookieHeader.add("Path=/");
                 setCookieHeader.add("Domain="+domain);
                 setCookieHeader.add("Secure");

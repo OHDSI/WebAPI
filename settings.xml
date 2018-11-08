@@ -19,7 +19,7 @@
                 <security.cas.casticket>ticket</security.cas.casticket>
                 <security.cas.cassvcs></security.cas.cassvcs>
                 <!--<security.cas>true</security.cas>-->
-                <!--<security.token.expiration>1200</security.token.expiration>-->
+                <security.token.expiration>1020</security.token.expiration>
                 <security.origin>*</security.origin>
                 <security.oauth.google.apiKey></security.oauth.google.apiKey>
                 <security.oauth.google.apiSecret></security.oauth.google.apiSecret>

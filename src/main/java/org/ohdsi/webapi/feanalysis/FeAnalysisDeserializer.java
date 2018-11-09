@@ -19,7 +19,7 @@ import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisD
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.webapi.cohortcharacterization.CcResultType;
-import org.ohdsi.webapi.feanalysis.dto.FeAnalysisCriteriaDTO;
+import org.ohdsi.webapi.feanalysis.dto.BaseFeAnalysisCriteriaDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisWithConceptSetDTO;
 
@@ -79,7 +79,7 @@ public class FeAnalysisDeserializer extends JsonDeserializer<FeAnalysisDTO> {
                 if (statType != null) {
                     dto.setStatType(CcResultType.valueOf(statType.textValue()));
                 }
-                final List<FeAnalysisCriteriaDTO> list = new ArrayList<>();
+                final List<BaseFeAnalysisCriteriaDTO> list = new ArrayList<>();
                 for (final JsonNode jsonNode : design) {
                     list.add(convert(jsonNode));
                 }
@@ -119,9 +119,9 @@ public class FeAnalysisDeserializer extends JsonDeserializer<FeAnalysisDTO> {
         return analysisDTO;
     }
     
-    private FeAnalysisCriteriaDTO convert(final JsonNode node) {
+    private BaseFeAnalysisCriteriaDTO convert(final JsonNode node) {
         try {
-            return objectMapper.treeToValue(node, FeAnalysisCriteriaDTO.class);
+            return objectMapper.treeToValue(node, BaseFeAnalysisCriteriaDTO.class);
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException(e);
         }

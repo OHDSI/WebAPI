@@ -74,6 +74,7 @@ import static org.ohdsi.webapi.Constants.Params.*;
 public class PathwayServiceImpl extends AbstractDaoService implements PathwayService {
 
     private static final String ENTITY_NAME = "pathway_analysis";
+    private static final String SECURITY_ID = "pathway-analysis";
     private final PathwayAnalysisEntityRepository pathwayAnalysisRepository;
     private final PathwayAnalysisGenerationRepository pathwayAnalysisGenerationRepository;
     private final SourceService sourceService;
@@ -120,7 +121,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         this.generationUtils = generationUtils;
 
         SerializedPathwayAnalysisToPathwayAnalysisConverter.setConversionService(conversionService);
-        facetedSearchService.registerFacets(ENTITY_NAME, AuthorFacetProvider.FACET_NAME, CreatedDateFacetProvider.FACET_NAME, ModifiedDateFacetProvider.FACET_NAME);
+        facetedSearchService.registerFacets(ENTITY_NAME, SECURITY_ID, AuthorFacetProvider.FACET_NAME, CreatedDateFacetProvider.FACET_NAME, ModifiedDateFacetProvider.FACET_NAME);
         facetedSearchService.registerColumns(ENTITY_NAME, AuthorFacetProvider.FACET_NAME, NameFilterProvider.COLUMN_NAME);
     }
 

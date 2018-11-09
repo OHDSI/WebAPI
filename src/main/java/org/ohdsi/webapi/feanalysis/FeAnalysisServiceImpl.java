@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class FeAnalysisServiceImpl implements FeAnalysisService {
     private static final String ENTITY_NAME = "fe_analysis";
+    private static final String SECURITY_ID = "feature-analysis";
 
     private final FeAnalysisEntityRepository analysisRepository;
     private final FeAnalysisCriteriaRepository criteriaRepository;
@@ -52,7 +53,7 @@ public class FeAnalysisServiceImpl implements FeAnalysisService {
         this.stringAnalysisRepository = stringAnalysisRepository;
         this.facetedSearchService = facetedSearchService;
 
-        facetedSearchService.registerFacets(ENTITY_NAME,  TypeFacetProvider.FACET_NAME, AuthorFacetProvider.FACET_NAME, CreatedDateFacetProvider.FACET_NAME, ModifiedDateFacetProvider.FACET_NAME);
+        facetedSearchService.registerFacets(ENTITY_NAME, SECURITY_ID, TypeFacetProvider.FACET_NAME, AuthorFacetProvider.FACET_NAME, CreatedDateFacetProvider.FACET_NAME, ModifiedDateFacetProvider.FACET_NAME);
         facetedSearchService.registerColumns(ENTITY_NAME, AuthorFacetProvider.FACET_NAME, NameFilterProvider.COLUMN_NAME, DescriptionFilterProvider.COLUMN_NAME);
     }
 

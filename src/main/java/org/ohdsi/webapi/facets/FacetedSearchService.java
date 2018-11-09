@@ -3,6 +3,7 @@ package org.ohdsi.webapi.facets;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.cosium.spring.data.jpa.entity.graph.repository.EntityGraphJpaSpecificationExecutor;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.SecurityUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
@@ -28,6 +29,7 @@ public class FacetedSearchService {
     private final Map<String, FacetProvider> providersByFacet = new HashMap<>();
     private final Map<String, ColumnFilterProvider> providersByColumn = new HashMap<>();
     private final Map<String, Collection<String>> facetsByEntity = new HashMap<>();
+    private final Map<String, String> urlByEntity = new HashMap<>();
     private final Map<String, Collection<String>> columnsByEntity = new HashMap<>();
 
     public FacetedSearchService(Collection<FacetProvider> facetProviders, Collection<ColumnFilterProvider> columnFilterProviders) {
@@ -39,12 +41,17 @@ public class FacetedSearchService {
         });
     }
 
-    public List<Facet> getFacets(String entityName) {
+    public List<Facet> getFacets(String entityName) throws IllegalAccessException {
         final Collection<String> facetNames = facetsByEntity.get(entityName);
         if(facetNames == null) {
             throw new IllegalArgumentException("unknown entity name");
         }
-        return facetNames.stream().map(f -> new Facet(f, getFacetProvider(f).getValues(entityName))).collect(Collectors.toList());
+        final String url = urlByEntity.get(entityName);
+        assert url != null : "url must be registered with facets";
+        if(!SecurityUtils.getSubject().isPermitted(url + ":get")) {
+            throw new IllegalAccessException("User does not have access to list " + entityName);
+        }
+         return facetNames.stream().map(f -> new Facet(f, getFacetProvider(f).getValues(entityName))).collect(Collectors.toList());
     }
 
     public <T> Page<T> getPage(FilteredPageRequest pageable, JpaSpecificationExecutor<T> repository, String entityName) {
@@ -115,7 +122,8 @@ public class FacetedSearchService {
     }
 
 
-    public void registerFacets(String entityName, String... facetNames) {
+    public void registerFacets(String entityName, String url, String... facetNames) {
+        urlByEntity.put(entityName, url);
         facetsByEntity.put(entityName, Arrays.asList(facetNames));
     }
 

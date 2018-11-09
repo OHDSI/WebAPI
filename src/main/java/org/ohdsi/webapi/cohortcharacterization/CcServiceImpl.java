@@ -87,6 +87,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
     private static final String GENERATION_NOT_FOUND_ERROR = "generation cannot be found by id %d";
     private static final String[] GENERATION_PARAMETERS = {"cohort_characterization_generation_id"};
+    private static final String SECURITY_ID = "cohort-characterization";
     private final String QUERY_RESULTS = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/queryResults.sql");
     private final String DELETE_RESULTS = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/deleteResults.sql");
     private final String DELETE_EXECUTION = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/deleteExecution.sql");
@@ -157,7 +158,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         this.facetedSearchService = facetedSearchService;
         SerializedCcToCcConverter.setConversionService(conversionService);
 
-        facetedSearchService.registerFacets(ENTITY_NAME, AuthorFacetProvider.FACET_NAME, CreatedDateFacetProvider.FACET_NAME, ModifiedDateFacetProvider.FACET_NAME);
+        facetedSearchService.registerFacets(ENTITY_NAME, SECURITY_ID, AuthorFacetProvider.FACET_NAME, CreatedDateFacetProvider.FACET_NAME, ModifiedDateFacetProvider.FACET_NAME);
         facetedSearchService.registerColumns(ENTITY_NAME, AuthorFacetProvider.FACET_NAME, NameFilterProvider.COLUMN_NAME);
     }
 

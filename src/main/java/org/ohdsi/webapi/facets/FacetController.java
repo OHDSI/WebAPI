@@ -25,7 +25,7 @@ public class FacetController {
     @Path("/{entityName}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public List<Facet> getValues(@PathParam("entityName") String entityName) {
+    public List<Facet> getValues(@PathParam("entityName") String entityName) throws IllegalAccessException {
         return searchService.getFacets(entityName);
      }
 }

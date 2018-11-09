@@ -5,6 +5,7 @@ import com.cosium.spring.data.jpa.entity.graph.repository.EntityGraphJpaSpecific
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -32,6 +33,9 @@ public class FacetedSearchService {
     private final Map<String, String> urlByEntity = new HashMap<>();
     private final Map<String, Collection<String>> columnsByEntity = new HashMap<>();
 
+    @Value("#{!'${security.provider}'.equals('DisabledSecurity')}")
+    private boolean securityEnabled;
+
     public FacetedSearchService(Collection<FacetProvider> facetProviders, Collection<ColumnFilterProvider> columnFilterProviders) {
         facetProviders.forEach(p -> {
             providersByFacet.put(p.getName(), p);
@@ -46,12 +50,14 @@ public class FacetedSearchService {
         if(facetNames == null) {
             throw new IllegalArgumentException("unknown entity name");
         }
-        final String url = urlByEntity.get(entityName);
-        assert url != null : "url must be registered with facets";
-        if(!SecurityUtils.getSubject().isPermitted(url + ":get")) {
-            throw new IllegalAccessException("User does not have access to list " + entityName);
+        if(securityEnabled) {
+            final String url = urlByEntity.get(entityName);
+            assert url != null : "url must be registered with facets";
+            if (!SecurityUtils.getSubject().isPermitted(url + ":get")) {
+                throw new IllegalAccessException("User does not have access to list " + entityName);
+            }
         }
-         return facetNames.stream().map(f -> new Facet(f, getFacetProvider(f).getValues(entityName))).collect(Collectors.toList());
+        return facetNames.stream().map(f -> new Facet(f, getFacetProvider(f).getValues(entityName))).collect(Collectors.toList());
     }
 
     public <T> Page<T> getPage(FilteredPageRequest pageable, JpaSpecificationExecutor<T> repository, String entityName) {

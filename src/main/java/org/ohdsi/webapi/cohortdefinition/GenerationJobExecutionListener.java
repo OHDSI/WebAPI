@@ -86,7 +86,7 @@ public class GenerationJobExecutionListener implements JobExecutionListener {
 			info.setRecordCount(null);
 			info.setPersonCount(null);
 			info.setCanceled(je.getStepExecutions().stream().anyMatch(se -> Objects.equals(Constants.CANCELED, se.getExitStatus().getExitCode())));
-			info.setFailMessage(StringUtils.left(je.getAllFailureExceptions().get(0).getMessage(),2000));
+			info.setFailMessage(StringUtils.abbreviateMiddle(je.getAllFailureExceptions().get(0).getMessage(),"... [truncated] ...",2000));
 		} else {
 			info.setIsValid(true);
 			info.setFailMessage(null);

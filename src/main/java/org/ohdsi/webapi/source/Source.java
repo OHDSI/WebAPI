@@ -19,6 +19,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMechanism;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -78,7 +79,10 @@ public class Source implements Serializable {
   @Type(type = "encryptedString")
   private String password;
 
-  @Column(name = "krb_keytab")
+  @Column(name = "deleted_date")
+  private Date deletedDate;
+
+    @Column(name = "krb_keytab")
   private byte[] krbKeytab;
 
   @Column(name = "keytab_name")

@@ -286,7 +286,7 @@ public class SourceService extends AbstractDaoService {
     if (source != null) {
       final String sourceKey = source.getSourceKey();
       sourceRepository.delete(source);
-        publisher.publishEvent(new DeleteDataSourceEvent(this, sourceId, source.getSourceName()));
+      publisher.publishEvent(new DeleteDataSourceEvent(this, sourceId, source.getSourceName()));
       cachedSources = null;
       securityManager.removeSourceRole(sourceKey);
       return Response.ok().build();

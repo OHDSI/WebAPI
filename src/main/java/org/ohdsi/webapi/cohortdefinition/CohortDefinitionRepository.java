@@ -29,7 +29,7 @@ import org.springframework.data.repository.CrudRepository;
 public interface CohortDefinitionRepository extends CrudRepository<CohortDefinition, Integer> {
   Page<CohortDefinition> findAll(Pageable pageable);
   
-  // Bug in hibernate, findById should use @EntityGraph, but details are not being feched. Workaround: mark details Fetch.EAGER,
+  // Bug in hibernate, findById should use @EntityGraph, but details are not being fetched. Workaround: mark details Fetch.EAGER,
   // but means findAll() will eager load definitions (what the @EntityGraph was supposed to solve)
   @EntityGraph(value = "CohortDefinition.withDetail", type = EntityGraph.EntityGraphType.LOAD)
   @Query("select cd from CohortDefinition cd LEFT JOIN FETCH cd.createdBy LEFT JOIN FETCH cd.modifiedBy where cd.id = ?1")

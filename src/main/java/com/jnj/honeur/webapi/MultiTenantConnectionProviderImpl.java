@@ -6,9 +6,6 @@ import org.hibernate.engine.jdbc.connections.spi.AbstractDataSourceBasedMultiTen
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
 
 /**
  * Provides the correct data source based on the tenant context (~ SourceDaimonContext)
@@ -45,37 +42,5 @@ public class MultiTenantConnectionProviderImpl extends AbstractDataSourceBasedMu
         DataSource ds = dataSourceLookup.getDataSource(tenantIdentifier);
         LOG.trace("Select dataSource for "+ tenantIdentifier+ ": " + ds);
         return ds;
-    }
-
-    @Override
-    public Connection getConnection(String tenantIdentifier) throws SQLException {
-        final Connection connection = super.getConnection(tenantIdentifier);
-        setSchema(connection, tenantIdentifier);
-        return connection;
-    }
-
-    private void setSchema(final Connection connection, final String tenantIdentifier) {
-        Statement stmt = null;
-        try {
-            String schema = dataSourceLookup.getSchema(tenantIdentifier);
-            LOG.debug(String.format("Set schema to %s", schema));
-            connection.setSchema(schema);
-            stmt = connection.createStatement();
-            stmt.execute(String.format("set search_path to %s", schema));
-        } catch (SQLException e) {
-            LOG.warn("Unable to set the DB schema: " + e.getMessage());
-        } finally {
-            close(stmt);
-        }
-    }
-
-    private void close(Statement stmt) {
-        try {
-            if(stmt != null) {
-                stmt.close();
-            }
-        } catch (SQLException e) {
-            LOG.warn(e.getMessage());
-        }
     }
 }

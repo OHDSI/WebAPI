@@ -2,7 +2,7 @@
 /***** Populate the hierarchy lookup table per treemap *****/
 /***********************************************************/
 /********** CONDITION/CONDITION_ERA **********/
-INSERT INTO @results_database_schema.concept_hierarchy
+INSERT INTO @results_schema.concept_hierarchy
 	(concept_id, concept_name, treemap, level1_concept_name, level2_concept_name, level3_concept_name, level4_concept_name)
 SELECT
 	snomed.concept_id,
@@ -73,7 +73,7 @@ LEFT JOIN (
 LEFT JOIN @vocab_database_schema.concept soc ON hlgt_to_soc.soc_concept_id = soc.concept_id;
 
 /********** DRUG **********/
-INSERT INTO @results_database_schema.concept_hierarchy
+INSERT INTO @results_schema.concept_hierarchy
 	(concept_id, concept_name, treemap, level1_concept_name, level2_concept_name, level3_concept_name, level4_concept_name)
 SELECT
 	rxnorm.concept_id,
@@ -140,7 +140,7 @@ LEFT JOIN (
 LEFT JOIN @vocab_database_schema.concept atc1 ON atc3_to_atc1.atc1_concept_id = atc1.concept_id;
 
 /********** DRUG_ERA **********/
-INSERT INTO @results_database_schema.concept_hierarchy
+INSERT INTO @results_schema.concept_hierarchy
 	(concept_id, concept_name, treemap, level1_concept_name, level2_concept_name, level3_concept_name)
 SELECT
 	rxnorm.rxnorm_ingredient_concept_id,
@@ -201,7 +201,7 @@ LEFT JOIN (
 LEFT JOIN @vocab_database_schema.concept atc1 ON atc3_to_atc1.atc1_concept_id = atc1.concept_id;
 
 /********** MEASUREMENT **********/
-INSERT INTO @results_database_schema.concept_hierarchy
+INSERT INTO @results_schema.concept_hierarchy
 	(concept_id, concept_name, treemap, level1_concept_name, level2_concept_name, level3_concept_name)
 SELECT
 	m.concept_id,
@@ -226,7 +226,7 @@ LEFT JOIN @vocab_database_schema.concept c3 ON ca3.ANCESTOR_CONCEPT_ID = c3.conc
 GROUP BY M.concept_id, M.concept_name;
 
 /********** OBSERVATION **********/
-INSERT INTO @results_database_schema.concept_hierarchy
+INSERT INTO @results_schema.concept_hierarchy
 	(concept_id, concept_name, treemap, level1_concept_name, level2_concept_name, level3_concept_name)
 SELECT
 	obs.concept_id,
@@ -251,7 +251,7 @@ LEFT JOIN @vocab_database_schema.concept c3 ON ca3.ANCESTOR_CONCEPT_ID = c3.conc
 GROUP BY obs.concept_id, obs.concept_name;
 
 /********** PROCEDURE **********/
-INSERT INTO @results_database_schema.concept_hierarchy
+INSERT INTO @results_schema.concept_hierarchy
 	(concept_id, concept_name, treemap, level1_concept_name, level2_concept_name, level3_concept_name)
 SELECT
 	procs.concept_id,

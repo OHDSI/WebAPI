@@ -100,7 +100,7 @@ public class DDLService {
             return generateSQL(dialect, "cem_results_schema", schema, CEMRESULT_DDL_FILE_PATHS, CEMRESULT_INIT_FILE_PATHS, CEMRESULT_INDEX_FILE_PATHS);
 	}
         
-        private String generateSQL(String dialect, String schemaSqlParameter, String schema, Collection<String> filePaths, Collection<String> initFilePaths, Collection<String> indexFilePaths) {
+	private String generateSQL(String dialect, String schemaSqlParameter, String schema, Collection<String> filePaths, Collection<String> initFilePaths, Collection<String> indexFilePaths) {
 		StringBuilder sqlBuilder = new StringBuilder();
 		for (String fileName : filePaths) {
 			sqlBuilder.append("\n").append(ResourceHelper.GetResourceAsString(fileName));
@@ -120,7 +120,7 @@ public class DDLService {
 			result = translateSqlFile(result, dialect, schemaSqlParameter, schema);
 		}
 		return result.replaceAll(";", ";\n");
-        }
+	}
 
 	private String translateSqlFile(String sql, String dialect, String schemaSqlParameter, String schema) {
 

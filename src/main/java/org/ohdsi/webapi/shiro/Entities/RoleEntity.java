@@ -30,6 +30,8 @@ public class RoleEntity implements Serializable{
   @OneToMany(mappedBy = "role", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   private Set<UserRoleEntity> userRoles = new LinkedHashSet<>();
 
+  @Column(name = "system_role")
+  private Boolean systemRole;
   
   public Long getId() {
     return id;
@@ -61,5 +63,13 @@ public class RoleEntity implements Serializable{
 
   public void setUserRoles(Set<UserRoleEntity> userRoles) {
     this.userRoles = userRoles;
+  }
+
+  public Boolean isSystemRole() {
+    return systemRole;
+  }
+
+  public void setSystemRole(Boolean system) {
+    systemRole = system;
   }
 }

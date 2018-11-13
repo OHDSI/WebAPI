@@ -39,7 +39,7 @@ public class LockoutWebSecurityManager extends DefaultWebSecurityManager {
         super.onSuccessfulLogin(token, info, subject);
         if (token instanceof UsernamePasswordToken) {
             String username = ((UsernamePasswordToken) token).getUsername();
-            lockoutPolicy.loginSuceeded(username);
+            lockoutPolicy.loginSucceeded(username);
         }
     }
 

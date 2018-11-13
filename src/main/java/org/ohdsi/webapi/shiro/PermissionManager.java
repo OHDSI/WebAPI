@@ -1,12 +1,14 @@
 package org.ohdsi.webapi.shiro;
 
 import java.security.Principal;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import com.odysseusinc.logging.event.AddUserEvent;
+import com.odysseusinc.logging.event.DeleteUserEvent;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authz.AuthorizationInfo;
@@ -27,6 +29,7 @@ import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.Entities.UserRoleEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,17 +56,21 @@ public class PermissionManager {
   @Autowired
   private UserRoleRepository userRoleRepository;
 
+  @Autowired
+  private ApplicationEventPublisher eventPublisher;
 
-  public RoleEntity addRole(String roleName) throws Exception {
+
+  public RoleEntity addRole(String roleName, boolean isSystem) throws Exception {
     Guard.checkNotEmpty(roleName);
     
-    RoleEntity role = this.roleRepository.findByName(roleName);
+    RoleEntity role = this.roleRepository.findByNameAndSystemRole(roleName, isSystem);
     if (role != null) {
       throw new Exception("Can't create role - it already exists");
     }
     
     role = new RoleEntity();
     role.setName(roleName);
+    role.setSystemRole(isSystem);
     role = this.roleRepository.save(role);
     
     return role;
@@ -96,20 +103,12 @@ public class PermissionManager {
   }
 
   public Iterable<RoleEntity> getRoles(boolean includePersonalRoles) {
-    Iterable<RoleEntity> roles = this.roleRepository.findAll();
+
     if (includePersonalRoles) {
-      return roles;
+      return this.roleRepository.findAll();
+    } else {
+      return this.roleRepository.findAllBySystemRoleTrue();
     }
-
-    Set<String> logins = this.userRepository.getUserLogins();
-    HashSet<RoleEntity> filteredRoles = new HashSet<>();
-    for (RoleEntity role : roles) {
-      if (!logins.contains(role.getName())) {
-        filteredRoles.add(role);
-      }
-    }
-
-    return filteredRoles;
   }
 
   public AuthorizationInfo getAuthorizationInfo(final String login) {
@@ -143,8 +142,9 @@ public class PermissionManager {
     user = new UserEntity();
     user.setLogin(login);
     user = userRepository.save(user);
+    eventPublisher.publishEvent(new AddUserEvent(this, user.getId(), login));
 
-    RoleEntity personalRole = this.addRole(login);
+    RoleEntity personalRole = this.addRole(login, false);
     this.addUser(user, personalRole, null);
 
     if (defaultRoles != null) {
@@ -167,6 +167,7 @@ public class PermissionManager {
     if (user != null) {
       this.deleteRole(login);   // delete individual role
       userRepository.delete(user);
+      eventPublisher.publishEvent(new DeleteUserEvent(this, user.getId(), user.getLogin()));
     }
   }
   

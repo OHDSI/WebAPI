@@ -1,19 +1,18 @@
 package org.ohdsi.webapi.cohortanalysis;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.ohdsi.webapi.cohortresults.PeriodType;
+import org.ohdsi.webapi.source.Source;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
 
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.ohdsi.webapi.cohortresults.PeriodType;
-import org.ohdsi.webapi.source.Source;
-
 public class CohortAnalysisTask {
 
-	private static final Log log = LogFactory.getLog(CohortAnalysisTasklet.class);
+	private static final Logger log = LoggerFactory.getLogger(CohortAnalysisTasklet.class);
 
 	private String jobName;
 
@@ -297,13 +296,13 @@ public class CohortAnalysisTask {
 
 	@Override
 	public String toString() {
-			ObjectMapper mapper = new ObjectMapper();
-			try {
-				return mapper.writeValueAsString(this);
-			} catch (Exception e) {
-				log.error(whitelist(e));
-			}
-		return super.toString();
+			return String.format("jobName = %s, source = %s, smallCellCount = %d, runHeraclesHeel = %s, " +
+					"cohortPeriodOnly = %s, cdmVersion = %s, visualizations = %s, cohortDefinitionIds = %s, " +
+					"analysisIds = %s, conditionConceptIds = %s, drugConceptIds = %s, procedureConceptIds = %s, " +
+					"observationConceptIds = %s, measurementConceptIds = %s, periods = %s",
+					jobName, source, smallCellCount, runHeraclesHeel, cohortPeriodOnly, cdmVersion,
+					visualizations, cohortDefinitionIds, analysisIds, conditionConceptIds, drugConceptIds,
+					procedureConceptIds, observationConceptIds, measurementConceptIds, periods);
 
 	}
 }

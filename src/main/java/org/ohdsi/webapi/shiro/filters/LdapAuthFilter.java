@@ -19,8 +19,14 @@
 package org.ohdsi.webapi.shiro.filters;
 
 import org.ohdsi.webapi.shiro.tokens.LdapUsernamePasswordToken;
+import org.springframework.context.ApplicationEventPublisher;
 
 public class LdapAuthFilter extends AbstractLdapAuthFilter<LdapUsernamePasswordToken> {
+
+    public LdapAuthFilter(ApplicationEventPublisher eventPublisher) {
+        super(eventPublisher);
+    }
+
     @Override
     protected LdapUsernamePasswordToken getToken() {
 

@@ -1,26 +1,23 @@
 package org.ohdsi.webapi;
 
-import java.util.*;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
-import org.ohdsi.webapi.shiro.lockout.DefaultLockoutPolicy;
-import org.ohdsi.webapi.shiro.lockout.ExponentLockoutStrategy;
-import org.ohdsi.webapi.shiro.lockout.LockoutPolicy;
-import org.ohdsi.webapi.shiro.lockout.LockoutStrategy;
-import org.ohdsi.webapi.shiro.lockout.LockoutWebSecurityManager;
-import org.ohdsi.webapi.shiro.lockout.NoLockoutPolicy;
-import org.ohdsi.webapi.shiro.management.AtlasSecurity;
+import org.ohdsi.webapi.shiro.lockout.*;
+import org.ohdsi.webapi.shiro.management.DataSourceAccessBeanPostProcessor;
 import org.ohdsi.webapi.shiro.management.DisabledSecurity;
 import org.ohdsi.webapi.shiro.management.Security;
+import org.ohdsi.webapi.shiro.management.datasource.DataSourceAccessParameterResolver;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
+
+import java.util.Set;
 
 /**
  * Created by GMalikov on 20.08.2015.
@@ -28,7 +25,6 @@ import org.springframework.context.annotation.DependsOn;
 
 @Configuration
 public class ShiroConfiguration {
-  private static final Log log = LogFactory.getLog(ShiroConfiguration.class);
 
   @Value("${security.maxLoginAttempts}")
   private int maxLoginAttempts;
@@ -36,6 +32,8 @@ public class ShiroConfiguration {
   private long initialDuration;
   @Value("${security.duration.increment}")
   private long increment;
+  @Autowired
+  protected ApplicationEventPublisher eventPublisher;
 
   @Bean
   public ShiroFilterFactoryBean shiroFilter(Security security, LockoutPolicy lockoutPolicy){
@@ -72,7 +70,7 @@ public class ShiroConfiguration {
   @ConditionalOnProperty(name = "security.provider", havingValue = "AtlasRegularSecurity")
   public LockoutPolicy lockoutPolicy(){
 
-    return new DefaultLockoutPolicy(lockoutStrategy(), maxLoginAttempts);
+    return new DefaultLockoutPolicy(lockoutStrategy(), maxLoginAttempts, eventPublisher);
   }
 
   @Bean
@@ -80,6 +78,13 @@ public class ShiroConfiguration {
   public LockoutStrategy lockoutStrategy(){
 
     return new ExponentLockoutStrategy(initialDuration, increment, maxLoginAttempts);
+  }
+
+  @Bean
+  @ConditionalOnMissingBean(value = DisabledSecurity.class)
+  public DataSourceAccessBeanPostProcessor dataSourceAccessBeanPostProcessor(DataSourceAccessParameterResolver parameterResolver) {
+
+    return new DataSourceAccessBeanPostProcessor(parameterResolver);
   }
 
 }

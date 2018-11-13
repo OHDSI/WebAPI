@@ -15,11 +15,11 @@
  */
 package org.ohdsi.webapi.source;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMechanism;
-import org.hibernate.annotations.Type;
-import org.ohdsi.webapi.source.SourceDaimon.DaimonType;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -30,8 +30,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Type;
+import org.hibernate.annotations.Where;
 import org.ohdsi.webapi.source.SourceDaimon.DaimonType;
 
 /**
@@ -40,10 +41,13 @@ import org.ohdsi.webapi.source.SourceDaimon.DaimonType;
  */
 @Entity(name = "Source")
 @Table(name="source")
+@SQLDelete(sql = "UPDATE {h-schema}source SET deleted_date = current_timestamp WHERE SOURCE_ID = ?")
+@Where(clause = "deleted_date IS NULL")
 public class Source implements Serializable {
 
   public static final String MASQUERADED_USERNAME = "<username>";
   public static final String MASQUERADED_PASSWORD = "<password>";
+  public static final String IMPALA_DATASOURCE = "impala";
 
   @Id
   @GeneratedValue
@@ -51,6 +55,7 @@ public class Source implements Serializable {
   private int sourceId;
 
   @OneToMany(fetch= FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "source")
+  @Where(clause = "priority >= 0")
   private Collection<SourceDaimon> daimons;
 
   @Column(name="SOURCE_NAME")
@@ -73,18 +78,18 @@ public class Source implements Serializable {
   @Type(type = "encryptedString")
   private String password;
 
-    @Column(name = "krb_keytab")
-    private byte[] krbKeytab;
+  @Column(name = "krb_keytab")
+  private byte[] krbKeytab;
 
-    @Column(name = "keytab_name")
-    private String keytabName;
+  @Column(name = "keytab_name")
+  private String keytabName;
 
-    @Column(name = "krb_admin_server")
-    private String krbAdminServer;
+  @Column(name = "krb_admin_server")
+  private String krbAdminServer;
 
-    @Column(name = "krb_auth_method")
-    @Enumerated(EnumType.STRING)
-    private KerberosAuthMechanism krbAuthMethod;
+  @Column(name = "krb_auth_method")
+  @Enumerated(EnumType.STRING)
+  private KerberosAuthMechanism krbAuthMethod;
 
   public String getTableQualifier(DaimonType daimonType) {
 		String result = getTableQualifierOrNull(daimonType);
@@ -170,35 +175,65 @@ public class Source implements Serializable {
     this.password = password;
   }
 
-    public byte[] getKrbKeytab() {
+  public byte[] getKrbKeytab() {
         return krbKeytab;
     }
 
-    public void setKrbKeytab(byte[] krbKeytab) {
+  public void setKrbKeytab(byte[] krbKeytab) {
         this.krbKeytab = krbKeytab;
     }
 
-    public String getKeytabName() {
+  public String getKeytabName() {
         return keytabName;
     }
 
-    public void setKeytabName(String keytabName) {
+  public void setKeytabName(String keytabName) {
         this.keytabName = keytabName;
     }
 
-    public KerberosAuthMechanism getKrbAuthMethod() {
+  public KerberosAuthMechanism getKrbAuthMethod() {
         return krbAuthMethod;
     }
 
-    public void setKrbAuthMethod(KerberosAuthMechanism krbAuthMethod) {
+  public void setKrbAuthMethod(KerberosAuthMechanism krbAuthMethod) {
         this.krbAuthMethod = krbAuthMethod;
     }
 
-    public String getKrbAdminServer() {
+  public String getKrbAdminServer() {
         return krbAdminServer;
     }
 
-    public void setKrbAdminServer(String krbAdminServer) {
+  public void setKrbAdminServer(String krbAdminServer) {
         this.krbAdminServer = krbAdminServer;
     }
+
+  @Override
+  public boolean equals(Object o) {
+
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Source source = (Source) o;
+    return sourceId == source.sourceId;
+  }
+
+  @Override
+  public int hashCode() {
+
+    return Objects.hash(sourceId);
+  }
+
+  @Override
+  public String toString() {
+    String source = "sourceId=" + sourceId +
+                    ", daimons=" + daimons +
+                    ", sourceName='" + sourceName + '\'' +
+                    ", sourceDialect='" + sourceDialect + '\'' +
+                    ", sourceKey='" + sourceKey;
+    if (IMPALA_DATASOURCE.equalsIgnoreCase(sourceDialect)){
+      source += '\'' +
+              ", krbAdminServer='" + krbAdminServer + '\'' +
+              ", krbAuthMethod=" + krbAuthMethod;
+    }
+    return source;
+  }
 }

@@ -45,8 +45,9 @@ import org.springframework.stereotype.Component;
  *
  * @author fdefalco
  */
-@Path("/conceptset/")
 @Component
+@Transactional
+@Path("/conceptset/")
 public class ConceptSetService extends AbstractDaoService {
 
     @Autowired
@@ -296,7 +297,7 @@ public class ConceptSetService extends AbstractDaoService {
         this.conceptSetGenerationInfoRepository.deleteByConceptSetId(id);
       } catch (EmptyResultDataAccessException e) {
           // Ignore - there may be no data
-          log.debug(e.getMessage());
+          log.warn("Failed to delete Generation Info by ConceptSet with ID = {}, {}", id, e);
       }
       catch (Exception e) {
           throw e;
@@ -307,7 +308,7 @@ public class ConceptSetService extends AbstractDaoService {
         getConceptSetItemRepository().deleteByConceptSetId(id);
       } catch (EmptyResultDataAccessException e) {
           // Ignore - there may be no data
-          log.debug(e.getMessage());
+          log.warn("Failed to delete ConceptSet items with ID = {}, {}", id, e);
       }
       catch (Exception e) {
           throw e;
@@ -318,7 +319,7 @@ public class ConceptSetService extends AbstractDaoService {
         getConceptSetRepository().delete(id);
       } catch (EmptyResultDataAccessException e) {
           // Ignore - there may be no data
-          log.debug(e.getMessage());
+          log.warn("Failed to delete ConceptSet with ID = {}, {}", id, e);
       }
       catch (Exception e) {
           throw e;

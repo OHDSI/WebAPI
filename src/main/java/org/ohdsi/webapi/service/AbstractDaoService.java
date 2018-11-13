@@ -1,21 +1,34 @@
 package org.ohdsi.webapi.service;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.*;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.DataSourceUnsecuredDTO;
+import com.odysseusinc.datasourcemanager.krblogin.KerberosService;
+import com.odysseusinc.datasourcemanager.krblogin.KrbConfig;
+import com.odysseusinc.datasourcemanager.krblogin.RuntimeServiceMode;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.IExecutionInfo;
 import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisExecutionRepository;
 import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetItemRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetRepository;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.shiro.Entities.UserRepository;
+import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
+import org.ohdsi.webapi.util.CancelableJdbcTemplate;
+import org.ohdsi.webapi.util.DataSourceDTOParser;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -23,14 +36,12 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.sql.Connection;
-
 /**
  *
  */
 public abstract class AbstractDaoService {
 
-  protected final Log log = LogFactory.getLog(getClass());
+  protected final Logger log = LoggerFactory.getLogger(getClass());
 
   @Value("${datasource.ohdsi.schema}")
   private String ohdsiSchema;
@@ -55,6 +66,12 @@ public abstract class AbstractDaoService {
 
   @Autowired 
   ConceptSetItemRepository conceptSetItemRepository;
+
+  @Autowired
+  protected Security security;
+
+  @Autowired
+  protected UserRepository userRepository;
 
   public static final List<GenerationStatus> INVALIDATE_STATUSES = new ArrayList<GenerationStatus>() {{
     add(GenerationStatus.PENDING);
@@ -93,6 +110,9 @@ public abstract class AbstractDaoService {
 	@Autowired
   private TransactionTemplate transactionTemplateNoTransaction;
 
+  @Autowired
+  private KerberosService kerberosService;
+
   public SourceRepository getSourceRepository() {
     return sourceRepository;
   }
@@ -118,20 +138,43 @@ public abstract class AbstractDaoService {
     return jdbcTemplate;
   }
 
-  public JdbcTemplate getSourceJdbcTemplate(Source source) {
+  public CancelableJdbcTemplate getSourceJdbcTemplate(Source source) {
 
+    DataSourceUnsecuredDTO dataSourceData = DataSourceDTOParser.parseDTO(source);
+    if (dataSourceData.getUseKerberos()) {
+      loginToKerberos(dataSourceData);
+    }
     DriverManagerDataSource dataSource;
-    if (source.getUsername() != null && source.getPassword() != null) {
+    if (dataSourceData.getUsername() != null && dataSourceData.getPassword() != null) {
       // NOTE: jdbc link should NOT include username and password, because they have higher priority than separate ones
       dataSource = new DriverManagerDataSource(
-              source.getSourceConnection(),
-              source.getUsername(),
-              source.getPassword()
+              dataSourceData.getConnectionString(),
+              dataSourceData.getUsername(),
+              dataSourceData.getPassword()
       );
     } else {
-      dataSource = new DriverManagerDataSource(source.getSourceConnection());
+      dataSource = new DriverManagerDataSource(dataSourceData.getConnectionString());
     }
-    return new JdbcTemplate(dataSource);
+    return new CancelableJdbcTemplate(dataSource);
+  }
+
+  private void loginToKerberos(DataSourceUnsecuredDTO dataSourceData) {
+
+    File temporaryDir = com.google.common.io.Files.createTempDir();
+    KrbConfig krbConfig = new KrbConfig();
+    try {
+      krbConfig = kerberosService.runKinit(dataSourceData, RuntimeServiceMode.SINGLE, temporaryDir);
+    } catch (RuntimeException | IOException e) {
+      log.error("Login to kerberos failed", e);
+    }
+    try {
+      FileUtils.forceDelete(temporaryDir);
+      if (StringUtils.isNotBlank(krbConfig.getComponents().getKeytabPath().toString())){
+        FileUtils.forceDelete(krbConfig.getComponents().getKeytabPath().toFile());
+      }
+    } catch (IOException e) {
+      log.warn(e.getMessage(), e);
+    }
   }
 
   /**
@@ -198,7 +241,7 @@ public abstract class AbstractDaoService {
       });
 
     } catch (Exception e) {
-      log.error("error loading in result set", e);
+      log.error("Result set loading error", e);
     }
     return results;
   }
@@ -242,6 +285,14 @@ public abstract class AbstractDaoService {
   protected void invalidateExecutions(List<? extends IExecutionInfo> executionInfoList) {
 
     executionInfoList.forEach(this::invalidateExecution);
+  }
+
+  protected UserEntity getCurrentUser() {
+    return userRepository.findByLogin(getCurrentUserLogin());
+  }
+
+  protected String getCurrentUserLogin() {
+    return security.getSubject();
   }
 
 }

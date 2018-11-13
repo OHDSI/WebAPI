@@ -1,19 +1,14 @@
 package org.ohdsi.webapi;
 
-import java.sql.DriverManager;
-import java.util.Properties;
-import javax.persistence.EntityManagerFactory;
-import javax.servlet.Filter;
-import javax.sql.DataSource;
-
+import com.cosium.spring.data.jpa.entity.graph.repository.support.EntityGraphJpaRepositoryFactoryBean;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jasypt.encryption.pbe.PBEStringEncryptor;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import org.jasypt.hibernate4.encryptor.HibernatePBEEncryptorRegistry;
 import org.ohdsi.webapi.source.NotEncrypted;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -31,15 +26,19 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import javax.persistence.EntityManagerFactory;
+import javax.sql.DataSource;
+import java.util.Properties;
+
 /**
  *
  */
 @Configuration
-@EnableJpaRepositories
 @EnableTransactionManagement
+@EnableJpaRepositories(repositoryFactoryBeanClass = EntityGraphJpaRepositoryFactoryBean.class)
 public class DataAccessConfig {
 
-    private final Log logger = LogFactory.getLog(DataAccessConfig.class);
+    private final Logger logger = LoggerFactory.getLogger(DataAccessConfig.class);
 	
     @Autowired
     private Environment env;
@@ -82,9 +81,9 @@ public class DataAccessConfig {
         for (String driverName : supportedDrivers) {
             try {
                 Class.forName(driverName);
-                System.out.println("driver loaded: " + driverName);
+                logger.info("driver loaded: {}", driverName);
             } catch (Exception ex) {
-                System.out.println("error loading " + driverName + " driver.");
+                logger.info("error loading {} driver. {}", driverName, ex.getMessage());
             }
         }
         return ds;

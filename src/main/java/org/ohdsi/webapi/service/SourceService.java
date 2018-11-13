@@ -16,6 +16,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.odysseusinc.logging.event.AddDataSourceEvent;
+import com.odysseusinc.logging.event.ChangeDataSourceEvent;
+import com.odysseusinc.logging.event.DeleteDataSourceEvent;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -38,13 +41,14 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static org.ohdsi.webapi.source.Source.IMPALA_DATASOURCE;
+
 @Path("/source/")
 @Component
 @Transactional
 public class SourceService extends AbstractDaoService {
 
     public static final String SECURE_MODE_ERROR = "This feature requires the administrator to enable security for the application";
-    private static final String IMPALA_DATASOURCE = "impala";
     private static final String KRB_REALM = "KrbRealm";
     private static final String KRB_FQDN = "KrbHostFQDN";
 
@@ -56,6 +60,9 @@ public class SourceService extends AbstractDaoService {
   private Environment env;
   @Autowired
   private ApplicationEventPublisher publisher;
+  @Autowired
+  private VocabularyService vocabularyService;
+
   @Value("${datasource.ohdsi.schema}")
   private String schema;
 
@@ -89,6 +96,11 @@ public class SourceService extends AbstractDaoService {
   public Source findBySourceKey(final String sourceKey) {
 
     return sourceRepository.findBySourceKey(sourceKey);
+  }
+
+  public Source findBySourceId(final Integer sourceId) {
+
+    return sourceRepository.findBySourceId(sourceId);
   }
 
   public class SortByKey implements Comparator<SourceInfo>
@@ -148,6 +160,7 @@ public class SourceService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<SourceInfo> refreshSources() {
     cachedSources = null;
+    vocabularyService.clearVocabularyInfoCache();
 		this.ensureSourceEncrypted();
     return getSources();
   }
@@ -206,7 +219,9 @@ public class SourceService extends AbstractDaoService {
     String sourceKey = saved.getSourceKey();
     cachedSources = null;
     securityManager.addSourceRole(sourceKey);
-    return new SourceInfo(saved);
+      SourceInfo sourceInfo = new SourceInfo(saved);
+      publisher.publishEvent(new AddDataSourceEvent(this, source.getSourceId(), source.getSourceName()));
+      return sourceInfo;
   }
 
   @Path("{sourceId}")
@@ -236,6 +251,7 @@ public class SourceService extends AbstractDaoService {
               .collect(Collectors.toList());
       sourceDaimonRepository.delete(removed);
       Source result = sourceRepository.save(updated);
+        publisher.publishEvent(new ChangeDataSourceEvent(this, updated.getSourceId(), updated.getSourceName()));
       cachedSources = null;
       return new SourceInfo(result);
     } else {
@@ -270,6 +286,7 @@ public class SourceService extends AbstractDaoService {
     if (source != null) {
       final String sourceKey = source.getSourceKey();
       sourceRepository.delete(source);
+        publisher.publishEvent(new DeleteDataSourceEvent(this, sourceId, source.getSourceName()));
       cachedSources = null;
       securityManager.removeSourceRole(sourceKey);
       return Response.ok().build();
@@ -281,7 +298,7 @@ public class SourceService extends AbstractDaoService {
   @Path("connection/{key}")
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  public SourceInfo checkConnection(@PathParam("key") final String sourceKey) throws Exception {
+  public SourceInfo checkConnection(@PathParam("key") final String sourceKey) {
 
     final Source source = sourceRepository.findBySourceKey(sourceKey);
     final JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);

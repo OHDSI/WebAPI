@@ -34,6 +34,7 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortresults.PeriodType;
 import org.ohdsi.webapi.cohortresults.VisualizationDataRepository;
+import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.model.results.Analysis;
@@ -54,8 +55,9 @@ import org.springframework.util.StringUtils;
  */
 @Path("/cohortanalysis/")
 @Component
-public class CohortAnalysisService extends AbstractDaoService {
+public class CohortAnalysisService extends AbstractDaoService implements GeneratesNotification {
 
+	public static final String NAME = "cohortAnalysisJob";
 	@Value("${heracles.smallcellcount}")
 	private String smallCellCount;
 	
@@ -241,7 +243,7 @@ public class CohortAnalysisService extends AbstractDaoService {
 
 				stmts = SqlSplit.splitSql(sql);
 				for (int x = 0; x < stmts.length; x++) {
-					log.debug(String.format("Split SQL %s : %s", x, stmts[x]));
+					log.debug("Split SQL {} : {}", x, stmts[x]);
 				}
 			}
 			return stmts;
@@ -272,6 +274,7 @@ public class CohortAnalysisService extends AbstractDaoService {
 		task.setSmallCellCount(Integer.parseInt(this.smallCellCount));
 		JobParametersBuilder builder = new JobParametersBuilder();
 
+		builder.addString("sourceKey", source.getSourceKey());
 		builder.addString("cohortDefinitionIds", limitJobParams(Joiner.on(",").join(task.getCohortDefinitionIds())));
 		builder.addString("analysisIds", limitJobParams(Joiner.on(",").join(task.getAnalysisIds())));
 		if (task.getConditionConceptIds() != null && task.getConditionConceptIds().size() > 0) {
@@ -324,12 +327,22 @@ public class CohortAnalysisService extends AbstractDaoService {
 		//TODO consider analysisId
 		final String taskString = task.toString();
 		final JobParameters jobParameters = builder.toJobParameters();
-		log.info(String.format("Beginning run for cohort analysis task: \n %s", taskString));
+		log.info("Beginning run for cohort analysis task: {}", taskString);
 
 		CohortAnalysisTasklet tasklet = new CohortAnalysisTasklet(task, getSourceJdbcTemplate(task.getSource()), 
 				getTransactionTemplate(), getTransactionTemplateRequiresNew(), this.getSourceDialect(), this.visualizationDataRepository, this.cohortDefinitionRepository);
 
-		return this.jobTemplate.launchTasklet("cohortAnalysisJob", "cohortAnalysisStep", tasklet, jobParameters);
+		return this.jobTemplate.launchTasklet(NAME, "cohortAnalysisStep", tasklet, jobParameters);
+	}
+
+	@Override
+	public String getJobName() {
+		return NAME;
+	}
+
+	@Override
+	public String getExecutionFoldingKey() {
+		return "analysisIds";
 	}
 
 	private String limitJobParams(String param) {

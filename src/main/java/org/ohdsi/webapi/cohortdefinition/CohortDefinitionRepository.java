@@ -15,6 +15,7 @@
 package org.ohdsi.webapi.cohortdefinition;
 
 import java.util.List;
+import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -31,10 +32,11 @@ public interface CohortDefinitionRepository extends CrudRepository<CohortDefinit
   // Bug in hibernate, findById should use @EntityGraph, but details are not being feched. Workaround: mark details Fetch.EAGER,
   // but means findAll() will eager load definitions (what the @EntityGraph was supposed to solve)
   @EntityGraph(value = "CohortDefinition.withDetail", type = EntityGraph.EntityGraphType.LOAD)
-  @Query("select cd from CohortDefinition cd where id = ?1")
+  @Query("select cd from CohortDefinition cd LEFT JOIN FETCH cd.createdBy LEFT JOIN FETCH cd.modifiedBy where cd.id = ?1")
   CohortDefinition findOneWithDetail(Integer id);
   
   @Query("select cd from CohortDefinition AS cd JOIN FETCH cd.details as d")          
   List<CohortDefinition> list();
-  
+
+  List<CohortDefinition> findAllByCohortCharacterizations(CohortCharacterizationEntity mainEntity);
 }

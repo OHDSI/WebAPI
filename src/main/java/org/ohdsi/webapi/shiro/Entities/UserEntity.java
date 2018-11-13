@@ -1,9 +1,19 @@
 package org.ohdsi.webapi.shiro.Entities;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import javax.persistence.*;
 
 /**
  * Created by GMalikov on 24.08.2015.
@@ -21,6 +31,7 @@ public class UserEntity implements Serializable{
   private String salt;
   private String name;
   private Set<UserRoleEntity> userRoles = new LinkedHashSet<>();
+  private Date lastViewedNotificationsTime;
 
   @Id
   @Column(name = "ID")
@@ -59,5 +70,14 @@ public class UserEntity implements Serializable{
 
   public void setUserRoles(Set<UserRoleEntity> userRoles) {
     this.userRoles = userRoles;
+  }
+
+  @Column(name = "last_viewed_notifications_time")
+  public Date getLastViewedNotificationsTime() {
+    return lastViewedNotificationsTime;
+  }
+
+  public void setLastViewedNotificationsTime(Date lastViewedNotificationsTime) {
+    this.lastViewedNotificationsTime = lastViewedNotificationsTime;
   }
 }

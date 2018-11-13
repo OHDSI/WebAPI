@@ -69,6 +69,7 @@ import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.UserUtils;
@@ -79,7 +80,6 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionDefinition;
@@ -587,7 +587,7 @@ public class FeasibilityService extends AbstractDaoService {
     builder.addString("generate_stats", Boolean.TRUE.toString());
 
     final JobParameters jobParameters = builder.toJobParameters();
-    final JdbcTemplate sourceJdbcTemplate = getSourceJdbcTemplate(source);
+    final CancelableJdbcTemplate sourceJdbcTemplate = getSourceJdbcTemplate(source);
 
     GenerateCohortTasklet indexRuleTasklet = new GenerateCohortTasklet(sourceJdbcTemplate, getTransactionTemplate(), cohortDefinitionRepository, getSourceRepository());
 
@@ -596,7 +596,7 @@ public class FeasibilityService extends AbstractDaoService {
             .exceptionHandler(new TerminateJobStepExceptionHandler())
             .build();
 
-    PerformFeasibilityTasklet simulateTasket = new PerformFeasibilityTasklet(sourceJdbcTemplate, getTransactionTemplate(), feasibilityStudyRepository, cohortDefinitionRepository);
+    PerformFeasibilityTasklet simulateTasket = new PerformFeasibilityTasklet(sourceJdbcTemplate, getTransactionTemplate(), feasibilityStudyRepository);
 
     Step performStudyStep = stepBuilders.get("performStudy.performStudy")
             .tasklet(simulateTasket)

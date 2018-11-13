@@ -14,14 +14,22 @@
  */
 package org.ohdsi.webapi.cohortdefinition;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import javax.persistence.*;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.ohdsi.circe.cohortdefinition.CohortExpression;
+import org.ohdsi.analysis.Cohort;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisGenerationInfo;
+import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 
@@ -36,7 +44,7 @@ import org.ohdsi.webapi.shiro.Entities.UserEntity;
     attributeNodes = { @NamedAttributeNode(value = "details", subgraph = "detailsGraph") },
     subgraphs = {@NamedSubgraph(name = "detailsGraph", type = CohortDefinitionDetails.class, attributeNodes = { @NamedAttributeNode(value="expression")})}
 )
-public class CohortDefinition extends CommonEntity implements Serializable{
+public class CohortDefinition extends CommonEntity implements Serializable, Cohort{
 
   private static final long serialVersionUID = 1L;
     
@@ -63,6 +71,12 @@ public class CohortDefinition extends CommonEntity implements Serializable{
 
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "cohortDefinition")
 	private Set<CohortAnalysisGenerationInfo> cohortAnalysisGenerationInfoList = new HashSet<>();
+
+  @ManyToMany(targetEntity = CohortCharacterizationEntity.class, fetch = FetchType.LAZY)
+  @JoinTable(name = "cc_cohort",
+          joinColumns = @JoinColumn(name = "cohort_id", referencedColumnName = "id"),
+          inverseJoinColumns = @JoinColumn(name = "cohort_characterization_id", referencedColumnName = "id"))
+  private List<CohortCharacterizationEntity> cohortCharacterizations = new ArrayList<>();
 
   public Integer getId() {
     return id;
@@ -117,12 +131,42 @@ public class CohortDefinition extends CommonEntity implements Serializable{
     return this;
   }
 
-	public Set<CohortAnalysisGenerationInfo> getCohortAnalysisGenerationInfoList() {
+  @Override
+  public boolean equals(final Object o) {
+
+    if (this == o) return true;
+    if (!(o instanceof CohortDefinition)) return false;
+    final CohortDefinition that = (CohortDefinition) o;
+    return Objects.equals(getId(), that.getId());
+  }
+
+  @Override
+  public int hashCode() {
+
+    return Objects.hash(getId(), super.hashCode());
+  }
+
+  public Set<CohortAnalysisGenerationInfo> getCohortAnalysisGenerationInfoList() {
 		return cohortAnalysisGenerationInfoList;
 	}
 
 	public void setCohortAnalysisGenerationInfoList(Set<CohortAnalysisGenerationInfo> cohortAnalysisGenerationInfoList) {
 		this.cohortAnalysisGenerationInfoList = cohortAnalysisGenerationInfoList;
 	}
-	
+
+    @Override
+    public CohortExpression getExpression() {
+
+      return details != null ? details.getExpressionObject() : null;
+    }
+
+  public List<CohortCharacterizationEntity> getCohortCharacterizations() {
+
+    return cohortCharacterizations;
+  }
+
+  public void setCohortCharacterizations(final List<CohortCharacterizationEntity> cohortCharacterizations) {
+
+    this.cohortCharacterizations = cohortCharacterizations;
+  }
 }

@@ -12,14 +12,18 @@ import java.util.Set;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.web.servlet.AdviceFilter;
+import org.apache.shiro.web.servlet.ShiroHttpServletRequest;
 import org.apache.shiro.web.util.WebUtils;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.TokenManager;
+import org.ohdsi.webapi.util.UserUtils;
 
 /**
  *
@@ -56,6 +60,17 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
       login = ((Principal)principal).getName();
     } else if (principal instanceof Pac4jPrincipal) {
       login = ((Pac4jPrincipal)principal).getProfile().getEmail();
+      
+      /**
+      * for CAS login
+      */
+      ShiroHttpServletRequest requestShiro = (ShiroHttpServletRequest) request;
+      HttpSession session = requestShiro.getSession();
+      if (login == null && session.getAttribute(CasHandleFilter.CONST_CAS_AUTHN) != null
+              && ((String) session.getAttribute(CasHandleFilter.CONST_CAS_AUTHN)).equalsIgnoreCase("true")) {
+              login = ((Pac4jPrincipal) principal).getProfile().getId();
+      }
+            
       if (login == null) {
         // user doesn't provide email - send empty token
         jwt = "";
@@ -66,9 +81,7 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
       throw new Exception("Unknown type of principal");
     }
 
-    if (login != null) {
-      login = login.toLowerCase();
-    }
+    login = UserUtils.toLowerCase(login);
 
     // stop session to make logout of OAuth users possible
     Session session = SecurityUtils.getSubject().getSession(false);

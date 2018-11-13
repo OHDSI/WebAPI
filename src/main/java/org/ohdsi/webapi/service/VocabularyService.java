@@ -85,18 +85,23 @@ public class VocabularyService extends AbstractDaoService {
 
   private String getDefaultVocabularySourceKey()
   {
-    // fun with streams:
-    // the below expression streams each source, returning the first (or null) which contains a daimon that is either Vocabulary or CDM
-    SourceInfo firstSource = sourceService.getSources().stream()
-            .filter(source -> source.daimons.stream()
-                    .filter(daimon -> daimon.getDaimonType() == SourceDaimon.DaimonType.Vocabulary || daimon.getDaimonType() == SourceDaimon.DaimonType.CDM)
-                    .collect(Collectors.toList()).size() > 0)
-            .findFirst().orElse(null);
+    List<SourceInfo> vocabSources = sourceService.getSources().stream()
+           .filter(source -> source.daimons.stream()
+                   .filter(daimon -> daimon.getDaimonType() == SourceDaimon.DaimonType.Vocabulary)
+                   .collect(Collectors.toList()).size() > 0)
+            .collect(Collectors.toList());
     
-    if (firstSource != null)
-      return firstSource.sourceKey;
+    Integer vocabularyPriority = 0;
+    String sourceKey = null;
+    for(SourceInfo si : vocabSources) {
+        SourceDaimon sd = si.daimons.stream().filter(daimon -> daimon.getDaimonType() == SourceDaimon.DaimonType.Vocabulary).findFirst().orElse(null);
+        if (sd != null && sd.getPriority() >= vocabularyPriority) {
+            vocabularyPriority = sd.getPriority();
+            sourceKey = si.sourceKey;
+        }
+    }
     
-    return null;
+    return sourceKey;
   }
 
   /**
@@ -527,7 +532,7 @@ public class VocabularyService extends AbstractDaoService {
     try {
       concept = getSourceJdbcTemplate(source).queryForObject(psr.getSql(), psr.getOrderedParams(), this.rowMapper);
     } catch (EmptyResultDataAccessException e) {
-      log.debug(String.format("Request for conceptId=%s resulted in 0 results", id));
+      log.error("Request for conceptId={} resulted in 0 results", id);
       throw new WebApplicationException(Response.Status.RESET_CONTENT); // http 205
     }
     return concept;
@@ -852,6 +857,10 @@ public class VocabularyService extends AbstractDaoService {
     }
     
     return vocabularyInfoCache.get(sourceKey);
+  }
+
+  public void clearVocabularyInfoCache() {
+    vocabularyInfoCache = null;
   }
   
   @POST

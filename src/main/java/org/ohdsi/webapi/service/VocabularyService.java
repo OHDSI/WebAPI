@@ -858,6 +858,10 @@ public class VocabularyService extends AbstractDaoService {
     
     return vocabularyInfoCache.get(sourceKey);
   }
+
+  public void clearVocabularyInfoCache() {
+    vocabularyInfoCache = null;
+  }
   
   @POST
   @Path("{sourceKey}/descendantofancestor")

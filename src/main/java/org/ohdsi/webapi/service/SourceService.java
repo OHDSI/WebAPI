@@ -60,6 +60,9 @@ public class SourceService extends AbstractDaoService {
   private Environment env;
   @Autowired
   private ApplicationEventPublisher publisher;
+  @Autowired
+  private VocabularyService vocabularyService;
+
   @Value("${datasource.ohdsi.schema}")
   private String schema;
 
@@ -157,6 +160,7 @@ public class SourceService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<SourceInfo> refreshSources() {
     cachedSources = null;
+    vocabularyService.clearVocabularyInfoCache();
 		this.ensureSourceEncrypted();
     return getSources();
   }

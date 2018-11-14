@@ -11,6 +11,7 @@ public class CcPrevalenceStat extends CcResult implements PrevalenceStat {
     private Long covariateId;
     private String covariateName;
     private Long conceptId;
+    private String conceptName;
     private Long count;
     private long distance = 0;
     
@@ -84,5 +85,13 @@ public class CcPrevalenceStat extends CcResult implements PrevalenceStat {
 
     public void setDistance(long distance) {
         this.distance = distance;
+    }
+
+    public String getConceptName() {
+        return conceptName;
+    }
+
+    public void setConceptName(String conceptName) {
+        this.conceptName = conceptName;
     }
 }

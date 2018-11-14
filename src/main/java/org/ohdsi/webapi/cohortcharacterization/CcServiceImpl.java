@@ -392,12 +392,14 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
             CcPrevalenceStat stat = new CcPrevalenceStat();
             stat.setAvg(rs.getDouble("stat_value"));
             stat.setConceptId(rs.getLong("concept_id"));
+            stat.setConceptName(rs.getString("concept_name"));
             stat.setCount(rs.getLong("count_value"));
             stat.setCovariateId(rs.getLong("covariate_id"));
             stat.setCovariateName(rs.getString("covariate_name"));
             stat.setAnalysisId(rs.getInt("analysis_id"));
             stat.setAnalysisName(rs.getString("analysis_name"));
             stat.setSourceKey(source.getSourceKey());
+            stat.setDistance(rs.getInt("min_levels_of_separation"));
             return stat;
         });
     }

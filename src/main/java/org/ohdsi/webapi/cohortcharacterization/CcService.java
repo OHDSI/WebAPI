@@ -5,6 +5,7 @@ import java.util.List;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcPrevalenceStat;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.springframework.data.domain.Page;
@@ -42,6 +43,8 @@ public interface CcService {
     List<CcGenerationEntity> findGenerationsByCcIdAndSource(Long id, String sourceKey);
 
     List<CcResult> findResults(Long generationId);
+
+    List<CcPrevalenceStat> getPrevalenceStatsByGenerationId(final Long id, final Long covariateId);
 
     void deleteCcGeneration(Long generationId);
 }

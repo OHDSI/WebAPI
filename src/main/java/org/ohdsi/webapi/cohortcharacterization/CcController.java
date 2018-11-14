@@ -194,4 +194,13 @@ public class CcController {
         });
         return ccResults;
     }
+
+    @GET
+    @Path("/generation/{generationId}/explore/prevalence/{covariateId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<CcPrevalenceStat> getPrevalenceStat(@PathParam("generationId") Long generationId,
+                                                    @PathParam("covariateId") Long covariateId) {
+
+        return service.getPrevalenceStatsByGenerationId(generationId, covariateId);
+    }
 }

@@ -55,6 +55,7 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -83,9 +84,11 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
     private static final String GENERATION_NOT_FOUND_ERROR = "generation cannot be found by id %d";
     private static final String[] GENERATION_PARAMETERS = {"cohort_characterization_generation_id"};
+    private static final String[] PREVALENCE_STATS_PARAMS = {"cdm_database_schema", "cdm_results_schema", "cc_generation_id", "covariate_id"};
     private final String QUERY_RESULTS = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/queryResults.sql");
     private final String DELETE_RESULTS = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/deleteResults.sql");
     private final String DELETE_EXECUTION = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/deleteExecution.sql");
+    private final String QUERY_PREVALENCE_STATS = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/queryCovariateStatsVocab.sql");
     private final String IMPORTED_ENTITY_PREFIX = "COPY OF: ";
 
     private final static List<String> INCOMPLETE_STATUSES = ImmutableList.of(BatchStatus.STARTED, BatchStatus.STARTING, BatchStatus.STOPPING, BatchStatus.UNKNOWN)
@@ -373,6 +376,30 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         final String resultSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
         String translatedSql = SqlTranslate.translateSql(generationResults, source.getSourceDialect(), SessionUtils.sessionId(), resultSchema);
         return getGenerationResults(source, translatedSql);
+    }
+
+    @Override
+    public List<CcPrevalenceStat> getPrevalenceStatsByGenerationId(Long id, Long covariateId) {
+        final CcGenerationEntity generationEntity = ccGenerationRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, id)));
+        final Source source = generationEntity.getSource();
+        final String cdmSchema = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+        final String resultSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+        String prevalenceStats = sourceAwareSqlRender.renderSql(source.getSourceId(), QUERY_PREVALENCE_STATS, PREVALENCE_STATS_PARAMS,
+                new String[]{ cdmSchema, resultSchema, String.valueOf(id), String.valueOf(covariateId) });
+        String translatedSql = SqlTranslate.translateSql(prevalenceStats, source.getSourceDialect(), SessionUtils.sessionId(), resultSchema);
+        return getSourceJdbcTemplate(source).query(translatedSql, (rs, rowNum) -> {
+            CcPrevalenceStat stat = new CcPrevalenceStat();
+            stat.setAvg(rs.getDouble("stat_value"));
+            stat.setConceptId(rs.getLong("concept_id"));
+            stat.setCount(rs.getLong("count_value"));
+            stat.setCovariateId(rs.getLong("covariate_id"));
+            stat.setCovariateName(rs.getString("covariate_name"));
+            stat.setAnalysisId(rs.getInt("analysis_id"));
+            stat.setAnalysisName(rs.getString("analysis_name"));
+            stat.setSourceKey(source.getSourceKey());
+            return stat;
+        });
     }
 
     @Override

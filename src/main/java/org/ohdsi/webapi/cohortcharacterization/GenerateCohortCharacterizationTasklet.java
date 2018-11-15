@@ -263,6 +263,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             // Target schema
             options.resultSchema = SourceUtils.getTempQualifier(source);
             options.cohortId = id;
+            options.generateStats = false;
             return options;
         }
 

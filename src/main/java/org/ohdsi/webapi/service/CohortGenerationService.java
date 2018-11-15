@@ -165,10 +165,10 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     builder.addString(CDM_DATABASE_SCHEMA, cdmTableQualifier);
     builder.addString(RESULTS_DATABASE_SCHEMA, resultsTableQualifier);
 
-    if (targetTable.indexOf('.') != -1) {
-      String[] targetParts = targetTable.split("\\.");
-      builder.addString(TARGET_DATABASE_SCHEMA, targetParts[0]);
-      builder.addString(TARGET_TABLE, targetParts[1]);
+    int idx;
+    if ((idx = targetTable.lastIndexOf('.')) != -1) {
+      builder.addString(TARGET_DATABASE_SCHEMA, targetTable.substring(0, idx));
+      builder.addString(TARGET_TABLE, targetTable.substring(idx + 1));
     } else {
       builder.addString(TARGET_DATABASE_SCHEMA, resultsTableQualifier);
       builder.addString(TARGET_TABLE, targetTable);

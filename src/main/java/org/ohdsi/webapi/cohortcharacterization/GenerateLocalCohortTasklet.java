@@ -82,6 +82,7 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
 
       Map<String, String> extraParams = new HashMap<>();
       extraParams.put(JOB_AUTHOR, jobAuthorLogin);
+      extraParams.put(GENERATE_STATS, Boolean.FALSE.toString());
       return cohortGenerationService.runGenerateCohortJob(cd, source, false, false, targetSchema + '.' + targetTable, extraParams, GENERATE_LOCAL_COHORT);
     }
 

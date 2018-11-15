@@ -66,7 +66,6 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
   class GenerateTask {
 
     private final String targetTable;
-    private final String targetSchema;
     private final Source source;
     private final String jobAuthorLogin;
 
@@ -74,7 +73,6 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
       Map<String, Object> jobParameters = chunkContext.getStepContext().getJobParameters();
       source = sourceService.findBySourceId(Integer.valueOf(jobParameters.get(SOURCE_ID).toString()));
       targetTable = jobParameters.get(TARGET_TABLE).toString();
-      targetSchema = SourceUtils.getTempQualifier(source);
       jobAuthorLogin = jobParameters.get(JOB_AUTHOR).toString();
     }
 
@@ -83,7 +81,7 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
       Map<String, String> extraParams = new HashMap<>();
       extraParams.put(JOB_AUTHOR, jobAuthorLogin);
       extraParams.put(GENERATE_STATS, Boolean.FALSE.toString());
-      return cohortGenerationService.runGenerateCohortJob(cd, source, false, false, targetSchema + '.' + targetTable, extraParams, GENERATE_LOCAL_COHORT);
+      return cohortGenerationService.runGenerateCohortJob(cd, source, false, false, targetTable, extraParams, GENERATE_LOCAL_COHORT);
     }
 
     public void run(Collection<CohortDefinition> cohortDefinitions) {

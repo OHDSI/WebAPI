@@ -8,6 +8,7 @@ import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.util.SourceUtils;
 import org.springframework.batch.core.*;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
@@ -165,14 +166,8 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     builder.addString(CDM_DATABASE_SCHEMA, cdmTableQualifier);
     builder.addString(RESULTS_DATABASE_SCHEMA, resultsTableQualifier);
 
-    int idx;
-    if ((idx = targetTable.lastIndexOf('.')) != -1) {
-      builder.addString(TARGET_DATABASE_SCHEMA, targetTable.substring(0, idx));
-      builder.addString(TARGET_TABLE, targetTable.substring(idx + 1));
-    } else {
-      builder.addString(TARGET_DATABASE_SCHEMA, resultsTableQualifier);
-      builder.addString(TARGET_TABLE, targetTable);
-    }
+    builder.addString(TARGET_DATABASE_SCHEMA, SourceUtils.getTempQualifier(source));
+    builder.addString(TARGET_TABLE, targetTable);
 
     if (vocabularyTableQualifier != null) {
       builder.addString(VOCABULARY_DATABASE_SCHEMA, vocabularyTableQualifier);

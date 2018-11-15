@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
+import com.google.common.collect.ImmutableMap;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.service.CohortGenerationService;
@@ -78,9 +79,11 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
 
     private JobExecutionResource generateCohort(CohortDefinition cd) {
 
-      Map<String, String> extraParams = new HashMap<>();
-      extraParams.put(JOB_AUTHOR, jobAuthorLogin);
-      extraParams.put(GENERATE_STATS, Boolean.FALSE.toString());
+      Map<String, String> extraParams = ImmutableMap.<String, String>builder()
+        .put(JOB_AUTHOR, jobAuthorLogin)
+        .put(GENERATE_STATS, Boolean.FALSE.toString())
+        .put(TARGET_DATABASE_SCHEMA, SourceUtils.getTempQualifier(source))
+        .build();
       return cohortGenerationService.runGenerateCohortJob(cd, source, false, false, targetTable, extraParams, GENERATE_LOCAL_COHORT);
     }
 

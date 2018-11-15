@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.service;
 
+import com.google.common.collect.ImmutableMap;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.cohortdefinition.*;
 import org.ohdsi.webapi.cohortfeatures.GenerateCohortFeaturesTasklet;
@@ -127,7 +128,8 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
   }
 
   public JobExecutionResource runGenerateCohortJob(CohortDefinition cohortDefinition, Source source, boolean includeFeatures, boolean updateGenerationInfo, String targetTable) {
-    return runGenerateCohortJob(cohortDefinition, source, includeFeatures, updateGenerationInfo, targetTable, new HashMap<>(), GENERATE_COHORT);
+    Map<String, String> extraParams = ImmutableMap.of(TARGET_DATABASE_SCHEMA, SourceUtils.getResultsQualifier(source));
+    return runGenerateCohortJob(cohortDefinition, source, includeFeatures, updateGenerationInfo, targetTable, extraParams, GENERATE_COHORT);
   }
 
   public Optional<JobExecution> getJobExecution(Source source, Integer cohortDefinitionId) {
@@ -166,7 +168,6 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     builder.addString(CDM_DATABASE_SCHEMA, cdmTableQualifier);
     builder.addString(RESULTS_DATABASE_SCHEMA, resultsTableQualifier);
 
-    builder.addString(TARGET_DATABASE_SCHEMA, SourceUtils.getTempQualifier(source));
     builder.addString(TARGET_TABLE, targetTable);
 
     if (vocabularyTableQualifier != null) {

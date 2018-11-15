@@ -899,7 +899,7 @@ DROP TABLE #raw_107;
   from
   (select cohort_definition_id, person_id, COUNT_BIG(OBSERVATION_period_start_date) as num_periods 
   from @CDM_schema.OBSERVATION_PERIOD op0
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
+  inner join (select distinct subject_id, cohort_definition_id from #HERACLES_cohort) c1
   on op0.person_id = c1.subject_id
   group by cohort_definition_id, PERSON_ID) op1
   group by cohort_definition_id, op1.num_periods

@@ -756,7 +756,7 @@ DROP TABLE #raw_107;
   -- 109   Number of persons with continuous observation in each year
   -- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
    
-  WITH x AS (SELECT n FROM (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) v(n)),
+  WITH x AS (SELECT 0 AS n UNION ALL SELECT 1 AS n UNION ALL SELECT 2 AS n UNION ALL SELECT 3 AS n UNION ALL SELECT 4 AS n UNION ALL SELECT 5 AS n UNION ALL SELECT 6 AS n UNION ALL SELECT 7 AS n UNION ALL SELECT 8 AS n UNION ALL SELECT 9 AS n),
     years AS (SELECT ones.n + 10*tens.n + 100*hundreds.n + 1000*thousands.n as year
               FROM x ones,     x tens,      x hundreds,       x thousands),
     op_date_range AS (select
@@ -806,10 +806,10 @@ DROP TABLE #raw_107;
   -- 110   Number of persons with continuous observation in each month
   -- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
 
-	WITH x AS (SELECT n FROM (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) v(n)),
+	WITH x AS (SELECT 0 AS n UNION ALL SELECT 1 AS n UNION ALL SELECT 2 AS n UNION ALL SELECT 3 AS n UNION ALL SELECT 4 AS n UNION ALL SELECT 5 AS n UNION ALL SELECT 6 AS n UNION ALL SELECT 7 AS n UNION ALL SELECT 8 AS n UNION ALL SELECT 9 AS n),
 		years AS (SELECT ones.n + 10*tens.n + 100*hundreds.n + 1000*thousands.n as year
 							FROM x ones,     x tens,      x hundreds,       x thousands),
-		months AS (SELECT month FROM (VALUES (1), (2), (3), (4), (5), (6), (7), (8), (9), (10), (11), (12)) v(month)),
+		months AS (SELECT 1 AS month UNION ALL SELECT 2 AS month UNION ALL SELECT 3 AS month UNION ALL SELECT 4 AS month UNION ALL SELECT 5 AS month UNION ALL SELECT 6 AS month UNION ALL SELECT 7 AS month UNION ALL SELECT 8 AS month UNION ALL SELECT 9 AS month UNION ALL SELECT 10 AS month UNION ALL SELECT 11 AS month UNION ALL SELECT 12 AS month),
 		op_date_range AS (
 			SELECT MIN(observation_period_start_date) AS op_start_date,
 				MAX(observation_period_end_date) AS op_end_date
@@ -966,7 +966,7 @@ DROP TABLE #raw_107;
   -- 116   Number of persons with at least one day of observation in each year by gender and age decile
   -- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
 
-	WITH x AS (SELECT n FROM (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) v(n)),
+	WITH x AS (SELECT 0 AS n UNION ALL SELECT 1 AS n UNION ALL SELECT 2 AS n UNION ALL SELECT 3 AS n UNION ALL SELECT 4 AS n UNION ALL SELECT 5 AS n UNION ALL SELECT 6 AS n UNION ALL SELECT 7 AS n UNION ALL SELECT 8 AS n UNION ALL SELECT 9 AS n),
 		years AS (SELECT ones.n + 10*tens.n + 100*hundreds.n + 1000*thousands.n as year
 							FROM x ones,     x tens,      x hundreds,       x thousands),
 		op_date_range AS (
@@ -1020,10 +1020,10 @@ DROP TABLE #raw_107;
   -- 117   Number of persons with at least one day of observation in each year by gender and age decile
   -- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
 
-	WITH x AS (SELECT n FROM (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) v(n)),
+	WITH x AS (SELECT 0 AS n UNION ALL SELECT 1 AS n UNION ALL SELECT 2 AS n UNION ALL SELECT 3 AS n UNION ALL SELECT 4 AS n UNION ALL SELECT 5 AS n UNION ALL SELECT 6 AS n UNION ALL SELECT 7 AS n UNION ALL SELECT 8 AS n UNION ALL SELECT 9 AS n),
 		years AS (SELECT ones.n + 10*tens.n + 100*hundreds.n + 1000*thousands.n as year
 							FROM x ones,     x tens,      x hundreds,       x thousands),
-		months AS (SELECT month FROM (VALUES (1), (2), (3), (4), (5), (6), (7), (8), (9), (10), (11), (12)) v(month)),
+		months AS (SELECT 1 AS month UNION ALL SELECT 2 AS month UNION ALL SELECT 3 AS month UNION ALL SELECT 4 AS month UNION ALL SELECT 5 AS month UNION ALL SELECT 6 AS month UNION ALL SELECT 7 AS month UNION ALL SELECT 8 AS month UNION ALL SELECT 9 AS month UNION ALL SELECT 10 AS month UNION ALL SELECT 11 AS month UNION ALL SELECT 12 AS month),
 		op_date_range AS (
 			select
 				MIN(observation_period_start_date) AS op_start_date,
@@ -1037,7 +1037,7 @@ DROP TABLE #raw_107;
 	SELECT years.year * 100 + months.month AS obs_month
 	INTO
 		#temp_dates_4
-	FROM years, monsth, op_date_range
+	FROM years, months, op_date_range
 	WHERE years.year BETWEEN YEAR(op_date_range.op_start_date) AND YEAR(op_date_range.op_end_date)
   ;
   

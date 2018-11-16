@@ -11,6 +11,7 @@ import com.jnj.honeur.webapi.cohortinclusion.CohortInclusionRepository;
 import com.jnj.honeur.webapi.cohortinclusionresult.CohortInclusionResultRepository;
 import com.jnj.honeur.webapi.cohortinclusionstats.CohortInclusionStatsRepository;
 import com.jnj.honeur.webapi.cohortsummarystats.CohortSummaryStatsRepository;
+import com.jnj.honeur.webapi.shiro.LiferayPermissionManager;
 import org.ohdsi.webapi.cohort.CohortRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfoRepository;
@@ -48,6 +49,7 @@ public class CohortGenerationImportService extends AbstractDaoService {
     private final CohortGenerationInfoRepository cohortGenerationInfoRepository;
     private final CohortDefinitionRepository cohortDefinitionRepository;
     private final CohortDefinitionService cohortDefinitionService;
+    private final LiferayPermissionManager authorizer;
 
     @Autowired
     public CohortGenerationImportService(StepBuilderFactory stepBuilders, JobBuilderFactory jobBuilders,
@@ -62,7 +64,8 @@ public class CohortGenerationImportService extends AbstractDaoService {
                                          CohortFeaturesRefRepository cohortFeaturesRefRepository,
                                          CohortGenerationInfoRepository cohortGenerationInfoRepository,
                                          CohortDefinitionRepository cohortDefinitionRepository,
-                                         CohortDefinitionService cohortDefinitionService) {
+                                         CohortDefinitionService cohortDefinitionService,
+                                         LiferayPermissionManager authorizer) {
         this.stepBuilders = stepBuilders;
         this.jobBuilders = jobBuilders;
         this.jobTemplate = jobTemplate;
@@ -78,6 +81,7 @@ public class CohortGenerationImportService extends AbstractDaoService {
         this.cohortGenerationInfoRepository = cohortGenerationInfoRepository;
         this.cohortDefinitionRepository = cohortDefinitionRepository;
         this.cohortDefinitionService = cohortDefinitionService;
+        this.authorizer = authorizer;
     }
 
     public JobExecutionResource importCohortGeneration(int cohortDefinitionId,
@@ -88,8 +92,7 @@ public class CohortGenerationImportService extends AbstractDaoService {
                 new ImportCohortGenerationTasklet(getTransactionTemplate(), cohortRepository, cohortInclusionRepository,
                         cohortInclusionStatsRepository, cohortInclusionResultRepository, cohortSummaryStatsRepository,
                         cohortFeaturesRepository, cohortFeaturesAnalysisRefRepository, cohortFeaturesDistRepository,
-                        cohortFeaturesRefRepository, cohortGenerationInfoRepository, cohortDefinitionRepository,
-                        cohortDefinitionService);
+                        cohortFeaturesRefRepository);
 
         Step importCohortStep = stepBuilders.get("cohortDefinition.importCohortGeneration")
                 .tasklet(importCohortGenerationTasklet)
@@ -97,7 +100,8 @@ public class CohortGenerationImportService extends AbstractDaoService {
 
         SimpleJobBuilder importJobBuilder = jobBuilders.get(GENERATE_COHORT).start(importCohortStep);
 
-        importJobBuilder.listener(new ImportJobExecutionListener(cohortGenerationResults));
+        importJobBuilder.listener(new ImportJobExecutionListener(cohortGenerationResults, getTransactionTemplate(),
+                cohortGenerationInfoRepository, cohortDefinitionRepository, cohortDefinitionService, authorizer));
 
         return jobTemplate.launch(importJobBuilder.build(),
                 getJobParametersBuilder(cohortDefinitionId, sourceKey).toJobParameters());

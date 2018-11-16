@@ -483,6 +483,7 @@ public class HoneurCohortDefinitionServiceExtension {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/import/{sourceKey}")
+    @Transactional
     public JobExecutionResource importCohortResults(@HeaderParam("Authorization") String token, @PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey, CohortGenerationResults cohortGenerationResults){
         return cohortGenerationImportService.importCohortGeneration(id, cohortGenerationResults, sourceKey);
 //        try {

@@ -27,8 +27,10 @@ import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfo;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfoRepository;
 import org.ohdsi.webapi.service.CohortDefinitionService;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
+import org.springframework.batch.core.step.tasklet.StoppableTasklet;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.transaction.TransactionDefinition;
@@ -41,7 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class ImportCohortGenerationTasklet implements Tasklet {
+public class ImportCohortGenerationTasklet implements StoppableTasklet {
 
     private TransactionTemplate transactionTemplate;
     private CohortRepository cohortRepository;
@@ -53,9 +55,7 @@ public class ImportCohortGenerationTasklet implements Tasklet {
     private CohortFeaturesAnalysisRefRepository cohortFeaturesAnalysisRefRepository;
     private CohortFeaturesDistRepository cohortFeaturesDistRepository;
     private CohortFeaturesRefRepository cohortFeaturesRefRepository;
-    private CohortGenerationInfoRepository cohortGenerationInfoRepository;
-    private CohortDefinitionRepository cohortDefinitionRepository;
-    private CohortDefinitionService cohortDefinitionService;
+    private boolean stopped = false;
 
     public ImportCohortGenerationTasklet(TransactionTemplate transactionTemplate, CohortRepository cohortRepository,
                                          CohortInclusionRepository cohortInclusionRepository,
@@ -65,10 +65,7 @@ public class ImportCohortGenerationTasklet implements Tasklet {
                                          CohortFeaturesRepository cohortFeaturesRepository,
                                          CohortFeaturesAnalysisRefRepository cohortFeaturesAnalysisRefRepository,
                                          CohortFeaturesDistRepository cohortFeaturesDistRepository,
-                                         CohortFeaturesRefRepository cohortFeaturesRefRepository,
-                                         CohortGenerationInfoRepository cohortGenerationInfoRepository,
-                                         CohortDefinitionRepository cohortDefinitionRepository,
-                                         CohortDefinitionService cohortDefinitionService) {
+                                         CohortFeaturesRefRepository cohortFeaturesRefRepository) {
         this.transactionTemplate = transactionTemplate;
         this.cohortRepository = cohortRepository;
         this.cohortInclusionRepository = cohortInclusionRepository;
@@ -79,9 +76,6 @@ public class ImportCohortGenerationTasklet implements Tasklet {
         this.cohortFeaturesAnalysisRefRepository = cohortFeaturesAnalysisRefRepository;
         this.cohortFeaturesDistRepository = cohortFeaturesDistRepository;
         this.cohortFeaturesRefRepository = cohortFeaturesRefRepository;
-        this.cohortGenerationInfoRepository = cohortGenerationInfoRepository;
-        this.cohortDefinitionRepository = cohortDefinitionRepository;
-        this.cohortDefinitionService = cohortDefinitionService;
     }
 
     private int[] doTask(ChunkContext chunkContext) {
@@ -91,40 +85,26 @@ public class ImportCohortGenerationTasklet implements Tasklet {
         Integer defId = Integer.valueOf(jobParams.get(Constants.Params.COHORT_DEFINITION_ID).toString());
         String sourceKey = jobParams.get(Constants.Params.SOURCE_KEY).toString();
 
+        DefaultTransactionDefinition completeTx = new DefaultTransactionDefinition();
+        completeTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        TransactionStatus completeStatus = this.transactionTemplate.getTransactionManager().getTransaction(completeTx);
+
         CohortGenerationResults cohortGenerationResults =
                 (CohortGenerationResults) chunkContext.getStepContext().getJobExecutionContext()
                         .get(ImportJobExecutionListener.COHORT_GENERATION_RESULTS);
 
         SourceDaimonContextHolder.setCurrentSourceDaimonContext(new SourceDaimonContext(sourceKey, SourceDaimon.DaimonType.Results));
 
-		DefaultTransactionDefinition completeTx = new DefaultTransactionDefinition();
-		completeTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-		TransactionStatus completeStatus = this.transactionTemplate.getTransactionManager().getTransaction(completeTx);
-
         importCohortGenerationResults(defId, cohortGenerationResults);
+        if(stopped){
+            return result;
+        }
 
         SourceDaimonContextHolder.clear();
-
-        importCohortGenerationInfo(defId, sourceKey, cohortGenerationResults.getCohortGenerationInfo());
 
 		this.transactionTemplate.getTransactionManager().commit(completeStatus);
 
         return result;
-    }
-
-    CohortGenerationInfo importCohortGenerationInfo(int id, String sourceKey, CohortGenerationInfo cohortGenerationInfo) {
-
-        CohortGenerationInfo cohortGenerationInfoAdapted = new CohortGenerationInfo(this.cohortDefinitionRepository.findOne(id),cohortDefinitionService.getSourceRepository().findBySourceKey(sourceKey).getSourceId());
-        cohortGenerationInfoAdapted.setStatus(cohortGenerationInfo.getStatus());
-        cohortGenerationInfoAdapted.setExecutionDuration(cohortGenerationInfo.getExecutionDuration());
-        cohortGenerationInfoAdapted.setIsValid(cohortGenerationInfo.isIsValid());
-        cohortGenerationInfoAdapted.setStartTime(cohortGenerationInfo.getStartTime());
-        cohortGenerationInfoAdapted.setFailMessage(cohortGenerationInfo.getFailMessage());
-        cohortGenerationInfoAdapted.setPersonCount(cohortGenerationInfo.getPersonCount());
-        cohortGenerationInfoAdapted.setRecordCount(cohortGenerationInfo.getRecordCount());
-        cohortGenerationInfoAdapted.setIncludeFeatures(cohortGenerationInfo.isIncludeFeatures());
-
-        return cohortGenerationInfoRepository.save(cohortGenerationInfoAdapted);
     }
 
     CohortGenerationResults importCohortGenerationResults(int id, CohortGenerationResults cohortGenerationResults) {
@@ -132,6 +112,9 @@ public class ImportCohortGenerationTasklet implements Tasklet {
 
         List<CohortEntity> cohortEntities = new ArrayList<>();
         for (CohortEntity cohort : cohortGenerationResults.getCohort()) {
+            if(stopped){
+                return newResults;
+            }
             CohortEntity cohortEntity = new CohortEntity();
             cohortEntity.setCohortDefinitionId((long) id);
             cohortEntity.setCohortEndDate(cohort.getCohortEndDate());
@@ -143,6 +126,9 @@ public class ImportCohortGenerationTasklet implements Tasklet {
 
         List<CohortInclusionEntity> cohortInclusionEntities = new ArrayList<>();
         for (CohortInclusionEntity cohortInclusion : cohortGenerationResults.getCohortInclusion()) {
+            if(stopped){
+                return newResults;
+            }
             CohortInclusionEntity cohortInclusionEntity = new CohortInclusionEntity();
             cohortInclusionEntity.setCohortDefinitionId((long) id);
             cohortInclusionEntity.setDescription(cohortInclusion.getDescription());
@@ -154,6 +140,9 @@ public class ImportCohortGenerationTasklet implements Tasklet {
 
         List<CohortInclusionResultEntity> cohortInclusionResultEntities = new ArrayList<>();
         for (CohortInclusionResultEntity cohortInclusionResult : cohortGenerationResults.getCohortInclusionResult()) {
+            if(stopped){
+                return newResults;
+            }
             CohortInclusionResultEntity cohortInclusionResultEntity = new CohortInclusionResultEntity();
             cohortInclusionResultEntity.setCohortDefinitionId((long) id);
             cohortInclusionResultEntity.setInclusionRuleMask(cohortInclusionResult.getInclusionRuleMask());
@@ -165,6 +154,9 @@ public class ImportCohortGenerationTasklet implements Tasklet {
 
         List<CohortInclusionStatsEntity> cohortInclusionStatsList = new ArrayList<>();
         for (CohortInclusionStatsEntity cohortInclusionStats : cohortGenerationResults.getCohortInclusionStats()) {
+            if(stopped){
+                return newResults;
+            }
             CohortInclusionStatsEntity cohortInclusionStatsEntity = new CohortInclusionStatsEntity();
             cohortInclusionStatsEntity.setCohortDefinitionId((long) id);
             cohortInclusionStatsEntity.setGainCount(cohortInclusionStats.getGainCount());
@@ -178,6 +170,9 @@ public class ImportCohortGenerationTasklet implements Tasklet {
 
         List<CohortSummaryStatsEntity> cohortSummaryStatsList = new ArrayList<>();
         for (CohortSummaryStatsEntity cohortSummaryStats : cohortGenerationResults.getCohortSummaryStats()) {
+            if(stopped){
+                return newResults;
+            }
             CohortSummaryStatsEntity cohortSummaryStatsEntity = new CohortSummaryStatsEntity();
             cohortSummaryStatsEntity.setCohortDefinitionId((long) id);
             cohortSummaryStatsEntity.setBaseCount(cohortSummaryStats.getBaseCount());
@@ -189,6 +184,9 @@ public class ImportCohortGenerationTasklet implements Tasklet {
         if (cohortGenerationResults.getCohortGenerationInfo().isIncludeFeatures()) {
             List<CohortFeaturesEntity> cohortFeaturesEntities = new ArrayList<>();
             for (CohortFeaturesEntity cohortFeatures : cohortGenerationResults.getCohortFeatures()) {
+                if(stopped){
+                    return newResults;
+                }
                 CohortFeaturesEntity cohortFeaturesEntity = new CohortFeaturesEntity();
                 cohortFeaturesEntity.setCohortDefinitionId((long) id);
                 cohortFeaturesEntity.setAverageValue(cohortFeatures.getAverageValue());
@@ -201,6 +199,9 @@ public class ImportCohortGenerationTasklet implements Tasklet {
             List<CohortFeaturesAnalysisRefEntity> cohortFeaturesAnalysisRefEntities = new ArrayList<>();
             for (CohortFeaturesAnalysisRefEntity cohortFeaturesAnalysisRef : cohortGenerationResults
                     .getCohortFeaturesAnalysisRef()) {
+                if(stopped){
+                    return newResults;
+                }
                 CohortFeaturesAnalysisRefEntity cohortFeaturesAnalysisRefEntity = new CohortFeaturesAnalysisRefEntity();
                 cohortFeaturesAnalysisRefEntity.setCohortDefinitionId((long) id);
                 cohortFeaturesAnalysisRefEntity.setAnalysisId(cohortFeaturesAnalysisRef.getAnalysisId());
@@ -217,6 +218,9 @@ public class ImportCohortGenerationTasklet implements Tasklet {
 
             List<CohortFeaturesDistEntity> cohortFeaturesDistEntities = new ArrayList<>();
             for (CohortFeaturesDistEntity cohortFeaturesDist : cohortGenerationResults.getCohortFeaturesDist()) {
+                if(stopped){
+                    return newResults;
+                }
                 CohortFeaturesDistEntity cohortFeaturesDistEntity = new CohortFeaturesDistEntity();
                 cohortFeaturesDistEntity.setCohortDefinitionId((long) id);
                 cohortFeaturesDistEntity.setCovariateId(cohortFeaturesDist.getCovariateId());
@@ -237,6 +241,9 @@ public class ImportCohortGenerationTasklet implements Tasklet {
 
             List<CohortFeaturesRefEntity> cohortFeaturesRefEntities = new ArrayList<>();
             for (CohortFeaturesRefEntity cohortFeaturesRef : cohortGenerationResults.getCohortFeaturesRef()) {
+                if(stopped){
+                    return newResults;
+                }
                 CohortFeaturesRefEntity cohortFeaturesRefEntity = new CohortFeaturesRefEntity();
                 cohortFeaturesRefEntity.setCohortDefinitionId((long) id);
                 cohortFeaturesRefEntity.setCovariateId(cohortFeaturesRef.getCovariateId());
@@ -260,6 +267,14 @@ public class ImportCohortGenerationTasklet implements Tasklet {
                 return doTask(chunkContext);
             }
         });
+        if (this.stopped) {
+            stepContribution.setExitStatus(ExitStatus.STOPPED);
+        }
         return RepeatStatus.FINISHED;
+    }
+
+    @Override
+    public void stop() {
+        this.stopped = true;
     }
 }

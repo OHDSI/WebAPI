@@ -103,14 +103,12 @@ public class DataSourceLookup implements org.springframework.jdbc.datasource.loo
     }
 
     public String getSchema(final String tenantIdentifier) {
-        if(PRIMARY_DATA_SOURCE_KEY.equals(tenantIdentifier)) {
-            return tenantIdentifier;
-        }
+        String schema = tenantIdentifier;
         DataSource dataSource = getDataSource(tenantIdentifier);
         if(dataSource instanceof DriverManagerDataSource) {
-            return ((DriverManagerDataSource)dataSource).getSchema();
+            schema = ((DriverManagerDataSource)dataSource).getSchema();
         }
-        return tenantIdentifier;
+        return schema != null ? schema : tenantIdentifier;
     }
 
     public DataSource getPrimaryDataSource() {

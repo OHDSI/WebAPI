@@ -44,7 +44,7 @@ public interface CcService {
 
     List<CcResult> findResults(Long generationId);
 
-    List<CcPrevalenceStat> getPrevalenceStatsByGenerationId(final Long id, final Long covariateId);
+    List<CcPrevalenceStat> getPrevalenceStatsByGenerationId(final Long id, Long analysisId, final Long covariateId);
 
     void deleteCcGeneration(Long generationId);
 }

@@ -10,7 +10,7 @@ WITH main_table AS (
       fr.avg_value as stat_value
     from @cdm_results_schema.cc_results fr
       LEFT JOIN @cdm_database_schema.concept c on c.concept_id = fr.concept_id
-    where fr.cc_generation_id = @cc_generation_id
+    where fr.cc_generation_id = @cc_generation_id and fr.analysis_id = @analysis_id
 ),
     ancestry_ref AS (
     SELECT
@@ -32,7 +32,7 @@ WITH main_table AS (
     WHERE fr.covariate_id = @covariate_id and fr.cc_generation_id = @cc_generation_id
           and min_levels_of_separation > 0
   )
-select
+select distinct
   mt.*
   , ar.ancestry_status
   , ar.min_levels_of_separation

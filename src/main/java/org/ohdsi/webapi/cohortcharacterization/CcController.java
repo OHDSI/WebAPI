@@ -196,11 +196,12 @@ public class CcController {
     }
 
     @GET
-    @Path("/generation/{generationId}/explore/prevalence/{covariateId}")
+    @Path("/generation/{generationId}/explore/prevalence/{analysisId}/{covariateId}")
     @Produces(MediaType.APPLICATION_JSON)
     public List<CcPrevalenceStat> getPrevalenceStat(@PathParam("generationId") Long generationId,
+                                                    @PathParam("analysisId") Long analysisId,
                                                     @PathParam("covariateId") Long covariateId) {
 
-        return service.getPrevalenceStatsByGenerationId(generationId, covariateId);
+        return service.getPrevalenceStatsByGenerationId(generationId, analysisId, covariateId);
     }
 }

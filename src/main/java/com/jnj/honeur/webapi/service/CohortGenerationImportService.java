@@ -19,16 +19,24 @@ import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.CohortDefinitionService;
+import org.ohdsi.webapi.source.Source;
+import org.springframework.batch.core.JobExecution;
+import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
+import java.util.Optional;
+
 import static org.ohdsi.webapi.Constants.GENERATE_COHORT;
 import static org.ohdsi.webapi.Constants.Params.COHORT_DEFINITION_ID;
+import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
 import static org.ohdsi.webapi.Constants.Params.SOURCE_KEY;
 
 @Component
@@ -50,6 +58,7 @@ public class CohortGenerationImportService extends AbstractDaoService {
     private final CohortDefinitionRepository cohortDefinitionRepository;
     private final CohortDefinitionService cohortDefinitionService;
     private final LiferayPermissionManager authorizer;
+    private final JobExplorer jobExplorer;
 
     @Autowired
     public CohortGenerationImportService(StepBuilderFactory stepBuilders, JobBuilderFactory jobBuilders,
@@ -65,7 +74,8 @@ public class CohortGenerationImportService extends AbstractDaoService {
                                          CohortGenerationInfoRepository cohortGenerationInfoRepository,
                                          CohortDefinitionRepository cohortDefinitionRepository,
                                          CohortDefinitionService cohortDefinitionService,
-                                         LiferayPermissionManager authorizer) {
+                                         LiferayPermissionManager authorizer,
+                                         JobExplorer jobExplorer) {
         this.stepBuilders = stepBuilders;
         this.jobBuilders = jobBuilders;
         this.jobTemplate = jobTemplate;
@@ -82,6 +92,7 @@ public class CohortGenerationImportService extends AbstractDaoService {
         this.cohortDefinitionRepository = cohortDefinitionRepository;
         this.cohortDefinitionService = cohortDefinitionService;
         this.authorizer = authorizer;
+        this.jobExplorer = jobExplorer;
     }
 
     public JobExecutionResource importCohortGeneration(int cohortDefinitionId,
@@ -114,5 +125,19 @@ public class CohortGenerationImportService extends AbstractDaoService {
         parametersBuilder.addString(SOURCE_KEY, sourceKey);
 
         return parametersBuilder;
+    }
+
+    public JobExecution getJobExecution(Long jobExecutionId) {
+        return jobExplorer.getJobExecution(jobExecutionId);
+    }
+
+    public Optional<JobExecution> getJobExecution(Source source, Integer cohortDefinitionId) {
+
+        return jobExplorer.findRunningJobExecutions(GENERATE_COHORT)
+                .stream().filter(e -> {
+                    JobParameters parameters = e.getJobParameters();
+                    return Objects.equals(parameters.getString(COHORT_DEFINITION_ID), Integer.toString(cohortDefinitionId))
+                            && Objects.equals(parameters.getString(SOURCE_KEY), source.getSourceKey());
+                }).findFirst();
     }
 }

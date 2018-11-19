@@ -11,12 +11,10 @@ import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfo;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfoRepository;
 import org.ohdsi.webapi.service.CohortDefinitionService;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
-import org.ohdsi.webapi.source.SourceRepository;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobExecutionListener;
 import org.springframework.batch.core.JobParameters;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
@@ -87,14 +85,19 @@ public class ImportJobExecutionListener implements JobExecutionListener {
         String sourceKey = jobParams.getString(Constants.Params.SOURCE_KEY);
 
         addViewPermissions(defId, sourceKey);
+        CohortGenerationInfo info = null;
 
         if (jobExecution.getStatus() == BatchStatus.FAILED || jobExecution.getStatus() == BatchStatus.STOPPED) {
-            cohortGenerationResults.getCohortGenerationInfo().setStatus(GenerationStatus.ERROR);
+            info = cohortGenerationInfoRepository
+                    .findGenerationInfoByIdAndSourceId(cohortDefinitionRepository.findOne(defId).getId(),
+                            cohortDefinitionService.getSourceRepository().findBySourceKey(sourceKey).getSourceId());
+            info.setStatus(GenerationStatus.ERROR);
         } else {
-            cohortGenerationResults.getCohortGenerationInfo().setStatus(GenerationStatus.COMPLETE);
+            info = cohortGenerationResults.getCohortGenerationInfo();
+            info.setStatus(GenerationStatus.COMPLETE);
         }
 
-        importCohortGenerationInfo(defId, sourceKey, cohortGenerationResults.getCohortGenerationInfo());
+        importCohortGenerationInfo(defId, sourceKey, info);
 
         this.transactionTemplate.getTransactionManager().commit(completeStatus);
     }

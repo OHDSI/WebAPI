@@ -1,32 +1,41 @@
 package org.ohdsi.webapi.service;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.AbstractMap.SimpleEntry;
-import javax.annotation.PostConstruct;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import org.apache.commons.lang3.StringUtils;
-import org.ohdsi.circe.helper.ResourceHelper;
-import org.ohdsi.sql.SqlRender;
-import org.ohdsi.sql.SqlTranslate;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
+import java.util.List;
+import javax.annotation.PostConstruct;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
 import org.ohdsi.webapi.cache.ResultsCache;
 import org.ohdsi.webapi.cdmresults.CDMResultsCache;
 import org.ohdsi.webapi.cdmresults.CDMResultsCacheTasklet;
-import org.ohdsi.webapi.report.*;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
+import org.ohdsi.webapi.report.CDMAchillesHeel;
+import org.ohdsi.webapi.report.CDMDashboard;
+import org.ohdsi.webapi.report.CDMDataDensity;
+import org.ohdsi.webapi.report.CDMDeath;
+import org.ohdsi.webapi.report.CDMPersonSummary;
+import org.ohdsi.webapi.report.CDMResultsAnalysisRunner;
+import org.ohdsi.webapi.report.ConditionOccurrenceTreemapNode;
+import org.ohdsi.webapi.report.DrugEraPrevalence;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.event.EventListener;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -79,32 +88,24 @@ public class CDMResultsService extends AbstractDaoService {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public List<SimpleEntry<Long, Long[]>> getConceptRecordCount(@PathParam("sourceKey") String sourceKey, String[] identifiers) {
+    public List<SimpleEntry<Long, Long[]>> getConceptRecordCount(@PathParam("sourceKey") String sourceKey, Long[] identifiers) {
         ResultsCache resultsCache = new ResultsCache();
         CDMResultsCache sourceCache = resultsCache.getCache(sourceKey);
         if (sourceCache != null && sourceCache.warm) {
             ArrayList<SimpleEntry<Long, Long[]>> listFromCache = new ArrayList<>();
-            for (String identifier : identifiers) {
-                Long id = Long.parseLong(identifier);
+            for (Long id : identifiers) {
                 Long[] counts = sourceCache.cache.get(id);
                 SimpleEntry<Long, Long[]> se = new SimpleEntry<>(id, counts);
                 listFromCache.add(se);
             }
             return listFromCache;
         }
-
         Source source = getSourceRepository().findBySourceKey(sourceKey);
-
-        for (int i = 0;
-                i < identifiers.length;
-                i++) {
-            identifiers[i] = "'" + identifiers[i] + "'";
-        }
         PreparedStatementRenderer psr = prepareGetConceptRecordCount(identifiers, source);
         return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), rowMapper);
     }
 
-    protected PreparedStatementRenderer prepareGetConceptRecordCount(String[] identifiers, Source source) {
+    protected PreparedStatementRenderer prepareGetConceptRecordCount(Long[] identifiers, Source source) {
 
         String sqlPath = "/resources/cdmresults/sql/getConceptRecordCount.sql";
 
@@ -115,12 +116,7 @@ public class CDMResultsService extends AbstractDaoService {
 
         String[] tableQualifierNames = {resultTableQualifierName, vocabularyTableQualifierName};
         String[] tableQualifierValues = {resultTableQualifierValue, vocabularyTableQualifierValue};
-
-        Object[] results = new Object[identifiers.length];
-        for (int i = 0; i < identifiers.length; i++) {
-            results[i] = Integer.parseInt(identifiers[i]);
-        }
-        return new PreparedStatementRenderer(source, sqlPath, tableQualifierNames, tableQualifierValues, "conceptIdentifiers", results);
+        return new PreparedStatementRenderer(source, sqlPath, tableQualifierNames, tableQualifierValues, "conceptIdentifiers", identifiers);
     }
 
     /**

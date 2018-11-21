@@ -899,7 +899,7 @@ DROP TABLE #raw_107;
   from
   (select cohort_definition_id, person_id, COUNT_BIG(OBSERVATION_period_start_date) as num_periods 
   from @CDM_schema.OBSERVATION_PERIOD op0
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
+  inner join (select distinct subject_id, cohort_definition_id from #HERACLES_cohort) c1
   on op0.person_id = c1.subject_id
   group by cohort_definition_id, PERSON_ID) op1
   group by cohort_definition_id, op1.num_periods
@@ -918,7 +918,7 @@ DROP TABLE #raw_107;
   @CDM_schema.PERSON p1
   inner join (select cohort_definition_id, person_id, MIN(year(OBSERVATION_period_start_date)) as first_obs_year 
   from @CDM_schema.OBSERVATION_PERIOD op0
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
+  inner join (select distinct subject_id, cohort_definition_id from #HERACLES_cohort) c1
   on op0.person_id = c1.subject_id
   group by cohort_definition_id, PERSON_ID) op1
   on p1.person_id = op1.person_id
@@ -936,7 +936,7 @@ DROP TABLE #raw_107;
   COUNT_BIG(op1.PERSON_ID) as count_value
   into #results_115
   from @CDM_schema.PERSON p1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
+  inner join (select distinct subject_id, cohort_definition_id from #HERACLES_cohort) c1
   on p1.person_id = c1.subject_id
   inner join
   @CDM_schema.observation_period op1

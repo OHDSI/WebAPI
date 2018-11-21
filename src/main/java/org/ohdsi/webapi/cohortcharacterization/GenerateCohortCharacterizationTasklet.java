@@ -283,10 +283,10 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
                 if (feature instanceof FeAnalysisWindowedCriteriaEntity) {
                   WindowedCriteria criteria = ((FeAnalysisWindowedCriteriaEntity) feature).getExpression();
                   criteria.ignoreObservationPeriod = true;
-                  groupQuery = queryBuilder.getWindowedCriteriaQuery(criteria, "#qualified_events");
+                  groupQuery = queryBuilder.getWindowedCriteriaQuery(criteria, "qualified_events");
                 } else if (feature instanceof FeAnalysisDemographicCriteriaEntity) {
                   DemographicCriteria criteria = ((FeAnalysisDemographicCriteriaEntity)feature).getExpression();
-                  groupQuery = queryBuilder.getDemographicCriteriaQuery(criteria, "#qualified_events");
+                  groupQuery = queryBuilder.getDemographicCriteriaQuery(criteria, "qualified_events");
                 } else {
                     throw new IllegalArgumentException(String.format("Feature class %s is not supported", feature.getClass()));
                 }

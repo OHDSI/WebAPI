@@ -728,7 +728,7 @@ DROP TABLE #raw_107;
   --}
   
   --{108 IN (@list_of_analysis_ids)}?{
-  -- 108   Number of persons by length of observation period, in 30d increments
+  -- 108   Number of persons by length of first observation period, in 30d increments
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, count_value)
   select c1.cohort_definition_id, 
   108 as analysis_id,  
@@ -737,7 +737,7 @@ DROP TABLE #raw_107;
   COUNT_BIG(distinct p1.person_id) as count_value
   into #results_108
   from @CDM_schema.PERSON p1
-  inner join (select subject_id, cohort_definition_id, cohort_start_date, cohort_end_date from #HERACLES_cohort) c1
+  inner join (select distinct subject_id, cohort_definition_id from #HERACLES_cohort) c1
   on p1.person_id = c1.subject_id
   inner join 
   (select person_id, 

@@ -6,7 +6,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.circe.helper.ResourceHelper;
-import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConverter;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
@@ -33,11 +32,9 @@ import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.CohortGenerationService;
 import org.ohdsi.webapi.service.FeatureExtractionService;
 import org.ohdsi.webapi.service.SourceService;
-import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.annotations.CcGenerationId;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
-import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.sqlrender.SourceAwareSqlRender;
@@ -337,8 +334,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                         analysisService,
                         analysisGenerationInfoEntityRepository,
                         sourceService,
-                        userRepository,
-                        sourceAwareSqlRender)
+                        userRepository
+                )
         );
 
         return this.jobTemplate.launch(generateCohortJob, jobParameters);

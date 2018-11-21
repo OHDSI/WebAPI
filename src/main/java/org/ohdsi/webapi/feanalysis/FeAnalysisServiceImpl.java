@@ -62,12 +62,21 @@ public class FeAnalysisServiceImpl implements FeAnalysisService {
     @Override
     @Transactional
     public FeAnalysisWithCriteriaEntity createCriteriaAnalysis(final FeAnalysisWithCriteriaEntity analysis) {
-        FeAnalysisWithCriteriaEntity newAnalysis = new FeAnalysisWithCriteriaEntity(analysis);
+        FeAnalysisWithCriteriaEntity newAnalysis = newAnalysis(analysis);
         newAnalysis.setDesign(Collections.emptyList());
         final FeAnalysisWithCriteriaEntity entityWithMainFields = analysisRepository.save(newAnalysis);
         final List<FeAnalysisCriteriaEntity> criteriaList = createCriteriaListForAnalysis(entityWithMainFields, analysis.getDesign());
         entityWithMainFields.setDesign(criteriaList);
         return entityWithMainFields;
+    }
+
+    private FeAnalysisWithCriteriaEntity newAnalysis(final FeAnalysisWithCriteriaEntity analysis) {
+      if (Objects.equals(analysis.getStatType(), CcResultType.PREVALENCE)) {
+        return new FeAnalysisWithPrevalenceCriteriaEntity(analysis);
+      } else if (Objects.equals(analysis.getStatType(), CcResultType.DISTRIBUTION)) {
+        return new FeAnalysisWithDistributionCriteriaEntity(analysis);
+      }
+      throw new IllegalArgumentException();
     }
 
     private List<FeAnalysisCriteriaEntity> createCriteriaListForAnalysis(final FeAnalysisWithCriteriaEntity analysis, final List<FeAnalysisCriteriaEntity> design) {
@@ -95,7 +104,7 @@ public class FeAnalysisServiceImpl implements FeAnalysisService {
         checkEntityLocked(savedEntity);
         savedEntity.setDescr(updatedEntity.getDescr());
         if (savedEntity instanceof FeAnalysisWithCriteriaEntity && updatedEntity instanceof FeAnalysisWithCriteriaEntity) {
-          FeAnalysisWithCriteriaEntity updatedWithCriteriaEntity = (FeAnalysisWithCriteriaEntity) updatedEntity,
+          FeAnalysisWithCriteriaEntity<?> updatedWithCriteriaEntity = (FeAnalysisWithCriteriaEntity) updatedEntity,
                   savedWithCriteria = (FeAnalysisWithCriteriaEntity) savedEntity;
           removeFeAnalysisCriteriaEntities(savedWithCriteria, updatedWithCriteriaEntity);
           updatedWithCriteriaEntity.getDesign().forEach(criteria -> criteria.setFeatureAnalysis(savedWithCriteria));
@@ -124,7 +133,7 @@ public class FeAnalysisServiceImpl implements FeAnalysisService {
         return analysisRepository.save(savedEntity);
     }
 
-    private void removeFeAnalysisCriteriaEntities(FeAnalysisWithCriteriaEntity original, FeAnalysisWithCriteriaEntity updated) {
+    private void removeFeAnalysisCriteriaEntities(FeAnalysisWithCriteriaEntity<?> original, FeAnalysisWithCriteriaEntity<?> updated) {
 
       List<FeAnalysisCriteriaEntity> removed = original.getDesign().stream()
               .filter(c -> updated.getDesign().stream().noneMatch(u -> Objects.equals(c.getId(), u.getId())))

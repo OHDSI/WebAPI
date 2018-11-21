@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
+import com.google.common.collect.ImmutableMap;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.service.CohortGenerationService;
@@ -66,7 +67,6 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
   class GenerateTask {
 
     private final String targetTable;
-    private final String targetSchema;
     private final Source source;
     private final String jobAuthorLogin;
 
@@ -74,15 +74,17 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
       Map<String, Object> jobParameters = chunkContext.getStepContext().getJobParameters();
       source = sourceService.findBySourceId(Integer.valueOf(jobParameters.get(SOURCE_ID).toString()));
       targetTable = jobParameters.get(TARGET_TABLE).toString();
-      targetSchema = SourceUtils.getTempQualifier(source);
       jobAuthorLogin = jobParameters.get(JOB_AUTHOR).toString();
     }
 
     private JobExecutionResource generateCohort(CohortDefinition cd) {
 
-      Map<String, String> extraParams = new HashMap<>();
-      extraParams.put(JOB_AUTHOR, jobAuthorLogin);
-      return cohortGenerationService.runGenerateCohortJob(cd, source, false, false, targetSchema + '.' + targetTable, extraParams, GENERATE_LOCAL_COHORT);
+      Map<String, String> extraParams = ImmutableMap.<String, String>builder()
+        .put(JOB_AUTHOR, jobAuthorLogin)
+        .put(GENERATE_STATS, Boolean.FALSE.toString())
+        .put(TARGET_DATABASE_SCHEMA, SourceUtils.getTempQualifier(source))
+        .build();
+      return cohortGenerationService.runGenerateCohortJob(cd, source, false, false, targetTable, extraParams, GENERATE_LOCAL_COHORT);
     }
 
     public void run(Collection<CohortDefinition> cohortDefinitions) {

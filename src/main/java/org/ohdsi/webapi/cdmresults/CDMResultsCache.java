@@ -21,7 +21,7 @@ import java.util.HashMap;
  */
 public class CDMResultsCache {
     public boolean warm;
-    public HashMap<Long,Long[]> cache;
+    public HashMap<Integer,Long[]> cache;
     
     public CDMResultsCache() {
         warm = false;

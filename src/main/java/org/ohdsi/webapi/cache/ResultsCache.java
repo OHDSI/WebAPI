@@ -23,17 +23,13 @@ import org.ohdsi.webapi.cdmresults.CDMResultsCache;
  * @author fdefalco
  */
 public class ResultsCache {
-    private static HashMap<String,CDMResultsCache> sourceCaches;
+    private static HashMap<String,CDMResultsCache> sourceCaches = new HashMap<>();
     
     public HashMap<String,CDMResultsCache> getCaches() {
-        if (sourceCaches == null) {
-            sourceCaches = new HashMap<>();
-        }
-        
         return sourceCaches;
     }
     
     public CDMResultsCache getCache(String sourceKey) {
-        return this.getCaches().get(sourceKey);
+        return this.getCaches().putIfAbsent(sourceKey, new CDMResultsCache());
     }
 }

@@ -22,7 +22,7 @@ public class CDMResultsServiceTest extends AbstractServiceTest {
   @Test
   public void prepareGetConceptRecordCount() throws IOException {
 
-    Long[] identifiers = {0L, 1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L};
+    Integer[] identifiers = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     PreparedStatementRenderer psr = cdmResultsService.prepareGetConceptRecordCount(identifiers, getSource());
     assertSqlEquals("/cdmresults/sql/getConceptRecordCount-expected.sql", psr);
   }

@@ -21,16 +21,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.impl.factory.Lists;
 import org.json.JSONObject;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
-import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
-import org.ohdsi.circe.cohortdefinition.ConceptSet;
-import org.ohdsi.circe.cohortdefinition.DemographicCriteria;
-import org.ohdsi.circe.cohortdefinition.WindowedCriteria;
+import org.ohdsi.circe.cohortdefinition.*;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.featureExtraction.FeatureExtraction;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConverter;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcParamEntity;
+import org.ohdsi.webapi.cohortcharacterization.domain.CcStrataEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfoEntityRepository;
 import org.ohdsi.webapi.common.generation.AnalysisTasklet;
@@ -44,6 +42,7 @@ import org.ohdsi.webapi.util.*;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.jdbc.core.SqlProvider;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
@@ -57,16 +56,24 @@ import static org.ohdsi.webapi.Constants.Params.*;
 
 public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
     private static final String[] CUSTOM_PARAMETERS = {"analysisId", "analysisName", "cohortId", "jobId", "design"};
-    private static final String[] RETRIEVING_PARAMETERS = {"features", "featureRefs", "analysisRefs", "cohortId", "executionId"};
+    private static final String[] RETRIEVING_PARAMETERS = {"features", "featureRefs", "analysisRefs", "cohortId", "executionId", "strataId", "stratified"};
     private static final String[] DAIMONS = {RESULTS_DATABASE_SCHEMA, CDM_DATABASE_SCHEMA, TEMP_DATABASE_SCHEMA, VOCABULARY_DATABASE_SCHEMA};
 
     private static final String COHORT_STATS_QUERY = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/prevalenceWithCriteria.sql");
     private static final String COHORT_DIST_QUERY = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/distributionWithCriteria.sql");
 
-    private static final String[] CRITERIA_REGEXES = new String[] { "groupQuery", "indexId", "targetTable", "totalsTable" };
+    private static final String COHORT_STRATA_QUERY = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/strataWithCriteria.sql");
+
+    private static final String[] CRITERIA_REGEXES = new String[] { "groupQuery", "indexId", "targetTable", "totalsTable", "stratified" };
+    private static final String[] STRATA_REGEXES = new String[] { "strataQuery", "indexId", "targetTable", "strataCohortTable" };
 
     private static final Collection<String> CRITERIA_PARAM_NAMES = ImmutableList.<String>builder()
-            .add("cohortId", "executionId", "analysisId", "analysisName", "covariateName", "conceptId", "covariateId")
+            .add("cohortId", "executionId", "analysisId", "analysisName", "covariateName", "conceptId", "covariateId", "strataId", "strataName")
+            .build();
+
+    private static final Collection<String> STRATA_PARAM_NAMES = ImmutableList.<String>builder()
+            .add("cohortId")
+            .add("strataId")
             .build();
 
     private static final Function<String, String> COMPLETE_DOTCOMMA = s -> s.trim().endsWith(";") ? s : s + ";";
@@ -155,7 +162,8 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
 
         private List<PreparedStatementCreator> getAnalysisQueriesOnCohort(final Integer cohortDefinitionId) {
 
-            return getSqlQueriesToRun(createFeJsonObject(createDefaultOptions(cohortDefinitionId)), cohortDefinitionId);
+            final CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = createDefaultOptions(cohortDefinitionId);
+            return getSqlQueriesToRun(createFeJsonObject(options, options.resultSchema + "." + cohortTable), cohortDefinitionId);
         }
 
         private String renderCustomAnalysisDesign(FeAnalysisWithStringEntity fa, Integer cohortId) {
@@ -194,12 +202,13 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
                     .collect(Collectors.toList());
         }
 
-        private List<PreparedStatementCreator> getQueriesForCriteriaAnalyses(Integer cohortDefinitionId) {
+        private List<PreparedStatementCreator> getQueriesForCriteriaAnalyses(Integer cohortDefinitionId, CcStrataEntity strata) {
             List<PreparedStatementCreator> queries = new ArrayList<>();
             List<FeAnalysisWithCriteriaEntity> analysesWithCriteria = getFeAnalysesWithCriteria();
             if (!analysesWithCriteria.isEmpty()) {
+                String cohortTable = Objects.nonNull(strata) ? getStrataCohortTable(strata) : SourceUtils.getTempQualifier(source) + "." + this.cohortTable;
                 analysesWithCriteria.stream()
-                        .map(analysis -> getCriteriaFeaturesQueries(cohortDefinitionId, analysis, this.cohortTable))
+                        .map(analysis -> getCriteriaFeaturesQueries(cohortDefinitionId, analysis, cohortTable, strata))
                         .flatMap(Collection::stream)
                         .forEach(queries::add);
             }
@@ -214,7 +223,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
                     .collect(Collectors.toList());
         }
 
-        private List<PreparedStatementCreator> getQueriesForPresetAnalyses(final JSONObject jsonObject, final Integer cohortId) {
+        private List<PreparedStatementCreator> getQueriesForPresetAnalyses(final JSONObject jsonObject, final Integer cohortId, final CcStrataEntity strata) {
             final String cohortWrapper = "select %1$d as %2$s from (%3$s) W";
 
             final String featureRefColumns = "cohort_definition_id, covariate_id, covariate_name, analysis_id, concept_id";
@@ -227,20 +236,28 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
 
             final List<PreparedStatementCreator> queries = new ArrayList<>();
 
+            String strataId = Objects.nonNull(strata) ? String.valueOf(strata.getId()) : "";
+            String strataName = Objects.nonNull(strata) ? strata.getName() : "";
+
+            String[] sqlParamNames = new String[]{ "strataName" };
+            Object[] sqlParamVars = new Object[]{ strataName };
+
             if (ccHasPresetDistributionAnalyses()) {
                 final String distColumns = "cohort_definition_id, covariate_id, count_value, min_value, max_value, average_value, "
                         + "standard_deviation, median_value, p10_value, p25_value, p75_value, p90_value";
                 final String distFeatures = String.format(cohortWrapper, cohortId, distColumns,
                         StringUtils.stripEnd(jsonObject.getString("sqlQueryContinuousFeatures"), ";"));
                 queries.add(prepareStatement(distributionRetrievingQuery, sessionId, RETRIEVING_PARAMETERS,
-                        new String[] { distFeatures, featureRefs, analysisRefs, String.valueOf(cohortId), String.valueOf(jobId) }));
+                        new String[] { distFeatures, featureRefs, analysisRefs, String.valueOf(cohortId), String.valueOf(jobId),
+                                strataId, Boolean.toString(Objects.nonNull(strata)) }, sqlParamNames, sqlParamVars));
             }
             if (ccHasPresetPrevalenceAnalyses()) {
                 final String featureColumns = "cohort_definition_id, covariate_id, sum_value, average_value";
                 final String features = String.format(cohortWrapper, cohortId, featureColumns,
                         StringUtils.stripEnd(jsonObject.getString("sqlQueryFeatures"), ";"));
-                queries.add(prepareStatement(prevalenceRetrievingQuery, sessionId, RETRIEVING_PARAMETERS,
-                        new String[]{ features, featureRefs, analysisRefs, String.valueOf(cohortId), String.valueOf(jobId) }));
+                String[] paramValues = new String[]{ features, featureRefs, analysisRefs, String.valueOf(cohortId), String.valueOf(jobId),
+                        strataId, Boolean.toString(Objects.nonNull(strata)) };
+                queries.add(prepareStatement(prevalenceRetrievingQuery, sessionId, RETRIEVING_PARAMETERS, paramValues, sqlParamNames, sqlParamVars));
             }
 
             return queries;
@@ -268,50 +285,118 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             return options;
         }
 
-        private List<PreparedStatementRendererCreator> getCriteriaFeatureQuery(Integer cohortDefinitionId, FeAnalysisWithCriteriaEntity analysis, FeAnalysisCriteriaEntity feature, String targetTable) {
+        private List<PreparedStatementCreator> getCriteriaFeatureQuery(Integer cohortDefinitionId, FeAnalysisWithCriteriaEntity analysis, FeAnalysisCriteriaEntity feature, String targetTable, CcStrataEntity strata) {
 
             Long conceptId = 0L;
             String queryFile;
-            String groupQuery;
+            String groupQuery = getCriteriaGroupQuery(analysis, feature);
             String[] paramNames = CRITERIA_PARAM_NAMES.toArray(new String[0]);
 
             if (CcResultType.PREVALENCE.equals(analysis.getStatType())) {
                 queryFile = COHORT_STATS_QUERY;
-                groupQuery = queryBuilder.getCriteriaGroupQuery(((FeAnalysisCriteriaGroupEntity)feature).getExpression(), "#qualified_events");
             } else if (CcResultType.DISTRIBUTION.equals(analysis.getStatType())) {
                 queryFile = COHORT_DIST_QUERY;
-                if (feature instanceof FeAnalysisWindowedCriteriaEntity) {
-                  WindowedCriteria criteria = ((FeAnalysisWindowedCriteriaEntity) feature).getExpression();
-                  criteria.ignoreObservationPeriod = true;
-                  groupQuery = queryBuilder.getWindowedCriteriaQuery(criteria, "#qualified_events");
-                } else if (feature instanceof FeAnalysisDemographicCriteriaEntity) {
-                  DemographicCriteria criteria = ((FeAnalysisDemographicCriteriaEntity)feature).getExpression();
-                  groupQuery = queryBuilder.getDemographicCriteriaQuery(criteria, "#qualified_events");
-                } else {
-                    throw new IllegalArgumentException(String.format("Feature class %s is not supported", feature.getClass()));
-                }
             } else {
                 throw new IllegalArgumentException(String.format("Stat type %s is not supported", analysis.getStatType()));
             }
+            Long strataId = Objects.nonNull(strata) ? strata.getId() : 0L;
+            String strataName = Objects.nonNull(strata) ? strata.getName() : null;
             Collection<Object> paramValues = Lists.mutable.with(cohortDefinitionId, jobId, analysis.getId(), analysis.getName(), feature.getName(), conceptId,
-                    feature.getId());
+                    feature.getId(), strataId, strataName);
+            String[] criteriaValues = new String[]{ groupQuery, "0", targetTable, cohortTable, Boolean.toString(Objects.nonNull(strata)) };
+
             return Arrays.stream(SqlSplit.splitSql(queryFile))
                     .map(COMPLETE_DOTCOMMA)
-                    .map(sql -> prepareStatement(sql, sessionId, CRITERIA_REGEXES, new String[]{ groupQuery, "0", targetTable, cohortTable },
+                    .map(sql -> prepareStatement(sql, sessionId, CRITERIA_REGEXES, criteriaValues,
                             paramNames, paramValues.toArray(new Object[0])))
                     .collect(Collectors.toList());
         }
 
-        private List<PreparedStatementCreator> getCriteriaFeaturesQueries(Integer cohortDefinitionId, FeAnalysisWithCriteriaEntity<?> analysis, String targetTable) {
+        private String getCriteriaGroupQuery(FeAnalysisWithCriteriaEntity analysis, FeAnalysisCriteriaEntity feature) {
+            String groupQuery;
+            if (CcResultType.PREVALENCE.equals(analysis.getStatType())) {
+              groupQuery = queryBuilder.getCriteriaGroupQuery(((FeAnalysisCriteriaGroupEntity)feature).getExpression(), "#qualified_events");
+            } else if (CcResultType.DISTRIBUTION.equals(analysis.getStatType())) {
+              if (feature instanceof FeAnalysisWindowedCriteriaEntity) {
+                WindowedCriteria criteria = ((FeAnalysisWindowedCriteriaEntity) feature).getExpression();
+                criteria.ignoreObservationPeriod = true;
+                groupQuery = queryBuilder.getWindowedCriteriaQuery(criteria, "#qualified_events");
+              } else if (feature instanceof FeAnalysisDemographicCriteriaEntity) {
+                DemographicCriteria criteria = ((FeAnalysisDemographicCriteriaEntity)feature).getExpression();
+                groupQuery = queryBuilder.getDemographicCriteriaQuery(criteria, "#qualified_events");
+              } else {
+                throw new IllegalArgumentException(String.format("Feature class %s is not supported", feature.getClass()));
+              }
+            } else {
+              throw new IllegalArgumentException(String.format("Stat type %s is not supported", analysis.getStatType()));
+            }
+            return groupQuery;
+        }
+
+        private List<PreparedStatementCreator> getQueriesForStratifiedCriteriaAnalyses(Integer cohortDefinitionId) {
 
             List<PreparedStatementCreator> queriesToRun = new ArrayList<>();
-            String codesetQuery = queryBuilder.getCodesetQuery(analysis.getConceptSets().toArray(new ConceptSet[0]));
-            queriesToRun.addAll(Arrays.stream(SqlSplit.splitSql(codesetQuery))
-                    .map(sql -> prepareStatement(sql, sessionId))
+            queriesToRun.addAll(getCodesetQuery(cohortCharacterization.getConceptSets()));
+
+            //Generate stratified cohorts
+            queriesToRun.addAll(cohortCharacterization.getStratas().stream()
+                    .flatMap(strata -> getStrataQuery(cohortDefinitionId, strata).stream())
                     .collect(Collectors.toList()));
 
+            queriesToRun.add(prepareStatement("DROP TABLE #Codesets;", sessionId));
+
+            //Extract features from stratified cohorts
+            queriesToRun.addAll(cohortCharacterization.getStratas().stream()
+                    .flatMap(strata -> {
+                      JSONObject jsonObject = createFeJsonObject(createDefaultOptions(cohortDefinitionId), getStrataCohortTable(strata));
+                      List<PreparedStatementCreator> queries = new ArrayList<>();
+                      queries.addAll(getCreateQueries(jsonObject));
+                      queries.addAll(getFeatureAnalysisQueries(jsonObject, cohortDefinitionId, strata));
+                      queries.addAll(getCleanupQueries(jsonObject));
+                      return queries.stream();
+                    })
+                    .collect(Collectors.toList()));
+
+            //Cleanup stratified cohorts tables
+            queriesToRun.addAll(cohortCharacterization.getStratas().stream()
+                    .map(strata -> prepareStatement("DROP TABLE " + getStrataCohortTable(strata) + ";", sessionId))
+                    .collect(Collectors.toList()));
+
+            return queriesToRun;
+        }
+
+        private List<PreparedStatementCreator> getStrataQuery(Integer cohortDefinitionId, CcStrataEntity strata) {
+            List<PreparedStatementCreator> queries = new ArrayList<>();
+            String strataQuery = queryBuilder.getCriteriaGroupQuery(strata.getCriteria(), "#qualified_events");
+            String[] paramNames = STRATA_PARAM_NAMES.toArray(new String[0]);
+            String[] replacements = new String[]{ strataQuery, "0", cohortTable, getStrataCohortTable(strata) };
+            Object[] paramValues = new Object[]{ cohortDefinitionId, strata.getId() };
+            queries.add(prepareStatement("CREATE TABLE " + getStrataCohortTable(strata)
+                    + "(cohort_definition_id INTEGER, strata_id BIGINT, subject_id BIGINT, cohort_start_date DATE, cohort_end_date DATE);", sessionId));
+            queries.add(prepareStatement(COHORT_STRATA_QUERY, sessionId, STRATA_REGEXES, replacements, paramNames, paramValues));
+            return queries;
+        }
+
+        private String getStrataCohortTable(CcStrataEntity strata) {
+
+          return "#strata_cohort_" + strata.getId();
+        }
+
+        private List<PreparedStatementCreator> getCodesetQuery(Collection<ConceptSet> conceptSets) {
+
+            String codesetQuery = queryBuilder.getCodesetQuery(conceptSets.toArray(new ConceptSet[0]));
+            return Arrays.stream(SqlSplit.splitSql(codesetQuery))
+                    .map(sql -> prepareStatement(sql, sessionId))
+                    .collect(Collectors.toList());
+        }
+
+        private List<PreparedStatementCreator> getCriteriaFeaturesQueries(Integer cohortDefinitionId, FeAnalysisWithCriteriaEntity<?> analysis, String targetTable, CcStrataEntity strata) {
+
+            List<PreparedStatementCreator> queriesToRun = new ArrayList<>();
+            queriesToRun.addAll(getCodesetQuery(analysis.getConceptSets()));
+
             queriesToRun.addAll(analysis.getDesign().stream()
-                    .map(feature -> getCriteriaFeatureQuery(cohortDefinitionId, analysis, feature, targetTable))
+                    .map(feature -> getCriteriaFeatureQuery(cohortDefinitionId, analysis, feature, targetTable, strata))
                     .flatMap(Collection::stream)
                     .collect(Collectors.toList())); // statistics queries
             queriesToRun.add(prepareStatement("DROP TABLE #Codesets;", sessionId));
@@ -333,12 +418,15 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             final String cdmQualifier = SourceUtils.getCdmQualifier(source);
             final String tempQualifier = SourceUtils.getTempQualifier(source, resultsQualifier);
             final String vocabularyQualifier = SourceUtils.getVocabularyQualifier(source);
+            final String[] tmpRegexes = ArrayUtils.addAll(regexes, DAIMONS);
+            final String[] tmpValues = ArrayUtils.addAll(variables, resultsQualifier, cdmQualifier, tempQualifier, vocabularyQualifier);
+            final String sql = SqlRender.renderSql(query, tmpRegexes, tmpValues);
             return new PreparedStatementRendererCreator(
                     new PreparedStatementRenderer(
                             source,
-                            query,
-                            ArrayUtils.addAll(regexes, DAIMONS),
-                            ArrayUtils.addAll(variables, resultsQualifier, cdmQualifier, tempQualifier, vocabularyQualifier),
+                            sql,
+                            tmpRegexes,
+                            tmpValues,
                             paramNames,
                             paramValues,
                             sessionId
@@ -348,30 +436,52 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
         private List<PreparedStatementCreator> getSqlQueriesToRun(final JSONObject jsonObject, final Integer cohortDefinitionId) {
             List<PreparedStatementCreator> queriesToRun = new LinkedList<>();
 
-            List<PreparedStatementCreator> createQueries = Arrays.stream(SqlSplit.splitSql(jsonObject.getString("sqlConstruction")))
-                    .map(COMPLETE_DOTCOMMA)
-                    .map(sql -> prepareStatement(sql, sessionId))
-                    .collect(Collectors.toList());
-            queriesToRun.addAll(createQueries);
+            queriesToRun.addAll(getCreateQueries(jsonObject));
 
-            queriesToRun.addAll(getQueriesForPresetAnalyses(jsonObject,cohortDefinitionId));
-            queriesToRun.addAll(getQueriesForCustomDistributionAnalyses(cohortDefinitionId));
-            queriesToRun.addAll(getQueriesForCustomPrevalenceAnalyses(cohortDefinitionId));
-            queriesToRun.addAll(getQueriesForCriteriaAnalyses(cohortDefinitionId));
+            queriesToRun.addAll(getFeatureAnalysisQueries(jsonObject, cohortDefinitionId, null));
 
-            List<PreparedStatementCreator> cleanupQueries = Arrays.stream(SqlSplit.splitSql(jsonObject.getString("sqlCleanup")))
-                    .map(COMPLETE_DOTCOMMA)
-                    .map(sql -> prepareStatement(sql, sessionId))
-                    .collect(Collectors.toList());
-            queriesToRun.addAll(cleanupQueries);
+            queriesToRun.addAll(getCleanupQueries(jsonObject));
+
+            if (!cohortCharacterization.getStratas().isEmpty()) {
+              queriesToRun.addAll(getQueriesForStratifiedCriteriaAnalyses(cohortDefinitionId));
+            }
+
+            String sql = queriesToRun.stream().map(q -> ((SqlProvider)q).getSql()).collect(Collectors.joining("\n"));
+            log.debug(sql);
 
             return queriesToRun;
         }
 
-         private JSONObject createFeJsonObject(final CohortExpressionQueryBuilder.BuildExpressionQueryOptions options) {
+        private List<PreparedStatementCreator> getCreateQueries(final JSONObject jsonObject) {
+
+            return Arrays.stream(SqlSplit.splitSql(jsonObject.getString("sqlConstruction")))
+                    .map(COMPLETE_DOTCOMMA)
+                    .map(sql -> prepareStatement(sql, sessionId))
+                    .collect(Collectors.toList());
+        }
+
+        private List<PreparedStatementCreator> getCleanupQueries(final JSONObject jsonObject) {
+
+            return Arrays.stream(SqlSplit.splitSql(jsonObject.getString("sqlCleanup")))
+                    .map(COMPLETE_DOTCOMMA)
+                    .map(sql -> prepareStatement(sql, sessionId))
+                    .collect(Collectors.toList());
+        }
+
+        private List<PreparedStatementCreator> getFeatureAnalysisQueries(final JSONObject jsonObject, final Integer cohortDefinitionId, final CcStrataEntity strata) {
+
+            List<PreparedStatementCreator> queriesToRun = new ArrayList<>();
+            queriesToRun.addAll(getQueriesForPresetAnalyses(jsonObject,cohortDefinitionId, strata));
+            queriesToRun.addAll(getQueriesForCustomDistributionAnalyses(cohortDefinitionId));
+            queriesToRun.addAll(getQueriesForCustomPrevalenceAnalyses(cohortDefinitionId));
+            queriesToRun.addAll(getQueriesForCriteriaAnalyses(cohortDefinitionId, strata));
+            return queriesToRun;
+        }
+
+         private JSONObject createFeJsonObject(final CohortExpressionQueryBuilder.BuildExpressionQueryOptions options, final String cohortTable) {
             FeatureExtraction.init(null);
             String settings = buildSettings();
-            String sqlJson = FeatureExtraction.createSql(settings, true, options.resultSchema + "." + cohortTable,
+            String sqlJson = FeatureExtraction.createSql(settings, true, cohortTable,
                     "subject_id", options.cohortId, options.cdmSchema);
             return new JSONObject(sqlJson);
         }

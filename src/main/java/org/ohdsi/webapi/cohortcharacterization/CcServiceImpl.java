@@ -8,16 +8,11 @@ import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisT
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConverter;
-import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
-import org.ohdsi.webapi.cohortcharacterization.domain.CcParamEntity;
-import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
+import org.ohdsi.webapi.cohortcharacterization.domain.*;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcDistributionStat;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcPrevalenceStat;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
-import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfoEntityRepository;
-import org.ohdsi.webapi.cohortcharacterization.repository.CcGenerationEntityRepository;
-import org.ohdsi.webapi.cohortcharacterization.repository.CcParamRepository;
-import org.ohdsi.webapi.cohortcharacterization.repository.CcRepository;
+import org.ohdsi.webapi.cohortcharacterization.repository.*;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.common.DesignImportService;
@@ -60,13 +55,7 @@ import javax.persistence.EntityManager;
 import javax.ws.rs.NotFoundException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -98,6 +87,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
     private CcRepository repository;
     private CcParamRepository paramRepository;
+    private CcStrataRepository strataRepository;
+    private CcConceptSetRepository conceptSetRepository;
     private FeAnalysisService analysisService;
     private CohortDefinitionRepository cohortRepository;
     private JobTemplate jobTemplate;
@@ -116,6 +107,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     public CcServiceImpl(
             final CcRepository ccRepository,
             final CcParamRepository paramRepository,
+            final CcStrataRepository strataRepository,
+            final CcConceptSetRepository conceptSetRepository,
             final FeAnalysisService analysisService,
             final CohortDefinitionRepository cohortRepository,
             final JobTemplate jobTemplate,
@@ -133,6 +126,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     ) {
         this.repository = ccRepository;
         this.paramRepository = paramRepository;
+        this.strataRepository = strataRepository;
+        this.conceptSetRepository = conceptSetRepository;
         this.analysisService = analysisService;
         this.cohortRepository = cohortRepository;
         this.jobTemplate = jobTemplate;
@@ -187,10 +182,12 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         if (StringUtils.isNotEmpty(entity.getName())) {
             foundEntity.setName(entity.getName());
         }
+        foundEntity.setStratifiedBy(entity.getStratifiedBy());
 
         foundEntity.setFeatureAnalyses(entity.getFeatureAnalyses());
         foundEntity.setCohortDefinitions(entity.getCohortDefinitions());
         foundEntity.setParameters(entity.getParameters());
+        foundEntity.setStratas(entity.getStratas());
 
         foundEntity.setModifiedDate(new Date());
         foundEntity.setModifiedBy(getCurrentUser());
@@ -199,9 +196,46 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     }
 
     private void updateLinkedFields(final CohortCharacterizationEntity entity, final CohortCharacterizationEntity foundEntity) {
+        updateConceptSet(entity, foundEntity);
         updateParams(entity, foundEntity);
         updateAnalyses(entity, foundEntity);
         updateCohorts(entity, foundEntity);
+        updateStratas(entity, foundEntity);
+    }
+
+  private void updateConceptSet(CohortCharacterizationEntity entity, CohortCharacterizationEntity foundEntity) {
+      if (Objects.nonNull(foundEntity.getConceptSetEntity()) && Objects.nonNull(entity.getConceptSetEntity())) {
+        foundEntity.getConceptSetEntity().setRawExpression(entity.getConceptSetEntity().getRawExpression());
+      } else if (Objects.nonNull(entity.getConceptSetEntity())) {
+        CcConceptSetEntity savedEntity = conceptSetRepository.save(entity.getConceptSetEntity());
+        foundEntity.setConceptSetEntity(savedEntity);
+      }
+  }
+
+  private void updateStratas(CohortCharacterizationEntity entity, CohortCharacterizationEntity foundEntity) {
+        final List<CcStrataEntity> stratasToDelete = foundEntity.getStratas()
+                .stream()
+                .filter(strata -> entity.getStratas().stream().noneMatch(s -> Objects.equals(s.getId(), strata.getId())))
+                .collect(Collectors.toList());
+        foundEntity.getStratas().removeAll(stratasToDelete);
+        strataRepository.delete(stratasToDelete);
+        Map<Long, CcStrataEntity> strataEntityMap = foundEntity.getStratas().stream()
+                .collect(Collectors.toMap(CcStrataEntity::getId, s -> s));
+
+        List<CcStrataEntity> updatedStratas = entity.getStratas().stream().map(updated -> {
+            updated.setCohortCharacterization(foundEntity);
+            if (Objects.nonNull(updated.getId())) {
+                CcStrataEntity strata = strataEntityMap.get(updated.getId());
+                if (StringUtils.isNotBlank(updated.getName())) {
+                    strata.setName(updated.getName());
+                }
+                strata.setExpressionString(updated.getExpressionString());
+                return strata;
+            } else {
+                return updated;
+            }
+        }).collect(Collectors.toList());
+        entity.setStratas(new HashSet<>(strataRepository.save(updatedStratas)));
     }
 
     private void updateCohorts(final CohortCharacterizationEntity entity, final CohortCharacterizationEntity foundEntity) {
@@ -253,6 +287,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         final CohortCharacterizationEntity persistedCohortCharacterization = this.createCc(newCohortCharacterization);
 
         updateParams(entity, persistedCohortCharacterization);
+        updateStratas(entity, persistedCohortCharacterization);
 
         importCohorts(entity, persistedCohortCharacterization);
         importAnalyses(entity, persistedCohortCharacterization);
@@ -434,6 +469,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         stat.setConceptId(rs.getLong("concept_id"));
         stat.setAvg(rs.getDouble("avg_value"));
         stat.setCount(rs.getLong("count_value"));
+        stat.setStrataId(rs.getLong("strata_id"));
+        stat.setStrataName(rs.getString("strata_name"));
     }
 
     private void gatherForDistribution(final CcDistributionStat stat, final ResultSet rs) throws SQLException {

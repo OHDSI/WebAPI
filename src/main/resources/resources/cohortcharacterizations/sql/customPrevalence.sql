@@ -9,6 +9,10 @@ insert into @results_database_schema.cc_results (
      count_value,
      avg_value,
      cohort_definition_id,
+{@stratified} ? {
+      strata_id,
+      strata_name,
+}
      cc_generation_id)
 select 'PREVALENCE'    as type,
         'CUSTOM_FE' as fa_type,
@@ -20,5 +24,9 @@ select 'PREVALENCE'    as type,
         sum_value       as count_value,
         average_value   as stat_value,
         @cohortId            as cohort_definition_id,
+{@stratified} ? {
+        @strataId as strata_id,
+        @strataName as strata_name,
+}
         @jobId            as cc_generation_id
 from (@design) subquery;

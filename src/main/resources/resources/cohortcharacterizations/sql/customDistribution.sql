@@ -17,6 +17,10 @@ insert into
      p75_value,
      p90_value,
      cohort_definition_id,
+{@stratified} ? {
+      strata_id,
+      strata_name,
+}
      cc_generation_id)
  select 'DISTRIBUTION' as type,
         'CUSTOM_FE' as fa_type,
@@ -36,5 +40,9 @@ insert into
         p75_value,
         p90_value,
         @cohortId as cohort_definition_id,
+{@stratified} ? {
+        @strataId as strata_id,
+        @strataName as strata_name,
+}
         @jobId as cc_generation_id
  from (@design) subquery;

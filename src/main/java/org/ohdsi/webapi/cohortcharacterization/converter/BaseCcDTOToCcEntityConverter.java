@@ -3,8 +3,11 @@ package org.ohdsi.webapi.cohortcharacterization.converter;
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.ohdsi.analysis.CohortMetadata;
+import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
+import org.ohdsi.webapi.cohortcharacterization.domain.CcConceptSetEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcParamEntity;
+import org.ohdsi.webapi.cohortcharacterization.domain.CcStrataEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.dto.BaseCcDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcParameterDTO;
@@ -34,6 +37,7 @@ public abstract class BaseCcDTOToCcEntityConverter<T extends BaseCcDTO<? extends
     final CohortCharacterizationEntity cohortCharacterization = new CohortCharacterizationEntity();
 
     cohortCharacterization.setName(source.getName());
+    cohortCharacterization.setStratifiedBy(source.getStratifiedBy());
 
     cohortCharacterization.setId(source.getId());
 
@@ -45,6 +49,14 @@ public abstract class BaseCcDTOToCcEntityConverter<T extends BaseCcDTO<? extends
 
     final Set<CcParamEntity> convertedParameters = converterUtils.convertSet(source.getParameters(), CcParamEntity.class);
     cohortCharacterization.setParameters(convertedParameters);
+
+    final Set<CcStrataEntity> convertedStratas = converterUtils.convertSet(source.getStratas(), CcStrataEntity.class);
+    cohortCharacterization.setStratas(convertedStratas);
+
+    CcConceptSetEntity conceptSetEntity = new CcConceptSetEntity();
+    conceptSetEntity.setCohortCharacterization(cohortCharacterization);
+    conceptSetEntity.setRawExpression(Utils.serialize(source.getConceptSets()));
+    cohortCharacterization.setConceptSetEntity(conceptSetEntity);
 
     return cohortCharacterization;
   }

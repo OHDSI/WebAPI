@@ -2,12 +2,9 @@ package org.ohdsi.webapi.feanalysis.converter;
 
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
-import org.ohdsi.webapi.feanalysis.domain.FeAnalysisConcepsetEntity;
-import org.ohdsi.webapi.feanalysis.domain.FeAnalysisCriteriaEntity;
-import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
-import org.ohdsi.webapi.feanalysis.dto.FeAnalysisCriteriaDTO;
-import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
-import org.ohdsi.webapi.feanalysis.dto.FeAnalysisWithConceptSetDTO;
+import org.ohdsi.webapi.cohortcharacterization.CcResultType;
+import org.ohdsi.webapi.feanalysis.domain.*;
+import org.ohdsi.webapi.feanalysis.dto.*;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -17,10 +14,15 @@ import java.util.Objects;
 @Component
 public class FeAnalysisDTOToFeAnalysisWithCriteriasConverter extends BaseFeAnalysisDTOToFeAnalysisConverter<FeAnalysisDTO, FeAnalysisWithCriteriaEntity> {
 
+    private static final String RESULT_TYPE_IS_NOT_SUPPORTED = "Result type of %s is not supported";
+    private static final String DTO_IS_NOT_SUPPORTED = "DTO class is not supported";
+
     @Override
     public FeAnalysisWithCriteriaEntity convert(final FeAnalysisDTO source) {
-        final FeAnalysisWithCriteriaEntity baseEntity = super.convert(source);
-        baseEntity.setDesign(buildCriteriaList(source.getDesign()));
+        final FeAnalysisWithCriteriaEntity<? extends FeAnalysisCriteriaEntity> baseEntity = super.convert(source);
+        baseEntity.setStatType(source.getStatType());
+        List list = getBuilder(source.getStatType()).buildList(source.getDesign());
+        baseEntity.setDesign(list);
         baseEntity.getDesign().forEach(c -> c.setFeatureAnalysis(baseEntity));
         if (Objects.equals(StandardFeatureAnalysisType.CRITERIA_SET, source.getType())){
             convert(baseEntity, (FeAnalysisWithConceptSetDTO) source);
@@ -35,30 +37,104 @@ public class FeAnalysisDTOToFeAnalysisWithCriteriasConverter extends BaseFeAnaly
         baseEntity.setConceptSetEntity(concepsetEntity);
     }
 
-    private List<FeAnalysisCriteriaEntity> buildCriteriaList(final Object design) {
-        final List<FeAnalysisCriteriaEntity> result = new ArrayList<>();
-        if (!(design instanceof List<?>)) {
-            throw new IllegalArgumentException("Design: " + design.toString() + " cannot be converted to Criteria List");
-        } else {
-            for (final Object criteria : (List<?>) design) {
-                if (!(criteria instanceof FeAnalysisCriteriaDTO)) {
-                    throw new IllegalArgumentException("Object " + criteria.toString() + " cannot be converted to Criteria");
-                } else {
-                    final FeAnalysisCriteriaDTO typifiedCriteria = (FeAnalysisCriteriaDTO) criteria;
-                    final FeAnalysisCriteriaEntity criteriaEntity = new FeAnalysisCriteriaEntity();
-                    criteriaEntity.setExpressionString(Utils.serialize(typifiedCriteria.getExpression()));
-                    criteriaEntity.setId(typifiedCriteria.getId());
-                    criteriaEntity.setName(typifiedCriteria.getName());
-                    result.add(criteriaEntity);
-                }
-            }
-        }
-        return result;
+    @Override
+    protected FeAnalysisWithCriteriaEntity<? extends FeAnalysisCriteriaEntity> createResultObject(FeAnalysisDTO source) {
+
+        return getBuilder(source.getStatType()).createFeAnalysisObject();
     }
 
+    interface FeAnalysisBuilder<T extends FeAnalysisCriteriaEntity> {
+        FeAnalysisWithCriteriaEntity<T> createFeAnalysisObject();
+        List<T> buildList(final Object design);
+    }
 
-    @Override
-    protected FeAnalysisWithCriteriaEntity createResultObject() {
-        return new FeAnalysisWithCriteriaEntity();
+    FeAnalysisBuilder getBuilder(CcResultType statType) {
+        if (Objects.equals(CcResultType.PREVALENCE, statType)) {
+            return FeAnalysisPrevalenceCriteriaBuilder.INSTANCE;
+        } else if (Objects.equals(CcResultType.DISTRIBUTION, statType)) {
+            return FeAnalysisDistributionCriteriaBuilder.INSTANCE;
+        }
+        throw new IllegalArgumentException(String.format(RESULT_TYPE_IS_NOT_SUPPORTED, statType));
+    }
+
+    static abstract class FeAnalysisBuilderSupport<T extends FeAnalysisCriteriaEntity>  implements FeAnalysisBuilder<T> {
+
+        public List<T> buildList(final Object design) {
+            List<T> result = new ArrayList<>();
+            if (!(design instanceof List<?>)) {
+                throw new IllegalArgumentException("Design: " + design.toString() + " cannot be converted to Criteria List");
+            } else {
+                for (final Object criteria : (List<?>) design) {
+                    if (!(criteria instanceof BaseFeAnalysisCriteriaDTO)) {
+                        throw new IllegalArgumentException("Object " + criteria.toString() + " cannot be converted to Criteria");
+                    } else {
+                        final BaseFeAnalysisCriteriaDTO typifiedCriteria = (BaseFeAnalysisCriteriaDTO) criteria;
+                        final T criteriaEntity = newCriteriaEntity(typifiedCriteria);
+                        criteriaEntity.setExpressionString(Utils.serialize(getExpression(typifiedCriteria)));
+                        criteriaEntity.setId(typifiedCriteria.getId());
+                        criteriaEntity.setName(typifiedCriteria.getName());
+                        result.add(criteriaEntity);
+                    }
+                }
+            }
+            return result;
+        }
+
+        protected abstract Object getExpression(BaseFeAnalysisCriteriaDTO typifiedCriteria);
+
+        protected abstract T newCriteriaEntity(BaseFeAnalysisCriteriaDTO typifiedCriteria);
+    }
+
+    static class FeAnalysisPrevalenceCriteriaBuilder extends FeAnalysisBuilderSupport<FeAnalysisCriteriaGroupEntity>{
+
+        final static FeAnalysisPrevalenceCriteriaBuilder INSTANCE = new FeAnalysisPrevalenceCriteriaBuilder();
+
+        @Override
+        public FeAnalysisWithCriteriaEntity<FeAnalysisCriteriaGroupEntity> createFeAnalysisObject() {
+            return new FeAnalysisWithPrevalenceCriteriaEntity();
+        }
+
+        @Override
+        protected Object getExpression(BaseFeAnalysisCriteriaDTO typifiedCriteria) {
+            if (typifiedCriteria instanceof FeAnalysisCriteriaDTO) {
+                return ((FeAnalysisCriteriaDTO)typifiedCriteria).getExpression();
+            }
+            return null;
+        }
+
+        @Override
+        protected FeAnalysisCriteriaGroupEntity newCriteriaEntity(BaseFeAnalysisCriteriaDTO criteriaDTO) {
+            return new FeAnalysisCriteriaGroupEntity();
+        }
+    }
+
+    static class FeAnalysisDistributionCriteriaBuilder extends FeAnalysisBuilderSupport<FeAnalysisDistributionCriteriaEntity> {
+
+        final static FeAnalysisDistributionCriteriaBuilder INSTANCE = new FeAnalysisDistributionCriteriaBuilder();
+
+        @Override
+        public FeAnalysisWithCriteriaEntity<FeAnalysisDistributionCriteriaEntity> createFeAnalysisObject() {
+            return new FeAnalysisWithDistributionCriteriaEntity();
+        }
+
+        @Override
+        protected Object getExpression(BaseFeAnalysisCriteriaDTO typifiedCriteria) {
+            if (typifiedCriteria instanceof FeAnalysisWindowedCriteriaDTO) {
+                return ((FeAnalysisWindowedCriteriaDTO)typifiedCriteria).getExpression();
+            } else if (typifiedCriteria instanceof FeAnalysisDemographicCriteriaDTO) {
+                return ((FeAnalysisDemographicCriteriaDTO)typifiedCriteria).getExpression();
+            }
+            throw new IllegalArgumentException(DTO_IS_NOT_SUPPORTED);
+        }
+
+        @Override
+        protected FeAnalysisDistributionCriteriaEntity newCriteriaEntity(BaseFeAnalysisCriteriaDTO criteriaDTO) {
+            if (criteriaDTO instanceof FeAnalysisWindowedCriteriaDTO) {
+                return new FeAnalysisWindowedCriteriaEntity();
+            } else if (criteriaDTO instanceof FeAnalysisDemographicCriteriaDTO) {
+                return new FeAnalysisDemographicCriteriaEntity();
+            }
+            throw new IllegalArgumentException(DTO_IS_NOT_SUPPORTED);
+        }
     }
 }

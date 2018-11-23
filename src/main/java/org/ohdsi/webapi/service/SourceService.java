@@ -41,13 +41,14 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static org.ohdsi.webapi.source.Source.IMPALA_DATASOURCE;
+
 @Path("/source/")
 @Component
 @Transactional
 public class SourceService extends AbstractDaoService {
 
     public static final String SECURE_MODE_ERROR = "This feature requires the administrator to enable security for the application";
-    private static final String IMPALA_DATASOURCE = "impala";
     private static final String KRB_REALM = "KrbRealm";
     private static final String KRB_FQDN = "KrbHostFQDN";
 
@@ -59,6 +60,9 @@ public class SourceService extends AbstractDaoService {
   private Environment env;
   @Autowired
   private ApplicationEventPublisher publisher;
+  @Autowired
+  private VocabularyService vocabularyService;
+
   @Value("${datasource.ohdsi.schema}")
   private String schema;
 
@@ -156,6 +160,7 @@ public class SourceService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<SourceInfo> refreshSources() {
     cachedSources = null;
+    vocabularyService.clearVocabularyInfoCache();
 		this.ensureSourceEncrypted();
     return getSources();
   }
@@ -281,7 +286,7 @@ public class SourceService extends AbstractDaoService {
     if (source != null) {
       final String sourceKey = source.getSourceKey();
       sourceRepository.delete(source);
-        publisher.publishEvent(new DeleteDataSourceEvent(this, sourceId, source.getSourceName()));
+      publisher.publishEvent(new DeleteDataSourceEvent(this, sourceId, source.getSourceName()));
       cachedSources = null;
       securityManager.removeSourceRole(sourceKey);
       return Response.ok().build();

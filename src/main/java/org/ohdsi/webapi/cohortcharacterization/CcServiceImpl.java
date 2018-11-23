@@ -336,8 +336,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                         analysisService,
                         analysisGenerationInfoEntityRepository,
                         sourceService,
-                        userRepository,
-                        sourceAwareSqlRender)
+                        userRepository
+                )
         );
 
         return this.jobTemplate.launch(generateCohortJob, jobParameters);

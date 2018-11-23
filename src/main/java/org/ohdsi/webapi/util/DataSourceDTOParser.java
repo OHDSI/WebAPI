@@ -27,9 +27,9 @@ public final class DataSourceDTOParser {
             KerberosUtils.setKerberosParams(source, params, dto);
         }
 
-        dto.setCdmSchema(source.getTableQualifier(SourceDaimon.DaimonType.CDM));
-        dto.setVocabularySchema(source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary));
-        dto.setResultSchema(source.getTableQualifier(SourceDaimon.DaimonType.Results));
+        dto.setCdmSchema(source.getTableQualifierOrNull(SourceDaimon.DaimonType.CDM));
+        dto.setVocabularySchema(source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary));
+        dto.setResultSchema(source.getTableQualifierOrNull(SourceDaimon.DaimonType.Results));
 
         return dto;
     }

@@ -125,4 +125,9 @@ public class SourceDaimon implements Serializable {
 
         return Objects.hash(getSource(), getDaimonType());
     }
+
+    @Override
+    public String toString(){
+        return String.format("sourceDaimonId = %d, daimonType = %s, tableQualifier = %s, priority = %d", sourceDaimonId, daimonType, tableQualifier, priority);
+    }
 }

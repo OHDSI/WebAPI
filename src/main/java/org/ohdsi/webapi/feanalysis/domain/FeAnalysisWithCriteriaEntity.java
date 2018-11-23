@@ -2,17 +2,17 @@ package org.ohdsi.webapi.feanalysis.domain;
 
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
 
+import javax.persistence.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import javax.persistence.*;
 
 @Entity
-@DiscriminatorValue(value = "CRITERIA_SET")
-public class FeAnalysisWithCriteriaEntity extends FeAnalysisEntity<List<FeAnalysisCriteriaEntity>> {
+@Table(name = "fe_analysis")
+public abstract class FeAnalysisWithCriteriaEntity<T extends FeAnalysisCriteriaEntity> extends FeAnalysisEntity<List<T>> {
     
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "featureAnalysis", cascade = CascadeType.ALL)
-    private List<FeAnalysisCriteriaEntity> design;
+    @OneToMany(targetEntity = FeAnalysisCriteriaEntity.class, fetch = FetchType.EAGER, mappedBy = "featureAnalysis", cascade = CascadeType.ALL)
+    private List<T> design;
 
     @OneToOne(fetch = FetchType.EAGER, mappedBy = "featureAnalysis", cascade = CascadeType.ALL)
     private FeAnalysisConcepsetEntity conceptSetEntity;
@@ -26,12 +26,12 @@ public class FeAnalysisWithCriteriaEntity extends FeAnalysisEntity<List<FeAnalys
     }
 
     @Override
-    public List<FeAnalysisCriteriaEntity> getDesign() {
+    public List<T> getDesign() {
         return design;
     }
 
     @Override
-    public void setDesign(List<FeAnalysisCriteriaEntity> design) {
+    public void setDesign(List<T> design) {
         this.design = design;
     }
 

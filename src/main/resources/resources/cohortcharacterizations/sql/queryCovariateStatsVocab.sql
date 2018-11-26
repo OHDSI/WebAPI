@@ -19,7 +19,7 @@ WITH main_table AS (
       , min_levels_of_separation
     FROM @cdm_results_schema.cc_results fr
       INNER JOIN @cdm_database_schema.concept_ancestor ca ON ca.descendant_concept_id = fr.concept_id
-    WHERE fr.covariate_id = @covariate_id and fr.cc_generation_id = @cc_generation_id
+    WHERE fr.covariate_id = @covariate_id and fr.cc_generation_id = @cc_generation_id and fr.cohort_definition_id = @cohort_id
 
     UNION ALL
 
@@ -29,7 +29,7 @@ WITH main_table AS (
       ,-1*min_levels_of_separation as min_levels_of_separation
     FROM @cdm_results_schema.cc_results fr
       INNER JOIN @cdm_database_schema.concept_ancestor ca ON ca.ancestor_concept_id = fr.concept_id
-    WHERE fr.covariate_id = @covariate_id and fr.cc_generation_id = @cc_generation_id
+    WHERE fr.covariate_id = @covariate_id and fr.cc_generation_id = @cc_generation_id and fr.cohort_definition_id = @cohort_id
           and min_levels_of_separation > 0
   )
 select distinct

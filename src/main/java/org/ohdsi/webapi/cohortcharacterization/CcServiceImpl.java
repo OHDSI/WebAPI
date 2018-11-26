@@ -80,7 +80,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
     private static final String GENERATION_NOT_FOUND_ERROR = "generation cannot be found by id %d";
     private static final String[] GENERATION_PARAMETERS = {"cohort_characterization_generation_id"};
-    private static final String[] PREVALENCE_STATS_PARAMS = {"cdm_database_schema", "cdm_results_schema", "cc_generation_id", "analysisId", "cohort_id", "covariate_id"};
+    private static final String[] PREVALENCE_STATS_PARAMS = {"cdm_database_schema", "cdm_results_schema", "cc_generation_id", "analysis_id", "cohort_id", "covariate_id"};
     private final String QUERY_RESULTS = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/queryResults.sql");
     private final String DELETE_RESULTS = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/deleteResults.sql");
     private final String DELETE_EXECUTION = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/deleteExecution.sql");

@@ -6,17 +6,16 @@ import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.springframework.batch.admin.service.SearchableJobExecutionDao;
 import org.springframework.batch.core.JobExecution;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class NotificationServiceImpl implements NotificationService {
@@ -28,6 +27,9 @@ public class NotificationServiceImpl implements NotificationService {
     private final SearchableJobExecutionDao jobExecutionDao;
     private final PermissionManager permissionManager;
     private final UserRepository userRepository;
+
+    @Value("#{!'${security.provider}'.equals('DisabledSecurity')}")
+    private boolean securityEnabled;
 
     public NotificationServiceImpl(SearchableJobExecutionDao jobExecutionDao, List<GeneratesNotification> whiteList, PermissionManager permissionManager, UserRepository userRepository) {
         this.jobExecutionDao = jobExecutionDao;
@@ -65,15 +67,17 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public Date getLastViewedTime() throws Exception {
-        final UserEntity user = permissionManager.getCurrentUser();
+        final UserEntity user = securityEnabled ? permissionManager.getCurrentUser() : null;
         return user != null ? user.getLastViewedNotificationsTime() : null;
     }
 
     @Override
     public void setLastViewedTime(Date stamp) throws Exception {
-        final UserEntity user = permissionManager.getCurrentUser();
-        user.setLastViewedNotificationsTime(stamp);
-        userRepository.save(user);
+        final UserEntity user = securityEnabled ? permissionManager.getCurrentUser() : null;
+        if(user != null) {
+            user.setLastViewedNotificationsTime(stamp);
+            userRepository.save(user);
+        }
     }
 
     private static String getFoldingKey(JobExecution entity) {
@@ -86,8 +90,8 @@ public class NotificationServiceImpl implements NotificationService {
     }
     
     private boolean isMine(JobExecution jobExec) {
-        final String login = permissionManager.getSubjectName();
+        final String login = securityEnabled ? permissionManager.getSubjectName() : null;
         final String jobAuthor = jobExec.getJobParameters().getString(Constants.Params.JOB_AUTHOR);
-        return jobAuthor == null || Objects.equals(login, jobAuthor);
+        return !securityEnabled || jobAuthor == null || Objects.equals(login, jobAuthor);
     }
 }

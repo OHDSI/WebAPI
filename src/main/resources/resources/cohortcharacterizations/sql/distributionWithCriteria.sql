@@ -27,7 +27,7 @@ with
       min(value_as_int) as min_value,
       max(value_as_int) as max_value,
       sum(value_as_int) as sum_value,
-      stdev(value_as_int) as sdtev_value,
+      stdev(value_as_int) as stdev_value,
       total_cohort_count.cnt - count(*) as count_no_value,
       total_cohort_count.cnt as population_size
     from #events_count, total_cohort_count
@@ -54,8 +54,6 @@ with
   events_p90_value as (
     select min(value_as_int) as p90 from events_dist, event_stat_values where people_count + count_no_value >= 0.9 * population_size
   )
-insert into @results_database_schema.cc_results(type, fa_type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id,
-  cohort_definition_id, cc_generation_id, {@stratified} ? { strata_id, strata_name, } count_value, min_value, max_value, avg_value, stdev_value, p10_value, p25_value, median_value, p75_value, p90_value)
 select
   'DISTRIBUTION' as type,
   'CRITERIA' as fa_type,
@@ -74,13 +72,23 @@ select
   case when count_no_value = 0 then event_stat_values.min_value else 0 end as min_value,
   event_stat_values.max_value,
   cast(event_stat_values.sum_value / (1.0 * population_size) as float) as avg_value,
-  event_stat_values.sdtev_value,
+  event_stat_values.stdev_value,
   case when population_size * .10 < count_no_value then 0 else events_p10_value.p10 end as p10_value,
   case when population_size * .25 < count_no_value then 0 else events_p25_value.p25 end as p25_value,
   case when population_size * .50 < count_no_value then 0 else events_median_value.median_value end as median_value,
   case when population_size * .75 < count_no_value then 0 else events_p75_value.p75 end as p75_value,
   case when population_size * .90 < count_no_value then 0 else events_p90_value.p90 end as p90_value
+INTO #events_dist
 from events_max_value, event_stat_values, events_p10_value, events_p25_value, events_median_value, events_p75_value, events_p90_value;
+
+insert into @results_database_schema.cc_results(type, fa_type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id,
+  cohort_definition_id, cc_generation_id,{@stratified} ? { strata_id, strata_name, } count_value, min_value, max_value, avg_value, stdev_value, p10_value, p25_value, median_value, p75_value, p90_value)
+select type, fa_type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id,
+  cohort_definition_id, cc_generation_id,{@stratified} ? { strata_id, strata_name, } count_value, min_value, max_value, avg_value, stdev_value, p10_value, p25_value, median_value, p75_value, p90_value
+FROM #events_dist;
+
+truncate table #events_dist;
+drop table #events_dist;
 
 truncate table #events_count;
 drop table #events_count;

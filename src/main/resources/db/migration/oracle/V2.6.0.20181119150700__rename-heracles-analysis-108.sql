@@ -1,1 +1,0 @@
-update ${ohdsiSchema}.heracles_analysis set ANALYSIS_NAME = 'Number of persons by length of first observation period, in 30d increments' where ANALYSIS_ID = 108;

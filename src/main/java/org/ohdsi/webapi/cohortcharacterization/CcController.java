@@ -14,7 +14,10 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
+import org.ohdsi.featureExtraction.FeatureExtraction;
 import org.ohdsi.webapi.Pagination;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.dto.*;
@@ -48,6 +51,7 @@ public class CcController {
         this.feAnalysisService = feAnalysisService;
         this.conversionService = conversionService;
         this.converterUtils = converterUtils;
+        FeatureExtraction.init(null);
     }
 
     @POST
@@ -183,15 +187,7 @@ public class CcController {
     public List<CcResult> getGenerationsResults(
             @PathParam("generationId") final Long generationId) {
         List<CcResult> ccResults = service.findResults(generationId);
-        List<FeAnalysisWithStringEntity> presetFeAnalyses = feAnalysisService.findPresetAnalysesBySystemNames(ccResults.stream().map(CcResult::getAnalysisName).distinct().collect(Collectors.toList()));
-        ccResults.forEach(res -> {
-            if (Objects.equals(res.getFaType(), StandardFeatureAnalysisType.PRESET.name())) {
-                presetFeAnalyses.stream().filter(fa -> fa.getDesign().equals(res.getAnalysisName())).findFirst().ifPresent(fa -> {
-                    res.setAnalysisId(fa.getId());
-                    res.setAnalysisName(fa.getName());
-                });
-            }
-        });
+        convertPresetAnalysesToLocal(ccResults);
         return ccResults;
     }
 
@@ -203,6 +199,50 @@ public class CcController {
                                                     @PathParam("cohortId") Long cohortId,
                                                     @PathParam("covariateId") Long covariateId) {
 
-        return service.getPrevalenceStatsByGenerationId(generationId, analysisId, cohortId, covariateId);
+        Integer presetId = convertPresetAnalysisIdToSystem(Math.toIntExact(analysisId));
+        return service.getPrevalenceStatsByGenerationId(generationId, Long.valueOf(presetId), cohortId, covariateId);
+    }
+
+    private void convertPresetAnalysesToLocal(List<CcResult> ccResults) {
+
+      List<FeAnalysisWithStringEntity> presetFeAnalyses = feAnalysisService.findPresetAnalysesBySystemNames(ccResults.stream().map(CcResult::getAnalysisName).distinct().collect(Collectors.toList()));
+      ccResults.stream().filter(res -> Objects.equals(res.getFaType(), StandardFeatureAnalysisType.PRESET.name()))
+              .forEach(res -> {
+                presetFeAnalyses.stream().filter(fa -> fa.getDesign().equals(res.getAnalysisName())).findFirst().ifPresent(fa -> {
+                  res.setAnalysisId(fa.getId());
+                  res.setAnalysisName(fa.getName());
+                });
+              });
+    }
+
+    private Integer convertPresetAnalysisIdToSystem(Integer analysisId) {
+
+        FeAnalysisEntity fe = feAnalysisService.findById(analysisId).orElse(null);
+        if (fe instanceof FeAnalysisWithStringEntity) {
+          String settings = buildSettings(((FeAnalysisWithStringEntity) fe).getDesign());// FeatureExtraction.getDefaultPrespecAnalyses();
+          JSONObject jsonObject = new JSONObject(FeatureExtraction.convertSettingsPrespecToDetails(settings));
+          JSONArray analyses = (JSONArray) jsonObject.get("analyses");
+          for(Object element : analyses) {
+            if (element instanceof JSONObject) {
+              JSONObject analysis = (JSONObject) element;
+              JSONObject params = analysis.getJSONObject("parameters");
+              if (Objects.equals(fe.getDesign(), params.getString("analysisName"))) {
+                  return analysis.getInt("analysisId");
+              }
+            }
+          }
+        }
+        return analysisId;
+    }
+
+    private String buildSettings(String prespecName) {
+
+        JSONObject defaultSettings = new JSONObject(FeatureExtraction.getDefaultPrespecAnalyses());
+        for(String key : defaultSettings.keySet()){
+            if (!Objects.equals(prespecName, key)) {
+                defaultSettings.put(key, Boolean.FALSE);
+            }
+        }
+        return defaultSettings.toString();
     }
 }

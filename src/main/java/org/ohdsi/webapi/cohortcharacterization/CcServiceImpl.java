@@ -207,7 +207,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
       if (Objects.nonNull(foundEntity.getConceptSetEntity()) && Objects.nonNull(entity.getConceptSetEntity())) {
         foundEntity.getConceptSetEntity().setRawExpression(entity.getConceptSetEntity().getRawExpression());
       } else if (Objects.nonNull(entity.getConceptSetEntity())) {
-        CcConceptSetEntity savedEntity = conceptSetRepository.save(entity.getConceptSetEntity());
+        CcStrataConceptSetEntity savedEntity = conceptSetRepository.save(entity.getConceptSetEntity());
         foundEntity.setConceptSetEntity(savedEntity);
       }
   }

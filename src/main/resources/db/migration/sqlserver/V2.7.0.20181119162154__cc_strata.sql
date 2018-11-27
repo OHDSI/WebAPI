@@ -17,22 +17,22 @@ ALTER TABLE ${ohdsiSchema}.cc_strata
     ADD CONSTRAINT fk_cc_strata_cc FOREIGN KEY (cohort_characterization_id)
     REFERENCES ${ohdsiSchema}.cohort_characterization(id) ON UPDATE NO ACTION ON DELETE CASCADE;
 
-CREATE SEQUENCE ${ohdsiSchema}.cc_conceptset_sequence START WITH 1;
+CREATE SEQUENCE ${ohdsiSchema}.cc_strata_conceptset_seq START WITH 1;
 
-CREATE TABLE ${ohdsiSchema}.cc_conceptset(
+CREATE TABLE ${ohdsiSchema}.cc_strata_conceptset(
   id BIGINT NOT NULL,
   cohort_characterization_id BIGINT NOT NULL,
   expression VARCHAR(MAX)
 );
 
-ALTER TABLE ${ohdsiSchema}.cc_conceptset
-    ADD CONSTRAINT df_cc_conceptset_id DEFAULT (NEXT VALUE FOR ${ohdsiSchema}.cc_conceptset_sequence) FOR id;
+ALTER TABLE ${ohdsiSchema}.cc_strata_conceptset
+    ADD CONSTRAINT df_cc_strata_conceptset_id DEFAULT (NEXT VALUE FOR ${ohdsiSchema}.cc_strata_conceptset_seq) FOR id;
 
-ALTER TABLE ${ohdsiSchema}.cc_conceptset
-    ADD CONSTRAINT pk_cc_conceptset_id PRIMARY KEY(id);
+ALTER TABLE ${ohdsiSchema}.cc_strata_conceptset
+    ADD CONSTRAINT pk_cc_strata_conceptset_id PRIMARY KEY(id);
 
-ALTER TABLE ${ohdsiSchema}.cc_conceptset
-    ADD CONSTRAINT fk_cc_conceptset_cc FOREIGN KEY (cohort_characterization_id)
+ALTER TABLE ${ohdsiSchema}.cc_strata_conceptset
+    ADD CONSTRAINT fk_cc_strata_conceptset_cc FOREIGN KEY (cohort_characterization_id)
     REFERENCES ${ohdsiSchema}.cohort_characterization(id) ON UPDATE NO ACTION ON DELETE CASCADE;
 
 ALTER TABLE ${ohdsiSchema}.cohort_characterization ADD stratified_by VARCHAR(255);

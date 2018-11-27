@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.cohortcharacterization.repository;
 
-import org.ohdsi.webapi.cohortcharacterization.domain.CcConceptSetEntity;
+import org.ohdsi.webapi.cohortcharacterization.domain.CcStrataConceptSetEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface CcConceptSetRepository extends JpaRepository<CcConceptSetEntity, Long> {
+public interface CcConceptSetRepository extends JpaRepository<CcStrataConceptSetEntity, Long> {
 }

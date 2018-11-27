@@ -5,11 +5,11 @@ import org.ohdsi.webapi.common.CommonConceptSetEntity;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "cc_conceptset")
-public class CcConceptSetEntity extends CommonConceptSetEntity {
+@Table(name = "cc_strata_conceptset")
+public class CcStrataConceptSetEntity extends CommonConceptSetEntity {
   @Id
-  @SequenceGenerator(name = "cc_conceptset_sequence", sequenceName = "cc_conceptset_sequence", allocationSize = 1)
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "cc_conceptset_sequence")
+  @SequenceGenerator(name = "cc_strata_conceptset_sequence", sequenceName = "cc_strata_conceptset_seq", allocationSize = 1)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "cc_strata_conceptset_sequence")
   private Long id;
 
   @OneToOne(optional = false, targetEntity = CohortCharacterizationEntity.class, fetch = FetchType.LAZY)

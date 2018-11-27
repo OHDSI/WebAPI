@@ -12,17 +12,17 @@ ALTER TABLE ${ohdsiSchema}.cc_strata
     ADD CONSTRAINT fk_cc_strata_cc FOREIGN KEY (cohort_characterization_id)
     REFERENCES ${ohdsiSchema}.cohort_characterization(id);
 
-CREATE SEQUENCE ${ohdsiSchema}.cc_conceptset_sequence;
+CREATE SEQUENCE ${ohdsiSchema}.cc_strata_conceptset_seq;
 
-CREATE TABLE ${ohdsiSchema}.cc_conceptset(
+CREATE TABLE ${ohdsiSchema}.cc_strata_conceptset(
   id NUMBER(19) NOT NULL,
   cohort_characterization_id NUMBER(19) NOT NULL,
   expression CLOB,
-  CONSTRAINT pk_cc_conceptset_id PRIMARY KEY(id)
+  CONSTRAINT pk_cc_strata_conceptset_id PRIMARY KEY(id)
 );
 
-ALTER TABLE ${ohdsiSchema}.cc_conceptset
-  ADD CONSTRAINT fk_cc_conceptset_cc FOREIGN KEY (cohort_characterization_id)
+ALTER TABLE ${ohdsiSchema}.cc_strata_conceptset
+  ADD CONSTRAINT fk_cc_strata_conceptset_cc FOREIGN KEY (cohort_characterization_id)
   REFERENCES ${ohdsiSchema}.cohort_characterization(id);
 
 ALTER TABLE ${ohdsiSchema}.cohort_characterization ADD stratified_by VARCHAR(255);

@@ -3,7 +3,7 @@ package org.ohdsi.webapi.cohortcharacterization.converter;
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.analysis.CohortMetadata;
 import org.ohdsi.analysis.Utils;
-import org.ohdsi.webapi.cohortcharacterization.domain.CcConceptSetEntity;
+import org.ohdsi.webapi.cohortcharacterization.domain.CcStrataConceptSetEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcParamEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcStrataEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
@@ -44,7 +44,7 @@ public abstract class BaseCcDTOToCcEntityConverter<T extends BaseCcDTO<? extends
     final Set<CcStrataEntity> convertedStratas = converterUtils.convertSet(source.getStratas(), CcStrataEntity.class);
     cohortCharacterization.setStratas(convertedStratas);
 
-    CcConceptSetEntity conceptSetEntity = new CcConceptSetEntity();
+    CcStrataConceptSetEntity conceptSetEntity = new CcStrataConceptSetEntity();
     conceptSetEntity.setCohortCharacterization(cohortCharacterization);
     conceptSetEntity.setRawExpression(Utils.serialize(source.getStrataConceptSets()));
     cohortCharacterization.setConceptSetEntity(conceptSetEntity);

@@ -149,7 +149,7 @@ NULL as stratum_5_name,
 CAST('OBSERVATION' as VARCHAR(255)) as analysis_type
 union all
 select  108 as analysis_id,
-CAST('Number of persons by length of observation period, in 30d increments' as VARCHAR(255)) as analysis_name,
+CAST('Number of persons by length of first observation period, in 30d increments' as VARCHAR(255)) as analysis_name,
 CAST('Observation period length 30d increments' as VARCHAR(255)) as stratum_1_name,
 NULL as stratum_2_name,
 NULL as stratum_3_name,

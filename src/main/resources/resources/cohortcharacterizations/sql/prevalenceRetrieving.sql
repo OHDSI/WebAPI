@@ -1,6 +1,5 @@
 insert into @results_database_schema.cc_results (type, fa_type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id, count_value, avg_value,
-                                                 {@stratified} ? { strata_id, strata_name, }
-                                                 cohort_definition_id, cc_generation_id)
+                                                 strata_id, strata_name, cohort_definition_id, cc_generation_id)
   select 'PREVALENCE' as type,
     'PRESET' as fa_type,
     f.covariate_id,
@@ -10,10 +9,8 @@ insert into @results_database_schema.cc_results (type, fa_type, covariate_id, co
     fr.concept_id,
     f.sum_value     as count_value,
     f.average_value as stat_value,
-{@stratified} ? {
     @strataId as strata_id,
     @strataName as strata_name,
-}
     @cohortId as cohort_definition_id,
     @executionId as cc_generation_id
   from (@features) f

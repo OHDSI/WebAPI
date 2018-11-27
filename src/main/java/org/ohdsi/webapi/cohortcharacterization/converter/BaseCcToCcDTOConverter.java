@@ -19,7 +19,7 @@ public abstract class BaseCcToCcDTOConverter<T extends BaseCcDTO> extends BaseCc
     cohortCharacterizationDTO.setParameters(converterUtils.convertSet(source.getParameters(), CcParameterDTO.class));
     cohortCharacterizationDTO.setStratas(converterUtils.convertSet(source.getStratas(), CcStrataDTO.class));
     cohortCharacterizationDTO.setStratifiedBy(source.getStratifiedBy());
-    cohortCharacterizationDTO.setConceptSets(source.getConceptSets());
+    cohortCharacterizationDTO.setStrataConceptSets(source.getConceptSets());
     return cohortCharacterizationDTO;
   }
 

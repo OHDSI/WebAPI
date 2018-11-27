@@ -46,7 +46,6 @@ with
   ),
   events_median_value as (
       select min(value_as_int) as median_value from events_dist, event_stat_values where (people_count + count_no_value) >= 0.5 * population_size
---     select value_as_int as median_value from events_dist where people_count = (select max(people_count) from events_dist)
   ),
   events_p75_value as (
     select min(value_as_int) as p75 from events_dist, event_stat_values where people_count + count_no_value >= 0.75 * population_size
@@ -64,10 +63,8 @@ select
   @conceptId as concept_id,
   @cohortId as cohort_definition_id,
   @executionId as cc_generation_id,
-{@stratified} ? {
   @strataId as strata_id,
   @strataName as strata_name,
-}
   event_stat_values.count_value,
   case when count_no_value = 0 then event_stat_values.min_value else 0 end as min_value,
   event_stat_values.max_value,
@@ -82,9 +79,9 @@ INTO #events_dist
 from events_max_value, event_stat_values, events_p10_value, events_p25_value, events_median_value, events_p75_value, events_p90_value;
 
 insert into @results_database_schema.cc_results(type, fa_type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id,
-  cohort_definition_id, cc_generation_id,{@stratified} ? { strata_id, strata_name, } count_value, min_value, max_value, avg_value, stdev_value, p10_value, p25_value, median_value, p75_value, p90_value)
+  cohort_definition_id, cc_generation_id, strata_id, strata_name, count_value, min_value, max_value, avg_value, stdev_value, p10_value, p25_value, median_value, p75_value, p90_value)
 select type, fa_type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id,
-  cohort_definition_id, cc_generation_id,{@stratified} ? { strata_id, strata_name, } count_value, min_value, max_value, avg_value, stdev_value, p10_value, p25_value, median_value, p75_value, p90_value
+  cohort_definition_id, cc_generation_id, strata_id, strata_name, count_value, min_value, max_value, avg_value, stdev_value, p10_value, p25_value, median_value, p75_value, p90_value
 FROM #events_dist;
 
 truncate table #events_dist;

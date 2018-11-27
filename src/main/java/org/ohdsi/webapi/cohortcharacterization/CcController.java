@@ -218,31 +218,10 @@ public class CcController {
     private Integer convertPresetAnalysisIdToSystem(Integer analysisId) {
 
         FeAnalysisEntity fe = feAnalysisService.findById(analysisId).orElse(null);
-        if (fe instanceof FeAnalysisWithStringEntity) {
-          String settings = buildSettings(((FeAnalysisWithStringEntity) fe).getDesign());// FeatureExtraction.getDefaultPrespecAnalyses();
-          JSONObject jsonObject = new JSONObject(FeatureExtraction.convertSettingsPrespecToDetails(settings));
-          JSONArray analyses = (JSONArray) jsonObject.get("analyses");
-          for(Object element : analyses) {
-            if (element instanceof JSONObject) {
-              JSONObject analysis = (JSONObject) element;
-              JSONObject params = analysis.getJSONObject("parameters");
-              if (Objects.equals(fe.getDesign(), params.getString("analysisName"))) {
-                  return analysis.getInt("analysisId");
-              }
-            }
-          }
+        if (fe instanceof FeAnalysisWithStringEntity && fe.isPreset()) {
+            FeatureExtraction.PrespecAnalysis prespecAnalysis = FeatureExtraction.getNameToPrespecAnalysis().get(((FeAnalysisWithStringEntity) fe).getDesign());
+            return prespecAnalysis.analysisId;
         }
         return analysisId;
-    }
-
-    private String buildSettings(String prespecName) {
-
-        JSONObject defaultSettings = new JSONObject(FeatureExtraction.getDefaultPrespecAnalyses());
-        for(String key : defaultSettings.keySet()){
-            if (!Objects.equals(prespecName, key)) {
-                defaultSettings.put(key, Boolean.FALSE);
-            }
-        }
-        return defaultSettings.toString();
     }
 }

@@ -11,7 +11,9 @@ public class CcPrevalenceStat extends CcResult implements PrevalenceStat {
     private Long covariateId;
     private String covariateName;
     private Long conceptId;
+    private String conceptName;
     private Long count;
+    private long distance = 0;
     
     @Override
     public Double getProportion() {
@@ -75,5 +77,21 @@ public class CcPrevalenceStat extends CcResult implements PrevalenceStat {
     public void setAvg(Double avg) {
 
         this.avg = avg;
+    }
+
+    public long getDistance() {
+        return distance;
+    }
+
+    public void setDistance(long distance) {
+        this.distance = distance;
+    }
+
+    public String getConceptName() {
+        return conceptName;
+    }
+
+    public void setConceptName(String conceptName) {
+        this.conceptName = conceptName;
     }
 }

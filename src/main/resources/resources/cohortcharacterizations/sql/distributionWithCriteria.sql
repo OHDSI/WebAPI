@@ -16,7 +16,7 @@ group by v.person_id;
 
 with
   total_cohort_count AS (
-    SELECT COUNT(*) cnt FROM @temp_database_schema.@targetTable where cohort_definition_id = @cohortId
+    SELECT COUNT(*) cnt FROM @targetTable where cohort_definition_id = @cohortId
   ),
   events_max_value as (
     select max(value_as_int) as max_value from #events_count
@@ -64,7 +64,7 @@ select
   @cohortId as cohort_definition_id,
   @executionId as cc_generation_id,
   @strataId as strata_id,
-  @strataName as strata_name,
+  CAST(@strataName AS VARCHAR(255)) as strata_name,
   event_stat_values.count_value,
   case when count_no_value = 0 then event_stat_values.min_value else 0 end as min_value,
   event_stat_values.max_value,

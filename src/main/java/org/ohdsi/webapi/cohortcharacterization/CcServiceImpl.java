@@ -80,6 +80,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     private final EntityGraph defaultEntityGraph = EntityUtils.fromAttributePaths(
             "cohortDefinitions",
             "featureAnalyses",
+            "stratas",
             "parameters",
             "createdBy",
             "modifiedBy"
@@ -153,6 +154,10 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
     private CohortCharacterizationEntity saveCc(final CohortCharacterizationEntity entity) {
         CohortCharacterizationEntity savedEntity = repository.saveAndFlush(entity);
+        for(CcStrataEntity strata : entity.getStratas()){
+          strata.setCohortCharacterization(savedEntity);
+          strataRepository.save(strata);
+        }
         entityManager.refresh(savedEntity);
         savedEntity = findByIdWithLinkedEntities(savedEntity.getId());
 

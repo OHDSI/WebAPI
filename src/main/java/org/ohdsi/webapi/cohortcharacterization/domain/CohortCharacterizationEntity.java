@@ -116,7 +116,7 @@ public class CohortCharacterizationEntity extends CommonEntity implements Cohort
     }
 
     public Boolean getStrataOnly() {
-        return strataOnly;
+        return Objects.nonNull(strataOnly) ? strataOnly : false;
     }
 
     public void setStrataOnly(Boolean strataOnly) {

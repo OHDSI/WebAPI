@@ -444,8 +444,10 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
               queriesToRun.addAll(getQueriesForStratifiedCriteriaAnalyses(cohortDefinitionId));
             }
 
-            String sql = queriesToRun.stream().map(q -> ((SqlProvider)q).getSql()).collect(Collectors.joining("\n"));
-            log.debug(sql);
+            if (log.isDebugEnabled()) {
+                String sql = queriesToRun.stream().map(q -> ((SqlProvider) q).getSql()).collect(Collectors.joining("\n"));
+                log.debug("Generated SQL: {}", sql);
+            }
 
             return queriesToRun;
         }

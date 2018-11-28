@@ -15,6 +15,7 @@
  */
 package org.ohdsi.webapi.cohortfeatures;
 
+import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
@@ -37,11 +38,13 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -129,17 +132,13 @@ public class GenerateCohortFeaturesTasklet implements Tasklet
         options.cdmSchema = jobParams.get("cdm_database_schema").toString();
         options.resultSchema = jobParams.get("results_database_schema").toString();
 
-        String deleteSql = "";
-        String[] tableNames = new String[] { "cohort_features", "cohort_features_dist", "cohort_features_ref", "cohort_features_analysis_ref"};
-        
-        for (String tableName : tableNames)
-        {
-            deleteSql += SqlTranslate.translateSql(
-                    String.format("DELETE FROM %1$s.%2$s WHERE cohort_definition_id = %3$d;", 
-                      options.resultSchema, tableName, options.cohortId), 
-                    jobParams.get("target_dialect").toString(), sessionId, null);
-        }
-        
+        List<String> tableNames = ImmutableList.of("cohort_features", "cohort_features_dist", "cohort_features_ref", "cohort_features_analysis_ref");
+
+        String deleteSql = tableNames.stream().map(tableName -> SqlTranslate.translateSql(
+                  String.format("DELETE FROM %1$s.%2$s WHERE cohort_definition_id = %3$d;",
+                          options.resultSchema, tableName, options.cohortId),
+                  jobParams.get("target_dialect").toString(), sessionId, null)).collect(Collectors.joining());
+
         this.jdbcTemplate.batchUpdate(deleteSql.split(";")); // use batch update since SQL translation may produce multiple statements
 
         FeatureExtraction.init(null);

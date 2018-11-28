@@ -36,3 +36,4 @@ ALTER TABLE ${ohdsiSchema}.cc_strata_conceptset
     REFERENCES ${ohdsiSchema}.cohort_characterization(id) ON UPDATE NO ACTION ON DELETE CASCADE;
 
 ALTER TABLE ${ohdsiSchema}.cohort_characterization ADD stratified_by VARCHAR(255);
+ALTER TABLE ${ohdsiSchema}.cohort_characterization ADD strata_only BIT DEFAULT 0;

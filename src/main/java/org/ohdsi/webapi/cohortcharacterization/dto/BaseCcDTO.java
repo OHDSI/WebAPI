@@ -15,6 +15,8 @@ public class BaseCcDTO<T extends CohortMetadata, F extends FeAnalysisShortDTO> e
   private Collection<CcParameterDTO> parameters = new ArrayList<>();
   @JsonProperty("stratifiedBy")
   private String stratifiedBy;
+  @JsonProperty("strataOnly")
+  private Boolean strataOnly;
   private Collection<CcStrataDTO> stratas = new ArrayList<>();
   @JsonProperty("strataConceptSets")
   private Collection<ConceptSet> strataConceptSets = new ArrayList<>();
@@ -59,6 +61,14 @@ public class BaseCcDTO<T extends CohortMetadata, F extends FeAnalysisShortDTO> e
 
   public void setStratifiedBy(String stratifiedBy) {
     this.stratifiedBy = stratifiedBy;
+  }
+
+  public Boolean getStrataOnly() {
+    return strataOnly;
+  }
+
+  public void setStrataOnly(Boolean strataOnly) {
+    this.strataOnly = strataOnly;
   }
 
   public Collection<ConceptSet> getStrataConceptSets() {

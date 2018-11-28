@@ -26,3 +26,4 @@ ALTER TABLE ${ohdsiSchema}.cc_strata_conceptset
   REFERENCES ${ohdsiSchema}.cohort_characterization(id);
 
 ALTER TABLE ${ohdsiSchema}.cohort_characterization ADD stratified_by VARCHAR(255);
+ALTER TABLE ${ohdsiSchema}.cohort_characterization ADD strata_only CHAR(1) DEFAULT '0';

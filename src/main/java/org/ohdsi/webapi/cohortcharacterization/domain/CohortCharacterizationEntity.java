@@ -42,6 +42,9 @@ public class CohortCharacterizationEntity extends CommonEntity implements Cohort
     @Column(name = "stratified_by")
     private String stratifiedBy;
 
+    @Column(name = "strata_only")
+    private Boolean strataOnly;
+
     @OneToOne(mappedBy = "cohortCharacterization", cascade = CascadeType.ALL)
     private CcStrataConceptSetEntity conceptSetEntity;
     
@@ -110,6 +113,14 @@ public class CohortCharacterizationEntity extends CommonEntity implements Cohort
 
     public void setStratifiedBy(String stratifiedBy) {
         this.stratifiedBy = stratifiedBy;
+    }
+
+    public Boolean getStrataOnly() {
+        return strataOnly;
+    }
+
+    public void setStrataOnly(Boolean strataOnly) {
+        this.strataOnly = strataOnly;
     }
 
     public CcStrataConceptSetEntity getConceptSetEntity() {

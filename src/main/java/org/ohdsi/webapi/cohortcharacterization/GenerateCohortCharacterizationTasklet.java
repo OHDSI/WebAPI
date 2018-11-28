@@ -434,11 +434,11 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
         private List<PreparedStatementCreator> getSqlQueriesToRun(final JSONObject jsonObject, final Integer cohortDefinitionId) {
             List<PreparedStatementCreator> queriesToRun = new LinkedList<>();
 
-            queriesToRun.addAll(getCreateQueries(jsonObject));
-
-            queriesToRun.addAll(getFeatureAnalysesQueries(jsonObject, cohortDefinitionId, null));
-
-            queriesToRun.addAll(getCleanupQueries(jsonObject));
+            if (!cohortCharacterization.getStrataOnly() || cohortCharacterization.getStratas().isEmpty()) {
+                queriesToRun.addAll(getCreateQueries(jsonObject));
+                queriesToRun.addAll(getFeatureAnalysesQueries(jsonObject, cohortDefinitionId, null));
+                queriesToRun.addAll(getCleanupQueries(jsonObject));
+            }
 
             if (!cohortCharacterization.getStratas().isEmpty()) {
               queriesToRun.addAll(getQueriesForStratifiedCriteriaAnalyses(cohortDefinitionId));

@@ -183,6 +183,9 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
             foundEntity.setName(entity.getName());
         }
         foundEntity.setStratifiedBy(entity.getStratifiedBy());
+        if (Objects.nonNull(entity.getStrataOnly())) {
+          foundEntity.setStrataOnly(entity.getStrataOnly());
+        }
 
         foundEntity.setFeatureAnalyses(entity.getFeatureAnalyses());
         foundEntity.setCohortDefinitions(entity.getCohortDefinitions());

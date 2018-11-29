@@ -1,10 +1,10 @@
 package org.ohdsi.webapi.cohortcharacterization.domain;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import javax.persistence.*;
 
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
+import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.model.CommonEntity;
@@ -35,6 +35,18 @@ public class CohortCharacterizationEntity extends CommonEntity implements Cohort
     
     @OneToMany(mappedBy = "cohortCharacterization", fetch = FetchType.LAZY, targetEntity = CcParamEntity.class)
     private Set<CcParamEntity> parameters = new HashSet<>();
+
+    @OneToMany(mappedBy = "cohortCharacterization", fetch = FetchType.LAZY, targetEntity = CcStrataEntity.class)
+    private Set<CcStrataEntity> stratas = new HashSet<>();
+
+    @Column(name = "stratified_by")
+    private String stratifiedBy;
+
+    @Column(name = "strata_only")
+    private Boolean strataOnly;
+
+    @OneToOne(mappedBy = "cohortCharacterization", cascade = CascadeType.ALL)
+    private CcStrataConceptSetEntity conceptSetEntity;
     
     @Column(name = "hash_code")
     private Integer hashCode;
@@ -84,6 +96,43 @@ public class CohortCharacterizationEntity extends CommonEntity implements Cohort
 
     public void setCohortDefinitions(final Set<CohortDefinition> cohortDefinitions) {
         this.cohortDefinitions = cohortDefinitions;
+    }
+
+    @Override
+    public Set<CcStrataEntity> getStratas() {
+        return stratas;
+    }
+
+    public void setStratas(Set<CcStrataEntity> stratas) {
+        this.stratas = stratas;
+    }
+
+    public String getStratifiedBy() {
+        return stratifiedBy;
+    }
+
+    public void setStratifiedBy(String stratifiedBy) {
+        this.stratifiedBy = stratifiedBy;
+    }
+
+    public Boolean getStrataOnly() {
+        return Objects.nonNull(strataOnly) ? strataOnly : false;
+    }
+
+    public void setStrataOnly(Boolean strataOnly) {
+        this.strataOnly = strataOnly;
+    }
+
+    public CcStrataConceptSetEntity getConceptSetEntity() {
+        return conceptSetEntity;
+    }
+
+    public void setConceptSetEntity(CcStrataConceptSetEntity conceptSetEntity) {
+        this.conceptSetEntity = conceptSetEntity;
+    }
+
+    public List<ConceptSet> getConceptSets() {
+        return Objects.nonNull(this.conceptSetEntity) ? this.conceptSetEntity.getConceptSets() : Collections.emptyList();
     }
 
     public Integer getHashCode() {

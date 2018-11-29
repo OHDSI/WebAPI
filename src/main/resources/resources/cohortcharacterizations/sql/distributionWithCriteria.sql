@@ -1,6 +1,9 @@
+IF OBJECT_ID('tempdb..#events_count', 'U') IS NOT NULL
+  DROP TABLE #events_count;
+
 WITH qualified_events AS (
   SELECT ROW_NUMBER() OVER (partition by E.subject_id order by E.cohort_start_date) AS event_id, E.subject_id AS person_id, E.cohort_start_date AS start_date, E.cohort_end_date AS end_date, OP.observation_period_start_date AS op_start_date, OP.observation_period_end_date AS op_end_date
-  FROM @temp_database_schema.@targetTable E
+  FROM @targetTable E
     JOIN @cdm_database_schema.observation_period OP ON E.subject_id = OP.person_id AND E.cohort_start_date >= OP.observation_period_start_date AND E.cohort_start_date <= OP.observation_period_end_date
   WHERE cohort_definition_id = @cohortId
 )
@@ -13,7 +16,7 @@ group by v.person_id;
 
 with
   total_cohort_count AS (
-    SELECT COUNT(*) cnt FROM @temp_database_schema.@targetTable where cohort_definition_id = @cohortId
+    SELECT COUNT(*) cnt FROM @targetTable where cohort_definition_id = @cohortId
   ),
   events_max_value as (
     select max(value_as_int) as max_value from #events_count
@@ -43,7 +46,6 @@ with
   ),
   events_median_value as (
       select min(value_as_int) as median_value from events_dist, event_stat_values where (people_count + count_no_value) >= 0.5 * population_size
---     select value_as_int as median_value from events_dist where people_count = (select max(people_count) from events_dist)
   ),
   events_p75_value as (
     select min(value_as_int) as p75 from events_dist, event_stat_values where people_count + count_no_value >= 0.75 * population_size
@@ -61,6 +63,8 @@ select
   @conceptId as concept_id,
   @cohortId as cohort_definition_id,
   @executionId as cc_generation_id,
+  @strataId as strata_id,
+  CAST(@strataName AS VARCHAR(255)) as strata_name,
   event_stat_values.count_value,
   case when count_no_value = 0 then event_stat_values.min_value else 0 end as min_value,
   event_stat_values.max_value,
@@ -75,9 +79,9 @@ INTO #events_dist
 from events_max_value, event_stat_values, events_p10_value, events_p25_value, events_median_value, events_p75_value, events_p90_value;
 
 insert into @results_database_schema.cc_results(type, fa_type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id,
-  cohort_definition_id, cc_generation_id, count_value, min_value, max_value, avg_value, stdev_value, p10_value, p25_value, median_value, p75_value, p90_value)
+  cohort_definition_id, cc_generation_id, strata_id, strata_name, count_value, min_value, max_value, avg_value, stdev_value, p10_value, p25_value, median_value, p75_value, p90_value)
 select type, fa_type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id,
-  cohort_definition_id, cc_generation_id, count_value, min_value, max_value, avg_value, stdev_value, p10_value, p25_value, median_value, p75_value, p90_value
+  cohort_definition_id, cc_generation_id, strata_id, strata_name, count_value, min_value, max_value, avg_value, stdev_value, p10_value, p25_value, median_value, p75_value, p90_value
 FROM #events_dist;
 
 truncate table #events_dist;

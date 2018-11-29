@@ -18,6 +18,8 @@ select
        r.p75_value,
        r.p90_value,
        r.max_value,
-       r.cohort_definition_id
+       r.cohort_definition_id,
+       r.strata_id,
+       r.strata_name
 from @results_database_schema.cc_results r
 where r.cc_generation_id = @cohort_characterization_generation_id

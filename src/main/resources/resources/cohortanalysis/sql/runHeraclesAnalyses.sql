@@ -846,7 +846,6 @@ DROP TABLE #raw_107;
   INTO
   #temp_dates_2
   FROM #tmp_years years, #tmp_months months, op_date_range WHERE year BETWEEN YEAR(op_date_range.op_start_date) AND YEAR(op_date_range.op_end_date)
-	ORDER BY years.year*100 + months.month
   ;
   
   

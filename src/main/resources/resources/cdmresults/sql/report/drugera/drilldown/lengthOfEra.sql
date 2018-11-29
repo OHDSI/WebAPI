@@ -14,3 +14,4 @@ INNER JOIN
 ON CAST(ard1.stratum_1 AS INT) = c1.concept_id
 WHERE ard1.analysis_id = 907
 AND ard1.count_value > 0
+AND c1.concept_id = @conceptId

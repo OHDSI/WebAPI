@@ -757,15 +757,32 @@ DROP TABLE #raw_107;
   group by c1.cohort_definition_id, floor(DATEDIFF(dd, op1.observation_period_start_date, op1.observation_period_end_date)/30)
   ;
   --}
+
+	--{109 IN (@list_of_analysis_ids) | 110 IN (@list_of_analysis_ids) | 116 IN (@list_of_analysis_ids) | 117 IN (@list_of_analysis_ids)}?{
+
+		IF OBJECT_ID('tempdb..#tmp_years', 'U') IS NOT NULL
+			DROP TABLE  #tmp_years;
+
+		IF OBJECT_ID('tempdb..#tmp_months', 'U') IS NOT NULL
+			DROP TABLE  #tmp_months;
+
+		WITH x AS (SELECT 0 AS n UNION ALL SELECT 1 AS n UNION ALL SELECT 2 AS n UNION ALL SELECT 3 AS n UNION ALL SELECT 4 AS n UNION ALL SELECT 5 AS n UNION ALL SELECT 6 AS n UNION ALL SELECT 7 AS n UNION ALL SELECT 8 AS n UNION ALL SELECT 9 AS n),
+		years AS (SELECT ones.n + 10*tens.n + 100*hundreds.n + 1000*thousands.n as year
+							FROM x ones,     x tens,      x hundreds,       x thousands)
+		SELECT year
+		INTO #tmp_years FROM years WHERE year BETWEEN 1900 AND 2201;
+
+		WITH months AS (SELECT 1 AS month UNION ALL SELECT 2 AS month UNION ALL SELECT 3 AS month UNION ALL SELECT 4 AS month UNION ALL SELECT 5 AS month UNION ALL SELECT 6 AS month UNION ALL SELECT 7 AS month UNION ALL SELECT 8 AS month UNION ALL SELECT 9 AS month UNION ALL SELECT 10 AS month UNION ALL SELECT 11 AS month UNION ALL SELECT 12 AS month)
+		SELECT month
+		INTO #tmp_months FROM months;
+
+	--}
   
   --{109 IN (@list_of_analysis_ids)}?{
   -- 109   Number of persons with continuous observation in each year
   -- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
    
-  WITH x AS (SELECT 0 AS n UNION ALL SELECT 1 AS n UNION ALL SELECT 2 AS n UNION ALL SELECT 3 AS n UNION ALL SELECT 4 AS n UNION ALL SELECT 5 AS n UNION ALL SELECT 6 AS n UNION ALL SELECT 7 AS n UNION ALL SELECT 8 AS n UNION ALL SELECT 9 AS n),
-    years AS (SELECT ones.n + 10*tens.n + 100*hundreds.n + 1000*thousands.n as year
-              FROM x ones,     x tens,      x hundreds,       x thousands),
-    op_date_range AS (select
+  WITH op_date_range AS (select
                         min(observation_period_start_date) op_start_date,
                         max(observation_period_end_date) op_end_date
                       from @CDM_schema.PERSON p1
@@ -776,7 +793,7 @@ DROP TABLE #raw_107;
                           on p1.person_id = op1.person_id)
   select year as obs_year, DATEFROMPARTS(year, 1, 1) as obs_year_start, DATEFROMPARTS(year,12,31) as obs_year_end
 		into #temp_dates_1
-    from years, op_date_range where year between YEAR(op_date_range.op_start_date) AND YEAR(op_date_range.op_end_date)
+    from #tmp_years, op_date_range where year between YEAR(op_date_range.op_start_date) AND YEAR(op_date_range.op_end_date)
   ;
 
 
@@ -812,11 +829,7 @@ DROP TABLE #raw_107;
   -- 110   Number of persons with continuous observation in each month
   -- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
 
-	WITH x AS (SELECT 0 AS n UNION ALL SELECT 1 AS n UNION ALL SELECT 2 AS n UNION ALL SELECT 3 AS n UNION ALL SELECT 4 AS n UNION ALL SELECT 5 AS n UNION ALL SELECT 6 AS n UNION ALL SELECT 7 AS n UNION ALL SELECT 8 AS n UNION ALL SELECT 9 AS n),
-		years AS (SELECT ones.n + 10*tens.n + 100*hundreds.n + 1000*thousands.n as year
-							FROM x ones,     x tens,      x hundreds,       x thousands),
-		months AS (SELECT 1 AS month UNION ALL SELECT 2 AS month UNION ALL SELECT 3 AS month UNION ALL SELECT 4 AS month UNION ALL SELECT 5 AS month UNION ALL SELECT 6 AS month UNION ALL SELECT 7 AS month UNION ALL SELECT 8 AS month UNION ALL SELECT 9 AS month UNION ALL SELECT 10 AS month UNION ALL SELECT 11 AS month UNION ALL SELECT 12 AS month),
-		op_date_range AS (
+	WITH op_date_range AS (
 			SELECT MIN(observation_period_start_date) AS op_start_date,
 				MAX(observation_period_end_date) AS op_end_date
 			FROM @CDM_schema.PERSON p1
@@ -832,7 +845,7 @@ DROP TABLE #raw_107;
   DATEADD(dd,-1,DATEADD(mm,1,DATEFROMPARTS(years.year, months.month, 1))) AS obs_month_end
   INTO
   #temp_dates_2
-  FROM years, months, op_date_range WHERE year BETWEEN YEAR(op_date_range.op_start_date) AND YEAR(op_date_range.op_end_date)
+  FROM #tmp_years years, #tmp_months months, op_date_range WHERE year BETWEEN YEAR(op_date_range.op_start_date) AND YEAR(op_date_range.op_end_date)
 	ORDER BY years.year*100 + months.month
   ;
   
@@ -972,10 +985,7 @@ DROP TABLE #raw_107;
   -- 116   Number of persons with at least one day of observation in each year by gender and age decile
   -- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
 
-	WITH x AS (SELECT 0 AS n UNION ALL SELECT 1 AS n UNION ALL SELECT 2 AS n UNION ALL SELECT 3 AS n UNION ALL SELECT 4 AS n UNION ALL SELECT 5 AS n UNION ALL SELECT 6 AS n UNION ALL SELECT 7 AS n UNION ALL SELECT 8 AS n UNION ALL SELECT 9 AS n),
-		years AS (SELECT ones.n + 10*tens.n + 100*hundreds.n + 1000*thousands.n as year
-							FROM x ones,     x tens,      x hundreds,       x thousands),
-		op_date_range AS (
+	WITH op_date_range AS (
 			select
 				MIN(observation_period_start_date) as op_start_date,
 				MAX(observation_period_end_date) as op_end_date
@@ -988,7 +998,7 @@ DROP TABLE #raw_107;
 		)
 	SELECT year as obs_year
 		INTO #temp_dates_3
-	FROM years, op_date_range WHERE years.year BETWEEN YEAR(op_date_range.op_start_date) AND YEAR(op_date_range.op_end_date)
+	FROM #tmp_years years, op_date_range WHERE years.year BETWEEN YEAR(op_date_range.op_start_date) AND YEAR(op_date_range.op_end_date)
   ;
   
   --insert into @results_schema.HERACLES_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3, count_value)
@@ -1026,11 +1036,7 @@ DROP TABLE #raw_107;
   -- 117   Number of persons with at least one day of observation in each year by gender and age decile
   -- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
 
-	WITH x AS (SELECT 0 AS n UNION ALL SELECT 1 AS n UNION ALL SELECT 2 AS n UNION ALL SELECT 3 AS n UNION ALL SELECT 4 AS n UNION ALL SELECT 5 AS n UNION ALL SELECT 6 AS n UNION ALL SELECT 7 AS n UNION ALL SELECT 8 AS n UNION ALL SELECT 9 AS n),
-		years AS (SELECT ones.n + 10*tens.n + 100*hundreds.n + 1000*thousands.n as year
-							FROM x ones,     x tens,      x hundreds,       x thousands),
-		months AS (SELECT 1 AS month UNION ALL SELECT 2 AS month UNION ALL SELECT 3 AS month UNION ALL SELECT 4 AS month UNION ALL SELECT 5 AS month UNION ALL SELECT 6 AS month UNION ALL SELECT 7 AS month UNION ALL SELECT 8 AS month UNION ALL SELECT 9 AS month UNION ALL SELECT 10 AS month UNION ALL SELECT 11 AS month UNION ALL SELECT 12 AS month),
-		op_date_range AS (
+	WITH op_date_range AS (
 			select
 				MIN(observation_period_start_date) AS op_start_date,
 				MAX(observation_period_end_date) AS op_end_date
@@ -1043,7 +1049,7 @@ DROP TABLE #raw_107;
 	SELECT years.year * 100 + months.month AS obs_month
 	INTO
 		#temp_dates_4
-	FROM years, months, op_date_range
+	FROM #tmp_years years, #tmp_months months, op_date_range
 	WHERE years.year BETWEEN YEAR(op_date_range.op_start_date) AND YEAR(op_date_range.op_end_date)
   ;
   
@@ -15261,3 +15267,8 @@ drop table  #results_dist_4022;
 IF OBJECT_ID('tempdb..#results_dist_4023', 'U') IS NOT NULL
 drop table  #results_dist_4023;
 
+IF OBJECT_ID('tempdb..#tmp_years', 'U') IS NOT NULL
+	DROP TABLE  #tmp_years;
+
+IF OBJECT_ID('tempdb..#tmp_months', 'U') IS NOT NULL
+	DROP TABLE  #tmp_months;

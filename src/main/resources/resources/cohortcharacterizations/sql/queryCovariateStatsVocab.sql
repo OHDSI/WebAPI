@@ -6,7 +6,10 @@ WITH main_table AS (
       fr.analysis_name,
       fr.concept_id,
       fr.count_value,
-      fr.avg_value as stat_value
+      fr.avg_value as stat_value,
+      fr.strata_id,
+      fr.strata_name,
+      fr.fa_type
     from @cdm_results_schema.cc_results fr
     where fr.cc_generation_id = @cc_generation_id and fr.analysis_id = @analysis_id and fr.cohort_definition_id = @cohort_id --and fr.covariate_id = @covariate_id
 ),

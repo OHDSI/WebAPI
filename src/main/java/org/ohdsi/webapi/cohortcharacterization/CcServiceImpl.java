@@ -439,6 +439,9 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
             stat.setAnalysisName(rs.getString("analysis_name"));
             stat.setSourceKey(source.getSourceKey());
             stat.setDistance(rs.getInt("min_levels_of_separation"));
+            stat.setStrataId(rs.getLong("strata_id"));
+            stat.setStrataName(rs.getString("strata_name"));
+            stat.setFaType(rs.getString("fa_type"));
             return stat;
         });
     }

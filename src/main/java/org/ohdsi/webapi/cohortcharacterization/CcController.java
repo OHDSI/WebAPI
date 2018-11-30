@@ -200,10 +200,12 @@ public class CcController {
                                                     @PathParam("covariateId") Long covariateId) {
 
         Integer presetId = convertPresetAnalysisIdToSystem(Math.toIntExact(analysisId));
-        return service.getPrevalenceStatsByGenerationId(generationId, Long.valueOf(presetId), cohortId, covariateId);
+        List<CcPrevalenceStat> stats = service.getPrevalenceStatsByGenerationId(generationId, Long.valueOf(presetId), cohortId, covariateId);
+        convertPresetAnalysesToLocal(stats);
+        return stats;
     }
 
-    private void convertPresetAnalysesToLocal(List<CcResult> ccResults) {
+    private void convertPresetAnalysesToLocal(List<? extends CcResult> ccResults) {
 
       List<FeAnalysisWithStringEntity> presetFeAnalyses = feAnalysisService.findPresetAnalysesBySystemNames(ccResults.stream().map(CcResult::getAnalysisName).distinct().collect(Collectors.toList()));
       ccResults.stream().filter(res -> Objects.equals(res.getFaType(), StandardFeatureAnalysisType.PRESET.name()))

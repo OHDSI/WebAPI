@@ -55,5 +55,4 @@ FROM concepts
   LEFT JOIN counts c1 ON concepts.ancestor_id = c1.concept_id
   LEFT JOIN counts c2 ON concepts.descendant_id = c2.concept_id
 GROUP BY concepts.ancestor_id
-HAVING isnull(max(c1.agg_count_value), 0) > 0 OR isnull(sum(c2.agg_count_value), 0) > 0
 ;

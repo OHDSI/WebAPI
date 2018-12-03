@@ -14,7 +14,7 @@ public class SeriesPerPersonMapper implements RowMapper<SeriesPerPerson> {
 		SeriesPerPerson record = new SeriesPerPerson();
 		record.setSeriesName(rs.getString("SERIES_NAME"));
 		record.setxCalendarMonth(rs.getInt("X_CALENDAR_MONTH"));
-		record.setyRecordCount(rs.getInt("Y_RECORD_COUNT"));
+		record.setyRecordCount(rs.getFloat("Y_RECORD_COUNT"));
 		return record;
 	}
 

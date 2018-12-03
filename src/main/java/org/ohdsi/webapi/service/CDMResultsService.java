@@ -19,7 +19,10 @@ import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.util.PreparedSqlRender;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,6 +36,7 @@ import org.springframework.stereotype.Component;
 @Path("/cdmresults")
 @Component
 public class CDMResultsService extends AbstractDaoService {
+    private final Logger logger = LoggerFactory.getLogger(CDMResultsService.class);
 
     private CDMResultsAnalysisRunner queryRunner = null;
 
@@ -82,14 +86,30 @@ public class CDMResultsService extends AbstractDaoService {
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
 
-        if (notCachedRecordIds.size() > 0) {
+        if (!sourceCache.warm && notCachedRecordIds.size() > 0) {
             Source source = getSourceRepository().findBySourceKey(sourceKey);
-            PreparedStatementRenderer psr = prepareGetConceptRecordCount(notCachedRecordIds.toArray(new Integer[notCachedRecordIds.size()]), source);
-            List<SimpleEntry<Integer, Long[]>> queriedList = getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), CDMResultsCacheTasklet.getMapper(sourceCache.cache));
+            List<SimpleEntry<Integer, Long[]>> queriedList = this.executeGetConceptRecordCount(notCachedRecordIds.toArray(new Integer[notCachedRecordIds.size()]), source, sourceCache);
             cachedRecordCounts.addAll(queriedList);
         }
 
         return cachedRecordCounts;
+    }
+    
+    protected List<SimpleEntry<Integer, Long[]>> executeGetConceptRecordCount(Integer[] identifiers, Source source, CDMResultsCache sourceCache) {
+        List<SimpleEntry<Integer, Long[]>> returnVal = new ArrayList<>();
+        if (identifiers.length == 0) {
+            return returnVal;
+        } else {
+            int parameterLimit = PreparedSqlRender.getParameterLimit(source);
+            if (parameterLimit > 0 && identifiers.length > parameterLimit) {
+                returnVal = executeGetConceptRecordCount(Arrays.copyOfRange(identifiers, parameterLimit, identifiers.length), source, sourceCache);
+                logger.debug("executeGetConceptRecordCount: " + returnVal.size());
+                identifiers = Arrays.copyOfRange(identifiers, 0, parameterLimit);
+            }
+            PreparedStatementRenderer psr = prepareGetConceptRecordCount(identifiers, source);
+            returnVal.addAll(getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), CDMResultsCacheTasklet.getMapper(sourceCache.cache)));
+        }
+        return returnVal;
     }
 
     protected PreparedStatementRenderer prepareGetConceptRecordCount(Integer[] identifiers, Source source) {

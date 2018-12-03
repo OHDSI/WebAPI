@@ -20,7 +20,7 @@ ALTER TABLE ${ohdsiSchema}.PENELOPE_LAERTES_UNIVERSE ADD CONSTRAINT pk_penelope_
 ALTER TABLE ${ohdsiSchema}.plp ADD CONSTRAINT pk_plp PRIMARY KEY (PLP_ID);
 
 
-ALTER TABLE ${ohdsiSchema}.cohort_features ADD (id NUMBER);
+ALTER TABLE ${ohdsiSchema}.cohort_features ADD (id NUMBER(19));
 CREATE SEQUENCE cohort_features_pk_seq START WITH 1 NOCYCLE;
 CREATE OR REPLACE TRIGGER ${ohdsiSchema}.cohort_features_bir
   BEFORE INSERT ON ${ohdsiSchema}.cohort_features
@@ -32,7 +32,7 @@ CREATE OR REPLACE TRIGGER ${ohdsiSchema}.cohort_features_bir
 UPDATE ${ohdsiSchema}.cohort_features SET id = cohort_features_pk_seq.nextval;
 ALTER TABLE ${ohdsiSchema}.cohort_features ADD CONSTRAINT pk_cohort_features PRIMARY KEY (id);
 
-ALTER TABLE ${ohdsiSchema}.cohort_features_analysis_ref ADD (id NUMBER);
+ALTER TABLE ${ohdsiSchema}.cohort_features_analysis_ref ADD (id NUMBER(19));
 CREATE SEQUENCE cohort_feat_anlys_ref_pk_seq START WITH 1 NOCYCLE;
 CREATE OR REPLACE TRIGGER ${ohdsiSchema}.cohort_feat_anlys_ref_bir
   BEFORE INSERT ON ${ohdsiSchema}.cohort_features_analysis_ref
@@ -44,7 +44,7 @@ CREATE OR REPLACE TRIGGER ${ohdsiSchema}.cohort_feat_anlys_ref_bir
 UPDATE ${ohdsiSchema}.cohort_features_analysis_ref SET id = cohort_feat_anlys_ref_pk_seq.nextval;
 ALTER TABLE ${ohdsiSchema}.cohort_features_analysis_ref ADD CONSTRAINT pk_coh_features_an_ref PRIMARY KEY (id);
 
-ALTER TABLE ${ohdsiSchema}.cohort_features_dist ADD (id NUMBER);
+ALTER TABLE ${ohdsiSchema}.cohort_features_dist ADD (id NUMBER(19));
 CREATE SEQUENCE cohort_features_dist_pk_seq START WITH 1 NOCYCLE;
 CREATE OR REPLACE TRIGGER ${ohdsiSchema}.cohort_features_dist_bir
   BEFORE INSERT ON ${ohdsiSchema}.cohort_features_dist
@@ -56,7 +56,7 @@ CREATE OR REPLACE TRIGGER ${ohdsiSchema}.cohort_features_dist_bir
 UPDATE ${ohdsiSchema}.cohort_features_dist SET id = cohort_features_dist_pk_seq.nextval;
 ALTER TABLE ${ohdsiSchema}.cohort_features_dist ADD CONSTRAINT pk_coh_features_dist PRIMARY KEY (id);
 
-ALTER TABLE ${ohdsiSchema}.cohort_features_ref ADD (id NUMBER);
+ALTER TABLE ${ohdsiSchema}.cohort_features_ref ADD (id NUMBER(19));
 CREATE SEQUENCE cohort_features_ref_pk_seq START WITH 1 NOCYCLE;
 CREATE OR REPLACE TRIGGER ${ohdsiSchema}.cohort_features_ref_bir
   BEFORE INSERT ON ${ohdsiSchema}.cohort_features_ref
@@ -68,7 +68,7 @@ CREATE OR REPLACE TRIGGER ${ohdsiSchema}.cohort_features_ref_bir
 UPDATE ${ohdsiSchema}.cohort_features_ref SET id = cohort_features_ref_pk_seq.nextval;
 ALTER TABLE ${ohdsiSchema}.cohort_features_ref ADD CONSTRAINT pk_coh_features_ref PRIMARY KEY (id);
 
-ALTER TABLE ${ohdsiSchema}.heracles_heel_results ADD (id NUMBER);
+ALTER TABLE ${ohdsiSchema}.heracles_heel_results ADD (id NUMBER(19));
 CREATE SEQUENCE heracles_heel_results_pk_seq START WITH 1 NOCYCLE;
 CREATE OR REPLACE TRIGGER ${ohdsiSchema}.heracles_heel_results_bir
   BEFORE INSERT ON ${ohdsiSchema}.heracles_heel_results
@@ -80,7 +80,7 @@ CREATE OR REPLACE TRIGGER ${ohdsiSchema}.heracles_heel_results_bir
 UPDATE ${ohdsiSchema}.heracles_heel_results SET id = heracles_heel_results_pk_seq.nextval;
 ALTER TABLE ${ohdsiSchema}.heracles_heel_results ADD CONSTRAINT pk_heracles_heel_res PRIMARY KEY (id);
 
-ALTER TABLE ${ohdsiSchema}.heracles_results ADD (id NUMBER);
+ALTER TABLE ${ohdsiSchema}.heracles_results ADD (id NUMBER(19));
 CREATE SEQUENCE heracles_results_pk_seq START WITH 1 NOCYCLE;
 CREATE OR REPLACE TRIGGER ${ohdsiSchema}.heracles_results_bir
   BEFORE INSERT ON ${ohdsiSchema}.heracles_results
@@ -93,7 +93,7 @@ UPDATE ${ohdsiSchema}.heracles_results SET id = heracles_results_pk_seq.nextval;
 ALTER TABLE ${ohdsiSchema}.heracles_results ADD CONSTRAINT pk_heracles_res PRIMARY KEY (id);
 
 
-ALTER TABLE ${ohdsiSchema}.heracles_results_dist ADD (id NUMBER);
+ALTER TABLE ${ohdsiSchema}.heracles_results_dist ADD (id NUMBER(19));
 CREATE SEQUENCE heracles_results_dist_pk_seq START WITH 1 NOCYCLE;
 CREATE OR REPLACE TRIGGER ${ohdsiSchema}.heracles_results_dist_bir
   BEFORE INSERT ON ${ohdsiSchema}.heracles_results_dist
@@ -105,7 +105,7 @@ CREATE OR REPLACE TRIGGER ${ohdsiSchema}.heracles_results_dist_bir
 UPDATE ${ohdsiSchema}.heracles_results_dist SET id = heracles_results_dist_pk_seq.nextval;
 ALTER TABLE ${ohdsiSchema}.heracles_results_dist ADD CONSTRAINT pk_heracles_res_dist PRIMARY KEY (id);
 
-ALTER TABLE ${ohdsiSchema}.ir_analysis_dist ADD (id NUMBER);
+ALTER TABLE ${ohdsiSchema}.ir_analysis_dist ADD (id NUMBER(19));
 CREATE SEQUENCE ir_analysis_dist_pk_seq START WITH 1 NOCYCLE;
 CREATE OR REPLACE TRIGGER ${ohdsiSchema}.ir_analysis_dist_bir
   BEFORE INSERT ON ${ohdsiSchema}.ir_analysis_dist
@@ -117,7 +117,7 @@ CREATE OR REPLACE TRIGGER ${ohdsiSchema}.ir_analysis_dist_bir
 UPDATE ${ohdsiSchema}.ir_analysis_dist SET id = ir_analysis_dist_pk_seq.nextval;
 ALTER TABLE ${ohdsiSchema}.ir_analysis_dist ADD CONSTRAINT pk_ir_analysis_dist PRIMARY KEY (id);
 
-ALTER TABLE ${ohdsiSchema}.ir_analysis_result ADD (id NUMBER);
+ALTER TABLE ${ohdsiSchema}.ir_analysis_result ADD (id NUMBER(19));
 CREATE SEQUENCE ir_analysis_result_pk_seq START WITH 1 NOCYCLE;
 CREATE OR REPLACE TRIGGER ${ohdsiSchema}.ir_analysis_result_bir
   BEFORE INSERT ON ${ohdsiSchema}.ir_analysis_result
@@ -129,7 +129,7 @@ CREATE OR REPLACE TRIGGER ${ohdsiSchema}.ir_analysis_result_bir
 UPDATE ${ohdsiSchema}.ir_analysis_result SET id = ir_analysis_result_pk_seq.nextval;
 ALTER TABLE ${ohdsiSchema}.ir_analysis_result ADD CONSTRAINT pk_ir_analysis_res PRIMARY KEY (id);
 
-ALTER TABLE ${ohdsiSchema}.ir_analysis_strata_stats ADD (id NUMBER);
+ALTER TABLE ${ohdsiSchema}.ir_analysis_strata_stats ADD (id NUMBER(19));
 CREATE SEQUENCE ir_anls_strat_stat_pk_seq START WITH 1 NOCYCLE;
 CREATE OR REPLACE TRIGGER ${ohdsiSchema}.ir_analysis_strata_stats_bir
   BEFORE INSERT ON ${ohdsiSchema}.ir_analysis_strata_stats
@@ -142,7 +142,7 @@ UPDATE ${ohdsiSchema}.ir_analysis_strata_stats SET id = ir_anls_strat_stat_pk_se
 ALTER TABLE ${ohdsiSchema}.ir_analysis_strata_stats ADD CONSTRAINT pk_ir_an_strata_stats PRIMARY KEY (id);
 
 
-ALTER TABLE ${ohdsiSchema}.ir_strata ADD (id NUMBER);
+ALTER TABLE ${ohdsiSchema}.ir_strata ADD (id NUMBER(19));
 CREATE SEQUENCE ir_strata_pk_seq START WITH 1 NOCYCLE;
 CREATE OR REPLACE TRIGGER ${ohdsiSchema}.ir_strata_bir
   BEFORE INSERT ON ${ohdsiSchema}.ir_strata
@@ -154,7 +154,7 @@ CREATE OR REPLACE TRIGGER ${ohdsiSchema}.ir_strata_bir
 UPDATE ${ohdsiSchema}.ir_strata SET id = ir_strata_pk_seq.nextval;
 ALTER TABLE ${ohdsiSchema}.ir_strata ADD CONSTRAINT pk_ir_strata PRIMARY KEY (id);
 
-ALTER TABLE ${ohdsiSchema}.penelope_laertes_uni_pivot ADD (id NUMBER);
+ALTER TABLE ${ohdsiSchema}.penelope_laertes_uni_pivot ADD (id NUMBER(19));
 CREATE SEQUENCE penelope_lae_uni_p_pk_seq START WITH 1 NOCYCLE;
 CREATE OR REPLACE TRIGGER ${ohdsiSchema}.penelope_lae_uni_p_bir
   BEFORE INSERT ON ${ohdsiSchema}.penelope_laertes_uni_pivot

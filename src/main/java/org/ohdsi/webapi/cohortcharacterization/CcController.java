@@ -14,7 +14,10 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
+import org.ohdsi.featureExtraction.FeatureExtraction;
 import org.ohdsi.webapi.Pagination;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.dto.*;
@@ -48,6 +51,7 @@ public class CcController {
         this.feAnalysisService = feAnalysisService;
         this.conversionService = conversionService;
         this.converterUtils = converterUtils;
+        FeatureExtraction.init(null);
     }
 
     @POST
@@ -183,15 +187,43 @@ public class CcController {
     public List<CcResult> getGenerationsResults(
             @PathParam("generationId") final Long generationId) {
         List<CcResult> ccResults = service.findResults(generationId);
-        List<FeAnalysisWithStringEntity> presetFeAnalyses = feAnalysisService.findPresetAnalysesBySystemNames(ccResults.stream().map(CcResult::getAnalysisName).distinct().collect(Collectors.toList()));
-        ccResults.forEach(res -> {
-            if (Objects.equals(res.getFaType(), StandardFeatureAnalysisType.PRESET.name())) {
-                presetFeAnalyses.stream().filter(fa -> fa.getDesign().equals(res.getAnalysisName())).findFirst().ifPresent(fa -> {
-                    res.setAnalysisId(fa.getId());
-                    res.setAnalysisName(fa.getName());
-                });
-            }
-        });
+        convertPresetAnalysesToLocal(ccResults);
         return ccResults;
+    }
+
+    @GET
+    @Path("/generation/{generationId}/explore/prevalence/{analysisId}/{cohortId}/{covariateId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<CcPrevalenceStat> getPrevalenceStat(@PathParam("generationId") Long generationId,
+                                                    @PathParam("analysisId") Long analysisId,
+                                                    @PathParam("cohortId") Long cohortId,
+                                                    @PathParam("covariateId") Long covariateId) {
+
+        Integer presetId = convertPresetAnalysisIdToSystem(Math.toIntExact(analysisId));
+        List<CcPrevalenceStat> stats = service.getPrevalenceStatsByGenerationId(generationId, Long.valueOf(presetId), cohortId, covariateId);
+        convertPresetAnalysesToLocal(stats);
+        return stats;
+    }
+
+    private void convertPresetAnalysesToLocal(List<? extends CcResult> ccResults) {
+
+      List<FeAnalysisWithStringEntity> presetFeAnalyses = feAnalysisService.findPresetAnalysesBySystemNames(ccResults.stream().map(CcResult::getAnalysisName).distinct().collect(Collectors.toList()));
+      ccResults.stream().filter(res -> Objects.equals(res.getFaType(), StandardFeatureAnalysisType.PRESET.name()))
+              .forEach(res -> {
+                presetFeAnalyses.stream().filter(fa -> fa.getDesign().equals(res.getAnalysisName())).findFirst().ifPresent(fa -> {
+                  res.setAnalysisId(fa.getId());
+                  res.setAnalysisName(fa.getName());
+                });
+              });
+    }
+
+    private Integer convertPresetAnalysisIdToSystem(Integer analysisId) {
+
+        FeAnalysisEntity fe = feAnalysisService.findById(analysisId).orElse(null);
+        if (fe instanceof FeAnalysisWithStringEntity && fe.isPreset()) {
+            FeatureExtraction.PrespecAnalysis prespecAnalysis = FeatureExtraction.getNameToPrespecAnalysis().get(((FeAnalysisWithStringEntity) fe).getDesign());
+            return prespecAnalysis.analysisId;
+        }
+        return analysisId;
     }
 }

@@ -1,3 +1,16 @@
+SELECT DISTINCT cohort_characterization_id, cohort_id 
+INTO ${ohdsiSchema}.cc_cohort_tmp
+FROM ${ohdsiSchema}.cc_cohort;
+
+DELETE FROM ${ohdsiSchema}.cc_cohort;
+
+INSERT INTO ${ohdsiSchema}.cc_cohort (cohort_characterization_id, cohort_id)
+SELECT cohort_characterization_id, cohort_id 
+FROM ${ohdsiSchema}.cc_cohort_tmp;
+
+TRUNCATE TABLE ${ohdsiSchema}.cc_cohort_tmp;
+DROP TABLE ${ohdsiSchema}.cc_cohort_tmp;
+
 ALTER TABLE ${ohdsiSchema}.ANALYSIS_GENERATION_INFO ADD CONSTRAINT pk_an_gen_info PRIMARY KEY (JOB_EXECUTION_ID);
 ALTER TABLE ${ohdsiSchema}.cc_analysis ADD CONSTRAINT pk_cc_analysis PRIMARY KEY (cohort_characterization_id, fe_analysis_id);
 ALTER TABLE ${ohdsiSchema}.cc_cohort ADD CONSTRAINT pk_cc_cohort PRIMARY KEY (cohort_characterization_id, cohort_id);
@@ -14,7 +27,7 @@ ALTER TABLE ${ohdsiSchema}.CONCEPT_SET_ITEM ADD CONSTRAINT pk_concept_set_item P
 ALTER TABLE ${ohdsiSchema}.feas_study_inclusion_stats ADD CONSTRAINT pk_feas_st_incl_stats PRIMARY KEY (study_id);
 ALTER TABLE ${ohdsiSchema}.feas_study_index_stats ADD CONSTRAINT pk_feas_st_indx_stats PRIMARY KEY (study_id);
 ALTER TABLE ${ohdsiSchema}.feas_study_result ADD CONSTRAINT pk_feas_study_result PRIMARY KEY (study_id);
-ALTER TABLE ${ohdsiSchema}.feasibility_inclusion ADD CONSTRAINT pk_feas_inclusion PRIMARY KEY (name);
+ALTER TABLE ${ohdsiSchema}.feasibility_inclusion ADD CONSTRAINT pk_feas_inclusion PRIMARY KEY (study_id, sequence);
 ALTER TABLE ${ohdsiSchema}.heracles_analysis ADD CONSTRAINT pk_heracles_analysis PRIMARY KEY (analysis_id);
 ALTER TABLE ${ohdsiSchema}.PENELOPE_LAERTES_UNIVERSE ADD CONSTRAINT pk_penelope_lae_uni PRIMARY KEY (ID);
 ALTER TABLE ${ohdsiSchema}.plp ADD CONSTRAINT pk_plp PRIMARY KEY (PLP_ID);

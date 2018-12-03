@@ -1,3 +1,17 @@
+SELECT DISTINCT cohort_characterization_id, cohort_id 
+INTO ${ohdsiSchema}.cc_cohort_tmp
+FROM ${ohdsiSchema}.cc_cohort;
+
+DELETE FROM ${ohdsiSchema}.cc_cohort;
+
+INSERT INTO ${ohdsiSchema}.cc_cohort (cohort_characterization_id, cohort_id)
+SELECT cohort_characterization_id, cohort_id 
+FROM ${ohdsiSchema}.cc_cohort_tmp;
+
+TRUNCATE TABLE ${ohdsiSchema}.cc_cohort_tmp;
+DROP TABLE ${ohdsiSchema}.cc_cohort_tmp;
+GO
+
 ALTER TABLE ${ohdsiSchema}.analysis_execution ADD CONSTRAINT pk_analysis_exec PRIMARY KEY (id);
 GO
 ALTER TABLE ${ohdsiSchema}.analysis_generation_info ADD CONSTRAINT pk_an_gen_info PRIMARY KEY (job_execution_id);
@@ -46,7 +60,7 @@ GO
 UPDATE ${ohdsiSchema}.feasibility_inclusion SET name = '' WHERE name IS NULL;
 ALTER TABLE ${ohdsiSchema}.feasibility_inclusion ALTER COLUMN name VARCHAR(255) NOT NULL;
 GO
-ALTER TABLE ${ohdsiSchema}.feasibility_inclusion ADD CONSTRAINT pk_feas_inclusion PRIMARY KEY (name);
+ALTER TABLE ${ohdsiSchema}.feasibility_inclusion ADD CONSTRAINT pk_feas_inclusion PRIMARY KEY (study_id, sequence);
 GO
 
 UPDATE ${ohdsiSchema}.heracles_analysis SET analysis_id = 0 WHERE analysis_id IS NULL;

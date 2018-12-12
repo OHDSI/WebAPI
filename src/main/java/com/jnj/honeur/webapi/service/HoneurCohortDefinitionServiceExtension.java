@@ -143,7 +143,7 @@ public class HoneurCohortDefinitionServiceExtension {
     @Autowired
     private RoleRepository roleRepository;
 
-    @Autowired
+    @Autowired(required = false)
     private CohortGenerationImportService cohortGenerationImportService;
 
     private final ObjectMapper mapper = new ObjectMapper();

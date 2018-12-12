@@ -29,6 +29,7 @@ import org.springframework.batch.core.configuration.annotation.StepBuilderFactor
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
@@ -40,6 +41,7 @@ import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
 import static org.ohdsi.webapi.Constants.Params.SOURCE_KEY;
 
 @Component
+@ConditionalOnExpression("${datasource.honeur.enabled} and ${webapi.central}")
 public class CohortGenerationImportService extends AbstractDaoService {
 
     private final StepBuilderFactory stepBuilders;

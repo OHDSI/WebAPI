@@ -71,7 +71,7 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
     @Autowired
     private JobOperator jobOperator;
 
-    @Autowired
+    @Autowired(required = false)
     private CohortGenerationImportService cohortGenerationImportService;
 
     @Value("${security.provider}")

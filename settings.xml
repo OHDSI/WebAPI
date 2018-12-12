@@ -12,7 +12,6 @@
                 <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
                 <flyway.datasource.username>ohdsi_admin_user</flyway.datasource.username>
                 <flyway.locations>classpath:db/migration/postgresql,classpath:db/extension/honeur</flyway.locations>
-                <security.provider>AtlasCustomSecurity</security.provider>
                 <security.cas.loginUrl>https://localhost:8443/cas/login</security.cas.loginUrl>
                 <security.cas.callbackUrl>https://localhost:8444/webapi/user/cas/callback?client_name=CasClient</security.cas.callbackUrl>
                 <security.cas.serverUrl>https://localhost:8443/cas</security.cas.serverUrl>
@@ -46,6 +45,18 @@
                 <central>true</central>
                 <security.cas.tgc.domain>.honeur.org</security.cas.tgc.domain>
                 <liferay.company.web.id>liferay.com</liferay.company.web.id>
+            </properties>
+        </profile>
+        <profile>
+            <id>docker</id>
+            <properties>
+                <datasource.db>OHDSI</datasource.db>
+                <datasource.password>app1</datasource.password>
+                <flyway.datasource.password>admin1</flyway.datasource.password>
+                <datasource.url>jdbc:postgresql://postgres:5432/${datasource.db}</datasource.url>
+                <hss.url>https:/dev.honeur.org/storage/api</hss.url>
+                <security.ssl.enabled>false</security.ssl.enabled> <!-- !!! Enabling this property doesn't work on AWS.  Not a real problem as SSL is already enforced on AWS !!! -->
+                <central>false</central>
             </properties>
         </profile>
         <profile>
@@ -93,6 +104,7 @@
             <id>honeur-central</id>
             <properties>
                 <central>true</central>
+                <security.provider>AtlasCustomSecurity</security.provider>
                 <war.directory>target</war.directory>
                 <datasource.db>OHDSI</datasource.db>
                 <honeur.port>8444</honeur.port>

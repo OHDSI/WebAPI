@@ -726,9 +726,9 @@
       </properties>
       <dependencies>
         <dependency>
-          <groupId>ojdbc</groupId>
-          <artifactId>ojdbc</artifactId>
-          <version>14</version>
+          <groupId>com.oracle</groupId>
+          <artifactId>ojdbc6</artifactId>
+          <version>12.1.0.1</version>
         </dependency>
       </dependencies>
     </profile>

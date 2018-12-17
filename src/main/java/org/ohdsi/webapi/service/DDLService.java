@@ -20,6 +20,7 @@ package org.ohdsi.webapi.service;
 
 import static org.ohdsi.webapi.service.SqlRenderService.translateSQL;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -47,7 +48,6 @@ public class DDLService {
 		"/ddl/results/cohort_inclusion_result.sql",
 		"/ddl/results/cohort_inclusion_stats.sql",
 		"/ddl/results/cohort_summary_stats.sql",
-		"/ddl/results/concept_hierarchy.sql",
 		"/ddl/results/feas_study_inclusion_stats.sql",
 		"/ddl/results/feas_study_index_stats.sql",
 		"/ddl/results/feas_study_result.sql",
@@ -67,8 +67,12 @@ public class DDLService {
 
 	public static final Collection<String> RESULT_INIT_FILE_PATHS = Arrays.asList(
 		"/ddl/results/init_heracles_analysis.sql",
-		"/ddl/results/init_heracles_periods.sql",
-		"/ddl/results/init_concept_hierarchy.sql"
+		"/ddl/results/init_heracles_periods.sql"
+	);
+
+	public static final Collection<String> INIT_CONCEPT_HIERARCHY_FILE_PATHS = Arrays.asList(
+			"/ddl/results/concept_hierarchy.sql",
+			"/ddl/results/init_concept_hierarchy.sql"
 	);
 
 	private static final Collection<String> RESULT_INDEX_FILE_PATHS = Arrays.asList(
@@ -89,8 +93,18 @@ public class DDLService {
 	@GET
 	@Path("results")
 	@Produces("text/plain")
-	public String generateResultSQL(@QueryParam("dialect") String dialect, @DefaultValue("results") @QueryParam("schema") String schema) {
-            return generateSQL(dialect, "results_schema", schema, RESULT_DDL_FILE_PATHS, RESULT_INIT_FILE_PATHS, RESULT_INDEX_FILE_PATHS);
+	public String generateResultSQL(
+			@QueryParam("dialect") String dialect,
+			@DefaultValue("results") @QueryParam("schema") String schema,
+			@DefaultValue("true") @QueryParam("initConceptHierarchy") Boolean initConceptHierarchy) {
+
+		Collection<String> resultDDLFilePaths = new ArrayList<>(RESULT_DDL_FILE_PATHS);
+
+		if (initConceptHierarchy) {
+			resultDDLFilePaths.addAll(INIT_CONCEPT_HIERARCHY_FILE_PATHS);
+		}
+
+		return generateSQL(dialect, "results_schema", schema, resultDDLFilePaths, RESULT_INIT_FILE_PATHS, RESULT_INDEX_FILE_PATHS);
 	}
         
 	@GET

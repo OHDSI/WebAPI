@@ -3,7 +3,7 @@
 /***** Create hierarchy lookup table for the treemap hierarchies *****/
 /*********************************************************************/
 
-CREATE TABLE @results_database_schema.concept_hierarchy
+CREATE TABLE @results_schema.concept_hierarchy
 (
   concept_id             INT,
   concept_name           VARCHAR(400),

@@ -33,6 +33,7 @@ import javax.ws.rs.QueryParam;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.webapi.sqlrender.SourceStatement;
 import org.ohdsi.webapi.sqlrender.TranslatedStatement;
+import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.stereotype.Component;
 
 @Path("/ddl/")
@@ -158,7 +159,7 @@ public class DDLService {
 		statement.targetDialect = dialect.toLowerCase();
 		statement.sql = sql;
 		statement.parameters = new HashMap<>(params);
-		TranslatedStatement translatedStatement = translateSQL(statement);
+		TranslatedStatement translatedStatement = translateSQL(statement, SessionUtils.sessionId(), params.get(RESULTS_SCHEMA));
 		return translatedStatement.targetSQL;
 	}
 

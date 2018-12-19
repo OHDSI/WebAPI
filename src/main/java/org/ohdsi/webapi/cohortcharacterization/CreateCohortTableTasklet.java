@@ -1,11 +1,14 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
 import org.ohdsi.circe.helper.ResourceHelper;
+import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.sqlrender.SourceAwareSqlRender;
 import org.ohdsi.webapi.util.SourceUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
@@ -19,6 +22,8 @@ import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
 import static org.ohdsi.webapi.Constants.Params.TARGET_TABLE;
 
 public class CreateCohortTableTasklet implements Tasklet {
+
+  protected final Logger log = LoggerFactory.getLogger(getClass());
 
   private final String CREATE_COHORT_SQL = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/createCohortTable.sql");
 
@@ -51,8 +56,13 @@ public class CreateCohortTableTasklet implements Tasklet {
     final Source source = sourceService.findBySourceId(sourceId);
     final String resultsQualifier = SourceUtils.getResultsQualifier(source);
     final String tempQualifier = SourceUtils.getTempQualifier(source, resultsQualifier);
-    jdbcTemplate.execute(SqlTranslate.translateSql(sql, source.getSourceDialect(), null, tempQualifier));
-
+    
+    String translated = SqlTranslate.translateSql(sql, source.getSourceDialect(), null, tempQualifier);
+    String[] stmts = SqlSplit.splitSql(translated);
+    for (int i = 0; i < stmts.length; i++) { 
+      log.debug("Split SQL {} : {}", i, stmts[i]);
+      jdbcTemplate.execute(stmts[i]);
+    }
     return null;
   }
 }

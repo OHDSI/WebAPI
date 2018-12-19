@@ -45,7 +45,7 @@ marked_dates AS (
   FROM person_dates
 ),
 grouped_dates AS (
-  SELECT *, ordinal - SUM(to_be_collapsed) OVER ( PARTITION BY subject_id ORDER BY cohort_date ASC ROWS UNBOUNDED PRECEDING) group_idx
+  SELECT ordinal, subject_id, cohort_date, to_be_collapsed, ordinal - SUM(to_be_collapsed) OVER ( PARTITION BY subject_id ORDER BY cohort_date ASC ROWS UNBOUNDED PRECEDING) group_idx
   FROM marked_dates
 ),
 replacements AS (
@@ -88,8 +88,8 @@ into
       |B--|B--|
 */
 
-IF OBJECT_ID('tempdb..#split_overlapping_events', 'U') IS NOT NULL
-DROP TABLE #split_overlapping_events;
+IF OBJECT_ID('tempdb..#split_overlay_events', 'U') IS NOT NULL
+DROP TABLE #split_overlay_events;
 
 SELECT
 	CASE WHEN ordinal < 3 THEN first.id ELSE second.id END as id,
@@ -117,7 +117,7 @@ SELECT
 		WHEN 4 THEN
 		second.cohort_end_date
 		END as cohort_end_date
-INTO #split_overlapping_events
+INTO #split_overlay_events
 FROM #collapsed_dates_events first
 JOIN #collapsed_dates_events second ON first.subject_id = second.subject_id
     AND first.cohort_start_date < second.cohort_start_date
@@ -136,12 +136,12 @@ DROP TABLE #combo_events;
 WITH events AS (
   SELECT *
   FROM #collapsed_dates_events cde
-  WHERE NOT EXISTS(SELECT id FROM #split_overlapping_events WHERE #split_overlapping_events.id = cde.id)
+  WHERE NOT EXISTS(SELECT id FROM #split_overlay_events WHERE #split_overlay_events.id = cde.id)
 
   UNION ALL
 
   SELECT *
-  FROM #split_overlapping_events
+  FROM #split_overlay_events
 )
 SELECT SUM(DISTINCT POWER(2, e.event_cohort_index)) as combo_id, subject_id, cohort_start_date, cohort_end_date
 INTO #combo_events
@@ -164,7 +164,7 @@ SELECT
 INTO #non_repetetive_events
 FROM (
   SELECT
-    *,
+    combo_id, subject_id, cohort_start_date, cohort_end_date,
     CASE WHEN (combo_id = LAG(combo_id) OVER (PARTITION BY subject_id ORDER BY subject_id, cohort_start_date ASC))
       THEN 1
       ELSE 0

@@ -6,7 +6,7 @@ create table @temp_database_schema.@target_table
   cohort_end_date date NOT NULL
 );
 
-IF OBJECT_ID('@results_schema.cohort_inclusion', 'U') IS NULL
+IF OBJECT_ID('@temp_database_schema.cohort_inclusion', 'U') IS NULL
 CREATE TABLE @temp_database_schema.cohort_inclusion(
   cohort_definition_id int NOT NULL,
   rule_sequence int NOT NULL,

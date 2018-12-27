@@ -11,6 +11,8 @@ import org.ohdsi.webapi.feanalysis.domain.*;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisCriteriaRepository;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisEntityRepository;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisWithStringEntityRepository;
+import org.ohdsi.webapi.service.AbstractDaoService;
+import org.ohdsi.webapi.shiro.filters.ProcessResponseContentFilter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -20,7 +22,7 @@ import javax.ws.rs.NotFoundException;
 
 @Service
 @Transactional(readOnly = true)
-public class FeAnalysisServiceImpl implements FeAnalysisService {
+public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnalysisService {
     
     private FeAnalysisEntityRepository analysisRepository;
     private FeAnalysisCriteriaRepository criteriaRepository;
@@ -40,7 +42,7 @@ public class FeAnalysisServiceImpl implements FeAnalysisService {
         return analysisRepository.findAll(pageable);
     }
 
-  @Override
+    @Override
     public List<FeAnalysisWithStringEntity> findPresetAnalysesBySystemNames(Collection<String> names) {
         return stringAnalysisRepository.findByDesignIn(names);
     }
@@ -51,7 +53,13 @@ public class FeAnalysisServiceImpl implements FeAnalysisService {
         if (analysis.getStatType() == null) {
             analysis.setStatType(CcResultType.PREVALENCE);
         }
-        return analysisRepository.save(analysis);
+        FeAnalysisEntity savedEntity = analysisRepository.save(analysis);
+        try {
+            ((ProcessResponseContentFilter)security.getFilters().get("createPermissionsOnCreateFeatureAnalysis")).doProcessResponseContent(savedEntity.getId().toString());
+        } catch (Exception e) {
+            log.error("Failed to add permissions to feature analysis with id = " + savedEntity.getId(), e);
+        }
+        return savedEntity;
     }
 
     @Override

@@ -31,6 +31,7 @@ import org.ohdsi.webapi.service.CohortDefinitionService.CohortDefinitionDTO;
 import org.ohdsi.webapi.service.dto.PatientLevelPredictionAnalysisDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
+import org.ohdsi.webapi.shiro.filters.ProcessResponseContentFilter;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -116,7 +117,11 @@ public class PatientLevelPredictionService extends AbstractDaoService {
       plpa.setCreatedDate(currentTime);
 
       PatientLevelPredictionAnalysis plpaWithId = this.patientLevelPredictionAnalysisRepository.save(plpa);
-
+      try {
+          ((ProcessResponseContentFilter)security.getFilters().get("createPermissionsOnCreatePlp")).doProcessResponseContent(String.valueOf(plpaWithId.getAnalysisId()));
+      } catch (Exception e) {
+          log.error("Failed to add permissions to patient level prediction with id = " + plpaWithId.getAnalysisId(), e);
+      }
       return conversionService.convert(plpaWithId, PatientLevelPredictionAnalysisDTO.class);
     });
 	}
@@ -147,10 +152,9 @@ public class PatientLevelPredictionService extends AbstractDaoService {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/copy")
-	@Transactional
 	public PatientLevelPredictionAnalysisDTO copy(@PathParam("id") final int id) {
 		PatientLevelPredictionAnalysis analysis = this.patientLevelPredictionAnalysisRepository.findOne(id);
-		entityManager.detach(analysis); // Detach from the persistance context in order to save a copy
+		entityManager.detach(analysis); // Detach from the persistence context in order to save a copy
 		analysis.setAnalysisId(null);
 		analysis.setName("COPY OF: " + analysis.getName());
 		return this.createAnalysis(analysis);

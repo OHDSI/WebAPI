@@ -29,6 +29,7 @@ import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.PathwayAnalysisGenerationId;
 import org.ohdsi.webapi.shiro.annotations.SourceId;
+import org.ohdsi.webapi.shiro.filters.ProcessResponseContentFilter;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
@@ -138,8 +139,13 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
         newAnalysis.setCreatedBy(getCurrentUser());
         newAnalysis.setCreatedDate(new Date());
-
-        return save(newAnalysis);
+        PathwayAnalysisEntity savedEntity = save(newAnalysis);
+        try {
+            ((ProcessResponseContentFilter)security.getFilters().get("createPermissionsOnCreatePathwayAnalysis")).doProcessResponseContent(savedEntity.getId().toString());
+        } catch (Exception e) {
+            log.error("Failed to add permissions to pathway analysis with id = " + savedEntity.getId(), e);
+        }
+        return savedEntity;
     }
 
     @Override
@@ -164,7 +170,13 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         newAnalysis.setCreatedBy(getCurrentUser());
         newAnalysis.setCreatedDate(new Date());
 
-        return save(newAnalysis);
+        PathwayAnalysisEntity savedEntity = save(newAnalysis);
+        try {
+            ((ProcessResponseContentFilter)security.getFilters().get("createPermissionsOnCreatePathwayAnalysis")).doProcessResponseContent(savedEntity.getId().toString());
+        } catch (Exception e) {
+            log.error("Failed to add permissions to pathway analysis with id = " + savedEntity.getId(), e);
+        }
+        return savedEntity;
     }
 
     @Override

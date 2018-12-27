@@ -30,6 +30,7 @@ import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.shiro.annotations.CcGenerationId;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
+import org.ohdsi.webapi.shiro.filters.ProcessResponseContentFilter;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.sqlrender.SourceAwareSqlRender;
@@ -151,7 +152,13 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     public CohortCharacterizationEntity createCc(final CohortCharacterizationEntity entity) {
         entity.setCreatedBy(getCurrentUser());
         entity.setCreatedDate(new Date());
-        return saveCc(entity);
+        CohortCharacterizationEntity savedEntity = saveCc(entity);
+        try {
+            ((ProcessResponseContentFilter)security.getFilters().get("createPermissionsOnCreateCohortCharacterization")).doProcessResponseContent(savedEntity.getId().toString());
+        } catch (Exception e) {
+            log.error("Failed to add permissions to cohort characterization with id = " + savedEntity.getId(), e);
+        }
+        return savedEntity;
     }
 
     private CohortCharacterizationEntity saveCc(final CohortCharacterizationEntity entity) {

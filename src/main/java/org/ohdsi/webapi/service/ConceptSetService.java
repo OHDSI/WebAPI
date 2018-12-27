@@ -34,6 +34,7 @@ import org.ohdsi.webapi.conceptset.ExportUtil;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
+import org.ohdsi.webapi.shiro.filters.ProcessResponseContentFilter;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -229,11 +230,17 @@ public class ConceptSetService extends AbstractDaoService {
     public ConceptSetDTO createConceptSet(ConceptSetDTO conceptSetDTO) {
 
         UserEntity user = userRepository.findByLogin(security.getSubject());
+        ConceptSet conceptSet = conversionService.convert(conceptSetDTO, ConceptSet.class);
         ConceptSet updated = new ConceptSet();
         updated.setCreatedBy(user);
         updated.setCreatedDate(new Date());
-        ConceptSet conceptSet = conversionService.convert(conceptSetDTO, ConceptSet.class);
-        return conversionService.convert(updateConceptSet(updated, conceptSet), ConceptSetDTO.class);
+        updateConceptSet(updated, conceptSet);
+        try {
+            ((ProcessResponseContentFilter)security.getFilters().get("createPermissionsOnCreateConceptSet")).doProcessResponseContent(String.valueOf(updated.getId()));
+        } catch (Exception e) {
+            log.error("Failed to add permissions to concept set with id = " + updated.getId(), e);
+        }
+        return conversionService.convert(updated, ConceptSetDTO.class);
     }
 
     @Path("/{id}")

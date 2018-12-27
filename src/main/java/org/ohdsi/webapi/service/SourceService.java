@@ -26,6 +26,7 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.jasypt.encryption.pbe.PBEStringEncryptor;
 import org.jasypt.properties.PropertyValueEncryptionUtils;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.shiro.filters.ProcessResponseContentFilter;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,9 +49,9 @@ import static org.ohdsi.webapi.source.Source.IMPALA_DATASOURCE;
 @Transactional
 public class SourceService extends AbstractDaoService {
 
-    public static final String SECURE_MODE_ERROR = "This feature requires the administrator to enable security for the application";
-    private static final String KRB_REALM = "KrbRealm";
-    private static final String KRB_FQDN = "KrbHostFQDN";
+  public static final String SECURE_MODE_ERROR = "This feature requires the administrator to enable security for the application";
+  private static final String KRB_REALM = "KrbRealm";
+  private static final String KRB_FQDN = "KrbHostFQDN";
 
   @Autowired
   private JdbcTemplate jdbcTemplate;
@@ -217,11 +218,16 @@ public class SourceService extends AbstractDaoService {
     setImpalaKrbData(source, new Source(), file);
     Source saved = sourceRepository.save(source);
     String sourceKey = saved.getSourceKey();
+    try {
+      ((ProcessResponseContentFilter)security.getFilters().get("createPermissionsOnCreateSource")).doProcessResponseContent(sourceKey);
+    } catch (Exception e) {
+      log.error("Failed to add permissions to source with id = " + sourceKey, e);
+    }
     cachedSources = null;
     securityManager.addSourceRole(sourceKey);
-      SourceInfo sourceInfo = new SourceInfo(saved);
-      publisher.publishEvent(new AddDataSourceEvent(this, source.getSourceId(), source.getSourceName()));
-      return sourceInfo;
+    SourceInfo sourceInfo = new SourceInfo(saved);
+    publisher.publishEvent(new AddDataSourceEvent(this, source.getSourceId(), source.getSourceName()));
+    return sourceInfo;
   }
 
   @Path("{sourceId}")

@@ -51,6 +51,7 @@ import org.ohdsi.webapi.service.CohortDefinitionService.CohortDefinitionDTO;
 import org.ohdsi.webapi.service.dto.ComparativeCohortAnalysisDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
+import org.ohdsi.webapi.shiro.filters.ProcessResponseContentFilter;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
@@ -115,8 +116,7 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
               .collect(Collectors.toList())
       );
     }
-
-   
+    
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -130,6 +130,11 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
       comparativeCohortAnalysis.setCreatedBy(author);
       comparativeCohortAnalysis.setModifiedBy(author);
       comparativeCohortAnalysis = this.getComparativeCohortAnalysisRepository().save(comparativeCohortAnalysis);
+      try {
+          ((ProcessResponseContentFilter)security.getFilters().get("comparativecohortanalysis")).doProcessResponseContent(String.valueOf(comparativeCohortAnalysis.getAnalysisId()));
+      } catch (Exception e) {
+          log.error("Failed to add permissions to comparative cohort analysis with id = " + comparativeCohortAnalysis.getAnalysisId(), e);
+      }
       return conversionService.convert(comparativeCohortAnalysis, ComparativeCohortAnalysisDTO.class);
     }
 

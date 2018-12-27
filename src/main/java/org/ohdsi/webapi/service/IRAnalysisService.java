@@ -67,6 +67,7 @@ import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
+import org.ohdsi.webapi.shiro.filters.ProcessResponseContentFilter;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
@@ -344,6 +345,11 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
       newAnalysis.setDetails(null);
     
     IncidenceRateAnalysis createdAnalysis = this.irAnalysisRepository.save(newAnalysis);
+    try {
+      ((ProcessResponseContentFilter)security.getFilters().get("createPermissionsOnCreateIR")).doProcessResponseContent(createdAnalysis.getId().toString());
+    } catch (Exception e) {
+      log.error("Failed to add permissions to incidence rate analysis with id = " + createdAnalysis.getId(), e);
+    }
     return analysisToDTO(createdAnalysis);
   }
 

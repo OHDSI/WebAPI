@@ -24,6 +24,7 @@ import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
+import org.ohdsi.webapi.shiro.filters.ProcessResponseContentFilter;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
@@ -406,7 +407,11 @@ public class CohortDefinitionService extends AbstractDaoService {
       newDef.setDetails(details);
 
       CohortDefinition createdDefinition = this.cohortDefinitionRepository.save(newDef);
-
+      try {
+        ((ProcessResponseContentFilter)security.getFilters().get("createPermissionsOnCreateCohortDefinition")).doProcessResponseContent(createdDefinition.getId().toString());
+      } catch (Exception e) {
+        log.error("Failed to add permissions to cohort with id = " + createdDefinition.getId(), e);
+      }
       return cohortDefinitionToDTO(createdDefinition);
     });
   }

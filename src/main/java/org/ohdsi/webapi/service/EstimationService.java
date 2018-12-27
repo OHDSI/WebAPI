@@ -45,6 +45,7 @@ import org.ohdsi.webapi.estimation.specification.*;
 import org.ohdsi.webapi.estimation.specification.EstimationAnalysis;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
+import org.ohdsi.webapi.shiro.filters.ProcessResponseContentFilter;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -128,6 +129,11 @@ public class EstimationService extends AbstractDaoService {
             est.setCreatedDate(currentTime);
 
             Estimation estWithId = this.estimationRepository.save(est);
+            try {
+                ((ProcessResponseContentFilter)security.getFilters().get("createPermissionsOnCreateEstimation")).doProcessResponseContent(String.valueOf(estWithId.getId()));
+            } catch (Exception e) {
+                log.error("Failed to add permissions to estimation with id = " + estWithId.getId(), e);
+            }
 
             return conversionService.convert(estWithId, EstimationDTO.class);
         });
@@ -160,11 +166,11 @@ public class EstimationService extends AbstractDaoService {
     @Path("/{id}/copy")
     @Transactional
     public EstimationDTO copy(@PathParam("id") final int id) {
-            Estimation est = this.estimationRepository.findOne(id);
-            entityManager.detach(est); // Detach from the persistance context in order to save a copy
-            est.setId(null);
-            est.setName("COPY OF: " + est.getName());
-            return this.createEstimation(est);
+        Estimation est = this.estimationRepository.findOne(id);
+        entityManager.detach(est); // Detach from the persistence context in order to save a copy
+        est.setId(null);
+        est.setName("COPY OF: " + est.getName());
+        return this.createEstimation(est);
     }
     
     @GET

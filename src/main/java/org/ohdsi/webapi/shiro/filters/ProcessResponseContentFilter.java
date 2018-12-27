@@ -23,7 +23,6 @@ import javax.servlet.ServletResponse;
 import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
-import org.apache.shiro.web.util.WebUtils;
 
 /**
  *
@@ -32,7 +31,7 @@ import org.apache.shiro.web.util.WebUtils;
 public abstract class ProcessResponseContentFilter implements Filter {
 
   @Override
-  public void init(FilterConfig fc) throws ServletException {
+  public void init(FilterConfig fc) {
   }
 
   @Override
@@ -41,41 +40,17 @@ public abstract class ProcessResponseContentFilter implements Filter {
       chain.doFilter(request, response);
       return;
     }
-
     if (response.getCharacterEncoding() == null) {
       response.setCharacterEncoding("UTF-8"); 
     }
-
     HttpServletResponseCopier responseCopier = new HttpServletResponseCopier((HttpServletResponse) response);
     chain.doFilter(request, responseCopier);
-
     responseCopier.flushBuffer();
-    byte[] responseBytes = responseCopier.getCopy();
-    
-    HttpServletResponse httpResponse = WebUtils.toHttp(response);
-    String responseString;
-    String contentEncoding = httpResponse.getHeader("Content-Encoding");
-    if ("gzip".equalsIgnoreCase(contentEncoding)) {
-      responseString = this.readGZip(responseBytes, response.getCharacterEncoding());
-    }
-    else {
-      responseString = new String(responseBytes, response.getCharacterEncoding());
-    }
-
-    this.processResponseContent(responseString);
-  }
-
-  private void processResponseContent(String content) {
-    try {
-      this.doProcessResponseContent(content);
-    } catch (Exception ex) {
-      Logger.getLogger(ProcessResponseContentFilter.class.getName()).log(Level.SEVERE, "Failed to process response content", ex);
-    }
   }
 
   protected abstract boolean shouldProcess(ServletRequest request, ServletResponse response);
   
-  protected abstract void doProcessResponseContent(String content) throws Exception;
+  public abstract void doProcessResponseContent(String content) throws Exception;
 
   protected String parseJsonField(String json, String field) throws IOException {
     ObjectMapper mapper = new ObjectMapper();
@@ -87,22 +62,6 @@ public abstract class ProcessResponseContentFilter implements Filter {
 
   @Override
   public void destroy() {
-  }
-
-  private String readGZip(byte[] data, String encoding) {
-    String decompressed = "";
-    
-    try {
-      GZIPInputStream stream = new GZIPInputStream(new ByteArrayInputStream(data));
-      BufferedReader reader = new BufferedReader(new InputStreamReader(stream, encoding));
-      String line;
-      while ((line = reader.readLine()) != null) {
-        decompressed += line;
-      }
-    } catch (IOException ex) {
-      Logger.getLogger(ProcessResponseContentFilter.class.getName()).log(Level.SEVERE, "Failed decompress gzipped response content", ex);
-    }
-    return decompressed;
   }
 
   protected class HttpServletResponseCopier extends HttpServletResponseWrapper {

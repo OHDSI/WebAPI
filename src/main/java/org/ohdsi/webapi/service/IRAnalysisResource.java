@@ -110,7 +110,7 @@ public interface IRAnalysisResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/copy")
-    @javax.transaction.Transactional
+    @Transactional
     IRAnalysisService.IRAnalysisDTO copy(@PathParam("id") final int id);
 
     @GET

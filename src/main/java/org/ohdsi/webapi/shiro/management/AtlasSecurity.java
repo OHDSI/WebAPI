@@ -75,6 +75,7 @@ public abstract class AtlasSecurity extends Security {
   private final Map<String, String> predictionPermissionTemplates = new LinkedHashMap<>();
   private final Map<String, String> dataSourcePermissionTemplates = new LinkedHashMap<>();
   private final Map<String, String> featureAnalysisPermissionTemplates = new LinkedHashMap<>();
+  private final Map<String, javax.servlet.Filter> filters = new HashMap<>();
 
   public AtlasSecurity() {
     this.defaultRoles.add("public");
@@ -131,6 +132,8 @@ public abstract class AtlasSecurity extends Security {
 
     this.predictionPermissionTemplates.put("prediction:%s:put", "Edit Estimation with ID=%s");
     this.predictionPermissionTemplates.put("prediction:%s:delete", "Delete Estimation with ID=%s");
+    
+    fillFilters();
   }
 
   @Override
@@ -269,30 +272,32 @@ public abstract class AtlasSecurity extends Security {
   }
 
   @Override
-  public Map<String, Filter> getFilters() {
-    Map<String, javax.servlet.Filter> filters = new HashMap<>();
-
+  public Map<String, javax.servlet.Filter> getFilters(){
+    return new HashMap<>(filters);
+  }
+  
+  private void fillFilters() {
     filters.put("noSessionCreation", new NoSessionCreationFilter());
     filters.put("forceSessionCreation", new ForceSessionCreationFilter());
     filters.put("authz", new UrlBasedAuthorizingFilter());
     filters.put("createPermissionsOnCreateCohortDefinition", this.getCreatePermissionsOnCreateCohortDefinitionFilter());
-    filters.put("createPermissionsOnCreateCohortCharacterization", this.getCreatePermissionsOnCreateCohortCharacterizationFilter());
+    filters.put("createPermissionsOnCreateCohortCharacterization", new ProcessResponseContentFilterImpl(cohortCharacterizationCreatorPermissionTemplates));
     filters.put("deletePermissionsOnDeleteCohortCharacterization", this.getDeletePermissionsOnDeleteFilter(cohortCharacterizationCreatorPermissionTemplates));
-    filters.put("createPermissionsOnCreatePathwayAnalysis", this.getCreatePermissionsOnCreatePathwayAnalysisFilter());
+    filters.put("createPermissionsOnCreatePathwayAnalysis", new ProcessResponseContentFilterImpl(pathwayAnalysisCreatorPermissionTemplate));
     filters.put("deletePermissionsOnDeletePathwayAnalysis", this.getDeletePermissionsOnDeleteFilter(pathwayAnalysisCreatorPermissionTemplate));
-    filters.put("createPermissionsOnCreateFeatureAnalysis", this.getCreatePermissionsOnCreateFilter(featureAnalysisPermissionTemplates, "id"));
+    filters.put("createPermissionsOnCreateFeatureAnalysis", new ProcessResponseContentFilterImpl(featureAnalysisPermissionTemplates));
     filters.put("deletePermissionsOnDeleteFeatureAnalysis", this.getDeletePermissionsOnDeleteFilter(featureAnalysisPermissionTemplates));
-    filters.put("createPermissionsOnCreateConceptSet", this.getCreatePermissionsOnCreateConceptSetFilter());
+    filters.put("createPermissionsOnCreateConceptSet", new ProcessResponseContentFilterImpl(conceptsetCreatorPermissionTemplates));
     filters.put("deletePermissionsOnDeleteCohortDefinition", this.getDeletePermissionsOnDeleteCohortDefinitionFilter());
     filters.put("deletePermissionsOnDeleteConceptSet", this.getDeletePermissionsOnDeleteConceptSetFilter());
     filters.put("deletePermissionsOnDeletePle", this.getDeletePermissionsOnDeleteFilter(plePermissionTemplates));
     filters.put("deletePermissionsOnDeletePlp", this.getDeletePermissionsOnDeleteFilter(plpPermissionTemplate));
-    filters.put("createPermissionsOnCreateIR", this.getCreatePermissionsOnCreateIncidenceRateFilter());
+    filters.put("createPermissionsOnCreateIR", new ProcessResponseContentFilterImpl(incidenceRatePermissionTemplates));
     filters.put("createPermissionsOnCopyIR", this.getCreatePermissionsOnCopyIncidenceRateFilter());
-    filters.put("createPermissionsOnCreatePle", this.getCreatePermissionsOnCreateFilter(estimationPermissionTemplates, "analysisId"));
-    filters.put("createPermissionsOnCreatePlp", this.getCreatePermissionsOnCreateFilter(plpPermissionTemplate, "analysisId"));
-    filters.put("createPermissionsOnCopyPlp", this.getCreatePermissionsOnCopyFilter(plpPermissionTemplate, ".*plp/.*/copy", "analysisId"));
-    filters.put("createPermissionsOnCreateSource", this.getCreatePermissionsOnCreateFilter(dataSourcePermissionTemplates, "sourceKey"));
+    filters.put("createPermissionsOnCreatePle", new ProcessResponseContentFilterImpl(estimationPermissionTemplates));
+    filters.put("createPermissionsOnCreatePlp", new ProcessResponseContentFilterImpl(plpPermissionTemplate));
+    filters.put("createPermissionsOnCopyPlp", this.getCreatePermissionsOnCopyFilter(plpPermissionTemplate, ".*plp/.*/copy"));
+    filters.put("createPermissionsOnCreateSource", new ProcessResponseContentFilterImpl(dataSourcePermissionTemplates));
     filters.put("deletePermissionsOnDeleteSource", this.getDeletePermissionsOnDeleteFilter(dataSourcePermissionTemplates));
     filters.put("cors", new CorsFilter());
     filters.put("skipFurtherFiltersIfNotPost", this.getSkipFurtherFiltersIfNotPostFilter());
@@ -300,13 +305,10 @@ public abstract class AtlasSecurity extends Security {
     filters.put("skipFurtherFiltersIfNotPutOrPost", this.getskipFurtherFiltersIfNotPutOrPostFilter());
     filters.put("skipFurtherFiltersIfNotPutOrDelete", this.getskipFurtherFiltersIfNotPutOrDeleteFilter());
     filters.put("ssl", this.getSslFilter());
-
-    filters.put("createPermissionsOnCreatePrediction", this.getCreatePermissionsOnCreateFilter(predictionPermissionTemplates, "id"));
+    filters.put("createPermissionsOnCreatePrediction", new ProcessResponseContentFilterImpl(predictionPermissionTemplates));
     filters.put("deletePermissionsOnDeletePrediction", this.getDeletePermissionsOnDeleteFilter(predictionPermissionTemplates));
-    filters.put("createPermissionsOnCreateEstimation", this.getCreatePermissionsOnCreateFilter(estimationPermissionTemplates, "id"));
+    filters.put("createPermissionsOnCreateEstimation", new ProcessResponseContentFilterImpl(estimationPermissionTemplates));
     filters.put("deletePermissionsOnDeleteEstimation", this.getDeletePermissionsOnDeleteFilter(estimationPermissionTemplates));
-
-    return filters;
   }
 
   @Override
@@ -360,9 +362,28 @@ public abstract class AtlasSecurity extends Security {
       log.error(e.getMessage(), e);
     }
   }
+  
+  private class ProcessResponseContentFilterImpl extends ProcessResponseContentFilter{
+    private Map<String, String> template;
+    
+    private ProcessResponseContentFilterImpl(Map<String, String> template){
+      this.template = new HashMap<>(template);
+    }
+
+    @Override
+    protected boolean shouldProcess(ServletRequest request, ServletResponse response) {
+      return HttpMethod.POST.equalsIgnoreCase(WebUtils.toHttp(request).getMethod());
+    }
+
+    @Override
+    public void doProcessResponseContent(String id) throws Exception {
+      RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
+      authorizer.addPermissionsFromTemplate(currentUserPersonalRole, template, id);
+    }
+  }
 
   private Filter getCreatePermissionsOnCreateCohortDefinitionFilter() {
-    return new ProcessResponseContentFilter() {
+    return new ProcessResponseContentFilterImpl(cohortdefinitionCreatorPermissionTemplates) {
       @Override
       protected boolean shouldProcess(ServletRequest request, ServletResponse response) {
         HttpServletRequest httpRequest = WebUtils.toHttp(request);
@@ -375,130 +396,25 @@ public abstract class AtlasSecurity extends Security {
           return  HttpMethod.POST.equalsIgnoreCase(WebUtils.toHttp(request).getMethod());
         }
       }
-
-      @Override
-      protected void doProcessResponseContent(String content) throws Exception {
-        String id = this.parseJsonField(content, "id");
-        RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
-        authorizer.addPermissionsFromTemplate(currentUserPersonalRole, cohortdefinitionCreatorPermissionTemplates, id);
-      }
-    };
-  }
-
-  private Filter getCreatePermissionsOnCreateCohortCharacterizationFilter() {
-    return  new ProcessResponseContentFilter() {
-      @Override
-      protected boolean shouldProcess(ServletRequest request, ServletResponse response) {
-
-        return HttpMethod.POST.equalsIgnoreCase(WebUtils.toHttp(request).getMethod());
-      }
-
-      @Override
-      protected void doProcessResponseContent(String content) throws Exception {
-        String id = this.parseJsonField(content, "id");
-        RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
-        authorizer.addPermissionsFromTemplate(currentUserPersonalRole, cohortCharacterizationCreatorPermissionTemplates, id);
-      }
-    };
-  }
-
-  private Filter getCreatePermissionsOnCreatePathwayAnalysisFilter() {
-    return  new ProcessResponseContentFilter() {
-      @Override
-      protected boolean shouldProcess(ServletRequest request, ServletResponse response) {
-
-        return HttpMethod.POST.equalsIgnoreCase(WebUtils.toHttp(request).getMethod());
-      }
-
-      @Override
-      protected void doProcessResponseContent(String content) throws Exception {
-        String id = this.parseJsonField(content, "id");
-        RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
-        authorizer.addPermissionsFromTemplate(currentUserPersonalRole, pathwayAnalysisCreatorPermissionTemplate, id);
-      }
-    };
-  }
-
-  private Filter getCreatePermissionsOnCreateIncidenceRateFilter() {
-    return  new ProcessResponseContentFilter() {
-      @Override
-      protected boolean shouldProcess(ServletRequest request, ServletResponse response) {
-
-        return HttpMethod.POST.equalsIgnoreCase(WebUtils.toHttp(request).getMethod());
-      }
-
-      @Override
-      protected void doProcessResponseContent(String content) throws Exception {
-        String id = this.parseJsonField(content, "id");
-        RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
-        authorizer.addPermissionsFromTemplate(currentUserPersonalRole, incidenceRatePermissionTemplates, id);
-      }
-    };
-  }
-
-  private Filter getCreatePermissionsOnCreateFilter(Map<String, String> template, String idField) {
-    return new ProcessResponseContentFilter() {
-      @Override
-      protected boolean shouldProcess(ServletRequest request, ServletResponse response) {
-
-        return HttpMethod.POST.equalsIgnoreCase(WebUtils.toHttp(request).getMethod());
-      }
-
-      @Override
-      protected void doProcessResponseContent(String content) throws Exception {
-        String id = this.parseJsonField(content, idField);
-        RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
-        authorizer.addPermissionsFromTemplate(currentUserPersonalRole, template, id);
-      }
     };
   }
 
   private Filter getCreatePermissionsOnCopyIncidenceRateFilter() {
-    return new ProcessResponseContentFilter() {
+    return new ProcessResponseContentFilterImpl(incidenceRatePermissionTemplates) {
       @Override
       protected boolean shouldProcess(ServletRequest request, ServletResponse response) {
 
         return WebUtils.toHttp(request).getRequestURI().matches(".*ir/.*/copy");
       }
-
-      @Override
-      protected void doProcessResponseContent(String content) throws Exception {
-        String id = this.parseJsonField(content, "id");
-        RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
-        authorizer.addPermissionsFromTemplate(currentUserPersonalRole, incidenceRatePermissionTemplates, id);
-      }
     };
   }
 
-  private Filter getCreatePermissionsOnCopyFilter(Map<String, String> template, String pathRegex, String idField) {
-    return new ProcessResponseContentFilter() {
+  private Filter getCreatePermissionsOnCopyFilter(Map<String, String> template, String pathRegex) {
+    return new ProcessResponseContentFilterImpl(template) {
       @Override
       protected boolean shouldProcess(ServletRequest request, ServletResponse response) {
 
         return WebUtils.toHttp(request).getRequestURI().matches(pathRegex);
-      }
-
-      @Override
-      protected void doProcessResponseContent(String content) throws Exception {
-        String id = this.parseJsonField(content, idField);
-        RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
-        authorizer.addPermissionsFromTemplate(currentUserPersonalRole, template, id);
-      }
-    };
-  }
-
-  private Filter getCreatePermissionsOnCreateConceptSetFilter() {
-    return  new ProcessResponseContentFilter() {
-      @Override
-      protected boolean shouldProcess(ServletRequest request, ServletResponse response) {
-        return  HttpMethod.POST.equalsIgnoreCase(WebUtils.toHttp(request).getMethod());
-      }
-
-      @Override
-      protected void doProcessResponseContent(String content) throws Exception {
-        String id = this.parseJsonField(content, "id");
-        RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
-        authorizer.addPermissionsFromTemplate(currentUserPersonalRole, conceptsetCreatorPermissionTemplates, id);
       }
     };
   }

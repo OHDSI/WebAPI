@@ -220,24 +220,25 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
         // the order does matter - first match wins
         FilterChainBuilder filterChainBuilder = new FilterChainBuilder()
-                .setOAuthFilters(SSL.getTemplateName() + ", " + CORS.getTemplateName() + ", " + FORCE_SESSION_CREATION.getTemplateName(), "updateToken, sendTokenInUrl")
-                .setRestFilters(SSL.getTemplateName() +  ", " + NO_SESSION_CREATION.getTemplateName() + ", " + CORS.getTemplateName())
-                .setAuthcFilter(JWT_AUTHC.getTemplateName())
-                .setAuthzFilter(AUTHZ.getTemplateName())
+                .setBeforeOAuthFilters(SSL, CORS, FORCE_SESSION_CREATION)
+                .setAfterOAuthFilters(UPDATE_TOKEN, SEND_TOKEN_IN_URL)
+                .setRestFilters(SSL, NO_SESSION_CREATION, CORS)
+                .setAuthcFilter(JWT_AUTHC)
+                .setAuthzFilter(AUTHZ)
                 // login/logout
-                .addRestPath("/user/login/openid", FORCE_SESSION_CREATION.getTemplateName() + ", " + OIDC_AUTH.getTemplateName() + ", " + UPDATE_TOKEN.getTemplateName() + ", " + SEND_TOKEN_IN_REDIRECT.getTemplateName())
-                .addRestPath("/user/login/windows",NEGOTIATE_AUTHC.getTemplateName() + ", " + UPDATE_TOKEN.getTemplateName() + ", " + SEND_TOKEN_IN_HEADER.getTemplateName())
-                .addRestPath("/user/login/kerberos", KERBEROS_FILTER.getTemplateName() + ", " + UPDATE_TOKEN.getTemplateName() + ", " + SEND_TOKEN_IN_HEADER.getTemplateName())
-                .addRestPath("/user/login/db",  JDBC_FILTER.getTemplateName() + ", " + UPDATE_TOKEN.getTemplateName() + ", " + SEND_TOKEN_IN_HEADER.getTemplateName())
-                .addRestPath("/user/login/ldap", LDAP_FILTER.getTemplateName() + ", " + UPDATE_TOKEN.getTemplateName() + ", " + SEND_TOKEN_IN_HEADER.getTemplateName())
-                .addRestPath("/user/login/ad", AD_FILTER.getTemplateName() + ", " + UPDATE_TOKEN.getTemplateName() + ", " + SEND_TOKEN_IN_HEADER.getTemplateName())
-                .addRestPath("/user/refresh", JWT_AUTHC.getTemplateName() + ", " + UPDATE_TOKEN.getTemplateName() + ", " + SEND_TOKEN_IN_HEADER.getTemplateName())
-                .addRestPath("/user/logout", LOGOUT.getTemplateName())
-                .addOAuthPath("/user/oauth/google", GOOGLE_AUTHC.getTemplateName())
-                .addOAuthPath("/user/oauth/facebook", FACEBOOK_AUTHC.getTemplateName())
-                .addPath("/user/login/cas", SSL.getTemplateName() + ", " + CORS.getTemplateName() + ", " + FORCE_SESSION_CREATION.getTemplateName() + ", " + CAS_AUTHC.getTemplateName() + ", " + UPDATE_TOKEN.getTemplateName() + ", " + SEND_TOKEN_IN_URL.getTemplateName())
-                .addPath("/user/oauth/callback", SSL.getTemplateName() + ", " + HANDLE_UNSUCCESSFUL_OAUTH.getTemplateName() +", " + OAUTH_CALLBACK.getTemplateName())
-                .addPath("/user/cas/callback", SSL.getTemplateName() + ", " + HANDLE_CAS.getTemplateName() + ", " + UPDATE_TOKEN.getTemplateName() + ", " + SEND_TOKEN_IN_URL.getTemplateName());
+                .addRestPath("/user/login/openid", FORCE_SESSION_CREATION, OIDC_AUTH, UPDATE_TOKEN, SEND_TOKEN_IN_REDIRECT)
+                .addRestPath("/user/login/windows",NEGOTIATE_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
+                .addRestPath("/user/login/kerberos", KERBEROS_FILTER, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
+                .addRestPath("/user/login/db",  JDBC_FILTER, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
+                .addRestPath("/user/login/ldap", LDAP_FILTER, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
+                .addRestPath("/user/login/ad", AD_FILTER, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
+                .addRestPath("/user/refresh", JWT_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
+                .addRestPath("/user/logout", LOGOUT)
+                .addOAuthPath("/user/oauth/google", GOOGLE_AUTHC)
+                .addOAuthPath("/user/oauth/facebook", FACEBOOK_AUTHC)
+                .addPath("/user/login/cas", SSL, CORS, FORCE_SESSION_CREATION, CAS_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_URL)
+                .addPath("/user/oauth/callback", SSL, HANDLE_UNSUCCESSFUL_OAUTH, OAUTH_CALLBACK)
+                .addPath("/user/cas/callback", SSL, HANDLE_CAS, UPDATE_TOKEN, SEND_TOKEN_IN_URL);
 
         setupProtectedPaths(filterChainBuilder);
 

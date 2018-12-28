@@ -1,10 +1,12 @@
 package org.ohdsi.webapi.shiro.management;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.servlet.Filter;
 import javax.servlet.ServletRequest;
@@ -188,43 +190,43 @@ public abstract class AtlasSecurity extends Security {
       .addProtectedRestPath("/permission/**")
 
       // concept set
-      .addProtectedRestPath("/conceptset", JWT_AUTHC + ", " + AUTHZ.getTemplateName() + ", " + CREATE_CONCEPT_SET.getTemplateName())
-      .addProtectedRestPath("/conceptset/*/items", JWT_AUTHC + ", " + AUTHZ.getTemplateName())
-      .addProtectedRestPath("/conceptset/*", JWT_AUTHC + ", " + AUTHZ.getTemplateName() + ", " + DELETE_CONCEPT_SET.getTemplateName())
+      .addProtectedRestPath("/conceptset", JWT_AUTHC, AUTHZ,CREATE_CONCEPT_SET)
+      .addProtectedRestPath("/conceptset/*/items", JWT_AUTHC, AUTHZ)
+      .addProtectedRestPath("/conceptset/*", JWT_AUTHC, AUTHZ, DELETE_CONCEPT_SET)
 
       // incidence rates
-      .addProtectedRestPath("/ir", JWT_AUTHC + ", " + AUTHZ.getTemplateName() + ", " + CREATE_IR.getTemplateName())
-      .addProtectedRestPath("/ir/*/copy", CREATE_COPY_IR.getTemplateName())
-      .addProtectedRestPath("/ir/*", JWT_AUTHC + ", " + AUTHZ.getTemplateName())
+      .addProtectedRestPath("/ir", JWT_AUTHC, AUTHZ, CREATE_IR)
+      .addProtectedRestPath("/ir/*/copy", CREATE_COPY_IR)
+      .addProtectedRestPath("/ir/*", JWT_AUTHC, AUTHZ)
       .addProtectedRestPath("/ir/*/execute/*")
 
       // comparative cohort analysis (estimation)
-      .addProtectedRestPath("/comparativecohortanalysis", CREATE_PLE.getTemplateName())
-      .addProtectedRestPath("/comparativecohortanalysis/*", DELETE_PLE.getTemplateName())
+      .addProtectedRestPath("/comparativecohortanalysis", CREATE_PLE)
+      .addProtectedRestPath("/comparativecohortanalysis/*", DELETE_PLE)
 
       // new estimation
-      .addProtectedRestPath("/estimation", CREATE_ESTIMATION.getTemplateName())
-      .addProtectedRestPath("/estimation/*/copy", CREATE_ESTIMATION.getTemplateName())
-      .addProtectedRestPath("/estimation/*", DELETE_ESTIMATION.getTemplateName())
+      .addProtectedRestPath("/estimation", CREATE_ESTIMATION)
+      .addProtectedRestPath("/estimation/*/copy", CREATE_ESTIMATION)
+      .addProtectedRestPath("/estimation/*", DELETE_ESTIMATION)
       .addProtectedRestPath("/estimation/*/export")
       .addProtectedRestPath("/estimation/*/download")
 
       // population level prediction
-      .addProtectedRestPath("/plp", CREATE_PLP.getTemplateName())
-      .addProtectedRestPath("/plp/*/copy", CREATE_COPY_PLP.getTemplateName())
-      .addProtectedRestPath("/plp/*", DELETE_PLP.getTemplateName())
+      .addProtectedRestPath("/plp", CREATE_PLP)
+      .addProtectedRestPath("/plp/*/copy", CREATE_COPY_PLP)
+      .addProtectedRestPath("/plp/*", DELETE_PLP)
 
       // new prediction
-      .addProtectedRestPath("/prediction", CREATE_PREDICTION.getTemplateName())
-      .addProtectedRestPath("/prediction/*/copy", CREATE_PREDICTION.getTemplateName())
-      .addProtectedRestPath("/prediction/*", DELETE_PREDICTION.getTemplateName())
+      .addProtectedRestPath("/prediction", CREATE_PREDICTION)
+      .addProtectedRestPath("/prediction/*/copy", CREATE_PREDICTION)
+      .addProtectedRestPath("/prediction/*", DELETE_PREDICTION)
       .addProtectedRestPath("/prediction/*/export")
       .addProtectedRestPath("/prediction/*/download")
 
       // cohort definition
-      .addProtectedRestPath("/cohortdefinition", CREATE_COHORT_DEFINITION.getTemplateName())
-      .addProtectedRestPath("/cohortdefinition/*/copy", CREATE_COHORT_DEFINITION.getTemplateName())
-      .addProtectedRestPath("/cohortdefinition/*", DELETE_COHORT_DEFINITION.getTemplateName())
+      .addProtectedRestPath("/cohortdefinition", CREATE_COHORT_DEFINITION)
+      .addProtectedRestPath("/cohortdefinition/*/copy", CREATE_COHORT_DEFINITION)
+      .addProtectedRestPath("/cohortdefinition/*", DELETE_COHORT_DEFINITION)
       .addProtectedRestPath("/cohortdefinition/*/info")
       .addProtectedRestPath("/cohortdefinition/sql")
       .addProtectedRestPath("/cohortdefinition/*/generate/*")
@@ -238,8 +240,8 @@ public abstract class AtlasSecurity extends Security {
       .addProtectedRestPath("/source/priorityVocabulary")
       .addRestPath("/source/sources")
       .addProtectedRestPath("/source/connection/*")
-      .addProtectedRestPath("/source", CREATE_SOURCE.getTemplateName())
-      .addProtectedRestPath("/source/*", DELETE_SOURCE.getTemplateName())
+      .addProtectedRestPath("/source", CREATE_SOURCE)
+      .addProtectedRestPath("/source/*", DELETE_SOURCE)
       .addProtectedRestPath("/source/details/*")
 
       // cohort analysis
@@ -250,9 +252,9 @@ public abstract class AtlasSecurity extends Security {
       .addProtectedRestPath("/cohortresults/*")
 
       // cohort characterization
-      .addProtectedRestPath("/cohort-characterization", CREATE_COHORT_CHARACTERIZATION.getTemplateName())
-      .addProtectedRestPath("/cohort-characterization/import", CREATE_COHORT_CHARACTERIZATION.getTemplateName())
-      .addProtectedRestPath("/cohort-characterization/*", DELETE_COHORT_CHARACTERIZATION.getTemplateName())
+      .addProtectedRestPath("/cohort-characterization", CREATE_COHORT_CHARACTERIZATION)
+      .addProtectedRestPath("/cohort-characterization/import", CREATE_COHORT_CHARACTERIZATION)
+      .addProtectedRestPath("/cohort-characterization/*", DELETE_COHORT_CHARACTERIZATION)
       .addProtectedRestPath("/cohort-characterization/*/generation/*")
       .addProtectedRestPath("/cohort-characterization/*/generation")
       .addProtectedRestPath("/cohort-characterization/generation/*")
@@ -261,9 +263,9 @@ public abstract class AtlasSecurity extends Security {
       .addProtectedRestPath("/cohort-characterization/*/export")
 
       // Pathways Analyses
-      .addProtectedRestPath("/pathway-analysis", CREATE_PATHWAY_ANALYSIS.getTemplateName())
-      .addProtectedRestPath("/pathway-analysis/import", CREATE_PATHWAY_ANALYSIS.getTemplateName())
-      .addProtectedRestPath("/pathway-analysis/*", DELETE_PATHWAY_ANALYSIS.getTemplateName())
+      .addProtectedRestPath("/pathway-analysis", CREATE_PATHWAY_ANALYSIS)
+      .addProtectedRestPath("/pathway-analysis/import", CREATE_PATHWAY_ANALYSIS)
+      .addProtectedRestPath("/pathway-analysis/*", DELETE_PATHWAY_ANALYSIS)
       .addProtectedRestPath("/pathway-analysis/*/sql/*")
       .addProtectedRestPath("/pathway-analysis/*/generation/*")
       .addProtectedRestPath("/pathway-analysis/*/generation")
@@ -273,8 +275,8 @@ public abstract class AtlasSecurity extends Security {
       .addProtectedRestPath("/pathway-analysis/*/export")
 
       // feature analyses
-      .addProtectedRestPath("/feature-analysis", CREATE_FEATURE_ANALYSIS.getTemplateName())
-      .addProtectedRestPath("/feature-analysis/*", DELETE_FEATURE_ANALYSIS.getTemplateName())
+      .addProtectedRestPath("/feature-analysis", CREATE_FEATURE_ANALYSIS)
+      .addProtectedRestPath("/feature-analysis/*", DELETE_FEATURE_ANALYSIS)
 
       // evidence
       .addProtectedRestPath("/evidence/*")
@@ -592,24 +594,28 @@ public abstract class AtlasSecurity extends Security {
     private String filtersBeforeOAuth;
     private String filtersAfterOAuth;
 
-    public FilterChainBuilder setRestFilters(String restFilters) {
-      this.restFilters = restFilters;
+    public FilterChainBuilder setRestFilters(FilterTemplates... restFilters) {
+      this.restFilters = convertArrayToString(restFilters);
       return this;
     }
 
-    public FilterChainBuilder setOAuthFilters(String filtersBeforeOAuth, String filtersAfterOAuth) {
-      this.filtersBeforeOAuth = filtersBeforeOAuth;
-      this.filtersAfterOAuth = filtersAfterOAuth;
+    public FilterChainBuilder setBeforeOAuthFilters(FilterTemplates... filtersBeforeOAuth) {
+      this.filtersBeforeOAuth = convertArrayToString(filtersBeforeOAuth);
+      return this;
+    }
+    
+    public FilterChainBuilder setAfterOAuthFilters(FilterTemplates... filtersAfterOAuth) {
+      this.filtersAfterOAuth = convertArrayToString(filtersAfterOAuth);
       return this;
     }
 
-    public FilterChainBuilder setAuthcFilter(String authcFilter) {
-      this.authcFilter = authcFilter;
+    public FilterChainBuilder setAuthcFilter(FilterTemplates... authcFilters) {
+      this.authcFilter = convertArrayToString(authcFilters);
       return this;
     }
 
-    public FilterChainBuilder setAuthzFilter(String authzFilter) {
-      this.authzFilter = authzFilter;
+    public FilterChainBuilder setAuthzFilter(FilterTemplates... authzFilters) {
+      this.authzFilter = convertArrayToString(authzFilters);
       return this;
     }
 
@@ -617,20 +623,30 @@ public abstract class AtlasSecurity extends Security {
       return this.addPath(path, this.restFilters + ", " + filters);
     }
 
+    public FilterChainBuilder addRestPath(String path, FilterTemplates... filters) { 
+      return addRestPath(path, convertArrayToString(filters));
+    }
+
     public FilterChainBuilder addRestPath(String path) {
       return this.addPath(path, this.restFilters);
     }
 
-    public FilterChainBuilder addOAuthPath(String path, String oauthFilter) {
-      return this.addPath(path, filtersBeforeOAuth + ", " + oauthFilter + ", " + filtersAfterOAuth);
+    public FilterChainBuilder addOAuthPath(String path, FilterTemplates... oauthFilters) {        
+      return this.addPath(path, filtersBeforeOAuth + ", " + convertArrayToString(oauthFilters) + ", " + filtersAfterOAuth);
     }
 
     public FilterChainBuilder addProtectedRestPath(String path) {
       return this.addRestPath(path, this.authcFilter + ", " + this.authzFilter);
     }
 
-    public FilterChainBuilder addProtectedRestPath(String path, String filters) {
-      return this.addRestPath(path, authcFilter + ", " + authzFilter + ", " + filters);
+    public FilterChainBuilder addProtectedRestPath(String path, FilterTemplates... filters) {
+
+      String filtersStr = convertArrayToString(filters);
+      return this.addRestPath(path, authcFilter + ", " + authzFilter + ", " + filtersStr);
+    }
+
+    public FilterChainBuilder addPath(String path, FilterTemplates... filters) {
+      return addPath(path, convertArrayToString(filters));     
     }
 
     public FilterChainBuilder addPath(String path, String filters) {
@@ -645,12 +661,17 @@ public abstract class AtlasSecurity extends Security {
       if (!path.endsWith("*")) {
         this.filterChain.put(path + "/", filters);
       }
-
       return this;
     }
 
     public Map<String, String> build() {
       return filterChain;
+    }
+    
+    private String convertArrayToString(FilterTemplates... templates){
+        return Arrays.stream(templates)
+                .map(FilterTemplates::getTemplateName)
+                .collect(Collectors.joining(", "));
     }
   }
 }

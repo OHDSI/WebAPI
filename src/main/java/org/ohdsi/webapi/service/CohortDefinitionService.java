@@ -67,7 +67,7 @@ import java.util.stream.Stream;
 
 import static org.ohdsi.webapi.Constants.Params.COHORT_DEFINITION_ID;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
-import static org.ohdsi.webapi.shiro.management.CreatePermTemplates.CREATE_COHORT_DEFINITION;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_COHORT_DEFINITION;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 /**

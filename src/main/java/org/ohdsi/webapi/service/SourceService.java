@@ -42,7 +42,7 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static org.ohdsi.webapi.shiro.management.CreatePermTemplates.CREATE_SOURCE;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_SOURCE;
 import static org.ohdsi.webapi.source.Source.IMPALA_DATASOURCE;
 
 @Path("/source/")

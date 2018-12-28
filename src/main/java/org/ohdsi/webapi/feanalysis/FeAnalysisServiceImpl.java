@@ -20,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.ws.rs.NotFoundException;
 
-import static org.ohdsi.webapi.shiro.management.CreatePermTemplates.CREATE_FEATURE_ANALYSIS;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_FEATURE_ANALYSIS;
 
 @Service
 @Transactional(readOnly = true)

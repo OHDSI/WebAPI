@@ -22,7 +22,7 @@ import static org.ohdsi.webapi.Constants.Params.RESULTS_DATABASE_SCHEMA;
 import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
 import static org.ohdsi.webapi.Constants.Params.TARGET_DIALECT;
 import static org.ohdsi.webapi.Constants.Params.VOCABULARY_DATABASE_SCHEMA;
-import static org.ohdsi.webapi.shiro.management.CreatePermTemplates.CREATE_IR;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_IR;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 import com.fasterxml.jackson.annotation.JsonFormat;

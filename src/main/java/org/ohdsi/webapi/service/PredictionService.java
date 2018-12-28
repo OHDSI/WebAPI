@@ -45,7 +45,7 @@ import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
-import static org.ohdsi.webapi.shiro.management.CreatePermTemplates.CREATE_PREDICTION;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_PREDICTION;
 
 @Component
 @Transactional

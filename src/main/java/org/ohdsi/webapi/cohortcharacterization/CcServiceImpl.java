@@ -62,7 +62,7 @@ import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.GENERATE_COHORT_CHARACTERIZATION;
 import static org.ohdsi.webapi.Constants.Params.*;
-import static org.ohdsi.webapi.shiro.management.CreatePermTemplates.CREATE_COHORT_CHARACTERIZATION;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_COHORT_CHARACTERIZATION;
 
 @Service
 @Transactional

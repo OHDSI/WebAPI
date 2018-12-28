@@ -5,7 +5,6 @@
  */
 package org.ohdsi.webapi.service;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -38,7 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Component;
 
-import static org.ohdsi.webapi.shiro.management.CreatePermTemplates.CREATE_PLP;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_PLP;
 
 /**
  *

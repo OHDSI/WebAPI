@@ -42,7 +42,7 @@ import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
 
-import static org.ohdsi.webapi.shiro.management.CreatePermTemplates.CREATE_CONCEPT_SET;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_CONCEPT_SET;
 
 /**
  *

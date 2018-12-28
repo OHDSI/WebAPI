@@ -130,7 +130,7 @@ public class EstimationService extends AbstractDaoService {
 
         Estimation estWithId = this.estimationRepository.save(est);
         try {
-            ((ProcessResponseContentFilter)security.getFilters().get(CREATE_ESTIMATION.getTemplateName())).doProcessResponseContent(String.valueOf(estWithId.getId()));
+            ((ProcessResponseContentFilter)security.getFilters().get(CREATE_ESTIMATION)).doProcessResponseContent(String.valueOf(estWithId.getId()));
         } catch (Exception e) {
             log.error("Failed to add permissions to estimation with id = " + estWithId.getId(), e);
         }

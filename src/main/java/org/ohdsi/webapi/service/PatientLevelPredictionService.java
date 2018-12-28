@@ -118,7 +118,7 @@ public class PatientLevelPredictionService extends AbstractDaoService {
 
       PatientLevelPredictionAnalysis plpaWithId = this.patientLevelPredictionAnalysisRepository.save(plpa);
       try {
-          ((ProcessResponseContentFilter)security.getFilters().get(CREATE_PLP.getTemplateName())).doProcessResponseContent(String.valueOf(plpaWithId.getAnalysisId()));
+          ((ProcessResponseContentFilter)security.getFilters().get(CREATE_PLP)).doProcessResponseContent(String.valueOf(plpaWithId.getAnalysisId()));
       } catch (Exception e) {
           log.error("Failed to add permissions to patient level prediction with id = " + plpaWithId.getAnalysisId(), e);
       }

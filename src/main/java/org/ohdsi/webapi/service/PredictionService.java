@@ -116,7 +116,7 @@ public class PredictionService  extends AbstractDaoService {
     
         PredictionAnalysis predWithId = this.predictionAnalysisRepository.save(pred);
         try {
-            ((ProcessResponseContentFilter)security.getFilters().get(CREATE_PREDICTION.getTemplateName())).doProcessResponseContent(String.valueOf(predWithId.getId()));
+            ((ProcessResponseContentFilter)security.getFilters().get(CREATE_PREDICTION)).doProcessResponseContent(String.valueOf(predWithId.getId()));
         } catch (Exception e) {
             log.error("Failed to add permissions to prediction with id = " + predWithId.getId(), e);
         }

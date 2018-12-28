@@ -155,7 +155,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         entity.setCreatedDate(new Date());
         CohortCharacterizationEntity savedEntity = saveCc(entity);
         try {
-            ((ProcessResponseContentFilter)security.getFilters().get(CREATE_COHORT_CHARACTERIZATION.getTemplateName())).doProcessResponseContent(savedEntity.getId().toString());
+            ((ProcessResponseContentFilter)security.getFilters().get(CREATE_COHORT_CHARACTERIZATION)).doProcessResponseContent(savedEntity.getId().toString());
         } catch (Exception e) {
             log.error("Failed to add permissions to cohort characterization with id = " + savedEntity.getId(), e);
         }

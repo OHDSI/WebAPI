@@ -142,7 +142,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         newAnalysis.setCreatedDate(new Date());
         PathwayAnalysisEntity savedEntity = save(newAnalysis);
         try {
-            ((ProcessResponseContentFilter)security.getFilters().get(CREATE_PATHWAY_ANALYSIS.getTemplateName())).doProcessResponseContent(savedEntity.getId().toString());
+            ((ProcessResponseContentFilter)security.getFilters().get(CREATE_PATHWAY_ANALYSIS)).doProcessResponseContent(savedEntity.getId().toString());
         } catch (Exception e) {
             log.error("Failed to add permissions to pathway analysis with id = " + savedEntity.getId(), e);
         }
@@ -173,7 +173,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
         PathwayAnalysisEntity savedEntity = save(newAnalysis);
         try {
-            ((ProcessResponseContentFilter)security.getFilters().get(CREATE_PATHWAY_ANALYSIS.getTemplateName())).doProcessResponseContent(savedEntity.getId().toString());
+            ((ProcessResponseContentFilter)security.getFilters().get(CREATE_PATHWAY_ANALYSIS)).doProcessResponseContent(savedEntity.getId().toString());
         } catch (Exception e) {
             log.error("Failed to add permissions to pathway analysis with id = " + savedEntity.getId(), e);
         }

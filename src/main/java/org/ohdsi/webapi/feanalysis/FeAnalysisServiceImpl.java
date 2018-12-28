@@ -57,7 +57,7 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
         }
         FeAnalysisEntity savedEntity = analysisRepository.save(analysis);
         try {
-            ((ProcessResponseContentFilter)security.getFilters().get(CREATE_FEATURE_ANALYSIS.getTemplateName())).doProcessResponseContent(savedEntity.getId().toString());
+            ((ProcessResponseContentFilter)security.getFilters().get(CREATE_FEATURE_ANALYSIS)).doProcessResponseContent(savedEntity.getId().toString());
         } catch (Exception e) {
             log.error("Failed to add permissions to feature analysis with id = " + savedEntity.getId(), e);
         }

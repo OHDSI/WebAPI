@@ -220,7 +220,7 @@ public class SourceService extends AbstractDaoService {
     Source saved = sourceRepository.save(source);
     String sourceKey = saved.getSourceKey();
     try {
-      ((ProcessResponseContentFilter)security.getFilters().get(CREATE_SOURCE.getTemplateName())).doProcessResponseContent(sourceKey);
+      ((ProcessResponseContentFilter)security.getFilters().get(CREATE_SOURCE)).doProcessResponseContent(sourceKey);
     } catch (Exception e) {
       log.error("Failed to add permissions to source with id = " + sourceKey, e);
     }

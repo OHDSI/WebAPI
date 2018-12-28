@@ -347,7 +347,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     
     IncidenceRateAnalysis createdAnalysis = this.irAnalysisRepository.save(newAnalysis);
     try {
-      ((ProcessResponseContentFilter)security.getFilters().get(CREATE_IR.getTemplateName())).doProcessResponseContent(createdAnalysis.getId().toString());
+      ((ProcessResponseContentFilter)security.getFilters().get(CREATE_IR)).doProcessResponseContent(createdAnalysis.getId().toString());
     } catch (Exception e) {
       log.error("Failed to add permissions to incidence rate analysis with id = " + createdAnalysis.getId(), e);
     }

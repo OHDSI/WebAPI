@@ -62,6 +62,7 @@ import static org.ohdsi.webapi.shiro.management.FilterTemplates.DELETE_PLP;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.DELETE_PREDICTION;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.DELETE_SOURCE;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.FORCE_SESSION_CREATION;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.JWT_AUTHC;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.NO_SESSION_CREATION;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.SKIP_IF_NOT_POST;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.SKIP_IF_NOT_PUT;
@@ -187,14 +188,14 @@ public abstract class AtlasSecurity extends Security {
       .addProtectedRestPath("/permission/**")
 
       // concept set
-      .addProtectedRestPath("/conceptset", "jwtAuthc, " + AUTHZ.getTemplateName() + ", " + CREATE_CONCEPT_SET.getTemplateName())
-      .addProtectedRestPath("/conceptset/*/items", "jwtAuthc, " + AUTHZ.getTemplateName())
-      .addProtectedRestPath("/conceptset/*", "jwtAuthc, " + AUTHZ.getTemplateName() + ", " + DELETE_CONCEPT_SET.getTemplateName())
+      .addProtectedRestPath("/conceptset", JWT_AUTHC + ", " + AUTHZ.getTemplateName() + ", " + CREATE_CONCEPT_SET.getTemplateName())
+      .addProtectedRestPath("/conceptset/*/items", JWT_AUTHC + ", " + AUTHZ.getTemplateName())
+      .addProtectedRestPath("/conceptset/*", JWT_AUTHC + ", " + AUTHZ.getTemplateName() + ", " + DELETE_CONCEPT_SET.getTemplateName())
 
       // incidence rates
-      .addProtectedRestPath("/ir", "jwtAuthc, " + AUTHZ.getTemplateName() + ", " + CREATE_IR.getTemplateName())
+      .addProtectedRestPath("/ir", JWT_AUTHC + ", " + AUTHZ.getTemplateName() + ", " + CREATE_IR.getTemplateName())
       .addProtectedRestPath("/ir/*/copy", CREATE_COPY_IR.getTemplateName())
-      .addProtectedRestPath("/ir/*", "jwtAuthc, " + AUTHZ.getTemplateName())
+      .addProtectedRestPath("/ir/*", JWT_AUTHC + ", " + AUTHZ.getTemplateName())
       .addProtectedRestPath("/ir/*/execute/*")
 
       // comparative cohort analysis (estimation)

@@ -222,22 +222,22 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         FilterChainBuilder filterChainBuilder = new FilterChainBuilder()
                 .setOAuthFilters(SSL.getTemplateName() + ", " + CORS.getTemplateName() + ", " + FORCE_SESSION_CREATION.getTemplateName(), "updateToken, sendTokenInUrl")
                 .setRestFilters(SSL.getTemplateName() +  ", " + NO_SESSION_CREATION.getTemplateName() + ", " + CORS.getTemplateName())
-                .setAuthcFilter("jwtAuthc")
+                .setAuthcFilter(JWT_AUTHC.getTemplateName())
                 .setAuthzFilter(AUTHZ.getTemplateName())
                 // login/logout
-                .addRestPath("/user/login/openid", FORCE_SESSION_CREATION.getTemplateName() + ", oidcAuth, updateToken, sendTokenInRedirect")
-                .addRestPath("/user/login/windows","negotiateAuthc, updateToken, sendTokenInHeader")
-                .addRestPath("/user/login/kerberos","kerberosFilter, updateToken, sendTokenInHeader")
-                .addRestPath("/user/login/db", "jdbcFilter, updateToken, sendTokenInHeader")
-                .addRestPath("/user/login/ldap", "ldapFilter, updateToken, sendTokenInHeader")
-                .addRestPath("/user/login/ad", "adFilter, updateToken, sendTokenInHeader")
-                .addRestPath("/user/refresh", "jwtAuthc, updateToken, sendTokenInHeader")
-                .addRestPath("/user/logout", "logout")
-                .addOAuthPath("/user/oauth/google", "googleAuthc")
-                .addOAuthPath("/user/oauth/facebook", "facebookAuthc")
-                .addPath("/user/login/cas", SSL.getTemplateName() + ", " + CORS.getTemplateName() + ", " + FORCE_SESSION_CREATION.getTemplateName() +", casAuthc, updateToken, sendTokenInUrl")
-                .addPath("/user/oauth/callback", SSL.getTemplateName() + ", handleUnsuccessfullOAuth, oauthCallback")
-                .addPath("/user/cas/callback", SSL.getTemplateName() + ", handleCas, updateToken, sendTokenInUrl");
+                .addRestPath("/user/login/openid", FORCE_SESSION_CREATION.getTemplateName() + ", " + OIDC_AUTH.getTemplateName() + ", " + UPDATE_TOKEN.getTemplateName() + ", " + SEND_TOKEN_IN_REDIRECT.getTemplateName())
+                .addRestPath("/user/login/windows",NEGOTIATE_AUTHC.getTemplateName() + ", " + UPDATE_TOKEN.getTemplateName() + ", " + SEND_TOKEN_IN_HEADER.getTemplateName())
+                .addRestPath("/user/login/kerberos", KERBEROS_FILTER.getTemplateName() + ", " + UPDATE_TOKEN.getTemplateName() + ", " + SEND_TOKEN_IN_HEADER.getTemplateName())
+                .addRestPath("/user/login/db",  JDBC_FILTER.getTemplateName() + ", " + UPDATE_TOKEN.getTemplateName() + ", " + SEND_TOKEN_IN_HEADER.getTemplateName())
+                .addRestPath("/user/login/ldap", LDAP_FILTER.getTemplateName() + ", " + UPDATE_TOKEN.getTemplateName() + ", " + SEND_TOKEN_IN_HEADER.getTemplateName())
+                .addRestPath("/user/login/ad", AD_FILTER.getTemplateName() + ", " + UPDATE_TOKEN.getTemplateName() + ", " + SEND_TOKEN_IN_HEADER.getTemplateName())
+                .addRestPath("/user/refresh", JWT_AUTHC.getTemplateName() + ", " + UPDATE_TOKEN.getTemplateName() + ", " + SEND_TOKEN_IN_HEADER.getTemplateName())
+                .addRestPath("/user/logout", LOGOUT.getTemplateName())
+                .addOAuthPath("/user/oauth/google", GOOGLE_AUTHC.getTemplateName())
+                .addOAuthPath("/user/oauth/facebook", FACEBOOK_AUTHC.getTemplateName())
+                .addPath("/user/login/cas", SSL.getTemplateName() + ", " + CORS.getTemplateName() + ", " + FORCE_SESSION_CREATION.getTemplateName() + ", " + CAS_AUTHC.getTemplateName() + ", " + UPDATE_TOKEN.getTemplateName() + ", " + SEND_TOKEN_IN_URL.getTemplateName())
+                .addPath("/user/oauth/callback", SSL.getTemplateName() + ", " + HANDLE_UNSUCCESSFUL_OAUTH.getTemplateName() +", " + OAUTH_CALLBACK.getTemplateName())
+                .addPath("/user/cas/callback", SSL.getTemplateName() + ", " + HANDLE_CAS.getTemplateName() + ", " + UPDATE_TOKEN.getTemplateName() + ", " + SEND_TOKEN_IN_URL.getTemplateName());
 
         setupProtectedPaths(filterChainBuilder);
 

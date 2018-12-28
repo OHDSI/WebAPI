@@ -29,9 +29,9 @@ public class DisabledSecurity extends Security {
   @Override
   public Map<String, String> getFilterChain() {
     Map<String, String> filterChain = new HashMap<>();
-    filterChain.put("/user/**", "hideResource");
-    filterChain.put("/role/**", "hideResource");
-    filterChain.put("/permission/**", "hideResource");
+    filterChain.put("/user/**", HIDE_RESOURCE.getTemplateName());
+    filterChain.put("/role/**", HIDE_RESOURCE.getTemplateName());
+    filterChain.put("/permission/**", HIDE_RESOURCE.getTemplateName());
     filterChain.put("/**", CORS.getTemplateName());
     return filterChain;
   }

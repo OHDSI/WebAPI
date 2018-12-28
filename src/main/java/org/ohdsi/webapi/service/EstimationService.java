@@ -120,47 +120,45 @@ public class EstimationService extends AbstractDaoService {
     
     @POST
     @Path("/")
+    @Transactional
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public EstimationDTO createEstimation(Estimation est) {
-        return getTransactionTemplate().execute(transactionStatus -> {
-            Date currentTime = Calendar.getInstance().getTime();
+    public EstimationDTO createEstimation(Estimation est) { 
+        Date currentTime = Calendar.getInstance().getTime();
 
-            UserEntity user = userRepository.findByLogin(security.getSubject());
-            est.setCreatedBy(user);
-            est.setCreatedDate(currentTime);
+        UserEntity user = userRepository.findByLogin(security.getSubject());
+        est.setCreatedBy(user);
+        est.setCreatedDate(currentTime);
 
-            Estimation estWithId = this.estimationRepository.save(est);
-            try {
-                ((ProcessResponseContentFilter)security.getFilters().get(CREATE_ESTIMATION.getTemplateName())).doProcessResponseContent(String.valueOf(estWithId.getId()));
-            } catch (Exception e) {
-                log.error("Failed to add permissions to estimation with id = " + estWithId.getId(), e);
-            }
+        Estimation estWithId = this.estimationRepository.save(est);
+        try {
+            ((ProcessResponseContentFilter)security.getFilters().get(CREATE_ESTIMATION.getTemplateName())).doProcessResponseContent(String.valueOf(estWithId.getId()));
+        } catch (Exception e) {
+            log.error("Failed to add permissions to estimation with id = " + estWithId.getId(), e);
+        }
 
-            return conversionService.convert(estWithId, EstimationDTO.class);
-        });
+        return conversionService.convert(estWithId, EstimationDTO.class);
     }
 
     @PUT
     @Path("{id}")
+    @Transactional
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public EstimationDTO updateEstimation(@PathParam("id") final int id, Estimation est) {
-        return getTransactionTemplate().execute(transactionStatus -> {
-            Estimation estFromDB = estimationRepository.findOne(id);
-            Date currentTime = Calendar.getInstance().getTime();
+        Estimation estFromDB = estimationRepository.findOne(id);
+        Date currentTime = Calendar.getInstance().getTime();
 
-            UserEntity user = userRepository.findByLogin(security.getSubject());
-            est.setModifiedBy(user);
-            est.setModifiedDate(currentTime);
-            // Prevent any updates to protected fields like created/createdBy
-            est.setCreatedDate(estFromDB.getCreatedDate());
-            est.setCreatedBy(estFromDB.getCreatedBy());
+        UserEntity user = userRepository.findByLogin(security.getSubject());
+        est.setModifiedBy(user);
+        est.setModifiedDate(currentTime);
+        // Prevent any updates to protected fields like created/createdBy
+        est.setCreatedDate(estFromDB.getCreatedDate());
+        est.setCreatedBy(estFromDB.getCreatedBy());
 
-            Estimation updatedEst = this.estimationRepository.save(est);
+        Estimation updatedEst = this.estimationRepository.save(est);
 
-            return conversionService.convert(updatedEst, EstimationDTO.class);
-        });
+        return conversionService.convert(updatedEst, EstimationDTO.class);
     }
     
     @GET

@@ -111,7 +111,6 @@ public class PatientLevelPredictionService extends AbstractDaoService {
 	@Consumes(MediaType.APPLICATION_JSON)
 	public PatientLevelPredictionAnalysisDTO createAnalysis(PatientLevelPredictionAnalysis plpa) {
 
-	  return getTransactionTemplate().execute(transactionStatus -> {
       Date currentTime = Calendar.getInstance().getTime();
 
       UserEntity user = userRepository.findByLogin(security.getSubject());
@@ -125,7 +124,6 @@ public class PatientLevelPredictionService extends AbstractDaoService {
           log.error("Failed to add permissions to patient level prediction with id = " + plpaWithId.getAnalysisId(), e);
       }
       return conversionService.convert(plpaWithId, PatientLevelPredictionAnalysisDTO.class);
-    });
 	}
 
 	@PUT

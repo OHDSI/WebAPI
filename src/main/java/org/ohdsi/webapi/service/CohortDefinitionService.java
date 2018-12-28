@@ -381,11 +381,11 @@ public class CohortDefinitionService extends AbstractDaoService {
    */
   @POST
   @Path("/")
+  @Transactional
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public CohortDefinitionDTO createCohortDefinition(CohortDefinitionDTO def) {
-
-    return getTransactionTemplate().execute(transactionStatus -> {
+    
       Date currentTime = Calendar.getInstance().getTime();
 
       UserEntity user = userRepository.findByLogin(security.getSubject());
@@ -414,7 +414,6 @@ public class CohortDefinitionService extends AbstractDaoService {
         log.error("Failed to add permissions to cohort with id = " + createdDefinition.getId(), e);
       }
       return cohortDefinitionToDTO(createdDefinition);
-    });
   }
 
   /**

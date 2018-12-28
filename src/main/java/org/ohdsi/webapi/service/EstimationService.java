@@ -53,6 +53,8 @@ import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
+import static org.ohdsi.webapi.shiro.management.CreatePermTemplates.CREATE_ESTIMATION;
+
 @Path("/estimation/")
 @Component
 public class EstimationService extends AbstractDaoService {
@@ -130,7 +132,7 @@ public class EstimationService extends AbstractDaoService {
 
             Estimation estWithId = this.estimationRepository.save(est);
             try {
-                ((ProcessResponseContentFilter)security.getFilters().get("createPermissionsOnCreateEstimation")).doProcessResponseContent(String.valueOf(estWithId.getId()));
+                ((ProcessResponseContentFilter)security.getFilters().get(CREATE_ESTIMATION.getTemplateName())).doProcessResponseContent(String.valueOf(estWithId.getId()));
             } catch (Exception e) {
                 log.error("Failed to add permissions to estimation with id = " + estWithId.getId(), e);
             }

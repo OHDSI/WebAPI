@@ -42,6 +42,7 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static org.ohdsi.webapi.shiro.management.CreatePermTemplates.CREATE_SOURCE;
 import static org.ohdsi.webapi.source.Source.IMPALA_DATASOURCE;
 
 @Path("/source/")
@@ -219,7 +220,7 @@ public class SourceService extends AbstractDaoService {
     Source saved = sourceRepository.save(source);
     String sourceKey = saved.getSourceKey();
     try {
-      ((ProcessResponseContentFilter)security.getFilters().get("createPermissionsOnCreateSource")).doProcessResponseContent(sourceKey);
+      ((ProcessResponseContentFilter)security.getFilters().get(CREATE_SOURCE.getTemplateName())).doProcessResponseContent(sourceKey);
     } catch (Exception e) {
       log.error("Failed to add permissions to source with id = " + sourceKey, e);
     }

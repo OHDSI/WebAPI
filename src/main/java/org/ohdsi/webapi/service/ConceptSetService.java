@@ -42,6 +42,8 @@ import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
 
+import static org.ohdsi.webapi.shiro.management.CreatePermTemplates.CREATE_CONCEPT_SET;
+
 /**
  *
  * @author fdefalco
@@ -236,7 +238,7 @@ public class ConceptSetService extends AbstractDaoService {
         updated.setCreatedDate(new Date());
         updateConceptSet(updated, conceptSet);
         try {
-            ((ProcessResponseContentFilter)security.getFilters().get("createPermissionsOnCreateConceptSet")).doProcessResponseContent(String.valueOf(updated.getId()));
+            ((ProcessResponseContentFilter)security.getFilters().get(CREATE_CONCEPT_SET.getTemplateName())).doProcessResponseContent(String.valueOf(updated.getId()));
         } catch (Exception e) {
             log.error("Failed to add permissions to concept set with id = " + updated.getId(), e);
         }

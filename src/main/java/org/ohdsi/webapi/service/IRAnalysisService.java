@@ -22,6 +22,7 @@ import static org.ohdsi.webapi.Constants.Params.RESULTS_DATABASE_SCHEMA;
 import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
 import static org.ohdsi.webapi.Constants.Params.TARGET_DIALECT;
 import static org.ohdsi.webapi.Constants.Params.VOCABULARY_DATABASE_SCHEMA;
+import static org.ohdsi.webapi.shiro.management.CreatePermTemplates.CREATE_IR;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -330,7 +331,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     // it might be possible to leverage saveAnalysis() but not sure how to pull the auto ID from
     // the DB to pass it into saveAnalysis (since saveAnalysis does a findOne() at the start).
     // If there's a way to get the Entity into the persistence manager so findOne() returns this newly created entity
-    // then we could create the entity here (wihtout persist) and then call saveAnalysis within the sasme Tx.
+    // then we could create the entity here (without persist) and then call saveAnalysis within the same Tx.
     IncidenceRateAnalysis newAnalysis = new IncidenceRateAnalysis();
     newAnalysis.setName(analysis.name)
             .setDescription(analysis.description);
@@ -346,7 +347,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     
     IncidenceRateAnalysis createdAnalysis = this.irAnalysisRepository.save(newAnalysis);
     try {
-      ((ProcessResponseContentFilter)security.getFilters().get("createPermissionsOnCreateIR")).doProcessResponseContent(createdAnalysis.getId().toString());
+      ((ProcessResponseContentFilter)security.getFilters().get(CREATE_IR.getTemplateName())).doProcessResponseContent(createdAnalysis.getId().toString());
     } catch (Exception e) {
       log.error("Failed to add permissions to incidence rate analysis with id = " + createdAnalysis.getId(), e);
     }

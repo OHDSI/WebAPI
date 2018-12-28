@@ -62,6 +62,7 @@ import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.GENERATE_COHORT_CHARACTERIZATION;
 import static org.ohdsi.webapi.Constants.Params.*;
+import static org.ohdsi.webapi.shiro.management.CreatePermTemplates.CREATE_COHORT_CHARACTERIZATION;
 
 @Service
 @Transactional
@@ -154,7 +155,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         entity.setCreatedDate(new Date());
         CohortCharacterizationEntity savedEntity = saveCc(entity);
         try {
-            ((ProcessResponseContentFilter)security.getFilters().get("createPermissionsOnCreateCohortCharacterization")).doProcessResponseContent(savedEntity.getId().toString());
+            ((ProcessResponseContentFilter)security.getFilters().get(CREATE_COHORT_CHARACTERIZATION.getTemplateName())).doProcessResponseContent(savedEntity.getId().toString());
         } catch (Exception e) {
             log.error("Failed to add permissions to cohort characterization with id = " + savedEntity.getId(), e);
         }

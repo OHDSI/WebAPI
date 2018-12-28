@@ -45,6 +45,8 @@ import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
+import static org.ohdsi.webapi.shiro.management.CreatePermTemplates.CREATE_PREDICTION;
+
 @Component
 @Transactional
 @Path("/prediction/")
@@ -114,7 +116,7 @@ public class PredictionService  extends AbstractDaoService {
     
         PredictionAnalysis predWithId = this.predictionAnalysisRepository.save(pred);
         try {
-            ((ProcessResponseContentFilter)security.getFilters().get("createPermissionsOnCreatePrediction")).doProcessResponseContent(String.valueOf(predWithId.getId()));
+            ((ProcessResponseContentFilter)security.getFilters().get(CREATE_PREDICTION.getTemplateName())).doProcessResponseContent(String.valueOf(predWithId.getId()));
         } catch (Exception e) {
             log.error("Failed to add permissions to prediction with id = " + predWithId.getId(), e);
         }

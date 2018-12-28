@@ -38,6 +38,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Component;
 
+import static org.ohdsi.webapi.shiro.management.CreatePermTemplates.CREATE_PLP;
+
 /**
  *
  * @author asena5
@@ -118,7 +120,7 @@ public class PatientLevelPredictionService extends AbstractDaoService {
 
       PatientLevelPredictionAnalysis plpaWithId = this.patientLevelPredictionAnalysisRepository.save(plpa);
       try {
-          ((ProcessResponseContentFilter)security.getFilters().get("createPermissionsOnCreatePlp")).doProcessResponseContent(String.valueOf(plpaWithId.getAnalysisId()));
+          ((ProcessResponseContentFilter)security.getFilters().get(CREATE_PLP.getTemplateName())).doProcessResponseContent(String.valueOf(plpaWithId.getAnalysisId()));
       } catch (Exception e) {
           log.error("Failed to add permissions to patient level prediction with id = " + plpaWithId.getAnalysisId(), e);
       }

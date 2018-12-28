@@ -20,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.ws.rs.NotFoundException;
 
+import static org.ohdsi.webapi.shiro.management.CreatePermTemplates.CREATE_FEATURE_ANALYSIS;
+
 @Service
 @Transactional(readOnly = true)
 public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnalysisService {
@@ -55,7 +57,7 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
         }
         FeAnalysisEntity savedEntity = analysisRepository.save(analysis);
         try {
-            ((ProcessResponseContentFilter)security.getFilters().get("createPermissionsOnCreateFeatureAnalysis")).doProcessResponseContent(savedEntity.getId().toString());
+            ((ProcessResponseContentFilter)security.getFilters().get(CREATE_FEATURE_ANALYSIS.getTemplateName())).doProcessResponseContent(savedEntity.getId().toString());
         } catch (Exception e) {
             log.error("Failed to add permissions to feature analysis with id = " + savedEntity.getId(), e);
         }

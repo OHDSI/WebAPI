@@ -67,6 +67,7 @@ import java.util.stream.Stream;
 
 import static org.ohdsi.webapi.Constants.Params.COHORT_DEFINITION_ID;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
+import static org.ohdsi.webapi.shiro.management.CreatePermTemplates.CREATE_COHORT_DEFINITION;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 /**
@@ -408,7 +409,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 
       CohortDefinition createdDefinition = this.cohortDefinitionRepository.save(newDef);
       try {
-        ((ProcessResponseContentFilter)security.getFilters().get("createPermissionsOnCreateCohortDefinition")).doProcessResponseContent(createdDefinition.getId().toString());
+        ((ProcessResponseContentFilter)security.getFilters().get(CREATE_COHORT_DEFINITION.getTemplateName())).doProcessResponseContent(createdDefinition.getId().toString());
       } catch (Exception e) {
         log.error("Failed to add permissions to cohort with id = " + createdDefinition.getId(), e);
       }

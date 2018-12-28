@@ -67,6 +67,7 @@ import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
 import static org.ohdsi.webapi.Constants.Params.PATHWAY_ANALYSIS_ID;
 import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
 import static org.ohdsi.webapi.Constants.Params.TARGET_TABLE;
+import static org.ohdsi.webapi.shiro.management.CreatePermTemplates.CREATE_PATHWAY_ANALYSIS;
 
 @Service
 @Transactional
@@ -141,7 +142,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         newAnalysis.setCreatedDate(new Date());
         PathwayAnalysisEntity savedEntity = save(newAnalysis);
         try {
-            ((ProcessResponseContentFilter)security.getFilters().get("createPermissionsOnCreatePathwayAnalysis")).doProcessResponseContent(savedEntity.getId().toString());
+            ((ProcessResponseContentFilter)security.getFilters().get(CREATE_PATHWAY_ANALYSIS.getTemplateName())).doProcessResponseContent(savedEntity.getId().toString());
         } catch (Exception e) {
             log.error("Failed to add permissions to pathway analysis with id = " + savedEntity.getId(), e);
         }
@@ -172,7 +173,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
         PathwayAnalysisEntity savedEntity = save(newAnalysis);
         try {
-            ((ProcessResponseContentFilter)security.getFilters().get("createPermissionsOnCreatePathwayAnalysis")).doProcessResponseContent(savedEntity.getId().toString());
+            ((ProcessResponseContentFilter)security.getFilters().get(CREATE_PATHWAY_ANALYSIS.getTemplateName())).doProcessResponseContent(savedEntity.getId().toString());
         } catch (Exception e) {
             log.error("Failed to add permissions to pathway analysis with id = " + savedEntity.getId(), e);
         }

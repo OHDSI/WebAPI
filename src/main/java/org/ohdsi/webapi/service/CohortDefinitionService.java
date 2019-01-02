@@ -371,7 +371,7 @@ public class CohortDefinitionService extends AbstractDaoService {
   @GET
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
-  public List<CohortDefinitionListItem> getCohortDefinitionList(@HeaderParam("Authorization") String token) {
+  public List<CohortDefinitionListItem> getCohortDefinitionList(@HeaderParam("Authorization") String token, @CookieParam("userFingerprint") String userFingerprint) {
 
 		ArrayList<CohortDefinitionListItem> result = new ArrayList<>();
 		// we use a direct query here because using repository.findAll leads to N+1 query performance (because the One-To-One mapping to 

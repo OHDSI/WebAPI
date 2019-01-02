@@ -1,5 +1,6 @@
 package com.jnj.honeur.webapi.shiro.filters;
 
+import com.jnj.honeur.security.SecurityUtils2;
 import com.jnj.honeur.webapi.shiro.HoneurTokenManager;
 import io.buji.pac4j.subject.Pac4jPrincipal;
 import org.apache.commons.lang.StringUtils;
@@ -14,10 +15,12 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Set;
 
+import static com.jnj.honeur.webapi.shiro.management.AtlasCustomSecurity.FINGERPRINT_ATTRIBUTE;
 import static org.ohdsi.webapi.shiro.management.AtlasSecurity.PERMISSIONS_ATTRIBUTE;
 import static org.ohdsi.webapi.shiro.management.AtlasSecurity.TOKEN_ATTRIBUTE;
 
@@ -30,14 +33,17 @@ public class HoneurUpdateAccessTokenFilter extends AdviceFilter {
   private final PermissionManager authorizer;
   private final int tokenExpirationIntervalInSeconds;
   private final Set<String> defaultRoles;
+  private final String cookieDomain;
   
   public HoneurUpdateAccessTokenFilter(
           PermissionManager authorizer,
           Set<String> defaultRoles,
-          int tokenExpirationIntervalInSeconds) {
+          int tokenExpirationIntervalInSeconds,
+          String cookieDomain) {
     this.authorizer = authorizer;
     this.tokenExpirationIntervalInSeconds = tokenExpirationIntervalInSeconds;
     this.defaultRoles = defaultRoles;
+    this.cookieDomain = cookieDomain;
   }
   
   @Override
@@ -72,7 +78,19 @@ public class HoneurUpdateAccessTokenFilter extends AdviceFilter {
       this.authorizer.registerUser(login, defaultRoles);
 
       Date expiration = HoneurTokenManager.getExpirationDate(this.tokenExpirationIntervalInSeconds);
-      jwt = HoneurTokenManager.createJsonWebToken(login, expiration);
+      String fingerprint = SecurityUtils2.generateFingerprint();
+      ArrayList<String> setCookieHeader = new ArrayList<>();
+
+      setCookieHeader.add(String.format("userFingerprint=%s", fingerprint));
+      setCookieHeader.add(String.format("Domain=%s", cookieDomain));
+      setCookieHeader.add("Path=/");
+      setCookieHeader.add(String.format("Max-Age=%s", tokenExpirationIntervalInSeconds));
+      setCookieHeader.add("Secure");
+      setCookieHeader.add("HttpOnly");
+
+      request.setAttribute(FINGERPRINT_ATTRIBUTE, String.join(";", setCookieHeader));
+
+      jwt = HoneurTokenManager.createJsonWebToken(login, expiration, fingerprint);
     }
 
     request.setAttribute(TOKEN_ATTRIBUTE, jwt);

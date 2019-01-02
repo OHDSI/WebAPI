@@ -9,49 +9,60 @@ import org.ohdsi.webapi.shiro.tokens.JwtAuthToken;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Arrays;
+import java.util.Optional;
 
 /**
- *
  * @author gennadiy.anisimov
  */
 public final class HoneurJwtAuthFilter extends AtlasAuthFilter {
 
-  @Override
-  protected JwtAuthToken createToken(ServletRequest request, ServletResponse response) throws Exception {
-    String jwt = HoneurTokenManager.extractToken(request);
-    String subject;
-    try {
-      subject = HoneurTokenManager.getSubject(jwt);
-    } catch (JwtException e) {
-      throw new AuthenticationException(e);
+    @Override
+    protected JwtAuthToken createToken(ServletRequest request, ServletResponse response) throws Exception {
+        String jwt = HoneurTokenManager.extractToken(request);
+        String subject;
+
+        HttpServletRequest httpServletRequest = WebUtils.toHttp(request);
+        Optional<Cookie> fingerprintCookie = Arrays.stream(httpServletRequest.getCookies())
+                .filter(cookie -> cookie.getName().equals("userFingerprint")).findFirst();
+
+        try {
+            if(fingerprintCookie.isPresent()) {
+                subject = HoneurTokenManager.getSubject(jwt, fingerprintCookie.get().getValue());
+            } else {
+                throw new AuthenticationException("No fingerprint cookie!");
+            }
+        } catch (JwtException e) {
+            throw new AuthenticationException(e);
+        }
+
+        return new JwtAuthToken(subject);
     }
 
-    return new JwtAuthToken(subject);
-  }
+    @Override
+    protected boolean onAccessDenied(ServletRequest request, ServletResponse response) throws Exception {
+        boolean loggedIn = false;
 
-  @Override
-  protected boolean onAccessDenied(ServletRequest request, ServletResponse response) throws Exception {
-    boolean loggedIn = false;
+        if (isLoginAttempt(request, response)) {
+            try {
+                loggedIn = executeLogin(request, response);
+            } catch (AuthenticationException ae) {
+                loggedIn = false;
+            }
+        }
 
-    if (isLoginAttempt(request, response)) {
-      try {
-        loggedIn = executeLogin(request, response);
-      }
-      catch(AuthenticationException ae) {
-        loggedIn = false;
-      }
+        if (!loggedIn) {
+            HttpServletResponse httpResponse = WebUtils.toHttp(response);
+            httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        }
+
+        return loggedIn;
     }
 
-    if (!loggedIn) {
-        HttpServletResponse httpResponse = WebUtils.toHttp(response);
-        httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    protected boolean isLoginAttempt(ServletRequest request, ServletResponse response) {
+        return HoneurTokenManager.extractToken(request) != null;
     }
-
-    return loggedIn;
-  }
-
-  protected boolean isLoginAttempt(ServletRequest request, ServletResponse response) {
-    return HoneurTokenManager.extractToken(request) != null;
-  }
 }

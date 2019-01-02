@@ -34,6 +34,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import javax.transaction.Transactional;
+import javax.ws.rs.CookieParam;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
@@ -88,7 +89,7 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
      */
     @Override
     @Transactional
-    public List<CohortDefinitionListItem> getCohortDefinitionList(@HeaderParam("Authorization") String token) {
+    public List<CohortDefinitionListItem> getCohortDefinitionList(@HeaderParam("Authorization") String token, @CookieParam("userFingerprint") String userFingerprint) {
         ArrayList<CohortDefinitionListItem> result = new ArrayList<>();
         Iterable<CohortDefinition> defs = cohortDefinitionRepository.findAll();
 
@@ -107,7 +108,7 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
             String permissionPattern = "cohortdefinition:([0-9]+|\\*):get";
             LiferayPermissionManager liferayPermissionManager = (LiferayPermissionManager) authorizer;
             List<Integer> definitionIds =
-                    liferayPermissionManager.getUserPermissions(SecurityUtils2.getSubject(token.replace("Bearer ", "")))
+                    liferayPermissionManager.getUserPermissions(SecurityUtils2.getSubject(token.replace("Bearer ", ""), userFingerprint))
                             .stream()
                             .map(PermissionEntity::getValue)
                             .filter(permissionString -> permissionString.matches(permissionPattern))

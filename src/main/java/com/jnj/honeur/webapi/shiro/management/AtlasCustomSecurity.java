@@ -1,9 +1,7 @@
 package com.jnj.honeur.webapi.shiro.management;
 
 import com.jnj.honeur.webapi.cas.filter.CASSessionFilter;
-import com.jnj.honeur.webapi.shiro.filters.HoneurLogoutFilter;
-import com.jnj.honeur.webapi.shiro.filters.HoneurJwtAuthFilter;
-import com.jnj.honeur.webapi.shiro.filters.HoneurUpdateAccessTokenFilter;
+import com.jnj.honeur.webapi.shiro.filters.*;
 import io.buji.pac4j.filter.CallbackFilter;
 import io.buji.pac4j.filter.SecurityFilter;
 import io.buji.pac4j.realm.Pac4jRealm;
@@ -64,6 +62,8 @@ import static org.ohdsi.webapi.util.QuoteUtils.dequote;
 @DependsOn("flyway")
 public class AtlasCustomSecurity extends AtlasSecurity {
 
+  public static final String FINGERPRINT_ATTRIBUTE = "FINGERPRINT";
+
   private final Log logger = LogFactory.getLog(getClass());
 
   @Autowired
@@ -75,8 +75,8 @@ public class AtlasCustomSecurity extends AtlasSecurity {
   @Value("${webapi.central}")
   private boolean central;
 
-  @Value("${security.cas.tgc.domain}")
-  private String casTgcDomain;
+  @Value("${security.cookies.domain}")
+  private String cookiesDomain;
 
   @Value("${security.oauth.callback.ui}")
   private String oauthUiCallback;
@@ -224,7 +224,7 @@ public class AtlasCustomSecurity extends AtlasSecurity {
       Map<String, Filter> filters = super.getFilters();
 
       filters.put("logout", new HoneurLogoutFilter());
-      filters.put("updateToken", new HoneurUpdateAccessTokenFilter(this.authorizer, this.defaultRoles, this.tokenExpirationIntervalInSeconds));
+      filters.put("updateToken", new HoneurUpdateAccessTokenFilter(this.authorizer, this.defaultRoles, this.tokenExpirationIntervalInSeconds, this.cookiesDomain));
 
       filters.put("jwtAuthc", new HoneurJwtAuthFilter());
       filters.put("jdbcFilter", new JdbcAuthFilter(eventPublisher));
@@ -233,15 +233,15 @@ public class AtlasCustomSecurity extends AtlasSecurity {
       filters.put("adFilter", new ActiveDirectoryAuthFilter(eventPublisher));
       filters.put("negotiateAuthc", new NegotiateAuthenticationFilter());
 
-      filters.put("sendTokenInUrl", new SendTokenInUrlFilter(this.oauthUiCallback));
-      filters.put("sendTokenInHeader", new SendTokenInHeaderFilter());
-      filters.put("sendTokenInRedirect", new SendTokenInRedirectFilter(redirectUrl));
+      filters.put("sendTokenInUrl", new HoneurSendTokenInUrlFilter(this.oauthUiCallback));
+      filters.put("sendTokenInHeader", new HoneurSendTokenInHeaderFilter());
+      filters.put("sendTokenInRedirect", new HoneurSendTokenInRedirectFilter(redirectUrl));
 
       filters.put("createPermissionsOnImportCohortDefinition", this.getCreatePermissionsOnImportCohortDefinitionFilter());
       filters.put("deletePermissionsOnExportCohortDefinition", this.getDeletePermissionsOnExportCohortDefinitionFilter());
       filters.put("createPermissionsOnCreateCohortDefinition", this.getCreatePermissionsOnCreateCohortDefinitionFilter());
       filters.put("deletePermissionsOnDeleteCohortDefinition", this.getDeletePermissionsOnDeleteCohortDefinitionFilter());
-      filters.put("casSessionFilter", new CASSessionFilter(true, casTgcDomain));
+      filters.put("casSessionFilter", new CASSessionFilter(true, cookiesDomain));
 
       // OAuth
       //

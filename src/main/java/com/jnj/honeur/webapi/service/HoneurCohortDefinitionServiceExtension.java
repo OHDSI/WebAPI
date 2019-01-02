@@ -420,9 +420,9 @@ public class HoneurCohortDefinitionServiceExtension {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/uuids")
-    public List<String> getUUIDSList(@HeaderParam("token") String token){
+    public List<String> getUUIDSList(@HeaderParam("token") String token, @CookieParam("userFingerprint") String userFingerprint){
         log.info("Path: /cohortdefinition/uuids");
-        final Set<PermissionEntity> userPermissions = this.authorizer.getUserPermissions(SecurityUtils2.getSubject(token));
+        final Set<PermissionEntity> userPermissions = this.authorizer.getUserPermissions(SecurityUtils2.getSubject(token, userFingerprint));
 
         if(userHasCohortDefinitionWildcardPermission(userPermissions)) {
             return getCohortDefinitionUuids(cohortDefinitionRepository.findAll());

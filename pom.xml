@@ -146,7 +146,7 @@
     <spring.batch.taskExecutor.maxPoolSize>20</spring.batch.taskExecutor.maxPoolSize>
   </properties>
   <build>
-    <finalName>WebAPI</finalName>
+    <finalName>webapi</finalName>
     <resources>
       <resource>
         <directory>src/main/resources</directory>

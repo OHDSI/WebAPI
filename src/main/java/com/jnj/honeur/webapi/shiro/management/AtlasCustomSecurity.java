@@ -75,6 +75,9 @@ public class AtlasCustomSecurity extends AtlasSecurity {
   @Value("${webapi.central}")
   private boolean central;
 
+  @Value("${security.cas.tgc.domain}")
+  private String casTgcDomain;
+
   @Value("${security.cookies.domain}")
   private String cookiesDomain;
 
@@ -241,7 +244,7 @@ public class AtlasCustomSecurity extends AtlasSecurity {
       filters.put("deletePermissionsOnExportCohortDefinition", this.getDeletePermissionsOnExportCohortDefinitionFilter());
       filters.put("createPermissionsOnCreateCohortDefinition", this.getCreatePermissionsOnCreateCohortDefinitionFilter());
       filters.put("deletePermissionsOnDeleteCohortDefinition", this.getDeletePermissionsOnDeleteCohortDefinitionFilter());
-      filters.put("casSessionFilter", new CASSessionFilter(true, cookiesDomain));
+      filters.put("casSessionFilter", new CASSessionFilter(true, casTgcDomain));
 
       // OAuth
       //

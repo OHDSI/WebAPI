@@ -1,12 +1,10 @@
 package org.ohdsi.webapi.cohortcharacterization.domain;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import javax.persistence.*;
 
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
+import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterizationStrata;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.model.CommonEntity;
@@ -54,6 +52,11 @@ public class CohortCharacterizationEntity extends CommonEntity implements Cohort
     @Override
     public Set<CcParamEntity> getParameters() {
         return parameters;
+    }
+
+    @Override
+    public Collection<? extends CohortCharacterizationStrata> getStratas() {
+        return Collections.emptyList();
     }
 
     public Long getId() {

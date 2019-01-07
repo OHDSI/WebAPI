@@ -40,6 +40,8 @@
                 <security.cas.login.url>${CAS_SERVER_LOGIN_URL}</security.cas.login.url>
                 <security.oauth.callback.ui>${ATLAS_WELCOME_URL}</security.oauth.callback.ui>
                 <security.oauth.callback.api>${ATLAS_WEBAPI_CALLBACK_URL}</security.oauth.callback.api>
+                <security.cas.serverUrl>${CAS_SERVER_BASE_URL}</security.cas.serverUrl>
+                <security.provider>AtlasCustomSecurity</security.provider>
                 <security.ssl.enabled>false</security.ssl.enabled> <!-- !!! Enabling this property doesn't work on AWS.  Not a real problem as SSL is already enforced on AWS !!! -->
                 <war.directory>target</war.directory>
                 <central>true</central>

@@ -291,6 +291,27 @@
            </restModel>
         </configuration>
       </plugin>
+
+      <plugin>
+        <groupId>com.lazerycode.jmeter</groupId>
+        <artifactId>jmeter-maven-plugin</artifactId>
+        <version>2.7.0</version>
+        <executions>
+          <execution>
+            <id>jmeter-tests</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>jmeter</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <customPropertiesFiles>
+            <file>${user.properties}</file>
+          </customPropertiesFiles>
+          <propertiesFilesDirectory>${properties.folder}</propertiesFilesDirectory>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 

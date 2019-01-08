@@ -37,7 +37,8 @@
                 <liferay.user>${WEBAPI_LIFERAY_USER}</liferay.user>
                 <liferay.password>${WEBAPI_LIFERAY_PASSWORD}</liferay.password>
                 <hss.url>${STORAGE_SERVER_BASE_URL}/api</hss.url>
-                <security.cas.login.url>${CAS_SERVER_LOGIN_URL}</security.cas.login.url>
+                <security.cas.loginUrl>${CAS_SERVER_LOGIN_URL}</security.cas.loginUrl>
+                <security.cas.callbackUrl>${WEBAPI_CAS_CALLBACK_URL}</security.cas.callbackUrl>
                 <security.oauth.callback.ui>${ATLAS_WELCOME_URL}</security.oauth.callback.ui>
                 <security.oauth.callback.api>${ATLAS_WEBAPI_CALLBACK_URL}</security.oauth.callback.api>
                 <security.cas.serverUrl>${CAS_SERVER_BASE_URL}</security.cas.serverUrl>
@@ -74,9 +75,11 @@
                 <liferay.password>${WEBAPI_LIFERAY_PASSWORD}</liferay.password>
                 <hss.url>${STORAGE_SERVER_BASE_URL}/api</hss.url>
                 <security.enabled>false</security.enabled>
-                <security.cas.login.url>${CAS_SERVER_LOGIN_URL}</security.cas.login.url>
+                <security.cas.loginUrl>${CAS_SERVER_LOGIN_URL}</security.cas.loginUrl>
+                <security.cas.callbackUrl>${WEBAPI_CAS_CALLBACK_URL}</security.cas.callbackUrl>
                 <security.oauth.callback.ui>${ATLAS_WELCOME_URL}</security.oauth.callback.ui>
                 <security.oauth.callback.api>${ATLAS_WEBAPI_CALLBACK_URL}</security.oauth.callback.api>
+                <security.cas.serverUrl>${CAS_SERVER_BASE_URL}</security.cas.serverUrl>
                 <security.ssl.enabled>false</security.ssl.enabled> <!-- !!! Enabling this property doesn't work on AWS.  Not a real problem as SSL is already enforced on AWS !!! -->
                 <war.directory>target</war.directory>
                 <central>false</central>
@@ -96,7 +99,8 @@
                 <liferay.user>test@liferay.com</liferay.user>
                 <liferay.password>test</liferay.password>
                 <hss.url>https://dev.honeur.org/storage/api</hss.url>
-                <security.cas.login.url>https://localhost:8443/cas/login</security.cas.login.url>
+                <security.cas.loginUrl>https://localhost:8443/cas/login</security.cas.loginUrl>
+                <security.cas.callbackUrl>https://localhost:${server.port}/webapi/user/cas/callback?client_name=CasClient</security.cas.callbackUrl>
                 <security.oauth.callback.ui>https://localhost:${server.port}/atlas/#/welcome</security.oauth.callback.ui>
                 <security.oauth.callback.api>https://localhost:${server.port}/webapi/user/oauth/callback</security.oauth.callback.api>
                 <security.ssl.enabled>true</security.ssl.enabled>
@@ -161,7 +165,8 @@
                 <flyway.locations>classpath:db/migration/postgresql,classpath:db/extension/honeur</flyway.locations>
                 <security.enabled>false</security.enabled>
                 <security.cas>false</security.cas>
-                <security.cas.login.url>https://cas-uat.honeur.org/login</security.cas.login.url>
+                <security.cas.loginUrl>https://cas-uat.honeur.org/login</security.cas.loginUrl>
+                <security.cas.callbackUrl>https://webapi-uat.honeur.org/user/cas/callback?client_name=CasClient</security.cas.callbackUrl>
                 <security.token.expiration>43200</security.token.expiration>
                 <security.origin>*</security.origin>
                 <security.ssl.enabled>false</security.ssl.enabled>

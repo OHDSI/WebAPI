@@ -136,6 +136,18 @@ public class LiferayPermissionManager extends PermissionManager {
         return permissions;
     }
 
+    /**
+     * Added because of use of private class methods.
+     * @return
+     * @throws Exception
+     */
+    @Override
+    public UserEntity getCurrentUser() throws Exception {
+        final String login = this.getSubjectName();
+        final UserEntity currentUser = this.getUserByLogin(login);
+        return currentUser;
+    }
+
     private UserEntity getUserById(Long userId) {
         UserEntity user = liferayApiClient.findUserById(userId);
         if (user == null) {

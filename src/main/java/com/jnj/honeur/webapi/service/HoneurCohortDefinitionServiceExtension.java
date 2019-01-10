@@ -1,12 +1,9 @@
 package com.jnj.honeur.webapi.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
 import com.jnj.honeur.security.SecurityUtils2;
 import com.jnj.honeur.webapi.SourceDaimonContextHolder;
 import com.jnj.honeur.webapi.cohortdefinition.CohortGenerationResults;
-import com.jnj.honeur.webapi.cohortdefinition.ImportCohortGenerationTasklet;
-import com.jnj.honeur.webapi.cohortdefinition.ImportJobExecutionListener;
 import com.jnj.honeur.webapi.cohortfeatures.CohortFeaturesEntity;
 import com.jnj.honeur.webapi.cohortfeatures.CohortFeaturesRepository;
 import com.jnj.honeur.webapi.cohortfeaturesanalysisref.CohortFeaturesAnalysisRefEntity;
@@ -35,12 +32,8 @@ import org.apache.commons.logging.LogFactory;
 import org.ohdsi.webapi.cohort.CohortEntity;
 import org.ohdsi.webapi.cohort.CohortRepository;
 import org.ohdsi.webapi.cohortdefinition.*;
-import org.ohdsi.webapi.cohortfeatures.GenerateCohortFeaturesTasklet;
 import org.ohdsi.webapi.job.JobExecutionResource;
-import org.ohdsi.webapi.job.JobTemplate;
-import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.CohortDefinitionService;
-import org.ohdsi.webapi.service.CohortGenerationService;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
@@ -48,13 +41,7 @@ import org.ohdsi.webapi.shiro.Entities.RoleRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceRepository;
-import org.springframework.batch.core.JobParameters;
-import org.springframework.batch.core.Step;
-import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
-import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
-import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
@@ -67,16 +54,12 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-
-import static org.ohdsi.webapi.Constants.GENERATE_COHORT;
 
 @Path("/cohortdefinition")
 @Component
@@ -157,8 +140,8 @@ public class HoneurCohortDefinitionServiceExtension {
     @GET
     @Path("/hss/list/all")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<CohortDefinitionStorageInformationItem> getCohortDefinitionImportList(@HeaderParam("Authorization") String token) {
-        return storageServiceClient.getCohortDefinitionImportList(token);
+    public List<CohortDefinitionStorageInformationItem> getCohortDefinitionImportList(@HeaderParam("Authorization") String token, @CookieParam("userFingerprint") String userFingerprint) {
+        return storageServiceClient.getCohortDefinitionImportList(token, userFingerprint);
     }
 
     /**
@@ -170,11 +153,11 @@ public class HoneurCohortDefinitionServiceExtension {
     @GET
     @Path("/hss/list/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<StorageInformationItem> getCohortDefinitionResultsImportList(@HeaderParam("Authorization") String token, @PathParam("id") final int id) {
+    public List<StorageInformationItem> getCohortDefinitionResultsImportList(@HeaderParam("Authorization") String token, @CookieParam("userFingerprint") String userFingerprint, @PathParam("id") final int id) {
         if (cohortDefinitionRepository.findOne(id) == null || cohortDefinitionRepository.findOne(id).getUuid() == null) {
             throw new IllegalArgumentException(String.format("Definition with ID=%s does not exist or is not yet shared!", id));
         }
-        return storageServiceClient.getCohortDefinitionResultsImportList(token, cohortDefinitionRepository.findOne(id).getUuid());
+        return storageServiceClient.getCohortDefinitionResultsImportList(token, userFingerprint, cohortDefinitionRepository.findOne(id).getUuid());
     }
 
     /**
@@ -188,9 +171,9 @@ public class HoneurCohortDefinitionServiceExtension {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional
-    public CohortDefinitionService.CohortDefinitionDTO createCohortDefinitionFromFile(@HeaderParam("Authorization") String token, final StorageInformationItem storageInformationItem) {
+    public CohortDefinitionService.CohortDefinitionDTO createCohortDefinitionFromFile(@HeaderParam("Authorization") String token, @CookieParam("userFingerprint") String userFingerprint, final StorageInformationItem storageInformationItem) {
         CohortDefinitionService.CohortDefinitionDTO
-                definition = storageServiceClient.getCohortDefinition(token, storageInformationItem.getUuid());
+                definition = storageServiceClient.getCohortDefinition(token, userFingerprint, storageInformationItem.getUuid());
 
         definition.id = null;
         definition.organizations = new ArrayList<>();
@@ -210,8 +193,8 @@ public class HoneurCohortDefinitionServiceExtension {
     @Path("/hss/{id}/select/{sourceKey}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public JobExecutionResource createCohortDefinitionResultsFromFile(@HeaderParam("Authorization") String token, @PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey, final StorageInformationItem storageInformationItem) throws Exception {
-        CohortGenerationResults results = storageServiceClient.getCohortGenerationResults(token,
+    public JobExecutionResource createCohortDefinitionResultsFromFile(@HeaderParam("Authorization") String token, @CookieParam("userFingerprint") String userFingerprint, @PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey, final StorageInformationItem storageInformationItem) throws Exception {
+        CohortGenerationResults results = storageServiceClient.getCohortGenerationResults(token, userFingerprint,
                 cohortDefinitionRepository.findOne(id).getUuid().toString(), storageInformationItem.getUuid());
         return importCohortResults(token, id, sourceKey, results);
     }
@@ -227,7 +210,7 @@ public class HoneurCohortDefinitionServiceExtension {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/export/{sourceKey}")
-    public Response exportCohortResults(@HeaderParam("Authorization") String token, @PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey, @QueryParam("toCloud") final boolean toCloud, HttpHeaders headers) {
+    public Response exportCohortResults(@HeaderParam("Authorization") String token, @CookieParam("userFingerprint") String userFingerprint, @PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey, @QueryParam("toCloud") final boolean toCloud, HttpHeaders headers) {
         try {
             log.info("Cohort definition id: " + id);
             log.info("Source key: " + sourceKey);
@@ -292,7 +275,7 @@ public class HoneurCohortDefinitionServiceExtension {
                     log.error("Unable to export a cohort definition without a UUID!");
                     return Response.serverError().build();
                 }
-                storageServiceClient.saveResults(token, file, cohortDefinition.getUuid().toString());
+                storageServiceClient.saveResults(token, userFingerprint, file, cohortDefinition.getUuid().toString());
             }
             return getResponse(file);
         } catch(Throwable e) {
@@ -307,7 +290,7 @@ public class HoneurCohortDefinitionServiceExtension {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/export")
     @Transactional
-    public CohortDefinitionService.CohortDefinitionDTO exportCohortDefinition(@HeaderParam("Authorization") String token, @Context HttpServletRequest request, @PathParam("id") final int id, @QueryParam("toCloud") final boolean toCloud) {
+    public CohortDefinitionService.CohortDefinitionDTO exportCohortDefinition(@HeaderParam("Authorization") String token, @CookieParam("userFingerprint") String userFingerprint, @Context HttpServletRequest request, @PathParam("id") final int id, @QueryParam("toCloud") final boolean toCloud) {
         CohortDefinition cohortDefinition = this.cohortDefinitionRepository.findOneWithDetail(id);
 
 //        String expression = cohortDefinition.getDetails().getExpression();
@@ -320,10 +303,10 @@ public class HoneurCohortDefinitionServiceExtension {
             if(file != null) {
                 if (cohortDefinition.getGroupKey() == null) {
                     UUID groupKey = UUID.randomUUID();
-                    storageServiceClient.saveCohort(token, file, groupKey, uuid);
+                    storageServiceClient.saveCohort(token, userFingerprint, file, groupKey, uuid);
                     cohortDefinition.setGroupKey(groupKey);
                 } else {
-                    storageServiceClient.saveCohort(token, file, cohortDefinition.getGroupKey(), uuid);
+                    storageServiceClient.saveCohort(token, userFingerprint, file, cohortDefinition.getGroupKey(), uuid);
                 }
                 this.cohortDefinitionRepository.save(cohortDefinition);
             }

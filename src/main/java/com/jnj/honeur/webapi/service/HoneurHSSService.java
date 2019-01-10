@@ -1,5 +1,6 @@
 package com.jnj.honeur.webapi.service;
 
+import com.jnj.honeur.security.TokenContext;
 import com.jnj.honeur.webapi.hss.StorageServiceClient;
 import com.jnj.honeur.webapi.hssserviceuser.HSSServiceUserEntity;
 import com.jnj.honeur.webapi.hssserviceuser.HSSServiceUserRepository;
@@ -36,9 +37,10 @@ public class HoneurHSSService {
     @Path("/token")
     @Produces(MediaType.APPLICATION_JSON)
     public Map getHSSToken() {
-        String token = storageServiceClient.getStorageServiceToken();
+        TokenContext tokenContext = storageServiceClient.getStorageServiceToken();
         Map<String, String> map = new HashMap<>();
-        map.put("token", token);
+        map.put("token", tokenContext.getToken());
+        map.put("userFingerprint", tokenContext.getFingerprint());
         return map;
     }
 }

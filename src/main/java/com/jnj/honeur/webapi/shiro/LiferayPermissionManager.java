@@ -131,7 +131,7 @@ public class LiferayPermissionManager extends PermissionManager {
 
     @Override
     public Set<PermissionEntity> getUserPermissions(Long userId) throws Exception {
-        UserEntity user = userRepository.findOne(userId);
+        UserEntity user = getUserById(userId);
         Set<PermissionEntity> permissions = this.getUserPermissions(user.getLogin());
         return permissions;
     }

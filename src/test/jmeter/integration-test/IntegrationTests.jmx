@@ -61,7 +61,7 @@
           </elementProp>
           <elementProp name="CasLocalCallback" elementType="Argument">
             <stringProp name="Argument.name">CasLocalCallback</stringProp>
-            <stringProp name="Argument.value">${__P(cas.local.callback.url,https://localhost:8844/WebAPI/user/oauth/cas)}</stringProp>
+            <stringProp name="Argument.value">${__P(cas.local.callback.url,https://localhost:8844/WebAPI/user/login/cas)}</stringProp>
             <stringProp name="Argument.desc">Service Provider url</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
@@ -1300,7 +1300,7 @@ vars.put(&quot;definitionIds&quot;, JsonOutput.toJson(ids));</stringProp>
             <stringProp name="HTTPSampler.port"></stringProp>
             <stringProp name="HTTPSampler.protocol"></stringProp>
             <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-            <stringProp name="HTTPSampler.path">${WebAPICentralHost}/user/permission</stringProp>
+            <stringProp name="HTTPSampler.path">${WebAPICentralHost}/user/me</stringProp>
             <stringProp name="HTTPSampler.method">GET</stringProp>
             <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
             <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
@@ -1322,7 +1322,7 @@ import groovy.json.internal.LazyMap;
 
 def jsonSlurper = new JsonSlurper();
 
-data = jsonSlurper.parseText(prev.getResponseDataAsString());
+data = jsonSlurper.parseText(prev.getResponseDataAsString()).permissions;
 regex = /cohortdefinition:[0-9]*:get/
 
 ids = [];
@@ -2175,7 +2175,7 @@ AssertionResult.setFailure(data.uuid != null || data.groupKey != null);
           <stringProp name="HTTPSampler.port"></stringProp>
           <stringProp name="HTTPSampler.protocol"></stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-          <stringProp name="HTTPSampler.path">${WebAPICentralHost}/user/oauth/cas</stringProp>
+          <stringProp name="HTTPSampler.path">${WebAPICentralHost}/user/login/cas</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
@@ -2197,7 +2197,7 @@ AssertionResult.setFailure(data.uuid != null || data.groupKey != null);
           <hashTree/>
           <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Verify on CAS login page" enabled="true">
             <collectionProp name="Asserion.test_strings">
-              <stringProp name="613104141">/login?service=</stringProp>
+              <stringProp name="-300614786">/login?casurl=</stringProp>
             </collectionProp>
             <stringProp name="Assertion.test_field">Assertion.sample_label</stringProp>
             <boolProp name="Assertion.assume_success">false</boolProp>

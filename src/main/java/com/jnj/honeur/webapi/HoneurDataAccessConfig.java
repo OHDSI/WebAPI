@@ -45,6 +45,9 @@ public class HoneurDataAccessConfig {
     @Autowired
     private DataSource primaryDataSource;
 
+    @Value("${datasource.ohdsi.schema}")
+    private String defaultDataSourceKey;
+
     private Properties getJPAProperties() {
         Properties properties = new Properties();
         properties.setProperty("hibernate.dialect", this.env.getProperty("spring.jpa.properties.hibernate.dialect"));
@@ -75,7 +78,7 @@ public class HoneurDataAccessConfig {
         factory.setDataSource(primaryDataSource);
         factory.getJpaPropertyMap().put(org.hibernate.cfg.Environment.MULTI_TENANT, MultiTenancyStrategy.DATABASE);
         factory.getJpaPropertyMap().put(org.hibernate.cfg.Environment.MULTI_TENANT_CONNECTION_PROVIDER, new MultiTenantConnectionProviderImpl(dataSourceLookup));
-        factory.getJpaPropertyMap().put(org.hibernate.cfg.Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, new CurrentTenantIdentifierResolverImpl());
+        factory.getJpaPropertyMap().put(org.hibernate.cfg.Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, new CurrentTenantIdentifierResolverImpl(defaultDataSourceKey));
         factory.afterPropertiesSet();
 
         return factory.getObject();

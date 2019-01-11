@@ -6,8 +6,8 @@ import com.jnj.honeur.webapi.source.SourceDaimonContext;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.lookup.DataSourceLookupFailureException;
 import org.springframework.stereotype.Component;
@@ -31,7 +31,8 @@ public class DataSourceLookup implements org.springframework.jdbc.datasource.loo
 
     private static final Log LOG = LogFactory.getLog(DataSourceLookup.class);
 
-    public static final String PRIMARY_DATA_SOURCE_KEY = "webapi";
+    @Value("${datasource.ohdsi.schema}")
+    private String primaryDataSourceKey;
 
     private final Map<String, String> databaseDriverMapping = new HashMap<>();
     private final Map<SourceDaimonContext, DataSource> dataSourceMap = new HashMap<>();
@@ -93,7 +94,7 @@ public class DataSourceLookup implements org.springframework.jdbc.datasource.loo
     @Override
     public DataSource getDataSource(final String tenantIdentifier) throws DataSourceLookupFailureException {
         LOG.debug(String.format("getDataSource %s", tenantIdentifier));
-        if(PRIMARY_DATA_SOURCE_KEY.equals(tenantIdentifier)) {
+        if(primaryDataSourceKey.equals(tenantIdentifier)) {
             return getPrimaryDataSource();
         }
         try {
@@ -106,7 +107,7 @@ public class DataSourceLookup implements org.springframework.jdbc.datasource.loo
     }
 
     public String getSchema(final String tenantIdentifier) {
-        if(PRIMARY_DATA_SOURCE_KEY.equals(tenantIdentifier)) {
+        if(primaryDataSourceKey.equals(tenantIdentifier)) {
             return tenantIdentifier;
         }
         DataSource dataSource = getDataSource(tenantIdentifier);

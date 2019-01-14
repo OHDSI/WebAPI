@@ -723,20 +723,20 @@ vars.put(&quot;status&quot;, response.cohortGenerationInfo.status.toString())
 vars.put(&quot;valid&quot;, response.cohortGenerationInfo.isValid.toString())</stringProp>
                 </JSR223PostProcessor>
                 <hashTree/>
-              </hashTree>
-            </hashTree>
-            <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Valid Assertion" enabled="true">
-              <stringProp name="scriptLanguage">groovy</stringProp>
-              <stringProp name="parameters"></stringProp>
-              <stringProp name="filename"></stringProp>
-              <stringProp name="cacheKey">true</stringProp>
-              <stringProp name="script">running = vars.get(&quot;status&quot;)
+                <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Valid Assertion" enabled="true">
+                  <stringProp name="scriptLanguage">groovy</stringProp>
+                  <stringProp name="parameters"></stringProp>
+                  <stringProp name="filename"></stringProp>
+                  <stringProp name="cacheKey">true</stringProp>
+                  <stringProp name="script">running = vars.get(&quot;status&quot;)
 inValid = !vars.get(&quot;valid&quot;)
 
 AssertionResult.setFailureMessage(&quot;Wrong response for &apos;GET Export Cohort Definition Generation Results&apos; (Invalid generation)&quot;);
 AssertionResult.setFailure(running == &quot;COMPLETE&quot; &amp;&amp; inValid);  </stringProp>
-            </JSR223Assertion>
-            <hashTree/>
+                </JSR223Assertion>
+                <hashTree/>
+              </hashTree>
+            </hashTree>
             <IfController guiclass="IfControllerPanel" testclass="IfController" testname="If valid" enabled="true">
               <stringProp name="IfController.condition">${__groovy(${valid})}</stringProp>
               <boolProp name="IfController.evaluateAll">false</boolProp>

@@ -26,6 +26,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 import java.io.Serializable;
@@ -51,7 +53,14 @@ public class SourceDaimon implements Serializable {
   }
   
   @Id
-  @GeneratedValue    
+  @GenericGenerator(
+    name = "SOURCE_DAIMON_SEQUENCE_GENERATOR",
+    strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+    parameters = {
+      @Parameter(name = "increment_size", value = "1")
+    }
+  )
+  @GeneratedValue(generator = "SOURCE_DAIMON_SEQUENCE_GENERATOR")
   @Column(name="SOURCE_DAIMON_ID")  
   private int sourceDaimonId;
   

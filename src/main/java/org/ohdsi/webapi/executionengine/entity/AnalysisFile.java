@@ -8,12 +8,19 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 
 @Entity(name = "input_files")
 public class AnalysisFile {
 
     @Id
-    @GeneratedValue
+    @GenericGenerator(
+        name = "ANALYSIS_INPUT_FILE_SEQUENCE_GENERATOR",
+        strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+        parameters = { @Parameter(name = "increment_size", value = "1")}
+    )
+    @GeneratedValue(generator = "ANALYSIS_INPUT_FILE_SEQUENCE_GENERATOR")
     @Column
     private Long id;
 

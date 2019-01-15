@@ -15,16 +15,15 @@
 package org.ohdsi.webapi.cohortcomparison;
 
 import java.io.Serializable;
-import java.util.Date;
 import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.ohdsi.webapi.model.CommonEntity;
 
 /**
@@ -39,8 +38,15 @@ import org.ohdsi.webapi.model.CommonEntity;
 public class ComparativeCohortAnalysis extends CommonEntity implements Serializable {
 
     @Id
-    @SequenceGenerator(name = "cca_seq", sequenceName = "cca_sequence", allocationSize = 1)
-    @GeneratedValue(generator = "cca_seq", strategy = GenerationType.SEQUENCE)
+    @GenericGenerator(
+        name = "cca_seq",
+        strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+        parameters = {
+            @Parameter(name = "sequence_name", value = "cca_sequence"),
+            @Parameter(name = "increment_size", value = "1")
+        }
+    )
+    @GeneratedValue(generator = "cca_seq")
     @Column(name = "cca_id")
     private Integer analysisId;
 

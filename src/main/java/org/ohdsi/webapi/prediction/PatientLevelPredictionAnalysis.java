@@ -5,17 +5,15 @@
  */
 package org.ohdsi.webapi.prediction;
 
-import java.util.Date;
 import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import org.ohdsi.circe.vocabulary.ConceptSetExpression;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.ohdsi.webapi.model.CommonEntity;
 
 /**
@@ -29,10 +27,17 @@ import org.ohdsi.webapi.model.CommonEntity;
         @AttributeOverride(name = "modifiedDate", column = @Column(name = "modified"))
 })
 public class PatientLevelPredictionAnalysis extends CommonEntity {
-	
+
     @Id
-	@SequenceGenerator(name = "plp_seq", sequenceName = "plp_sequence", allocationSize = 1)
-    @GeneratedValue(generator = "plp_seq", strategy = GenerationType.SEQUENCE)
+    @GenericGenerator(
+        name = "plp_seq",
+        strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+        parameters = {
+            @Parameter(name = "sequence_name", value = "plp_sequence"),
+            @Parameter(name = "increment_size", value = "1")
+        }
+    )
+    @GeneratedValue(generator = "plp_seq")
     @Column(name = "plp_id")
     private Integer analysisId;
 

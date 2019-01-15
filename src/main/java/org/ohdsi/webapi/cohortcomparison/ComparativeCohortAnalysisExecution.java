@@ -21,6 +21,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 
 /**
  * @author Frank DeFalco <fdefalco@ohdsi.org>
@@ -167,7 +169,14 @@ public class ComparativeCohortAnalysisExecution implements Serializable {
     };
 
     @Id
-    @GeneratedValue
+    @GenericGenerator(
+        name = "cca_execution_seq",
+        strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+        parameters = {
+            @Parameter(name = "increment_size", value = "1")
+        }
+    )
+    @GeneratedValue(generator = "cca_execution_seq")
     @Column(name = "cca_execution_id")
     private Integer executionId;
 

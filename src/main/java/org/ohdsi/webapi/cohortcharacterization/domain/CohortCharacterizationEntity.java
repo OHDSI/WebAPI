@@ -1,8 +1,21 @@
 package org.ohdsi.webapi.cohortcharacterization.domain;
 
 import java.util.*;
-import javax.persistence.*;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
@@ -14,8 +27,15 @@ import org.ohdsi.webapi.model.CommonEntity;
 public class CohortCharacterizationEntity extends CommonEntity implements CohortCharacterization {
 
     @Id
-    @SequenceGenerator(name = "cohort_characterization_pk_sequence", sequenceName = "cohort_characterization_seq", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "cohort_characterization_pk_sequence")
+    @GenericGenerator(
+        name = "cohort_characterization_pk_sequence",
+        strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+        parameters = {
+            @Parameter(name = "sequence_name", value = "cohort_characterization_seq"),
+            @Parameter(name = "increment_size", value = "1")
+        }
+    )
+    @GeneratedValue(generator = "cohort_characterization_pk_sequence")
     private Long id;
     
     @Column

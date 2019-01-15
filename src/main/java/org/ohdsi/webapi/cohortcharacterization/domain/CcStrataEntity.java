@@ -1,18 +1,34 @@
 package org.ohdsi.webapi.cohortcharacterization.domain;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterizationStrata;
 import org.ohdsi.circe.cohortdefinition.CriteriaGroup;
 
-import javax.persistence.*;
 
 @Entity
 @Table(name = "cc_strata")
 public class CcStrataEntity implements CohortCharacterizationStrata {
 
   @Id
-  @SequenceGenerator(name = "cc_strata_pk_sequence", sequenceName = "cc_strata_seq", allocationSize = 1)
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "cc_strata_pk_sequence")
+  @GenericGenerator(
+    name = "cc_strata_pk_sequence",
+    strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+    parameters = {
+      @Parameter(name = "sequence_name", value = "cc_strata_seq"),
+      @Parameter(name = "increment_size", value = "1")
+    }
+  )
+  @GeneratedValue(generator = "cc_strata_pk_sequence")
   private Long id;
   @Column(name = "name")
   private String name;

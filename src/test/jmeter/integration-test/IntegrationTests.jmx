@@ -933,57 +933,129 @@ AssertionResult.setFailure(data.size() &lt;= 0);
             <stringProp name="HTTPSampler.connect_timeout"></stringProp>
             <stringProp name="HTTPSampler.response_timeout"></stringProp>
           </HTTPSamplerProxy>
+          <hashTree/>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET Sources" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain"></stringProp>
+            <stringProp name="HTTPSampler.port"></stringProp>
+            <stringProp name="HTTPSampler.protocol"></stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">${WebAPICentralHost}/source/sources</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          </HTTPSamplerProxy>
           <hashTree>
-            <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Response Assertion" enabled="true">
-              <stringProp name="cacheKey">true</stringProp>
-              <stringProp name="filename"></stringProp>
+            <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Source ID Of Generation" enabled="true">
+              <stringProp name="JSONPostProcessor.referenceNames">sourceId</stringProp>
+              <stringProp name="JSONPostProcessor.jsonPathExprs">$[?(@.sourceKey == &quot;${sourceKey}&quot;)].sourceId</stringProp>
+              <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+            </JSONPostProcessor>
+            <hashTree/>
+          </hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET Cohort Results Info" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain"></stringProp>
+            <stringProp name="HTTPSampler.port"></stringProp>
+            <stringProp name="HTTPSampler.protocol"></stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">${WebAPICentralHost}/cohortdefinition/${exportedDefinitionID}/info</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Extract Source Generation Status And Validity" enabled="true">
+              <stringProp name="scriptLanguage">groovy</stringProp>
               <stringProp name="parameters"></stringProp>
-              <stringProp name="script">import groovy.json.JsonSlurper;
-import groovy.json.internal.LazyMap;
+              <stringProp name="filename"></stringProp>
+              <stringProp name="cacheKey">true</stringProp>
+              <stringProp name="script">import groovy.json.JsonSlurper
 
 def jsonSlurper = new JsonSlurper();
+def response = jsonSlurper.parseText(prev.getResponseDataAsString());
 
-data = jsonSlurper.parseText(prev.getResponseDataAsString());
-
-inValid = false;
-
-actualCohortDefId = null;
-expectedCohortDefId = null;
-
-def boolean checkDefinitionId(object) {
-	if(object.cohortDefinitionId.toString() != vars.get(&quot;exportedDefinitionID&quot;).toString()){
-		actualCohortDefId = object.cohortDefinitionId.toString()
-		expectedCohortDefId = vars.get(&quot;exportedDefinitionID&quot;).toString()
-		return true
-	}
-	return false
-}
-
-for(object in data){
-	if(object.getValue() instanceof ArrayList){
-		for(nestedObject in object.getValue()){
-			inValid = checkDefinitionId(nestedObject);
-			if(inValid){
-				break
-			}
-		}
-	}
-	if(object.getValue() instanceof LazyMap){
-		//Currently one element is an object, so this will always work.
-		inValid = checkDefinitionId(object.getValue().id);
-	}
-	
-	if(inValid){
-		break
+for(el in response) {
+	if(el.id.sourceId == ${sourceId}){
+		vars.put(&quot;importStatus&quot;, el.status.toString())
+		vars.put(&quot;valid&quot;, el.isValid.toString())
 	}
 }
 
-AssertionResult.setFailureMessage(&quot;Wrong response for &apos;POST Select Definition To Import&apos;(Was=${actualCohortDefId}, Expected=${expectedCohortDefId})&quot;);
-AssertionResult.setFailure(inValid);    
 </stringProp>
-              <stringProp name="scriptLanguage">groovy</stringProp>
-            </JSR223Assertion>
+            </JSR223PostProcessor>
             <hashTree/>
+          </hashTree>
+          <WhileController guiclass="WhileControllerGui" testclass="WhileController" testname="While Controller" enabled="true">
+            <stringProp name="WhileController.condition">${__groovy(&quot;${importStatus}&quot; != &quot;COMPLETE&quot;)}</stringProp>
+          </WhileController>
+          <hashTree>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET Cohort Definition Generation Results Info" enabled="true">
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+                <collectionProp name="Arguments.arguments"/>
+              </elementProp>
+              <stringProp name="HTTPSampler.domain"></stringProp>
+              <stringProp name="HTTPSampler.port"></stringProp>
+              <stringProp name="HTTPSampler.protocol"></stringProp>
+              <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+              <stringProp name="HTTPSampler.path">${WebAPICentralHost}/cohortdefinition/${exportedDefinitionID}/info</stringProp>
+              <stringProp name="HTTPSampler.method">GET</stringProp>
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+              <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+              <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+              <stringProp name="HTTPSampler.response_timeout"></stringProp>
+            </HTTPSamplerProxy>
+            <hashTree>
+              <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Extract Source Generation Status And Validity" enabled="true">
+                <stringProp name="scriptLanguage">groovy</stringProp>
+                <stringProp name="parameters"></stringProp>
+                <stringProp name="filename"></stringProp>
+                <stringProp name="cacheKey">true</stringProp>
+                <stringProp name="script">import groovy.json.JsonSlurper
+
+def jsonSlurper = new JsonSlurper();
+def response = jsonSlurper.parseText(prev.getResponseDataAsString());
+
+for(el in response) {
+	if(el.id.sourceId == ${sourceId}){
+		vars.put(&quot;importStatus&quot;, el.status.toString())
+		vars.put(&quot;validImport&quot;, el.isValid.toString())
+	}
+}
+
+</stringProp>
+              </JSR223PostProcessor>
+              <hashTree/>
+              <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Valid Assertion" enabled="true">
+                <stringProp name="scriptLanguage">groovy</stringProp>
+                <stringProp name="parameters"></stringProp>
+                <stringProp name="filename"></stringProp>
+                <stringProp name="cacheKey">true</stringProp>
+                <stringProp name="script">running = vars.get(&quot;importStatus&quot;)
+inValid = !vars.get(&quot;validImport&quot;)
+
+AssertionResult.setFailureMessage(&quot;Wrong response for &apos;GET Cohort Definition Generation Results Info&apos; (Invalid generation)&quot;);
+AssertionResult.setFailure(running == &quot;COMPLETE&quot; &amp;&amp; inValid);  </stringProp>
+              </JSR223Assertion>
+              <hashTree/>
+            </hashTree>
           </hashTree>
         </hashTree>
         <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Logout" enabled="true"/>

@@ -31,9 +31,12 @@ import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEnti
 @Table(name = "fe_analysis")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorFormula(
-        "CASE WHEN type = 'CRITERIA_SET' THEN CONCAT(type,'_',stat_type)" +
-          "ELSE type END"
-)
+        "CASE WHEN type = 'CRITERIA_SET' THEN " +
+                "CASE WHEN stat_type IS NOT NULL THEN CONCAT(type, '_', stat_type) " +
+                     "ELSE 'CRITERIA_SET_PREVALENCE' " +
+                "END " + 
+              "ELSE type " +
+         "END")
 public abstract class FeAnalysisEntity<T> implements FeatureAnalysis, Comparable<FeAnalysisEntity> {
 
     public FeAnalysisEntity() {

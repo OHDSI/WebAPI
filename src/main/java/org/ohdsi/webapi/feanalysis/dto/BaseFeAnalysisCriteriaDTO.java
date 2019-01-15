@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "criteriaType")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "criteriaType", defaultImpl = FeAnalysisCriteriaDTO.class)
 @JsonSubTypes({
         @JsonSubTypes.Type(value = FeAnalysisCriteriaDTO.class, name = "CriteriaGroup"),
         @JsonSubTypes.Type(value = FeAnalysisWindowedCriteriaDTO.class, name = "WindowedCriteria"),

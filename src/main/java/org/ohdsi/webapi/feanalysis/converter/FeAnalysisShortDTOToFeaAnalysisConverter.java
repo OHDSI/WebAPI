@@ -13,8 +13,8 @@ public class FeAnalysisShortDTOToFeaAnalysisConverter extends BaseFeAnalysisDTOT
 
   @Override
   protected FeAnalysisEntity createResultObject(FeAnalysisShortDTO dto) {
-    return Objects.equals(dto.getType(), StandardFeatureAnalysisType.CRITERIA_SET) ? 
-            (CcResultType.PREVALENCE.equals(dto.getStatType()) || dto.getStatType() == null) ? new FeAnalysisWithPrevalenceCriteriaEntity() : new FeAnalysisWithDistributionCriteriaEntity()
+    return Objects.equals(dto.getType(), StandardFeatureAnalysisType.CRITERIA_SET) ?
+            Objects.equals(dto.getStatType(), CcResultType.PREVALENCE) ? new FeAnalysisWithPrevalenceCriteriaEntity() : new FeAnalysisWithDistributionCriteriaEntity()
             : new FeAnalysisWithStringEntity();
   }
 }

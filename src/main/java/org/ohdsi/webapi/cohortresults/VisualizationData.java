@@ -19,13 +19,13 @@ public class VisualizationData implements Serializable {
 
     @Id
     @GenericGenerator(
-        name = "VISUALIZATION_SEQUENCE_GENERATOR",
+        name = "visualization_generator",
         strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
         parameters = {
             @Parameter(name = "increment_size", value = "1")
         }
     )
-    @GeneratedValue(generator = "VISUALIZATION_SEQUENCE_GENERATOR")
+    @GeneratedValue(generator = "visualization_generator")
     @Column(name = "ID")
     private int id;
 

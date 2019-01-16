@@ -35,14 +35,14 @@ public class ConceptSet extends CommonEntity implements Serializable {
   
   @Id
   @GenericGenerator(
-      name = "concept_set_seq",
+      name = "concept_set_generator",
       strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
       parameters = {
           @Parameter(name = "sequence_name", value = "concept_set_sequence"),
           @Parameter(name = "increment_size", value = "1")
       }
   )
-  @GeneratedValue(generator = "concept_set_seq")
+  @GeneratedValue(generator = "concept_set_generator")
   @Column(name="concept_set_id")
   private int id;
   

@@ -17,14 +17,14 @@ import org.ohdsi.webapi.model.CommonEntity;
 public class PredictionAnalysis extends CommonEntity {
     @Id
     @GenericGenerator(
-        name = "pred_seq",
+        name = "pred_generator",
         strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
         parameters = {
             @Parameter(name = "sequence_name", value = "prediction_seq"),
             @Parameter(name = "increment_size", value = "1")
         }
     )
-    @GeneratedValue(generator = "pred_seq")
+    @GeneratedValue(generator = "pred_generator")
     @Column(name = "prediction_id")
     private Integer id;
     

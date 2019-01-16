@@ -20,14 +20,14 @@ public class CcParamEntity implements CohortCharacterizationParam {
     
     @Id
     @GenericGenerator(
-        name = "cc_param_pk_sequence",
+        name = "cc_param_generator",
         strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
         parameters = {
             @Parameter(name = "sequence_name", value = "cc_param_sequence"),
             @Parameter(name = "increment_size", value = "1")
         }
     )
-    @GeneratedValue(generator = "cc_param_pk_sequence")
+    @GeneratedValue(generator = "cc_param_generator")
     private Long id;
     @ManyToOne(optional = false, targetEntity = CohortCharacterizationEntity.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "cohort_characterization_id")

@@ -16,14 +16,14 @@ import org.ohdsi.webapi.common.CommonConceptSetEntity;
 public class CcStrataConceptSetEntity extends CommonConceptSetEntity {
   @Id
   @GenericGenerator(
-    name = "cc_strata_conceptset_sequence",
+    name = "cc_strata_conceptset_generator",
     strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
     parameters = {
       @Parameter(name = "sequence_name", value = "cc_strata_conceptset_seq"),
       @Parameter(name = "increment_size", value = "1")
     }
   )
-  @GeneratedValue(generator = "cc_strata_conceptset_sequence")
+  @GeneratedValue(generator = "cc_strata_conceptset_generator")
   private Long id;
 
   @OneToOne(optional = false, targetEntity = CohortCharacterizationEntity.class, fetch = FetchType.LAZY)

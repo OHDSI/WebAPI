@@ -26,14 +26,14 @@ public abstract class FeAnalysisCriteriaEntity {
     
     @Id
     @GenericGenerator(
-        name = "fe_analysis_criteria_pk_sequence",
+        name = "fe_analysis_criteria_generator",
         strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
         parameters = {
             @Parameter(name = "sequence_name", value = "fe_analysis_criteria_sequence"),
             @Parameter(name = "increment_size", value = "1")
         }
     )
-    @GeneratedValue(generator = "fe_analysis_criteria_pk_sequence")
+    @GeneratedValue(generator = "fe_analysis_criteria_generator")
     private Long id;
 
     @Column

@@ -54,13 +54,13 @@ public class SourceDaimon implements Serializable {
   
   @Id
   @GenericGenerator(
-    name = "SOURCE_DAIMON_SEQUENCE_GENERATOR",
+    name = "source_daimon_generator",
     strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
     parameters = {
       @Parameter(name = "increment_size", value = "1")
     }
   )
-  @GeneratedValue(generator = "SOURCE_DAIMON_SEQUENCE_GENERATOR")
+  @GeneratedValue(generator = "source_daimon_generator")
   @Column(name="SOURCE_DAIMON_ID")  
   private int sourceDaimonId;
   

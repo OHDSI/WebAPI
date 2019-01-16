@@ -35,14 +35,14 @@ public class ConceptSetItem implements Serializable{
   
   @Id
   @GenericGenerator(
-      name = "concept_set_item_seq",
+      name = "concept_set_item_generator",
       strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
       parameters = {
           @Parameter(name = "sequence_name", value = "concept_set_item_sequence"),
           @Parameter(name = "increment_size", value = "1")
       }
   )
-  @GeneratedValue(generator = "concept_set_item_seq")
+  @GeneratedValue(generator = "concept_set_item_generator")
   @Column(name="concept_set_item_id")
   private int id;
   

@@ -19,14 +19,14 @@ public class RoleGroupEntity {
 
   @Id
   @GenericGenerator(
-    name = "sec_role_group_seq",
+    name = "sec_role_group_generator",
     strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
     parameters = {
       @Parameter(name = "sequence_name", value = "sec_role_group_seq"),
       @Parameter(name = "increment_size", value = "1")
     }
   )
-  @GeneratedValue(generator = "sec_role_group_seq")
+  @GeneratedValue(generator = "sec_role_group_generator")
   @Column(name = "id")
   private int id;
 

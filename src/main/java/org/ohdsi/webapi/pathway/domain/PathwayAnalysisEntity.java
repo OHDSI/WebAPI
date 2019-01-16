@@ -17,14 +17,14 @@ public class PathwayAnalysisEntity extends CommonEntity {
 
     @Id
     @GenericGenerator(
-        name = "pathway_analysis_pk_sequence",
+        name = "pathway_analysis_generator",
         strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
         parameters = {
             @Parameter(name = "sequence_name", value = "pathway_analysis_sequence"),
             @Parameter(name = "increment_size", value = "1")
         }
     )
-    @GeneratedValue(generator = "pathway_analysis_pk_sequence")
+    @GeneratedValue(generator = "pathway_analysis_generator")
     private Integer id;
 
     @Column

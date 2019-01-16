@@ -46,14 +46,14 @@ public class IncidenceRateAnalysis extends CommonEntity implements Serializable 
   
   @Id
   @GenericGenerator(
-      name = "ir_analysis_seq",
+      name = "ir_analysis_generator",
       strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
       parameters = {
           @Parameter(name = "sequence_name", value = "ir_analysis_sequence"),
           @Parameter(name = "increment_size", value = "1")
       }
   )
-  @GeneratedValue(generator = "ir_analysis_seq")
+  @GeneratedValue(generator = "ir_analysis_generator")
   @Column(name="id")
   @Access(AccessType.PROPERTY)
   private Integer id; 

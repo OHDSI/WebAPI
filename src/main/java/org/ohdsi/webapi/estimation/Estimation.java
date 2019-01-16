@@ -16,14 +16,14 @@ import org.ohdsi.webapi.model.CommonEntity;
 public class Estimation extends CommonEntity {
     @Id
     @GenericGenerator(
-        name = "estimation_seq",
+        name = "estimation_generator",
         strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
         parameters = {
             @Parameter(name = "sequence_name", value = "estimation_seq"),
             @Parameter(name = "increment_size", value = "1")
         }
     )
-    @GeneratedValue(generator = "estimation_seq")
+    @GeneratedValue(generator = "estimation_generator")
     @Column(name = "estimation_id")
     private Integer id;
 

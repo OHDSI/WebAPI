@@ -50,14 +50,14 @@ public abstract class FeAnalysisEntity<T> implements FeatureAnalysis, Comparable
     
     @Id
     @GenericGenerator(
-        name = "fe_analysis_pk_sequence",
+        name = "fe_analysis_generator",
         strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
         parameters = {
             @Parameter(name = "sequence_name", value = "fe_analysis_sequence"),
             @Parameter(name = "increment_size", value = "1")
         }
     )
-    @GeneratedValue(generator = "fe_analysis_pk_sequence")
+    @GeneratedValue(generator = "fe_analysis_generator")
     private Integer id;
 
     @Column

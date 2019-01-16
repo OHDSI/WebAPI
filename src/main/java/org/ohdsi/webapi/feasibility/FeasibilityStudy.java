@@ -70,14 +70,14 @@ public class FeasibilityStudy {
   
   @Id
   @GenericGenerator(
-      name = "feasibility_study_seq",
+      name = "feasibility_study_generator",
       strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
       parameters = {
           @Parameter(name = "sequence_name", value = "feasibility_study_sequence"),
           @Parameter(name = "increment_size", value = "1")
       }
   )
-  @GeneratedValue(generator = "feasibility_study_seq")
+  @GeneratedValue(generator = "feasibility_study_generator")
   @Column(name="id")
   @Access(AccessType.PROPERTY)
   private Integer id; 

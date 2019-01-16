@@ -17,14 +17,14 @@ public abstract class PathwayCohort {
 
     @Id
     @GenericGenerator(
-        name = "pathway_cohort_pk_sequence",
+        name = "pathway_cohort_generator",
         strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
         parameters = {
             @Parameter(name = "sequence_name", value = "pathway_cohort_sequence"),
             @Parameter(name = "increment_size", value = "1")
         }
     )
-    @GeneratedValue(generator = "pathway_cohort_pk_sequence")
+    @GeneratedValue(generator = "pathway_cohort_generator")
     protected Integer id;
 
     @Column

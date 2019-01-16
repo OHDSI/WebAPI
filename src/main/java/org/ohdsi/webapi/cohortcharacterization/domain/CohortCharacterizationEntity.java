@@ -28,14 +28,14 @@ public class CohortCharacterizationEntity extends CommonEntity implements Cohort
 
     @Id
     @GenericGenerator(
-        name = "cohort_characterization_pk_sequence",
+        name = "cohort_characterization_generator",
         strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
         parameters = {
             @Parameter(name = "sequence_name", value = "cohort_characterization_seq"),
             @Parameter(name = "increment_size", value = "1")
         }
     )
-    @GeneratedValue(generator = "cohort_characterization_pk_sequence")
+    @GeneratedValue(generator = "cohort_characterization_generator")
     private Long id;
     
     @Column

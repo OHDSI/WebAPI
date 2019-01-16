@@ -21,14 +21,14 @@ public class CcStrataEntity implements CohortCharacterizationStrata {
 
   @Id
   @GenericGenerator(
-    name = "cc_strata_pk_sequence",
+    name = "cc_strata_generator",
     strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
     parameters = {
       @Parameter(name = "sequence_name", value = "cc_strata_seq"),
       @Parameter(name = "increment_size", value = "1")
     }
   )
-  @GeneratedValue(generator = "cc_strata_pk_sequence")
+  @GeneratedValue(generator = "cc_strata_generator")
   private Long id;
   @Column(name = "name")
   private String name;

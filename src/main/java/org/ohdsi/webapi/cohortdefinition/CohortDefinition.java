@@ -64,14 +64,14 @@ public class CohortDefinition extends CommonEntity implements Serializable, Coho
     
   @Id
   @GenericGenerator(
-    name = "cohort_definition_seq",
+    name = "cohort_definition_generator",
     strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
     parameters = {
       @Parameter(name = "sequence_name", value = "cohort_definition_sequence"),
       @Parameter(name = "increment_size", value = "1")
     }
   )
-  @GeneratedValue(generator = "cohort_definition_seq")
+  @GeneratedValue(generator = "cohort_definition_generator")
   @Access(AccessType.PROPERTY)
   private Integer id;
   

@@ -170,13 +170,13 @@ public class ComparativeCohortAnalysisExecution implements Serializable {
 
     @Id
     @GenericGenerator(
-        name = "cca_execution_seq",
+        name = "cca_execution_generator",
         strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
         parameters = {
             @Parameter(name = "increment_size", value = "1")
         }
     )
-    @GeneratedValue(generator = "cca_execution_seq")
+    @GeneratedValue(generator = "cca_execution_generator")
     @Column(name = "cca_execution_id")
     private Integer executionId;
 

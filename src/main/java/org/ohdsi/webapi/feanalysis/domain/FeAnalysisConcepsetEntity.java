@@ -16,14 +16,14 @@ import org.ohdsi.webapi.common.CommonConceptSetEntity;
 public class FeAnalysisConcepsetEntity extends CommonConceptSetEntity {
   @Id
   @GenericGenerator(
-      name = "fe_conceptset_sequence",
+      name = "fe_conceptset_generator",
       strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
       parameters = {
           @Parameter(name = "sequence_name", value = "fe_conceptset_sequence"),
           @Parameter(name = "increment_size", value = "1")
       }
   )
-  @GeneratedValue(generator = "fe_conceptset_sequence")
+  @GeneratedValue(generator = "fe_conceptset_generator")
   private Long id;
 
   @OneToOne(fetch = FetchType.LAZY)

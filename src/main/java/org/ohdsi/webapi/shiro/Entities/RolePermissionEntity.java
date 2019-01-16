@@ -28,15 +28,15 @@ public class RolePermissionEntity implements Serializable {
   @Id
   @Column(name = "ID")
   @GenericGenerator(
-    name = "SEC_ROLE_PERMISSION_SEQUENCE_GENERATOR",
+    name = "sec_role_permission_generator",
     strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
     parameters = {
-      @Parameter(name = "sequence_name", value = "SEC_ROLE_PERMISSION_SEQUENCE"),
+      @Parameter(name = "sequence_name", value = "sec_role_permission_sequence"),
       @Parameter(name = "initial_value", value = "1000"),
       @Parameter(name = "increment_size", value = "1")
     }
   )
-  @GeneratedValue(generator = "SEC_ROLE_PERMISSION_SEQUENCE_GENERATOR")
+  @GeneratedValue(generator = "sec_role_permission_generator")
   public Long getId() {
     return id;
   }

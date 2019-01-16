@@ -30,14 +30,14 @@ public class PatientLevelPredictionAnalysis extends CommonEntity {
 
     @Id
     @GenericGenerator(
-        name = "plp_seq",
+        name = "plp_generator",
         strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
         parameters = {
             @Parameter(name = "sequence_name", value = "plp_sequence"),
             @Parameter(name = "increment_size", value = "1")
         }
     )
-    @GeneratedValue(generator = "plp_seq")
+    @GeneratedValue(generator = "plp_generator")
     @Column(name = "plp_id")
     private Integer analysisId;
 

@@ -19,13 +19,13 @@ public class Widget implements Serializable {
     
     @Id
     @GenericGenerator(
-        name = "EXAMPLEAPP_WIDGET_SEQUENCE_GENERATOR",
+        name = "exampleapp_widget_generator",
         strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
         parameters = {
             @Parameter(name = "increment_size", value = "1")
         }
     )
-    @GeneratedValue(generator = "EXAMPLEAPP_WIDGET_SEQUENCE_GENERATOR")
+    @GeneratedValue(generator = "exampleapp_widget_generator")
     private Long id;
     
     @Column(nullable = false)

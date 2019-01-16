@@ -16,11 +16,11 @@ public class AnalysisResultFile {
 
     @Id
     @GenericGenerator(
-        name = "ANALYSIS_RESULT_FILE_SEQUENCE_GENERATOR",
+        name = "analysis_result_file_generator",
         strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
         parameters = { @Parameter(name = "increment_size", value = "1") }
     )
-    @GeneratedValue(generator = "ANALYSIS_RESULT_FILE_SEQUENCE_GENERATOR")
+    @GeneratedValue(generator = "analysis_result_file_generator")
     @Column
     private Long id;
 

@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.feanalysis.converter;
 
+import org.ohdsi.webapi.cohortcharacterization.CcResultType;
 import org.ohdsi.webapi.converter.BaseConversionServiceAwareConverter;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisShortDTO;
@@ -16,8 +17,8 @@ public abstract class BaseFeAnalysisDTOToFeAnalysisConverter<D extends FeAnalysi
     result.setDomain(source.getDomain());
     result.setName(source.getName());
     result.setType(source.getType());
-    result.setStatType(source.getStatType());
-
+    CcResultType statType = source.getStatType();
+    result.setStatType(statType == null ? CcResultType.PREVALENCE : statType);
     return result;
   }
 }

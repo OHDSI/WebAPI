@@ -71,7 +71,7 @@ public class FeAnalysisServiceImpl implements FeAnalysisService {
     }
 
     private FeAnalysisWithCriteriaEntity newAnalysis(final FeAnalysisWithCriteriaEntity analysis) {
-      if (CcResultType.PREVALENCE.equals(analysis.getStatType()) || analysis.getStatType() == null) {
+      if (CcResultType.PREVALENCE.equals(analysis.getStatType())) {
         return new FeAnalysisWithPrevalenceCriteriaEntity(analysis);
       } else if (Objects.equals(analysis.getStatType(), CcResultType.DISTRIBUTION)) {
         return new FeAnalysisWithDistributionCriteriaEntity(analysis);

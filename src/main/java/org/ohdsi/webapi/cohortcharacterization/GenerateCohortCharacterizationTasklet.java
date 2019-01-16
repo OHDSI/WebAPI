@@ -290,7 +290,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             String groupQuery = getCriteriaGroupQuery(analysis, feature);
             String[] paramNames = CRITERIA_PARAM_NAMES.toArray(new String[0]);
 
-            if (CcResultType.PREVALENCE.equals(analysis.getStatType()) || analysis.getStatType() == null) {
+            if (CcResultType.PREVALENCE.equals(analysis.getStatType())) {
                 queryFile = COHORT_STATS_QUERY;
             } else if (CcResultType.DISTRIBUTION.equals(analysis.getStatType())) {
                 queryFile = COHORT_DIST_QUERY;
@@ -312,7 +312,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
 
         private String getCriteriaGroupQuery(FeAnalysisWithCriteriaEntity analysis, FeAnalysisCriteriaEntity feature) {
             String groupQuery;
-            if (CcResultType.PREVALENCE.equals(analysis.getStatType()) || analysis.getStatType() == null) {
+            if (CcResultType.PREVALENCE.equals(analysis.getStatType())) {
               groupQuery = queryBuilder.getCriteriaGroupQuery(((FeAnalysisCriteriaGroupEntity)feature).getExpression(), "#qualified_events");
             } else if (CcResultType.DISTRIBUTION.equals(analysis.getStatType())) {
               if (feature instanceof FeAnalysisWindowedCriteriaEntity) {

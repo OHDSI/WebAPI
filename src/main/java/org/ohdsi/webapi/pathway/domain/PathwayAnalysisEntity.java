@@ -1,24 +1,30 @@
 package org.ohdsi.webapi.pathway.domain;
 
-import org.ohdsi.webapi.model.CommonEntity;
-
+import java.util.HashSet;
+import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
-import javax.persistence.SequenceGenerator;
-import java.util.HashSet;
-import java.util.Set;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+import org.ohdsi.webapi.model.CommonEntity;
 
 @Entity(name = "pathway_analysis")
 public class PathwayAnalysisEntity extends CommonEntity {
 
     @Id
-    @SequenceGenerator(name = "pathway_analysis_pk_sequence", sequenceName = "pathway_analysis_sequence", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pathway_analysis_pk_sequence")
+    @GenericGenerator(
+        name = "pathway_analysis_generator",
+        strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+        parameters = {
+            @Parameter(name = "sequence_name", value = "pathway_analysis_sequence"),
+            @Parameter(name = "increment_size", value = "1")
+        }
+    )
+    @GeneratedValue(generator = "pathway_analysis_generator")
     private Integer id;
 
     @Column

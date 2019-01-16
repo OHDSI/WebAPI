@@ -49,7 +49,7 @@ public class FeAnalysisDTOToFeAnalysisWithCriteriasConverter extends BaseFeAnaly
     }
 
     FeAnalysisBuilder getBuilder(CcResultType statType) {
-        if (CcResultType.PREVALENCE.equals(statType) || statType == null) {
+        if (Objects.equals(CcResultType.PREVALENCE, statType)) {
             return FeAnalysisPrevalenceCriteriaBuilder.INSTANCE;
         } else if (Objects.equals(CcResultType.DISTRIBUTION, statType)) {
             return FeAnalysisDistributionCriteriaBuilder.INSTANCE;

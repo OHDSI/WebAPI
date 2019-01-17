@@ -10,12 +10,12 @@ SELECT
   1.0 * ar1.count_value / denom.count_value                      AS percent_persons,
   ar2.avg_value                                                  AS length_of_era
 FROM (SELECT *
-      FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 900) ar1
+      FROM @results_database_schema.achilles_results WHERE analysis_id = 900) ar1
   INNER JOIN
   (SELECT
      stratum_1,
      avg_value
-   FROM @results_database_schema.ACHILLES_results_dist WHERE analysis_id = 907) ar2
+   FROM @results_database_schema.achilles_results_dist WHERE analysis_id = 907) ar2
     ON ar1.stratum_1 = ar2.stratum_1
   INNER JOIN
   @results_database_schema.concept_hierarchy concept_hierarchy
@@ -23,4 +23,4 @@ FROM (SELECT *
   AND concept_hierarchy.treemap='Drug Era'
   ,
   (SELECT count_value
-   FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 1) denom
+   FROM @results_database_schema.achilles_results WHERE analysis_id = 1) denom

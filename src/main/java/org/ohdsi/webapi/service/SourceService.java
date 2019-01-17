@@ -26,6 +26,7 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.jasypt.encryption.pbe.PBEStringEncryptor;
 import org.jasypt.properties.PropertyValueEncryptionUtils;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -213,15 +214,19 @@ public class SourceService extends AbstractDaoService {
     if (!securityEnabled) {
       throw new NotAuthorizedException(SECURE_MODE_ERROR);
     }
+    Source oldSource = sourceRepository.findBySourceKey(request.getKey());
+    if (Objects.isNull(oldSource)) {
+      throw new Exception("The source key has been already used.");
+    }
     Source source = conversionService.convert(request, Source.class);
     setImpalaKrbData(source, new Source(), file);
     Source saved = sourceRepository.save(source);
     String sourceKey = saved.getSourceKey();
     cachedSources = null;
     securityManager.addSourceRole(sourceKey);
-      SourceInfo sourceInfo = new SourceInfo(saved);
-      publisher.publishEvent(new AddDataSourceEvent(this, source.getSourceId(), source.getSourceName()));
-      return sourceInfo;
+    SourceInfo sourceInfo = new SourceInfo(saved);
+    publisher.publishEvent(new AddDataSourceEvent(this, source.getSourceId(), source.getSourceName()));
+    return sourceInfo;
   }
 
   @Path("{sourceId}")

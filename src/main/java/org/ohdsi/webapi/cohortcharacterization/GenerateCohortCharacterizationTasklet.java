@@ -42,12 +42,14 @@ import org.ohdsi.webapi.util.*;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.jdbc.core.SqlProvider;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.sql.PreparedStatement;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -287,7 +289,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
 
             Long conceptId = 0L;
             String queryFile;
-            String groupQuery = getCriteriaGroupQuery(analysis, feature);
+            String groupQuery = getCriteriaGroupQuery(analysis, feature, Objects.nonNull(strata)  ? "qualified_events" : "#qualified_events");
             String[] paramNames = CRITERIA_PARAM_NAMES.toArray(new String[0]);
 
             if (CcResultType.PREVALENCE.equals(analysis.getStatType())) {
@@ -310,18 +312,18 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
                     .collect(Collectors.toList());
         }
 
-        private String getCriteriaGroupQuery(FeAnalysisWithCriteriaEntity analysis, FeAnalysisCriteriaEntity feature) {
+        private String getCriteriaGroupQuery(FeAnalysisWithCriteriaEntity analysis, FeAnalysisCriteriaEntity feature, String eventTable) {
             String groupQuery;
             if (CcResultType.PREVALENCE.equals(analysis.getStatType())) {
-              groupQuery = queryBuilder.getCriteriaGroupQuery(((FeAnalysisCriteriaGroupEntity)feature).getExpression(), "#qualified_events");
+              groupQuery = queryBuilder.getCriteriaGroupQuery(((FeAnalysisCriteriaGroupEntity)feature).getExpression(), eventTable);
             } else if (CcResultType.DISTRIBUTION.equals(analysis.getStatType())) {
               if (feature instanceof FeAnalysisWindowedCriteriaEntity) {
                 WindowedCriteria criteria = ((FeAnalysisWindowedCriteriaEntity) feature).getExpression();
                 criteria.ignoreObservationPeriod = true;
-                groupQuery = queryBuilder.getWindowedCriteriaQuery(criteria, "#qualified_events");
+                groupQuery = queryBuilder.getWindowedCriteriaQuery(criteria, eventTable);
               } else if (feature instanceof FeAnalysisDemographicCriteriaEntity) {
                 DemographicCriteria criteria = ((FeAnalysisDemographicCriteriaEntity)feature).getExpression();
-                groupQuery = queryBuilder.getDemographicCriteriaQuery(criteria, "#qualified_events");
+                groupQuery = queryBuilder.getDemographicCriteriaQuery(criteria, eventTable);
               } else {
                 throw new IllegalArgumentException(String.format("Feature class %s is not supported", feature.getClass()));
               }
@@ -371,7 +373,12 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             Object[] paramValues = new Object[]{ cohortDefinitionId, strata.getId() };
             queries.add(prepareStatement("CREATE TABLE " + getStrataCohortTable(strata)
                     + "(cohort_definition_id INTEGER, strata_id BIGINT, subject_id BIGINT, cohort_start_date DATE, cohort_end_date DATE);", sessionId));
-            queries.add(prepareStatement(COHORT_STRATA_QUERY, sessionId, STRATA_REGEXES, replacements, paramNames, paramValues));
+            String[] statements = SqlSplit.splitSql(COHORT_STRATA_QUERY);
+            queries.addAll(Arrays.stream(statements)
+                    .map(COMPLETE_DOTCOMMA)
+                    .flatMap(q -> prepareMultipleStatements(q, sessionId, STRATA_REGEXES, replacements, paramNames, paramValues).stream())
+                    .collect(Collectors.toList())
+            );
             return queries;
         }
 
@@ -429,6 +436,29 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
                             paramValues,
                             sessionId
                     ));
+        }
+
+        private Collection<PreparedStatementCreator> prepareMultipleStatements(String query, String sessionId, String[] regexes, String[] variables, String[] paramNames, Object[] paramValues) {
+
+            final String resultsQualifier = SourceUtils.getResultsQualifier(source);
+            final String cdmQualifier = SourceUtils.getCdmQualifier(source);
+            final String tempQualifier = SourceUtils.getTempQualifier(source, resultsQualifier);
+            final String vocabularyQualifier = SourceUtils.getVocabularyQualifier(source);
+            final String[] tmpRegexes = ArrayUtils.addAll(regexes, DAIMONS);
+            final String[] tmpValues = ArrayUtils.addAll(variables, resultsQualifier, cdmQualifier, tempQualifier, vocabularyQualifier);
+            final String sql = SqlRender.renderSql(query, tmpRegexes, tmpValues);
+            PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, tmpRegexes, tmpValues, paramNames, paramValues,
+                    sessionId);
+            String translatedSql = psr.getSql();
+            String[] stmts = SqlSplit.splitSql(translatedSql);
+            return Arrays.stream(stmts).map(s -> (PreparedStatementCreator) con -> {
+                PreparedStatement statement = con.prepareStatement(s);
+                PreparedStatementSetter setter = psr.getSetter();
+                if (Objects.nonNull(setter) && s.contains("?")) {
+                    setter.setValues(statement);
+                }
+                return statement;
+            }).collect(Collectors.toList());
         }
 
         private List<PreparedStatementCreator> getSqlQueriesToRun(final JSONObject jsonObject, final Integer cohortDefinitionId) {

@@ -140,6 +140,9 @@
     <!-- ORGANIZATION SETTINGS -->
     <organization.name>OHDSI</organization.name>
 
+    <!-- JdbcTemplate -->
+    <jdbc.suppressInvalidApiException>true</jdbc.suppressInvalidApiException>
+
     <!-- Logging -->
     <spring.jpa.show-sql>false</spring.jpa.show-sql>
     <logging.level.root>info</logging.level.root>

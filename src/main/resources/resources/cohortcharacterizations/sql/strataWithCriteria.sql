@@ -1,3 +1,5 @@
+IF OBJECT_ID('#qualified_events', 'U') IS NOT NULL DROP TABLE #qualified_events;
+
 SELECT ROW_NUMBER() OVER (partition by E.subject_id order by E.cohort_start_date) AS event_id, E.subject_id AS person_id, E.cohort_start_date AS start_date, E.cohort_end_date AS end_date, OP.observation_period_start_date AS op_start_date, OP.observation_period_end_date AS op_end_date
 INTO #qualified_events
 FROM @temp_database_schema.@targetTable E
@@ -10,5 +12,4 @@ SELECT @cohortId AS cohort_definition_id, @strataId AS strata_id, q.person_id as
   JOIN (SELECT person_id FROM (@strataQuery) st GROUP BY person_id) sti ON sti.person_id = q.person_id
 ;
 
-IF OBJECT_ID('#qualified_events', 'U') IS NOT NULL
-    DROP TABLE #qualified_events;
+IF OBJECT_ID('#qualified_events', 'U') IS NOT NULL DROP TABLE #qualified_events;

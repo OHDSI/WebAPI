@@ -213,8 +213,8 @@ public class SourceService extends AbstractDaoService {
     if (!securityEnabled) {
       throw new NotAuthorizedException(SECURE_MODE_ERROR);
     }
-    Source oldSource = sourceRepository.findBySourceKey(request.getKey());
-    if (Objects.isNull(oldSource)) {
+    Source sourceByKey = sourceRepository.findBySourceKey(request.getKey());
+    if (Objects.isNull(sourceByKey)) {
       throw new Exception("The source key has been already used.");
     }
     Source source = conversionService.convert(request, Source.class);

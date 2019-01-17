@@ -252,6 +252,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         String analysisSql = ResourceHelper.GetResourceAsString("/resources/pathway/runPathwayAnalysis.sql");
         String eventCohortInputSql = ResourceHelper.GetResourceAsString("/resources/pathway/eventCohortInput.sql");
 
+        String tempTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Temp);
         String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 
         String eventCohortIdIndexSql = eventCohortCodes.entrySet()
@@ -268,6 +269,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
             String[] params = new String[]{
                     "generation_id",
                     "event_cohort_id_index_map",
+                    "temp_database_schema",
                     "target_database_schema",
                     "target_cohort_table",
                     "pathway_target_cohort_id",
@@ -278,6 +280,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
             String[] values = new String[]{
                     generationId.toString(),
                     eventCohortIdIndexSql,
+                    tempTableQualifier,
                     resultsTableQualifier,
                     cohortTable,
                     tc.getCohortDefinition().getId().toString(),

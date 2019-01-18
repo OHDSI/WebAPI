@@ -123,6 +123,7 @@ public class CohortDefinitionService extends AbstractDaoService {
       InclusionRuleReport.Summary summary = new InclusionRuleReport.Summary();
       summary.baseCount = rs.getLong("base_count");
       summary.finalCount = rs.getLong("final_count");
+      summary.lostCount = rs.getLong("lost_count");
 
       double matchRatio = (summary.baseCount > 0) ? ((double) summary.finalCount / (double) summary.baseCount) : 0.0;
       summary.percentMatched = new BigDecimal(matchRatio * 100.0).setScale(2, RoundingMode.HALF_UP).toPlainString() + "%";
@@ -175,7 +176,7 @@ public class CohortDefinitionService extends AbstractDaoService {
   
   private InclusionRuleReport.Summary getInclusionRuleReportSummary(int id, Source source, int modeId) {
 
-    String sql = "select base_count, final_count from @tableQualifier.cohort_summary_stats where cohort_definition_id = @id and mode_id = @modeId";
+    String sql = "select base_count, final_count, lost_count from @tableQualifier.cohort_summary_stats where cohort_definition_id = @id and mode_id = @modeId";
     String tqName = "tableQualifier";
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 		String[] varNames = {"id", "modeId"};

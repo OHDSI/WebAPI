@@ -42,6 +42,7 @@ public class DDLService {
 	public static final String VOCAB_SCHEMA = "vocab_schema";
 	public static final String RESULTS_SCHEMA = "results_schema";
 	public static final String CEM_SCHEMA = "cem_results_schema";
+	public static final String TEMP_SCHEMA = "oracle_temp_schema";
 
 	private static final Collection<String> RESULT_DDL_FILE_PATHS = Arrays.asList(
 		"/ddl/results/cohort.sql",
@@ -113,6 +114,7 @@ public class DDLService {
 		Map<String, String> params = new HashMap<String, String>() {{
 			put(VOCAB_SCHEMA, vocabSchema);
 			put(RESULTS_SCHEMA, resultSchema);
+			put(TEMP_SCHEMA, resultSchema);
 		}};
 
 		return generateSQL(dialect, params, resultDDLFilePaths, RESULT_INIT_FILE_PATHS, RESULT_INDEX_FILE_PATHS);
@@ -158,7 +160,7 @@ public class DDLService {
 		statement.targetDialect = dialect.toLowerCase();
 		statement.sql = sql;
 		statement.parameters = new HashMap<>(params);
-		TranslatedStatement translatedStatement = translateSQL(statement);
+		TranslatedStatement translatedStatement = translateSQL(statement, params.get(TEMP_SCHEMA));
 		return translatedStatement.targetSQL;
 	}
 

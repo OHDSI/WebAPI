@@ -66,7 +66,13 @@ public class DataSourceLookup implements org.springframework.jdbc.datasource.loo
 
     private DataSource createDataSource(Source source, SourceDaimon.DaimonType daimonType) {
         LOG.debug(String.format("Create datasource for source '%s' and daimon type '%s'", source.getSourceKey(), daimonType.name()));
-        final DriverManagerDataSource ds = new DriverManagerDataSource(source.getSourceConnection());
+        final DriverManagerDataSource ds;
+        if (source.getUsername() != null && source.getPassword() != null) {
+            ds = new DriverManagerDataSource(source.getSourceConnection(), source.getUsername(),
+                            source.getPassword());
+        } else {
+            ds = new DriverManagerDataSource(source.getSourceConnection());
+        }
         String driverClassName = databaseDriverMapping.get(source.getSourceDialect());
         LOG.debug(String.format("Driver class name %s", driverClassName));
         if(driverClassName == null) {

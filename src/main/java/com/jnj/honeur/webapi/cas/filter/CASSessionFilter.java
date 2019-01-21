@@ -24,13 +24,12 @@ public class CASSessionFilter extends AdviceFilter {
 
     private boolean casEnabled;
     private String domain;
-
-    @Value("${security.token.expiration}")
     private int tokenExpirationIntervalInSeconds;
 
-    public CASSessionFilter(boolean casEnabled, String domain) {
+    public CASSessionFilter(boolean casEnabled, String domain, int tokenExpirationIntervalInSeconds) {
         this.casEnabled = casEnabled;
         this.domain = domain;
+        this.tokenExpirationIntervalInSeconds = tokenExpirationIntervalInSeconds;
     }
 
     @Override

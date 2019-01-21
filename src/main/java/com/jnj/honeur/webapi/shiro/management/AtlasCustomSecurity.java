@@ -244,7 +244,7 @@ public class AtlasCustomSecurity extends AtlasSecurity {
       filters.put("deletePermissionsOnExportCohortDefinition", this.getDeletePermissionsOnExportCohortDefinitionFilter());
       filters.put("createPermissionsOnCreateCohortDefinition", this.getCreatePermissionsOnCreateCohortDefinitionFilter());
       filters.put("deletePermissionsOnDeleteCohortDefinition", this.getDeletePermissionsOnDeleteCohortDefinitionFilter());
-      filters.put("casSessionFilter", new CASSessionFilter(true, casTgcDomain));
+      filters.put("casSessionFilter", new CASSessionFilter(true, casTgcDomain, tokenExpirationIntervalInSeconds));
 
       // OAuth
       //

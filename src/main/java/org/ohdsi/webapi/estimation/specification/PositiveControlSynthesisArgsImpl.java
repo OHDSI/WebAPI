@@ -8,6 +8,10 @@ import org.ohdsi.webapi.cyclops.specification.ControlImpl;
 import org.ohdsi.webapi.featureextraction.specification.CovariateSettingsImpl;
 import org.ohdsi.webapi.cyclops.specification.PriorImpl;
 
+/**
+ *
+ * @author asena5
+ */
 public class PositiveControlSynthesisArgsImpl implements PositiveControlSynthesisArgs {
   private PositiveControlSynthesisModelTypeEnum modelType = PositiveControlSynthesisModelTypeEnum.SURVIVAL;
   private Integer minOutcomeCountForModel = 100;
@@ -35,7 +39,11 @@ public class PositiveControlSynthesisArgsImpl implements PositiveControlSynthesi
     return modelType;
   }
 
-  public void setModelType(PositiveControlSynthesisModelTypeEnum modelType) {
+    /**
+     *
+     * @param modelType
+     */
+    public void setModelType(PositiveControlSynthesisModelTypeEnum modelType) {
     this.modelType = modelType;
   }
 
@@ -48,7 +56,11 @@ public class PositiveControlSynthesisArgsImpl implements PositiveControlSynthesi
     return minOutcomeCountForModel;
   }
 
-  public void setMinOutcomeCountForModel(Integer minOutcomeCountForModel) {
+    /**
+     *
+     * @param minOutcomeCountForModel
+     */
+    public void setMinOutcomeCountForModel(Integer minOutcomeCountForModel) {
     this.minOutcomeCountForModel = minOutcomeCountForModel;
   }
 
@@ -61,7 +73,11 @@ public class PositiveControlSynthesisArgsImpl implements PositiveControlSynthesi
     return minOutcomeCountForInjection;
   }
 
-  public void setMinOutcomeCountForInjection(Integer minOutcomeCountForInjection) {
+    /**
+     *
+     * @param minOutcomeCountForInjection
+     */
+    public void setMinOutcomeCountForInjection(Integer minOutcomeCountForInjection) {
     this.minOutcomeCountForInjection = minOutcomeCountForInjection;
   }
 
@@ -74,7 +90,11 @@ public class PositiveControlSynthesisArgsImpl implements PositiveControlSynthesi
     return covariateSettings;
   }
 
-  public void setCovariateSettings(CovariateSettingsImpl covariateSettings) {
+    /**
+     *
+     * @param covariateSettings
+     */
+    public void setCovariateSettings(CovariateSettingsImpl covariateSettings) {
     this.covariateSettings = covariateSettings;
   }
 
@@ -87,7 +107,11 @@ public class PositiveControlSynthesisArgsImpl implements PositiveControlSynthesi
     return prior;
   }
 
-  public void setPrior(PriorImpl prior) {
+    /**
+     *
+     * @param prior
+     */
+    public void setPrior(PriorImpl prior) {
     this.prior = prior;
   }
 
@@ -100,7 +124,11 @@ public class PositiveControlSynthesisArgsImpl implements PositiveControlSynthesi
     return control;
   }
 
-  public void setControl(ControlImpl control) {
+    /**
+     *
+     * @param control
+     */
+    public void setControl(ControlImpl control) {
     this.control = control;
   }
 
@@ -113,7 +141,11 @@ public class PositiveControlSynthesisArgsImpl implements PositiveControlSynthesi
     return firstExposureOnly;
   }
 
-  public void setFirstExposureOnly(Boolean firstExposureOnly) {
+    /**
+     *
+     * @param firstExposureOnly
+     */
+    public void setFirstExposureOnly(Boolean firstExposureOnly) {
     this.firstExposureOnly = firstExposureOnly;
   }
 
@@ -126,7 +158,11 @@ public class PositiveControlSynthesisArgsImpl implements PositiveControlSynthesi
     return washoutPeriod;
   }
 
-  public void setWashoutPeriod(Integer washoutPeriod) {
+    /**
+     *
+     * @param washoutPeriod
+     */
+    public void setWashoutPeriod(Integer washoutPeriod) {
     this.washoutPeriod = washoutPeriod;
   }
 
@@ -139,7 +175,11 @@ public class PositiveControlSynthesisArgsImpl implements PositiveControlSynthesi
     return riskWindowStart;
   }
 
-  public void setRiskWindowStart(Integer riskWindowStart) {
+    /**
+     *
+     * @param riskWindowStart
+     */
+    public void setRiskWindowStart(Integer riskWindowStart) {
     this.riskWindowStart = riskWindowStart;
   }
 
@@ -152,7 +192,11 @@ public class PositiveControlSynthesisArgsImpl implements PositiveControlSynthesi
     return riskWindowEnd;
   }
 
-  public void setRiskWindowEnd(Integer riskWindowEnd) {
+    /**
+     *
+     * @param riskWindowEnd
+     */
+    public void setRiskWindowEnd(Integer riskWindowEnd) {
     this.riskWindowEnd = riskWindowEnd;
   }
 
@@ -165,7 +209,11 @@ public class PositiveControlSynthesisArgsImpl implements PositiveControlSynthesi
     return addExposureDaysToEnd;
   }
 
-  public void setAddExposureDaysToEnd(Boolean addExposureDaysToEnd) {
+    /**
+     *
+     * @param addExposureDaysToEnd
+     */
+    public void setAddExposureDaysToEnd(Boolean addExposureDaysToEnd) {
     this.addExposureDaysToEnd = addExposureDaysToEnd;
   }
 
@@ -178,7 +226,11 @@ public class PositiveControlSynthesisArgsImpl implements PositiveControlSynthesi
     return firstOutcomeOnly;
   }
 
-  public void setFirstOutcomeOnly(Boolean firstOutcomeOnly) {
+    /**
+     *
+     * @param firstOutcomeOnly
+     */
+    public void setFirstOutcomeOnly(Boolean firstOutcomeOnly) {
     this.firstOutcomeOnly = firstOutcomeOnly;
   }
 
@@ -191,7 +243,11 @@ public class PositiveControlSynthesisArgsImpl implements PositiveControlSynthesi
     return removePeopleWithPriorOutcomes;
   }
 
-  public void setRemovePeopleWithPriorOutcomes(Boolean removePeopleWithPriorOutcomes) {
+    /**
+     *
+     * @param removePeopleWithPriorOutcomes
+     */
+    public void setRemovePeopleWithPriorOutcomes(Boolean removePeopleWithPriorOutcomes) {
     this.removePeopleWithPriorOutcomes = removePeopleWithPriorOutcomes;
   }
 
@@ -204,11 +260,20 @@ public class PositiveControlSynthesisArgsImpl implements PositiveControlSynthesi
     return maxSubjectsForModel;
   }
 
-  public void setMaxSubjectsForModel(Integer maxSubjectsForModel) {
+    /**
+     *
+     * @param maxSubjectsForModel
+     */
+    public void setMaxSubjectsForModel(Integer maxSubjectsForModel) {
     this.maxSubjectsForModel = maxSubjectsForModel;
   }
 
-  public PositiveControlSynthesisArgsImpl addEffectSizesItem(Float effectSizesItem) {
+    /**
+     *
+     * @param effectSizesItem
+     * @return
+     */
+    public PositiveControlSynthesisArgsImpl addEffectSizesItem(Float effectSizesItem) {
     if (this.effectSizes == null) {
       this.effectSizes = new ArrayList<>();
     }
@@ -225,7 +290,11 @@ public class PositiveControlSynthesisArgsImpl implements PositiveControlSynthesi
     return effectSizes;
   }
 
-  public void setEffectSizes(List<Float> effectSizes) {
+    /**
+     *
+     * @param effectSizes
+     */
+    public void setEffectSizes(List<Float> effectSizes) {
     this.effectSizes = effectSizes;
   }
 
@@ -238,7 +307,11 @@ public class PositiveControlSynthesisArgsImpl implements PositiveControlSynthesi
     return precision;
   }
 
-  public void setPrecision(Float precision) {
+    /**
+     *
+     * @param precision
+     */
+    public void setPrecision(Float precision) {
     this.precision = precision;
   }
 
@@ -251,7 +324,11 @@ public class PositiveControlSynthesisArgsImpl implements PositiveControlSynthesi
     return outputIdOffset;
   }
 
-  public void setOutputIdOffset(Integer outputIdOffset) {
+    /**
+     *
+     * @param outputIdOffset
+     */
+    public void setOutputIdOffset(Integer outputIdOffset) {
     this.outputIdOffset = outputIdOffset;
   }    
 }

@@ -3,10 +3,14 @@ package org.ohdsi.webapi.estimation.specification;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.ohdsi.analysis.estimation.design.SkeletonTypeEnum;
+import org.ohdsi.analysis.hydra.design.SkeletonTypeEnum;
 import org.ohdsi.analysis.estimation.design.EstimationAnalysis;
 import org.ohdsi.webapi.conceptset.ConceptSetCrossReferenceImpl;
 
+/**
+ *
+ * @author asena5
+ */
 public class EstimationAnalysisImpl implements EstimationAnalysis {
   private Integer id = null;
   private String name = null;
@@ -14,7 +18,7 @@ public class EstimationAnalysisImpl implements EstimationAnalysis {
   private String version = null;
   private String organizationName = null;
   private String packageName = null;
-  private SkeletonTypeEnum skeletonType = SkeletonTypeEnum.COMPARATIVEEFFECTSTUDY;
+  private SkeletonTypeEnum skeletonType = SkeletonTypeEnum.COMPARATIVE_EFFECT_STUDY;
   private String skeletonVersion = "v0.0.1";
   private String createdBy = null;
   private String createdDate = null;
@@ -39,8 +43,11 @@ public class EstimationAnalysisImpl implements EstimationAnalysis {
     return id;
   }
 
-    
-  public void setId(Integer id) {
+    /**
+     *
+     * @param id
+     */
+    public void setId(Integer id) {
     this.id = id;
   }
 
@@ -54,8 +61,11 @@ public class EstimationAnalysisImpl implements EstimationAnalysis {
     return name;
   }
 
-    
-  public void setName(String name) {
+    /**
+     *
+     * @param name
+     */
+    public void setName(String name) {
     this.name = name;
   }
 
@@ -69,8 +79,11 @@ public class EstimationAnalysisImpl implements EstimationAnalysis {
     return description;
   }
 
-    
-  public void setDescription(String description) {
+    /**
+     *
+     * @param description
+     */
+    public void setDescription(String description) {
     this.description = description;
   }
 
@@ -83,8 +96,11 @@ public class EstimationAnalysisImpl implements EstimationAnalysis {
     return version;
   }
 
-    
-  public void setVersion(String version) {
+    /**
+     *
+     * @param version
+     */
+    public void setVersion(String version) {
     this.version = version;
   }
 
@@ -97,8 +113,11 @@ public class EstimationAnalysisImpl implements EstimationAnalysis {
     return organizationName;
   }
 
-    
-  public void setOrganizationName(String organizationName) {
+    /**
+     *
+     * @param organizationName
+     */
+    public void setOrganizationName(String organizationName) {
     this.organizationName = organizationName;
   }
 
@@ -112,7 +131,11 @@ public class EstimationAnalysisImpl implements EstimationAnalysis {
     return packageName;
   }
     
-  public void setPackageName(String packageName) {
+    /**
+     *
+     * @param packageName
+     */
+    public void setPackageName(String packageName) {
     this.packageName = packageName;
   }
     
@@ -125,7 +148,11 @@ public class EstimationAnalysisImpl implements EstimationAnalysis {
     return skeletonType;
   }
     
-  public void setSkeletonType(SkeletonTypeEnum skeletonType) {
+    /**
+     *
+     * @param skeletonType
+     */
+    public void setSkeletonType(SkeletonTypeEnum skeletonType) {
     this.skeletonType = skeletonType;
   }
 
@@ -139,7 +166,11 @@ public class EstimationAnalysisImpl implements EstimationAnalysis {
     return skeletonVersion;
   }
 
-  public void setSkeletonVersion(String skeletonVersion) {
+    /**
+     *
+     * @param skeletonVersion
+     */
+    public void setSkeletonVersion(String skeletonVersion) {
     this.skeletonVersion = skeletonVersion;
   }
 
@@ -153,8 +184,11 @@ public class EstimationAnalysisImpl implements EstimationAnalysis {
     return createdBy;
   }
 
-    
-  public void setCreatedBy(String createdBy) {
+    /**
+     *
+     * @param createdBy
+     */
+    public void setCreatedBy(String createdBy) {
     this.createdBy = createdBy;
   }
 
@@ -168,8 +202,11 @@ public class EstimationAnalysisImpl implements EstimationAnalysis {
     return createdDate;
   }
 
-    
-  public void setCreatedDate(String createdDate) {
+    /**
+     *
+     * @param createdDate
+     */
+    public void setCreatedDate(String createdDate) {
     this.createdDate = createdDate;
   }
 
@@ -183,8 +220,11 @@ public class EstimationAnalysisImpl implements EstimationAnalysis {
     return modifiedBy;
   }
 
-    
-  public void setModifiedBy(String modifiedBy) {
+    /**
+     *
+     * @param modifiedBy
+     */
+    public void setModifiedBy(String modifiedBy) {
     this.modifiedBy = modifiedBy;
   }
 
@@ -197,13 +237,20 @@ public class EstimationAnalysisImpl implements EstimationAnalysis {
     return modifiedDate;
   }
 
-    
-  public void setModifiedDate(String modifiedDate) {
+    /**
+     *
+     * @param modifiedDate
+     */
+    public void setModifiedDate(String modifiedDate) {
     this.modifiedDate = modifiedDate;
   }
 
-    
-  public EstimationAnalysisImpl addCohortDefinitionsItem(EstimationCohortDefinition cohortDefinitionsItem) {
+    /**
+     *
+     * @param cohortDefinitionsItem
+     * @return
+     */
+    public EstimationAnalysisImpl addCohortDefinitionsItem(EstimationCohortDefinition cohortDefinitionsItem) {
     if (this.cohortDefinitions == null) {
       this.cohortDefinitions = new ArrayList<>();
     }
@@ -220,13 +267,20 @@ public class EstimationAnalysisImpl implements EstimationAnalysis {
     return cohortDefinitions;
   }
 
-    
-  public void setCohortDefinitions(List<EstimationCohortDefinition> cohortDefinitions) {
+    /**
+     *
+     * @param cohortDefinitions
+     */
+    public void setCohortDefinitions(List<EstimationCohortDefinition> cohortDefinitions) {
     this.cohortDefinitions = cohortDefinitions;
   }
 
-    
-  public EstimationAnalysisImpl addConceptSetsItem(EstimationConceptSet conceptSetsItem) {
+    /**
+     *
+     * @param conceptSetsItem
+     * @return
+     */
+    public EstimationAnalysisImpl addConceptSetsItem(EstimationConceptSet conceptSetsItem) {
     if (this.conceptSets == null) {
       this.conceptSets = new ArrayList<>();
     }
@@ -243,13 +297,20 @@ public class EstimationAnalysisImpl implements EstimationAnalysis {
     return conceptSets;
   }
 
-    
-  public void setConceptSets(List<EstimationConceptSet> conceptSets) {
+    /**
+     *
+     * @param conceptSets
+     */
+    public void setConceptSets(List<EstimationConceptSet> conceptSets) {
     this.conceptSets = conceptSets;
   }
 
-    
-  public EstimationAnalysisImpl addConceptSetCrossReferenceItem(ConceptSetCrossReferenceImpl conceptSetCrossReferenceItem) {
+    /**
+     *
+     * @param conceptSetCrossReferenceItem
+     * @return
+     */
+    public EstimationAnalysisImpl addConceptSetCrossReferenceItem(ConceptSetCrossReferenceImpl conceptSetCrossReferenceItem) {
     if (this.conceptSetCrossReference == null) {
       this.conceptSetCrossReference = new ArrayList<>();
     }
@@ -266,12 +327,20 @@ public class EstimationAnalysisImpl implements EstimationAnalysis {
     return conceptSetCrossReference;
   }
 
-    
-  public void setConceptSetCrossReference(List<ConceptSetCrossReferenceImpl> conceptSetCrossReference) {
+    /**
+     *
+     * @param conceptSetCrossReference
+     */
+    public void setConceptSetCrossReference(List<ConceptSetCrossReferenceImpl> conceptSetCrossReference) {
     this.conceptSetCrossReference = conceptSetCrossReference;
   }
     
-  public EstimationAnalysisImpl addNegativeControlsItem(NegativeControlImpl negativeControlsItem) {
+    /**
+     *
+     * @param negativeControlsItem
+     * @return
+     */
+    public EstimationAnalysisImpl addNegativeControlsItem(NegativeControlImpl negativeControlsItem) {
     if (this.negativeControls == null) {
       this.negativeControls = new ArrayList<>();
     }
@@ -288,8 +357,11 @@ public class EstimationAnalysisImpl implements EstimationAnalysis {
     return negativeControls;
   }
 
-    
-  public void setNegativeControls(List<NegativeControlImpl> negativeControls) {
+    /**
+     *
+     * @param negativeControls
+     */
+    public void setNegativeControls(List<NegativeControlImpl> negativeControls) {
     this.negativeControls = negativeControls;
   }
 
@@ -299,8 +371,11 @@ public class EstimationAnalysisImpl implements EstimationAnalysis {
     return doPositiveControlSynthesis;
   }
 
-    
-  public void setDoPositiveControlSynthesis(Boolean doPositiveControlSynthesis) {
+    /**
+     *
+     * @param doPositiveControlSynthesis
+     */
+    public void setDoPositiveControlSynthesis(Boolean doPositiveControlSynthesis) {
     this.doPositiveControlSynthesis = doPositiveControlSynthesis;
   }
 
@@ -309,8 +384,11 @@ public class EstimationAnalysisImpl implements EstimationAnalysis {
     return positiveControlSynthesisArgs;
   }
 
-    
-  public void setPositiveControlSynthesisArgs(PositiveControlSynthesisArgsImpl positiveControlSynthesisArgs) {
+    /**
+     *
+     * @param positiveControlSynthesisArgs
+     */
+    public void setPositiveControlSynthesisArgs(PositiveControlSynthesisArgsImpl positiveControlSynthesisArgs) {
     this.positiveControlSynthesisArgs = positiveControlSynthesisArgs;
   }
 
@@ -319,8 +397,11 @@ public class EstimationAnalysisImpl implements EstimationAnalysis {
     return negativeControlOutcomeCohortDefinition;
   }
 
-    
-  public void setNegativeControlOutcomeCohortDefinition(NegativeControlOutcomeCohortExpressionImpl negativeControlOutcomeCohortDefinition) {
+    /**
+     *
+     * @param negativeControlOutcomeCohortDefinition
+     */
+    public void setNegativeControlOutcomeCohortDefinition(NegativeControlOutcomeCohortExpressionImpl negativeControlOutcomeCohortDefinition) {
     this.negativeControlOutcomeCohortDefinition = negativeControlOutcomeCohortDefinition;
   }
 
@@ -330,8 +411,11 @@ public class EstimationAnalysisImpl implements EstimationAnalysis {
     return negativeControlExposureCohortDefinition;
   }
 
-    
-  public void setNegativeControlExposureCohortDefinition(NegativeControlExposureCohortExpressionImpl negativeControlExposureCohortDefinition) {
+    /**
+     *
+     * @param negativeControlExposureCohortDefinition
+     */
+    public void setNegativeControlExposureCohortDefinition(NegativeControlExposureCohortExpressionImpl negativeControlExposureCohortDefinition) {
     this.negativeControlExposureCohortDefinition = negativeControlExposureCohortDefinition;
   }
 
@@ -340,8 +424,11 @@ public class EstimationAnalysisImpl implements EstimationAnalysis {
     return estimationAnalysisSettings;
   }
 
-    
-  public void setEstimationAnalysisSettings(EstimationAnalysisSettingsImpl estimationAnalysisSettings) {
+    /**
+     *
+     * @param estimationAnalysisSettings
+     */
+    public void setEstimationAnalysisSettings(EstimationAnalysisSettingsImpl estimationAnalysisSettings) {
     this.estimationAnalysisSettings = estimationAnalysisSettings;
   }
 }

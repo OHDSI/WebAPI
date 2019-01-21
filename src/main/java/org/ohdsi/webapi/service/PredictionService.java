@@ -1,10 +1,6 @@
 package org.ohdsi.webapi.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -12,8 +8,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import javax.persistence.EntityManager;
@@ -31,7 +26,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.hibernate.Hibernate;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.hydra.Hydra;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
@@ -42,17 +36,19 @@ import org.ohdsi.webapi.prediction.PredictionListItem;
 import org.ohdsi.webapi.prediction.PredictionAnalysisRepository;
 import org.ohdsi.webapi.prediction.dto.PredictionAnalysisDTO;
 import org.ohdsi.webapi.prediction.specification.*;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RestController;
 
-@Component
-@Transactional
+/**
+ *
+ * @author asena5
+ */
+@RestController
 @Path("/prediction/")
 public class PredictionService  extends AbstractDaoService {
     @Autowired
@@ -61,6 +57,9 @@ public class PredictionService  extends AbstractDaoService {
     @Autowired
     private PredictionAnalysisRepository predictionAnalysisRepository;
 
+    /**
+     *
+     */
     @PersistenceContext
     protected EntityManager entityManager;
 
@@ -82,6 +81,10 @@ public class PredictionService  extends AbstractDaoService {
     @Autowired
     private Environment env;
 
+    /**
+     *
+     * @return
+     */
     @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
@@ -102,6 +105,10 @@ public class PredictionService  extends AbstractDaoService {
         }).collect(Collectors.toList()));
     }
     
+    /**
+     *
+     * @param id
+     */
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}")
@@ -109,6 +116,11 @@ public class PredictionService  extends AbstractDaoService {
         this.predictionAnalysisRepository.delete(id);
     }
     
+    /**
+     *
+     * @param pred
+     * @return
+     */
     @POST
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
@@ -126,6 +138,12 @@ public class PredictionService  extends AbstractDaoService {
         });
     }
 
+    /**
+     *
+     * @param id
+     * @param pred
+     * @return
+     */
     @PUT
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -147,6 +165,11 @@ public class PredictionService  extends AbstractDaoService {
         });
     }
     
+    /**
+     *
+     * @param id
+     * @return
+     */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/copy")
@@ -159,6 +182,11 @@ public class PredictionService  extends AbstractDaoService {
             return this.createAnalysis(analysis);
     }
     
+    /**
+     *
+     * @param id
+     * @return
+     */
     @GET
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -169,15 +197,19 @@ public class PredictionService  extends AbstractDaoService {
         });
     }    
     
+    /**
+     *
+     * @param id
+     * @return
+     */
     @GET
     @Path("{id}/export")
     @Produces(MediaType.APPLICATION_JSON)
     public PatientLevelPredictionAnalysisImpl exportAnalysis(@PathParam("id") int id) {
         PredictionAnalysis pred = predictionAnalysisRepository.findOne(id);
-        ObjectMapper mapper = new ObjectMapper();
         PatientLevelPredictionAnalysisImpl expression = new PatientLevelPredictionAnalysisImpl();
         try {
-            expression = mapper.readValue(pred.getSpecification(), PatientLevelPredictionAnalysisImpl.class);
+            expression = Utils.deserialize(pred.getSpecification(), PatientLevelPredictionAnalysisImpl.class);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -189,7 +221,7 @@ public class PredictionService  extends AbstractDaoService {
         expression.setOrganizationName(env.getRequiredProperty("organization.name"));
         
         // Retrieve the cohort definition details
-        ArrayList<PredictionCohortDefinition> detailedList = new ArrayList<>();
+        List<PredictionCohortDefinition> detailedList = new ArrayList<>();
         for (PredictionCohortDefinition c : expression.getCohortDefinitions()) {
             CohortDefinition cd = cohortDefinitionRepository.findOneWithDetail(c.getId());
             detailedList.add(new PredictionCohortDefinition(cd));
@@ -197,8 +229,8 @@ public class PredictionService  extends AbstractDaoService {
         expression.setCohortDefinitions(detailedList);
         
         // Retrieve the concept set expressions
-        ArrayList<PredictionConceptSet> pcsList = new ArrayList<>();
-        HashMap<Integer, ArrayList<Long>> conceptIdentifiers = new HashMap<Integer, ArrayList<Long>>();
+        List<PredictionConceptSet> pcsList = new ArrayList<>();
+        Map<Integer, List<Long>> conceptIdentifiers = new HashMap<>();
         for (PredictionConceptSet pcs : expression.getConceptSets()) {
             pcs.expression = conceptSetService.getConceptSetExpression(pcs.id);
             pcsList.add(pcs);
@@ -220,6 +252,13 @@ public class PredictionService  extends AbstractDaoService {
         return expression;
     }
     
+    /**
+     *
+     * @param id
+     * @param packageName
+     * @return
+     * @throws IOException
+     */
     @GET
     @Path("{id}/download")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -233,7 +272,7 @@ public class PredictionService  extends AbstractDaoService {
         }
         PatientLevelPredictionAnalysisImpl plpa = this.exportAnalysis(id);
         plpa.setPackageName(packageName);
-        String studySpecs = Utils.serialize(plpa);        
+        String studySpecs = Utils.serialize(plpa, true);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         
         Hydra h = new Hydra(studySpecs);

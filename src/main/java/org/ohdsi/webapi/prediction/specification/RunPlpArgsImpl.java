@@ -3,6 +3,10 @@ package org.ohdsi.webapi.prediction.specification;
 import org.ohdsi.analysis.prediction.design.RunPlpArgs;
 import org.ohdsi.analysis.prediction.design.TestSplitEnum;
 
+/**
+ *
+ * @author asena5
+ */
 public class RunPlpArgsImpl implements RunPlpArgs {
   private Float minCovariateFraction = 0.001f;
   private Boolean normalizeData = true;
@@ -20,7 +24,11 @@ public class RunPlpArgsImpl implements RunPlpArgs {
     return minCovariateFraction;
   }
 
-  public void setMinCovariateFraction(Float minCovariateFraction) {
+    /**
+     *
+     * @param minCovariateFraction
+     */
+    public void setMinCovariateFraction(Float minCovariateFraction) {
     this.minCovariateFraction = minCovariateFraction;
   }
 
@@ -33,7 +41,11 @@ public class RunPlpArgsImpl implements RunPlpArgs {
     return normalizeData;
   }
 
-  public void setNormalizeData(Boolean normalizeData) {
+    /**
+     *
+     * @param normalizeData
+     */
+    public void setNormalizeData(Boolean normalizeData) {
     this.normalizeData = normalizeData;
   }
 
@@ -46,7 +58,11 @@ public class RunPlpArgsImpl implements RunPlpArgs {
     return testSplit;
   }
 
-  public void setTestSplit(TestSplitEnum testSplit) {
+    /**
+     *
+     * @param testSplit
+     */
+    public void setTestSplit(TestSplitEnum testSplit) {
     this.testSplit = testSplit;
   }
 
@@ -59,7 +75,11 @@ public class RunPlpArgsImpl implements RunPlpArgs {
     return testFraction;
   }
 
-  public void setTestFraction(Float testFraction) {
+    /**
+     *
+     * @param testFraction
+     */
+    public void setTestFraction(Float testFraction) {
     this.testFraction = testFraction;
   }
 
@@ -72,7 +92,11 @@ public class RunPlpArgsImpl implements RunPlpArgs {
     return splitSeed;
   }
 
-  public void setSplitSeed(Float splitSeed) {
+    /**
+     *
+     * @param splitSeed
+     */
+    public void setSplitSeed(Float splitSeed) {
     this.splitSeed = splitSeed;
   }
 
@@ -85,7 +109,11 @@ public class RunPlpArgsImpl implements RunPlpArgs {
     return nfold;
   }
 
-  public void setNfold(Integer nfold) {
+    /**
+     *
+     * @param nfold
+     */
+    public void setNfold(Integer nfold) {
     this.nfold = nfold;
   }
 }

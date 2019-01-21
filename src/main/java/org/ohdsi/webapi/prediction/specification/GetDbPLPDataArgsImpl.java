@@ -3,6 +3,10 @@ package org.ohdsi.webapi.prediction.specification;
 import java.math.BigDecimal;
 import org.ohdsi.analysis.prediction.design.GetDbPLPDataArgs;
 
+/**
+ *
+ * @author asena5
+ */
 public class GetDbPLPDataArgsImpl implements GetDbPLPDataArgs {
   private BigDecimal maxSampleSize = null;
   private Integer washoutPeriod = 0;
@@ -16,7 +20,11 @@ public class GetDbPLPDataArgsImpl implements GetDbPLPDataArgs {
     return maxSampleSize;
   }
 
-  public void setMaxSampleSize(BigDecimal maxSampleSize) {
+    /**
+     *
+     * @param maxSampleSize
+     */
+    public void setMaxSampleSize(BigDecimal maxSampleSize) {
     this.maxSampleSize = maxSampleSize;
   }
 
@@ -29,7 +37,11 @@ public class GetDbPLPDataArgsImpl implements GetDbPLPDataArgs {
     return washoutPeriod;
   }
 
-  public void setWashoutPeriod(Integer washoutPeriod) {
+    /**
+     *
+     * @param washoutPeriod
+     */
+    public void setWashoutPeriod(Integer washoutPeriod) {
     this.washoutPeriod = washoutPeriod;
   }
 }

@@ -1,11 +1,15 @@
-package org.ohdsi.webapi.estimation.specification;
+package org.ohdsi.webapi.estimation.comparativecohortanalysis.specification;
 
 import java.util.ArrayList;
 import java.util.List;
 import javax.validation.constraints.*;
 import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.TargetComparatorOutcomes;
+import org.ohdsi.webapi.estimation.specification.TargetOutcomeImpl;
 
-
+/**
+ *
+ * @author asena5
+ */
 public class TargetComparatorOutcomesImpl extends TargetOutcomeImpl implements TargetComparatorOutcomes {
   private Long comparatorId = null;
   private List<Long> excludedCovariateConceptIds = null;
@@ -21,11 +25,20 @@ public class TargetComparatorOutcomesImpl extends TargetOutcomeImpl implements T
     return comparatorId;
   }
 
-  public void setComparatorId(Long comparatorId) {
+    /**
+     *
+     * @param comparatorId
+     */
+    public void setComparatorId(Long comparatorId) {
     this.comparatorId = comparatorId;
   }
 
-  public TargetComparatorOutcomesImpl addExcludedCovariateConceptIdsItem(Long excludedCovariateConceptIdsItem) {
+    /**
+     *
+     * @param excludedCovariateConceptIdsItem
+     * @return
+     */
+    public TargetComparatorOutcomesImpl addExcludedCovariateConceptIdsItem(Long excludedCovariateConceptIdsItem) {
     if (this.excludedCovariateConceptIds == null) {
       this.excludedCovariateConceptIds = new ArrayList<>();
     }
@@ -42,11 +55,20 @@ public class TargetComparatorOutcomesImpl extends TargetOutcomeImpl implements T
     return excludedCovariateConceptIds;
   }
 
-  public void setExcludedCovariateConceptIds(List<Long> excludedCovariateConceptIds) {
+    /**
+     *
+     * @param excludedCovariateConceptIds
+     */
+    public void setExcludedCovariateConceptIds(List<Long> excludedCovariateConceptIds) {
     this.excludedCovariateConceptIds = excludedCovariateConceptIds;
   }
 
-  public TargetComparatorOutcomesImpl addIncludedCovariateConceptIdsItem(Long includedCovariateConceptIdsItem) {
+    /**
+     *
+     * @param includedCovariateConceptIdsItem
+     * @return
+     */
+    public TargetComparatorOutcomesImpl addIncludedCovariateConceptIdsItem(Long includedCovariateConceptIdsItem) {
     if (this.includedCovariateConceptIds == null) {
       this.includedCovariateConceptIds = new ArrayList<>();
     }
@@ -63,7 +85,11 @@ public class TargetComparatorOutcomesImpl extends TargetOutcomeImpl implements T
     return includedCovariateConceptIds;
   }
 
-  public void setIncludedCovariateConceptIds(List<Long> includedCovariateConceptIds) {
+    /**
+     *
+     * @param includedCovariateConceptIds
+     */
+    public void setIncludedCovariateConceptIds(List<Long> includedCovariateConceptIds) {
     this.includedCovariateConceptIds = includedCovariateConceptIds;
   }
 }

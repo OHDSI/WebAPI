@@ -30,7 +30,11 @@ public class CreateStudyPopulationArgsImpl extends RLangClassImpl implements Cre
     return binary;
   }
 
-  public void setBinary(Boolean binary) {
+    /**
+     *
+     * @param binary
+     */
+    public void setBinary(Boolean binary) {
     this.binary = binary;
   }
 
@@ -43,7 +47,11 @@ public class CreateStudyPopulationArgsImpl extends RLangClassImpl implements Cre
     return includeAllOutcomes;
   }
 
-  public void setIncludeAllOutcomes(Boolean includeAllOutcomes) {
+    /**
+     *
+     * @param includeAllOutcomes
+     */
+    public void setIncludeAllOutcomes(Boolean includeAllOutcomes) {
     this.includeAllOutcomes = includeAllOutcomes;
   }
 
@@ -56,7 +64,11 @@ public class CreateStudyPopulationArgsImpl extends RLangClassImpl implements Cre
     return firstExposureOnly;
   }
 
-  public void setFirstExposureOnly(Boolean firstExposureOnly) {
+    /**
+     *
+     * @param firstExposureOnly
+     */
+    public void setFirstExposureOnly(Boolean firstExposureOnly) {
     this.firstExposureOnly = firstExposureOnly;
   }
 
@@ -69,7 +81,11 @@ public class CreateStudyPopulationArgsImpl extends RLangClassImpl implements Cre
     return washoutPeriod;
   }
 
-  public void setWashoutPeriod(Integer washoutPeriod) {
+    /**
+     *
+     * @param washoutPeriod
+     */
+    public void setWashoutPeriod(Integer washoutPeriod) {
     this.washoutPeriod = washoutPeriod;
   }
 
@@ -82,7 +98,11 @@ public class CreateStudyPopulationArgsImpl extends RLangClassImpl implements Cre
     return removeSubjectsWithPriorOutcome;
   }
 
-  public void setRemoveSubjectsWithPriorOutcome(Boolean removeSubjectsWithPriorOutcome) {
+    /**
+     *
+     * @param removeSubjectsWithPriorOutcome
+     */
+    public void setRemoveSubjectsWithPriorOutcome(Boolean removeSubjectsWithPriorOutcome) {
     this.removeSubjectsWithPriorOutcome = removeSubjectsWithPriorOutcome;
   }
 
@@ -95,7 +115,11 @@ public class CreateStudyPopulationArgsImpl extends RLangClassImpl implements Cre
     return priorOutcomeLookback;
   }
 
-  public void setPriorOutcomeLookback(Integer priorOutcomeLookback) {
+    /**
+     *
+     * @param priorOutcomeLookback
+     */
+    public void setPriorOutcomeLookback(Integer priorOutcomeLookback) {
     this.priorOutcomeLookback = priorOutcomeLookback;
   }
 
@@ -108,7 +132,11 @@ public class CreateStudyPopulationArgsImpl extends RLangClassImpl implements Cre
     return requireTimeAtRisk;
   }
 
-  public void setRequireTimeAtRisk(Boolean requireTimeAtRisk) {
+    /**
+     *
+     * @param requireTimeAtRisk
+     */
+    public void setRequireTimeAtRisk(Boolean requireTimeAtRisk) {
     this.requireTimeAtRisk = requireTimeAtRisk;
   }
 
@@ -121,7 +149,11 @@ public class CreateStudyPopulationArgsImpl extends RLangClassImpl implements Cre
     return minTimeAtRisk;
   }
 
-  public void setMinTimeAtRisk(Integer minTimeAtRisk) {
+    /**
+     *
+     * @param minTimeAtRisk
+     */
+    public void setMinTimeAtRisk(Integer minTimeAtRisk) {
     this.minTimeAtRisk = minTimeAtRisk;
   }
 
@@ -134,7 +166,11 @@ public class CreateStudyPopulationArgsImpl extends RLangClassImpl implements Cre
     return riskWindowStart;
   }
 
-  public void setRiskWindowStart(Integer riskWindowStart) {
+    /**
+     *
+     * @param riskWindowStart
+     */
+    public void setRiskWindowStart(Integer riskWindowStart) {
     this.riskWindowStart = riskWindowStart;
   }
 
@@ -147,7 +183,11 @@ public class CreateStudyPopulationArgsImpl extends RLangClassImpl implements Cre
     return addExposureDaysToStart;
   }
 
-  public void setAddExposureDaysToStart(Boolean addExposureDaysToStart) {
+    /**
+     *
+     * @param addExposureDaysToStart
+     */
+    public void setAddExposureDaysToStart(Boolean addExposureDaysToStart) {
     this.addExposureDaysToStart = addExposureDaysToStart;
   }
 
@@ -160,7 +200,11 @@ public class CreateStudyPopulationArgsImpl extends RLangClassImpl implements Cre
     return riskWindowEnd;
   }
 
-  public void setRiskWindowEnd(Integer riskWindowEnd) {
+    /**
+     *
+     * @param riskWindowEnd
+     */
+    public void setRiskWindowEnd(Integer riskWindowEnd) {
     this.riskWindowEnd = riskWindowEnd;
   }
 
@@ -173,7 +217,11 @@ public class CreateStudyPopulationArgsImpl extends RLangClassImpl implements Cre
     return addExposureDaysToEnd;
   }
 
-  public void setAddExposureDaysToEnd(Boolean addExposureDaysToEnd) {
+    /**
+     *
+     * @param addExposureDaysToEnd
+     */
+    public void setAddExposureDaysToEnd(Boolean addExposureDaysToEnd) {
     this.addExposureDaysToEnd = addExposureDaysToEnd;
   }
 
@@ -186,6 +234,11 @@ public class CreateStudyPopulationArgsImpl extends RLangClassImpl implements Cre
     return popAttrClass;
   }
 
+    /**
+     *
+     * @param attrClass
+     */
+    @Override
   public void setAttrClass(String attrClass) {
     this.popAttrClass = attrClass;
   }

@@ -3,6 +3,10 @@ package org.ohdsi.webapi.estimation.specification;
 import org.ohdsi.webapi.RLangClassImpl;
 import org.ohdsi.analysis.estimation.design.Analysis;
 
+/**
+ *
+ * @author asena5
+ */
 public class AnalysisImpl extends RLangClassImpl implements Analysis {
   private Integer analysisId = null;
   private String description = null;
@@ -16,7 +20,11 @@ public class AnalysisImpl extends RLangClassImpl implements Analysis {
     return analysisId;
   }
 
-  public void setAnalysisId(Integer analysisId) {
+    /**
+     *
+     * @param analysisId
+     */
+    public void setAnalysisId(Integer analysisId) {
     this.analysisId = analysisId;
   }
 
@@ -29,7 +37,11 @@ public class AnalysisImpl extends RLangClassImpl implements Analysis {
     return description;
   }
 
-  public void setDescription(String description) {
+    /**
+     *
+     * @param description
+     */
+    public void setDescription(String description) {
     this.description = description;
   }
 }

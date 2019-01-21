@@ -5,9 +5,13 @@ import java.util.List;
 import javax.validation.constraints.*;
 import org.ohdsi.analysis.estimation.design.TargetOutcome;
 
+/**
+ *
+ * @author asena5
+ */
 public class TargetOutcomeImpl implements TargetOutcome {
   private Long targetId = null;
-  private List<Long> outcomeIds = new ArrayList<Long>();
+  private List<Long> outcomeIds = new ArrayList<>();
 
   /**
    * Target cohort id
@@ -19,11 +23,20 @@ public class TargetOutcomeImpl implements TargetOutcome {
     return targetId;
   }
 
-  public void setTargetId(Long targetId) {
+    /**
+     *
+     * @param targetId
+     */
+    public void setTargetId(Long targetId) {
     this.targetId = targetId;
   }
 
-  public TargetOutcomeImpl addOutcomeIdsItem(Long outcomeIdsItem) {
+    /**
+     *
+     * @param outcomeIdsItem
+     * @return
+     */
+    public TargetOutcomeImpl addOutcomeIdsItem(Long outcomeIdsItem) {
     this.outcomeIds.add(outcomeIdsItem);
     return this;
   }
@@ -38,7 +51,11 @@ public class TargetOutcomeImpl implements TargetOutcome {
     return outcomeIds;
   }
 
-  public void setOutcomeIds(List<Long> outcomeIds) {
+    /**
+     *
+     * @param outcomeIds
+     */
+    public void setOutcomeIds(List<Long> outcomeIds) {
     this.outcomeIds = outcomeIds;
   }
 }

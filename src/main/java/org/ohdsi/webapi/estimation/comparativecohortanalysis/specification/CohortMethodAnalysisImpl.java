@@ -1,6 +1,7 @@
-package org.ohdsi.webapi.estimation.specification;
+package org.ohdsi.webapi.estimation.comparativecohortanalysis.specification;
 
 import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.CohortMethodAnalysis;
+import org.ohdsi.webapi.estimation.specification.AnalysisImpl;
 
 /**
  * CohortMethodAnalysisImpl
@@ -27,7 +28,11 @@ public class CohortMethodAnalysisImpl extends AnalysisImpl implements CohortMeth
   private Boolean fitOutcomeModel = false;
   private FitOutcomeModelArgsImpl fitOutcomeModelArgs = null;
 
-  @Override
+    /**
+     *
+     * @param attrClass
+     */
+    @Override
   public void setAttrClass(String attrClass) {
     super.setAttrClass("cmAnalysis");
   }
@@ -41,7 +46,11 @@ public class CohortMethodAnalysisImpl extends AnalysisImpl implements CohortMeth
     return targetType;
   }
 
-  public void setTargetType(String targetType) {
+    /**
+     *
+     * @param targetType
+     */
+    public void setTargetType(String targetType) {
     this.targetType = targetType;
   }
 
@@ -54,7 +63,11 @@ public class CohortMethodAnalysisImpl extends AnalysisImpl implements CohortMeth
     return comparatorType;
   }
 
-  public void setComparatorType(String comparatorType) {
+    /**
+     *
+     * @param comparatorType
+     */
+    public void setComparatorType(String comparatorType) {
     this.comparatorType = comparatorType;
   }
 
@@ -63,11 +76,15 @@ public class CohortMethodAnalysisImpl extends AnalysisImpl implements CohortMeth
    * @return getDbCohortMethodDataArgs
    **/
   @Override
-  public GetDbCohortMethodDataArgsImpl getGetDbCohortMethodDataArgs() {
+  public GetDbCohortMethodDataArgsImpl getDbCohortMethodDataArgs() {
     return getDbCohortMethodDataArgs;
   }
 
-  public void setGetDbCohortMethodDataArgs(GetDbCohortMethodDataArgsImpl getDbCohortMethodDataArgs) {
+    /**
+     *
+     * @param getDbCohortMethodDataArgs
+     */
+    public void setGetDbCohortMethodDataArgs(GetDbCohortMethodDataArgsImpl getDbCohortMethodDataArgs) {
     this.getDbCohortMethodDataArgs = getDbCohortMethodDataArgs;
   }
 
@@ -80,7 +97,11 @@ public class CohortMethodAnalysisImpl extends AnalysisImpl implements CohortMeth
     return createStudyPopArgs;
   }
 
-  public void setCreateStudyPopArgs(CreateStudyPopulationArgsImpl createStudyPopArgs) {
+    /**
+     *
+     * @param createStudyPopArgs
+     */
+    public void setCreateStudyPopArgs(CreateStudyPopulationArgsImpl createStudyPopArgs) {
     this.createStudyPopArgs = createStudyPopArgs;
   }
 
@@ -93,7 +114,11 @@ public class CohortMethodAnalysisImpl extends AnalysisImpl implements CohortMeth
     return createPs;
   }
 
-  public void setCreatePs(Boolean createPs) {
+    /**
+     *
+     * @param createPs
+     */
+    public void setCreatePs(Boolean createPs) {
     this.createPs = createPs;
   }
 
@@ -106,7 +131,11 @@ public class CohortMethodAnalysisImpl extends AnalysisImpl implements CohortMeth
     return createPsArgs;
   }
 
-  public void setCreatePsArgs(CreatePsArgsImpl createPsArgs) {
+    /**
+     *
+     * @param createPsArgs
+     */
+    public void setCreatePsArgs(CreatePsArgsImpl createPsArgs) {
     this.createPsArgs = createPsArgs;
   }
 
@@ -119,7 +148,11 @@ public class CohortMethodAnalysisImpl extends AnalysisImpl implements CohortMeth
     return trimByPs;
   }
 
-  public void setTrimByPs(Boolean trimByPs) {
+    /**
+     *
+     * @param trimByPs
+     */
+    public void setTrimByPs(Boolean trimByPs) {
     this.trimByPs = trimByPs;
   }
 
@@ -132,7 +165,11 @@ public class CohortMethodAnalysisImpl extends AnalysisImpl implements CohortMeth
     return trimByPsArgs;
   }
 
-  public void setTrimByPsArgs(TrimByPsArgsImpl trimByPsArgs) {
+    /**
+     *
+     * @param trimByPsArgs
+     */
+    public void setTrimByPsArgs(TrimByPsArgsImpl trimByPsArgs) {
     this.trimByPsArgs = trimByPsArgs;
   }
 
@@ -145,7 +182,11 @@ public class CohortMethodAnalysisImpl extends AnalysisImpl implements CohortMeth
     return trimByPsToEquipoise;
   }
 
-  public void setTrimByPsToEquipoise(Boolean trimByPsToEquipoise) {
+    /**
+     *
+     * @param trimByPsToEquipoise
+     */
+    public void setTrimByPsToEquipoise(Boolean trimByPsToEquipoise) {
     this.trimByPsToEquipoise = trimByPsToEquipoise;
   }
 
@@ -158,7 +199,11 @@ public class CohortMethodAnalysisImpl extends AnalysisImpl implements CohortMeth
     return trimByPsToEquipoiseArgs;
   }
 
-  public void setTrimByPsToEquipoiseArgs(TrimByPsToEquipoiseArgsImpl trimByPsToEquipoiseArgs) {
+    /**
+     *
+     * @param trimByPsToEquipoiseArgs
+     */
+    public void setTrimByPsToEquipoiseArgs(TrimByPsToEquipoiseArgsImpl trimByPsToEquipoiseArgs) {
     this.trimByPsToEquipoiseArgs = trimByPsToEquipoiseArgs;
   }
 
@@ -171,7 +216,11 @@ public class CohortMethodAnalysisImpl extends AnalysisImpl implements CohortMeth
     return matchOnPs;
   }
 
-  public void setMatchOnPs(Boolean matchOnPs) {
+    /**
+     *
+     * @param matchOnPs
+     */
+    public void setMatchOnPs(Boolean matchOnPs) {
     this.matchOnPs = matchOnPs;
   }
 
@@ -184,7 +233,11 @@ public class CohortMethodAnalysisImpl extends AnalysisImpl implements CohortMeth
     return matchOnPsArgs;
   }
 
-  public void setMatchOnPsArgs(MatchOnPsArgsImpl matchOnPsArgs) {
+    /**
+     *
+     * @param matchOnPsArgs
+     */
+    public void setMatchOnPsArgs(MatchOnPsArgsImpl matchOnPsArgs) {
     this.matchOnPsArgs = matchOnPsArgs;
   }
 
@@ -197,11 +250,20 @@ public class CohortMethodAnalysisImpl extends AnalysisImpl implements CohortMeth
     return matchOnPsAndCovariates;
   }
 
-  public void setMatchOnPsAndCovariates(Boolean matchOnPsAndCovariates) {
+    /**
+     *
+     * @param matchOnPsAndCovariates
+     */
+    public void setMatchOnPsAndCovariates(Boolean matchOnPsAndCovariates) {
     this.matchOnPsAndCovariates = matchOnPsAndCovariates;
   }
 
-  public CohortMethodAnalysis matchOnPsAndCovariatesArgs(MatchOnPsAndCovariatesArgsImpl matchOnPsAndCovariatesArgs) {
+    /**
+     *
+     * @param matchOnPsAndCovariatesArgs
+     * @return
+     */
+    public CohortMethodAnalysis matchOnPsAndCovariatesArgs(MatchOnPsAndCovariatesArgsImpl matchOnPsAndCovariatesArgs) {
     this.matchOnPsAndCovariatesArgs = matchOnPsAndCovariatesArgs;
     return this;
   }
@@ -215,7 +277,11 @@ public class CohortMethodAnalysisImpl extends AnalysisImpl implements CohortMeth
     return matchOnPsAndCovariatesArgs;
   }
 
-  public void setMatchOnPsAndCovariatesArgs(MatchOnPsAndCovariatesArgsImpl matchOnPsAndCovariatesArgs) {
+    /**
+     *
+     * @param matchOnPsAndCovariatesArgs
+     */
+    public void setMatchOnPsAndCovariatesArgs(MatchOnPsAndCovariatesArgsImpl matchOnPsAndCovariatesArgs) {
     this.matchOnPsAndCovariatesArgs = matchOnPsAndCovariatesArgs;
   }
 
@@ -228,7 +294,11 @@ public class CohortMethodAnalysisImpl extends AnalysisImpl implements CohortMeth
     return stratifyByPs;
   }
 
-  public void setStratifyByPs(Boolean stratifyByPs) {
+    /**
+     *
+     * @param stratifyByPs
+     */
+    public void setStratifyByPs(Boolean stratifyByPs) {
     this.stratifyByPs = stratifyByPs;
   }
 
@@ -241,7 +311,11 @@ public class CohortMethodAnalysisImpl extends AnalysisImpl implements CohortMeth
     return stratifyByPsArgs;
   }
 
-  public void setStratifyByPsArgs(StratifyByPsArgsImpl stratifyByPsArgs) {
+    /**
+     *
+     * @param stratifyByPsArgs
+     */
+    public void setStratifyByPsArgs(StratifyByPsArgsImpl stratifyByPsArgs) {
     this.stratifyByPsArgs = stratifyByPsArgs;
   }
 
@@ -254,7 +328,11 @@ public class CohortMethodAnalysisImpl extends AnalysisImpl implements CohortMeth
     return stratifyByPsAndCovariates;
   }
 
-  public void setStratifyByPsAndCovariates(Boolean stratifyByPsAndCovariates) {
+    /**
+     *
+     * @param stratifyByPsAndCovariates
+     */
+    public void setStratifyByPsAndCovariates(Boolean stratifyByPsAndCovariates) {
     this.stratifyByPsAndCovariates = stratifyByPsAndCovariates;
   }
 
@@ -267,7 +345,11 @@ public class CohortMethodAnalysisImpl extends AnalysisImpl implements CohortMeth
     return stratifyByPsAndCovariatesArgs;
   }
 
-  public void setStratifyByPsAndCovariatesArgs(StratifyByPsAndCovariatesArgsImpl stratifyByPsAndCovariatesArgs) {
+    /**
+     *
+     * @param stratifyByPsAndCovariatesArgs
+     */
+    public void setStratifyByPsAndCovariatesArgs(StratifyByPsAndCovariatesArgsImpl stratifyByPsAndCovariatesArgs) {
     this.stratifyByPsAndCovariatesArgs = stratifyByPsAndCovariatesArgs;
   }
 
@@ -280,7 +362,11 @@ public class CohortMethodAnalysisImpl extends AnalysisImpl implements CohortMeth
     return fitOutcomeModel;
   }
 
-  public void setFitOutcomeModel(Boolean fitOutcomeModel) {
+    /**
+     *
+     * @param fitOutcomeModel
+     */
+    public void setFitOutcomeModel(Boolean fitOutcomeModel) {
     this.fitOutcomeModel = fitOutcomeModel;
   }
 
@@ -293,7 +379,11 @@ public class CohortMethodAnalysisImpl extends AnalysisImpl implements CohortMeth
     return fitOutcomeModelArgs;
   }
 
-  public void setFitOutcomeModelArgs(FitOutcomeModelArgsImpl fitOutcomeModelArgs) {
+    /**
+     *
+     * @param fitOutcomeModelArgs
+     */
+    public void setFitOutcomeModelArgs(FitOutcomeModelArgsImpl fitOutcomeModelArgs) {
     this.fitOutcomeModelArgs = fitOutcomeModelArgs;
   }
 }

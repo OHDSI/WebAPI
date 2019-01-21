@@ -2,102 +2,151 @@ package org.ohdsi.webapi.prediction.specification;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.InputMismatchException;
 import java.util.List;
 import org.ohdsi.analysis.prediction.design.GradientBoostingMachineSettings;
 
+/**
+ *
+ * @author asena5
+ */
 public class GradientBoostingMachineSettingsImpl extends SeedSettingsImpl implements GradientBoostingMachineSettings {
-  private List<BigDecimal> ntrees = null;
-  private Integer nthread = 20;
-  private List<BigDecimal> maxDepth = null;
-  private Integer minRows = 20;
-  private List<Float> learnRate = null;
 
-  public GradientBoostingMachineSettingsImpl addNtreesItem(BigDecimal ntreesItem) {
-    if (this.ntrees == null) {
-      this.ntrees = new ArrayList<>();
+    private List<Integer> nTrees = null;
+    private Integer nthread = 20;
+    private List<Integer> maxDepth = null;
+    private List<Integer> minRows = new ArrayList<>(Arrays.asList(20));
+    private List<BigDecimal> learnRate = null;
+
+    /**
+     * The number of trees to build
+     *
+     * @return nTrees
+   *
+     */
+    @Override
+    public List<Integer> getNTrees() {
+        return nTrees;
     }
-    this.ntrees.add(ntreesItem);
-    return this;
-  }
 
-  /**
-   * The number of trees to build 
-   * @return ntrees
-   **/
-  @Override
-  public List<BigDecimal> getNtrees() {
-    return ntrees;
-  }
-
-  public void setNtrees(List<BigDecimal> ntrees) {
-    this.ntrees = ntrees;
-  }
-
-  /**
-   * The number of computer threads to (how many cores do you have?) 
-   * @return nthread
-   **/
-  @Override
-  public Integer getNthread() {
-    return nthread;
-  }
-
-  public void setNthread(Integer nthread) {
-    this.nthread = nthread;
-  }
-
-  public GradientBoostingMachineSettingsImpl addMaxDepthItem(BigDecimal maxDepthItem) {
-    if (this.maxDepth == null) {
-      this.maxDepth = new ArrayList<>();
+    /**
+     *
+     * @param nTrees
+     */
+    public void setNTrees(List<Object> nTrees) {
+        if (nTrees != null) {
+            if (this.nTrees == null)
+                this.nTrees = new ArrayList<>();
+            
+            nTrees.forEach((o) -> {
+                if (o instanceof BigDecimal) {
+                    this.nTrees.add(((BigDecimal) o).intValue());
+                } else if (o instanceof Integer) {
+                    this.nTrees.add((Integer) o);
+                } else {
+                    throw new InputMismatchException("Expected ArrayList<Integer> or ArrayList<BigDecimal>");
+                }
+            });
+        } else {
+            this.nTrees = null;
+        }
     }
-    this.maxDepth.add(maxDepthItem);
-    return this;
-  }
 
-  /**
-   * Maximum number of interactions - a large value will lead to slow model training 
-   * @return maxDepth
-   **/
-  @Override
-  public List<BigDecimal> getMaxDepth() {
-    return maxDepth;
-  }
-
-  public void setMaxDepth(List<BigDecimal> maxDepth) {
-    this.maxDepth = maxDepth;
-  }
-
-  /**
-   * The minimum number of rows required at each end node of the tree 
-   * @return minRows
-   **/
-  @Override
-  public Integer getMinRows() {
-    return minRows;
-  }
-
-  public void setMinRows(Integer minRows) {
-    this.minRows = minRows;
-  }
-
-  public GradientBoostingMachineSettingsImpl addLearnRateItem(Float learnRateItem) {
-    if (this.learnRate == null) {
-      this.learnRate = new ArrayList<>();
+    /**
+     * The number of computer threads to (how many cores do you have?)
+     *
+     * @return nthread
+   *
+     */
+    @Override
+    public Integer getNThread() {
+        return nthread;
     }
-    this.learnRate.add(learnRateItem);
-    return this;
-  }
 
-  /**
-   * The boosting learn rate 
-   * @return learnRate
-   **/
-  @Override
-  public List<Float> getLearnRate() {
-    return learnRate;
-  }
+    /**
+     *
+     * @param nthread
+     */
+    public void setNthread(Integer nthread) {
+        this.nthread = nthread;
+    }
 
-  public void setLearnRate(List<Float> learnRate) {
-    this.learnRate = learnRate;
-  }
+    /**
+     * Maximum number of interactions - a large value will lead to slow model
+     * training
+     *
+     * @return maxDepth
+   *
+     */
+    @Override
+    public List<Integer> getMaxDepth() {
+        return maxDepth;
+    }
+
+    /**
+     *
+     * @param maxDepth
+     */
+    public void setMaxDepth(Object maxDepth) {
+        if (maxDepth != null) {
+            if (maxDepth instanceof ArrayList) {
+                this.maxDepth = (ArrayList<Integer>) maxDepth;
+            } else if (maxDepth instanceof Integer) {
+                this.maxDepth = new ArrayList<>(Arrays.asList((Integer) maxDepth));
+            } else {
+                throw new InputMismatchException("Expected ArrayList<Integer> or Integer");
+            }
+        } else {
+            this.maxDepth = null;
+        }
+    }
+
+    /**
+     * The minimum number of rows required at each end node of the tree
+     *
+     * @return minRows
+   *
+     */
+    @Override
+    public List<Integer> getMinRows() {
+        return minRows;
+    }
+
+    /**
+     *
+     * @param minRows
+     */
+    public void setMinRows(Object minRows) {
+        if (minRows != null) {
+            if (minRows instanceof ArrayList) {
+                this.minRows = (ArrayList<Integer>) minRows;
+            } else if (minRows instanceof Integer) {
+                this.minRows = new ArrayList<>(Arrays.asList((Integer) minRows));
+            } else {
+                throw new InputMismatchException("Expected ArrayList<Integer> or Integer");
+            }
+        } else {
+            this.minRows = null;
+        }
+    }
+
+    /**
+     * The boosting learn rate
+     *
+     * @return learnRate
+   *
+     */
+    @Override
+    public List<BigDecimal> getLearnRate() {
+        return learnRate;
+    }
+
+    /**
+     *
+     * @param learnRate
+     */
+    public void setLearnRate(List<BigDecimal> learnRate) {
+        this.learnRate = learnRate;
+    }
 }

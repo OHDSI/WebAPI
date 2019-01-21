@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import org.ohdsi.analysis.estimation.design.NegativeControlOutcomeCohortExpression;
 
+/**
+ *
+ * @author asena5
+ */
 public class NegativeControlOutcomeCohortExpressionImpl implements NegativeControlOutcomeCohortExpression {
   private String occurrenceType = null;
   private Boolean detectOnDescendants = null;
@@ -18,7 +22,11 @@ public class NegativeControlOutcomeCohortExpressionImpl implements NegativeContr
     return occurrenceType;
   }
 
-  public void setOccurrenceType(String occurrenceType) {
+    /**
+     *
+     * @param occurrenceType
+     */
+    public void setOccurrenceType(String occurrenceType) {
     this.occurrenceType = occurrenceType;
   }
 
@@ -31,11 +39,20 @@ public class NegativeControlOutcomeCohortExpressionImpl implements NegativeContr
     return detectOnDescendants;
   }
 
-  public void setDetectOnDescendants(Boolean detectOnDescendants) {
+    /**
+     *
+     * @param detectOnDescendants
+     */
+    public void setDetectOnDescendants(Boolean detectOnDescendants) {
     this.detectOnDescendants = detectOnDescendants;
   }
 
-  public NegativeControlOutcomeCohortExpressionImpl addDomainsItem(String domainsItem) {
+    /**
+     *
+     * @param domainsItem
+     * @return
+     */
+    public NegativeControlOutcomeCohortExpressionImpl addDomainsItem(String domainsItem) {
     if (this.domains == null) {
       this.domains = new ArrayList<>();
     }
@@ -52,7 +69,11 @@ public class NegativeControlOutcomeCohortExpressionImpl implements NegativeContr
     return domains;
   }
 
-  public void setDomains(List<String> domains) {
+    /**
+     *
+     * @param domains
+     */
+    public void setDomains(List<String> domains) {
     this.domains = domains;
   }
 }

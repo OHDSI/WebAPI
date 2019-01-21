@@ -1,8 +1,12 @@
-package org.ohdsi.webapi.estimation.specification;
+package org.ohdsi.webapi.estimation.comparativecohortanalysis.specification;
 
 import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.TrimByPsArgs;
 import org.ohdsi.webapi.RLangClassImpl;
 
+/**
+ *
+ * @author asena5
+ */
 public class TrimByPsArgsImpl extends RLangClassImpl implements TrimByPsArgs {
   private Float trimFraction = 0.05f;
 
@@ -15,7 +19,11 @@ public class TrimByPsArgsImpl extends RLangClassImpl implements TrimByPsArgs {
     return trimFraction;
   }
 
-  public void setTrimFraction(Float trimFraction) {
+    /**
+     *
+     * @param trimFraction
+     */
+    public void setTrimFraction(Float trimFraction) {
     this.trimFraction = trimFraction;
   }
 }

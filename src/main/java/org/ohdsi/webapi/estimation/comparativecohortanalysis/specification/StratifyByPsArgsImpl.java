@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.estimation.specification;
+package org.ohdsi.webapi.estimation.comparativecohortanalysis.specification;
 
 import org.ohdsi.webapi.RLangClassImpl;
 import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.BaseSelectionEnum;
@@ -7,6 +7,10 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.validation.constraints.*;
 
+/**
+ *
+ * @author asena5
+ */
 public class StratifyByPsArgsImpl extends RLangClassImpl implements StratifyByPsArgs {
   private Integer numberOfStrata = 5;
   private BaseSelectionEnum baseSelection = BaseSelectionEnum.ALL;
@@ -22,7 +26,11 @@ public class StratifyByPsArgsImpl extends RLangClassImpl implements StratifyByPs
     return numberOfStrata;
   }
 
-  public void setNumberOfStrata(Integer numberOfStrata) {
+    /**
+     *
+     * @param numberOfStrata
+     */
+    public void setNumberOfStrata(Integer numberOfStrata) {
     this.numberOfStrata = numberOfStrata;
   }
 
@@ -35,11 +43,20 @@ public class StratifyByPsArgsImpl extends RLangClassImpl implements StratifyByPs
     return baseSelection;
   }
 
-  public void setBaseSelection(BaseSelectionEnum baseSelection) {
+    /**
+     *
+     * @param baseSelection
+     */
+    public void setBaseSelection(BaseSelectionEnum baseSelection) {
     this.baseSelection = baseSelection;
   }
 
-  public StratifyByPsArgsImpl addStratificationColumnsItem(String stratificationColumnsItem) {
+    /**
+     *
+     * @param stratificationColumnsItem
+     * @return
+     */
+    public StratifyByPsArgsImpl addStratificationColumnsItem(String stratificationColumnsItem) {
     if (this.stratificationColumns == null) {
       this.stratificationColumns = new ArrayList<>();
     }
@@ -56,7 +73,11 @@ public class StratifyByPsArgsImpl extends RLangClassImpl implements StratifyByPs
     return stratificationColumns;
   }
 
-  public void setStratificationColumns(List<String> stratificationColumns) {
+    /**
+     *
+     * @param stratificationColumns
+     */
+    public void setStratificationColumns(List<String> stratificationColumns) {
     this.stratificationColumns = stratificationColumns;
   }
 }

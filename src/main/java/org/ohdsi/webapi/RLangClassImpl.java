@@ -3,10 +3,16 @@ package org.ohdsi.webapi;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.ohdsi.analysis.RLangClass;
 
-import java.io.Serializable;
+/**
+ *
+ * @author asena5
+ */
+public abstract class RLangClassImpl implements RLangClass {
 
-public abstract class RLangClassImpl implements RLangClass, Serializable {
-  protected String attrClass = "args";
+    /**
+     *
+     */
+    protected String attrClass = "args";
 
   /**
    * Get attrClass
@@ -17,7 +23,11 @@ public abstract class RLangClassImpl implements RLangClass, Serializable {
     return attrClass;
   }
 
-  public void setAttrClass(String attrClass) {
+    /**
+     *
+     * @param attrClass
+     */
+    public void setAttrClass(String attrClass) {
     this.attrClass = attrClass;
   }  
 }

@@ -8,6 +8,10 @@ import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.ExpressionType;
 
+/**
+ *
+ * @author asena5
+ */
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class EstimationCohortDefinition implements Cohort {
   String dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
@@ -40,7 +44,11 @@ public class EstimationCohortDefinition implements Cohort {
   @JsonProperty("modifiedDate")
   private String modifiedDate;
   
-  public EstimationCohortDefinition(CohortDefinition def) {
+    /**
+     *
+     * @param def
+     */
+    public EstimationCohortDefinition(CohortDefinition def) {
       this.dateFormatter = new SimpleDateFormat(this.dateFormat);
       this.id = def.getId();
       this.name = def.getName();
@@ -53,54 +61,100 @@ public class EstimationCohortDefinition implements Cohort {
       this.modifiedDate = def.getModifiedDate() != null ? this.dateFormatter.format(def.getModifiedDate()) : null;
   }
   
-  public EstimationCohortDefinition() {
+    /**
+     * Constructor
+     */
+    public EstimationCohortDefinition() {
   }
   
-  @Override
+    /**
+     *
+     * @return
+     */
+    @Override
   public Integer getId() {
     return id;
   }
 
-  public void setId(Integer id) {
+    /**
+     *
+     * @param id
+     */
+    public void setId(Integer id) {
     this.id = id;
   }
 
-  @Override
+    /**
+     *
+     * @return
+     */
+    @Override
   public String getName() {
     return name;
   }
 
-  public EstimationCohortDefinition setName(String name) {
+    /**
+     *
+     * @param name
+     * @return
+     */
+    public EstimationCohortDefinition setName(String name) {
     this.name = name;
     return this;
   }
 
-  @Override
+    /**
+     *
+     * @return
+     */
+    @Override
   public String getDescription() {
     return description;
   }
 
-  public EstimationCohortDefinition setDescription(String description) {
+    /**
+     *
+     * @param description
+     * @return
+     */
+    public EstimationCohortDefinition setDescription(String description) {
     this.description = description;
     return this;
   }
   
-  public ExpressionType getExpressionType() {
+    /**
+     *
+     * @return
+     */
+    public ExpressionType getExpressionType() {
     return expressionType;
   }
   
-  public EstimationCohortDefinition setExpressionType(ExpressionType expressionType) {
+    /**
+     *
+     * @param expressionType
+     * @return
+     */
+    public EstimationCohortDefinition setExpressionType(ExpressionType expressionType) {
     this.expressionType = expressionType;
     return this;
   }
   
-  
-  @Override
+    /**
+     *
+     * @return
+     */
+    @Override
   public CohortExpression getExpression() {
       return expression;
   }
   
-  public EstimationCohortDefinition setExpression(CohortExpression expression) {
+    /**
+     *
+     * @param expression
+     * @return
+     */
+    public EstimationCohortDefinition setExpression(CohortExpression expression) {
       this.expression = expression;
       return this;
   }

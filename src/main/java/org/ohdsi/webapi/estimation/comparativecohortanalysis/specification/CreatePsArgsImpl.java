@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.estimation.specification;
+package org.ohdsi.webapi.estimation.comparativecohortanalysis.specification;
 
 import org.ohdsi.webapi.RLangClassImpl;
 import java.util.List;
@@ -6,6 +6,10 @@ import org.ohdsi.webapi.cyclops.specification.ControlImpl;
 import org.ohdsi.webapi.cyclops.specification.PriorImpl;
 import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.CreatePsArgs;
 
+/**
+ *
+ * @author asena5
+ */
 public class CreatePsArgsImpl extends RLangClassImpl implements CreatePsArgs {
   private List<Integer> excludeCovariateIds = null;
   private List<Integer> includeCovariateIds = null;
@@ -24,7 +28,11 @@ public class CreatePsArgsImpl extends RLangClassImpl implements CreatePsArgs {
     return excludeCovariateIds;
   }
 
-  public void setExcludeCovariateIds(List<Integer> excludeCovariateIds) {
+    /**
+     *
+     * @param excludeCovariateIds
+     */
+    public void setExcludeCovariateIds(List<Integer> excludeCovariateIds) {
     this.excludeCovariateIds = excludeCovariateIds;
   }
 
@@ -37,7 +45,11 @@ public class CreatePsArgsImpl extends RLangClassImpl implements CreatePsArgs {
     return includeCovariateIds;
   }
 
-  public void setIncludeCovariateIds(List<Integer> includeCovariateIds) {
+    /**
+     *
+     * @param includeCovariateIds
+     */
+    public void setIncludeCovariateIds(List<Integer> includeCovariateIds) {
     this.includeCovariateIds = includeCovariateIds;
   }
 
@@ -50,7 +62,11 @@ public class CreatePsArgsImpl extends RLangClassImpl implements CreatePsArgs {
     return maxCohortSizeForFitting;
   }
 
-  public void setMaxCohortSizeForFitting(Integer maxCohortSizeForFitting) {
+    /**
+     *
+     * @param maxCohortSizeForFitting
+     */
+    public void setMaxCohortSizeForFitting(Integer maxCohortSizeForFitting) {
     this.maxCohortSizeForFitting = maxCohortSizeForFitting;
   }
 
@@ -63,7 +79,11 @@ public class CreatePsArgsImpl extends RLangClassImpl implements CreatePsArgs {
     return errorOnHighCorrelation;
   }
 
-  public void setErrorOnHighCorrelation(Boolean errorOnHighCorrelation) {
+    /**
+     *
+     * @param errorOnHighCorrelation
+     */
+    public void setErrorOnHighCorrelation(Boolean errorOnHighCorrelation) {
     this.errorOnHighCorrelation = errorOnHighCorrelation;
   }
 
@@ -76,7 +96,11 @@ public class CreatePsArgsImpl extends RLangClassImpl implements CreatePsArgs {
     return stopOnError;
   }
 
-  public void setStopOnError(Boolean stopOnError) {
+    /**
+     *
+     * @param stopOnError
+     */
+    public void setStopOnError(Boolean stopOnError) {
     this.stopOnError = stopOnError;
   }
 
@@ -89,7 +113,11 @@ public class CreatePsArgsImpl extends RLangClassImpl implements CreatePsArgs {
     return prior;
   }
 
-  public void setPrior(PriorImpl prior) {
+    /**
+     *
+     * @param prior
+     */
+    public void setPrior(PriorImpl prior) {
     this.prior = prior;
   }
 
@@ -102,11 +130,20 @@ public class CreatePsArgsImpl extends RLangClassImpl implements CreatePsArgs {
     return control;
   }
 
-  public void setControl(ControlImpl control) {
+    /**
+     *
+     * @param control
+     */
+    public void setControl(ControlImpl control) {
     this.control = control;
   }
 
-  public CreatePsArgsImpl attrClass(String attrClass) {
+    /**
+     *
+     * @param attrClass
+     * @return
+     */
+    public CreatePsArgsImpl attrClass(String attrClass) {
     this.attrClass = attrClass;
     return this;
   }

@@ -2,7 +2,11 @@ package org.ohdsi.webapi.prediction.specification;
 
 import org.ohdsi.analysis.prediction.design.KNNSettings;
 
-public class KNNSettingsImpl implements KNNSettings {
+/**
+ *
+ * @author asena5
+ */
+public class KNNSettingsImpl extends ModelSettingsImpl implements KNNSettings {
   private Integer k = 1000;
   
   /**
@@ -14,7 +18,11 @@ public class KNNSettingsImpl implements KNNSettings {
     return k;
   }
 
-  public void setK(Integer k) {
+    /**
+     *
+     * @param k
+     */
+    public void setK(Integer k) {
     this.k = k;
   }
 }

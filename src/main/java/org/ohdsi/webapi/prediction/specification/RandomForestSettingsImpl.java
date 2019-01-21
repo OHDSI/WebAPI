@@ -2,72 +2,143 @@ package org.ohdsi.webapi.prediction.specification;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.InputMismatchException;
 import java.util.List;
 import org.ohdsi.analysis.prediction.design.RandomForestSettings;
 
+/**
+ *
+ * @author asena5
+ */
 public class RandomForestSettingsImpl extends SeedSettingsImpl implements RandomForestSettings {
-  private Integer mtries = -1;
-  private Integer ntrees = 500;
-  private List<BigDecimal> maxDepth = null;
-  private Boolean varImp = true;
-  
-  /**
-   * The number of features to include in each tree (-1 defaults to square root of total features) 
-   * @return mtries
-   **/
-  @Override
-  public Integer getMtries() {
-    return mtries;
-  }
 
-  public void setMtries(Integer mtries) {
-    this.mtries = mtries;
-  }
+    private List<Integer> mtries = new ArrayList<>(Arrays.asList(-1));
+    private List<Integer> ntrees = new ArrayList<>(Arrays.asList(500));
+    private List<Integer> maxDepth = null;
+    private List<Boolean> varImp = new ArrayList<>(Arrays.asList(true));
 
-  /**
-   * The number of trees to build 
-   * @return ntrees
-   **/
-  @Override
-  public Integer getNtrees() {
-    return ntrees;
-  }
-
-  public void setNtrees(Integer ntrees) {
-    this.ntrees = ntrees;
-  }
-
-  public RandomForestSettingsImpl addMaxDepthItem(BigDecimal maxDepthItem) {
-    if (this.maxDepth == null) {
-      this.maxDepth = new ArrayList<>();
+    /**
+     * The number of features to include in each tree (-1 defaults to square
+     * root of total features)
+     *
+     * @return mtries
+   *
+     */
+    @Override
+    public List<Integer> getMtries() {
+        return mtries;
     }
-    this.maxDepth.add(maxDepthItem);
-    return this;
-  }
 
-  /**
-   * Maximum number of interactions - a large value will lead to slow model training 
-   * @return maxDepth
-   **/
-  @Override
-  public List<BigDecimal> getMaxDepth() {
-    return maxDepth;
-  }
+    /**
+     *
+     * @param mtries
+     */
+    public void setMtries(Object mtries) {
+        if (mtries != null) {
+            if (mtries instanceof ArrayList) {
+                this.mtries = (ArrayList<Integer>) mtries;
+            } else if (mtries instanceof Integer) {
+                this.mtries = new ArrayList<>(Arrays.asList((Integer) mtries));
+            } else {
+                throw new InputMismatchException("Expected ArrayList<Integer> or Integer");
+            }
+        } else {
+            this.mtries = null;
+        }        
+    }
 
-  public void setMaxDepth(List<BigDecimal> maxDepth) {
-    this.maxDepth = maxDepth;
-  }
+    /**
+     * The number of trees to build
+     *
+     * @return ntrees
+   *
+     */
+    @Override
+    public List<Integer> getNtrees() {
+        return ntrees;
+    }
 
-  /**
-   * Perform an initial variable selection prior to fitting the model to select the useful variables 
-   * @return varImp
-   **/
-  @Override
-  public Boolean getVarImp() {
-    return varImp;
-  }
+    /**
+     *
+     * @param ntrees
+     */
+    public void setNtrees(Object ntrees) {
+        if (ntrees != null) {
+            if (ntrees instanceof ArrayList) {
+                this.ntrees = (ArrayList<Integer>) ntrees;
+            } else if (ntrees instanceof Integer) {
+                this.ntrees = new ArrayList<>(Arrays.asList((Integer) ntrees));
+            } else {
+                throw new InputMismatchException("Expected ArrayList<Integer> or Integer");
+            }
+        } else {
+            this.ntrees = null;
+        }        
+    }
 
-  public void setVarImp(Boolean varImp) {
-    this.varImp = varImp;
-  }
+    /**
+     * Maximum number of interactions - a large value will lead to slow model
+     * training
+     *
+     * @return maxDepth
+   *
+     */
+    @Override
+    public List<Integer> getMaxDepth() {
+        return maxDepth;
+    }
+
+    /**
+     *
+     * @param maxDepth
+     */
+    public void setMaxDepth(List<Object> maxDepth) {
+        if (maxDepth != null) {
+            if (this.maxDepth == null)
+                this.maxDepth = new ArrayList<>();
+            
+            maxDepth.forEach((o) -> {
+                if (o instanceof BigDecimal) {
+                    this.maxDepth.add(((BigDecimal) o).intValue());
+                } else if (o instanceof Integer) {
+                    this.maxDepth.add((Integer) o);
+                } else {
+                    throw new InputMismatchException("Expected ArrayList<Integer> or ArrayList<BigDecimal>");
+                }
+            });
+        } else {
+            this.maxDepth = null;
+        }
+    }
+
+    /**
+     * Perform an initial variable selection prior to fitting the model to
+     * select the useful variables
+     *
+     * @return varImp
+   *
+     */
+    @Override
+    public List<Boolean> getVarImp() {
+        return varImp;
+    }
+
+    /**
+     *
+     * @param varImp
+     */
+    public void setVarImp(Object varImp) {
+        if (varImp != null) {
+            if (varImp instanceof ArrayList) {
+                this.varImp = (ArrayList<Boolean>) varImp;
+            } else if (varImp instanceof Boolean) {
+                this.varImp = new ArrayList<>(Arrays.asList((Boolean) varImp));
+            } else {
+                throw new InputMismatchException("Expected ArrayList<Boolean> or Boolean");
+            }
+        } else {
+            this.varImp = null;
+        }        
+    }
 }

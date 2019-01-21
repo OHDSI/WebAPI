@@ -1,15 +1,16 @@
 package org.ohdsi.webapi.service;
 
+import org.ohdsi.webapi.estimation.comparativecohortanalysis.specification.TargetComparatorOutcomesImpl;
+import org.ohdsi.webapi.estimation.comparativecohortanalysis.specification.ComparativeCohortAnalysisImpl;
+import org.ohdsi.webapi.estimation.comparativecohortanalysis.specification.CohortMethodAnalysisImpl;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import javax.persistence.EntityManager;
@@ -29,6 +30,7 @@ import javax.ws.rs.core.Response;
 
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.estimation.design.NegativeControlTypeEnum;
+import org.ohdsi.analysis.estimation.design.Settings;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression.ConceptSetItem;
 import org.ohdsi.hydra.Hydra;
@@ -41,6 +43,7 @@ import org.ohdsi.webapi.estimation.EstimationRepository;
 import org.ohdsi.webapi.estimation.dto.EstimationDTO;
 import org.ohdsi.webapi.estimation.specification.*;
 import org.ohdsi.webapi.estimation.specification.EstimationAnalysisImpl;
+import org.ohdsi.webapi.featureextraction.specification.CovariateSettingsImpl;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
@@ -49,9 +52,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+/**
+ *
+ * @author asena5
+ */
+@RestController
 @Path("/estimation/")
 public class EstimationService extends AbstractDaoService {
     
@@ -59,10 +66,15 @@ public class EstimationService extends AbstractDaoService {
     private static final String CONCEPT_SET_XREF_KEY_NEGATIVE_CONTROL_OUTCOMES = "negativeControlOutcomes";
     private static final String CONCEPT_SET_XREF_KEY_COHORT_METHOD_COVAR = "estimationAnalysisSettings.analysisSpecification.cohortMethodAnalysisList.getDbCohortMethodDataArgs.covariateSettings";
     private static final String CONCEPT_SET_XREF_KEY_POS_CONTROL_COVAR = "positiveControlSynthesisArgs.covariateSettings";
+    private static final String CONCEPT_SET_XREF_KEY_INCLUDED_COVARIATE_CONCEPT_IDS = "includedCovariateConceptIds";
+    private static final String CONCEPT_SET_XREF_KEY_EXCLUDED_COVARIATE_CONCEPT_IDS = "excludedCovariateConceptIds";
     
     @Autowired
     private Security security;
     
+    /**
+     *
+     */
     @PersistenceContext
     protected EntityManager entityManager;
     
@@ -90,6 +102,10 @@ public class EstimationService extends AbstractDaoService {
     @Value("${organization.name}")
     private String organizationName;
     
+    /**
+     *
+     * @return
+     */
     @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
@@ -110,6 +126,10 @@ public class EstimationService extends AbstractDaoService {
             }).collect(Collectors.toList()));        
     }
     
+    /**
+     *
+     * @param id
+     */
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}")
@@ -117,6 +137,11 @@ public class EstimationService extends AbstractDaoService {
         this.estimationRepository.delete(id);
     }
     
+    /**
+     *
+     * @param est
+     * @return
+     */
     @POST
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
@@ -135,6 +160,12 @@ public class EstimationService extends AbstractDaoService {
         });
     }
 
+    /**
+     *
+     * @param id
+     * @param est
+     * @return
+     */
     @PUT
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -157,6 +188,11 @@ public class EstimationService extends AbstractDaoService {
         });
     }
     
+    /**
+     *
+     * @param id
+     * @return
+     */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/copy")
@@ -169,6 +205,11 @@ public class EstimationService extends AbstractDaoService {
             return this.createEstimation(est);
     }
     
+    /**
+     *
+     * @param id
+     * @return
+     */
     @GET
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -179,6 +220,11 @@ public class EstimationService extends AbstractDaoService {
         });
     }
     
+    /**
+     *
+     * @param id
+     * @return
+     */
     @GET
     @Path("{id}/export")
     @Produces(MediaType.APPLICATION_JSON)
@@ -198,7 +244,7 @@ public class EstimationService extends AbstractDaoService {
         expression.setOrganizationName(this.organizationName);
         
         // Retrieve the cohort definition details
-        ArrayList<EstimationCohortDefinition> detailedList = new ArrayList<>();
+        List<EstimationCohortDefinition> detailedList = new ArrayList<>();
         for (EstimationCohortDefinition c : expression.getCohortDefinitions()) {
             CohortDefinition cd = cohortDefinitionRepository.findOneWithDetail(c.getId());
             detailedList.add(new EstimationCohortDefinition(cd));
@@ -206,9 +252,9 @@ public class EstimationService extends AbstractDaoService {
         expression.setCohortDefinitions(detailedList);
         
         // Retrieve the concept set expressions
-        ArrayList<EstimationConceptSet> ecsList = new ArrayList<>();
-        HashMap<Integer, ArrayList<Long>> conceptIdentifiers = new HashMap<>();
-        HashMap<Integer, ConceptSetExpression> csExpressionList = new HashMap<>();
+        List<EstimationConceptSet> ecsList = new ArrayList<>();
+        Map<Integer, List<Long>> conceptIdentifiers = new HashMap<>();
+        Map<Integer, ConceptSetExpression> csExpressionList = new HashMap<>();
         for (EstimationConceptSet pcs : expression.getConceptSets()) {
             pcs.expression = conceptSetService.getConceptSetExpression(pcs.id);
             csExpressionList.put(pcs.id, pcs.expression);
@@ -222,34 +268,45 @@ public class EstimationService extends AbstractDaoService {
             // TODO: Make this conditional on the expression.getEstimationAnalysisSettings().getEstimationType() vs
             // hard coded to always use a comparative cohort analysis once we have implemented the other
             // estimation types
-            ArrayList<LinkedHashMap> tcoList = (ArrayList<LinkedHashMap>) ((LinkedHashMap) expression.getEstimationAnalysisSettings().getAnalysisSpecification()).get("targetComparatorOutcomes");
-            ArrayList<LinkedHashMap> ccaList = (ArrayList<LinkedHashMap>) ((LinkedHashMap) expression.getEstimationAnalysisSettings().getAnalysisSpecification()).get("cohortMethodAnalysisList");
+            Settings settings = expression.getEstimationAnalysisSettings().getAnalysisSpecification();
+            ComparativeCohortAnalysisImpl ccaSpec = (ComparativeCohortAnalysisImpl) settings;
+            List<TargetComparatorOutcomesImpl> tcoList = ccaSpec.getTargetComparatorOutcomes(); 
+            List<CohortMethodAnalysisImpl> ccaList = ccaSpec.getCohortMethodAnalysisList();
             
             if (xref.getTargetName().equalsIgnoreCase(CONCEPT_SET_XREF_KEY_TARGET_COMPARATOR_OUTCOME)) {
-                LinkedHashMap tco = tcoList.get(xref.getTargetIndex());
-                tco.put(xref.getPropertyName(), conceptIdentifiers.get(xref.getConceptSetId()));
+                TargetComparatorOutcomesImpl tco = tcoList.get(xref.getTargetIndex());
+                List<Long> conceptIds = conceptIdentifiers.get(xref.getConceptSetId());
+                if (xref.getPropertyName().equalsIgnoreCase(CONCEPT_SET_XREF_KEY_INCLUDED_COVARIATE_CONCEPT_IDS)) {
+                    tco.setIncludedCovariateConceptIds(conceptIds);
+                } else if (xref.getPropertyName().equalsIgnoreCase(CONCEPT_SET_XREF_KEY_EXCLUDED_COVARIATE_CONCEPT_IDS)) {
+                    tco.setExcludedCovariateConceptIds(conceptIds);
+                }
             } else if (xref.getTargetName().equalsIgnoreCase(CONCEPT_SET_XREF_KEY_NEGATIVE_CONTROL_OUTCOMES)) {
                 // Fill in the negative controls for each T/C pair as specified
-                LinkedHashMap tco = tcoList.get(xref.getTargetIndex());
+                TargetComparatorOutcomesImpl tco = tcoList.get(xref.getTargetIndex());
                 ConceptSetExpression e = csExpressionList.get(xref.getConceptSetId());
                 for(ConceptSetItem csi : e.items) {
                     NegativeControlImpl nc = new NegativeControlImpl();
-                    nc.setTargetId(Long.valueOf((int) tco.get("targetId")));
-                    nc.setComparatorId(Long.valueOf((int) tco.get("comparatorId")));
+                    nc.setTargetId(tco.getTargetId());
+                    nc.setComparatorId(tco.getComparatorId());
                     nc.setOutcomeId(csi.concept.conceptId);
                     nc.setOutcomeName(csi.concept.conceptName);
                     nc.setType(NegativeControlTypeEnum.OUTCOME);
                     expression.addNegativeControlsItem(nc);
                 }
             } else if (xref.getTargetName().equalsIgnoreCase(CONCEPT_SET_XREF_KEY_COHORT_METHOD_COVAR)) {
-                LinkedHashMap cca = ccaList.get(xref.getTargetIndex());
-                LinkedHashMap dbCohortMethod = (LinkedHashMap) cca.get("getDbCohortMethodDataArgs");
-                LinkedHashMap dbCohortMethodCovarSettings = (LinkedHashMap) dbCohortMethod.get("covariateSettings");
-                dbCohortMethodCovarSettings.put(xref.getPropertyName(), conceptIdentifiers.get(xref.getConceptSetId()));
+                CohortMethodAnalysisImpl cca = ccaList.get(xref.getTargetIndex());
+                CovariateSettingsImpl dbCohortMethodCovarSettings = cca.getDbCohortMethodDataArgs().getCovariateSettings();
+                List<Long> conceptIds = conceptIdentifiers.get(xref.getConceptSetId());
+                if (xref.getPropertyName().equalsIgnoreCase(CONCEPT_SET_XREF_KEY_INCLUDED_COVARIATE_CONCEPT_IDS)) {
+                    dbCohortMethodCovarSettings.setIncludedCovariateConceptIds(conceptIds);
+                } else if (xref.getPropertyName().equalsIgnoreCase(CONCEPT_SET_XREF_KEY_EXCLUDED_COVARIATE_CONCEPT_IDS)) {
+                    dbCohortMethodCovarSettings.setExcludedCovariateConceptIds(conceptIds);
+                }
             } else if (xref.getTargetName().equalsIgnoreCase(CONCEPT_SET_XREF_KEY_POS_CONTROL_COVAR)) {
-                if (xref.getPropertyName().equalsIgnoreCase("includedCovariateConceptIds")) {
+                if (xref.getPropertyName().equalsIgnoreCase(CONCEPT_SET_XREF_KEY_INCLUDED_COVARIATE_CONCEPT_IDS)) {
                     expression.getPositiveControlSynthesisArgs().getCovariateSettings().setIncludedCovariateConceptIds(conceptIdentifiers.get(xref.getConceptSetId()));
-                } else if (xref.getPropertyName().equalsIgnoreCase("excludedCovariateConceptIds")) {
+                } else if (xref.getPropertyName().equalsIgnoreCase(CONCEPT_SET_XREF_KEY_EXCLUDED_COVARIATE_CONCEPT_IDS)) {
                     expression.getPositiveControlSynthesisArgs().getCovariateSettings().setExcludedCovariateConceptIds(conceptIdentifiers.get(xref.getConceptSetId()));
                 }
             }
@@ -258,7 +315,13 @@ public class EstimationService extends AbstractDaoService {
         return expression;
     }
     
-    
+    /**
+     *
+     * @param id
+     * @param packageName
+     * @return
+     * @throws IOException
+     */
     @GET
     @Path("{id}/download")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -273,11 +336,12 @@ public class EstimationService extends AbstractDaoService {
         
         EstimationAnalysisImpl analysis = this.exportAnalysis(id);
         analysis.setPackageName(packageName);
-        String studySpecs = Utils.serialize(analysis);
+        String studySpecs = Utils.serialize(analysis, true);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         
         Hydra h = new Hydra(studySpecs);
         h.hydrate(baos);
+
         
         Response response = Response
                 .ok(baos)

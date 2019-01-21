@@ -1,16 +1,20 @@
-package org.ohdsi.webapi.estimation.specification;
+package org.ohdsi.webapi.estimation.comparativecohortanalysis.specification;
 
 import org.ohdsi.webapi.RLangClassImpl;
 import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.CaliperScaleEnum;
-import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.MatchOnPsArgs;
+import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.MatchOnPsAndCovariatesArgs;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MatchOnPsArgsImpl extends RLangClassImpl implements MatchOnPsArgs {
+/**
+ *
+ * @author asena5
+ */
+public class MatchOnPsAndCovariatesArgsImpl extends RLangClassImpl implements MatchOnPsAndCovariatesArgs {
   private Float caliper = 0.2f;
   private CaliperScaleEnum caliperScale = CaliperScaleEnum.STANDARDIZED_LOGIT;
   private Integer maxRatio = 1;
-  private List<String> stratificationColumns = null;
+  private List<Integer> covariateIds = null;
 
   /**
    * The caliper for matching. A caliper is the distance which is acceptable for any match. Observations which are outside of the caliper are dropped. A caliper of 0 means no caliper is used. 
@@ -21,7 +25,11 @@ public class MatchOnPsArgsImpl extends RLangClassImpl implements MatchOnPsArgs {
     return caliper;
   }
 
-  public void setCaliper(Float caliper) {
+    /**
+     *
+     * @param caliper
+     */
+    public void setCaliper(Float caliper) {
     this.caliper = caliper;
   }
 
@@ -34,7 +42,11 @@ public class MatchOnPsArgsImpl extends RLangClassImpl implements MatchOnPsArgs {
     return caliperScale;
   }
 
-  public void setCaliperScale(CaliperScaleEnum caliperScale) {
+    /**
+     *
+     * @param caliperScale
+     */
+    public void setCaliperScale(CaliperScaleEnum caliperScale) {
     this.caliperScale = caliperScale;
   }
 
@@ -47,28 +59,41 @@ public class MatchOnPsArgsImpl extends RLangClassImpl implements MatchOnPsArgs {
     return maxRatio;
   }
 
-  public void setMaxRatio(Integer maxRatio) {
+    /**
+     *
+     * @param maxRatio
+     */
+    public void setMaxRatio(Integer maxRatio) {
     this.maxRatio = maxRatio;
   }
 
-  public MatchOnPsArgsImpl addStratificationColumnsItem(String stratificationColumnsItem) {
-    if (this.stratificationColumns == null) {
-      this.stratificationColumns = new ArrayList<>();
+    /**
+     *
+     * @param covariateIdsItem
+     * @return
+     */
+    public MatchOnPsAndCovariatesArgsImpl addCovariateIdsItem(Integer covariateIdsItem) {
+    if (this.covariateIds == null) {
+      this.covariateIds = new ArrayList<>();
     }
-    this.stratificationColumns.add(stratificationColumnsItem);
+    this.covariateIds.add(covariateIdsItem);
     return this;
   }
 
   /**
-   * Names or numbers of one or more columns in the data data.frame on which subjects should be stratified prior to matching. No personswill be matched with persons outside of the strata identified by thevalues in these columns. 
-   * @return stratificationColumns
+   * One or more covariate IDs in the cohortMethodData object on which subjects should be also matched. 
+   * @return covariateIds
    **/
   @Override
-  public List<String> getStratificationColumns() {
-    return stratificationColumns;
+  public List<Integer> getCovariateIds() {
+    return covariateIds;
   }
 
-  public void setStratificationColumns(List<String> stratificationColumns) {
-    this.stratificationColumns = stratificationColumns;
+    /**
+     *
+     * @param covariateIds
+     */
+    public void setCovariateIds(List<Integer> covariateIds) {
+    this.covariateIds = covariateIds;
   }
 }

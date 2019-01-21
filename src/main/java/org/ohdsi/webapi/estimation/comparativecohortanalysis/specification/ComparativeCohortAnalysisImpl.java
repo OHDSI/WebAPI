@@ -1,14 +1,23 @@
-package org.ohdsi.webapi.estimation.specification;
+package org.ohdsi.webapi.estimation.comparativecohortanalysis.specification;
 
 import java.util.ArrayList;
 import java.util.List;
 import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.ComparativeCohortAnalysis;
 
-public class ComparativeCohortAnalysisImpl implements ComparativeCohortAnalysis {
+/**
+ *
+ * @author asena5
+ */
+public class ComparativeCohortAnalysisImpl implements ComparativeCohortAnalysis  {
   private List<TargetComparatorOutcomesImpl> targetComparatorOutcomes = null;
   private List<CohortMethodAnalysisImpl> cohortMethodAnalysisList = null;
 
-  public ComparativeCohortAnalysisImpl addTargetComparatorOutcomesItem(TargetComparatorOutcomesImpl targetComparatorOutcomesItem) {
+    /**
+     *
+     * @param targetComparatorOutcomesItem
+     * @return
+     */
+    public ComparativeCohortAnalysisImpl addTargetComparatorOutcomesItem(TargetComparatorOutcomesImpl targetComparatorOutcomesItem) {
     if (this.targetComparatorOutcomes == null) {
       this.targetComparatorOutcomes = new ArrayList<>();
     }
@@ -25,11 +34,20 @@ public class ComparativeCohortAnalysisImpl implements ComparativeCohortAnalysis 
     return targetComparatorOutcomes;
   }
 
-  public void setTargetComparatorOutcomes(List<TargetComparatorOutcomesImpl> targetComparatorOutcomes) {
+    /**
+     *
+     * @param targetComparatorOutcomes
+     */
+    public void setTargetComparatorOutcomes(List<TargetComparatorOutcomesImpl> targetComparatorOutcomes) {
     this.targetComparatorOutcomes = targetComparatorOutcomes;
   }
 
-  public ComparativeCohortAnalysisImpl addCohortMethodAnalysisListItem(CohortMethodAnalysisImpl cohortMethodAnalysisListItem) {
+    /**
+     *
+     * @param cohortMethodAnalysisListItem
+     * @return
+     */
+    public ComparativeCohortAnalysisImpl addCohortMethodAnalysisListItem(CohortMethodAnalysisImpl cohortMethodAnalysisListItem) {
     if (this.cohortMethodAnalysisList == null) {
       this.cohortMethodAnalysisList = new ArrayList<>();
     }
@@ -46,7 +64,11 @@ public class ComparativeCohortAnalysisImpl implements ComparativeCohortAnalysis 
     return cohortMethodAnalysisList;
   }
 
-  public void setCohortMethodAnalysisList(List<CohortMethodAnalysisImpl> cohortMethodAnalysisList) {
+    /**
+     *
+     * @param cohortMethodAnalysisList
+     */
+    public void setCohortMethodAnalysisList(List<CohortMethodAnalysisImpl> cohortMethodAnalysisList) {
     this.cohortMethodAnalysisList = cohortMethodAnalysisList;
   }
 }

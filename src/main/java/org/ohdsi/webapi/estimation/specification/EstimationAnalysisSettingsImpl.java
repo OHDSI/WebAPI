@@ -1,35 +1,35 @@
 package org.ohdsi.webapi.estimation.specification;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import org.ohdsi.analysis.estimation.design.EstimationAnalysisConst;
 import org.ohdsi.analysis.estimation.design.EstimationTypeEnum;
 import org.ohdsi.analysis.estimation.design.EstimationAnalysisSettings;
+import org.ohdsi.analysis.estimation.design.Settings;
+import org.ohdsi.webapi.estimation.comparativecohortanalysis.specification.ComparativeCohortAnalysisSettings;
 
-public class EstimationAnalysisSettingsImpl implements EstimationAnalysisSettings {
-  private EstimationTypeEnum estimationType = EstimationTypeEnum.COMPARATIVE_COHORT_ANALYSIS;
-  private Object analysisSpecification = null;
+/**
+ *
+ * @author asena5
+ */
+@JsonSubTypes({
+  @JsonSubTypes.Type(value = ComparativeCohortAnalysisSettings.class, name = EstimationAnalysisConst.COMPARATIVE_COHORT_ANALYSIS)
+})
+@JsonIgnoreProperties({"estimationType"})
+public abstract class EstimationAnalysisSettingsImpl implements EstimationAnalysisSettings {
 
-  /**
-   * The type of estimation analysis to execute 
-   * @return estimationType
-   **/
-  @Override
-  public EstimationTypeEnum getEstimationType() {
-    return estimationType;
-  }
-
-  public void setEstimationType(EstimationTypeEnum estimationType) {
-    this.estimationType = estimationType;
-  }
-
-  /**
-   * Get analysisSpecification
-   * @return analysisSpecification
-   **/
-  @Override
-  public Object getAnalysisSpecification() {
-    return analysisSpecification;
-  }
-
-  public void setAnalysisSpecification(Object analysisSpecification) {
-    this.analysisSpecification = analysisSpecification;
-  }
+    /**
+     *
+     * @return
+     */
+    @Override
+  public abstract EstimationTypeEnum getEstimationType();
+  
+    /**
+     *
+     * @return
+     */
+    @Override
+  public abstract Settings getAnalysisSpecification();
 }
+

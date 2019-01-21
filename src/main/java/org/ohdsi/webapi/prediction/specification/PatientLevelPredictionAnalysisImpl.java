@@ -5,10 +5,14 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import org.ohdsi.analysis.prediction.design.PatientLevelPredictionAnalysis;
-import org.ohdsi.analysis.prediction.design.SkeletonTypeEnum;
+import org.ohdsi.analysis.hydra.design.SkeletonTypeEnum;
 import org.ohdsi.webapi.conceptset.ConceptSetCrossReferenceImpl;
 import org.ohdsi.webapi.featureextraction.specification.CovariateSettingsImpl;
 
+/**
+ *
+ * @author asena5
+ */
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictionAnalysis {
   private Integer id = null;
@@ -17,7 +21,7 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
   private String version = null;
   private String organizationName = null;
   private String packageName = null;
-  private SkeletonTypeEnum skeletonType = SkeletonTypeEnum.PATIENTLEVELPREDICTIONSTUDY;
+  private SkeletonTypeEnum skeletonType = SkeletonTypeEnum.PATIENT_LEVEL_PREDICTION_STUDY;
   private String skeletonVersion = "v0.0.1";
   private String createdBy = null;
   private String createdDate = null;
@@ -30,7 +34,7 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
   private List<BigDecimal> outcomeIds = null;
   private List<CovariateSettingsImpl> covariateSettings = null;
   private List<CreateStudyPopulationArgsImpl> populationSettings = null;
-  private List<Object> modelSettings = null;
+  private List<ModelSettingsImpl> modelSettings = null;
   private GetDbPLPDataArgsImpl getPlpDataArgs = null;
   private RunPlpArgsImpl runPlpArgs = null;
 
@@ -43,7 +47,11 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
     return id;
   }
 
-  public void setId(Integer id) {
+    /**
+     *
+     * @param id
+     */
+    public void setId(Integer id) {
     this.id = id;
   }
 
@@ -56,7 +64,11 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
     return name;
   }
 
-  public void setName(String name) {
+    /**
+     *
+     * @param name
+     */
+    public void setName(String name) {
     this.name = name;
   }
 
@@ -69,7 +81,11 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
     return description;
   }
 
-  public void setDescription(String description) {
+    /**
+     *
+     * @param description
+     */
+    public void setDescription(String description) {
     this.description = description;
   }
 
@@ -82,7 +98,11 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
     return version;
   }
 
-  public void setVersion(String version) {
+    /**
+     *
+     * @param version
+     */
+    public void setVersion(String version) {
     this.version = version;
   }
 
@@ -95,7 +115,11 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
     return organizationName;
   }
 
-  public void setOrganizationName(String organizationName) {
+    /**
+     *
+     * @param organizationName
+     */
+    public void setOrganizationName(String organizationName) {
     this.organizationName = organizationName;
   }
 
@@ -108,7 +132,11 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
     return packageName;
   }
 
-  public void setPackageName(String packageName) {
+    /**
+     *
+     * @param packageName
+     */
+    public void setPackageName(String packageName) {
     this.packageName = packageName;
   }
 
@@ -121,7 +149,11 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
     return skeletonType;
   }
 
-  public void setSkeletonType(SkeletonTypeEnum skeletonType) {
+    /**
+     *
+     * @param skeletonType
+     */
+    public void setSkeletonType(SkeletonTypeEnum skeletonType) {
     this.skeletonType = skeletonType;
   }
 
@@ -134,7 +166,11 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
     return skeletonVersion;
   }
 
-  public void setSkeletonVersion(String skeletonVersion) {
+    /**
+     *
+     * @param skeletonVersion
+     */
+    public void setSkeletonVersion(String skeletonVersion) {
     this.skeletonVersion = skeletonVersion;
   }
 
@@ -147,7 +183,11 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
     return createdBy;
   }
 
-  public void setCreatedBy(String createdBy) {
+    /**
+     *
+     * @param createdBy
+     */
+    public void setCreatedBy(String createdBy) {
     this.createdBy = createdBy;
   }
 
@@ -160,7 +200,11 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
     return createdDate;
   }
 
-  public void setCreatedDate(String createdDate) {
+    /**
+     *
+     * @param createdDate
+     */
+    public void setCreatedDate(String createdDate) {
     this.createdDate = createdDate;
   }
 
@@ -173,7 +217,11 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
     return modifiedBy;
   }
 
-  public void setModifiedBy(String modifiedBy) {
+    /**
+     *
+     * @param modifiedBy
+     */
+    public void setModifiedBy(String modifiedBy) {
     this.modifiedBy = modifiedBy;
   }
 
@@ -186,11 +234,20 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
     return modifiedDate;
   }
 
-  public void setModifiedDate(String modifiedDate) {
+    /**
+     *
+     * @param modifiedDate
+     */
+    public void setModifiedDate(String modifiedDate) {
     this.modifiedDate = modifiedDate;
   }
   
-  public PatientLevelPredictionAnalysisImpl addCohortDefinitionsItem(PredictionCohortDefinition cohortDefinitionsItem) {
+    /**
+     *
+     * @param cohortDefinitionsItem
+     * @return
+     */
+    public PatientLevelPredictionAnalysisImpl addCohortDefinitionsItem(PredictionCohortDefinition cohortDefinitionsItem) {
     if (this.cohortDefinitions == null) {
       this.cohortDefinitions = new ArrayList<>();
     }
@@ -207,11 +264,20 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
     return cohortDefinitions;
   }
 
-  public void setCohortDefinitions(List<PredictionCohortDefinition> cohortDefinitions) {
+    /**
+     *
+     * @param cohortDefinitions
+     */
+    public void setCohortDefinitions(List<PredictionCohortDefinition> cohortDefinitions) {
     this.cohortDefinitions = cohortDefinitions;
   }
   
-  public PatientLevelPredictionAnalysisImpl addConceptSetsItem(PredictionConceptSet conceptSetsItem) {
+    /**
+     *
+     * @param conceptSetsItem
+     * @return
+     */
+    public PatientLevelPredictionAnalysisImpl addConceptSetsItem(PredictionConceptSet conceptSetsItem) {
     if (this.conceptSets == null) {
       this.conceptSets = new ArrayList<>();
     }
@@ -228,7 +294,11 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
     return conceptSets;
   }
 
-  public void setConceptSets(List<PredictionConceptSet> conceptSets) {
+    /**
+     *
+     * @param conceptSets
+     */
+    public void setConceptSets(List<PredictionConceptSet> conceptSets) {
     this.conceptSets = conceptSets;
   }
   
@@ -241,11 +311,20 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
     return conceptSetCrossReference;
   }
 
-  public void setConceptSetCrossReference(List<ConceptSetCrossReferenceImpl> conceptSetCrossReference) {
+    /**
+     *
+     * @param conceptSetCrossReference
+     */
+    public void setConceptSetCrossReference(List<ConceptSetCrossReferenceImpl> conceptSetCrossReference) {
     this.conceptSetCrossReference = conceptSetCrossReference;
   }
 
-  public PatientLevelPredictionAnalysisImpl addTargetIdsItem(BigDecimal targetIdsItem) {
+    /**
+     *
+     * @param targetIdsItem
+     * @return
+     */
+    public PatientLevelPredictionAnalysisImpl addTargetIdsItem(BigDecimal targetIdsItem) {
     if (this.targetIds == null) {
       this.targetIds = new ArrayList<>();
     }
@@ -262,12 +341,20 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
     return targetIds;
   }
 
-  public void setTargetIds(List<BigDecimal> targetIds) {
+    /**
+     *
+     * @param targetIds
+     */
+    public void setTargetIds(List<BigDecimal> targetIds) {
     this.targetIds = targetIds;
   }
 
-
-  public PatientLevelPredictionAnalysisImpl addOutcomeIdsItem(BigDecimal outcomeIdsItem) {
+    /**
+     *
+     * @param outcomeIdsItem
+     * @return
+     */
+    public PatientLevelPredictionAnalysisImpl addOutcomeIdsItem(BigDecimal outcomeIdsItem) {
     if (this.outcomeIds == null) {
       this.outcomeIds = new ArrayList<>();
     }
@@ -284,11 +371,20 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
     return outcomeIds;
   }
 
-  public void setOutcomeIds(List<BigDecimal> outcomeIds) {
+    /**
+     *
+     * @param outcomeIds
+     */
+    public void setOutcomeIds(List<BigDecimal> outcomeIds) {
     this.outcomeIds = outcomeIds;
   }
 
-  public PatientLevelPredictionAnalysisImpl addCovariateSettingsItem(CovariateSettingsImpl covariateSettingsItem) {
+    /**
+     *
+     * @param covariateSettingsItem
+     * @return
+     */
+    public PatientLevelPredictionAnalysisImpl addCovariateSettingsItem(CovariateSettingsImpl covariateSettingsItem) {
     if (this.covariateSettings == null) {
       this.covariateSettings = new ArrayList<>();
     }
@@ -305,11 +401,20 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
     return covariateSettings;
   }
 
-  public void setCovariateSettings(List<CovariateSettingsImpl> covariateSettings) {
+    /**
+     *
+     * @param covariateSettings
+     */
+    public void setCovariateSettings(List<CovariateSettingsImpl> covariateSettings) {
     this.covariateSettings = covariateSettings;
   }
 
-  public PatientLevelPredictionAnalysisImpl addPopulationSettingsItem(CreateStudyPopulationArgsImpl populationSettingsItem) {
+    /**
+     *
+     * @param populationSettingsItem
+     * @return
+     */
+    public PatientLevelPredictionAnalysisImpl addPopulationSettingsItem(CreateStudyPopulationArgsImpl populationSettingsItem) {
     if (this.populationSettings == null) {
       this.populationSettings = new ArrayList<>();
     }
@@ -326,11 +431,20 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
     return populationSettings;
   }
 
-  public void setPopulationSettings(List<CreateStudyPopulationArgsImpl> populationSettings) {
+    /**
+     *
+     * @param populationSettings
+     */
+    public void setPopulationSettings(List<CreateStudyPopulationArgsImpl> populationSettings) {
     this.populationSettings = populationSettings;
   }
 
-  public PatientLevelPredictionAnalysisImpl addModelSettingsItem(Object modelSettingsItem) {
+    /**
+     *
+     * @param modelSettingsItem
+     * @return
+     */
+    public PatientLevelPredictionAnalysisImpl addModelSettingsItem(ModelSettingsImpl modelSettingsItem) {
     if (this.modelSettings == null) {
       this.modelSettings = new ArrayList<>();
     }
@@ -343,11 +457,15 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
    * @return modelSettings
    **/
   @Override
-  public List<Object> getModelSettings() {
+  public List<ModelSettingsImpl> getModelSettings() {
     return modelSettings;
   }
 
-  public void setModelSettings(List<Object> modelSettings) {
+    /**
+     *
+     * @param modelSettings
+     */
+    public void setModelSettings(List<ModelSettingsImpl> modelSettings) {
     this.modelSettings = modelSettings;
   }
 
@@ -356,11 +474,15 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
    * @return getPlpDataArgs
    **/
   @Override
-  public GetDbPLPDataArgsImpl getGetPlpDataArgs() {
+  public GetDbPLPDataArgsImpl getPlpDataArgs() {
     return getPlpDataArgs;
   }
 
-  public void setGetPlpDataArgs(GetDbPLPDataArgsImpl getPlpDataArgs) {
+    /**
+     *
+     * @param getPlpDataArgs
+     */
+    public void setGetPlpDataArgs(GetDbPLPDataArgsImpl getPlpDataArgs) {
     this.getPlpDataArgs = getPlpDataArgs;
   }
 
@@ -373,7 +495,11 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
     return runPlpArgs;
   }
 
-  public void setRunPlpArgs(RunPlpArgsImpl runPlpArgs) {
+    /**
+     *
+     * @param runPlpArgs
+     */
+    public void setRunPlpArgs(RunPlpArgsImpl runPlpArgs) {
     this.runPlpArgs = runPlpArgs;
   }
 }

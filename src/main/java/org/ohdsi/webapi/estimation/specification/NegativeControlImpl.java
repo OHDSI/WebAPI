@@ -3,6 +3,10 @@ package org.ohdsi.webapi.estimation.specification;
 import org.ohdsi.analysis.estimation.design.NegativeControl;
 import org.ohdsi.analysis.estimation.design.NegativeControlTypeEnum;
 
+/**
+ *
+ * @author asena5
+ */
 public class NegativeControlImpl implements NegativeControl {
   private Long targetId = null;
   private Long comparatorId = null;
@@ -19,7 +23,11 @@ public class NegativeControlImpl implements NegativeControl {
     return targetId;
   }
 
-  public void setTargetId(Long targetId) {
+    /**
+     *
+     * @param targetId
+     */
+    public void setTargetId(Long targetId) {
     this.targetId = targetId;
   }
 
@@ -32,7 +40,11 @@ public class NegativeControlImpl implements NegativeControl {
     return comparatorId;
   }
 
-  public void setComparatorId(Long comparatorId) {
+    /**
+     *
+     * @param comparatorId
+     */
+    public void setComparatorId(Long comparatorId) {
     this.comparatorId = comparatorId;
   }
 
@@ -45,7 +57,11 @@ public class NegativeControlImpl implements NegativeControl {
     return outcomeId;
   }
 
-  public void setOutcomeId(Long outcomeId) {
+    /**
+     *
+     * @param outcomeId
+     */
+    public void setOutcomeId(Long outcomeId) {
     this.outcomeId = outcomeId;
   }
 
@@ -58,7 +74,11 @@ public class NegativeControlImpl implements NegativeControl {
     return outcomeName;
   }
 
-  public void setOutcomeName(String outcomeName) {
+    /**
+     *
+     * @param outcomeName
+     */
+    public void setOutcomeName(String outcomeName) {
     this.outcomeName = outcomeName;
   }
 
@@ -71,7 +91,11 @@ public class NegativeControlImpl implements NegativeControl {
     return type;
   }
 
-  public void setType(NegativeControlTypeEnum type) {
+    /**
+     *
+     * @param type
+     */
+    public void setType(NegativeControlTypeEnum type) {
     this.type = type;
   }
 }

@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.estimation.specification;
+package org.ohdsi.webapi.estimation.comparativecohortanalysis.specification;
 
 import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.GetDbCohortMethodDataArgs;
 import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.RemoveDuplicateSubjectsEnum;
@@ -26,12 +26,16 @@ public class GetDbCohortMethodDataArgsImpl extends RLangClassImpl implements Get
    **/
   @Override
   public Date getStudyStartDate() {
-    return studyStartDate;
+    return this.studyStartDate == null ? null : new Date(this.studyStartDate.getTime());
   }
 
-  public void setStudyStartDate(Date studyStartDate) {
-    this.studyStartDate = studyStartDate;
-  }
+    /**
+     *
+     * @param studyStartDate
+     */
+    public void setStudyStartDate(Date studyStartDate) {
+        this.studyStartDate = studyStartDate == null ? null : new Date(studyStartDate.getTime());
+    }
 
   /**
    * A calendar date specifying the maximum date that a cohort index date can appear. Date format is &#x27;yyyymmdd&#x27;. Important - the study end date is also used to truncate risk windows, meaning no outcomes beyond the study end date will be considered. 
@@ -39,11 +43,15 @@ public class GetDbCohortMethodDataArgsImpl extends RLangClassImpl implements Get
    **/
   @Override
   public Date getStudyEndDate() {
-    return studyEndDate;
+    return this.studyEndDate == null ? null : new Date(this.studyEndDate.getTime());
   }
 
-  public void setStudyEndDate(Date studyEndDate) {
-    this.studyEndDate = studyEndDate;
+    /**
+     *
+     * @param studyEndDate
+     */
+    public void setStudyEndDate(Date studyEndDate) {
+    this.studyEndDate = studyEndDate == null ? null : new Date(studyEndDate.getTime());
   }
 
   /**
@@ -55,7 +63,11 @@ public class GetDbCohortMethodDataArgsImpl extends RLangClassImpl implements Get
     return excludeDrugsFromCovariates;
   }
 
-  public void setExcludeDrugsFromCovariates(Boolean excludeDrugsFromCovariates) {
+    /**
+     *
+     * @param excludeDrugsFromCovariates
+     */
+    public void setExcludeDrugsFromCovariates(Boolean excludeDrugsFromCovariates) {
     this.excludeDrugsFromCovariates = excludeDrugsFromCovariates;
   }
 
@@ -68,7 +80,11 @@ public class GetDbCohortMethodDataArgsImpl extends RLangClassImpl implements Get
     return firstExposureOnly;
   }
 
-  public void setFirstExposureOnly(Boolean firstExposureOnly) {
+    /**
+     *
+     * @param firstExposureOnly
+     */
+    public void setFirstExposureOnly(Boolean firstExposureOnly) {
     this.firstExposureOnly = firstExposureOnly;
   }
 
@@ -81,7 +97,11 @@ public class GetDbCohortMethodDataArgsImpl extends RLangClassImpl implements Get
     return removeDuplicateSubjects;
   }
 
-  public void setRemoveDuplicateSubjects(RemoveDuplicateSubjectsEnum removeDuplicateSubjects) {
+    /**
+     *
+     * @param removeDuplicateSubjects
+     */
+    public void setRemoveDuplicateSubjects(RemoveDuplicateSubjectsEnum removeDuplicateSubjects) {
     this.removeDuplicateSubjects = removeDuplicateSubjects;
   }
 
@@ -94,7 +114,11 @@ public class GetDbCohortMethodDataArgsImpl extends RLangClassImpl implements Get
     return restrictToCommonPeriod;
   }
 
-  public void setRestrictToCommonPeriod(Boolean restrictToCommonPeriod) {
+    /**
+     *
+     * @param restrictToCommonPeriod
+     */
+    public void setRestrictToCommonPeriod(Boolean restrictToCommonPeriod) {
     this.restrictToCommonPeriod = restrictToCommonPeriod;
   }
 
@@ -107,7 +131,11 @@ public class GetDbCohortMethodDataArgsImpl extends RLangClassImpl implements Get
     return washoutPeriod;
   }
 
-  public void setWashoutPeriod(Integer washoutPeriod) {
+    /**
+     *
+     * @param washoutPeriod
+     */
+    public void setWashoutPeriod(Integer washoutPeriod) {
     this.washoutPeriod = washoutPeriod;
   }
 
@@ -120,7 +148,11 @@ public class GetDbCohortMethodDataArgsImpl extends RLangClassImpl implements Get
     return maxCohortSize;
   }
 
-  public void setMaxCohortSize(Integer maxCohortSize) {
+    /**
+     *
+     * @param maxCohortSize
+     */
+    public void setMaxCohortSize(Integer maxCohortSize) {
     this.maxCohortSize = maxCohortSize;
   }
 
@@ -133,7 +165,11 @@ public class GetDbCohortMethodDataArgsImpl extends RLangClassImpl implements Get
     return covariateSettings;
   }
 
-  public void setCovariateSettings(CovariateSettingsImpl covariateSettings) {
+    /**
+     *
+     * @param covariateSettings
+     */
+    public void setCovariateSettings(CovariateSettingsImpl covariateSettings) {
     this.covariateSettings = covariateSettings;
   }
 }

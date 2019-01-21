@@ -6,6 +6,10 @@ import java.util.List;
 import org.ohdsi.analysis.featureextraction.design.*;
 import org.ohdsi.webapi.RLangClassImpl;
 
+/**
+ *
+ * @author asena5
+ */
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSettings {
   private Boolean temporal = false;
@@ -134,7 +138,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return temporal;
   }
 
-  public void setTemporal(Boolean temporal) {
+    /**
+     *
+     * @param temporal
+     */
+    public void setTemporal(Boolean temporal) {
     this.temporal = temporal;
   }
 
@@ -148,7 +156,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return demographicsGender;
   }
 
-  public void setDemographicsGender(Boolean demographicsGender) {
+    /**
+     *
+     * @param demographicsGender
+     */
+    public void setDemographicsGender(Boolean demographicsGender) {
     this.demographicsGender = demographicsGender;
   }
 
@@ -162,7 +174,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return demographicsAge;
   }
 
-  public void setDemographicsAge(Boolean demographicsAge) {
+    /**
+     *
+     * @param demographicsAge
+     */
+    public void setDemographicsAge(Boolean demographicsAge) {
     this.demographicsAge = demographicsAge;
   }
 
@@ -176,7 +192,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return demographicsAgeGroup;
   }
 
-  public void setDemographicsAgeGroup(Boolean demographicsAgeGroup) {
+    /**
+     *
+     * @param demographicsAgeGroup
+     */
+    public void setDemographicsAgeGroup(Boolean demographicsAgeGroup) {
     this.demographicsAgeGroup = demographicsAgeGroup;
   }
 
@@ -190,7 +210,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return demographicsRace;
   }
 
-  public void setDemographicsRace(Boolean demographicsRace) {
+    /**
+     *
+     * @param demographicsRace
+     */
+    public void setDemographicsRace(Boolean demographicsRace) {
     this.demographicsRace = demographicsRace;
   }
 
@@ -203,7 +227,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return demographicsEthnicity;
   }
 
-  public void setDemographicsEthnicity(Boolean demographicsEthnicity) {
+    /**
+     *
+     * @param demographicsEthnicity
+     */
+    public void setDemographicsEthnicity(Boolean demographicsEthnicity) {
     this.demographicsEthnicity = demographicsEthnicity;
   }
 
@@ -216,7 +244,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return demographicsIndexYear;
   }
 
-  public void setDemographicsIndexYear(Boolean demographicsIndexYear) {
+    /**
+     *
+     * @param demographicsIndexYear
+     */
+    public void setDemographicsIndexYear(Boolean demographicsIndexYear) {
     this.demographicsIndexYear = demographicsIndexYear;
   }
 
@@ -229,7 +261,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return demographicsIndexMonth;
   }
 
-  public void setDemographicsIndexMonth(Boolean demographicsIndexMonth) {
+    /**
+     *
+     * @param demographicsIndexMonth
+     */
+    public void setDemographicsIndexMonth(Boolean demographicsIndexMonth) {
     this.demographicsIndexMonth = demographicsIndexMonth;
   }
 
@@ -242,7 +278,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return demographicsPriorObservationTime;
   }
 
-  public void setDemographicsPriorObservationTime(Boolean demographicsPriorObservationTime) {
+    /**
+     *
+     * @param demographicsPriorObservationTime
+     */
+    public void setDemographicsPriorObservationTime(Boolean demographicsPriorObservationTime) {
     this.demographicsPriorObservationTime = demographicsPriorObservationTime;
   }
 
@@ -255,7 +295,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return demographicsPostObservationTime;
   }
 
-  public void setDemographicsPostObservationTime(Boolean demographicsPostObservationTime) {
+    /**
+     *
+     * @param demographicsPostObservationTime
+     */
+    public void setDemographicsPostObservationTime(Boolean demographicsPostObservationTime) {
     this.demographicsPostObservationTime = demographicsPostObservationTime;
   }
 
@@ -268,7 +312,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return demographicsTimeInCohort;
   }
 
-  public void setDemographicsTimeInCohort(Boolean demographicsTimeInCohort) {
+    /**
+     *
+     * @param demographicsTimeInCohort
+     */
+    public void setDemographicsTimeInCohort(Boolean demographicsTimeInCohort) {
     this.demographicsTimeInCohort = demographicsTimeInCohort;
   }
 
@@ -282,7 +330,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return demographicsIndexYearMonth;
   }
 
-  public void setDemographicsIndexYearMonth(Boolean demographicsIndexYearMonth) {
+    /**
+     *
+     * @param demographicsIndexYearMonth
+     */
+    public void setDemographicsIndexYearMonth(Boolean demographicsIndexYearMonth) {
     this.demographicsIndexYearMonth = demographicsIndexYearMonth;
   }
 
@@ -295,7 +347,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return conditionOccurrenceAnyTimePrior;
   }
 
-  public void setConditionOccurrenceAnyTimePrior(Boolean conditionOccurrenceAnyTimePrior) {
+    /**
+     *
+     * @param conditionOccurrenceAnyTimePrior
+     */
+    public void setConditionOccurrenceAnyTimePrior(Boolean conditionOccurrenceAnyTimePrior) {
     this.conditionOccurrenceAnyTimePrior = conditionOccurrenceAnyTimePrior;
   }
 
@@ -309,7 +365,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return conditionOccurrenceLongTerm;
   }
 
-  public void setConditionOccurrenceLongTerm(Boolean conditionOccurrenceLongTerm) {
+    /**
+     *
+     * @param conditionOccurrenceLongTerm
+     */
+    public void setConditionOccurrenceLongTerm(Boolean conditionOccurrenceLongTerm) {
     this.conditionOccurrenceLongTerm = conditionOccurrenceLongTerm;
   }
 
@@ -323,7 +383,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return conditionOccurrenceMediumTerm;
   }
 
-  public void setConditionOccurrenceMediumTerm(Boolean conditionOccurrenceMediumTerm) {
+    /**
+     *
+     * @param conditionOccurrenceMediumTerm
+     */
+    public void setConditionOccurrenceMediumTerm(Boolean conditionOccurrenceMediumTerm) {
     this.conditionOccurrenceMediumTerm = conditionOccurrenceMediumTerm;
   }
 
@@ -336,7 +400,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return conditionOccurrenceShortTerm;
   }
 
-  public void setConditionOccurrenceShortTerm(Boolean conditionOccurrenceShortTerm) {
+    /**
+     *
+     * @param conditionOccurrenceShortTerm
+     */
+    public void setConditionOccurrenceShortTerm(Boolean conditionOccurrenceShortTerm) {
     this.conditionOccurrenceShortTerm = conditionOccurrenceShortTerm;
   }
 
@@ -349,7 +417,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return conditionOccurrencePrimaryInpatientAnyTimePrior;
   }
 
-  public void setConditionOccurrencePrimaryInpatientAnyTimePrior(Boolean conditionOccurrencePrimaryInpatientAnyTimePrior) {
+    /**
+     *
+     * @param conditionOccurrencePrimaryInpatientAnyTimePrior
+     */
+    public void setConditionOccurrencePrimaryInpatientAnyTimePrior(Boolean conditionOccurrencePrimaryInpatientAnyTimePrior) {
     this.conditionOccurrencePrimaryInpatientAnyTimePrior = conditionOccurrencePrimaryInpatientAnyTimePrior;
   }
 
@@ -362,7 +434,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return conditionOccurrencePrimaryInpatientLongTerm;
   }
 
-  public void setConditionOccurrencePrimaryInpatientLongTerm(Boolean conditionOccurrencePrimaryInpatientLongTerm) {
+    /**
+     *
+     * @param conditionOccurrencePrimaryInpatientLongTerm
+     */
+    public void setConditionOccurrencePrimaryInpatientLongTerm(Boolean conditionOccurrencePrimaryInpatientLongTerm) {
     this.conditionOccurrencePrimaryInpatientLongTerm = conditionOccurrencePrimaryInpatientLongTerm;
   }
 
@@ -375,7 +451,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return conditionOccurrencePrimaryInpatientMediumTerm;
   }
 
-  public void setConditionOccurrencePrimaryInpatientMediumTerm(Boolean conditionOccurrencePrimaryInpatientMediumTerm) {
+    /**
+     *
+     * @param conditionOccurrencePrimaryInpatientMediumTerm
+     */
+    public void setConditionOccurrencePrimaryInpatientMediumTerm(Boolean conditionOccurrencePrimaryInpatientMediumTerm) {
     this.conditionOccurrencePrimaryInpatientMediumTerm = conditionOccurrencePrimaryInpatientMediumTerm;
   }
 
@@ -388,7 +468,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return conditionOccurrencePrimaryInpatientShortTerm;
   }
 
-  public void setConditionOccurrencePrimaryInpatientShortTerm(Boolean conditionOccurrencePrimaryInpatientShortTerm) {
+    /**
+     *
+     * @param conditionOccurrencePrimaryInpatientShortTerm
+     */
+    public void setConditionOccurrencePrimaryInpatientShortTerm(Boolean conditionOccurrencePrimaryInpatientShortTerm) {
     this.conditionOccurrencePrimaryInpatientShortTerm = conditionOccurrencePrimaryInpatientShortTerm;
   }
 
@@ -401,7 +485,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return conditionEraAnyTimePrior;
   }
 
-  public void setConditionEraAnyTimePrior(Boolean conditionEraAnyTimePrior) {
+    /**
+     *
+     * @param conditionEraAnyTimePrior
+     */
+    public void setConditionEraAnyTimePrior(Boolean conditionEraAnyTimePrior) {
     this.conditionEraAnyTimePrior = conditionEraAnyTimePrior;
   }
 
@@ -414,7 +502,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return conditionEraLongTerm;
   }
 
-  public void setConditionEraLongTerm(Boolean conditionEraLongTerm) {
+    /**
+     *
+     * @param conditionEraLongTerm
+     */
+    public void setConditionEraLongTerm(Boolean conditionEraLongTerm) {
     this.conditionEraLongTerm = conditionEraLongTerm;
   }
 
@@ -427,7 +519,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return conditionEraMediumTerm;
   }
 
-  public void setConditionEraMediumTerm(Boolean conditionEraMediumTerm) {
+    /**
+     *
+     * @param conditionEraMediumTerm
+     */
+    public void setConditionEraMediumTerm(Boolean conditionEraMediumTerm) {
     this.conditionEraMediumTerm = conditionEraMediumTerm;
   }
 
@@ -440,7 +536,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return conditionEraShortTerm;
   }
 
-  public void setConditionEraShortTerm(Boolean conditionEraShortTerm) {
+    /**
+     *
+     * @param conditionEraShortTerm
+     */
+    public void setConditionEraShortTerm(Boolean conditionEraShortTerm) {
     this.conditionEraShortTerm = conditionEraShortTerm;
   }
 
@@ -452,7 +552,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return conditionEraOverlapping;
   }
 
-  public void setConditionEraOverlapping(Boolean conditionEraOverlapping) {
+    /**
+     *
+     * @param conditionEraOverlapping
+     */
+    public void setConditionEraOverlapping(Boolean conditionEraOverlapping) {
     this.conditionEraOverlapping = conditionEraOverlapping;
   }
 
@@ -465,7 +569,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return conditionEraStartLongTerm;
   }
 
-  public void setConditionEraStartLongTerm(Boolean conditionEraStartLongTerm) {
+    /**
+     *
+     * @param conditionEraStartLongTerm
+     */
+    public void setConditionEraStartLongTerm(Boolean conditionEraStartLongTerm) {
     this.conditionEraStartLongTerm = conditionEraStartLongTerm;
   }
 
@@ -478,7 +586,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return conditionEraStartMediumTerm;
   }
 
-  public void setConditionEraStartMediumTerm(Boolean conditionEraStartMediumTerm) {
+    /**
+     *
+     * @param conditionEraStartMediumTerm
+     */
+    public void setConditionEraStartMediumTerm(Boolean conditionEraStartMediumTerm) {
     this.conditionEraStartMediumTerm = conditionEraStartMediumTerm;
   }
 
@@ -491,7 +603,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return conditionEraStartShortTerm;
   }
 
-  public void setConditionEraStartShortTerm(Boolean conditionEraStartShortTerm) {
+    /**
+     *
+     * @param conditionEraStartShortTerm
+     */
+    public void setConditionEraStartShortTerm(Boolean conditionEraStartShortTerm) {
     this.conditionEraStartShortTerm = conditionEraStartShortTerm;
   }
 
@@ -504,7 +620,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return conditionGroupEraAnyTimePrior;
   }
 
-  public void setConditionGroupEraAnyTimePrior(Boolean conditionGroupEraAnyTimePrior) {
+    /**
+     *
+     * @param conditionGroupEraAnyTimePrior
+     */
+    public void setConditionGroupEraAnyTimePrior(Boolean conditionGroupEraAnyTimePrior) {
     this.conditionGroupEraAnyTimePrior = conditionGroupEraAnyTimePrior;
   }
 
@@ -517,7 +637,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return conditionGroupEraLongTerm;
   }
 
-  public void setConditionGroupEraLongTerm(Boolean conditionGroupEraLongTerm) {
+    /**
+     *
+     * @param conditionGroupEraLongTerm
+     */
+    public void setConditionGroupEraLongTerm(Boolean conditionGroupEraLongTerm) {
     this.conditionGroupEraLongTerm = conditionGroupEraLongTerm;
   }
 
@@ -530,7 +654,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return conditionGroupEraMediumTerm;
   }
 
-  public void setConditionGroupEraMediumTerm(Boolean conditionGroupEraMediumTerm) {
+    /**
+     *
+     * @param conditionGroupEraMediumTerm
+     */
+    public void setConditionGroupEraMediumTerm(Boolean conditionGroupEraMediumTerm) {
     this.conditionGroupEraMediumTerm = conditionGroupEraMediumTerm;
   }
 
@@ -543,7 +671,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return conditionGroupEraShortTerm;
   }
 
-  public void setConditionGroupEraShortTerm(Boolean conditionGroupEraShortTerm) {
+    /**
+     *
+     * @param conditionGroupEraShortTerm
+     */
+    public void setConditionGroupEraShortTerm(Boolean conditionGroupEraShortTerm) {
     this.conditionGroupEraShortTerm = conditionGroupEraShortTerm;
   }
 
@@ -556,7 +688,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return conditionGroupEraOverlapping;
   }
 
-  public void setConditionGroupEraOverlapping(Boolean conditionGroupEraOverlapping) {
+    /**
+     *
+     * @param conditionGroupEraOverlapping
+     */
+    public void setConditionGroupEraOverlapping(Boolean conditionGroupEraOverlapping) {
     this.conditionGroupEraOverlapping = conditionGroupEraOverlapping;
   }
 
@@ -569,7 +705,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return conditionGroupEraStartLongTerm;
   }
 
-  public void setConditionGroupEraStartLongTerm(Boolean conditionGroupEraStartLongTerm) {
+    /**
+     *
+     * @param conditionGroupEraStartLongTerm
+     */
+    public void setConditionGroupEraStartLongTerm(Boolean conditionGroupEraStartLongTerm) {
     this.conditionGroupEraStartLongTerm = conditionGroupEraStartLongTerm;
   }
 
@@ -582,7 +722,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return conditionGroupEraStartMediumTerm;
   }
 
-  public void setConditionGroupEraStartMediumTerm(Boolean conditionGroupEraStartMediumTerm) {
+    /**
+     *
+     * @param conditionGroupEraStartMediumTerm
+     */
+    public void setConditionGroupEraStartMediumTerm(Boolean conditionGroupEraStartMediumTerm) {
     this.conditionGroupEraStartMediumTerm = conditionGroupEraStartMediumTerm;
   }
 
@@ -595,7 +739,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return conditionGroupEraStartShortTerm;
   }
 
-  public void setConditionGroupEraStartShortTerm(Boolean conditionGroupEraStartShortTerm) {
+    /**
+     *
+     * @param conditionGroupEraStartShortTerm
+     */
+    public void setConditionGroupEraStartShortTerm(Boolean conditionGroupEraStartShortTerm) {
     this.conditionGroupEraStartShortTerm = conditionGroupEraStartShortTerm;
   }
 
@@ -608,7 +756,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return drugExposureAnyTimePrior;
   }
 
-  public void setDrugExposureAnyTimePrior(Boolean drugExposureAnyTimePrior) {
+    /**
+     *
+     * @param drugExposureAnyTimePrior
+     */
+    public void setDrugExposureAnyTimePrior(Boolean drugExposureAnyTimePrior) {
     this.drugExposureAnyTimePrior = drugExposureAnyTimePrior;
   }
 
@@ -621,7 +773,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return drugExposureLongTerm;
   }
 
-  public void setDrugExposureLongTerm(Boolean drugExposureLongTerm) {
+    /**
+     *
+     * @param drugExposureLongTerm
+     */
+    public void setDrugExposureLongTerm(Boolean drugExposureLongTerm) {
     this.drugExposureLongTerm = drugExposureLongTerm;
   }
 
@@ -634,7 +790,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return drugExposureMediumTerm;
   }
 
-  public void setDrugExposureMediumTerm(Boolean drugExposureMediumTerm) {
+    /**
+     *
+     * @param drugExposureMediumTerm
+     */
+    public void setDrugExposureMediumTerm(Boolean drugExposureMediumTerm) {
     this.drugExposureMediumTerm = drugExposureMediumTerm;
   }
 
@@ -647,7 +807,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return drugExposureShortTerm;
   }
 
-  public void setDrugExposureShortTerm(Boolean drugExposureShortTerm) {
+    /**
+     *
+     * @param drugExposureShortTerm
+     */
+    public void setDrugExposureShortTerm(Boolean drugExposureShortTerm) {
     this.drugExposureShortTerm = drugExposureShortTerm;
   }
 
@@ -660,7 +824,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return drugEraAnyTimePrior;
   }
 
-  public void setDrugEraAnyTimePrior(Boolean drugEraAnyTimePrior) {
+    /**
+     *
+     * @param drugEraAnyTimePrior
+     */
+    public void setDrugEraAnyTimePrior(Boolean drugEraAnyTimePrior) {
     this.drugEraAnyTimePrior = drugEraAnyTimePrior;
   }
 
@@ -673,7 +841,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return drugEraLongTerm;
   }
 
-  public void setDrugEraLongTerm(Boolean drugEraLongTerm) {
+    /**
+     *
+     * @param drugEraLongTerm
+     */
+    public void setDrugEraLongTerm(Boolean drugEraLongTerm) {
     this.drugEraLongTerm = drugEraLongTerm;
   }
 
@@ -686,7 +858,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return drugEraMediumTerm;
   }
 
-  public void setDrugEraMediumTerm(Boolean drugEraMediumTerm) {
+    /**
+     *
+     * @param drugEraMediumTerm
+     */
+    public void setDrugEraMediumTerm(Boolean drugEraMediumTerm) {
     this.drugEraMediumTerm = drugEraMediumTerm;
   }
 
@@ -699,7 +875,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return drugEraShortTerm;
   }
 
-  public void setDrugEraShortTerm(Boolean drugEraShortTerm) {
+    /**
+     *
+     * @param drugEraShortTerm
+     */
+    public void setDrugEraShortTerm(Boolean drugEraShortTerm) {
     this.drugEraShortTerm = drugEraShortTerm;
   }
 
@@ -712,7 +892,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return drugEraOverlapping;
   }
 
-  public void setDrugEraOverlapping(Boolean drugEraOverlapping) {
+    /**
+     *
+     * @param drugEraOverlapping
+     */
+    public void setDrugEraOverlapping(Boolean drugEraOverlapping) {
     this.drugEraOverlapping = drugEraOverlapping;
   }
 
@@ -725,7 +909,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return drugEraStartLongTerm;
   }
 
-  public void setDrugEraStartLongTerm(Boolean drugEraStartLongTerm) {
+    /**
+     *
+     * @param drugEraStartLongTerm
+     */
+    public void setDrugEraStartLongTerm(Boolean drugEraStartLongTerm) {
     this.drugEraStartLongTerm = drugEraStartLongTerm;
   }
 
@@ -738,7 +926,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return drugEraStartMediumTerm;
   }
 
-  public void setDrugEraStartMediumTerm(Boolean drugEraStartMediumTerm) {
+    /**
+     *
+     * @param drugEraStartMediumTerm
+     */
+    public void setDrugEraStartMediumTerm(Boolean drugEraStartMediumTerm) {
     this.drugEraStartMediumTerm = drugEraStartMediumTerm;
   }
 
@@ -751,7 +943,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return drugEraStartShortTerm;
   }
 
-  public void setDrugEraStartShortTerm(Boolean drugEraStartShortTerm) {
+    /**
+     *
+     * @param drugEraStartShortTerm
+     */
+    public void setDrugEraStartShortTerm(Boolean drugEraStartShortTerm) {
     this.drugEraStartShortTerm = drugEraStartShortTerm;
   }
 
@@ -764,7 +960,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return drugGroupEraAnyTimePrior;
   }
 
-  public void setDrugGroupEraAnyTimePrior(Boolean drugGroupEraAnyTimePrior) {
+    /**
+     *
+     * @param drugGroupEraAnyTimePrior
+     */
+    public void setDrugGroupEraAnyTimePrior(Boolean drugGroupEraAnyTimePrior) {
     this.drugGroupEraAnyTimePrior = drugGroupEraAnyTimePrior;
   }
 
@@ -777,7 +977,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return drugGroupEraLongTerm;
   }
 
-  public void setDrugGroupEraLongTerm(Boolean drugGroupEraLongTerm) {
+    /**
+     *
+     * @param drugGroupEraLongTerm
+     */
+    public void setDrugGroupEraLongTerm(Boolean drugGroupEraLongTerm) {
     this.drugGroupEraLongTerm = drugGroupEraLongTerm;
   }
 
@@ -790,7 +994,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return drugGroupEraMediumTerm;
   }
 
-  public void setDrugGroupEraMediumTerm(Boolean drugGroupEraMediumTerm) {
+    /**
+     *
+     * @param drugGroupEraMediumTerm
+     */
+    public void setDrugGroupEraMediumTerm(Boolean drugGroupEraMediumTerm) {
     this.drugGroupEraMediumTerm = drugGroupEraMediumTerm;
   }
 
@@ -803,7 +1011,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return drugGroupEraShortTerm;
   }
 
-  public void setDrugGroupEraShortTerm(Boolean drugGroupEraShortTerm) {
+    /**
+     *
+     * @param drugGroupEraShortTerm
+     */
+    public void setDrugGroupEraShortTerm(Boolean drugGroupEraShortTerm) {
     this.drugGroupEraShortTerm = drugGroupEraShortTerm;
   }
 
@@ -816,7 +1028,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return drugGroupEraOverlapping;
   }
 
-  public void setDrugGroupEraOverlapping(Boolean drugGroupEraOverlapping) {
+    /**
+     *
+     * @param drugGroupEraOverlapping
+     */
+    public void setDrugGroupEraOverlapping(Boolean drugGroupEraOverlapping) {
     this.drugGroupEraOverlapping = drugGroupEraOverlapping;
   }
 
@@ -829,7 +1045,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return drugGroupEraStartLongTerm;
   }
 
-  public void setDrugGroupEraStartLongTerm(Boolean drugGroupEraStartLongTerm) {
+    /**
+     *
+     * @param drugGroupEraStartLongTerm
+     */
+    public void setDrugGroupEraStartLongTerm(Boolean drugGroupEraStartLongTerm) {
     this.drugGroupEraStartLongTerm = drugGroupEraStartLongTerm;
   }
 
@@ -842,7 +1062,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return drugGroupEraStartMediumTerm;
   }
 
-  public void setDrugGroupEraStartMediumTerm(Boolean drugGroupEraStartMediumTerm) {
+    /**
+     *
+     * @param drugGroupEraStartMediumTerm
+     */
+    public void setDrugGroupEraStartMediumTerm(Boolean drugGroupEraStartMediumTerm) {
     this.drugGroupEraStartMediumTerm = drugGroupEraStartMediumTerm;
   }
 
@@ -855,7 +1079,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return drugGroupEraStartShortTerm;
   }
 
-  public void setDrugGroupEraStartShortTerm(Boolean drugGroupEraStartShortTerm) {
+    /**
+     *
+     * @param drugGroupEraStartShortTerm
+     */
+    public void setDrugGroupEraStartShortTerm(Boolean drugGroupEraStartShortTerm) {
     this.drugGroupEraStartShortTerm = drugGroupEraStartShortTerm;
   }
 
@@ -868,7 +1096,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return procedureOccurrenceAnyTimePrior;
   }
 
-  public void setProcedureOccurrenceAnyTimePrior(Boolean procedureOccurrenceAnyTimePrior) {
+    /**
+     *
+     * @param procedureOccurrenceAnyTimePrior
+     */
+    public void setProcedureOccurrenceAnyTimePrior(Boolean procedureOccurrenceAnyTimePrior) {
     this.procedureOccurrenceAnyTimePrior = procedureOccurrenceAnyTimePrior;
   }
 
@@ -881,7 +1113,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return procedureOccurrenceLongTerm;
   }
 
-  public void setProcedureOccurrenceLongTerm(Boolean procedureOccurrenceLongTerm) {
+    /**
+     *
+     * @param procedureOccurrenceLongTerm
+     */
+    public void setProcedureOccurrenceLongTerm(Boolean procedureOccurrenceLongTerm) {
     this.procedureOccurrenceLongTerm = procedureOccurrenceLongTerm;
   }
 
@@ -894,7 +1130,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return procedureOccurrenceMediumTerm;
   }
 
-  public void setProcedureOccurrenceMediumTerm(Boolean procedureOccurrenceMediumTerm) {
+    /**
+     *
+     * @param procedureOccurrenceMediumTerm
+     */
+    public void setProcedureOccurrenceMediumTerm(Boolean procedureOccurrenceMediumTerm) {
     this.procedureOccurrenceMediumTerm = procedureOccurrenceMediumTerm;
   }
 
@@ -907,7 +1147,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return procedureOccurrenceShortTerm;
   }
 
-  public void setProcedureOccurrenceShortTerm(Boolean procedureOccurrenceShortTerm) {
+    /**
+     *
+     * @param procedureOccurrenceShortTerm
+     */
+    public void setProcedureOccurrenceShortTerm(Boolean procedureOccurrenceShortTerm) {
     this.procedureOccurrenceShortTerm = procedureOccurrenceShortTerm;
   }
 
@@ -920,7 +1164,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return deviceExposureAnyTimePrior;
   }
 
-  public void setDeviceExposureAnyTimePrior(Boolean deviceExposureAnyTimePrior) {
+    /**
+     *
+     * @param deviceExposureAnyTimePrior
+     */
+    public void setDeviceExposureAnyTimePrior(Boolean deviceExposureAnyTimePrior) {
     this.deviceExposureAnyTimePrior = deviceExposureAnyTimePrior;
   }
 
@@ -933,7 +1181,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return deviceExposureLongTerm;
   }
 
-  public void setDeviceExposureLongTerm(Boolean deviceExposureLongTerm) {
+    /**
+     *
+     * @param deviceExposureLongTerm
+     */
+    public void setDeviceExposureLongTerm(Boolean deviceExposureLongTerm) {
     this.deviceExposureLongTerm = deviceExposureLongTerm;
   }
 
@@ -946,7 +1198,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return deviceExposureMediumTerm;
   }
 
-  public void setDeviceExposureMediumTerm(Boolean deviceExposureMediumTerm) {
+    /**
+     *
+     * @param deviceExposureMediumTerm
+     */
+    public void setDeviceExposureMediumTerm(Boolean deviceExposureMediumTerm) {
     this.deviceExposureMediumTerm = deviceExposureMediumTerm;
   }
 
@@ -959,7 +1215,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return deviceExposureShortTerm;
   }
 
-  public void setDeviceExposureShortTerm(Boolean deviceExposureShortTerm) {
+    /**
+     *
+     * @param deviceExposureShortTerm
+     */
+    public void setDeviceExposureShortTerm(Boolean deviceExposureShortTerm) {
     this.deviceExposureShortTerm = deviceExposureShortTerm;
   }
 
@@ -972,7 +1232,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return measurementAnyTimePrior;
   }
 
-  public void setMeasurementAnyTimePrior(Boolean measurementAnyTimePrior) {
+    /**
+     *
+     * @param measurementAnyTimePrior
+     */
+    public void setMeasurementAnyTimePrior(Boolean measurementAnyTimePrior) {
     this.measurementAnyTimePrior = measurementAnyTimePrior;
   }
 
@@ -985,7 +1249,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return measurementLongTerm;
   }
 
-  public void setMeasurementLongTerm(Boolean measurementLongTerm) {
+    /**
+     *
+     * @param measurementLongTerm
+     */
+    public void setMeasurementLongTerm(Boolean measurementLongTerm) {
     this.measurementLongTerm = measurementLongTerm;
   }
 
@@ -998,7 +1266,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return measurementMediumTerm;
   }
 
-  public void setMeasurementMediumTerm(Boolean measurementMediumTerm) {
+    /**
+     *
+     * @param measurementMediumTerm
+     */
+    public void setMeasurementMediumTerm(Boolean measurementMediumTerm) {
     this.measurementMediumTerm = measurementMediumTerm;
   }
 
@@ -1011,7 +1283,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return measurementShortTerm;
   }
 
-  public void setMeasurementShortTerm(Boolean measurementShortTerm) {
+    /**
+     *
+     * @param measurementShortTerm
+     */
+    public void setMeasurementShortTerm(Boolean measurementShortTerm) {
     this.measurementShortTerm = measurementShortTerm;
   }
 
@@ -1024,7 +1300,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return measurementValueAnyTimePrior;
   }
 
-  public void setMeasurementValueAnyTimePrior(Boolean measurementValueAnyTimePrior) {
+    /**
+     *
+     * @param measurementValueAnyTimePrior
+     */
+    public void setMeasurementValueAnyTimePrior(Boolean measurementValueAnyTimePrior) {
     this.measurementValueAnyTimePrior = measurementValueAnyTimePrior;
   }
 
@@ -1037,7 +1317,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return measurementValueLongTerm;
   }
 
-  public void setMeasurementValueLongTerm(Boolean measurementValueLongTerm) {
+    /**
+     *
+     * @param measurementValueLongTerm
+     */
+    public void setMeasurementValueLongTerm(Boolean measurementValueLongTerm) {
     this.measurementValueLongTerm = measurementValueLongTerm;
   }
 
@@ -1050,7 +1334,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return measurementValueMediumTerm;
   }
 
-  public void setMeasurementValueMediumTerm(Boolean measurementValueMediumTerm) {
+    /**
+     *
+     * @param measurementValueMediumTerm
+     */
+    public void setMeasurementValueMediumTerm(Boolean measurementValueMediumTerm) {
     this.measurementValueMediumTerm = measurementValueMediumTerm;
   }
 
@@ -1063,7 +1351,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return measurementValueShortTerm;
   }
 
-  public void setMeasurementValueShortTerm(Boolean measurementValueShortTerm) {
+    /**
+     *
+     * @param measurementValueShortTerm
+     */
+    public void setMeasurementValueShortTerm(Boolean measurementValueShortTerm) {
     this.measurementValueShortTerm = measurementValueShortTerm;
   }
 
@@ -1076,7 +1368,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return measurementRangeGroupAnyTimePrior;
   }
 
-  public void setMeasurementRangeGroupAnyTimePrior(Boolean measurementRangeGroupAnyTimePrior) {
+    /**
+     *
+     * @param measurementRangeGroupAnyTimePrior
+     */
+    public void setMeasurementRangeGroupAnyTimePrior(Boolean measurementRangeGroupAnyTimePrior) {
     this.measurementRangeGroupAnyTimePrior = measurementRangeGroupAnyTimePrior;
   }
 
@@ -1089,7 +1385,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return measurementRangeGroupLongTerm;
   }
 
-  public void setMeasurementRangeGroupLongTerm(Boolean measurementRangeGroupLongTerm) {
+    /**
+     *
+     * @param measurementRangeGroupLongTerm
+     */
+    public void setMeasurementRangeGroupLongTerm(Boolean measurementRangeGroupLongTerm) {
     this.measurementRangeGroupLongTerm = measurementRangeGroupLongTerm;
   }
 
@@ -1102,7 +1402,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return measurementRangeGroupMediumTerm;
   }
 
-  public void setMeasurementRangeGroupMediumTerm(Boolean measurementRangeGroupMediumTerm) {
+    /**
+     *
+     * @param measurementRangeGroupMediumTerm
+     */
+    public void setMeasurementRangeGroupMediumTerm(Boolean measurementRangeGroupMediumTerm) {
     this.measurementRangeGroupMediumTerm = measurementRangeGroupMediumTerm;
   }
 
@@ -1115,7 +1419,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return measurementRangeGroupShortTerm;
   }
 
-  public void setMeasurementRangeGroupShortTerm(Boolean measurementRangeGroupShortTerm) {
+    /**
+     *
+     * @param measurementRangeGroupShortTerm
+     */
+    public void setMeasurementRangeGroupShortTerm(Boolean measurementRangeGroupShortTerm) {
     this.measurementRangeGroupShortTerm = measurementRangeGroupShortTerm;
   }
 
@@ -1128,7 +1436,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return observationAnyTimePrior;
   }
 
-  public void setObservationAnyTimePrior(Boolean observationAnyTimePrior) {
+    /**
+     *
+     * @param observationAnyTimePrior
+     */
+    public void setObservationAnyTimePrior(Boolean observationAnyTimePrior) {
     this.observationAnyTimePrior = observationAnyTimePrior;
   }
 
@@ -1141,7 +1453,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return observationLongTerm;
   }
 
-  public void setObservationLongTerm(Boolean observationLongTerm) {
+    /**
+     *
+     * @param observationLongTerm
+     */
+    public void setObservationLongTerm(Boolean observationLongTerm) {
     this.observationLongTerm = observationLongTerm;
   }
 
@@ -1154,7 +1470,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return observationMediumTerm;
   }
 
-  public void setObservationMediumTerm(Boolean observationMediumTerm) {
+    /**
+     *
+     * @param observationMediumTerm
+     */
+    public void setObservationMediumTerm(Boolean observationMediumTerm) {
     this.observationMediumTerm = observationMediumTerm;
   }
 
@@ -1167,7 +1487,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return observationShortTerm;
   }
 
-  public void setObservationShortTerm(Boolean observationShortTerm) {
+    /**
+     *
+     * @param observationShortTerm
+     */
+    public void setObservationShortTerm(Boolean observationShortTerm) {
     this.observationShortTerm = observationShortTerm;
   }
 
@@ -1180,7 +1504,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return charlsonIndex;
   }
 
-  public void setCharlsonIndex(Boolean charlsonIndex) {
+    /**
+     *
+     * @param charlsonIndex
+     */
+    public void setCharlsonIndex(Boolean charlsonIndex) {
     this.charlsonIndex = charlsonIndex;
   }
 
@@ -1193,7 +1521,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return dcsi;
   }
 
-  public void setDcsi(Boolean dcsi) {
+    /**
+     *
+     * @param dcsi
+     */
+    public void setDcsi(Boolean dcsi) {
     this.dcsi = dcsi;
   }
 
@@ -1206,7 +1538,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return chads2;
   }
 
-  public void setChads2(Boolean chads2) {
+    /**
+     *
+     * @param chads2
+     */
+    public void setChads2(Boolean chads2) {
     this.chads2 = chads2;
   }
 
@@ -1219,7 +1555,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return chads2Vasc;
   }
 
-  public void setChads2Vasc(Boolean chads2Vasc) {
+    /**
+     *
+     * @param chads2Vasc
+     */
+    public void setChads2Vasc(Boolean chads2Vasc) {
     this.chads2Vasc = chads2Vasc;
   }
 
@@ -1232,7 +1572,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return distinctConditionCountLongTerm;
   }
 
-  public void setDistinctConditionCountLongTerm(Boolean distinctConditionCountLongTerm) {
+    /**
+     *
+     * @param distinctConditionCountLongTerm
+     */
+    public void setDistinctConditionCountLongTerm(Boolean distinctConditionCountLongTerm) {
     this.distinctConditionCountLongTerm = distinctConditionCountLongTerm;
   }
 
@@ -1245,7 +1589,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return distinctConditionCountMediumTerm;
   }
 
-  public void setDistinctConditionCountMediumTerm(Boolean distinctConditionCountMediumTerm) {
+    /**
+     *
+     * @param distinctConditionCountMediumTerm
+     */
+    public void setDistinctConditionCountMediumTerm(Boolean distinctConditionCountMediumTerm) {
     this.distinctConditionCountMediumTerm = distinctConditionCountMediumTerm;
   }
 
@@ -1258,7 +1606,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return distinctConditionCountShortTerm;
   }
 
-  public void setDistinctConditionCountShortTerm(Boolean distinctConditionCountShortTerm) {
+    /**
+     *
+     * @param distinctConditionCountShortTerm
+     */
+    public void setDistinctConditionCountShortTerm(Boolean distinctConditionCountShortTerm) {
     this.distinctConditionCountShortTerm = distinctConditionCountShortTerm;
   }
 
@@ -1271,7 +1623,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return distinctIngredientCountLongTerm;
   }
 
-  public void setDistinctIngredientCountLongTerm(Boolean distinctIngredientCountLongTerm) {
+    /**
+     *
+     * @param distinctIngredientCountLongTerm
+     */
+    public void setDistinctIngredientCountLongTerm(Boolean distinctIngredientCountLongTerm) {
     this.distinctIngredientCountLongTerm = distinctIngredientCountLongTerm;
   }
 
@@ -1284,7 +1640,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return distinctIngredientCountMediumTerm;
   }
 
-  public void setDistinctIngredientCountMediumTerm(Boolean distinctIngredientCountMediumTerm) {
+    /**
+     *
+     * @param distinctIngredientCountMediumTerm
+     */
+    public void setDistinctIngredientCountMediumTerm(Boolean distinctIngredientCountMediumTerm) {
     this.distinctIngredientCountMediumTerm = distinctIngredientCountMediumTerm;
   }
 
@@ -1297,7 +1657,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return distinctIngredientCountShortTerm;
   }
 
-  public void setDistinctIngredientCountShortTerm(Boolean distinctIngredientCountShortTerm) {
+    /**
+     *
+     * @param distinctIngredientCountShortTerm
+     */
+    public void setDistinctIngredientCountShortTerm(Boolean distinctIngredientCountShortTerm) {
     this.distinctIngredientCountShortTerm = distinctIngredientCountShortTerm;
   }
 
@@ -1311,7 +1675,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return distinctProcedureCountLongTerm;
   }
 
-  public void setDistinctProcedureCountLongTerm(Boolean distinctProcedureCountLongTerm) {
+    /**
+     *
+     * @param distinctProcedureCountLongTerm
+     */
+    public void setDistinctProcedureCountLongTerm(Boolean distinctProcedureCountLongTerm) {
     this.distinctProcedureCountLongTerm = distinctProcedureCountLongTerm;
   }
 
@@ -1324,7 +1692,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return distinctProcedureCountMediumTerm;
   }
 
-  public void setDistinctProcedureCountMediumTerm(Boolean distinctProcedureCountMediumTerm) {
+    /**
+     *
+     * @param distinctProcedureCountMediumTerm
+     */
+    public void setDistinctProcedureCountMediumTerm(Boolean distinctProcedureCountMediumTerm) {
     this.distinctProcedureCountMediumTerm = distinctProcedureCountMediumTerm;
   }
 
@@ -1337,7 +1709,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return distinctProcedureCountShortTerm;
   }
 
-  public void setDistinctProcedureCountShortTerm(Boolean distinctProcedureCountShortTerm) {
+    /**
+     *
+     * @param distinctProcedureCountShortTerm
+     */
+    public void setDistinctProcedureCountShortTerm(Boolean distinctProcedureCountShortTerm) {
     this.distinctProcedureCountShortTerm = distinctProcedureCountShortTerm;
   }
 
@@ -1350,7 +1726,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return distinctMeasurementCountLongTerm;
   }
 
-  public void setDistinctMeasurementCountLongTerm(Boolean distinctMeasurementCountLongTerm) {
+    /**
+     *
+     * @param distinctMeasurementCountLongTerm
+     */
+    public void setDistinctMeasurementCountLongTerm(Boolean distinctMeasurementCountLongTerm) {
     this.distinctMeasurementCountLongTerm = distinctMeasurementCountLongTerm;
   }
 
@@ -1363,7 +1743,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return distinctMeasurementCountMediumTerm;
   }
 
-  public void setDistinctMeasurementCountMediumTerm(Boolean distinctMeasurementCountMediumTerm) {
+    /**
+     *
+     * @param distinctMeasurementCountMediumTerm
+     */
+    public void setDistinctMeasurementCountMediumTerm(Boolean distinctMeasurementCountMediumTerm) {
     this.distinctMeasurementCountMediumTerm = distinctMeasurementCountMediumTerm;
   }
 
@@ -1376,7 +1760,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return distinctMeasurementCountShortTerm;
   }
 
-  public void setDistinctMeasurementCountShortTerm(Boolean distinctMeasurementCountShortTerm) {
+    /**
+     *
+     * @param distinctMeasurementCountShortTerm
+     */
+    public void setDistinctMeasurementCountShortTerm(Boolean distinctMeasurementCountShortTerm) {
     this.distinctMeasurementCountShortTerm = distinctMeasurementCountShortTerm;
   }
 
@@ -1389,7 +1777,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return distinctObservationCountLongTerm;
   }
 
-  public void setDistinctObservationCountLongTerm(Boolean distinctObservationCountLongTerm) {
+    /**
+     *
+     * @param distinctObservationCountLongTerm
+     */
+    public void setDistinctObservationCountLongTerm(Boolean distinctObservationCountLongTerm) {
     this.distinctObservationCountLongTerm = distinctObservationCountLongTerm;
   }
 
@@ -1402,7 +1794,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return distinctObservationCountMediumTerm;
   }
 
-  public void setDistinctObservationCountMediumTerm(Boolean distinctObservationCountMediumTerm) {
+    /**
+     *
+     * @param distinctObservationCountMediumTerm
+     */
+    public void setDistinctObservationCountMediumTerm(Boolean distinctObservationCountMediumTerm) {
     this.distinctObservationCountMediumTerm = distinctObservationCountMediumTerm;
   }
 
@@ -1415,7 +1811,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return distinctObservationCountShortTerm;
   }
 
-  public void setDistinctObservationCountShortTerm(Boolean distinctObservationCountShortTerm) {
+    /**
+     *
+     * @param distinctObservationCountShortTerm
+     */
+    public void setDistinctObservationCountShortTerm(Boolean distinctObservationCountShortTerm) {
     this.distinctObservationCountShortTerm = distinctObservationCountShortTerm;
   }
 
@@ -1428,7 +1828,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return visitCountLongTerm;
   }
 
-  public void setVisitCountLongTerm(Boolean visitCountLongTerm) {
+    /**
+     *
+     * @param visitCountLongTerm
+     */
+    public void setVisitCountLongTerm(Boolean visitCountLongTerm) {
     this.visitCountLongTerm = visitCountLongTerm;
   }
 
@@ -1441,7 +1845,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return visitCountMediumTerm;
   }
 
-  public void setVisitCountMediumTerm(Boolean visitCountMediumTerm) {
+    /**
+     *
+     * @param visitCountMediumTerm
+     */
+    public void setVisitCountMediumTerm(Boolean visitCountMediumTerm) {
     this.visitCountMediumTerm = visitCountMediumTerm;
   }
 
@@ -1454,7 +1862,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return visitCountShortTerm;
   }
 
-  public void setVisitCountShortTerm(Boolean visitCountShortTerm) {
+    /**
+     *
+     * @param visitCountShortTerm
+     */
+    public void setVisitCountShortTerm(Boolean visitCountShortTerm) {
     this.visitCountShortTerm = visitCountShortTerm;
   }
 
@@ -1467,7 +1879,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return visitConceptCountLongTerm;
   }
 
-  public void setVisitConceptCountLongTerm(Boolean visitConceptCountLongTerm) {
+    /**
+     *
+     * @param visitConceptCountLongTerm
+     */
+    public void setVisitConceptCountLongTerm(Boolean visitConceptCountLongTerm) {
     this.visitConceptCountLongTerm = visitConceptCountLongTerm;
   }
 
@@ -1480,7 +1896,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return visitConceptCountMediumTerm;
   }
 
-  public void setVisitConceptCountMediumTerm(Boolean visitConceptCountMediumTerm) {
+    /**
+     *
+     * @param visitConceptCountMediumTerm
+     */
+    public void setVisitConceptCountMediumTerm(Boolean visitConceptCountMediumTerm) {
     this.visitConceptCountMediumTerm = visitConceptCountMediumTerm;
   }
 
@@ -1493,7 +1913,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return visitConceptCountShortTerm;
   }
 
-  public void setVisitConceptCountShortTerm(Boolean visitConceptCountShortTerm) {
+    /**
+     *
+     * @param visitConceptCountShortTerm
+     */
+    public void setVisitConceptCountShortTerm(Boolean visitConceptCountShortTerm) {
     this.visitConceptCountShortTerm = visitConceptCountShortTerm;
   }
 
@@ -1506,7 +1930,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return longTermStartDays;
   }
 
-  public void setLongTermStartDays(Integer longTermStartDays) {
+    /**
+     *
+     * @param longTermStartDays
+     */
+    public void setLongTermStartDays(Integer longTermStartDays) {
     this.longTermStartDays = longTermStartDays;
   }
 
@@ -1519,7 +1947,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return mediumTermStartDays;
   }
 
-  public void setMediumTermStartDays(Integer mediumTermStartDays) {
+    /**
+     *
+     * @param mediumTermStartDays
+     */
+    public void setMediumTermStartDays(Integer mediumTermStartDays) {
     this.mediumTermStartDays = mediumTermStartDays;
   }
 
@@ -1532,7 +1964,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return shortTermStartDays;
   }
 
-  public void setShortTermStartDays(Integer shortTermStartDays) {
+    /**
+     *
+     * @param shortTermStartDays
+     */
+    public void setShortTermStartDays(Integer shortTermStartDays) {
     this.shortTermStartDays = shortTermStartDays;
   }
 
@@ -1545,11 +1981,20 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return endDays;
   }
 
-  public void setEndDays(Integer endDays) {
+    /**
+     *
+     * @param endDays
+     */
+    public void setEndDays(Integer endDays) {
     this.endDays = endDays;
   }
 
-  public CovariateSettingsImpl addIncludedCovariateConceptIdsItem(Long includedCovariateConceptIdsItem) {
+    /**
+     *
+     * @param includedCovariateConceptIdsItem
+     * @return
+     */
+    public CovariateSettingsImpl addIncludedCovariateConceptIdsItem(Long includedCovariateConceptIdsItem) {
     if (this.includedCovariateConceptIds == null) {
       this.includedCovariateConceptIds = new ArrayList<>();
     }
@@ -1566,7 +2011,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return includedCovariateConceptIds;
   }
 
-  public void setIncludedCovariateConceptIds(List<Long> includedCovariateConceptIds) {
+    /**
+     *
+     * @param includedCovariateConceptIds
+     */
+    public void setIncludedCovariateConceptIds(List<Long> includedCovariateConceptIds) {
     this.includedCovariateConceptIds = includedCovariateConceptIds;
   }
 
@@ -1580,12 +2029,20 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return addDescendantsToInclude;
   }
 
-  public void setAddDescendantsToInclude(Boolean addDescendantsToInclude) {
+    /**
+     *
+     * @param addDescendantsToInclude
+     */
+    public void setAddDescendantsToInclude(Boolean addDescendantsToInclude) {
     this.addDescendantsToInclude = addDescendantsToInclude;
   }
 
-    
-  public CovariateSettingsImpl addExcludedCovariateConceptIdsItem(Long excludedCovariateConceptIdsItem) {
+    /**
+     *
+     * @param excludedCovariateConceptIdsItem
+     * @return
+     */
+    public CovariateSettingsImpl addExcludedCovariateConceptIdsItem(Long excludedCovariateConceptIdsItem) {
     if (this.excludedCovariateConceptIds == null) {
       this.excludedCovariateConceptIds = new ArrayList<>();
     }
@@ -1602,7 +2059,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return excludedCovariateConceptIds;
   }
 
-  public void setExcludedCovariateConceptIds(List<Long> excludedCovariateConceptIds) {
+    /**
+     *
+     * @param excludedCovariateConceptIds
+     */
+    public void setExcludedCovariateConceptIds(List<Long> excludedCovariateConceptIds) {
     this.excludedCovariateConceptIds = excludedCovariateConceptIds;
   }
 
@@ -1615,11 +2076,20 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return addDescendantsToExclude;
   }
 
-  public void setAddDescendantsToExclude(Boolean addDescendantsToExclude) {
+    /**
+     *
+     * @param addDescendantsToExclude
+     */
+    public void setAddDescendantsToExclude(Boolean addDescendantsToExclude) {
     this.addDescendantsToExclude = addDescendantsToExclude;
   }
 
-  public CovariateSettingsImpl addIncludedCovariateIdsItem(Integer includedCovariateIdsItem) {
+    /**
+     *
+     * @param includedCovariateIdsItem
+     * @return
+     */
+    public CovariateSettingsImpl addIncludedCovariateIdsItem(Integer includedCovariateIdsItem) {
     if (this.includedCovariateIds == null) {
       this.includedCovariateIds = new ArrayList<>();
     }
@@ -1636,7 +2106,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return includedCovariateIds;
   }
 
-  public void setIncludedCovariateIds(List<Integer> includedCovariateIds) {
+    /**
+     *
+     * @param includedCovariateIds
+     */
+    public void setIncludedCovariateIds(List<Integer> includedCovariateIds) {
     this.includedCovariateIds = includedCovariateIds;
   }
 
@@ -1650,7 +2124,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return attrFun;
   }
 
-  public void setAttrFun(String attrFun) {
+    /**
+     *
+     * @param attrFun
+     */
+    public void setAttrFun(String attrFun) {
     this.attrFun = attrFun;
   }
 
@@ -1663,7 +2141,11 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
     return csAttrClass;
   }
 
-  @Override
+    /**
+     *
+     * @param attrClass
+     */
+    @Override
   public void setAttrClass(String attrClass) {
     this.csAttrClass = attrClass;
   }

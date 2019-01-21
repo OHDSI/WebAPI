@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.estimation.specification;
+package org.ohdsi.webapi.estimation.comparativecohortanalysis.specification;
 
 import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.OutcomeModelTypeEnum;
 import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.FitOutcomeModelArgs;
@@ -9,6 +9,10 @@ import javax.validation.constraints.*;
 import org.ohdsi.webapi.cyclops.specification.ControlImpl;
 import org.ohdsi.webapi.cyclops.specification.PriorImpl;
 
+/**
+ *
+ * @author asena5
+ */
 public class FitOutcomeModelArgsImpl extends RLangClassImpl implements FitOutcomeModelArgs {
   private OutcomeModelTypeEnum modelType = OutcomeModelTypeEnum.COX;
   private Boolean stratified = true;
@@ -30,7 +34,11 @@ public class FitOutcomeModelArgsImpl extends RLangClassImpl implements FitOutcom
     return modelType;
   }
 
-  public void setModelType(OutcomeModelTypeEnum modelType) {
+    /**
+     *
+     * @param modelType
+     */
+    public void setModelType(OutcomeModelTypeEnum modelType) {
     this.modelType = modelType;
   }
 
@@ -43,7 +51,11 @@ public class FitOutcomeModelArgsImpl extends RLangClassImpl implements FitOutcom
     return stratified;
   }
 
-  public void setStratified(Boolean stratified) {
+    /**
+     *
+     * @param stratified
+     */
+    public void setStratified(Boolean stratified) {
     this.stratified = stratified;
   }
 
@@ -56,7 +68,11 @@ public class FitOutcomeModelArgsImpl extends RLangClassImpl implements FitOutcom
     return useCovariates;
   }
 
-  public void setUseCovariates(Boolean useCovariates) {
+    /**
+     *
+     * @param useCovariates
+     */
+    public void setUseCovariates(Boolean useCovariates) {
     this.useCovariates = useCovariates;
   }
 
@@ -69,11 +85,20 @@ public class FitOutcomeModelArgsImpl extends RLangClassImpl implements FitOutcom
     return inversePtWeighting;
   }
 
-  public void setInversePtWeighting(Boolean inversePtWeighting) {
+    /**
+     *
+     * @param inversePtWeighting
+     */
+    public void setInversePtWeighting(Boolean inversePtWeighting) {
     this.inversePtWeighting = inversePtWeighting;
   }
 
-  public FitOutcomeModelArgsImpl addInteractionCovariateIdsItem(Integer interactionCovariateIdsItem) {
+    /**
+     *
+     * @param interactionCovariateIdsItem
+     * @return
+     */
+    public FitOutcomeModelArgsImpl addInteractionCovariateIdsItem(Integer interactionCovariateIdsItem) {
     if (this.interactionCovariateIds == null) {
       this.interactionCovariateIds = new ArrayList<>();
     }
@@ -90,11 +115,20 @@ public class FitOutcomeModelArgsImpl extends RLangClassImpl implements FitOutcom
     return interactionCovariateIds;
   }
 
-  public void setInteractionCovariateIds(List<Integer> interactionCovariateIds) {
+    /**
+     *
+     * @param interactionCovariateIds
+     */
+    public void setInteractionCovariateIds(List<Integer> interactionCovariateIds) {
     this.interactionCovariateIds = interactionCovariateIds;
   }
 
-  public FitOutcomeModelArgsImpl addExcludeCovariateIdsItem(Integer excludeCovariateIdsItem) {
+    /**
+     *
+     * @param excludeCovariateIdsItem
+     * @return
+     */
+    public FitOutcomeModelArgsImpl addExcludeCovariateIdsItem(Integer excludeCovariateIdsItem) {
     if (this.excludeCovariateIds == null) {
       this.excludeCovariateIds = new ArrayList<>();
     }
@@ -111,11 +145,20 @@ public class FitOutcomeModelArgsImpl extends RLangClassImpl implements FitOutcom
     return excludeCovariateIds;
   }
 
-  public void setExcludeCovariateIds(List<Integer> excludeCovariateIds) {
+    /**
+     *
+     * @param excludeCovariateIds
+     */
+    public void setExcludeCovariateIds(List<Integer> excludeCovariateIds) {
     this.excludeCovariateIds = excludeCovariateIds;
   }
 
-  public FitOutcomeModelArgsImpl addIncludeCovariateIdsItem(Integer includeCovariateIdsItem) {
+    /**
+     *
+     * @param includeCovariateIdsItem
+     * @return
+     */
+    public FitOutcomeModelArgsImpl addIncludeCovariateIdsItem(Integer includeCovariateIdsItem) {
     if (this.includeCovariateIds == null) {
       this.includeCovariateIds = new ArrayList<>();
     }
@@ -132,7 +175,11 @@ public class FitOutcomeModelArgsImpl extends RLangClassImpl implements FitOutcom
     return includeCovariateIds;
   }
 
-  public void setIncludeCovariateIds(List<Integer> includeCovariateIds) {
+    /**
+     *
+     * @param includeCovariateIds
+     */
+    public void setIncludeCovariateIds(List<Integer> includeCovariateIds) {
     this.includeCovariateIds = includeCovariateIds;
   }
 
@@ -145,7 +192,11 @@ public class FitOutcomeModelArgsImpl extends RLangClassImpl implements FitOutcom
     return prior;
   }
 
-  public void setPrior(PriorImpl prior) {
+    /**
+     *
+     * @param prior
+     */
+    public void setPrior(PriorImpl prior) {
     this.prior = prior;
   }
 
@@ -158,7 +209,11 @@ public class FitOutcomeModelArgsImpl extends RLangClassImpl implements FitOutcom
     return control;
   }
 
-  public void setControl(ControlImpl control) {
+    /**
+     *
+     * @param control
+     */
+    public void setControl(ControlImpl control) {
     this.control = control;
   }
 }

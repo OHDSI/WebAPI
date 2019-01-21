@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.estimation.specification;
+package org.ohdsi.webapi.estimation.comparativecohortanalysis.specification;
 
 import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.StratifyByPsAndCovariatesArgs;
 import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.BaseSelectionEnum;
@@ -7,6 +7,10 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.validation.constraints.*;
 
+/**
+ *
+ * @author asena5
+ */
 public class StratifyByPsAndCovariatesArgsImpl extends RLangClassImpl implements StratifyByPsAndCovariatesArgs {
   private Integer numberOfStrata = 5;
   private BaseSelectionEnum baseSelection = BaseSelectionEnum.ALL;
@@ -22,7 +26,11 @@ public class StratifyByPsAndCovariatesArgsImpl extends RLangClassImpl implements
     return numberOfStrata;
   }
 
-  public void setNumberOfStrata(Integer numberOfStrata) {
+    /**
+     *
+     * @param numberOfStrata
+     */
+    public void setNumberOfStrata(Integer numberOfStrata) {
     this.numberOfStrata = numberOfStrata;
   }
 
@@ -35,11 +43,20 @@ public class StratifyByPsAndCovariatesArgsImpl extends RLangClassImpl implements
     return baseSelection;
   }
 
-  public void setBaseSelection(BaseSelectionEnum baseSelection) {
+    /**
+     *
+     * @param baseSelection
+     */
+    public void setBaseSelection(BaseSelectionEnum baseSelection) {
     this.baseSelection = baseSelection;
   }
 
-  public StratifyByPsAndCovariatesArgsImpl addCovariateIdsItem(Integer covariateIdsItem) {
+    /**
+     *
+     * @param covariateIdsItem
+     * @return
+     */
+    public StratifyByPsAndCovariatesArgsImpl addCovariateIdsItem(Integer covariateIdsItem) {
     if (this.covariateIds == null) {
       this.covariateIds = new ArrayList<>();
     }
@@ -56,7 +73,11 @@ public class StratifyByPsAndCovariatesArgsImpl extends RLangClassImpl implements
     return covariateIds;
   }
 
-  public void setCovariateIds(List<Integer> covariateIds) {
+    /**
+     *
+     * @param covariateIds
+     */
+    public void setCovariateIds(List<Integer> covariateIds) {
     this.covariateIds = covariateIds;
   }
 }

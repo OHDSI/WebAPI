@@ -20,6 +20,7 @@ import org.ohdsi.sql.SqlRender;
 import org.ohdsi.webapi.cohortdefinition.*;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ExportUtil;
+import org.ohdsi.webapi.events.DeleteCohortEvent;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
@@ -42,6 +43,7 @@ import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.batch.core.launch.JobOperator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionStatus;
@@ -407,12 +409,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 
       newDef.setDetails(details);
 
-      CohortDefinition createdDefinition = this.cohortDefinitionRepository.save(newDef);
-      try {
-        ((ProcessResponseContentFilter)security.getFilters().get(CREATE_COHORT_DEFINITION)).doProcessResponseContent(createdDefinition.getId().toString());
-      } catch (Exception e) {
-        log.error("Failed to add permissions to cohort with id = " + createdDefinition.getId(), e);
-      }
+      CohortDefinition createdDefinition = this.cohortDefinitionRepository.save(newDef);      
       return cohortDefinitionToDTO(createdDefinition);
   }
 
@@ -546,6 +543,11 @@ public class CohortDefinitionService extends AbstractDaoService {
 
     return copyDef;
   }      
+  
+  @EventListener
+  public void delete(DeleteCohortEvent event){
+    delete(event.getId());
+  }
 
   /**
    * Deletes the specified cohort definition

@@ -17,6 +17,7 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
+import org.ohdsi.webapi.events.DeleteCcEvent;
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
@@ -30,7 +31,6 @@ import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.shiro.annotations.CcGenerationId;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
-import org.ohdsi.webapi.shiro.filters.ProcessResponseContentFilter;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.sqlrender.SourceAwareSqlRender;
@@ -62,7 +62,6 @@ import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.GENERATE_COHORT_CHARACTERIZATION;
 import static org.ohdsi.webapi.Constants.Params.*;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_COHORT_CHARACTERIZATION;
 
 @Service
 @Transactional
@@ -153,13 +152,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     public CohortCharacterizationEntity createCc(final CohortCharacterizationEntity entity) {
         entity.setCreatedBy(getCurrentUser());
         entity.setCreatedDate(new Date());
-        CohortCharacterizationEntity savedEntity = saveCc(entity);
-        try {
-            ((ProcessResponseContentFilter)security.getFilters().get(CREATE_COHORT_CHARACTERIZATION)).doProcessResponseContent(savedEntity.getId().toString());
-        } catch (Exception e) {
-            log.error("Failed to add permissions to cohort characterization with id = " + savedEntity.getId(), e);
-        }
-        return savedEntity;
+        return saveCc(entity);
     }
 
     private CohortCharacterizationEntity saveCc(final CohortCharacterizationEntity entity) {
@@ -179,8 +172,14 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         return repository.save(savedEntity);
     }
 
+    @Override
     public void deleteCc(Long ccId) {
         repository.delete(ccId);
+    }
+
+    @Override
+    public void deleteCc(DeleteCcEvent event) {
+        deleteCc(new Long(event.getId()));
     }
 
     private void sortInnerEntities(final CohortCharacterizationEntity savedEntity) {

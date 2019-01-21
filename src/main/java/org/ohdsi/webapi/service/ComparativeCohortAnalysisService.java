@@ -44,6 +44,7 @@ import org.ohdsi.webapi.cohortcomparison.ModelScoreDistributionValue;
 import org.ohdsi.webapi.cohortcomparison.OutcomeModel;
 import org.ohdsi.webapi.cohortcomparison.PropensityScoreModelCovariate;
 import org.ohdsi.webapi.cohortcomparison.PropensityScoreModelReport;
+import org.ohdsi.webapi.events.DeleteComparativeCohAnalysisEvent;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.rsb.RSBTasklet;
@@ -63,6 +64,7 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.RowMapper;
@@ -130,11 +132,6 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
       comparativeCohortAnalysis.setCreatedBy(author);
       comparativeCohortAnalysis.setModifiedBy(author);
       comparativeCohortAnalysis = this.getComparativeCohortAnalysisRepository().save(comparativeCohortAnalysis);
-      try {
-          ((ProcessResponseContentFilter)security.getFilters().get("comparativecohortanalysis")).doProcessResponseContent(String.valueOf(comparativeCohortAnalysis.getAnalysisId()));
-      } catch (Exception e) {
-          log.error("Failed to add permissions to comparative cohort analysis with id = " + comparativeCohortAnalysis.getAnalysisId(), e);
-      }
       return conversionService.convert(comparativeCohortAnalysis, ComparativeCohortAnalysisDTO.class);
     }
 
@@ -162,6 +159,11 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
         ComparativeCohortAnalysis updatedAnalysis = this.getComparativeCohortAnalysisRepository().save(comparativeCohortAnalysis);
         return conversionService.convert(updatedAnalysis, ComparativeCohortAnalysisDTO.class);
       });
+    }
+    
+    @EventListener
+    public void delete(DeleteComparativeCohAnalysisEvent event){
+        delete(event.getId());
     }
     
     /**

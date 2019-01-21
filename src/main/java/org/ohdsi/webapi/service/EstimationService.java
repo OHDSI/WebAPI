@@ -41,12 +41,14 @@ import org.ohdsi.webapi.estimation.EstimationRepository;
 import org.ohdsi.webapi.estimation.dto.EstimationDTO;
 import org.ohdsi.webapi.estimation.specification.*;
 import org.ohdsi.webapi.estimation.specification.EstimationAnalysis;
+import org.ohdsi.webapi.events.DeleteEstimationEvent;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.filters.ProcessResponseContentFilter;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
@@ -109,6 +111,11 @@ public class EstimationService extends AbstractDaoService {
             }).collect(Collectors.toList()));        
     }
     
+    @EventListener
+    public void delete(DeleteEstimationEvent event) {
+        delete(event.getId());
+    }
+    
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}")
@@ -129,12 +136,6 @@ public class EstimationService extends AbstractDaoService {
         est.setCreatedDate(currentTime);
 
         Estimation estWithId = this.estimationRepository.save(est);
-        try {
-            ((ProcessResponseContentFilter)security.getFilters().get(CREATE_ESTIMATION)).doProcessResponseContent(String.valueOf(estWithId.getId()));
-        } catch (Exception e) {
-            log.error("Failed to add permissions to estimation with id = " + estWithId.getId(), e);
-        }
-
         return conversionService.convert(estWithId, EstimationDTO.class);
     }
 

@@ -13,6 +13,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.HttpMethod;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.Authenticator;
@@ -23,6 +24,7 @@ import org.apache.shiro.web.filter.session.NoSessionCreationFilter;
 import org.apache.shiro.web.servlet.AdviceFilter;
 import org.apache.shiro.web.util.WebUtils;
 import org.ohdsi.webapi.OidcConfCreator;
+import org.ohdsi.webapi.events.EntityName;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.filters.CorsFilter;
@@ -36,8 +38,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import waffle.shiro.negotiate.NegotiateAuthenticationStrategy;
 
+import static org.ohdsi.webapi.events.DeleteEventMessageFactory.getDeletionEvent;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.AUTHZ;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.CORS;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_COHORT_CHARACTERIZATION;
@@ -88,6 +92,9 @@ public abstract class AtlasSecurity extends Security {
   @Autowired
   SourceRepository sourceRepository;
 
+  @Autowired
+  private ApplicationEventPublisher eventPublisher;
+  
   @Autowired
   OidcConfCreator oidcConfCreator;
 
@@ -316,24 +323,24 @@ public abstract class AtlasSecurity extends Security {
     filters.put(NO_SESSION_CREATION, new NoSessionCreationFilter());
     filters.put(FORCE_SESSION_CREATION, new ForceSessionCreationFilter());
     filters.put(AUTHZ, new UrlBasedAuthorizingFilter());
-    filters.put(CREATE_COHORT_DEFINITION, this.getCreatePermissionsOnCreateCohortDefinitionFilter());
-    filters.put(CREATE_COHORT_CHARACTERIZATION, new ProcessResponseContentFilterImpl(cohortCharacterizationCreatorPermissionTemplates));
+    filters.put(CREATE_COHORT_DEFINITION, this.getCreatePermissionsOnCreateCohortDefinitionFilter(EntityName.COHORT));
+    filters.put(CREATE_COHORT_CHARACTERIZATION, new ProcessResponseContentFilterImpl(cohortCharacterizationCreatorPermissionTemplates, EntityName.COHORT_CHARACTERIZATION));
     filters.put(DELETE_COHORT_CHARACTERIZATION, this.getDeletePermissionsOnDeleteFilter(cohortCharacterizationCreatorPermissionTemplates));
-    filters.put(CREATE_PATHWAY_ANALYSIS, new ProcessResponseContentFilterImpl(pathwayAnalysisCreatorPermissionTemplate));
+    filters.put(CREATE_PATHWAY_ANALYSIS, new ProcessResponseContentFilterImpl(pathwayAnalysisCreatorPermissionTemplate, EntityName.PATHWAY_ANALYSIS));
     filters.put(DELETE_PATHWAY_ANALYSIS, this.getDeletePermissionsOnDeleteFilter(pathwayAnalysisCreatorPermissionTemplate));
-    filters.put(CREATE_FEATURE_ANALYSIS, new ProcessResponseContentFilterImpl(featureAnalysisPermissionTemplates));
+    filters.put(CREATE_FEATURE_ANALYSIS, new ProcessResponseContentFilterImpl(featureAnalysisPermissionTemplates, EntityName.FEATURE_ANALYSIS));
     filters.put(DELETE_FEATURE_ANALYSIS, this.getDeletePermissionsOnDeleteFilter(featureAnalysisPermissionTemplates));
-    filters.put(CREATE_CONCEPT_SET, new ProcessResponseContentFilterImpl(conceptsetCreatorPermissionTemplates));
+    filters.put(CREATE_CONCEPT_SET, new ProcessResponseContentFilterImpl(conceptsetCreatorPermissionTemplates, EntityName.CONCEPT_SET));
     filters.put(DELETE_COHORT_DEFINITION, this.getDeletePermissionsOnDeleteCohortDefinitionFilter());
     filters.put(DELETE_CONCEPT_SET, this.getDeletePermissionsOnDeleteConceptSetFilter());
     filters.put(DELETE_PLE, this.getDeletePermissionsOnDeleteFilter(plePermissionTemplates));
     filters.put(DELETE_PLP, this.getDeletePermissionsOnDeleteFilter(plpPermissionTemplate));
-    filters.put(CREATE_IR, new ProcessResponseContentFilterImpl(incidenceRatePermissionTemplates));
-    filters.put(CREATE_COPY_IR, this.getCreatePermissionsOnCopyIncidenceRateFilter());
-    filters.put(CREATE_PLE, new ProcessResponseContentFilterImpl(estimationPermissionTemplates));
-    filters.put(CREATE_PLP, new ProcessResponseContentFilterImpl(plpPermissionTemplate));
-    filters.put(CREATE_COPY_PLP, this.getCreatePermissionsOnCopyFilter(plpPermissionTemplate, ".*plp/.*/copy"));
-    filters.put(CREATE_SOURCE, new ProcessResponseContentFilterImpl(dataSourcePermissionTemplates));
+    filters.put(CREATE_IR, new ProcessResponseContentFilterImpl(incidenceRatePermissionTemplates, EntityName.INCIDENCE_RATE));
+    filters.put(CREATE_COPY_IR, this.getCreatePermissionsOnCopyIncidenceRateFilter(EntityName.INCIDENCE_RATE));
+    filters.put(CREATE_PLE, new ProcessResponseContentFilterImpl(estimationPermissionTemplates, EntityName.ESTIMATION));
+    filters.put(CREATE_PLP, new ProcessResponseContentFilterImpl(plpPermissionTemplate, EntityName.PATIENT_LEVEL_PREDICTION));
+    filters.put(CREATE_COPY_PLP, this.getCreatePermissionsOnCopyPLPFilter(plpPermissionTemplate, ".*plp/.*/copy", EntityName.PATIENT_LEVEL_PREDICTION));
+    filters.put(CREATE_SOURCE, new ProcessResponseContentFilterImpl(dataSourcePermissionTemplates, EntityName.SOURCE));
     filters.put(DELETE_SOURCE, this.getDeletePermissionsOnDeleteFilter(dataSourcePermissionTemplates));
     filters.put(CORS, new CorsFilter());
     filters.put(SKIP_IF_NOT_POST, this.getSkipFurtherFiltersIfNotPostFilter());
@@ -341,9 +348,9 @@ public abstract class AtlasSecurity extends Security {
     filters.put(SKIP_IF_NOT_PUT_OR_POST, this.getskipFurtherFiltersIfNotPutOrPostFilter());
     filters.put(SKIP_IF_NOT_PUT_OR_DELETE, this.getskipFurtherFiltersIfNotPutOrDeleteFilter());
     filters.put(SSL, this.getSslFilter());
-    filters.put(CREATE_PREDICTION, new ProcessResponseContentFilterImpl(predictionPermissionTemplates));
+    filters.put(CREATE_PREDICTION, new ProcessResponseContentFilterImpl(predictionPermissionTemplates, EntityName.PREDICTION));
     filters.put(DELETE_PREDICTION, this.getDeletePermissionsOnDeleteFilter(predictionPermissionTemplates));
-    filters.put(CREATE_ESTIMATION, new ProcessResponseContentFilterImpl(estimationPermissionTemplates));
+    filters.put(CREATE_ESTIMATION, new ProcessResponseContentFilterImpl(estimationPermissionTemplates, EntityName.ESTIMATION));
     filters.put(DELETE_ESTIMATION, this.getDeletePermissionsOnDeleteFilter(estimationPermissionTemplates));
   }
 
@@ -401,9 +408,11 @@ public abstract class AtlasSecurity extends Security {
   
   private class ProcessResponseContentFilterImpl extends ProcessResponseContentFilter{
     private Map<String, String> template;
+    private EntityName entityName;
     
-    private ProcessResponseContentFilterImpl(Map<String, String> template){
+    private ProcessResponseContentFilterImpl(Map<String, String> template, EntityName entityName){
       this.template = new HashMap<>(template);
+      this.entityName = entityName;
     }
 
     @Override
@@ -412,14 +421,20 @@ public abstract class AtlasSecurity extends Security {
     }
 
     @Override
-    public void doProcessResponseContent(String id) throws Exception {
-      RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
-      authorizer.addPermissionsFromTemplate(currentUserPersonalRole, template, id);
+    public void doProcessResponseContent(String content) throws Exception {
+      String id = this.parseJsonField(content, "id");
+      try {
+          RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
+          authorizer.addPermissionsFromTemplate(currentUserPersonalRole, template, id); 
+      } catch (Exception ex){
+          eventPublisher.publishEvent(getDeletionEvent(this, entityName, Integer.parseInt(id)));
+          log.error("Failed to add permissions to " + entityName.getName() + " with id = " + id, ex);
+      }      
     }
   }
 
-  private Filter getCreatePermissionsOnCreateCohortDefinitionFilter() {
-    return new ProcessResponseContentFilterImpl(cohortdefinitionCreatorPermissionTemplates) {
+  private Filter getCreatePermissionsOnCreateCohortDefinitionFilter(EntityName entityName) {
+    return new ProcessResponseContentFilterImpl(cohortdefinitionCreatorPermissionTemplates, entityName) {
       @Override
       protected boolean shouldProcess(ServletRequest request, ServletResponse response) {
         HttpServletRequest httpRequest = WebUtils.toHttp(request);
@@ -435,8 +450,8 @@ public abstract class AtlasSecurity extends Security {
     };
   }
 
-  private Filter getCreatePermissionsOnCopyIncidenceRateFilter() {
-    return new ProcessResponseContentFilterImpl(incidenceRatePermissionTemplates) {
+  private Filter getCreatePermissionsOnCopyIncidenceRateFilter(EntityName entityName) {
+    return new ProcessResponseContentFilterImpl(incidenceRatePermissionTemplates, entityName) {
       @Override
       protected boolean shouldProcess(ServletRequest request, ServletResponse response) {
 
@@ -445,8 +460,8 @@ public abstract class AtlasSecurity extends Security {
     };
   }
 
-  private Filter getCreatePermissionsOnCopyFilter(Map<String, String> template, String pathRegex) {
-    return new ProcessResponseContentFilterImpl(template) {
+  private Filter getCreatePermissionsOnCopyPLPFilter(Map<String, String> template, String pathRegex, EntityName entityName) {
+    return new ProcessResponseContentFilterImpl(template, entityName) {
       @Override
       protected boolean shouldProcess(ServletRequest request, ServletResponse response) {
 

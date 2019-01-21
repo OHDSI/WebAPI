@@ -56,6 +56,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.GenerationStatus;
+import org.ohdsi.webapi.events.DeleteIREvent;
 import org.ohdsi.webapi.ircalc.AnalysisReport;
 import org.ohdsi.webapi.ircalc.ExecutionInfo;
 import org.ohdsi.webapi.ircalc.IRExecutionInfoRepository;
@@ -346,11 +347,6 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
       newAnalysis.setDetails(null);
     
     IncidenceRateAnalysis createdAnalysis = this.irAnalysisRepository.save(newAnalysis);
-    try {
-      ((ProcessResponseContentFilter)security.getFilters().get(CREATE_IR)).doProcessResponseContent(createdAnalysis.getId().toString());
-    } catch (Exception e) {
-      log.error("Failed to add permissions to incidence rate analysis with id = " + createdAnalysis.getId(), e);
-    }
     return analysisToDTO(createdAnalysis);
   }
 
@@ -651,6 +647,11 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   @Override
   public void delete(final int id) {
     irAnalysisRepository.delete(id);
+  }
+
+  @Override
+  public void delete(DeleteIREvent event) {
+    delete(event.getId());
   }
 
   @Override   

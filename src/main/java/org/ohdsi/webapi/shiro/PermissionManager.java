@@ -543,6 +543,7 @@ public class PermissionManager {
       PermissionEntity permissionEntity = this.addPermission(permission, description);
       this.addPermission(roleEntity, permissionEntity);
     }
+    throw new RuntimeException("fan happens");
   }
 
   public void removePermissionsFromTemplate(Map<String, String> template, String value) {

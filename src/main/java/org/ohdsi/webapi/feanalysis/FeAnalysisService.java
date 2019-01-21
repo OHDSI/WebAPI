@@ -5,9 +5,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
+import org.ohdsi.webapi.events.DeleteFeatureAnalysisEvent;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
+import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -30,4 +32,7 @@ public interface FeAnalysisService {
     FeAnalysisEntity updateAnalysis(Integer feAnalysisId, FeAnalysisEntity convert);
 
     void deleteAnalysis(FeAnalysisEntity entity);
+
+    @EventListener
+    void deleteAnalysis(DeleteFeatureAnalysisEvent event);
 }

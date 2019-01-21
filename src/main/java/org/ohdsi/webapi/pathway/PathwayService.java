@@ -1,8 +1,10 @@
 package org.ohdsi.webapi.pathway;
 
+import org.ohdsi.webapi.events.DeletePathwayAnalysisEvent;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisGenerationEntity;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
+import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -22,6 +24,9 @@ public interface PathwayService {
     PathwayAnalysisEntity update(PathwayAnalysisEntity pathwayAnalysisEntity);
 
     void delete(Integer id);
+
+    @EventListener
+    void delete(DeletePathwayAnalysisEvent event);
 
     Map<Integer, Integer> getEventCohortCodes(PathwayAnalysisEntity pathwayAnalysis);
 

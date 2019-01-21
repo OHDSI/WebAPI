@@ -9,6 +9,7 @@ import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfo
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
+import org.ohdsi.webapi.events.DeletePathwayAnalysisEvent;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.pathway.converter.SerializedPathwayAnalysisToPathwayAnalysisConverter;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
@@ -140,13 +141,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
         newAnalysis.setCreatedBy(getCurrentUser());
         newAnalysis.setCreatedDate(new Date());
-        PathwayAnalysisEntity savedEntity = save(newAnalysis);
-        try {
-            ((ProcessResponseContentFilter)security.getFilters().get(CREATE_PATHWAY_ANALYSIS)).doProcessResponseContent(savedEntity.getId().toString());
-        } catch (Exception e) {
-            log.error("Failed to add permissions to pathway analysis with id = " + savedEntity.getId(), e);
-        }
-        return savedEntity;
+        return save(newAnalysis);
     }
 
     @Override
@@ -171,13 +166,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         newAnalysis.setCreatedBy(getCurrentUser());
         newAnalysis.setCreatedDate(new Date());
 
-        PathwayAnalysisEntity savedEntity = save(newAnalysis);
-        try {
-            ((ProcessResponseContentFilter)security.getFilters().get(CREATE_PATHWAY_ANALYSIS)).doProcessResponseContent(savedEntity.getId().toString());
-        } catch (Exception e) {
-            log.error("Failed to add permissions to pathway analysis with id = " + savedEntity.getId(), e);
-        }
-        return savedEntity;
+        return save(newAnalysis);
     }
 
     @Override
@@ -233,6 +222,11 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     public void delete(Integer id) {
 
         pathwayAnalysisRepository.delete(id);
+    }
+
+    @Override
+    public void delete(DeletePathwayAnalysisEvent event) {
+        delete(event.getId());
     }
 
     @Override

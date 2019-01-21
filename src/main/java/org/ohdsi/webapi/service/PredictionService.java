@@ -31,6 +31,7 @@ import javax.ws.rs.core.Response;
 import org.ohdsi.hydra.Hydra;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.events.DeletePredictionEvent;
 import org.ohdsi.webapi.prediction.PredictionAnalysis;
 import org.ohdsi.webapi.prediction.PredictionListItem;
 import org.ohdsi.webapi.prediction.PredictionAnalysisRepository;
@@ -41,6 +42,7 @@ import org.ohdsi.webapi.shiro.filters.ProcessResponseContentFilter;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
@@ -105,6 +107,11 @@ public class PredictionService  extends AbstractDaoService {
         this.predictionAnalysisRepository.delete(id);
     }
     
+    @EventListener
+    public void delete(DeletePredictionEvent event){
+        delete(event.getId());
+    }
+    
     @POST
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
@@ -115,11 +122,6 @@ public class PredictionService  extends AbstractDaoService {
         pred.setCreatedDate(currentTime);
     
         PredictionAnalysis predWithId = this.predictionAnalysisRepository.save(pred);
-        try {
-            ((ProcessResponseContentFilter)security.getFilters().get(CREATE_PREDICTION)).doProcessResponseContent(String.valueOf(predWithId.getId()));
-        } catch (Exception e) {
-            log.error("Failed to add permissions to prediction with id = " + predWithId.getId(), e);
-        }
         return conversionService.convert(predWithId, PredictionAnalysisDTO.class);        
     }
 

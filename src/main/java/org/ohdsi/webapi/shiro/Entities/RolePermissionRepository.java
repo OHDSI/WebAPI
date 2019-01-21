@@ -9,11 +9,11 @@ import org.springframework.data.repository.CrudRepository;
  */
 public interface RolePermissionRepository extends CrudRepository<RolePermissionEntity, Long> {
   
-  public RolePermissionEntity findById(Long id);
+  RolePermissionEntity findById(Long id);
   
-  public RolePermissionEntity findByRoleAndPermission(RoleEntity role, PermissionEntity permission);
+  RolePermissionEntity findByRoleAndPermission(RoleEntity role, PermissionEntity permission);
 
-  public RolePermissionEntity findByRoleIdAndPermissionId(Long roleId, Long permissionId);
+  RolePermissionEntity findByRoleIdAndPermissionId(Long roleId, Long permissionId);
 
-  public List<RolePermissionEntity> findByStatusIgnoreCase(String status);
+  List<RolePermissionEntity> findByStatusIgnoreCase(String status);
 }

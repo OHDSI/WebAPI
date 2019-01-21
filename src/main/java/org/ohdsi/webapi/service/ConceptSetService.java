@@ -31,6 +31,7 @@ import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfo;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetItem;
 import org.ohdsi.webapi.conceptset.ExportUtil;
+import org.ohdsi.webapi.events.DeleteConceptSetEvent;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
@@ -38,6 +39,7 @@ import org.ohdsi.webapi.shiro.filters.ProcessResponseContentFilter;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
@@ -237,11 +239,6 @@ public class ConceptSetService extends AbstractDaoService {
         updated.setCreatedBy(user);
         updated.setCreatedDate(new Date());
         updateConceptSet(updated, conceptSet);
-        try {
-            ((ProcessResponseContentFilter)security.getFilters().get(CREATE_CONCEPT_SET)).doProcessResponseContent(String.valueOf(updated.getId()));
-        } catch (Exception e) {
-            log.error("Failed to add permissions to concept set with id = " + updated.getId(), e);
-        }
         return conversionService.convert(updated, ConceptSetDTO.class);
     }
 
@@ -297,10 +294,15 @@ public class ConceptSetService extends AbstractDaoService {
       return this.conceptSetGenerationInfoRepository.findAllByConceptSetId(id);
   }
   
+  @EventListener
+  public void delete(DeleteConceptSetEvent event){
+      deleteConceptSet(event.getId());
+  }
+  
   @DELETE
   @Transactional(rollbackOn = Exception.class, dontRollbackOn = EmptyResultDataAccessException.class)
   @Path("{id}")
-  public void deleteConceptSet(@PathParam("id") final int id) throws Exception {
+  public void deleteConceptSet(@PathParam("id") final int id) {
       // Remove any generation info
       try {
         this.conceptSetGenerationInfoRepository.deleteByConceptSetId(id);

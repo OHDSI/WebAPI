@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.webapi.cohortcharacterization.CcResultType;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
+import org.ohdsi.webapi.events.DeleteFeatureAnalysisEvent;
 import org.ohdsi.webapi.feanalysis.domain.*;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisCriteriaRepository;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisEntityRepository;
@@ -55,13 +56,7 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
         if (analysis.getStatType() == null) {
             analysis.setStatType(CcResultType.PREVALENCE);
         }
-        FeAnalysisEntity savedEntity = analysisRepository.save(analysis);
-        try {
-            ((ProcessResponseContentFilter)security.getFilters().get(CREATE_FEATURE_ANALYSIS)).doProcessResponseContent(savedEntity.getId().toString());
-        } catch (Exception e) {
-            log.error("Failed to add permissions to feature analysis with id = " + savedEntity.getId(), e);
-        }
-        return savedEntity;
+        return analysisRepository.save(analysis);
     }
 
     @Override
@@ -156,6 +151,12 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
     public void deleteAnalysis(FeAnalysisEntity entity) {
         checkEntityLocked(entity);
         analysisRepository.delete(entity);
+    }
+
+    @Override
+    @Transactional
+    public void deleteAnalysis(DeleteFeatureAnalysisEvent event) {
+        deleteAnalysis(analysisRepository.findById(event.getId()).orElseThrow(() -> new RuntimeException("There is no Feature Analysis with id = " + event.getId())));
     }
 
     private void checkEntityLocked(FeAnalysisEntity entity) {

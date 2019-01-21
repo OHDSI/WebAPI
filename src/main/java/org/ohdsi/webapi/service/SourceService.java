@@ -26,12 +26,14 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.jasypt.encryption.pbe.PBEStringEncryptor;
 import org.jasypt.properties.PropertyValueEncryptionUtils;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.events.DeleteSourceEvent;
 import org.ohdsi.webapi.shiro.filters.ProcessResponseContentFilter;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.EventListener;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -219,11 +221,6 @@ public class SourceService extends AbstractDaoService {
     setImpalaKrbData(source, new Source(), file);
     Source saved = sourceRepository.save(source);
     String sourceKey = saved.getSourceKey();
-    try {
-      ((ProcessResponseContentFilter)security.getFilters().get(CREATE_SOURCE)).doProcessResponseContent(sourceKey);
-    } catch (Exception e) {
-      log.error("Failed to add permissions to source with id = " + sourceKey, e);
-    }
     cachedSources = null;
     securityManager.addSourceRole(sourceKey);
     SourceInfo sourceInfo = new SourceInfo(saved);

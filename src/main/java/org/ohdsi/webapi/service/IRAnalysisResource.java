@@ -1,7 +1,9 @@
 package org.ohdsi.webapi.service;
 
+import org.ohdsi.webapi.events.DeleteIREvent;
 import org.ohdsi.webapi.ircalc.AnalysisReport;
 import org.ohdsi.webapi.job.JobExecutionResource;
+import org.springframework.context.event.EventListener;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.ws.rs.Consumes;
@@ -87,7 +89,12 @@ public interface IRAnalysisResource {
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}")
+    @Transactional
     void delete(@PathParam("id") final int id);
+    
+    @EventListener
+    @Transactional
+    void delete(DeleteIREvent event);
 
     /**
      * Exports the analysis definition and results

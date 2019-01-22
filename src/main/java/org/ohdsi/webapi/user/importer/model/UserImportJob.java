@@ -2,13 +2,33 @@ package org.ohdsi.webapi.user.importer.model;
 
 import com.odysseusinc.scheduler.model.ArachneJob;
 
-import javax.persistence.*;
 import java.time.DayOfWeek;
 import java.util.List;
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.NamedAttributeNode;
+import javax.persistence.NamedEntityGraph;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 
 @Entity
 @Table(name = "user_import_job")
-@SequenceGenerator(name = "arachne_job_generator", sequenceName = "user_import_job_seq", allocationSize = 1)
+@GenericGenerator(
+  name = "arachne_job_generator",
+  strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+  parameters = {
+    @Parameter(name = "sequence_name", value = "user_import_job_seq"),
+    @Parameter(name = "increment_size", value = "1")
+  }
+)
 @NamedEntityGraph(name = "jobWithMapping",
   attributeNodes = @NamedAttributeNode("roleGroupMapping"))
 public class UserImportJob extends ArachneJob {

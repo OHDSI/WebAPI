@@ -152,8 +152,8 @@ GROUP BY subject_id, cohort_start_date, cohort_end_date;
 * Remove repetitive events (e.g. A-A-A into A)
 */
 
-IF OBJECT_ID('tempdb..#non_repetetive_events', 'U') IS NOT NULL
-DROP TABLE #non_repetetive_events;
+IF OBJECT_ID('tempdb..#non_repetitive_events', 'U') IS NOT NULL
+DROP TABLE #non_repetitive_events;
 
 SELECT
   ROW_NUMBER() OVER (PARTITION BY subject_id ORDER BY cohort_start_date) ordinal,
@@ -161,7 +161,7 @@ SELECT
   subject_id,
   cohort_start_date,
   cohort_end_date
-INTO #non_repetetive_events
+INTO #non_repetitive_events
 FROM (
   SELECT
     combo_id, subject_id, cohort_start_date, cohort_end_date,
@@ -187,7 +187,7 @@ SELECT
   combo_id,
   cohort_start_date,
   cohort_end_date
-FROM #non_repetetive_events
+FROM #non_repetitive_events
 WHERE 1 = 1 {@max_depth != ''}?{ AND ordinal <= @max_depth };
 
 INSERT INTO @target_database_schema.pathway_analysis_stats (pathway_analysis_generation_id, target_cohort_id, target_cohort_count, pathways_count)

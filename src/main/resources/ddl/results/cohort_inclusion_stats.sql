@@ -5,6 +5,5 @@ CREATE TABLE @results_schema.cohort_inclusion_stats(
   mode_id int NOT NULL DEFAULT 0,
   person_count bigint NOT NULL,
   gain_count bigint NOT NULL,
-  person_total bigint NOT NULL,
-  lost_count bigint NOT NULL DEFAULT 0
+  person_total bigint NOT NULL
 );

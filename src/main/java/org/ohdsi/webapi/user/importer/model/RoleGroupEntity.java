@@ -1,17 +1,32 @@
 package org.ohdsi.webapi.user.importer.model;
 
-import org.ohdsi.webapi.user.importer.model.LdapProviderType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
-
-import javax.persistence.*;
 
 @Entity
 @Table(name = "sec_role_group")
 public class RoleGroupEntity {
 
   @Id
-  @SequenceGenerator(name = "sec_role_group_seq", sequenceName = "sec_role_group_seq", allocationSize = 1)
-  @GeneratedValue(generator = "sec_role_group_seq", strategy = GenerationType.SEQUENCE)
+  @GenericGenerator(
+    name = "sec_role_group_generator",
+    strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+    parameters = {
+      @Parameter(name = "sequence_name", value = "sec_role_group_seq"),
+      @Parameter(name = "increment_size", value = "1")
+    }
+  )
+  @GeneratedValue(generator = "sec_role_group_generator")
   @Column(name = "id")
   private int id;
 

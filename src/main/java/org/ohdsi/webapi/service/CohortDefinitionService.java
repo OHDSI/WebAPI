@@ -424,6 +424,9 @@ public class CohortDefinitionService extends AbstractDaoService {
 
     return getTransactionTemplate().execute(transactionStatus -> {
       CohortDefinition d = this.cohortDefinitionRepository.findOneWithDetail(id);
+      if (Objects.isNull(d)) {
+        throw new IllegalArgumentException(String.format("There is no cohort definition with id = %d.", id));
+      }
       return cohortDefinitionToDTO(d);
     });
   }
@@ -513,6 +516,9 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Transactional
   public List<CohortGenerationInfo> getInfo(@PathParam("id") final int id) {
     CohortDefinition def = this.cohortDefinitionRepository.findOne(id);
+    if (Objects.isNull(def)) {
+      throw new IllegalArgumentException(String.format("There is no cohort definition with id = %d.", id));
+    }
     Set<CohortGenerationInfo> infoList = def.getGenerationInfoList();
 
     List<CohortGenerationInfo> result = new ArrayList<>();

@@ -31,6 +31,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.Where;
@@ -51,7 +53,14 @@ public class Source implements Serializable {
   public static final String IMPALA_DATASOURCE = "impala";
 
   @Id
-  @GeneratedValue
+  @GenericGenerator(
+    name = "source_generator",
+    strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+    parameters = {
+      @Parameter(name = "increment_size", value = "1")
+    }
+  )
+  @GeneratedValue(generator = "source_generator")
   @Column(name="SOURCE_ID")
   private int sourceId;
 

@@ -40,6 +40,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.util.List;
 import java.util.Map;
 
+import static org.ohdsi.webapi.Constants.Params.GENERATE_STATS;
 import static org.ohdsi.webapi.Constants.Params.TARGET_DATABASE_SCHEMA;
 
 /**
@@ -92,30 +93,32 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
         options.vocabularySchema = jobParams.get(Constants.Params.VOCABULARY_DATABASE_SCHEMA).toString();
       options.generateStats = Boolean.valueOf(jobParams.get(Constants.Params.GENERATE_STATS).toString());
 
-      Integer sourceId = Integer.parseInt(jobParams.get(Constants.Params.SOURCE_ID).toString());
-      Source source = sourceRepository.findBySourceId(sourceId);
+      if (jobParams.get(GENERATE_STATS).equals(Boolean.TRUE.toString())) {
+        Integer sourceId = Integer.parseInt(jobParams.get(Constants.Params.SOURCE_ID).toString());
+        Source source = sourceRepository.findBySourceId(sourceId);
 
-      String deleteSql = "DELETE FROM @target_database_schema.cohort_inclusion WHERE cohort_definition_id = @cohortDefinitionId;";
-      PreparedStatementRenderer psr = new PreparedStatementRenderer(source, deleteSql, "target_database_schema",
-              targetSchema, "cohortDefinitionId", options.cohortId);
-      if (isStopped()) {
-        return result;
-      }
-      jdbcTemplate.update(psr.getSql(), psr.getSetter());
-
-//      String insertSql = "INSERT INTO @results_schema.cohort_inclusion (cohort_definition_id, rule_sequence, name, description)  VALUES (@cohortId,@iteration,'@ruleName','@ruleDescription');";
-      String insertSql = "INSERT INTO @target_database_schema.cohort_inclusion (cohort_definition_id, rule_sequence, name, description) SELECT @cohortId as cohort_definition_id, @iteration as rule_sequence, CAST('@ruleName' as VARCHAR(255)) as name, CAST('@ruleDescription' as VARCHAR(1000)) as description;";
-
-      String[] names = new String[]{"cohortId", "iteration", "ruleName", "ruleDescription"};
-      List<InclusionRule> inclusionRules = expression.inclusionRules;
-      for (int i = 0; i < inclusionRules.size(); i++) {
-        InclusionRule r = inclusionRules.get(i);
-        Object[] values = new Object[]{options.cohortId, i, r.name, r.description};
-        psr = new PreparedStatementRenderer(source, insertSql, "target_database_schema", targetSchema, names, values, sessionId);
+        String deleteSql = "DELETE FROM @target_database_schema.cohort_inclusion WHERE cohort_definition_id = @cohortDefinitionId;";
+        PreparedStatementRenderer psr = new PreparedStatementRenderer(source, deleteSql, "target_database_schema",
+                targetSchema, "cohortDefinitionId", options.cohortId);
         if (isStopped()) {
           return result;
         }
         jdbcTemplate.update(psr.getSql(), psr.getSetter());
+
+  //      String insertSql = "INSERT INTO @results_schema.cohort_inclusion (cohort_definition_id, rule_sequence, name, description)  VALUES (@cohortId,@iteration,'@ruleName','@ruleDescription');";
+        String insertSql = "INSERT INTO @target_database_schema.cohort_inclusion (cohort_definition_id, rule_sequence, name, description) SELECT @cohortId as cohort_definition_id, @iteration as rule_sequence, CAST('@ruleName' as VARCHAR(255)) as name, CAST('@ruleDescription' as VARCHAR(1000)) as description;";
+
+        String[] names = new String[]{"cohortId", "iteration", "ruleName", "ruleDescription"};
+        List<InclusionRule> inclusionRules = expression.inclusionRules;
+        for (int i = 0; i < inclusionRules.size(); i++) {
+          InclusionRule r = inclusionRules.get(i);
+          Object[] values = new Object[]{options.cohortId, i, r.name, r.description};
+          psr = new PreparedStatementRenderer(source, insertSql, "target_database_schema", targetSchema, names, values, sessionId);
+          if (isStopped()) {
+            return result;
+          }
+          jdbcTemplate.update(psr.getSql(), psr.getSetter());
+        }
       }
 
       String expressionSql = expressionQueryBuilder.buildExpressionQuery(expression, options);

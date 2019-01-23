@@ -16,6 +16,7 @@
 package org.ohdsi.webapi.cohortdefinition;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.MoreObjects;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.InclusionRule;
@@ -29,6 +30,7 @@ import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.ohdsi.webapi.util.SourceUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.StoppableTasklet;
@@ -93,9 +95,10 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
         options.vocabularySchema = jobParams.get(Constants.Params.VOCABULARY_DATABASE_SCHEMA).toString();
       options.generateStats = Boolean.valueOf(jobParams.get(Constants.Params.GENERATE_STATS).toString());
 
+      Integer sourceId = Integer.parseInt(jobParams.get(Constants.Params.SOURCE_ID).toString());
+      Source source = sourceRepository.findBySourceId(sourceId);
+
       if (jobParams.get(GENERATE_STATS).equals(Boolean.TRUE.toString())) {
-        Integer sourceId = Integer.parseInt(jobParams.get(Constants.Params.SOURCE_ID).toString());
-        Source source = sourceRepository.findBySourceId(sourceId);
 
         String deleteSql = "DELETE FROM @target_database_schema.cohort_inclusion WHERE cohort_definition_id = @cohortDefinitionId;";
         PreparedStatementRenderer psr = new PreparedStatementRenderer(source, deleteSql, "target_database_schema",
@@ -112,7 +115,7 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
         List<InclusionRule> inclusionRules = expression.inclusionRules;
         for (int i = 0; i < inclusionRules.size(); i++) {
           InclusionRule r = inclusionRules.get(i);
-          Object[] values = new Object[]{options.cohortId, i, r.name, r.description};
+          Object[] values = new Object[]{options.cohortId, i, r.name, MoreObjects.firstNonNull(r.description, "")};
           psr = new PreparedStatementRenderer(source, insertSql, "target_database_schema", targetSchema, names, values, sessionId);
           if (isStopped()) {
             return result;
@@ -123,7 +126,7 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
 
       String expressionSql = expressionQueryBuilder.buildExpressionQuery(expression, options);
       expressionSql = SqlRender.renderSql(expressionSql, null, null);
-      String translatedSql = SqlTranslate.translateSql(expressionSql, jobParams.get("target_dialect").toString(), sessionId, null);
+      String translatedSql = SqlTranslate.translateSql(expressionSql, jobParams.get("target_dialect").toString(), sessionId, SourceUtils.getTempQualifier(source));
       return SqlSplit.splitSql(translatedSql);
     } catch (Exception e) {
       log.error("Failed to generate cohort: {}", defId, e);

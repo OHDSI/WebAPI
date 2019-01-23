@@ -271,7 +271,7 @@ public class PreparedStatementRenderer {
 
   public String getSql() {
     String translatedSql = SqlTranslate.translateSql(sql, targetDialect, sessionId, null);
-    return DBMSType.ORACLE.getOhdsiDB().equals(targetDialect) ? translatedSql.replaceAll(";$", "") : translatedSql;
+    return DBMSType.ORACLE.getOhdsiDB().equals(targetDialect) && !translatedSql.startsWith("BEGIN") ? translatedSql.replaceAll(";$", "") : translatedSql;
   }
 
   public PreparedStatementSetter getSetter() {

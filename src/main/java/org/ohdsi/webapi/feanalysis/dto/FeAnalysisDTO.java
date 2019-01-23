@@ -22,6 +22,7 @@ public class FeAnalysisDTO extends FeAnalysisShortDTO implements FeatureAnalysis
         this.value = value;
     }
 
+    @Override
     public Object getDesign() {
 
         return design;

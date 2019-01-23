@@ -89,7 +89,7 @@ public abstract class AtlasSecurity extends Security {
   private ApplicationEventPublisher eventPublisher;
   
   @Autowired
-  AtlasSecurityHelper helper;
+  private AtlasSecurityHelper helper;
   
   @Autowired
   OidcConfCreator oidcConfCreator;
@@ -171,11 +171,14 @@ public abstract class AtlasSecurity extends Security {
 
     this.predictionPermissionTemplates.put("prediction:%s:put", "Edit Estimation with ID=%s");
     this.predictionPermissionTemplates.put("prediction:%s:delete", "Delete Estimation with ID=%s");
-    
-    fillFilters();
   }
 
   @PostConstruct
+  private void init() {
+    fillFilters();
+    initRolesForSources();
+  }
+
   private void initRolesForSources() {
     try {
       for (Source source : sourceRepository.findAll()) {
@@ -242,6 +245,8 @@ public abstract class AtlasSecurity extends Security {
     addProcessEntityFilter(CREATE_PREDICTION, predictionPermissionTemplates);
     addProcessEntityFilter(CREATE_ESTIMATION, estimationPermissionTemplates);    
   }
+
+  
   
   private void addProcessEntityFilter(FilterTemplates template, Map<String, String> permissionTemplates){
     filters.put(template, helper.createResponseContentBuilder(template, permissionTemplates, authorizer, eventPublisher).build());

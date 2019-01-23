@@ -18,7 +18,7 @@ public class DeleteEventMessageFactory {
             case PATIENT_LEVEL_PREDICTION: return new DeletePLPEvent(source, id);
             case PREDICTION: return new DeletePredictionEvent(source, id);
             case SOURCE: return new DeleteSourceEvent(source, id);
-            default: throw new IllegalArgumentException("Unknown value: " + entityName);
+            default: throw new IllegalArgumentException("Unknown value: " + entityName.getName());
         }
     }
 }

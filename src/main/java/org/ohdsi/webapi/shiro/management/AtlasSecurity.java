@@ -1,12 +1,10 @@
 package org.ohdsi.webapi.shiro.management;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.servlet.Filter;
 import javax.servlet.ServletRequest;
@@ -64,7 +62,6 @@ import static org.ohdsi.webapi.shiro.management.FilterTemplates.DELETE_PLP;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.DELETE_PREDICTION;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.DELETE_SOURCE;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.FORCE_SESSION_CREATION;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.JWT_AUTHC;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.NO_SESSION_CREATION;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.SKIP_IF_NOT_POST;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.SKIP_IF_NOT_PUT;
@@ -90,6 +87,9 @@ public abstract class AtlasSecurity extends Security {
 
   @Autowired
   private ApplicationEventPublisher eventPublisher;
+  
+  @Autowired
+  AtlasSecurityHelper helper;
   
   @Autowired
   OidcConfCreator oidcConfCreator;
@@ -175,6 +175,18 @@ public abstract class AtlasSecurity extends Security {
     fillFilters();
   }
 
+  @PostConstruct
+  private void initRolesForSources() {
+    try {
+      for (Source source : sourceRepository.findAll()) {
+        this.addSourceRole(source.getSourceKey());
+      }
+    }
+    catch (Exception e) {
+      log.error(e.getMessage(), e);
+    }
+  }
+
   @Override
   public Map<String, String> getFilterChain() {
 
@@ -185,129 +197,7 @@ public abstract class AtlasSecurity extends Security {
 
   protected FilterChainBuilder setupProtectedPaths(FilterChainBuilder filterChainBuilder) {
 
-    return filterChainBuilder
-
-      // permissions
-      .addProtectedRestPath("/user/**")
-      .addProtectedRestPath("/role/**")
-      .addProtectedRestPath("/permission/**")
-
-      // concept set
-      .addProtectedRestPath("/conceptset", JWT_AUTHC, AUTHZ,CREATE_CONCEPT_SET)
-      .addProtectedRestPath("/conceptset/*/items", JWT_AUTHC, AUTHZ)
-      .addProtectedRestPath("/conceptset/*", JWT_AUTHC, AUTHZ, DELETE_CONCEPT_SET)
-
-      // incidence rates
-      .addProtectedRestPath("/ir", JWT_AUTHC, AUTHZ, CREATE_IR)
-      .addProtectedRestPath("/ir/*/copy", CREATE_COPY_IR)
-      .addProtectedRestPath("/ir/*", JWT_AUTHC, AUTHZ)
-      .addProtectedRestPath("/ir/*/execute/*")
-
-      // comparative cohort analysis (estimation)
-      .addProtectedRestPath("/comparativecohortanalysis", CREATE_PLE)
-      .addProtectedRestPath("/comparativecohortanalysis/*", DELETE_PLE)
-
-      // new estimation
-      .addProtectedRestPath("/estimation", CREATE_ESTIMATION)
-      .addProtectedRestPath("/estimation/*/copy", CREATE_ESTIMATION)
-      .addProtectedRestPath("/estimation/*", DELETE_ESTIMATION)
-      .addProtectedRestPath("/estimation/*/export")
-      .addProtectedRestPath("/estimation/*/download")
-
-      // population level prediction
-      .addProtectedRestPath("/plp", CREATE_PLP)
-      .addProtectedRestPath("/plp/*/copy", CREATE_COPY_PLP)
-      .addProtectedRestPath("/plp/*", DELETE_PLP)
-
-      // new prediction
-      .addProtectedRestPath("/prediction", CREATE_PREDICTION)
-      .addProtectedRestPath("/prediction/*/copy", CREATE_PREDICTION)
-      .addProtectedRestPath("/prediction/*", DELETE_PREDICTION)
-      .addProtectedRestPath("/prediction/*/export")
-      .addProtectedRestPath("/prediction/*/download")
-
-      // cohort definition
-      .addProtectedRestPath("/cohortdefinition", CREATE_COHORT_DEFINITION)
-      .addProtectedRestPath("/cohortdefinition/*/copy", CREATE_COHORT_DEFINITION)
-      .addProtectedRestPath("/cohortdefinition/*", DELETE_COHORT_DEFINITION)
-      .addProtectedRestPath("/cohortdefinition/*/info")
-      .addProtectedRestPath("/cohortdefinition/sql")
-      .addProtectedRestPath("/cohortdefinition/*/generate/*")
-      .addProtectedRestPath("/cohortdefinition/*/report/*")
-      .addProtectedRestPath("/*/cohortresults/*/breakdown")
-      .addProtectedRestPath("/job/execution")
-      .addProtectedRestPath("/job")
-
-      // configuration
-      .addProtectedRestPath("/source/refresh")
-      .addProtectedRestPath("/source/priorityVocabulary")
-      .addRestPath("/source/sources")
-      .addProtectedRestPath("/source/connection/*")
-      .addProtectedRestPath("/source", CREATE_SOURCE)
-      .addProtectedRestPath("/source/*", DELETE_SOURCE)
-      .addProtectedRestPath("/source/details/*")
-
-      // cohort analysis
-      .addProtectedRestPath("/cohortanalysis")
-      .addProtectedRestPath("/cohortanalysis/*")
-
-      // cohort results
-      .addProtectedRestPath("/cohortresults/*")
-
-      // cohort characterization
-      .addProtectedRestPath("/cohort-characterization", CREATE_COHORT_CHARACTERIZATION)
-      .addProtectedRestPath("/cohort-characterization/import", CREATE_COHORT_CHARACTERIZATION)
-      .addProtectedRestPath("/cohort-characterization/*", DELETE_COHORT_CHARACTERIZATION)
-      .addProtectedRestPath("/cohort-characterization/*/generation/*")
-      .addProtectedRestPath("/cohort-characterization/*/generation")
-      .addProtectedRestPath("/cohort-characterization/generation/*")
-      .addProtectedRestPath("/cohort-characterization/generation/*/design")
-      .addProtectedRestPath("/cohort-characterization/generation/*/result")
-      .addProtectedRestPath("/cohort-characterization/*/export")
-
-      // Pathways Analyses
-      .addProtectedRestPath("/pathway-analysis", CREATE_PATHWAY_ANALYSIS)
-      .addProtectedRestPath("/pathway-analysis/import", CREATE_PATHWAY_ANALYSIS)
-      .addProtectedRestPath("/pathway-analysis/*", DELETE_PATHWAY_ANALYSIS)
-      .addProtectedRestPath("/pathway-analysis/*/sql/*")
-      .addProtectedRestPath("/pathway-analysis/*/generation/*")
-      .addProtectedRestPath("/pathway-analysis/*/generation")
-      .addProtectedRestPath("/pathway-analysis/generation/*")
-      .addProtectedRestPath("/pathway-analysis/generation/*/design")
-      .addProtectedRestPath("/pathway-analysis/generation/*/result")
-      .addProtectedRestPath("/pathway-analysis/*/export")
-
-      // feature analyses
-      .addProtectedRestPath("/feature-analysis", CREATE_FEATURE_ANALYSIS)
-      .addProtectedRestPath("/feature-analysis/*", DELETE_FEATURE_ANALYSIS)
-
-      // evidence
-      .addProtectedRestPath("/evidence/*")
-      .addProtectedRestPath("/evidence/*/negativecontrols")
-
-      // execution service
-      .addProtectedRestPath("/executionservice/*")
-      .addProtectedRestPath("/executionservice/execution/run")
-
-      // feasibility
-      .addProtectedRestPath("/feasibility")
-      .addProtectedRestPath("/feasibility/*")
-
-      // featureextraction
-      .addProtectedRestPath("/featureextraction/*")
-
-      // vocabulary services
-      .addProtectedRestPath("/vocabulary/*")
-
-      // data sources
-      .addProtectedRestPath("/cdmresults/*")
-
-      // profiles
-      .addProtectedRestPath("/*/person/*")
-
-      // notifications
-      .addProtectedRestPath("/notifications/viewed")
-      .addProtectedRestPath("/notifications");
+    return helper.setupProtectedPaths(filterChainBuilder);
   }
 
   @Override
@@ -326,11 +216,12 @@ public abstract class AtlasSecurity extends Security {
     filters.put(SKIP_IF_NOT_PUT_OR_POST, this.getskipFurtherFiltersIfNotPutOrPostFilter());
     filters.put(SKIP_IF_NOT_PUT_OR_DELETE, this.getskipFurtherFiltersIfNotPutOrDeleteFilter());
     filters.put(SSL, this.getSslFilter());
+    
     filters.put(DELETE_COHORT_CHARACTERIZATION, this.getDeletePermissionsOnDeleteFilter(cohortCharacterizationCreatorPermissionTemplates));
     filters.put(DELETE_PATHWAY_ANALYSIS, this.getDeletePermissionsOnDeleteFilter(pathwayAnalysisCreatorPermissionTemplate));
     filters.put(DELETE_FEATURE_ANALYSIS, this.getDeletePermissionsOnDeleteFilter(featureAnalysisPermissionTemplates));
-    filters.put(DELETE_COHORT_DEFINITION, this.getDeletePermissionsOnDeleteCohortDefinitionFilter());
-    filters.put(DELETE_CONCEPT_SET, this.getDeletePermissionsOnDeleteConceptSetFilter());
+    filters.put(DELETE_COHORT_DEFINITION, this.getDeletePermissionsOnDeleteFilter(cohortdefinitionCreatorPermissionTemplates));
+    filters.put(DELETE_CONCEPT_SET, this.getDeletePermissionsOnDeleteFilter(conceptsetCreatorPermissionTemplates));
     filters.put(DELETE_PLE, this.getDeletePermissionsOnDeleteFilter(plePermissionTemplates));
     filters.put(DELETE_PLP, this.getDeletePermissionsOnDeleteFilter(plpPermissionTemplate));
     filters.put(DELETE_SOURCE, this.getDeletePermissionsOnDeleteFilter(dataSourcePermissionTemplates));
@@ -352,20 +243,12 @@ public abstract class AtlasSecurity extends Security {
     addProcessEntityFilter(CREATE_ESTIMATION, estimationPermissionTemplates);    
   }
   
-  private ResponseContentFilterBuilder createResponseContentBuilder(FilterTemplates template, Map<String, String> permissionTemplates){
-    return ResponseContentFilterBuilder.builder()
-            .withPermissionManager(authorizer)
-            .withEventPublisher(eventPublisher)
-            .withTemplate(permissionTemplates)
-            .withEntityName(template.getEntityName());
-  }
-  
   private void addProcessEntityFilter(FilterTemplates template, Map<String, String> permissionTemplates){
-    filters.put(template, createResponseContentBuilder(template, permissionTemplates).build());
+    filters.put(template, helper.createResponseContentBuilder(template, permissionTemplates, authorizer, eventPublisher).build());
   }
 
   private void addProcessEntityFilterWithCheck(FilterTemplates template, Map<String, String> permissionTemplates){
-    filters.put(template, createResponseContentBuilder(template, permissionTemplates).withHttpMethodCheck().build());
+    filters.put(template, helper.createResponseContentBuilder(template, permissionTemplates, authorizer, eventPublisher).withHttpMethodCheck().build());
   }
 
   @Override
@@ -408,22 +291,10 @@ public abstract class AtlasSecurity extends Security {
     }
   }
 
-  @PostConstruct
-  private void initRolesForSources() {
-    try {
-      for (Source source : sourceRepository.findAll()) {
-          this.addSourceRole(source.getSourceKey());
-      }
-    }
-    catch (Exception e) {
-      log.error(e.getMessage(), e);
-    }
-  }
-
   private Filter getDeletePermissionsOnDeleteFilter(Map<String, String> template) {
     return new AdviceFilter() {
       @Override
-      protected void postHandle(ServletRequest request, ServletResponse response) throws Exception {
+      protected void postHandle(ServletRequest request, ServletResponse response) {
 
         HttpServletRequest httpRequest = WebUtils.toHttp(request);
         if (!HttpMethod.DELETE.equalsIgnoreCase(httpRequest.getMethod())) {
@@ -433,66 +304,8 @@ public abstract class AtlasSecurity extends Security {
         String id = httpRequest.getPathInfo()
                 .replaceAll("^/+", "")
                 .replaceAll("/+$", "")
-                .split("/")
-                [1];
+                .split("/")[1];
         authorizer.removePermissionsFromTemplate(template, id);
-      }
-    };
-  }
-
-  private Filter getDeletePermissionsOnDeleteCohortDefinitionFilter() {
-    return new AdviceFilter() {
-      @Override
-      protected void postHandle(ServletRequest request, ServletResponse response) {
-        HttpServletRequest httpRequest = WebUtils.toHttp(request);
-        if (!HttpMethod.DELETE.equalsIgnoreCase(httpRequest.getMethod())) {
-          return;
-        }
-
-        String id = httpRequest.getPathInfo()
-                .replaceAll("^/+", "")
-                .replaceAll("/+$", "")
-                .split("/")
-                [1];
-        authorizer.removePermissionsFromTemplate(cohortdefinitionCreatorPermissionTemplates, id);
-      }
-    };
-  }
-
-  private Filter getDeletePermissionsOnDeleteIRFilter() {
-    return new AdviceFilter() {
-      @Override
-      protected void postHandle(ServletRequest request, ServletResponse response) throws Exception {
-
-        HttpServletRequest httpRequest = WebUtils.toHttp(request);
-        if (!HttpMethod.DELETE.equalsIgnoreCase(httpRequest.getMethod())){
-          return;
-        }
-        String id = httpRequest.getPathInfo()
-                .replaceAll("^/+", "")
-                .replaceAll("/+$", "")
-                .split("/")
-                [1];
-        authorizer.removePermissionsFromTemplate(incidenceRatePermissionTemplates, id);
-      }
-    };
-  }
-
-  private Filter getDeletePermissionsOnDeleteConceptSetFilter() {
-    return new AdviceFilter() {
-      @Override
-      protected void postHandle(ServletRequest request, ServletResponse response) {
-        HttpServletRequest httpRequest = WebUtils.toHttp(request);
-        if (!HttpMethod.DELETE.equalsIgnoreCase(httpRequest.getMethod())) {
-          return;
-        }
-
-        String id = httpRequest.getPathInfo()
-                .replaceAll("^/+", "")
-                .replaceAll("/+$", "")
-                .split("/")
-                [1];
-        authorizer.removePermissionsFromTemplate(conceptsetCreatorPermissionTemplates, id);
       }
     };
   }
@@ -548,95 +361,5 @@ public abstract class AtlasSecurity extends Security {
       return authorizer.getSubjectName();
     else
       return "anonymous";
-  }
-
-  class FilterChainBuilder {
-
-    private Map<String, String> filterChain = new LinkedHashMap<>();
-    private String restFilters;
-    private String authcFilter;
-    private String authzFilter;
-    private String filtersBeforeOAuth;
-    private String filtersAfterOAuth;
-
-    public FilterChainBuilder setRestFilters(FilterTemplates... restFilters) {
-      this.restFilters = convertArrayToString(restFilters);
-      return this;
-    }
-
-    public FilterChainBuilder setBeforeOAuthFilters(FilterTemplates... filtersBeforeOAuth) {
-      this.filtersBeforeOAuth = convertArrayToString(filtersBeforeOAuth);
-      return this;
-    }
-    
-    public FilterChainBuilder setAfterOAuthFilters(FilterTemplates... filtersAfterOAuth) {
-      this.filtersAfterOAuth = convertArrayToString(filtersAfterOAuth);
-      return this;
-    }
-
-    public FilterChainBuilder setAuthcFilter(FilterTemplates... authcFilters) {
-      this.authcFilter = convertArrayToString(authcFilters);
-      return this;
-    }
-
-    public FilterChainBuilder setAuthzFilter(FilterTemplates... authzFilters) {
-      this.authzFilter = convertArrayToString(authzFilters);
-      return this;
-    }
-
-    public FilterChainBuilder addRestPath(String path, String filters) {
-      return this.addPath(path, this.restFilters + ", " + filters);
-    }
-
-    public FilterChainBuilder addRestPath(String path, FilterTemplates... filters) { 
-      return addRestPath(path, convertArrayToString(filters));
-    }
-
-    public FilterChainBuilder addRestPath(String path) {
-      return this.addPath(path, this.restFilters);
-    }
-
-    public FilterChainBuilder addOAuthPath(String path, FilterTemplates... oauthFilters) {        
-      return this.addPath(path, filtersBeforeOAuth + ", " + convertArrayToString(oauthFilters) + ", " + filtersAfterOAuth);
-    }
-
-    public FilterChainBuilder addProtectedRestPath(String path) {
-      return this.addRestPath(path, this.authcFilter + ", " + this.authzFilter);
-    }
-
-    public FilterChainBuilder addProtectedRestPath(String path, FilterTemplates... filters) {
-
-      String filtersStr = convertArrayToString(filters);
-      return this.addRestPath(path, authcFilter + ", " + authzFilter + ", " + filtersStr);
-    }
-
-    public FilterChainBuilder addPath(String path, FilterTemplates... filters) {
-      return addPath(path, convertArrayToString(filters));     
-    }
-
-    public FilterChainBuilder addPath(String path, String filters) {
-      path = path.replaceAll("/+$", "");
-      this.filterChain.put(path, filters);
-
-      // If path ends with non wildcard character, need to add two paths -
-      // one without slash at the end and one with slash at the end, because
-      // both URLs like www.domain.com/myapp/mypath and www.domain.com/myapp/mypath/
-      // (note the slash at the end) are falling into the same method, but
-      // for filter chain these are different paths
-      if (!path.endsWith("*")) {
-        this.filterChain.put(path + "/", filters);
-      }
-      return this;
-    }
-
-    public Map<String, String> build() {
-      return filterChain;
-    }
-    
-    private String convertArrayToString(FilterTemplates... templates){
-        return Arrays.stream(templates)
-                .map(FilterTemplates::getTemplateName)
-                .collect(Collectors.joining(", "));
-    }
   }
 }

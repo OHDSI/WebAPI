@@ -44,7 +44,6 @@ import org.ohdsi.webapi.cohortcomparison.ModelScoreDistributionValue;
 import org.ohdsi.webapi.cohortcomparison.OutcomeModel;
 import org.ohdsi.webapi.cohortcomparison.PropensityScoreModelCovariate;
 import org.ohdsi.webapi.cohortcomparison.PropensityScoreModelReport;
-import org.ohdsi.webapi.events.DeleteComparativeCohAnalysisEvent;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.rsb.RSBTasklet;
@@ -52,7 +51,6 @@ import org.ohdsi.webapi.service.CohortDefinitionService.CohortDefinitionDTO;
 import org.ohdsi.webapi.service.dto.ComparativeCohortAnalysisDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
-import org.ohdsi.webapi.shiro.filters.ProcessResponseContentFilter;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
@@ -64,7 +62,6 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.EventListener;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.RowMapper;
@@ -159,11 +156,6 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
         ComparativeCohortAnalysis updatedAnalysis = this.getComparativeCohortAnalysisRepository().save(comparativeCohortAnalysis);
         return conversionService.convert(updatedAnalysis, ComparativeCohortAnalysisDTO.class);
       });
-    }
-    
-    @EventListener
-    public void delete(DeleteComparativeCohAnalysisEvent event){
-        delete(event.getId());
     }
     
     /**

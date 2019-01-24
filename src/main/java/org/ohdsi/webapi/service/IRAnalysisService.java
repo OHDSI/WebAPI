@@ -22,7 +22,6 @@ import static org.ohdsi.webapi.Constants.Params.RESULTS_DATABASE_SCHEMA;
 import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
 import static org.ohdsi.webapi.Constants.Params.TARGET_DIALECT;
 import static org.ohdsi.webapi.Constants.Params.VOCABULARY_DATABASE_SCHEMA;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_IR;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -56,7 +55,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.GenerationStatus;
-import org.ohdsi.webapi.events.DeleteIREvent;
 import org.ohdsi.webapi.ircalc.AnalysisReport;
 import org.ohdsi.webapi.ircalc.ExecutionInfo;
 import org.ohdsi.webapi.ircalc.IRExecutionInfoRepository;
@@ -69,7 +67,6 @@ import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
-import org.ohdsi.webapi.shiro.filters.ProcessResponseContentFilter;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
@@ -647,11 +644,6 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   @Override
   public void delete(final int id) {
     irAnalysisRepository.delete(id);
-  }
-
-  @Override
-  public void delete(DeleteIREvent event) {
-    delete(event.getId());
   }
 
   @Override   

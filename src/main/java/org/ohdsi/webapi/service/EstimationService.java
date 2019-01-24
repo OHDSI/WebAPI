@@ -41,19 +41,14 @@ import org.ohdsi.webapi.estimation.EstimationRepository;
 import org.ohdsi.webapi.estimation.dto.EstimationDTO;
 import org.ohdsi.webapi.estimation.specification.*;
 import org.ohdsi.webapi.estimation.specification.EstimationAnalysis;
-import org.ohdsi.webapi.events.DeleteEstimationEvent;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
-import org.ohdsi.webapi.shiro.filters.ProcessResponseContentFilter;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.EventListener;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
-
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_ESTIMATION;
 
 @Path("/estimation/")
 @Component
@@ -111,12 +106,8 @@ public class EstimationService extends AbstractDaoService {
             }).collect(Collectors.toList()));        
     }
     
-    @EventListener
-    public void delete(DeleteEstimationEvent event) {
-        delete(event.getId());
-    }
-    
     @DELETE
+    @Transactional
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}")
     public void delete(@PathParam("id") final int id) {

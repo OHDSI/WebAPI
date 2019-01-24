@@ -7,21 +7,17 @@ import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.webapi.cohortcharacterization.CcResultType;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
-import org.ohdsi.webapi.events.DeleteFeatureAnalysisEvent;
 import org.ohdsi.webapi.feanalysis.domain.*;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisCriteriaRepository;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisEntityRepository;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisWithStringEntityRepository;
 import org.ohdsi.webapi.service.AbstractDaoService;
-import org.ohdsi.webapi.shiro.filters.ProcessResponseContentFilter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.ws.rs.NotFoundException;
-
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_FEATURE_ANALYSIS;
 
 @Service
 @Transactional(readOnly = true)
@@ -155,8 +151,8 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
 
     @Override
     @Transactional
-    public void deleteAnalysis(DeleteFeatureAnalysisEvent event) {
-        deleteAnalysis(analysisRepository.findById(event.getId()).orElseThrow(() -> new RuntimeException("There is no Feature Analysis with id = " + event.getId())));
+    public void deleteAnalysis(int id) {
+        deleteAnalysis(analysisRepository.findById(id).orElseThrow(() -> new RuntimeException("There is no Feature Analysis with id = " + id)));
     }
 
     private void checkEntityLocked(FeAnalysisEntity entity) {

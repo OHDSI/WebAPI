@@ -7,9 +7,7 @@ import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcPrevalenceStat;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
-import org.ohdsi.webapi.events.DeleteCcEvent;
 import org.ohdsi.webapi.job.JobExecutionResource;
-import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -17,9 +15,6 @@ public interface CcService {
     CohortCharacterizationEntity createCc(CohortCharacterizationEntity entity);
 
     CohortCharacterizationEntity updateCc(CohortCharacterizationEntity entity);
-
-    @EventListener
-    void deleteCc(DeleteCcEvent event);
     
     void deleteCc(Long ccId);
 

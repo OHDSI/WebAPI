@@ -31,11 +31,9 @@ import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfo;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetItem;
 import org.ohdsi.webapi.conceptset.ExportUtil;
-import org.ohdsi.webapi.events.DeleteConceptSetEvent;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
-import org.ohdsi.webapi.shiro.filters.ProcessResponseContentFilter;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,8 +41,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
-
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_CONCEPT_SET;
 
 /**
  *
@@ -292,11 +288,6 @@ public class ConceptSetService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<ConceptSetGenerationInfo> getConceptSetGenerationInfo(@PathParam("id") final int id) {
       return this.conceptSetGenerationInfoRepository.findAllByConceptSetId(id);
-  }
-  
-  @EventListener
-  public void delete(DeleteConceptSetEvent event){
-      deleteConceptSet(event.getId());
   }
   
   @DELETE

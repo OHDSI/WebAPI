@@ -20,12 +20,10 @@ import org.ohdsi.sql.SqlRender;
 import org.ohdsi.webapi.cohortdefinition.*;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ExportUtil;
-import org.ohdsi.webapi.events.DeleteCohortEvent;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
-import org.ohdsi.webapi.shiro.filters.ProcessResponseContentFilter;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
@@ -43,7 +41,6 @@ import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.batch.core.launch.JobOperator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.EventListener;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionStatus;
@@ -69,7 +66,6 @@ import java.util.stream.Stream;
 
 import static org.ohdsi.webapi.Constants.Params.COHORT_DEFINITION_ID;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_COHORT_DEFINITION;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 /**
@@ -542,11 +538,6 @@ public class CohortDefinitionService extends AbstractDaoService {
     CohortDefinitionDTO copyDef = createCohortDefinition(sourceDef);
 
     return copyDef;
-  }      
-  
-  @EventListener
-  public void delete(DeleteCohortEvent event){
-    delete(event.getId());
   }
 
   /**

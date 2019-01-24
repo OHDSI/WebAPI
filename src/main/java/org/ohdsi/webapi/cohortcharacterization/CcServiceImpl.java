@@ -17,7 +17,6 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
-import org.ohdsi.webapi.events.DeleteCcEvent;
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
@@ -175,11 +174,6 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     @Override
     public void deleteCc(Long ccId) {
         repository.delete(ccId);
-    }
-
-    @Override
-    public void deleteCc(DeleteCcEvent event) {
-        deleteCc(new Long(event.getId()));
     }
 
     private void sortInnerEntities(final CohortCharacterizationEntity savedEntity) {

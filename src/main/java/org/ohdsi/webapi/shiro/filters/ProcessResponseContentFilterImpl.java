@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.shiro.filters;
 
 import org.apache.shiro.web.util.WebUtils;
+import org.ohdsi.webapi.events.DeleteEntityEvent;
 import org.ohdsi.webapi.events.EntityName;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.PermissionManager;
@@ -12,8 +13,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.ohdsi.webapi.events.DeleteEventMessageFactory.getDeletionEvent;
 
 public class ProcessResponseContentFilterImpl extends ProcessResponseContentFilter {
     
@@ -40,7 +39,7 @@ public class ProcessResponseContentFilterImpl extends ProcessResponseContentFilt
             RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
             authorizer.addPermissionsFromTemplate(currentUserPersonalRole, template, id);
         } catch (Exception ex) {
-            eventPublisher.publishEvent(getDeletionEvent(this, entityName, Integer.parseInt(id)));
+            eventPublisher.publishEvent(new DeleteEntityEvent(this, Integer.parseInt(id), entityName));
             log.error("Failed to add permissions to " + entityName.getName() + " with id = " + id, ex);
         }
     }

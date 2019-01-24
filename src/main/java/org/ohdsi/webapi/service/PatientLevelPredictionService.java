@@ -23,7 +23,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import org.ohdsi.webapi.events.DeletePLPEvent;
 import org.ohdsi.webapi.prediction.PatientLevelPredictionAnalysis;
 import org.ohdsi.webapi.prediction.PatientLevelPredictionAnalysisInfo;
 import org.ohdsi.webapi.prediction.PatientLevelPredictionAnalysisRepository;
@@ -32,15 +31,12 @@ import org.ohdsi.webapi.service.CohortDefinitionService.CohortDefinitionDTO;
 import org.ohdsi.webapi.service.dto.PatientLevelPredictionAnalysisDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
-import org.ohdsi.webapi.shiro.filters.ProcessResponseContentFilter;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.EventListener;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Component;
 
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_PLP;
 
 /**
  *
@@ -106,11 +102,6 @@ public class PatientLevelPredictionService extends AbstractDaoService {
 	public void delete(@PathParam("id") final int id) {
 		this.patientLevelPredictionAnalysisRepository.delete(id);
 	}
-	
-	@EventListener
-	public void delete(DeletePLPEvent event){
-	    delete(event.getId());
-    }
 
 	@POST
 	@Path("/")

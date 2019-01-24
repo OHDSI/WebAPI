@@ -48,9 +48,9 @@ import static org.ohdsi.webapi.source.Source.IMPALA_DATASOURCE;
 @Transactional
 public class SourceService extends AbstractDaoService {
 
-    public static final String SECURE_MODE_ERROR = "This feature requires the administrator to enable security for the application";
-    private static final String KRB_REALM = "KrbRealm";
-    private static final String KRB_FQDN = "KrbHostFQDN";
+  public static final String SECURE_MODE_ERROR = "This feature requires the administrator to enable security for the application";
+  private static final String KRB_REALM = "KrbRealm";
+  private static final String KRB_FQDN = "KrbHostFQDN";
 
   @Autowired
   private JdbcTemplate jdbcTemplate;

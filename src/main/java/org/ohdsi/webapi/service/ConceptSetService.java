@@ -37,6 +37,7 @@ import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
@@ -229,11 +230,12 @@ public class ConceptSetService extends AbstractDaoService {
     public ConceptSetDTO createConceptSet(ConceptSetDTO conceptSetDTO) {
 
         UserEntity user = userRepository.findByLogin(security.getSubject());
+        ConceptSet conceptSet = conversionService.convert(conceptSetDTO, ConceptSet.class);
         ConceptSet updated = new ConceptSet();
         updated.setCreatedBy(user);
         updated.setCreatedDate(new Date());
-        ConceptSet conceptSet = conversionService.convert(conceptSetDTO, ConceptSet.class);
-        return conversionService.convert(updateConceptSet(updated, conceptSet), ConceptSetDTO.class);
+        updateConceptSet(updated, conceptSet);
+        return conversionService.convert(updated, ConceptSetDTO.class);
     }
 
     @Path("/{id}")
@@ -291,7 +293,7 @@ public class ConceptSetService extends AbstractDaoService {
   @DELETE
   @Transactional(rollbackOn = Exception.class, dontRollbackOn = EmptyResultDataAccessException.class)
   @Path("{id}")
-  public void deleteConceptSet(@PathParam("id") final int id) throws Exception {
+  public void deleteConceptSet(@PathParam("id") final int id) {
       // Remove any generation info
       try {
         this.conceptSetGenerationInfoRepository.deleteByConceptSetId(id);

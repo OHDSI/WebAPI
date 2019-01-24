@@ -11,7 +11,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.HttpMethod;
-import org.apache.commons.lang.StringUtils;
+
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.Authenticator;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
@@ -25,7 +25,7 @@ import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.filters.CorsFilter;
 import org.ohdsi.webapi.shiro.filters.ForceSessionCreationFilter;
-import org.ohdsi.webapi.shiro.filters.ProcessResponseContentFilter;
+import org.ohdsi.webapi.shiro.filters.ProcessResponseContentFilterImpl;
 import org.ohdsi.webapi.shiro.filters.SkipFurtherFilteringFilter;
 import org.ohdsi.webapi.shiro.filters.UrlBasedAuthorizingFilter;
 import org.ohdsi.webapi.source.Source;
@@ -34,7 +34,43 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import waffle.shiro.negotiate.NegotiateAuthenticationStrategy;
+
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.AUTHZ;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.CORS;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_COHORT_CHARACTERIZATION;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_COHORT_DEFINITION;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_CONCEPT_SET;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_COPY_COHORT_DEFINITION;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_COPY_IR;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_COPY_PLP;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_IR;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_PLE;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_PLP;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_SOURCE;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_ESTIMATION;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_FEATURE_ANALYSIS;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_PATHWAY_ANALYSIS;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_PREDICTION;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.DELETE_COHORT_CHARACTERIZATION;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.DELETE_COHORT_DEFINITION;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.DELETE_CONCEPT_SET;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.DELETE_ESTIMATION;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.DELETE_FEATURE_ANALYSIS;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.DELETE_PATHWAY_ANALYSIS;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.DELETE_PLE;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.DELETE_PLP;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.DELETE_PREDICTION;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.DELETE_SOURCE;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.FORCE_SESSION_CREATION;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.JWT_AUTHC;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.NO_SESSION_CREATION;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.SKIP_IF_NOT_POST;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.SKIP_IF_NOT_PUT;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.SKIP_IF_NOT_PUT_OR_DELETE;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.SKIP_IF_NOT_PUT_OR_POST;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.SSL;
 
 /**
  *
@@ -52,6 +88,9 @@ public abstract class AtlasSecurity extends Security {
   @Autowired
   SourceRepository sourceRepository;
 
+  @Autowired
+  private ApplicationEventPublisher eventPublisher;
+  
   @Autowired
   OidcConfCreator oidcConfCreator;
 
@@ -75,6 +114,7 @@ public abstract class AtlasSecurity extends Security {
   private final Map<String, String> predictionPermissionTemplates = new LinkedHashMap<>();
   private final Map<String, String> dataSourcePermissionTemplates = new LinkedHashMap<>();
   private final Map<String, String> featureAnalysisPermissionTemplates = new LinkedHashMap<>();
+  private final Map<FilterTemplates, Filter> filters = new HashMap<>();
 
   public AtlasSecurity() {
     this.defaultRoles.add("public");
@@ -133,6 +173,23 @@ public abstract class AtlasSecurity extends Security {
     this.predictionPermissionTemplates.put("prediction:%s:delete", "Delete Estimation with ID=%s");
   }
 
+  @PostConstruct
+  private void init() {
+    fillFilters();
+    initRolesForSources();
+  }
+
+  private void initRolesForSources() {
+    try {
+      for (Source source : sourceRepository.findAll()) {
+        this.addSourceRole(source.getSourceKey());
+      }
+    }
+    catch (Exception e) {
+      log.error(e.getMessage(), e);
+    }
+  }
+
   @Override
   public Map<String, String> getFilterChain() {
 
@@ -145,169 +202,176 @@ public abstract class AtlasSecurity extends Security {
 
     return filterChainBuilder
 
-      // permissions
-      .addProtectedRestPath("/user/**")
-      .addProtectedRestPath("/role/**")
-      .addProtectedRestPath("/permission/**")
+            // permissions
+            .addProtectedRestPath("/user/**")
+            .addProtectedRestPath("/role/**")
+            .addProtectedRestPath("/permission/**")
 
-      // concept set
-      .addProtectedRestPath("/conceptset", "jwtAuthc, authz, createPermissionsOnCreateConceptSet")
-      .addProtectedRestPath("/conceptset/*/items", "jwtAuthc, authz")
-      .addProtectedRestPath("/conceptset/*", "jwtAuthc, authz, deletePermissionsOnDeleteConceptSet")
+            // concept set
+            .addProtectedRestPath("/conceptset", JWT_AUTHC, AUTHZ,CREATE_CONCEPT_SET)
+            .addProtectedRestPath("/conceptset/*/items", JWT_AUTHC, AUTHZ)
+            .addProtectedRestPath("/conceptset/*", JWT_AUTHC, AUTHZ, DELETE_CONCEPT_SET)
 
-      // incidence rates
-      .addProtectedRestPath("/ir", "jwtAuthc, authz, createPermissionsOnCreateIR")
-      .addProtectedRestPath("/ir/*/copy", "createPermissionsOnCopyIR")
-      .addProtectedRestPath("/ir/*", "jwtAuthc, authz")
-      .addProtectedRestPath("/ir/*/execute/*")
+            // incidence rates
+            .addProtectedRestPath("/ir", JWT_AUTHC, AUTHZ, CREATE_IR)
+            .addProtectedRestPath("/ir/*/copy", CREATE_COPY_IR)
+            .addProtectedRestPath("/ir/*", JWT_AUTHC, AUTHZ)
+            .addProtectedRestPath("/ir/*/execute/*")
 
-      // comparative cohort analysis (estimation)
-      .addProtectedRestPath("/comparativecohortanalysis", "createPermissionsOnCreatePle")
-      .addProtectedRestPath("/comparativecohortanalysis/*", "deletePermissionsOnDeletePle")
+            // comparative cohort analysis (estimation)
+            .addProtectedRestPath("/comparativecohortanalysis", CREATE_PLE)
+            .addProtectedRestPath("/comparativecohortanalysis/*", DELETE_PLE)
 
-      // new estimation
-      .addProtectedRestPath("/estimation", "createPermissionsOnCreateEstimation")
-      .addProtectedRestPath("/estimation/*/copy", "createPermissionsOnCreateEstimation")
-      .addProtectedRestPath("/estimation/*", "deletePermissionsOnDeleteEstimation")
-      .addProtectedRestPath("/estimation/*/export")
-      .addProtectedRestPath("/estimation/*/download")
+            // new estimation
+            .addProtectedRestPath("/estimation", CREATE_ESTIMATION)
+            .addProtectedRestPath("/estimation/*/copy", CREATE_ESTIMATION)
+            .addProtectedRestPath("/estimation/*", DELETE_ESTIMATION)
+            .addProtectedRestPath("/estimation/*/export")
+            .addProtectedRestPath("/estimation/*/download")
 
-      // population level prediction
-      .addProtectedRestPath("/plp", "createPermissionsOnCreatePlp")
-      .addProtectedRestPath("/plp/*/copy", "createPermissionsOnCopyPlp")
-      .addProtectedRestPath("/plp/*", "deletePermissionsOnDeletePlp")
+            // population level prediction
+            .addProtectedRestPath("/plp", CREATE_PLP)
+            .addProtectedRestPath("/plp/*/copy", CREATE_COPY_PLP)
+            .addProtectedRestPath("/plp/*", DELETE_PLP)
 
-      // new prediction
-      .addProtectedRestPath("/prediction", "createPermissionsOnCreatePrediction")
-      .addProtectedRestPath("/prediction/*/copy", "createPermissionsOnCreatePrediction")
-      .addProtectedRestPath("/prediction/*", "deletePermissionsOnDeletePrediction")
-      .addProtectedRestPath("/prediction/*/export")
-      .addProtectedRestPath("/prediction/*/download")
+            // new prediction
+            .addProtectedRestPath("/prediction", CREATE_PREDICTION)
+            .addProtectedRestPath("/prediction/*/copy", CREATE_PREDICTION)
+            .addProtectedRestPath("/prediction/*", DELETE_PREDICTION)
+            .addProtectedRestPath("/prediction/*/export")
+            .addProtectedRestPath("/prediction/*/download")
 
-      // cohort definition
-      .addProtectedRestPath("/cohortdefinition", "createPermissionsOnCreateCohortDefinition")
-      .addProtectedRestPath("/cohortdefinition/*/copy", "createPermissionsOnCreateCohortDefinition")
-      .addProtectedRestPath("/cohortdefinition/*", "deletePermissionsOnDeleteCohortDefinition")
-      .addProtectedRestPath("/cohortdefinition/*/info")
-      .addProtectedRestPath("/cohortdefinition/sql")
-      .addProtectedRestPath("/cohortdefinition/*/generate/*")
-      .addProtectedRestPath("/cohortdefinition/*/report/*")
-      .addProtectedRestPath("/*/cohortresults/*/breakdown")
-      .addProtectedRestPath("/job/execution")
-      .addProtectedRestPath("/job")
+            // cohort definition
+            .addProtectedRestPath("/cohortdefinition", CREATE_COHORT_DEFINITION)
+            .addProtectedRestPath("/cohortdefinition/*/copy", CREATE_COPY_COHORT_DEFINITION)
+            .addProtectedRestPath("/cohortdefinition/*", DELETE_COHORT_DEFINITION)
+            .addProtectedRestPath("/cohortdefinition/*/info")
+            .addProtectedRestPath("/cohortdefinition/sql")
+            .addProtectedRestPath("/cohortdefinition/*/generate/*")
+            .addProtectedRestPath("/cohortdefinition/*/report/*")
+            .addProtectedRestPath("/*/cohortresults/*/breakdown")
+            .addProtectedRestPath("/job/execution")
+            .addProtectedRestPath("/job")
 
-      // configuration
-      .addProtectedRestPath("/source/refresh")
-      .addProtectedRestPath("/source/priorityVocabulary")
-      .addRestPath("/source/sources")
-      .addProtectedRestPath("/source/connection/*")
-      .addProtectedRestPath("/source", "createPermissionsOnCreateSource")
-      .addProtectedRestPath("/source/*", "deletePermissionsOnDeleteSource")
-      .addProtectedRestPath("/source/*/daimons/*/set-priority")
-      .addProtectedRestPath("/source/details/*")
+            // configuration
+            .addProtectedRestPath("/source/refresh")
+            .addProtectedRestPath("/source/priorityVocabulary")
+            .addRestPath("/source/sources")
+            .addProtectedRestPath("/source/connection/*")
+            .addProtectedRestPath("/source", CREATE_SOURCE)
+            .addProtectedRestPath("/source/*", DELETE_SOURCE)
+            .addProtectedRestPath("/source/*/daimons/*/set-priority")
+            .addProtectedRestPath("/source/details/*")
 
-      // cohort analysis
-      .addProtectedRestPath("/cohortanalysis")
-      .addProtectedRestPath("/cohortanalysis/*")
+            // cohort analysis
+            .addProtectedRestPath("/cohortanalysis")
+            .addProtectedRestPath("/cohortanalysis/*")
 
-      // cohort results
-      .addProtectedRestPath("/cohortresults/*")
+            // cohort results
+            .addProtectedRestPath("/cohortresults/*")
 
-      // cohort characterization
-      .addProtectedRestPath("/cohort-characterization", "createPermissionsOnCreateCohortCharacterization")
-      .addProtectedRestPath("/cohort-characterization/import", "createPermissionsOnCreateCohortCharacterization")
-      .addProtectedRestPath("/cohort-characterization/*", "deletePermissionsOnDeleteCohortCharacterization")
-      .addProtectedRestPath("/cohort-characterization/*/generation/*")
-      .addProtectedRestPath("/cohort-characterization/*/generation")
-      .addProtectedRestPath("/cohort-characterization/generation/*")
-      .addProtectedRestPath("/cohort-characterization/generation/*/design")
-      .addProtectedRestPath("/cohort-characterization/generation/*/result")
-      .addProtectedRestPath("/cohort-characterization/*/export")
+            // cohort characterization
+            .addProtectedRestPath("/cohort-characterization", CREATE_COHORT_CHARACTERIZATION)
+            .addProtectedRestPath("/cohort-characterization/import", CREATE_COHORT_CHARACTERIZATION)
+            .addProtectedRestPath("/cohort-characterization/*", DELETE_COHORT_CHARACTERIZATION)
+            .addProtectedRestPath("/cohort-characterization/*/generation/*")
+            .addProtectedRestPath("/cohort-characterization/*/generation")
+            .addProtectedRestPath("/cohort-characterization/generation/*")
+            .addProtectedRestPath("/cohort-characterization/generation/*/design")
+            .addProtectedRestPath("/cohort-characterization/generation/*/result")
+            .addProtectedRestPath("/cohort-characterization/*/export")
 
-      // Pathways Analyses
-      .addProtectedRestPath("/pathway-analysis", "createPermissionsOnCreatePathwayAnalysis")
-      .addProtectedRestPath("/pathway-analysis/import", "createPermissionsOnCreatePathwayAnalysis")
-      .addProtectedRestPath("/pathway-analysis/*", "deletePermissionsOnDeletePathwayAnalysis")
-      .addProtectedRestPath("/pathway-analysis/*/sql/*")
-      .addProtectedRestPath("/pathway-analysis/*/generation/*")
-      .addProtectedRestPath("/pathway-analysis/*/generation")
-      .addProtectedRestPath("/pathway-analysis/generation/*")
-      .addProtectedRestPath("/pathway-analysis/generation/*/design")
-      .addProtectedRestPath("/pathway-analysis/generation/*/result")
-      .addProtectedRestPath("/pathway-analysis/*/export")
+            // Pathways Analyses
+            .addProtectedRestPath("/pathway-analysis", CREATE_PATHWAY_ANALYSIS)
+            .addProtectedRestPath("/pathway-analysis/import", CREATE_PATHWAY_ANALYSIS)
+            .addProtectedRestPath("/pathway-analysis/*", DELETE_PATHWAY_ANALYSIS)
+            .addProtectedRestPath("/pathway-analysis/*/sql/*")
+            .addProtectedRestPath("/pathway-analysis/*/generation/*")
+            .addProtectedRestPath("/pathway-analysis/*/generation")
+            .addProtectedRestPath("/pathway-analysis/generation/*")
+            .addProtectedRestPath("/pathway-analysis/generation/*/design")
+            .addProtectedRestPath("/pathway-analysis/generation/*/result")
+            .addProtectedRestPath("/pathway-analysis/*/export")
 
-      // feature analyses
-      .addProtectedRestPath("/feature-analysis", "createPermissionsOnCreateFeatureAnalysis")
-      .addProtectedRestPath("/feature-analysis/*", "deletePermissionsOnDeleteFeatureAnalysis")
+            // feature analyses
+            .addProtectedRestPath("/feature-analysis", CREATE_FEATURE_ANALYSIS)
+            .addProtectedRestPath("/feature-analysis/*", DELETE_FEATURE_ANALYSIS)
 
-      // evidence
-      .addProtectedRestPath("/evidence/*")
-      .addProtectedRestPath("/evidence/*/negativecontrols")
+            // evidence
+            .addProtectedRestPath("/evidence/*")
+            .addProtectedRestPath("/evidence/*/negativecontrols")
 
-      // execution service
-      .addProtectedRestPath("/executionservice/*")
-      .addProtectedRestPath("/executionservice/execution/run")
+            // execution service
+            .addProtectedRestPath("/executionservice/*")
+            .addProtectedRestPath("/executionservice/execution/run")
 
-      // feasibility
-      .addProtectedRestPath("/feasibility")
-      .addProtectedRestPath("/feasibility/*")
+            // feasibility
+            .addProtectedRestPath("/feasibility")
+            .addProtectedRestPath("/feasibility/*")
 
-      // featureextraction
-      .addProtectedRestPath("/featureextraction/*")
+            // featureextraction
+            .addProtectedRestPath("/featureextraction/*")
 
-      // vocabulary services
-      .addProtectedRestPath("/vocabulary/*")
+            // vocabulary services
+            .addProtectedRestPath("/vocabulary/*")
 
-      // data sources
-      .addProtectedRestPath("/cdmresults/*")
+            // data sources
+            .addProtectedRestPath("/cdmresults/*")
 
-      // profiles
-      .addProtectedRestPath("/*/person/*")
+            // profiles
+            .addProtectedRestPath("/*/person/*")
 
-      // notifications
-      .addProtectedRestPath("/notifications/viewed")
-      .addProtectedRestPath("/notifications");
+            // notifications
+            .addProtectedRestPath("/notifications/viewed")
+            .addProtectedRestPath("/notifications");
   }
 
   @Override
-  public Map<String, Filter> getFilters() {
-    Map<String, javax.servlet.Filter> filters = new HashMap<>();
+  public Map<FilterTemplates, Filter> getFilters(){
+    return new HashMap<>(filters);
+  }
+  
+  private void fillFilters() {
+    
+    filters.put(NO_SESSION_CREATION, new NoSessionCreationFilter());
+    filters.put(FORCE_SESSION_CREATION, new ForceSessionCreationFilter());
+    filters.put(AUTHZ, new UrlBasedAuthorizingFilter());
+    filters.put(CORS, new CorsFilter());
+    filters.put(SKIP_IF_NOT_POST, this.getSkipFurtherFiltersIfNotPostFilter());
+    filters.put(SKIP_IF_NOT_PUT, this.getSkipFurtherFiltersIfNotPutFilter());
+    filters.put(SKIP_IF_NOT_PUT_OR_POST, this.getskipFurtherFiltersIfNotPutOrPostFilter());
+    filters.put(SKIP_IF_NOT_PUT_OR_DELETE, this.getskipFurtherFiltersIfNotPutOrDeleteFilter());
+    filters.put(SSL, this.getSslFilter());
+    
+    filters.put(DELETE_COHORT_CHARACTERIZATION, this.getDeletePermissionsOnDeleteFilter(cohortCharacterizationCreatorPermissionTemplates));
+    filters.put(DELETE_PATHWAY_ANALYSIS, this.getDeletePermissionsOnDeleteFilter(pathwayAnalysisCreatorPermissionTemplate));
+    filters.put(DELETE_FEATURE_ANALYSIS, this.getDeletePermissionsOnDeleteFilter(featureAnalysisPermissionTemplates));
+    filters.put(DELETE_COHORT_DEFINITION, this.getDeletePermissionsOnDeleteFilter(cohortdefinitionCreatorPermissionTemplates));
+    filters.put(DELETE_CONCEPT_SET, this.getDeletePermissionsOnDeleteFilter(conceptsetCreatorPermissionTemplates));
+    filters.put(DELETE_PLE, this.getDeletePermissionsOnDeleteFilter(plePermissionTemplates));
+    filters.put(DELETE_PLP, this.getDeletePermissionsOnDeleteFilter(plpPermissionTemplate));
+    filters.put(DELETE_SOURCE, this.getDeletePermissionsOnDeleteFilter(dataSourcePermissionTemplates));
+    filters.put(DELETE_PREDICTION, this.getDeletePermissionsOnDeleteFilter(predictionPermissionTemplates));
+    filters.put(DELETE_ESTIMATION, this.getDeletePermissionsOnDeleteFilter(estimationPermissionTemplates));
+    
+    addProcessEntityFilter(CREATE_COPY_COHORT_DEFINITION, cohortdefinitionCreatorPermissionTemplates);
+    addProcessEntityFilter(CREATE_COPY_IR, incidenceRatePermissionTemplates);
+    addProcessEntityFilter(CREATE_COPY_PLP, plpPermissionTemplate);
+    addProcessEntityFilter(CREATE_COHORT_DEFINITION, cohortdefinitionCreatorPermissionTemplates);
+    addProcessEntityFilter(CREATE_COHORT_CHARACTERIZATION, cohortCharacterizationCreatorPermissionTemplates);
+    addProcessEntityFilter(CREATE_PATHWAY_ANALYSIS, pathwayAnalysisCreatorPermissionTemplate);
+    addProcessEntityFilter(CREATE_FEATURE_ANALYSIS, featureAnalysisPermissionTemplates);
+    addProcessEntityFilter(CREATE_CONCEPT_SET, conceptsetCreatorPermissionTemplates);
+    addProcessEntityFilter(CREATE_IR, incidenceRatePermissionTemplates);    
+    addProcessEntityFilter(CREATE_PLE, estimationPermissionTemplates);
+    addProcessEntityFilter(CREATE_PLP, plpPermissionTemplate);
+    addProcessEntityFilter(CREATE_SOURCE, dataSourcePermissionTemplates);
+    addProcessEntityFilter(CREATE_PREDICTION, predictionPermissionTemplates);
+    addProcessEntityFilter(CREATE_ESTIMATION, estimationPermissionTemplates);    
+  }
 
-    filters.put("noSessionCreation", new NoSessionCreationFilter());
-    filters.put("forceSessionCreation", new ForceSessionCreationFilter());
-    filters.put("authz", new UrlBasedAuthorizingFilter());
-    filters.put("createPermissionsOnCreateCohortDefinition", this.getCreatePermissionsOnCreateCohortDefinitionFilter());
-    filters.put("createPermissionsOnCreateCohortCharacterization", this.getCreatePermissionsOnCreateCohortCharacterizationFilter());
-    filters.put("deletePermissionsOnDeleteCohortCharacterization", this.getDeletePermissionsOnDeleteFilter(cohortCharacterizationCreatorPermissionTemplates));
-    filters.put("createPermissionsOnCreatePathwayAnalysis", this.getCreatePermissionsOnCreatePathwayAnalysisFilter());
-    filters.put("deletePermissionsOnDeletePathwayAnalysis", this.getDeletePermissionsOnDeleteFilter(pathwayAnalysisCreatorPermissionTemplate));
-    filters.put("createPermissionsOnCreateFeatureAnalysis", this.getCreatePermissionsOnCreateFilter(featureAnalysisPermissionTemplates, "id"));
-    filters.put("deletePermissionsOnDeleteFeatureAnalysis", this.getDeletePermissionsOnDeleteFilter(featureAnalysisPermissionTemplates));
-    filters.put("createPermissionsOnCreateConceptSet", this.getCreatePermissionsOnCreateConceptSetFilter());
-    filters.put("deletePermissionsOnDeleteCohortDefinition", this.getDeletePermissionsOnDeleteCohortDefinitionFilter());
-    filters.put("deletePermissionsOnDeleteConceptSet", this.getDeletePermissionsOnDeleteConceptSetFilter());
-    filters.put("deletePermissionsOnDeletePle", this.getDeletePermissionsOnDeleteFilter(plePermissionTemplates));
-    filters.put("deletePermissionsOnDeletePlp", this.getDeletePermissionsOnDeleteFilter(plpPermissionTemplate));
-    filters.put("createPermissionsOnCreateIR", this.getCreatePermissionsOnCreateIncidenceRateFilter());
-    filters.put("createPermissionsOnCopyIR", this.getCreatePermissionsOnCopyIncidenceRateFilter());
-    filters.put("createPermissionsOnCreatePle", this.getCreatePermissionsOnCreateFilter(estimationPermissionTemplates, "analysisId"));
-    filters.put("createPermissionsOnCreatePlp", this.getCreatePermissionsOnCreateFilter(plpPermissionTemplate, "analysisId"));
-    filters.put("createPermissionsOnCopyPlp", this.getCreatePermissionsOnCopyFilter(plpPermissionTemplate, ".*plp/.*/copy", "analysisId"));
-    filters.put("createPermissionsOnCreateSource", this.getCreatePermissionsOnCreateFilter(dataSourcePermissionTemplates, "sourceKey"));
-    filters.put("deletePermissionsOnDeleteSource", this.getDeletePermissionsOnDeleteFilter(dataSourcePermissionTemplates));
-    filters.put("cors", new CorsFilter());
-    filters.put("skipFurtherFiltersIfNotPost", this.getSkipFurtherFiltersIfNotPostFilter());
-    filters.put("skipFurtherFiltersIfNotPut", this.getSkipFurtherFiltersIfNotPutFilter());
-    filters.put("skipFurtherFiltersIfNotPutOrPost", this.getskipFurtherFiltersIfNotPutOrPostFilter());
-    filters.put("skipFurtherFiltersIfNotPutOrDelete", this.getskipFurtherFiltersIfNotPutOrDeleteFilter());
-    filters.put("ssl", this.getSslFilter());
-
-    filters.put("createPermissionsOnCreatePrediction", this.getCreatePermissionsOnCreateFilter(predictionPermissionTemplates, "id"));
-    filters.put("deletePermissionsOnDeletePrediction", this.getDeletePermissionsOnDeleteFilter(predictionPermissionTemplates));
-    filters.put("createPermissionsOnCreateEstimation", this.getCreatePermissionsOnCreateFilter(estimationPermissionTemplates, "id"));
-    filters.put("deletePermissionsOnDeleteEstimation", this.getDeletePermissionsOnDeleteFilter(estimationPermissionTemplates));
-
-    return filters;
+  private void addProcessEntityFilter(FilterTemplates template, Map<String, String> permissionTemplates){
+    filters.put(template, new ProcessResponseContentFilterImpl(permissionTemplates, template.getEntityName(), authorizer, eventPublisher, template.getHttpMethod()));
   }
 
   @Override
@@ -350,164 +414,10 @@ public abstract class AtlasSecurity extends Security {
     }
   }
 
-  @PostConstruct
-  private void initRolesForSources() {
-    try {
-      for (Source source : sourceRepository.findAll()) {
-          this.addSourceRole(source.getSourceKey());
-      }
-    }
-    catch (Exception e) {
-      log.error(e.getMessage(), e);
-    }
-  }
-
-  private Filter getCreatePermissionsOnCreateCohortDefinitionFilter() {
-    return new ProcessResponseContentFilter() {
-      @Override
-      protected boolean shouldProcess(ServletRequest request, ServletResponse response) {
-        HttpServletRequest httpRequest = WebUtils.toHttp(request);
-        String path = httpRequest.getPathInfo().replaceAll("/+$", "");
-
-        if (StringUtils.endsWithIgnoreCase(path, "copy")) {
-          return HttpMethod.GET.equalsIgnoreCase(WebUtils.toHttp(request).getMethod());
-        }
-        else {
-          return  HttpMethod.POST.equalsIgnoreCase(WebUtils.toHttp(request).getMethod());
-        }
-      }
-
-      @Override
-      protected void doProcessResponseContent(String content) throws Exception {
-        String id = this.parseJsonField(content, "id");
-        RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
-        authorizer.addPermissionsFromTemplate(currentUserPersonalRole, cohortdefinitionCreatorPermissionTemplates, id);
-      }
-    };
-  }
-
-  private Filter getCreatePermissionsOnCreateCohortCharacterizationFilter() {
-    return  new ProcessResponseContentFilter() {
-      @Override
-      protected boolean shouldProcess(ServletRequest request, ServletResponse response) {
-
-        return HttpMethod.POST.equalsIgnoreCase(WebUtils.toHttp(request).getMethod());
-      }
-
-      @Override
-      protected void doProcessResponseContent(String content) throws Exception {
-        String id = this.parseJsonField(content, "id");
-        RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
-        authorizer.addPermissionsFromTemplate(currentUserPersonalRole, cohortCharacterizationCreatorPermissionTemplates, id);
-      }
-    };
-  }
-
-  private Filter getCreatePermissionsOnCreatePathwayAnalysisFilter() {
-    return  new ProcessResponseContentFilter() {
-      @Override
-      protected boolean shouldProcess(ServletRequest request, ServletResponse response) {
-
-        return HttpMethod.POST.equalsIgnoreCase(WebUtils.toHttp(request).getMethod());
-      }
-
-      @Override
-      protected void doProcessResponseContent(String content) throws Exception {
-        String id = this.parseJsonField(content, "id");
-        RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
-        authorizer.addPermissionsFromTemplate(currentUserPersonalRole, pathwayAnalysisCreatorPermissionTemplate, id);
-      }
-    };
-  }
-
-  private Filter getCreatePermissionsOnCreateIncidenceRateFilter() {
-    return  new ProcessResponseContentFilter() {
-      @Override
-      protected boolean shouldProcess(ServletRequest request, ServletResponse response) {
-
-        return HttpMethod.POST.equalsIgnoreCase(WebUtils.toHttp(request).getMethod());
-      }
-
-      @Override
-      protected void doProcessResponseContent(String content) throws Exception {
-        String id = this.parseJsonField(content, "id");
-        RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
-        authorizer.addPermissionsFromTemplate(currentUserPersonalRole, incidenceRatePermissionTemplates, id);
-      }
-    };
-  }
-
-  private Filter getCreatePermissionsOnCreateFilter(Map<String, String> template, String idField) {
-    return new ProcessResponseContentFilter() {
-      @Override
-      protected boolean shouldProcess(ServletRequest request, ServletResponse response) {
-
-        return HttpMethod.POST.equalsIgnoreCase(WebUtils.toHttp(request).getMethod());
-      }
-
-      @Override
-      protected void doProcessResponseContent(String content) throws Exception {
-        String id = this.parseJsonField(content, idField);
-        RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
-        authorizer.addPermissionsFromTemplate(currentUserPersonalRole, template, id);
-      }
-    };
-  }
-
-  private Filter getCreatePermissionsOnCopyIncidenceRateFilter() {
-    return new ProcessResponseContentFilter() {
-      @Override
-      protected boolean shouldProcess(ServletRequest request, ServletResponse response) {
-
-        return WebUtils.toHttp(request).getRequestURI().matches(".*ir/.*/copy");
-      }
-
-      @Override
-      protected void doProcessResponseContent(String content) throws Exception {
-        String id = this.parseJsonField(content, "id");
-        RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
-        authorizer.addPermissionsFromTemplate(currentUserPersonalRole, incidenceRatePermissionTemplates, id);
-      }
-    };
-  }
-
-  private Filter getCreatePermissionsOnCopyFilter(Map<String, String> template, String pathRegex, String idField) {
-    return new ProcessResponseContentFilter() {
-      @Override
-      protected boolean shouldProcess(ServletRequest request, ServletResponse response) {
-
-        return WebUtils.toHttp(request).getRequestURI().matches(pathRegex);
-      }
-
-      @Override
-      protected void doProcessResponseContent(String content) throws Exception {
-        String id = this.parseJsonField(content, idField);
-        RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
-        authorizer.addPermissionsFromTemplate(currentUserPersonalRole, template, id);
-      }
-    };
-  }
-
-  private Filter getCreatePermissionsOnCreateConceptSetFilter() {
-    return  new ProcessResponseContentFilter() {
-      @Override
-      protected boolean shouldProcess(ServletRequest request, ServletResponse response) {
-        return  HttpMethod.POST.equalsIgnoreCase(WebUtils.toHttp(request).getMethod());
-      }
-
-      @Override
-      protected void doProcessResponseContent(String content) throws Exception {
-        String id = this.parseJsonField(content, "id");
-        RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
-        authorizer.addPermissionsFromTemplate(currentUserPersonalRole, conceptsetCreatorPermissionTemplates, id);
-      }
-    };
-  }
-
   private Filter getDeletePermissionsOnDeleteFilter(Map<String, String> template) {
     return new AdviceFilter() {
       @Override
-      protected void postHandle(ServletRequest request, ServletResponse response) throws Exception {
+      protected void postHandle(ServletRequest request, ServletResponse response) {
 
         HttpServletRequest httpRequest = WebUtils.toHttp(request);
         if (!HttpMethod.DELETE.equalsIgnoreCase(httpRequest.getMethod())) {
@@ -517,66 +427,8 @@ public abstract class AtlasSecurity extends Security {
         String id = httpRequest.getPathInfo()
                 .replaceAll("^/+", "")
                 .replaceAll("/+$", "")
-                .split("/")
-                [1];
+                .split("/")[1];
         authorizer.removePermissionsFromTemplate(template, id);
-      }
-    };
-  }
-
-  private Filter getDeletePermissionsOnDeleteCohortDefinitionFilter() {
-    return new AdviceFilter() {
-      @Override
-      protected void postHandle(ServletRequest request, ServletResponse response) {
-        HttpServletRequest httpRequest = WebUtils.toHttp(request);
-        if (!HttpMethod.DELETE.equalsIgnoreCase(httpRequest.getMethod())) {
-          return;
-        }
-
-        String id = httpRequest.getPathInfo()
-                .replaceAll("^/+", "")
-                .replaceAll("/+$", "")
-                .split("/")
-                [1];
-        authorizer.removePermissionsFromTemplate(cohortdefinitionCreatorPermissionTemplates, id);
-      }
-    };
-  }
-
-  private Filter getDeletePermissionsOnDeleteIRFilter() {
-    return new AdviceFilter() {
-      @Override
-      protected void postHandle(ServletRequest request, ServletResponse response) throws Exception {
-
-        HttpServletRequest httpRequest = WebUtils.toHttp(request);
-        if (!HttpMethod.DELETE.equalsIgnoreCase(httpRequest.getMethod())){
-          return;
-        }
-        String id = httpRequest.getPathInfo()
-                .replaceAll("^/+", "")
-                .replaceAll("/+$", "")
-                .split("/")
-                [1];
-        authorizer.removePermissionsFromTemplate(incidenceRatePermissionTemplates, id);
-      }
-    };
-  }
-
-  private Filter getDeletePermissionsOnDeleteConceptSetFilter() {
-    return new AdviceFilter() {
-      @Override
-      protected void postHandle(ServletRequest request, ServletResponse response) {
-        HttpServletRequest httpRequest = WebUtils.toHttp(request);
-        if (!HttpMethod.DELETE.equalsIgnoreCase(httpRequest.getMethod())) {
-          return;
-        }
-
-        String id = httpRequest.getPathInfo()
-                .replaceAll("^/+", "")
-                .replaceAll("/+$", "")
-                .split("/")
-                [1];
-        authorizer.removePermissionsFromTemplate(conceptsetCreatorPermissionTemplates, id);
       }
     };
   }
@@ -632,76 +484,5 @@ public abstract class AtlasSecurity extends Security {
       return authorizer.getSubjectName();
     else
       return "anonymous";
-  }
-
-  class FilterChainBuilder {
-
-    private Map<String, String> filterChain = new LinkedHashMap<>();
-    private String restFilters;
-    private String authcFilter;
-    private String authzFilter;
-    private String filtersBeforeOAuth;
-    private String filtersAfterOAuth;
-
-    public FilterChainBuilder setRestFilters(String restFilters) {
-      this.restFilters = restFilters;
-      return this;
-    }
-
-    public FilterChainBuilder setOAuthFilters(String filtersBeforeOAuth, String filtersAfterOAuth) {
-      this.filtersBeforeOAuth = filtersBeforeOAuth;
-      this.filtersAfterOAuth = filtersAfterOAuth;
-      return this;
-    }
-
-    public FilterChainBuilder setAuthcFilter(String authcFilter) {
-      this.authcFilter = authcFilter;
-      return this;
-    }
-
-    public FilterChainBuilder setAuthzFilter(String authzFilter) {
-      this.authzFilter = authzFilter;
-      return this;
-    }
-
-    public FilterChainBuilder addRestPath(String path, String filters) {
-      return this.addPath(path, this.restFilters + ", " + filters);
-    }
-
-    public FilterChainBuilder addRestPath(String path) {
-      return this.addPath(path, this.restFilters);
-    }
-
-    public FilterChainBuilder addOAuthPath(String path, String oauthFilter) {
-      return this.addPath(path, filtersBeforeOAuth + ", " + oauthFilter + ", " + filtersAfterOAuth);
-    }
-
-    public FilterChainBuilder addProtectedRestPath(String path) {
-      return this.addRestPath(path, this.authcFilter + ", " + this.authzFilter);
-    }
-
-    public FilterChainBuilder addProtectedRestPath(String path, String filters) {
-      return this.addRestPath(path, authcFilter + ", " + authzFilter + ", " + filters);
-    }
-
-    public FilterChainBuilder addPath(String path, String filters) {
-      path = path.replaceAll("/+$", "");
-      this.filterChain.put(path, filters);
-
-      // If path ends with non wildcard character, need to add two paths -
-      // one without slash at the end and one with slash at the end, because
-      // both URLs like www.domain.com/myapp/mypath and www.domain.com/myapp/mypath/
-      // (note the slash at the end) are falling into the same method, but
-      // for filter chain these are different paths
-      if (!path.endsWith("*")) {
-        this.filterChain.put(path + "/", filters);
-      }
-
-      return this;
-    }
-
-    public Map<String, String> build() {
-      return filterChain;
-    }
   }
 }

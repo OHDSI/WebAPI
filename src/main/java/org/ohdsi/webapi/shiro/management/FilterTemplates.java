@@ -2,6 +2,8 @@ package org.ohdsi.webapi.shiro.management;
 
 import org.ohdsi.webapi.events.EntityName;
 
+import static javax.ws.rs.HttpMethod.GET;
+import static javax.ws.rs.HttpMethod.POST;
 import static org.ohdsi.webapi.events.EntityName.COHORT;
 import static org.ohdsi.webapi.events.EntityName.COHORT_CHARACTERIZATION;
 import static org.ohdsi.webapi.events.EntityName.CONCEPT_SET;
@@ -14,19 +16,20 @@ import static org.ohdsi.webapi.events.EntityName.PREDICTION;
 import static org.ohdsi.webapi.events.EntityName.SOURCE;
 
 public enum FilterTemplates {
-    CREATE_COHORT_DEFINITION("createPermissionsOnCreateCohortDefinition", COHORT), 
-    CREATE_COHORT_CHARACTERIZATION("createPermissionsOnCreateCohortCharacterization", COHORT_CHARACTERIZATION),
-    CREATE_PATHWAY_ANALYSIS("createPermissionsOnCreatePathwayAnalysis", PATHWAY_ANALYSIS),
-    CREATE_FEATURE_ANALYSIS("createPermissionsOnCreateFeatureAnalysis", FEATURE_ANALYSIS),
-    CREATE_CONCEPT_SET("createPermissionsOnCreateConceptSet", CONCEPT_SET),
-    CREATE_IR("createPermissionsOnCreateIR", INCIDENCE_RATE),
-    CREATE_COPY_IR("createPermissionsOnCopyIR", INCIDENCE_RATE),
-    CREATE_PLE("createPermissionsOnCreatePle", ESTIMATION),
-    CREATE_PLP("createPermissionsOnCreatePlp", PATIENT_LEVEL_PREDICTION),
-    CREATE_COPY_PLP("createPermissionsOnCopyPlp", PATIENT_LEVEL_PREDICTION),
-    CREATE_SOURCE("createPermissionsOnCreateSource", SOURCE),
-    CREATE_PREDICTION("createPermissionsOnCreatePrediction", PREDICTION),
-    CREATE_ESTIMATION("createPermissionsOnCreateEstimation", ESTIMATION),
+    CREATE_COHORT_DEFINITION("createPermissionsOnCreateCohortDefinition", COHORT, POST),
+    CREATE_COPY_COHORT_DEFINITION("createPermissionsOnCopyCohortDefinition", COHORT, GET),
+    CREATE_COHORT_CHARACTERIZATION("createPermissionsOnCreateCohortCharacterization", COHORT_CHARACTERIZATION, POST),
+    CREATE_PATHWAY_ANALYSIS("createPermissionsOnCreatePathwayAnalysis", PATHWAY_ANALYSIS, POST),
+    CREATE_FEATURE_ANALYSIS("createPermissionsOnCreateFeatureAnalysis", FEATURE_ANALYSIS, POST),
+    CREATE_CONCEPT_SET("createPermissionsOnCreateConceptSet", CONCEPT_SET, POST),
+    CREATE_IR("createPermissionsOnCreateIR", INCIDENCE_RATE, POST),
+    CREATE_COPY_IR("createPermissionsOnCopyIR", INCIDENCE_RATE, GET),
+    CREATE_PLE("createPermissionsOnCreatePle", ESTIMATION, POST),
+    CREATE_PLP("createPermissionsOnCreatePlp", PATIENT_LEVEL_PREDICTION, POST),
+    CREATE_COPY_PLP("createPermissionsOnCopyPlp", PATIENT_LEVEL_PREDICTION, GET),
+    CREATE_SOURCE("createPermissionsOnCreateSource", SOURCE, POST),
+    CREATE_PREDICTION("createPermissionsOnCreatePrediction", PREDICTION, POST),
+    CREATE_ESTIMATION("createPermissionsOnCreateEstimation", ESTIMATION, POST),
     
     DELETE_COHORT_CHARACTERIZATION("deletePermissionsOnDeleteCohortCharacterization", COHORT_CHARACTERIZATION),
     DELETE_PATHWAY_ANALYSIS("deletePermissionsOnDeletePathwayAnalysis", PATHWAY_ANALYSIS),
@@ -75,13 +78,20 @@ public enum FilterTemplates {
     
     private String templateName;
     private EntityName entityName;
+    private String httpMethod;
+    
     FilterTemplates(String templateName){
-        this(templateName, null);
+        this(templateName, null, null);
+    }
+
+    FilterTemplates(String templateName, EntityName entityName){
+        this(templateName, entityName, null);
     }
     
-    FilterTemplates(String templateName, EntityName entityName){
+    FilterTemplates(String templateName, EntityName entityName, String httpMethod){
         this.templateName = templateName;
         this.entityName = entityName;
+        this.httpMethod = httpMethod;
     }
     
     public String getTemplateName() {
@@ -90,5 +100,9 @@ public enum FilterTemplates {
 
     public EntityName getEntityName() {
         return entityName;
+    }
+
+    public String getHttpMethod() {
+        return httpMethod;
     }
 }

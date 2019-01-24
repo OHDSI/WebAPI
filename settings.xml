@@ -55,10 +55,11 @@
             <id>docker</id>
             <properties>
                 <datasource.db>OHDSI</datasource.db>
-                <datasource.password>app1</datasource.password>
-                <flyway.datasource.password>admin1</flyway.datasource.password>
+                <datasource.ohdsi.schema>${WEBAPI_SCHEMA}</datasource.ohdsi.schema>
+                <datasource.password>${WEBAPI_USER_PW}</datasource.password>
+                <flyway.datasource.password>${WEBAPI_ADMIN_PW}</flyway.datasource.password>
                 <datasource.url>jdbc:postgresql://postgres:5432/${datasource.db}</datasource.url>
-                <hss.url>https:/dev.honeur.org/storage/api</hss.url>
+                <hss.url>https://dev.honeur.org/storage/api</hss.url>
                 <security.ssl.enabled>false</security.ssl.enabled> <!-- !!! Enabling this property doesn't work on AWS.  Not a real problem as SSL is already enforced on AWS !!! -->
                 <central>false</central>
             </properties>
@@ -89,6 +90,56 @@
             </properties>
         </profile>
         <profile>
+            <id>agunva-uat</id>
+            <properties>
+                <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
+                <datasource.url>jdbc:postgresql://localhost:5432/honeur</datasource.url>
+                <datasource.username>postgres</datasource.username>
+                <datasource.password>ec2Admin</datasource.password>
+                <datasource.dialect>postgresql</datasource.dialect>
+                <datasource.ohdsi.schema>webapi</datasource.ohdsi.schema>
+                <hibernate.dialect>org.hibernate.dialect.PostgreSQL9Dialect</hibernate.dialect>
+                <honeur.enabled>true</honeur.enabled>
+                <hss.url>https://storage-uat.honeur.org/api</hss.url>
+                <liferay.company.web.id>liferay.com</liferay.company.web.id>
+                <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
+                <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
+                <flyway.datasource.username>postgres</flyway.datasource.username>
+                <flyway.datasource.password>ec2Admin</flyway.datasource.password>
+                <flyway.locations>classpath:db/migration/postgresql,classpath:db/extension/honeur</flyway.locations>
+                <security.origin>*</security.origin>
+                <security.ssl.enabled>false</security.ssl.enabled>
+                <central>false</central>
+                <jersey.resources.additional.packages>com.jnj.honeur.webapi</jersey.resources.additional.packages>
+                <war.directory>target-agunva</war.directory>
+            </properties>
+        </profile>
+        <profile>
+            <id>agunva-dev</id>
+            <properties>
+                <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
+                <datasource.url>jdbc:postgresql://localhost:5432/honeur</datasource.url>
+                <datasource.username>postgres</datasource.username>
+                <datasource.password>ec2Admin</datasource.password>
+                <datasource.dialect>postgresql</datasource.dialect>
+                <datasource.ohdsi.schema>webapi</datasource.ohdsi.schema>
+                <hibernate.dialect>org.hibernate.dialect.PostgreSQL9Dialect</hibernate.dialect>
+                <honeur.enabled>true</honeur.enabled>
+                <hss.url>https://dev.honeur.org/storage/api</hss.url>
+                <liferay.company.web.id>liferay.com</liferay.company.web.id>
+                <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
+                <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
+                <flyway.datasource.username>postgres</flyway.datasource.username>
+                <flyway.datasource.password>ec2Admin</flyway.datasource.password>
+                <flyway.locations>classpath:db/migration/postgresql,classpath:db/extension/honeur</flyway.locations>
+                <security.origin>*</security.origin>
+                <security.ssl.enabled>false</security.ssl.enabled>
+                <central>false</central>
+                <jersey.resources.additional.packages>com.jnj.honeur.webapi</jersey.resources.additional.packages>
+                <war.directory>target-agunva</war.directory>
+            </properties>
+        </profile>
+        <profile>
             <id>local-dev</id>
             <properties>
                 <server.port>${honeur.port}</server.port>
@@ -109,6 +160,8 @@
                 <liferay.company.web.id>liferay.com</liferay.company.web.id>
             </properties>
         </profile>
+
+        <!-- for local testing -->
         <profile>
             <id>honeur-central</id>
             <properties>
@@ -130,6 +183,7 @@
             </properties>
         </profile>
 
+        <!-- for jmeter tests -->
         <profile>
             <id>honeur-test</id>
             <properties>
@@ -142,43 +196,6 @@
             <properties>
                 <user.properties>${properties.folder}/custom.properties</user.properties>
                 <properties.folder>${project.basedir}/src/test/resources/jmeter/dev</properties.folder>
-            </properties>
-        </profile>
-        <profile>
-            <id>agunva</id>
-            <properties>
-                <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
-                <datasource.url>jdbc:postgresql://localhost:5432/honeur</datasource.url>
-                <datasource.username>postgres</datasource.username>
-                <datasource.password>ec2Admin</datasource.password>
-                <datasource.dialect>postgresql</datasource.dialect>
-                <datasource.ohdsi.schema>webapi</datasource.ohdsi.schema>
-                <hibernate.dialect>org.hibernate.dialect.PostgreSQL9Dialect</hibernate.dialect>
-                <honeur.enabled>true</honeur.enabled>
-                <hss.url>https://storage-uat.honeur.org/api</hss.url>
-                <liferay.company.web.id>liferay.com</liferay.company.web.id>
-                <security.cookies.domain>.honeur.org</security.cookies.domain>
-                <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
-                <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
-                <flyway.datasource.username>postgres</flyway.datasource.username>
-                <flyway.datasource.password>ec2Admin</flyway.datasource.password>
-                <flyway.locations>classpath:db/migration/postgresql,classpath:db/extension/honeur</flyway.locations>
-                <security.enabled>false</security.enabled>
-                <security.cas>false</security.cas>
-                <security.cas.loginUrl>https://cas-uat.honeur.org/login</security.cas.loginUrl>
-                <security.cas.callbackUrl>https://webapi-uat.honeur.org/user/cas/callback?client_name=CasClient</security.cas.callbackUrl>
-                <security.token.expiration>43200</security.token.expiration>
-                <security.origin>*</security.origin>
-                <security.ssl.enabled>false</security.ssl.enabled>
-                <security.oauth.callback.ui>http://awsagunva1008.jnj.com/Atlas/#/welcome</security.oauth.callback.ui>
-                <security.oauth.callback.api>http://awsagunva1008.jnj.com:8080/WebAPI/user/oauth/callback</security.oauth.callback.api>
-                <security.oauth.google.apiKey></security.oauth.google.apiKey>
-                <security.oauth.google.apiSecret></security.oauth.google.apiSecret>
-                <security.oauth.facebook.apiKey></security.oauth.facebook.apiKey>
-                <security.oauth.facebook.apiSecret></security.oauth.facebook.apiSecret>
-                <central>false</central>
-                <jersey.resources.additional.packages>com.jnj.honeur.webapi</jersey.resources.additional.packages>
-                <war.directory>target-agunva</war.directory>
             </properties>
         </profile>
     </profiles>

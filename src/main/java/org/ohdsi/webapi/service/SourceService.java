@@ -213,6 +213,10 @@ public class SourceService extends AbstractDaoService {
     if (!securityEnabled) {
       throw new NotAuthorizedException(SECURE_MODE_ERROR);
     }
+    Source sourceByKey = sourceRepository.findBySourceKey(request.getKey());
+    if (Objects.nonNull(sourceByKey)) {
+      throw new Exception("The source key has been already used.");
+    }
     Source source = conversionService.convert(request, Source.class);
     setImpalaKrbData(source, new Source(), file);
     Source saved = sourceRepository.save(source);

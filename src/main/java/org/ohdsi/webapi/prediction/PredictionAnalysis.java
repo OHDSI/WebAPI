@@ -1,29 +1,30 @@
 package org.ohdsi.webapi.prediction;
 
-import javax.persistence.AttributeOverride;
-import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
-import javax.persistence.ManyToOne;
-import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.ohdsi.webapi.model.CommonEntity;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
 
 
 @Entity(name = "PredictionAnalysis")
 @Table(name = "prediction")
 public class PredictionAnalysis extends CommonEntity {
     @Id
-    @SequenceGenerator(name = "pred_seq", sequenceName = "prediction_seq", allocationSize = 1)
-    @GeneratedValue(generator = "pred_seq", strategy = GenerationType.SEQUENCE)
+    @GenericGenerator(
+        name = "pred_generator",
+        strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+        parameters = {
+            @Parameter(name = "sequence_name", value = "prediction_seq"),
+            @Parameter(name = "increment_size", value = "1")
+        }
+    )
+    @GeneratedValue(generator = "pred_generator")
     @Column(name = "prediction_id")
     private Integer id;
     

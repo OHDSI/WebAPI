@@ -262,7 +262,7 @@
       <plugin>
         <groupId>com.qmino</groupId>
         <artifactId>miredot-plugin</artifactId>
-        <version>1.5.1</version>
+        <version>2.1.2</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -272,31 +272,36 @@
           </execution>
         </executions>
         <configuration>
-           <licence>cHJvamVjdHxvcmcub2hkc2kuV2ViQVBJfDIwMjAtMDMtMzF8dHJ1ZXwtMSNNQzBDRkNNQ2R2ZEhjbDg0Z2tONVI3bHlmQ2Y4SnNkYUFoVUFoMkdtOUVFdy9RelpLVzM1V2p6a2FsdzJZV009</licence>
-           <restModel>
-						<httpStatusCodes>
-							<httpStatusCode>
-									<httpCode>200</httpCode>
-									<document>always</document>
-									<defaultMessage>The service call has completed successfully.</defaultMessage>
-							</httpStatusCode>
-							<httpStatusCode>
-									<httpCode>401</httpCode>
-									<document>Authorization Exception</document>
-									<defaultMessage>The user is not authorized to use this service.</defaultMessage>
-							</httpStatusCode>
-							<httpStatusCode>
-									<httpCode>412</httpCode>
-									<document>put,post</document>
-									<defaultMessage>Invalid JSON/XML input.</defaultMessage>
-							</httpStatusCode>
-							<httpStatusCode>
-									<httpCode>500</httpCode>
-									<document>always</document>
-									<defaultMessage>The service call has not succeeded.</defaultMessage>
-							</httpStatusCode>
-						</httpStatusCodes>
-           </restModel>
+          <licence>cHJvamVjdHxvcmcub2hkc2kuV2ViQVBJfDIwMjAtMDMtMzF8dHJ1ZXwtMSNNQzBDRkNNQ2R2ZEhjbDg0Z2tONVI3bHlmQ2Y4SnNkYUFoVUFoMkdtOUVFdy9RelpLVzM1V2p6a2FsdzJZV009</licence>
+          <restModel>
+            <httpStatusCodes>
+              <httpStatusCode>
+                <httpCode>200</httpCode>
+                <document>always</document>
+                <defaultMessage>The service call has completed successfully.</defaultMessage>
+              </httpStatusCode>
+              <httpStatusCode>
+                <httpCode>401</httpCode>
+                <document>Authorization Exception</document>
+                <defaultMessage>The user is not authorized to use this service.</defaultMessage>
+              </httpStatusCode>
+              <httpStatusCode>
+                <httpCode>412</httpCode>
+                <document>put,post</document>
+                <defaultMessage>Invalid JSON/XML input.</defaultMessage>
+              </httpStatusCode>
+              <httpStatusCode>
+                <httpCode>500</httpCode>
+                <document>always</document>
+                <defaultMessage>The service call has not succeeded.</defaultMessage>
+              </httpStatusCode>
+            </httpStatusCodes>
+          </restModel>
+          <output>
+            <html>
+              <intro>api.html</intro>
+            </html>
+          </output>
         </configuration>
       </plugin>
     </plugins>
@@ -600,7 +605,7 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>circe</artifactId>
-      <version>1.7.0-SNAPSHOT</version>
+      <version>1.7.1</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
@@ -678,7 +683,7 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>standardized-analysis-api</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>1.1.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.cosium.spring.data</groupId>

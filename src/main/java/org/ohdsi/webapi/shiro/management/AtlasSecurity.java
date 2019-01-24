@@ -260,6 +260,7 @@ public abstract class AtlasSecurity extends Security {
             .addProtectedRestPath("/source/connection/*")
             .addProtectedRestPath("/source", CREATE_SOURCE)
             .addProtectedRestPath("/source/*", DELETE_SOURCE)
+            .addProtectedRestPath("/source/*/daimons/*/set-priority")
             .addProtectedRestPath("/source/details/*")
 
             // cohort analysis

@@ -20,8 +20,28 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.persistence.*;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
+import javax.persistence.CascadeType;
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.NamedAttributeNode;
+import javax.persistence.NamedEntityGraph;
+import javax.persistence.NamedEntityGraphs;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.OrderColumn;
+import javax.persistence.Table;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 
@@ -49,10 +69,17 @@ import org.ohdsi.webapi.shiro.Entities.UserEntity;
 public class FeasibilityStudy {
   
   @Id
-  @SequenceGenerator(name = "feasibility_study_seq", sequenceName = "feasibility_study_sequence", allocationSize = 1)
-  @GeneratedValue(generator = "feasibility_study_seq", strategy = GenerationType.SEQUENCE)
+  @GenericGenerator(
+      name = "feasibility_study_generator",
+      strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+      parameters = {
+          @Parameter(name = "sequence_name", value = "feasibility_study_sequence"),
+          @Parameter(name = "increment_size", value = "1")
+      }
+  )
+  @GeneratedValue(generator = "feasibility_study_generator")
   @Column(name="id")
-  @Access(AccessType.PROPERTY) 
+  @Access(AccessType.PROPERTY)
   private Integer id; 
   
   @Column(name="name")

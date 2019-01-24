@@ -19,10 +19,10 @@ import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 
 /**
  *
@@ -34,8 +34,15 @@ import javax.persistence.Table;
 public class ConceptSetItem implements Serializable{
   
   @Id
-  @SequenceGenerator(name = "concept_set_item_seq", sequenceName = "concept_set_item_sequence", allocationSize = 1)
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "concept_set_item_seq")
+  @GenericGenerator(
+      name = "concept_set_item_generator",
+      strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+      parameters = {
+          @Parameter(name = "sequence_name", value = "concept_set_item_sequence"),
+          @Parameter(name = "increment_size", value = "1")
+      }
+  )
+  @GeneratedValue(generator = "concept_set_item_generator")
   @Column(name="concept_set_item_id")
   private int id;
   

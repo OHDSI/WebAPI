@@ -18,6 +18,10 @@
  */
 package org.ohdsi.webapi.service;
 
+import static com.odysseusinc.arachne.commons.types.DBMSType.IMPALA;
+import static com.odysseusinc.arachne.commons.types.DBMSType.NETEZZA;
+import static com.odysseusinc.arachne.commons.types.DBMSType.REDSHIFT;
+import static org.ohdsi.webapi.Constants.Params.DB_SUPPORTS_DEFAULT;
 import static org.ohdsi.webapi.service.SqlRenderService.translateSQL;
 
 import java.util.Arrays;
@@ -28,6 +32,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.webapi.sqlrender.SourceStatement;
 import org.ohdsi.webapi.sqlrender.TranslatedStatement;
@@ -80,7 +85,9 @@ public class DDLService {
 
 	private static final Collection<String> CEMRESULT_INDEX_FILE_PATHS = Arrays.asList();
 
-	private static final Collection<String> DBMS_NO_INDEXES = Arrays.asList("redshift", "impala", "netezza");
+	private static final Collection<String> DBMS_NO_INDEXES = Arrays.asList(REDSHIFT.getOhdsiDB(), IMPALA.getOhdsiDB(), NETEZZA.getOhdsiDB());
+
+	private static final Collection<String> DBMS_NO_DEFAULT = Arrays.asList(IMPALA.getOhdsiDB());
 
 	@GET
 	@Path("results")
@@ -125,6 +132,7 @@ public class DDLService {
 		statement.sql = sql;
 		HashMap<String, String> parameters = new HashMap<>();
 		parameters.put(schemaSqlParameter, schema);
+		parameters.put(DB_SUPPORTS_DEFAULT, Boolean.valueOf(!DBMS_NO_DEFAULT.contains(dialect)).toString());
 		statement.parameters = parameters;
 		TranslatedStatement translatedStatement = translateSQL(statement);
 		return translatedStatement.targetSQL;

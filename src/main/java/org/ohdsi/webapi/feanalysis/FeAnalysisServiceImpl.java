@@ -3,6 +3,7 @@ package org.ohdsi.webapi.feanalysis;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.webapi.cohortcharacterization.CcResultType;
@@ -12,6 +13,7 @@ import org.ohdsi.webapi.feanalysis.repository.FeAnalysisCriteriaRepository;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisEntityRepository;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisWithStringEntityRepository;
 import org.ohdsi.webapi.service.AbstractDaoService;
+import org.ohdsi.webapi.util.EntityUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -26,7 +28,12 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
     private FeAnalysisEntityRepository analysisRepository;
     private FeAnalysisCriteriaRepository criteriaRepository;
     private FeAnalysisWithStringEntityRepository stringAnalysisRepository;
-    
+
+    private final EntityGraph defaultEntityGraph = EntityUtils.fromAttributePaths(
+            "createdBy",
+            "modifiedBy"
+    );
+
     public FeAnalysisServiceImpl(
             final FeAnalysisEntityRepository analysisRepository,
             final FeAnalysisCriteriaRepository criteriaRepository, 
@@ -38,7 +45,7 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
 
     @Override
     public Page<FeAnalysisEntity> getPage(final Pageable pageable) {
-        return analysisRepository.findAll(pageable);
+        return analysisRepository.findAll(pageable, defaultEntityGraph);
     }
 
     @Override
@@ -52,12 +59,12 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
         if (analysis.getStatType() == null) {
             analysis.setStatType(CcResultType.PREVALENCE);
         }
-        return analysisRepository.save(analysis);
+        return saveNew(analysis);
     }
 
     @Override
     public Optional<FeAnalysisEntity> findById(Integer id) {
-        return analysisRepository.findById(id);
+        return analysisRepository.findById(id, defaultEntityGraph);
     }
 
     @Override
@@ -65,10 +72,16 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
     public FeAnalysisWithCriteriaEntity createCriteriaAnalysis(final FeAnalysisWithCriteriaEntity analysis) {
         FeAnalysisWithCriteriaEntity newAnalysis = newAnalysis(analysis);
         newAnalysis.setDesign(Collections.emptyList());
-        final FeAnalysisWithCriteriaEntity entityWithMainFields = analysisRepository.save(newAnalysis);
+        final FeAnalysisWithCriteriaEntity entityWithMainFields = saveNew(newAnalysis);
         final List<FeAnalysisCriteriaEntity> criteriaList = createCriteriaListForAnalysis(entityWithMainFields, analysis.getDesign());
         entityWithMainFields.setDesign(criteriaList);
         return entityWithMainFields;
+    }
+
+    private <T extends FeAnalysisEntity> T saveNew(T entity) {
+        entity.setCreatedBy(getCurrentUser());
+        entity.setCreatedDate(new Date());
+        return analysisRepository.save(entity);
     }
 
     private FeAnalysisWithCriteriaEntity newAnalysis(final FeAnalysisWithCriteriaEntity analysis) {
@@ -131,6 +144,8 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
         if (Objects.nonNull(updatedEntity.getType())) {
             savedEntity.setType(updatedEntity.getType());
         }
+        savedEntity.setModifiedBy(getCurrentUser());
+        savedEntity.setModifiedDate(new Date());
         return analysisRepository.save(savedEntity);
     }
 

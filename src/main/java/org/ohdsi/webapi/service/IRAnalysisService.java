@@ -15,13 +15,7 @@
  */
 package org.ohdsi.webapi.service;
 
-import static org.ohdsi.webapi.Constants.Params.ANALYSIS_ID;
-import static org.ohdsi.webapi.Constants.Params.CDM_DATABASE_SCHEMA;
-import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
-import static org.ohdsi.webapi.Constants.Params.RESULTS_DATABASE_SCHEMA;
-import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
-import static org.ohdsi.webapi.Constants.Params.TARGET_DIALECT;
-import static org.ohdsi.webapi.Constants.Params.VOCABULARY_DATABASE_SCHEMA;
+import static org.ohdsi.webapi.Constants.Params.*;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -72,6 +66,7 @@ import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.ohdsi.webapi.util.TempTableCleanupManager;
 import org.ohdsi.webapi.util.UserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -422,6 +417,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
     this.getTransactionTemplate().getTransactionManager().commit(initStatus);
 
+    final String sessionId = SessionUtils.sessionId();
     JobParametersBuilder builder = new JobParametersBuilder();
     builder.addString(JOB_NAME, String.format("IR Analysis: %d: %s (%s)", analysis.getId(), source.getSourceName(), source.getSourceKey()));
     builder.addString(CDM_DATABASE_SCHEMA, cdmTableQualifier);
@@ -430,13 +426,23 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     builder.addString(TARGET_DIALECT, source.getSourceDialect());
     builder.addString(ANALYSIS_ID, String.valueOf(analysisId));
     builder.addString(SOURCE_ID, String.valueOf(source.getSourceId()));
+    builder.addString(SESSION_ID, sessionId);
 
     final JobParameters jobParameters = builder.toJobParameters();
 
     PerformAnalysisTasklet analysisTasklet = new PerformAnalysisTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), irAnalysisRepository);
+    GenerationTaskExceptionHandler exceptionHandler = new GenerationTaskExceptionHandler(new TempTableCleanupManager(
+            getSourceJdbcTemplate(source),
+            getTransactionTemplate(),
+            source.getSourceDialect(),
+            resultsTableQualifier,
+            sessionId,
+            null
+    ));
 
     Step irAnalysisStep = stepBuilders.get("irAnalysis.execute")
       .tasklet(analysisTasklet)
+      .exceptionHandler(exceptionHandler)
     .build();
 
     Job executeAnalysis = jobBuilders.get(NAME)

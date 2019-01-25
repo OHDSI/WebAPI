@@ -40,8 +40,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.util.List;
 import java.util.Map;
 
-import static org.ohdsi.webapi.Constants.Params.GENERATE_STATS;
-import static org.ohdsi.webapi.Constants.Params.TARGET_DATABASE_SCHEMA;
+import static org.ohdsi.webapi.Constants.Params.*;
 
 /**
  *
@@ -70,8 +69,9 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
 
     Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
     Integer defId = Integer.valueOf(jobParams.get(Constants.Params.COHORT_DEFINITION_ID).toString());
-    String sessionId = SessionUtils.sessionId();
+    String sessionId = jobParams.getOrDefault(SESSION_ID, SessionUtils.sessionId()).toString();
 
+    final String oracleTempSchema = null;
     try {
       ObjectMapper mapper = new ObjectMapper();
 
@@ -123,7 +123,7 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
 
       String expressionSql = expressionQueryBuilder.buildExpressionQuery(expression, options);
       expressionSql = SqlRender.renderSql(expressionSql, null, null);
-      String translatedSql = SqlTranslate.translateSql(expressionSql, jobParams.get("target_dialect").toString(), sessionId, null);
+      String translatedSql = SqlTranslate.translateSql(expressionSql, jobParams.get("target_dialect").toString(), sessionId, oracleTempSchema);
       return SqlSplit.splitSql(translatedSql);
     } catch (Exception e) {
       log.error("Failed to generate cohort: {}", defId, e);

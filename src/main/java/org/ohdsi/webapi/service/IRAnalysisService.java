@@ -64,6 +64,7 @@ import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.TempTableCleanupManager;
@@ -113,6 +114,9 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
   @Autowired
   private UserRepository userRepository;
+
+  @Autowired
+  private SourceRepository sourceRepository;
 
   @Autowired
   private Security security;
@@ -430,7 +434,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
     final JobParameters jobParameters = builder.toJobParameters();
 
-    PerformAnalysisTasklet analysisTasklet = new PerformAnalysisTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), irAnalysisRepository);
+    PerformAnalysisTasklet analysisTasklet = new PerformAnalysisTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), irAnalysisRepository, sourceRepository);
     GenerationTaskExceptionHandler exceptionHandler = new GenerationTaskExceptionHandler(new TempTableCleanupManager(
             getSourceJdbcTemplate(source),
             getTransactionTemplate(),

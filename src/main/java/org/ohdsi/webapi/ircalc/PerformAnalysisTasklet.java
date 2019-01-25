@@ -22,8 +22,10 @@ import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.common.generation.CancelableTasklet;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
+import org.ohdsi.webapi.util.SourceUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
@@ -48,17 +50,20 @@ public class PerformAnalysisTasklet extends CancelableTasklet {
 
   private final TransactionTemplate transactionTemplate;
   private final IncidenceRateAnalysisRepository incidenceRateAnalysisRepository;
+  private final SourceRepository sourceRepository;
   private ExecutionInfo analysisInfo;
   private Date startTime;
 
   public PerformAnalysisTasklet(
           final CancelableJdbcTemplate jdbcTemplate,
           final TransactionTemplate transactionTemplate,
-          final IncidenceRateAnalysisRepository incidenceRateAnalysisRepository) {
+          final IncidenceRateAnalysisRepository incidenceRateAnalysisRepository,
+          final SourceRepository sourceRepository) {
 
     super(LoggerFactory.getLogger(PerformAnalysisTasklet.class), jdbcTemplate, transactionTemplate);
     this.transactionTemplate = transactionTemplate;
     this.incidenceRateAnalysisRepository = incidenceRateAnalysisRepository;
+    this.sourceRepository = sourceRepository;
   }
 
   private Optional<ExecutionInfo> findExecutionInfoBySourceId(Collection<ExecutionInfo> infoList, Integer sourceId)
@@ -73,11 +78,10 @@ public class PerformAnalysisTasklet extends CancelableTasklet {
     
     Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
 
-    String targetDialect = jobParams.get(TARGET_DIALECT).toString();
     String resultSchema = jobParams.get(RESULTS_DATABASE_SCHEMA).toString();
-    String oracleTempSchema = null;
-    Source source = new Source();
-    source.setSourceDialect(targetDialect);
+    Integer sourceId = Integer.parseInt(jobParams.get(SOURCE_ID).toString());
+    Source source = sourceRepository.findBySourceId(sourceId);
+    String oracleTempSchema = SourceUtils.getTempQualifier(source);
 
     Integer analysisId = Integer.valueOf(jobParams.get(ANALYSIS_ID).toString());
     String sessionId = jobParams.get(SESSION_ID).toString();

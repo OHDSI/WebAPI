@@ -36,9 +36,6 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.transaction.support.TransactionTemplate;
 
-/**
- *
- */
 public abstract class AbstractDaoService {
 
   protected final Logger log = LoggerFactory.getLogger(getClass());
@@ -107,7 +104,7 @@ public abstract class AbstractDaoService {
   @Autowired
   private TransactionTemplate transactionTemplateRequiresNew;
 
-	@Autowired
+  @Autowired
   private TransactionTemplate transactionTemplateNoTransaction;
 
   @Autowired

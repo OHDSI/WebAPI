@@ -24,6 +24,7 @@ import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisD
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.webapi.cohortcharacterization.CcResultType;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
+import org.ohdsi.webapi.model.CommonEntity;
 
 @Entity
 @Table(name = "fe_analysis")
@@ -32,7 +33,7 @@ import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEnti
         "CASE WHEN type = 'CRITERIA_SET' THEN CONCAT(type,'_',stat_type)" +
           "ELSE type END"
 )
-public abstract class FeAnalysisEntity<T> implements FeatureAnalysis, Comparable<FeAnalysisEntity> {
+public abstract class FeAnalysisEntity<T> extends CommonEntity implements FeatureAnalysis, Comparable<FeAnalysisEntity> {
 
     public FeAnalysisEntity() {
     }

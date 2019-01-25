@@ -166,7 +166,7 @@ public abstract class AbstractDaoService {
     }
     try {
       FileUtils.forceDelete(temporaryDir);
-      if (StringUtils.isNotBlank(krbConfig.getComponents().getKeytabPath().toString())){
+      if (Objects.nonNull(krbConfig.getComponents()) && StringUtils.isNotBlank(krbConfig.getComponents().getKeytabPath().toString())){
         FileUtils.forceDelete(krbConfig.getComponents().getKeytabPath().toFile());
       }
     } catch (IOException e) {

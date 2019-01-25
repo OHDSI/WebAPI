@@ -1,10 +1,10 @@
 package com.jnj.honeur.webapi.liferay;
 
-import com.jnj.honeur.webapi.liferay.model.Organization;
-import com.jnj.honeur.webapi.shiro.LiferayPermissionManager;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.Entities.RoleRepository;
 import org.ohdsi.webapi.shiro.PermissionManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -17,6 +17,8 @@ import java.util.stream.Collectors;
 @Component
 @ConditionalOnProperty(value="webapi.central", matchIfMissing = true)
 public class LiferayInitialization implements ApplicationListener<ApplicationReadyEvent> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(LiferayInitialization.class);
 
     @Autowired
     private LiferayApiClient liferayApiClient;
@@ -36,13 +38,12 @@ public class LiferayInitialization implements ApplicationListener<ApplicationRea
         Iterable<RoleEntity> roleEntityList = roleRepository.findAll();
         List<String> organizationNames = liferayApiClient.getOrganizations().stream()
                 .map(organization -> organization.getName()).collect(Collectors.toList());
-        for(RoleEntity role: roleEntityList){
+        for(RoleEntity role: roleEntityList) {
             if(liferayApiClient.findUserByLogin(role.getName()) == null && !organizationNames.contains(role.getName())){
                 liferayApiClient.addRole(role);
+            } else {
+                LOGGER.info("Don't sync personal role or organization '{}' to Liferay", role.getName());
             }
-//            else if(organizationNames.contains(role.getName())) {
-//                this.authorizer.addOrganizationRole(role.getName());
-//            }
         }
     }
 }

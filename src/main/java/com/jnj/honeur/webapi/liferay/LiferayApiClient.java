@@ -28,6 +28,7 @@ public class LiferayApiClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(LiferayApiClient.class);
 
     private static final String STANDARD_ROLE = "1";
+    public static final String ROLE_PREFIX = "Atlas ";
 
 
     @Value("${datasource.liferay.company.web.id}")
@@ -137,7 +138,7 @@ public class LiferayApiClient {
 
     public boolean addRole(RoleEntity role, boolean prefix){
         String endpoint = "/role/add-role/class-name/com.liferay.portal.kernel.model.Role/class-pk/0/name/" +
-                (prefix ? "Atlas " : "") + role.getName()+"/title-map/{}/description-map/{}/type/"+STANDARD_ROLE+"?subtype=";
+                (prefix ? ROLE_PREFIX : "") + role.getName()+"/title-map/{}/description-map/{}/type/"+STANDARD_ROLE+"?subtype=";
 
         try {
             JsonNode responseBody = restTemplate.exchange(liferayWebApi + endpoint,

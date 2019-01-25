@@ -1632,7 +1632,8 @@ public class CohortResultsAnalysisRunner {
 		String reportPath = BASE_SQL_PATH + "/healthcareutilization/getVisitUtilization.sql";
 		String reportSql = ResourceHelper.GetResourceAsString(reportPath);
 		
-		String summarySql = SqlRender.renderSql(reportSql, new String[] {"is_summary"}, new String[]{"TRUE"});
+		String summarySql = SqlRender.renderSql(reportSql, new String[] {"is_summary", "visit_concept_id"}, new String[]{"TRUE", 
+				visitConceptId == null ? "" : visitConceptId.toString()});
 		
 		String[] reportCols = new String[]{"cohort_definition_id"
 			, "subjects_analysis_id"

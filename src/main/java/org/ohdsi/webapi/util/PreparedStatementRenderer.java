@@ -28,6 +28,7 @@ public class PreparedStatementRenderer {
 
   private String sql;
   private String sourceDialect = "sql server";
+  private String tempSchema = null;
   private List<Object> orderedParamsList;
   private String targetDialect = "sql server";
 	private String sessionId;
@@ -86,6 +87,7 @@ public class PreparedStatementRenderer {
 
 		if (source != null) {
 			this.targetDialect = source.getSourceDialect();
+			this.tempSchema = SourceUtils.getTempQualifier(source);
 		}
 
 		this.sessionId = sessionId;
@@ -270,7 +272,7 @@ public class PreparedStatementRenderer {
   }
 
   public String getSql() {
-    String translatedSql = SqlTranslate.translateSql(sql, targetDialect, sessionId, null);
+    String translatedSql = SqlTranslate.translateSql(sql, targetDialect, sessionId, tempSchema);
     return DBMSType.ORACLE.getOhdsiDB().equals(targetDialect) ? translatedSql.replaceAll(";$", "") : translatedSql;
   }
 

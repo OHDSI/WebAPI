@@ -39,7 +39,7 @@ public class SqlRenderService {
     }
 
     static TranslatedStatement translateSQL(SourceStatement sourceStatement) {
-        return translateSQL(sourceStatement, SessionUtils.sessionId(), null);
+        return translateSQL(sourceStatement, SessionUtils.sessionId(), "@temp_database_schema");
     }
 
     static TranslatedStatement translateSQL(SourceStatement sourceStatement, String sessionId, String tempSchema) {

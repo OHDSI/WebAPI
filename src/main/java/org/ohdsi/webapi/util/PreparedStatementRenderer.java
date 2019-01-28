@@ -6,7 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.odysseusinc.arachne.commons.types.DBMSType;
@@ -82,8 +84,21 @@ public class PreparedStatementRenderer {
     paramValueMap = buildParamValueMap(sqlVariableNames, sqlVariableValues);
 
     this.orderedParamsList = PreparedSqlRender.getOrderedListOfParameterValues(paramValueMap, sql);
+    // NOTE:
+    // Look below
+    if (source.getSourceDialect().equals(DBMSType.BIGQUERY.getOhdsiDB())) {
+      this.orderedParamsList = this.orderedParamsList.stream().filter(Objects::nonNull).collect(Collectors.toList());
+    }
+
     buildPreparedStatementSetter();
-    sql = PreparedSqlRender.fixPreparedStatementSql(sql, paramValueMap);
+    sql = PreparedSqlRender.fixPreparedStatementSql(
+      sql,
+      paramValueMap,
+      // NOTE:
+      // Current version of BigQuery driver has issues when NULLs are provided as variables for prepared statements (throws NPE)
+      // That's why in case of NULLs we paste them directly into code
+      source.getSourceDialect().equals(DBMSType.BIGQUERY.getOhdsiDB()) ? (object -> object == null ? "NULL" : "?") : (object -> "?")
+    );
 
 		if (source != null) {
 			this.targetDialect = source.getSourceDialect();

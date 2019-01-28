@@ -697,7 +697,7 @@
     <dependency>
       <groupId>com.jnj.honeur</groupId>
       <artifactId>security</artifactId>
-      <version>1.1-rc1</version>
+      <version>1.2-SNAPSHOT</version>
     </dependency>
   </dependencies>
   <profiles>

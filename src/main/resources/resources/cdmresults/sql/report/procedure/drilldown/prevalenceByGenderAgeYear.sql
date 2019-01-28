@@ -35,7 +35,7 @@ FROM (
               AND num.stratum_4 = denom.stratum_3
      ) tmp
   INNER JOIN @vocab_database_schema.concept c1
-ON CAST(CASE WHEN isNumeric(num_stratum_1) THEN num_stratum_1 ELSE null END AS INT) = c1.concept_id
+ON CAST(CASE WHEN isNumeric(num_stratum_1) = 1 THEN num_stratum_1 ELSE null END AS INT) = c1.concept_id
 INNER JOIN @vocab_database_schema.concept c2
-ON CAST(CASE WHEN isNumeric(num_stratum_3) THEN num_stratum_3 ELSE null END AS INT) = c2.concept_id
+ON CAST(CASE WHEN isNumeric(num_stratum_3) = 1 THEN num_stratum_3 ELSE null END AS INT) = c2.concept_id
 WHERE c1.concept_id = @conceptId

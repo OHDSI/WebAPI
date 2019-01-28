@@ -360,6 +360,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         builder.addString(SOURCE_ID, String.valueOf(source.getSourceId()));
         builder.addString(JOB_AUTHOR, getCurrentUserLogin());
         builder.addString(TARGET_TABLE, GenerationUtils.getTempCohortTableName());
+        builder.addString(SESSION_ID, SessionUtils.sessionId());
 
         final JobParameters jobParameters = builder.toJobParameters();
 
@@ -367,6 +368,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
         Job generateCohortJob = generationUtils.buildJobForCohortBasedAnalysisTasklet(
                 GENERATE_COHORT_CHARACTERIZATION,
+                source,
+                jobParameters,
                 jdbcTemplate,
                 chunkContext -> {
                     Long ccId = Long.valueOf(chunkContext.getStepContext().getJobParameters().get(COHORT_CHARACTERIZATION_ID).toString());

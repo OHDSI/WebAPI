@@ -1,14 +1,21 @@
 package org.ohdsi.webapi.common.generation;
 
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortcharacterization.CreateCohortTableTasklet;
 import org.ohdsi.webapi.cohortcharacterization.DropCohortTableListener;
 import org.ohdsi.webapi.cohortcharacterization.GenerateLocalCohortTasklet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.CohortGenerationService;
+import org.ohdsi.webapi.service.GenerationTaskExceptionHandler;
 import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.sqlrender.SourceAwareSqlRender;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.ohdsi.webapi.util.SourceUtils;
+import org.ohdsi.webapi.util.TempTableCleanupManager;
 import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
@@ -23,7 +30,7 @@ import java.util.List;
 import java.util.function.Function;
 
 @Component
-public class GenerationUtils {
+public class GenerationUtils extends AbstractDaoService {
 
     private StepBuilderFactory stepBuilderFactory;
     private TransactionTemplate transactionTemplate;
@@ -49,10 +56,23 @@ public class GenerationUtils {
 
     public Job buildJobForCohortBasedAnalysisTasklet(
             String analysisTypeName,
+            Source source,
+            JobParameters jobParameters,
             JdbcTemplate jdbcTemplate,
             Function<ChunkContext, Collection<CohortDefinition>> cohortGetter,
             AnalysisTasklet analysisTasklet
     ) {
+
+        TempTableCleanupManager cleanupManager = new TempTableCleanupManager(
+                getSourceJdbcTemplate(source),
+                transactionTemplate,
+                source.getSourceDialect(),
+                SourceUtils.getTempQualifier(source),
+                jobParameters.getString(Constants.Params.SESSION_ID),
+                null
+        );
+
+        GenerationTaskExceptionHandler exceptionHandler = new GenerationTaskExceptionHandler(cleanupManager);
 
         CreateCohortTableTasklet createCohortTableTasklet = new CreateCohortTableTasklet(jdbcTemplate, transactionTemplate, sourceService, sourceAwareSqlRender);
         Step createCohortTableStep = stepBuilderFactory.get(analysisTypeName + ".createCohortTable")
@@ -71,6 +91,7 @@ public class GenerationUtils {
 
         Step generateCohortFeaturesStep = stepBuilderFactory.get(analysisTypeName + ".generate")
                 .tasklet(analysisTasklet)
+                .exceptionHandler(exceptionHandler)
                 .build();
 
         DropCohortTableListener dropCohortTableListener = new DropCohortTableListener(jdbcTemplate, transactionTemplate, sourceService, sourceAwareSqlRender);

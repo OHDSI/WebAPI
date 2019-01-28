@@ -54,10 +54,11 @@ public class GeneratePathwayAnalysisTasklet extends AnalysisTasklet {
         Long jobId = chunkContext.getStepContext().getStepExecution().getJobExecution().getId();
         UserEntity user = userRepository.findByLogin(jobParams.get(JOB_AUTHOR).toString());
         String cohortTable = jobParams.get(TARGET_TABLE).toString();
+        String sessionId = jobParams.get(SESSION_ID).toString();
 
         saveInfo(jobId, new SerializedPathwayAnalysisToPathwayAnalysisConverter().convertToDatabaseColumn(pathwayAnalysis), user);
 
-        String analysisSql = pathwayService.buildAnalysisSql(jobId, pathwayAnalysis, sourceId, cohortTable);
+        String analysisSql = pathwayService.buildAnalysisSql(jobId, pathwayAnalysis, sourceId, cohortTable, sessionId);
 
         return SqlSplit.splitSql(analysisSql);
     }

@@ -147,7 +147,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             this.source = sourceService.findBySourceId(sourceId);
             this.cohortTable = jobParams.get(TARGET_TABLE).toString();
             this.userEntity = userRepository.findByLogin(jobParams.get(JOB_AUTHOR).toString());
-            this.sessionId = SessionUtils.sessionId();
+            this.sessionId = jobParams.get(SESSION_ID).toString();
         }
         
         private List<PreparedStatementCreator> run() {

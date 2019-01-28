@@ -122,6 +122,9 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   @Autowired
   private Security security;
 
+  @Autowired
+  private SourceService sourceService;
+
   @Context
   ServletContext context;
   
@@ -424,16 +427,12 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
     JobParametersBuilder builder = new JobParametersBuilder();
     builder.addString(JOB_NAME, String.format("IR Analysis: %d: %s (%s)", analysis.getId(), source.getSourceName(), source.getSourceKey()));
-    builder.addString(CDM_DATABASE_SCHEMA, cdmTableQualifier);
-    builder.addString(RESULTS_DATABASE_SCHEMA, resultsTableQualifier);
-    builder.addString(VOCABULARY_DATABASE_SCHEMA, vocabularyTableQualifier);
-    builder.addString(TARGET_DIALECT, source.getSourceDialect());
     builder.addString(ANALYSIS_ID, String.valueOf(analysisId));
     builder.addString(SOURCE_ID, String.valueOf(source.getSourceId()));
 
     final JobParameters jobParameters = builder.toJobParameters();
 
-    PerformAnalysisTasklet analysisTasklet = new PerformAnalysisTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), irAnalysisRepository);
+    PerformAnalysisTasklet analysisTasklet = new PerformAnalysisTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), irAnalysisRepository, sourceService);
 
     Step irAnalysisStep = stepBuilders.get("irAnalysis.execute")
       .tasklet(analysisTasklet)

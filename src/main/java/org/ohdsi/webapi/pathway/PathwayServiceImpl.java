@@ -136,7 +136,6 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
         newAnalysis.setCreatedBy(getCurrentUser());
         newAnalysis.setCreatedDate(new Date());
-
         return save(newAnalysis);
     }
 

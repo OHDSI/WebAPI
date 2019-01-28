@@ -115,8 +115,7 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
               .collect(Collectors.toList())
       );
     }
-
-   
+    
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

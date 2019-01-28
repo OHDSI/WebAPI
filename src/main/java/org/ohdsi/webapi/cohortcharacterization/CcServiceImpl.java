@@ -171,6 +171,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         return repository.save(savedEntity);
     }
 
+    @Override
     public void deleteCc(Long ccId) {
         repository.delete(ccId);
     }

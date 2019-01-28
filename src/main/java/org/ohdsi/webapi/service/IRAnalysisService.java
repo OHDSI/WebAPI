@@ -328,7 +328,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     // it might be possible to leverage saveAnalysis() but not sure how to pull the auto ID from
     // the DB to pass it into saveAnalysis (since saveAnalysis does a findOne() at the start).
     // If there's a way to get the Entity into the persistence manager so findOne() returns this newly created entity
-    // then we could create the entity here (wihtout persist) and then call saveAnalysis within the sasme Tx.
+    // then we could create the entity here (without persist) and then call saveAnalysis within the same Tx.
     IncidenceRateAnalysis newAnalysis = new IncidenceRateAnalysis();
     newAnalysis.setName(analysis.name)
             .setDescription(analysis.description);

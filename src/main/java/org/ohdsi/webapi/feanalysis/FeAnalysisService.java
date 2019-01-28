@@ -30,4 +30,6 @@ public interface FeAnalysisService {
     FeAnalysisEntity updateAnalysis(Integer feAnalysisId, FeAnalysisEntity convert);
 
     void deleteAnalysis(FeAnalysisEntity entity);
+    
+    void deleteAnalysis(int id);
 }

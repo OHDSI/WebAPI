@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.feanalysis.repository;
 
+import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.cosium.spring.data.jpa.entity.graph.repository.EntityGraphJpaRepository;
 import java.util.List;
 import java.util.Optional;
@@ -14,4 +15,5 @@ public interface BaseFeAnalysisEntityRepository<T extends FeAnalysisEntity> exte
     Set<T> findAllByCohortCharacterizations(CohortCharacterizationEntity cohortCharacterization);
     List<T> findAllByType(StandardFeatureAnalysisType preset);
     Optional<T> findById(Integer id);
+    Optional<T> findById(Integer id, EntityGraph entityGraph);
 }

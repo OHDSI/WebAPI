@@ -25,6 +25,8 @@
                 <security.oauth.facebook.apiKey></security.oauth.facebook.apiKey>
                 <security.oauth.facebook.apiSecret></security.oauth.facebook.apiSecret>
                 <jersey.resources.additional.packages>com.jnj.honeur.webapi</jersey.resources.additional.packages>
+                <jasypt.encryptor.enabled>true</jasypt.encryptor.enabled>
+                <jasypt.encryptor.algorithm>AES</jasypt.encryptor.algorithm>
             </properties>
         </profile>
         <profile>
@@ -158,6 +160,7 @@
                 <security.cas.tgc.domain>localhost</security.cas.tgc.domain>
                 <security.cookies.domain>localhost</security.cookies.domain>
                 <liferay.company.web.id>liferay.com</liferay.company.web.id>
+                <jasypt.encryptor.password>qTEB5aBP4fLJIAfLo11BxhMtcLfZt4opgX9ra5aoqKi5TvMnCs0hTOTuLvAtci3HEDtKwEtFWAIAPnrmIQi87pP56yFSCiVtsctUr2VXe7U6ozAsEfBW8E9I1SLfAMo9jYWDIh9DnnGFL3Lqwvt9UpjmHyscRC4WGt4PYW1oZ6pxP3BDFye2d4RVbhuNdrN3ulRZbij5ASSSyfSDicETNZa20pWkjXa0UKNwSBqQgVzLpxNMhRYiHPR052ftTNOX</jasypt.encryptor.password>
             </properties>
         </profile>
 

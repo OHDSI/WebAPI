@@ -11,7 +11,7 @@ WHERE pathway_analysis_generation_id = @generation_id AND target_cohort_id = @pa
 IF OBJECT_ID('tempdb..#raw_events', 'U') IS NOT NULL
 DROP TABLE #raw_events;
 
-select id, event_cohort_index, subject_id, cohort_start_date, cohort_end_date
+select id, event_cohort_index, subject_id, CAST(cohort_start_date AS DATETIME) AS cohort_start_date, CAST(cohort_end_date AS DATETIME) AS cohort_end_date
 INTO #raw_events
 FROM (
 	SELECT ROW_NUMBER() OVER (ORDER BY e.cohort_start_date) AS id,
@@ -136,14 +136,14 @@ DROP TABLE #combo_events;
 WITH events AS (
   SELECT *
   FROM #collapsed_dates_events cde
-  WHERE NOT EXISTS(SELECT id FROM #split_overlapping_events WHERE #split_overlapping_events.id = cde.id)
+  WHERE NOT EXISTS(SELECT id FROM #split_overlapping_events soe WHERE soe.id = cde.id)
 
   UNION ALL
 
   SELECT *
   FROM #split_overlapping_events
 )
-SELECT SUM(DISTINCT POWER(2, e.event_cohort_index)) as combo_id, subject_id, cohort_start_date, cohort_end_date
+SELECT CAST(SUM(DISTINCT POWER(2, e.event_cohort_index)) as INT) as combo_id, subject_id, cohort_start_date, cohort_end_date
 INTO #combo_events
 FROM events e
 GROUP BY subject_id, cohort_start_date, cohort_end_date;

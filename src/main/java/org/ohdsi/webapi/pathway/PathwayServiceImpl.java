@@ -34,6 +34,8 @@ import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
+import org.ohdsi.webapi.util.SessionUtils;
+import org.ohdsi.webapi.util.SourceUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -286,7 +288,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
             };
 
             String renderedSql = SqlRender.renderSql(analysisSql, params, values);
-            String translatedSql = SqlTranslate.translateSql(renderedSql, source.getSourceDialect());
+            String translatedSql = SqlTranslate.translateSql(renderedSql, source.getSourceDialect(), SessionUtils.sessionId(), SourceUtils.getTempQualifier(source));
 
             joiner.add(translatedSql);
         });

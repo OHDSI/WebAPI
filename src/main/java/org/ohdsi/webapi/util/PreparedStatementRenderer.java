@@ -49,10 +49,6 @@ public class PreparedStatementRenderer {
     return getOrderedParamsList().toArray(new Object[getOrderedParamsList().size()]);
   }
 
-  public void setTargetDialect(String targetDialect) {
-
-    this.targetDialect = targetDialect;
-  }
   private PreparedStatementSetter preparedStatementSetter;
 
   private Map<String, Object> paramValueMap = new HashMap<String, Object>();
@@ -86,7 +82,7 @@ public class PreparedStatementRenderer {
     this.orderedParamsList = PreparedSqlRender.getOrderedListOfParameterValues(paramValueMap, sql);
     // NOTE:
     // Look below
-    if (source.getSourceDialect().equals(DBMSType.BIGQUERY.getOhdsiDB())) {
+    if (Objects.equals(source.getSourceDialect(), DBMSType.BIGQUERY.getOhdsiDB())) {
       this.orderedParamsList = this.orderedParamsList.stream().filter(Objects::nonNull).collect(Collectors.toList());
     }
 

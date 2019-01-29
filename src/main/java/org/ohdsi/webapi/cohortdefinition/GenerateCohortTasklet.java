@@ -95,7 +95,7 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
 
       Integer sourceId = Integer.parseInt(jobParams.get(Constants.Params.SOURCE_ID).toString());
       Source source = sourceRepository.findBySourceId(sourceId);
-      final String oracleTempSchema = null;
+      final String oracleTempSchema = SourceUtils.getTempQualifier(source);
 
       if (jobParams.get(GENERATE_STATS).equals(Boolean.TRUE.toString())) {
 

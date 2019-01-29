@@ -26,6 +26,7 @@ import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.ohdsi.webapi.util.SourceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.StepContribution;
@@ -79,7 +80,7 @@ public class CleanupCohortTasklet implements Tasklet {
 			try {
 				String resultSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 				String deleteSql = SqlRender.renderSql(CLEANUP_TEMPLATE, new String[]{"results_database_schema", "cohort_definition_id"}, new String[]{resultSchema, cohortId.toString()});
-				deleteSql = SqlTranslate.translateSql(deleteSql, source.getSourceDialect(), sessionId, null);
+				deleteSql = SqlTranslate.translateSql(deleteSql, source.getSourceDialect(), sessionId, SourceUtils.getTempQualifier(source));
 				
 				getSourceJdbcTemplate(source).batchUpdate(deleteSql.split(";")); // use batch update since SQL translation may produce multiple statements
 				sourcesUpdated++;

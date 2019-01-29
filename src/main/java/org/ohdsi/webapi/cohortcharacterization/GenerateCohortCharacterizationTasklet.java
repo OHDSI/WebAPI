@@ -287,7 +287,8 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
 
             Long conceptId = 0L;
             String queryFile;
-            String groupQuery = getCriteriaGroupQuery(analysis, feature);
+            String eventTable = Objects.isNull(strata) ? "#qualified_events" : "qualified_events";
+            String groupQuery = getCriteriaGroupQuery(analysis, feature, eventTable);
             String[] paramNames = CRITERIA_PARAM_NAMES.toArray(new String[0]);
 
             if (CcResultType.PREVALENCE.equals(analysis.getStatType())) {
@@ -310,18 +311,18 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
                     .collect(Collectors.toList());
         }
 
-        private String getCriteriaGroupQuery(FeAnalysisWithCriteriaEntity analysis, FeAnalysisCriteriaEntity feature) {
+        private String getCriteriaGroupQuery(FeAnalysisWithCriteriaEntity analysis, FeAnalysisCriteriaEntity feature, String eventTable) {
             String groupQuery;
             if (CcResultType.PREVALENCE.equals(analysis.getStatType())) {
-              groupQuery = queryBuilder.getCriteriaGroupQuery(((FeAnalysisCriteriaGroupEntity)feature).getExpression(), "#qualified_events");
+              groupQuery = queryBuilder.getCriteriaGroupQuery(((FeAnalysisCriteriaGroupEntity)feature).getExpression(), eventTable);
             } else if (CcResultType.DISTRIBUTION.equals(analysis.getStatType())) {
               if (feature instanceof FeAnalysisWindowedCriteriaEntity) {
                 WindowedCriteria criteria = ((FeAnalysisWindowedCriteriaEntity) feature).getExpression();
                 criteria.ignoreObservationPeriod = true;
-                groupQuery = queryBuilder.getWindowedCriteriaQuery(criteria, "#qualified_events");
+                groupQuery = queryBuilder.getWindowedCriteriaQuery(criteria, eventTable);
               } else if (feature instanceof FeAnalysisDemographicCriteriaEntity) {
                 DemographicCriteria criteria = ((FeAnalysisDemographicCriteriaEntity)feature).getExpression();
-                groupQuery = queryBuilder.getDemographicCriteriaQuery(criteria, "#qualified_events");
+                groupQuery = queryBuilder.getDemographicCriteriaQuery(criteria, eventTable);
               } else {
                 throw new IllegalArgumentException(String.format("Feature class %s is not supported", feature.getClass()));
               }
@@ -371,7 +372,10 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             Object[] paramValues = new Object[]{ cohortDefinitionId, strata.getId() };
             queries.add(prepareStatement("CREATE TABLE " + getStrataCohortTable(strata)
                     + "(cohort_definition_id INTEGER, strata_id BIGINT, subject_id BIGINT, cohort_start_date DATE, cohort_end_date DATE);", sessionId));
-            queries.add(prepareStatement(COHORT_STRATA_QUERY, sessionId, STRATA_REGEXES, replacements, paramNames, paramValues));
+            queries.addAll(Arrays.stream(SqlSplit.splitSql(COHORT_STRATA_QUERY))
+                    .map(COMPLETE_DOTCOMMA)
+                    .map(q -> prepareStatement(q, sessionId, STRATA_REGEXES, replacements, paramNames, paramValues))
+                    .collect(Collectors.toList()));
             return queries;
         }
 

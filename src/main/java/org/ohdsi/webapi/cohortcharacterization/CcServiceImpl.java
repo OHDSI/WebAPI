@@ -31,11 +31,11 @@ import org.ohdsi.webapi.shiro.annotations.CcGenerationId;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.source.Source;
-import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.sqlrender.SourceAwareSqlRender;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.ohdsi.webapi.util.SourceUtils;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.Job;
@@ -416,8 +416,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                 .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, generationId)));
         final Source source = generationEntity.getSource();
         String generationResults = sourceAwareSqlRender.renderSql(source.getSourceId(), QUERY_RESULTS, GENERATION_PARAMETERS, new String[]{String.valueOf(generationId)});
-        final String resultSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-        String translatedSql = SqlTranslate.translateSql(generationResults, source.getSourceDialect(), SessionUtils.sessionId(), resultSchema);
+        final String tempSchema = SourceUtils.getTempQualifier(source);
+        String translatedSql = SqlTranslate.translateSql(generationResults, source.getSourceDialect(), SessionUtils.sessionId(), tempSchema);
         return getGenerationResults(source, translatedSql);
     }
 
@@ -426,11 +426,12 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         final CcGenerationEntity generationEntity = ccGenerationRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, id)));
         final Source source = generationEntity.getSource();
-        final String cdmSchema = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
-        final String resultSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+        final String cdmSchema = SourceUtils.getCdmQualifier(source);
+        final String resultSchema = SourceUtils.getResultsQualifier(source);
+        final String tempSchema = SourceUtils.getTempQualifier(source);
         String prevalenceStats = sourceAwareSqlRender.renderSql(source.getSourceId(), QUERY_PREVALENCE_STATS, PREVALENCE_STATS_PARAMS,
                 new String[]{ cdmSchema, resultSchema, String.valueOf(id), String.valueOf(analysisId), String.valueOf(cohortId), String.valueOf(covariateId) });
-        String translatedSql = SqlTranslate.translateSql(prevalenceStats, source.getSourceDialect(), SessionUtils.sessionId(), resultSchema);
+        String translatedSql = SqlTranslate.translateSql(prevalenceStats, source.getSourceDialect(), SessionUtils.sessionId(), tempSchema);
         return getSourceJdbcTemplate(source).query(translatedSql, (rs, rowNum) -> {
             CcPrevalenceStat stat = new CcPrevalenceStat();
             stat.setAvg(rs.getDouble("stat_value"));
@@ -457,8 +458,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                 .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, generationId)));
         final Source source = generationEntity.getSource();
         final String sql = sourceAwareSqlRender.renderSql(source.getSourceId(), DELETE_RESULTS,GENERATION_PARAMETERS, new String[]{ String.valueOf(generationId) });
-        final String resultSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-        final String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect(), SessionUtils.sessionId(), resultSchema);
+        final String tempScheam = SourceUtils.getTempQualifier(source);
+        final String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect(), SessionUtils.sessionId(), tempScheam);
         getSourceJdbcTemplate(source).execute(translatedSql);
 
         final String deleteJobSql = sourceAwareSqlRender.renderSql(source.getSourceId(), DELETE_EXECUTION,

@@ -24,7 +24,6 @@ import org.ohdsi.webapi.pathway.dto.internal.PersonPathwayEvent;
 import org.ohdsi.webapi.pathway.repository.PathwayAnalysisEntityRepository;
 import org.ohdsi.webapi.pathway.repository.PathwayAnalysisGenerationRepository;
 import org.ohdsi.webapi.service.AbstractDaoService;
-import org.ohdsi.webapi.service.GenerationTaskExceptionHandler;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
@@ -36,6 +35,7 @@ import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.ohdsi.webapi.util.SourceUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -284,7 +284,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
             };
 
             String renderedSql = SqlRender.renderSql(analysisSql, params, values);
-            String translatedSql = SqlTranslate.translateSql(renderedSql, source.getSourceDialect(), sessionId, null);
+            String translatedSql = SqlTranslate.translateSql(renderedSql, source.getSourceDialect(), sessionId, SourceUtils.getTempQualifier(source));
 
             joiner.add(translatedSql);
         });

@@ -13,6 +13,7 @@ import org.ohdsi.webapi.feanalysis.repository.FeAnalysisCriteriaRepository;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisEntityRepository;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisWithStringEntityRepository;
 import org.ohdsi.webapi.service.AbstractDaoService;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -115,6 +116,8 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
     public FeAnalysisEntity updateAnalysis(Integer feAnalysisId, FeAnalysisEntity updatedEntity) {
 
         FeAnalysisEntity savedEntity = findById(feAnalysisId).orElseThrow(NotFoundException::new);
+        UserEntity user = getCurrentUser();
+
         checkEntityLocked(savedEntity);
         savedEntity.setDescr(updatedEntity.getDescr());
         if (savedEntity instanceof FeAnalysisWithCriteriaEntity && updatedEntity instanceof FeAnalysisWithCriteriaEntity) {
@@ -144,7 +147,7 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
         if (Objects.nonNull(updatedEntity.getType())) {
             savedEntity.setType(updatedEntity.getType());
         }
-        savedEntity.setModifiedBy(getCurrentUser());
+        savedEntity.setModifiedBy(user);
         savedEntity.setModifiedDate(new Date());
         return analysisRepository.save(savedEntity);
     }

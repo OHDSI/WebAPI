@@ -11,6 +11,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * This is used for collapsing multiple PreparedStaments into single.
+ * Collapsing is needed for MS SQL databases cause there is an issue with temp tables on sql server.
+ * Temp tables scope is session or stored procedure. To execute PreparedStatement sql server uses stored procedure <i>sp_executesql</i>
+ * and this is the reason why multiple PreparedStatements cannot share the same local temporary table.
+ * Also temp tables cannot be re-used in the same PreparedStatement, e.g. temp table cannot be created, used, dropped
+ * and created again in the same PreparedStatement because sql optimizator detects object already exists and fails.
+ * When is required to re-use temp table it should be separated to several PreparedStatements.
+ */
 public class PreparedStatementUtils {
 
   public static PreparedStatementCreator collapsePreparedStatementCreators(List<PreparedStatementCreator> creators) {

@@ -1,7 +1,7 @@
 ALTER TABLE ${ohdsiSchema}.fe_analysis
   ALTER COLUMN stat_type SET NOT NULL;
 
-UPDATE fe_analysis_criteria
+UPDATE ${ohdsiSchema}.fe_analysis_criteria
   SET criteria_type =
     CASE WHEN criteria_type IS NULL THEN
       CASE

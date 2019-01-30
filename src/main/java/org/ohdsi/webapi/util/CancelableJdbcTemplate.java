@@ -110,11 +110,12 @@ public class CancelableJdbcTemplate extends JdbcTemplate {
           current = statements.get(i);
           PreparedStatement query = current.createPreparedStatement(con);
           cancelOp.setStatement(query);
-          if (query.execute()){
+          if (query.execute()) {
             rowsAffected[i] = query.getUpdateCount();
           } else if (!suppressApiException) {
             throw new InvalidDataAccessApiUsageException("Invalid batch SQL statement: " + getSql());
           }
+          query.close();
           if (cancelOp.isCanceled()) {
             break;
           }

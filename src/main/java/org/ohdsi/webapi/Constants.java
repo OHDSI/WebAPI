@@ -35,6 +35,5 @@ public interface Constants {
     String LDAP_PROVIDER = "provider";
     String ROLE_GROUP_MAPPING = "roleGroupMapping";
     String PRESERVE_ROLES = "preserveRoles";
-    String DB_SUPPORTS_DEFAULT = "SupportsDefault";
   }
 }

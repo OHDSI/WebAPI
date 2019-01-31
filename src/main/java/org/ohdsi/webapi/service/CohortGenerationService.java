@@ -99,7 +99,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     ExceptionHandler exceptionHandler = new GenerationTaskExceptionHandler(new TempTableCleanupManager(getSourceJdbcTemplate(source),
             getTransactionTemplate(),
             source.getSourceDialect(),
-            jobParameters.getString(TARGET_DATABASE_SCHEMA),
+            jobParameters.getString(TEMP_DATABASE_SCHEMA),
             jobParameters.getString(SESSION_ID),
             null
     ));
@@ -181,7 +181,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     builder.addString(RESULTS_DATABASE_SCHEMA, resultsTableQualifier);
     builder.addString(TEMP_DATABASE_SCHEMA, SourceUtils.getTempQualifier(source));
 
-    builder.addString(TARGET_DATABASE_SCHEMA, SourceUtils.getTempQualifier(source));
+    builder.addString(TARGET_DATABASE_SCHEMA, SourceUtils.getResultsQualifier(source));
     builder.addString(TARGET_TABLE, targetTable);
     builder.addString(SESSION_ID, SessionUtils.sessionId());
 

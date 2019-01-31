@@ -160,7 +160,7 @@ public class DDLService {
 
 		SourceStatement statement = new SourceStatement();
 		statement.targetDialect = dialect.toLowerCase();
-		statement.oracleTempSchema = params.get(TEMP_SCHEMA) != null ? params.get(TEMP_SCHEMA).toLowerCase() : null;
+		statement.oracleTempSchema = params.get(TEMP_SCHEMA);
 		statement.sql = sql;
 		statement.parameters = new HashMap<>(params);
 		TranslatedStatement translatedStatement = translateSQL(statement);

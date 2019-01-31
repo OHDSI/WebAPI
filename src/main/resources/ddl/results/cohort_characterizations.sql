@@ -1,3 +1,4 @@
+IF OBJECT_ID('@results_schema.cc_results', 'U') IS NULL
 CREATE TABLE @results_schema.cc_results
 (
   type VARCHAR(255) NOT NULL,

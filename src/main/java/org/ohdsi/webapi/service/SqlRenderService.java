@@ -39,11 +39,6 @@ public class SqlRenderService {
 
     static TranslatedStatement translateSQL(SourceStatement sourceStatement) {
 
-        return translateSQL(sourceStatement, null) ;
-    }
-
-    static TranslatedStatement translateSQL(SourceStatement sourceStatement, String oracleTempSchema) {
-
         TranslatedStatement translated = new TranslatedStatement();
 
         try {
@@ -56,7 +51,7 @@ public class SqlRenderService {
             if ((sourceStatement.targetDialect == null) || ("sql server".equals(sourceStatement.targetDialect))) {
                 translated.targetSQL = renderedSQL;
             } else {
-                translated.targetSQL = SqlTranslate.translateSql(renderedSQL, sourceStatement.targetDialect, null, oracleTempSchema);
+                translated.targetSQL = SqlTranslate.translateSql(renderedSQL, sourceStatement.targetDialect, null, sourceStatement.oracleTempSchema);
             }
 
         } catch (Exception exception) {

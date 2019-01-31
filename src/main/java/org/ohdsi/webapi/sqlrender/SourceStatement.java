@@ -15,7 +15,10 @@ public class SourceStatement {
         
     @JsonProperty("targetdialect")
     public String targetDialect;
-    
+
+    @JsonProperty("oracleTempSchema")
+    public String oracleTempSchema;
+
     @JsonProperty("SQL")
     public String sql;
     

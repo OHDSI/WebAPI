@@ -13,6 +13,7 @@ import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.sqlrender.SourceStatement;
 import org.ohdsi.webapi.sqlrender.TranslatedStatement;
+import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
@@ -51,7 +52,7 @@ public class SqlRenderService {
             if ((sourceStatement.targetDialect == null) || ("sql server".equals(sourceStatement.targetDialect))) {
                 translated.targetSQL = renderedSQL;
             } else {
-                translated.targetSQL = SqlTranslate.translateSql(renderedSQL, sourceStatement.targetDialect);
+                translated.targetSQL = SqlTranslate.translateSql(renderedSQL, sourceStatement.targetDialect, SessionUtils.sessionId(), sourceStatement.oracleTempSchema);
             }
 
         } catch (Exception exception) {

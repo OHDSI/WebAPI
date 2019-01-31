@@ -1,6 +1,10 @@
 package org.ohdsi.webapi;
 
+import com.google.common.collect.ImmutableList;
+import com.odysseusinc.arachne.commons.types.DBMSType;
 import org.springframework.batch.core.ExitStatus;
+
+import java.util.List;
 
 public interface Constants {
   String GENERATE_COHORT = "generateCohort";
@@ -37,4 +41,6 @@ public interface Constants {
     String ROLE_GROUP_MAPPING = "roleGroupMapping";
     String PRESERVE_ROLES = "preserveRoles";
   }
+
+  List<String> REQUIRE_COLLAPSE_PS_DBMS = ImmutableList.of(DBMSType.MS_SQL_SERVER.getOhdsiDB(), DBMSType.PDW.getOhdsiDB());
 }

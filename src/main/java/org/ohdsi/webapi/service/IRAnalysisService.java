@@ -448,7 +448,11 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
   @Override
   public List<AnalysisInfoDTO> getAnalysisInfo(final int id) {
-    IncidenceRateAnalysis analysis = irAnalysisRepository.findOneWithExecutions(id);
+    IncidenceRateAnalysis analysis = irAnalysisRepository.findOneWithExecutionsOnAllSources(id);
+    
+    if (analysis.getExecutionInfoList().size() > 0){ 
+      analysis = irAnalysisRepository.findOneWithExecutionsOnExistingSources(id);
+    }
 
     List<AnalysisInfoDTO> result = new ArrayList<>();
     Set<ExecutionInfo> executionInfoList = analysis.getExecutionInfoList();

@@ -70,6 +70,7 @@ import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.UserUtils;
@@ -449,6 +450,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   @Override
   public List<AnalysisInfoDTO> getAnalysisInfo(final int id) {
     IncidenceRateAnalysis analysis = irAnalysisRepository.findOneWithExecutions(id);
+    ExceptionUtils.throwNotFoundExceptionIfNull(analysis, String.format("There is no incidence rate analysis with id = %d.", id));
 
     List<AnalysisInfoDTO> result = new ArrayList<>();
     Set<ExecutionInfo> executionInfoList = analysis.getExecutionInfoList();

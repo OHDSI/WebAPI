@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -533,7 +534,7 @@ public class VocabularyService extends AbstractDaoService {
       concept = getSourceJdbcTemplate(source).queryForObject(psr.getSql(), psr.getOrderedParams(), this.rowMapper);
     } catch (EmptyResultDataAccessException e) {
       log.error("Request for conceptId={} resulted in 0 results", id);
-      throw new WebApplicationException(Response.Status.NOT_FOUND);
+      throw new NotFoundException(String.format("There is no concept with id = %d.", id));
     }
     return concept;
   }

@@ -13,6 +13,8 @@ import java.util.List;
 
 public class CancelableJdbcTemplate extends JdbcTemplate {
 
+  private boolean suppressApiException = true;
+
   public CancelableJdbcTemplate() {
   }
 
@@ -22,6 +24,14 @@ public class CancelableJdbcTemplate extends JdbcTemplate {
 
   public CancelableJdbcTemplate(DataSource dataSource, boolean lazyInit) {
     super(dataSource, lazyInit);
+  }
+
+  public boolean isSuppressApiException() {
+    return suppressApiException;
+  }
+
+  public void setSuppressApiException(boolean suppressApiException) {
+    this.suppressApiException = suppressApiException;
   }
 
   public int[] batchUpdate(StatementCancel cancelOp, String... sql) throws DataAccessException {
@@ -65,7 +75,7 @@ public class CancelableJdbcTemplate extends JdbcTemplate {
             if (!stmt.execute(sql[i])) {
               rowsAffected[i] = stmt.getUpdateCount();
             }
-            else {
+            else if (!suppressApiException) {
               throw new InvalidDataAccessApiUsageException("Invalid batch SQL statement: " + sql[i]);
             }
           }
@@ -100,7 +110,12 @@ public class CancelableJdbcTemplate extends JdbcTemplate {
           current = statements.get(i);
           PreparedStatement query = current.createPreparedStatement(con);
           cancelOp.setStatement(query);
-          rowsAffected[i] = query.executeUpdate();
+          if (query.execute()) {
+            rowsAffected[i] = query.getUpdateCount();
+          } else if (!suppressApiException) {
+            throw new InvalidDataAccessApiUsageException("Invalid batch SQL statement: " + getSql());
+          }
+          query.close();
           if (cancelOp.isCanceled()) {
             break;
           }
@@ -114,7 +129,7 @@ public class CancelableJdbcTemplate extends JdbcTemplate {
         if (current instanceof SqlProvider) {
           return ((SqlProvider)current).getSql();
         }
-        return null;
+        return "";
       }
     }
 

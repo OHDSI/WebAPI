@@ -19,6 +19,5 @@ public interface Constants {
     String TARGET_TABLE = "target_table";
     String GENERATE_STATS = "generate_stats";
     String JOB_START_TIME = "time";
-    String DB_SUPPORTS_DEFAULT = "SupportsDefault";
   }
 }

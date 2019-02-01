@@ -352,7 +352,8 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   public IRAnalysisDTO getAnalysis(final int id) {
 
     return getTransactionTemplate().execute(transactionStatus -> {
-      IncidenceRateAnalysis a = this.irAnalysisRepository.findOne(id);
+      IncidenceRateAnalysis a = null;
+      ExceptionUtils.throwNotFoundExceptionIfNull(a, String.format("There is no incidence rate analysis with id = %d.", id));
       return analysisToDTO(a);
     });
   }

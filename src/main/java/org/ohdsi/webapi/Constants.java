@@ -16,6 +16,8 @@ public interface Constants {
   String FAILED = ExitStatus.FAILED.getExitCode();
   String CANCELED = "CANCELED";
 
+  String TEMP_COHORT_TABLE_PREFIX = "temp_cohort_";
+
   interface Params {
 
     String VOCABULARY_DATABASE_SCHEMA = "vocabulary_database_schema";

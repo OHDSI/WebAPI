@@ -51,7 +51,7 @@ public class GenerationUtils extends AbstractDaoService {
 
     public static String getTempCohortTableName() {
 
-        return "cohort_" + SessionUtils.sessionId();
+        return Constants.TEMP_COHORT_TABLE_PREFIX + SessionUtils.sessionId();
     }
 
     public Job buildJobForCohortBasedAnalysisTasklet(

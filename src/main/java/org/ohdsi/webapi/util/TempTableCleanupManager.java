@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import com.odysseusinc.arachne.commons.types.DBMSType;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -54,7 +55,8 @@ public class TempTableCleanupManager {
       transactionTemplate.execute(status -> {
         try {
           Connection c = jdbcTemplate.getDataSource().getConnection();
-          removeTempTables(c, tempSchema);
+          removeTempTables(c, getTablePrefix(sessionId, tempSchema) + "%");
+          removeTempTables(c, Constants.TEMP_COHORT_TABLE_PREFIX);
           removeTempTables(c, null); //removes temp tables from results schema, e.g. temp strata cohorts table
         } catch (SQLException e) {
           LOGGER.error("Failed to cleanup temp tables", e);
@@ -65,10 +67,10 @@ public class TempTableCleanupManager {
     }
   }
 
-  private void removeTempTables(Connection c, String tempSchema) throws SQLException {
+  private void removeTempTables(Connection c, String tablePrefix) throws SQLException {
 
       DatabaseMetaData metaData = c.getMetaData();
-      try (ResultSet resultSet = metaData.getTables(null, schema, getTablePrefix(sessionId, tempSchema) + "%", TABLE_TYPES)) {
+      try (ResultSet resultSet = metaData.getTables(null, schema, tablePrefix, TABLE_TYPES)) {
         RowMapperResultSetExtractor<String> extractor = new RowMapperResultSetExtractor<>((rs, rowNum) -> rs.getString("TABLE_NAME"));
         List<String> tableNames = extractor.extractData(resultSet);
         String sql = tableNames.stream().map(table -> String.format(DROP_TABLE_STATEMENT, table)).collect(Collectors.joining());

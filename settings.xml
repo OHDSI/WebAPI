@@ -25,8 +25,8 @@
                 <security.oauth.facebook.apiKey></security.oauth.facebook.apiKey>
                 <security.oauth.facebook.apiSecret></security.oauth.facebook.apiSecret>
                 <jersey.resources.additional.packages>com.jnj.honeur.webapi</jersey.resources.additional.packages>
-                <jasypt.encryptor.enabled>true</jasypt.encryptor.enabled>
-                <jasypt.encryptor.algorithm>AES</jasypt.encryptor.algorithm>
+                <!--<jasypt.encryptor.enabled>true</jasypt.encryptor.enabled>-->
+                <!--<jasypt.encryptor.algorithm>AES</jasypt.encryptor.algorithm>-->
             </properties>
         </profile>
         <profile>
@@ -61,7 +61,7 @@
                 <datasource.password>${WEBAPI_USER_PW}</datasource.password>
                 <flyway.datasource.password>${WEBAPI_ADMIN_PW}</flyway.datasource.password>
                 <datasource.url>jdbc:postgresql://postgres:5432/${datasource.db}</datasource.url>
-                <hss.url>https://dev.honeur.org/storage/api</hss.url>
+                <hss.url>${HSS_URL}</hss.url>
                 <security.ssl.enabled>false</security.ssl.enabled> <!-- !!! Enabling this property doesn't work on AWS.  Not a real problem as SSL is already enforced on AWS !!! -->
                 <central>false</central>
             </properties>
@@ -181,7 +181,7 @@
                 <security.enabled>false</security.enabled>
                 <central>false</central>
                 <war.directory>target-local</war.directory>
-                <datasource.db>testing-docker</datasource.db>
+                <datasource.db>OHDSI-local</datasource.db>
                 <honeur.port>8844</honeur.port>
             </properties>
         </profile>

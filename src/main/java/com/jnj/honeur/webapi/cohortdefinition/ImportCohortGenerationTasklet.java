@@ -79,11 +79,14 @@ public class ImportCohortGenerationTasklet implements StoppableTasklet {
     }
 
     private int[] doTask(ChunkContext chunkContext) {
+
         int[] result = new int[0];
 
         Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
         Integer defId = Integer.valueOf(jobParams.get(Constants.Params.COHORT_DEFINITION_ID).toString());
         String sourceKey = jobParams.get(Constants.Params.SOURCE_KEY).toString();
+
+        SourceDaimonContextHolder.setCurrentSourceDaimonContext(new SourceDaimonContext(sourceKey, SourceDaimon.DaimonType.Results));
 
         DefaultTransactionDefinition completeTx = new DefaultTransactionDefinition();
         completeTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -93,16 +96,15 @@ public class ImportCohortGenerationTasklet implements StoppableTasklet {
                 (CohortGenerationResults) chunkContext.getStepContext().getJobExecutionContext()
                         .get(ImportJobExecutionListener.COHORT_GENERATION_RESULTS);
 
-        SourceDaimonContextHolder.setCurrentSourceDaimonContext(new SourceDaimonContext(sourceKey, SourceDaimon.DaimonType.Results));
 
         importCohortGenerationResults(defId, cohortGenerationResults);
         if(stopped){
             return result;
         }
 
-        SourceDaimonContextHolder.clear();
-
 		this.transactionTemplate.getTransactionManager().commit(completeStatus);
+
+        SourceDaimonContextHolder.clear();
 
         return result;
     }

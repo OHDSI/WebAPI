@@ -9,16 +9,16 @@ insert into @results_database_schema.cc_results (type, fa_type, covariate_id, co
          CAST('CRITERIA' AS VARCHAR(255)) as fa_type,
     CAST(@covariateId AS BIGINT) as covariate_id,
     CAST('@covariateName' AS VARCHAR(1000)) as covariate_name,
-    CAST(@analysisId AS INT) as analysis_id,
+    CAST(@analysisId AS INTEGER) as analysis_id,
     CAST('@analysisName' AS VARCHAR(1000)) as analysis_name,
-    CAST(@conceptId AS INT) as concept_id,
+    CAST(@conceptId AS INTEGER) as concept_id,
     sum.sum_value as count_value,
     case
       when totals.total > 0 then (sum.sum_value * 1.0 / totals.total * 1.0)
       else 0.0
     end as stat_value,
     CAST(@strataId AS BIGINT) as strata_id,
-    CAST('@strataName' AS VARCHAR(1000)) as strata_name,
+    CAST(@strataName AS VARCHAR(1000)) as strata_name,
     CAST(@cohortId AS BIGINT) as cohort_definition_id,
     CAST(@executionId AS BIGINT) as cc_generation_id
 from (select count(*) as sum_value from(

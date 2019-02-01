@@ -18,3 +18,6 @@ create table ${ohdsiSchema}.HERACLES_VISUALIZATION_DATA
   end_time             datetime,
   data                 varchar(max)
 );
+
+INSERT INTO ${ohdsiSchema}.HERACLES_VISUALIZATION_DATA SELECT * FROM HERACLES_VISUALIZATION_DATA_bak;
+DROP TABLE ${ohdsiSchema}.HERACLES_VISUALIZATION_DATA_bak;

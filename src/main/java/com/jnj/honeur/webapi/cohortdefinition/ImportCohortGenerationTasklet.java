@@ -147,6 +147,7 @@ public class ImportCohortGenerationTasklet implements StoppableTasklet {
             }
             CohortInclusionResultEntity cohortInclusionResultEntity = new CohortInclusionResultEntity();
             cohortInclusionResultEntity.setCohortDefinitionId((long) id);
+            cohortInclusionResultEntity.setModeId(cohortInclusionResult.getModeId());
             cohortInclusionResultEntity.setInclusionRuleMask(cohortInclusionResult.getInclusionRuleMask());
             cohortInclusionResultEntity.setPersonCount(cohortInclusionResult.getPersonCount());
             cohortInclusionResultEntities.add(cohortInclusionResultEntity);
@@ -161,6 +162,7 @@ public class ImportCohortGenerationTasklet implements StoppableTasklet {
             }
             CohortInclusionStatsEntity cohortInclusionStatsEntity = new CohortInclusionStatsEntity();
             cohortInclusionStatsEntity.setCohortDefinitionId((long) id);
+            cohortInclusionStatsEntity.setModeId(cohortInclusionStats.getModeId());
             cohortInclusionStatsEntity.setGainCount(cohortInclusionStats.getGainCount());
             cohortInclusionStatsEntity.setPersonCount(cohortInclusionStats.getPersonCount());
             cohortInclusionStatsEntity.setPersonTotal(cohortInclusionStats.getPersonTotal());
@@ -177,6 +179,7 @@ public class ImportCohortGenerationTasklet implements StoppableTasklet {
             }
             CohortSummaryStatsEntity cohortSummaryStatsEntity = new CohortSummaryStatsEntity();
             cohortSummaryStatsEntity.setCohortDefinitionId((long) id);
+            cohortSummaryStatsEntity.setModeId(cohortSummaryStats.getModeId());
             cohortSummaryStatsEntity.setBaseCount(cohortSummaryStats.getBaseCount());
             cohortSummaryStatsEntity.setFinalCount(cohortSummaryStats.getFinalCount());
             cohortSummaryStatsList.add(cohortSummaryStatsEntity);

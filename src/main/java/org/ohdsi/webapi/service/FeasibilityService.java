@@ -31,10 +31,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -48,7 +48,6 @@ import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CriteriaGroup;
-import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.feasibility.InclusionRule;
 import org.ohdsi.webapi.feasibility.FeasibilityStudy;
 import org.ohdsi.webapi.feasibility.PerformFeasibilityTasklet;
@@ -65,11 +64,14 @@ import org.ohdsi.webapi.cohortdefinition.GenerateCohortTasklet;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.ohdsi.webapi.util.UserUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -77,7 +79,6 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -115,6 +116,9 @@ public class FeasibilityService extends AbstractDaoService {
   @Autowired
   private Security security;
 
+  @Autowired
+  private UserRepository userRepository;
+
   @Context
   ServletContext context;
 
@@ -144,10 +148,10 @@ public class FeasibilityService extends AbstractDaoService {
     public String createdBy;
     public Integer indexCohortId;
     public Integer matchingCohortId;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd, HH:mm")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
     public Date createdDate;
     public String modifiedBy;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd, HH:mm")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
     public Date modifiedDate;
   }
 
@@ -346,9 +350,9 @@ public class FeasibilityService extends AbstractDaoService {
     pDTO.description = study.getDescription();
     pDTO.indexCohortId = study.getIndexRule().getId();
     pDTO.matchingCohortId = study.getResultRule() != null ? study.getResultRule().getId() : null;
-    pDTO.createdBy = study.getCreatedBy();
+    pDTO.createdBy = UserUtils.nullSafeLogin(study.getCreatedBy());
     pDTO.createdDate = study.getCreatedDate();
-    pDTO.modifiedBy = study.getModifiedBy();
+    pDTO.modifiedBy = UserUtils.nullSafeLogin(study.getModifiedBy());
     pDTO.modifiedDate = study.getModifiedDate();
     pDTO.indexRule = study.getIndexRule().getDetails().getExpression();
     pDTO.indexDescription = study.getIndexRule().getDescription();
@@ -366,22 +370,23 @@ public class FeasibilityService extends AbstractDaoService {
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
   public List<FeasibilityService.FeasibilityStudyListItem> getFeasibilityStudyList() {
-    ArrayList<FeasibilityService.FeasibilityStudyListItem> result = new ArrayList<>();
-    Iterable<FeasibilityStudy> studies = this.feasibilityStudyRepository.findAll();
-    for (FeasibilityStudy p : studies) {
-      FeasibilityService.FeasibilityStudyListItem item = new FeasibilityService.FeasibilityStudyListItem();
-      item.id = p.getId();
-      item.name = p.getName();
-      item.description = p.getDescription();
-      item.indexCohortId = p.getIndexRule().getId();
-      item.matchingCohortId = p.getResultRule() != null ? p.getResultRule().getId() : null;
-      item.createdBy = p.getCreatedBy();
-      item.createdDate = p.getCreatedDate();
-      item.modifiedBy = p.getModifiedBy();
-      item.modifiedDate = p.getModifiedDate();
-      result.add(item);
-    }
-    return result;
+
+    return getTransactionTemplate().execute(transactionStatus -> {
+      Iterable<FeasibilityStudy> studies = this.feasibilityStudyRepository.findAll();
+      return StreamSupport.stream(studies.spliterator(), false).map(p -> {
+        FeasibilityService.FeasibilityStudyListItem item = new FeasibilityService.FeasibilityStudyListItem();
+        item.id = p.getId();
+        item.name = p.getName();
+        item.description = p.getDescription();
+        item.indexCohortId = p.getIndexRule().getId();
+        item.matchingCohortId = p.getResultRule() != null ? p.getResultRule().getId() : null;
+        item.createdBy = UserUtils.nullSafeLogin(p.getCreatedBy());
+        item.createdDate = p.getCreatedDate();
+        item.modifiedBy = UserUtils.nullSafeLogin(p.getModifiedBy());
+        item.modifiedDate = p.getModifiedDate();
+        return item;
+      }).collect(Collectors.toList());
+    });
   }
 
   /**
@@ -396,50 +401,54 @@ public class FeasibilityService extends AbstractDaoService {
   @Consumes(MediaType.APPLICATION_JSON)
   @Transactional
   public FeasibilityService.FeasibilityStudyDTO createStudy(FeasibilityService.FeasibilityStudyDTO study) {
-    Date currentTime = Calendar.getInstance().getTime();
 
-    //create definition in 2 saves, first to get the generated ID for the new cohort definition (the index rule)
-    // then to associate the new definition with the index rule of the study
-    FeasibilityStudy newStudy = new FeasibilityStudy();
-    newStudy.setName(study.name)
-            .setDescription(study.description)
-            .setCreatedBy(security.getSubject())
-            .setCreatedDate(currentTime)
-            .setInclusionRules(new ArrayList<InclusionRule>(study.inclusionRules));
+    return getTransactionTemplate().execute(transactionStatus -> {
+      Date currentTime = Calendar.getInstance().getTime();
 
-    // create index cohort
-    CohortDefinition indexRule = new CohortDefinition()
-            .setName("Index Population for Study: " + newStudy.getName())
-            .setDescription(study.indexDescription)
-            .setCreatedBy(security.getSubject())
-            .setCreatedDate(currentTime)
-            .setExpressionType(ExpressionType.SIMPLE_EXPRESSION);
-
-    CohortDefinitionDetails indexDetails = new CohortDefinitionDetails();
-    indexDetails.setCohortDefinition(indexRule)
-            .setExpression(study.indexRule);
-    indexRule.setDetails(indexDetails);
-    newStudy.setIndexRule(indexRule);
-
-    // build matching cohort from inclusion rules if inclusion rules exist
-    if (newStudy.getInclusionRules().size() > 0) {
-      CohortDefinition resultDef = new CohortDefinition()
-              .setName("Matching Population for Study: " + newStudy.getName())
-              .setDescription(newStudy.getDescription())
-              .setCreatedBy(security.getSubject())
+      UserEntity user = userRepository.findByLogin(security.getSubject());
+      //create definition in 2 saves, first to get the generated ID for the new cohort definition (the index rule)
+      // then to associate the new definition with the index rule of the study
+      FeasibilityStudy newStudy = new FeasibilityStudy();
+      newStudy.setName(study.name)
+              .setDescription(study.description)
+              .setCreatedBy(user)
               .setCreatedDate(currentTime)
-              .setExpressionType(ExpressionType.SIMPLE_EXPRESSION);
+              .setInclusionRules(new ArrayList<InclusionRule>(study.inclusionRules));
 
-      CohortDefinitionDetails resultDetails = new CohortDefinitionDetails();
-      resultDetails.setCohortDefinition(resultDef)
-              .setExpression(getMatchingCriteriaExpression(newStudy));
-      resultDef.setDetails(resultDetails);
-      newStudy.setResultRule(resultDef);
-    }
+      // create index cohort
+      CohortDefinition indexRule = new CohortDefinition()
+              .setName("Index Population for Study: " + newStudy.getName())
+              .setDescription(study.indexDescription);
+      indexRule.setCreatedBy(user);
+      indexRule.setCreatedDate(currentTime);
+      indexRule.setExpressionType(ExpressionType.SIMPLE_EXPRESSION);
 
-    FeasibilityStudy createdStudy = this.feasibilityStudyRepository.save(newStudy);
+      CohortDefinitionDetails indexDetails = new CohortDefinitionDetails();
+      indexDetails.setCohortDefinition(indexRule)
+              .setExpression(study.indexRule);
+      indexRule.setDetails(indexDetails);
+      newStudy.setIndexRule(indexRule);
 
-    return feasibilityStudyToDTO(createdStudy);
+      // build matching cohort from inclusion rules if inclusion rules exist
+      if (newStudy.getInclusionRules().size() > 0) {
+        CohortDefinition resultDef = new CohortDefinition()
+                .setName("Matching Population for Study: " + newStudy.getName())
+                .setDescription(newStudy.getDescription());
+        resultDef.setCreatedBy(user);
+        resultDef.setCreatedDate(currentTime);
+        resultDef.setExpressionType(ExpressionType.SIMPLE_EXPRESSION);
+
+        CohortDefinitionDetails resultDetails = new CohortDefinitionDetails();
+        resultDetails.setCohortDefinition(resultDef)
+                .setExpression(getMatchingCriteriaExpression(newStudy));
+        resultDef.setDetails(resultDetails);
+        newStudy.setResultRule(resultDef);
+      }
+
+      FeasibilityStudy createdStudy = this.feasibilityStudyRepository.save(newStudy);
+
+      return feasibilityStudyToDTO(createdStudy);
+    });
   }
 
   @GET
@@ -448,8 +457,11 @@ public class FeasibilityService extends AbstractDaoService {
   @Consumes(MediaType.APPLICATION_JSON)
   @Transactional(readOnly = true)
   public FeasibilityService.FeasibilityStudyDTO getStudy(@PathParam("id") final int id) {
-    FeasibilityStudy s = this.feasibilityStudyRepository.findOneWithDetail(id);
-    return feasibilityStudyToDTO(s);
+
+    return getTransactionTemplate().execute(transactionStatus -> {
+      FeasibilityStudy s = this.feasibilityStudyRepository.findOneWithDetail(id);
+      return feasibilityStudyToDTO(s);
+    });
   }
 
   @PUT
@@ -459,28 +471,30 @@ public class FeasibilityService extends AbstractDaoService {
   public FeasibilityService.FeasibilityStudyDTO saveStudy(@PathParam("id") final int id, FeasibilityStudyDTO study) {
     Date currentTime = Calendar.getInstance().getTime();
 
+    UserEntity user = userRepository.findByLogin(security.getSubject());
+
     FeasibilityStudy updatedStudy = this.feasibilityStudyRepository.findOne(id);
     updatedStudy.setName(study.name)
             .setDescription(study.description)
-            .setModifiedBy(security.getSubject())
+            .setModifiedBy(user)
             .setModifiedDate(currentTime)
             .setInclusionRules(study.inclusionRules);
 
     updatedStudy.getIndexRule()
-            .setModifiedBy(security.getSubject())
-            .setModifiedDate(currentTime)
             .setName("Index Population for Study: " + updatedStudy.getName())
             .setDescription(study.indexDescription)
             .getDetails().setExpression(study.indexRule);
+    updatedStudy.getIndexRule().setModifiedBy(user);
+    updatedStudy.getIndexRule().setModifiedDate(currentTime);
 
     CohortDefinition resultRule = updatedStudy.getResultRule();
     if (updatedStudy.getInclusionRules().size() > 0) {
       if (resultRule == null) {
         resultRule = new CohortDefinition();
         resultRule.setName("Matching Population for Study: " + updatedStudy.getName())
-                .setCreatedBy(security.getSubject())
-                .setCreatedDate(currentTime)
                 .setExpressionType(ExpressionType.SIMPLE_EXPRESSION);
+        resultRule.setCreatedBy(user);
+        resultRule.setCreatedDate(currentTime);
 
         CohortDefinitionDetails resultDetails = new CohortDefinitionDetails();
         resultDetails.setCohortDefinition(resultRule);
@@ -488,13 +502,11 @@ public class FeasibilityService extends AbstractDaoService {
         updatedStudy.setResultRule(resultRule);
       }
 
-      resultRule.setModifiedBy(security.getSubject())
-              .setModifiedDate(currentTime)
-              .setName("Matching Population for Study: " + updatedStudy.getName())
+      resultRule.setName("Matching Population for Study: " + updatedStudy.getName())
               .setDescription(updatedStudy.getDescription())
-              .setModifiedBy(security.getSubject())
-              .setModifiedDate(currentTime)
               .getDetails().setExpression(getMatchingCriteriaExpression(updatedStudy));
+      resultRule.setModifiedBy(user);
+      resultRule.setModifiedDate(currentTime);
     } else {
       updatedStudy.setResultRule(null);
       if (resultRule != null) {
@@ -577,7 +589,7 @@ public class FeasibilityService extends AbstractDaoService {
     final JobParameters jobParameters = builder.toJobParameters();
     final JdbcTemplate sourceJdbcTemplate = getSourceJdbcTemplate(source);
 
-    GenerateCohortTasklet indexRuleTasklet = new GenerateCohortTasklet(sourceJdbcTemplate, getTransactionTemplate(), cohortDefinitionRepository);
+    GenerateCohortTasklet indexRuleTasklet = new GenerateCohortTasklet(sourceJdbcTemplate, getTransactionTemplate(), cohortDefinitionRepository, getSourceRepository());
 
     Step generateCohortStep = stepBuilders.get("performStudy.generateIndexCohort")
             .tasklet(indexRuleTasklet)

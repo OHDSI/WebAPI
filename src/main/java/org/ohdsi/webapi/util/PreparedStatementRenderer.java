@@ -7,8 +7,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
+
+import com.odysseusinc.arachne.commons.types.DBMSType;
 import org.apache.commons.lang.ArrayUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
+import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.source.Source;
 import org.springframework.jdbc.core.PreparedStatementSetter;
@@ -26,6 +30,8 @@ public class PreparedStatementRenderer {
   private String sourceDialect = "sql server";
   private List<Object> orderedParamsList;
   private String targetDialect = "sql server";
+	private String sessionId;
+	
 
   public List<Object> getOrderedParamsList() {
 
@@ -69,7 +75,7 @@ public class PreparedStatementRenderer {
 
     validateArguments(source, sqlResource, searchRegexes, replacementStrings, sourceDialect, sqlVariableNames, sqlVariableValues);
     /// this part does the heavy lifting, the calling classes can get needed items through getters
-    sql = PreparedSqlRender.removeSqlComments(sql);
+		sql = PreparedSqlRender.removeSqlComments(sql);
 
     updateSqlWithVariableSearchAndReplace(searchRegexes, replacementStrings);
     paramValueMap = buildParamValueMap(sqlVariableNames, sqlVariableValues);
@@ -77,8 +83,12 @@ public class PreparedStatementRenderer {
     this.orderedParamsList = PreparedSqlRender.getOrderedListOfParameterValues(paramValueMap, sql);
     buildPreparedStatementSetter();
     sql = PreparedSqlRender.fixPreparedStatementSql(sql, paramValueMap);
-    String targetDialect = source != null ? source.getSourceDialect() : this.targetDialect;
-    sql = SqlTranslate.translateSql(sql, targetDialect, sessionId, null);
+
+		if (source != null) {
+			this.targetDialect = source.getSourceDialect();
+		}
+
+		this.sessionId = sessionId;
   }
 
   public PreparedStatementRenderer(Source source, String sqlResource, String[] searchRegexes, String[] replacementStrings, String sessionId) {
@@ -260,8 +270,8 @@ public class PreparedStatementRenderer {
   }
 
   public String getSql() {
-
-    return sql;
+    String translatedSql = SqlTranslate.translateSql(sql, targetDialect, sessionId, null);
+    return DBMSType.ORACLE.getOhdsiDB().equals(targetDialect) ? translatedSql.replaceAll(";$", "") : translatedSql;
   }
 
   public PreparedStatementSetter getSetter() {
@@ -286,5 +296,10 @@ public class PreparedStatementRenderer {
     return value;
   }
 
-
+	public String generateDebugSql(String sql, String[] searchRegexes, String[] replacementStrings, String[] sqlVariableNames, Object[]sqlVariableValues)
+	{
+		String[] vars = Stream.concat(Stream.of(searchRegexes), Stream.of(sqlVariableNames)).toArray(String[]::new);
+		String[] vals = Stream.concat(Stream.of(replacementStrings), Stream.of(sqlVariableValues)).map(Object::toString).toArray(size->new String[size]);
+		return SqlRender.renderSql(sql, vars, vals);
+	}
 }

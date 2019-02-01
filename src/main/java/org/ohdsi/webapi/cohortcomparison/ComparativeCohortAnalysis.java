@@ -21,7 +21,9 @@ import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import org.ohdsi.webapi.model.CommonEntity;
 
@@ -37,7 +39,8 @@ import org.ohdsi.webapi.model.CommonEntity;
 public class ComparativeCohortAnalysis extends CommonEntity implements Serializable {
 
     @Id
-    @GeneratedValue
+    @SequenceGenerator(name = "cca_seq", sequenceName = "cca_sequence", allocationSize = 1)
+    @GeneratedValue(generator = "cca_seq", strategy = GenerationType.SEQUENCE)
     @Column(name = "cca_id")
     private Integer analysisId;
 

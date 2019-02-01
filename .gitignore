@@ -11,4 +11,3 @@ sandbox/
 /nbactions*.xml
 *~
 .DS_Store
-**jmeter.log

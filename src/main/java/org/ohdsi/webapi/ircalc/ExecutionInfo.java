@@ -27,6 +27,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.MapsId;
 import javax.persistence.Table;
 import org.ohdsi.webapi.GenerationStatus;
+import org.ohdsi.webapi.IExecutionInfo;
 import org.ohdsi.webapi.source.Source;
 
 /**
@@ -35,7 +36,7 @@ import org.ohdsi.webapi.source.Source;
  */
 @Entity(name = "IRAnalysisGenerationInfo")
 @Table(name="ir_execution")
-public class ExecutionInfo implements Serializable {
+public class ExecutionInfo implements Serializable, IExecutionInfo {
  private static final long serialVersionUID = 1L;
 
   @EmbeddedId
@@ -53,7 +54,6 @@ public class ExecutionInfo implements Serializable {
   @JoinColumn(name="source_id", referencedColumnName="source_id")
   private Source source;
   
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd, HH:mm")
   @Column(name="start_time")
   private Date startTime;  
   

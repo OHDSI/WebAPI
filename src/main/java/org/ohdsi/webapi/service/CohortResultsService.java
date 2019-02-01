@@ -4,37 +4,24 @@ import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
-import org.ohdsi.sql.SqlRender;
-import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysis;
+import org.ohdsi.webapi.cohortanalysis.CohortAnalysisGenerationInfo;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTask;
 import org.ohdsi.webapi.cohortanalysis.CohortSummary;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortresults.*;
 import org.ohdsi.webapi.cohortresults.mapper.AnalysisResultsMapper;
+import org.ohdsi.webapi.model.CohortDefinition;
 import org.ohdsi.webapi.model.results.Analysis;
 import org.ohdsi.webapi.model.results.AnalysisResults;
 import org.ohdsi.webapi.source.Source;
@@ -42,7 +29,6 @@ import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -50,7 +36,6 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayOutputStream;
-import java.math.BigDecimal;
 import java.sql.ResultSetMetaData;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -78,6 +63,9 @@ public class CohortResultsService extends AbstractDaoService {
 
   @Autowired
   private CohortDefinitionService cohortDefinitionService;
+
+  @Autowired
+  private CohortDefinitionRepository cohortDefinitionRepository;
 
   private ObjectMapper mapper = new ObjectMapper();
   private CohortResultsAnalysisRunner queryRunner = null;
@@ -456,9 +444,11 @@ public class CohortResultsService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   public List<Integer> getCompletedAnalyses(@PathParam("sourceKey") String sourceKey, @PathParam("id") String id) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    PreparedStatementRenderer psr = prepareGetCompletedAnalysis(id, source);
+		int sourceId = source.getSourceId();
+		
+    PreparedStatementRenderer psr = prepareGetCompletedAnalysis(id, sourceId);
     final String sql = psr.getSql();
-    return getSourceJdbcTemplate(source).query(sql, psr.getSetter(), new RowMapper<Integer>() {
+    return this.getJdbcTemplate().query(sql, psr.getSetter(), new RowMapper<Integer>() {
           @Override
           public Integer mapRow(ResultSet resultSet, int arg1) throws SQLException {
 
@@ -468,12 +458,68 @@ public class CohortResultsService extends AbstractDaoService {
     );
   }
 
-  protected PreparedStatementRenderer prepareGetCompletedAnalysis(String id, Source source) {
+  class GenerationInfoDTO {
+    private String sourceKey;
+    private Integer analysisId;
+    private Integer progress;
+
+    public GenerationInfoDTO() {
+    }
+
+    public GenerationInfoDTO(String sourceKey, Integer analysisId, Integer progress) {
+      this.sourceKey = sourceKey;
+      this.analysisId = analysisId;
+      this.progress = progress;
+    }
+
+    public String getSourceKey() {
+      return sourceKey;
+    }
+
+    public void setSourceKey(String sourceKey) {
+      this.sourceKey = sourceKey;
+    }
+
+    public Integer getAnalysisId() {
+      return analysisId;
+    }
+
+    public void setAnalysisId(Integer analysisId) {
+      this.analysisId = analysisId;
+    }
+
+    public Integer getProgress() {
+      return progress;
+    }
+
+    public void setProgress(Integer progress) {
+      this.progress = progress;
+    }
+  }
+
+  @GET
+  @Path("{sourceKey}/{id}/info")
+  @Produces(MediaType.APPLICATION_JSON)
+  public GenerationInfoDTO getAnalysisProgress(@PathParam("sourceKey") String sourceKey, @PathParam("id") Integer id) {
+
+    return getTransactionTemplateRequiresNew().execute(status -> {
+      org.ohdsi.webapi.cohortdefinition.CohortDefinition def = cohortDefinitionRepository.findOne(id);
+      Source source = getSourceRepository().findBySourceKey(sourceKey);
+      return def.getCohortAnalysisGenerationInfoList().stream()
+              .filter(cd -> Objects.equals(cd.getSourceId(), source.getSourceId()))
+              .findFirst().map(gen -> new GenerationInfoDTO(sourceKey, id, gen.getProgress()))
+              .<RuntimeException>orElseThrow(NotFoundException::new);
+    });
+  }
+
+  protected PreparedStatementRenderer prepareGetCompletedAnalysis(String id, int sourceId) {
 
     String sqlPath = BASE_SQL_PATH + "/raw/getCompletedAnalyses.sql";
-    String tqName = "tableQualifier";
-    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sqlPath, tqName, tqValue, "id", Integer.valueOf(id));
+    PreparedStatementRenderer psr = new PreparedStatementRenderer(null
+			, sqlPath
+			, new String[]{"tableQualifier"}, new String[] { this.getOhdsiSchema()}
+			, new String[]{"cohort_definition_id", "source_id"}, new Object[]{Integer.valueOf(id), Integer.valueOf(sourceId)});
+		psr.setTargetDialect(this.getDialect());
     return psr;
   }
 
@@ -1327,7 +1373,7 @@ public class CohortResultsService extends AbstractDaoService {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String sqlPath = "/resources/cohortresults/sql/raw/getMembers.sql";
     String tqName = "tableQualifier";
-    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
     String[] names = new String[]{"cohortDefinitionId", "min", "max"};
     Object[] values = new Object[]{whitelist(id), whitelist(min), whitelist(max)};
     PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sqlPath, tqName, tqValue, names, values, SessionUtils.sessionId());
@@ -1770,7 +1816,88 @@ public class CohortResultsService extends AbstractDaoService {
         
         return el;
     }
-    
+		
+	@GET
+	@Path("{sourceKey}/{id}/healthcareutilization/exposure/{window}")
+	@Produces(MediaType.APPLICATION_JSON)
+  public HealthcareExposureReport getHealthcareUtilizationExposureReport(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey
+		, @PathParam("window") final WindowType window
+		, @DefaultValue("ww") @QueryParam("periodType") final PeriodType periodType) {
+		Source source = getSourceRepository().findBySourceKey(sourceKey);
+		HealthcareExposureReport exposureReport = queryRunner.getHealthcareExposureReport(getSourceJdbcTemplate(source), id, window, periodType, source);
+		return exposureReport;
+	}
+
+	@GET
+	@Path("{sourceKey}/{id}/healthcareutilization/periods/{window}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<String> getHealthcareUtilizationPeriods(
+						@PathParam("id") final int id
+					, @PathParam("sourceKey") final String sourceKey
+					, @PathParam("window") final WindowType window) {
+		final Source source = getSourceRepository().findBySourceKey(sourceKey);
+		final List<String> periodTypes = queryRunner.getHealthcarePeriodTypes(getSourceJdbcTemplate(source), id, window, source);
+		return periodTypes;
+	}
+	
+	@GET
+	@Path("{sourceKey}/{id}/healthcareutilization/visit/{window}/{visitStat}")
+	@Produces(MediaType.APPLICATION_JSON)
+  public HealthcareVisitUtilizationReport getHealthcareUtilizationVisitReport(@PathParam("id") final int id
+		, @PathParam("sourceKey") String sourceKey
+		, @PathParam("window") final WindowType window
+		, @PathParam("visitStat") final VisitStatType visitStat
+		, @DefaultValue("ww") @QueryParam("periodType") final PeriodType periodType
+		, @QueryParam("visitConcept") final Long visitConcept
+		, @QueryParam("visitTypeConcept") final Long visitTypeConcept
+		, @DefaultValue("31968") @QueryParam("costTypeConcept") final Long costTypeConcept) {
+		Source source = getSourceRepository().findBySourceKey(sourceKey);
+		HealthcareVisitUtilizationReport visitUtilizationReport = queryRunner.getHealthcareVisitReport(getSourceJdbcTemplate(source), id, window, visitStat, periodType, visitConcept, visitTypeConcept, costTypeConcept, source);
+		return visitUtilizationReport;
+	}	
+	
+	@GET
+	@Path("{sourceKey}/{id}/healthcareutilization/drug/{window}")
+	@Produces(MediaType.APPLICATION_JSON)
+  public HealthcareDrugUtilizationSummary getHealthcareUtilizationDrugSummaryReport(@PathParam("id") final int id
+		, @PathParam("sourceKey") String sourceKey
+		, @PathParam("window") final WindowType window 
+		, @QueryParam("drugType") final Long drugTypeConceptId
+		, @DefaultValue("31968") @QueryParam("costType") final Long costTypeConceptId
+		
+	) {
+		Source source = getSourceRepository().findBySourceKey(sourceKey);
+		HealthcareDrugUtilizationSummary report = queryRunner.getHealthcareDrugUtilizationSummary(getSourceJdbcTemplate(source), id, window, drugTypeConceptId, costTypeConceptId, source);
+		return report;
+	}	
+	
+	@GET
+	@Path("{sourceKey}/{id}/healthcareutilization/drug/{window}/{drugConceptId}")
+	@Produces(MediaType.APPLICATION_JSON)
+  public HealthcareDrugUtilizationDetail getHealthcareUtilizationDrugDetailReport(@PathParam("id") final int id
+		, @PathParam("sourceKey") String sourceKey
+		, @PathParam("window") final WindowType window
+		, @PathParam("drugConceptId") final Long drugConceptId
+		, @DefaultValue("ww") @QueryParam("periodType") final PeriodType periodType
+		, @QueryParam("drugType") final Long drugTypeConceptId
+		, @DefaultValue("31968") @QueryParam("costType") final Long costTypeConceptId
+	) {	
+		Source source = getSourceRepository().findBySourceKey(sourceKey);
+		HealthcareDrugUtilizationDetail report = queryRunner.getHealthcareDrugUtilizationReport(getSourceJdbcTemplate(source), id, window, drugConceptId, drugTypeConceptId, periodType, costTypeConceptId, source);
+		return report;
+	}
+	
+	@GET
+	@Path("{sourceKey}/{id}/healthcareutilization/drugtypes")
+	@Produces(MediaType.APPLICATION_JSON)
+  public List<Concept> getDrugTypes(@PathParam("id") final int id
+		, @PathParam("sourceKey") String sourceKey
+		, @QueryParam("drugConceptId") final Long drugConceptId) 
+	{	
+		Source source = getSourceRepository().findBySourceKey(sourceKey);
+		return queryRunner.getDrugTypes(getSourceJdbcTemplate(source), id, drugConceptId, source);
+	}	
+	
   protected PreparedStatementRenderer prepareGetExposureOutcomeCohortPredictors(
     ExposureCohortSearch search, Source source) {
 

@@ -14,25 +14,19 @@
  */
 package org.ohdsi.webapi.cohortdefinition;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.NamedAttributeNode;
-import javax.persistence.NamedEntityGraph;
-import javax.persistence.NamedSubgraph;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
+
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.ohdsi.circe.cohortdefinition.CohortExpression;
+import org.ohdsi.analysis.Cohort;
+import org.ohdsi.webapi.cohortanalysis.CohortAnalysisGenerationInfo;
+import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
+import org.ohdsi.webapi.model.CommonEntity;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
 
 /**
  * JPA Entity for Cohort Definitions
@@ -45,12 +39,13 @@ import javax.persistence.Table;
     attributeNodes = { @NamedAttributeNode(value = "details", subgraph = "detailsGraph") },
     subgraphs = {@NamedSubgraph(name = "detailsGraph", type = CohortDefinitionDetails.class, attributeNodes = { @NamedAttributeNode(value="expression")})}
 )
-public class CohortDefinition implements Serializable{
+public class CohortDefinition extends CommonEntity implements Serializable, Cohort{
 
   private static final long serialVersionUID = 1L;
     
   @Id
-  @GeneratedValue
+  @SequenceGenerator(name = "cohort_definition_seq",sequenceName = "cohort_definition_sequence", allocationSize = 1)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "cohort_definition_seq")
   @Access(AccessType.PROPERTY) 
   private Integer id;
   
@@ -66,20 +61,17 @@ public class CohortDefinition implements Serializable{
   @JoinColumn(name="id")
   private CohortDefinitionDetails details;
 
-  @OneToMany(fetch= FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "cohortDefinition")
+  @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "cohortDefinition")
   private Set<CohortGenerationInfo> generationInfoList;
-  
-  @Column(name="created_by")
-  private String createdBy;
-  
-  @Column(name="created_date")
-  private Date createdDate;
 
-  @Column(name="modified_by")
-  private String modifiedBy;
-    
-  @Column(name="modified_date")
-  private Date modifiedDate;
+	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "cohortDefinition")
+	private Set<CohortAnalysisGenerationInfo> cohortAnalysisGenerationInfoList = new HashSet<>();
+
+  @ManyToMany(targetEntity = CohortCharacterizationEntity.class, fetch = FetchType.LAZY)
+  @JoinTable(name = "cc_cohort",
+          joinColumns = @JoinColumn(name = "cohort_id", referencedColumnName = "id"),
+          inverseJoinColumns = @JoinColumn(name = "cohort_characterization_id", referencedColumnName = "id"))
+  private List<CohortCharacterizationEntity> cohortCharacterizations = new ArrayList<>();
 
   @Column(name = "uuid")
   private UUID uuid;
@@ -125,43 +117,7 @@ public class CohortDefinition implements Serializable{
     this.expressionType = expressionType;
     return this;
   }
-  
-  public String getCreatedBy() {
-    return createdBy;
-  }
 
-  public CohortDefinition setCreatedBy(String createdBy) {
-    this.createdBy = createdBy;
-    return this;
-  }
-
-  public Date getCreatedDate() {
-    return createdDate;
-  }
-
-  public CohortDefinition setCreatedDate(Date createdDate) {
-    this.createdDate = createdDate;
-    return this;
-  }
-
-  public String getModifiedBy() {
-    return modifiedBy;
-  }
-
-  public CohortDefinition setModifiedBy(String modifiedBy) {
-    this.modifiedBy = modifiedBy;
-    return this;
-  }
-
-  public Date getModifiedDate() {
-    return modifiedDate;
-  }
-
-  public CohortDefinition setModifiedDate(Date modifiedDate) {
-    this.modifiedDate = modifiedDate;
-    return this;
-  }
-  
   public CohortDefinitionDetails getDetails() {
     return this.details;
   }
@@ -178,6 +134,45 @@ public class CohortDefinition implements Serializable{
   public CohortDefinition setGenerationInfoList(Set<CohortGenerationInfo> list) {
     this.generationInfoList = list;
     return this;
+  }
+
+  @Override
+  public boolean equals(final Object o) {
+
+    if (this == o) return true;
+    if (!(o instanceof CohortDefinition)) return false;
+    final CohortDefinition that = (CohortDefinition) o;
+    return Objects.equals(getId(), that.getId());
+  }
+
+  @Override
+  public int hashCode() {
+
+    return Objects.hash(getId(), super.hashCode());
+  }
+
+  public Set<CohortAnalysisGenerationInfo> getCohortAnalysisGenerationInfoList() {
+		return cohortAnalysisGenerationInfoList;
+	}
+
+	public void setCohortAnalysisGenerationInfoList(Set<CohortAnalysisGenerationInfo> cohortAnalysisGenerationInfoList) {
+		this.cohortAnalysisGenerationInfoList = cohortAnalysisGenerationInfoList;
+	}
+
+    @Override
+    public CohortExpression getExpression() {
+
+      return details != null ? details.getExpressionObject() : null;
+    }
+
+  public List<CohortCharacterizationEntity> getCohortCharacterizations() {
+
+    return cohortCharacterizations;
+  }
+
+  public void setCohortCharacterizations(final List<CohortCharacterizationEntity> cohortCharacterizations) {
+
+    this.cohortCharacterizations = cohortCharacterizations;
   }
 
   public UUID getUuid() {

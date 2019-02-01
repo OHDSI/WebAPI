@@ -1,8 +1,10 @@
 package com.jnj.honeur.webapi.hss;
 
+import com.jnj.honeur.security.TokenContext;
 import com.jnj.honeur.webapi.cohortdefinition.CohortGenerationResults;
 import com.jnj.honeur.webapi.hssserviceuser.HSSServiceUserEntity;
 import com.jnj.honeur.webapi.hssserviceuser.HSSServiceUserRepository;
+import jdk.nashorn.internal.parser.Token;
 import org.junit.Before;
 import org.junit.Test;
 import org.ohdsi.webapi.service.CohortDefinitionService;
@@ -20,6 +22,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.notNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -27,6 +30,7 @@ public class StorageServiceClientIT {
 
     private StorageServiceClient storageServiceClient;
     private String token;
+    private String fingerprint;
 
     @Before
     public void setup() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
@@ -35,7 +39,9 @@ public class StorageServiceClientIT {
         storageServiceClient.setStorageServiceApi("https://dev.honeur.org/storage/api");
         storageServiceClient.setWebapiCentral(true);
 
-        token = storageServiceClient.getStorageServiceToken();
+        TokenContext tokenContext = storageServiceClient.getStorageServiceToken();
+        token = tokenContext.getToken();
+        fingerprint = tokenContext.getFingerprint();
     }
 
     private HSSServiceUserRepository mockHSSServiceUserRepository() {
@@ -51,21 +57,23 @@ public class StorageServiceClientIT {
 
     @Test
     public void getStorageServiceToken() {
-        String token = storageServiceClient.getStorageServiceToken();
+        TokenContext tokenContext = storageServiceClient.getStorageServiceToken();
+        token = tokenContext.getToken();
+        fingerprint = tokenContext.getFingerprint();
         assertNotNull(token);
         assertTrue(token.length() > 20);
     }
 
     @Test
     public void getCohortDefinitionImportList() {
-        List<CohortDefinitionStorageInformationItem> cohortDefinitionInfoList = storageServiceClient.getCohortDefinitionImportList(token);
+        List<CohortDefinitionStorageInformationItem> cohortDefinitionInfoList = storageServiceClient.getCohortDefinitionImportList(token, fingerprint);
         assertNotNull(cohortDefinitionInfoList);
         assertTrue(cohortDefinitionInfoList.size() > 0);
     }
 
     @Test
     public void getCohortDefinition() {
-        List<CohortDefinitionStorageInformationItem> cohortDefinitionInfoList = storageServiceClient.getCohortDefinitionImportList(token);
+        List<CohortDefinitionStorageInformationItem> cohortDefinitionInfoList = storageServiceClient.getCohortDefinitionImportList(token, fingerprint);
         assertNotNull(cohortDefinitionInfoList);
         assertTrue(cohortDefinitionInfoList.size() > 0);
 
@@ -75,7 +83,7 @@ public class StorageServiceClientIT {
         for (CohortDefinitionStorageInformationItem cohortDefinitionStorageInformationItem: cohortDefinitionInfoList) {
             try {
                 uuid = cohortDefinitionStorageInformationItem.getUuid();
-                cohortDefinition = storageServiceClient.getCohortDefinition(token, uuid);
+                cohortDefinition = storageServiceClient.getCohortDefinition(token, fingerprint, uuid);
                 if(cohortDefinition != null) {
                     System.out.println("Valid cohort definition retrieved!");
                     break;
@@ -101,13 +109,13 @@ public class StorageServiceClientIT {
         UUID groupKey = UUID.randomUUID();
         UUID uuid = UUID.randomUUID();
         File cohortFile = new File(getClass().getClassLoader().getResource("hypertension.cohort").toURI());
-        assertTrue(storageServiceClient.saveCohort(token, cohortFile, groupKey, uuid));
-        assertTrue(storageServiceClient.deleteStorageFile(token, uuid.toString()));
+        assertTrue(storageServiceClient.saveCohort(token, fingerprint, cohortFile, groupKey, uuid));
+        assertTrue(storageServiceClient.deleteStorageFile(token, fingerprint, uuid.toString()));
     }
 
     @Test
     public void saveResults() throws URISyntaxException {
-        List<CohortDefinitionStorageInformationItem> cohortDefinitionInfoList = storageServiceClient.getCohortDefinitionImportList(token);
+        List<CohortDefinitionStorageInformationItem> cohortDefinitionInfoList = storageServiceClient.getCohortDefinitionImportList(token, fingerprint);
         assertNotNull(cohortDefinitionInfoList);
         assertTrue(cohortDefinitionInfoList.size() > 0);
 
@@ -115,22 +123,22 @@ public class StorageServiceClientIT {
 
         // Save cohort result
         File resultsFile = new File(getClass().getClassLoader().getResource("hypertension.result").toURI());
-        String newCohortResultPath = storageServiceClient.saveResults(token, resultsFile, cohortDefinitionUuid);
+        String newCohortResultPath = storageServiceClient.saveResults(token, fingerprint, resultsFile, cohortDefinitionUuid);
         assertNotNull(newCohortResultPath);
 
         // Cleanup
-        assertTrue(storageServiceClient.deleteStorageFile(token, parseUuid(newCohortResultPath)));
+        assertTrue(storageServiceClient.deleteStorageFile(token, fingerprint, parseUuid(newCohortResultPath)));
     }
 
     @Test
     public void getCohortDefinitionResultsImportList() {
-        List<CohortDefinitionStorageInformationItem> cohortDefinitionInfoList = storageServiceClient.getCohortDefinitionImportList(token);
+        List<CohortDefinitionStorageInformationItem> cohortDefinitionInfoList = storageServiceClient.getCohortDefinitionImportList(token, fingerprint);
         assertNotNull(cohortDefinitionInfoList);
         assertTrue(cohortDefinitionInfoList.size() > 0);
 
         boolean resultFound = false;
         for(CohortDefinitionStorageInformationItem cohortDefinitionInfo : cohortDefinitionInfoList) {
-            List<StorageInformationItem> resultsImportList = storageServiceClient.getCohortDefinitionResultsImportList(token, UUID.fromString(cohortDefinitionInfo.getUuid()));
+            List<StorageInformationItem> resultsImportList = storageServiceClient.getCohortDefinitionResultsImportList(token, fingerprint, UUID.fromString(cohortDefinitionInfo.getUuid()));
             assertNotNull(resultsImportList);
             for(StorageInformationItem cohortResultInfo:resultsImportList) {
                 assertTrue(cohortResultInfo.getKey().contains(cohortDefinitionInfo.getUuid()));
@@ -146,14 +154,14 @@ public class StorageServiceClientIT {
         assertNotNull(cohortDefinitionInfo);
         StorageInformationItem cohortResultInfo = getCohortResultInfo(cohortDefinitionInfo);
         assertNotNull(cohortResultInfo);
-        CohortGenerationResults cohortGenerationResults = storageServiceClient.getCohortGenerationResults(token, cohortDefinitionInfo.getUuid(), cohortResultInfo.getUuid());
+        CohortGenerationResults cohortGenerationResults = storageServiceClient.getCohortGenerationResults(token, fingerprint, cohortDefinitionInfo.getUuid(), cohortResultInfo.getUuid());
         assertNotNull(cohortGenerationResults);
     }
 
     private CohortDefinitionStorageInformationItem getCohortDefinitionWithResultsInfo() {
-        List<CohortDefinitionStorageInformationItem> cohortDefinitionInfoList = storageServiceClient.getCohortDefinitionImportList(token);
+        List<CohortDefinitionStorageInformationItem> cohortDefinitionInfoList = storageServiceClient.getCohortDefinitionImportList(token, fingerprint);
         for(CohortDefinitionStorageInformationItem cohortDefinitionInfo : cohortDefinitionInfoList) {
-            List<StorageInformationItem> resultsImportList = storageServiceClient.getCohortDefinitionResultsImportList(token, UUID.fromString(cohortDefinitionInfo.getUuid()));
+            List<StorageInformationItem> resultsImportList = storageServiceClient.getCohortDefinitionResultsImportList(token, fingerprint, UUID.fromString(cohortDefinitionInfo.getUuid()));
             if(resultsImportList.size() > 0) {
                 return cohortDefinitionInfo;
             }
@@ -162,7 +170,7 @@ public class StorageServiceClientIT {
     }
 
     private StorageInformationItem getCohortResultInfo(CohortDefinitionStorageInformationItem cohortDefinitionInfo) {
-        List<StorageInformationItem> resultsImportList = storageServiceClient.getCohortDefinitionResultsImportList(token, UUID.fromString(cohortDefinitionInfo.getUuid()));
+        List<StorageInformationItem> resultsImportList = storageServiceClient.getCohortDefinitionResultsImportList(token, fingerprint, UUID.fromString(cohortDefinitionInfo.getUuid()));
         if(resultsImportList.size() > 0) {
             return resultsImportList.get(0);
         }

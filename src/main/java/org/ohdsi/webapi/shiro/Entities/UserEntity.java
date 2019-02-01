@@ -60,8 +60,4 @@ public class UserEntity implements Serializable{
   public void setUserRoles(Set<UserRoleEntity> userRoles) {
     this.userRoles = userRoles;
   }
-
-  public void setPassword(String password) {
-    this.password = password;
-  }
 }

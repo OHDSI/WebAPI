@@ -5,7 +5,7 @@ inner join
 @ohdsi_database_schema.heracles_results hr1
 on ha1.analysis_id = hr1.analysis_id
 where ha1.analysis_id = 0
-and cohort_definition_id in (@cohortDefinitionId)
+and cohort_definition_id = @cohortDefinitionId
 union
 
 select ha1.analysis_name as attribute_name, 
@@ -15,6 +15,6 @@ inner join
 @ohdsi_database_schema.heracles_results hr1
 on ha1.analysis_id = hr1.analysis_id
 where ha1.analysis_id = 1
-and cohort_definition_id in (@cohortDefinitionId)
+and cohort_definition_id = @cohortDefinitionId
 )
 order by attribute_name desc

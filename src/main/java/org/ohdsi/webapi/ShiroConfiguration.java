@@ -1,28 +1,31 @@
 package org.ohdsi.webapi;
 
 import java.util.*;
-
-import com.jnj.honeur.webapi.shiro.management.AtlasWithCasSecurity;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
+import org.ohdsi.webapi.cohortcharacterization.repository.CcGenerationEntityRepository;
 import org.ohdsi.webapi.shiro.lockout.DefaultLockoutPolicy;
 import org.ohdsi.webapi.shiro.lockout.ExponentLockoutStrategy;
 import org.ohdsi.webapi.shiro.lockout.LockoutPolicy;
 import org.ohdsi.webapi.shiro.lockout.LockoutStrategy;
 import org.ohdsi.webapi.shiro.lockout.LockoutWebSecurityManager;
 import org.ohdsi.webapi.shiro.lockout.NoLockoutPolicy;
-import org.ohdsi.webapi.shiro.management.AtlasSecurity;
+import org.ohdsi.webapi.shiro.management.DataSourceAccessBeanPostProcessor;
 import org.ohdsi.webapi.shiro.management.DisabledSecurity;
 import org.ohdsi.webapi.shiro.management.Security;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.ohdsi.webapi.shiro.management.datasource.DataSourceAccessParameterResolver;
+import org.ohdsi.webapi.source.SourceRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
-import org.springframework.core.annotation.Order;
 
 /**
  * Created by GMalikov on 20.08.2015.
@@ -32,32 +35,14 @@ import org.springframework.core.annotation.Order;
 public class ShiroConfiguration {
   private static final Log log = LogFactory.getLog(ShiroConfiguration.class);
 
-  @Value("${security.enabled}")
-  private boolean enabled;
-  @Value("${security.cas}")
-  private boolean cas;
-
   @Value("${security.maxLoginAttempts}")
   private int maxLoginAttempts;
   @Value("${security.duration.initial}")
   private long initialDuration;
   @Value("${security.duration.increment}")
   private long increment;
-
-  @Bean
-  @DependsOn(value={"flyway"})
-  public Security security() {
-    if (enabled) {
-      if(cas){
-        log.debug("AtlasSecurity module loaded, with CAS");
-        return new AtlasWithCasSecurity();
-      }
-      log.debug("AtlasSecurity module loaded, without CAS");
-      return new AtlasSecurity();
-    }
-    log.debug("DisabledSecurity module loaded");
-    return new DisabledSecurity();
-  };
+  @Autowired
+  protected ApplicationEventPublisher eventPublisher;
 
   @Bean
   public ShiroFilterFactoryBean shiroFilter(Security security, LockoutPolicy lockoutPolicy){
@@ -72,7 +57,7 @@ public class ShiroConfiguration {
 
   @Bean
   public DefaultWebSecurityManager securityManager(Security security, LockoutPolicy lockoutPolicy){
-    final DefaultWebSecurityManager securityManager = new LockoutWebSecurityManager(lockoutPolicy);
+    final DefaultWebSecurityManager securityManager = new LockoutWebSecurityManager(lockoutPolicy, eventPublisher);
 
     securityManager.setAuthenticator(security.getAuthenticator());
 
@@ -84,24 +69,31 @@ public class ShiroConfiguration {
   }
 
   @Bean
-  @ConditionalOnProperty(name = "security.enabled", havingValue = "false")
+  @ConditionalOnExpression("#{!'${security.provider}'.equals('AtlasRegularSecurity')}")
   public LockoutPolicy noLockoutPolicy(){
 
     return new NoLockoutPolicy();
   }
 
   @Bean
-  @ConditionalOnProperty(name = "security.enabled", havingValue = "true")
+  @ConditionalOnProperty(name = "security.provider", havingValue = "AtlasRegularSecurity")
   public LockoutPolicy lockoutPolicy(){
 
     return new DefaultLockoutPolicy(lockoutStrategy(), maxLoginAttempts);
   }
 
   @Bean
-  @ConditionalOnProperty(name = "security.enabled", havingValue = "true")
+  @ConditionalOnProperty(name = "security.provider", havingValue = "AtlasRegularSecurity")
   public LockoutStrategy lockoutStrategy(){
 
     return new ExponentLockoutStrategy(initialDuration, increment, maxLoginAttempts);
+  }
+
+  @Bean
+  @ConditionalOnMissingBean(value = DisabledSecurity.class)
+  public DataSourceAccessBeanPostProcessor dataSourceAccessBeanPostProcessor(DataSourceAccessParameterResolver parameterResolver) {
+
+    return new DataSourceAccessBeanPostProcessor(parameterResolver);
   }
 
 }

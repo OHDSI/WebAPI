@@ -31,7 +31,7 @@ public class HealthStatusService {
     @Autowired
     private StorageServiceClient storageServiceClient;
 
-    @Value("${security.cas.login.url}")
+    @Value("${security.cas.loginUrl}")
     private String casLoginUrl;
 
     @GET

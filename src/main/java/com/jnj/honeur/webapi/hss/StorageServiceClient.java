@@ -2,6 +2,7 @@ package com.jnj.honeur.webapi.hss;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jnj.honeur.security.TokenContext;
 import com.jnj.honeur.webapi.cohortdefinition.CohortGenerationResults;
 import com.jnj.honeur.webapi.hssserviceuser.HSSServiceUserEntity;
 import com.jnj.honeur.webapi.hssserviceuser.HSSServiceUserRepository;
@@ -83,13 +84,15 @@ public class StorageServiceClient {
         this.hssServiceUserRepository = hssServiceUserRepository;
     }
 
-    public String saveResults(String token, File results, String uuid) {
+    public String saveResults(String token, String fingerprint, File results, String uuid) {
         if (!webapiCentral) {
-            token = getStorageServiceToken();
+            TokenContext tokenContext = getStorageServiceToken();
+            token = tokenContext.getToken();
+            fingerprint = tokenContext.getFingerprint();
         }
         String endpoint = "/cohort-results/" + uuid;
         try {
-            HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = createHttpEntity(token, results);
+            HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = createHttpEntity(token, fingerprint, results);
 
             String result = restTemplate.exchange(storageServiceApi + endpoint,
                     HttpMethod.POST, requestEntity, String.class).getHeaders().getLocation().getPath();
@@ -103,15 +106,17 @@ public class StorageServiceClient {
         }
     }
 
-    public boolean saveCohort(String token, File results, final UUID groupKey, final UUID uuid) {
+    public boolean saveCohort(String token, String fingerprint, File results, final UUID groupKey, final UUID uuid) {
         final String endpoint = "/cohort-definitions/" + groupKey + "/" + uuid;
 
         try {
             if (!webapiCentral) {
-                token = getStorageServiceToken();
+                TokenContext tokenContext = getStorageServiceToken();
+                token = tokenContext.getToken();
+                fingerprint = tokenContext.getFingerprint();
             }
 
-            HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = createHttpEntity(token, results);
+            HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = createHttpEntity(token, fingerprint, results);
 
             final ResponseEntity<StorageInformationItem> response = restTemplate.exchange(storageServiceApi + endpoint,
                     HttpMethod.POST, requestEntity, StorageInformationItem.class);
@@ -127,44 +132,51 @@ public class StorageServiceClient {
         }
     }
 
-    private HttpEntity<LinkedMultiValueMap<String, Object>> createHttpEntity(String token, File file) {
+    private HttpEntity<LinkedMultiValueMap<String, Object>> createHttpEntity(String token, String fingerprint, File file) {
         LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
         map.add("file", new FileSystemResource(file.getAbsolutePath()));
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
         headers.set("token", token.replace("Bearer ", ""));
+        headers.set("Cookie", "userFingerprint="+fingerprint);
 
         return new HttpEntity<>(map, headers);
     }
 
-    public List<CohortDefinitionStorageInformationItem> getCohortDefinitionImportList(String token) {
+    public List<CohortDefinitionStorageInformationItem> getCohortDefinitionImportList(String token, String fingerprint) {
         if (!webapiCentral) {
-            token = getStorageServiceToken();
+            TokenContext tokenContext = getStorageServiceToken();
+            token = tokenContext.getToken();
+            fingerprint = tokenContext.getFingerprint();
         }
         String endpoint = "/cohort-definitions/list";
 
         return Arrays.asList(restTemplate.exchange(storageServiceApi + endpoint, HttpMethod.GET,
-                getTokenHeader(token), CohortDefinitionStorageInformationItem[].class).getBody());
+                getTokenHeader(token, fingerprint), CohortDefinitionStorageInformationItem[].class).getBody());
     }
 
-    public CohortDefinitionService.CohortDefinitionDTO getCohortDefinition(String token, String uuid) {
+    public CohortDefinitionService.CohortDefinitionDTO getCohortDefinition(String token, String fingerprint, String uuid) {
         if (!webapiCentral) {
-            token = getStorageServiceToken();
+            TokenContext tokenContext = getStorageServiceToken();
+            token = tokenContext.getToken();
+            fingerprint = tokenContext.getFingerprint();
         }
         String endpoint = "/cohort-definitions/" + uuid;
         return restTemplate
-                .exchange(storageServiceApi + endpoint, HttpMethod.GET, getTokenHeader(token), CohortDefinitionService.CohortDefinitionDTO.class)
+                .exchange(storageServiceApi + endpoint, HttpMethod.GET, getTokenHeader(token, fingerprint), CohortDefinitionService.CohortDefinitionDTO.class)
                 .getBody();
     }
 
-    public List<StorageInformationItem> getCohortDefinitionResultsImportList(String token, UUID uuid) {
+    public List<StorageInformationItem> getCohortDefinitionResultsImportList(String token, String fingerprint, UUID uuid) {
         if (!webapiCentral) {
-            token = getStorageServiceToken();
+            TokenContext tokenContext = getStorageServiceToken();
+            token = tokenContext.getToken();
+            fingerprint = tokenContext.getFingerprint();
         }
         try {
             String endpoint = "/cohort-results/list/" + uuid + "?reverseOrder=true";
             return Arrays.asList(restTemplate
-                    .exchange(storageServiceApi + endpoint, HttpMethod.GET, getTokenHeader(token),
+                    .exchange(storageServiceApi + endpoint, HttpMethod.GET, getTokenHeader(token, fingerprint),
                             StorageInformationItem[].class).getBody());
         } catch (RestClientException e) {
             LOGGER.error(e.getMessage(), e);
@@ -172,29 +184,31 @@ public class StorageServiceClient {
         }
     }
 
-    public CohortGenerationResults getCohortGenerationResults(String token, String definitionUuid, String resultsUuid) throws IOException {
+    public CohortGenerationResults getCohortGenerationResults(String token, String fingerprint, String definitionUuid, String resultsUuid) throws IOException {
         if (!webapiCentral) {
-            token = getStorageServiceToken();
+            TokenContext tokenContext = getStorageServiceToken();
+            token = tokenContext.getToken();
+            fingerprint = tokenContext.getFingerprint();
         }
         String endpoint = "/cohort-results/" + definitionUuid + "/" + resultsUuid;
         String response = restTemplate
-                .exchange(storageServiceApi + endpoint, HttpMethod.GET, getTokenHeader(token), String.class)
+                .exchange(storageServiceApi + endpoint, HttpMethod.GET, getTokenHeader(token, fingerprint), String.class)
                 .getBody();
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(response, CohortGenerationResults.class);
     }
 
-    public String getStorageServiceToken() {
-        JsonNode tokenResponse = restTemplate
+    public TokenContext getStorageServiceToken() {
+        ResponseEntity<JsonNode> tokenResponse = restTemplate
                 .exchange(storageServiceApi + "/login", HttpMethod.GET, getBasicAuthenticationHeader(),
-                        JsonNode.class).getBody();
-        return tokenResponse.path("token").asText();
+                        JsonNode.class);
+        return new TokenContext(tokenResponse.getBody().path("token").asText(), tokenResponse.getHeaders().getFirst("Set-Cookie").replace("userFingerprint=", ""));
     }
 
-    boolean deleteStorageFile(String token, String uuid) {
+    boolean deleteStorageFile(String token, String fingerprint, String uuid) {
         try {
             String serviceUrl = storageServiceApi + "/" + uuid;
-            restTemplate.exchange(serviceUrl, HttpMethod.DELETE, getTokenHeader(token), String.class);
+            restTemplate.exchange(serviceUrl, HttpMethod.DELETE, getTokenHeader(token, fingerprint), String.class);
             return true;
         } catch (RestClientException e) {
             LOGGER.error(e.getMessage(), e);
@@ -202,9 +216,10 @@ public class StorageServiceClient {
         }
     }
 
-    private HttpEntity getTokenHeader(String token) {
+    private HttpEntity getTokenHeader(String token, String fingerprint) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("token", token.replace("Bearer ", ""));
+        headers.set("Cookie", "userFingerprint="+fingerprint);
 
         return new HttpEntity(headers);
     }

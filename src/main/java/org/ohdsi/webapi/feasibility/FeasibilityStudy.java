@@ -20,25 +20,10 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.CascadeType;
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.NamedAttributeNode;
-import javax.persistence.NamedEntityGraph;
-import javax.persistence.NamedEntityGraphs;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.OrderColumn;
-import javax.persistence.Table;
+import javax.persistence.*;
+
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
 
 /**
  *
@@ -64,7 +49,8 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 public class FeasibilityStudy {
   
   @Id
-  @GeneratedValue
+  @SequenceGenerator(name = "feasibility_study_seq", sequenceName = "feasibility_study_sequence", allocationSize = 1)
+  @GeneratedValue(generator = "feasibility_study_seq", strategy = GenerationType.SEQUENCE)
   @Column(name="id")
   @Access(AccessType.PROPERTY) 
   private Integer id; 
@@ -86,14 +72,16 @@ public class FeasibilityStudy {
   @OneToMany(fetch= FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "study", orphanRemoval=true)
   private Set<StudyGenerationInfo> studyGenerationInfoList = new HashSet<StudyGenerationInfo>();  
   
-  @Column(name="created_by")
-  private String createdBy;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "created_by_id")
+  private UserEntity createdBy;
   
   @Column(name="created_date")
   private Date createdDate;
 
-  @Column(name="modified_by")
-  private String modifiedBy;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "modified_by_id")
+  private UserEntity modifiedBy;
     
   @Column(name="modified_date")
   private Date modifiedDate;
@@ -157,11 +145,11 @@ public class FeasibilityStudy {
     return this;
   }
 
-  public String getCreatedBy() {
+  public UserEntity getCreatedBy() {
     return createdBy;
   }
 
-  public FeasibilityStudy setCreatedBy(String createdBy) {
+  public FeasibilityStudy setCreatedBy(UserEntity createdBy) {
     this.createdBy = createdBy;
     return this;
   }
@@ -175,11 +163,11 @@ public class FeasibilityStudy {
     return this;
   }
 
-  public String getModifiedBy() {
+  public UserEntity getModifiedBy() {
     return modifiedBy;
   }
 
-  public FeasibilityStudy setModifiedBy(String modifiedBy) {
+  public FeasibilityStudy setModifiedBy(UserEntity modifiedBy) {
     this.modifiedBy = modifiedBy;
     return this;
   }

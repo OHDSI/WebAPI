@@ -12,7 +12,7 @@ select   concept_hierarchy.concept_id,
 	isNull(concept_hierarchy.hlt_concept_name,'NA') as hlt_concept_name,
 	isNull(concept_hierarchy.pt_concept_name,'NA') as pt_concept_name,
 	isNull(concept_hierarchy.snomed_concept_name,'NA') as concept_name,
-  isNull(concept_hierarchy.soc_concept_name,'NA') + '||' + isNull(concept_hierarchy.hlgt_concept_name,'NA') + '||' + isNull(concept_hierarchy.hlt_concept_name,'NA') + '||' + isNull(concept_hierarchy.pt_concept_name,'NA') + '||' + isNull(concept_hierarchy.snomed_concept_name,'NA') as concept_path,
+  CONCAT(isNull(concept_hierarchy.soc_concept_name,'NA'), '||', isNull(concept_hierarchy.hlgt_concept_name,'NA'), '||', isNull(concept_hierarchy.hlt_concept_name,'NA'), '||', isNull(concept_hierarchy.pt_concept_name,'NA'), '||', isNull(concept_hierarchy.snomed_concept_name,'NA')) as concept_path,
 	1.0*hr1.num_persons / denom.count_value as percent_persons,
 	1.0*hr1.num_persons_before / denom.count_value as percent_persons_before,
 	1.0*hr1.num_persons_after / denom.count_value as percent_persons_after,
@@ -27,7 +27,7 @@ from
 	sum(case when CAST(stratum_2 AS INT) > 0 then count_value else 0 end) as num_persons_after
 from @ohdsi_database_schema.heracles_results
 where analysis_id in (1820) --first occurrence of condition
-and cohort_definition_id in (@cohortDefinitionId)
+and cohort_definition_id = @cohortDefinitionId
 group by stratum_1
 ) hr1
 inner join
@@ -121,5 +121,5 @@ inner join
 (select count_value
 from @ohdsi_database_schema.heracles_results
 where analysis_id = 1
-and cohort_definition_id in (@cohortDefinitionId)
+and cohort_definition_id = @cohortDefinitionId
 ) denom

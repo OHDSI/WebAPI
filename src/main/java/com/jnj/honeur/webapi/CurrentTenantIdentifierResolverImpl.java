@@ -14,6 +14,12 @@ public class CurrentTenantIdentifierResolverImpl implements CurrentTenantIdentif
 
     private static final Log LOG = LogFactory.getLog(CurrentTenantIdentifierResolverImpl.class);
 
+    private String defaultDataSourceKey;
+
+    public CurrentTenantIdentifierResolverImpl(final String defaultDataSourceKey) {
+        this.defaultDataSourceKey = defaultDataSourceKey;
+    }
+
     @Override
     public String resolveCurrentTenantIdentifier() {
         String currentTenant = SourceDaimonContextHolder.getCurrentSourceDaimonContextKey();
@@ -21,8 +27,8 @@ public class CurrentTenantIdentifierResolverImpl implements CurrentTenantIdentif
             LOG.trace("Tenant resolved: " + currentTenant);
             return currentTenant;
         }
-        LOG.trace("Resolved to default tenant: " + DataSourceLookup.PRIMARY_DATA_SOURCE_KEY);
-        return DataSourceLookup.PRIMARY_DATA_SOURCE_KEY;
+        LOG.trace("Resolved to default tenant: " + defaultDataSourceKey);
+        return defaultDataSourceKey;
     }
 
     public void setTenant(String tenant) {

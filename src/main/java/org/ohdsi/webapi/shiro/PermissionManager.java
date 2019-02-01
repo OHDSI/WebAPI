@@ -1,12 +1,14 @@
 package org.ohdsi.webapi.shiro;
 
 import java.security.Principal;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import com.odysseusinc.logging.event.AddUserEvent;
+import com.odysseusinc.logging.event.DeleteUserEvent;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authz.AuthorizationInfo;
@@ -27,6 +29,8 @@ import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.Entities.UserRoleEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,8 +38,9 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * @author gennadiy.anisimov
  */
-//@Component
+@Component
 @Transactional
+@ConditionalOnExpression("${datasource.honeur.enabled} and !${webapi.central}")
 public class PermissionManager {
   
   @Autowired
@@ -53,13 +58,16 @@ public class PermissionManager {
   @Autowired
   private UserRoleRepository userRoleRepository;
 
+  @Autowired
+  private ApplicationEventPublisher eventPublisher;
+
 
   public RoleEntity addRole(String roleName) throws Exception {
     Guard.checkNotEmpty(roleName);
     
     RoleEntity role = this.roleRepository.findByName(roleName);
     if (role != null) {
-      throw new Exception(String.format("Can't create role %s - it already exists", roleName));
+      throw new Exception("Can't create role - it already exists");
     }
     
     role = new RoleEntity();
@@ -143,6 +151,7 @@ public class PermissionManager {
     user = new UserEntity();
     user.setLogin(login);
     user = userRepository.save(user);
+    eventPublisher.publishEvent(new AddUserEvent(this, user.getId(), login));
 
     RoleEntity personalRole = this.addRole(login);
     this.addUser(user, personalRole, null);
@@ -167,6 +176,7 @@ public class PermissionManager {
     if (user != null) {
       this.deleteRole(login);   // delete individual role
       userRepository.delete(user);
+      eventPublisher.publishEvent(new DeleteUserEvent(this, user.getId(), user.getLogin()));
     }
   }
   
@@ -262,7 +272,7 @@ public class PermissionManager {
 
     PermissionEntity permission = this.permissionRepository.findByValueIgnoreCase(permissionName);
     if (permission != null) {
-      throw new Exception(String.format("Can't create permission %s - it already exists", permissionName));
+      throw new Exception("Can't create permission - it already exists");
     }
 
     permission = new PermissionEntity();
@@ -402,7 +412,7 @@ public class PermissionManager {
     return users;
   }
 
-  private UserEntity getCurrentUser() throws Exception {
+  public UserEntity getCurrentUser() throws Exception {
     final String login = this.getSubjectName();
     final UserEntity currentUser = this.getUserByLogin(login);
     return currentUser;
@@ -424,7 +434,7 @@ public class PermissionManager {
     return user;
   }
 
-  private RoleEntity getRoleByName(String roleName) throws Exception {
+  public RoleEntity getRoleByName(String roleName) throws Exception {
     final RoleEntity roleEntity = this.roleRepository.findByName(roleName);
     if (roleEntity == null)
       throw new Exception("Role doesn't exist");

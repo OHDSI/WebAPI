@@ -14,7 +14,7 @@ FROM   (SELECT cohort_definition_id,
                count_value 
         FROM   @ohdsi_database_schema.heracles_results 
         WHERE  analysis_id IN ( 1820 ) 
-               AND cohort_definition_id IN ( @cohortDefinitionId )
+               AND cohort_definition_id = @cohortDefinitionId
                AND Cast(stratum_2 AS INTEGER) * 30 BETWEEN -1000 AND 1000
                         ) hr1 
        INNER JOIN (SELECT -1 * Cast(stratum_1 AS INTEGER) * 30                AS 
@@ -61,14 +61,12 @@ FROM   (SELECT cohort_definition_id,
                                       FROM 
                           @ohdsi_database_schema.heracles_results 
                                       WHERE  analysis_id = 1806 
-                                             AND cohort_definition_id IN ( 
-                                                 @cohortDefinitionId ) 
+                                             AND cohort_definition_id = @cohortDefinitionId 
                                       GROUP  BY cohort_definition_id) t1 
                                   ON hr1.cohort_definition_id = 
                                      t1.cohort_definition_id 
                    WHERE  hr1.analysis_id IN ( 1806 ) 
-                          AND hr1.cohort_definition_id IN 
-                              ( @cohortDefinitionId )
+                          AND hr1.cohort_definition_id = @cohortDefinitionId
                                                     ) t1 
                ON  hr1.duration = t1.duration 
        INNER JOIN (SELECT Cast(stratum_1 AS INTEGER) AS concept_id, 
@@ -99,7 +97,7 @@ FROM   (SELECT cohort_definition_id,
                count_value 
         FROM   @ohdsi_database_schema.heracles_results  
         WHERE  analysis_id IN ( 1821 ) 
-               AND cohort_definition_id IN ( @cohortDefinitionId )
+               AND cohort_definition_id = @cohortDefinitionId
                AND Cast(stratum_2 AS INTEGER) * 30 BETWEEN -1000 AND 1000
                ) hr1 
        INNER JOIN (SELECT -1 * Cast(stratum_1 AS INTEGER) * 30                AS 
@@ -146,8 +144,7 @@ FROM   (SELECT cohort_definition_id,
                                       FROM 
                           @ohdsi_database_schema.heracles_results 
                                       WHERE  analysis_id = 1806 
-                                             AND cohort_definition_id IN ( 
-                                                 @cohortDefinitionId ) 
+                                             AND cohort_definition_id = @cohortDefinitionId 
                                       GROUP  BY cohort_definition_id) t1 
                                   ON hr1.cohort_definition_id = 
                                      t1.cohort_definition_id 

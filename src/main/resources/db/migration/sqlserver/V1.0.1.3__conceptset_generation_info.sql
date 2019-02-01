@@ -2,7 +2,7 @@ IF (NOT EXISTS (SELECT *
 		    FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS 
 		    WHERE CONSTRAINT_TYPE = 'PRIMARY KEY' 
                     AND TABLE_NAME = 'concept_set' 
-		    AND TABLE_SCHEMA ='dbo' ))
+		    AND TABLE_SCHEMA = '${ohdsiSchema}' ))
 BEGIN
     ALTER TABLE [${ohdsiSchema}].[concept_set] ADD CONSTRAINT [PK_concept_set] PRIMARY KEY CLUSTERED 
     (

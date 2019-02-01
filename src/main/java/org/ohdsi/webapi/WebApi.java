@@ -1,22 +1,20 @@
 package org.ohdsi.webapi;
 
-import javax.annotation.PostConstruct;
 import org.apache.catalina.webresources.TomcatURLStreamHandlerFactory;
-import org.ohdsi.webapi.service.CDMResultsService;
-import org.ohdsi.webapi.service.SourceService;
-import org.ohdsi.webapi.source.SourceDaimon;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 
 /**
  * Launch as java application or deploy as WAR (@link {@link WebApplication}
  * will source this file).
  */
+@EnableScheduling
 @SpringBootApplication(exclude={HibernateJpaAutoConfiguration.class})
 @ComponentScan(basePackages = {"org.ohdsi.webapi", "com.jnj.honeur.webapi"})
 public class WebApi extends SpringBootServletInitializer {
@@ -25,28 +23,11 @@ public class WebApi extends SpringBootServletInitializer {
     protected SpringApplicationBuilder configure(final SpringApplicationBuilder application) {
         return application.sources(WebApi.class);
     }
-   
-    public static void main(final String[] args) throws Exception 
+
+    public static void main(final String[] args) throws Exception
     {
         TomcatURLStreamHandlerFactory.disable();
         new SpringApplicationBuilder(WebApi.class).run(args);
     }
 
-
-    @Autowired
-    private CDMResultsService resultsService;
-
-    @Autowired
-    private SourceService sourceService;
-
-    @PostConstruct
-    public void warmCaches() {
-        sourceService.getSources().stream().forEach((s) -> {
-            for (SourceDaimon sd : s.daimons) {
-                if (sd.getDaimonType() == SourceDaimon.DaimonType.Results) {
-                    resultsService.warmCache(s.sourceKey);
-                }
-            }
-        });
-    }
 }

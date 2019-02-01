@@ -10,12 +10,16 @@ import org.ohdsi.webapi.shiro.PermissionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Component
 @Transactional
+@ConditionalOnExpression("${datasource.honeur.enabled} and ${webapi.central}")
 public class LiferayPermissionManager extends PermissionManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LiferayPermissionManager.class);
@@ -24,6 +28,8 @@ public class LiferayPermissionManager extends PermissionManager {
     private LiferayApiClient liferayApiClient;
     @Autowired
     private PermissionRepository permissionRepository;
+    @Autowired
+    private UserRepository userRepository;
     @Autowired
     private RoleRepository roleRepository;
 
@@ -42,7 +48,7 @@ public class LiferayPermissionManager extends PermissionManager {
                 .filter(role -> role.startsWith("Atlas "))
                 .map(role -> {
                     String result = role;
-                    if(role.startsWith("Atlas ")){
+                    if (role.startsWith("Atlas ")) {
                         result = result.substring(6, role.length());
                     }
                     return result;
@@ -64,7 +70,7 @@ public class LiferayPermissionManager extends PermissionManager {
 
         final UserEntity userEntity = liferayApiClient.findUserByLogin(login);
 
-        if(userEntity == null) {
+        if (userEntity == null) {
             throw new UnknownAccountException(String.format("Account %s does not exist in Liferay", login));
         }
 
@@ -83,15 +89,6 @@ public class LiferayPermissionManager extends PermissionManager {
         return info;
     }
 
-    public Set<PermissionEntity> getUserPermissions(String userName) {
-        UserEntity user = this.liferayApiClient.findUserByLogin(userName);
-        if(user == null) {
-            throw new UnknownAccountException(String.format("Account %s does not exist in Liferay", userName));
-        }
-        Set<PermissionEntity> permissions = this.getUserPermissions(user);
-        return permissions;
-    }
-
     @Transactional
     @Override
     public UserEntity registerUser(final String login, final Set<String> defaultRoles) throws Exception {
@@ -101,7 +98,7 @@ public class LiferayPermissionManager extends PermissionManager {
 
         UserEntity user = liferayApiClient.findUserByLogin(login);
 
-        if(user == null) {
+        if (user == null) {
             LOGGER.warn(String.format("No user with login %s found in Liferay!", login));
             return null;
         }
@@ -109,7 +106,7 @@ public class LiferayPermissionManager extends PermissionManager {
         Set<UserRoleEntity> userRoleEntities = getUserRoleEntities(user);
 
         user.setUserRoles(userRoleEntities);
-        if(this.roleRepository.findByName(login) == null){
+        if (this.roleRepository.findByName(login) == null) {
             RoleEntity personalRole = this.addRole(login, false);
             this.addUser(user, personalRole, null);
         }
@@ -123,6 +120,32 @@ public class LiferayPermissionManager extends PermissionManager {
     @Override
     public Iterable<UserEntity> getUsers() {
         return null;
+    }
+
+    @Override
+    public Set<RoleEntity> getUserRoles(Long userId) throws Exception {
+        UserEntity user = this.getUserById(userId);
+        Set<RoleEntity> roles = this.getUserRoles(user);
+        return roles;
+    }
+
+    @Override
+    public Set<PermissionEntity> getUserPermissions(Long userId) throws Exception {
+        UserEntity user = getUserById(userId);
+        Set<PermissionEntity> permissions = this.getUserPermissions(user.getLogin());
+        return permissions;
+    }
+
+    /**
+     * Added because of use of private class methods.
+     * @return
+     * @throws Exception
+     */
+    @Override
+    public UserEntity getCurrentUser() throws Exception {
+        final String login = this.getSubjectName();
+        final UserEntity currentUser = this.getUserByLogin(login);
+        return currentUser;
     }
 
     private UserEntity getUserById(Long userId) {
@@ -162,7 +185,7 @@ public class LiferayPermissionManager extends PermissionManager {
             LOGGER.info(e.getMessage(), e);
             roleEntity = this.roleRepository.findByName(roleName);
         }
-        if(addToLiferay && roleEntity != null) {
+        if (addToLiferay && roleEntity != null) {
             liferayApiClient.addRole(roleEntity, prefix);
         }
         return roleEntity;
@@ -172,7 +195,7 @@ public class LiferayPermissionManager extends PermissionManager {
     public RoleEntity addRole(String roleName) {
         try {
             return addRole(roleName, true);
-        } catch (Exception e){
+        } catch (Exception e) {
             return null;
         }
     }
@@ -206,7 +229,8 @@ public class LiferayPermissionManager extends PermissionManager {
 
     @Override
     public void removeUser(Long userId, Long roleId) {
-        removeUserFromRole(roleRepository.findById(roleId).getName(), this.liferayApiClient.findUserById(userId).getLogin());
+        removeUserFromRole(roleRepository.findById(roleId).getName(),
+                this.liferayApiClient.findUserById(userId).getLogin());
     }
 
     @Override
@@ -241,7 +265,7 @@ public class LiferayPermissionManager extends PermissionManager {
 //    }
 
     private Set<RoleEntity> getUserRoles(UserEntity user) {
-        if(user == null) {
+        if (user == null) {
             return Collections.emptySet();
         }
 
@@ -249,7 +273,7 @@ public class LiferayPermissionManager extends PermissionManager {
 
         Set<RoleEntity> roles = new LinkedHashSet<>();
 
-        for(String role: roleNames){
+        for (String role : roleNames) {
             if (role.startsWith("Atlas ")) {
                 role = role.substring(6, role.length());
             }
@@ -260,7 +284,7 @@ public class LiferayPermissionManager extends PermissionManager {
         }
 
         RoleEntity personalRole = roleRepository.findByName(user.getLogin());
-        if(personalRole != null) {
+        if (personalRole != null) {
             roles.add(personalRole);
         }
 
@@ -270,7 +294,7 @@ public class LiferayPermissionManager extends PermissionManager {
     private Set<UserRoleEntity> getUserRoleEntities(UserEntity user) {
         Set<UserRoleEntity> userRoleEntities = new HashSet<>();
 
-        for(RoleEntity role: getUserRoles(user)) {
+        for (RoleEntity role : getUserRoles(user)) {
             UserRoleEntity userRoleEntity = new UserRoleEntity();
             userRoleEntity.setRole(role);
             userRoleEntity.setUser(user);
@@ -279,8 +303,8 @@ public class LiferayPermissionManager extends PermissionManager {
         return userRoleEntities;
     }
 
-
-    private RoleEntity getRoleByName(String roleName) {
+    @Override
+    public RoleEntity getRoleByName(String roleName) {
         final RoleEntity roleEntity = this.roleRepository.findByName(roleName);
         if (roleEntity == null)
             throw new RuntimeException(String.format("Role %s doesn't exist", roleName));
@@ -319,14 +343,23 @@ public class LiferayPermissionManager extends PermissionManager {
 
     public PermissionEntity getPermissionByValue(String value) {
         final PermissionEntity permission = this.permissionRepository.findByValueIgnoreCase(value);
-        if (permission == null ) {
+        if (permission == null) {
             try {
-                return addPermission(value, "Retrieve Cohort Definition with ID = "+value.split(":")[1]);
-            } catch (Exception e){
+                return addPermission(value, "Retrieve Cohort Definition with ID = " + value.split(":")[1]);
+            } catch (Exception e) {
                 return null;
             }
         }
 
         return permission;
+    }
+
+    public Set<PermissionEntity> getUserPermissions(String userName) {
+        UserEntity user = this.liferayApiClient.findUserByLogin(userName);
+        if (user == null) {
+            throw new UnknownAccountException(String.format("Account %s does not exist in Liferay", userName));
+        }
+        Set<PermissionEntity> permissions = this.getUserPermissions(user);
+        return permissions;
     }
 }

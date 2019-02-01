@@ -4,10 +4,10 @@ select hr1.stratum_1 as x_calendar_month,
 from (select stratum_1, count_value 
 	from @ohdsi_database_schema.heracles_results
 	where analysis_id in (1815)
-	and cohort_definition_id in (@cohortDefinitionId)
+	and cohort_definition_id = @cohortDefinitionId
 ) hr1
 	inner join 
 (
-	select stratum_1, count_value from @ohdsi_database_schema.heracles_results where analysis_id = 117 and cohort_definition_id in (@cohortDefinitionId)
+	select stratum_1, count_value from @ohdsi_database_schema.heracles_results where analysis_id = 117 and cohort_definition_id = @cohortDefinitionId
 ) t1
 on hr1.stratum_1 = t1.stratum_1

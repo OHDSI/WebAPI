@@ -78,7 +78,7 @@ public class GenerationJobExecutionListener implements JobExecutionListener {
 		info.setExecutionDuration((int)(je.getEndTime().getTime() - je.getStartTime().getTime()));
 		info.setStatus(GenerationStatus.COMPLETE);
 
-		if (je.getStatus() == BatchStatus.FAILED) {
+		if (je.getStatus() == BatchStatus.FAILED || je.getStatus() == BatchStatus.STOPPED) {
 			info.setIsValid(false);
 			info.setRecordCount(null);
 			info.setPersonCount(null);

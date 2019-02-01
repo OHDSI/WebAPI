@@ -2,16 +2,11 @@ package org.ohdsi.webapi.service;
 
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
-import com.microsoft.sqlserver.jdbc.SQLServerDriver;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.Consumes;
@@ -24,6 +19,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.circe.vocabulary.Concept;
@@ -35,6 +31,7 @@ import org.ohdsi.webapi.activity.Activity.ActivityType;
 import org.ohdsi.webapi.activity.Tracker;
 import org.ohdsi.webapi.conceptset.ConceptSetComparison;
 import org.ohdsi.webapi.conceptset.ConceptSetOptimizationResult;
+import org.ohdsi.webapi.service.vocabulary.ConceptSetStrategy;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
@@ -88,20 +85,96 @@ public class VocabularyService extends AbstractDaoService {
 
   private String getDefaultVocabularySourceKey()
   {
-    // fun with streams:
-    // the below expression streams each source, returning the first (or null) which contains a daimon that is either Vocabulary or CDM
-    SourceInfo firstSource = sourceService.getSources().stream()
-            .filter(source -> source.daimons.stream()
-                    .filter(daimon -> daimon.getDaimonType() == SourceDaimon.DaimonType.Vocabulary || daimon.getDaimonType() == SourceDaimon.DaimonType.CDM)
-                    .collect(Collectors.toList()).size() > 0)
-            .findFirst().orElse(null);
+    List<SourceInfo> vocabSources = sourceService.getSources().stream()
+           .filter(source -> source.daimons.stream()
+                   .filter(daimon -> daimon.getDaimonType() == SourceDaimon.DaimonType.Vocabulary)
+                   .collect(Collectors.toList()).size() > 0)
+            .collect(Collectors.toList());
     
-    if (firstSource != null)
-      return firstSource.sourceKey;
+    Integer vocabularyPriority = 0;
+    String sourceKey = null;
+    for(SourceInfo si : vocabSources) {
+        SourceDaimon sd = si.daimons.stream().filter(daimon -> daimon.getDaimonType() == SourceDaimon.DaimonType.Vocabulary).findFirst().orElse(null);
+        if (sd != null && sd.getPriority() >= vocabularyPriority) {
+            vocabularyPriority = sd.getPriority();
+            sourceKey = si.sourceKey;
+        }
+    }
     
-    return null;
+    return sourceKey;
   }
+
+  /**
+   * @summary Calculates ancestors for the given descendants
+   * 
+   * @param ids concepts identifiers from concept set
+   *                            
+   * @return map {id -> ascendant id}
+   */
+  @Path("{sourceKey}/lookup/identifiers/ancestors")
+  @POST
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Map<Long, List<Long>> calculateAscendants(@PathParam("sourceKey") String sourceKey, Ids ids) {
+
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
     
+    if (CollectionUtils.isEmpty(ids.ancestors) || CollectionUtils.isEmpty(ids.descendants)) { 
+        return new HashMap<>();
+    }
+
+    final int limit = Math.floorDiv(PreparedSqlRender.getParameterLimit(source), 2);
+
+    final List<Map.Entry<Long, Long>> result = new ArrayList<>();
+    
+    // Here we calculate cartesian product of batches
+    for (final List<Long> ancestorsBatch : Lists.partition(ids.ancestors, limit)) {
+      
+        for (final List<Long> descendantsBatch : Lists.partition(ids.descendants, limit)) {
+          
+            final PreparedStatementRenderer psr = prepareAscendantsCalculating(
+                    ancestorsBatch.toArray(new Long[0]),
+                    descendantsBatch.toArray(new Long[0]), 
+                    source
+            );
+            
+            result.addAll(getSourceJdbcTemplate(source)
+                    .query(
+                            psr.getSql(),
+                            psr.getSetter(),
+                            (resultSet, arg1) -> Maps.immutableEntry(resultSet.getLong("ANCESTOR_ID"), resultSet.getLong("DESCENDANT_ID"))));
+        }
+    }
+
+    return result
+            .stream()
+            .collect(
+                    Collectors.groupingBy(
+                            Map.Entry::getValue, 
+                            Collectors.mapping(
+                                    Map.Entry::getKey, 
+                                    Collectors.toList()
+                            )
+                    )
+            ); 
+  }
+  
+  private static class Ids {
+    public List<Long> ancestors;
+    public List<Long> descendants;
+  }
+
+  protected PreparedStatementRenderer prepareAscendantsCalculating(Long[] identifiers, Long[] descendants, Source source) {
+
+    String sqlPath = "/resources/vocabulary/sql/calculateAscendants.sql";
+    String tqName = "CDM_schema";
+    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
+
+    return new PreparedStatementRenderer(source, sqlPath, tqName, tqValue, 
+            new String[]{ "ancestors", "descendants" }, 
+            new Object[]{ identifiers, descendants });
+  }
+  
   /**
    * @summary Perform a lookup of an array of concept identifiers returning the
    * matching concepts with their detailed properties.
@@ -570,11 +643,7 @@ public class VocabularyService extends AbstractDaoService {
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<Long> resolveConceptSetExpression(@PathParam("sourceKey") String sourceKey, ConceptSetExpression conceptSetExpression) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    String tqName = "vocabulary_database_schema";
-    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
-    ConceptSetExpressionQueryBuilder builder = new ConceptSetExpressionQueryBuilder();
-    String query = builder.buildExpressionQuery(conceptSetExpression);
-    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, query, tqName, tqValue);
+    PreparedStatementRenderer psr = new ConceptSetStrategy(conceptSetExpression).prepareStatement(source, null);
     final ArrayList<Long> identifiers = new ArrayList<>();
     getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), new RowCallbackHandler() {
       @Override
@@ -598,6 +667,31 @@ public class VocabularyService extends AbstractDaoService {
 
     return resolveConceptSetExpression(defaultSourceKey, conceptSetExpression);
   }
+
+  @POST
+  @Path("{sourceKey}/included-concepts/count")
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Integer countIncludedConceptSets(@PathParam("sourceKey") String sourceKey, ConceptSetExpression conceptSetExpression) {
+
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String query = new ConceptSetStrategy(conceptSetExpression).prepareStatement(source, sql -> "select count(*) from (" + sql + ") Q;").getSql();
+    return getSourceJdbcTemplate(source).query(query, rs -> rs.next() ? rs.getInt(1) : 0);
+  }
+
+  @POST
+  @Path("included-concepts/count")
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Integer countIncludedConcepSets(ConceptSetExpression conceptSetExpression) {
+
+    String defaultSourceKey = getDefaultVocabularySourceKey();
+    if (Objects.isNull(defaultSourceKey)) {
+      throw new WebApplicationException(new Exception("No vocabulary or cdm daimon was found in configured sources.  Search failed."), Response.Status.SERVICE_UNAVAILABLE);
+    }
+    return countIncludedConceptSets(defaultSourceKey, conceptSetExpression);
+  }
+
 
   @POST
   @Path("conceptSetExpressionSQL")

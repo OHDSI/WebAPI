@@ -15,10 +15,12 @@ select   concept_hierarchy.concept_id,
 	isnull(concept_hierarchy.atc5_concept_name,'NA') as atc5_concept_name,
 	isnull(concept_hierarchy.atc3_concept_name,'NA') as atc3_concept_name,
 	isnull(concept_hierarchy.atc1_concept_name,'NA') as atc1_concept_name,
- isnull(concept_hierarchy.atc1_concept_name,'NA') + '||' + 
-	isnull(concept_hierarchy.atc3_concept_name,'NA') + '||' +
-	isnull(concept_hierarchy.atc5_concept_name,'NA') + '||' +
-	isnull(concept_hierarchy.rxnorm_ingredient_concept_name,'||') as concept_path,
+  CONCAT(
+    isnull(concept_hierarchy.atc1_concept_name,'NA'), '||',
+    isnull(concept_hierarchy.atc3_concept_name,'NA'), '||',
+    isnull(concept_hierarchy.atc5_concept_name,'NA'), '||',
+    isnull(concept_hierarchy.rxnorm_ingredient_concept_name,'||')
+	) as concept_path,
 	1.0*hr1.num_persons / denom.count_value as percent_persons,
 	1.0*hr1.num_persons_before / denom.count_value as percent_persons_before,
 	1.0*hr1.num_persons_after / denom.count_value as percent_persons_after,
@@ -33,7 +35,7 @@ from
 	sum(case when CAST(stratum_2 AS INT) > 0 then count_value else 0 end) as num_persons_after
 from @ohdsi_database_schema.heracles_results
 where analysis_id in (1870) --first occurrence of drug
-and cohort_definition_id in (@cohortDefinitionId)
+and cohort_definition_id = @cohortDefinitionId
 group by stratum_1
 ) hr1
 inner join
@@ -115,5 +117,5 @@ inner join
 (select count_value
 from @ohdsi_database_schema.heracles_results
 where analysis_id = 1
-and cohort_definition_id in (@cohortDefinitionId)
+and cohort_definition_id = @cohortDefinitionId
 ) denom

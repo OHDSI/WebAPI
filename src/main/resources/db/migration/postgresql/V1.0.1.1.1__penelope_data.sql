@@ -1,3 +1,5 @@
+SET datestyle TO 'MDY';
+
 /* COHORT_STUDY */
 INSERT INTO COHORT_STUDY (cohort_study_id, cohort_definition_id, study_type, study_name, study_URL) VALUES (1, 296, 1, 'Treatment Pathways in Chronic Disease', 'http://www.ohdsi.org/web/wiki/doku.php?id=research:treatment_pathways_in_chronic_disease');
 INSERT INTO COHORT_STUDY (cohort_study_id, cohort_definition_id, study_type, study_name, study_URL) VALUES (2, 296, 1, 'Early Treatment Pathways in Chronic Disease', 'http://www.ohdsi.org/web/wiki/doku.php?id=research:treatment_pathways_in_chronic_disease_12_mos');

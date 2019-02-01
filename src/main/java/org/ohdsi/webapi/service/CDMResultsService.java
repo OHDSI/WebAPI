@@ -25,6 +25,8 @@ import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.event.EventListener;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -40,10 +42,25 @@ public class CDMResultsService extends AbstractDaoService {
 
     @Autowired
     private JobTemplate jobTemplate;
+    @Autowired
+    private SourceService sourceService;
+    @Value("${jasypt.encryptor.enabled}")
+    private boolean encryptorEnabled;
 
     @PostConstruct
     public void init() {
         queryRunner = new CDMResultsAnalysisRunner(this.getSourceDialect());
+        warmCaches();
+    }
+
+    public void warmCaches(){
+        sourceService.getSources().stream().forEach((s) -> {
+            for (SourceDaimon sd : s.daimons) {
+                if (sd.getDaimonType() == SourceDaimon.DaimonType.Results) {
+                    warmCache(s.sourceKey);
+                }
+            }
+        });
     }
 
     private final RowMapper<SimpleEntry<Long, Long[]>> rowMapper = new RowMapper<SimpleEntry<Long, Long[]>>() {
@@ -54,7 +71,7 @@ public class CDMResultsService extends AbstractDaoService {
             long descendant_record_count = resultSet.getLong("descendant_record_count");
             long person_record_count = resultSet.getLong("person_record_count");
 
-            SimpleEntry<Long, Long[]> entry = new SimpleEntry<>(id, new Long[]{record_count, descendant_record_count, person_record_count});
+            SimpleEntry<Long, Long[]> entry = new SimpleEntry<Long, Long[]>(id, new Long[]{record_count, descendant_record_count, person_record_count});
             return entry;
         }
     };
@@ -63,13 +80,13 @@ public class CDMResultsService extends AbstractDaoService {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public List<SimpleEntry<Long, Long[]>> getConceptRecordCount(@PathParam("sourceKey") String sourceKey, Integer[] identifiers) {
+    public List<SimpleEntry<Long, Long[]>> getConceptRecordCount(@PathParam("sourceKey") String sourceKey, String[] identifiers) {
         ResultsCache resultsCache = new ResultsCache();
         CDMResultsCache sourceCache = resultsCache.getCache(sourceKey);
         if (sourceCache != null && sourceCache.warm) {
             ArrayList<SimpleEntry<Long, Long[]>> listFromCache = new ArrayList<>();
-            for (Integer identifier : identifiers) {
-                Long id = Long.valueOf(identifier);
+            for (String identifier : identifiers) {
+                Long id = Long.parseLong(identifier);
                 Long[] counts = sourceCache.cache.get(id);
                 SimpleEntry<Long, Long[]> se = new SimpleEntry<>(id, counts);
                 listFromCache.add(se);
@@ -83,7 +100,7 @@ public class CDMResultsService extends AbstractDaoService {
         return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), rowMapper);
     }
 
-    protected PreparedStatementRenderer prepareGetConceptRecordCount(Integer[] identifiers, Source source) {
+    protected PreparedStatementRenderer prepareGetConceptRecordCount(String[] identifiers, Source source) {
 
         String sqlPath = "/resources/cdmresults/sql/getConceptRecordCount.sql";
 
@@ -95,7 +112,11 @@ public class CDMResultsService extends AbstractDaoService {
         String[] tableQualifierNames = {resultTableQualifierName, vocabularyTableQualifierName};
         String[] tableQualifierValues = {resultTableQualifierValue, vocabularyTableQualifierValue};
 
-        return new PreparedStatementRenderer(source, sqlPath, tableQualifierNames, tableQualifierValues, "conceptIdentifiers", identifiers);
+        Object[] results = new Object[identifiers.length];
+        for (int i = 0; i < identifiers.length; i++) {
+            results[i] = Integer.parseInt(identifiers[i]);
+        }
+        return new PreparedStatementRenderer(source, sqlPath, tableQualifierNames, tableQualifierValues, "conceptIdentifiers", results);
     }
 
     /**

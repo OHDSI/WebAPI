@@ -6,17 +6,19 @@
   <groupId>org.ohdsi</groupId>
   <artifactId>WebAPI</artifactId>
   <packaging>war</packaging>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>1.2-SNAPSHOT</version>
   <name>WebAPI</name>
   <properties>
-    <webapi.version>2.3.0</webapi.version>
+    <webapi.version>2.6.0</webapi.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jersey.version>2.14</jersey.version>
     <!-- Spring Boot manages spring.version as well -->
     <spring.boot.version>1.5.2.RELEASE</spring.boot.version>
     <spring.batch.version>3.0.8.RELEASE</spring.batch.version>
-    <flyway.version>3.1</flyway.version>
+    <flyway.version>4.2.0</flyway.version>
     <waffle.version>1.7.3</waffle.version>
+    <pac4j.version>2.2.1</pac4j.version>
+    <buji.version>3.2.0</buji.version>
     <start-class>org.ohdsi.webapi.WebApi</start-class>
 
     <!-- Primary DataSource -->
@@ -42,12 +44,22 @@
     <!-- CDM properties -->
     <source.name>CDM_NAME</source.name>
     <cdm.version>5</cdm.version>
+    <!-- Person properties -->
+    <person.viewDates>false</person.viewDates>
 
-    <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
+    <!-- Heracles properties -->
+    <heracles.smallcellcount>5</heracles.smallcellcount>
+
+    <!-- Kerberos properties -->
+    <kerberos.timeout>60</kerberos.timeout>
+    <kerberos.configPath>/etc/krb5.conf</kerberos.configPath>
+    <kerberos.kinitPath></kerberos.kinitPath>
+
+		<spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
     <spring.batch.repository.isolationLevelForCreate>ISOLATION_READ_COMMITTED</spring.batch.repository.isolationLevelForCreate>
     <spring.profiles.active>default</spring.profiles.active>
 
-    <security.enabled>false</security.enabled>
+    <security.provider>DisabledSecurity</security.provider>
     <security.token.expiration>43200</security.token.expiration>
     <security.origin>http://localhost</security.origin>
     <security.ssl.enabled>false</security.ssl.enabled>
@@ -61,15 +73,26 @@
     <security.oid.apiSecret></security.oid.apiSecret>
     <security.oid.url></security.oid.url>
     <security.oid.redirectUrl>http://localhost/index.html#/welcome/</security.oid.redirectUrl>
-    <security.kerberos.spn></security.kerberos.spn>
-    <security.kerberos.keytabPath></security.kerberos.keytabPath>
     <security.ldap.dn>cn={0},dc=example,dc=org</security.ldap.dn>
     <security.ldap.url>ldap://localhost:389</security.ldap.url>
+    <security.ldap.baseDn></security.ldap.baseDn>
+    <security.ldap.system.username></security.ldap.system.username>
+    <security.ldap.system.password></security.ldap.system.password>
     <security.ad.url>ldap://localhost:389</security.ad.url>
     <security.ad.searchBase>CN=Users,DC=example,DC=org</security.ad.searchBase>
     <security.ad.principalSuffix>@example.org</security.ad.principalSuffix>
     <security.ad.system.username></security.ad.system.username>
     <security.ad.system.password></security.ad.system.password>
+    <security.ad.searchFilter></security.ad.searchFilter>
+    <security.ad.ignore.partial.result.exception>true</security.ad.ignore.partial.result.exception>
+    <security.ad.result.count.limit>30000</security.ad.result.count.limit> <!-- 0 means no limit -->
+    <security.ad.default.import.group>public</security.ad.default.import.group>
+
+    <security.cas.loginUrl></security.cas.loginUrl>
+    <security.cas.callbackUrl></security.cas.callbackUrl>
+    <security.cas.serverUrl></security.cas.serverUrl>
+    <security.cas.cassvcs></security.cas.cassvcs>
+    <security.cas.casticket>casticket</security.cas.casticket>
 
     <security.db.datasource.schema>${datasource.ohdsi.schema}</security.db.datasource.schema>
     <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
@@ -77,8 +100,11 @@
     <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
     <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
 
-    <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.users where email = ?</security.db.datasource.authenticationQuery>
+    <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.users where lower(email) = lower(?)</security.db.datasource.authenticationQuery>
     <use.single.connect.datasource.for.testing>true</use.single.connect.datasource.for.testing>
+
+    <security.googleIap.cloudProjectId></security.googleIap.cloudProjectId>
+    <security.googleIap.backendServiceId></security.googleIap.backendServiceId>
 
     <security.cors.enabled>true</security.cors.enabled>
     <security.maxLoginAttempts>3</security.maxLoginAttempts>
@@ -87,6 +113,7 @@
 
 
     <spring.datasource.hikari.connection-test-query>SELECT 1</spring.datasource.hikari.connection-test-query>
+    <spring.datasource.hikari.connection-test-query-timeout>2000</spring.datasource.hikari.connection-test-query-timeout>
     <spring.datasource.hikari.maximum-pool-size>5</spring.datasource.hikari.maximum-pool-size>
     <spring.datasource.hikari.minimum-idle>1</spring.datasource.hikari.minimum-idle>
 
@@ -95,10 +122,31 @@
     <server.ssl.key-store></server.ssl.key-store>
     <server.ssl.key-store-password></server.ssl.key-store-password>
     <server.ssl.key-password></server.ssl.key-password>
+
+    <arachne.version>1.14.0-alpha-1</arachne.version>
+    <jersey-media-multipart.version>2.25.1</jersey-media-multipart.version>
+    <execution.invalidation.maxage>4</execution.invalidation.maxage>
+    <execution.invalidation.period>10000</execution.invalidation.period>
+    <execution.status.period>10000</execution.status.period>
+		<executionengine.url>https://localhost:8888/api/v1/analyze</executionengine.url>
+		<executionengine.token>Basic YWRtaW5Ab2R5c3NldXNpbmMuY29tOnBhc3N3b3Jk</executionengine.token>
+		<executionengine.updateStatusCallback>http://localhost:8080/WebAPI/executionservice/callbacks/submission/{id}/status/update/{password}</executionengine.updateStatusCallback>
+		<executionengine.resultCallback>http://localhost:8080/WebAPI/executionservice/callbacks/submission/{id}/result/{password}</executionengine.resultCallback>
+
+
+    <!-- PASSWORD ENCRYPTION -->
+    <jasypt.encryptor.enabled>false</jasypt.encryptor.enabled>
+    <jasypt.encryptor.password></jasypt.encryptor.password>
+		<jasypt.encryptor.algorithm>PBEWithMD5AndDES</jasypt.encryptor.algorithm>
+                
+    <!-- ORGANIZATION SETTINGS -->
+    <organization.name>OHDSI</organization.name>
+
+    <spring.batch.taskExecutor.corePoolSize>10</spring.batch.taskExecutor.corePoolSize>
+    <spring.batch.taskExecutor.maxPoolSize>20</spring.batch.taskExecutor.maxPoolSize>
   </properties>
   <build>
     <finalName>webapi</finalName>
-    <directory>${war.directory}</directory>
     <resources>
       <resource>
         <directory>src/main/resources</directory>
@@ -169,7 +217,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.5.1</version>
+        <version>3.1</version>
         <inherited>true</inherited>
         <configuration>
           <source>1.8</source>
@@ -216,7 +264,31 @@
           </execution>
         </executions>
         <configuration>
-          <licence>cHJvamVjdHxvcmcub2hkc2kuV2ViQVBJfDIwMjAtMDMtMzF8dHJ1ZXwtMSNNQzBDRkNNQ2R2ZEhjbDg0Z2tONVI3bHlmQ2Y4SnNkYUFoVUFoMkdtOUVFdy9RelpLVzM1V2p6a2FsdzJZV009</licence>
+           <licence>cHJvamVjdHxvcmcub2hkc2kuV2ViQVBJfDIwMjAtMDMtMzF8dHJ1ZXwtMSNNQzBDRkNNQ2R2ZEhjbDg0Z2tONVI3bHlmQ2Y4SnNkYUFoVUFoMkdtOUVFdy9RelpLVzM1V2p6a2FsdzJZV009</licence>
+           <restModel>
+						<httpStatusCodes>
+							<httpStatusCode>
+									<httpCode>200</httpCode>
+									<document>always</document>
+									<defaultMessage>The service call has completed successfully.</defaultMessage>
+							</httpStatusCode>
+							<httpStatusCode>
+									<httpCode>401</httpCode>
+									<document>Authorization Exception</document>
+									<defaultMessage>The user is not authorized to use this service.</defaultMessage>
+							</httpStatusCode>
+							<httpStatusCode>
+									<httpCode>412</httpCode>
+									<document>put,post</document>
+									<defaultMessage>Invalid JSON/XML input.</defaultMessage>
+							</httpStatusCode>
+							<httpStatusCode>
+									<httpCode>500</httpCode>
+									<document>always</document>
+									<defaultMessage>The service call has not succeeded.</defaultMessage>
+							</httpStatusCode>
+						</httpStatusCodes>
+           </restModel>
         </configuration>
       </plugin>
 
@@ -285,6 +357,32 @@
       <id>redshift</id>
       <url>http://redshift-maven-repository.s3-website-us-east-1.amazonaws.com/release</url>
     </repository>
+    <repository>
+      <id>odysseus.community.snapshots</id>
+      <name>Odysseus community snapshots</name>
+      <releases>
+        <enabled>false</enabled>
+        <updatePolicy>always</updatePolicy>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+        <updatePolicy>always</updatePolicy>
+      </snapshots>
+      <url>http://repo.odysseusinc.com/artifactory/community-libs-snapshot-local</url>
+    </repository>
+    <repository>
+      <id>odysseus.community.releases</id>
+      <name>Odysseus community releases</name>
+      <releases>
+        <enabled>true</enabled>
+        <updatePolicy>always</updatePolicy>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+        <updatePolicy>always</updatePolicy>
+      </snapshots>
+      <url>http://repo.odysseusinc.com/artifactory/community-libs-release-local</url>
+    </repository>
   </repositories>
 
   <pluginRepositories>
@@ -313,7 +411,7 @@
     </dependencies>
   </dependencyManagement>
   <dependencies>
-    <!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-actuator</artifactId> 
+    <!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-actuator</artifactId>
     <version>${spring.boot.version}</version> </dependency> -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -366,7 +464,7 @@
     <dependency>
       <groupId>org.ohdsi.sql</groupId>
       <artifactId>SqlRender</artifactId>
-      <version>1.4.8</version>
+      <version>1.5.2</version>
     </dependency>
     <dependency>
       <groupId>commons-dbutils</groupId>
@@ -490,32 +588,27 @@
     <dependency>
       <groupId>io.buji</groupId>
       <artifactId>buji-pac4j</artifactId>
-      <version>3.1.0</version>
+      <version>${buji.version}</version>
     </dependency>
     <dependency>
       <groupId>org.pac4j</groupId>
       <artifactId>pac4j-oauth</artifactId>
-      <version>2.2.1</version>
+      <version>${pac4j.version}</version>
     </dependency>
     <dependency>
       <groupId>org.pac4j</groupId>
       <artifactId>pac4j-oidc</artifactId>
-      <version>2.2.1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.pac4j</groupId>
-      <artifactId>pac4j-cas</artifactId>
-      <version>2.2.1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.pac4j</groupId>
-      <artifactId>pac4j-http</artifactId>
-      <version>2.2.1</version>
+      <version>${pac4j.version}</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>circe</artifactId>
-      <version>1.4.0</version>
+      <version>1.7.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.ohdsi</groupId>
+      <artifactId>hydra</artifactId>
+      <version>0.0.1</version>
     </dependency>
     <dependency>
       <groupId>org.json</groupId>
@@ -525,7 +618,7 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>featureExtraction</artifactId>
-      <version>2.0.2</version>
+      <version>2.1.5</version>
     </dependency>
     <dependency>
       <groupId>com.amazon.redshift</groupId>
@@ -546,9 +639,65 @@
       <artifactId>gson</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.jasypt</groupId>
+      <artifactId>jasypt-hibernate4</artifactId>
+      <version>1.9.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcprov-jdk15on</artifactId>
+      <version>1.59</version>
+    </dependency>
+    <dependency>
+      <groupId>com.odysseusinc.arachne</groupId>
+      <artifactId>execution-engine-commons</artifactId>
+      <version>${arachne.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.odysseusinc</groupId>
+      <artifactId>logging</artifactId>
+      <version>${arachne.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jersey.media</groupId>
+      <artifactId>jersey-media-multipart</artifactId>
+      <version>${jersey-media-multipart.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.ldap</groupId>
+      <artifactId>spring-ldap-core</artifactId>
+      <version>2.3.2.RELEASE</version>
+    </dependency>
+    <dependency>
+      <groupId>com.odysseusinc</groupId>
+      <artifactId>data-source-manager</artifactId>
+      <version>${arachne.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.ohdsi</groupId>
+      <artifactId>standardized-analysis-api</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.cosium.spring.data</groupId>
+      <artifactId>spring-data-jpa-entity-graph</artifactId>
+      <version>1.11.03</version>
+    </dependency>
+    <dependency>
+      <groupId>org.pac4j</groupId>
+      <artifactId>pac4j-cas</artifactId>
+      <version>${pac4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+      <version>2.8.7</version>
+      <type>jar</type>
+    </dependency>
+    <dependency>
       <groupId>com.jnj.honeur</groupId>
       <artifactId>security</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>1.2-SNAPSHOT</version>
     </dependency>
   </dependencies>
   <profiles>
@@ -576,14 +725,13 @@
         <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
         <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
         <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.user where \
-          login = ?</security.db.datasource.authenticationQuery>
+          lower(email) = lower(?)</security.db.datasource.authenticationQuery>
       </properties>
       <dependencies>
         <dependency>
           <groupId>ojdbc</groupId>
           <artifactId>ojdbc</artifactId>
-          <version>6.0.0</version>
-          <!-- If you have it local and not in a repository <systemPath></systemPath> -->
+          <version>14</version>
         </dependency>
       </dependencies>
     </profile>
@@ -609,8 +757,8 @@
         <security.db.datasource.driverClassName>${datasource.driverClassName}</security.db.datasource.driverClassName>
         <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
         <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
-        <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.user where \
-          login = ?</security.db.datasource.authenticationQuery>
+        <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.users_data where \
+          lower(email) = lower(?)</security.db.datasource.authenticationQuery>
       </properties>
     </profile>
     <profile>
@@ -636,7 +784,7 @@
         <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
         <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
         <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.user where \
-          login = ?</security.db.datasource.authenticationQuery>
+          lower(email) = lower(?)</security.db.datasource.authenticationQuery>
       </properties>
     </profile>
     <profile>
@@ -670,6 +818,166 @@
                   <version>1.0</version>
                   <packaging>jar</packaging>
                   <file>${basedir}/src/main/extras/netezza/nzjdbc.jar</file>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>webapi-impala</id>
+      <properties>
+        <impala.enabled>true</impala.enabled>
+				<!-- Impala JDBC driver path -->
+				<impala.classpath>...path/to/impala/jdbc/drivers...</impala.classpath>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>hive</groupId>
+          <artifactId>hive_metastore</artifactId>
+          <version>1.0.0</version>
+        </dependency>
+        <dependency>
+          <groupId>hive</groupId>
+          <artifactId>hive_service</artifactId>
+          <version>1.0.0</version>
+        </dependency>
+        <dependency>
+          <groupId>com.cloudera</groupId>
+          <artifactId>ImpalaJDBC41</artifactId>
+          <version>2.5.42</version>
+        </dependency>
+        <dependency>
+          <groupId>libfb</groupId>
+          <artifactId>libfb303</artifactId>
+          <version>0.9.0</version>
+        </dependency>
+        <dependency>
+          <groupId>libthrift</groupId>
+          <artifactId>libthrift</artifactId>
+          <version>0.9.0</version>
+        </dependency>
+        <dependency>
+          <groupId>ql</groupId>
+          <artifactId>ql</artifactId>
+          <version>1.0.0</version>
+        </dependency>
+        <dependency>
+          <groupId>TCLI</groupId>
+          <artifactId>TCLI</artifactId>
+          <version>1.0.0</version>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.zookeeper</groupId>
+          <artifactId>zookeeper</artifactId>
+          <version>3.4.6</version>
+          <type>pom</type>
+        </dependency>
+      </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-install-plugin</artifactId>
+            <version>2.5.2</version>
+            <executions>
+              <execution>
+                <id>impala-jdbc</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                  <groupId>com.cloudera</groupId>
+                  <artifactId>ImpalaJDBC41</artifactId>
+                  <version>2.5.41</version>
+                  <packaging>jar</packaging>
+                  <file>${impala.classpath}/ImpalaJDBC41.jar</file>
+                </configuration>
+              </execution>
+              <execution>
+                <id>hive_metastore</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                  <groupId>hive</groupId>
+                  <artifactId>hive_metastore</artifactId>
+                  <version>1.0.0</version>
+                  <packaging>jar</packaging>
+                  <file>${impala.classpath}/hive_metastore.jar</file>
+                </configuration>
+              </execution>
+              <execution>
+                <id>hive_service</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                  <groupId>hive</groupId>
+                  <artifactId>hive_service</artifactId>
+                  <version>1.0.0</version>
+                  <packaging>jar</packaging>
+                  <file>${impala.classpath}/hive_service.jar</file>
+                </configuration>
+              </execution>
+              <execution>
+                <id>libfb</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                  <groupId>libfb</groupId>
+                  <artifactId>libfb303</artifactId>
+                  <version>0.9.0</version>
+                  <packaging>jar</packaging>
+                  <file>${impala.classpath}/libfb303-0.9.0.jar</file>
+                </configuration>
+              </execution>
+              <execution>
+                <id>libthrift</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                  <groupId>libthrift</groupId>
+                  <artifactId>libthrift</artifactId>
+                  <version>0.9.0</version>
+                  <packaging>jar</packaging>
+                  <file>${impala.classpath}/libthrift-0.9.0.jar</file>
+                </configuration>
+              </execution>
+              <execution>
+                <id>ql</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                  <groupId>ql</groupId>
+                  <artifactId>ql</artifactId>
+                  <version>1.0.0</version>
+                  <packaging>jar</packaging>
+                  <file>${impala.classpath}/ql.jar</file>
+                </configuration>
+              </execution>
+              <execution>
+                <id>TCLI</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                  <groupId>TCLI</groupId>
+                  <artifactId>TCLI</artifactId>
+                  <version>1.0.0</version>
+                  <packaging>jar</packaging>
+                  <file>${impala.classpath}/TCLIServiceClient.jar</file>
                 </configuration>
               </execution>
             </executions>

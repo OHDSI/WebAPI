@@ -6,6 +6,8 @@ import org.ohdsi.webapi.shiro.TokenManager;
 import org.pac4j.cas.profile.CasProfile;
 
 import javax.servlet.ServletRequest;
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -18,30 +20,31 @@ public class HoneurTokenManager {
 
     private static final List<String> userList = new ArrayList<>();
 
-    public static String createJsonWebToken(String subject, Date expiration) {
+    public static String createJsonWebToken(String subject, Date expiration, String fingerprint)
+            throws UnsupportedEncodingException, NoSuchAlgorithmException {
 
         CasProfile casProfile = new CasProfile();
         casProfile.setId(subject);
 
         userList.add(subject);
-        return SecurityUtils2.generateJwtToken(casProfile, expiration);
+        return SecurityUtils2.generateJwtToken(casProfile, expiration, SecurityUtils2.hashFingerprint(fingerprint));
     }
 
-    public static String getSubject(String jwt) throws JwtException {
-        String subject = SecurityUtils2.getSubject(jwt);
+    public static String getSubject(String jwt, String fingerprint) throws JwtException {
+        String subject = SecurityUtils2.getSubject(jwt, fingerprint);
         if (subject == null) {
             throw new JwtException("Token is invalid or expired.");
         }
-        return SecurityUtils2.getSubject(jwt);
+        return subject;
     }
 
-    public static Boolean invalidate(String jwt) {
+    public static Boolean invalidate(String jwt, String fingerprint) {
         if (jwt == null)
             return false;
 
         String subject;
         try {
-            subject = SecurityUtils2.getSubject(jwt);
+            subject = SecurityUtils2.getSubject(jwt, fingerprint);
         } catch (JwtException e) {
             return false;
         }

@@ -10,27 +10,41 @@ import com.jnj.honeur.webapi.shiro.LiferayPermissionManager;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
+import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfo;
 import org.ohdsi.webapi.service.CohortDefinitionService;
+import org.ohdsi.webapi.service.CohortGenerationService;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.PermissionManager;
+import org.ohdsi.webapi.shiro.management.DisabledSecurity;
 import org.ohdsi.webapi.shiro.management.Security;
+import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
+import org.ohdsi.webapi.util.UserUtils;
+import org.springframework.batch.core.launch.JobExecutionNotRunningException;
+import org.springframework.batch.core.launch.JobOperator;
+import org.springframework.batch.core.launch.NoSuchJobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import javax.transaction.Transactional;
+import javax.ws.rs.CookieParam;
 import javax.ws.rs.HeaderParam;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.Response;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 /**
  * Customization of CohortDefinitionService of OHDSI
+ *
  * @author Sander Bylemans
  */
 @Component("honeurCohortDefinitionService")
@@ -49,12 +63,23 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
     @Autowired
     private SourceService sourceService;
 
-    @Value("${security.enabled}")
-    private boolean securityEnabled;
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private CohortGenerationService cohortGenerationService;
+
+    @Autowired
+    private JobOperator jobOperator;
+
+    @Autowired(required = false)
+    private CohortGenerationImportService cohortGenerationImportService;
+
+    @Value("${security.provider}")
+    private String securityProvider;
 
     @Value("${webapi.central}")
     private boolean isCentral;
-
 
 
     /**
@@ -63,7 +88,8 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
      * @return List of cohort_definition
      */
     @Override
-    public List<CohortDefinitionListItem> getCohortDefinitionList(@HeaderParam("Authorization") String token) {
+    @Transactional
+    public List<CohortDefinitionListItem> getCohortDefinitionList(@HeaderParam("Authorization") String token, @CookieParam("userFingerprint") String userFingerprint) {
         ArrayList<CohortDefinitionListItem> result = new ArrayList<>();
         Iterable<CohortDefinition> defs = cohortDefinitionRepository.findAll();
 
@@ -78,16 +104,18 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
                 .filter(cohortDefinition -> !previousVersionsUuids.contains(cohortDefinition.getUuid()))
                 .collect(Collectors.toList());
 
-        if(securityEnabled) {
+        if (!securityProvider.equals(DisabledSecurity.class.getSimpleName())) {
             String permissionPattern = "cohortdefinition:([0-9]+|\\*):get";
             LiferayPermissionManager liferayPermissionManager = (LiferayPermissionManager) authorizer;
-            List<Integer> definitionIds = liferayPermissionManager.getUserPermissions(SecurityUtils2.getSubject(token.replace("Bearer ", ""))).stream()
-                    .map(PermissionEntity::getValue)
-                    .filter(permissionString -> permissionString.matches(permissionPattern))
-                    .map(permissionString -> parseCohortDefinitionId(permissionString))
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .collect(Collectors.toList());
+            List<Integer> definitionIds =
+                    liferayPermissionManager.getUserPermissions(SecurityUtils2.getSubject(token.replace("Bearer ", ""), userFingerprint))
+                            .stream()
+                            .map(PermissionEntity::getValue)
+                            .filter(permissionString -> permissionString.matches(permissionPattern))
+                            .map(permissionString -> parseCohortDefinitionId(permissionString))
+                            .filter(Optional::isPresent)
+                            .map(Optional::get)
+                            .collect(Collectors.toList());
             filteredDefs = filteredDefs.stream()
                     .filter(cohortDefinition -> definitionIds.contains(cohortDefinition.getId()))
                     .collect(Collectors.toList());
@@ -99,20 +127,22 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
             item.name = d.getName();
             item.description = d.getDescription();
             item.expressionType = d.getExpressionType();
-            item.createdBy = d.getCreatedBy();
+            item.createdBy = UserUtils.nullSafeLogin(d.getCreatedBy());
             item.createdDate = d.getCreatedDate();
-            item.modifiedBy = d.getModifiedBy();
+            item.modifiedBy = UserUtils.nullSafeLogin(d.getModifiedBy());
             item.modifiedDate = d.getModifiedDate();
 
             item.uuid = d.getUuid();
             item.groupKey = d.getGroupKey();
+
             List<CohortDefinitionDTO> groupedPreviousVersions =
                     StreamSupport.stream(defs.spliterator(), false)
-                            .filter(cohortDefinition -> (cohortDefinition.getGroupKey() == null || cohortDefinition.getGroupKey().equals(item.groupKey)) && !cohortDefinition.getId().equals(item.id))
+                            .filter(cohortDefinition -> (cohortDefinition.getGroupKey() == null || cohortDefinition
+                                    .getGroupKey().equals(item.groupKey)) && !cohortDefinition.getId().equals(item.id))
                             .sorted(Comparator.comparing(CohortDefinition::getCreatedDate).reversed())
                             .map(this::cohortDefinitionToDTO).collect(Collectors.toList());
 
-            if(groupedPreviousVersions.size() > 0) {
+            if (groupedPreviousVersions.size() > 0) {
 
                 item.previousVersion = groupedPreviousVersions.get(0);
 
@@ -145,39 +175,45 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
      */
     @Override
     public CohortDefinitionDTO createCohortDefinition(CohortDefinitionDTO def) {
-        Date currentTime = Calendar.getInstance().getTime();
 
-        //create definition in 2 saves, first to get the generated ID for the new def
-        // then to associate the details with the definition
-        CohortDefinition newDef = new CohortDefinition();
-        newDef.setName(def.name)
-                .setDescription(def.description)
-                .setCreatedBy(security.getSubject())
-                .setCreatedDate(currentTime)
-                .setExpressionType(def.expressionType)
-                .setPreviousVersion(def.previousVersion == null ? null : cohortDefinitionRepository.findByUuid(def.previousVersion.uuid))
-                .setUuid(def.uuid)
-                .setGroupKey(def.groupKey);
 
-        newDef = this.cohortDefinitionRepository.save(newDef);
+        return getTransactionTemplate().execute(transactionStatus -> {
+            Date currentTime = Calendar.getInstance().getTime();
 
-        // associate details
-        CohortDefinitionDetails details = new CohortDefinitionDetails();
-        details.setCohortDefinition(newDef)
-                .setExpression(def.expression);
+            UserEntity user = userRepository.findByLogin(security.getSubject());
+            //create definition in 2 saves, first to get the generated ID for the new def
+            // then to associate the details with the definition
+            CohortDefinition newDef = new CohortDefinition();
+            newDef.setName(def.name)
+                    .setDescription(def.description)
+                    .setExpressionType(def.expressionType)
+                    .setPreviousVersion(def.previousVersion == null ? null : cohortDefinitionRepository
+                            .findByUuid(def.previousVersion.uuid))
+                    .setUuid(def.uuid)
+                    .setGroupKey(def.groupKey);
+            newDef.setCreatedBy(user);
+            newDef.setCreatedDate(currentTime);
 
-        newDef.setDetails(details);
+            newDef = this.cohortDefinitionRepository.save(newDef);
 
-        CohortDefinition createdDefinition = this.cohortDefinitionRepository.save(newDef);
+            // associate details
+            CohortDefinitionDetails details = new CohortDefinitionDetails();
+            details.setCohortDefinition(newDef)
+                    .setExpression(def.expression);
 
-        // Add generation permission if the source daimons are there
-        addGenerationPermissions(createdDefinition);
+            newDef.setDetails(details);
 
-        return cohortDefinitionToDTO(createdDefinition);
+            CohortDefinition createdDefinition = this.cohortDefinitionRepository.save(newDef);
+
+            // Add generation permission if the source daimons are there
+            addGenerationPermissions(createdDefinition);
+
+            return cohortDefinitionToDTO(createdDefinition);
+        });
     }
 
     private void addGenerationPermissions(CohortDefinition createdDefinition) {
-        if(securityEnabled) {
+        if (!securityProvider.equals(DisabledSecurity.class.getSimpleName())) {
             Collection<SourceInfo> sources = sourceService.getSources();
             for (SourceInfo sourceInfo : sources) {
                 HashMap<String, String> map = new HashMap<>();
@@ -216,15 +252,16 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
         Date currentTime = Calendar.getInstance().getTime();
 
         CohortDefinition currentDefinition = this.cohortDefinitionRepository.findOneWithDetail(id);
+        UserEntity modifier = userRepository.findByLogin(security.getSubject());
 
         currentDefinition.setName(def.name)
                 .setDescription(def.description)
                 .setExpressionType(def.expressionType)
-                .setModifiedBy(security.getSubject())
-                .setModifiedDate(currentTime)
                 .getDetails().setExpression(def.expression);
+        currentDefinition.setModifiedBy(modifier);
+        currentDefinition.setModifiedDate(currentTime);
 
-        if(!isCentral){
+        if (!isCentral) {
             currentDefinition.setGroupKey(null);
             currentDefinition.setUuid(null);
         }
@@ -232,5 +269,21 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
         this.cohortDefinitionRepository.save(currentDefinition);
 
         return getCohortDefinition(id);
+    }
+
+    @Override
+    public Response cancelGenerateCohort(final int id, final String sourceKey) {
+        final Source source = Optional.ofNullable(getSourceRepository().findBySourceKey(sourceKey))
+                .orElseThrow(NotFoundException::new);
+        Response response = super.cancelGenerateCohort(id, sourceKey);
+
+        cohortGenerationImportService.getJobExecution(source, id)
+                .ifPresent(job -> {
+                    try {
+                        jobOperator.stop(job.getJobId());
+                    } catch (NoSuchJobExecutionException | JobExecutionNotRunningException ignored) {
+                    }
+                });
+        return response;
     }
 }

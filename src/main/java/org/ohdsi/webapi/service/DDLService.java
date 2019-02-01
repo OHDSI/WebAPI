@@ -47,6 +47,7 @@ public class DDLService {
 		"/ddl/results/cohort_inclusion_result.sql",
 		"/ddl/results/cohort_inclusion_stats.sql",
 		"/ddl/results/cohort_summary_stats.sql",
+		"/ddl/results/concept_hierarchy.sql",
 		"/ddl/results/feas_study_inclusion_stats.sql",
 		"/ddl/results/feas_study_index_stats.sql",
 		"/ddl/results/feas_study_result.sql",
@@ -57,16 +58,31 @@ public class DDLService {
 		"/ddl/results/ir_analysis_dist.sql",
 		"/ddl/results/ir_analysis_result.sql",
 		"/ddl/results/ir_analysis_strata_stats.sql",
-		"/ddl/results/ir_strata.sql"
+		"/ddl/results/ir_strata.sql",
+		"/ddl/results/heracles_periods.sql",
+		"/ddl/results/cohort_characterizations.sql",
+		"/ddl/results/pathway_analysis_events.sql",
+		"/ddl/results/pathway_analysis_stats.sql"
 	);
 
 	public static final Collection<String> RESULT_INIT_FILE_PATHS = Arrays.asList(
-		"/ddl/results/init_heracles_analysis.sql"
+		"/ddl/results/init_heracles_analysis.sql",
+		"/ddl/results/init_heracles_periods.sql",
+		"/ddl/results/init_concept_hierarchy.sql"
 	);
 
 	private static final Collection<String> RESULT_INDEX_FILE_PATHS = Arrays.asList(
-		"/ddl/results/create_index.sql"
+		"/ddl/results/create_index.sql",
+		"/ddl/results/pathway_analysis_events_indexes.sql"
 	);
+        
+	private static final Collection<String> CEMRESULT_DDL_FILE_PATHS = Arrays.asList(
+		"/ddl/cemresults/nc_results.sql"
+	);
+
+	public static final Collection<String> CEMRESULT_INIT_FILE_PATHS = Arrays.asList();
+
+	private static final Collection<String> CEMRESULT_INDEX_FILE_PATHS = Arrays.asList();
 
 	private static final Collection<String> DBMS_NO_INDEXES = Arrays.asList("redshift", "impala", "netezza");
 
@@ -74,35 +90,45 @@ public class DDLService {
 	@Path("results")
 	@Produces("text/plain")
 	public String generateResultSQL(@QueryParam("dialect") String dialect, @DefaultValue("results") @QueryParam("schema") String schema) {
-
+            return generateSQL(dialect, "results_schema", schema, RESULT_DDL_FILE_PATHS, RESULT_INIT_FILE_PATHS, RESULT_INDEX_FILE_PATHS);
+	}
+        
+	@GET
+	@Path("cemresults")
+	@Produces("text/plain")
+	public String generateCemResultSQL(@QueryParam("dialect") String dialect, @DefaultValue("cemresults") @QueryParam("schema") String schema) {
+            return generateSQL(dialect, "cem_results_schema", schema, CEMRESULT_DDL_FILE_PATHS, CEMRESULT_INIT_FILE_PATHS, CEMRESULT_INDEX_FILE_PATHS);
+	}
+        
+        private String generateSQL(String dialect, String schemaSqlParameter, String schema, Collection<String> filePaths, Collection<String> initFilePaths, Collection<String> indexFilePaths) {
 		StringBuilder sqlBuilder = new StringBuilder();
-		for (String fileName : RESULT_DDL_FILE_PATHS) {
+		for (String fileName : filePaths) {
 			sqlBuilder.append("\n").append(ResourceHelper.GetResourceAsString(fileName));
 		}
 
-		for (String fileName : RESULT_INIT_FILE_PATHS) {
+		for (String fileName : initFilePaths) {
 			sqlBuilder.append("\n").append(ResourceHelper.GetResourceAsString(fileName));
 		}
 
 		if (dialect == null || DBMS_NO_INDEXES.stream().noneMatch(dbms -> dbms.equals(dialect.toLowerCase()))) {
-			for (String fileName : RESULT_INDEX_FILE_PATHS) {
+			for (String fileName : indexFilePaths) {
 				sqlBuilder.append("\n").append(ResourceHelper.GetResourceAsString(fileName));
 			}
 		}
 		String result = sqlBuilder.toString();
 		if (dialect != null) {
-			result = translateSqlFile(result, dialect, schema);
+			result = translateSqlFile(result, dialect, schemaSqlParameter, schema);
 		}
 		return result.replaceAll(";", ";\n");
-	}
+        }
 
-	private String translateSqlFile(String sql, String dialect, String schema) {
+	private String translateSqlFile(String sql, String dialect, String schemaSqlParameter, String schema) {
 
 		SourceStatement statement = new SourceStatement();
 		statement.targetDialect = dialect.toLowerCase();
 		statement.sql = sql;
 		HashMap<String, String> parameters = new HashMap<>();
-		parameters.put("results_schema", schema);
+		parameters.put(schemaSqlParameter, schema);
 		statement.parameters = parameters;
 		TranslatedStatement translatedStatement = translateSQL(statement);
 		return translatedStatement.targetSQL;

@@ -6,6 +6,7 @@ import javax.sql.DataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ohdsi.webapi.job.JobTemplate;
+import org.ohdsi.webapi.shiro.management.Security;
 import org.springframework.batch.admin.service.JdbcSearchableJobExecutionDao;
 import org.springframework.batch.admin.service.JdbcSearchableJobInstanceDao;
 import org.springframework.batch.admin.service.SearchableJobExecutionDao;
@@ -48,6 +49,12 @@ public class JobConfig {
     
     @Value("${spring.batch.repository.isolationLevelForCreate}")
     private String isolationLevelForCreate;
+
+    @Value("${spring.batch.taskExecutor.corePoolSize}")
+    private Integer corePoolSize;
+
+    @Value("${spring.batch.taskExecutor.maxPoolSize}")
+    private Integer maxPoolSize;
     
     @Autowired
     private DataSource dataSource;
@@ -60,8 +67,8 @@ public class JobConfig {
     @Bean
     public TaskExecutor taskExecutor() {
         final ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
-        taskExecutor.setCorePoolSize(10);
-        taskExecutor.setMaxPoolSize(20);//TODO
+        taskExecutor.setCorePoolSize(corePoolSize);
+        taskExecutor.setMaxPoolSize(maxPoolSize);
         taskExecutor.afterPropertiesSet();
         return taskExecutor;
     }
@@ -73,8 +80,8 @@ public class JobConfig {
     
     @Bean
     public JobTemplate jobTemplate(final JobLauncher jobLauncher, final JobBuilderFactory jobBuilders,
-                                   final StepBuilderFactory stepBuilders) {
-        return new JobTemplate(jobLauncher, jobBuilders, stepBuilders);
+                                   final StepBuilderFactory stepBuilders, final Security security) {
+        return new JobTemplate(jobLauncher, jobBuilders, stepBuilders, security);
     }
     
     @Bean
@@ -194,6 +201,7 @@ public class JobConfig {
             factory.setIsolationLevelForCreate(JobConfig.this.isolationLevelForCreate);
             factory.setTablePrefix(JobConfig.this.tablePrefix);
             factory.setTransactionManager(getTransactionManager());
+            factory.setValidateTransactionState(false);
             factory.afterPropertiesSet();
             return factory.getObject();
         }

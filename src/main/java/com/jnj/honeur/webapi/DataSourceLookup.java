@@ -1,11 +1,13 @@
 package com.jnj.honeur.webapi;
 
-import com.jnj.honeur.webapi.source.SourceDaimonContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import com.jnj.honeur.webapi.source.SourceDaimonContext;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.lookup.DataSourceLookupFailureException;
 import org.springframework.stereotype.Component;
@@ -24,11 +26,13 @@ import java.util.Map;
  * Date: 02/feb/2018
  */
 @Component
+@ConditionalOnExpression("${datasource.honeur.enabled}")
 public class DataSourceLookup implements org.springframework.jdbc.datasource.lookup.DataSourceLookup {
 
     private static final Log LOG = LogFactory.getLog(DataSourceLookup.class);
 
-    public static final String PRIMARY_DATA_SOURCE_KEY = "webapi";
+    @Value("${datasource.ohdsi.schema}")
+    private String primaryDataSourceKey;
 
     private final Map<String, String> databaseDriverMapping = new HashMap<>();
     private final Map<SourceDaimonContext, DataSource> dataSourceMap = new HashMap<>();
@@ -55,14 +59,20 @@ public class DataSourceLookup implements org.springframework.jdbc.datasource.loo
                     dataSourceMap.put(new SourceDaimonContext(source.getSourceKey(), sourceDaimon.getDaimonType()), dataSource);
                 }
             }
-         }
+        }
 
-         LOG.debug("# Data sources: " + dataSourceMap.size());
+        LOG.debug("# Data sources: " + dataSourceMap.size());
     }
 
     private DataSource createDataSource(Source source, SourceDaimon.DaimonType daimonType) {
         LOG.debug(String.format("Create datasource for source '%s' and daimon type '%s'", source.getSourceKey(), daimonType.name()));
-        final DriverManagerDataSource ds = new DriverManagerDataSource(source.getSourceConnection());
+        final DriverManagerDataSource ds;
+        if (source.getUsername() != null && source.getPassword() != null) {
+            ds = new DriverManagerDataSource(source.getSourceConnection(), source.getUsername(),
+                            source.getPassword());
+        } else {
+            ds = new DriverManagerDataSource(source.getSourceConnection());
+        }
         String driverClassName = databaseDriverMapping.get(source.getSourceDialect());
         LOG.debug(String.format("Driver class name %s", driverClassName));
         if(driverClassName == null) {
@@ -90,7 +100,7 @@ public class DataSourceLookup implements org.springframework.jdbc.datasource.loo
     @Override
     public DataSource getDataSource(final String tenantIdentifier) throws DataSourceLookupFailureException {
         LOG.debug(String.format("getDataSource %s", tenantIdentifier));
-        if(PRIMARY_DATA_SOURCE_KEY.equals(tenantIdentifier)) {
+        if(primaryDataSourceKey.equals(tenantIdentifier)) {
             return getPrimaryDataSource();
         }
         try {
@@ -103,12 +113,14 @@ public class DataSourceLookup implements org.springframework.jdbc.datasource.loo
     }
 
     public String getSchema(final String tenantIdentifier) {
-        String schema = tenantIdentifier;
+        if(primaryDataSourceKey.equals(tenantIdentifier)) {
+            return tenantIdentifier;
+        }
         DataSource dataSource = getDataSource(tenantIdentifier);
         if(dataSource instanceof DriverManagerDataSource) {
-            schema = ((DriverManagerDataSource)dataSource).getSchema();
+            return ((DriverManagerDataSource)dataSource).getSchema();
         }
-        return schema != null ? schema : tenantIdentifier;
+        return tenantIdentifier;
     }
 
     public DataSource getPrimaryDataSource() {

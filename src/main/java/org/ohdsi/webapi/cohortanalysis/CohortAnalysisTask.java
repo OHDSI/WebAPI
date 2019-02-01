@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ohdsi.webapi.cohortresults.PeriodType;
 import org.ohdsi.webapi.source.Source;
 
 public class CohortAnalysisTask {
@@ -26,6 +27,8 @@ public class CohortAnalysisTask {
 
 	private boolean cohortPeriodOnly;
 	
+	private String cdmVersion = "5";  // Default to CDM V5
+	
 	private List<String> visualizations;
 
 	private List<String> cohortDefinitionIds;
@@ -41,6 +44,12 @@ public class CohortAnalysisTask {
 	private List<String> observationConceptIds;
 
 	private List<String> measurementConceptIds;
+	
+	private List<PeriodType> periods;
+
+	private boolean rollupUtilizationVisit;
+
+	private boolean rollupUtilizationDrug;
 
 	public String getSourceKey() {
 		return sourceKey;
@@ -220,6 +229,21 @@ public class CohortAnalysisTask {
 		this.cohortPeriodOnly = cohortPeriodOnly;
 	}
 
+	/**
+	 * @return the cdmVersion
+	 */	
+	public String getCdmVersion() {
+		return cdmVersion;
+	}
+
+	/**
+	 * @param cdmVersion the cdmVersion to set
+	 */	
+	public void setCdmVersion(String cdmVersion) {
+		this.cdmVersion = cdmVersion;
+	}
+
+	
 
 	/**
 	 * @return the visualizations
@@ -233,6 +257,42 @@ public class CohortAnalysisTask {
 	 */
 	public void setVisualizations(List<String> visualizations) {
 		this.visualizations = visualizations;
+	}
+
+	/**
+	 * @return the periods
+	 */
+	public List<PeriodType> getPeriods() {
+
+		return periods;
+	}
+
+	/**
+	 * @param periods the periods to set
+	 */
+	public void setPeriods(final List<PeriodType> periods) {
+
+		this.periods = periods;
+	}
+
+	public boolean getRollupUtilizationVisit() {
+
+		return rollupUtilizationVisit;
+	}
+
+	public void setRollupUtilizationVisit(boolean rollupUtilizationVisit) {
+
+		this.rollupUtilizationVisit = rollupUtilizationVisit;
+	}
+
+	public boolean getRollupUtilizationDrug() {
+
+		return rollupUtilizationDrug;
+	}
+
+	public void setRollupUtilizationDrug(boolean rollupUtilizationDrug) {
+
+		this.rollupUtilizationDrug = rollupUtilizationDrug;
 	}
 
 	@Override

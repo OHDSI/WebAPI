@@ -19,7 +19,7 @@ public class LiferayApiClientIT {
     @Before
     public void setup() {
         liferayApiClient = new LiferayApiClient();
-        liferayApiClient.setLiferayBaseUrl("https://portaldev71.honeur.org");
+        liferayApiClient.setLiferayBaseUrl("https://portal-dev.honeur.org");
         liferayApiClient.setLiferayServiceUser("test@liferay.com");
         liferayApiClient.setLiferayServicePassword("test");
         liferayApiClient.initializeLiferayUrlAndCompanyId();

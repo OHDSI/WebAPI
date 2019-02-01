@@ -10,6 +10,7 @@ import org.ohdsi.webapi.service.CohortGenerationService;
 import org.ohdsi.webapi.service.GenerationTaskExceptionHandler;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.sqlrender.SourceAwareSqlRender;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.SourceUtils;
@@ -26,7 +27,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.function.Function;
 
 @Component
@@ -67,9 +67,9 @@ public class GenerationUtils extends AbstractDaoService {
                 getSourceJdbcTemplate(source),
                 transactionTemplate,
                 source.getSourceDialect(),
-                SourceUtils.getTempQualifier(source),
+                SourceUtils.getResultsQualifier(source),
                 jobParameters.getString(Constants.Params.SESSION_ID),
-                null
+                source.getTableQualifierOrNull(SourceDaimon.DaimonType.Temp)
         );
 
         GenerationTaskExceptionHandler exceptionHandler = new GenerationTaskExceptionHandler(cleanupManager);

@@ -441,7 +441,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
             source.getSourceDialect(),
             resultsTableQualifier,
             sessionId,
-            null
+            source.getTableQualifierOrNull(SourceDaimon.DaimonType.Temp)
     ));
 
     Step irAnalysisStep = stepBuilders.get("irAnalysis.execute")

@@ -54,14 +54,8 @@ public class TempTableCleanupManager {
       transactionTemplate.execute(status -> {
         try {
           Connection c = jdbcTemplate.getDataSource().getConnection();
-          DatabaseMetaData metaData = c.getMetaData();
-          try (ResultSet resultSet = metaData.getTables(null, schema, getTablePrefix(sessionId, tempSchema) + "%", TABLE_TYPES)) {
-            RowMapperResultSetExtractor<String> extractor = new RowMapperResultSetExtractor<>((rs, rowNum) -> rs.getString("TABLE_NAME"));
-            List<String> tableNames = extractor.extractData(resultSet);
-            String sql = tableNames.stream().map(table -> String.format(DROP_TABLE_STATEMENT, table)).collect(Collectors.joining());
-            String translatedSql = SqlTranslate.translateSql(sql, dialect);
-            Arrays.asList(SqlSplit.splitSql(translatedSql)).forEach(jdbcTemplate::execute);
-          }
+          removeTempTables(c, tempSchema);
+          removeTempTables(c, null); //removes temp tables from results schema, e.g. temp strata cohorts table
         } catch (SQLException e) {
           LOGGER.error("Failed to cleanup temp tables", e);
           throw new RuntimeException(e);
@@ -71,10 +65,22 @@ public class TempTableCleanupManager {
     }
   }
 
+  private void removeTempTables(Connection c, String tempSchema) throws SQLException {
+
+      DatabaseMetaData metaData = c.getMetaData();
+      try (ResultSet resultSet = metaData.getTables(null, schema, getTablePrefix(sessionId, tempSchema) + "%", TABLE_TYPES)) {
+        RowMapperResultSetExtractor<String> extractor = new RowMapperResultSetExtractor<>((rs, rowNum) -> rs.getString("TABLE_NAME"));
+        List<String> tableNames = extractor.extractData(resultSet);
+        String sql = tableNames.stream().map(table -> String.format(DROP_TABLE_STATEMENT, table)).collect(Collectors.joining());
+        String translatedSql = SqlTranslate.translateSql(sql, dialect);
+        Arrays.asList(SqlSplit.splitSql(translatedSql)).forEach(jdbcTemplate::execute);
+      }
+  }
+
   private static String getTablePrefix(String sessionId, String tempSchema) {
     StringBuilder sb = new StringBuilder();
     if (Objects.nonNull(tempSchema)) {
-      sb.append(tempSchema);
+      sb.append(tempSchema).append(".");
     }
     return sb.append(sessionId).toString();
   }

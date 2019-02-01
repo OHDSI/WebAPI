@@ -49,9 +49,9 @@ public class GenerationUtils extends AbstractDaoService {
         this.sourceAwareSqlRender = sourceAwareSqlRender;
     }
 
-    public static String getTempCohortTableName() {
+    public static String getTempCohortTableName(String sessionId) {
 
-        return Constants.TEMP_COHORT_TABLE_PREFIX + SessionUtils.sessionId();
+        return Constants.TEMP_COHORT_TABLE_PREFIX + sessionId;
     }
 
     public Job buildJobForCohortBasedAnalysisTasklet(

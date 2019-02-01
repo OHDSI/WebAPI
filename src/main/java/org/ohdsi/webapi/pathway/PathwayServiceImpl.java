@@ -313,8 +313,9 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         builder.addString(SOURCE_ID, String.valueOf(source.getSourceId()));
         builder.addString(PATHWAY_ANALYSIS_ID, pathwayAnalysis.getId().toString());
         builder.addString(JOB_AUTHOR, getCurrentUserLogin());
-        builder.addString(TARGET_TABLE, GenerationUtils.getTempCohortTableName());
-        builder.addString(SESSION_ID, SessionUtils.sessionId());
+        final String sessionId = SessionUtils.sessionId();
+        builder.addString(SESSION_ID, sessionId);
+        builder.addString(TARGET_TABLE, GenerationUtils.getTempCohortTableName(sessionId));
 
         final JobParameters jobParameters = builder.toJobParameters();
 

@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import com.odysseusinc.arachne.commons.types.DBMSType;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
-import org.ohdsi.webapi.Constants;
+import org.ohdsi.webapi.common.generation.GenerationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -56,7 +56,7 @@ public class TempTableCleanupManager {
         try {
           Connection c = jdbcTemplate.getDataSource().getConnection();
           removeTempTables(c, getTablePrefix(sessionId, tempSchema) + "%");
-          removeTempTables(c, Constants.TEMP_COHORT_TABLE_PREFIX);
+          removeTempTables(c, GenerationUtils.getTempCohortTableName(sessionId));
           removeTempTables(c, null); //removes temp tables from results schema, e.g. temp strata cohorts table
         } catch (SQLException e) {
           LOGGER.error("Failed to cleanup temp tables", e);

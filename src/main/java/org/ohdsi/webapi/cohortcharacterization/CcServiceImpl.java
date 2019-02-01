@@ -360,8 +360,9 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         builder.addString(COHORT_CHARACTERIZATION_ID, String.valueOf(id));
         builder.addString(SOURCE_ID, String.valueOf(source.getSourceId()));
         builder.addString(JOB_AUTHOR, getCurrentUserLogin());
-        builder.addString(TARGET_TABLE, GenerationUtils.getTempCohortTableName());
-        builder.addString(SESSION_ID, SessionUtils.sessionId());
+        final String sessionId = SessionUtils.sessionId();
+        builder.addString(SESSION_ID, sessionId);
+        builder.addString(TARGET_TABLE, GenerationUtils.getTempCohortTableName(sessionId));
 
         final JobParameters jobParameters = builder.toJobParameters();
 

@@ -1,5 +1,6 @@
-SELECT DISTINCT cohort_characterization_id, cohort_id 
-INTO ${ohdsiSchema}.cc_cohort_tmp
+CREATE TABLE ${ohdsiSchema}.cc_cohort_tmp
+AS
+SELECT DISTINCT cohort_characterization_id, cohort_id
 FROM ${ohdsiSchema}.cc_cohort;
 
 DELETE FROM ${ohdsiSchema}.cc_cohort;

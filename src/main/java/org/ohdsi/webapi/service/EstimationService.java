@@ -29,6 +29,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression.ConceptSetItem;
 import org.ohdsi.hydra.Hydra;
@@ -107,6 +108,7 @@ public class EstimationService extends AbstractDaoService {
     }
     
     @DELETE
+    @Transactional
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}")
     public void delete(@PathParam("id") final int id) {
@@ -115,42 +117,39 @@ public class EstimationService extends AbstractDaoService {
     
     @POST
     @Path("/")
+    @Transactional
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public EstimationDTO createEstimation(Estimation est) {
-        return getTransactionTemplate().execute(transactionStatus -> {
-            Date currentTime = Calendar.getInstance().getTime();
+        Date currentTime = Calendar.getInstance().getTime();
 
-            UserEntity user = userRepository.findByLogin(security.getSubject());
-            est.setCreatedBy(user);
-            est.setCreatedDate(currentTime);
+        UserEntity user = userRepository.findByLogin(security.getSubject());
+        est.setCreatedBy(user);
+        est.setCreatedDate(currentTime);
 
-            Estimation estWithId = this.estimationRepository.save(est);
-
-            return conversionService.convert(estWithId, EstimationDTO.class);
-        });
+        Estimation estWithId = this.estimationRepository.save(est);
+        return conversionService.convert(estWithId, EstimationDTO.class);
     }
 
     @PUT
     @Path("{id}")
+    @Transactional
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public EstimationDTO updateEstimation(@PathParam("id") final int id, Estimation est) {
-        return getTransactionTemplate().execute(transactionStatus -> {
-            Estimation estFromDB = estimationRepository.findOne(id);
-            Date currentTime = Calendar.getInstance().getTime();
+        Estimation estFromDB = estimationRepository.findOne(id);
+        Date currentTime = Calendar.getInstance().getTime();
 
-            UserEntity user = userRepository.findByLogin(security.getSubject());
-            est.setModifiedBy(user);
-            est.setModifiedDate(currentTime);
-            // Prevent any updates to protected fields like created/createdBy
-            est.setCreatedDate(estFromDB.getCreatedDate());
-            est.setCreatedBy(estFromDB.getCreatedBy());
+        UserEntity user = userRepository.findByLogin(security.getSubject());
+        est.setModifiedBy(user);
+        est.setModifiedDate(currentTime);
+        // Prevent any updates to protected fields like created/createdBy
+        est.setCreatedDate(estFromDB.getCreatedDate());
+        est.setCreatedBy(estFromDB.getCreatedBy());
 
-            Estimation updatedEst = this.estimationRepository.save(est);
+        Estimation updatedEst = this.estimationRepository.save(est);
 
-            return conversionService.convert(updatedEst, EstimationDTO.class);
-        });
+        return conversionService.convert(updatedEst, EstimationDTO.class);
     }
     
     @GET
@@ -158,11 +157,11 @@ public class EstimationService extends AbstractDaoService {
     @Path("/{id}/copy")
     @Transactional
     public EstimationDTO copy(@PathParam("id") final int id) {
-            Estimation est = this.estimationRepository.findOne(id);
-            entityManager.detach(est); // Detach from the persistance context in order to save a copy
-            est.setId(null);
-            est.setName("COPY OF: " + est.getName());
-            return this.createEstimation(est);
+        Estimation est = this.estimationRepository.findOne(id);
+        entityManager.detach(est); // Detach from the persistence context in order to save a copy
+        est.setId(null);
+        est.setName("COPY OF: " + est.getName());
+        return this.createEstimation(est);
     }
     
     @GET

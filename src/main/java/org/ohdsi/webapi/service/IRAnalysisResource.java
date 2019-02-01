@@ -87,6 +87,7 @@ public interface IRAnalysisResource {
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}")
+    @Transactional
     void delete(@PathParam("id") final int id);
 
     /**
@@ -110,7 +111,7 @@ public interface IRAnalysisResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/copy")
-    @javax.transaction.Transactional
+    @Transactional
     IRAnalysisService.IRAnalysisDTO copy(@PathParam("id") final int id);
 
     @GET

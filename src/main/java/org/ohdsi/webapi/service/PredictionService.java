@@ -45,6 +45,7 @@ import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
+
 @Component
 @Transactional
 @Path("/prediction/")
@@ -81,19 +82,19 @@ public class PredictionService  extends AbstractDaoService {
     @Produces(MediaType.APPLICATION_JSON)
     public List<PredictionListItem> getAnalysisList() {
 
-      return getTransactionTemplate().execute(transactionStatus ->
-        StreamSupport.stream(predictionAnalysisRepository.findAll().spliterator(), false)
-        .map(pred -> {
-          PredictionListItem item = new PredictionListItem();
-          item.analysisId = pred.getId();
-          item.name = pred.getName();
-          item.description = pred.getDescription();
-          item.createdBy = UserUtils.nullSafeLogin(pred.getCreatedBy());
-          item.createdDate = pred.getCreatedDate();
-          item.modifiedBy = UserUtils.nullSafeLogin(pred.getModifiedBy());
-          item.modifiedDate = pred.getModifiedDate();
-          return item;
-        }).collect(Collectors.toList()));
+        return StreamSupport
+                .stream(predictionAnalysisRepository.findAll().spliterator(), false)
+                .map(pred -> { 
+                    PredictionListItem item = new PredictionListItem();
+                    item.analysisId = pred.getId();
+                    item.name = pred.getName();
+                    item.description = pred.getDescription();
+                    item.createdBy = UserUtils.nullSafeLogin(pred.getCreatedBy());
+                    item.createdDate = pred.getCreatedDate();
+                    item.modifiedBy = UserUtils.nullSafeLogin(pred.getModifiedBy());
+                    item.modifiedDate = pred.getModifiedDate();
+                    return item;
+                }).collect(Collectors.toList());
     }
     
     @DELETE
@@ -107,17 +108,13 @@ public class PredictionService  extends AbstractDaoService {
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public PredictionAnalysisDTO createAnalysis(PredictionAnalysis pred) {
-        return getTransactionTemplate().execute(transactionStatus -> {
-            Date currentTime = Calendar.getInstance().getTime();
-
-            pred.setCreatedBy(getCurrentUser());
-            pred.setCreatedDate(currentTime);
-
-            PredictionAnalysis predWithId = this.predictionAnalysisRepository.save(pred);
-
-            return conversionService.convert(predWithId, PredictionAnalysisDTO.class);
-        });
+    public PredictionAnalysisDTO createAnalysis(PredictionAnalysis pred) { 
+        Date currentTime = Calendar.getInstance().getTime();
+        pred.setCreatedBy(getCurrentUser());
+        pred.setCreatedDate(currentTime);
+    
+        PredictionAnalysis predWithId = this.predictionAnalysisRepository.save(pred);
+        return conversionService.convert(predWithId, PredictionAnalysisDTO.class);        
     }
 
     @PUT
@@ -125,32 +122,29 @@ public class PredictionService  extends AbstractDaoService {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public PredictionAnalysisDTO updateAnalysis(@PathParam("id") final int id, PredictionAnalysis pred) {
-        return getTransactionTemplate().execute(transactionStatus -> {
-            PredictionAnalysis predFromDB = predictionAnalysisRepository.findOne(id);
-            Date currentTime = Calendar.getInstance().getTime();
+        PredictionAnalysis predFromDB = predictionAnalysisRepository.findOne(id);
+        Date currentTime = Calendar.getInstance().getTime();
 
-            pred.setModifiedBy(getCurrentUser());
-            pred.setModifiedDate(currentTime);
-            // Prevent any updates to protected fields like created/createdBy
-            pred.setCreatedDate(predFromDB.getCreatedDate());
-            pred.setCreatedBy(predFromDB.getCreatedBy());
+        pred.setModifiedBy(getCurrentUser());
+        pred.setModifiedDate(currentTime);
+        // Prevent any updates to protected fields like created/createdBy
+        pred.setCreatedDate(predFromDB.getCreatedDate());
+        pred.setCreatedBy(predFromDB.getCreatedBy());
 
-            PredictionAnalysis updatedPred = this.predictionAnalysisRepository.save(pred);
+        PredictionAnalysis updatedPred = this.predictionAnalysisRepository.save(pred);
 
-            return conversionService.convert(updatedPred, PredictionAnalysisDTO.class);
-        });
+        return conversionService.convert(updatedPred, PredictionAnalysisDTO.class);
     }
     
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/copy")
-    @Transactional
     public PredictionAnalysisDTO copy(@PathParam("id") final int id) {
-            PredictionAnalysis analysis = this.predictionAnalysisRepository.findOne(id);
-            entityManager.detach(analysis); // Detach from the persistance context in order to save a copy
-            analysis.setId(null);
-            analysis.setName("COPY OF: " + analysis.getName());
-            return this.createAnalysis(analysis);
+        PredictionAnalysis analysis = this.predictionAnalysisRepository.findOne(id);
+        entityManager.detach(analysis); // Detach from the persistence context in order to save a copy
+        analysis.setId(null);
+        analysis.setName("COPY OF: " + analysis.getName());
+        return this.createAnalysis(analysis);
     }
     
     @GET
@@ -227,7 +221,7 @@ public class PredictionService  extends AbstractDaoService {
         // properties with null values which are required in the
         // specification
         //String studySpecs = Utils.serialize(analysis);        
-        String studySpecs = this.seralizeAnalysis(plpa);
+        String studySpecs = this.serializeAnalysis(plpa);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         
         Hydra h = new Hydra(studySpecs);
@@ -245,7 +239,7 @@ public class PredictionService  extends AbstractDaoService {
     
     // NOTE: This should be replaced with SSA.serialize once issue
     // noted in the download function is addressed.
-    private String seralizeAnalysis(PatientLevelPredictionAnalysis predictionAnalysis) throws JsonProcessingException {
+    private String serializeAnalysis(PatientLevelPredictionAnalysis predictionAnalysis) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.disable(
                 MapperFeature.AUTO_DETECT_CREATORS,

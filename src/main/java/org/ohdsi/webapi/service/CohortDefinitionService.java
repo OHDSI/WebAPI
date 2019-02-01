@@ -382,11 +382,11 @@ public class CohortDefinitionService extends AbstractDaoService {
    */
   @POST
   @Path("/")
+  @Transactional
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public CohortDefinitionDTO createCohortDefinition(CohortDefinitionDTO def) {
-
-    return getTransactionTemplate().execute(transactionStatus -> {
+    
       Date currentTime = Calendar.getInstance().getTime();
 
       UserEntity user = userRepository.findByLogin(security.getSubject());
@@ -408,10 +408,8 @@ public class CohortDefinitionService extends AbstractDaoService {
 
       newDef.setDetails(details);
 
-      CohortDefinition createdDefinition = this.cohortDefinitionRepository.save(newDef);
-
+      CohortDefinition createdDefinition = this.cohortDefinitionRepository.save(newDef);      
       return cohortDefinitionToDTO(createdDefinition);
-    });
   }
 
   /**
@@ -547,7 +545,7 @@ public class CohortDefinitionService extends AbstractDaoService {
     CohortDefinitionDTO copyDef = createCohortDefinition(sourceDef);
 
     return copyDef;
-  }      
+  }
 
   /**
    * Deletes the specified cohort definition

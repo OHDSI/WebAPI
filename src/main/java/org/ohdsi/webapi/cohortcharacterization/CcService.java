@@ -15,7 +15,7 @@ public interface CcService {
     CohortCharacterizationEntity createCc(CohortCharacterizationEntity entity);
 
     CohortCharacterizationEntity updateCc(CohortCharacterizationEntity entity);
-
+    
     void deleteCc(Long ccId);
 
     CohortCharacterizationEntity importCc(CohortCharacterizationEntity entity);

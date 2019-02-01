@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
 import org.ohdsi.circe.helper.ResourceHelper;
+import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.source.Source;
@@ -13,6 +14,7 @@ import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
@@ -51,7 +53,8 @@ public class CreateCohortTableTasklet implements Tasklet {
     final Source source = sourceService.findBySourceId(sourceId);
     final String resultsQualifier = SourceUtils.getResultsQualifier(source);
     final String tempQualifier = SourceUtils.getTempQualifier(source, resultsQualifier);
-    jdbcTemplate.execute(SqlTranslate.translateSql(sql, source.getSourceDialect(), null, tempQualifier));
+    final String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect(), null, tempQualifier);
+    Arrays.stream(SqlSplit.splitSql(translatedSql)).forEach(jdbcTemplate::execute);
 
     return null;
   }

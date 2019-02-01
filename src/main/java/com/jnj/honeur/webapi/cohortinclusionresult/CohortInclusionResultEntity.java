@@ -14,6 +14,10 @@ public class CohortInclusionResultEntity implements Serializable {
     private Long cohortDefinitionId;
 
     @Id
+    @Column(name = "mode_id")
+    private Integer modeId;
+
+    @Id
     @Column(name = "inclusion_rule_mask")
     private Long inclusionRuleMask;
 
@@ -27,13 +31,14 @@ public class CohortInclusionResultEntity implements Serializable {
         CohortInclusionResultEntity that = (CohortInclusionResultEntity) o;
         return Objects.equals(cohortDefinitionId, that.cohortDefinitionId) &&
                 Objects.equals(inclusionRuleMask, that.inclusionRuleMask) &&
-                Objects.equals(personCount, that.personCount);
+                Objects.equals(personCount, that.personCount) &&
+                Objects.equals(modeId, that.modeId);
     }
 
     @Override
     public int hashCode() {
 
-        return Objects.hash(cohortDefinitionId, inclusionRuleMask, personCount);
+        return Objects.hash(cohortDefinitionId, modeId, inclusionRuleMask, personCount);
     }
 
     public Long getCohortDefinitionId() {
@@ -58,5 +63,13 @@ public class CohortInclusionResultEntity implements Serializable {
 
     public void setPersonCount(Long personCount) {
         this.personCount = personCount;
+    }
+
+    public Integer getModeId() {
+        return modeId;
+    }
+
+    public void setModeId(Integer modeId) {
+        this.modeId = modeId;
     }
 }

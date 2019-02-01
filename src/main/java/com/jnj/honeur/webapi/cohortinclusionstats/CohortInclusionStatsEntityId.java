@@ -7,13 +7,15 @@ public class CohortInclusionStatsEntityId implements Serializable {
 
     private Long cohortDefinitionId;
     private int ruleSequence;
+    private int modeId;
 
     public CohortInclusionStatsEntityId() {
     }
 
-    public CohortInclusionStatsEntityId(Long cohortDefinitionId, int ruleSequence) {
+    public CohortInclusionStatsEntityId(Long cohortDefinitionId, int ruleSequence, int modeId) {
         this.cohortDefinitionId = cohortDefinitionId;
         this.ruleSequence = ruleSequence;
+        this.modeId = modeId;
     }
 
     public Long getCohortDefinitionId() {
@@ -30,12 +32,13 @@ public class CohortInclusionStatsEntityId implements Serializable {
         if (o == null || getClass() != o.getClass()) return false;
         CohortInclusionStatsEntityId that = (CohortInclusionStatsEntityId) o;
         return ruleSequence == that.ruleSequence &&
-                Objects.equals(cohortDefinitionId, that.cohortDefinitionId);
+                Objects.equals(cohortDefinitionId, that.cohortDefinitionId) &&
+                modeId == that.modeId;
     }
 
     @Override
     public int hashCode() {
 
-        return Objects.hash(cohortDefinitionId, ruleSequence);
+        return Objects.hash(cohortDefinitionId, ruleSequence, modeId);
     }
 }

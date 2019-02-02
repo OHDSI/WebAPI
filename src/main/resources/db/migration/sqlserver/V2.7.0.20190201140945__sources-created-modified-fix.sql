@@ -24,7 +24,7 @@ EXEC sp_executesql @sql;
 
 CREATE TABLE ${ohdsiSchema}.source
 (
-  SOURCE_ID         int default NEXT VALUE FOR ${ohdsiSchema}.source_sequence not null constraint PK_source primary key nonclustered,
+  SOURCE_ID         int not null constraint PK_source default NEXT VALUE FOR ${ohdsiSchema}.source_sequence primary key clustered,
   SOURCE_NAME       varchar(255)                   not null,
   SOURCE_KEY        varchar(50)                    not null constraint [source_key_unique] unique,
   SOURCE_CONNECTION varchar(8000)                  not null,
@@ -36,7 +36,7 @@ CREATE TABLE ${ohdsiSchema}.source
   krb_keytab        varbinary(max),
   krb_admin_server  varchar(50),
   deleted_date      datetime
-)
+) ON [PRIMARY];
 
 -- Copy previous source configuration and drop table
 INSERT INTO ${ohdsiSchema}.source SELECT * from ${ohdsiSchema}.source_bak;
@@ -59,12 +59,12 @@ EXEC sp_executesql @sql;
 
 CREATE TABLE ${ohdsiSchema}.source_daimon
 (
-  source_daimon_id int default NEXT VALUE FOR ${ohdsiSchema}.source_sequence not null primary key,
+  source_daimon_id int not null constraint PK_source_daimon default NEXT VALUE FOR ${ohdsiSchema}.source_sequence primary key clustered,
   source_id        int           not null,
   daimon_type      int           not null,
   table_qualifier  varchar(255)  not null,
   priority         int default 0 not null
-)
+) ON [PRIMARY];
 
 -- Copy previous source configuration and drop table
 INSERT INTO ${ohdsiSchema}.source_daimon SELECT * from ${ohdsiSchema}.source_daimon_bak;

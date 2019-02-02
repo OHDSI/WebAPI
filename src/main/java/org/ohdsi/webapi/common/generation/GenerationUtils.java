@@ -60,7 +60,7 @@ public class GenerationUtils extends AbstractDaoService {
             JobParameters jobParameters,
             JdbcTemplate jdbcTemplate,
             Function<ChunkContext, Collection<CohortDefinition>> cohortGetter,
-            AnalysisTasklet analysisTasklet
+            CancelableTasklet analysisTasklet
     ) {
 
         TempTableCleanupManager cleanupManager = new TempTableCleanupManager(

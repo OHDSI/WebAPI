@@ -15,6 +15,7 @@
  */
 package org.ohdsi.webapi.service;
 
+import static org.ohdsi.webapi.Constants.GENERATE_IR_ANALYSIS;
 import static org.ohdsi.webapi.Constants.Params.*;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -46,14 +48,18 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.collections4.Predicate;
 import org.apache.commons.lang3.StringUtils;
+import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.GenerationStatus;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.common.generation.GenerationUtils;
 import org.ohdsi.webapi.ircalc.AnalysisReport;
 import org.ohdsi.webapi.ircalc.ExecutionInfo;
 import org.ohdsi.webapi.ircalc.IRExecutionInfoRepository;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysis;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisDetails;
+import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisExpression;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisRepository;
 import org.ohdsi.webapi.ircalc.PerformAnalysisTasklet;
 import org.ohdsi.webapi.job.GeneratesNotification;
@@ -64,7 +70,6 @@ import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
-import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.TempTableCleanupManager;
@@ -74,7 +79,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
-import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -116,10 +120,13 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   private UserRepository userRepository;
 
   @Autowired
-  private SourceRepository sourceRepository;
+  private Security security;
 
   @Autowired
-  private Security security;
+  private SourceService sourceService;
+
+  @Autowired
+  private GenerationUtils generationUtils;
 
   @Context
   ServletContext context;
@@ -424,42 +431,40 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     final String sessionId = SessionUtils.sessionId();
     JobParametersBuilder builder = new JobParametersBuilder();
     builder.addString(JOB_NAME, String.format("IR Analysis: %d: %s (%s)", analysis.getId(), source.getSourceName(), source.getSourceKey()));
-    builder.addString(CDM_DATABASE_SCHEMA, cdmTableQualifier);
-    builder.addString(RESULTS_DATABASE_SCHEMA, resultsTableQualifier);
-    builder.addString(VOCABULARY_DATABASE_SCHEMA, vocabularyTableQualifier);
-    builder.addString(TARGET_DIALECT, source.getSourceDialect());
     builder.addString(ANALYSIS_ID, String.valueOf(analysisId));
     builder.addString(SOURCE_ID, String.valueOf(source.getSourceId()));
     builder.addString(SESSION_ID, sessionId);
+    builder.addString(TARGET_TABLE, GenerationUtils.getTempCohortTableName(sessionId));
 
     final JobParameters jobParameters = builder.toJobParameters();
 
-    PerformAnalysisTasklet analysisTasklet = new PerformAnalysisTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), irAnalysisRepository, sourceRepository);
-    GenerationTaskExceptionHandler exceptionHandler = new GenerationTaskExceptionHandler(new TempTableCleanupManager(
-            getSourceJdbcTemplate(source),
-            getTransactionTemplate(),
-            source.getSourceDialect(),
-            resultsTableQualifier,
-            sessionId,
-            source.getTableQualifierOrNull(SourceDaimon.DaimonType.Temp)
-    ));
+    Job generateIrJob = generationUtils.buildJobForCohortBasedAnalysisTasklet(
+      GENERATE_IR_ANALYSIS,
+      getSourceJdbcTemplate(source),
+      chunkContext -> {
+          Integer irId = Integer.valueOf(chunkContext.getStepContext().getJobParameters().get(ANALYSIS_ID).toString());
+          IncidenceRateAnalysis ir = this.irAnalysisRepository.findOne(irId);
+          IncidenceRateAnalysisExpression expression = Utils.deserialize(ir.getDetails().getExpression(), IncidenceRateAnalysisExpression.class);
+          return Stream.concat(
+              expression.targetIds.stream(),
+              expression.outcomeIds.stream()
+            ).map(id -> {
+              CohortDefinition cd = new CohortDefinition();
+              cd.setId(id);
+              return cd;
+            })
+            .collect(Collectors.toList());
+      },
+      new PerformAnalysisTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), irAnalysisRepository, sourceService)
+    );
 
-    Step irAnalysisStep = stepBuilders.get("irAnalysis.execute")
-      .tasklet(analysisTasklet)
-      .exceptionHandler(exceptionHandler)
-    .build();
-
-    Job executeAnalysis = jobBuilders.get(NAME)
-      .start(irAnalysisStep)
-      .build();
-
-    JobExecutionResource jobExec = this.jobTemplate.launch(executeAnalysis, jobParameters);
+    JobExecutionResource jobExec = this.jobTemplate.launch(generateIrJob, jobParameters);
     return jobExec;  }
 
   @Override
   public List<AnalysisInfoDTO> getAnalysisInfo(final int id) {
-    IncidenceRateAnalysis analysis = irAnalysisRepository.findOneWithExecutions(id);
 
+    IncidenceRateAnalysis analysis = irAnalysisRepository.findOneWithExecutionsOnExistingSources(id);
     List<AnalysisInfoDTO> result = new ArrayList<>();
     Set<ExecutionInfo> executionInfoList = analysis.getExecutionInfoList();
     for (ExecutionInfo executionInfo : executionInfoList) {

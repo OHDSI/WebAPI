@@ -1,3 +1,7 @@
+-- DECLARE current id
+DECLARE @cur_id_val INT;
+DECLARE @sql NVARCHAR(MAX);
+
 -- RENAME source table
 ALTER TABLE ${ohdsiSchema}.source DROP CONSTRAINT DF_source_SOURCE_DIALECT;
 ALTER TABLE ${ohdsiSchema}.source DROP CONSTRAINT source_key_unique;
@@ -7,9 +11,16 @@ EXEC sp_rename '[${ohdsiSchema}].[source]', 'source_bak';
 
 CREATE SEQUENCE ${ohdsiSchema}.source_sequence
   AS BIGINT
-  MINVALUE 0
+  MINVALUE 1
   NO CYCLE
   CACHE 1;
+
+-- GET current ID for source table
+-- and resetting number
+SELECT @cur_id_val = coalesce(MAX(SOURCE_ID), 1) FROM ${ohdsiSchema}.source_bak;
+SET @sql = N'ALTER SEQUENCE ${ohdsiSchema}.source_sequence RESTART WITH ' + CAST(@cur_id_val as NVARCHAR(20)) + ';';
+
+EXEC sp_executesql @sql;
 
 CREATE TABLE ${ohdsiSchema}.source
 (
@@ -35,9 +46,16 @@ EXEC sp_rename '[${ohdsiSchema}].[source_daimon]', 'source_daimon_bak';
 
 CREATE SEQUENCE ${ohdsiSchema}.source_daimon_sequence
   AS BIGINT
-  MINVALUE 0
+  MINVALUE 1
   NO CYCLE
   CACHE 1;
+
+-- GET current id for previous source_daimon table
+-- and resetting number
+SELECT @cur_id_val = coalesce(MAX(source_daimon_id), 1) FROM ${ohdsiSchema}.source_daimon_bak;
+SET @sql = N'ALTER SEQUENCE ${ohdsiSchema}.source_daimon_sequence RESTART WITH ' + CAST(@cur_id_val as NVARCHAR(20)) + ';';
+
+EXEC sp_executesql @sql;
 
 CREATE TABLE ${ohdsiSchema}.source_daimon
 (

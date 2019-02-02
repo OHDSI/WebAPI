@@ -4,9 +4,16 @@ EXEC sp_rename '[${ohdsiSchema}].[HERACLES_VISUALIZATION_DATA]', 'HERACLES_VISUA
 
 CREATE SEQUENCE ${ohdsiSchema}.HERACLES_VIZ_DATA_SEQUENCE
   AS BIGINT
-  START WITH 0
+  START WITH 1
   NO CYCLE
   CACHE 1;
+
+DECLARE @cur_id_val INT;
+DECLARE @sql NVARCHAR(MAX);
+SELECT @cur_id_val =  coalesce(MAX(id), 1) FROM ${ohdsiSchema}.HERACLES_VISUALIZATION_DATA_bak;
+SET @sql = N'ALTER SEQUENCE ${ohdsiSchema}.HERACLES_VIZ_DATA_SEQUENCE RESTART WITH ' + CAST(@cur_id_val as NVARCHAR(20)) + ';';
+
+EXEC sp_executesql @sql;
 
 create table ${ohdsiSchema}.HERACLES_VISUALIZATION_DATA
 (

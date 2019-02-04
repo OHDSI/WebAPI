@@ -46,6 +46,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import java.util.stream.Collectors;
 
+import static org.ohdsi.webapi.Constants.Params.CDM_DATABASE_SCHEMA;
+import static org.ohdsi.webapi.Constants.Params.RESULTS_DATABASE_SCHEMA;
+import static org.ohdsi.webapi.Constants.Params.TEMP_DATABASE_SCHEMA;
+
 /**
  *
  * @author Chris Knoll <cknoll@ohdsi.org>
@@ -129,15 +133,16 @@ public class GenerateCohortFeaturesTasklet implements Tasklet
         
         CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = new CohortExpressionQueryBuilder.BuildExpressionQueryOptions();
         options.cohortId = defId;
-        options.cdmSchema = jobParams.get("cdm_database_schema").toString();
-        options.resultSchema = jobParams.get("results_database_schema").toString();
+        options.cdmSchema = jobParams.get(CDM_DATABASE_SCHEMA).toString();
+        options.resultSchema = jobParams.get(RESULTS_DATABASE_SCHEMA).toString();
+        final String tempSchema = jobParams.get(TEMP_DATABASE_SCHEMA).toString();
 
         List<String> tableNames = ImmutableList.of("cohort_features", "cohort_features_dist", "cohort_features_ref", "cohort_features_analysis_ref");
 
         String deleteSql = tableNames.stream().map(tableName -> SqlTranslate.translateSql(
                   String.format("DELETE FROM %1$s.%2$s WHERE cohort_definition_id = %3$d;",
                           options.resultSchema, tableName, options.cohortId),
-                  jobParams.get("target_dialect").toString(), sessionId, null)).collect(Collectors.joining());
+                  jobParams.get("target_dialect").toString(), sessionId, tempSchema)).collect(Collectors.joining());
 
         this.jdbcTemplate.batchUpdate(deleteSql.split(";")); // use batch update since SQL translation may produce multiple statements
 
@@ -149,7 +154,7 @@ public class GenerateCohortFeaturesTasklet implements Tasklet
         JSONObject jsonObject = new JSONObject(sqlJson);
 
         String sql = getSql(options, jsonObject);
-        String translatedSql = SqlTranslate.translateSql(sql, jobParams.get("target_dialect").toString(), sessionId, null);
+        String translatedSql = SqlTranslate.translateSql(sql, jobParams.get("target_dialect").toString(), sessionId, tempSchema);
         String[] sqlStatements = SqlSplit.splitSql(translatedSql);
 				FutureTask<int[]> batchUpdateTask = new FutureTask<>(() -> GenerateCohortFeaturesTasklet.this.jdbcTemplate.batchUpdate(sqlStatements));
 				taskExecutor.execute(batchUpdateTask);

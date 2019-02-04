@@ -29,6 +29,7 @@ import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.ohdsi.webapi.util.SourceUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.StoppableTasklet;
@@ -40,8 +41,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.util.List;
 import java.util.Map;
 
-import static org.ohdsi.webapi.Constants.Params.GENERATE_STATS;
-import static org.ohdsi.webapi.Constants.Params.TARGET_DATABASE_SCHEMA;
+import static org.ohdsi.webapi.Constants.Params.*;
 
 /**
  *
@@ -70,7 +70,7 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
 
     Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
     Integer defId = Integer.valueOf(jobParams.get(Constants.Params.COHORT_DEFINITION_ID).toString());
-    String sessionId = SessionUtils.sessionId();
+    String sessionId = jobParams.getOrDefault(SESSION_ID, SessionUtils.sessionId()).toString();
 
     try {
       ObjectMapper mapper = new ObjectMapper();
@@ -93,9 +93,11 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
         options.vocabularySchema = jobParams.get(Constants.Params.VOCABULARY_DATABASE_SCHEMA).toString();
       options.generateStats = Boolean.valueOf(jobParams.get(Constants.Params.GENERATE_STATS).toString());
 
+      Integer sourceId = Integer.parseInt(jobParams.get(Constants.Params.SOURCE_ID).toString());
+      Source source = sourceRepository.findBySourceId(sourceId);
+      final String oracleTempSchema = SourceUtils.getTempQualifier(source);
+
       if (jobParams.get(GENERATE_STATS).equals(Boolean.TRUE.toString())) {
-        Integer sourceId = Integer.parseInt(jobParams.get(Constants.Params.SOURCE_ID).toString());
-        Source source = sourceRepository.findBySourceId(sourceId);
 
         String deleteSql = "DELETE FROM @target_database_schema.cohort_inclusion WHERE cohort_definition_id = @cohortDefinitionId;";
         PreparedStatementRenderer psr = new PreparedStatementRenderer(source, deleteSql, "target_database_schema",
@@ -123,7 +125,7 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
 
       String expressionSql = expressionQueryBuilder.buildExpressionQuery(expression, options);
       expressionSql = SqlRender.renderSql(expressionSql, null, null);
-      String translatedSql = SqlTranslate.translateSql(expressionSql, jobParams.get("target_dialect").toString(), sessionId, null);
+      String translatedSql = SqlTranslate.translateSql(expressionSql, jobParams.get("target_dialect").toString(), sessionId, oracleTempSchema);
       return SqlSplit.splitSql(translatedSql);
     } catch (Exception e) {
       log.error("Failed to generate cohort: {}", defId, e);

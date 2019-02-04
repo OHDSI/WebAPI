@@ -17,6 +17,8 @@ public interface Constants {
   String FAILED = ExitStatus.FAILED.getExitCode();
   String CANCELED = "CANCELED";
 
+  String TEMP_COHORT_TABLE_PREFIX = "temp_cohort_";
+
   interface Params {
 
     String VOCABULARY_DATABASE_SCHEMA = "vocabulary_database_schema";
@@ -40,6 +42,7 @@ public interface Constants {
     String LDAP_PROVIDER = "provider";
     String ROLE_GROUP_MAPPING = "roleGroupMapping";
     String PRESERVE_ROLES = "preserveRoles";
+    String SESSION_ID = "sessionId";
   }
 
   List<String> REQUIRE_COLLAPSE_PS_DBMS = ImmutableList.of(DBMSType.MS_SQL_SERVER.getOhdsiDB(), DBMSType.PDW.getOhdsiDB());

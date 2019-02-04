@@ -100,7 +100,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
             getTransactionTemplate(),
             source.getSourceDialect(),
             jobParameters.getString(SESSION_ID),
-            source.getTableQualifierOrNull(SourceDaimon.DaimonType.Temp)
+            SourceUtils.getTempQualifier(source)
     ));
 
     Step generateCohortStep = stepBuilders.get("cohortDefinition.generateCohort")

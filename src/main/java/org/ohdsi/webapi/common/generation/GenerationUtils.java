@@ -76,7 +76,7 @@ public class GenerationUtils extends AbstractDaoService {
                 transactionTemplate,
                 source.getSourceDialect(),
                 sessionId,
-                source.getTableQualifierOrNull(SourceDaimon.DaimonType.Temp)
+                SourceUtils.getTempQualifier(source)
         );
 
         GenerationTaskExceptionHandler exceptionHandler = new GenerationTaskExceptionHandler(cleanupManager);

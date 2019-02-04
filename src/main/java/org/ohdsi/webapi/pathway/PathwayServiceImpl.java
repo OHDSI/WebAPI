@@ -333,7 +333,8 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
                         getTransactionTemplate(),
                         pathwayService,
                         analysisGenerationInfoEntityRepository,
-                        userRepository
+                        userRepository,
+                        sourceService
                 )
         );
 

@@ -23,10 +23,7 @@ import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
-import org.ohdsi.webapi.service.AbstractDaoService;
-import org.ohdsi.webapi.service.CohortGenerationService;
-import org.ohdsi.webapi.service.FeatureExtractionService;
-import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.service.*;
 import org.ohdsi.webapi.shiro.annotations.CcGenerationId;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
@@ -42,6 +39,7 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.convert.ConversionService;
@@ -94,7 +92,6 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     private CcConceptSetRepository conceptSetRepository;
     private FeAnalysisService analysisService;
     private CohortDefinitionRepository cohortRepository;
-    private JobTemplate jobTemplate;
     private CcGenerationEntityRepository ccGenerationRepository;
     private FeatureExtractionService featureExtractionService;
     private DesignImportService designImportService;
@@ -106,6 +103,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
     private final JobRepository jobRepository;
     private final SourceAwareSqlRender sourceAwareSqlRender;
+    private final JobService jobService;
 
     public CcServiceImpl(
             final CcRepository ccRepository,
@@ -125,7 +123,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
             final SourceService sourceService,
             final GenerationUtils generationUtils,
             SourceAwareSqlRender sourceAwareSqlRender,
-            final EntityManager entityManager
+            final EntityManager entityManager,
+            final JobService jobService
     ) {
         this.repository = ccRepository;
         this.paramRepository = paramRepository;
@@ -133,7 +132,6 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         this.conceptSetRepository = conceptSetRepository;
         this.analysisService = analysisService;
         this.cohortRepository = cohortRepository;
-        this.jobTemplate = jobTemplate;
         this.ccGenerationRepository = ccGenerationRepository;
         this.featureExtractionService = featureExtractionService;
         this.designImportService = designImportService;
@@ -144,6 +142,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         this.generationUtils = generationUtils;
         this.sourceAwareSqlRender = sourceAwareSqlRender;
         this.entityManager = entityManager;
+        this.jobService = jobService;
         SerializedCcToCcConverter.setConversionService(conversionService);
     }
 
@@ -367,7 +366,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         CancelableJdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
 
         Job generateCohortJob = generationUtils.buildJobForCohortBasedAnalysisTasklet(
-                GENERATE_COHORT_CHARACTERIZATION,
+                getJobName(),
                 jdbcTemplate,
                 chunkContext -> {
                     Long ccId = Long.valueOf(chunkContext.getStepContext().getJobParameters().get(COHORT_CHARACTERIZATION_ID).toString());
@@ -384,7 +383,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                 )
         );
 
-        return this.jobTemplate.launch(generateCohortJob, jobParameters);
+        return jobService.runJob(generateCohortJob, jobParameters);
     }
 
     @Override
@@ -466,13 +465,22 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         getJdbcTemplate().batchUpdate(translatedJobSql.split(";"));
     }
 
-  @Override
-  public void cancelGeneration(Long id, String sourceKey) {
-    List<CcGenerationEntity> ccGenerations = findGenerationsByCcIdAndSource(id, sourceKey);
+    @Override
+    @DataSourceAccess
+    public void cancelGeneration(Long id, @SourceKey String sourceKey) {
 
-  }
+      Source source = getSourceRepository().findBySourceKey(sourceKey);
+      if (Objects.isNull(source)) {
+        throw new NotFoundException();
+      }
+      jobService.cancelJobExecution(getJobName(), j -> {
+        JobParameters jobParameters = j.getJobParameters();
+        return Objects.equals(jobParameters.getString(SOURCE_ID), Integer.toString(source.getSourceId()))
+                && Objects.equals(jobParameters.getString(COHORT_CHARACTERIZATION_ID), Long.toString(id));
+      });
+    }
 
-  @Override
+    @Override
     public String getJobName() {
         return GENERATE_COHORT_CHARACTERIZATION;
     }
@@ -603,7 +611,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         getTransactionTemplateRequiresNew().execute(transactionStatus -> {
             List<CcGenerationEntity> generations = findAllIncompleteGenerations();
             generations.forEach(gen -> {
-                JobExecution job = cohortGenerationService.getJobExecution(gen.getId());
+                JobExecution job = jobService.getJobExecution(gen.getId());
                 job.setStatus(BatchStatus.FAILED);
                 job.setExitStatus(new ExitStatus(ExitStatus.FAILED.getExitCode(), "Invalidated by system"));
                 jobRepository.update(job);

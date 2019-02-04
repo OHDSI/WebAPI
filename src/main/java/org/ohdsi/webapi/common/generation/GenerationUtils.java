@@ -5,6 +5,7 @@ import org.ohdsi.webapi.cohortcharacterization.DropCohortTableListener;
 import org.ohdsi.webapi.cohortcharacterization.GenerateLocalCohortTasklet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.service.CohortGenerationService;
+import org.ohdsi.webapi.service.JobService;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.sqlrender.SourceAwareSqlRender;
 import org.ohdsi.webapi.util.SessionUtils;
@@ -30,9 +31,16 @@ public class GenerationUtils {
     private CohortGenerationService cohortGenerationService;
     private SourceService sourceService;
     private JobBuilderFactory jobBuilders;
+    private JobService jobService;
     private final SourceAwareSqlRender sourceAwareSqlRender;
 
-    public GenerationUtils(StepBuilderFactory stepBuilderFactory, TransactionTemplate transactionTemplate, CohortGenerationService cohortGenerationService, SourceService sourceService, JobBuilderFactory jobBuilders, SourceAwareSqlRender sourceAwareSqlRender) {
+    public GenerationUtils(StepBuilderFactory stepBuilderFactory,
+                           TransactionTemplate transactionTemplate,
+                           CohortGenerationService cohortGenerationService,
+                           SourceService sourceService,
+                           JobBuilderFactory jobBuilders,
+                           SourceAwareSqlRender sourceAwareSqlRender,
+                           JobService jobService) {
 
         this.stepBuilderFactory = stepBuilderFactory;
         this.transactionTemplate = transactionTemplate;
@@ -40,6 +48,7 @@ public class GenerationUtils {
         this.sourceService = sourceService;
         this.jobBuilders = jobBuilders;
         this.sourceAwareSqlRender = sourceAwareSqlRender;
+        this.jobService = jobService;
     }
 
     public static String getTempCohortTableName() {
@@ -63,6 +72,7 @@ public class GenerationUtils {
                 transactionTemplate,
                 cohortGenerationService,
                 sourceService,
+                jobService,
                 cohortGetter
         );
         Step generateLocalCohortStep = stepBuilderFactory.get(analysisTypeName + ".generateCohort")
@@ -79,7 +89,8 @@ public class GenerationUtils {
                 .start(createCohortTableStep)
                 .next(generateLocalCohortStep)
                 .next(generateCohortFeaturesStep)
-                .listener(dropCohortTableListener);
+                .listener(dropCohortTableListener)
+                .listener(new AutoremoveJobListener(jobService));
 
         return generateJobBuilder.build();
     }

@@ -2,10 +2,8 @@ package org.ohdsi.webapi.service;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Predicate;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -18,14 +16,12 @@ import javax.ws.rs.core.MediaType;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobInstanceResource;
+import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.job.JobUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.batch.admin.service.SearchableJobExecutionDao;
 import org.springframework.batch.admin.service.SearchableJobInstanceDao;
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.JobInstance;
-import org.springframework.batch.core.Step;
+import org.springframework.batch.core.*;
 import org.springframework.batch.core.configuration.JobLocator;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.launch.JobExecutionNotRunningException;
@@ -61,6 +57,11 @@ public class JobService extends AbstractDaoService {
 
   @Autowired
   private JobOperator jobOperator;
+
+  @Autowired
+  private JobTemplate jobTemplate;
+
+  private Map<Long, Job> jobMap = new HashMap<>();
 
   @GET
   @Path("{jobId}")
@@ -197,5 +198,39 @@ public class JobService extends AbstractDaoService {
       jobOperator.stop(jobExecution.getJobId());
     } catch (NoSuchJobExecutionException | JobExecutionNotRunningException ignored) {
     }
+  }
+
+  public JobExecution getJobExecution(Long jobExecutionId) {
+
+    return jobExplorer.getJobExecution(jobExecutionId);
+  }
+
+  protected Job getRunningJob(Long jobExecutionId) {
+
+    return jobMap.get(jobExecutionId);
+  }
+
+  public void removeJob(Long jobExecutionId) {
+
+    jobMap.remove(jobExecutionId);
+  }
+
+  public JobExecutionResource runJob(Job job, JobParameters jobParameters) {
+
+    JobExecutionResource jobExecution = this.jobTemplate.launch(job, jobParameters);
+    jobMap.put(jobExecution.getExecutionId(), job);
+    return jobExecution;
+  }
+
+  public void cancelJobExecution(String jobName, Predicate<? super JobExecution> filterPredicate) {
+    jobExplorer.findRunningJobExecutions(jobName).stream()
+            .filter(filterPredicate)
+            .findFirst()
+            .ifPresent(jobExecution -> {
+              Job job = getRunningJob(jobExecution.getJobId());
+              if (Objects.nonNull(job)) {
+                stopJob(jobExecution, job);
+              }
+            });
   }
 }

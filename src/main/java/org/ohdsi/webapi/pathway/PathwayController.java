@@ -154,6 +154,17 @@ public class PathwayController {
     }
 
     @GET
+    @Path("/{id}/generation/{sourceKey}/cancel")
+    public void cancelPathwaysGeneration(
+            @PathParam("id") final Integer pathwayAnalysisId,
+            @PathParam("sourceKey") final String sourceKey
+    ){
+
+        Source source = sourceService.findBySourceKey(sourceKey);
+        pathwayService.cancelGeneration(pathwayAnalysisId, source.getSourceId());
+    }
+
+    @GET
     @Path("/{id}/generation")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)

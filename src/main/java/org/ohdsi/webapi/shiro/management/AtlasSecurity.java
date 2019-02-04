@@ -133,10 +133,12 @@ public abstract class AtlasSecurity extends Security {
     this.cohortCharacterizationCreatorPermissionTemplates.put("cohort-characterization:%s:put", "Update Cohort Characterization with ID = %s");
     this.cohortCharacterizationCreatorPermissionTemplates.put("cohort-characterization:%s:delete", "Delete Cohort Characterization with ID = %s");
     this.cohortCharacterizationCreatorPermissionTemplates.put("cohort-characterization:%s:generation:*:post", "Generate Cohort Characterization with ID = %s");
+    this.cohortCharacterizationCreatorPermissionTemplates.put("cohort-characterization:%s:generation:*:cancel:get", "Cancel Generation of Cohort Characterization with ID = %s");
 
     this.pathwayAnalysisCreatorPermissionTemplate.put("pathway-analysis:%s:put", "Update Pathway Analysis with ID = %s");
     this.pathwayAnalysisCreatorPermissionTemplate.put("pathway-analysis:%s:sql:*:get", "Get analysis sql for Pathway Analysis with ID = %s");
     this.pathwayAnalysisCreatorPermissionTemplate.put("pathway-analysis:%s:generation:*:post", "Generate Pathway Analysis with ID = %s");
+    this.pathwayAnalysisCreatorPermissionTemplate.put("pathway-analysis:%s:generation:*:cancel:get", "Cancel Generation of Pathway Analysis with ID = %s");
     this.pathwayAnalysisCreatorPermissionTemplate.put("pathway-analysis:%s:delete", "Delete Pathway Analysis with ID = %s");
 
     this.featureAnalysisPermissionTemplates.put("feature-analysis:%s:put", "Update Feature Analysis with ID = %s");
@@ -217,6 +219,7 @@ public abstract class AtlasSecurity extends Security {
             .addProtectedRestPath("/ir/*/copy", CREATE_COPY_IR)
             .addProtectedRestPath("/ir/*", JWT_AUTHC, AUTHZ)
             .addProtectedRestPath("/ir/*/execute/*")
+            .addProtectedRestPath("/ir/*/execute/*/cancel")
 
             // comparative cohort analysis (estimation)
             .addProtectedRestPath("/comparativecohortanalysis", CREATE_PLE)
@@ -275,6 +278,7 @@ public abstract class AtlasSecurity extends Security {
             .addProtectedRestPath("/cohort-characterization/import", CREATE_COHORT_CHARACTERIZATION)
             .addProtectedRestPath("/cohort-characterization/*", DELETE_COHORT_CHARACTERIZATION)
             .addProtectedRestPath("/cohort-characterization/*/generation/*")
+            .addProtectedRestPath("/cohort-characterization/*/generation/*/cancel")
             .addProtectedRestPath("/cohort-characterization/*/generation")
             .addProtectedRestPath("/cohort-characterization/generation/*")
             .addProtectedRestPath("/cohort-characterization/generation/*/design")
@@ -287,6 +291,7 @@ public abstract class AtlasSecurity extends Security {
             .addProtectedRestPath("/pathway-analysis/*", DELETE_PATHWAY_ANALYSIS)
             .addProtectedRestPath("/pathway-analysis/*/sql/*")
             .addProtectedRestPath("/pathway-analysis/*/generation/*")
+            .addProtectedRestPath("/pathway-analysis/*/generation/*/cancel")
             .addProtectedRestPath("/pathway-analysis/*/generation")
             .addProtectedRestPath("/pathway-analysis/generation/*")
             .addProtectedRestPath("/pathway-analysis/generation/*/design")

@@ -27,7 +27,7 @@ public class TempTableCleanupManager {
 
   private static final String[] TABLE_TYPES = { "TABLE", "GLOBAL TEMPORARY", "LOCAL TEMPORARY" };
   private static final String DROP_TABLE_STATEMENT = "IF OBJECT_ID('%1$s', 'U') IS NOT NULL DROP TABLE %s;\n";
-  private static final Set<String> APPLICABLE_DIALECTS = ImmutableSet.of(DBMSType.ORACLE.getOhdsiDB(), DBMSType.IMPALA.getOhdsiDB());
+  private static final Set<String> APPLICABLE_DIALECTS = ImmutableSet.of(DBMSType.ORACLE.getOhdsiDB(), DBMSType.IMPALA.getOhdsiDB(), DBMSType.BIGQUERY.getOhdsiDB());
 
   private JdbcTemplate jdbcTemplate;
   private TransactionTemplate transactionTemplate;

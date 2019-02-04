@@ -63,6 +63,10 @@ public interface IRAnalysisResource {
     JobExecutionResource performAnalysis(@PathParam("analysis_id") final int analysisId, @PathParam("sourceKey") final String sourceKey);
 
     @GET
+    @Path("/{analysis_id}/execute/{sourceKey}/cancel")
+    void cancelAnalysis(@PathParam("analysis_id") final int analysisId, @PathParam("sourceKey") final String sourceKey);
+
+    @GET
     @Path("/{id}/info")
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional(readOnly = true)

@@ -313,18 +313,13 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         builder.addString(SOURCE_ID, String.valueOf(source.getSourceId()));
         builder.addString(PATHWAY_ANALYSIS_ID, pathwayAnalysis.getId().toString());
         builder.addString(JOB_AUTHOR, getCurrentUserLogin());
-        final String sessionId = SessionUtils.sessionId();
-        builder.addString(SESSION_ID, sessionId);
-        builder.addString(TARGET_TABLE, GenerationUtils.getTempCohortTableName(sessionId));
-
-        final JobParameters jobParameters = builder.toJobParameters();
 
         JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
 
         Job generateAnalysisJob = generationUtils.buildJobForCohortBasedAnalysisTasklet(
                 GENERATE_PATHWAY_ANALYSIS,
                 source,
-                jobParameters,
+                builder,
                 jdbcTemplate,
                 chunkContext -> {
                     Integer analysisId = Integer.valueOf(chunkContext.getStepContext().getJobParameters().get(PATHWAY_ANALYSIS_ID).toString());
@@ -341,6 +336,8 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
                         userRepository
                 )
         );
+
+        final JobParameters jobParameters = builder.toJobParameters();
 
         this.jobTemplate.launch(generateAnalysisJob, jobParameters);
     }

@@ -17,6 +17,7 @@ import org.ohdsi.webapi.util.SourceUtils;
 import org.ohdsi.webapi.util.TempTableCleanupManager;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
+import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
@@ -28,6 +29,9 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Collection;
 import java.util.function.Function;
+
+import static org.ohdsi.webapi.Constants.Params.SESSION_ID;
+import static org.ohdsi.webapi.Constants.Params.TARGET_TABLE;
 
 @Component
 public class GenerationUtils extends AbstractDaoService {
@@ -57,18 +61,21 @@ public class GenerationUtils extends AbstractDaoService {
     public Job buildJobForCohortBasedAnalysisTasklet(
             String analysisTypeName,
             Source source,
-            JobParameters jobParameters,
+            JobParametersBuilder builder,
             JdbcTemplate jdbcTemplate,
             Function<ChunkContext, Collection<CohortDefinition>> cohortGetter,
             CancelableTasklet analysisTasklet
     ) {
 
+        final String sessionId = SessionUtils.sessionId();
+        builder.addString(SESSION_ID, sessionId);
+        builder.addString(TARGET_TABLE, GenerationUtils.getTempCohortTableName(sessionId));
+
         TempTableCleanupManager cleanupManager = new TempTableCleanupManager(
                 getSourceJdbcTemplate(source),
                 transactionTemplate,
                 source.getSourceDialect(),
-                SourceUtils.getResultsQualifier(source),
-                jobParameters.getString(Constants.Params.SESSION_ID),
+                sessionId,
                 source.getTableQualifierOrNull(SourceDaimon.DaimonType.Temp)
         );
 

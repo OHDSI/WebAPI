@@ -32,15 +32,13 @@ public class TempTableCleanupManager {
   private JdbcTemplate jdbcTemplate;
   private TransactionTemplate transactionTemplate;
   private String dialect;
-  private String schema;
   private String sessionId;
   private String tempSchema;
 
-  public TempTableCleanupManager(JdbcTemplate jdbcTemplate, TransactionTemplate transactionTemplate, String dialect, String schema, String sessionId, String tempSchema) {
+  public TempTableCleanupManager(JdbcTemplate jdbcTemplate, TransactionTemplate transactionTemplate, String dialect, String sessionId, String tempSchema) {
     this.jdbcTemplate = jdbcTemplate;
     this.transactionTemplate = transactionTemplate;
     this.dialect = dialect;
-    this.schema = schema;
     this.sessionId = sessionId;
     this.tempSchema = tempSchema;
   }
@@ -50,27 +48,26 @@ public class TempTableCleanupManager {
   }
 
   public void cleanupTempTables() {
-    if (isApplicable(this.dialect)) {
-      LOGGER.info("Removing temp tables at {}", schema);
-      transactionTemplate.execute(status -> {
-        try {
-          Connection c = jdbcTemplate.getDataSource().getConnection();
+    LOGGER.info("Removing temp tables at {}", tempSchema);
+    transactionTemplate.execute(status -> {
+      try {
+        Connection c = jdbcTemplate.getDataSource().getConnection();
+        removeTempTables(c, GenerationUtils.getTempCohortTableName(sessionId));
+        if (isApplicable(this.dialect)) {
           removeTempTables(c, getTablePrefix(sessionId, tempSchema) + "%");
-          removeTempTables(c, GenerationUtils.getTempCohortTableName(sessionId));
-          removeTempTables(c, null); //removes temp tables from results schema, e.g. temp strata cohorts table
-        } catch (SQLException e) {
-          LOGGER.error("Failed to cleanup temp tables", e);
-          throw new RuntimeException(e);
         }
-        return null;
-      });
-    }
+      } catch (SQLException e) {
+        LOGGER.error("Failed to cleanup temp tables", e);
+        throw new RuntimeException(e);
+      }
+      return null;
+    });
   }
 
   private void removeTempTables(Connection c, String tablePrefix) throws SQLException {
 
       DatabaseMetaData metaData = c.getMetaData();
-      try (ResultSet resultSet = metaData.getTables(null, schema, tablePrefix, TABLE_TYPES)) {
+      try (ResultSet resultSet = metaData.getTables(null, tempSchema, tablePrefix, TABLE_TYPES)) {
         RowMapperResultSetExtractor<String> extractor = new RowMapperResultSetExtractor<>((rs, rowNum) -> rs.getString("TABLE_NAME"));
         List<String> tableNames = extractor.extractData(resultSet);
         String sql = tableNames.stream().map(table -> String.format(DROP_TABLE_STATEMENT, table)).collect(Collectors.joining());

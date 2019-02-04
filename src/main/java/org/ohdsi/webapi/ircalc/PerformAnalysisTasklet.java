@@ -80,7 +80,6 @@ public class PerformAnalysisTasklet extends CancelableTasklet {
     
     Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
 
-    String resultSchema = jobParams.get(RESULTS_DATABASE_SCHEMA).toString();
     Integer sourceId = Integer.parseInt(jobParams.get(SOURCE_ID).toString());
     Source source = sourceService.findBySourceId(sourceId);
     String oracleTempSchema = SourceUtils.getTempQualifier(source);
@@ -116,7 +115,7 @@ public class PerformAnalysisTasklet extends CancelableTasklet {
       }
       
       String expressionSql = analysisQueryBuilder.buildAnalysisQuery(analysis, options);
-      String translatedSql = SqlTranslate.translateSql(expressionSql, jobParams.get("target_dialect").toString(), sessionId, oracleTempSchema);
+      String translatedSql = SqlTranslate.translateSql(expressionSql, source.getSourceDialect(), sessionId, oracleTempSchema);
       return SqlSplit.splitSql(translatedSql);
     } catch (Exception e) {
       throw new RuntimeException(e);

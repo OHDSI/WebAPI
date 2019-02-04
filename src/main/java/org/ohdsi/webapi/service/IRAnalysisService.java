@@ -394,14 +394,6 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     Date startTime = Calendar.getInstance().getTime();
 
     Source source = this.getSourceRepository().findBySourceKey(sourceKey);
-    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-    String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
-    String vocabularyTableQualifier = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
-		
-		// No vocabulary table qualifier found - use the CDM as a default
-    if (vocabularyTableQualifier == null) {
-      vocabularyTableQualifier = cdmTableQualifier;
-    }
 
     DefaultTransactionDefinition requresNewTx = new DefaultTransactionDefinition();
     requresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -428,18 +420,15 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
     this.getTransactionTemplate().getTransactionManager().commit(initStatus);
 
-    final String sessionId = SessionUtils.sessionId();
     JobParametersBuilder builder = new JobParametersBuilder();
     builder.addString(JOB_NAME, String.format("IR Analysis: %d: %s (%s)", analysis.getId(), source.getSourceName(), source.getSourceKey()));
     builder.addString(ANALYSIS_ID, String.valueOf(analysisId));
     builder.addString(SOURCE_ID, String.valueOf(source.getSourceId()));
-    builder.addString(SESSION_ID, sessionId);
-    builder.addString(TARGET_TABLE, GenerationUtils.getTempCohortTableName(sessionId));
-
-    final JobParameters jobParameters = builder.toJobParameters();
 
     Job generateIrJob = generationUtils.buildJobForCohortBasedAnalysisTasklet(
       GENERATE_IR_ANALYSIS,
+      source,
+      builder,
       getSourceJdbcTemplate(source),
       chunkContext -> {
           Integer irId = Integer.valueOf(chunkContext.getStepContext().getJobParameters().get(ANALYSIS_ID).toString());
@@ -458,8 +447,10 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
       new PerformAnalysisTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), irAnalysisRepository, sourceService)
     );
 
-    JobExecutionResource jobExec = this.jobTemplate.launch(generateIrJob, jobParameters);
-    return jobExec;  }
+    final JobParameters jobParameters = builder.toJobParameters();
+
+    return this.jobTemplate.launch(generateIrJob, jobParameters);
+  }
 
   @Override
   public List<AnalysisInfoDTO> getAnalysisInfo(final int id) {

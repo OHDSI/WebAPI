@@ -13,6 +13,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -145,6 +146,13 @@ public class CcController {
     @Consumes(MediaType.APPLICATION_JSON)
     public JobExecutionResource generate(@PathParam("id") final Long id, @PathParam("sourceKey") final String sourceKey) {
         return service.generateCc(id, sourceKey);
+    }
+
+    @GET
+    @Path("/{id}/generation/{sourceKey}/cancel")
+    public Response cancelGeneration(@PathParam("id") final Long id, @PathParam("sourceKey") final String sourceKey) {
+        service.cancelGeneration(id, sourceKey);
+        return Response.ok().build();
     }
     
     @GET

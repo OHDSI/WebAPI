@@ -466,7 +466,13 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         getJdbcTemplate().batchUpdate(translatedJobSql.split(";"));
     }
 
-    @Override
+  @Override
+  public void cancelGeneration(Long id, String sourceKey) {
+    List<CcGenerationEntity> ccGenerations = findGenerationsByCcIdAndSource(id, sourceKey);
+
+  }
+
+  @Override
     public String getJobName() {
         return GENERATE_COHORT_CHARACTERIZATION;
     }

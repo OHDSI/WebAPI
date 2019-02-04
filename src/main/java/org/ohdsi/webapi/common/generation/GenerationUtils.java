@@ -60,7 +60,7 @@ public class GenerationUtils {
             String analysisTypeName,
             JdbcTemplate jdbcTemplate,
             Function<ChunkContext, Collection<CohortDefinition>> cohortGetter,
-            AnalysisTasklet analysisTasklet
+            CancelableTasklet analysisTasklet
     ) {
 
         CreateCohortTableTasklet createCohortTableTasklet = new CreateCohortTableTasklet(jdbcTemplate, transactionTemplate, sourceService, sourceAwareSqlRender);

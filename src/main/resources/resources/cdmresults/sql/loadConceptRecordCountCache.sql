@@ -3,6 +3,7 @@ WITH concepts AS (
       CAST(ancestor_concept_id AS VARCHAR)   ancestor_id,
       CAST(descendant_concept_id AS VARCHAR) descendant_id
     FROM @vocabularyTableQualifier.concept_ancestor ca
+    WHERE ca.descendant_concept_id != ca.ancestor_concept_id
 ), counts AS (
 SELECT stratum_1 concept_id, MAX (count_value) agg_count_value
 FROM @resultTableQualifier.achilles_results

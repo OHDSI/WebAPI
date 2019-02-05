@@ -153,8 +153,8 @@ public class PathwayController {
         pathwayService.generatePathways(pathwayAnalysisId, source.getSourceId());
     }
 
-    @GET
-    @Path("/{id}/generation/{sourceKey}/cancel")
+    @DELETE
+    @Path("/{id}/generation/{sourceKey}")
     public void cancelPathwaysGeneration(
             @PathParam("id") final Integer pathwayAnalysisId,
             @PathParam("sourceKey") final String sourceKey

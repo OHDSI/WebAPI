@@ -148,8 +148,8 @@ public class CcController {
         return service.generateCc(id, sourceKey);
     }
 
-    @GET
-    @Path("/{id}/generation/{sourceKey}/cancel")
+    @DELETE
+    @Path("/{id}/generation/{sourceKey}")
     public Response cancelGeneration(@PathParam("id") final Long id, @PathParam("sourceKey") final String sourceKey) {
         service.cancelGeneration(id, sourceKey);
         return Response.ok().build();

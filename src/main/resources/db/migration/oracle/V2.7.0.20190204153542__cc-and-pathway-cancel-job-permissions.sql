@@ -3,8 +3,8 @@
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
     SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, REPLACE(value, ':post', ':delete'),
       'Cancel Generation of Cohort Characterization with ID = ' || REPLACE(REPLACE(value, 'cohort-characterization:'), ':generation:*:post')
-    FROM ohdsi.SEC_PERMISSION sp
-      JOIN ohdsi.SEC_ROLE_PERMISSION srp on srp.PERMISSION_ID = sp.ID
+    FROM ${ohdsiSchema}.sec_permission sp
+      JOIN ${ohdsiSchema}.SEC_ROLE_PERMISSION srp on srp.PERMISSION_ID = sp.ID
     WHERE sp.VALUE like 'cohort-characterization:%:generation:*:post' AND NOT sp.value = 'cohort-characterization:*:generation:*:post';
 
 INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
@@ -19,8 +19,8 @@ INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
   SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, REPLACE(value, ':post', ':delete'),
     'Cancel Generation of Pathway Analysis with ID = ' || REPLACE(REPLACE(value, 'pathway-analysis:'), ':generation:*:post')
-FROM ohdsi.SEC_PERMISSION sp
-JOIN ohdsi.SEC_ROLE_PERMISSION srp on srp.PERMISSION_ID = sp.ID
+FROM ${ohdsiSchema}.sec_permission sp
+JOIN ${ohdsiSchema}.SEC_ROLE_PERMISSION srp on srp.PERMISSION_ID = sp.ID
 WHERE sp.VALUE like 'pathway-analysis:%:generation:*:post' AND NOT sp.value = 'pathway-analysis:*:generation:*:post';
 
 INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)

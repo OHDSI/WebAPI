@@ -28,7 +28,7 @@ public interface PathwayService {
 
     String buildAnalysisSql(Long generationId, PathwayAnalysisEntity pathwayAnalysis, Integer sourceId);
 
-    String buildAnalysisSql(Long generationId, PathwayAnalysisEntity pathwayAnalysis, Integer sourceId, String cohortTable);
+    String buildAnalysisSql(Long generationId, PathwayAnalysisEntity pathwayAnalysis, Integer sourceId, String cohortTable, String sessionId);
 
     void generatePathways(final Integer pathwayAnalysisId, final Integer sourceId);
 

@@ -16,10 +16,7 @@
 package org.ohdsi.webapi.service;
 
 import static org.ohdsi.webapi.Constants.GENERATE_IR_ANALYSIS;
-import static org.ohdsi.webapi.Constants.Params.ANALYSIS_ID;
-import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
-import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
-import static org.ohdsi.webapi.Constants.Params.TARGET_TABLE;
+import static org.ohdsi.webapi.Constants.Params.*;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -67,6 +64,7 @@ import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.ohdsi.webapi.util.TempTableCleanupManager;
 import org.ohdsi.webapi.util.UserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -391,14 +389,6 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     Date startTime = Calendar.getInstance().getTime();
 
     Source source = this.getSourceRepository().findBySourceKey(sourceKey);
-    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-    String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
-    String vocabularyTableQualifier = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
-		
-		// No vocabulary table qualifier found - use the CDM as a default
-    if (vocabularyTableQualifier == null) {
-      vocabularyTableQualifier = cdmTableQualifier;
-    }
 
     DefaultTransactionDefinition requresNewTx = new DefaultTransactionDefinition();
     requresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -429,12 +419,11 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     builder.addString(JOB_NAME, String.format("IR Analysis: %d: %s (%s)", analysis.getId(), source.getSourceName(), source.getSourceKey()));
     builder.addString(ANALYSIS_ID, String.valueOf(analysisId));
     builder.addString(SOURCE_ID, String.valueOf(source.getSourceId()));
-    builder.addString(TARGET_TABLE, GenerationUtils.getTempCohortTableName());
-
-    final JobParameters jobParameters = builder.toJobParameters();
 
     Job generateIrJob = generationUtils.buildJobForCohortBasedAnalysisTasklet(
       GENERATE_IR_ANALYSIS,
+      source,
+      builder,
       getSourceJdbcTemplate(source),
       chunkContext -> {
           Integer irId = Integer.valueOf(chunkContext.getStepContext().getJobParameters().get(ANALYSIS_ID).toString());
@@ -452,6 +441,8 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
       },
       new PerformAnalysisTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), irAnalysisRepository, sourceService)
     );
+
+    final JobParameters jobParameters = builder.toJobParameters();
 
     return jobService.runJob(generateIrJob, jobParameters);
   }

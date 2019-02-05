@@ -35,6 +35,8 @@ import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
+import org.ohdsi.webapi.util.SessionUtils;
+import org.ohdsi.webapi.util.SourceUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -62,11 +64,7 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.summingInt;
 import static org.ohdsi.webapi.Constants.GENERATE_PATHWAY_ANALYSIS;
-import static org.ohdsi.webapi.Constants.Params.JOB_AUTHOR;
-import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
-import static org.ohdsi.webapi.Constants.Params.PATHWAY_ANALYSIS_ID;
-import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
-import static org.ohdsi.webapi.Constants.Params.TARGET_TABLE;
+import static org.ohdsi.webapi.Constants.Params.*;
 
 @Service
 @Transactional
@@ -245,7 +243,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
     @Override
     @DataSourceAccess
-    public String buildAnalysisSql(Long generationId, PathwayAnalysisEntity pathwayAnalysis, @SourceId Integer sourceId, String cohortTable) {
+    public String buildAnalysisSql(Long generationId, PathwayAnalysisEntity pathwayAnalysis, @SourceId Integer sourceId, String cohortTable, String sessionId) {
 
         Map<Integer, Integer> eventCohortCodes = getEventCohortCodes(pathwayAnalysis);
         Source source = sourceService.findBySourceId(sourceId);
@@ -289,7 +287,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
             };
 
             String renderedSql = SqlRender.renderSql(analysisSql, params, values);
-            String translatedSql = SqlTranslate.translateSql(renderedSql, source.getSourceDialect());
+            String translatedSql = SqlTranslate.translateSql(renderedSql, source.getSourceDialect(), sessionId, SourceUtils.getTempQualifier(source));
 
             joiner.add(translatedSql);
         });
@@ -300,7 +298,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     @Override
     public String buildAnalysisSql(Long generationId, PathwayAnalysisEntity pathwayAnalysis, Integer sourceId) {
 
-        return buildAnalysisSql(generationId, pathwayAnalysis, sourceId, "cohort");
+        return buildAnalysisSql(generationId, pathwayAnalysis, sourceId, "cohort", SessionUtils.sessionId());
     }
 
 
@@ -318,14 +316,13 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         builder.addString(SOURCE_ID, String.valueOf(source.getSourceId()));
         builder.addString(PATHWAY_ANALYSIS_ID, pathwayAnalysis.getId().toString());
         builder.addString(JOB_AUTHOR, getCurrentUserLogin());
-        builder.addString(TARGET_TABLE, GenerationUtils.getTempCohortTableName());
-
-        final JobParameters jobParameters = builder.toJobParameters();
 
         JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
 
         Job generateAnalysisJob = generationUtils.buildJobForCohortBasedAnalysisTasklet(
                 GENERATE_PATHWAY_ANALYSIS,
+                source,
+                builder,
                 jdbcTemplate,
                 chunkContext -> {
                     Integer analysisId = Integer.valueOf(chunkContext.getStepContext().getJobParameters().get(PATHWAY_ANALYSIS_ID).toString());
@@ -339,9 +336,12 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
                         getTransactionTemplate(),
                         pathwayService,
                         analysisGenerationInfoEntityRepository,
-                        userRepository
+                        userRepository,
+                        sourceService
                 )
         );
+
+        final JobParameters jobParameters = builder.toJobParameters();
 
         jobService.runJob(generateAnalysisJob, jobParameters);
     }

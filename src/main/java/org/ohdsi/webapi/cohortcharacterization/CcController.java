@@ -63,6 +63,17 @@ public class CcController {
         return conversionService.convert(createdEntity, CohortCharacterizationDTO.class);
     }
 
+    @POST
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public CohortCharacterizationDTO copy(@PathParam("id") final Long id) {
+        CohortCharacterizationEntity copyingEntity = service.findById(id);
+        copyingEntity.setId(null);
+        copyingEntity.setName(String.format("COPY OF: %s", copyingEntity.getName()));
+        final CohortCharacterizationEntity cloneEntity = service.createCc(copyingEntity);
+        return conversionService.convert(cloneEntity, CohortCharacterizationDTO.class);
+    }
+
     @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)

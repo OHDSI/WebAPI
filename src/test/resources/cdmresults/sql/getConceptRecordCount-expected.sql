@@ -2,7 +2,6 @@ with concepts as (
 	select CAST(ancestor_concept_id as VARCHAR) ancestor_id, CAST(descendant_concept_id as VARCHAR) descendant_id 
 	from vocab_schema.concept_ancestor ca 
 	where ancestor_concept_id in (?,?,?,?,?,?,?,?,?,?)
-	and ca.descendant_concept_id != ca.ancestor_concept_id
 ), counts as (
 	select stratum_1 concept_id, max(count_value) agg_count_value
 	from result_schema.achilles_results
@@ -17,5 +16,5 @@ with concepts as (
 select concepts.ancestor_id concept_id, isnull(max(c1.agg_count_value),0) record_count, isnull(sum(c2.agg_count_value),0) descendant_record_count
 from concepts
 left join counts c1 on concepts.ancestor_id = c1.concept_id
-left join counts c2 on concepts.descendant_id = c2.concept_id
+left join counts c2 on concepts.descendant_id = c2.concept_id AND concepts.descendant_id != concepts.ancestor_id
 group by concepts.ancestor_id

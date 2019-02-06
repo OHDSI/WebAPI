@@ -4,7 +4,6 @@ WITH concepts AS (
       CAST(descendant_concept_id AS VARCHAR) descendant_id
     FROM @vocabularyTableQualifier.concept_ancestor ca
     WHERE ancestor_concept_id IN (@conceptIdentifiers)
-    AND ca.descendant_concept_id != ca.ancestor_concept_id
 ), counts AS (
 SELECT stratum_1 concept_id, MAX (count_value) agg_count_value
 FROM @resultTableQualifier.achilles_results
@@ -55,5 +54,5 @@ SELECT
 */
 FROM concepts
   LEFT JOIN counts c1 ON concepts.ancestor_id = c1.concept_id
-  LEFT JOIN counts c2 ON concepts.descendant_id = c2.concept_id
+  LEFT JOIN counts c2 ON concepts.descendant_id = c2.concept_id AND concepts.descendant_id != concepts.ancestor_id
 GROUP BY concepts.ancestor_id

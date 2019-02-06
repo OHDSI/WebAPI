@@ -79,11 +79,14 @@ public class ImportCohortGenerationTasklet implements StoppableTasklet {
     }
 
     private int[] doTask(ChunkContext chunkContext) {
+
         int[] result = new int[0];
 
         Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
         Integer defId = Integer.valueOf(jobParams.get(Constants.Params.COHORT_DEFINITION_ID).toString());
         String sourceKey = jobParams.get(Constants.Params.SOURCE_KEY).toString();
+
+        SourceDaimonContextHolder.setCurrentSourceDaimonContext(new SourceDaimonContext(sourceKey, SourceDaimon.DaimonType.Results));
 
         DefaultTransactionDefinition completeTx = new DefaultTransactionDefinition();
         completeTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -93,16 +96,15 @@ public class ImportCohortGenerationTasklet implements StoppableTasklet {
                 (CohortGenerationResults) chunkContext.getStepContext().getJobExecutionContext()
                         .get(ImportJobExecutionListener.COHORT_GENERATION_RESULTS);
 
-        SourceDaimonContextHolder.setCurrentSourceDaimonContext(new SourceDaimonContext(sourceKey, SourceDaimon.DaimonType.Results));
 
         importCohortGenerationResults(defId, cohortGenerationResults);
         if(stopped){
             return result;
         }
 
-        SourceDaimonContextHolder.clear();
-
 		this.transactionTemplate.getTransactionManager().commit(completeStatus);
+
+        SourceDaimonContextHolder.clear();
 
         return result;
     }
@@ -145,6 +147,7 @@ public class ImportCohortGenerationTasklet implements StoppableTasklet {
             }
             CohortInclusionResultEntity cohortInclusionResultEntity = new CohortInclusionResultEntity();
             cohortInclusionResultEntity.setCohortDefinitionId((long) id);
+            cohortInclusionResultEntity.setModeId(cohortInclusionResult.getModeId());
             cohortInclusionResultEntity.setInclusionRuleMask(cohortInclusionResult.getInclusionRuleMask());
             cohortInclusionResultEntity.setPersonCount(cohortInclusionResult.getPersonCount());
             cohortInclusionResultEntities.add(cohortInclusionResultEntity);
@@ -159,6 +162,7 @@ public class ImportCohortGenerationTasklet implements StoppableTasklet {
             }
             CohortInclusionStatsEntity cohortInclusionStatsEntity = new CohortInclusionStatsEntity();
             cohortInclusionStatsEntity.setCohortDefinitionId((long) id);
+            cohortInclusionStatsEntity.setModeId(cohortInclusionStats.getModeId());
             cohortInclusionStatsEntity.setGainCount(cohortInclusionStats.getGainCount());
             cohortInclusionStatsEntity.setPersonCount(cohortInclusionStats.getPersonCount());
             cohortInclusionStatsEntity.setPersonTotal(cohortInclusionStats.getPersonTotal());
@@ -175,6 +179,7 @@ public class ImportCohortGenerationTasklet implements StoppableTasklet {
             }
             CohortSummaryStatsEntity cohortSummaryStatsEntity = new CohortSummaryStatsEntity();
             cohortSummaryStatsEntity.setCohortDefinitionId((long) id);
+            cohortSummaryStatsEntity.setModeId(cohortSummaryStats.getModeId());
             cohortSummaryStatsEntity.setBaseCount(cohortSummaryStats.getBaseCount());
             cohortSummaryStatsEntity.setFinalCount(cohortSummaryStats.getFinalCount());
             cohortSummaryStatsList.add(cohortSummaryStatsEntity);

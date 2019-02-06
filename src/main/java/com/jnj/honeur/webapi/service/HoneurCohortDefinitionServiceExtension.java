@@ -290,7 +290,7 @@ public class HoneurCohortDefinitionServiceExtension {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/export")
     @Transactional
-    public CohortDefinitionService.CohortDefinitionDTO exportCohortDefinition(@HeaderParam("Authorization") String token, @CookieParam("userFingerprint") String userFingerprint, @Context HttpServletRequest request, @PathParam("id") final int id, @QueryParam("toCloud") final boolean toCloud) {
+    public Response exportCohortDefinition(@HeaderParam("Authorization") String token, @CookieParam("userFingerprint") String userFingerprint, @Context HttpServletRequest request, @PathParam("id") final int id, @QueryParam("toCloud") final boolean toCloud) {
         CohortDefinition cohortDefinition = this.cohortDefinitionRepository.findOneWithDetail(id);
 
 //        String expression = cohortDefinition.getDetails().getExpression();
@@ -331,10 +331,10 @@ public class HoneurCohortDefinitionServiceExtension {
             List<Organization> organizations = getAllOrganisations(id);
             savePermissionsForOrganizations(copyDef.id, organizations);
 
-            return copyDef;
+            return getResponse(createFile(copyDef.name+"-"+timeStamp+".cohort", copyDef));
         }
 
-        return this.cohortDefinitionService.cohortDefinitionToDTO(cohortDefinition);
+        return getResponse(createFile(cohortDefinition.getName()+"-"+timeStamp+".cohort",this.cohortDefinitionService.cohortDefinitionToDTO(cohortDefinition)));
     }
 
     @POST

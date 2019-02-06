@@ -1,11 +1,14 @@
 package com.jnj.honeur.webapi.cohortsummarystats;
 
+import com.jnj.honeur.webapi.cohortinclusionstats.CohortInclusionStatsEntityId;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Objects;
 
 @Entity(name = "CohortSummaryStatsEntity")
 @Table(name = "cohort_summary_stats")
+@IdClass(CohortSummaryStatsEntityId.class)
 public class CohortSummaryStatsEntity implements Serializable {
 
     private static final long serialVersionUID = 8196131925781288320L;
@@ -13,6 +16,10 @@ public class CohortSummaryStatsEntity implements Serializable {
     @Id
     @Column(name = "cohort_definition_id")
     private Long cohortDefinitionId;
+
+    @Id
+    @Column(name = "mode_id")
+    private int modeId;
 
     @Column(name = "base_count")
     private Long baseCount;
@@ -44,6 +51,14 @@ public class CohortSummaryStatsEntity implements Serializable {
         this.finalCount = finalCount;
     }
 
+    public int getModeId() {
+        return modeId;
+    }
+
+    public void setModeId(int modeId) {
+        this.modeId = modeId;
+    }
+
     @Override
     public boolean equals(Object o) {
 
@@ -51,6 +66,7 @@ public class CohortSummaryStatsEntity implements Serializable {
         if (o == null || getClass() != o.getClass()) return false;
         CohortSummaryStatsEntity that = (CohortSummaryStatsEntity) o;
         return cohortDefinitionId == that.cohortDefinitionId &&
+                modeId == that.modeId &&
                 Objects.equals(baseCount, that.baseCount) &&
                 Objects.equals(finalCount, that.finalCount);
     }
@@ -58,6 +74,6 @@ public class CohortSummaryStatsEntity implements Serializable {
     @Override
     public int hashCode() {
 
-        return Objects.hash(cohortDefinitionId, baseCount, finalCount);
+        return Objects.hash(cohortDefinitionId, modeId, baseCount, finalCount);
     }
 }

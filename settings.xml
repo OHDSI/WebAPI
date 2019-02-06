@@ -25,6 +25,8 @@
                 <security.oauth.facebook.apiKey></security.oauth.facebook.apiKey>
                 <security.oauth.facebook.apiSecret></security.oauth.facebook.apiSecret>
                 <jersey.resources.additional.packages>com.jnj.honeur.webapi</jersey.resources.additional.packages>
+                <jasypt.encryptor.enabled>true</jasypt.encryptor.enabled>
+                <jasypt.encryptor.algorithm>PBEWithSHAAndTwofish-CBC</jasypt.encryptor.algorithm>
             </properties>
         </profile>
         <profile>
@@ -44,6 +46,7 @@
                 <security.cas.serverUrl>${CAS_SERVER_BASE_URL}</security.cas.serverUrl>
                 <security.provider>AtlasCustomSecurity</security.provider>
                 <security.ssl.enabled>false</security.ssl.enabled> <!-- !!! Enabling this property doesn't work on AWS.  Not a real problem as SSL is already enforced on AWS !!! -->
+                <jasypt.encryptor.password>${SOURCE_ENCRYPTION_PASSWORD}</jasypt.encryptor.password>
                 <war.directory>target</war.directory>
                 <central>true</central>
                 <security.cas.tgc.domain>.honeur.org</security.cas.tgc.domain>
@@ -59,9 +62,10 @@
                 <datasource.password>${WEBAPI_USER_PW}</datasource.password>
                 <flyway.datasource.password>${WEBAPI_ADMIN_PW}</flyway.datasource.password>
                 <datasource.url>jdbc:postgresql://postgres:5432/${datasource.db}</datasource.url>
-                <hss.url>https://dev.honeur.org/storage/api</hss.url>
+                <hss.url>${STORAGE_SERVER_BASE_URL}/api</hss.url>
                 <security.ssl.enabled>false</security.ssl.enabled> <!-- !!! Enabling this property doesn't work on AWS.  Not a real problem as SSL is already enforced on AWS !!! -->
                 <central>false</central>
+                <jasypt.encryptor.password>${SOURCE_ENCRYPTION_PASSWORD}</jasypt.encryptor.password>
             </properties>
         </profile>
         <profile>
@@ -81,6 +85,7 @@
                 <security.oauth.callback.ui>${ATLAS_WELCOME_URL}</security.oauth.callback.ui>
                 <security.oauth.callback.api>${ATLAS_WEBAPI_CALLBACK_URL}</security.oauth.callback.api>
                 <security.cas.serverUrl>${CAS_SERVER_BASE_URL}</security.cas.serverUrl>
+                <jasypt.encryptor.password>${SOURCE_ENCRYPTION_PASSWORD}</jasypt.encryptor.password>
                 <security.ssl.enabled>false</security.ssl.enabled> <!-- !!! Enabling this property doesn't work on AWS.  Not a real problem as SSL is already enforced on AWS !!! -->
                 <war.directory>target</war.directory>
                 <central>false</central>
@@ -109,6 +114,9 @@
                 <flyway.locations>classpath:db/migration/postgresql,classpath:db/extension/honeur</flyway.locations>
                 <security.origin>*</security.origin>
                 <security.ssl.enabled>false</security.ssl.enabled>
+                <jasypt.encryptor.password>nLfOM0D8iCTg7lLH</jasypt.encryptor.password>
+                <jasypt.encryptor.enabled>true</jasypt.encryptor.enabled>
+                <jasypt.encryptor.algorithm>PBEWithSHAAndTwofish-CBC</jasypt.encryptor.algorithm>
                 <central>false</central>
                 <jersey.resources.additional.packages>com.jnj.honeur.webapi</jersey.resources.additional.packages>
                 <war.directory>target-agunva</war.directory>
@@ -134,6 +142,9 @@
                 <flyway.locations>classpath:db/migration/postgresql,classpath:db/extension/honeur</flyway.locations>
                 <security.origin>*</security.origin>
                 <security.ssl.enabled>false</security.ssl.enabled>
+                <jasypt.encryptor.password>nLfOM0D8iCTg7lLH</jasypt.encryptor.password>
+                <jasypt.encryptor.enabled>true</jasypt.encryptor.enabled>
+                <jasypt.encryptor.algorithm>PBEWithSHAAndTwofish-CBC</jasypt.encryptor.algorithm>
                 <central>false</central>
                 <jersey.resources.additional.packages>com.jnj.honeur.webapi</jersey.resources.additional.packages>
                 <war.directory>target-agunva</war.directory>
@@ -158,6 +169,7 @@
                 <security.cas.tgc.domain>localhost</security.cas.tgc.domain>
                 <security.cookies.domain>localhost</security.cookies.domain>
                 <liferay.company.web.id>liferay.com</liferay.company.web.id>
+                <jasypt.encryptor.password>localpassword</jasypt.encryptor.password>
             </properties>
         </profile>
 
@@ -178,7 +190,7 @@
                 <security.enabled>false</security.enabled>
                 <central>false</central>
                 <war.directory>target-local</war.directory>
-                <datasource.db>testing-docker</datasource.db>
+                <datasource.db>OHDSI-local</datasource.db>
                 <honeur.port>8844</honeur.port>
             </properties>
         </profile>

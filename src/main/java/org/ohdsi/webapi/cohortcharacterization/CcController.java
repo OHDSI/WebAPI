@@ -13,19 +13,22 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
+import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.featureExtraction.FeatureExtraction;
 import org.ohdsi.webapi.Pagination;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
-import org.ohdsi.webapi.cohortcharacterization.dto.*;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcExportDTO;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcPrevalenceStat;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcShortDTO;
+import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
+import org.ohdsi.webapi.common.generation.CommonGenerationDTO;
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
-import org.ohdsi.webapi.common.generation.CommonGenerationDTO;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
 import org.ohdsi.webapi.job.JobExecutionResource;
+import org.ohdsi.webapi.util.ExceptionUtils;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -92,6 +95,8 @@ public class CcController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public CohortCharacterizationDTO getDesign(@PathParam("id") final Long id) {
+        CohortCharacterization  cc = service.findByIdWithLinkedEntities(id);
+        ExceptionUtils.throwNotFoundExceptionIfNull(cc, String.format("There is no cohort characterization with id = %d.", id));
         return convertCcToDto(service.findByIdWithLinkedEntities(id));
     }
 

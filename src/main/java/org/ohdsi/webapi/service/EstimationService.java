@@ -44,6 +44,7 @@ import org.ohdsi.webapi.estimation.specification.EstimationAnalysis;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
+import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.support.GenericConversionService;
@@ -119,7 +120,7 @@ public class EstimationService extends AbstractDaoService {
     @Transactional
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public EstimationDTO createEstimation(Estimation est) { 
+    public EstimationDTO createEstimation(Estimation est) {
         Date currentTime = Calendar.getInstance().getTime();
 
         UserEntity user = userRepository.findByLogin(security.getSubject());
@@ -169,6 +170,7 @@ public class EstimationService extends AbstractDaoService {
     public EstimationDTO getAnalysis(@PathParam("id") int id) {
         return getTransactionTemplate().execute(transactionStatus -> {
             Estimation est = this.estimationRepository.findOne(id);
+            ExceptionUtils.throwNotFoundExceptionIfNull(est, String.format("There is no estimation with id = %d.", id));
             return conversionService.convert(est, EstimationDTO.class);
         });
     }

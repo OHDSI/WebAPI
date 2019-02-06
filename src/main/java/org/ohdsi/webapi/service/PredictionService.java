@@ -38,6 +38,7 @@ import org.ohdsi.webapi.prediction.dto.PredictionAnalysisDTO;
 import org.ohdsi.webapi.prediction.specification.*;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
+import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.support.GenericConversionService;
@@ -152,6 +153,7 @@ public class PredictionService  extends AbstractDaoService {
     public PredictionAnalysisDTO getAnalysis(@PathParam("id") int id) {
         return getTransactionTemplate().execute(transactionStatus -> {
             PredictionAnalysis analysis = this.predictionAnalysisRepository.findOne(id);
+            ExceptionUtils.throwNotFoundExceptionIfNull(analysis, String.format("There is no prediction analysis with id = %d.", id));
             return conversionService.convert(analysis, PredictionAnalysisDTO.class);
         });
     }    

@@ -36,6 +36,7 @@ import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.SourceInfo;
+import org.ohdsi.webapi.util.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.convert.support.GenericConversionService;
@@ -74,9 +75,7 @@ public class ConceptSetService extends AbstractDaoService {
     @Produces(MediaType.APPLICATION_JSON)
     public ConceptSetDTO getConceptSet(@PathParam("id") final int id) {
         ConceptSet conceptSet = getConceptSetRepository().findById(id);
-        if (Objects.isNull(conceptSet)) {
-            throw new NotFoundException();
-        }
+        ExceptionUtils.throwNotFoundExceptionIfNull(conceptSet, String.format("There is no concept set with id = %d.", id));
         return conversionService.convert(conceptSet, ConceptSetDTO.class);
     }
 

@@ -55,6 +55,9 @@ public abstract class AbstractDaoService {
   @Value("${cdm.version}")
   private String cdmVersion;
 
+  @Value("${jdbc.suppressInvalidApiException}")
+  private boolean suppressApiException;
+
   @Autowired
   private JdbcTemplate jdbcTemplate;
 
@@ -152,7 +155,9 @@ public abstract class AbstractDaoService {
     } else {
       dataSource = new DriverManagerDataSource(dataSourceData.getConnectionString());
     }
-    return new CancelableJdbcTemplate(dataSource);
+    CancelableJdbcTemplate jdbcTemplate = new CancelableJdbcTemplate(dataSource);
+    jdbcTemplate.setSuppressApiException(suppressApiException);
+    return jdbcTemplate;
   }
 
   private void loginToKerberos(DataSourceUnsecuredDTO dataSourceData) {
@@ -166,7 +171,7 @@ public abstract class AbstractDaoService {
     }
     try {
       FileUtils.forceDelete(temporaryDir);
-      if (StringUtils.isNotBlank(krbConfig.getComponents().getKeytabPath().toString())){
+      if (krbConfig.getComponents() != null && StringUtils.isNotBlank(krbConfig.getComponents().getKeytabPath().toString())){
         FileUtils.forceDelete(krbConfig.getComponents().getKeytabPath().toFile());
       }
     } catch (IOException e) {

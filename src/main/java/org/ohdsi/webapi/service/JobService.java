@@ -20,27 +20,22 @@ import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.job.JobUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.batch.admin.service.SearchableJobExecutionDao;
-import org.springframework.batch.admin.service.SearchableJobInstanceDao;
 import org.springframework.batch.core.*;
-import org.springframework.batch.core.configuration.JobLocator;
 import org.springframework.batch.core.explore.JobExplorer;
-import org.springframework.batch.core.launch.JobExecutionNotRunningException;
-import org.springframework.batch.core.launch.JobOperator;
 import org.springframework.batch.core.launch.NoSuchJobException;
-import org.springframework.batch.core.launch.NoSuchJobExecutionException;
+import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.scope.context.StepSynchronizationManager;
 import org.springframework.batch.core.step.StepLocator;
 import org.springframework.batch.core.step.tasklet.StoppableTasklet;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.core.step.tasklet.TaskletStep;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -49,19 +44,23 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Component
 public class JobService extends AbstractDaoService {
 
-  @Autowired
-  private JobExplorer jobExplorer;
+  private final JobExplorer jobExplorer;
 
-  @Autowired
-  private SearchableJobExecutionDao jobExecutionDao;
+  private final SearchableJobExecutionDao jobExecutionDao;
 
-  @Autowired
-  private JobOperator jobOperator;
+  private final JobRepository jobRepository;
 
-  @Autowired
-  private JobTemplate jobTemplate;
+  private final JobTemplate jobTemplate;
 
   private Map<Long, Job> jobMap = new HashMap<>();
+
+  public JobService(JobExplorer jobExplorer, SearchableJobExecutionDao jobExecutionDao, JobRepository jobRepository, JobTemplate jobTemplate) {
+
+    this.jobExplorer = jobExplorer;
+    this.jobExecutionDao = jobExecutionDao;
+    this.jobRepository = jobRepository;
+    this.jobTemplate = jobTemplate;
+  }
 
   @GET
   @Path("{jobId}")
@@ -179,8 +178,8 @@ public class JobService extends AbstractDaoService {
   }
 
   public void stopJob(JobExecution jobExecution, Job job) {
-    try {
-      if (Objects.nonNull(job)) {
+
+    if (Objects.nonNull(job)) {
         jobExecution.getStepExecutions().stream()
           .filter(step -> step.getStatus().isRunning())
           .forEach(stepExec -> {
@@ -195,9 +194,10 @@ public class JobService extends AbstractDaoService {
             }
           });
       }
-      jobOperator.stop(jobExecution.getJobId());
-    } catch (NoSuchJobExecutionException | JobExecutionNotRunningException ignored) {
-    }
+      if (jobExecution.isRunning()) {
+        jobExecution.setStatus(BatchStatus.STOPPING);
+        jobRepository.update(jobExecution);
+      }
   }
 
   public JobExecution getJobExecution(Long jobExecutionId) {
@@ -222,6 +222,7 @@ public class JobService extends AbstractDaoService {
     return jobExecution;
   }
 
+  @Transactional
   public void cancelJobExecution(String jobName, Predicate<? super JobExecution> filterPredicate) {
     jobExplorer.findRunningJobExecutions(jobName).stream()
             .filter(filterPredicate)

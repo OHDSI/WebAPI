@@ -54,6 +54,7 @@ import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
@@ -394,6 +395,7 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
 
       return getTransactionTemplate().execute(transactionStatus -> {
         ComparativeCohortAnalysis analysis = this.getComparativeCohortAnalysisRepository().findOne(id);
+        ExceptionUtils.throwNotFoundExceptionIfNull(analysis, String.format("There is no comparative cohort analysis with id = %d.", id));
         ComparativeCohortAnalysisInfo info = conversionService.convert(analysis, ComparativeCohortAnalysisInfo.class);
 
         if (analysis.getComparatorId() > 0) {
@@ -472,8 +474,8 @@ public class ComparativeCohortAnalysisService extends AbstractDaoService {
           }
         }
 
-        return info;
-      });
+            return info;
+        });
     }
 
     @GET

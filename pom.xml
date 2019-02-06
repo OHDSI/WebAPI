@@ -150,6 +150,9 @@
 
     <spring.batch.taskExecutor.corePoolSize>10</spring.batch.taskExecutor.corePoolSize>
     <spring.batch.taskExecutor.maxPoolSize>20</spring.batch.taskExecutor.maxPoolSize>
+
+    <!-- Sensitive Info settings -->
+    <sensitiveinfo.admin.role>admin</sensitiveinfo.admin.role>
   </properties>
   <build>
     <finalName>WebAPI</finalName>

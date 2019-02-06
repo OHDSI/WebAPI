@@ -1,5 +1,6 @@
 package org.ohdsi.webapi;
 
+import org.ohdsi.webapi.source.Source;
 import org.springframework.batch.core.ExitStatus;
 
 public interface Constants {
@@ -35,5 +36,15 @@ public interface Constants {
     String LDAP_PROVIDER = "provider";
     String ROLE_GROUP_MAPPING = "roleGroupMapping";
     String PRESERVE_ROLES = "preserveRoles";
+  }
+
+  interface Variables {
+    String SOURCE = "source";
+  }
+
+  interface SecurityProviders {
+    String DISABLED = "DisabledSecurity";
+    String REGULAR = "AtlasRegularSecurity";
+    String GOOGLE = "AtlasGoogleSecurity";
   }
 }

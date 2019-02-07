@@ -17,7 +17,10 @@ import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.sql.SqlRender;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortdefinition.*;
+import org.ohdsi.webapi.common.SourceMapKey;
+import org.ohdsi.webapi.common.sensitiveinfo.CohortGenerationSensitiveInfoService;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ExportUtil;
 import org.ohdsi.webapi.job.JobExecutionResource;
@@ -114,6 +117,9 @@ public class CohortDefinitionService extends AbstractDaoService {
 
   @Autowired
   private JobService jobService;
+
+  @Autowired
+  private CohortGenerationSensitiveInfoService sensitiveInfoService;
 
 	@PersistenceContext
 	protected EntityManager entityManager;
@@ -520,11 +526,9 @@ public class CohortDefinitionService extends AbstractDaoService {
     }
     Set<CohortGenerationInfo> infoList = def.getGenerationInfoList();
 
-    List<CohortGenerationInfo> result = new ArrayList<>();
-    for (CohortGenerationInfo info : infoList) {
-      result.add(info);
-    }
-    return result;
+    List<CohortGenerationInfo> result = new ArrayList<>(infoList);
+    Map<Integer, SourceInfo> sourceMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_ID);
+    return sensitiveInfoService.filterSensitiveInfo(result, gi -> Collections.singletonMap(Constants.Variables.SOURCE, sourceMap.get(gi.getId().getSourceId())));
   }
 
   /**

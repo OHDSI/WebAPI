@@ -1,30 +1,37 @@
+-- Heracles visualization data table id column
 ALTER TABLE ${ohdsiSchema}.HERACLES_VISUALIZATION_DATA DROP CONSTRAINT PK_heracles_viz_data;
-
-EXEC sp_rename '[${ohdsiSchema}].[HERACLES_VISUALIZATION_DATA]', 'HERACLES_VISUALIZATION_DATA_bak';
+GO
 
 CREATE SEQUENCE ${ohdsiSchema}.HERACLES_VIZ_DATA_SEQUENCE
   AS BIGINT
   START WITH 1
-  NO CYCLE
-  CACHE 1;
+  NO CYCLE;
+GO
+
+ALTER TABLE ${ohdsiSchema}.HERACLES_VISUALIZATION_DATA ADD h_id INT NOT NULL;
+GO
+
+UPDATE ${ohdsiSchema}.HERACLES_VISUALIZATION_DATA SET h_id = id;
+GO
+
+ALTER TABLE ${ohdsiSchema}.HERACLES_VISUALIZATION_DATA DROP COLUMN id;
+GO
+
+EXEC sp_rename '[${ohdsiSchema}].HERACLES_VISUALIZATION_DATA.h_id', 'id', 'COLUMN';
+GO
+
+ALTER TABLE ${ohdsiSchema}.HERACLES_VISUALIZATION_DATA ALTER COLUMN id INT NOT NULL;
+GO
+
+ALTER TABLE ${ohdsiSchema}.HERACLES_VISUALIZATION_DATA ADD CONSTRAINT DF_heracles_viz_data_id DEFAULT (NEXT VALUE FOR ${ohdsiSchema}.HERACLES_VIZ_DATA_SEQUENCE) FOR id;
+GO
+
+ALTER TABLE ${ohdsiSchema}.HERACLES_VISUALIZATION_DATA ADD CONSTRAINT pk_heracles_viz_data PRIMARY KEY CLUSTERED(id asc);
+GO
 
 DECLARE @cur_id_val INT;
 DECLARE @sql NVARCHAR(MAX);
-SELECT @cur_id_val = coalesce(MAX(id), 1) FROM ${ohdsiSchema}.HERACLES_VISUALIZATION_DATA_bak;
+SELECT @cur_id_val = coalesce(MAX(id), 1) FROM ${ohdsiSchema}.HERACLES_VISUALIZATION_DATA;
 SET @sql = N'ALTER SEQUENCE ${ohdsiSchema}.HERACLES_VIZ_DATA_SEQUENCE RESTART WITH ' + CAST(@cur_id_val as NVARCHAR(20)) + ';';
 
 EXEC sp_executesql @sql;
-
-create table ${ohdsiSchema}.HERACLES_VISUALIZATION_DATA
-(
-  cohort_definition_id int          not null,
-  source_id            int          not null,
-  visualization_key    varchar(300) not null,
-  drilldown_id         int,
-  id                   int not null constraint PK_heracles_viz_data default NEXT VALUE FOR ${ohdsiSchema}.HERACLES_VIZ_DATA_SEQUENCE,
-  end_time             datetime,
-  data                 varchar(max)
-) ON [PRIMARY];
-
-INSERT INTO ${ohdsiSchema}.HERACLES_VISUALIZATION_DATA SELECT * FROM ${ohdsiSchema}.HERACLES_VISUALIZATION_DATA_bak;
-DROP TABLE ${ohdsiSchema}.HERACLES_VISUALIZATION_DATA_bak;

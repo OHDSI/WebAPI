@@ -28,6 +28,7 @@ import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
+import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.UserUtils;
@@ -424,9 +425,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 
     return getTransactionTemplate().execute(transactionStatus -> {
       CohortDefinition d = this.cohortDefinitionRepository.findOneWithDetail(id);
-      if (Objects.isNull(d)) {
-        throw new IllegalArgumentException(String.format("There is no cohort definition with id = %d.", id));
-      }
+      ExceptionUtils.throwNotFoundExceptionIfNull(d, String.format("There is no cohort definition with id = %d.", id));
       return cohortDefinitionToDTO(d);
     });
   }

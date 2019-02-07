@@ -16,6 +16,7 @@ import javax.ws.rs.core.MediaType;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.featureExtraction.FeatureExtraction;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.Pagination;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcExportDTO;
@@ -34,6 +35,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
+
+import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
 
 @Path("/cohort-characterization")
 @Controller
@@ -70,11 +73,12 @@ public class CcController {
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public CohortCharacterizationDTO copy(@PathParam("id") final Long id) {
-        CohortCharacterizationEntity copyingEntity = service.findById(id);
-        copyingEntity.setId(null);
-        copyingEntity.setName(String.format("COPY OF: %s", copyingEntity.getName()));
-        final CohortCharacterizationEntity cloneEntity = service.createCc(copyingEntity);
-        return conversionService.convert(cloneEntity, CohortCharacterizationDTO.class);
+        CohortCharacterizationDTO cc = getDesign(id);
+        String copyName = String.format(ENTITY_COPY_PREFIX, cc.getName());
+        int similar = service.countLikeName(copyName);
+        cc.setId(null);
+        cc.setName(similar > 0 ? copyName + " (" + similar + ")" : copyName);
+        return create(cc);
     }
 
     @GET

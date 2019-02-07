@@ -36,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
+
 @Path("/pathway-analysis")
 @Controller
 public class PathwayController {
@@ -63,6 +65,18 @@ public class PathwayController {
         PathwayAnalysisEntity pathwayAnalysis = conversionService.convert(dto, PathwayAnalysisEntity.class);
         PathwayAnalysisEntity saved = pathwayService.create(pathwayAnalysis);
         return conversionService.convert(saved, PathwayAnalysisDTO.class);
+    }
+
+    @POST
+    @Path("/{id}")
+    public PathwayAnalysisDTO copy(@PathParam("id") final Integer id) {
+
+        PathwayAnalysisDTO pathwayAnalysis = get(id);
+        String copyName = String.format(ENTITY_COPY_PREFIX, pathwayAnalysis.getName());
+        int similar = pathwayService.countLikeName(copyName);
+        pathwayAnalysis.setId(null);
+        pathwayAnalysis.setName(similar > 0 ? copyName + " (" + similar + ")" : copyName);
+        return create(pathwayAnalysis);
     }
 
     @POST

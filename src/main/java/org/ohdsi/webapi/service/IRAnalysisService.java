@@ -51,6 +51,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
@@ -509,7 +510,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   public IRAnalysisDTO copy(final int id) {
     IRAnalysisDTO analysis = getAnalysis(id);
     analysis.id = null; // clear the ID
-    analysis.name = "COPY OF: " + analysis.name;
+    analysis.name = String.format(Constants.Templates.ENTITY_COPY_PREFIX, analysis.name);
 
     IRAnalysisDTO copyStudy = createAnalysis(analysis);
     return copyStudy;

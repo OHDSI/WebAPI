@@ -47,4 +47,6 @@ public interface CcService {
     List<CcPrevalenceStat> getPrevalenceStatsByGenerationId(final Long id, Long analysisId, final Long cohortId, final Long covariateId);
 
     void deleteCcGeneration(Long generationId);
+
+    int countLikeName(String copyName);
 }

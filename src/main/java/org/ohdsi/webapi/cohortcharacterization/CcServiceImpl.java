@@ -61,6 +61,7 @@ import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.GENERATE_COHORT_CHARACTERIZATION;
 import static org.ohdsi.webapi.Constants.Params.*;
+import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
 
 @Service
 @Transactional
@@ -74,7 +75,6 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     private final String DELETE_RESULTS = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/deleteResults.sql");
     private final String DELETE_EXECUTION = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/deleteExecution.sql");
     private final String QUERY_PREVALENCE_STATS = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/queryCovariateStatsVocab.sql");
-    private final String IMPORTED_ENTITY_PREFIX = "COPY OF: ";
 
     private final static List<String> INCOMPLETE_STATUSES = ImmutableList.of(BatchStatus.STARTED, BatchStatus.STARTING, BatchStatus.STOPPING, BatchStatus.UNKNOWN)
             .stream().map(BatchStatus::name).collect(Collectors.toList());
@@ -294,7 +294,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         cleanIds(entity);
 
         final CohortCharacterizationEntity newCohortCharacterization = new CohortCharacterizationEntity();
-        newCohortCharacterization.setName(IMPORTED_ENTITY_PREFIX + entity.getName());
+        newCohortCharacterization.setName(String.format(ENTITY_COPY_PREFIX, entity.getName()));
         final CohortCharacterizationEntity persistedCohortCharacterization = this.createCc(newCohortCharacterization);
 
         updateParams(entity, persistedCohortCharacterization);
@@ -468,7 +468,13 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         getJdbcTemplate().batchUpdate(translatedJobSql.split(";"));
     }
 
-    @Override
+  @Override
+  public int countLikeName(String copyName) {
+
+    return repository.countByNameStartsWith(copyName);
+  }
+
+  @Override
     public String getJobName() {
         return GENERATE_COHORT_CHARACTERIZATION;
     }

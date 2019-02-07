@@ -29,6 +29,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.ohdsi.hydra.Hydra;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.prediction.PredictionAnalysis;
@@ -143,7 +144,7 @@ public class PredictionService  extends AbstractDaoService {
         PredictionAnalysis analysis = this.predictionAnalysisRepository.findOne(id);
         entityManager.detach(analysis); // Detach from the persistence context in order to save a copy
         analysis.setId(null);
-        analysis.setName("COPY OF: " + analysis.getName());
+        analysis.setName(String.format(Constants.Templates.ENTITY_COPY_PREFIX, analysis.getName()));
         return this.createAnalysis(analysis);
     }
     

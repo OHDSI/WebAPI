@@ -17,6 +17,7 @@ import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.sql.SqlRender;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortdefinition.*;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ExportUtil;
@@ -67,6 +68,7 @@ import java.util.stream.Stream;
 
 import static org.ohdsi.webapi.Constants.Params.COHORT_DEFINITION_ID;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
+import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 /**
@@ -540,7 +542,7 @@ public class CohortDefinitionService extends AbstractDaoService {
   public CohortDefinitionDTO copy(@PathParam("id") final int id) {
     CohortDefinitionDTO sourceDef = getCohortDefinition(id);
     sourceDef.id = null; // clear the ID
-    sourceDef.name = "COPY OF: " + sourceDef.name;
+    sourceDef.name = String.format(ENTITY_COPY_PREFIX, sourceDef.name);
 
     CohortDefinitionDTO copyDef = createCohortDefinition(sourceDef);
 

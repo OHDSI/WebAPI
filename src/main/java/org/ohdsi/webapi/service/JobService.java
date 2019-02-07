@@ -205,7 +205,7 @@ public class JobService extends AbstractDaoService {
     return jobExplorer.getJobExecution(jobExecutionId);
   }
 
-  protected Job getRunningJob(Long jobExecutionId) {
+  public Job getRunningJob(Long jobExecutionId) {
 
     return jobMap.get(jobExecutionId);
   }

@@ -19,6 +19,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMechanism;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -30,6 +31,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.Where;
@@ -50,7 +53,14 @@ public class Source implements Serializable {
   public static final String IMPALA_DATASOURCE = "impala";
 
   @Id
-  @GeneratedValue
+  @GenericGenerator(
+    name = "source_generator",
+    strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+    parameters = {
+      @Parameter(name = "increment_size", value = "1")
+    }
+  )
+  @GeneratedValue(generator = "source_generator")
   @Column(name="SOURCE_ID")
   private int sourceId;
 
@@ -78,7 +88,10 @@ public class Source implements Serializable {
   @Type(type = "encryptedString")
   private String password;
 
-  @Column(name = "krb_keytab")
+  @Column(name = "deleted_date")
+  private Date deletedDate;
+
+    @Column(name = "krb_keytab")
   private byte[] krbKeytab;
 
   @Column(name = "keytab_name")

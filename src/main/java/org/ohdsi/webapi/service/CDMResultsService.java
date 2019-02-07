@@ -4,16 +4,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import org.apache.commons.lang3.StringUtils;
-import org.ohdsi.circe.helper.ResourceHelper;
-import org.ohdsi.sql.SqlRender;
-import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cache.ResultsCache;
 import org.ohdsi.webapi.cdmresults.CDMResultsCache;
 import org.ohdsi.webapi.cdmresults.CDMResultsCacheTasklet;
@@ -22,11 +19,13 @@ import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.util.PreparedSqlRender;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.event.EventListener;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -37,6 +36,7 @@ import org.springframework.stereotype.Component;
 @Path("/cdmresults")
 @Component
 public class CDMResultsService extends AbstractDaoService {
+    private final Logger logger = LoggerFactory.getLogger(CDMResultsService.class);
 
     private CDMResultsAnalysisRunner queryRunner = null;
 
@@ -63,48 +63,56 @@ public class CDMResultsService extends AbstractDaoService {
         });
     }
 
-    private final RowMapper<SimpleEntry<Long, Long[]>> rowMapper = new RowMapper<SimpleEntry<Long, Long[]>>() {
-        @Override
-        public SimpleEntry<Long, Long[]> mapRow(final ResultSet resultSet, final int arg1) throws SQLException {
-            long id = resultSet.getLong("concept_id");
-            long record_count = resultSet.getLong("record_count");
-            long descendant_record_count = resultSet.getLong("descendant_record_count");
-
-            SimpleEntry<Long, Long[]> entry = new SimpleEntry<Long, Long[]>(id, new Long[]{record_count, descendant_record_count});
-            return entry;
-        }
-    };
-
     @Path("{sourceKey}/conceptRecordCount")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public List<SimpleEntry<Long, Long[]>> getConceptRecordCount(@PathParam("sourceKey") String sourceKey, String[] identifiers) {
+    public List<SimpleEntry<Integer, Long[]>> getConceptRecordCount(@PathParam("sourceKey") String sourceKey, ArrayList<Integer> identifiers) {
         ResultsCache resultsCache = new ResultsCache();
         CDMResultsCache sourceCache = resultsCache.getCache(sourceKey);
-        if (sourceCache != null && sourceCache.warm) {
-            ArrayList<SimpleEntry<Long, Long[]>> listFromCache = new ArrayList<>();
-            for (String identifier : identifiers) {
-                Long id = Long.parseLong(identifier);
+
+        List<Integer> notCachedRecordIds = new ArrayList<>();
+
+        List<SimpleEntry<Integer, Long[]>> cachedRecordCounts = identifiers.stream()
+            .map(id -> {
                 Long[] counts = sourceCache.cache.get(id);
-                SimpleEntry<Long, Long[]> se = new SimpleEntry<>(id, counts);
-                listFromCache.add(se);
+                if (counts != null) {
+                    return new SimpleEntry<>(id, counts);
+                } else {
+                    notCachedRecordIds.add(id);
+                    return null;
+                }
+            })
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+
+        if (!sourceCache.warm && notCachedRecordIds.size() > 0) {
+            Source source = getSourceRepository().findBySourceKey(sourceKey);
+            List<SimpleEntry<Integer, Long[]>> queriedList = this.executeGetConceptRecordCount(notCachedRecordIds.toArray(new Integer[notCachedRecordIds.size()]), source, sourceCache);
+            cachedRecordCounts.addAll(queriedList);
+        }
+
+        return cachedRecordCounts;
+    }
+    
+    protected List<SimpleEntry<Integer, Long[]>> executeGetConceptRecordCount(Integer[] identifiers, Source source, CDMResultsCache sourceCache) {
+        List<SimpleEntry<Integer, Long[]>> returnVal = new ArrayList<>();
+        if (identifiers.length == 0) {
+            return returnVal;
+        } else {
+            int parameterLimit = PreparedSqlRender.getParameterLimit(source);
+            if (parameterLimit > 0 && identifiers.length > parameterLimit) {
+                returnVal = executeGetConceptRecordCount(Arrays.copyOfRange(identifiers, parameterLimit, identifiers.length), source, sourceCache);
+                logger.debug("executeGetConceptRecordCount: " + returnVal.size());
+                identifiers = Arrays.copyOfRange(identifiers, 0, parameterLimit);
             }
-            return listFromCache;
+            PreparedStatementRenderer psr = prepareGetConceptRecordCount(identifiers, source);
+            returnVal.addAll(getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), CDMResultsCacheTasklet.getMapper(sourceCache.cache)));
         }
-
-        Source source = getSourceRepository().findBySourceKey(sourceKey);
-
-        for (int i = 0;
-                i < identifiers.length;
-                i++) {
-            identifiers[i] = "'" + identifiers[i] + "'";
-        }
-        PreparedStatementRenderer psr = prepareGetConceptRecordCount(identifiers, source);
-        return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), rowMapper);
+        return returnVal;
     }
 
-    protected PreparedStatementRenderer prepareGetConceptRecordCount(String[] identifiers, Source source) {
+    protected PreparedStatementRenderer prepareGetConceptRecordCount(Integer[] identifiers, Source source) {
 
         String sqlPath = "/resources/cdmresults/sql/getConceptRecordCount.sql";
 
@@ -115,12 +123,7 @@ public class CDMResultsService extends AbstractDaoService {
 
         String[] tableQualifierNames = {resultTableQualifierName, vocabularyTableQualifierName};
         String[] tableQualifierValues = {resultTableQualifierValue, vocabularyTableQualifierValue};
-
-        Object[] results = new Object[identifiers.length];
-        for (int i = 0; i < identifiers.length; i++) {
-            results[i] = Integer.parseInt(identifiers[i]);
-        }
-        return new PreparedStatementRenderer(source, sqlPath, tableQualifierNames, tableQualifierValues, "conceptIdentifiers", results);
+        return new PreparedStatementRenderer(source, sqlPath, tableQualifierNames, tableQualifierValues, "conceptIdentifiers", identifiers);
     }
 
     /**

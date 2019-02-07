@@ -48,9 +48,9 @@ import static org.ohdsi.webapi.source.Source.IMPALA_DATASOURCE;
 @Transactional
 public class SourceService extends AbstractDaoService {
 
-    public static final String SECURE_MODE_ERROR = "This feature requires the administrator to enable security for the application";
-    private static final String KRB_REALM = "KrbRealm";
-    private static final String KRB_FQDN = "KrbHostFQDN";
+  public static final String SECURE_MODE_ERROR = "This feature requires the administrator to enable security for the application";
+  private static final String KRB_REALM = "KrbRealm";
+  private static final String KRB_FQDN = "KrbHostFQDN";
 
   @Autowired
   private JdbcTemplate jdbcTemplate;
@@ -213,15 +213,19 @@ public class SourceService extends AbstractDaoService {
     if (!securityEnabled) {
       throw new NotAuthorizedException(SECURE_MODE_ERROR);
     }
+    Source sourceByKey = sourceRepository.findBySourceKey(request.getKey());
+    if (Objects.nonNull(sourceByKey)) {
+      throw new Exception("The source key has been already used.");
+    }
     Source source = conversionService.convert(request, Source.class);
     setImpalaKrbData(source, new Source(), file);
     Source saved = sourceRepository.save(source);
     String sourceKey = saved.getSourceKey();
     cachedSources = null;
     securityManager.addSourceRole(sourceKey);
-      SourceInfo sourceInfo = new SourceInfo(saved);
-      publisher.publishEvent(new AddDataSourceEvent(this, source.getSourceId(), source.getSourceName()));
-      return sourceInfo;
+    SourceInfo sourceInfo = new SourceInfo(saved);
+    publisher.publishEvent(new AddDataSourceEvent(this, source.getSourceId(), source.getSourceName()));
+    return sourceInfo;
   }
 
   @Path("{sourceId}")
@@ -286,7 +290,7 @@ public class SourceService extends AbstractDaoService {
     if (source != null) {
       final String sourceKey = source.getSourceKey();
       sourceRepository.delete(source);
-        publisher.publishEvent(new DeleteDataSourceEvent(this, sourceId, source.getSourceName()));
+      publisher.publishEvent(new DeleteDataSourceEvent(this, sourceId, source.getSourceName()));
       cachedSources = null;
       securityManager.removeSourceRole(sourceKey);
       return Response.ok().build();

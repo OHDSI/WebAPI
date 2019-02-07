@@ -1,10 +1,23 @@
 package org.ohdsi.webapi.cohortcharacterization.domain;
 
-import java.util.HashSet;
-import java.util.Set;
-import javax.persistence.*;
+import java.util.*;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
+import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.model.CommonEntity;
@@ -14,8 +27,15 @@ import org.ohdsi.webapi.model.CommonEntity;
 public class CohortCharacterizationEntity extends CommonEntity implements CohortCharacterization {
 
     @Id
-    @SequenceGenerator(name = "cohort_characterization_pk_sequence", sequenceName = "cohort_characterization_seq", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "cohort_characterization_pk_sequence")
+    @GenericGenerator(
+        name = "cohort_characterization_generator",
+        strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+        parameters = {
+            @Parameter(name = "sequence_name", value = "cohort_characterization_seq"),
+            @Parameter(name = "increment_size", value = "1")
+        }
+    )
+    @GeneratedValue(generator = "cohort_characterization_generator")
     private Long id;
     
     @Column
@@ -35,6 +55,18 @@ public class CohortCharacterizationEntity extends CommonEntity implements Cohort
     
     @OneToMany(mappedBy = "cohortCharacterization", fetch = FetchType.LAZY, targetEntity = CcParamEntity.class)
     private Set<CcParamEntity> parameters = new HashSet<>();
+
+    @OneToMany(mappedBy = "cohortCharacterization", fetch = FetchType.LAZY, targetEntity = CcStrataEntity.class)
+    private Set<CcStrataEntity> stratas = new HashSet<>();
+
+    @Column(name = "stratified_by")
+    private String stratifiedBy;
+
+    @Column(name = "strata_only")
+    private Boolean strataOnly;
+
+    @OneToOne(mappedBy = "cohortCharacterization", cascade = CascadeType.ALL)
+    private CcStrataConceptSetEntity conceptSetEntity;
     
     @Column(name = "hash_code")
     private Integer hashCode;
@@ -84,6 +116,43 @@ public class CohortCharacterizationEntity extends CommonEntity implements Cohort
 
     public void setCohortDefinitions(final Set<CohortDefinition> cohortDefinitions) {
         this.cohortDefinitions = cohortDefinitions;
+    }
+
+    @Override
+    public Set<CcStrataEntity> getStratas() {
+        return stratas;
+    }
+
+    public void setStratas(Set<CcStrataEntity> stratas) {
+        this.stratas = stratas;
+    }
+
+    public String getStratifiedBy() {
+        return stratifiedBy;
+    }
+
+    public void setStratifiedBy(String stratifiedBy) {
+        this.stratifiedBy = stratifiedBy;
+    }
+
+    public Boolean getStrataOnly() {
+        return Objects.nonNull(strataOnly) ? strataOnly : false;
+    }
+
+    public void setStrataOnly(Boolean strataOnly) {
+        this.strataOnly = strataOnly;
+    }
+
+    public CcStrataConceptSetEntity getConceptSetEntity() {
+        return conceptSetEntity;
+    }
+
+    public void setConceptSetEntity(CcStrataConceptSetEntity conceptSetEntity) {
+        this.conceptSetEntity = conceptSetEntity;
+    }
+
+    public List<ConceptSet> getConceptSets() {
+        return Objects.nonNull(this.conceptSetEntity) ? this.conceptSetEntity.getConceptSets() : Collections.emptyList();
     }
 
     public Integer getHashCode() {

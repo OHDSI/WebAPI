@@ -7,6 +7,7 @@ import java.util.Objects;
 public class StatementCancel {
 
   private Statement statement;
+  private boolean canceled = false;
 
   public void setStatement(Statement statement) {
 
@@ -16,8 +17,12 @@ public class StatementCancel {
   public void cancel() throws SQLException {
 
     if (Objects.nonNull(statement)) {
+      this.canceled = true;
       statement.cancel();
     }
   }
 
+  public boolean isCanceled() {
+    return canceled;
+  }
 }

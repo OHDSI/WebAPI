@@ -15,6 +15,7 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.*;
 /**
  *
  * @author gennadiy.anisimov
@@ -28,18 +29,18 @@ public class DisabledSecurity extends Security {
   @Override
   public Map<String, String> getFilterChain() {
     Map<String, String> filterChain = new HashMap<>();
-    filterChain.put("/user/**", "hideResource");
-    filterChain.put("/role/**", "hideResource");
-    filterChain.put("/permission/**", "hideResource");
-    filterChain.put("/**", "cors");
+    filterChain.put("/user/**", HIDE_RESOURCE.getTemplateName());
+    filterChain.put("/role/**", HIDE_RESOURCE.getTemplateName());
+    filterChain.put("/permission/**", HIDE_RESOURCE.getTemplateName());
+    filterChain.put("/**", CORS.getTemplateName());
     return filterChain;
   }
 
   @Override
-  public Map<String, Filter> getFilters() {
-    Map<String, javax.servlet.Filter> filters = new HashMap<>();
-    filters.put("hideResource", new HideResourceFilter());
-    filters.put("cors", new CorsFilter());
+  public Map<FilterTemplates, Filter> getFilters() {
+    Map<FilterTemplates, Filter> filters = new HashMap<>();
+    filters.put(HIDE_RESOURCE, new HideResourceFilter());
+    filters.put(CORS, new CorsFilter());
     return filters;
   }
 

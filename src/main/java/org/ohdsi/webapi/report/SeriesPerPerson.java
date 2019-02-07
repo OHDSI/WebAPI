@@ -3,7 +3,7 @@ package org.ohdsi.webapi.report;
 public class SeriesPerPerson {
 	private String seriesName;
 	private int xCalendarMonth;
-	private long yRecordCount;
+	private float yRecordCount;
 	/**
 	 * @return the seriesName
 	 */
@@ -31,13 +31,13 @@ public class SeriesPerPerson {
 	/**
 	 * @return the yRecordCount
 	 */
-	public long getyRecordCount() {
+	public float getyRecordCount() {
 		return yRecordCount;
 	}
 	/**
 	 * @param yRecordCount the yRecordCount to set
 	 */
-	public void setyRecordCount(long yRecordCount) {
+	public void setyRecordCount(float yRecordCount) {
 		this.yRecordCount = yRecordCount;
 	} 
 }

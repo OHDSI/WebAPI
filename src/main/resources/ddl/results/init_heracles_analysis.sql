@@ -149,7 +149,7 @@ NULL as stratum_5_name,
 CAST('OBSERVATION' as VARCHAR(255)) as analysis_type
 union all
 select  108 as analysis_id,
-CAST('Number of persons by length of observation period, in 30d increments' as VARCHAR(255)) as analysis_name,
+CAST('Number of persons by length of first observation period, in 30d increments' as VARCHAR(255)) as analysis_name,
 CAST('Observation period length 30d increments' as VARCHAR(255)) as stratum_1_name,
 NULL as stratum_2_name,
 NULL as stratum_3_name,
@@ -1668,4 +1668,229 @@ NULL as stratum_3_name,
 NULL as stratum_4_name,
 NULL as stratum_5_name,
 CAST('COHORT_SPECIFIC_ANALYSES' as VARCHAR(255)) as analysis_type
+union all
+select 4000 as analysis_id,
+CAST('Distribution of observation period days by period_id in the 365 days prior to first cohort_start_date' as VARCHAR(255)) as analysis_name,
+NULL as stratum_1_name,
+NULL as stratum_2_name,
+NULL as stratum_3_name,
+NULL as stratum_4_name,
+NULL as stratum_5_name,
+CAST('HEALTHCARE_UTILIZATION' as VARCHAR(255)) as analysis_type
+union all
+select 4001 as analysis_id,
+CAST('Number of subjects with visits by period_id, by visit_concept_id, by visit_type_concept_id in the 365d prior to first cohort start date' as VARCHAR(255)) as analysis_name,
+NULL as stratum_1_name,
+NULL as stratum_2_name,
+NULL as stratum_3_name,
+NULL as stratum_4_name,
+NULL as stratum_5_name,
+CAST('HEALTHCARE_UTILIZATION' as VARCHAR(255)) as analysis_type
+union all
+select 4002 as analysis_id,
+CAST('Distribution of number of visit occurrence records per subject by period_id, by visit_concept_id, by visit_type_concept_id in 365d prior to cohort start date' as VARCHAR(255)) as analysis_name,
+NULL as stratum_1_name,
+NULL as stratum_2_name,
+NULL as stratum_3_name,
+NULL as stratum_4_name,
+NULL as stratum_5_name,
+CAST('HEALTHCARE_UTILIZATION' as VARCHAR(255)) as analysis_type
+union all
+select 4003 as analysis_id,
+CAST('Distribution of number of visit dates per subject by period_id, by visit_concept_id, by visit_type_concept_id in 365d prior to first cohort start date' as VARCHAR(255)) as analysis_name,
+NULL as stratum_1_name,
+NULL as stratum_2_name,
+NULL as stratum_3_name,
+NULL as stratum_4_name,
+NULL as stratum_5_name,
+CAST('HEALTHCARE_UTILIZATION' as VARCHAR(255)) as analysis_type
+union all
+select 4003 as analysis_id,
+CAST('Distribution of number of visit dates per subject by period_id, by visit_concept_id, by visit_type_concept_id in 365d prior to first cohort start date' as VARCHAR(255)) as analysis_name,
+NULL as stratum_1_name,
+NULL as stratum_2_name,
+NULL as stratum_3_name,
+NULL as stratum_4_name,
+NULL as stratum_5_name,
+CAST('HEALTHCARE_UTILIZATION' as VARCHAR(255)) as analysis_type
+union all
+select 4004 as analysis_id,
+CAST('Distribution of number of care_site+visit dates per subject by period_id, by visit_concept_id, by visit_type_concept_id in 365d prior to first cohort start date' as VARCHAR(255)) as analysis_name,
+NULL as stratum_1_name,
+NULL as stratum_2_name,
+NULL as stratum_3_name,
+NULL as stratum_4_name,
+NULL as stratum_5_name,
+CAST('HEALTHCARE_UTILIZATION' as VARCHAR(255)) as analysis_type
+union all
+select 4005 as analysis_id,
+CAST('Distribution of length of stay for inpatient visits per subject by period_id, by visit_concept_id, by visit_type_concept_id in the 365 days prior to first cohort_start_date' as VARCHAR(255)) as analysis_name,
+NULL as stratum_1_name,
+NULL as stratum_2_name,
+NULL as stratum_3_name,
+NULL as stratum_4_name,
+NULL as stratum_5_name,
+CAST('HEALTHCARE_UTILIZATION' as VARCHAR(255)) as analysis_type
+union all
+select 4006 as analysis_id,
+CAST('Distribution of observation period days per subject, by period_id during cohort period' as VARCHAR(255)) as analysis_name,
+NULL as stratum_1_name,
+NULL as stratum_2_name,
+NULL as stratum_3_name,
+NULL as stratum_4_name,
+NULL as stratum_5_name,
+CAST('HEALTHCARE_UTILIZATION' as VARCHAR(255)) as analysis_type
+union all
+select 4007 as analysis_id,
+CAST('Number of subjects with visits by period_id, by visit_concept_id, by visit_type_concept_id during the cohort period' as VARCHAR(255)) as analysis_name,
+NULL as stratum_1_name,
+NULL as stratum_2_name,
+NULL as stratum_3_name,
+NULL as stratum_4_name,
+NULL as stratum_5_name,
+CAST('HEALTHCARE_UTILIZATION' as VARCHAR(255)) as analysis_type
+union all
+select 4008 as analysis_id,
+CAST('Distribution of number of visit occurrence records per subject by period_id, by visit_concept_id, by visit_type_concept_id during the cohort period' as VARCHAR(255)) as analysis_name,
+NULL as stratum_1_name,
+NULL as stratum_2_name,
+NULL as stratum_3_name,
+NULL as stratum_4_name,
+NULL as stratum_5_name,
+CAST('HEALTHCARE_UTILIZATION' as VARCHAR(255)) as analysis_type
+union all
+select 4009 as analysis_id,
+CAST('Distribution of number of visit dates per subject by period_id, by visit_concept_id, by visit_type_concept_id during the cohort period' as VARCHAR(255)) as analysis_name,
+NULL as stratum_1_name,
+NULL as stratum_2_name,
+NULL as stratum_3_name,
+NULL as stratum_4_name,
+NULL as stratum_5_name,
+CAST('HEALTHCARE_UTILIZATION' as VARCHAR(255)) as analysis_type
+union all
+select 4010 as analysis_id,
+CAST('Distribution of number of care_site+visit dates per subject by period_id, by visit_concept_id, by visit_type_concept_id during the cohort period' as VARCHAR(255)) as analysis_name,
+NULL as stratum_1_name,
+NULL as stratum_2_name,
+NULL as stratum_3_name,
+NULL as stratum_4_name,
+NULL as stratum_5_name,
+CAST('HEALTHCARE_UTILIZATION' as VARCHAR(255)) as analysis_type
+union all
+select 4011 as analysis_id,
+CAST('Distribution of length of stay for inpatient visits per subject by period_id, by visit_concept_id, by visit_type_concept_id during cohort period' as VARCHAR(255)) as analysis_name,
+NULL as stratum_1_name,
+NULL as stratum_2_name,
+NULL as stratum_3_name,
+NULL as stratum_4_name,
+NULL as stratum_5_name,
+CAST('HEALTHCARE_UTILIZATION' as VARCHAR(255)) as analysis_type
+union all
+select 4012 as analysis_id,
+CAST('Number of subjects with Drug Exposure by period_id, by drug_concept_id, by drug_type_concept_id in the 365d prior to first cohort start date' as VARCHAR(255)) as analysis_name,
+NULL as stratum_1_name,
+NULL as stratum_2_name,
+NULL as stratum_3_name,
+NULL as stratum_4_name,
+NULL as stratum_5_name,
+CAST('HEALTHCARE_UTILIZATION' as VARCHAR(255)) as analysis_type
+union all
+select 4013 as analysis_id,
+CAST('Distribution of number of Drug Exposure records per subject, by period_id, by drug_concept_id in 365d prior to first cohort start date' as VARCHAR(255)) as analysis_name,
+NULL as stratum_1_name,
+NULL as stratum_2_name,
+NULL as stratum_3_name,
+NULL as stratum_4_name,
+NULL as stratum_5_name,
+CAST('HEALTHCARE_UTILIZATION' as VARCHAR(255)) as analysis_type
+union all
+select 4014 as analysis_id,
+CAST('Distribution of greater than 0 drug day supply per subject by period_id, by drug_concept_id in the 365d prior to first cohort start date' as VARCHAR(255)) as analysis_name,
+NULL as stratum_1_name,
+NULL as stratum_2_name,
+NULL as stratum_3_name,
+NULL as stratum_4_name,
+NULL as stratum_5_name,
+CAST('HEALTHCARE_UTILIZATION' as VARCHAR(255)) as analysis_type
+union all
+select 4015 as analysis_id,
+CAST('Distribution of greater than 0 drug quantity per subject by period_id, by drug_concept_id in the 365d prior to first cohort start date' as VARCHAR(255)) as analysis_name,
+NULL as stratum_1_name,
+NULL as stratum_2_name,
+NULL as stratum_3_name,
+NULL as stratum_4_name,
+NULL as stratum_5_name,
+CAST('HEALTHCARE_UTILIZATION' as VARCHAR(255)) as analysis_type
+union all
+select 4016 as analysis_id,
+CAST('Number of subjects with Drug Exposure by period_id, by drug_concept_id, by drug_type_concept_id during the cohort period' as VARCHAR(255)) as analysis_name,
+NULL as stratum_1_name,
+NULL as stratum_2_name,
+NULL as stratum_3_name,
+NULL as stratum_4_name,
+NULL as stratum_5_name,
+CAST('HEALTHCARE_UTILIZATION' as VARCHAR(255)) as analysis_type
+union all
+select 4017 as analysis_id,
+CAST('Distribution of number of Drug Exposure records per subject, by period_id, by drug_concept_id during the cohort period' as VARCHAR(255)) as analysis_name,
+NULL as stratum_1_name,
+NULL as stratum_2_name,
+NULL as stratum_3_name,
+NULL as stratum_4_name,
+NULL as stratum_5_name,
+CAST('HEALTHCARE_UTILIZATION' as VARCHAR(255)) as analysis_type
+union all
+select 4018 as analysis_id,
+CAST('Distribution of greater than 0 drug day supply per subject by period_id, by drug_concept_id during the cohort period' as VARCHAR(255)) as analysis_name,
+NULL as stratum_1_name,
+NULL as stratum_2_name,
+NULL as stratum_3_name,
+NULL as stratum_4_name,
+NULL as stratum_5_name,
+CAST('HEALTHCARE_UTILIZATION' as VARCHAR(255)) as analysis_type
+union all
+select 4019 as analysis_id,
+CAST('Distribution of greater than 0 drug quantity per subject by period_id, by drug_concept_id during the cohort period' as VARCHAR(255)) as analysis_name,
+NULL as stratum_1_name,
+NULL as stratum_2_name,
+NULL as stratum_3_name,
+NULL as stratum_4_name,
+NULL as stratum_5_name,
+CAST('HEALTHCARE_UTILIZATION' as VARCHAR(255)) as analysis_type
+union all
+select 4020 as analysis_id,
+CAST('Distribution of greater than 0 US$ cost per subject by period_id, by visit_concept_id, by visit_type_concept_id, by cost_concept_id, by cost_type_concept_id in the 365d prior to first cohort start date' as VARCHAR(255)) as analysis_name,
+NULL as stratum_1_name,
+NULL as stratum_2_name,
+NULL as stratum_3_name,
+NULL as stratum_4_name,
+NULL as stratum_5_name,
+CAST('HEALTHCARE_UTILIZATION' as VARCHAR(255)) as analysis_type
+union all
+select 4021 as analysis_id,
+CAST('Distribution of greater than 0 US$ cost per subject by period_id, by visit_concept_id, by visit_type_concept_id, by cost_concept_id, by cost_type_concept_id during the cohort period' as VARCHAR(255)) as analysis_name,
+NULL as stratum_1_name,
+NULL as stratum_2_name,
+NULL as stratum_3_name,
+NULL as stratum_4_name,
+NULL as stratum_5_name,
+CAST('HEALTHCARE_UTILIZATION' as VARCHAR(255)) as analysis_type
+union all
+select 4022 as analysis_id,
+CAST('Distribution of greater than 0 US$ cost per subject by period_id, by drug_concept_id, by drug_type_concept_id, by cost_concept_id, by cost_type_concept_id in the 365d prior to first cohort start date' as VARCHAR(255)) as analysis_name,
+NULL as stratum_1_name,
+NULL as stratum_2_name,
+NULL as stratum_3_name,
+NULL as stratum_4_name,
+NULL as stratum_5_name,
+CAST('HEALTHCARE_UTILIZATION' as VARCHAR(255)) as analysis_type
+union all
+select 4023 as analysis_id,
+CAST('Distribution of greater than 0 US$ cost per subject by period_id, by drug_concept_id, by drug_type_concept_id, by cost_concept_id, by cost_type_concept_id, by cost_type_concept_id during the cohort period' as VARCHAR(255)) as analysis_name,
+NULL as stratum_1_name,
+NULL as stratum_2_name,
+NULL as stratum_3_name,
+NULL as stratum_4_name,
+NULL as stratum_5_name,
+CAST('HEALTHCARE_UTILIZATION' as VARCHAR(255)) as analysis_type
 ;

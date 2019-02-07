@@ -1,3 +1,4 @@
+IF OBJECT_ID('@results_schema.cc_results', 'U') IS NULL
 CREATE TABLE @results_schema.cc_results
 (
   type VARCHAR(255) NOT NULL,
@@ -7,6 +8,8 @@ CREATE TABLE @results_schema.cc_results
   analysis_name VARCHAR(1000),
   covariate_id BIGINT,
   covariate_name VARCHAR(1000),
+  strata_id BIGINT,
+  strata_name VARCHAR(1000),
   time_window VARCHAR(255),
   concept_id INTEGER,
   count_value BIGINT,

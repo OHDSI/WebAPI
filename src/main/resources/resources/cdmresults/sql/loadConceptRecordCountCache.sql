@@ -6,7 +6,7 @@ WITH concepts AS (
 ), counts AS (
 SELECT stratum_1 concept_id, MAX (count_value) agg_count_value
 FROM @resultTableQualifier.achilles_results
-WHERE analysis_id IN (2, 4, 5, 201, 301, 401, 501, 505, 601, 701, 801, 901, 1001, 1201, 1801)
+WHERE analysis_id IN (2, 4, 5, 201, 301, 401, 501, 505, 601, 701, 801, 901, 1001, 1201, 1801, 2101)
 		/* analyses:
  			 Number of persons by gender
 			 Number of persons by race
@@ -23,12 +23,13 @@ WHERE analysis_id IN (2, 4, 5, 201, 301, 401, 501, 505, 601, 701, 801, 901, 1001
 			 Number of condition era records, by condition_concept_id
 			 Number of visits by place of service
 			 Number of measurement occurrence records, by observation_concept_id
+			 Number of device exposure records, by device_concept_id
 		*/
 GROUP BY stratum_1
 UNION
 SELECT stratum_2 AS concept_id, SUM (count_value) AS agg_count_value
 FROM @resultTableQualifier.achilles_results
-WHERE analysis_id IN (405, 605, 705, 805, 807, 1805, 1807)
+WHERE analysis_id IN (405, 605, 705, 805, 807, 1805, 1807, 2105)
 		/* analyses:
 			 Number of condition occurrence records, by condition_concept_id by condition_type_concept_id
 			 Number of procedure occurrence records, by procedure_concept_id by procedure_type_concept_id
@@ -37,6 +38,7 @@ WHERE analysis_id IN (405, 605, 705, 805, 807, 1805, 1807)
 			 Number of observation occurrence records, by observation_concept_id and unit_concept_id
 			 Number of observation occurrence records, by measurement_concept_id by measurement_type_concept_id
 			 Number of measurement occurrence records, by measurement_concept_id and unit_concept_id
+			 Number of device exposure records, by device_concept_id by device_type_concept_id
 		    but this subquery only gets the type or unit concept_ids, i.e., stratum_2
 		*/
 GROUP BY stratum_2
@@ -53,4 +55,4 @@ FROM concepts
   LEFT JOIN counts c1 ON concepts.ancestor_id = c1.concept_id
   LEFT JOIN counts c2 ON concepts.descendant_id = c2.concept_id
 GROUP BY concepts.ancestor_id
-HAVING isnull(max(c1.agg_count_value), 0) > 0 OR isnull(sum(c2.agg_count_value), 0) > 0
+;

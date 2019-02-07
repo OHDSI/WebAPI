@@ -13,16 +13,22 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-
+import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
+import org.ohdsi.featureExtraction.FeatureExtraction;
 import org.ohdsi.webapi.Pagination;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
-import org.ohdsi.webapi.cohortcharacterization.dto.*;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcExportDTO;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcPrevalenceStat;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcShortDTO;
+import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
+import org.ohdsi.webapi.common.generation.CommonGenerationDTO;
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
-import org.ohdsi.webapi.common.generation.CommonGenerationDTO;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
 import org.ohdsi.webapi.job.JobExecutionResource;
+import org.ohdsi.webapi.util.ExceptionUtils;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -48,6 +54,7 @@ public class CcController {
         this.feAnalysisService = feAnalysisService;
         this.conversionService = conversionService;
         this.converterUtils = converterUtils;
+        FeatureExtraction.init(null);
     }
 
     @POST
@@ -88,6 +95,8 @@ public class CcController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public CohortCharacterizationDTO getDesign(@PathParam("id") final Long id) {
+        CohortCharacterization  cc = service.findByIdWithLinkedEntities(id);
+        ExceptionUtils.throwNotFoundExceptionIfNull(cc, String.format("There is no cohort characterization with id = %d.", id));
         return convertCcToDto(service.findByIdWithLinkedEntities(id));
     }
 
@@ -183,15 +192,43 @@ public class CcController {
     public List<CcResult> getGenerationsResults(
             @PathParam("generationId") final Long generationId) {
         List<CcResult> ccResults = service.findResults(generationId);
-        List<FeAnalysisWithStringEntity> presetFeAnalyses = feAnalysisService.findPresetAnalysesBySystemNames(ccResults.stream().map(CcResult::getAnalysisName).distinct().collect(Collectors.toList()));
-        ccResults.forEach(res -> {
-            if (Objects.equals(res.getFaType(), StandardFeatureAnalysisType.PRESET.name())) {
-                presetFeAnalyses.stream().filter(fa -> fa.getDesign().equals(res.getAnalysisName())).findFirst().ifPresent(fa -> {
-                    res.setAnalysisId(fa.getId());
-                    res.setAnalysisName(fa.getName());
-                });
-            }
-        });
+        convertPresetAnalysesToLocal(ccResults);
         return ccResults;
+    }
+
+    @GET
+    @Path("/generation/{generationId}/explore/prevalence/{analysisId}/{cohortId}/{covariateId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<CcPrevalenceStat> getPrevalenceStat(@PathParam("generationId") Long generationId,
+                                                    @PathParam("analysisId") Long analysisId,
+                                                    @PathParam("cohortId") Long cohortId,
+                                                    @PathParam("covariateId") Long covariateId) {
+
+        Integer presetId = convertPresetAnalysisIdToSystem(Math.toIntExact(analysisId));
+        List<CcPrevalenceStat> stats = service.getPrevalenceStatsByGenerationId(generationId, Long.valueOf(presetId), cohortId, covariateId);
+        convertPresetAnalysesToLocal(stats);
+        return stats;
+    }
+
+    private void convertPresetAnalysesToLocal(List<? extends CcResult> ccResults) {
+
+      List<FeAnalysisWithStringEntity> presetFeAnalyses = feAnalysisService.findPresetAnalysesBySystemNames(ccResults.stream().map(CcResult::getAnalysisName).distinct().collect(Collectors.toList()));
+      ccResults.stream().filter(res -> Objects.equals(res.getFaType(), StandardFeatureAnalysisType.PRESET.name()))
+              .forEach(res -> {
+                presetFeAnalyses.stream().filter(fa -> fa.getDesign().equals(res.getAnalysisName())).findFirst().ifPresent(fa -> {
+                  res.setAnalysisId(fa.getId());
+                  res.setAnalysisName(fa.getName());
+                });
+              });
+    }
+
+    private Integer convertPresetAnalysisIdToSystem(Integer analysisId) {
+
+        FeAnalysisEntity fe = feAnalysisService.findById(analysisId).orElse(null);
+        if (fe instanceof FeAnalysisWithStringEntity && fe.isPreset()) {
+            FeatureExtraction.PrespecAnalysis prespecAnalysis = FeatureExtraction.getNameToPrespecAnalysis().get(((FeAnalysisWithStringEntity) fe).getDesign());
+            return prespecAnalysis.analysisId;
+        }
+        return analysisId;
     }
 }

@@ -2,19 +2,18 @@ package org.ohdsi.webapi.util;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.SqlProvider;
-import org.springframework.jdbc.core.StatementCallback;
+import org.springframework.jdbc.core.*;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import javax.sql.DataSource;
-import java.sql.BatchUpdateException;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
+import java.util.List;
 
 public class CancelableJdbcTemplate extends JdbcTemplate {
+
+  private boolean suppressApiException = true;
 
   public CancelableJdbcTemplate() {
   }
@@ -25,6 +24,14 @@ public class CancelableJdbcTemplate extends JdbcTemplate {
 
   public CancelableJdbcTemplate(DataSource dataSource, boolean lazyInit) {
     super(dataSource, lazyInit);
+  }
+
+  public boolean isSuppressApiException() {
+    return suppressApiException;
+  }
+
+  public void setSuppressApiException(boolean suppressApiException) {
+    this.suppressApiException = suppressApiException;
   }
 
   public int[] batchUpdate(StatementCancel cancelOp, String... sql) throws DataAccessException {
@@ -68,7 +75,7 @@ public class CancelableJdbcTemplate extends JdbcTemplate {
             if (!stmt.execute(sql[i])) {
               rowsAffected[i] = stmt.getUpdateCount();
             }
-            else {
+            else if (!suppressApiException) {
               throw new InvalidDataAccessApiUsageException("Invalid batch SQL statement: " + sql[i]);
             }
           }
@@ -87,5 +94,45 @@ public class CancelableJdbcTemplate extends JdbcTemplate {
     }
 
     return execute(new BatchUpdateStatementCallback());
+  }
+
+  public int[] batchUpdate(StatementCancel cancelOp, List<PreparedStatementCreator> statements) {
+
+    class BatchUpdateConnectionCallback implements ConnectionCallback<int[]>, SqlProvider {
+
+      private PreparedStatementCreator current;
+
+      @Override
+      public int[] doInConnection(Connection con) throws SQLException, DataAccessException {
+        int[] rowsAffected = new int[statements.size()];
+
+        for (int i = 0; i < statements.size(); i++) {
+          current = statements.get(i);
+          PreparedStatement query = current.createPreparedStatement(con);
+          cancelOp.setStatement(query);
+          if (query.execute()) {
+            rowsAffected[i] = query.getUpdateCount();
+          } else if (!suppressApiException) {
+            throw new InvalidDataAccessApiUsageException("Invalid batch SQL statement: " + getSql());
+          }
+          query.close();
+          if (cancelOp.isCanceled()) {
+            break;
+          }
+        }
+
+        return rowsAffected;
+      }
+
+      @Override
+      public String getSql() {
+        if (current instanceof SqlProvider) {
+          return ((SqlProvider)current).getSql();
+        }
+        return "";
+      }
+    }
+
+    return execute(new BatchUpdateConnectionCallback());
   }
 }

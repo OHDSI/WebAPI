@@ -8,7 +8,6 @@ package org.ohdsi.webapi.service;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.circe.check.Checker;
 import org.ohdsi.circe.check.Warning;
@@ -529,7 +528,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 
     List<CohortGenerationInfo> result = new ArrayList<>(infoList);
     Map<Integer, SourceInfo> sourceMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_ID);
-    return sensitiveInfoService.filterSensitiveInfo(result, gi -> ImmutableMap.of(Constants.Variables.SOURCE, sourceMap.get(gi.getId().getSourceId())));
+    return sensitiveInfoService.filterSensitiveInfo(result, gi -> Collections.singletonMap(Constants.Variables.SOURCE, sourceMap.get(gi.getId().getSourceId())));
   }
 
   /**

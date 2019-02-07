@@ -1,7 +1,8 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
-import com.google.common.collect.ImmutableMap;
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
+
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -47,7 +48,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Controller
 @Transactional
 public class CcController {
-    
+
     private CcService service;
     private FeAnalysisService feAnalysisService;
     private ConversionService conversionService;
@@ -174,7 +175,7 @@ public class CcController {
 
         Map<String, SourceInfo> sourcesMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_KEY);
         return sensitiveInfoService.filterSensitiveInfo(converterUtils.convertList(service.findGenerationsByCcId(id), CommonGenerationDTO.class),
-                info -> ImmutableMap.of(Constants.Variables.SOURCE, sourcesMap.get(info.getSourceKey())));
+                info -> Collections.singletonMap(Constants.Variables.SOURCE, sourcesMap.get(info.getSourceKey())));
     }
 
     @GET
@@ -185,7 +186,7 @@ public class CcController {
 
         CcGenerationEntity generationEntity = service.findGenerationById(generationId);
         return sensitiveInfoService.filterSensitiveInfo(conversionService.convert(generationEntity, CommonGenerationDTO.class),
-                ImmutableMap.of(Constants.Variables.SOURCE, generationEntity.getSource()));
+                Collections.singletonMap(Constants.Variables.SOURCE, generationEntity.getSource()));
     }
 
     @DELETE

@@ -71,19 +71,17 @@ public class PreparedSqlRender {
   }
 	
 	// Given a source, determine how many parameters are allowed for IN clauses
-	// when using prepared statements. This function will return -1 if there
+	// when using prepared statements. This function will return 30000 if there
 	// is no known limit otherwise it will return the value based on the 
 	// sourceDialect property of the source object
 	public static int getParameterLimit(Source source) {
-		int returnVal = -1;
+		int returnVal = 30000;
 		String sourceDialect = source.getSourceDialect().toLowerCase();
 		
 		if (sourceDialect.equals("oracle")) {
 			returnVal = 990;
 		} else if (sourceDialect.equals("sql server") || sourceDialect.equals("pdw")) {
 			returnVal = 2000;
-		} else if (sourceDialect.equals("postgresql") || sourceDialect.equals("redshift")) {
-			returnVal = 30000;
 		}
 		return returnVal;
 	}

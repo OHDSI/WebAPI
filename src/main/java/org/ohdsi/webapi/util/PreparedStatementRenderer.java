@@ -82,7 +82,7 @@ public class PreparedStatementRenderer {
     this.orderedParamsList = PreparedSqlRender.getOrderedListOfParameterValues(paramValueMap, sql);
     // NOTE:
     // Look below
-    if (Objects.equals(source.getSourceDialect(), DBMSType.BIGQUERY.getOhdsiDB())) {
+    if (source != null && Objects.equals(source.getSourceDialect(), DBMSType.BIGQUERY.getOhdsiDB())) {
       this.orderedParamsList = this.orderedParamsList.stream().filter(Objects::nonNull).collect(Collectors.toList());
     }
 
@@ -93,12 +93,17 @@ public class PreparedStatementRenderer {
       // NOTE:
       // Current version of BigQuery driver has issues when NULLs are provided as variables for prepared statements (throws NPE)
       // That's why in case of NULLs we paste them directly into code
-      source.getSourceDialect().equals(DBMSType.BIGQUERY.getOhdsiDB()) ? (object -> object == null ? "NULL" : "?") : (object -> "?")
+      (source != null && source.getSourceDialect().equals(DBMSType.BIGQUERY.getOhdsiDB())) ? (object -> object == null ? "NULL" : "?") : (object -> "?")
     );
 
 		if (source != null) {
 			this.targetDialect = source.getSourceDialect();
-			this.tempSchema = SourceUtils.getTempQualifier(source);
+			try {
+				this.tempSchema = SourceUtils.getTempQualifier(source);
+			}
+			catch (Exception e) {
+				this.tempSchema = null;
+			}
 		}
 
 		this.sessionId = sessionId;

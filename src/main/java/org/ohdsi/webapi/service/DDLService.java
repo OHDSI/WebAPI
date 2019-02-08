@@ -30,6 +30,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import org.apache.commons.lang3.ObjectUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.webapi.sqlrender.SourceStatement;
 import org.ohdsi.webapi.sqlrender.TranslatedStatement;
@@ -42,6 +43,7 @@ public class DDLService {
 	public static final String VOCAB_SCHEMA = "vocab_schema";
 	public static final String RESULTS_SCHEMA = "results_schema";
 	public static final String CEM_SCHEMA = "cem_results_schema";
+	public static final String TEMP_SCHEMA = "oracle_temp_schema";
 
 	private static final Collection<String> RESULT_DDL_FILE_PATHS = Arrays.asList(
 		"/ddl/results/cohort.sql",
@@ -53,6 +55,7 @@ public class DDLService {
 		"/ddl/results/cohort_inclusion_result.sql",
 		"/ddl/results/cohort_inclusion_stats.sql",
 		"/ddl/results/cohort_summary_stats.sql",
+		"/ddl/results/cohort_censor_stats.sql",
 		"/ddl/results/feas_study_inclusion_stats.sql",
 		"/ddl/results/feas_study_index_stats.sql",
 		"/ddl/results/feas_study_result.sql",
@@ -102,17 +105,19 @@ public class DDLService {
 			@QueryParam("dialect") String dialect,
 			@DefaultValue("vocab") @QueryParam("vocabSchema") String vocabSchema,
 			@DefaultValue("results") @QueryParam("schema") String resultSchema,
-			@DefaultValue("true") @QueryParam("initConceptHierarchy") Boolean initConceptHierarchy) {
+			@DefaultValue("true") @QueryParam("initConceptHierarchy") Boolean initConceptHierarchy,
+			@QueryParam("tempSchema") String tempSchema) {
 
 		Collection<String> resultDDLFilePaths = new ArrayList<>(RESULT_DDL_FILE_PATHS);
 
 		if (initConceptHierarchy) {
 			resultDDLFilePaths.addAll(INIT_CONCEPT_HIERARCHY_FILE_PATHS);
 		}
-
+		String oracleTempSchema = ObjectUtils.firstNonNull(tempSchema, resultSchema);
 		Map<String, String> params = new HashMap<String, String>() {{
 			put(VOCAB_SCHEMA, vocabSchema);
 			put(RESULTS_SCHEMA, resultSchema);
+			put(TEMP_SCHEMA, oracleTempSchema);
 		}};
 
 		return generateSQL(dialect, params, resultDDLFilePaths, RESULT_INIT_FILE_PATHS, RESULT_INDEX_FILE_PATHS);
@@ -156,6 +161,7 @@ public class DDLService {
 
 		SourceStatement statement = new SourceStatement();
 		statement.targetDialect = dialect.toLowerCase();
+		statement.oracleTempSchema = params.get(TEMP_SCHEMA);
 		statement.sql = sql;
 		statement.parameters = new HashMap<>(params);
 		TranslatedStatement translatedStatement = translateSQL(statement);

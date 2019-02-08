@@ -1,16 +1,24 @@
 package org.ohdsi.webapi;
 
+import org.ohdsi.webapi.source.Source;
+import com.google.common.collect.ImmutableList;
+import com.odysseusinc.arachne.commons.types.DBMSType;
 import org.springframework.batch.core.ExitStatus;
+
+import java.util.List;
 
 public interface Constants {
   String GENERATE_COHORT = "generateCohort";
   String GENERATE_COHORT_CHARACTERIZATION = "generateCohortCharacterization";
   String GENERATE_PATHWAY_ANALYSIS = "generatePathwayAnalysis";
+  String GENERATE_IR_ANALYSIS = "irAnalysis";
   String WARM_CACHE = "warmCache";
   String USERS_IMPORT = "usersImport";
 
   String FAILED = ExitStatus.FAILED.getExitCode();
   String CANCELED = "CANCELED";
+
+  String TEMP_COHORT_TABLE_PREFIX = "temp_cohort_";
 
   interface Params {
 
@@ -35,5 +43,18 @@ public interface Constants {
     String LDAP_PROVIDER = "provider";
     String ROLE_GROUP_MAPPING = "roleGroupMapping";
     String PRESERVE_ROLES = "preserveRoles";
+    String SESSION_ID = "sessionId";
   }
+
+  interface Variables {
+    String SOURCE = "source";
+  }
+
+  interface SecurityProviders {
+    String DISABLED = "DisabledSecurity";
+    String REGULAR = "AtlasRegularSecurity";
+    String GOOGLE = "AtlasGoogleSecurity";
+  }
+
+  List<String> REQUIRE_COLLAPSE_PS_DBMS = ImmutableList.of(DBMSType.MS_SQL_SERVER.getOhdsiDB(), DBMSType.PDW.getOhdsiDB());
 }

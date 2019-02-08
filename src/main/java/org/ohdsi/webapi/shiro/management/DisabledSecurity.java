@@ -8,6 +8,7 @@ import javax.servlet.Filter;
 import org.apache.shiro.authc.Authenticator;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
 import org.apache.shiro.realm.Realm;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.shiro.filters.CorsFilter;
 import org.ohdsi.webapi.shiro.filters.HideResourceFilter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -15,31 +16,32 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.*;
 /**
  *
  * @author gennadiy.anisimov
  */
 @Component
 @Primary
-@ConditionalOnProperty(name = "security.provider", havingValue = "DisabledSecurity")
+@ConditionalOnProperty(name = "security.provider", havingValue = Constants.SecurityProviders.DISABLED)
 @DependsOn("flyway")
 public class DisabledSecurity extends Security {
 
   @Override
   public Map<String, String> getFilterChain() {
     Map<String, String> filterChain = new HashMap<>();
-    filterChain.put("/user/**", "hideResource");
-    filterChain.put("/role/**", "hideResource");
-    filterChain.put("/permission/**", "hideResource");
-    filterChain.put("/**", "cors");
+    filterChain.put("/user/**", HIDE_RESOURCE.getTemplateName());
+    filterChain.put("/role/**", HIDE_RESOURCE.getTemplateName());
+    filterChain.put("/permission/**", HIDE_RESOURCE.getTemplateName());
+    filterChain.put("/**", CORS.getTemplateName());
     return filterChain;
   }
 
   @Override
-  public Map<String, Filter> getFilters() {
-    Map<String, javax.servlet.Filter> filters = new HashMap<>();
-    filters.put("hideResource", new HideResourceFilter());
-    filters.put("cors", new CorsFilter());
+  public Map<FilterTemplates, Filter> getFilters() {
+    Map<FilterTemplates, Filter> filters = new HashMap<>();
+    filters.put(HIDE_RESOURCE, new HideResourceFilter());
+    filters.put(CORS, new CorsFilter());
     return filters;
   }
 

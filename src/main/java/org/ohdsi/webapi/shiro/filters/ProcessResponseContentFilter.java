@@ -36,7 +36,7 @@ import org.ohdsi.webapi.shiro.exception.NullJsonNodeException;
 public abstract class ProcessResponseContentFilter implements Filter {
 
   @Override
-  public void init(FilterConfig fc) throws ServletException {
+  public void init(FilterConfig fc) {
   }
 
   @Override
@@ -81,7 +81,7 @@ public abstract class ProcessResponseContentFilter implements Filter {
 
   protected abstract boolean shouldProcess(ServletRequest request, ServletResponse response);
   
-  protected abstract void doProcessResponseContent(String content) throws Exception;
+  public abstract void doProcessResponseContent(String content) throws Exception;
 
   protected String parseJsonField(String json, String field) throws IOException {
     ObjectMapper mapper = new ObjectMapper();

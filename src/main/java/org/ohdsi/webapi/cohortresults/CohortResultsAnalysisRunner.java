@@ -1632,7 +1632,11 @@ public class CohortResultsAnalysisRunner {
 		String reportPath = BASE_SQL_PATH + "/healthcareutilization/getVisitUtilization.sql";
 		String reportSql = ResourceHelper.GetResourceAsString(reportPath);
 		
-		String summarySql = SqlRender.renderSql(reportSql, new String[] {"is_summary"}, new String[]{"TRUE"});
+		String visitConceptIdStr = visitConceptId == null ? "" : visitConceptId.toString();
+		String visitTypeConceptIdStr = visitTypeConceptId == null ? "" : visitTypeConceptId.toString();
+		
+		String summarySql = SqlRender.renderSql(reportSql, new String[] {"is_summary", "visit_concept_id", "visit_type_concept_id"}, 
+				new String[]{"TRUE", visitConceptIdStr, visitTypeConceptIdStr});
 		
 		String[] reportCols = new String[]{"cohort_definition_id"
 			, "subjects_analysis_id"
@@ -1651,8 +1655,8 @@ public class CohortResultsAnalysisRunner {
 			, visitStatAnalysisId
 			, losAnalysisId
 			, costAnalysisId
-			, visitConceptId == null ? "" : visitConceptId.toString()
-			, visitTypeConceptId == null ? "" : visitTypeConceptId.toString()
+			, visitConceptIdStr
+			, visitTypeConceptIdStr
 			, costTypeConceptId == null ? "" : costTypeConceptId.toString()
 			, periodType.toString().toLowerCase()
 		};

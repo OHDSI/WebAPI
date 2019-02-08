@@ -73,7 +73,7 @@ public class IRAnalysisInfoListener implements JobExecutionListener {
 
         findExecutionInfoBySourceId(analysis.getExecutionInfoList(), sourceId).ifPresent(analysisInfo -> {
             analysisInfo.setIsValid(isValid);
-			analysisInfo.setCanceled(je.getStepExecutions().stream().anyMatch(se -> Objects.equals(Constants.CANCELED, se.getExitStatus().getExitCode())));
+			analysisInfo.setCanceled(je.getStatus() == BatchStatus.STOPPED || je.getStepExecutions().stream().anyMatch(se -> Objects.equals(Constants.CANCELED, se.getExitStatus().getExitCode())));
             analysisInfo.setExecutionDuration((int) (endTime.getTime() - startTime.getTime()));
             analysisInfo.setStatus(GenerationStatus.COMPLETE);
             analysisInfo.setMessage(statusMessage.substring(0, Math.min(MAX_MESSAGE_LENGTH, statusMessage.length())));

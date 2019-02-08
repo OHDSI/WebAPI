@@ -19,9 +19,9 @@ FROM (
 	  e.subject_id,
 	  e.cohort_start_date,
 	  e.cohort_end_date
-	FROM @target_database_schema.@target_cohort_table e
+	FROM @target_cohort_table e
 	  JOIN ( @event_cohort_id_index_map ) ec ON e.cohort_definition_id = ec.cohort_definition_id
-	  JOIN @target_database_schema.@target_cohort_table t ON t.cohort_start_date <= e.cohort_start_date AND e.cohort_end_date <= t.cohort_end_date AND t.subject_id = e.subject_id
+	  JOIN @target_cohort_table t ON t.cohort_start_date <= e.cohort_start_date AND e.cohort_end_date <= t.cohort_end_date AND t.subject_id = e.subject_id
 	WHERE t.cohort_definition_id = @pathway_target_cohort_id
 ) RE;
 
@@ -168,7 +168,7 @@ SELECT
   pathway_count.cnt AS pathways_count
 FROM (
   SELECT COUNT(*) cnt
-  FROM @target_database_schema.@target_cohort_table
+  FROM @target_cohort_table
   WHERE cohort_definition_id = @pathway_target_cohort_id
 ) target_count,
 (

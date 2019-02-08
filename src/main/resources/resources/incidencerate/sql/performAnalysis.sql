@@ -18,12 +18,12 @@ cteCohortData(target_id, outcome_id, subject_id, cohort_start_date, cohort_end_d
   from cteCohortCombos combos
   join (
     select cohort_definition_id, subject_id, cohort_start_date, cohort_end_date, @adjustedStart as adjusted_start_date, @adjustedEnd as adjusted_end_date
-    FROM @results_database_schema.cohort
+    FROM @temp_database_schema.@cohort_table
   ) t on t.cohort_definition_id = combos.target_id
   join @cdm_database_schema.observation_period op on t.subject_id = op.person_id and t.cohort_start_date between op.observation_period_start_date and op.observation_period_end_date
   left join (
     select cohort_definition_id, subject_id, min(cohort_start_date) as cohort_start_date 
-    from @results_database_schema.cohort
+    from @temp_database_schema.@cohort_table
     GROUP BY cohort_definition_id, subject_id
   ) O on o.cohort_definition_id = combos.outcome_id
     and t.subject_id = o.subject_id
@@ -53,7 +53,7 @@ cteEndDates (target_id, outcome_id, subject_id, cohort_start_date, followup_end,
       join cteCohortData t on combos.target_id = t.target_id and combos.outcome_id = t.outcome_id
       join (
         select cohort_definition_id, subject_id, min(cohort_start_date) as cohort_start_date 
-        from @results_database_schema.cohort
+        from @temp_database_schema.@cohort_table
         GROUP BY cohort_definition_id, subject_id
       ) O on o.cohort_definition_id = combos.outcome_id and t.subject_id = o.subject_id
       where o.cohort_start_date > t.adjusted_start_date

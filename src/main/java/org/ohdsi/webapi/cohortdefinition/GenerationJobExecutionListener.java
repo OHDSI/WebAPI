@@ -102,8 +102,7 @@ public class GenerationJobExecutionListener implements JobExecutionListener {
 		
 		this.cohortDefinitionRepository.save(df);
 		this.transactionTemplate.getTransactionManager().commit(completeStatus);
-		cohortGenerationService.removeJob(je.getJobId());
-	}	
+	}
 
 	@Override
 	public void beforeJob(JobExecution je) { 

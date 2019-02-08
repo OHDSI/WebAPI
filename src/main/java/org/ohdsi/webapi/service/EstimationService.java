@@ -33,6 +33,7 @@ import javax.ws.rs.core.Response;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression.ConceptSetItem;
 import org.ohdsi.hydra.Hydra;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.estimation.Estimation;
@@ -44,11 +45,15 @@ import org.ohdsi.webapi.estimation.specification.EstimationAnalysis;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
+import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ConstantException;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
+
+import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
 
 @Path("/estimation/")
 @Component
@@ -119,7 +124,7 @@ public class EstimationService extends AbstractDaoService {
     @Transactional
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public EstimationDTO createEstimation(Estimation est) { 
+    public EstimationDTO createEstimation(Estimation est) {
         Date currentTime = Calendar.getInstance().getTime();
 
         UserEntity user = userRepository.findByLogin(security.getSubject());
@@ -159,7 +164,7 @@ public class EstimationService extends AbstractDaoService {
         Estimation est = this.estimationRepository.findOne(id);
         entityManager.detach(est); // Detach from the persistence context in order to save a copy
         est.setId(null);
-        est.setName("COPY OF: " + est.getName());
+        est.setName(String.format(ENTITY_COPY_PREFIX, est.getName()));
         return this.createEstimation(est);
     }
     
@@ -169,6 +174,7 @@ public class EstimationService extends AbstractDaoService {
     public EstimationDTO getAnalysis(@PathParam("id") int id) {
         return getTransactionTemplate().execute(transactionStatus -> {
             Estimation est = this.estimationRepository.findOne(id);
+            ExceptionUtils.throwNotFoundExceptionIfNull(est, String.format("There is no estimation with id = %d.", id));
             return conversionService.convert(est, EstimationDTO.class);
         });
     }

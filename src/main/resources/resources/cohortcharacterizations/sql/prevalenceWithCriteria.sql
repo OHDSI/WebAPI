@@ -5,22 +5,22 @@ WITH qualified_events AS (
     WHERE cohort_definition_id = @cohortId
 )
 insert into @results_database_schema.cc_results (type, fa_type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id, count_value, avg_value, strata_id, strata_name, cohort_definition_id, cc_generation_id)
-  select 'PREVALENCE' as type,
-         'CRITERIA' as fa_type,
-    @covariateId as covariate_id,
-    '@covariateName' as covariate_name,
-    @analysisId as analysis_id,
-    '@analysisName' as analysis_name,
-    @conceptId as concept_id,
+  select CAST('PREVALENCE' AS VARCHAR(255)) as type,
+         CAST('CRITERIA' AS VARCHAR(255)) as fa_type,
+    CAST(@covariateId AS BIGINT) as covariate_id,
+    CAST('@covariateName' AS VARCHAR(1000)) as covariate_name,
+    CAST(@analysisId AS INTEGER) as analysis_id,
+    CAST('@analysisName' AS VARCHAR(1000)) as analysis_name,
+    CAST(@conceptId AS INTEGER) as concept_id,
     sum.sum_value as count_value,
     case
       when totals.total > 0 then (sum.sum_value * 1.0 / totals.total * 1.0)
       else 0.0
     end as stat_value,
-    @strataId as strata_id,
+    CAST(@strataId AS BIGINT) as strata_id,
     CAST(@strataName AS VARCHAR(1000)) as strata_name,
-    @cohortId as cohort_definition_id,
-    @executionId as cc_generation_id
+    CAST(@cohortId AS BIGINT) as cohort_definition_id,
+    CAST(@executionId AS BIGINT) as cc_generation_id
 from (select count(*) as sum_value from(
    select person_id from ( @groupQuery ) pi group by pi.person_id) pci) sum,
   (select count(*) as total from  @temp_database_schema.@totalsTable where cohort_definition_id = @cohortId) totals

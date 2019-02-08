@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.function.Predicate;
 
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.DataSourceUnsecuredDTO;
 import com.odysseusinc.datasourcemanager.krblogin.KerberosService;
@@ -29,12 +30,19 @@ import org.ohdsi.webapi.util.DataSourceDTOParser;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.batch.core.JobExecution;
+import org.springframework.batch.core.JobParameters;
+import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.transaction.support.TransactionTemplate;
+
+import static org.ohdsi.webapi.Constants.GENERATE_COHORT;
+import static org.ohdsi.webapi.Constants.Params.COHORT_DEFINITION_ID;
+import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
 
 public abstract class AbstractDaoService {
 
@@ -54,6 +62,9 @@ public abstract class AbstractDaoService {
 
   @Value("${cdm.version}")
   private String cdmVersion;
+
+  @Value("${jdbc.suppressInvalidApiException}")
+  private boolean suppressApiException;
 
   @Autowired
   private JdbcTemplate jdbcTemplate;
@@ -152,7 +163,9 @@ public abstract class AbstractDaoService {
     } else {
       dataSource = new DriverManagerDataSource(dataSourceData.getConnectionString());
     }
-    return new CancelableJdbcTemplate(dataSource);
+    CancelableJdbcTemplate jdbcTemplate = new CancelableJdbcTemplate(dataSource);
+    jdbcTemplate.setSuppressApiException(suppressApiException);
+    return jdbcTemplate;
   }
 
   private void loginToKerberos(DataSourceUnsecuredDTO dataSourceData) {
@@ -166,7 +179,7 @@ public abstract class AbstractDaoService {
     }
     try {
       FileUtils.forceDelete(temporaryDir);
-      if (StringUtils.isNotBlank(krbConfig.getComponents().getKeytabPath().toString())){
+      if (krbConfig.getComponents() != null && StringUtils.isNotBlank(krbConfig.getComponents().getKeytabPath().toString())){
         FileUtils.forceDelete(krbConfig.getComponents().getKeytabPath().toFile());
       }
     } catch (IOException e) {

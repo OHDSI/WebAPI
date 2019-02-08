@@ -38,6 +38,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.*;
 
+import static org.ohdsi.webapi.Constants.Params.*;
+
 /**
  *
  * @author Chris Knoll <cknoll@ohdsi.org>
@@ -78,12 +80,13 @@ public class PerformAnalysisTasklet extends CancelableTasklet {
     
     Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
 
-    Integer sourceId = Integer.valueOf(jobParams.get("source_id").toString());
+    Integer sourceId = Integer.parseInt(jobParams.get(SOURCE_ID).toString());
     Source source = sourceService.findBySourceId(sourceId);
+    String oracleTempSchema = SourceUtils.getTempQualifier(source);
 
-    Integer analysisId = Integer.valueOf(jobParams.get("analysis_id").toString());
+    Integer analysisId = Integer.valueOf(jobParams.get(ANALYSIS_ID).toString());
+    String sessionId = jobParams.get(SESSION_ID).toString();
     try {
-      String sessionId = SessionUtils.sessionId();
       IncidenceRateAnalysis analysis = this.incidenceRateAnalysisRepository.findOne(analysisId);
       IncidenceRateAnalysisExpression expression = mapper.readValue(analysis.getDetails().getExpression(), IncidenceRateAnalysisExpression.class);
       
@@ -91,6 +94,8 @@ public class PerformAnalysisTasklet extends CancelableTasklet {
       options.cdmSchema = SourceUtils.getCdmQualifier(source);
       options.resultsSchema = SourceUtils.getResultsQualifier(source);
       options.vocabularySchema = SourceUtils.getVocabularyQualifier(source);
+      options.tempSchema = SourceUtils.getTempQualifier(source);
+      options.cohortTable = jobParams.get(TARGET_TABLE).toString();
 
       String delete = "DELETE FROM @tableQualifier.ir_strata WHERE analysis_id = @analysis_id;";
       PreparedStatementRenderer psr = new PreparedStatementRenderer(source, delete, "tableQualifier",
@@ -110,7 +115,7 @@ public class PerformAnalysisTasklet extends CancelableTasklet {
       }
       
       String expressionSql = analysisQueryBuilder.buildAnalysisQuery(analysis, options);
-      String translatedSql = SqlTranslate.translateSql(expressionSql, source.getSourceDialect(), sessionId, SourceUtils.getTempQualifier(source));
+      String translatedSql = SqlTranslate.translateSql(expressionSql, source.getSourceDialect(), sessionId, oracleTempSchema);
       return SqlSplit.splitSql(translatedSql);
     } catch (Exception e) {
       throw new RuntimeException(e);

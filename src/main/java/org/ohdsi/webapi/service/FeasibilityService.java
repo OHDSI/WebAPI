@@ -48,6 +48,7 @@ import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CriteriaGroup;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.feasibility.InclusionRule;
 import org.ohdsi.webapi.feasibility.FeasibilityStudy;
 import org.ohdsi.webapi.feasibility.PerformFeasibilityTasklet;
@@ -661,7 +662,7 @@ public class FeasibilityService extends AbstractDaoService {
   public FeasibilityStudyDTO copy(@PathParam("id") final int id) {
     FeasibilityStudyDTO sourceStudy = getStudy(id);
     sourceStudy.id = null; // clear the ID
-    sourceStudy.name = "COPY OF: " + sourceStudy.name;
+    sourceStudy.name = String.format(Constants.Templates.ENTITY_COPY_PREFIX, sourceStudy.name);
 
     return createStudy(sourceStudy);
   }

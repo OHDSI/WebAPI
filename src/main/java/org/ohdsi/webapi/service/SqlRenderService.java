@@ -39,10 +39,6 @@ public class SqlRenderService {
     }
 
     static TranslatedStatement translateSQL(SourceStatement sourceStatement) {
-        return translateSQL(sourceStatement, SessionUtils.sessionId(), "@temp_database_schema");
-    }
-
-    static TranslatedStatement translateSQL(SourceStatement sourceStatement, String sessionId, String tempSchema) {
 
         TranslatedStatement translated = new TranslatedStatement();
 
@@ -56,7 +52,7 @@ public class SqlRenderService {
             if ((sourceStatement.targetDialect == null) || ("sql server".equals(sourceStatement.targetDialect))) {
                 translated.targetSQL = renderedSQL;
             } else {
-                translated.targetSQL = SqlTranslate.translateSql(renderedSQL, sourceStatement.targetDialect, sessionId, tempSchema);
+                translated.targetSQL = SqlTranslate.translateSql(renderedSQL, sourceStatement.targetDialect, SessionUtils.sessionId(), sourceStatement.oracleTempSchema);
             }
 
         } catch (Exception exception) {

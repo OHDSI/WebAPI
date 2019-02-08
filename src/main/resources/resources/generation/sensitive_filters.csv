@@ -1,0 +1,3 @@
+jdbc:\S+,'[ %s connection string]'.format(#source != null ? #source.sourceName : 'Unknown source')
+(?i)(user|username)\s*(=|:)\s*\w+,'[ %s username]'.format(#source != null ? #source.sourceName : 'Unknown source')
+(?i)password\s*(=|:)\s*\w+,'[ %s password]'.format(#source != null ? #source.sourceName : 'Unknown source')

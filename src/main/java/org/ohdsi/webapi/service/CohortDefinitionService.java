@@ -17,7 +17,10 @@ import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.sql.SqlRender;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortdefinition.*;
+import org.ohdsi.webapi.common.SourceMapKey;
+import org.ohdsi.webapi.common.sensitiveinfo.CohortGenerationSensitiveInfoService;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ExportUtil;
 import org.ohdsi.webapi.job.JobExecutionResource;
@@ -28,6 +31,7 @@ import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
+import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.UserUtils;
@@ -66,6 +70,8 @@ import java.util.stream.Stream;
 
 import static org.ohdsi.webapi.Constants.Params.COHORT_DEFINITION_ID;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
+import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
+import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 /**
@@ -113,6 +119,9 @@ public class CohortDefinitionService extends AbstractDaoService {
 
   @Autowired
   private JobService jobService;
+
+  @Autowired
+  private CohortGenerationSensitiveInfoService sensitiveInfoService;
 
 	@PersistenceContext
 	protected EntityManager entityManager;
@@ -424,9 +433,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 
     return getTransactionTemplate().execute(transactionStatus -> {
       CohortDefinition d = this.cohortDefinitionRepository.findOneWithDetail(id);
-      if (Objects.isNull(d)) {
-        throw new IllegalArgumentException(String.format("There is no cohort definition with id = %d.", id));
-      }
+      ExceptionUtils.throwNotFoundExceptionIfNull(d, String.format("There is no cohort definition with id = %d.", id));
       return cohortDefinitionToDTO(d);
     });
   }
@@ -495,11 +502,11 @@ public class CohortDefinitionService extends AbstractDaoService {
       return null;
     });
 
-    cohortGenerationService.getJobExecution(source, id)
-            .ifPresent(jobExecution -> {
-              Job job = cohortGenerationService.getRunningJob(jobExecution.getJobId());
-              jobService.stopJob(jobExecution, job);
-            });
+    jobService.cancelJobExecution(Constants.GENERATE_COHORT, e -> {
+        JobParameters parameters = e.getJobParameters();
+        return Objects.equals(parameters.getString(COHORT_DEFINITION_ID), Integer.toString(id))
+              && Objects.equals(parameters.getString(SOURCE_ID), Integer.toString(source.getSourceId()));
+      });
     return Response.status(Response.Status.OK).build();
   }
 
@@ -521,11 +528,9 @@ public class CohortDefinitionService extends AbstractDaoService {
     }
     Set<CohortGenerationInfo> infoList = def.getGenerationInfoList();
 
-    List<CohortGenerationInfo> result = new ArrayList<>();
-    for (CohortGenerationInfo info : infoList) {
-      result.add(info);
-    }
-    return result;
+    List<CohortGenerationInfo> result = new ArrayList<>(infoList);
+    Map<Integer, SourceInfo> sourceMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_ID);
+    return sensitiveInfoService.filterSensitiveInfo(result, gi -> Collections.singletonMap(Constants.Variables.SOURCE, sourceMap.get(gi.getId().getSourceId())));
   }
 
   /**
@@ -541,7 +546,7 @@ public class CohortDefinitionService extends AbstractDaoService {
   public CohortDefinitionDTO copy(@PathParam("id") final int id) {
     CohortDefinitionDTO sourceDef = getCohortDefinition(id);
     sourceDef.id = null; // clear the ID
-    sourceDef.name = "COPY OF: " + sourceDef.name;
+    sourceDef.name = String.format(ENTITY_COPY_PREFIX, sourceDef.name);
 
     CohortDefinitionDTO copyDef = createCohortDefinition(sourceDef);
 

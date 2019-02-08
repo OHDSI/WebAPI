@@ -140,6 +140,9 @@
     <!-- ORGANIZATION SETTINGS -->
     <organization.name>OHDSI</organization.name>
 
+    <!-- JdbcTemplate -->
+    <jdbc.suppressInvalidApiException>true</jdbc.suppressInvalidApiException>
+
     <!-- Logging -->
     <spring.jpa.show-sql>false</spring.jpa.show-sql>
     <logging.level.root>info</logging.level.root>
@@ -150,6 +153,9 @@
 
     <spring.batch.taskExecutor.corePoolSize>10</spring.batch.taskExecutor.corePoolSize>
     <spring.batch.taskExecutor.maxPoolSize>20</spring.batch.taskExecutor.maxPoolSize>
+
+    <!-- Sensitive Info settings -->
+    <sensitiveinfo.admin.role>admin</sensitiveinfo.admin.role>
   </properties>
   <build>
     <finalName>WebAPI</finalName>
@@ -533,7 +539,7 @@
     <dependency>
       <groupId>com.microsoft.sqlserver</groupId>
       <artifactId>mssql-jdbc</artifactId>
-      <version>6.2.2.jre8</version>
+      <version>7.0.0.jre8</version>
     </dependency>
     <dependency>
       <groupId>com.opencsv</groupId>

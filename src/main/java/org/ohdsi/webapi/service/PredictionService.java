@@ -29,6 +29,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.ohdsi.hydra.Hydra;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.prediction.PredictionAnalysis;
@@ -38,6 +39,7 @@ import org.ohdsi.webapi.prediction.dto.PredictionAnalysisDTO;
 import org.ohdsi.webapi.prediction.specification.*;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
+import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.support.GenericConversionService;
@@ -142,7 +144,7 @@ public class PredictionService  extends AbstractDaoService {
         PredictionAnalysis analysis = this.predictionAnalysisRepository.findOne(id);
         entityManager.detach(analysis); // Detach from the persistence context in order to save a copy
         analysis.setId(null);
-        analysis.setName("COPY OF: " + analysis.getName());
+        analysis.setName(String.format(Constants.Templates.ENTITY_COPY_PREFIX, analysis.getName()));
         return this.createAnalysis(analysis);
     }
     
@@ -152,6 +154,7 @@ public class PredictionService  extends AbstractDaoService {
     public PredictionAnalysisDTO getAnalysis(@PathParam("id") int id) {
         return getTransactionTemplate().execute(transactionStatus -> {
             PredictionAnalysis analysis = this.predictionAnalysisRepository.findOne(id);
+            ExceptionUtils.throwNotFoundExceptionIfNull(analysis, String.format("There is no prediction analysis with id = %d.", id));
             return conversionService.convert(analysis, PredictionAnalysisDTO.class);
         });
     }    

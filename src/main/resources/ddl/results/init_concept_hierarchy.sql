@@ -255,7 +255,7 @@ INSERT INTO @results_schema.concept_hierarchy
 	(concept_id, concept_name, treemap, level1_concept_name, level2_concept_name, level3_concept_name)
 SELECT
 	procs.concept_id,
-	procs.proc_concept_name AS concept_name,
+	CAST(procs.proc_concept_name AS VARCHAR(400)) AS concept_name,
 	CAST('Procedure' AS VARCHAR(20)) AS treemap,
 	CAST(max(proc_hierarchy.os3_concept_name) AS VARCHAR(255)) AS level2_concept_name,
 	CAST(max(proc_hierarchy.os2_concept_name) AS VARCHAR(255)) AS level3_concept_name,

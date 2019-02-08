@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.shiro.management;
 
 import org.apache.shiro.realm.Realm;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.shiro.filters.GoogleIapJwtAuthFilter;
 import org.ohdsi.webapi.shiro.realms.JwtAuthRealm;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +20,7 @@ import static org.ohdsi.webapi.shiro.management.FilterTemplates.NO_SESSION_CREAT
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.SSL;
 
 @Component
-@ConditionalOnProperty(name = "security.provider", havingValue = "AtlasGoogleSecurity")
+@ConditionalOnProperty(name = "security.provider", havingValue = Constants.SecurityProviders.GOOGLE)
 @DependsOn("flyway")
 public class AtlasGoogleSecurity extends AtlasSecurity {
 

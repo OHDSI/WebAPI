@@ -1,8 +1,12 @@
 package org.ohdsi.webapi.pathway;
 
+import com.google.common.collect.ImmutableMap;
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.Pagination;
+import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.CommonGenerationDTO;
+import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
 import org.ohdsi.webapi.pathway.converter.SerializedPathwayAnalysisToPathwayAnalysisConverter;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisGenerationEntity;
@@ -15,6 +19,7 @@ import org.ohdsi.webapi.pathway.dto.TargetCohortPathwaysDTO;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
@@ -32,6 +37,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -44,14 +50,16 @@ public class PathwayController {
     private ConverterUtils converterUtils;
     private PathwayService pathwayService;
     private final SourceService sourceService;
+    private final CommonGenerationSensitiveInfoService sensitiveInfoService;
 
     @Autowired
-    public PathwayController(ConversionService conversionService, ConverterUtils converterUtils, PathwayService pathwayService, SourceService sourceService) {
+    public PathwayController(ConversionService conversionService, ConverterUtils converterUtils, PathwayService pathwayService, SourceService sourceService, CommonGenerationSensitiveInfoService sensitiveInfoService) {
 
         this.conversionService = conversionService;
         this.converterUtils = converterUtils;
         this.pathwayService = pathwayService;
         this.sourceService = sourceService;
+        this.sensitiveInfoService = sensitiveInfoService;
     }
 
     @POST
@@ -174,7 +182,9 @@ public class PathwayController {
             @PathParam("id") final Integer pathwayAnalysisId
     ) {
 
-        return converterUtils.convertList(pathwayService.getPathwayGenerations(pathwayAnalysisId), CommonGenerationDTO.class);
+        Map<String, SourceInfo> sourcesMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_KEY);
+        return sensitiveInfoService.filterSensitiveInfo(converterUtils.convertList(pathwayService.getPathwayGenerations(pathwayAnalysisId), CommonGenerationDTO.class),
+                info -> Collections.singletonMap(Constants.Variables.SOURCE, sourcesMap.get(info.getSourceKey())));
     }
 
     @GET
@@ -185,7 +195,9 @@ public class PathwayController {
             @PathParam("generationId") final Long generationId
     ) {
 
-        return conversionService.convert(pathwayService.getGeneration(generationId), CommonGenerationDTO.class);
+        PathwayAnalysisGenerationEntity generationEntity = pathwayService.getGeneration(generationId);
+        return sensitiveInfoService.filterSensitiveInfo(conversionService.convert(generationEntity, CommonGenerationDTO.class),
+                Collections.singletonMap(Constants.Variables.SOURCE, generationEntity.getSource()));
     }
 
     @GET

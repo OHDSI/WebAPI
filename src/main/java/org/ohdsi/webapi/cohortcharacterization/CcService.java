@@ -48,5 +48,7 @@ public interface CcService {
 
     void deleteCcGeneration(Long generationId);
 
+    void cancelGeneration(Long id, String sourceKey);
+
     int countLikeName(String copyName);
 }

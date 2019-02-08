@@ -8,6 +8,7 @@ import javax.servlet.Filter;
 import org.apache.shiro.authc.Authenticator;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
 import org.apache.shiro.realm.Realm;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.shiro.filters.CorsFilter;
 import org.ohdsi.webapi.shiro.filters.HideResourceFilter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -22,7 +23,7 @@ import static org.ohdsi.webapi.shiro.management.FilterTemplates.*;
  */
 @Component
 @Primary
-@ConditionalOnProperty(name = "security.provider", havingValue = "DisabledSecurity")
+@ConditionalOnProperty(name = "security.provider", havingValue = Constants.SecurityProviders.DISABLED)
 @DependsOn("flyway")
 public class DisabledSecurity extends Security {
 

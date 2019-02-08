@@ -3,6 +3,7 @@ package org.ohdsi.webapi.pathway;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisGenerationEntity;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
+import org.ohdsi.webapi.source.Source;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -36,6 +37,8 @@ public interface PathwayService {
     PathwayAnalysisGenerationEntity getGeneration(Long generationId);
 
     PathwayAnalysisResult getResultingPathways(final Long generationId);
+
+    void cancelGeneration(Integer pathwayAnalysisId, Integer sourceId);
 
     int countLikeName(String copyName);
 }

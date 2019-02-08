@@ -16,6 +16,7 @@ public class CommonGenerationToCommonGenerationDtoConverter extends BaseConversi
         resultObject.setHashCode(source.getHashCode());
         resultObject.setStartTime(source.getStartTime());
         resultObject.setEndTime(source.getEndTime());
+        resultObject.setExitMessage(source.getExitMessage());
         
         return resultObject;
     }

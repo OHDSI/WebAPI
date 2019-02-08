@@ -9,6 +9,7 @@ import org.apache.shiro.realm.activedirectory.ActiveDirectoryRealm;
 import org.apache.shiro.realm.ldap.JndiLdapContextFactory;
 import org.apache.shiro.realm.ldap.JndiLdapRealm;
 import org.jasig.cas.client.validation.Cas20ServiceTicketValidator;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.user.importer.providers.LdapProvider;
 import org.ohdsi.webapi.shiro.filters.LogoutFilter;
 import org.ohdsi.webapi.shiro.filters.SendTokenInHeaderFilter;
@@ -61,7 +62,7 @@ import static org.ohdsi.webapi.shiro.management.FilterTemplates.*;
 import static org.ohdsi.webapi.util.QuoteUtils.dequote;
 
 @Component
-@ConditionalOnProperty(name = "security.provider", havingValue = "AtlasRegularSecurity")
+@ConditionalOnProperty(name = "security.provider", havingValue = Constants.SecurityProviders.REGULAR)
 @DependsOn("flyway")
 public class AtlasRegularSecurity extends AtlasSecurity {
     

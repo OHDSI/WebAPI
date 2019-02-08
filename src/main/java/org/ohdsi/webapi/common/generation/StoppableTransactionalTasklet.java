@@ -6,6 +6,7 @@ import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.StoppableTasklet;
+import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.concurrent.FutureTask;
@@ -31,6 +32,10 @@ public abstract class StoppableTransactionalTasklet<T> extends TransactionalTask
               }
           }
       } catch (Exception e) {
+          if (isStopped() && e.getCause() instanceof DataAccessResourceFailureException) {
+            // ignore exception
+            return null;
+          }
           throw new RuntimeException(e);
       }
   }

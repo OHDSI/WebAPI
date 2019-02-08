@@ -5,7 +5,6 @@ import org.ohdsi.webapi.cohortdefinition.*;
 import org.ohdsi.webapi.cohortfeatures.GenerateCohortFeaturesTasklet;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
-import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.SessionUtils;
@@ -14,7 +13,6 @@ import org.ohdsi.webapi.util.TempTableCleanupManager;
 import org.springframework.batch.core.*;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
-import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.batch.repeat.exception.ExceptionHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 import static org.ohdsi.webapi.Constants.GENERATE_COHORT;
 import static org.ohdsi.webapi.Constants.Params.*;
@@ -45,25 +42,19 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
 
   private final StepBuilderFactory stepBuilders;
 
-  private final JobTemplate jobTemplate;
-
-  private final JobExplorer jobExplorer;
-
-  private Map<Long, Job> jobMap = new HashMap<>();
+  private JobService jobService;
 
   @Autowired
   public CohortGenerationService(CohortDefinitionRepository cohortDefinitionRepository,
                                  CohortGenerationInfoRepository cohortGenerationInfoRepository,
                                  JobBuilderFactory jobBuilders,
                                  StepBuilderFactory stepBuilders,
-                                 JobTemplate jobTemplate,
-                                 JobExplorer jobExplorer) {
+                                 JobService jobService) {
     this.cohortDefinitionRepository = cohortDefinitionRepository;
     this.cohortGenerationInfoRepository = cohortGenerationInfoRepository;
     this.jobBuilders = jobBuilders;
     this.stepBuilders = stepBuilders;
-    this.jobTemplate = jobTemplate;
-    this.jobExplorer = jobExplorer;
+    this.jobService = jobService;
   }
 
   public JobExecutionResource generateCohort(CohortDefinition cohortDefinition, Source source, boolean includeFeatures) {
@@ -134,38 +125,11 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     final JobParametersBuilder jobParametersBuilder = getJobParametersBuilder(source, cohortDefinition, targetTable);
     Job job = buildGenerateCohortJob(cohortDefinition, source, includeFeatures, updateGenerationInfo, jobName, jobParametersBuilder.toJobParameters());
     extraJobParams.forEach(jobParametersBuilder::addString);
-    JobExecutionResource jobExecution = this.jobTemplate.launch(job, jobParametersBuilder.toJobParameters());
-    jobMap.put(jobExecution.getExecutionId(), job);
-    return jobExecution;
+    return jobService.runJob(job, jobParametersBuilder.toJobParameters());
   }
 
   public JobExecutionResource runGenerateCohortJob(CohortDefinition cohortDefinition, Source source, boolean includeFeatures, boolean updateGenerationInfo, String targetTable) {
     return runGenerateCohortJob(cohortDefinition, source, includeFeatures, updateGenerationInfo, targetTable, new HashMap<>(), GENERATE_COHORT);
-  }
-
-  public Optional<JobExecution> getJobExecution(Source source, Integer cohortDefinitionId) {
-
-    return jobExplorer.findRunningJobExecutions(GENERATE_COHORT)
-            .stream().filter(e -> {
-      JobParameters parameters = e.getJobParameters();
-      return Objects.equals(parameters.getString(COHORT_DEFINITION_ID), Integer.toString(cohortDefinitionId))
-              && Objects.equals(parameters.getString(SOURCE_ID), Integer.toString(source.getSourceId()));
-    }).findFirst();
-  }
-
-  public JobExecution getJobExecution(Long jobExecutionId) {
-
-    return jobExplorer.getJobExecution(jobExecutionId);
-  }
-
-  public Job getRunningJob(Long jobExecutionId) {
-
-    return jobMap.get(jobExecutionId);
-  }
-
-  public void removeJob(Long jobExecutionId) {
-
-    jobMap.remove(jobExecutionId);
   }
 
   public JobParametersBuilder getJobParametersBuilder(Source source, CohortDefinition cohortDefinition, String targetTable) {

@@ -180,6 +180,12 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     }
 
     @Override
+    public int countLikeName(String name) {
+
+        return pathwayAnalysisRepository.countByNameStartsWith(name);
+    }
+
+    @Override
     public PathwayAnalysisEntity update(PathwayAnalysisEntity forUpdate) {
 
         PathwayAnalysisEntity existing = getById(forUpdate.getId());

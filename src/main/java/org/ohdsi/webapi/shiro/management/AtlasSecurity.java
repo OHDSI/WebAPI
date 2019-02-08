@@ -276,7 +276,7 @@ public abstract class AtlasSecurity extends Security {
             // cohort characterization
             .addProtectedRestPath("/cohort-characterization", CREATE_COHORT_CHARACTERIZATION)
             .addProtectedRestPath("/cohort-characterization/import", CREATE_COHORT_CHARACTERIZATION)
-            .addProtectedRestPath("/cohort-characterization/*", DELETE_COHORT_CHARACTERIZATION)
+            .addProtectedRestPath("/cohort-characterization/*", CREATE_COHORT_CHARACTERIZATION, DELETE_COHORT_CHARACTERIZATION)
             .addProtectedRestPath("/cohort-characterization/*/generation/*")
             .addProtectedRestPath("/cohort-characterization/*/generation")
             .addProtectedRestPath("/cohort-characterization/generation/*")
@@ -287,7 +287,7 @@ public abstract class AtlasSecurity extends Security {
             // Pathways Analyses
             .addProtectedRestPath("/pathway-analysis", CREATE_PATHWAY_ANALYSIS)
             .addProtectedRestPath("/pathway-analysis/import", CREATE_PATHWAY_ANALYSIS)
-            .addProtectedRestPath("/pathway-analysis/*", DELETE_PATHWAY_ANALYSIS)
+            .addProtectedRestPath("/pathway-analysis/*", CREATE_PATHWAY_ANALYSIS, DELETE_PATHWAY_ANALYSIS)
             .addProtectedRestPath("/pathway-analysis/*/sql/*")
             .addProtectedRestPath("/pathway-analysis/*/generation/*")
             .addProtectedRestPath("/pathway-analysis/*/generation")

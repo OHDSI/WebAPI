@@ -39,4 +39,6 @@ public interface PathwayService {
     PathwayAnalysisResult getResultingPathways(final Long generationId);
 
     void cancelGeneration(Integer pathwayAnalysisId, Integer sourceId);
+
+    int countLikeName(String copyName);
 }

@@ -40,6 +40,7 @@ import org.ohdsi.webapi.util.SourceUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
@@ -325,7 +326,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
         JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
 
-        Job generateAnalysisJob = generationUtils.buildJobForCohortBasedAnalysisTasklet(
+        SimpleJobBuilder generateAnalysisJob = generationUtils.buildJobForCohortBasedAnalysisTasklet(
                 GENERATE_PATHWAY_ANALYSIS,
                 source,
                 builder,
@@ -349,7 +350,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
         final JobParameters jobParameters = builder.toJobParameters();
 
-        jobService.runJob(generateAnalysisJob, jobParameters);
+        jobService.runJob(generateAnalysisJob.build(), jobParameters);
     }
 
     @Override

@@ -70,6 +70,7 @@ import java.util.stream.Stream;
 
 import static org.ohdsi.webapi.Constants.Params.COHORT_DEFINITION_ID;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
+import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 /**
@@ -500,11 +501,11 @@ public class CohortDefinitionService extends AbstractDaoService {
       return null;
     });
 
-    cohortGenerationService.getJobExecution(source, id)
-            .ifPresent(jobExecution -> {
-              Job job = cohortGenerationService.getRunningJob(jobExecution.getJobId());
-              jobService.stopJob(jobExecution, job);
-            });
+    jobService.cancelJobExecution(Constants.GENERATE_COHORT, e -> {
+        JobParameters parameters = e.getJobParameters();
+        return Objects.equals(parameters.getString(COHORT_DEFINITION_ID), Integer.toString(id))
+              && Objects.equals(parameters.getString(SOURCE_ID), Integer.toString(source.getSourceId()));
+      });
     return Response.status(Response.Status.OK).build();
   }
 

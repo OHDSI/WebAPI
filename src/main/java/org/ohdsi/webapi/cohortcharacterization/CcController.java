@@ -16,6 +16,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.featureExtraction.FeatureExtraction;
@@ -166,7 +168,14 @@ public class CcController {
     public JobExecutionResource generate(@PathParam("id") final Long id, @PathParam("sourceKey") final String sourceKey) {
         return service.generateCc(id, sourceKey);
     }
-    
+
+    @DELETE
+    @Path("/{id}/generation/{sourceKey}")
+    public Response cancelGeneration(@PathParam("id") final Long id, @PathParam("sourceKey") final String sourceKey) {
+        service.cancelGeneration(id, sourceKey);
+        return Response.ok().build();
+    }
+
     @GET
     @Path("/{id}/generation")
     @Produces(MediaType.APPLICATION_JSON)

@@ -163,6 +163,17 @@ public class PathwayController {
         pathwayService.generatePathways(pathwayAnalysisId, source.getSourceId());
     }
 
+    @DELETE
+    @Path("/{id}/generation/{sourceKey}")
+    public void cancelPathwaysGeneration(
+            @PathParam("id") final Integer pathwayAnalysisId,
+            @PathParam("sourceKey") final String sourceKey
+    ){
+
+        Source source = sourceService.findBySourceKey(sourceKey);
+        pathwayService.cancelGeneration(pathwayAnalysisId, source.getSourceId());
+    }
+
     @GET
     @Path("/{id}/generation")
     @Produces(MediaType.APPLICATION_JSON)

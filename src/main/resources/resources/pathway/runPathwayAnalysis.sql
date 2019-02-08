@@ -19,9 +19,9 @@ FROM (
 	  e.subject_id,
 	  e.cohort_start_date,
 	  e.cohort_end_date
-	FROM @target_cohort_table e
+	FROM @target_database_schema.@target_cohort_table e
 	  JOIN ( @event_cohort_id_index_map ) ec ON e.cohort_definition_id = ec.cohort_definition_id
-	  JOIN @target_cohort_table t ON t.cohort_start_date <= e.cohort_start_date AND e.cohort_end_date <= t.cohort_end_date AND t.subject_id = e.subject_id
+	  JOIN @target_database_schema.@target_cohort_table t ON t.cohort_start_date <= e.cohort_start_date AND e.cohort_end_date <= t.cohort_end_date AND t.subject_id = e.subject_id
 	WHERE t.cohort_definition_id = @pathway_target_cohort_id
 ) RE;
 
@@ -88,62 +88,32 @@ into
       |B--|B--|
 */
 
-IF OBJECT_ID('tempdb..#split_overlapping_events', 'U') IS NOT NULL
-DROP TABLE #split_overlapping_events;
-
-SELECT
-	CASE WHEN ordinal < 3 THEN first.id ELSE second.id END as id,
-	CASE WHEN ordinal < 3 THEN first.event_cohort_index ELSE second.event_cohort_index END event_cohort_index,
-	CASE WHEN ordinal < 3 THEN first.subject_id ELSE second.subject_id END subject_id,
-
-	CASE ordinal
-		WHEN 1 THEN
-		first.cohort_start_date
-		WHEN 2 THEN
-		second.cohort_start_date
-		WHEN 3 THEN
-		second.cohort_start_date
-		WHEN 4 THEN
-		first.cohort_end_date
-		END as cohort_start_date,
-
-	CASE ordinal
-		WHEN 1 THEN
-		second.cohort_start_date
-		WHEN 2 THEN
-		first.cohort_end_date
-		WHEN 3 THEN
-		first.cohort_end_date
-		WHEN 4 THEN
-		second.cohort_end_date
-		END as cohort_end_date
-INTO #split_overlapping_events
-FROM #collapsed_dates_events first
-JOIN #collapsed_dates_events second ON first.subject_id = second.subject_id
-    AND first.cohort_start_date < second.cohort_start_date
-    AND first.cohort_end_date < second.cohort_end_date
-    AND first.cohort_end_date > second.cohort_start_date
-CROSS JOIN (SELECT 1 ordinal UNION SELECT 2 UNION SELECT 3 UNION SELECT 4) multiplier;
-
-/*
-* Group fully overlapping events into combinations (e.g. two separate events A and B with same start and end dates -> single A+B event)
-* We'll use bitwise addition with SUM() to combine events instead of LIST_AGG(), replacing 'name' column with 'combo_id'.
-*/
-
 IF OBJECT_ID('tempdb..#combo_events', 'U') IS NOT NULL
 DROP TABLE #combo_events;
 
-WITH events AS (
-  SELECT *
-  FROM #collapsed_dates_events cde
-  WHERE NOT EXISTS(SELECT id FROM #split_overlapping_events WHERE #split_overlapping_events.id = cde.id)
+WITH 
+cohort_dates AS (
+	SELECT DISTINCT subject_id, cohort_date 
+	FROM (
+		  SELECT subject_id, cohort_start_date cohort_date FROM #collapsed_dates_events 
+		  UNION 
+		  SELECT subject_id, DATEADD(day, 1, cohort_end_date) cohort_date FROM #collapsed_dates_events
+		  ) all_dates
+	ORDER BY subject_id, cohort_date
+),
+time_periods AS (
+	SELECT subject_id, cohort_date, DATEADD(day, -1, LEAD(cohort_date,1) over (PARTITION BY subject_id ORDER BY cohort_date ASC)) next_cohort_date
+	FROM cohort_dates 
+	GROUP BY subject_id, cohort_date
+),
+events AS (
+	SELECT tp.subject_id, event_cohort_index, cohort_date cohort_start_date, next_cohort_date cohort_end_date  
+	FROM time_periods tp
+	LEFT JOIN #collapsed_dates_events e ON e.subject_id = tp.subject_id
+	WHERE (e.cohort_start_date <= tp.next_cohort_date AND e.cohort_end_date >= tp.cohort_date)
+) 
 
-  UNION ALL
-
-  SELECT *
-  FROM #split_overlapping_events
-)
-SELECT SUM(DISTINCT POWER(2, e.event_cohort_index)) as combo_id, subject_id, cohort_start_date, cohort_end_date
+SELECT SUM(POWER(2, e.event_cohort_index)) as combo_id,  subject_id , cohort_start_date, cohort_end_date
 INTO #combo_events
 FROM events e
 GROUP BY subject_id, cohort_start_date, cohort_end_date;
@@ -198,7 +168,7 @@ SELECT
   pathway_count.cnt AS pathways_count
 FROM (
   SELECT COUNT(*) cnt
-  FROM @target_cohort_table
+  FROM @target_database_schema.@target_cohort_table
   WHERE cohort_definition_id = @pathway_target_cohort_id
 ) target_count,
 (

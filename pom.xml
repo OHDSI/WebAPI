@@ -996,32 +996,32 @@
       </properties>
       <dependencies>
         <dependency>
-          <groupId>google-api-client</groupId>
+          <groupId>com.google.api-client</groupId>
           <artifactId>google-api-client</artifactId>
           <version>1.24.1</version>
         </dependency>
         <dependency>
-          <groupId>google-api-services-bigquery</groupId>
+          <groupId>com.google.apis</groupId>
           <artifactId>google-api-services-bigquery</artifactId>
-          <version>1.24.1</version>
+          <version>v2-rev410-1.24.1</version>
         </dependency>
         <dependency>
-          <groupId>GoogleBigQueryJDBC42</groupId>
-          <artifactId>GoogleBigQueryJDBC42</artifactId>
-          <version>1.24.1</version>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-bigquery</artifactId>
+            <version>1.24.1</version>
         </dependency>
         <dependency>
-          <groupId>google-http-client</groupId>
+          <groupId>com.google.http-client</groupId>
           <artifactId>google-http-client</artifactId>
           <version>1.24.1</version>
         </dependency>
         <dependency>
-          <groupId>google-http-client-jackson2</groupId>
+          <groupId>com.google.http-client</groupId>
           <artifactId>google-http-client-jackson2</artifactId>
           <version>1.24.1</version>
         </dependency>
         <dependency>
-          <groupId>google-oauth-client</groupId>
+          <groupId>com.google.oauth-client</groupId>
           <artifactId>google-oauth-client</artifactId>
           <version>1.24.1</version>
         </dependency>
@@ -1040,7 +1040,7 @@
                   <goal>install-file</goal>
                 </goals>
                 <configuration>
-                  <groupId>google-api-client</groupId>
+                  <groupId>com.google.api-client</groupId>
                   <artifactId>google-api-client</artifactId>
                   <version>1.24.1</version>
                   <packaging>jar</packaging>
@@ -1054,25 +1054,11 @@
                   <goal>install-file</goal>
                 </goals>
                 <configuration>
-                  <groupId>google-api-services-bigquery</groupId>
+                  <groupId>com.google.apis</groupId>
                   <artifactId>google-api-services-bigquery</artifactId>
                   <version>1.24.1</version>
                   <packaging>jar</packaging>
                   <file>${bigquery.classpath}/google-api-services-bigquery-v2-rev400-1.24.1.jar</file>
-                </configuration>
-              </execution>
-              <execution>
-                <id>GoogleBigQueryJDBC42</id>
-                <phase>initialize</phase>
-                <goals>
-                  <goal>install-file</goal>
-                </goals>
-                <configuration>
-                  <groupId>GoogleBigQueryJDBC42</groupId>
-                  <artifactId>GoogleBigQueryJDBC42</artifactId>
-                  <version>1.24.1</version>
-                  <packaging>jar</packaging>
-                  <file>${bigquery.classpath}/GoogleBigQueryJDBC42.jar</file>
                 </configuration>
               </execution>
               <execution>
@@ -1082,7 +1068,7 @@
                   <goal>install-file</goal>
                 </goals>
                 <configuration>
-                  <groupId>google-http-client</groupId>
+                  <groupId>com.google.http-client</groupId>
                   <artifactId>google-http-client</artifactId>
                   <version>1.24.1</version>
                   <packaging>jar</packaging>
@@ -1096,7 +1082,7 @@
                   <goal>install-file</goal>
                 </goals>
                 <configuration>
-                  <groupId>google-http-client-jackson2</groupId>
+                  <groupId>com.google.http-client</groupId>
                   <artifactId>google-http-client-jackson2</artifactId>
                   <version>1.24.1</version>
                   <packaging>jar</packaging>
@@ -1110,7 +1096,7 @@
                   <goal>install-file</goal>
                 </goals>
                 <configuration>
-                  <groupId>google-oauth-client</groupId>
+                  <groupId>com.google.oauth-client</groupId>
                   <artifactId>google-oauth-client</artifactId>
                   <version>1.24.1</version>
                   <packaging>jar</packaging>

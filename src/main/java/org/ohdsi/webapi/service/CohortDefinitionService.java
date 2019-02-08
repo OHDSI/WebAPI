@@ -17,7 +17,10 @@ import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.sql.SqlRender;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortdefinition.*;
+import org.ohdsi.webapi.common.SourceMapKey;
+import org.ohdsi.webapi.common.sensitiveinfo.CohortGenerationSensitiveInfoService;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ExportUtil;
 import org.ohdsi.webapi.job.JobExecutionResource;
@@ -28,6 +31,7 @@ import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
+import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.UserUtils;
@@ -114,6 +118,9 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Autowired
   private JobService jobService;
 
+  @Autowired
+  private CohortGenerationSensitiveInfoService sensitiveInfoService;
+
 	@PersistenceContext
 	protected EntityManager entityManager;
 	
@@ -123,6 +130,7 @@ public class CohortDefinitionService extends AbstractDaoService {
       InclusionRuleReport.Summary summary = new InclusionRuleReport.Summary();
       summary.baseCount = rs.getLong("base_count");
       summary.finalCount = rs.getLong("final_count");
+      summary.lostCount = rs.getLong("lost_count");
 
       double matchRatio = (summary.baseCount > 0) ? ((double) summary.finalCount / (double) summary.baseCount) : 0.0;
       summary.percentMatched = new BigDecimal(matchRatio * 100.0).setScale(2, RoundingMode.HALF_UP).toPlainString() + "%";
@@ -175,7 +183,8 @@ public class CohortDefinitionService extends AbstractDaoService {
   
   private InclusionRuleReport.Summary getInclusionRuleReportSummary(int id, Source source, int modeId) {
 
-    String sql = "select base_count, final_count from @tableQualifier.cohort_summary_stats where cohort_definition_id = @id and mode_id = @modeId";
+    String sql = "select cs.base_count, cs.final_count, cc.lost_count from @tableQualifier.cohort_summary_stats cs left join @tableQualifier.cohort_censor_stats cc " +
+            "on cc.cohort_definition_id = cs.cohort_definition_id where cs.cohort_definition_id = @id and cs.mode_id = @modeId";
     String tqName = "tableQualifier";
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 		String[] varNames = {"id", "modeId"};
@@ -379,11 +388,11 @@ public class CohortDefinitionService extends AbstractDaoService {
    */
   @POST
   @Path("/")
+  @Transactional
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public CohortDefinitionDTO createCohortDefinition(CohortDefinitionDTO def) {
-
-    return getTransactionTemplate().execute(transactionStatus -> {
+    
       Date currentTime = Calendar.getInstance().getTime();
 
       UserEntity user = userRepository.findByLogin(security.getSubject());
@@ -405,10 +414,8 @@ public class CohortDefinitionService extends AbstractDaoService {
 
       newDef.setDetails(details);
 
-      CohortDefinition createdDefinition = this.cohortDefinitionRepository.save(newDef);
-
+      CohortDefinition createdDefinition = this.cohortDefinitionRepository.save(newDef);      
       return cohortDefinitionToDTO(createdDefinition);
-    });
   }
 
   /**
@@ -424,9 +431,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 
     return getTransactionTemplate().execute(transactionStatus -> {
       CohortDefinition d = this.cohortDefinitionRepository.findOneWithDetail(id);
-      if (Objects.isNull(d)) {
-        throw new IllegalArgumentException(String.format("There is no cohort definition with id = %d.", id));
-      }
+      ExceptionUtils.throwNotFoundExceptionIfNull(d, String.format("There is no cohort definition with id = %d.", id));
       return cohortDefinitionToDTO(d);
     });
   }
@@ -521,11 +526,9 @@ public class CohortDefinitionService extends AbstractDaoService {
     }
     Set<CohortGenerationInfo> infoList = def.getGenerationInfoList();
 
-    List<CohortGenerationInfo> result = new ArrayList<>();
-    for (CohortGenerationInfo info : infoList) {
-      result.add(info);
-    }
-    return result;
+    List<CohortGenerationInfo> result = new ArrayList<>(infoList);
+    Map<Integer, SourceInfo> sourceMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_ID);
+    return sensitiveInfoService.filterSensitiveInfo(result, gi -> Collections.singletonMap(Constants.Variables.SOURCE, sourceMap.get(gi.getId().getSourceId())));
   }
 
   /**
@@ -546,7 +549,7 @@ public class CohortDefinitionService extends AbstractDaoService {
     CohortDefinitionDTO copyDef = createCohortDefinition(sourceDef);
 
     return copyDef;
-  }      
+  }
 
   /**
    * Deletes the specified cohort definition

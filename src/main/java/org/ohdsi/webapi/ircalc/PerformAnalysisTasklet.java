@@ -21,10 +21,12 @@ import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.common.generation.CancelableTasklet;
+import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.ohdsi.webapi.util.SourceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.StepContribution;
@@ -35,6 +37,8 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.*;
+
+import static org.ohdsi.webapi.Constants.Params.*;
 
 /**
  *
@@ -48,17 +52,20 @@ public class PerformAnalysisTasklet extends CancelableTasklet {
 
   private final TransactionTemplate transactionTemplate;
   private final IncidenceRateAnalysisRepository incidenceRateAnalysisRepository;
+  private final SourceService sourceService;
   private ExecutionInfo analysisInfo;
   private Date startTime;
 
   public PerformAnalysisTasklet(
           final CancelableJdbcTemplate jdbcTemplate,
           final TransactionTemplate transactionTemplate,
-          final IncidenceRateAnalysisRepository incidenceRateAnalysisRepository) {
+          final IncidenceRateAnalysisRepository incidenceRateAnalysisRepository,
+          final SourceService sourceService) {
 
     super(LoggerFactory.getLogger(PerformAnalysisTasklet.class), jdbcTemplate, transactionTemplate);
     this.transactionTemplate = transactionTemplate;
     this.incidenceRateAnalysisRepository = incidenceRateAnalysisRepository;
+    this.sourceService = sourceService;
   }
 
   private Optional<ExecutionInfo> findExecutionInfoBySourceId(Collection<ExecutionInfo> infoList, Integer sourceId)
@@ -73,19 +80,22 @@ public class PerformAnalysisTasklet extends CancelableTasklet {
     
     Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
 
-    Source source = new Source();
-    source.setSourceDialect(jobParams.get("target_dialect").toString());
+    Integer sourceId = Integer.parseInt(jobParams.get(SOURCE_ID).toString());
+    Source source = sourceService.findBySourceId(sourceId);
+    String oracleTempSchema = SourceUtils.getTempQualifier(source);
 
-    Integer analysisId = Integer.valueOf(jobParams.get("analysis_id").toString());
+    Integer analysisId = Integer.valueOf(jobParams.get(ANALYSIS_ID).toString());
+    String sessionId = jobParams.get(SESSION_ID).toString();
     try {
-      String sessionId = SessionUtils.sessionId();
       IncidenceRateAnalysis analysis = this.incidenceRateAnalysisRepository.findOne(analysisId);
       IncidenceRateAnalysisExpression expression = mapper.readValue(analysis.getDetails().getExpression(), IncidenceRateAnalysisExpression.class);
       
       IRAnalysisQueryBuilder.BuildExpressionQueryOptions options = new IRAnalysisQueryBuilder.BuildExpressionQueryOptions();
-      options.cdmSchema = jobParams.get("cdm_database_schema").toString();
-      options.resultsSchema = jobParams.get("results_database_schema").toString();
-      options.vocabularySchema = jobParams.get("vocabulary_database_schema").toString();
+      options.cdmSchema = SourceUtils.getCdmQualifier(source);
+      options.resultsSchema = SourceUtils.getResultsQualifier(source);
+      options.vocabularySchema = SourceUtils.getVocabularyQualifier(source);
+      options.tempSchema = SourceUtils.getTempQualifier(source);
+      options.cohortTable = jobParams.get(TARGET_TABLE).toString();
 
       String delete = "DELETE FROM @tableQualifier.ir_strata WHERE analysis_id = @analysis_id;";
       PreparedStatementRenderer psr = new PreparedStatementRenderer(source, delete, "tableQualifier",
@@ -105,7 +115,7 @@ public class PerformAnalysisTasklet extends CancelableTasklet {
       }
       
       String expressionSql = analysisQueryBuilder.buildAnalysisQuery(analysis, options);
-      String translatedSql = SqlTranslate.translateSql(expressionSql, jobParams.get("target_dialect").toString(), sessionId, null);
+      String translatedSql = SqlTranslate.translateSql(expressionSql, source.getSourceDialect(), sessionId, oracleTempSchema);
       return SqlSplit.splitSql(translatedSql);
     } catch (Exception e) {
       throw new RuntimeException(e);

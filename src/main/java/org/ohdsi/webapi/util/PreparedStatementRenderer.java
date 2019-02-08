@@ -24,7 +24,7 @@ import org.springframework.jdbc.core.PreparedStatementSetter;
  *
  * @author DNS   SHELLB (Brett Shelley)
  */
-public class PreparedStatementRenderer {
+public class PreparedStatementRenderer implements ParameterizedSqlProvider {
 
   private String sql;
   private String sourceDialect = "sql server";
@@ -222,15 +222,7 @@ public class PreparedStatementRenderer {
 
   final void buildPreparedStatementSetter() {
 
-    preparedStatementSetter = new PreparedStatementSetter() {
-      @Override
-      public void setValues(PreparedStatement ps) throws SQLException {
-
-        for (int i = 0; i < orderedParamsList.size(); i++) {
-          ps.setObject(i + 1, orderedParamsList.get(i));
-        }
-      }
-    };
+    preparedStatementSetter = new OrderedPreparedStatementSetter(orderedParamsList);
   }
 
   /**

@@ -26,6 +26,7 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.jasypt.encryption.pbe.PBEStringEncryptor;
 import org.jasypt.properties.PropertyValueEncryptionUtils;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,9 +49,9 @@ import static org.ohdsi.webapi.source.Source.IMPALA_DATASOURCE;
 @Transactional
 public class SourceService extends AbstractDaoService {
 
-    public static final String SECURE_MODE_ERROR = "This feature requires the administrator to enable security for the application";
-    private static final String KRB_REALM = "KrbRealm";
-    private static final String KRB_FQDN = "KrbHostFQDN";
+  public static final String SECURE_MODE_ERROR = "This feature requires the administrator to enable security for the application";
+  private static final String KRB_REALM = "KrbRealm";
+  private static final String KRB_FQDN = "KrbHostFQDN";
 
   @Autowired
   private JdbcTemplate jdbcTemplate;
@@ -153,6 +154,11 @@ public class SourceService extends AbstractDaoService {
       cachedSources = sources;
     }
     return cachedSources;
+  }
+
+  public <T> Map<T, SourceInfo> getSourcesMap(SourceMapKey<T> mapKey) {
+
+    return getSources().stream().collect(Collectors.toMap(mapKey.getKeyFunc(), s -> s));
   }
 
   @Path("refresh")

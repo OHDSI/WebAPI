@@ -17,7 +17,10 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.servlet.Filter;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created by GMalikov on 20.08.2015.
@@ -40,7 +43,9 @@ public class ShiroConfiguration {
     ShiroFilterFactoryBean shiroFilter = new ShiroFilterFactoryBean();
     shiroFilter.setSecurityManager(securityManager(security, lockoutPolicy));
 
-    shiroFilter.setFilters(security.getFilters());
+    Map<String, Filter> filters = security.getFilters().entrySet().stream()
+            .collect(Collectors.toMap(f -> f.getKey().getTemplateName(), Map.Entry::getValue));
+    shiroFilter.setFilters(filters);
     shiroFilter.setFilterChainDefinitionMap(security.getFilterChain());
 
     return shiroFilter;

@@ -1068,6 +1068,20 @@
                 </configuration>
               </execution>
               <execution>
+                <id>google-cloud-bigquery</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                  <groupId>com.google.cloud</groupId>
+                  <artifactId>google-cloud-bigquery</artifactId>
+                  <version>1.24.1</version>
+                  <packaging>jar</packaging>
+                  <file>${bigquery.classpath}/GoogleBigQueryJDBC42.jar</file>
+                </configuration>
+              </execution>
+              <execution>
                 <id>google-http-client</id>
                 <phase>initialize</phase>
                 <goals>

@@ -165,7 +165,7 @@ public class DDLService {
 		statement.oracleTempSchema = params.get(TEMP_SCHEMA);
 		statement.sql = sql;
 		statement.parameters = new HashMap<>(params);
-		TranslatedStatement translatedStatement = translateSQL(statement, SessionUtils.sessionId(), params.get(RESULTS_SCHEMA));
+		TranslatedStatement translatedStatement = translateSQL(statement);
 		return translatedStatement.targetSQL;
 	}
 

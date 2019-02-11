@@ -11,9 +11,9 @@ SELECT
 ,	STATISTIC_VALUE
 , STATISTIC_VALUE_TYPE
 FROM @cem_schema.CEM_UNIFIED u
-	JOIN @vocabularySchema.CONCEPT c1
+	JOIN @vocabularySchema.concept c1
 		ON c1.CONCEPT_ID = u.CONCEPT_ID_1
-	JOIN @vocabularySchema.CONCEPT c2
+	JOIN @vocabularySchema.concept c2
 		ON c2.CONCEPT_ID = u.CONCEPT_ID_2
 WHERE (CONCEPT_ID_1 = @id OR CONCEPT_ID_2 = @id)
 ;

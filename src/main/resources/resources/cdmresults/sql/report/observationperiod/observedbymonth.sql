@@ -3,8 +3,8 @@ SELECT
   ar1.count_value                                     AS countValue,
   round(1.0 * ar1.count_value / denom.count_value, 5) AS percentValue
 FROM (SELECT *
-      FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 110) ar1,
+      FROM @results_database_schema.achilles_results WHERE analysis_id = 110) ar1,
   (SELECT count_value
-   FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 1) denom
+   FROM @results_database_schema.achilles_results WHERE analysis_id = 1) denom
 
   

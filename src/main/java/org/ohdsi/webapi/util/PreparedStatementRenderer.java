@@ -6,7 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.odysseusinc.arachne.commons.types.DBMSType;
@@ -28,6 +30,7 @@ public class PreparedStatementRenderer implements ParameterizedSqlProvider {
 
   private String sql;
   private String sourceDialect = "sql server";
+  private String tempSchema = null;
   private List<Object> orderedParamsList;
   private String targetDialect = "sql server";
 	private String sessionId;
@@ -46,10 +49,6 @@ public class PreparedStatementRenderer implements ParameterizedSqlProvider {
     return getOrderedParamsList().toArray(new Object[getOrderedParamsList().size()]);
   }
 
-  public void setTargetDialect(String targetDialect) {
-
-    this.targetDialect = targetDialect;
-  }
   private PreparedStatementSetter preparedStatementSetter;
 
   private Map<String, Object> paramValueMap = new HashMap<String, Object>();
@@ -81,11 +80,30 @@ public class PreparedStatementRenderer implements ParameterizedSqlProvider {
     paramValueMap = buildParamValueMap(sqlVariableNames, sqlVariableValues);
 
     this.orderedParamsList = PreparedSqlRender.getOrderedListOfParameterValues(paramValueMap, sql);
+    // NOTE:
+    // Look below
+    if (source != null && Objects.equals(source.getSourceDialect(), DBMSType.BIGQUERY.getOhdsiDB())) {
+      this.orderedParamsList = this.orderedParamsList.stream().filter(Objects::nonNull).collect(Collectors.toList());
+    }
+
     buildPreparedStatementSetter();
-    sql = PreparedSqlRender.fixPreparedStatementSql(sql, paramValueMap);
+    sql = PreparedSqlRender.fixPreparedStatementSql(
+      sql,
+      paramValueMap,
+      // NOTE:
+      // Current version of BigQuery driver has issues when NULLs are provided as variables for prepared statements (throws NPE)
+      // That's why in case of NULLs we paste them directly into code
+      (source != null && source.getSourceDialect().equals(DBMSType.BIGQUERY.getOhdsiDB())) ? (object -> object == null ? "NULL" : "?") : (object -> "?")
+    );
 
 		if (source != null) {
 			this.targetDialect = source.getSourceDialect();
+			try {
+				this.tempSchema = SourceUtils.getTempQualifier(source);
+			}
+			catch (Exception e) {
+				this.tempSchema = null;
+			}
 		}
 
 		this.sessionId = sessionId;
@@ -262,7 +280,7 @@ public class PreparedStatementRenderer implements ParameterizedSqlProvider {
   }
 
   public String getSql() {
-    String translatedSql = SqlTranslate.translateSql(sql, targetDialect, sessionId, null);
+    String translatedSql = SqlTranslate.translateSql(sql, targetDialect, sessionId, tempSchema);
     return DBMSType.ORACLE.getOhdsiDB().equals(targetDialect) ? translatedSql.replaceAll(";$", "") : translatedSql;
   }
 

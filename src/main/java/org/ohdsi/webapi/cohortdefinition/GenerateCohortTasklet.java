@@ -16,6 +16,7 @@
 package org.ohdsi.webapi.cohortdefinition;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.MoreObjects;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.InclusionRule;
@@ -114,7 +115,7 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
         List<InclusionRule> inclusionRules = expression.inclusionRules;
         for (int i = 0; i < inclusionRules.size(); i++) {
           InclusionRule r = inclusionRules.get(i);
-          Object[] values = new Object[]{options.cohortId, i, r.name, r.description};
+          Object[] values = new Object[]{options.cohortId, i, r.name, MoreObjects.firstNonNull(r.description, "")};
           psr = new PreparedStatementRenderer(source, insertSql, "target_database_schema", targetSchema, names, values, sessionId);
           if (isStopped()) {
             return result;

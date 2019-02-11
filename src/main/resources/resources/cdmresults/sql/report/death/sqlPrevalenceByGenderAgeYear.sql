@@ -11,13 +11,13 @@ SELECT
   ROUND(1000 * (1.0 * num.count_value / denom.count_value), 5) AS y_Prevalence_1000Pp --prevalence, per 1000 persons
 FROM
   (SELECT stratum_1, stratum_2, stratum_3, count_value
-		FROM @results_database_schema.ACHILLES_results 
+		FROM @results_database_schema.achilles_results
 		WHERE analysis_id = 504
 		GROUP BY stratum_1, stratum_2, stratum_3, count_value
 	) num
   INNER JOIN (
 		SELECT stratum_1, stratum_2, stratum_3, count_value
-		FROM @results_database_schema.ACHILLES_results 
+		FROM @results_database_schema.achilles_results
 		WHERE analysis_id = 116
 		GROUP BY stratum_1, stratum_2, stratum_3, count_value
 	) denom ON num.stratum_1 = denom.stratum_1  --calendar year

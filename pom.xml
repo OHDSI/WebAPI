@@ -611,7 +611,7 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>circe</artifactId>
-      <version>1.7.1</version>
+      <version>1.7.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
@@ -986,6 +986,141 @@
                   <version>1.0.0</version>
                   <packaging>jar</packaging>
                   <file>${impala.classpath}/TCLIServiceClient.jar</file>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>webapi-bigquery</id>
+      <properties>
+        <bigquery.enabled>true</bigquery.enabled>
+        <!-- BigQuery JDBC driver path -->
+        <bigquery.classpath>${basedir}/src/main/extras/bigquery</bigquery.classpath>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>com.google.api-client</groupId>
+          <artifactId>google-api-client</artifactId>
+          <version>1.24.1</version>
+        </dependency>
+        <dependency>
+          <groupId>com.google.apis</groupId>
+          <artifactId>google-api-services-bigquery</artifactId>
+          <version>v2-rev410-1.24.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-bigquery</artifactId>
+            <version>1.24.1</version>
+        </dependency>
+        <dependency>
+          <groupId>com.google.http-client</groupId>
+          <artifactId>google-http-client</artifactId>
+          <version>1.24.1</version>
+        </dependency>
+        <dependency>
+          <groupId>com.google.http-client</groupId>
+          <artifactId>google-http-client-jackson2</artifactId>
+          <version>1.24.1</version>
+        </dependency>
+        <dependency>
+          <groupId>com.google.oauth-client</groupId>
+          <artifactId>google-oauth-client</artifactId>
+          <version>1.24.1</version>
+        </dependency>
+      </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-install-plugin</artifactId>
+            <version>2.5.2</version>
+            <executions>
+              <execution>
+                <id>google-api-client</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                  <groupId>com.google.api-client</groupId>
+                  <artifactId>google-api-client</artifactId>
+                  <version>1.24.1</version>
+                  <packaging>jar</packaging>
+                  <file>${bigquery.classpath}/google-api-client-1.24.1.jar</file>
+                </configuration>
+              </execution>
+              <execution>
+                <id>google-api-services-bigquery</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                  <groupId>com.google.apis</groupId>
+                  <artifactId>google-api-services-bigquery</artifactId>
+                  <version>1.24.1</version>
+                  <packaging>jar</packaging>
+                  <file>${bigquery.classpath}/google-api-services-bigquery-v2-rev400-1.24.1.jar</file>
+                </configuration>
+              </execution>
+              <execution>
+                <id>google-cloud-bigquery</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                  <groupId>com.google.cloud</groupId>
+                  <artifactId>google-cloud-bigquery</artifactId>
+                  <version>1.24.1</version>
+                  <packaging>jar</packaging>
+                  <file>${bigquery.classpath}/GoogleBigQueryJDBC42.jar</file>
+                </configuration>
+              </execution>
+              <execution>
+                <id>google-http-client</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                  <groupId>com.google.http-client</groupId>
+                  <artifactId>google-http-client</artifactId>
+                  <version>1.24.1</version>
+                  <packaging>jar</packaging>
+                  <file>${bigquery.classpath}/google-http-client-1.24.1.jar</file>
+                </configuration>
+              </execution>
+              <execution>
+                <id>google-http-client-jackson2</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                  <groupId>com.google.http-client</groupId>
+                  <artifactId>google-http-client-jackson2</artifactId>
+                  <version>1.24.1</version>
+                  <packaging>jar</packaging>
+                  <file>${bigquery.classpath}/google-http-client-jackson2-1.24.1.jar</file>
+                </configuration>
+              </execution>
+              <execution>
+                <id>google-oauth-client</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                  <groupId>com.google.oauth-client</groupId>
+                  <artifactId>google-oauth-client</artifactId>
+                  <version>1.24.1</version>
+                  <packaging>jar</packaging>
+                  <file>${bigquery.classpath}/google-oauth-client-1.24.1.jar</file>
                 </configuration>
               </execution>
             </executions>

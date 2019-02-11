@@ -12,6 +12,7 @@ public interface Constants {
   String GENERATE_COHORT_CHARACTERIZATION = "generateCohortCharacterization";
   String GENERATE_PATHWAY_ANALYSIS = "generatePathwayAnalysis";
   String GENERATE_IR_ANALYSIS = "irAnalysis";
+  String GENERATE_PREDICTION_ANALYSIS = "generatePredictionAnalysis";
   String WARM_CACHE = "warmCache";
   String USERS_IMPORT = "usersImport";
 

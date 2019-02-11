@@ -29,21 +29,33 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.ohdsi.hydra.Hydra;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.common.generation.CommonGenerationDTO;
+import org.ohdsi.webapi.common.generation.GenerationUtils;
 import org.ohdsi.webapi.prediction.PredictionAnalysis;
 import org.ohdsi.webapi.prediction.PredictionListItem;
 import org.ohdsi.webapi.prediction.PredictionAnalysisRepository;
 import org.ohdsi.webapi.prediction.dto.PredictionAnalysisDTO;
 import org.ohdsi.webapi.prediction.specification.*;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
+import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
+import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.shiro.management.Security;
+import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.UserUtils;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.core.env.Environment;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+
+import static org.ohdsi.webapi.Constants.GENERATE_PREDICTION_ANALYSIS;
+import static org.ohdsi.webapi.Constants.Params.*;
 
 
 @Component
@@ -73,6 +85,12 @@ public class PredictionService  extends AbstractDaoService {
     
     @Autowired
     private CohortDefinitionRepository cohortDefinitionRepository;
+
+    @Autowired
+    private SourceService sourceService;
+
+    @Autowired
+    private GenerationUtils generationUtils;
     
     @Autowired
     private Environment env;
@@ -256,6 +274,35 @@ public class PredictionService  extends AbstractDaoService {
         //objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         
         return objectMapper.writeValueAsString(predictionAnalysis);
+    }
+
+    @POST
+    @Path("{id}/generation/{sourceKey}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @DataSourceAccess
+    @Transactional
+    public void runGeneration(@PathParam("id") final Integer predictionAnalysisId,
+                              @PathParam("sourceKey") @SourceKey final String sourceKey) {
+        Source source = sourceService.findBySourceKey(sourceKey);
+
+        PredictionAnalysis predictionAnalysis = this.predictionAnalysisRepository.findOne(predictionAnalysisId);
+        ExceptionUtils.throwNotFoundExceptionIfNull(predictionAnalysis, String.format("There is no prediction analysis with id = %d.", predictionAnalysisId));
+
+        JobParametersBuilder builder = new JobParametersBuilder();
+        builder.addString(JOB_NAME, String.format("Generating Prediction Analysis %d using %s (%s)", predictionAnalysisId, source.getSourceName(), source.getSourceKey()));
+        builder.addString(SOURCE_ID, String.valueOf(source.getSourceId()));
+        builder.addString(PATHWAY_ANALYSIS_ID, predictionAnalysis.getId().toString());
+        builder.addString(JOB_AUTHOR, getCurrentUserLogin());
+
+        JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
+
+        Job generateAnalysisJob = generationUtils.buildJobForExecutionEngineBasedAnalysisTasklet(
+                GENERATE_PREDICTION_ANALYSIS,
+                source,
+                builder,
+                jdbcTemplate
+        );
     }
     
 }

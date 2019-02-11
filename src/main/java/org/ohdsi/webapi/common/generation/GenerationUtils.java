@@ -111,4 +111,11 @@ public class GenerationUtils extends AbstractDaoService {
 
         return generateJobBuilder.build();
     }
+
+    public Job buildJobForExecutionEngineBasedAnalysisTasklet(String analysisTypeName,
+                                                              Source source,
+                                                              JobParametersBuilder builder,
+                                                              JdbcTemplate jdbcTemplate) {
+        return null;
+    }
 }

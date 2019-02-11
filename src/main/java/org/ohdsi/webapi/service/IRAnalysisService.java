@@ -49,12 +49,13 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
 import org.ohdsi.webapi.ircalc.AnalysisReport;
 import org.ohdsi.webapi.ircalc.ExecutionInfo;
+import org.ohdsi.webapi.ircalc.IRAnalysisInfoListener;
 import org.ohdsi.webapi.ircalc.IRExecutionInfoRepository;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysis;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisDetails;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisExpression;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisRepository;
-import org.ohdsi.webapi.ircalc.PerformAnalysisTasklet;
+import org.ohdsi.webapi.ircalc.IRAnalysisTasklet;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
@@ -66,7 +67,6 @@ import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
-import org.ohdsi.webapi.util.TempTableCleanupManager;
 import org.ohdsi.webapi.util.UserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,6 +75,7 @@ import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -423,7 +424,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     builder.addString(ANALYSIS_ID, String.valueOf(analysisId));
     builder.addString(SOURCE_ID, String.valueOf(source.getSourceId()));
 
-    Job generateIrJob = generationUtils.buildJobForCohortBasedAnalysisTasklet(
+    SimpleJobBuilder generateIrJob = generationUtils.buildJobForCohortBasedAnalysisTasklet(
       GENERATE_IR_ANALYSIS,
       source,
       builder,
@@ -442,12 +443,14 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
             })
             .collect(Collectors.toList());
       },
-      new PerformAnalysisTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), irAnalysisRepository, sourceService)
+      new IRAnalysisTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), irAnalysisRepository, sourceService)
     );
+
+    generateIrJob.listener(new IRAnalysisInfoListener(getTransactionTemplate(), irAnalysisRepository));
 
     final JobParameters jobParameters = builder.toJobParameters();
 
-    return jobService.runJob(generateIrJob, jobParameters);
+    return jobService.runJob(generateIrJob.build(), jobParameters);
   }
 
   @Override

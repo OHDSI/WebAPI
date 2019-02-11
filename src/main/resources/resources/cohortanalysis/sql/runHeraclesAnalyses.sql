@@ -161,14 +161,14 @@ group by c1.cohort_definition_id;
 select c.cohort_definition_id, 
 3000 as analysis_id,  
 p.gender_concept_id as stratum_1, 
-(cast(year(c.cohort_start_date) - p.year_of_birth as int)) / 10 * 10 as stratum_2,
+cast((cast(year(c.cohort_start_date) - p.year_of_birth as int)) / 10 as int) * 10 as stratum_2,
 cast( '' as varchar(1) ) as stratum_3, cast( '' as varchar(1) ) as stratum_4,
 count_big(distinct p.person_id) as count_value
 into #results_3000
 from #HERACLES_cohort c 
 join @CDM_schema.person p
 on p.person_id = c.subject_id
-group by c.cohort_definition_id, p.gender_concept_id, (cast(year(c.cohort_start_date) - p.year_of_birth as int)) / 10 * 10
+group by c.cohort_definition_id, p.gender_concept_id, cast((cast(year(c.cohort_start_date) - p.year_of_birth as int)) / 10 as int) * 10
 ;
 --}
 
@@ -184,11 +184,11 @@ from (
 select c.cohort_definition_id,
 3001 as analysis_id,
 row_number() over (
-partition by cast((cast(year(c.cohort_start_date) - p.year_of_birth as int)) / 10 * 10 as int), p.gender_concept_id
+partition by cast((cast(year(c.cohort_start_date) - p.year_of_birth as int)) / 10 as int) * 10, p.gender_concept_id
 order by p.person_id
 ) as row_index, 
 p.person_id,
-(cast(year(c.cohort_start_date) - p.year_of_birth as int)) / 10 * 10 as age_group,
+cast((cast(year(c.cohort_start_date) - p.year_of_birth as int)) / 10 as int) * 10 as age_group,
 p.gender_concept_id
 from #HERACLES_cohort c
 join @CDM_schema.person p

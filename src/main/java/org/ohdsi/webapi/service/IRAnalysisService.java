@@ -25,15 +25,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -51,6 +43,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
@@ -119,6 +112,9 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
   @Autowired
   private UserRepository userRepository;
+
+  @Autowired
+  private JobService jobService;
 
   @Autowired
   private Security security;
@@ -451,7 +447,18 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
     final JobParameters jobParameters = builder.toJobParameters();
 
-    return this.jobTemplate.launch(generateIrJob, jobParameters);
+    return jobService.runJob(generateIrJob, jobParameters);
+  }
+
+  @Override
+  public void cancelAnalysis(int analysisId, String sourceKey) {
+
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    jobService.cancelJobExecution(NAME, j -> {
+      JobParameters jobParameters = j.getJobParameters();
+      return Objects.equals(jobParameters.getString(ANALYSIS_ID), String.valueOf(analysisId))
+              && Objects.equals(jobParameters.getString(SOURCE_ID), String.valueOf(source.getSourceId()));
+    });
   }
 
   @Override
@@ -509,7 +516,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   public IRAnalysisDTO copy(final int id) {
     IRAnalysisDTO analysis = getAnalysis(id);
     analysis.id = null; // clear the ID
-    analysis.name = "COPY OF: " + analysis.name;
+    analysis.name = String.format(Constants.Templates.ENTITY_COPY_PREFIX, analysis.name);
 
     IRAnalysisDTO copyStudy = createAnalysis(analysis);
     return copyStudy;

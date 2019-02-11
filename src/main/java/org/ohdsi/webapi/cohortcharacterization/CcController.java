@@ -16,6 +16,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.featureExtraction.FeatureExtraction;
@@ -43,6 +45,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
+
+import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
 
 @Path("/cohort-characterization")
 @Controller
@@ -79,6 +83,18 @@ public class CcController {
     public CohortCharacterizationDTO create(final CohortCharacterizationDTO dto) {
         final CohortCharacterizationEntity createdEntity = service.createCc(conversionService.convert(dto, CohortCharacterizationEntity.class));
         return conversionService.convert(createdEntity, CohortCharacterizationDTO.class);
+    }
+
+    @POST
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public CohortCharacterizationDTO copy(@PathParam("id") final Long id) {
+        CohortCharacterizationDTO cc = getDesign(id);
+        String copyName = String.format(ENTITY_COPY_PREFIX, cc.getName());
+        int similar = service.countLikeName(copyName);
+        cc.setId(null);
+        cc.setName(similar > 0 ? copyName + " (" + similar + ")" : copyName);
+        return create(cc);
     }
 
     @GET
@@ -166,7 +182,14 @@ public class CcController {
     public JobExecutionResource generate(@PathParam("id") final Long id, @PathParam("sourceKey") final String sourceKey) {
         return service.generateCc(id, sourceKey);
     }
-    
+
+    @DELETE
+    @Path("/{id}/generation/{sourceKey}")
+    public Response cancelGeneration(@PathParam("id") final Long id, @PathParam("sourceKey") final String sourceKey) {
+        service.cancelGeneration(id, sourceKey);
+        return Response.ok().build();
+    }
+
     @GET
     @Path("/{id}/generation")
     @Produces(MediaType.APPLICATION_JSON)

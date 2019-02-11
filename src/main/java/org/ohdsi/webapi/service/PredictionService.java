@@ -161,7 +161,7 @@ public class PredictionService  extends AbstractDaoService {
         PredictionAnalysis analysis = this.predictionAnalysisRepository.findOne(id);
         entityManager.detach(analysis); // Detach from the persistence context in order to save a copy
         analysis.setId(null);
-        analysis.setName("COPY OF: " + analysis.getName());
+        analysis.setName(String.format(Constants.Templates.ENTITY_COPY_PREFIX, analysis.getName()));
         return this.createAnalysis(analysis);
     }
     

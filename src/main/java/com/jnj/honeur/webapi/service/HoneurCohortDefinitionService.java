@@ -10,7 +10,6 @@ import com.jnj.honeur.webapi.shiro.LiferayPermissionManager;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
-import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfo;
 import org.ohdsi.webapi.service.CohortDefinitionService;
 import org.ohdsi.webapi.service.CohortGenerationService;
 import org.ohdsi.webapi.service.SourceService;
@@ -137,7 +136,7 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
 
             List<CohortDefinitionDTO> groupedPreviousVersions =
                     StreamSupport.stream(defs.spliterator(), false)
-                            .filter(cohortDefinition -> (cohortDefinition.getGroupKey() == null || cohortDefinition
+                            .filter(cohortDefinition -> (cohortDefinition.getGroupKey() != null && cohortDefinition
                                     .getGroupKey().equals(item.groupKey)) && !cohortDefinition.getId().equals(item.id))
                             .sorted(Comparator.comparing(CohortDefinition::getCreatedDate).reversed())
                             .map(this::cohortDefinitionToDTO).collect(Collectors.toList());
@@ -153,6 +152,8 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
                     previous = groupedPreviousVersions.get(i);
                 }
 
+                result.add(item);
+            } else {
                 result.add(item);
             }
         }

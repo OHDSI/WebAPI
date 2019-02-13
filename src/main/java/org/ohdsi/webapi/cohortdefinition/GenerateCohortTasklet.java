@@ -16,6 +16,7 @@
 package org.ohdsi.webapi.cohortdefinition;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.MoreObjects;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.InclusionRule;
@@ -29,6 +30,7 @@ import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.ohdsi.webapi.util.SourceUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.StoppableTasklet;
@@ -40,7 +42,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.util.List;
 import java.util.Map;
 
-import static org.ohdsi.webapi.Constants.Params.TARGET_DATABASE_SCHEMA;
+import static org.ohdsi.webapi.Constants.Params.*;
 
 /**
  *
@@ -69,7 +71,7 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
 
     Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
     Integer defId = Integer.valueOf(jobParams.get(Constants.Params.COHORT_DEFINITION_ID).toString());
-    String sessionId = SessionUtils.sessionId();
+    String sessionId = jobParams.getOrDefault(SESSION_ID, SessionUtils.sessionId()).toString();
 
     try {
       ObjectMapper mapper = new ObjectMapper();
@@ -94,33 +96,37 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
 
       Integer sourceId = Integer.parseInt(jobParams.get(Constants.Params.SOURCE_ID).toString());
       Source source = sourceRepository.findBySourceId(sourceId);
+      final String oracleTempSchema = SourceUtils.getTempQualifier(source);
 
-      String deleteSql = "DELETE FROM @target_database_schema.cohort_inclusion WHERE cohort_definition_id = @cohortDefinitionId;";
-      PreparedStatementRenderer psr = new PreparedStatementRenderer(source, deleteSql, "target_database_schema",
-              targetSchema, "cohortDefinitionId", options.cohortId);
-      if (isStopped()) {
-        return result;
-      }
-      jdbcTemplate.update(psr.getSql(), psr.getSetter());
+      if (jobParams.get(GENERATE_STATS).equals(Boolean.TRUE.toString())) {
 
-//      String insertSql = "INSERT INTO @results_schema.cohort_inclusion (cohort_definition_id, rule_sequence, name, description)  VALUES (@cohortId,@iteration,'@ruleName','@ruleDescription');";
-      String insertSql = "INSERT INTO @target_database_schema.cohort_inclusion (cohort_definition_id, rule_sequence, name, description) SELECT @cohortId as cohort_definition_id, @iteration as rule_sequence, CAST('@ruleName' as VARCHAR(255)) as name, CAST('@ruleDescription' as VARCHAR(1000)) as description;";
-
-      String[] names = new String[]{"cohortId", "iteration", "ruleName", "ruleDescription"};
-      List<InclusionRule> inclusionRules = expression.inclusionRules;
-      for (int i = 0; i < inclusionRules.size(); i++) {
-        InclusionRule r = inclusionRules.get(i);
-        Object[] values = new Object[]{options.cohortId, i, r.name, r.description};
-        psr = new PreparedStatementRenderer(source, insertSql, "target_database_schema", targetSchema, names, values, sessionId);
+        String deleteSql = "DELETE FROM @target_database_schema.cohort_inclusion WHERE cohort_definition_id = @cohortDefinitionId;";
+        PreparedStatementRenderer psr = new PreparedStatementRenderer(source, deleteSql, "target_database_schema",
+                targetSchema, "cohortDefinitionId", options.cohortId);
         if (isStopped()) {
           return result;
         }
         jdbcTemplate.update(psr.getSql(), psr.getSetter());
+
+  //      String insertSql = "INSERT INTO @results_schema.cohort_inclusion (cohort_definition_id, rule_sequence, name, description)  VALUES (@cohortId,@iteration,'@ruleName','@ruleDescription');";
+        String insertSql = "INSERT INTO @target_database_schema.cohort_inclusion (cohort_definition_id, rule_sequence, name, description) SELECT @cohortId as cohort_definition_id, @iteration as rule_sequence, CAST('@ruleName' as VARCHAR(255)) as name, CAST('@ruleDescription' as VARCHAR(1000)) as description;";
+
+        String[] names = new String[]{"cohortId", "iteration", "ruleName", "ruleDescription"};
+        List<InclusionRule> inclusionRules = expression.inclusionRules;
+        for (int i = 0; i < inclusionRules.size(); i++) {
+          InclusionRule r = inclusionRules.get(i);
+          Object[] values = new Object[]{options.cohortId, i, r.name, MoreObjects.firstNonNull(r.description, "")};
+          psr = new PreparedStatementRenderer(source, insertSql, "target_database_schema", targetSchema, names, values, sessionId);
+          if (isStopped()) {
+            return result;
+          }
+          jdbcTemplate.update(psr.getSql(), psr.getSetter());
+        }
       }
 
       String expressionSql = expressionQueryBuilder.buildExpressionQuery(expression, options);
       expressionSql = SqlRender.renderSql(expressionSql, null, null);
-      String translatedSql = SqlTranslate.translateSql(expressionSql, jobParams.get("target_dialect").toString(), sessionId, null);
+      String translatedSql = SqlTranslate.translateSql(expressionSql, jobParams.get("target_dialect").toString(), sessionId, oracleTempSchema);
       return SqlSplit.splitSql(translatedSql);
     } catch (Exception e) {
       log.error("Failed to generate cohort: {}", defId, e);

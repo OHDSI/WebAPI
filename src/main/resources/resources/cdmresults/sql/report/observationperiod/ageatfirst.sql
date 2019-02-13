@@ -5,9 +5,9 @@ SELECT
 FROM
   (
     SELECT *
-    FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 101
+    FROM @results_database_schema.achilles_results WHERE analysis_id = 101
   ) ar1,
   (
     SELECT count_value
-    FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 1
+    FROM @results_database_schema.achilles_results WHERE analysis_id = 1
   ) denom

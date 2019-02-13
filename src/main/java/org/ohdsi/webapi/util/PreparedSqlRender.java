@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
@@ -16,14 +17,15 @@ public class PreparedSqlRender {
     return sql.replaceAll("(--.*)", "").replaceAll("\\/\\*([\\S\\s]+?)\\*\\/", "");
   }
 
-  public static String fixPreparedStatementSql(String sql, Map<String, Object> paramValueMap) {
+  public static String fixPreparedStatementSql(String sql, Map<String, Object> paramValueMap, Function<Object, String> replacementResolver) {
 
     for (Map.Entry<String, Object> entry : paramValueMap.entrySet()) {
       Object value = entry.getValue();
       if (value instanceof String || value instanceof Integer || value instanceof Long || value == null) {
-        sql = sql.replace("'%@" + entry.getKey() + "%'", "?");
-        sql = sql.replace("'@" + entry.getKey() + "'", "?");
-        sql = sql.replace("@" + entry.getKey(), "?");
+        String replacement = replacementResolver.apply(value);
+        sql = sql.replace("'%@" + entry.getKey() + "%'", replacement);
+        sql = sql.replace("'@" + entry.getKey() + "'", replacement);
+        sql = sql.replace("@" + entry.getKey(), replacement);
 
       } else if (entry.getValue() instanceof Object[]) {
         int length = ((Object[]) entry.getValue()).length;
@@ -69,19 +71,17 @@ public class PreparedSqlRender {
   }
 	
 	// Given a source, determine how many parameters are allowed for IN clauses
-	// when using prepared statements. This function will return -1 if there
+	// when using prepared statements. This function will return 30000 if there
 	// is no known limit otherwise it will return the value based on the 
 	// sourceDialect property of the source object
 	public static int getParameterLimit(Source source) {
-		int returnVal = -1;
+		int returnVal = 30000;
 		String sourceDialect = source.getSourceDialect().toLowerCase();
 		
 		if (sourceDialect.equals("oracle")) {
 			returnVal = 990;
 		} else if (sourceDialect.equals("sql server") || sourceDialect.equals("pdw")) {
 			returnVal = 2000;
-		} else if (sourceDialect.equals("postgresql") || sourceDialect.equals("redshift")) {
-			returnVal = 30000;
 		}
 		return returnVal;
 	}

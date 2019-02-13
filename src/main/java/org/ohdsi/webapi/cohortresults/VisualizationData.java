@@ -8,18 +8,25 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 
 @Entity(name = "VisualizationData")
 @Table(name = "heracles_visualization_data")
 public class VisualizationData implements Serializable {
 
-    /**
-     *
-     */
     private static final long serialVersionUID = -567692689983359944L;
 
     @Id
-    @GeneratedValue
+    @GenericGenerator(
+        name = "visualization_generator",
+        strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+        parameters = {
+            @Parameter(name = "sequence_name", value = "heracles_vis_data_sequence"),
+            @Parameter(name = "increment_size", value = "1")
+        }
+    )
+    @GeneratedValue(generator = "visualization_generator")
     @Column(name = "ID")
     private int id;
 

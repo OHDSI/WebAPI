@@ -5,7 +5,6 @@
  */
 package org.ohdsi.webapi.service;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -23,6 +22,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.prediction.PatientLevelPredictionAnalysis;
 import org.ohdsi.webapi.prediction.PatientLevelPredictionAnalysisInfo;
 import org.ohdsi.webapi.prediction.PatientLevelPredictionAnalysisRepository;
@@ -36,6 +37,7 @@ import org.ohdsi.webapi.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Component;
+
 
 /**
  *
@@ -108,7 +110,6 @@ public class PatientLevelPredictionService extends AbstractDaoService {
 	@Consumes(MediaType.APPLICATION_JSON)
 	public PatientLevelPredictionAnalysisDTO createAnalysis(PatientLevelPredictionAnalysis plpa) {
 
-	  return getTransactionTemplate().execute(transactionStatus -> {
       Date currentTime = Calendar.getInstance().getTime();
 
       UserEntity user = userRepository.findByLogin(security.getSubject());
@@ -116,9 +117,7 @@ public class PatientLevelPredictionService extends AbstractDaoService {
       plpa.setCreatedDate(currentTime);
 
       PatientLevelPredictionAnalysis plpaWithId = this.patientLevelPredictionAnalysisRepository.save(plpa);
-
       return conversionService.convert(plpaWithId, PatientLevelPredictionAnalysisDTO.class);
-    });
 	}
 
 	@PUT
@@ -147,12 +146,11 @@ public class PatientLevelPredictionService extends AbstractDaoService {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/copy")
-	@Transactional
 	public PatientLevelPredictionAnalysisDTO copy(@PathParam("id") final int id) {
 		PatientLevelPredictionAnalysis analysis = this.patientLevelPredictionAnalysisRepository.findOne(id);
-		entityManager.detach(analysis); // Detach from the persistance context in order to save a copy
+		entityManager.detach(analysis); // Detach from the persistence context in order to save a copy
 		analysis.setAnalysisId(null);
-		analysis.setName("COPY OF: " + analysis.getName());
+		analysis.setName(String.format(Constants.Templates.ENTITY_COPY_PREFIX, analysis.getName()));
 		return this.createAnalysis(analysis);
 	}
 

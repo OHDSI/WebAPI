@@ -15,13 +15,8 @@
  */
 package org.ohdsi.webapi.service;
 
-import static org.ohdsi.webapi.Constants.Params.ANALYSIS_ID;
-import static org.ohdsi.webapi.Constants.Params.CDM_DATABASE_SCHEMA;
-import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
-import static org.ohdsi.webapi.Constants.Params.RESULTS_DATABASE_SCHEMA;
-import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
-import static org.ohdsi.webapi.Constants.Params.TARGET_DIALECT;
-import static org.ohdsi.webapi.Constants.Params.VOCABULARY_DATABASE_SCHEMA;
+import static org.ohdsi.webapi.Constants.GENERATE_IR_ANALYSIS;
+import static org.ohdsi.webapi.Constants.Params.*;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -30,16 +25,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -52,16 +40,22 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.collections4.Predicate;
 import org.apache.commons.lang3.StringUtils;
+import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.GenerationStatus;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.common.generation.GenerationUtils;
 import org.ohdsi.webapi.ircalc.AnalysisReport;
 import org.ohdsi.webapi.ircalc.ExecutionInfo;
+import org.ohdsi.webapi.ircalc.IRAnalysisInfoListener;
 import org.ohdsi.webapi.ircalc.IRExecutionInfoRepository;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysis;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisDetails;
+import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisExpression;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisRepository;
-import org.ohdsi.webapi.ircalc.PerformAnalysisTasklet;
+import org.ohdsi.webapi.ircalc.IRAnalysisTasklet;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
@@ -70,6 +64,7 @@ import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.UserUtils;
@@ -78,9 +73,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
-import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -120,7 +115,16 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   private UserRepository userRepository;
 
   @Autowired
+  private JobService jobService;
+
+  @Autowired
   private Security security;
+
+  @Autowired
+  private SourceService sourceService;
+
+  @Autowired
+  private GenerationUtils generationUtils;
 
   @Context
   ServletContext context;
@@ -329,7 +333,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     // it might be possible to leverage saveAnalysis() but not sure how to pull the auto ID from
     // the DB to pass it into saveAnalysis (since saveAnalysis does a findOne() at the start).
     // If there's a way to get the Entity into the persistence manager so findOne() returns this newly created entity
-    // then we could create the entity here (wihtout persist) and then call saveAnalysis within the sasme Tx.
+    // then we could create the entity here (without persist) and then call saveAnalysis within the same Tx.
     IncidenceRateAnalysis newAnalysis = new IncidenceRateAnalysis();
     newAnalysis.setName(analysis.name)
             .setDescription(analysis.description);
@@ -352,6 +356,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
     return getTransactionTemplate().execute(transactionStatus -> {
       IncidenceRateAnalysis a = this.irAnalysisRepository.findOne(id);
+      ExceptionUtils.throwNotFoundExceptionIfNull(a, String.format("There is no incidence rate analysis with id = %d.", id));
       return analysisToDTO(a);
     });
   }
@@ -388,14 +393,6 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     Date startTime = Calendar.getInstance().getTime();
 
     Source source = this.getSourceRepository().findBySourceKey(sourceKey);
-    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-    String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
-    String vocabularyTableQualifier = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
-		
-		// No vocabulary table qualifier found - use the CDM as a default
-    if (vocabularyTableQualifier == null) {
-      vocabularyTableQualifier = cdmTableQualifier;
-    }
 
     DefaultTransactionDefinition requresNewTx = new DefaultTransactionDefinition();
     requresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -424,32 +421,54 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
     JobParametersBuilder builder = new JobParametersBuilder();
     builder.addString(JOB_NAME, String.format("IR Analysis: %d: %s (%s)", analysis.getId(), source.getSourceName(), source.getSourceKey()));
-    builder.addString(CDM_DATABASE_SCHEMA, cdmTableQualifier);
-    builder.addString(RESULTS_DATABASE_SCHEMA, resultsTableQualifier);
-    builder.addString(VOCABULARY_DATABASE_SCHEMA, vocabularyTableQualifier);
-    builder.addString(TARGET_DIALECT, source.getSourceDialect());
     builder.addString(ANALYSIS_ID, String.valueOf(analysisId));
     builder.addString(SOURCE_ID, String.valueOf(source.getSourceId()));
 
+    SimpleJobBuilder generateIrJob = generationUtils.buildJobForCohortBasedAnalysisTasklet(
+      GENERATE_IR_ANALYSIS,
+      source,
+      builder,
+      getSourceJdbcTemplate(source),
+      chunkContext -> {
+          Integer irId = Integer.valueOf(chunkContext.getStepContext().getJobParameters().get(ANALYSIS_ID).toString());
+          IncidenceRateAnalysis ir = this.irAnalysisRepository.findOne(irId);
+          IncidenceRateAnalysisExpression expression = Utils.deserialize(ir.getDetails().getExpression(), IncidenceRateAnalysisExpression.class);
+          return Stream.concat(
+              expression.targetIds.stream(),
+              expression.outcomeIds.stream()
+            ).map(id -> {
+              CohortDefinition cd = new CohortDefinition();
+              cd.setId(id);
+              return cd;
+            })
+            .collect(Collectors.toList());
+      },
+      new IRAnalysisTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), irAnalysisRepository, sourceService)
+    );
+
+    generateIrJob.listener(new IRAnalysisInfoListener(getTransactionTemplate(), irAnalysisRepository));
+
     final JobParameters jobParameters = builder.toJobParameters();
 
-    PerformAnalysisTasklet analysisTasklet = new PerformAnalysisTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), irAnalysisRepository);
+    return jobService.runJob(generateIrJob.build(), jobParameters);
+  }
 
-    Step irAnalysisStep = stepBuilders.get("irAnalysis.execute")
-      .tasklet(analysisTasklet)
-    .build();
+  @Override
+  public void cancelAnalysis(int analysisId, String sourceKey) {
 
-    Job executeAnalysis = jobBuilders.get(NAME)
-      .start(irAnalysisStep)
-      .build();
-
-    JobExecutionResource jobExec = this.jobTemplate.launch(executeAnalysis, jobParameters);
-    return jobExec;  }
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    jobService.cancelJobExecution(NAME, j -> {
+      JobParameters jobParameters = j.getJobParameters();
+      return Objects.equals(jobParameters.getString(ANALYSIS_ID), String.valueOf(analysisId))
+              && Objects.equals(jobParameters.getString(SOURCE_ID), String.valueOf(source.getSourceId()));
+    });
+  }
 
   @Override
   public List<AnalysisInfoDTO> getAnalysisInfo(final int id) {
-    IncidenceRateAnalysis analysis = irAnalysisRepository.findOneWithExecutions(id);
 
+    IncidenceRateAnalysis analysis = irAnalysisRepository.findOneWithExecutionsOnExistingSources(id);
+    ExceptionUtils.throwNotFoundExceptionIfNull(analysis, String.format("There is no incidence rate analysis with id = %d.", id));
     List<AnalysisInfoDTO> result = new ArrayList<>();
     Set<ExecutionInfo> executionInfoList = analysis.getExecutionInfoList();
     for (ExecutionInfo executionInfo : executionInfoList) {
@@ -500,7 +519,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   public IRAnalysisDTO copy(final int id) {
     IRAnalysisDTO analysis = getAnalysis(id);
     analysis.id = null; // clear the ID
-    analysis.name = "COPY OF: " + analysis.name;
+    analysis.name = String.format(Constants.Templates.ENTITY_COPY_PREFIX, analysis.name);
 
     IRAnalysisDTO copyStudy = createAnalysis(analysis);
     return copyStudy;

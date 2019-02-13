@@ -20,13 +20,13 @@ FROM (
          denom.count_value AS denom_count_value
        FROM (
               SELECT *
-              FROM @results_database_schema.ACHILLES_results
+              FROM @results_database_schema.achilles_results
               WHERE analysis_id = 404
                     AND stratum_3 IN ('8507', '8532')
             ) num
          INNER JOIN (
                       SELECT *
-                      FROM @results_database_schema.ACHILLES_results
+                      FROM @results_database_schema.achilles_results
                       WHERE analysis_id = 116
                             AND stratum_2 IN ('8507', '8532')
                     ) denom
@@ -35,9 +35,9 @@ FROM (
               AND num.stratum_4 = denom.stratum_3
      ) tmp
   INNER JOIN @vocab_database_schema.concept c1
-ON CAST(num_stratum_1 AS INT) = c1.concept_id
+ON CAST(CASE WHEN isNumeric(num_stratum_1) = 1 THEN num_stratum_1 ELSE null END AS INT) = c1.concept_id
 INNER JOIN @vocab_database_schema.concept c2
-ON CAST(num_stratum_3 AS INT) = c2.concept_id
+ON CAST(CASE WHEN isNumeric(num_stratum_3) = 1 THEN num_stratum_3 ELSE null END AS INT) = c2.concept_id
 WHERE c1.concept_id = @conceptId
 ORDER BY c1.concept_id,
 num_stratum_2

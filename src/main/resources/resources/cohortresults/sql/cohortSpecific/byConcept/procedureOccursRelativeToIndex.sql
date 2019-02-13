@@ -70,7 +70,7 @@ FROM   (SELECT cohort_definition_id,
                           AND cohort_definition_id = @cohortDefinitionId 
                    GROUP  BY cohort_definition_id, 
                              Cast(stratum_1 AS INTEGER) 
-                   HAVING Sum(count_value) > @minCovariatePersonCount) ct1 
+                   HAVING Sum(heracles_results.count_value) > @minCovariatePersonCount) ct1
                ON hr1.cohort_definition_id = ct1.cohort_definition_id 
                   AND hr1.concept_id = ct1.concept_id 
        INNER JOIN @cdm_database_schema.concept c1 
@@ -141,7 +141,7 @@ FROM   (SELECT cohort_definition_id,
                           AND cohort_definition_id = @cohortDefinitionId 
                    GROUP  BY cohort_definition_id, 
                              Cast(stratum_1 AS INTEGER) 
-                   HAVING Sum(count_value) > @minCovariatePersonCount) ct1 
+                   HAVING Sum(heracles_results.count_value) > @minCovariatePersonCount) ct1
                ON hr1.cohort_definition_id = ct1.cohort_definition_id 
                   AND hr1.concept_id = ct1.concept_id 
        INNER JOIN @cdm_database_schema.concept c1 

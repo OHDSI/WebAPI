@@ -23,6 +23,6 @@ select 'PREVALENCE'    as type,
         average_value   as stat_value,
         @cohortId            as cohort_definition_id,
         @strataId as strata_id,
-        @strataName as strata_name,
+        CAST(@strataName AS VARCHAR(1000)) as strata_name,
         @jobId            as cc_generation_id
 from (@design) subquery;

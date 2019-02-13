@@ -1,7 +1,10 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
+
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.ws.rs.Consumes;
@@ -13,44 +16,63 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.featureExtraction.FeatureExtraction;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.Pagination;
+import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
-import org.ohdsi.webapi.cohortcharacterization.dto.*;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcExportDTO;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcPrevalenceStat;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcShortDTO;
+import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
+import org.ohdsi.webapi.common.generation.CommonGenerationDTO;
+import org.ohdsi.webapi.common.SourceMapKey;
+import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
-import org.ohdsi.webapi.common.generation.CommonGenerationDTO;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
 import org.ohdsi.webapi.job.JobExecutionResource;
+import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.source.SourceInfo;
+import org.ohdsi.webapi.util.ExceptionUtils;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
+
 @Path("/cohort-characterization")
 @Controller
 @Transactional
 public class CcController {
-    
+
     private CcService service;
     private FeAnalysisService feAnalysisService;
     private ConversionService conversionService;
     private ConverterUtils converterUtils;
-    
+    private final CommonGenerationSensitiveInfoService sensitiveInfoService;
+    private final SourceService sourceService;
+
     CcController(
             final CcService service,
             final FeAnalysisService feAnalysisService,
             final ConversionService conversionService,
-            final ConverterUtils converterUtils) {
+            final ConverterUtils converterUtils,
+            CommonGenerationSensitiveInfoService sensitiveInfoService,
+            SourceService sourceService) {
         this.service = service;
         this.feAnalysisService = feAnalysisService;
         this.conversionService = conversionService;
         this.converterUtils = converterUtils;
+        this.sensitiveInfoService = sensitiveInfoService;
+        this.sourceService = sourceService;
         FeatureExtraction.init(null);
     }
 
@@ -61,6 +83,18 @@ public class CcController {
     public CohortCharacterizationDTO create(final CohortCharacterizationDTO dto) {
         final CohortCharacterizationEntity createdEntity = service.createCc(conversionService.convert(dto, CohortCharacterizationEntity.class));
         return conversionService.convert(createdEntity, CohortCharacterizationDTO.class);
+    }
+
+    @POST
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public CohortCharacterizationDTO copy(@PathParam("id") final Long id) {
+        CohortCharacterizationDTO cc = getDesign(id);
+        String copyName = String.format(ENTITY_COPY_PREFIX, cc.getName());
+        int similar = service.countLikeName(copyName);
+        cc.setId(null);
+        cc.setName(similar > 0 ? copyName + " (" + similar + ")" : copyName);
+        return create(cc);
     }
 
     @GET
@@ -92,6 +126,8 @@ public class CcController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public CohortCharacterizationDTO getDesign(@PathParam("id") final Long id) {
+        CohortCharacterization  cc = service.findByIdWithLinkedEntities(id);
+        ExceptionUtils.throwNotFoundExceptionIfNull(cc, String.format("There is no cohort characterization with id = %d.", id));
         return convertCcToDto(service.findByIdWithLinkedEntities(id));
     }
 
@@ -146,13 +182,23 @@ public class CcController {
     public JobExecutionResource generate(@PathParam("id") final Long id, @PathParam("sourceKey") final String sourceKey) {
         return service.generateCc(id, sourceKey);
     }
-    
+
+    @DELETE
+    @Path("/{id}/generation/{sourceKey}")
+    public Response cancelGeneration(@PathParam("id") final Long id, @PathParam("sourceKey") final String sourceKey) {
+        service.cancelGeneration(id, sourceKey);
+        return Response.ok().build();
+    }
+
     @GET
     @Path("/{id}/generation")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public List<CommonGenerationDTO> getGenerationList(@PathParam("id") final Long id) {
-        return converterUtils.convertList(service.findGenerationsByCcId(id), CommonGenerationDTO.class);
+
+        Map<String, SourceInfo> sourcesMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_KEY);
+        return sensitiveInfoService.filterSensitiveInfo(converterUtils.convertList(service.findGenerationsByCcId(id), CommonGenerationDTO.class),
+                info -> Collections.singletonMap(Constants.Variables.SOURCE, sourcesMap.get(info.getSourceKey())));
     }
 
     @GET
@@ -160,7 +206,10 @@ public class CcController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public CommonGenerationDTO getGeneration(@PathParam("generationId") final Long generationId) {
-        return conversionService.convert(service.findGenerationById(generationId), CommonGenerationDTO.class);
+
+        CcGenerationEntity generationEntity = service.findGenerationById(generationId);
+        return sensitiveInfoService.filterSensitiveInfo(conversionService.convert(generationEntity, CommonGenerationDTO.class),
+                Collections.singletonMap(Constants.Variables.SOURCE, generationEntity.getSource()));
     }
 
     @DELETE

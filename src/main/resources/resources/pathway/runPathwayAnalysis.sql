@@ -11,7 +11,7 @@ WHERE pathway_analysis_generation_id = @generation_id AND target_cohort_id = @pa
 IF OBJECT_ID('tempdb..#raw_events', 'U') IS NOT NULL
 DROP TABLE #raw_events;
 
-select id, event_cohort_index, subject_id, cohort_start_date, cohort_end_date
+select id, event_cohort_index, subject_id, CAST(cohort_start_date AS DATETIME) AS cohort_start_date, CAST(cohort_end_date AS DATETIME) AS cohort_end_date
 INTO #raw_events
 FROM (
 	SELECT ROW_NUMBER() OVER (ORDER BY e.cohort_start_date) AS id,
@@ -19,9 +19,9 @@ FROM (
 	  e.subject_id,
 	  e.cohort_start_date,
 	  e.cohort_end_date
-	FROM @target_database_schema.@target_cohort_table e
+	FROM @target_cohort_table e
 	  JOIN ( @event_cohort_id_index_map ) ec ON e.cohort_definition_id = ec.cohort_definition_id
-	  JOIN @target_database_schema.@target_cohort_table t ON t.cohort_start_date <= e.cohort_start_date AND e.cohort_end_date <= t.cohort_end_date AND t.subject_id = e.subject_id
+	  JOIN @target_cohort_table t ON t.cohort_start_date <= e.cohort_start_date AND e.cohort_end_date <= t.cohort_end_date AND t.subject_id = e.subject_id
 	WHERE t.cohort_definition_id = @pathway_target_cohort_id
 ) RE;
 
@@ -136,14 +136,14 @@ DROP TABLE #combo_events;
 WITH events AS (
   SELECT *
   FROM #collapsed_dates_events cde
-  WHERE NOT EXISTS(SELECT id FROM #split_overlapping_events WHERE #split_overlapping_events.id = cde.id)
+  WHERE NOT EXISTS(SELECT id FROM #split_overlapping_events soe WHERE soe.id = cde.id)
 
   UNION ALL
 
   SELECT *
   FROM #split_overlapping_events
 )
-SELECT SUM(DISTINCT POWER(2, e.event_cohort_index)) as combo_id, subject_id, cohort_start_date, cohort_end_date
+SELECT CAST(SUM(DISTINCT POWER(2, e.event_cohort_index)) as INT) as combo_id, subject_id, cohort_start_date, cohort_end_date
 INTO #combo_events
 FROM events e
 GROUP BY subject_id, cohort_start_date, cohort_end_date;
@@ -198,7 +198,7 @@ SELECT
   pathway_count.cnt AS pathways_count
 FROM (
   SELECT COUNT(*) cnt
-  FROM @target_database_schema.@target_cohort_table
+  FROM @target_cohort_table
   WHERE cohort_definition_id = @pathway_target_cohort_id
 ) target_count,
 (

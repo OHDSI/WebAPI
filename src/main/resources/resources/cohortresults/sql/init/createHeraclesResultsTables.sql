@@ -200,7 +200,7 @@ create table heracles_results
 	last_update_time timestamp
 );
 
-ALTER TABLE heracles_results ADD CONSTRAINT DF_HERACLES_results DEFAULT GETDATE() FOR last_update_time;
+ALTER TABLE heracles_results ADD CONSTRAINT DF_heracles_results DEFAULT GETDATE() FOR last_update_time;
 
 create table heracles_results_dist
 (
@@ -224,6 +224,6 @@ create table heracles_results_dist
 	last_update_time timestamp
 );
 
-ALTER TABLE heracles_results_dist ADD CONSTRAINT DF_HERACLES_results_dist DEFAULT GETDATE() FOR last_update_time;
+ALTER TABLE heracles_results_dist ADD CONSTRAINT DF_heracles_results_dist DEFAULT GETDATE() FOR last_update_time;
 
 

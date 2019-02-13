@@ -19,7 +19,7 @@ insert into @results_database_schema.cc_results (type, fa_type, covariate_id, co
     f.p75_value,
     f.p90_value,
     @strataId as strata_id,
-    @strataName as strata_name,
+    CAST(@strataName AS VARCHAR(1000)) as strata_name,
     @cohortId as cohort_definition_id,
     @executionId as cc_generation_id
   from (@features) f

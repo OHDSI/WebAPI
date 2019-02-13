@@ -74,7 +74,7 @@ FROM   (SELECT cohort_definition_id,
                    FROM   @ohdsi_database_schema.heracles_results 
                    WHERE  analysis_id IN ( 1820 ) 
                            GROUP  BY Cast(stratum_1 AS INTEGER) 
-										HAVING Sum(count_value) > @minCovariatePersonCount
+										HAVING Sum(heracles_results.count_value) > @minCovariatePersonCount
                    ) ct1 
                ON hr1.concept_id = ct1.concept_id 
        INNER JOIN @cdm_database_schema.concept c1 
@@ -158,7 +158,7 @@ FROM   (SELECT cohort_definition_id,
                    FROM   @ohdsi_database_schema.heracles_results 
                    WHERE  analysis_id IN ( 1820 ) 
                            GROUP  BY Cast(stratum_1 AS INTEGER) 
-										HAVING Sum(count_value) > @minCovariatePersonCount
+										HAVING Sum(heracles_results.count_value) > @minCovariatePersonCount
                    ) ct1 
                ON hr1.concept_id = ct1.concept_id 
        INNER JOIN @cdm_database_schema.concept c1 

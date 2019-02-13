@@ -5,13 +5,13 @@ SELECT
 FROM
   (
     SELECT *
-    FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 109
+    FROM @results_database_schema.achilles_results WHERE analysis_id = 109
   ) ar1,
   (
     SELECT min(cast(stratum_1 AS INT)) AS MinValue
-    FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 109
+    FROM @results_database_schema.achilles_results WHERE analysis_id = 109
   ) MinValue,
   (
     SELECT count_value
-    FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 1
+    FROM @results_database_schema.achilles_results WHERE analysis_id = 1
   ) denom

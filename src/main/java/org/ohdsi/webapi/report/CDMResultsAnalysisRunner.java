@@ -226,7 +226,6 @@ public class CDMResultsAnalysisRunner {
             tableQualifierValues = new String[]{resultsTableQualifier, vocabularyTableQualifier, cdmTableQualifier};
             psr = new PreparedStatementRenderer(source, sqlPath, STANDARD_TABLE, tableQualifierValues, (String) null, null);
         }
-        psr.setTargetDialect(source.getSourceDialect());
         return psr;
     }
 }

@@ -10,13 +10,13 @@ FROM
      CAST(stratum_2 AS INT) stratum_2,
      count_value
    FROM
-     @results_database_schema.ACHILLES_results WHERE analysis_id = 402 GROUP BY analysis_id, stratum_1, stratum_2, count_value) num
+     @results_database_schema.achilles_results WHERE analysis_id = 402 GROUP BY analysis_id, stratum_1, stratum_2, count_value) num
   INNER JOIN
   (SELECT
      CAST(stratum_1 AS INT) stratum_1,
      count_value
    FROM
-     @results_database_schema.ACHILLES_results WHERE analysis_id = 117 GROUP BY analysis_id, stratum_1, count_value) denom
+     @results_database_schema.achilles_results WHERE analysis_id = 117 GROUP BY analysis_id, stratum_1, count_value) denom
     ON num.stratum_2 = denom.stratum_1
   --calendar year
   INNER JOIN

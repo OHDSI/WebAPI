@@ -1,8 +1,8 @@
 WITH branded_to_clin_drug AS (
   SELECT c2.CONCEPT_ID AS CONCEPT_ID
-  FROM @CDM_schema.CONCEPT c 
-      JOIN @CDM_schema.CONCEPT_ANCESTOR ca ON ca.descendant_concept_id = c.CONCEPT_ID 
-      JOIN @CDM_schema.CONCEPT c2 ON c2.CONCEPT_ID = ca.ANCESTOR_CONCEPT_ID
+  FROM @CDM_schema.concept c
+      JOIN @CDM_schema.concept_ancestor ca ON ca.descendant_concept_id = c.CONCEPT_ID
+      JOIN @CDM_schema.concept c2 ON c2.CONCEPT_ID = ca.ANCESTOR_CONCEPT_ID
                      AND c2.vocabulary_id = 'RxNorm'
                      AND c2.concept_class_id = 'Clinical Drug'
                      AND c2.invalid_reason IS NULL

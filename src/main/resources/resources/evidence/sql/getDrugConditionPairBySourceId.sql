@@ -7,19 +7,19 @@ SELECT DISTINCT
 	c2.CONCEPT_NAME AS CONDITION_CONCEPT_NAME,
 	u2.UNIQUE_IDENTIFIER
 FROM @cem_schema.NC_LU_CONCEPT_UNIVERSE u
-    JOIN @cem_schema.CONCEPT_ANCESTOR ca
+    JOIN @cem_schema.concept_ancestor ca
             ON u.{@targetDomain=='CONDITION'}?{CONDITION_CONCEPT_ID}:{DRUG_CONCEPT_ID} = ca.ANCESTOR_CONCEPT_ID
 {@targetDomain=='CONDITION'}?{
-    JOIN @vocabularySchema.CONCEPT_ANCESTOR ca2
+    JOIN @vocabularySchema.concept_ancestor ca2
         ON u.DRUG_CONCEPT_ID = ca2.ANCESTOR_CONCEPT_ID        
 }
     JOIN @cem_schema.CEM_UNIFIED u2
             ON u2.{@targetDomain=='CONDITION'}?{CONCEPT_ID_2}:{CONCEPT_ID_1} = ca.DESCENDANT_CONCEPT_ID 
             AND u2.{@targetDomain=='CONDITION'}?{CONCEPT_ID_2}:{CONCEPT_ID_1} != ca.ANCESTOR_CONCEPT_ID 
             {@targetDomain=='CONDITION'}?{AND u2.CONCEPT_ID_1 = ca2.DESCENDANT_CONCEPT_ID}
-    JOIN @vocabularySchema.CONCEPT c1
+    JOIN @vocabularySchema.concept c1
             ON c1.CONCEPT_ID = u2.CONCEPT_ID_1
-    JOIN @vocabularySchema.CONCEPT c2
+    JOIN @vocabularySchema.concept c2
             ON c2.CONCEPT_ID = u2.CONCEPT_ID_2
 WHERE u2.SOURCE_ID IN (@sourceIdList)
 AND {@targetDomain=='CONDITION'}?{ca2.ANCESTOR_CONCEPT_ID}:{u2.CONCEPT_ID_1} IN (@drugList)
@@ -39,12 +39,12 @@ SELECT DISTINCT
 	u2.UNIQUE_IDENTIFIER
 FROM @cem_schema.CEM_UNIFIED u2
 {@targetDomain=='CONDITION'}?{
-    JOIN @vocabularySchema.CONCEPT_ANCESTOR ca2
+    JOIN @vocabularySchema.concept_ancestor ca2
         ON u2.CONCEPT_ID_1 = ca2.DESCENDANT_CONCEPT_ID        
 }
-JOIN @vocabularySchema.CONCEPT c1
+JOIN @vocabularySchema.concept c1
     ON c1.CONCEPT_ID = u2.CONCEPT_ID_1
-JOIN @vocabularySchema.CONCEPT c2
+JOIN @vocabularySchema.concept c2
     ON c2.CONCEPT_ID = u2.CONCEPT_ID_2
 WHERE u2.SOURCE_ID IN (@sourceIdList)
 AND {@targetDomain=='CONDITION'}?{ca2.ANCESTOR_CONCEPT_ID}:{u2.CONCEPT_ID_1} IN (@drugList)
@@ -63,15 +63,15 @@ SELECT DISTINCT
 	c2.CONCEPT_NAME AS CONDITION_CONCEPT_NAME,
 	u2.UNIQUE_IDENTIFIER
 FROM @cem_schema.NC_LU_CONCEPT_UNIVERSE u
-    JOIN @vocabularySchema.CONCEPT_RELATIONSHIP cr
+    JOIN @vocabularySchema.concept_relationship cr
         ON u.{@targetDomain=='CONDITION'}?{CONDITION_CONCEPT_ID}:{DRUG_CONCEPT_ID} = cr.CONCEPT_ID_1
 	{@targetDomain=='CONDITION'}?{AND UPPER(cr.relationship_id) = UPPER('IS A')}
     JOIN @cem_schema.CEM_UNIFIED u2
         ON u2.{@targetDomain=='CONDITION'}?{CONCEPT_ID_2}:{CONCEPT_ID_1} = cr.CONCEPT_ID_2
         AND u2.{@targetDomain=='CONDITION'}?{CONCEPT_ID_2}:{CONCEPT_ID_1} != cr.CONCEPT_ID_1
-    JOIN @vocabularySchema.CONCEPT c1
+    JOIN @vocabularySchema.concept c1
 	ON c1.CONCEPT_ID = u2.CONCEPT_ID_1
-    JOIN @vocabularySchema.CONCEPT c2
+    JOIN @vocabularySchema.concept c2
 	ON c2.CONCEPT_ID = u2.CONCEPT_ID_2
 WHERE u2.SOURCE_ID IN (@sourceIdList)
 AND u2.CONCEPT_ID_1 IN (@drugList)
@@ -90,19 +90,19 @@ SELECT DISTINCT
 	c2.CONCEPT_NAME AS CONDITION_CONCEPT_NAME,
 	u2.UNIQUE_IDENTIFIER
 FROM @cem_schema.NC_LU_CONCEPT_UNIVERSE u
-    JOIN @vocabularySchema.CONCEPT_ANCESTOR ca
+    JOIN @vocabularySchema.concept_ancestor ca
 	ON u.{@targetDomain=='CONDITION'}?{CONDITION_CONCEPT_ID}:{DRUG_CONCEPT_ID} = ca.DESCENDANT_CONCEPT_ID
 {@targetDomain=='CONDITION'}?{
-    JOIN @vocabularySchema.CONCEPT_ANCESTOR ca2
+    JOIN @vocabularySchema.concept_ancestor ca2
         ON u.DRUG_CONCEPT_ID = ca2.ANCESTOR_CONCEPT_ID        
 }
     JOIN @cem_schema.CEM_UNIFIED u2
 	ON u2.{@targetDomain=='CONDITION'}?{CONCEPT_ID_2}:{CONCEPT_ID_1} = ca.ANCESTOR_CONCEPT_ID
         {@targetDomain=='CONDITION'}?{AND u2.CONCEPT_ID_1 = ca2.DESCENDANT_CONCEPT_ID}
 	AND u2.{@targetDomain=='CONDITION'}?{CONCEPT_ID_2}:{CONCEPT_ID_1} != ca.DESCENDANT_CONCEPT_ID
-    JOIN @vocabularySchema.CONCEPT c1
+    JOIN @vocabularySchema.concept c1
 	ON c1.CONCEPT_ID = u2.CONCEPT_ID_1
-    JOIN @vocabularySchema.CONCEPT c2
+    JOIN @vocabularySchema.concept c2
 	ON c2.CONCEPT_ID = u2.CONCEPT_ID_2
 WHERE u2.SOURCE_ID IN (@sourceIdList)
 AND {@targetDomain=='CONDITION'}?{ca2.ANCESTOR_CONCEPT_ID}:{u2.CONCEPT_ID_1} IN (@drugList)

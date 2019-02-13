@@ -82,7 +82,7 @@ public class GenerationUtils extends AbstractDaoService {
         return Constants.TEMP_COHORT_TABLE_PREFIX + sessionId;
     }
 
-    public Job buildJobForCohortBasedAnalysisTasklet(
+    public SimpleJobBuilder buildJobForCohortBasedAnalysisTasklet(
             String analysisTypeName,
             Source source,
             JobParametersBuilder builder,
@@ -135,7 +135,7 @@ public class GenerationUtils extends AbstractDaoService {
                 .listener(dropCohortTableListener)
                 .listener(new AutoremoveJobListener(jobService));
 
-        return generateJobBuilder.build();
+        return generateJobBuilder;
     }
 
     public Job buildJobForExecutionEngineBasedAnalysisTasklet(String analysisTypeName,

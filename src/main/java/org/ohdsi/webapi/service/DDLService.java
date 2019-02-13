@@ -34,6 +34,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.webapi.sqlrender.SourceStatement;
 import org.ohdsi.webapi.sqlrender.TranslatedStatement;
+import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.stereotype.Component;
 
 @Path("/ddl/")

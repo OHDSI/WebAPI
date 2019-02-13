@@ -515,11 +515,10 @@ public class CohortResultsService extends AbstractDaoService {
   protected PreparedStatementRenderer prepareGetCompletedAnalysis(String id, int sourceId) {
 
     String sqlPath = BASE_SQL_PATH + "/raw/getCompletedAnalyses.sql";
-    PreparedStatementRenderer psr = new PreparedStatementRenderer(null
+    PreparedStatementRenderer psr = new PreparedStatementRenderer(getSourceRepository().findBySourceId(sourceId)
 			, sqlPath
 			, new String[]{"tableQualifier"}, new String[] { this.getOhdsiSchema()}
 			, new String[]{"cohort_definition_id", "source_id"}, new Object[]{Integer.valueOf(id), Integer.valueOf(sourceId)});
-		psr.setTargetDialect(this.getDialect());
     return psr;
   }
 

@@ -38,6 +38,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import waffle.shiro.negotiate.NegotiateAuthenticationStrategy;
 
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.AUTHZ;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.COPY_ESTIMATION;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.COPY_PREDICTION;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.CORS;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_COHORT_CHARACTERIZATION;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_COHORT_DEFINITION;
@@ -225,21 +227,21 @@ public abstract class AtlasSecurity extends Security {
             .addProtectedRestPath("/comparativecohortanalysis", CREATE_PLE)
             .addProtectedRestPath("/comparativecohortanalysis/*", DELETE_PLE)
 
-            // new estimation
-            .addProtectedRestPath("/estimation", CREATE_ESTIMATION)
-            .addProtectedRestPath("/estimation/*/copy", CREATE_ESTIMATION)
-            .addProtectedRestPath("/estimation/*", DELETE_ESTIMATION)
-            .addProtectedRestPath("/estimation/*/export")
-            .addProtectedRestPath("/estimation/*/download")
-
             // population level prediction
             .addProtectedRestPath("/plp", CREATE_PLP)
             .addProtectedRestPath("/plp/*/copy", CREATE_COPY_PLP)
             .addProtectedRestPath("/plp/*", DELETE_PLP)
+            
+            // new estimation
+            .addProtectedRestPath("/estimation", CREATE_ESTIMATION)
+            .addProtectedRestPath("/estimation/*/copy", COPY_ESTIMATION)
+            .addProtectedRestPath("/estimation/*", DELETE_ESTIMATION)
+            .addProtectedRestPath("/estimation/*/export")
+            .addProtectedRestPath("/estimation/*/download")
 
             // new prediction
             .addProtectedRestPath("/prediction", CREATE_PREDICTION)
-            .addProtectedRestPath("/prediction/*/copy", CREATE_PREDICTION)
+            .addProtectedRestPath("/prediction/*/copy", COPY_PREDICTION)
             .addProtectedRestPath("/prediction/*", DELETE_PREDICTION)
             .addProtectedRestPath("/prediction/*/export")
             .addProtectedRestPath("/prediction/*/download")
@@ -359,18 +361,21 @@ public abstract class AtlasSecurity extends Security {
     
     addProcessEntityFilter(CREATE_COPY_COHORT_DEFINITION, cohortdefinitionCreatorPermissionTemplates);
     addProcessEntityFilter(CREATE_COPY_IR, incidenceRatePermissionTemplates);
-    addProcessEntityFilter(CREATE_COPY_PLP, plpPermissionTemplate);
     addProcessEntityFilter(CREATE_COHORT_DEFINITION, cohortdefinitionCreatorPermissionTemplates);
     addProcessEntityFilter(CREATE_COHORT_CHARACTERIZATION, cohortCharacterizationCreatorPermissionTemplates);
     addProcessEntityFilter(CREATE_PATHWAY_ANALYSIS, pathwayAnalysisCreatorPermissionTemplate);
     addProcessEntityFilter(CREATE_FEATURE_ANALYSIS, featureAnalysisPermissionTemplates);
     addProcessEntityFilter(CREATE_CONCEPT_SET, conceptsetCreatorPermissionTemplates);
-    addProcessEntityFilter(CREATE_IR, incidenceRatePermissionTemplates);    
-    addProcessEntityFilter(CREATE_PLE, estimationPermissionTemplates);
-    addProcessEntityFilter(CREATE_PLP, plpPermissionTemplate);
+    addProcessEntityFilter(CREATE_IR, incidenceRatePermissionTemplates);
     addProcessEntityFilter(CREATE_SOURCE, dataSourcePermissionTemplates);
     addProcessEntityFilter(CREATE_PREDICTION, predictionPermissionTemplates);
-    addProcessEntityFilter(CREATE_ESTIMATION, estimationPermissionTemplates);    
+    addProcessEntityFilter(CREATE_ESTIMATION, estimationPermissionTemplates);
+    addProcessEntityFilter(COPY_PREDICTION, predictionPermissionTemplates);
+    addProcessEntityFilter(COPY_ESTIMATION, estimationPermissionTemplates);
+    //old PLE & PLP
+    addProcessEntityFilter(CREATE_PLE, estimationPermissionTemplates);
+    addProcessEntityFilter(CREATE_PLP, plpPermissionTemplate);
+    addProcessEntityFilter(CREATE_COPY_PLP, plpPermissionTemplate);
   }
 
   private void addProcessEntityFilter(FilterTemplates template, Map<String, String> permissionTemplates){

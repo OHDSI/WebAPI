@@ -24,12 +24,16 @@ public enum FilterTemplates {
     CREATE_CONCEPT_SET("createPermissionsOnCreateConceptSet", CONCEPT_SET, POST),
     CREATE_IR("createPermissionsOnCreateIR", INCIDENCE_RATE, POST),
     CREATE_COPY_IR("createPermissionsOnCopyIR", INCIDENCE_RATE, GET),
-    CREATE_PLE("createPermissionsOnCreatePle", ESTIMATION, POST),
-    CREATE_PLP("createPermissionsOnCreatePlp", PATIENT_LEVEL_PREDICTION, POST),
-    CREATE_COPY_PLP("createPermissionsOnCopyPlp", PATIENT_LEVEL_PREDICTION, GET),
     CREATE_SOURCE("createPermissionsOnCreateSource", SOURCE, POST),
     CREATE_PREDICTION("createPermissionsOnCreatePrediction", PREDICTION, POST),
     CREATE_ESTIMATION("createPermissionsOnCreateEstimation", ESTIMATION, POST),
+    COPY_PREDICTION("createPermissionsOnCopyPrediction", PREDICTION, GET),
+    COPY_ESTIMATION("createPermissionsOnCopyEstimation", ESTIMATION, GET),
+    
+    //old PLE & PLP
+    CREATE_PLE("createPermissionsOnCreatePle", ESTIMATION, POST),
+    CREATE_PLP("createPermissionsOnCreatePlp", PATIENT_LEVEL_PREDICTION, POST),
+    CREATE_COPY_PLP("createPermissionsOnCopyPlp", PATIENT_LEVEL_PREDICTION, GET),
     
     DELETE_COHORT_CHARACTERIZATION("deletePermissionsOnDeleteCohortCharacterization", COHORT_CHARACTERIZATION),
     DELETE_PATHWAY_ANALYSIS("deletePermissionsOnDeletePathwayAnalysis", PATHWAY_ANALYSIS),

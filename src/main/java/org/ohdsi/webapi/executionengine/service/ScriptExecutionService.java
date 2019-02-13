@@ -12,7 +12,8 @@ import java.util.List;
 
 public interface ScriptExecutionService {
 
-    void runScript(Long executionId, Source source, List<AnalysisFile> files, String updatePassword, String executableFilename) throws Exception;
+    void runScript(Long executionId, Source source, List<AnalysisFile> files, String updatePassword,
+                   String executableFilename, String targetTable) throws Exception;
 
     Source findSourceByKey(String key);
 

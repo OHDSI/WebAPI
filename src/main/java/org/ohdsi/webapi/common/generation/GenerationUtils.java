@@ -92,8 +92,7 @@ public class GenerationUtils extends AbstractDaoService {
     ) {
 
         final String sessionId = SessionUtils.sessionId();
-        builder.addString(SESSION_ID, sessionId);
-        builder.addString(TARGET_TABLE, GenerationUtils.getTempCohortTableName(sessionId));
+        addSessionParams(builder, sessionId);
 
         TempTableCleanupManager cleanupManager = new TempTableCleanupManager(
                 getSourceJdbcTemplate(source),
@@ -138,10 +137,18 @@ public class GenerationUtils extends AbstractDaoService {
         return generateJobBuilder;
     }
 
+    protected void addSessionParams(JobParametersBuilder builder, String sessionId) {
+        builder.addString(SESSION_ID, sessionId);
+        builder.addString(TARGET_TABLE, GenerationUtils.getTempCohortTableName(sessionId));
+    }
+
     public Job buildJobForExecutionEngineBasedAnalysisTasklet(String analysisTypeName,
                                                               Source source,
                                                               JobParametersBuilder builder,
                                                               List<AnalysisFile> analysisFiles) {
+
+        final String sessionId = SessionUtils.sessionId();
+        addSessionParams(builder, sessionId);
 
         CreateAnalysisTasklet createAnalysisTasklet = new CreateAnalysisTasklet(executionService, source.getSourceKey(), analysisFiles);
         RunExecutionEngineTasklet runExecutionEngineTasklet = new RunExecutionEngineTasklet(executionService, source, analysisFiles);

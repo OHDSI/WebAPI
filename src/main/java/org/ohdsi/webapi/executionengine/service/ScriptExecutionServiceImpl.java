@@ -23,6 +23,7 @@ import org.ohdsi.webapi.service.HttpClient;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.DataSourceDTOParser;
+import org.ohdsi.webapi.util.SourceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.JobExecution;
@@ -102,9 +103,12 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     }
 
     @Override
-    public void runScript(Long executionId, Source source, List<AnalysisFile> files, String updatePassword, String executableFilename) {
+    public void runScript(Long executionId, Source source, List<AnalysisFile> files, String updatePassword,
+                          String executableFilename, String targetTable) {
 
         DataSourceUnsecuredDTO dataSourceData = DataSourceDTOParser.parseDTO(source);
+        dataSourceData.setCohortTargetTable(targetTable);
+        dataSourceData.setTargetSchema(SourceUtils.getTempQualifier(source));
 
         final String analysisExecutionUrl = "/analyze";
         WebTarget webTarget = client.target(executionEngineURL + analysisExecutionUrl);

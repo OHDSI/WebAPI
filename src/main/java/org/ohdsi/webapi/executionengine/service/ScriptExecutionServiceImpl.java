@@ -12,9 +12,9 @@ import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
 import org.ohdsi.webapi.KerberosUtils;
-import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysis;
+/*import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysis;
 import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisExecutionRepository;
-import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisRepository;
+import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisRepository;*/
 import org.ohdsi.webapi.executionengine.dto.ExecutionRequestDTO;
 import org.ohdsi.webapi.executionengine.entity.AnalysisExecution;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
@@ -23,8 +23,8 @@ import org.ohdsi.webapi.executionengine.repository.AnalysisExecutionRepository;
 import org.ohdsi.webapi.executionengine.repository.InputFileRepository;
 import org.ohdsi.webapi.executionengine.repository.OutputFileRepository;
 import org.ohdsi.webapi.executionengine.util.StringGenerationUtil;
-import org.ohdsi.webapi.prediction.PatientLevelPredictionAnalysis;
-import org.ohdsi.webapi.prediction.PatientLevelPredictionAnalysisRepository;
+/*import org.ohdsi.webapi.prediction.PatientLevelPredictionAnalysis;
+import org.ohdsi.webapi.prediction.PatientLevelPredictionAnalysisRepository;*/
 import org.ohdsi.webapi.service.HttpClient;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.source.Source;
@@ -61,8 +61,8 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     @Autowired
     private HttpClient client;
 
-    @Autowired
-    ComparativeCohortAnalysisExecutionRepository comparativeCohortAnalysisExecutionRepository;
+    /*@Autowired
+    ComparativeCohortAnalysisExecutionRepository comparativeCohortAnalysisExecutionRepository;*/
     @Value("${executionengine.url}")
     private String executionEngineURL;
     @Value("${executionengine.token}")
@@ -83,14 +83,14 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     @Autowired
     private InputFileRepository inputFileRepository;
 
-    @Autowired
-    private ComparativeCohortAnalysisRepository comparativeCohortAnalysisRepository;
+    /*@Autowired
+    private ComparativeCohortAnalysisRepository comparativeCohortAnalysisRepository;*/
     @Autowired
     private JobExplorer jobExplorer;
     @Autowired
     private AnalysisExecutionRepository analysisExecutionRepository;
-    @Autowired
-    private PatientLevelPredictionAnalysisRepository patientLevelPredictionAnalysisRepository;
+    /*@Autowired
+    private PatientLevelPredictionAnalysisRepository patientLevelPredictionAnalysisRepository;*/
 
     private List<AnalysisExecution.Status> INVALIDATE_STATUSES = new ArrayList<>();
 
@@ -212,14 +212,14 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         String name;
 
         switch (dto.analysisType){
-            case CCA:
+            /*case CCA:
                 ComparativeCohortAnalysis cca = comparativeCohortAnalysisRepository.findOne(dto.cohortId);
                 name = cca.getName();
                 break;
             case PLP:
                 PatientLevelPredictionAnalysis plp = patientLevelPredictionAnalysisRepository.findOne(dto.cohortId);
                 name = plp.getName();
-                break;
+                break;*/
             default:
                 name = "";
                 break;

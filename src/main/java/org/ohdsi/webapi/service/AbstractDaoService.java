@@ -16,8 +16,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.IExecutionInfo;
-import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisExecutionRepository;
-import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetItemRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetRepository;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
@@ -96,18 +94,6 @@ public abstract class AbstractDaoService {
   public ConceptSetRepository getConceptSetRepository() {
     return conceptSetRepository;
   }
-  
-  @Autowired
-  private ComparativeCohortAnalysisRepository comparativeCohortAnalysisRepository;
-  public ComparativeCohortAnalysisRepository getComparativeCohortAnalysisRepository() {
-    return comparativeCohortAnalysisRepository;
-  }
-  
-  @Autowired
-  private ComparativeCohortAnalysisExecutionRepository comparativeCohortAnalysisExecutionRepository;
-  public ComparativeCohortAnalysisExecutionRepository getComparativeCohortAnalysisExecutionRepository() {
-    return comparativeCohortAnalysisExecutionRepository;
-  }  
   
   @Autowired
   private TransactionTemplate transactionTemplate;

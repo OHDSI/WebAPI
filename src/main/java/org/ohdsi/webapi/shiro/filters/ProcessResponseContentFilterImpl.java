@@ -22,19 +22,26 @@ public class ProcessResponseContentFilterImpl extends ProcessResponseContentFilt
     private EntityName entityName;
     private String httpMethod;
     private final Logger log = LoggerFactory.getLogger(getClass());
+    private String identityField;
+
+    public ProcessResponseContentFilterImpl(Map<String, String> template, EntityName entityName, PermissionManager authorizer,
+                                            ApplicationEventPublisher eventPublisher, String httpMethod) {
+        this(template, entityName, authorizer, eventPublisher, httpMethod, "id");
+    }
 
     public ProcessResponseContentFilterImpl(Map<String, String> template, EntityName entityName, PermissionManager authorizer, 
-                                            ApplicationEventPublisher eventPublisher, String httpMethod) {
+                                            ApplicationEventPublisher eventPublisher, String httpMethod, String identityField) {
         this.template = new HashMap<>(template);
         this.entityName = entityName;
         this.authorizer = authorizer;
         this.eventPublisher = eventPublisher;
         this.httpMethod = httpMethod;
+        this.identityField = identityField;
     }
 
     @Override
     public void doProcessResponseContent(String content) throws Exception {
-        String id = this.parseJsonField(content, "id");
+        String id = this.parseJsonField(content, identityField);
         try {
             RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
             authorizer.addPermissionsFromTemplate(currentUserPersonalRole, template, id);

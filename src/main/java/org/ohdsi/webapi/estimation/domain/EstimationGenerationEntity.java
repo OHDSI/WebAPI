@@ -13,8 +13,19 @@ public class EstimationGenerationEntity extends CommonGeneration {
   @JoinColumn(name = "estimation_id")
   private Estimation estimationAnalysis;
 
+  @Column(name = "update_password")
+  private String updatePassword;
+
   public Estimation getEstimationAnalysis() {
     return estimationAnalysis;
+  }
+
+  public String getUpdatePassword() {
+    return updatePassword;
+  }
+
+  public void setUpdatePassword(String updatePassword) {
+    this.updatePassword = updatePassword;
   }
 
   @Override

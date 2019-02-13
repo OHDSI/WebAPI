@@ -13,8 +13,19 @@ public class PredictionGenerationEntity extends CommonGeneration {
   @JoinColumn(name = "prediction_id")
   private PredictionAnalysis predictionAnalysis;
 
+  @Column(name = "update_password")
+  private String updatePassword;
+
   public PredictionAnalysis getPredictionAnalysis() {
     return predictionAnalysis;
+  }
+
+  public String getUpdatePassword() {
+    return updatePassword;
+  }
+
+  public void setUpdatePassword(String updatePassword) {
+    this.updatePassword = updatePassword;
   }
 
   @Override

@@ -13,10 +13,11 @@ import org.ohdsi.webapi.executionengine.entity.AnalysisResultFile;
 import org.ohdsi.webapi.executionengine.exception.ScriptCallbackException;
 import org.ohdsi.webapi.executionengine.repository.AnalysisExecutionRepository;
 import org.ohdsi.webapi.executionengine.repository.OutputFileRepository;
+import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.ws.rs.Consumes;
@@ -30,56 +31,64 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
-@Component
+import static org.ohdsi.webapi.executionengine.entity.AnalysisExecution.Status.*;
+
+@Controller
 @Path("/executionservice/callbacks")
 public class ScriptExecutionCallbackController {
 
     private static final Logger log = LoggerFactory.getLogger(ScriptExecutionCallbackController.class);
+    private static final String EXECUTION_NOT_FOUND = "Analysis execution with id {%d} not found";
 
     private final AnalysisExecutionRepository analysisExecutionRepository;
 
     private final OutputFileRepository outputFileRepository;
 
+    private final ScriptExecutionService executionService;
 
     @Autowired
     public ScriptExecutionCallbackController(AnalysisExecutionRepository analysisExecutionRepository,
-                                             OutputFileRepository outputFileRepository) {
+                                             OutputFileRepository outputFileRepository,
+                                             ScriptExecutionService executionService) {
 
         this.analysisExecutionRepository = analysisExecutionRepository;
         this.outputFileRepository = outputFileRepository;
+        this.executionService = executionService;
     }
 
     @Path(value = "submission/{id}/status/update/{password}")
     @Consumes(MediaType.APPLICATION_JSON)
     @POST
     @Transactional
-    public void statusUpdate(@PathParam("id") Integer id,
+    public void statusUpdate(@PathParam("id") Long id,
                              @PathParam("password") String password,
                              AnalysisExecutionStatusDTO status) {
 
         log.info("Accepted an updateSubmission request. ID:{}, Update date:{} Log: {}",
                         status.getId(), status.getStdoutDate(), status.getStdout());
-            AnalysisExecution analysisExecution = analysisExecutionRepository.findOne(id);
-            if (analysisExecution != null
-                    && Objects.equals(password, analysisExecution.getUpdatePassword())
-                    && ( analysisExecution.getExecutionStatus().equals(AnalysisExecution.Status.STARTED)
-                    || analysisExecution.getExecutionStatus().equals(AnalysisExecution.Status.RUNNING))
-                    ) {
-                analysisExecution.setExecutionStatus(AnalysisExecution.Status.RUNNING);
-            }
+        AnalysisExecution analysisExecution = analysisExecutionRepository.findByJobExecutionId(id)
+                .orElseThrow(() -> new ScriptCallbackException(String.format(EXECUTION_NOT_FOUND, id)));
+        if (Objects.equals(password, analysisExecution.getUpdatePassword())
+                && ( analysisExecution.getExecutionStatus().equals(STARTED)
+                || analysisExecution.getExecutionStatus().equals(RUNNING))
+                ) {
+
+            executionService.updateAnalysisStatus(analysisExecution, RUNNING);
+        }
     }
 
     @Path(value = "submission/{id}/result/{password}")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @POST
     @Transactional
-    public void analysisResult(@PathParam("id") Integer id,
+    public void analysisResult(@PathParam("id") Long id,
                                @PathParam("password") String password,
                                FormDataMultiPart multiPart) {
 
         log.info("Accepted an analysisResult request. ID:{}", id);
-        AnalysisExecution analysisExecution = analysisExecutionRepository.findOne(id);
-        if (Objects.nonNull(analysisExecution) && Objects.equals(password, analysisExecution.getUpdatePassword())) {
+        AnalysisExecution analysisExecution = analysisExecutionRepository.findByJobExecutionId(id)
+                .orElseThrow(() -> new ScriptCallbackException(String.format(EXECUTION_NOT_FOUND, id)));
+        if (Objects.equals(password, analysisExecution.getUpdatePassword())) {
             Date timestamp = new Date();
             int seconds = (int) ((timestamp.getTime() - analysisExecution.getExecuted().getTime()) / 1000);
             analysisExecution.setDuration(seconds);
@@ -95,11 +104,10 @@ public class ScriptExecutionCallbackController {
             AnalysisResultStatusDTO status = analysisResultDTO.getStatus();
 
             if (status == AnalysisResultStatusDTO.EXECUTED) {
-                analysisExecution.setExecutionStatus(AnalysisExecution.Status.COMPLETED);
+                executionService.updateAnalysisStatus(analysisExecution, COMPLETED);
             } else if (status == AnalysisResultStatusDTO.FAILED) {
-                analysisExecution.setExecutionStatus(AnalysisExecution.Status.FAILED);
+                executionService.updateAnalysisStatus(analysisExecution, FAILED);
             }
-            analysisExecutionRepository.save(analysisExecution);
         } else {
             log.error("Update password not matched for execution ID:{}", id);
         }

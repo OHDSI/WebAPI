@@ -49,6 +49,8 @@ public class AnalysisExecution {
     private String updatePassword;
     @Column(name = "source_id")
     private Integer sourceId;
+    @Column(name = "job_execution_id")
+    private Long jobExecutionId;
 
     public Integer getId() {
 
@@ -138,5 +140,13 @@ public class AnalysisExecution {
     public void setSourceId(Integer sourceId) {
 
         this.sourceId = sourceId;
+    }
+
+    public Long getJobExecutionId() {
+        return jobExecutionId;
+    }
+
+    public void setJobExecutionId(Long jobExecutionId) {
+        this.jobExecutionId = jobExecutionId;
     }
 }

@@ -26,7 +26,7 @@ import javax.ws.rs.core.MediaType;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.prediction.PatientLevelPredictionAnalysis;
 import org.ohdsi.webapi.prediction.PatientLevelPredictionAnalysisInfo;
-import org.ohdsi.webapi.prediction.PatientLevelPredictionAnalysisRepository;
+import org.ohdsi.webapi.prediction.repository.PatientLevelPredictionAnalysisRepository;
 import org.ohdsi.webapi.prediction.PatientLevelPredictionListItem;
 import org.ohdsi.webapi.service.CohortDefinitionService.CohortDefinitionDTO;
 import org.ohdsi.webapi.service.dto.PatientLevelPredictionAnalysisDTO;

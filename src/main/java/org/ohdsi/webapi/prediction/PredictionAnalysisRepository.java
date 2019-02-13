@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.prediction;
 
-import org.springframework.data.repository.CrudRepository;
+import com.cosium.spring.data.jpa.entity.graph.repository.EntityGraphJpaRepository;
 
-public interface PredictionAnalysisRepository extends CrudRepository<PredictionAnalysis, Integer> {
+public interface PredictionAnalysisRepository extends EntityGraphJpaRepository<PredictionAnalysis, Integer> {
     
 }

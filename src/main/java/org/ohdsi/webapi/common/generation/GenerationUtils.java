@@ -5,19 +5,23 @@ import org.ohdsi.webapi.cohortcharacterization.CreateCohortTableTasklet;
 import org.ohdsi.webapi.cohortcharacterization.DropCohortTableListener;
 import org.ohdsi.webapi.cohortcharacterization.GenerateLocalCohortTasklet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
+import org.ohdsi.webapi.executionengine.job.CreateAnalysisTasklet;
+import org.ohdsi.webapi.executionengine.job.ExecutionEngineCallbackTasklet;
+import org.ohdsi.webapi.executionengine.job.RunExecutionEngineTasklet;
+import org.ohdsi.webapi.executionengine.repository.AnalysisExecutionRepository;
+import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.CohortGenerationService;
 import org.ohdsi.webapi.service.GenerationTaskExceptionHandler;
 import org.ohdsi.webapi.service.JobService;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.source.Source;
-import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.sqlrender.SourceAwareSqlRender;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.SourceUtils;
 import org.ohdsi.webapi.util.TempTableCleanupManager;
 import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
@@ -28,7 +32,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import javax.persistence.EntityManager;
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Function;
 
 import static org.ohdsi.webapi.Constants.Params.SESSION_ID;
@@ -44,6 +50,9 @@ public class GenerationUtils extends AbstractDaoService {
     private JobBuilderFactory jobBuilders;
     private JobService jobService;
     private final SourceAwareSqlRender sourceAwareSqlRender;
+    private final ScriptExecutionService executionService;
+    private final AnalysisExecutionRepository analysisExecutionRepository;
+    private final EntityManager entityManager;
 
     public GenerationUtils(StepBuilderFactory stepBuilderFactory,
                            TransactionTemplate transactionTemplate,
@@ -51,7 +60,10 @@ public class GenerationUtils extends AbstractDaoService {
                            SourceService sourceService,
                            JobBuilderFactory jobBuilders,
                            SourceAwareSqlRender sourceAwareSqlRender,
-                           JobService jobService) {
+                           JobService jobService,
+                           ScriptExecutionService executionService,
+                           AnalysisExecutionRepository analysisExecutionRepository,
+                           EntityManager entityManager) {
 
         this.stepBuilderFactory = stepBuilderFactory;
         this.transactionTemplate = transactionTemplate;
@@ -60,6 +72,9 @@ public class GenerationUtils extends AbstractDaoService {
         this.jobBuilders = jobBuilders;
         this.sourceAwareSqlRender = sourceAwareSqlRender;
         this.jobService = jobService;
+        this.executionService = executionService;
+        this.analysisExecutionRepository = analysisExecutionRepository;
+        this.entityManager = entityManager;
     }
 
     public static String getTempCohortTableName(String sessionId) {
@@ -126,7 +141,28 @@ public class GenerationUtils extends AbstractDaoService {
     public Job buildJobForExecutionEngineBasedAnalysisTasklet(String analysisTypeName,
                                                               Source source,
                                                               JobParametersBuilder builder,
-                                                              JdbcTemplate jdbcTemplate) {
-        return null;
+                                                              List<AnalysisFile> analysisFiles) {
+
+        CreateAnalysisTasklet createAnalysisTasklet = new CreateAnalysisTasklet(executionService, source.getSourceKey());
+        RunExecutionEngineTasklet runExecutionEngineTasklet = new RunExecutionEngineTasklet(executionService, source, analysisFiles);
+        ExecutionEngineCallbackTasklet callbackTasklet = new ExecutionEngineCallbackTasklet(analysisExecutionRepository, entityManager);
+
+        Step createAnalysisExecutionStep = stepBuilderFactory.get(analysisTypeName + ".createAnalysisExecution")
+                .tasklet(createAnalysisTasklet)
+                .build();
+
+        Step runExecutionStep = stepBuilderFactory.get(analysisTypeName + ".startExecutionEngine")
+                .tasklet(runExecutionEngineTasklet)
+                .build();
+
+        Step waitCallbackStep = stepBuilderFactory.get(analysisTypeName + ".waitForCallback")
+                .tasklet(callbackTasklet)
+                .build();
+
+        return jobBuilders.get(analysisTypeName)
+                .start(createAnalysisExecutionStep)
+                .next(runExecutionStep)
+                .next(waitCallbackStep)
+                .build();
     }
 }

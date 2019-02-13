@@ -92,7 +92,7 @@ public class ScriptExecutionController implements GeneratesNotification {
         this.sourceRepository = sourceRepository;
     }
 
-    @Path("execution/run")
+ /*   @Path("execution/run")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -109,7 +109,7 @@ public class ScriptExecutionController implements GeneratesNotification {
         parametersBuilder.addString(SCRIPT_TYPE, dto.analysisType.name());
         final JobParameters jobParameters = parametersBuilder.toJobParameters();
 
-        RunExecutionEngineTasklet runExecutionEngineTasklet = new RunExecutionEngineTasklet(scriptExecutionService, dto);
+        RunExecutionEngineTasklet runExecutionEngineTasklet = new RunExecutionEngineTasklet(scriptExecutionService, source, analysisFile);
         ExecutionEngineCallbackTasklet callbackTasklet = new ExecutionEngineCallbackTasklet(analysisExecutionRepository, entityManager);
         CreateAnalysisTasklet createAnalysisTasklet = new CreateAnalysisTasklet(scriptExecutionService, dto);
 
@@ -132,7 +132,7 @@ public class ScriptExecutionController implements GeneratesNotification {
                 .build();
 
         return jobTemplate.launch(runExecutionJob, jobParameters);
-    }
+    }*/
 
     @Path("execution/status/{executionId}")
     @GET
@@ -141,7 +141,7 @@ public class ScriptExecutionController implements GeneratesNotification {
         return scriptExecutionService.getExecutionStatus(executionId);
     }
 
-    @Path("execution/results/{executionId}")
+/*    @Path("execution/results/{executionId}")
     @GET
     @Produces("application/zip")
     public Response getResults(@PathParam("executionId") Long executionId) throws IOException {
@@ -166,7 +166,7 @@ public class ScriptExecutionController implements GeneratesNotification {
         response.header("Content-Disposition",
                 "attachment; filename=\"" + fileName + "\"");
         return response.build();
-    }
+    }*/
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)

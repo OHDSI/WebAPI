@@ -231,6 +231,9 @@ public abstract class AtlasSecurity extends Security {
             .addProtectedRestPath("/estimation/*", DELETE_ESTIMATION)
             .addProtectedRestPath("/estimation/*/export")
             .addProtectedRestPath("/estimation/*/download")
+            .addProtectedRestPath("/estimation/*/generation")
+            .addProtectedRestPath("/estimation/*/generation/*")
+            .addProtectedRestPath("/estimation/generation/*")
 
             // population level prediction
             .addProtectedRestPath("/plp", CREATE_PLP)
@@ -243,6 +246,9 @@ public abstract class AtlasSecurity extends Security {
             .addProtectedRestPath("/prediction/*", DELETE_PREDICTION)
             .addProtectedRestPath("/prediction/*/export")
             .addProtectedRestPath("/prediction/*/download")
+            .addProtectedRestPath("/prediction/*/generation")
+            .addProtectedRestPath("/prediction/*/generation/*")
+            .addProtectedRestPath("/prediction/generation/*")
 
             // cohort definition
             .addProtectedRestPath("/cohortdefinition", CREATE_COHORT_DEFINITION)

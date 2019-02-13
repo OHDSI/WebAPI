@@ -1,0 +1,1 @@
+ALTER TABLE ${ohdsiSchema}.analysis_execution ADD job_execution_id BIGINT;

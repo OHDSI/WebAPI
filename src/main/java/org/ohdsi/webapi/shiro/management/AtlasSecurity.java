@@ -311,13 +311,16 @@ public abstract class AtlasSecurity extends Security {
     addProcessEntityFilter(CREATE_IR, incidenceRatePermissionTemplates);    
     addProcessEntityFilter(CREATE_PLE, estimationPermissionTemplates);
     addProcessEntityFilter(CREATE_PLP, plpPermissionTemplate);
-    addProcessEntityFilter(CREATE_SOURCE, dataSourcePermissionTemplates);
+    addProcessEntityFilter(CREATE_SOURCE, dataSourcePermissionTemplates, "sourceId");
     addProcessEntityFilter(CREATE_PREDICTION, predictionPermissionTemplates);
     addProcessEntityFilter(CREATE_ESTIMATION, estimationPermissionTemplates);    
   }
 
   private void addProcessEntityFilter(FilterTemplates template, Map<String, String> permissionTemplates){
     filters.put(template, new ProcessResponseContentFilterImpl(permissionTemplates, template.getEntityName(), authorizer, eventPublisher, template.getHttpMethod()));
+  }
+  private void addProcessEntityFilter(FilterTemplates template, Map<String, String> permissionTemplates, String identityField){
+    filters.put(template, new ProcessResponseContentFilterImpl(permissionTemplates, template.getEntityName(), authorizer, eventPublisher, template.getHttpMethod(), identityField));
   }
 
   @Override

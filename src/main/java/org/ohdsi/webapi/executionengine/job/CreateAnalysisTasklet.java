@@ -1,8 +1,8 @@
 package org.ohdsi.webapi.executionengine.job;
 
 import org.ohdsi.webapi.Constants;
-import org.ohdsi.webapi.executionengine.dto.ExecutionRequestDTO;
 import org.ohdsi.webapi.executionengine.entity.AnalysisExecution;
+import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
 import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.StepContribution;
@@ -10,6 +10,7 @@ import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.repeat.RepeatStatus;
 
+import java.util.List;
 import java.util.Map;
 
 public class CreateAnalysisTasklet extends BaseExecutionTasklet {
@@ -19,14 +20,16 @@ public class CreateAnalysisTasklet extends BaseExecutionTasklet {
     private final ScriptExecutionService service;
 
     private final String sourceKey;
+    private List<AnalysisFile> analysisFiles;
 
     private Integer analysisId;
 
 
-    public CreateAnalysisTasklet(ScriptExecutionService executionService, String sourceKey) {
+    public CreateAnalysisTasklet(ScriptExecutionService executionService, String sourceKey, List<AnalysisFile> analysisFiles) {
 
         this.service = executionService;
         this.sourceKey = sourceKey;
+        this.analysisFiles = analysisFiles;
     }
     
     @Override
@@ -38,7 +41,8 @@ public class CreateAnalysisTasklet extends BaseExecutionTasklet {
         final AnalysisExecution createAnalysis = service.createAnalysisExecution(
                 jobId,
                 service.findSourceByKey(sourceKey),
-                updatePassword);
+                updatePassword,
+                analysisFiles);
         this.analysisId = createAnalysis.getId();
         return RepeatStatus.FINISHED;
     }

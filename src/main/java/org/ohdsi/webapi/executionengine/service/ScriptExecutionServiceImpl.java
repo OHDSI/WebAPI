@@ -1,27 +1,23 @@
 package org.ohdsi.webapi.executionengine.service;
 
 import com.odysseusinc.arachne.commons.types.DBMSType;
-import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.*;
+import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisRequestDTO;
+import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisRequestStatusDTO;
+import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.DataSourceUnsecuredDTO;
 import jersey.repackaged.com.google.common.collect.ImmutableList;
 import jersey.repackaged.com.google.common.collect.ImmutableMap;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.text.StrSubstitutor;
-import org.apache.commons.lang3.time.DateUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
-import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysis;
 import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisExecutionRepository;
 import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisRepository;
-import org.ohdsi.webapi.executionengine.dto.ExecutionRequestDTO;
 import org.ohdsi.webapi.executionengine.entity.AnalysisExecution;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFile;
 import org.ohdsi.webapi.executionengine.repository.AnalysisExecutionRepository;
 import org.ohdsi.webapi.executionengine.repository.InputFileRepository;
 import org.ohdsi.webapi.executionengine.repository.OutputFileRepository;
-import org.ohdsi.webapi.executionengine.util.StringGenerationUtil;
-import org.ohdsi.webapi.prediction.PatientLevelPredictionAnalysis;
 import org.ohdsi.webapi.prediction.repository.PatientLevelPredictionAnalysisRepository;
 import org.ohdsi.webapi.service.HttpClient;
 import org.ohdsi.webapi.service.SourceService;
@@ -33,7 +29,6 @@ import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -53,11 +48,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.StreamSupport;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import static com.odysseusinc.arachne.commons.types.DBMSType.IMPALA;
 
 @Service
 @Transactional
@@ -175,11 +167,9 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     }
 
     @Override
-    public AnalysisExecution createAnalysisExecution(Long jobId, Source source, String password) {
+    public AnalysisExecution createAnalysisExecution(Long jobId, Source source, String password, List<AnalysisFile> analysisFiles) {
 
         AnalysisExecution execution = new AnalysisExecution();
-        execution.setAnalysisId(jobId.intValue());
-//        execution.setAnalysisType(dto.analysisType);
         execution.setDuration(0);
         execution.setSourceId(source.getSourceId());
         execution.setExecuted(new Date());
@@ -187,28 +177,12 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         execution.setUserId(0); //Looks strange
         execution.setUpdatePassword(password);
         execution.setJobExecutionId(jobId);
-        analysisExecutionRepository.saveAndFlush(execution);
-        return execution;
-    }
-
-    private String getAnalysisName(ExecutionRequestDTO dto) {
-
-        String name;
-
-        switch (dto.analysisType){
-            case CCA:
-                ComparativeCohortAnalysis cca = comparativeCohortAnalysisRepository.findOne(dto.cohortId);
-                name = cca.getName();
-                break;
-            case PLP:
-                PatientLevelPredictionAnalysis plp = patientLevelPredictionAnalysisRepository.findOne(dto.cohortId);
-                name = plp.getName();
-                break;
-            default:
-                name = "";
-                break;
+        AnalysisExecution saved = analysisExecutionRepository.saveAndFlush(execution);
+        if (Objects.nonNull(analysisFiles)) {
+            analysisFiles.forEach(file -> file.setAnalysisExecution(saved));
+            inputFileRepository.save(analysisFiles);
         }
-        return name;
+        return saved;
     }
 
     @Override
@@ -234,47 +208,6 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     public List<AnalysisResultFile> getExecutionResultFiles(Long executionId) {
 
         return outputFileRepository.findByExecutionId(executionId.intValue());
-    }
-
-    private String processTemplate(ExecutionRequestDTO requestDTO,
-                                   DataSourceUnsecuredDTO dataSourceData) {
-
-        String temp = requestDTO.template
-                .replace("dbms = \"postgresql\"", "dbms = \"" + dataSourceData.getType().getOhdsiDB() + "\"")
-                .replace(
-                        "server = \"localhost/ohdsi\"",
-                        "connectionString = \"" + dataSourceData.getConnectionString() + "\", schema = \"" + dataSourceData.getCdmSchema() + "\""
-                )
-                .replace( "port = 5432,", "")
-                .replace("user = \"joe\"", "user = \"" + dataSourceData.getUsername() + "\"")
-                .replace("my_cdm_data", dataSourceData.getCdmSchema())
-                .replace("my_vocabulary_data", dataSourceData.getVocabularySchema())
-                .replace("my_results", dataSourceData.getResultSchema())
-                .replace("exposure_database_schema", dataSourceData.getResultSchema())
-                .replace("outcome_database_schema", dataSourceData.getResultSchema())
-                .replace("exposure_table", "cohort")
-                .replace("outcome_table", "cohort")
-                .replace("cohort_table", "cohort")
-//                .replace("exposureTable <- \"exposure_table\"", "")
-//                .replace("outcomeTable <- \"outcome_table\"", "")
-
-                .replace("cdmVersion <- \"5\"",
-                        "cdmVersion <- \"" + requestDTO.cdmVersion + "\"")
-                .replace("<insert your " + "directory here>",
-                        requestDTO.workFolder);
-        if (Objects.equals(IMPALA, dataSourceData.getType())) {
-            temp = temp.replace("password = \"supersecret\"", "password = \""
-                    + dataSourceData.getPassword() + "\", "
-                    + "pathToDriver=\"/impala/\"");
-
-        } else {
-            temp = temp.replace("password = \"supersecret\"", "password = \"" + dataSourceData.getPassword() + "\"");
-        }
-
-        //uncommenting package installation
-        return temp
-                .replace("true", "TRUE")
-                .replace("false", "FALSE");
     }
 
     @Override

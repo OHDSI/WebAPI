@@ -143,7 +143,7 @@ public class GenerationUtils extends AbstractDaoService {
                                                               JobParametersBuilder builder,
                                                               List<AnalysisFile> analysisFiles) {
 
-        CreateAnalysisTasklet createAnalysisTasklet = new CreateAnalysisTasklet(executionService, source.getSourceKey());
+        CreateAnalysisTasklet createAnalysisTasklet = new CreateAnalysisTasklet(executionService, source.getSourceKey(), analysisFiles);
         RunExecutionEngineTasklet runExecutionEngineTasklet = new RunExecutionEngineTasklet(executionService, source, analysisFiles);
         ExecutionEngineCallbackTasklet callbackTasklet = new ExecutionEngineCallbackTasklet(analysisExecutionRepository, entityManager);
 

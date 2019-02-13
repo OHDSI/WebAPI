@@ -31,11 +31,6 @@ public class AnalysisExecution {
     @GeneratedValue(generator = "analysis_execution_generator")
     @Column(name = "id")
     private Integer id;
-    @Column(name = "analysis_id")
-    private Integer analysisId;
-    @Column(name = "analysis_type")
-    @Enumerated(EnumType.STRING)
-    private AnalysisExecutionType analysisType;
     @Column(name = "duration")
     private Integer duration;
     @Column(name = "executed")
@@ -60,26 +55,6 @@ public class AnalysisExecution {
     public void setId(Integer id) {
 
         this.id = id;
-    }
-
-    public Integer getAnalysisId() {
-
-        return analysisId;
-    }
-
-    public void setAnalysisId(Integer analysisId) {
-
-        this.analysisId = analysisId;
-    }
-
-    public AnalysisExecutionType getAnalysisType() {
-
-        return analysisType;
-    }
-
-    public void setAnalysisType(AnalysisExecutionType analysisType) {
-
-        this.analysisType = analysisType;
     }
 
     public Integer getDuration() {

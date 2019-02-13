@@ -28,6 +28,7 @@ import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.ExceptionUtils;
+import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -235,19 +236,14 @@ public class PredictionServiceImpl extends AbstractDaoService implements Predict
         builder.addString(UPDATE_PASSWORD, StringGenerationUtil.generateRandomString());
         builder.addString(JOB_AUTHOR, getCurrentUserLogin());
 
-        String packageName;
+        String packageName = String.format("PredictionAnalysis.%s", SessionUtils.sessionId());
         String packageFilename = String.format("prediction_study_%d.zip", predictionAnalysisId);
         List<AnalysisFile> analysisFiles = new ArrayList<>();
         AnalysisFile analysisFile = new AnalysisFile();
         analysisFile.setFileName(packageFilename);
         try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
           PatientLevelPredictionAnalysis analysis = exportAnalysis(predictionAnalysisId);
-          if (Objects.isNull(analysis.getPackageName())) {
-              packageName = "prediction_analysis";
-              analysis.setPackageName(packageName);
-          } else {
-              packageName = analysis.getPackageName();
-          }
+          analysis.setPackageName(packageName);
           hydrateAnalysis(analysis, out);
           analysisFile.setContents(out.toByteArray());
         }

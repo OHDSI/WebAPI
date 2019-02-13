@@ -1,15 +1,14 @@
 package org.ohdsi.webapi.executionengine.service;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Date;
-import java.util.List;
-import org.ohdsi.webapi.executionengine.dto.ExecutionRequestDTO;
 import org.ohdsi.webapi.executionengine.entity.AnalysisExecution;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFile;
 import org.ohdsi.webapi.source.Source;
-import org.springframework.stereotype.Service;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Date;
+import java.util.List;
 
 public interface ScriptExecutionService {
 
@@ -17,7 +16,7 @@ public interface ScriptExecutionService {
 
     Source findSourceByKey(String key);
 
-    AnalysisExecution createAnalysisExecution(Long jobId, Source source, String password);
+    AnalysisExecution createAnalysisExecution(Long jobId, Source source, String password, List<AnalysisFile> analysisFiles);
 
     String getExecutionStatus(Long executionId);
 

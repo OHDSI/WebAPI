@@ -1,27 +1,15 @@
 package org.ohdsi.webapi.executionengine.controller;
 
-import org.ohdsi.webapi.executionengine.dto.ExecutionRequestDTO;
 import org.ohdsi.webapi.executionengine.entity.AnalysisExecution;
-import org.ohdsi.webapi.executionengine.entity.AnalysisExecutionType;
-import org.ohdsi.webapi.executionengine.entity.AnalysisResultFile;
-import org.ohdsi.webapi.executionengine.job.CreateAnalysisTasklet;
-import org.ohdsi.webapi.executionengine.job.ExecutionEngineCallbackTasklet;
-import org.ohdsi.webapi.executionengine.job.RunExecutionEngineTasklet;
 import org.ohdsi.webapi.executionengine.repository.AnalysisExecutionRepository;
 import org.ohdsi.webapi.executionengine.service.ExecutionEngineStatus;
 import org.ohdsi.webapi.executionengine.service.ExecutionEngineStatusService;
 import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
 import org.ohdsi.webapi.job.GeneratesNotification;
-import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
-import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobParameters;
-import org.springframework.batch.core.JobParametersBuilder;
-import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,23 +17,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
-import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
 
 @Component
 @Path("/executionservice")
@@ -168,6 +144,7 @@ public class ScriptExecutionController implements GeneratesNotification {
         return response.build();
     }*/
 
+/*
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("{type}/{id}/executions")
@@ -176,6 +153,7 @@ public class ScriptExecutionController implements GeneratesNotification {
 
         return analysisExecutionRepository.findByAnalysisIdAndAnalysisType(id, type);
     }
+*/
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)

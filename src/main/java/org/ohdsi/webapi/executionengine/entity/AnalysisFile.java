@@ -18,7 +18,10 @@ public class AnalysisFile {
     @GenericGenerator(
         name = "analysis_input_file_generator",
         strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
-        parameters = { @Parameter(name = "increment_size", value = "1")}
+        parameters = {
+                @Parameter(name = "sequence_name", value = "input_file_seq"),
+                @Parameter(name = "increment_size", value = "1")
+        }
     )
     @GeneratedValue(generator = "analysis_input_file_generator")
     @Column

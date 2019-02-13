@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.executionengine.controller;
 
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisExecutionStatusDTO;
+import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisRequestStatusDTO;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisResultDTO;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisResultStatusDTO;
 import org.apache.commons.io.FilenameUtils;
@@ -73,7 +74,8 @@ public class ScriptExecutionCallbackController {
                 || analysisExecution.getExecutionStatus().equals(RUNNING))
                 ) {
 
-            executionService.updateAnalysisStatus(analysisExecution, RUNNING);
+            analysisExecution.setExecutionStatus(RUNNING);
+            analysisExecutionRepository.saveAndFlush(analysisExecution);
         }
     }
 
@@ -89,24 +91,25 @@ public class ScriptExecutionCallbackController {
         AnalysisExecution analysisExecution = analysisExecutionRepository.findByJobExecutionId(id)
                 .orElseThrow(() -> new ScriptCallbackException(String.format(EXECUTION_NOT_FOUND, id)));
         if (Objects.equals(password, analysisExecution.getUpdatePassword())) {
-            Date timestamp = new Date();
-            int seconds = (int) ((timestamp.getTime() - analysisExecution.getExecuted().getTime()) / 1000);
-            analysisExecution.setDuration(seconds);
 
             AnalysisResultDTO analysisResultDTO =
                     multiPart.getField("analysisResult").getValueAs(AnalysisResultDTO.class);
+            AnalysisResultStatusDTO status = analysisResultDTO.getStatus();
+
+            if (status == AnalysisResultStatusDTO.EXECUTED) {
+                analysisExecution.setExecutionStatus(AnalysisExecution.Status.COMPLETED);
+            } else if (status == AnalysisResultStatusDTO.FAILED) {
+                analysisExecution.setExecutionStatus(AnalysisExecution.Status.FAILED);
+            }
+            Date timestamp = new Date();
+            int seconds = (int) ((timestamp.getTime() - analysisExecution.getExecuted().getTime()) / 1000);
+            analysisExecution.setDuration(seconds);
+            analysisExecutionRepository.saveAndFlush(analysisExecution);
+
             try {
                 saveFiles(multiPart, analysisExecution, analysisResultDTO);
             }catch (Exception e){
                 log.warn("Failed to save files for execution ID:{}", id, e);
-            }
-
-            AnalysisResultStatusDTO status = analysisResultDTO.getStatus();
-
-            if (status == AnalysisResultStatusDTO.EXECUTED) {
-                executionService.updateAnalysisStatus(analysisExecution, COMPLETED);
-            } else if (status == AnalysisResultStatusDTO.FAILED) {
-                executionService.updateAnalysisStatus(analysisExecution, FAILED);
             }
         } else {
             log.error("Update password not matched for execution ID:{}", id);

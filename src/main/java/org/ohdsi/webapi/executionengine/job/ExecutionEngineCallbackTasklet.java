@@ -28,15 +28,13 @@ public class ExecutionEngineCallbackTasklet extends BaseExecutionTasklet {
 
         AnalysisExecution.Status status;
 
+        final Long jobId = chunkContext.getStepContext().getStepExecution().getJobExecution().getJobId();
         while (true) {
-            if (contains(ANALYSIS_EXECUTION_ID)) {
-                int engineExecutionId = getInt(ANALYSIS_EXECUTION_ID);
-                entityManager.clear();
-                AnalysisExecution analysisExecution = analysisExecutionRepository.findOne(engineExecutionId);
-                status = analysisExecution.getExecutionStatus();
-                if (status == COMPLETED || status == FAILED) {
-                    break;
-                }
+            entityManager.clear();
+            status = analysisExecutionRepository.findByJobExecutionId(jobId).map(AnalysisExecution::getExecutionStatus)
+                    .orElse(AnalysisExecution.Status.RUNNING);
+            if (status == COMPLETED || status == FAILED) {
+                break;
             }
             Thread.sleep(3000);
         }

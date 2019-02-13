@@ -280,8 +280,7 @@ public class PreparedStatementRenderer implements ParameterizedSqlProvider {
   }
 
   public String getSql() {
-    String translatedSql = SqlTranslate.translateSql(sql, targetDialect, sessionId, tempSchema);
-    return DBMSType.ORACLE.getOhdsiDB().equals(targetDialect) ? translatedSql.replaceAll(";$", "") : translatedSql;
+    return SqlTranslate.translateSingleStatementSql(sql, targetDialect, sessionId, tempSchema);
   }
 
   public PreparedStatementSetter getSetter() {

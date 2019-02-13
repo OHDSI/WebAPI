@@ -128,6 +128,20 @@ public abstract class AtlasSecurity extends Security {
 
     this.sourcePermissionTemplates.put("cohortdefinition:*:report:%s:get", "Get Inclusion Rule Report for Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("cohortdefinition:*:generate:%s:get", "Generate Cohort on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("vocabulary:%s:*:get", "Get vocabulary info on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("vocabulary:%s:included-concepts:count:post", "Get vocab concept counts on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("vocabulary:%s:resolveConceptSetExpression:post", "Resolve concept set expression on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("vocabulary:%s:lookup:identifiers:post", "Lookup identifiers on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("vocabulary:%s:lookup:identifiers:ancestors:post", "Lookup identifiers ancestors on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("vocabulary:%s:lookup:mapped:post", "Lookup mapped identifiers on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("vocabulary:%s:compare:post", "Compare concept sets on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("vocabulary:%s:optimize:post", "Optimize concept sets on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("cdmresults:%s:*:get", "Get Achilles reports on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("cdmresults:%s:conceptRecordCount:post", "Get Achilles concept counts on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("cdmresults:%s:*:*:get", "Get Achilles reports details on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("cohortresults:%s:*:*:get", "Get cohort results on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("cohortresults:%s:*:*:*:get", "Get cohort results details on Source with SourceKey = %s");
+
     this.sourcePermissionTemplates.put(SOURCE_ACCESS_PERMISSION, "Access to Source with SourceKey = %s");
 
     this.cohortCharacterizationCreatorPermissionTemplates.put("cohort-characterization:%s:put", "Update Cohort Characterization with ID = %s");
@@ -205,21 +219,13 @@ public abstract class AtlasSecurity extends Security {
 
     return filterChainBuilder
 
-            // permissions
-            .addProtectedRestPath("/user/**")
-            .addProtectedRestPath("/role/**")
-            .addProtectedRestPath("/permission/**")
-
             // concept set
-            .addProtectedRestPath("/conceptset", JWT_AUTHC, AUTHZ,CREATE_CONCEPT_SET)
-            .addProtectedRestPath("/conceptset/*/items", JWT_AUTHC, AUTHZ)
-            .addProtectedRestPath("/conceptset/*", JWT_AUTHC, AUTHZ, DELETE_CONCEPT_SET)
+            .addProtectedRestPath("/conceptset", CREATE_CONCEPT_SET)
+            .addProtectedRestPath("/conceptset/*", DELETE_CONCEPT_SET)
 
             // incidence rates
-            .addProtectedRestPath("/ir", JWT_AUTHC, AUTHZ, CREATE_IR)
+            .addProtectedRestPath("/ir", CREATE_IR)
             .addProtectedRestPath("/ir/*/copy", CREATE_COPY_IR)
-            .addProtectedRestPath("/ir/*", JWT_AUTHC, AUTHZ)
-            .addProtectedRestPath("/ir/*/execute/*")
 
             // comparative cohort analysis (estimation)
             .addProtectedRestPath("/comparativecohortanalysis", CREATE_PLE)
@@ -229,8 +235,6 @@ public abstract class AtlasSecurity extends Security {
             .addProtectedRestPath("/estimation", CREATE_ESTIMATION)
             .addProtectedRestPath("/estimation/*/copy", CREATE_ESTIMATION)
             .addProtectedRestPath("/estimation/*", DELETE_ESTIMATION)
-            .addProtectedRestPath("/estimation/*/export")
-            .addProtectedRestPath("/estimation/*/download")
 
             // population level prediction
             .addProtectedRestPath("/plp", CREATE_PLP)
@@ -241,92 +245,31 @@ public abstract class AtlasSecurity extends Security {
             .addProtectedRestPath("/prediction", CREATE_PREDICTION)
             .addProtectedRestPath("/prediction/*/copy", CREATE_PREDICTION)
             .addProtectedRestPath("/prediction/*", DELETE_PREDICTION)
-            .addProtectedRestPath("/prediction/*/export")
-            .addProtectedRestPath("/prediction/*/download")
 
             // cohort definition
             .addProtectedRestPath("/cohortdefinition", CREATE_COHORT_DEFINITION)
             .addProtectedRestPath("/cohortdefinition/*/copy", CREATE_COPY_COHORT_DEFINITION)
             .addProtectedRestPath("/cohortdefinition/*", DELETE_COHORT_DEFINITION)
-            .addProtectedRestPath("/cohortdefinition/*/info")
-            .addProtectedRestPath("/cohortdefinition/sql")
-            .addProtectedRestPath("/cohortdefinition/*/generate/*")
-            .addProtectedRestPath("/cohortdefinition/*/report/*")
-            .addProtectedRestPath("/*/cohortresults/*/breakdown")
-            .addProtectedRestPath("/job/execution")
-            .addProtectedRestPath("/job")
 
             // configuration
-            .addProtectedRestPath("/source/refresh")
-            .addProtectedRestPath("/source/priorityVocabulary")
-            .addRestPath("/source/sources")
-            .addProtectedRestPath("/source/connection/*")
             .addProtectedRestPath("/source", CREATE_SOURCE)
             .addProtectedRestPath("/source/*", DELETE_SOURCE)
-            .addProtectedRestPath("/source/*/daimons/*/set-priority")
-            .addProtectedRestPath("/source/details/*")
-
-            // cohort analysis
-            .addProtectedRestPath("/cohortanalysis")
-            .addProtectedRestPath("/cohortanalysis/*")
-
-            // cohort results
-            .addProtectedRestPath("/cohortresults/*")
 
             // cohort characterization
             .addProtectedRestPath("/cohort-characterization", CREATE_COHORT_CHARACTERIZATION)
             .addProtectedRestPath("/cohort-characterization/import", CREATE_COHORT_CHARACTERIZATION)
             .addProtectedRestPath("/cohort-characterization/*", CREATE_COHORT_CHARACTERIZATION, DELETE_COHORT_CHARACTERIZATION)
-            .addProtectedRestPath("/cohort-characterization/*/generation/*")
-            .addProtectedRestPath("/cohort-characterization/*/generation")
-            .addProtectedRestPath("/cohort-characterization/generation/*")
-            .addProtectedRestPath("/cohort-characterization/generation/*/design")
-            .addProtectedRestPath("/cohort-characterization/generation/*/result")
-            .addProtectedRestPath("/cohort-characterization/*/export")
 
             // Pathways Analyses
             .addProtectedRestPath("/pathway-analysis", CREATE_PATHWAY_ANALYSIS)
             .addProtectedRestPath("/pathway-analysis/import", CREATE_PATHWAY_ANALYSIS)
             .addProtectedRestPath("/pathway-analysis/*", CREATE_PATHWAY_ANALYSIS, DELETE_PATHWAY_ANALYSIS)
-            .addProtectedRestPath("/pathway-analysis/*/sql/*")
-            .addProtectedRestPath("/pathway-analysis/*/generation/*")
-            .addProtectedRestPath("/pathway-analysis/*/generation")
-            .addProtectedRestPath("/pathway-analysis/generation/*")
-            .addProtectedRestPath("/pathway-analysis/generation/*/design")
-            .addProtectedRestPath("/pathway-analysis/generation/*/result")
-            .addProtectedRestPath("/pathway-analysis/*/export")
 
             // feature analyses
             .addProtectedRestPath("/feature-analysis", CREATE_FEATURE_ANALYSIS)
             .addProtectedRestPath("/feature-analysis/*", DELETE_FEATURE_ANALYSIS)
 
-            // evidence
-            .addProtectedRestPath("/evidence/*")
-            .addProtectedRestPath("/evidence/*/negativecontrols")
-
-            // execution service
-            .addProtectedRestPath("/executionservice/*")
-            .addProtectedRestPath("/executionservice/execution/run")
-
-            // feasibility
-            .addProtectedRestPath("/feasibility")
-            .addProtectedRestPath("/feasibility/*")
-
-            // featureextraction
-            .addProtectedRestPath("/featureextraction/*")
-
-            // vocabulary services
-            .addProtectedRestPath("/vocabulary/*")
-
-            // data sources
-            .addProtectedRestPath("/cdmresults/*")
-
-            // profiles
-            .addProtectedRestPath("/*/person/*")
-
-            // notifications
-            .addProtectedRestPath("/notifications/viewed")
-            .addProtectedRestPath("/notifications");
+            .addProtectedRestPath("/**/*");
   }
 
   @Override
@@ -368,13 +311,16 @@ public abstract class AtlasSecurity extends Security {
     addProcessEntityFilter(CREATE_IR, incidenceRatePermissionTemplates);    
     addProcessEntityFilter(CREATE_PLE, estimationPermissionTemplates);
     addProcessEntityFilter(CREATE_PLP, plpPermissionTemplate);
-    addProcessEntityFilter(CREATE_SOURCE, dataSourcePermissionTemplates);
+    addProcessEntityFilter(CREATE_SOURCE, dataSourcePermissionTemplates, "sourceId");
     addProcessEntityFilter(CREATE_PREDICTION, predictionPermissionTemplates);
     addProcessEntityFilter(CREATE_ESTIMATION, estimationPermissionTemplates);    
   }
 
   private void addProcessEntityFilter(FilterTemplates template, Map<String, String> permissionTemplates){
     filters.put(template, new ProcessResponseContentFilterImpl(permissionTemplates, template.getEntityName(), authorizer, eventPublisher, template.getHttpMethod()));
+  }
+  private void addProcessEntityFilter(FilterTemplates template, Map<String, String> permissionTemplates, String identityField){
+    filters.put(template, new ProcessResponseContentFilterImpl(permissionTemplates, template.getEntityName(), authorizer, eventPublisher, template.getHttpMethod(), identityField));
   }
 
   @Override

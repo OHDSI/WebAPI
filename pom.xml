@@ -472,7 +472,7 @@
     <dependency>
       <groupId>org.ohdsi.sql</groupId>
       <artifactId>SqlRender</artifactId>
-      <version>1.5.3-SNAPSHOT</version>
+      <version>1.6.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>commons-dbutils</groupId>

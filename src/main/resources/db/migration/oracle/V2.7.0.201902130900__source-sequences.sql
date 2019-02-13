@@ -7,6 +7,7 @@ BEGIN
 	SELECT nvl2(max(source_id), max(source_id) + 1, 1) INTO val FROM ${ohdsiSchema}.source;
 	EXECUTE IMMEDIATE stmt || val;
 END;
+/
 
 -- Source_daimon sequence
 DECLARE 
@@ -17,3 +18,4 @@ BEGIN
 	SELECT nvl2(max(source_daimon_id), max(source_daimon_id) + 1, 1) INTO val FROM ${ohdsiSchema}.source_daimon;
 	EXECUTE IMMEDIATE stmt || val;
 END;
+/

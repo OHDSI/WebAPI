@@ -2,8 +2,8 @@ ALTER TABLE ${ohdsiSchema}.sec_permission ADD COLUMN for_role_id INTEGER;
 
 INSERT INTO ${ohdsiSchema}.sec_permission (id, value, for_role_id)
 SELECT nextval('${ohdsiSchema}.sec_permission_id_seq'), REPLACE(new_perms.val, '%s', REPLACE(REPLACE(value, 'source:', ''), ':access', '')), role_id
-FROM sec_permission sp
-  JOIN sec_role_permission srp on sp.id = srp.permission_id
+FROM ${ohdsiSchema}.sec_permission sp
+  JOIN ${ohdsiSchema}.sec_role_permission srp on sp.id = srp.permission_id
   CROSS JOIN (
     SELECT 'vocabulary:%s:*:get' val
     UNION ALL

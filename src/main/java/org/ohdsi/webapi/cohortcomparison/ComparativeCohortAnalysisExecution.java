@@ -173,6 +173,7 @@ public class ComparativeCohortAnalysisExecution implements Serializable {
         name = "cca_execution_generator",
         strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
         parameters = {
+            @Parameter(name = "sequence_name", value = "cca_execution_sequence"),
             @Parameter(name = "increment_size", value = "1")
         }
     )

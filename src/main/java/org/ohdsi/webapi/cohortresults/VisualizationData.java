@@ -22,6 +22,7 @@ public class VisualizationData implements Serializable {
         name = "visualization_generator",
         strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
         parameters = {
+            @Parameter(name = "sequence_name", value = "heracles_vis_data_sequence"),
             @Parameter(name = "increment_size", value = "1")
         }
     )

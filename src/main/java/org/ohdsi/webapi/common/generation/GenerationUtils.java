@@ -8,6 +8,7 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.CohortGenerationService;
 import org.ohdsi.webapi.service.GenerationTaskExceptionHandler;
+import org.ohdsi.webapi.service.JobService;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
@@ -41,9 +42,16 @@ public class GenerationUtils extends AbstractDaoService {
     private CohortGenerationService cohortGenerationService;
     private SourceService sourceService;
     private JobBuilderFactory jobBuilders;
+    private JobService jobService;
     private final SourceAwareSqlRender sourceAwareSqlRender;
 
-    public GenerationUtils(StepBuilderFactory stepBuilderFactory, TransactionTemplate transactionTemplate, CohortGenerationService cohortGenerationService, SourceService sourceService, JobBuilderFactory jobBuilders, SourceAwareSqlRender sourceAwareSqlRender) {
+    public GenerationUtils(StepBuilderFactory stepBuilderFactory,
+                           TransactionTemplate transactionTemplate,
+                           CohortGenerationService cohortGenerationService,
+                           SourceService sourceService,
+                           JobBuilderFactory jobBuilders,
+                           SourceAwareSqlRender sourceAwareSqlRender,
+                           JobService jobService) {
 
         this.stepBuilderFactory = stepBuilderFactory;
         this.transactionTemplate = transactionTemplate;
@@ -51,6 +59,7 @@ public class GenerationUtils extends AbstractDaoService {
         this.sourceService = sourceService;
         this.jobBuilders = jobBuilders;
         this.sourceAwareSqlRender = sourceAwareSqlRender;
+        this.jobService = jobService;
     }
 
     public static String getTempCohortTableName(String sessionId) {
@@ -58,7 +67,7 @@ public class GenerationUtils extends AbstractDaoService {
         return Constants.TEMP_COHORT_TABLE_PREFIX + sessionId;
     }
 
-    public Job buildJobForCohortBasedAnalysisTasklet(
+    public SimpleJobBuilder buildJobForCohortBasedAnalysisTasklet(
             String analysisTypeName,
             Source source,
             JobParametersBuilder builder,
@@ -90,6 +99,7 @@ public class GenerationUtils extends AbstractDaoService {
                 transactionTemplate,
                 cohortGenerationService,
                 sourceService,
+                jobService,
                 cohortGetter
         );
         Step generateLocalCohortStep = stepBuilderFactory.get(analysisTypeName + ".generateCohort")
@@ -107,8 +117,9 @@ public class GenerationUtils extends AbstractDaoService {
                 .start(createCohortTableStep)
                 .next(generateLocalCohortStep)
                 .next(generateCohortFeaturesStep)
-                .listener(dropCohortTableListener);
+                .listener(dropCohortTableListener)
+                .listener(new AutoremoveJobListener(jobService));
 
-        return generateJobBuilder.build();
+        return generateJobBuilder;
     }
 }

@@ -24,6 +24,7 @@ import org.ohdsi.webapi.pathway.dto.internal.PersonPathwayEvent;
 import org.ohdsi.webapi.pathway.repository.PathwayAnalysisEntityRepository;
 import org.ohdsi.webapi.pathway.repository.PathwayAnalysisGenerationRepository;
 import org.ohdsi.webapi.service.AbstractDaoService;
+import org.ohdsi.webapi.service.JobService;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
@@ -39,6 +40,7 @@ import org.ohdsi.webapi.util.SourceUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
@@ -78,6 +80,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     private final AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository;
     private final UserRepository userRepository;
     private final GenerationUtils generationUtils;
+    private final JobService jobService;
 
     private final EntityGraph defaultEntityGraph = EntityUtils.fromAttributePaths(
             "targetCohorts.cohortDefinition",
@@ -98,14 +101,15 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
             DesignImportService designImportService,
             AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository,
             UserRepository userRepository,
-            GenerationUtils generationUtils
-    ) {
+            GenerationUtils generationUtils,
+            JobService jobService) {
 
         this.pathwayAnalysisRepository = pathwayAnalysisRepository;
         this.pathwayAnalysisGenerationRepository = pathwayAnalysisGenerationRepository;
         this.sourceService = sourceService;
         this.jobTemplate = jobTemplate;
         this.entityManager = entityManager;
+        this.jobService = jobService;
         this.security = security;
         this.designImportService = designImportService;
         this.analysisGenerationInfoEntityRepository = analysisGenerationInfoEntityRepository;
@@ -174,6 +178,12 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     public PathwayAnalysisEntity getById(Integer id) {
 
         return pathwayAnalysisRepository.findOne(id, defaultEntityGraph);
+    }
+
+    @Override
+    public int countLikeName(String name) {
+
+        return pathwayAnalysisRepository.countByNameStartsWith(name);
     }
 
     @Override
@@ -319,7 +329,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
         JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
 
-        Job generateAnalysisJob = generationUtils.buildJobForCohortBasedAnalysisTasklet(
+        SimpleJobBuilder generateAnalysisJob = generationUtils.buildJobForCohortBasedAnalysisTasklet(
                 GENERATE_PATHWAY_ANALYSIS,
                 source,
                 builder,
@@ -343,7 +353,18 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
         final JobParameters jobParameters = builder.toJobParameters();
 
-        this.jobTemplate.launch(generateAnalysisJob, jobParameters);
+        jobService.runJob(generateAnalysisJob.build(), jobParameters);
+    }
+
+    @Override
+    @DataSourceAccess
+    public void cancelGeneration(Integer pathwayAnalysisId, @SourceId Integer sourceId) {
+
+        jobService.cancelJobExecution(GENERATE_PATHWAY_ANALYSIS, j -> {
+            JobParameters jobParameters = j.getJobParameters();
+            return Objects.equals(jobParameters.getString(PATHWAY_ANALYSIS_ID), Integer.toString(pathwayAnalysisId))
+                    && Objects.equals(jobParameters.getString(SOURCE_ID), String.valueOf(sourceId));
+        });
     }
 
     @Override

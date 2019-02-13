@@ -90,7 +90,7 @@ CREATE TABLE #analysis_events (
   visit_occurrence_id BIGINT
 );
 
-INSERT INTO #analysis_events
+INSERT INTO #analysis_events (event_id, person_id, start_date, end_date, op_start_date, op_end_date, TARGET_CONCEPT_ID, visit_occurrence_id)
 select row_number() over (partition by P.person_id order by P.start_date) as event_id, P.person_id, P.start_date, P.end_date, P.op_start_date, P.op_end_date, CAST(NULL as bigint) as TARGET_CONCEPT_ID, CAST(NULL as bigint) as visit_occurrence_id
 FROM
 (

@@ -9,7 +9,7 @@ select c1.concept_id as concept_id,
        ard1.max_value as max_value
 from (
        select cast(stratum_1 as int) stratum_1, cast(stratum_2 as int) stratum_2, min_value, p10_value, p25_value, median_value, p75_value, p90_value, max_value
-       FROM @results_database_schema.ACHILLES_results_dist
+       FROM @results_database_schema.achilles_results_dist
        where analysis_id = 1817 and count_value > 0
        GROUP BY analysis_id, stratum_1, stratum_2, min_value, p10_value, p25_value, median_value, p75_value, p90_value, max_value
      ) ard1

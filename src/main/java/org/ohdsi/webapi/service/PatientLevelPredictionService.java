@@ -23,6 +23,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.prediction.PatientLevelPredictionAnalysis;
 import org.ohdsi.webapi.prediction.PatientLevelPredictionAnalysisInfo;
 import org.ohdsi.webapi.prediction.PatientLevelPredictionAnalysisRepository;
@@ -149,7 +150,7 @@ public class PatientLevelPredictionService extends AbstractDaoService {
 		PatientLevelPredictionAnalysis analysis = this.patientLevelPredictionAnalysisRepository.findOne(id);
 		entityManager.detach(analysis); // Detach from the persistence context in order to save a copy
 		analysis.setAnalysisId(null);
-		analysis.setName("COPY OF: " + analysis.getName());
+		analysis.setName(String.format(Constants.Templates.ENTITY_COPY_PREFIX, analysis.getName()));
 		return this.createAnalysis(analysis);
 	}
 

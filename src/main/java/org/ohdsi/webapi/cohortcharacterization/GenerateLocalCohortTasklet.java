@@ -4,9 +4,11 @@ import com.google.common.collect.ImmutableMap;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.service.CohortGenerationService;
+import org.ohdsi.webapi.service.JobService;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.SourceUtils;
+import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
@@ -29,6 +31,7 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
 
   protected TransactionTemplate transactionTemplate;
   protected final CohortGenerationService cohortGenerationService;
+  private final JobService jobService;
   protected final Function<ChunkContext, Collection<CohortDefinition>> cohortGetter;
 
   protected final SourceService sourceService;
@@ -38,12 +41,14 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
   public GenerateLocalCohortTasklet(TransactionTemplate transactionTemplate,
                                     CohortGenerationService cohortGenerationService,
                                     SourceService sourceService,
+                                    JobService jobService,
                                     Function<ChunkContext, Collection<CohortDefinition>> cohortGetter) {
     this.transactionTemplate = transactionTemplate;
 
     this.cohortGenerationService = cohortGenerationService;
     this.sourceService = sourceService;
     this.cohortGetter = cohortGetter;
+    this.jobService = jobService;
   }
 
   @Override
@@ -99,11 +104,16 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
       try {
         while (true) {
           Thread.sleep(checkInterval);
-          List<JobExecution> executions = executionIds.stream().map(cohortGenerationService::getJobExecution)
+          List<JobExecution> executions = executionIds.stream().map(jobService::getJobExecution)
                   .filter(Objects::nonNull)
                   .collect(Collectors.toList());
           if (stopped) {
-            executions.forEach(JobExecution::stop);
+            executions.forEach(jobExecution -> {
+              Job job = jobService.getRunningJob(jobExecution.getJobId());
+              if (Objects.nonNull(job)) {
+                jobService.stopJob(jobExecution, job);
+              }
+            });
           }
           if (stopped || executions.stream().noneMatch(job -> job.getStatus().isRunning()) || executions.isEmpty()) {
             break;

@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,8 +36,6 @@ import org.ohdsi.webapi.prediction.PredictionListItem;
 import org.ohdsi.webapi.prediction.PredictionAnalysisRepository;
 import org.ohdsi.webapi.prediction.dto.PredictionAnalysisDTO;
 import org.ohdsi.webapi.prediction.specification.*;
-import org.ohdsi.webapi.shiro.Entities.UserRepository;
-import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,9 +49,8 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @Path("/prediction/")
+@Transactional
 public class PredictionService  extends AbstractDaoService {
-    @Autowired
-    private Security security;
 
     @Autowired
     private PredictionAnalysisRepository predictionAnalysisRepository;
@@ -70,9 +66,6 @@ public class PredictionService  extends AbstractDaoService {
     
     @Autowired
     private VocabularyService vocabularyService;
-    
-    @Autowired
-    private UserRepository userRepository;
     
     @Autowired
     private GenericConversionService conversionService;

@@ -52,7 +52,6 @@ import org.ohdsi.webapi.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.support.GenericConversionService;
-import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
@@ -63,6 +62,7 @@ import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
  */
 @RestController
 @Path("/estimation/")
+@Transactional
 public class EstimationService extends AbstractDaoService {
     
     private static final String CONCEPT_SET_XREF_KEY_TARGET_COMPARATOR_OUTCOME = "estimationAnalysisSettings.analysisSpecification.targetComparatorOutcomes";
@@ -98,9 +98,6 @@ public class EstimationService extends AbstractDaoService {
     
     @Autowired
     private EstimationRepository estimationRepository;
-
-    @Autowired
-    private Environment env;
     
     @Value("${organization.name}")
     private String organizationName;
@@ -113,8 +110,7 @@ public class EstimationService extends AbstractDaoService {
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     public List<EstimationListItem> getAnalysisList() {
-        return getTransactionTemplate().execute(transactionStatus ->
-            StreamSupport.stream(estimationRepository.findAll().spliterator(), false)
+        return StreamSupport.stream(estimationRepository.findAll().spliterator(), false)
             .map(est -> {
               EstimationListItem item = new EstimationListItem();
               item.estimationId = est.getId();
@@ -126,7 +122,7 @@ public class EstimationService extends AbstractDaoService {
               item.modifiedBy = UserUtils.nullSafeLogin(est.getModifiedBy());
               item.modifiedDate = est.getModifiedDate();
               return item;
-            }).collect(Collectors.toList()));        
+            }).collect(Collectors.toList());
     }
     
     /**
@@ -134,7 +130,6 @@ public class EstimationService extends AbstractDaoService {
      * @param id
      */
     @DELETE
-    @Transactional
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}")
     public void delete(@PathParam("id") final int id) {
@@ -148,7 +143,6 @@ public class EstimationService extends AbstractDaoService {
      */
     @POST
     @Path("/")
-    @Transactional
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public EstimationDTO createEstimation(Estimation est) {
@@ -170,7 +164,6 @@ public class EstimationService extends AbstractDaoService {
      */
     @PUT
     @Path("{id}")
-    @Transactional
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public EstimationDTO updateEstimation(@PathParam("id") final int id, Estimation est) {
@@ -197,7 +190,6 @@ public class EstimationService extends AbstractDaoService {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/copy")
-    @Transactional
     public EstimationDTO copy(@PathParam("id") final int id) {
         Estimation est = this.estimationRepository.findOne(id);
         entityManager.detach(est); // Detach from the persistence context in order to save a copy

@@ -251,6 +251,9 @@ LEFT JOIN @vocab_schema.concept c3 ON ca3.ANCESTOR_CONCEPT_ID = c3.concept_id
 GROUP BY obs.concept_id, obs.concept_name;
 
 /********** PROCEDURE **********/
+
+TRUNCATE TABLE @results_schema.concept_hierarchy;
+
 INSERT INTO @results_schema.concept_hierarchy
 	(concept_id, concept_name, treemap, level1_concept_name, level2_concept_name, level3_concept_name)
 SELECT

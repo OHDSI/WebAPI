@@ -1,9 +1,8 @@
 /***********************************************************/
 /***** Populate the hierarchy lookup table per treemap *****/
 /***********************************************************/
-/********** CONDITION/CONDITION_ERA **********/
 TRUNCATE TABLE @results_schema.concept_hierarchy;
-
+/********** CONDITION/CONDITION_ERA **********/
 INSERT INTO @results_schema.concept_hierarchy
 	(concept_id, concept_name, treemap, level1_concept_name, level2_concept_name, level3_concept_name, level4_concept_name)
 SELECT

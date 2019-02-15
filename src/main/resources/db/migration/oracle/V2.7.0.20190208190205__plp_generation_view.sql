@@ -7,7 +7,7 @@ CREATE OR REPLACE VIEW ${ohdsiSchema}.prediction_analysis_generation as
     job.exit_message                         exit_message,
     CAST(CAST(plp_id_param.string_val AS VARCHAR2(64)) AS NUMERIC(10)) prediction_id,
     CAST(CAST(source_param.string_val AS VARCHAR2(64)) AS NUMERIC(10)) source_id,
-    passwd_param.string_val                  passwd_param,
+    passwd_param.string_val                  update_password,
     -- Generation info based
     gen_info.design                          design,
     gen_info.hash_code                       hash_code,

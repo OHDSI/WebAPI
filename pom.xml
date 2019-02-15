@@ -262,18 +262,18 @@
                 <include>**/*IT.java</include>
               </includes>
               <excludes>
-                <exclude>**/ControllerIT.java</exclude>
+                <exclude>**/SecurityIT.java</exclude>
               </excludes>
             </configuration>
           </execution>
           <execution>
-            <phase>package</phase>
+            <phase>test</phase>
             <goals>
               <goal>integration-test</goal>
             </goals>
             <configuration>
               <includes>
-                <include>**/ControllerIT.java</include>
+                <include>**/SecurityIT.java</include>
               </includes>
             </configuration>
           </execution>

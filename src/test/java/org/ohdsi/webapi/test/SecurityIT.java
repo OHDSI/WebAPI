@@ -41,7 +41,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = WebApi.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class ControllerIT {
+public class SecurityIT {
     @Autowired
     private TestRestTemplate restTemplate;
 

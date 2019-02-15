@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Objects;
 
 @Entity
-@Table(name = "fe_analysis")
 public abstract class FeAnalysisWithCriteriaEntity<T extends FeAnalysisCriteriaEntity> extends FeAnalysisEntity<List<T>> {
     
     @OneToMany(targetEntity = FeAnalysisCriteriaEntity.class, fetch = FetchType.EAGER, mappedBy = "featureAnalysis", cascade = CascadeType.ALL)

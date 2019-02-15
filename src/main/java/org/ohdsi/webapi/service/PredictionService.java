@@ -1,10 +1,5 @@
 package org.ohdsi.webapi.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -12,6 +7,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import javax.persistence.EntityManager;
@@ -25,38 +21,43 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.ohdsi.analysis.Utils;
 import org.ohdsi.hydra.Hydra;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.conceptset.ConceptSetCrossReferenceImpl;
 import org.ohdsi.webapi.prediction.PredictionAnalysis;
 import org.ohdsi.webapi.prediction.PredictionListItem;
 import org.ohdsi.webapi.prediction.PredictionAnalysisRepository;
 import org.ohdsi.webapi.prediction.dto.PredictionAnalysisDTO;
 import org.ohdsi.webapi.prediction.specification.*;
-import org.ohdsi.webapi.shiro.Entities.UserRepository;
-import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RestController;
 
-
-@Component
-@Transactional
+/**
+ *
+ * @author asena5
+ */
+@RestController
 @Path("/prediction/")
+@Transactional
 public class PredictionService  extends AbstractDaoService {
-    @Autowired
-    private Security security;
 
     @Autowired
     private PredictionAnalysisRepository predictionAnalysisRepository;
 
+    /**
+     *
+     */
     @PersistenceContext
     protected EntityManager entityManager;
 
@@ -67,9 +68,6 @@ public class PredictionService  extends AbstractDaoService {
     private VocabularyService vocabularyService;
     
     @Autowired
-    private UserRepository userRepository;
-    
-    @Autowired
     private GenericConversionService conversionService;
     
     @Autowired
@@ -78,6 +76,10 @@ public class PredictionService  extends AbstractDaoService {
     @Autowired
     private Environment env;
 
+    /**
+     *
+     * @return
+     */
     @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
@@ -98,6 +100,10 @@ public class PredictionService  extends AbstractDaoService {
                 }).collect(Collectors.toList());
     }
     
+    /**
+     *
+     * @param id
+     */
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}")
@@ -105,6 +111,11 @@ public class PredictionService  extends AbstractDaoService {
         this.predictionAnalysisRepository.delete(id);
     }
     
+    /**
+     *
+     * @param pred
+     * @return
+     */
     @POST
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
@@ -118,6 +129,12 @@ public class PredictionService  extends AbstractDaoService {
         return conversionService.convert(predWithId, PredictionAnalysisDTO.class);        
     }
 
+    /**
+     *
+     * @param id
+     * @param pred
+     * @return
+     */
     @PUT
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -137,6 +154,11 @@ public class PredictionService  extends AbstractDaoService {
         return conversionService.convert(updatedPred, PredictionAnalysisDTO.class);
     }
     
+    /**
+     *
+     * @param id
+     * @return
+     */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/copy")
@@ -148,6 +170,11 @@ public class PredictionService  extends AbstractDaoService {
         return this.createAnalysis(analysis);
     }
     
+    /**
+     *
+     * @param id
+     * @return
+     */
     @GET
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -159,15 +186,19 @@ public class PredictionService  extends AbstractDaoService {
         });
     }    
     
+    /**
+     *
+     * @param id
+     * @return
+     */
     @GET
     @Path("{id}/export")
     @Produces(MediaType.APPLICATION_JSON)
-    public PatientLevelPredictionAnalysis exportAnalysis(@PathParam("id") int id) {
+    public PatientLevelPredictionAnalysisImpl exportAnalysis(@PathParam("id") int id) {
         PredictionAnalysis pred = predictionAnalysisRepository.findOne(id);
-        ObjectMapper mapper = new ObjectMapper();
-        PatientLevelPredictionAnalysis expression = new PatientLevelPredictionAnalysis();
+        PatientLevelPredictionAnalysisImpl expression = new PatientLevelPredictionAnalysisImpl();
         try {
-            expression = mapper.readValue(pred.getSpecification(), PatientLevelPredictionAnalysis.class);
+            expression = Utils.deserialize(pred.getSpecification(), PatientLevelPredictionAnalysisImpl.class);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -179,19 +210,17 @@ public class PredictionService  extends AbstractDaoService {
         expression.setOrganizationName(env.getRequiredProperty("organization.name"));
         
         // Retrieve the cohort definition details
-        ArrayList<PredictionCohortDefinition> detailedList = new ArrayList<>();
+        List<PredictionCohortDefinition> detailedList = new ArrayList<>();
         for (PredictionCohortDefinition c : expression.getCohortDefinitions()) {
-            System.out.println(c.getId());
             CohortDefinition cd = cohortDefinitionRepository.findOneWithDetail(c.getId());
             detailedList.add(new PredictionCohortDefinition(cd));
         }
         expression.setCohortDefinitions(detailedList);
         
         // Retrieve the concept set expressions
-        ArrayList<PredictionConceptSet> pcsList = new ArrayList<>();
-        HashMap<Integer, ArrayList<Long>> conceptIdentifiers = new HashMap<Integer, ArrayList<Long>>();
+        List<PredictionConceptSet> pcsList = new ArrayList<>();
+        Map<Integer, List<Long>> conceptIdentifiers = new HashMap<>();
         for (PredictionConceptSet pcs : expression.getConceptSets()) {
-            System.out.println(pcs.id);
             pcs.expression = conceptSetService.getConceptSetExpression(pcs.id);
             pcsList.add(pcs);
             conceptIdentifiers.put(pcs.id, new ArrayList(vocabularyService.resolveConceptSetExpression(pcs.expression)));
@@ -199,12 +228,12 @@ public class PredictionService  extends AbstractDaoService {
         expression.setConceptSets(pcsList);
         
         // Resolve all ConceptSetCrossReferences
-        for (ConceptSetCrossReference xref : expression.getConceptSetCrossReference()) {
+        for (ConceptSetCrossReferenceImpl xref : expression.getConceptSetCrossReference()) {
             if (xref.getTargetName().equalsIgnoreCase("covariateSettings")) {
                 if (xref.getPropertyName().equalsIgnoreCase("includedCovariateConceptIds")) {
-                    expression.getCovariateSettings().get(xref.getTargetIndex()).includedCovariateConceptIds(conceptIdentifiers.get(xref.getConceptSetId()));
+                    expression.getCovariateSettings().get(xref.getTargetIndex()).setIncludedCovariateConceptIds(conceptIdentifiers.get(xref.getConceptSetId()));
                 } else if (xref.getPropertyName().equalsIgnoreCase("excludedCovariateConceptIds")) {
-                    expression.getCovariateSettings().get(xref.getTargetIndex()).excludedCovariateConceptIds(conceptIdentifiers.get(xref.getConceptSetId()));
+                    expression.getCovariateSettings().get(xref.getTargetIndex()).setExcludedCovariateConceptIds(conceptIdentifiers.get(xref.getConceptSetId()));
                 }
             }
         }
@@ -212,17 +241,27 @@ public class PredictionService  extends AbstractDaoService {
         return expression;
     }
     
+    /**
+     *
+     * @param id
+     * @param packageName
+     * @return
+     * @throws IOException
+     */
     @GET
     @Path("{id}/download")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response downloadPackage(@PathParam("id") int id) throws IOException {
-        PatientLevelPredictionAnalysis plpa = this.exportAnalysis(id);
-        // Cannot use Utils.serialize(analysis) since it removes
-        // properties with null values which are required in the
-        // specification
-        //String studySpecs = Utils.serialize(analysis);        
-        String studySpecs = this.serializeAnalysis(plpa);
+    public Response downloadPackage(@PathParam("id") int id, @QueryParam("packageName") String packageName) throws IOException {
+        if (packageName == null) {
+            packageName = "prediction" + String.valueOf(id);
+        }
+        if (!Utils.isAlphaNumeric(packageName)) {
+            throw new IllegalArgumentException("The package name must be alphanumeric only.");
+        }
+        PatientLevelPredictionAnalysisImpl plpa = this.exportAnalysis(id);
+        plpa.setPackageName(packageName);
+        String studySpecs = Utils.serialize(plpa, true);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         
         Hydra h = new Hydra(studySpecs);
@@ -235,28 +274,6 @@ public class PredictionService  extends AbstractDaoService {
                 .header("Content-Disposition", String.format("attachment; filename=\"prediction_study_%d_export.zip\"", id))
                 .build();
 
-        return response;        
+        return response;     
     }
-    
-    // NOTE: This should be replaced with SSA.serialize once issue
-    // noted in the download function is addressed.
-    private String serializeAnalysis(PatientLevelPredictionAnalysis predictionAnalysis) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.disable(
-                MapperFeature.AUTO_DETECT_CREATORS,
-                MapperFeature.AUTO_DETECT_GETTERS,
-                MapperFeature.AUTO_DETECT_IS_GETTERS
-        );
-
-        objectMapper.disable(
-                SerializationFeature.FAIL_ON_EMPTY_BEANS
-        );
-
-        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-
-        //objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        
-        return objectMapper.writeValueAsString(predictionAnalysis);
-    }
-    
 }

@@ -4,6 +4,7 @@ import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.CommonGenerationDTO;
+import org.ohdsi.webapi.common.generation.ExecutionBasedGenerationDTO;
 import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
 import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
 import org.ohdsi.webapi.prediction.domain.PredictionGenerationEntity;
@@ -42,7 +43,7 @@ public class PredictionController {
 
   private final ConverterUtils converterUtils;
 
-  private final CommonGenerationSensitiveInfoService sensitiveInfoService;
+  private final CommonGenerationSensitiveInfoService<ExecutionBasedGenerationDTO> sensitiveInfoService;
 
   private final SourceService sourceService;
 
@@ -169,21 +170,21 @@ public class PredictionController {
   @GET
   @Path("{id}/generation")
   @Produces(MediaType.APPLICATION_JSON)
-  public List<CommonGenerationDTO> getGenerations(@PathParam("id") Integer predictionAnalysisId) {
+  public List<ExecutionBasedGenerationDTO> getGenerations(@PathParam("id") Integer predictionAnalysisId) {
 
     Map<String, SourceInfo> sourcesMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_KEY);
-    return sensitiveInfoService.filterSensitiveInfo(converterUtils.convertList(service.getPredictionGenerations(predictionAnalysisId), CommonGenerationDTO.class),
+    return sensitiveInfoService.filterSensitiveInfo(converterUtils.convertList(service.getPredictionGenerations(predictionAnalysisId), ExecutionBasedGenerationDTO.class),
             info -> Collections.singletonMap(Constants.Variables.SOURCE, sourcesMap.get(info.getSourceKey())));
   }
 
   @GET
   @Path("/generation/{generationId}")
   @Produces(MediaType.APPLICATION_JSON)
-  public CommonGenerationDTO getGeneration(@PathParam("generationId") Long generationId) {
+  public ExecutionBasedGenerationDTO getGeneration(@PathParam("generationId") Long generationId) {
 
     PredictionGenerationEntity generationEntity = service.getGeneration(generationId);
     ExceptionUtils.throwNotFoundExceptionIfNull(generationEntity, String.format(NO_GENERATION_MESSAGE, generationId));
-    return sensitiveInfoService.filterSensitiveInfo(conversionService.convert(generationEntity, CommonGenerationDTO.class),
+    return sensitiveInfoService.filterSensitiveInfo(conversionService.convert(generationEntity, ExecutionBasedGenerationDTO.class),
             Collections.singletonMap(Constants.Variables.SOURCE, generationEntity.getSource()));
   }
 

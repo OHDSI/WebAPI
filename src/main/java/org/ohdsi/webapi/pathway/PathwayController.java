@@ -52,7 +52,7 @@ public class PathwayController {
     private ConverterUtils converterUtils;
     private PathwayService pathwayService;
     private final SourceService sourceService;
-    private final CommonGenerationSensitiveInfoService sensitiveInfoService;
+    private final CommonGenerationSensitiveInfoService<CommonGenerationDTO> sensitiveInfoService;
 
     @Autowired
     public PathwayController(ConversionService conversionService, ConverterUtils converterUtils, PathwayService pathwayService, SourceService sourceService, CommonGenerationSensitiveInfoService sensitiveInfoService) {

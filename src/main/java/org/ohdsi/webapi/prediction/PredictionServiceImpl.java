@@ -45,7 +45,7 @@ import static org.ohdsi.webapi.Constants.Params.*;
 @Transactional
 public class PredictionServiceImpl extends AnalysisExecutionSupport implements PredictionService {
 
-    private static final EntityGraph DEFAULT_ENTITY_GRAPH = EntityGraphUtils.fromAttributePaths("source");
+    private static final EntityGraph DEFAULT_ENTITY_GRAPH = EntityGraphUtils.fromAttributePaths("source", "analysisExecution.resultFiles");
 
     private final EntityGraph COMMONS_ENTITY_GRAPH = EntityUtils.fromAttributePaths(
             "createdBy",

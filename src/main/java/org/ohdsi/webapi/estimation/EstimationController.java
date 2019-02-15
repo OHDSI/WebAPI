@@ -1,22 +1,23 @@
-package org.ohdsi.webapi.prediction;
+package org.ohdsi.webapi.estimation;
 
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.CommonGenerationDTO;
 import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
+import org.ohdsi.webapi.estimation.domain.EstimationGenerationEntity;
+import org.ohdsi.webapi.estimation.dto.EstimationDTO;
+import org.ohdsi.webapi.estimation.specification.EstimationAnalysis;
 import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
-import org.ohdsi.webapi.prediction.domain.PredictionGenerationEntity;
-import org.ohdsi.webapi.prediction.dto.PredictionAnalysisDTO;
-import org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysis;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.UserUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Controller;
 
+import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -30,55 +31,48 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Controller
-@Path("/prediction/")
-public class PredictionController {
+@Path("/estimation/")
+public class EstimationController {
 
-  private static final String NO_PREDICTION_ANALYSIS_MESSAGE = "There is no prediction analysis with id = %d.";
+  private static final String NO_ESTIMATION_MESSAGE = "There is no estimation with id = %d.";
   private static final String NO_GENERATION_MESSAGE = "There is no generation with id = %d";
-
-  private final PredictionService service;
-
+  private final EstimationService service;
   private final GenericConversionService conversionService;
-
-  private final ConverterUtils converterUtils;
-
   private final CommonGenerationSensitiveInfoService sensitiveInfoService;
-
   private final SourceService sourceService;
-
+  private final ConverterUtils converterUtils;
   private final ScriptExecutionService executionService;
 
-  @Autowired
-  public PredictionController(PredictionService service,
+  public EstimationController(EstimationService service,
                               GenericConversionService conversionService,
-                              ConverterUtils converterUtils,
                               CommonGenerationSensitiveInfoService sensitiveInfoService,
                               SourceService sourceService,
+                              ConverterUtils converterUtils,
                               ScriptExecutionService executionService) {
     this.service = service;
     this.conversionService = conversionService;
-    this.converterUtils = converterUtils;
     this.sensitiveInfoService = sensitiveInfoService;
     this.sourceService = sourceService;
+    this.converterUtils = converterUtils;
     this.executionService = executionService;
   }
 
   @GET
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
-  public List<PredictionListItem> getAnalysisList() {
+  public List<EstimationListItem> getAnalysisList() {
 
-    return StreamSupport
-            .stream(service.getAnalysisList().spliterator(), false)
-            .map(pred -> {
-              PredictionListItem item = new PredictionListItem();
-              item.analysisId = pred.getId();
-              item.name = pred.getName();
-              item.description = pred.getDescription();
-              item.createdBy = UserUtils.nullSafeLogin(pred.getCreatedBy());
-              item.createdDate = pred.getCreatedDate();
-              item.modifiedBy = UserUtils.nullSafeLogin(pred.getModifiedBy());
-              item.modifiedDate = pred.getModifiedDate();
+    return StreamSupport.stream(service.getAnalysisList().spliterator(), false)
+            .map(est -> {
+              EstimationListItem item = new EstimationListItem();
+              item.estimationId = est.getId();
+              item.name = est.getName();
+              item.type = est.getType();
+              item.description = est.getDescription();
+              item.createdBy = UserUtils.nullSafeLogin(est.getCreatedBy());
+              item.createdDate = est.getCreatedDate();
+              item.modifiedBy = UserUtils.nullSafeLogin(est.getModifiedBy());
+              item.modifiedDate = est.getModifiedDate();
               return item;
             }).collect(Collectors.toList());
   }
@@ -86,7 +80,8 @@ public class PredictionController {
   @DELETE
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/{id}")
-  public void delete(@PathParam("id") int id) {
+  public void delete(@PathParam("id") final int id) {
+
     service.delete(id);
   }
 
@@ -94,85 +89,95 @@ public class PredictionController {
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public PredictionAnalysisDTO createAnalysis(PredictionAnalysis pred) {
+  public EstimationDTO createEstimation(Estimation est) throws Exception {
 
-    return conversionService.convert(service.createAnalysis(pred), PredictionAnalysisDTO.class);
+    Estimation estWithId = service.createEstimation(est);
+    return conversionService.convert(estWithId, EstimationDTO.class);
   }
 
   @PUT
   @Path("{id}")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public PredictionAnalysisDTO updateAnalysis(@PathParam("id") int id, PredictionAnalysis pred) {
+  public EstimationDTO updateEstimation(@PathParam("id") final int id, Estimation est) throws Exception {
 
-    return conversionService.convert(service.updateAnalysis(id, pred), PredictionAnalysisDTO.class);
+    Estimation updatedEst = service.updateEstimation(id, est);
+    return conversionService.convert(updatedEst, EstimationDTO.class);
   }
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/{id}/copy")
-  public PredictionAnalysisDTO copy(@PathParam("id") int id) {
+  @Transactional
+  public EstimationDTO copy(@PathParam("id") final int id) throws Exception {
 
-    return conversionService.convert(service.copy(id), PredictionAnalysisDTO.class);
+    Estimation est = service.copy(id);
+    return conversionService.convert(est, EstimationDTO.class);
   }
 
   @GET
   @Path("{id}")
   @Produces(MediaType.APPLICATION_JSON)
-  public PredictionAnalysisDTO getAnalysis(@PathParam("id") int id) {
+  public EstimationDTO getAnalysis(@PathParam("id") int id) {
 
-    PredictionAnalysis analysis = service.getAnalysis(id);
-    ExceptionUtils.throwNotFoundExceptionIfNull(analysis, String.format(NO_PREDICTION_ANALYSIS_MESSAGE, id));
-    return conversionService.convert(analysis, PredictionAnalysisDTO.class);
+    Estimation est = service.getAnalysis(id);
+    ExceptionUtils.throwNotFoundExceptionIfNull(est, String.format(NO_ESTIMATION_MESSAGE, id));
+    return conversionService.convert(est, EstimationDTO.class);
   }
 
   @GET
   @Path("{id}/export")
   @Produces(MediaType.APPLICATION_JSON)
-  public PatientLevelPredictionAnalysis exportAnalysis(@PathParam("id") int id) {
+  public EstimationAnalysis exportAnalysis(@PathParam("id") int id) {
 
-    return service.exportAnalysis(id);
+    Estimation estimation = service.getAnalysis(id);
+    ExceptionUtils.throwNotFoundExceptionIfNull(estimation, String.format(NO_ESTIMATION_MESSAGE, id));
+    return service.exportAnalysis(estimation);
   }
 
   @GET
   @Path("{id}/download")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
-  public Response downloadPackage(@PathParam("id") int id) throws IOException {
+  public Response download(@PathParam("id") int id, @QueryParam("target") String target) throws IOException {
+    if (target == null) {
+      target = "package";
+    }
 
-    org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysis plpa = service.exportAnalysis(id);
+    EstimationAnalysis analysis = this.exportAnalysis(id);
+    if (StringUtils.isEmpty(analysis.getPackageName())) {
+      analysis.setPackageName(target);
+    }
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-    service.hydrateAnalysis(plpa, baos);
+    service.hydrateAnalysis(analysis, baos);
 
-    Response response = Response
+    return Response
             .ok(baos)
             .type(MediaType.APPLICATION_OCTET_STREAM)
-            .header("Content-Disposition", String.format("attachment; filename=\"prediction_study_%d_export.zip\"", id))
+            .header("Content-Disposition", String.format("attachment; filename=\"estimation_%d.zip\"", id))
             .build();
-
-    return response;
   }
 
   @POST
   @Path("{id}/generation/{sourceKey}")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public void runGeneration(@PathParam("id") Integer predictionAnalysisId,
-                     @PathParam("sourceKey") String sourceKey) throws IOException {
+  public void runGeneration(@PathParam("id") Integer analysisId,
+                            @PathParam("sourceKey") String sourceKey) throws IOException {
 
-    PredictionAnalysis predictionAnalysis = service.getAnalysis(predictionAnalysisId);
-    ExceptionUtils.throwNotFoundExceptionIfNull(predictionAnalysis, String.format(NO_PREDICTION_ANALYSIS_MESSAGE, predictionAnalysisId));
-    service.runGeneration(predictionAnalysis, sourceKey);
+    Estimation analysis = service.getAnalysis(analysisId);
+    ExceptionUtils.throwNotFoundExceptionIfNull(analysis, String.format(NO_ESTIMATION_MESSAGE, analysisId));
+    service.runGeneration(analysis, sourceKey);
   }
 
   @GET
   @Path("{id}/generation")
   @Produces(MediaType.APPLICATION_JSON)
-  public List<CommonGenerationDTO> getGenerations(@PathParam("id") Integer predictionAnalysisId) {
+  public List<CommonGenerationDTO> getGenerations(@PathParam("id") Integer analysisId) {
 
     Map<String, SourceInfo> sourcesMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_KEY);
-    return sensitiveInfoService.filterSensitiveInfo(converterUtils.convertList(service.getPredictionGenerations(predictionAnalysisId), CommonGenerationDTO.class),
+    return sensitiveInfoService.filterSensitiveInfo(converterUtils.convertList(service.getEstimationGenerations(analysisId), CommonGenerationDTO.class),
             info -> Collections.singletonMap(Constants.Variables.SOURCE, sourcesMap.get(info.getSourceKey())));
   }
 
@@ -181,7 +186,7 @@ public class PredictionController {
   @Produces(MediaType.APPLICATION_JSON)
   public CommonGenerationDTO getGeneration(@PathParam("generationId") Long generationId) {
 
-    PredictionGenerationEntity generationEntity = service.getGeneration(generationId);
+    EstimationGenerationEntity generationEntity = service.getGeneration(generationId);
     ExceptionUtils.throwNotFoundExceptionIfNull(generationEntity, String.format(NO_GENERATION_MESSAGE, generationId));
     return sensitiveInfoService.filterSensitiveInfo(conversionService.convert(generationEntity, CommonGenerationDTO.class),
             Collections.singletonMap(Constants.Variables.SOURCE, generationEntity.getSource()));

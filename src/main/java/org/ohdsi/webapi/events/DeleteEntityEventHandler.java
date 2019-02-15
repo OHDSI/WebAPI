@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.events;
 
 import org.ohdsi.webapi.cohortcharacterization.CcService;
+import org.ohdsi.webapi.estimation.EstimationService;
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
 import org.ohdsi.webapi.pathway.PathwayService;
 import org.ohdsi.webapi.prediction.PredictionService;

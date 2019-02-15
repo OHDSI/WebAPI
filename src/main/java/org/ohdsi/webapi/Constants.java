@@ -13,6 +13,7 @@ public interface Constants {
   String GENERATE_PATHWAY_ANALYSIS = "generatePathwayAnalysis";
   String GENERATE_IR_ANALYSIS = "irAnalysis";
   String GENERATE_PREDICTION_ANALYSIS = "generatePredictionAnalysis";
+  String GENERATE_ESTIMATION_ANALYSIS = "generateEstimationAnalysis";
   String WARM_CACHE = "warmCache";
   String USERS_IMPORT = "usersImport";
 
@@ -28,6 +29,7 @@ public interface Constants {
     String COHORT_CHARACTERIZATION_ID = "cohort_characterization_id";
     String PATHWAY_ANALYSIS_ID = "pathway_analysis_id";
     String PREDICTION_ANALYSIS_ID = "prediction_analysis_id";
+    String ESTIMATION_ANALYSIS_ID = "estimation_analysis_id";
     String UPDATE_PASSWORD = "update_password";
     String SOURCE_ID = "source_id";
     String SOURCE_KEY = "source_key";

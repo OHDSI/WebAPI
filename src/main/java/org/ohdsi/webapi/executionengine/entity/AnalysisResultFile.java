@@ -27,12 +27,15 @@ public class AnalysisResultFile {
     @Column
     private Long id;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "execution_id", nullable = false, updatable = false)
     private AnalysisExecution execution;
 
     @Column(name = "file_name")
     private String fileName;
+
+    @Column(name = "media_type")
+    private String mediaType;
 
     @Column(name = "file_contents", columnDefinition = "BYTEA")
     @Basic(fetch = FetchType.LAZY)
@@ -45,10 +48,12 @@ public class AnalysisResultFile {
     public AnalysisResultFile(
             AnalysisExecution execution,
             String fileName,
+            String mediaType,
             byte[] contents) {
 
         this.execution = execution;
         this.fileName = fileName;
+        this.mediaType = mediaType;
         this.contents = contents;
     }
 
@@ -85,5 +90,13 @@ public class AnalysisResultFile {
     public void setContents(byte[] contents) {
 
         this.contents = contents;
+    }
+
+    public String getMediaType() {
+        return mediaType;
+    }
+
+    public void setMediaType(String mediaType) {
+        this.mediaType = mediaType;
     }
 }

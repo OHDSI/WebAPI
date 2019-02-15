@@ -3,19 +3,15 @@ package org.ohdsi.webapi.prediction;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.hydra.Hydra;
-import org.ohdsi.sql.SqlRender;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
+import org.ohdsi.webapi.common.generation.AnalysisExecutionSupport;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
-import org.ohdsi.webapi.executionengine.util.StringGenerationUtil;
 import org.ohdsi.webapi.prediction.domain.PredictionGenerationEntity;
 import org.ohdsi.webapi.prediction.repository.PredictionAnalysisGenerationRepository;
 import org.ohdsi.webapi.prediction.specification.ConceptSetCrossReference;
@@ -27,14 +23,12 @@ import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.EntityUtils;
-import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Component;
-import sun.misc.IOUtils;
+import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -47,10 +41,16 @@ import java.util.*;
 import static org.ohdsi.webapi.Constants.GENERATE_PREDICTION_ANALYSIS;
 import static org.ohdsi.webapi.Constants.Params.*;
 
-
-@Component
+@Service
 @Transactional
-public class PredictionServiceImpl extends AbstractDaoService implements PredictionService {
+public class PredictionServiceImpl extends AnalysisExecutionSupport implements PredictionService {
+
+    private static final EntityGraph DEFAULT_ENTITY_GRAPH = EntityGraphUtils.fromAttributePaths("source");
+
+    private final EntityGraph COMMONS_ENTITY_GRAPH = EntityUtils.fromAttributePaths(
+            "createdBy",
+            "modifiedBy"
+    );
 
     @Autowired
     private PredictionAnalysisRepository predictionAnalysisRepository;
@@ -82,17 +82,12 @@ public class PredictionServiceImpl extends AbstractDaoService implements Predict
     @Autowired
     private Environment env;
 
-    private final EntityGraph defaultEntityGraph = EntityUtils.fromAttributePaths(
-            "createdBy",
-            "modifiedBy"
-    );
-
     private final String EXEC_SCRIPT = ResourceHelper.GetResourceAsString("/resources/prediction/r/runAnalysis.R");
 
     @Override
     public Iterable<PredictionAnalysis> getAnalysisList() {
 
-        return predictionAnalysisRepository.findAll(defaultEntityGraph);
+        return predictionAnalysisRepository.findAll(COMMONS_ENTITY_GRAPH);
     }
     
     @Override
@@ -135,7 +130,7 @@ public class PredictionServiceImpl extends AbstractDaoService implements Predict
     @Override
     public PredictionAnalysis getAnalysis(int id) {
 
-        return this.predictionAnalysisRepository.findOne(id, defaultEntityGraph);
+        return this.predictionAnalysisRepository.findOne(id, COMMONS_ENTITY_GRAPH);
     }
     
     @Override
@@ -194,33 +189,12 @@ public class PredictionServiceImpl extends AbstractDaoService implements Predict
         // properties with null values which are required in the
         // specification
         //String studySpecs = Utils.serialize(analysis);
-        String studySpecs = this.serializeAnalysis(plpa);
+        String studySpecs = generationUtils.serializeAnalysis(plpa);
 
         Hydra h = new Hydra(studySpecs);
         h.hydrate(out);
     }
     
-    // NOTE: This should be replaced with SSA.serialize once issue
-    // noted in the download function is addressed.
-    private String serializeAnalysis(PatientLevelPredictionAnalysis predictionAnalysis) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.disable(
-                MapperFeature.AUTO_DETECT_CREATORS,
-                MapperFeature.AUTO_DETECT_GETTERS,
-                MapperFeature.AUTO_DETECT_IS_GETTERS
-        );
-
-        objectMapper.disable(
-                SerializationFeature.FAIL_ON_EMPTY_BEANS
-        );
-
-        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-
-        //objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        
-        return objectMapper.writeValueAsString(predictionAnalysis);
-    }
-
     @Override
     @DataSourceAccess
     public void runGeneration(final PredictionAnalysis predictionAnalysis,
@@ -228,13 +202,6 @@ public class PredictionServiceImpl extends AbstractDaoService implements Predict
 
         final Source source = sourceService.findBySourceKey(sourceKey);
         final Integer predictionAnalysisId = predictionAnalysis.getId();
-
-        JobParametersBuilder builder = new JobParametersBuilder();
-        builder.addString(JOB_NAME, String.format("Generating Prediction Analysis %d using %s (%s)", predictionAnalysisId, source.getSourceName(), source.getSourceKey()));
-        builder.addString(SOURCE_ID, String.valueOf(source.getSourceId()));
-        builder.addString(PREDICTION_ANALYSIS_ID, predictionAnalysisId.toString());
-        builder.addString(UPDATE_PASSWORD, StringGenerationUtil.generateRandomString());
-        builder.addString(JOB_AUTHOR, getCurrentUserLogin());
 
         String packageName = String.format("PredictionAnalysis.%s", SessionUtils.sessionId());
         String packageFilename = String.format("prediction_study_%d.zip", predictionAnalysisId);
@@ -249,39 +216,37 @@ public class PredictionServiceImpl extends AbstractDaoService implements Predict
         }
         analysisFiles.add(analysisFile);
         analysisFiles.add(prepareAnalysisExecution(packageName, packageFilename, predictionAnalysisId));
-        builder.addString(PACKAGE_NAME, packageName);
-        builder.addString(PACKAGE_FILE_NAME, packageFilename);
-        builder.addString(EXECUTABLE_FILE_NAME, "runAnalysis.R");
+
+        JobParametersBuilder builder = prepareJobParametersBuilder(source, predictionAnalysisId, packageName, packageFilename)
+                .addString(PREDICTION_ANALYSIS_ID, predictionAnalysisId.toString())
+                .addString(JOB_NAME, String.format("Generating Prediction Analysis %d using %s (%s)", predictionAnalysisId, source.getSourceName(), source.getSourceKey()));
+
 
         Job generateAnalysisJob = generationUtils.buildJobForExecutionEngineBasedAnalysisTasklet(
                 GENERATE_PREDICTION_ANALYSIS,
                 source,
                 builder,
                 analysisFiles
-        );
+        ).build();
 
         jobService.runJob(generateAnalysisJob, builder.toJobParameters());
     }
 
-    private AnalysisFile prepareAnalysisExecution(String packageName, String packageFilename, Integer analysisId) {
-        AnalysisFile execFile = new AnalysisFile();
-        execFile.setFileName("runAnalysis.R");
-        String[] paramNames = {"packageFile", "packageName", "analysisDir"};
-        String[] paramValues = {packageFilename, packageName, String.format("prediction_analysis_%d", analysisId)};
-        String script = SqlRender.renderSql(EXEC_SCRIPT, paramNames, paramValues);
-        execFile.setContents(script.getBytes());
-        return execFile;
+    @Override
+    protected String getExecutionScript() {
+
+        return EXEC_SCRIPT;
     }
 
     @Override
     public List<PredictionGenerationEntity> getPredictionGenerations(Integer predictionAnalysisId) {
 
-        return generationRepository.findByPredictionAnalysisId(predictionAnalysisId, EntityGraphUtils.fromAttributePaths("source"));
+        return generationRepository.findByPredictionAnalysisId(predictionAnalysisId, DEFAULT_ENTITY_GRAPH);
     }
 
     @Override
     public PredictionGenerationEntity getGeneration(Long generationId) {
 
-        return generationRepository.findOne(generationId, EntityGraphUtils.fromAttributePaths("source"));
+        return generationRepository.findOne(generationId, DEFAULT_ENTITY_GRAPH);
     }
 }

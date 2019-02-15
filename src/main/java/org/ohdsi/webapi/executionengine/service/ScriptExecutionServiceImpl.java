@@ -11,16 +11,15 @@ import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
 import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisExecutionRepository;
-import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisRepository;
 import org.ohdsi.webapi.executionengine.entity.AnalysisExecution;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFile;
 import org.ohdsi.webapi.executionengine.repository.AnalysisExecutionRepository;
 import org.ohdsi.webapi.executionengine.repository.InputFileRepository;
 import org.ohdsi.webapi.executionengine.repository.OutputFileRepository;
-import org.ohdsi.webapi.prediction.repository.PatientLevelPredictionAnalysisRepository;
 import org.ohdsi.webapi.service.HttpClient;
 import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.DataSourceDTOParser;
 import org.ohdsi.webapi.util.SourceUtils;
@@ -45,12 +44,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import static org.ohdsi.webapi.Constants.Variables.SOURCE;
 
 @Service
 @Transactional
@@ -86,13 +84,15 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     private InputFileRepository inputFileRepository;
 
     @Autowired
-    private ComparativeCohortAnalysisRepository comparativeCohortAnalysisRepository;
-    @Autowired
     private JobExplorer jobExplorer;
     @Autowired
     private AnalysisExecutionRepository analysisExecutionRepository;
+
     @Autowired
-    private PatientLevelPredictionAnalysisRepository patientLevelPredictionAnalysisRepository;
+    private PermissionManager authorizer;
+
+    @Autowired
+    private AnalysisResultFileSensitiveInfoService sensitiveInfoService;
 
     ScriptExecutionServiceImpl() throws KeyManagementException, NoSuchAlgorithmException {
 
@@ -175,10 +175,13 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
 
         AnalysisExecution execution = new AnalysisExecution();
         execution.setDuration(0);
-        execution.setSourceId(source.getSourceId());
+        execution.setSource(source);
         execution.setExecuted(new Date());
         execution.setExecutionStatus(AnalysisExecution.Status.STARTED);
-        execution.setUserId(0); //Looks strange
+        try {
+            execution.setAuthor(authorizer.getCurrentUser());
+        } catch (Exception ignored) {
+        }
         execution.setUpdatePassword(password);
         execution.setJobExecutionId(jobId);
         AnalysisExecution saved = analysisExecutionRepository.saveAndFlush(execution);
@@ -239,12 +242,13 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         String fileName = "execution_" + executionId + "_result.zip";
         File archive = tempDirectory.resolve(fileName).toFile();
         archive.deleteOnExit();
+        Map<String, Object> variables = Collections.singletonMap(SOURCE, analysisExecution.getSource());
 
         try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(archive))) {
-            List<AnalysisResultFile> outputFiles = outputFileRepository.findByExecutionId(analysisExecution.getId());
+            List<AnalysisResultFile> outputFiles = analysisExecution.getResultFiles(); //outputFileRepository.findByExecutionId(analysisExecution.getId());
             for (AnalysisResultFile resultFile : outputFiles) {
                 ZipEntry entry = new ZipEntry(resultFile.getFileName());
-                entry.setSize(resultFile.getContents().length);
+                entry.setSize(sensitiveInfoService.filterSensitiveInfo(resultFile, variables).getContents().length);
                 zos.putNextEntry(entry);
                 zos.write(resultFile.getContents());
                 zos.closeEntry();

@@ -7,5 +7,6 @@ import org.ohdsi.webapi.prediction.domain.PredictionGenerationEntity;
 import java.util.List;
 
 public interface PredictionAnalysisGenerationRepository extends EntityGraphJpaRepository<PredictionGenerationEntity, Long> {
+
   List<PredictionGenerationEntity> findByPredictionAnalysisId(Integer predictionAnalysisId, EntityGraph entityGraph);
 }

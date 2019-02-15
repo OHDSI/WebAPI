@@ -1,7 +1,6 @@
 package org.ohdsi.webapi.executionengine.controller;
 
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisExecutionStatusDTO;
-import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisRequestStatusDTO;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisResultDTO;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisResultStatusDTO;
 import org.apache.commons.io.FilenameUtils;
@@ -9,11 +8,13 @@ import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.media.multipart.BodyPartEntity;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.executionengine.entity.AnalysisExecution;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFile;
 import org.ohdsi.webapi.executionengine.exception.ScriptCallbackException;
 import org.ohdsi.webapi.executionengine.repository.AnalysisExecutionRepository;
 import org.ohdsi.webapi.executionengine.repository.OutputFileRepository;
+import org.ohdsi.webapi.executionengine.service.AnalysisResultFileSensitiveInfoService;
 import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,11 +28,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
+import static org.ohdsi.webapi.Constants.Variables.SOURCE;
 import static org.ohdsi.webapi.executionengine.entity.AnalysisExecution.Status.*;
 
 @Controller
@@ -45,16 +44,12 @@ public class ScriptExecutionCallbackController {
 
     private final OutputFileRepository outputFileRepository;
 
-    private final ScriptExecutionService executionService;
-
     @Autowired
     public ScriptExecutionCallbackController(AnalysisExecutionRepository analysisExecutionRepository,
-                                             OutputFileRepository outputFileRepository,
-                                             ScriptExecutionService executionService) {
+                                             OutputFileRepository outputFileRepository) {
 
         this.analysisExecutionRepository = analysisExecutionRepository;
         this.outputFileRepository = outputFileRepository;
-        this.executionService = executionService;
     }
 
     @Path(value = "submission/{id}/status/update/{password}")
@@ -124,32 +119,29 @@ public class ScriptExecutionCallbackController {
         List<AnalysisResultFile> files = new ArrayList<>();
         List<FormDataBodyPart> bodyParts = multiPart.getFields("file");
         if (bodyParts != null) {
+            Map<String,Integer> duplicates = new HashMap<>();
             for (FormDataBodyPart bodyPart : bodyParts) {
                 BodyPartEntity bodyPartEntity =
                         (BodyPartEntity) bodyPart.getEntity();
                 String fileName = bodyPart.getContentDisposition().getFileName();
+                String extension = FilenameUtils.getExtension(fileName);
+                int count = duplicates.getOrDefault(fileName, 0) + 1;
+                duplicates.put(fileName, count);
+                if (count > 1) {
+                    fileName = FilenameUtils.getBaseName(fileName) + " (" + count + ")." + extension;
+                }
                 try {
                     byte[] contents = IOUtils.toByteArray(bodyPartEntity.getInputStream());
-                    String extension = FilenameUtils.getExtension(fileName);
-                    if ("R".equalsIgnoreCase(extension)) {
-                        contents = filterCredentials(contents);
-                    }
-                    files.add(new AnalysisResultFile(analysisExecution, fileName, contents));
+                    files.add(new AnalysisResultFile(analysisExecution, fileName,
+                            bodyPart.getMediaType().getType(), contents));
                 } catch (IOException e) {
                     throw new ScriptCallbackException("Unable to read result " + "files");
                 }
             }
         }
-        files.add(new AnalysisResultFile(analysisExecution, "stdout.txt", analysisResultDTO.getStdout().getBytes()));
+        files.add(new AnalysisResultFile(analysisExecution, "stdout.txt", MediaType.TEXT_PLAIN,
+                analysisResultDTO.getStdout().getBytes()));
         return outputFileRepository.save(files);
     }
 
-    private byte[] filterCredentials(byte[] contents) throws IOException {
-
-        String script = IOUtils.toString(contents, "UTF-8");
-        return script
-                .replaceAll("user\\s*=\\s*\".*\"", "user = \"database_user\"")
-                .replaceAll("password\\s*=\\s*\".*?\"","password = \"database_password\"")
-                .getBytes();
-    }
 }

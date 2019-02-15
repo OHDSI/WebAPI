@@ -1,10 +1,16 @@
 package org.ohdsi.webapi.common.generation;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortcharacterization.CreateCohortTableTasklet;
 import org.ohdsi.webapi.cohortcharacterization.DropCohortTableListener;
 import org.ohdsi.webapi.cohortcharacterization.GenerateLocalCohortTasklet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.estimation.specification.EstimationAnalysis;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
 import org.ohdsi.webapi.executionengine.job.CreateAnalysisTasklet;
 import org.ohdsi.webapi.executionengine.job.ExecutionEngineCallbackTasklet;
@@ -142,7 +148,7 @@ public class GenerationUtils extends AbstractDaoService {
         builder.addString(TARGET_TABLE, GenerationUtils.getTempCohortTableName(sessionId));
     }
 
-    public Job buildJobForExecutionEngineBasedAnalysisTasklet(String analysisTypeName,
+    public SimpleJobBuilder buildJobForExecutionEngineBasedAnalysisTasklet(String analysisTypeName,
                                                               Source source,
                                                               JobParametersBuilder builder,
                                                               List<AnalysisFile> analysisFiles) {
@@ -166,10 +172,35 @@ public class GenerationUtils extends AbstractDaoService {
                 .tasklet(callbackTasklet)
                 .build();
 
+        JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
+        DropCohortTableListener dropCohortTableListener = new DropCohortTableListener(jdbcTemplate, transactionTemplate, sourceService, sourceAwareSqlRender);
+
         return jobBuilders.get(analysisTypeName)
                 .start(createAnalysisExecutionStep)
                 .next(runExecutionStep)
                 .next(waitCallbackStep)
-                .build();
+                .listener(dropCohortTableListener)
+                .listener(new AutoremoveJobListener(jobService));
+    }
+
+    // NOTE: This should be replaced with SSA.serialize once issue
+    // noted in the download function is addressed.
+    public <T> String serializeAnalysis(T analysis) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.disable(
+                MapperFeature.AUTO_DETECT_CREATORS,
+                MapperFeature.AUTO_DETECT_GETTERS,
+                MapperFeature.AUTO_DETECT_IS_GETTERS
+        );
+
+        objectMapper.disable(
+                SerializationFeature.FAIL_ON_EMPTY_BEANS
+        );
+
+        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+
+        //objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+
+        return objectMapper.writeValueAsString(analysis);
     }
 }

@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.estimation;
 
-import org.springframework.data.repository.CrudRepository;
+import com.cosium.spring.data.jpa.entity.graph.repository.EntityGraphJpaRepository;
 
-public interface EstimationRepository extends CrudRepository<Estimation, Integer> {
+public interface EstimationRepository extends EntityGraphJpaRepository<Estimation, Integer> {
     
 }

@@ -55,20 +55,6 @@
             </properties>
         </profile>
         <profile>
-            <id>docker</id>
-            <properties>
-                <datasource.db>OHDSI</datasource.db>
-                <datasource.ohdsi.schema>${WEBAPI_SCHEMA}</datasource.ohdsi.schema>
-                <datasource.password>${WEBAPI_USER_PW}</datasource.password>
-                <flyway.datasource.password>${WEBAPI_ADMIN_PW}</flyway.datasource.password>
-                <datasource.url>jdbc:postgresql://postgres:5432/${datasource.db}</datasource.url>
-                <hss.url>${STORAGE_SERVER_BASE_URL}/api</hss.url>
-                <security.ssl.enabled>false</security.ssl.enabled> <!-- !!! Enabling this property doesn't work on AWS.  Not a real problem as SSL is already enforced on AWS !!! -->
-                <central>false</central>
-                <jasypt.encryptor.password>${SOURCE_ENCRYPTION_PASSWORD}</jasypt.encryptor.password>
-            </properties>
-        </profile>
-        <profile>
             <id>integration-test</id>
             <properties>
                 <datasource.password>${OHDSI_APP_USER}</datasource.password>
@@ -95,30 +81,61 @@
             </properties>
         </profile>
         <profile>
+            <id>docker</id>
+            <properties>
+                <central>false</central>
+                <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
+                <datasource.dialect>postgresql</datasource.dialect>
+                <datasource.db>OHDSI</datasource.db>
+                <datasource.url>jdbc:postgresql://postgres:5432/${datasource.db}</datasource.url>
+                <datasource.ohdsi.schema>${WEBAPI_SCHEMA}</datasource.ohdsi.schema>
+                <datasource.username>ohdsi_app_user</datasource.username>
+                <datasource.password>${WEBAPI_USER_PW}</datasource.password>
+                <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
+                <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
+                <flyway.datasource.username>ohdsi_admin_user</flyway.datasource.username>
+                <flyway.datasource.password>${WEBAPI_ADMIN_PW}</flyway.datasource.password>
+                <flyway.locations>classpath:db/migration/postgresql,classpath:db/extension/honeur</flyway.locations>
+                <hibernate.dialect>org.hibernate.dialect.PostgreSQL9Dialect</hibernate.dialect>
+                <honeur.enabled>true</honeur.enabled>
+                <hss.url>${STORAGE_SERVER_BASE_URL}/api</hss.url>
+                <jasypt.encryptor.enabled>true</jasypt.encryptor.enabled>
+                <jasypt.encryptor.algorithm>PBEWithSHAAndTwofish-CBC</jasypt.encryptor.algorithm>
+                <jasypt.encryptor.password>${SOURCE_ENCRYPTION_PASSWORD}</jasypt.encryptor.password>
+                <jersey.resources.additional.packages>com.jnj.honeur.webapi</jersey.resources.additional.packages>
+                <liferay.company.web.id>liferay.com</liferay.company.web.id>
+                <security.enabled>false</security.enabled>
+                <security.origin>*</security.origin>
+                <security.ssl.enabled>false</security.ssl.enabled>
+                <war.directory>target-docker</war.directory>
+            </properties>
+        </profile>
+        <profile>
             <id>agunva-uat</id>
             <properties>
+                <central>false</central>
                 <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
                 <datasource.url>jdbc:postgresql://localhost:5432/honeur</datasource.url>
                 <datasource.username>postgres</datasource.username>
                 <datasource.password>ec2Admin</datasource.password>
                 <datasource.dialect>postgresql</datasource.dialect>
                 <datasource.ohdsi.schema>webapi</datasource.ohdsi.schema>
-                <hibernate.dialect>org.hibernate.dialect.PostgreSQL9Dialect</hibernate.dialect>
-                <honeur.enabled>true</honeur.enabled>
-                <hss.url>https://storage-uat.honeur.org/api</hss.url>
-                <liferay.company.web.id>liferay.com</liferay.company.web.id>
                 <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
                 <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
                 <flyway.datasource.username>postgres</flyway.datasource.username>
                 <flyway.datasource.password>ec2Admin</flyway.datasource.password>
                 <flyway.locations>classpath:db/migration/postgresql,classpath:db/extension/honeur</flyway.locations>
-                <security.origin>*</security.origin>
-                <security.ssl.enabled>false</security.ssl.enabled>
+                <hibernate.dialect>org.hibernate.dialect.PostgreSQL9Dialect</hibernate.dialect>
+                <honeur.enabled>true</honeur.enabled>
+                <hss.url>https://storage-uat.honeur.org/api</hss.url>
                 <jasypt.encryptor.password>nLfOM0D8iCTg7lLH</jasypt.encryptor.password>
                 <jasypt.encryptor.enabled>true</jasypt.encryptor.enabled>
                 <jasypt.encryptor.algorithm>PBEWithSHAAndTwofish-CBC</jasypt.encryptor.algorithm>
-                <central>false</central>
                 <jersey.resources.additional.packages>com.jnj.honeur.webapi</jersey.resources.additional.packages>
+                <liferay.company.web.id>liferay.com</liferay.company.web.id>
+                <security.enabled>false</security.enabled>
+                <security.origin>*</security.origin>
+                <security.ssl.enabled>false</security.ssl.enabled>
                 <war.directory>target-agunva</war.directory>
             </properties>
         </profile>

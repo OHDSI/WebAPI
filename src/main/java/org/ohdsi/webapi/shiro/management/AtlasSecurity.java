@@ -123,6 +123,7 @@ public abstract class AtlasSecurity extends Security {
 
     this.cohortdefinitionCreatorPermissionTemplates.put("cohortdefinition:%s:put", "Update Cohort Definition with ID = %s");
     this.cohortdefinitionCreatorPermissionTemplates.put("cohortdefinition:%s:delete", "Delete Cohort Definition with ID = %s");
+    this.cohortdefinitionCreatorPermissionTemplates.put("cohortdefinition:%s:check:post", "Fix Cohort Definition with ID = %s");
 
     this.conceptsetCreatorPermissionTemplates.put("conceptset:%s:put", "Update Concept Set with ID = %s");
     this.conceptsetCreatorPermissionTemplates.put("conceptset:%s:items:put", "Update Items of Concept Set with ID = %s");
@@ -138,6 +139,9 @@ public abstract class AtlasSecurity extends Security {
     this.sourcePermissionTemplates.put("vocabulary:%s:lookup:mapped:post", "Lookup mapped identifiers on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("vocabulary:%s:compare:post", "Compare concept sets on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("vocabulary:%s:optimize:post", "Optimize concept sets on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("vocabulary:%s:concept:*:get", "Get concept on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("vocabulary:%s:concept:*:related:get", "Get related concepts on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("vocabulary:%s:search:post", "Search vocab on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("cdmresults:%s:*:get", "Get Achilles reports on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("cdmresults:%s:conceptRecordCount:post", "Get Achilles concept counts on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("cdmresults:%s:*:*:get", "Get Achilles reports details on Source with SourceKey = %s");

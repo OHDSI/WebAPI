@@ -76,6 +76,7 @@ public abstract class AtlasSecurity extends Security {
 
     this.cohortdefinitionCreatorPermissionTemplates.put("cohortdefinition:%s:put", "Update Cohort Definition with ID = %s");
     this.cohortdefinitionCreatorPermissionTemplates.put("cohortdefinition:%s:delete", "Delete Cohort Definition with ID = %s");
+    this.cohortdefinitionCreatorPermissionTemplates.put("cohortdefinition:%s:check:post", "Fix Cohort Definition with ID = %s");
 
     this.conceptsetCreatorPermissionTemplates.put("conceptset:%s:put", "Update Concept Set with ID = %s");
     this.conceptsetCreatorPermissionTemplates.put("conceptset:%s:items:put", "Update Items of Concept Set with ID = %s");
@@ -83,6 +84,22 @@ public abstract class AtlasSecurity extends Security {
 
     this.sourcePermissionTemplates.put("cohortdefinition:*:report:%s:get", "Get Inclusion Rule Report for Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("cohortdefinition:*:generate:%s:get", "Generate Cohort on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("vocabulary:%s:*:get", "Get vocabulary info on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("vocabulary:%s:included-concepts:count:post", "Get vocab concept counts on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("vocabulary:%s:resolveConceptSetExpression:post", "Resolve concept set expression on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("vocabulary:%s:lookup:identifiers:post", "Lookup identifiers on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("vocabulary:%s:lookup:identifiers:ancestors:post", "Lookup identifiers ancestors on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("vocabulary:%s:lookup:mapped:post", "Lookup mapped identifiers on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("vocabulary:%s:compare:post", "Compare concept sets on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("vocabulary:%s:optimize:post", "Optimize concept sets on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("vocabulary:%s:concept:*:get", "Get concept on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("vocabulary:%s:concept:*:related:get", "Get related concepts on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("vocabulary:%s:search:post", "Search vocab on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("cdmresults:%s:*:get", "Get Achilles reports on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("cdmresults:%s:conceptRecordCount:post", "Get Achilles concept counts on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("cdmresults:%s:*:*:get", "Get Achilles reports details on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("cohortresults:%s:*:*:get", "Get cohort results on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("cohortresults:%s:*:*:*:get", "Get cohort results details on Source with SourceKey = %s");
 
     this.incidenceRatePermissionTemplates.put("ir:%s:get", "Read Incidence Rate with ID=%s");
     this.incidenceRatePermissionTemplates.put("ir:%s:execution:*:get", "Execute Incidence Rate job with ID=%s");
@@ -125,14 +142,12 @@ public abstract class AtlasSecurity extends Security {
       .addProtectedRestPath("/permission/**")
 
       // concept set
-      .addProtectedRestPath("/conceptset", "jwtAuthc, authz, createPermissionsOnCreateConceptSet")
-      .addProtectedRestPath("/conceptset/*/items", "jwtAuthc, authz")
-      .addProtectedRestPath("/conceptset/*", "jwtAuthc, authz, deletePermissionsOnDeleteConceptSet")
+      .addProtectedRestPath("/conceptset", "createPermissionsOnCreateConceptSet")
+      .addProtectedRestPath("/conceptset/*", "deletePermissionsOnDeleteConceptSet")
 
       // incidence rates
-      .addProtectedRestPath("/ir", "jwtAuthc, authz, createPermissionsOnCreateIR")
+      .addProtectedRestPath("/ir", "createPermissionsOnCreateIR")
       .addProtectedRestPath("/ir/*/copy", "createPermissionsOnCopyIR")
-      .addProtectedRestPath("/ir/*", "jwtAuthc, authz")
       .addProtectedRestPath("/ir/*/execute/*")
 
       // comparative cohort analysis (estimation)
@@ -148,53 +163,12 @@ public abstract class AtlasSecurity extends Security {
       .addProtectedRestPath("/cohortdefinition", "createPermissionsOnCreateCohortDefinition")
       .addProtectedRestPath("/cohortdefinition/*/copy", "createPermissionsOnCreateCohortDefinition")
       .addProtectedRestPath("/cohortdefinition/*", "deletePermissionsOnDeleteCohortDefinition")
-      .addProtectedRestPath("/cohortdefinition/*/info")
-      .addProtectedRestPath("/cohortdefinition/sql")
-      .addProtectedRestPath("/cohortdefinition/*/generate/*")
-      .addProtectedRestPath("/cohortdefinition/*/report/*")
-      .addProtectedRestPath("/*/cohortresults/*/breakdown")
-      .addProtectedRestPath("/job/execution")
-      .addProtectedRestPath("/job")
 
       // configuration
-      .addProtectedRestPath("/source/refresh")
-      .addProtectedRestPath("/source/priorityVocabulary")
-      .addRestPath("/source/sources")
-      .addProtectedRestPath("/source/connection/*")
       .addProtectedRestPath("/source", "createPermissionsOnCreateSource")
       .addProtectedRestPath("/source/*", "deletePermissionsOnDeleteSource")
-      .addProtectedRestPath("/source/details/*")
 
-      // cohort analysis
-      .addProtectedRestPath("/cohortanalysis")
-      .addProtectedRestPath("/cohortanalysis/*")
-
-      // cohort results
-      .addProtectedRestPath("/cohortresults/*")
-
-      // evidence
-      .addProtectedRestPath("/evidence/*")
-      .addProtectedRestPath("/evidence/*/negativecontrols")
-
-      // execution service
-      .addProtectedRestPath("/executionservice/*")
-      .addProtectedRestPath("/executionservice/execution/run")
-
-      // feasibility
-      .addProtectedRestPath("/feasibility")
-      .addProtectedRestPath("/feasibility/*")
-
-      // featureextraction
-      .addProtectedRestPath("/featureextraction/*")
-
-      // vocabulary services
-      .addProtectedRestPath("/vocabulary/*")
-
-      // data sources
-      .addProtectedRestPath("/cdmresults/*")
-
-      // profiles
-      .addProtectedRestPath("/*/person/*");
+      .addProtectedRestPath("/**/*");
   }
 
   @Override

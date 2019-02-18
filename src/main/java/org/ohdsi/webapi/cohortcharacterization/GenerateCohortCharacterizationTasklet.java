@@ -26,6 +26,7 @@ import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.featureExtraction.FeatureExtraction;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
+import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConverter;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcParamEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcStrataEntity;
@@ -452,33 +453,38 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             final String vocabularyQualifier = SourceUtils.getVocabularyQualifier(source);
             final String[] tmpRegexes = ArrayUtils.addAll(regexes, DAIMONS);
             final String[] tmpValues = ArrayUtils.addAll(variables, resultsQualifier, cdmQualifier, tempQualifier, vocabularyQualifier);
+
             final String sql = SqlRender.renderSql(query, tmpRegexes, tmpValues);
-            PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, tmpRegexes, tmpValues, paramNames, paramValues,
-                    sessionId);
-            String translatedSql = psr.getSql();
-            PreparedStatementSetter setter = psr.getSetter();
-            List<Object> orderedParams = psr.getOrderedParamsList();
+            String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect());
             String[] stmts = SqlSplit.splitSql(translatedSql);
-            return Arrays.stream(stmts).map(s -> new PreparedStatementWithParamsCreator() {
-                        @Override
-                        public String getSql() {
-                            return s;
-                        }
 
-                        @Override
-                        public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
-                            PreparedStatement statement = con.prepareStatement(s);
-                            if (Objects.nonNull(setter) && s.contains("?")) {
-                                setter.setValues(statement);
-                            }
-                            return statement;
-                        }
+            return Arrays.stream(stmts).map(stmt -> {
+                PreparedStatementRenderer psr = new PreparedStatementRenderer(null, stmt, new String[]{}, new String[]{}, paramNames, paramValues, sessionId);
+                String translatedStatement = psr.getSql();
+                PreparedStatementSetter setter = psr.getSetter();
+                List<Object> orderedParams = psr.getOrderedParamsList();
+                return new PreparedStatementWithParamsCreator() {
+                    @Override
+                    public String getSql() {
+                        return translatedStatement;
+                    }
 
-                        @Override
-                        public List<Object> getOrderedParamsList() {
-                            return Objects.nonNull(setter) && s.contains("?") ? orderedParams : null;
+                    @Override
+                    public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
+                        PreparedStatement statement = con.prepareStatement(translatedStatement);
+                        if (Objects.nonNull(setter) && translatedStatement.contains("?")) {
+                            setter.setValues(statement);
                         }
-                    }).collect(Collectors.toList());
+                        return statement;
+                    }
+
+                    @Override
+                    public List<Object> getOrderedParamsList() {
+                        return Objects.nonNull(setter) && translatedStatement.contains("?") ? orderedParams : null;
+                    }
+                };
+            })
+            .collect(Collectors.toList());
         }
 
         private List<PreparedStatementCreator> getSqlQueriesToRun(final JSONObject jsonObject, final Integer cohortDefinitionId) {
@@ -508,7 +514,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
 
             return Arrays.stream(SqlSplit.splitSql(jsonObject.getString("sqlConstruction")))
                     .map(COMPLETE_DOTCOMMA)
-                    .map(sql -> prepareStatement(sql, sessionId))
+                    .flatMap(sql -> prepareMultipleStatements(sql, sessionId, new String[0], new String[0], new String[0], new Object[0]).stream())
                     .collect(Collectors.toList());
         }
 

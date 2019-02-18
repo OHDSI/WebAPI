@@ -222,7 +222,7 @@ public class CohortResultsService extends AbstractDaoService {
   }
 
   @POST
-  @Path("{id}/warmup")
+  @Path("/warmup")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public int warmUpVisualizationData(CohortAnalysisTask task) {

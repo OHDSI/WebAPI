@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+
+import com.google.common.collect.ImmutableMap;
 import org.apache.catalina.webresources.TomcatURLStreamHandlerFactory;
 import org.glassfish.jersey.server.model.Parameter;
 import org.glassfish.jersey.server.model.Resource;
@@ -42,6 +44,11 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = WebApi.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class SecurityIT {
+
+    private Map<String, HttpStatus> EXPECTED_RESPONSE_CODES = ImmutableMap.<String, HttpStatus>builder()
+            .put("/info/", HttpStatus.OK)
+            .build();
+
     @Autowired
     private TestRestTemplate restTemplate;
 
@@ -92,7 +99,8 @@ public class SecurityIT {
 
                         ResponseEntity<Object> response = this.restTemplate.exchange(uri,
                                 serviceInfo.httpMethod, entity, Object.class);
-                        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+                        HttpStatus expectedStatus = EXPECTED_RESPONSE_CODES.getOrDefault(serviceInfo.pathPrefix, HttpStatus.UNAUTHORIZED);
+                        assertThat(response.getStatusCode()).isEqualTo(expectedStatus);
                     } catch (Throwable t) {
                         collector.addError(new ThrowableEx(t, serviceRawUrl));
                     }

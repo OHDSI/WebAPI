@@ -52,6 +52,8 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     private static final String CONCEPT_SET_XREF_KEY_NEGATIVE_CONTROL_OUTCOMES = "negativeControlOutcomes";
     private static final String CONCEPT_SET_XREF_KEY_COHORT_METHOD_COVAR = "estimationAnalysisSettings.analysisSpecification.cohortMethodAnalysisList.getDbCohortMethodDataArgs.covariateSettings";
     private static final String CONCEPT_SET_XREF_KEY_POS_CONTROL_COVAR = "positiveControlSynthesisArgs.covariateSettings";
+    private static final String CONCEPT_SET_XREF_KEY_INCLUDED_COVARIATE_CONCEPT_IDS = "includedCovariateConceptIds";
+    private static final String CONCEPT_SET_XREF_KEY_EXCLUDED_COVARIATE_CONCEPT_IDS = "excludedCovariateConceptIds";
 
     private final String EXEC_SCRIPT = ResourceHelper.GetResourceAsString("/resources/estimation/r/runAnalysis.R");
 
@@ -94,6 +96,9 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
 
     @Autowired
     private EstimationAnalysisGenerationRepository generationRepository;
+
+    @Value("${organization.name}")
+    private String organizationName;
 
     @Override
     public Iterable<Estimation> getAnalysisList() {
@@ -157,7 +162,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         ObjectMapper mapper = new ObjectMapper();
         EstimationAnalysis expression;
         try {
-            expression = mapper.readValue(est.getSpecification(), EstimationAnalysis.class);
+            expression = Utils.deserialize(est.getSpecification(), EstimationAnalysisImpl.class);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -166,23 +171,21 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         expression.setId(est.getId());
         expression.setName(est.getName());
         expression.setDescription(est.getDescription());
-        expression.setOrganizationName(env.getRequiredProperty("organization.name"));
+        expression.setOrganizationName(this.organizationName);
         
         // Retrieve the cohort definition details
-        ArrayList<EstimationCohortDefinition> detailedList = new ArrayList<>();
+        List<EstimationCohortDefinition> detailedList = new ArrayList<>();
         for (EstimationCohortDefinition c : expression.getCohortDefinitions()) {
-            System.out.println(c.getId());
             CohortDefinition cd = cohortDefinitionRepository.findOneWithDetail(c.getId());
             detailedList.add(new EstimationCohortDefinition(cd));
         }
         expression.setCohortDefinitions(detailedList);
         
         // Retrieve the concept set expressions
-        ArrayList<EstimationConceptSet> ecsList = new ArrayList<>();
-        HashMap<Integer, ArrayList<Long>> conceptIdentifiers = new HashMap<>();
-        HashMap<Integer, ConceptSetExpression> csExpressionList = new HashMap<>();
+        List<EstimationConceptSet> ecsList = new ArrayList<>();
+        Map<Integer, List<Long>> conceptIdentifiers = new HashMap<>();
+        Map<Integer, ConceptSetExpression> csExpressionList = new HashMap<>();
         for (EstimationConceptSet pcs : expression.getConceptSets()) {
-            System.out.println(pcs.id);
             pcs.expression = conceptSetService.getConceptSetExpression(pcs.id);
             csExpressionList.put(pcs.id, pcs.expression);
             ecsList.add(pcs);
@@ -191,39 +194,50 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         expression.setConceptSets(ecsList);
         
         // Resolve all ConceptSetCrossReferences
-        for (ConceptSetCrossReference xref : expression.getConceptSetCrossReference()) {
+        for (ConceptSetCrossReferenceImpl xref : expression.getConceptSetCrossReference()) {
             // TODO: Make this conditional on the expression.getEstimationAnalysisSettings().getEstimationType() vs
             // hard coded to always use a comparative cohort analysis once we have implemented the other
             // estimation types
-            ArrayList<LinkedHashMap> tcoList = (ArrayList<LinkedHashMap>) ((LinkedHashMap) expression.getEstimationAnalysisSettings().getAnalysisSpecification()).get("targetComparatorOutcomes");
-            ArrayList<LinkedHashMap> ccaList = (ArrayList<LinkedHashMap>) ((LinkedHashMap) expression.getEstimationAnalysisSettings().getAnalysisSpecification()).get("cohortMethodAnalysisList");
+            Settings settings = expression.getEstimationAnalysisSettings().getAnalysisSpecification();
+            ComparativeCohortAnalysisImpl ccaSpec = (ComparativeCohortAnalysisImpl) settings;
+            List<TargetComparatorOutcomesImpl> tcoList = ccaSpec.getTargetComparatorOutcomes();
+            List<CohortMethodAnalysisImpl> ccaList = ccaSpec.getCohortMethodAnalysisList();
             
             if (xref.getTargetName().equalsIgnoreCase(CONCEPT_SET_XREF_KEY_TARGET_COMPARATOR_OUTCOME)) {
-                LinkedHashMap tco = tcoList.get(xref.getTargetIndex());
-                tco.put(xref.getPropertyName(), conceptIdentifiers.get(xref.getConceptSetId()));
+                TargetComparatorOutcomesImpl tco = tcoList.get(xref.getTargetIndex());
+                List<Long> conceptIds = conceptIdentifiers.get(xref.getConceptSetId());
+                if (xref.getPropertyName().equalsIgnoreCase(CONCEPT_SET_XREF_KEY_INCLUDED_COVARIATE_CONCEPT_IDS)) {
+                    tco.setIncludedCovariateConceptIds(conceptIds);
+                } else if (xref.getPropertyName().equalsIgnoreCase(CONCEPT_SET_XREF_KEY_EXCLUDED_COVARIATE_CONCEPT_IDS)) {
+                    tco.setExcludedCovariateConceptIds(conceptIds);
+                }
             } else if (xref.getTargetName().equalsIgnoreCase(CONCEPT_SET_XREF_KEY_NEGATIVE_CONTROL_OUTCOMES)) {
                 // Fill in the negative controls for each T/C pair as specified
-                LinkedHashMap tco = tcoList.get(xref.getTargetIndex());
+                TargetComparatorOutcomesImpl tco = tcoList.get(xref.getTargetIndex());
                 ConceptSetExpression e = csExpressionList.get(xref.getConceptSetId());
                 for(ConceptSetItem csi : e.items) {
-                    NegativeControl nc = new NegativeControl();
-                    nc.setTargetId(Long.valueOf((int) tco.get("targetId")));
-                    nc.setComparatorId(Long.valueOf((int) tco.get("comparatorId")));
+                    NegativeControlImpl nc = new NegativeControlImpl();
+                    nc.setTargetId(tco.getTargetId());
+                    nc.setComparatorId(tco.getComparatorId());
                     nc.setOutcomeId(csi.concept.conceptId);
                     nc.setOutcomeName(csi.concept.conceptName);
-                    nc.setType(NegativeControl.TypeEnum.OUTCOME);
+                    nc.setType(NegativeControlTypeEnum.OUTCOME);
                     expression.addNegativeControlsItem(nc);
                 }
             } else if (xref.getTargetName().equalsIgnoreCase(CONCEPT_SET_XREF_KEY_COHORT_METHOD_COVAR)) {
-                LinkedHashMap cca = ccaList.get(xref.getTargetIndex());
-                LinkedHashMap dbCohortMethod = (LinkedHashMap) cca.get("getDbCohortMethodDataArgs");
-                LinkedHashMap dbCohortMethodCovarSettings = (LinkedHashMap) dbCohortMethod.get("covariateSettings");
-                dbCohortMethodCovarSettings.put(xref.getPropertyName(), conceptIdentifiers.get(xref.getConceptSetId()));
+                CohortMethodAnalysisImpl cca = ccaList.get(xref.getTargetIndex());
+                CovariateSettingsImpl dbCohortMethodCovarSettings = cca.getDbCohortMethodDataArgs().getCovariateSettings();
+                List<Long> conceptIds = conceptIdentifiers.get(xref.getConceptSetId());
+                if (xref.getPropertyName().equalsIgnoreCase(CONCEPT_SET_XREF_KEY_INCLUDED_COVARIATE_CONCEPT_IDS)) {
+                    dbCohortMethodCovarSettings.setIncludedCovariateConceptIds(conceptIds);
+                } else if (xref.getPropertyName().equalsIgnoreCase(CONCEPT_SET_XREF_KEY_EXCLUDED_COVARIATE_CONCEPT_IDS)) {
+                    dbCohortMethodCovarSettings.setExcludedCovariateConceptIds(conceptIds);
+                }
             } else if (xref.getTargetName().equalsIgnoreCase(CONCEPT_SET_XREF_KEY_POS_CONTROL_COVAR)) {
-                if (xref.getPropertyName().equalsIgnoreCase("includedCovariateConceptIds")) {
-                    expression.getPositiveControlSynthesisArgs().getCovariateSettings().includedCovariateConceptIds(conceptIdentifiers.get(xref.getConceptSetId()));
-                } else if (xref.getPropertyName().equalsIgnoreCase("excludedCovariateConceptIds")) {
-                    expression.getPositiveControlSynthesisArgs().getCovariateSettings().excludedCovariateConceptIds(conceptIdentifiers.get(xref.getConceptSetId()));
+                if (xref.getPropertyName().equalsIgnoreCase(CONCEPT_SET_XREF_KEY_INCLUDED_COVARIATE_CONCEPT_IDS)) {
+                    expression.getPositiveControlSynthesisArgs().getCovariateSettings().setIncludedCovariateConceptIds(conceptIdentifiers.get(xref.getConceptSetId()));
+                } else if (xref.getPropertyName().equalsIgnoreCase(CONCEPT_SET_XREF_KEY_EXCLUDED_COVARIATE_CONCEPT_IDS)) {
+                    expression.getPositiveControlSynthesisArgs().getCovariateSettings().setExcludedCovariateConceptIds(conceptIdentifiers.get(xref.getConceptSetId()));
                 }
             }
         }

@@ -57,6 +57,7 @@ public class SourceDaimon implements Serializable {
     name = "source_daimon_generator",
     strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
     parameters = {
+      @Parameter(name = "sequence_name", value = "source_daimon_sequence"),
       @Parameter(name = "increment_size", value = "1")
     }
   )

@@ -57,6 +57,7 @@ public class Source implements Serializable {
     name = "source_generator",
     strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
     parameters = {
+      @Parameter(name = "sequence_name", value = "source_sequence"),
       @Parameter(name = "increment_size", value = "1")
     }
   )

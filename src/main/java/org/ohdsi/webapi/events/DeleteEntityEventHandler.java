@@ -1,11 +1,13 @@
 package org.ohdsi.webapi.events;
 
 import org.ohdsi.webapi.cohortcharacterization.CcService;
-import org.ohdsi.webapi.estimation.EstimationService;
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
 import org.ohdsi.webapi.pathway.PathwayService;
-import org.ohdsi.webapi.prediction.PredictionService;
-import org.ohdsi.webapi.service.*;
+import org.ohdsi.webapi.service.CohortDefinitionService;
+import org.ohdsi.webapi.service.ConceptSetService;
+import org.ohdsi.webapi.service.EstimationService;
+import org.ohdsi.webapi.service.IRAnalysisResource;
+import org.ohdsi.webapi.service.PredictionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -22,15 +24,11 @@ public class DeleteEntityEventHandler {
     @Autowired
     private CohortDefinitionService cohortDefinitionService;
     @Autowired
-    private ComparativeCohortAnalysisService comparativeCohortAnalysisService;
-    @Autowired
     private ConceptSetService conceptSetService;
     @Autowired
     private EstimationService estimationService;
     @Autowired
     private IRAnalysisResource irAnalysisResource;
-    @Autowired
-    private PatientLevelPredictionService patientLevelPredictionService;
     @Autowired
     private PredictionService predictionService;
 

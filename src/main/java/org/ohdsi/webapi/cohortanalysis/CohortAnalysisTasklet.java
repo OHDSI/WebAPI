@@ -111,7 +111,7 @@ public class CohortAnalysisTasklet implements Tasklet {
 						failMessage = StringUtils.left(e.getMessage(),2000);
             throw e;//FAIL job status
         } finally {
-						// add genrated analysis IDs to  cohort analysis generation info
+						// add generated analysis IDs to  cohort analysis generation info
 						final String f_failMessage = failMessage; // assign final var to pass into lambda
 						final boolean f_successful = successful; // assign final var to pass into lambda
 						

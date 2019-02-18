@@ -168,6 +168,9 @@ public abstract class AtlasSecurity extends Security {
       .addProtectedRestPath("/source", "createPermissionsOnCreateSource")
       .addProtectedRestPath("/source/*", "deletePermissionsOnDeleteSource")
 
+      // version info
+      .addRestPath("/info")
+
       .addProtectedRestPath("/**/*");
   }
 

@@ -3,13 +3,12 @@ package org.ohdsi.webapi.prediction;
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.common.SourceMapKey;
-import org.ohdsi.webapi.common.generation.CommonGenerationDTO;
 import org.ohdsi.webapi.common.generation.ExecutionBasedGenerationDTO;
 import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
 import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
 import org.ohdsi.webapi.prediction.domain.PredictionGenerationEntity;
 import org.ohdsi.webapi.prediction.dto.PredictionAnalysisDTO;
-import org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysis;
+import org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysisImpl;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.util.ExceptionUtils;
@@ -130,7 +129,7 @@ public class PredictionController {
   @GET
   @Path("{id}/export")
   @Produces(MediaType.APPLICATION_JSON)
-  public PatientLevelPredictionAnalysis exportAnalysis(@PathParam("id") int id) {
+  public PatientLevelPredictionAnalysisImpl exportAnalysis(@PathParam("id") int id) {
 
     return service.exportAnalysis(id);
   }
@@ -141,7 +140,7 @@ public class PredictionController {
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
   public Response downloadPackage(@PathParam("id") int id) throws IOException {
 
-    org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysis plpa = service.exportAnalysis(id);
+    org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysisImpl plpa = service.exportAnalysis(id);
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
     service.hydrateAnalysis(plpa, baos);

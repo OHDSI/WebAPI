@@ -2,7 +2,7 @@ package org.ohdsi.webapi.prediction;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.ohdsi.webapi.prediction.domain.PredictionGenerationEntity;
-import org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysis;
+import org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysisImpl;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -22,9 +22,9 @@ public interface PredictionService {
 
   PredictionAnalysis getAnalysis(int id);
 
-  PatientLevelPredictionAnalysis exportAnalysis(int id);
+  PatientLevelPredictionAnalysisImpl exportAnalysis(int id);
 
-  void hydrateAnalysis(PatientLevelPredictionAnalysis plpa, OutputStream out) throws JsonProcessingException;
+  void hydrateAnalysis(PatientLevelPredictionAnalysisImpl plpa, OutputStream out) throws JsonProcessingException;
 
   void runGeneration(PredictionAnalysis predictionAnalysis, String sourceKey) throws IOException;
 

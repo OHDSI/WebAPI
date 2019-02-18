@@ -4,6 +4,7 @@ import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.hydra.Hydra;
 import org.ohdsi.webapi.Constants;
@@ -11,11 +12,11 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.common.generation.AnalysisExecutionSupport;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
+import org.ohdsi.webapi.conceptset.ConceptSetCrossReferenceImpl;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
 import org.ohdsi.webapi.prediction.domain.PredictionGenerationEntity;
 import org.ohdsi.webapi.prediction.repository.PredictionAnalysisGenerationRepository;
-import org.ohdsi.webapi.prediction.specification.ConceptSetCrossReference;
-import org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysis;
+import org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysisImpl;
 import org.ohdsi.webapi.prediction.specification.PredictionCohortDefinition;
 import org.ohdsi.webapi.prediction.specification.PredictionConceptSet;
 import org.ohdsi.webapi.service.*;
@@ -134,12 +135,11 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     }
     
     @Override
-    public PatientLevelPredictionAnalysis exportAnalysis(int id) {
+    public PatientLevelPredictionAnalysisImpl exportAnalysis(int id) {
         PredictionAnalysis pred = predictionAnalysisRepository.findOne(id);
-        ObjectMapper mapper = new ObjectMapper();
-        PatientLevelPredictionAnalysis expression;
+        PatientLevelPredictionAnalysisImpl expression;
         try {
-            expression = mapper.readValue(pred.getSpecification(), org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysis.class);
+            expression = Utils.deserialize(pred.getSpecification(), PatientLevelPredictionAnalysisImpl.class);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -153,7 +153,6 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         // Retrieve the cohort definition details
         ArrayList<PredictionCohortDefinition> detailedList = new ArrayList<>();
         for (PredictionCohortDefinition c : expression.getCohortDefinitions()) {
-            System.out.println(c.getId());
             CohortDefinition cd = cohortDefinitionRepository.findOneWithDetail(c.getId());
             detailedList.add(new PredictionCohortDefinition(cd));
         }
@@ -163,7 +162,6 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         ArrayList<PredictionConceptSet> pcsList = new ArrayList<>();
         HashMap<Integer, ArrayList<Long>> conceptIdentifiers = new HashMap<Integer, ArrayList<Long>>();
         for (PredictionConceptSet pcs : expression.getConceptSets()) {
-            System.out.println(pcs.id);
             pcs.expression = conceptSetService.getConceptSetExpression(pcs.id);
             pcsList.add(pcs);
             conceptIdentifiers.put(pcs.id, new ArrayList<>(vocabularyService.resolveConceptSetExpression(pcs.expression)));
@@ -171,12 +169,12 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         expression.setConceptSets(pcsList);
         
         // Resolve all ConceptSetCrossReferences
-        for (ConceptSetCrossReference xref : expression.getConceptSetCrossReference()) {
+        for (ConceptSetCrossReferenceImpl xref : expression.getConceptSetCrossReference()) {
             if (xref.getTargetName().equalsIgnoreCase("covariateSettings")) {
                 if (xref.getPropertyName().equalsIgnoreCase("includedCovariateConceptIds")) {
-                    expression.getCovariateSettings().get(xref.getTargetIndex()).includedCovariateConceptIds(conceptIdentifiers.get(xref.getConceptSetId()));
+                    expression.getCovariateSettings().get(xref.getTargetIndex()).setIncludedCovariateConceptIds(conceptIdentifiers.get(xref.getConceptSetId()));
                 } else if (xref.getPropertyName().equalsIgnoreCase("excludedCovariateConceptIds")) {
-                    expression.getCovariateSettings().get(xref.getTargetIndex()).excludedCovariateConceptIds(conceptIdentifiers.get(xref.getConceptSetId()));
+                    expression.getCovariateSettings().get(xref.getTargetIndex()).setExcludedCovariateConceptIds(conceptIdentifiers.get(xref.getConceptSetId()));
                 }
             }
         }
@@ -184,11 +182,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         return expression;
     }
     
-    public void hydrateAnalysis(org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysis plpa, OutputStream out) throws JsonProcessingException {
-        // Cannot use Utils.serialize(analysis) since it removes
-        // properties with null values which are required in the
-        // specification
-        //String studySpecs = Utils.serialize(analysis);
+    public void hydrateAnalysis(org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysisImpl plpa, OutputStream out) throws JsonProcessingException {
         String studySpecs = generationUtils.serializeAnalysis(plpa);
 
         Hydra h = new Hydra(studySpecs);
@@ -209,7 +203,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         AnalysisFile analysisFile = new AnalysisFile();
         analysisFile.setFileName(packageFilename);
         try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-          PatientLevelPredictionAnalysis analysis = exportAnalysis(predictionAnalysisId);
+          PatientLevelPredictionAnalysisImpl analysis = exportAnalysis(predictionAnalysisId);
           analysis.setPackageName(packageName);
           hydrateAnalysis(analysis, out);
           analysisFile.setContents(out.toByteArray());

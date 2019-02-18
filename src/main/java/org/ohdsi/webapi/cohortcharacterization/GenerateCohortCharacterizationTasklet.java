@@ -459,7 +459,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             String[] stmts = SqlSplit.splitSql(translatedSql);
 
             return Arrays.stream(stmts).map(stmt -> {
-                PreparedStatementRenderer psr = new PreparedStatementRenderer(null, stmt, new String[]{}, new String[]{}, paramNames, paramValues, sessionId);
+                PreparedStatementRenderer psr = new PreparedStatementRenderer(null, stmt, tmpRegexes, tmpValues, paramNames, paramValues, sessionId);
                 String translatedStatement = psr.getSql();
                 PreparedStatementSetter setter = psr.getSetter();
                 List<Object> orderedParams = psr.getOrderedParamsList();

@@ -6,11 +6,11 @@
 package org.ohdsi.webapi.prediction.repository;
 
 import com.cosium.spring.data.jpa.entity.graph.repository.EntityGraphJpaRepository;
-import org.ohdsi.webapi.prediction.PatientLevelPredictionAnalysis;
+import org.ohdsi.webapi.prediction.PredictionAnalysis;
 
 /**
  *
  * @author asena5
  */
-public interface PatientLevelPredictionAnalysisRepository extends EntityGraphJpaRepository<PatientLevelPredictionAnalysis, Integer> {
+public interface PredictionAnalysisRepository extends EntityGraphJpaRepository<PredictionAnalysis, Integer> {
 }

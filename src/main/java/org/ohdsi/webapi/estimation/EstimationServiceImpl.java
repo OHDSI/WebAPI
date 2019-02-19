@@ -4,6 +4,7 @@ import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression.ConceptSetItem;
@@ -14,6 +15,7 @@ import org.ohdsi.webapi.common.generation.AnalysisExecutionSupport;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
 import org.ohdsi.webapi.estimation.domain.EstimationGenerationEntity;
 import org.ohdsi.webapi.estimation.repository.EstimationAnalysisGenerationRepository;
+import org.ohdsi.webapi.estimation.repository.EstimationRepository;
 import org.ohdsi.webapi.estimation.specification.*;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
 import org.ohdsi.webapi.service.ConceptSetService;
@@ -28,6 +30,7 @@ import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
@@ -157,10 +160,10 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     }
 
     @Override
-    public EstimationAnalysis exportAnalysis(Estimation est) {
+    public EstimationAnalysisImpl exportAnalysis(Estimation est) {
 
         ObjectMapper mapper = new ObjectMapper();
-        EstimationAnalysis expression;
+        EstimationAnalysisImpl expression;
         try {
             expression = Utils.deserialize(est.getSpecification(), EstimationAnalysisImpl.class);
         } catch (Exception e) {

@@ -168,6 +168,10 @@ public abstract class AtlasSecurity extends Security {
       .addProtectedRestPath("/source", "createPermissionsOnCreateSource")
       .addProtectedRestPath("/source/*", "deletePermissionsOnDeleteSource")
 
+      // DDL service
+      .addRestPath("/ddl/results")
+      .addRestPath("/ddl/cemresults")
+
       //executionservice callbacks
       .addRestPath("/executionservice/callbacks/**")
 

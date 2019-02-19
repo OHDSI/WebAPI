@@ -47,6 +47,8 @@ public class SecurityIT {
 
     private Map<String, HttpStatus> EXPECTED_RESPONSE_CODES = ImmutableMap.<String, HttpStatus>builder()
             .put("/info/", HttpStatus.OK)
+            .put("/ddl/results", HttpStatus.OK)
+            .put("/ddl/cemresults", HttpStatus.OK)
             .build();
 
     @Autowired

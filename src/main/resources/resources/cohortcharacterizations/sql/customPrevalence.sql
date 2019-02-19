@@ -12,17 +12,17 @@ insert into @results_database_schema.cc_results (
      strata_id,
      strata_name,
      cc_generation_id)
-select 'PREVALENCE'    as type,
-        'CUSTOM_FE' as fa_type,
-        covariate_id,
-        covariate_name,
-        @analysisId as analysis_id,
-        @analysisName as analysis_name,
-        concept_id,
+select CAST('PREVALENCE' AS VARCHAR(255)) as type,
+        CAST('CUSTOM_FE' AS VARCHAR(255)) as fa_type,
+        CAST(covariate_id AS BIGINT) as covariate_id,
+        CAST(covariate_name AS VARCHAR(1000)) as covariate_name,
+        CAST(@analysisId AS INTEGER) as analysis_id,
+        CAST('@analysisName' AS VARCHAR(1000)) as analysis_name,
+        CAST(concept_id AS INTEGER) as concept_id,
         sum_value       as count_value,
         average_value   as stat_value,
-        @cohortId            as cohort_definition_id,
-        @strataId as strata_id,
+        CAST(@cohortId AS BIGINT) as cohort_definition_id,
+        CAST(@strataId AS BIGINT) as strata_id,
         CAST(@strataName AS VARCHAR(1000)) as strata_name,
-        @jobId            as cc_generation_id
+        CAST(@jobId AS BIGINT) as cc_generation_id
 from (@design) subquery;

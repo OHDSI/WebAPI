@@ -292,7 +292,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
 
             Long conceptId = 0L;
             String queryFile;
-            String groupQuery = getCriteriaGroupQuery(analysis, feature, Objects.nonNull(strata)  ? "qualified_events" : "#qualified_events");
+            String groupQuery = getCriteriaGroupQuery(analysis, feature, "qualified_events");
             String[] paramNames = CRITERIA_PARAM_NAMES.toArray(new String[0]);
 
             if (CcResultType.PREVALENCE.equals(analysis.getStatType())) {
@@ -455,7 +455,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             final String[] tmpValues = ArrayUtils.addAll(variables, resultsQualifier, cdmQualifier, tempQualifier, vocabularyQualifier);
 
             final String sql = SqlRender.renderSql(query, tmpRegexes, tmpValues);
-            String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect());
+            String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect(), sessionId, tempQualifier);
             String[] stmts = SqlSplit.splitSql(translatedSql);
 
             return Arrays.stream(stmts).map(stmt -> {

@@ -3,7 +3,6 @@ package org.ohdsi.webapi.prediction;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.hydra.Hydra;
@@ -16,6 +15,7 @@ import org.ohdsi.webapi.conceptset.ConceptSetCrossReferenceImpl;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
 import org.ohdsi.webapi.prediction.domain.PredictionGenerationEntity;
 import org.ohdsi.webapi.prediction.repository.PredictionAnalysisGenerationRepository;
+import org.ohdsi.webapi.prediction.repository.PredictionAnalysisRepository;
 import org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysisImpl;
 import org.ohdsi.webapi.prediction.specification.PredictionCohortDefinition;
 import org.ohdsi.webapi.prediction.specification.PredictionConceptSet;
@@ -183,7 +183,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     }
     
     public void hydrateAnalysis(org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysisImpl plpa, OutputStream out) throws JsonProcessingException {
-        String studySpecs = generationUtils.serializeAnalysis(plpa);
+        String studySpecs = Utils.serialize(plpa, true);
 
         Hydra h = new Hydra(studySpecs);
         h.hydrate(out);

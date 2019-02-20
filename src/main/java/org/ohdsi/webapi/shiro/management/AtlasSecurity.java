@@ -275,6 +275,9 @@ public abstract class AtlasSecurity extends Security {
             .addProtectedRestPath("/feature-analysis", CREATE_FEATURE_ANALYSIS)
             .addProtectedRestPath("/feature-analysis/*", DELETE_FEATURE_ANALYSIS)
 
+            //executionservice callbacks
+            .addRestPath("/executionservice/callbacks/**")
+
             .addProtectedRestPath("/**/*");
   }
 

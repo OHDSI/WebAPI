@@ -5,6 +5,8 @@ import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ohdsi.analysis.Utils;
+import org.ohdsi.analysis.estimation.design.NegativeControlTypeEnum;
+import org.ohdsi.analysis.estimation.design.Settings;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression.ConceptSetItem;
@@ -13,11 +15,16 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.common.generation.AnalysisExecutionSupport;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
+import org.ohdsi.webapi.conceptset.ConceptSetCrossReferenceImpl;
+import org.ohdsi.webapi.estimation.comparativecohortanalysis.specification.CohortMethodAnalysisImpl;
+import org.ohdsi.webapi.estimation.comparativecohortanalysis.specification.ComparativeCohortAnalysisImpl;
+import org.ohdsi.webapi.estimation.comparativecohortanalysis.specification.TargetComparatorOutcomesImpl;
 import org.ohdsi.webapi.estimation.domain.EstimationGenerationEntity;
 import org.ohdsi.webapi.estimation.repository.EstimationAnalysisGenerationRepository;
 import org.ohdsi.webapi.estimation.repository.EstimationRepository;
 import org.ohdsi.webapi.estimation.specification.*;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
+import org.ohdsi.webapi.featureextraction.specification.CovariateSettingsImpl;
 import org.ohdsi.webapi.service.ConceptSetService;
 import org.ohdsi.webapi.service.JobService;
 import org.ohdsi.webapi.service.SourceService;
@@ -248,12 +255,9 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         return expression;
     }
 
-    public void hydrateAnalysis(EstimationAnalysis analysis, OutputStream out) throws JsonProcessingException {
-        // Cannot use Utils.serialize(analysis) since it removes
-        // properties with null values which are required in the
-        // specification
-        //String studySpecs = Utils.serialize(analysis);
-        String studySpecs = generationUtils.serializeAnalysis(analysis);
+    public void hydrateAnalysis(EstimationAnalysisImpl analysis, OutputStream out) throws JsonProcessingException {
+
+        String studySpecs = Utils.serialize(analysis, true);
         Hydra h = new Hydra(studySpecs);
         h.hydrate(out);
     }
@@ -270,7 +274,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         AnalysisFile analysisFile = new AnalysisFile();
         analysisFile.setFileName(packageFilename);
         try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            EstimationAnalysis analysis = exportAnalysis(estimation);
+            EstimationAnalysisImpl analysis = exportAnalysis(estimation);
             analysis.setPackageName(packageName);
             hydrateAnalysis(analysis, out);
             analysisFile.setContents(out.toByteArray());

@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.executionengine.service;
 
-import com.odysseusinc.arachne.commons.types.DBMSType;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisRequestDTO;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisRequestStatusDTO;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.DataSourceUnsecuredDTO;
@@ -10,7 +9,6 @@ import org.apache.commons.lang3.text.StrSubstitutor;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
-import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisExecutionRepository;
 import org.ohdsi.webapi.executionengine.entity.AnalysisExecution;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFile;
@@ -61,8 +59,6 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     @Autowired
     private HttpClient client;
 
-    @Autowired
-    ComparativeCohortAnalysisExecutionRepository comparativeCohortAnalysisExecutionRepository;
     @Value("${executionengine.url}")
     private String executionEngineURL;
     @Value("${executionengine.token}")
@@ -73,8 +69,6 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     private String updateStatusCallback;
     @Autowired
     private OutputFileRepository outputFileRepository;
-
-    private List<DBMSType> DBMS_REQUIRE_DB = ImmutableList.of(DBMSType.POSTGRESQL, DBMSType.REDSHIFT);
 
     private List<AnalysisExecution.Status> FINAL_STATUES = ImmutableList.of(AnalysisExecution.Status.COMPLETED, AnalysisExecution.Status.COMPLETED);
 

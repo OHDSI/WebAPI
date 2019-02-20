@@ -4,12 +4,11 @@ import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.common.SourceMapKey;
-import org.ohdsi.webapi.common.generation.CommonGenerationDTO;
 import org.ohdsi.webapi.common.generation.ExecutionBasedGenerationDTO;
 import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
 import org.ohdsi.webapi.estimation.domain.EstimationGenerationEntity;
 import org.ohdsi.webapi.estimation.dto.EstimationDTO;
-import org.ohdsi.webapi.estimation.specification.EstimationAnalysis;
+import org.ohdsi.webapi.estimation.specification.EstimationAnalysisImpl;
 import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.source.SourceInfo;
@@ -129,7 +128,7 @@ public class EstimationController {
   @GET
   @Path("{id}/export")
   @Produces(MediaType.APPLICATION_JSON)
-  public EstimationAnalysis exportAnalysis(@PathParam("id") int id) {
+  public EstimationAnalysisImpl exportAnalysis(@PathParam("id") int id) {
 
     Estimation estimation = service.getAnalysis(id);
     ExceptionUtils.throwNotFoundExceptionIfNull(estimation, String.format(NO_ESTIMATION_MESSAGE, id));
@@ -145,7 +144,7 @@ public class EstimationController {
       target = "package";
     }
 
-    EstimationAnalysis analysis = this.exportAnalysis(id);
+    EstimationAnalysisImpl analysis = this.exportAnalysis(id);
     if (StringUtils.isEmpty(analysis.getPackageName())) {
       analysis.setPackageName(target);
     }

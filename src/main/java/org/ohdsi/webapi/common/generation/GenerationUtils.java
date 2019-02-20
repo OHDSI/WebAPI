@@ -10,7 +10,6 @@ import org.ohdsi.webapi.cohortcharacterization.CreateCohortTableTasklet;
 import org.ohdsi.webapi.cohortcharacterization.DropCohortTableListener;
 import org.ohdsi.webapi.cohortcharacterization.GenerateLocalCohortTasklet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
-import org.ohdsi.webapi.estimation.specification.EstimationAnalysis;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
 import org.ohdsi.webapi.executionengine.job.CreateAnalysisTasklet;
 import org.ohdsi.webapi.executionengine.job.ExecutionEngineCallbackTasklet;
@@ -181,26 +180,5 @@ public class GenerationUtils extends AbstractDaoService {
                 .next(waitCallbackStep)
                 .listener(dropCohortTableListener)
                 .listener(new AutoremoveJobListener(jobService));
-    }
-
-    // NOTE: This should be replaced with SSA.serialize once issue
-    // noted in the download function is addressed.
-    public <T> String serializeAnalysis(T analysis) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.disable(
-                MapperFeature.AUTO_DETECT_CREATORS,
-                MapperFeature.AUTO_DETECT_GETTERS,
-                MapperFeature.AUTO_DETECT_IS_GETTERS
-        );
-
-        objectMapper.disable(
-                SerializationFeature.FAIL_ON_EMPTY_BEANS
-        );
-
-        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-
-        //objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-
-        return objectMapper.writeValueAsString(analysis);
     }
 }

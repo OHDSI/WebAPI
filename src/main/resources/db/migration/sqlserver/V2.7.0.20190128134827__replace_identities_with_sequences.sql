@@ -8,7 +8,6 @@ GO
 UPDATE ${ohdsiSchema}.analysis_execution SET id_tmp = id;
 GO
 
-IF OBJECT_ID()
 ALTER TABLE ${ohdsiSchema}.analysis_execution DROP CONSTRAINT pk_analysis_exec;
 GO
 

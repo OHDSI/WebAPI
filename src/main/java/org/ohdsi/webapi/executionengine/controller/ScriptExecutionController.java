@@ -10,17 +10,12 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.persistence.EntityManager;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisExecutionRepository;
+import org.apache.shiro.SecurityUtils;
 import org.ohdsi.webapi.executionengine.dto.ExecutionRequestDTO;
 import org.ohdsi.webapi.executionengine.entity.AnalysisExecution;
 import org.ohdsi.webapi.executionengine.entity.AnalysisExecutionType;
@@ -34,7 +29,6 @@ import org.ohdsi.webapi.executionengine.service.ExecutionEngineStatusService;
 import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
-import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.springframework.batch.core.Job;
@@ -52,6 +46,8 @@ import org.springframework.stereotype.Component;
 public class ScriptExecutionController {
 
     private final Log logger = LogFactory.getLog(ScriptExecutionController.class);
+    private static final String DATASOURCE_PERMISSION = "cohortdefinition:*:generate:%s:get";
+    private static final String FORBIDDEN_MESSAGE = "Access to source with key %s is forbidden";
 
     @Value("${executionengine.resultCallback}")
     private String resultCallback;
@@ -67,6 +63,8 @@ public class ScriptExecutionController {
     private final EntityManager entityManager;
     private final ExecutionEngineStatusService executionEngineStatusService;
     private SourceRepository sourceRepository;
+    @Value("#{!'${security.provider}'.equals('DisabledSecurity')}")
+    private boolean securityEnabled;
 
     @Autowired
     public ScriptExecutionController(final ScriptExecutionService scriptExecutionService,
@@ -96,6 +94,10 @@ public class ScriptExecutionController {
 
         logger.info("Received an execution script to run");
         Source source = sourceRepository.findBySourceKey(dto.sourceKey);
+
+        if (securityEnabled && !SecurityUtils.getSubject().isPermitted(String.format(DATASOURCE_PERMISSION, source.getSourceKey()))) {
+            throw new ForbiddenException(String.format(FORBIDDEN_MESSAGE, source.getSourceKey()));
+        }
 
         JobParametersBuilder parametersBuilder = new JobParametersBuilder();
         parametersBuilder.addString(JOB_NAME, String.format("Generate %s %d: %s (%s)", dto.analysisType, dto.cohortId,

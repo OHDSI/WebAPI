@@ -17,6 +17,7 @@ package org.ohdsi.webapi.util;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -35,12 +36,19 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
 	@Override 
 	public Response toResponse(Throwable ex) {
 		ErrorMessage errorMessage = new ErrorMessage(ex);
-		StringWriter errorStackTrace = new StringWriter();
-		ex.printStackTrace(new PrintWriter(errorStackTrace));
+		Response.StatusType type = getStatusType(ex);
  
-		return Response.status(Status.INTERNAL_SERVER_ERROR)
+		return Response.status(type)
 				.entity(errorMessage)
 				.type(MediaType.APPLICATION_JSON)
 				.build();	
+	}
+
+	private Response.StatusType getStatusType(Throwable ex) {
+		if (ex instanceof WebApplicationException) {
+			return((WebApplicationException)ex).getResponse().getStatusInfo();
+		} else {
+			return Response.Status.INTERNAL_SERVER_ERROR;
+		}
 	}
 }

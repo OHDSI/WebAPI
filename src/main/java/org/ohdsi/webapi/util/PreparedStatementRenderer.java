@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.google.common.collect.ImmutableList;
 import com.odysseusinc.arachne.commons.types.DBMSType;
 import org.apache.commons.lang.ArrayUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
@@ -280,7 +281,21 @@ public class PreparedStatementRenderer implements ParameterizedSqlProvider {
   }
 
   public String getSql() {
-    return SqlTranslate.translateSingleStatementSql(sql, targetDialect, sessionId, tempSchema);
+    String translated = SqlTranslate.translateSingleStatementSql(sql, targetDialect, sessionId, tempSchema);
+    /*
+     * There is an issue with temp tables on sql server: Temp tables scope is session or stored procedure.
+     * To execute PreparedStatement sql server uses stored procedure <i>sp_executesql</i>
+     * and this is the reason why multiple PreparedStatements cannot share the same local temporary table.
+     * Also temp tables cannot be re-used in the same PreparedStatement, e.g. temp table cannot be created, used, dropped
+     * and created again in the same PreparedStatement because sql optimizator detects object already exists and fails.
+     * When is required to re-use temp table it should be separated to several PreparedStatements.
+     *
+     * Therefore, the proposed solution is to use global temp tables which can be shared between different Prepared statements
+     */
+    if (ImmutableList.of(DBMSType.MS_SQL_SERVER.getOhdsiDB(), DBMSType.PDW.getOhdsiDB()).contains(targetDialect)) {
+      translated = translated.replaceAll("#", "##" + sessionId + "_");
+    }
+    return translated;
   }
 
   public PreparedStatementSetter getSetter() {

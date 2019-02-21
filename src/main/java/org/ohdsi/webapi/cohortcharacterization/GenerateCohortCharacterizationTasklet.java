@@ -349,7 +349,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
 
             strataCohortQueries.addAll(prepareStatements("TRUNCATE TABLE #Codesets;\n", sessionId));
             strataCohortQueries.addAll(prepareStatements("DROP TABLE #Codesets;\n", sessionId));
-            PreparedStatementUtils.addAll(queriesToRun, strataCohortQueries, source);
+            queriesToRun.addAll(strataCohortQueries);
 
             //Extract features from stratified cohorts
             queriesToRun.addAll(cohortCharacterization.getStratas().stream()
@@ -359,7 +359,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
                       queries.addAll(getCreateQueries(jsonObject));
                       queries.addAll(getFeatureAnalysesQueries(jsonObject, cohortDefinitionId, strata));
                       queries.addAll(getCleanupQueries(jsonObject));
-                      return PreparedStatementUtils.collapse(queries, source).stream();
+                      return queries.stream();
                     })
                     .collect(Collectors.toList()));
 
@@ -473,7 +473,8 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
                 ccQueries.addAll(getCreateQueries(jsonObject));
                 ccQueries.addAll(getFeatureAnalysesQueries(jsonObject, cohortDefinitionId, null));
                 ccQueries.addAll(getCleanupQueries(jsonObject));
-                PreparedStatementUtils.addAll(queriesToRun, ccQueries, source);
+
+                queriesToRun.addAll(ccQueries);
             }
 
             if (!cohortCharacterization.getStratas().isEmpty()) {

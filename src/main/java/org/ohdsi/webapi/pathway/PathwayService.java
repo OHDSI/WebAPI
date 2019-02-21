@@ -1,14 +1,13 @@
 package org.ohdsi.webapi.pathway;
 
+import java.util.List;
+import java.util.Map;
+import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisGenerationEntity;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
-import org.ohdsi.webapi.source.Source;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
-import java.util.List;
-import java.util.Map;
 
 public interface PathwayService {
 
@@ -30,7 +29,7 @@ public interface PathwayService {
 
     String buildAnalysisSql(Long generationId, PathwayAnalysisEntity pathwayAnalysis, Integer sourceId, String cohortTable, String sessionId);
 
-    void generatePathways(final Integer pathwayAnalysisId, final Integer sourceId);
+    JobExecutionResource generatePathways(final Integer pathwayAnalysisId, final Integer sourceId);
 
     List<PathwayAnalysisGenerationEntity> getPathwayGenerations(final Integer pathwayAnalysisId);
 

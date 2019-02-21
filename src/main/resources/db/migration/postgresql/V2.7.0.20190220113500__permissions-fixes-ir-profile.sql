@@ -22,7 +22,7 @@ FROM ${ohdsiSchema}.sec_permission sp
     UNION ALL
     SELECT '%s:person:*:get'
   ) new_perms
-WHERE sp.value LIKE 'cohortdefinition:*:generate:%:get';
+WHERE sp.value LIKE 'cohortdefinition:*:generate:%:get' AND sp.value <> 'cohortdefinition:*:generate:*:get';
 
 INSERT INTO ${ohdsiSchema}.sec_role_permission (id, role_id, permission_id)
 SELECT nextval('${ohdsiSchema}.sec_role_permission_sequence'), sp.for_role_id, sp.id

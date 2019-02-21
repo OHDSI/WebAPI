@@ -46,7 +46,7 @@ import org.springframework.stereotype.Component;
 public class ScriptExecutionController {
 
     private final Log logger = LogFactory.getLog(ScriptExecutionController.class);
-    private static final String DATASOURCE_PERMISSION = "source:%s:get";
+    private static final String DATASOURCE_PERMISSION = "cohortdefinition:*:generate:%s:get";
     private static final String FORBIDDEN_MESSAGE = "Access to source with key %s is forbidden";
 
     @Value("${executionengine.resultCallback}")

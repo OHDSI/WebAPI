@@ -100,6 +100,9 @@ public abstract class AtlasSecurity extends Security {
     this.sourcePermissionTemplates.put("cdmresults:%s:*:*:get", "Get Achilles reports details on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("cohortresults:%s:*:*:get", "Get cohort results on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("cohortresults:%s:*:*:*:get", "Get cohort results details on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("ir:*:execute:%s:get", "Generate IR on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("ir:*:execute:%s:delete", "Cancel IR generation on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("%s:person:*:get", "Get person's profile on Source with SourceKey = %s");
 
     this.incidenceRatePermissionTemplates.put("ir:%s:get", "Read Incidence Rate with ID=%s");
     this.incidenceRatePermissionTemplates.put("ir:%s:execution:*:get", "Execute Incidence Rate job with ID=%s");

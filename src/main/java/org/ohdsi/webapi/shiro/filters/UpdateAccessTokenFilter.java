@@ -13,7 +13,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.session.Session;
@@ -34,14 +33,17 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
   private final PermissionManager authorizer;
   private final int tokenExpirationIntervalInSeconds;
   private final Set<String> defaultRoles;
-  
+  private final String redirectUrl;
+
   public UpdateAccessTokenFilter(
           PermissionManager authorizer,
           Set<String> defaultRoles,
-          int tokenExpirationIntervalInSeconds) {
+          int tokenExpirationIntervalInSeconds,
+          String redirectUrl) {
     this.authorizer = authorizer;
     this.tokenExpirationIntervalInSeconds = tokenExpirationIntervalInSeconds;
     this.defaultRoles = defaultRoles;
+    this.redirectUrl = redirectUrl;
   }
   
   @Override
@@ -65,15 +67,24 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
       * for CAS login
       */
       ShiroHttpServletRequest requestShiro = (ShiroHttpServletRequest) request;
-      HttpSession session = requestShiro.getSession();
-      if (login == null && session.getAttribute(CasHandleFilter.CONST_CAS_AUTHN) != null
-              && ((String) session.getAttribute(CasHandleFilter.CONST_CAS_AUTHN)).equalsIgnoreCase("true")) {
+      HttpSession shiroSession = requestShiro.getSession();
+      if (login == null && shiroSession.getAttribute(CasHandleFilter.CONST_CAS_AUTHN) != null
+              && ((String) shiroSession.getAttribute(CasHandleFilter.CONST_CAS_AUTHN)).equalsIgnoreCase("true")) {
               login = ((Pac4jPrincipal) principal).getProfile().getId();
       }
             
       if (login == null) {
         // user doesn't provide email - send empty token
-        jwt = "";
+        request.setAttribute(TOKEN_ATTRIBUTE, "");
+        // stop session to make logout of OAuth users possible
+        Session session = SecurityUtils.getSubject().getSession(false);
+        if (session != null) {
+          session.stop();
+        }
+
+        HttpServletResponse httpResponse = WebUtils.toHttp(response);
+        httpResponse.sendRedirect(redirectUrl + "oauth_error_email");
+        return false;
       }
     } else if (principal instanceof String) {
       login = (String)principal;

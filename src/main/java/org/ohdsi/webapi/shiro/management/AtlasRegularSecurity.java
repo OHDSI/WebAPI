@@ -182,7 +182,8 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         Map<FilterTemplates, Filter> filters = super.getFilters();
 
         filters.put(LOGOUT, new LogoutFilter(eventPublisher));
-        filters.put(UPDATE_TOKEN, new UpdateAccessTokenFilter(this.authorizer, this.defaultRoles, this.tokenExpirationIntervalInSeconds));
+        filters.put(UPDATE_TOKEN, new UpdateAccessTokenFilter(this.authorizer, this.defaultRoles, this.tokenExpirationIntervalInSeconds,
+                this.redirectUrl));
 
         filters.put(JWT_AUTHC, new AtlasJwtAuthFilter());
         filters.put(JDBC_FILTER, new JdbcAuthFilter(eventPublisher));

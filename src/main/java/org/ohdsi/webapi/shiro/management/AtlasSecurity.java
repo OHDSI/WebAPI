@@ -241,7 +241,7 @@ public abstract class AtlasSecurity extends Security {
             .addProtectedRestPath("/plp", CREATE_PLP)
             .addProtectedRestPath("/plp/*/copy", CREATE_COPY_PLP)
             .addProtectedRestPath("/plp/*", DELETE_PLP)
-
+            
             // new estimation
             .addProtectedRestPath("/estimation", CREATE_ESTIMATION)
             .addProtectedRestPath("/estimation/*/copy", COPY_ESTIMATION)
@@ -274,6 +274,9 @@ public abstract class AtlasSecurity extends Security {
             // feature analyses
             .addProtectedRestPath("/feature-analysis", CREATE_FEATURE_ANALYSIS)
             .addProtectedRestPath("/feature-analysis/*", DELETE_FEATURE_ANALYSIS)
+
+            // version info
+            .addRestPath("/info")
 
             //executionservice callbacks
             .addRestPath("/executionservice/callbacks/**")

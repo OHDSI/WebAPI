@@ -4,6 +4,8 @@ import static org.ohdsi.webapi.shiro.management.AtlasSecurity.PERMISSIONS_ATTRIB
 import static org.ohdsi.webapi.shiro.management.AtlasSecurity.TOKEN_ATTRIBUTE;
 
 import io.buji.pac4j.subject.Pac4jPrincipal;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.Principal;
 import java.util.Calendar;
 import java.util.Collection;
@@ -13,6 +15,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.ws.rs.core.UriBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.session.Session;
@@ -33,17 +36,17 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
   private final PermissionManager authorizer;
   private final int tokenExpirationIntervalInSeconds;
   private final Set<String> defaultRoles;
-  private final String redirectUrl;
+  private final String onFailRedirectUrl;
 
   public UpdateAccessTokenFilter(
           PermissionManager authorizer,
           Set<String> defaultRoles,
           int tokenExpirationIntervalInSeconds,
-          String redirectUrl) {
+          String onFailRedirectUrl) {
     this.authorizer = authorizer;
     this.tokenExpirationIntervalInSeconds = tokenExpirationIntervalInSeconds;
     this.defaultRoles = defaultRoles;
-    this.redirectUrl = redirectUrl;
+    this.onFailRedirectUrl = onFailRedirectUrl;
   }
   
   @Override
@@ -83,7 +86,9 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
         }
 
         HttpServletResponse httpResponse = WebUtils.toHttp(response);
-        httpResponse.sendRedirect(redirectUrl + "oauth_error_email");
+
+        URI oauthFailURI = getOAuthFailUri();
+        httpResponse.sendRedirect(oauthFailURI.toString());
         return false;
       }
     } else if (principal instanceof String) {
@@ -111,6 +116,25 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
     Collection<String> permissions = this.authorizer.getAuthorizationInfo(login).getStringPermissions();
     request.setAttribute(PERMISSIONS_ATTRIBUTE, StringUtils.join(permissions, "|"));
     return true;
+  }
+
+  private URI getOAuthFailUri() throws URISyntaxException {
+    return getFailUri("oauth_error_email");
+  }
+
+  private URI getFailUri(String failFragment) throws URISyntaxException {
+
+    URI oauthFailURI = new URI(onFailRedirectUrl);
+    String fragment = oauthFailURI.getFragment();
+    StringBuilder sbFragment = new StringBuilder();
+    if(fragment == null) {
+      sbFragment.append(failFragment).append("/");
+    } else if(fragment.endsWith("/")){
+      sbFragment.append(fragment).append(failFragment).append("/");
+    } else {
+      sbFragment.append(fragment).append("/").append(failFragment).append("/");
+    }
+    return UriBuilder.fromUri(oauthFailURI).fragment(sbFragment.toString()).build();
   }
 
   private Date getExpirationDate(final int expirationIntervalInSeconds) {

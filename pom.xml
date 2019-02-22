@@ -67,8 +67,8 @@
     <security.oauth.google.apiSecret></security.oauth.google.apiSecret>
     <security.oauth.facebook.apiKey></security.oauth.facebook.apiKey>
     <security.oauth.facebook.apiSecret></security.oauth.facebook.apiSecret>
-    <security.oauth.github.apiKey></security.oauth.github.apiKey>
-    <security.oauth.github.apiSecret></security.oauth.github.apiSecret>
+    <security.oauth.github.apiKey>d6bd909f5f15031c3216</security.oauth.github.apiKey>
+    <security.oauth.github.apiSecret>b5a24530e70cd21b62603ae4abb8cac623c16fb9</security.oauth.github.apiSecret>
     <security.oid.clientId></security.oid.clientId>
     <security.oid.apiSecret></security.oid.apiSecret>
     <security.oid.url></security.oid.url>

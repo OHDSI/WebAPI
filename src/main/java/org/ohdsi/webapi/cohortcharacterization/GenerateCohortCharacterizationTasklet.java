@@ -423,8 +423,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             final String[] tmpRegexes = ArrayUtils.addAll(regexes, DAIMONS);
             final String[] tmpValues = ArrayUtils.addAll(variables, resultsQualifier, cdmQualifier, tempQualifier, vocabularyQualifier);
 
-            final String sql = SqlRender.renderSql(query, tmpRegexes, tmpValues);
-            String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect(), sessionId, tempQualifier);
+            String sql = SqlRender.renderSql(query, tmpRegexes, tmpValues);
 
             /*
              * There is an issue with temp tables on sql server: Temp tables scope is session or stored procedure.
@@ -445,10 +444,11 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
              * which is not the case with the first option.
              */
             if (ImmutableList.of(DBMSType.MS_SQL_SERVER.getOhdsiDB(), DBMSType.PDW.getOhdsiDB()).contains(source.getSourceDialect())) {
-              translatedSql = translatedSql
+              sql = sql
                 .replaceAll("#", tempQualifier + "." + sessionId + "_")
                 .replaceAll("tempdb\\.\\.", "");
             }
+            String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect(), sessionId, tempQualifier);
 
             String[] stmts = SqlSplit.splitSql(translatedSql);
 

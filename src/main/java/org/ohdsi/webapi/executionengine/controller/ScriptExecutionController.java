@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.persistence.EntityManager;
@@ -141,7 +142,14 @@ public class ScriptExecutionController {
     @Path("execution/results/{executionId}")
     @GET
     @Produces("application/zip")
-    public Response getResults(@PathParam("executionId") Long executionId) throws IOException {
+    public Response getResults(@PathParam("executionId") Integer executionId) throws IOException {
+
+        AnalysisExecution analysisExecution = analysisExecutionRepository.findOne(executionId);
+        Source source = sourceRepository.findBySourceId(analysisExecution.getSourceId());
+
+        if (!permissionManager.hasSourceAccess(source)) {
+            throw new ForbiddenException(String.format(FORBIDDEN_MESSAGE, source.getSourceKey()));
+        }
 
         java.nio.file.Path tempDirectory = Files.createTempDirectory("atlas_ee_arch");
         String fileName = "execution_" + executionId + "_result.zip";
@@ -168,10 +176,14 @@ public class ScriptExecutionController {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("{type}/{id}/executions")
-    public Iterable<AnalysisExecution> getAnalysisExecutions(@PathParam("type") AnalysisExecutionType type,
+    public List<AnalysisExecution> getAnalysisExecutions(@PathParam("type") AnalysisExecutionType type,
                                                              @PathParam("id") Integer id){
 
-        return analysisExecutionRepository.findByAnalysisIdAndAnalysisType(id, type);
+        List<AnalysisExecution> executions = analysisExecutionRepository.findByAnalysisIdAndAnalysisType(id, type);
+        return executions.stream().filter(e -> {
+            Source source = sourceRepository.findBySourceId(e.getSourceId());
+            return permissionManager.hasSourceAccess(source);
+        }).collect(Collectors.toList());
     }
 
     @GET

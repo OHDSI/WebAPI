@@ -9,6 +9,6 @@ import org.springframework.data.repository.CrudRepository;
 
 public interface AnalysisExecutionRepository extends JpaRepository<AnalysisExecution, Integer> {
 
-    Iterable<AnalysisExecution> findByAnalysisIdAndAnalysisType(Integer analysisId, AnalysisExecutionType analysisType);
+    List<AnalysisExecution> findByAnalysisIdAndAnalysisType(Integer analysisId, AnalysisExecutionType analysisType);
     List<AnalysisExecution> findByExecutedBeforeAndExecutionStatusIn(Date invalidate, List<AnalysisExecution.Status> statuses);
 }

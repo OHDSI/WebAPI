@@ -16,6 +16,7 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
 import com.google.common.collect.ImmutableList;
+import com.odysseusinc.arachne.commons.types.DBMSType;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.impl.factory.Lists;
@@ -424,6 +425,31 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
 
             final String sql = SqlRender.renderSql(query, tmpRegexes, tmpValues);
             String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect(), sessionId, tempQualifier);
+
+            /*
+             * There is an issue with temp tables on sql server: Temp tables scope is session or stored procedure.
+             * To execute PreparedStatement sql server uses stored procedure <i>sp_executesql</i>
+             * and this is the reason why multiple PreparedStatements cannot share the same local temporary table.
+             *
+             * On the other side, temp tables cannot be re-used in the same PreparedStatement, e.g. temp table cannot be created, used, dropped
+             * and created again in the same PreparedStatement because sql optimizator detects object already exists and fails.
+             * When is required to re-use temp table it should be separated to several PreparedStatements.
+             *
+             * An option to use global temp tables also doesn't work since such tables can be not supported / disabled.
+             *
+             * Therefore, there are two ways:
+             * - either precisely group SQLs into statements so that temp tables aren't re-used in a single statement,
+             * - or use ‘permenant temporary tables’
+             *
+             * The second option looks better since such SQL could be exported and executed manually,
+             * which is not the case with the first option.
+             */
+            if (ImmutableList.of(DBMSType.MS_SQL_SERVER.getOhdsiDB(), DBMSType.PDW.getOhdsiDB()).contains(source.getSourceDialect())) {
+              translatedSql = translatedSql
+                .replaceAll("#", tempQualifier + "." + sessionId + "_")
+                .replaceAll("tempdb\\.\\.", "");
+            }
+
             String[] stmts = SqlSplit.splitSql(translatedSql);
 
             return Arrays.stream(stmts).map(stmt -> {

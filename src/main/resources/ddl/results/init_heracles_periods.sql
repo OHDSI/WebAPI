@@ -1,6 +1,7 @@
-select 0 as n union all select 1 union all select 2 union all select 3 union all select 4 union all select 5 union all select 6 union all select 7 union all select 8 union all select 9
-into #digits;
-
+select n  into #digits
+FROM (
+       select 0 as n union all select 1 union all select 2 union all select 3 union all select 4 union all select 5 union all select 6 union all select 7 union all select 8 union all select 9
+) N;
 
 SELECT
 	y1.n + (10*y10.n) + (100*y100.n) + (1000*y1000.n) AS d_years,

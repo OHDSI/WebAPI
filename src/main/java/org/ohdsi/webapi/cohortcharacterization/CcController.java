@@ -236,8 +236,8 @@ public class CcController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public List<CcResult> getGenerationsResults(
-            @PathParam("generationId") final Long generationId, @DefaultValue("false") @QueryParam("fullRetrieve") final boolean isFullRetrieve) {
-        List<CcResult> ccResults = service.findResults(generationId, isFullRetrieve);
+            @PathParam("generationId") final Long generationId, @DefaultValue("0.01") @QueryParam("thresholdLevel") final float thresholdLevel) {
+        List<CcResult> ccResults = service.findResults(generationId, thresholdLevel);
         convertPresetAnalysesToLocal(ccResults);
         return ccResults;
     }

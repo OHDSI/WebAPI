@@ -42,7 +42,7 @@ public interface CcService {
 
     List<CcGenerationEntity> findGenerationsByCcIdAndSource(Long id, String sourceKey);
 
-    List<CcResult> findResults(Long generationId, boolean isFullRetrieve);
+    List<CcResult> findResults(Long generationId, float thresholdLevel);
 
     List<CcPrevalenceStat> getPrevalenceStatsByGenerationId(final Long id, Long analysisId, final Long cohortId, final Long covariateId);
 

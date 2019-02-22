@@ -22,5 +22,4 @@ select
        r.strata_id,
        r.strata_name
 from @results_database_schema.cc_results r
-where r.cc_generation_id = @cohort_characterization_generation_id
-{!@is_full_retrieve} ? { and r.avg_value > @threshold_level}
+where r.cc_generation_id = @cohort_characterization_generation_id and r.avg_value > @threshold_level

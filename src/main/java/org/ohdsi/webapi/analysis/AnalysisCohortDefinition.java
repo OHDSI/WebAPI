@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.estimation.specification;
+package org.ohdsi.webapi.analysis;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -8,12 +8,7 @@ import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.ExpressionType;
 
-/**
- *
- * @author asena5
- */
-@JsonIgnoreProperties(ignoreUnknown=true)
-public class EstimationCohortDefinition implements Cohort {
+public class AnalysisCohortDefinition implements Cohort {
   String dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
   private SimpleDateFormat dateFormatter;
   
@@ -48,7 +43,7 @@ public class EstimationCohortDefinition implements Cohort {
      *
      * @param def
      */
-    public EstimationCohortDefinition(CohortDefinition def) {
+    public AnalysisCohortDefinition(CohortDefinition def) {
       this.dateFormatter = new SimpleDateFormat(this.dateFormat);
       this.id = def.getId();
       this.name = def.getName();
@@ -64,7 +59,7 @@ public class EstimationCohortDefinition implements Cohort {
     /**
      * Constructor
      */
-    public EstimationCohortDefinition() {
+    public AnalysisCohortDefinition() {
   }
   
     /**
@@ -96,12 +91,10 @@ public class EstimationCohortDefinition implements Cohort {
     /**
      *
      * @param name
-     * @return
      */
-    public EstimationCohortDefinition setName(String name) {
+    public void setName(String name) {
     this.name = name;
-    return this;
-  }
+    }
 
     /**
      *
@@ -115,11 +108,9 @@ public class EstimationCohortDefinition implements Cohort {
     /**
      *
      * @param description
-     * @return
      */
-    public EstimationCohortDefinition setDescription(String description) {
+    public void setDescription(String description) {
     this.description = description;
-    return this;
   }
   
     /**
@@ -133,11 +124,9 @@ public class EstimationCohortDefinition implements Cohort {
     /**
      *
      * @param expressionType
-     * @return
      */
-    public EstimationCohortDefinition setExpressionType(ExpressionType expressionType) {
+    public void setExpressionType(ExpressionType expressionType) {
     this.expressionType = expressionType;
-    return this;
   }
   
     /**
@@ -152,12 +141,10 @@ public class EstimationCohortDefinition implements Cohort {
     /**
      *
      * @param expression
-     * @return
      */
-    public EstimationCohortDefinition setExpression(CohortExpression expression) {
+    public void setExpression(CohortExpression expression) {
       this.expression = expression;
-      return this;
-  }
+    }
 
     /**
      * @return the createdBy

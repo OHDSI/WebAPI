@@ -1,13 +1,9 @@
-package org.ohdsi.webapi.estimation.specification;
+package org.ohdsi.webapi.analysis;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
 
-/**
- *
- * @author asena5
- */
 @JsonIgnoreProperties(ignoreUnknown=true)
-public class EstimationConceptSet extends ConceptSet {
+public class AnalysisConceptSet extends ConceptSet {
     
 }

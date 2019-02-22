@@ -9,6 +9,7 @@ import javax.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
+import org.ohdsi.analysis.estimation.design.EstimationTypeEnum;
 import org.ohdsi.webapi.model.CommonEntity;
 
 @Entity(name = "Estimation")
@@ -71,14 +72,14 @@ public class Estimation extends CommonEntity {
     /**
      * @return the type
      */
-    public EstimationType getType() {
-        return EstimationType.valueOf(type);
+    public EstimationTypeEnum getType() {
+        return EstimationTypeEnum.fromValue(type);
     }
 
     /**
      * @param type the type to set
      */
-    public void setType(EstimationType type) {
+    public void setType(EstimationTypeEnum type) {
         this.type = type.toString();
     }
 

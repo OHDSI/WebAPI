@@ -29,11 +29,14 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.ohdsi.analysis.Utils;
+import org.ohdsi.analysis.estimation.design.EstimationTypeEnum;
 import org.ohdsi.analysis.estimation.design.NegativeControlTypeEnum;
 import org.ohdsi.analysis.estimation.design.Settings;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression.ConceptSetItem;
 import org.ohdsi.hydra.Hydra;
+import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
+import org.ohdsi.webapi.analysis.importer.AnalysisConceptSetImportService;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.conceptset.ConceptSetCrossReferenceImpl;
@@ -54,12 +57,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.web.bind.annotation.RestController;
 
-import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
+import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
+import org.ohdsi.webapi.analysis.AnalysisConceptSet;
+import org.ohdsi.webapi.analysis.importer.AnalysisCohortDefinitionImportService;
+import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 
-/**
- *
- * @author asena5
- */
 @RestController
 @Path("/estimation/")
 @Transactional
@@ -183,9 +185,9 @@ public class EstimationService extends AbstractDaoService {
     }
     
     /**
-     *
-     * @param id
-     * @return
+     * Create a copy of the estimation using the ID
+     * @param id The identifier for the estimation specification
+     * @return The new estimation copy
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -199,9 +201,9 @@ public class EstimationService extends AbstractDaoService {
     }
     
     /**
-     *
-     * @param id
-     * @return
+     * Retrieve the estimation specification
+     * @param id The ID of the estimation to retrieve
+     * @return The estimation specification
      */
     @GET
     @Path("{id}")
@@ -215,9 +217,9 @@ public class EstimationService extends AbstractDaoService {
     }
     
     /**
-     *
-     * @param id
-     * @return
+     * Export the full estimation specification for exchange between environments
+     * @param id The ID of the estimation
+     * @return The full estimation specification
      */
     @GET
     @Path("{id}/export")
@@ -238,18 +240,18 @@ public class EstimationService extends AbstractDaoService {
         expression.setOrganizationName(this.organizationName);
         
         // Retrieve the cohort definition details
-        List<EstimationCohortDefinition> detailedList = new ArrayList<>();
-        for (EstimationCohortDefinition c : expression.getCohortDefinitions()) {
+        List<AnalysisCohortDefinition> detailedList = new ArrayList<>();
+        for (AnalysisCohortDefinition c : expression.getCohortDefinitions()) {
             CohortDefinition cd = cohortDefinitionRepository.findOneWithDetail(c.getId());
-            detailedList.add(new EstimationCohortDefinition(cd));
+            detailedList.add(new AnalysisCohortDefinition(cd));
         }
         expression.setCohortDefinitions(detailedList);
         
         // Retrieve the concept set expressions
-        List<EstimationConceptSet> ecsList = new ArrayList<>();
+        List<AnalysisConceptSet> ecsList = new ArrayList<>();
         Map<Integer, List<Long>> conceptIdentifiers = new HashMap<>();
         Map<Integer, ConceptSetExpression> csExpressionList = new HashMap<>();
-        for (EstimationConceptSet pcs : expression.getConceptSets()) {
+        for (AnalysisConceptSet pcs : expression.getConceptSets()) {
             pcs.expression = conceptSetService.getConceptSetExpression(pcs.id);
             csExpressionList.put(pcs.id, pcs.expression);
             ecsList.add(pcs);
@@ -310,10 +312,114 @@ public class EstimationService extends AbstractDaoService {
     }
     
     /**
-     *
-     * @param id
-     * @param packageName
-     * @return
+     * Import the full estimation specification
+     * @param analysis The full estimation specification
+     * @return The newly imported estimation
+     */
+    @POST
+    @Path("import")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public EstimationDTO importAnalysis(EstimationAnalysisImpl analysis) {
+        try {
+            if (analysis.getEstimationAnalysisSettings().getEstimationType() != EstimationTypeEnum.COMPARATIVE_COHORT_ANALYSIS) {
+                String estimationType = analysis.getEstimationAnalysisSettings().getEstimationType().name();
+                throw new UnsupportedOperationException("Cannot import " + estimationType);
+            }
+            
+            // Open up the analysis and get the relevant portions for import
+            Settings settings = analysis.getEstimationAnalysisSettings().getAnalysisSpecification();
+            ComparativeCohortAnalysisImpl ccaSpec = (ComparativeCohortAnalysisImpl) settings;
+            List<TargetComparatorOutcomesImpl> tcoList = ccaSpec.getTargetComparatorOutcomes();
+            List<CohortMethodAnalysisImpl> ccaList = ccaSpec.getCohortMethodAnalysisList();
+            
+            // Create all of the cohort definitions 
+            // and map the IDs from old -> new
+            Map<Long, Long> cohortIds = new HashMap<>();
+            AnalysisCohortDefinitionImportService cohortImportService = new AnalysisCohortDefinitionImportService(security, userRepository, cohortDefinitionRepository);
+            analysis.getCohortDefinitions().forEach((analysisCohortDefinition) -> {
+                CohortDefinition cd = cohortImportService.persistCohort(analysisCohortDefinition);
+                cohortIds.put(Long.valueOf(analysisCohortDefinition.getId()), Long.valueOf(cd.getId()));
+                analysisCohortDefinition.setId(cd.getId());
+                log.debug("cohort created: " + cd.getId());
+            });
+            
+            // Create all of the concept sets and map
+            // the IDs from old -> new
+            Map<Integer, Integer> conceptSetIdMap = new HashMap<>();
+            AnalysisConceptSetImportService conceptSetImportService = new AnalysisConceptSetImportService(conceptSetService);
+            analysis.getConceptSets().forEach((pcs) -> { 
+               int oldId = pcs.id;
+               ConceptSetDTO cs = conceptSetImportService.persistConceptSet(pcs);
+               pcs.id = cs.getId();
+               conceptSetIdMap.put(oldId, cs.getId());
+                log.debug("concept set created: " + cs.getId());
+            });
+            
+            // Replace all of the T/C/Os with the new IDs
+            tcoList.forEach((tco) -> {
+                // Get the new IDs
+                Long newT = cohortIds.get(tco.getTargetId());
+                Long newC = cohortIds.get(tco.getComparatorId());
+                List<Long> newOs = new ArrayList<>();
+                tco.getOutcomeIds().forEach((o) -> {
+                    newOs.add(cohortIds.get(o));
+                });
+                // Set the TCO to use the new IDs
+                tco.setTargetId(newT);
+                tco.setComparatorId(newC);
+                tco.setOutcomeIds(newOs);
+                // Clear any included/excluded covarite concept ids
+                tco.setExcludedCovariateConceptIds(new ArrayList<>());
+                tco.setIncludedCovariateConceptIds(new ArrayList<>());
+            });
+            
+            // Replace all of the negative controls with the new IDs
+            analysis.getNegativeControls().forEach((nc) -> {
+                Long newT = cohortIds.get(nc.getTargetId());
+                Long newC = cohortIds.get(nc.getComparatorId());
+                nc.setTargetId(newT);
+                nc.setComparatorId(newC);
+                // No need to set the outcomes since these are concept IDs
+                // and will transfer in fine
+            });
+            
+            // Replace all of the concept sets
+            analysis.getConceptSetCrossReference().forEach((ConceptSetCrossReferenceImpl xref) -> {
+                Integer newConceptSetId = conceptSetIdMap.get(xref.getConceptSetId());
+                xref.setConceptSetId(newConceptSetId);
+            });
+            
+            // Clear all of the concept IDs from the covariate settings
+            ccaList.forEach((cca) -> {
+                cca.getDbCohortMethodDataArgs().getCovariateSettings().setIncludedCovariateConceptIds(new ArrayList<>());
+                cca.getDbCohortMethodDataArgs().getCovariateSettings().setExcludedCovariateConceptIds(new ArrayList<>());
+            });
+            analysis.getPositiveControlSynthesisArgs().getCovariateSettings().setIncludedCovariateConceptIds(new ArrayList<>());
+            analysis.getPositiveControlSynthesisArgs().getCovariateSettings().setExcludedCovariateConceptIds(new ArrayList<>());
+            
+            // Remove the ID
+            analysis.setId(null);
+            
+            // Create the estimation 
+            Estimation est = new Estimation();
+            est.setDescription(analysis.getDescription());
+            est.setName(String.format(ENTITY_COPY_PREFIX, analysis.getName()));
+            est.setType(EstimationTypeEnum.COMPARATIVE_COHORT_ANALYSIS);
+            est.setSpecification(Utils.serialize(analysis));
+            
+            return this.createEstimation(est);
+        } catch (RuntimeException e) {
+            log.debug("Error whie importing estimation analysis: " + e.getMessage());
+            throw e;
+        }
+    }
+    
+    /**
+     * Download an R package to execute the estimation study
+     * @param id The id for the estimation study
+     * @param packageName The R package name for the study
+     * @return Binary zip file containing the full R package
      * @throws IOException
      */
     @GET

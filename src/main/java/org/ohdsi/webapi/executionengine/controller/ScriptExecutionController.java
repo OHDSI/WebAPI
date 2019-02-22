@@ -29,6 +29,7 @@ import org.ohdsi.webapi.executionengine.service.ExecutionEngineStatusService;
 import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
+import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.springframework.batch.core.Job;
@@ -46,7 +47,6 @@ import org.springframework.stereotype.Component;
 public class ScriptExecutionController {
 
     private final Log logger = LogFactory.getLog(ScriptExecutionController.class);
-    private static final String DATASOURCE_PERMISSION = "cohortdefinition:*:generate:%s:get";
     private static final String FORBIDDEN_MESSAGE = "Access to source with key %s is forbidden";
 
     @Value("${executionengine.resultCallback}")
@@ -63,8 +63,7 @@ public class ScriptExecutionController {
     private final EntityManager entityManager;
     private final ExecutionEngineStatusService executionEngineStatusService;
     private SourceRepository sourceRepository;
-    @Value("#{!'${security.provider}'.equals('DisabledSecurity')}")
-    private boolean securityEnabled;
+    private final PermissionManager permissionManager;
 
     @Autowired
     public ScriptExecutionController(final ScriptExecutionService scriptExecutionService,
@@ -74,7 +73,8 @@ public class ScriptExecutionController {
                                      final AnalysisExecutionRepository analysisExecutionRepository,
                                      final EntityManager entityManager,
                                      final ExecutionEngineStatusService executionEngineStatusService,
-                                     final SourceRepository sourceRepository) {
+                                     final SourceRepository sourceRepository,
+                                     final PermissionManager permissionManager) {
 
         this.scriptExecutionService = scriptExecutionService;
         this.stepBuilderFactory = stepBuilderFactory;
@@ -84,6 +84,7 @@ public class ScriptExecutionController {
         this.entityManager = entityManager;
         this.executionEngineStatusService = executionEngineStatusService;
         this.sourceRepository = sourceRepository;
+        this.permissionManager = permissionManager;
     }
 
     @Path("execution/run")
@@ -95,7 +96,7 @@ public class ScriptExecutionController {
         logger.info("Received an execution script to run");
         Source source = sourceRepository.findBySourceKey(dto.sourceKey);
 
-        if (securityEnabled && !SecurityUtils.getSubject().isPermitted(String.format(DATASOURCE_PERMISSION, source.getSourceKey()))) {
+        if (!permissionManager.hasSourceAccess(source)) {
             throw new ForbiddenException(String.format(FORBIDDEN_MESSAGE, source.getSourceKey()));
         }
 

@@ -1,27 +1,7 @@
 package org.ohdsi.webapi.pathway;
 
-import static java.util.stream.Collectors.summingInt;
-import static org.ohdsi.webapi.Constants.GENERATE_PATHWAY_ANALYSIS;
-import static org.ohdsi.webapi.Constants.Params.JOB_AUTHOR;
-import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
-import static org.ohdsi.webapi.Constants.Params.PATHWAY_ANALYSIS_ID;
-import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
-
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.google.common.base.MoreObjects;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.StringJoiner;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import javax.persistence.EntityManager;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
@@ -29,6 +9,7 @@ import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfo
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
+import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.pathway.converter.SerializedPathwayAnalysisToPathwayAnalysisConverter;
@@ -69,10 +50,30 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.StringJoiner;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.summingInt;
+import static org.ohdsi.webapi.Constants.GENERATE_PATHWAY_ANALYSIS;
+import static org.ohdsi.webapi.Constants.Params.JOB_AUTHOR;
+import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
+import static org.ohdsi.webapi.Constants.Params.PATHWAY_ANALYSIS_ID;
+import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
+
 @Service
 @Transactional
-public class PathwayServiceImpl extends AbstractDaoService implements PathwayService {
-
+public class PathwayServiceImpl extends AbstractDaoService implements PathwayService, GeneratesNotification {
     private final PathwayAnalysisEntityRepository pathwayAnalysisRepository;
     private final PathwayAnalysisGenerationRepository pathwayAnalysisGenerationRepository;
     private final SourceService sourceService;
@@ -512,4 +513,13 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         return pathwayAnalysis;
     }
 
+    @Override
+    public String getJobName() {
+        return GENERATE_PATHWAY_ANALYSIS;
+    }
+
+    @Override
+    public String getExecutionFoldingKey() {
+        return PATHWAY_ANALYSIS_ID;
+    }
 }

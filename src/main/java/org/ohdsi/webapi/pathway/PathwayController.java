@@ -1,21 +1,6 @@
 package org.ohdsi.webapi.pathway;
 
-import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
-
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.Pagination;
 import org.ohdsi.webapi.common.SourceMapKey;
@@ -42,6 +27,22 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
 
 @Path("/pathway-analysis")
 @Controller

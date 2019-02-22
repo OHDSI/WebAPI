@@ -8,6 +8,7 @@ import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.ExpressionType;
 
+@JsonIgnoreProperties(ignoreUnknown=true)
 public class AnalysisCohortDefinition implements Cohort {
   String dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
   private SimpleDateFormat dateFormatter;

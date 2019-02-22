@@ -4,10 +4,11 @@ import org.ohdsi.webapi.source.Source;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SourceAccessor extends BaseDataSourceAccessor implements DataSourceAccessor<Source> {
+public class SourceAccessor extends BaseDataSourceAccessor<Source> {
 
   @Override
-  public void checkAccess(Source source) {
-    checkSourceAccess(source);
+  protected Source extractSource(Source source) {
+
+    return source;
   }
 }

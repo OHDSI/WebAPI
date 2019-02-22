@@ -28,6 +28,7 @@ import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
+import org.ohdsi.webapi.shiro.management.datasource.SourceIdAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
@@ -122,6 +123,9 @@ public class CohortDefinitionService extends AbstractDaoService {
 
   @Autowired
   private CohortGenerationSensitiveInfoService sensitiveInfoService;
+
+  @Autowired
+  private SourceIdAccessor sourceIdAccessor;
 
 	@PersistenceContext
 	protected EntityManager entityManager;
@@ -528,7 +532,8 @@ public class CohortDefinitionService extends AbstractDaoService {
     }
     Set<CohortGenerationInfo> infoList = def.getGenerationInfoList();
 
-    List<CohortGenerationInfo> result = new ArrayList<>(infoList);
+    List<CohortGenerationInfo> result = infoList.stream().filter(genInfo -> sourceIdAccessor.hasAccess(genInfo.getId().getSourceId())).collect(Collectors.toList());
+
     Map<Integer, SourceInfo> sourceMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_ID);
     return sensitiveInfoService.filterSensitiveInfo(result, gi -> Collections.singletonMap(Constants.Variables.SOURCE, sourceMap.get(gi.getId().getSourceId())));
   }

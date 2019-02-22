@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.executionengine.controller;
 
-import org.ohdsi.webapi.executionengine.entity.AnalysisExecution;
 import org.ohdsi.webapi.executionengine.repository.AnalysisExecutionRepository;
 import org.ohdsi.webapi.executionengine.service.ExecutionEngineStatus;
 import org.ohdsi.webapi.executionengine.service.ExecutionEngineStatusService;
@@ -68,92 +67,12 @@ public class ScriptExecutionController implements GeneratesNotification {
         this.sourceRepository = sourceRepository;
     }
 
- /*   @Path("execution/run")
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public JobExecutionResource runScript(ExecutionRequestDTO dto) {
-
-        logger.info("Received an execution script to run");
-        Source source = sourceRepository.findBySourceKey(dto.sourceKey);
-
-        JobParametersBuilder parametersBuilder = new JobParametersBuilder();
-        parametersBuilder.addString(JOB_NAME, String.format("Generate %s %d: %s (%s)", dto.analysisType, dto.cohortId,
-                source.getSourceName(), dto.sourceKey));
-        parametersBuilder.addString(FOLDING_KEY, dto.analysisType.name() + dto.cohortId);
-        parametersBuilder.addString(COHORT_ID, String.valueOf(dto.cohortId));
-        parametersBuilder.addString(SCRIPT_TYPE, dto.analysisType.name());
-        final JobParameters jobParameters = parametersBuilder.toJobParameters();
-
-        RunExecutionEngineTasklet runExecutionEngineTasklet = new RunExecutionEngineTasklet(scriptExecutionService, source, analysisFile);
-        ExecutionEngineCallbackTasklet callbackTasklet = new ExecutionEngineCallbackTasklet(analysisExecutionRepository, entityManager);
-        CreateAnalysisTasklet createAnalysisTasklet = new CreateAnalysisTasklet(scriptExecutionService, dto);
-
-        Step analysisCreationStep = stepBuilderFactory.get("executionEngine.create-analysis")
-                .tasklet(createAnalysisTasklet)
-                .build();
-
-        Step runExecutionStep = stepBuilderFactory.get("executionEngine.start")
-                .tasklet(runExecutionEngineTasklet)
-                .build();
-
-        Step waitCallbackStep = stepBuilderFactory.get("executionEngine.callback")
-                .tasklet(callbackTasklet)
-                .build();
-
-        Job runExecutionJob = jobBuilders.get(NAME)
-                .start(analysisCreationStep)
-                .next(runExecutionStep)
-                .next(waitCallbackStep)
-                .build();
-
-        return jobTemplate.launch(runExecutionJob, jobParameters);
-    }*/
-
     @Path("execution/status/{executionId}")
     @GET
     public String getStatus(@PathParam("executionId") Long executionId) {
 
         return scriptExecutionService.getExecutionStatus(executionId);
     }
-
-/*    @Path("execution/results/{executionId}")
-    @GET
-    @Produces("application/zip")
-    public Response getResults(@PathParam("executionId") Long executionId) throws IOException {
-
-        java.nio.file.Path tempDirectory = Files.createTempDirectory("atlas_ee_arch");
-        String fileName = "execution_" + executionId + "_result.zip";
-        File archive = tempDirectory.resolve(fileName).toFile();
-
-        try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(archive))) {
-            List<AnalysisResultFile> outputFiles = scriptExecutionService.getExecutionResultFiles(executionId);
-            for (AnalysisResultFile resultFile : outputFiles) {
-                ZipEntry entry = new ZipEntry(resultFile.getFileName());
-                entry.setSize(resultFile.getContents().length);
-                zos.putNextEntry(entry);
-                zos.write(resultFile.getContents());
-                zos.closeEntry();
-            }
-        }
-
-        Response.ResponseBuilder response = Response.ok(archive);
-        response.header("Content-type", "application/zip");
-        response.header("Content-Disposition",
-                "attachment; filename=\"" + fileName + "\"");
-        return response.build();
-    }*/
-
-/*
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("{type}/{id}/executions")
-    public Iterable<AnalysisExecution> getAnalysisExecutions(@PathParam("type") AnalysisExecutionType type,
-                                                             @PathParam("id") Integer id){
-
-        return analysisExecutionRepository.findByAnalysisIdAndAnalysisType(id, type);
-    }
-*/
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)

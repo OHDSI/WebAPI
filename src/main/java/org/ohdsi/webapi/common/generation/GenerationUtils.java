@@ -1,10 +1,5 @@
 package org.ohdsi.webapi.common.generation;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortcharacterization.CreateCohortTableTasklet;
 import org.ohdsi.webapi.cohortcharacterization.DropCohortTableListener;
@@ -26,7 +21,6 @@ import org.ohdsi.webapi.sqlrender.SourceAwareSqlRender;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.SourceUtils;
 import org.ohdsi.webapi.util.TempTableCleanupManager;
-import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
@@ -171,14 +165,10 @@ public class GenerationUtils extends AbstractDaoService {
                 .tasklet(callbackTasklet)
                 .build();
 
-        JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
-        DropCohortTableListener dropCohortTableListener = new DropCohortTableListener(jdbcTemplate, transactionTemplate, sourceService, sourceAwareSqlRender);
-
         return jobBuilders.get(analysisTypeName)
                 .start(createAnalysisExecutionStep)
                 .next(runExecutionStep)
                 .next(waitCallbackStep)
-                .listener(dropCohortTableListener)
                 .listener(new AutoremoveJobListener(jobService));
     }
 }

@@ -56,8 +56,6 @@ public interface Constants {
     String GOOGLE = "AtlasGoogleSecurity";
   }
 
-  List<String> REQUIRE_COLLAPSE_PS_DBMS = ImmutableList.of(DBMSType.MS_SQL_SERVER.getOhdsiDB(), DBMSType.PDW.getOhdsiDB());
-
   interface Templates {
 
     String ENTITY_COPY_PREFIX = "COPY OF: %s";

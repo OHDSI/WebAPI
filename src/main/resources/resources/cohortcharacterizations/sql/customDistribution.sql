@@ -20,8 +20,8 @@ insert into
       strata_id,
       strata_name,
      cc_generation_id)
- select 'DISTRIBUTION' as type,
-        'CUSTOM_FE' as fa_type,
+ select CAST('DISTRIBUTION' AS VARCHAR(255)) as type,
+        CAST('CUSTOM_FE' AS VARCHAR(255)) as fa_type,
         covariate_id,
         covariate_name,
         @analysisId as analysis_id,

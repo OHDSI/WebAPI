@@ -16,6 +16,7 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
 import com.google.common.collect.ImmutableList;
+import com.odysseusinc.arachne.commons.types.DBMSType;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.impl.factory.Lists;
@@ -26,6 +27,7 @@ import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.featureExtraction.FeatureExtraction;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
+import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConverter;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcParamEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcStrataEntity;
@@ -189,9 +191,9 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
                     .stream()
                     .filter(FeAnalysisEntity::isCustom)
                     .filter(v -> v.getStatType() == CcResultType.DISTRIBUTION)
-                    .map(v -> prepareStatement(customDistributionQueryWrapper, sessionId,
+                    .flatMap(v -> prepareStatements(customDistributionQueryWrapper, sessionId,
                             CUSTOM_PARAMETERS,
-                            new String[] { String.valueOf(v.getId()), org.springframework.util.StringUtils.quote(v.getName()), String.valueOf(cohortId), String.valueOf(jobId), renderCustomAnalysisDesign((FeAnalysisWithStringEntity) v, cohortId)}))
+                            new String[] { String.valueOf(v.getId()), org.springframework.util.StringUtils.quote(v.getName()), String.valueOf(cohortId), String.valueOf(jobId), renderCustomAnalysisDesign((FeAnalysisWithStringEntity) v, cohortId)}).stream())
                     .collect(Collectors.toList());
         }
         
@@ -200,9 +202,9 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
                     .stream()
                     .filter(FeAnalysisEntity::isCustom)
                     .filter(v -> v.getStatType() == CcResultType.PREVALENCE)
-                    .map(v -> prepareStatement(customPrevalenceQueryWrapper, sessionId,
+                    .flatMap(v -> prepareStatements(customPrevalenceQueryWrapper, sessionId,
                             CUSTOM_PARAMETERS,
-                            new String[] { String.valueOf(v.getId()), org.springframework.util.StringUtils.quote(v.getName()), String.valueOf(cohortId), String.valueOf(jobId), renderCustomAnalysisDesign((FeAnalysisWithStringEntity) v, cohortId)}))
+                            new String[] { String.valueOf(v.getId()), org.springframework.util.StringUtils.quote(v.getName()), String.valueOf(cohortId), String.valueOf(jobId), renderCustomAnalysisDesign((FeAnalysisWithStringEntity) v, cohortId)}).stream())
                     .collect(Collectors.toList());
         }
 
@@ -251,7 +253,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
                         + "standard_deviation, median_value, p10_value, p25_value, p75_value, p90_value";
                 final String distFeatures = String.format(cohortWrapper, cohortId, distColumns,
                         StringUtils.stripEnd(jsonObject.getString("sqlQueryContinuousFeatures"), ";"));
-                queries.add(prepareStatement(distributionRetrievingQuery, sessionId, RETRIEVING_PARAMETERS,
+                queries.addAll(prepareStatements(distributionRetrievingQuery, sessionId, RETRIEVING_PARAMETERS,
                         new String[] { distFeatures, featureRefs, analysisRefs, String.valueOf(cohortId), String.valueOf(jobId) }, sqlParamNames, sqlParamVars));
             }
             if (ccHasPresetPrevalenceAnalyses()) {
@@ -259,7 +261,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
                 final String features = String.format(cohortWrapper, cohortId, featureColumns,
                         StringUtils.stripEnd(jsonObject.getString("sqlQueryFeatures"), ";"));
                 String[] paramValues = new String[]{ features, featureRefs, analysisRefs, String.valueOf(cohortId), String.valueOf(jobId) };
-                queries.add(prepareStatement(prevalenceRetrievingQuery, sessionId, RETRIEVING_PARAMETERS, paramValues, sqlParamNames, sqlParamVars));
+                queries.addAll(prepareStatements(prevalenceRetrievingQuery, sessionId, RETRIEVING_PARAMETERS, paramValues, sqlParamNames, sqlParamVars));
             }
 
             return queries;
@@ -291,7 +293,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
 
             Long conceptId = 0L;
             String queryFile;
-            String groupQuery = getCriteriaGroupQuery(analysis, feature, Objects.nonNull(strata)  ? "qualified_events" : "#qualified_events");
+            String groupQuery = getCriteriaGroupQuery(analysis, feature, "qualified_events");
             String[] paramNames = CRITERIA_PARAM_NAMES.toArray(new String[0]);
 
             if (CcResultType.PREVALENCE.equals(analysis.getStatType())) {
@@ -309,8 +311,8 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
 
             return Arrays.stream(SqlSplit.splitSql(queryFile))
                     .map(COMPLETE_DOTCOMMA)
-                    .map(sql -> prepareStatement(sql, sessionId, CRITERIA_REGEXES, criteriaValues,
-                            paramNames, paramValues.toArray(new Object[0])))
+                    .flatMap(sql -> prepareStatements(sql, sessionId, CRITERIA_REGEXES, criteriaValues,
+                            paramNames, paramValues.toArray(new Object[0])).stream())
                     .collect(Collectors.toList());
         }
 
@@ -346,9 +348,9 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
                     .flatMap(strata -> getStrataQuery(cohortDefinitionId, strata).stream())
                     .collect(Collectors.toList()));
 
-            strataCohortQueries.add(prepareStatement("TRUNCATE TABLE #Codesets;\n", sessionId));
-            strataCohortQueries.add(prepareStatement("DROP TABLE #Codesets;\n", sessionId));
-            PreparedStatementUtils.addAll(queriesToRun, strataCohortQueries, source);
+            strataCohortQueries.addAll(prepareStatements("TRUNCATE TABLE #Codesets;\n", sessionId));
+            strataCohortQueries.addAll(prepareStatements("DROP TABLE #Codesets;\n", sessionId));
+            queriesToRun.addAll(strataCohortQueries);
 
             //Extract features from stratified cohorts
             queriesToRun.addAll(cohortCharacterization.getStratas().stream()
@@ -358,13 +360,13 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
                       queries.addAll(getCreateQueries(jsonObject));
                       queries.addAll(getFeatureAnalysesQueries(jsonObject, cohortDefinitionId, strata));
                       queries.addAll(getCleanupQueries(jsonObject));
-                      return PreparedStatementUtils.collapse(queries, source).stream();
+                      return queries.stream();
                     })
                     .collect(Collectors.toList()));
 
             //Cleanup stratified cohorts tables
             queriesToRun.addAll(cohortCharacterization.getStratas().stream()
-                    .map(strata -> prepareStatement("DROP TABLE " + getStrataCohortTable(strata) + ";", sessionId))
+                    .flatMap(strata -> prepareStatements("DROP TABLE " + getStrataCohortTable(strata) + ";", sessionId).stream())
                     .collect(Collectors.toList()));
 
             return queriesToRun;
@@ -377,12 +379,12 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             String[] paramNames = STRATA_PARAM_NAMES.toArray(new String[0]);
             String[] replacements = new String[]{ strataQuery, "0", cohortTable, getStrataCohortTable(strata), eventsTable };
             Object[] paramValues = new Object[]{ cohortDefinitionId, strata.getId() };
-            queries.add(prepareStatement("CREATE TABLE " + getStrataCohortTable(strata)
+            queries.addAll(prepareStatements("CREATE TABLE " + getStrataCohortTable(strata)
                     + "(cohort_definition_id INTEGER, strata_id BIGINT, subject_id BIGINT, cohort_start_date DATE, cohort_end_date DATE);", sessionId));
             String[] statements = SqlSplit.splitSql(COHORT_STRATA_QUERY);
             queries.addAll(Arrays.stream(statements)
                     .map(COMPLETE_DOTCOMMA)
-                    .flatMap(q -> prepareMultipleStatements(q, sessionId, STRATA_REGEXES, replacements, paramNames, paramValues).stream())
+                    .flatMap(q -> prepareStatements(q, sessionId, STRATA_REGEXES, replacements, paramNames, paramValues).stream())
                     .collect(Collectors.toList())
             );
             return queries;
@@ -396,9 +398,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
         private List<PreparedStatementCreator> getCodesetQuery(Collection<ConceptSet> conceptSets) {
 
             String codesetQuery = queryBuilder.getCodesetQuery(conceptSets.toArray(new ConceptSet[0]));
-            return Arrays.stream(SqlSplit.splitSql(codesetQuery))
-                    .map(sql -> prepareStatement(sql, sessionId))
-                    .collect(Collectors.toList());
+            return new ArrayList<>(prepareStatements(codesetQuery, sessionId));
         }
 
         private List<PreparedStatementCreator> getCriteriaFeaturesQueries(Integer cohortDefinitionId, FeAnalysisWithCriteriaEntity<?> analysis, String targetTable, CcStrataEntity strata) {
@@ -410,41 +410,11 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
                     .map(feature -> getCriteriaFeatureQuery(cohortDefinitionId, analysis, feature, targetTable, strata))
                     .flatMap(Collection::stream)
                     .collect(Collectors.toList())); // statistics queries
-            queriesToRun.add(prepareStatement("DROP TABLE #Codesets;", sessionId));
+            queriesToRun.addAll(prepareStatements("DROP TABLE #Codesets;", sessionId));
             return queriesToRun;
         }
 
-        private PreparedStatementRendererCreator prepareStatement(String query, String sessionId) {
-
-          return prepareStatement(query, sessionId, new String[0], new String[0]);
-        }
-
-        private PreparedStatementRendererCreator prepareStatement(String query, String sessionId, String[] regexes, String[] variables) {
-
-            return prepareStatement(query, sessionId, regexes, variables, new String[0], new Object[0]);
-        }
-
-        private PreparedStatementRendererCreator prepareStatement(String query, String sessionId, String[] regexes, String[] variables, String[] paramNames, Object[] paramValues) {
-            final String resultsQualifier = SourceUtils.getResultsQualifier(source);
-            final String cdmQualifier = SourceUtils.getCdmQualifier(source);
-            final String tempQualifier = SourceUtils.getTempQualifier(source, resultsQualifier);
-            final String vocabularyQualifier = SourceUtils.getVocabularyQualifier(source);
-            final String[] tmpRegexes = ArrayUtils.addAll(regexes, DAIMONS);
-            final String[] tmpValues = ArrayUtils.addAll(variables, resultsQualifier, cdmQualifier, tempQualifier, vocabularyQualifier);
-            final String sql = SqlRender.renderSql(query, tmpRegexes, tmpValues);
-            return new PreparedStatementRendererCreator(
-                    new PreparedStatementRenderer(
-                            source,
-                            sql,
-                            tmpRegexes,
-                            tmpValues,
-                            paramNames,
-                            paramValues,
-                            sessionId
-                    ));
-        }
-
-        private Collection<PreparedStatementCreator> prepareMultipleStatements(String query, String sessionId, String[] regexes, String[] variables, String[] paramNames, Object[] paramValues) {
+        private Collection<PreparedStatementCreator> prepareStatements(String query, String sessionId, String[] regexes, String[] variables, String[] paramNames, Object[] paramValues) {
 
             final String resultsQualifier = SourceUtils.getResultsQualifier(source);
             final String cdmQualifier = SourceUtils.getCdmQualifier(source);
@@ -452,33 +422,73 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             final String vocabularyQualifier = SourceUtils.getVocabularyQualifier(source);
             final String[] tmpRegexes = ArrayUtils.addAll(regexes, DAIMONS);
             final String[] tmpValues = ArrayUtils.addAll(variables, resultsQualifier, cdmQualifier, tempQualifier, vocabularyQualifier);
-            final String sql = SqlRender.renderSql(query, tmpRegexes, tmpValues);
-            PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, tmpRegexes, tmpValues, paramNames, paramValues,
-                    sessionId);
-            String translatedSql = psr.getSql();
-            PreparedStatementSetter setter = psr.getSetter();
-            List<Object> orderedParams = psr.getOrderedParamsList();
+
+            String sql = SqlRender.renderSql(query, tmpRegexes, tmpValues);
+
+            /*
+             * There is an issue with temp tables on sql server: Temp tables scope is session or stored procedure.
+             * To execute PreparedStatement sql server uses stored procedure <i>sp_executesql</i>
+             * and this is the reason why multiple PreparedStatements cannot share the same local temporary table.
+             *
+             * On the other side, temp tables cannot be re-used in the same PreparedStatement, e.g. temp table cannot be created, used, dropped
+             * and created again in the same PreparedStatement because sql optimizator detects object already exists and fails.
+             * When is required to re-use temp table it should be separated to several PreparedStatements.
+             *
+             * An option to use global temp tables also doesn't work since such tables can be not supported / disabled.
+             *
+             * Therefore, there are two ways:
+             * - either precisely group SQLs into statements so that temp tables aren't re-used in a single statement,
+             * - or use ‘permenant temporary tables’
+             *
+             * The second option looks better since such SQL could be exported and executed manually,
+             * which is not the case with the first option.
+             */
+            if (ImmutableList.of(DBMSType.MS_SQL_SERVER.getOhdsiDB(), DBMSType.PDW.getOhdsiDB()).contains(source.getSourceDialect())) {
+              sql = sql
+                .replaceAll("#", tempQualifier + "." + sessionId + "_")
+                .replaceAll("tempdb\\.\\.", "");
+            }
+            String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect(), sessionId, tempQualifier);
+
             String[] stmts = SqlSplit.splitSql(translatedSql);
-            return Arrays.stream(stmts).map(s -> new PreparedStatementWithParamsCreator() {
-                        @Override
-                        public String getSql() {
-                            return s;
-                        }
 
-                        @Override
-                        public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
-                            PreparedStatement statement = con.prepareStatement(s);
-                            if (Objects.nonNull(setter) && s.contains("?")) {
-                                setter.setValues(statement);
-                            }
-                            return statement;
-                        }
+            return Arrays.stream(stmts).map(stmt -> {
+                PreparedStatementRenderer psr = new PreparedStatementRenderer(null, stmt, tmpRegexes, tmpValues, paramNames, paramValues, sessionId);
+                String translatedStatement = psr.getSql();
+                PreparedStatementSetter setter = psr.getSetter();
+                List<Object> orderedParams = psr.getOrderedParamsList();
+                return new PreparedStatementWithParamsCreator() {
+                    @Override
+                    public String getSql() {
+                        return translatedStatement;
+                    }
 
-                        @Override
-                        public List<Object> getOrderedParamsList() {
-                            return Objects.nonNull(setter) && s.contains("?") ? orderedParams : null;
+                    @Override
+                    public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
+                        PreparedStatement statement = con.prepareStatement(translatedStatement);
+                        if (Objects.nonNull(setter) && translatedStatement.contains("?")) {
+                            setter.setValues(statement);
                         }
-                    }).collect(Collectors.toList());
+                        return statement;
+                    }
+
+                    @Override
+                    public List<Object> getOrderedParamsList() {
+                        return Objects.nonNull(setter) && translatedStatement.contains("?") ? orderedParams : null;
+                    }
+                };
+            })
+            .collect(Collectors.toList());
+        }
+
+        private Collection<PreparedStatementCreator> prepareStatements(String query, String sessionId, String[] regexes, String[] variables) {
+
+            return prepareStatements(query, sessionId, regexes, variables, new String[]{}, new Object[]{});
+        }
+
+        private Collection<PreparedStatementCreator> prepareStatements(String query, String sessionId) {
+
+            return prepareStatements(query, sessionId, new String[]{}, new String[]{}, new String[]{}, new Object[]{});
         }
 
         private List<PreparedStatementCreator> getSqlQueriesToRun(final JSONObject jsonObject, final Integer cohortDefinitionId) {
@@ -489,7 +499,8 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
                 ccQueries.addAll(getCreateQueries(jsonObject));
                 ccQueries.addAll(getFeatureAnalysesQueries(jsonObject, cohortDefinitionId, null));
                 ccQueries.addAll(getCleanupQueries(jsonObject));
-                PreparedStatementUtils.addAll(queriesToRun, ccQueries, source);
+
+                queriesToRun.addAll(ccQueries);
             }
 
             if (!cohortCharacterization.getStratas().isEmpty()) {
@@ -508,7 +519,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
 
             return Arrays.stream(SqlSplit.splitSql(jsonObject.getString("sqlConstruction")))
                     .map(COMPLETE_DOTCOMMA)
-                    .map(sql -> prepareStatement(sql, sessionId))
+                    .flatMap(sql -> prepareStatements(sql, sessionId).stream())
                     .collect(Collectors.toList());
         }
 
@@ -516,7 +527,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
 
             return Arrays.stream(SqlSplit.splitSql(jsonObject.getString("sqlCleanup")))
                     .map(COMPLETE_DOTCOMMA)
-                    .map(sql -> prepareStatement(sql, sessionId))
+                    .flatMap(sql -> prepareStatements(sql, sessionId).stream())
                     .collect(Collectors.toList());
         }
 

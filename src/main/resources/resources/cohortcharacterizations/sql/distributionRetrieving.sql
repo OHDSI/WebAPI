@@ -1,8 +1,8 @@
 insert into @results_database_schema.cc_results (type, fa_type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id,
     count_value, min_value, max_value, avg_value, stdev_value, median_value,
     p10_value, p25_value, p75_value, p90_value, strata_id, strata_name, cohort_definition_id, cc_generation_id)
-  select 'DISTRIBUTION' as type,
-    'PRESET' as fa_type,
+  select CAST('DISTRIBUTION' AS VARCHAR(255)) as type,
+    CAST('PRESET' AS VARCHAR(255)) as fa_type,
     f.covariate_id,
     fr.covariate_name,
     ar.analysis_id,

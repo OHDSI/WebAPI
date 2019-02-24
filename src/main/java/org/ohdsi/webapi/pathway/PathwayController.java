@@ -1,17 +1,17 @@
 package org.ohdsi.webapi.pathway;
 
-import com.google.common.collect.ImmutableMap;
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.Pagination;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.CommonGenerationDTO;
 import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
+import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.pathway.converter.SerializedPathwayAnalysisToPathwayAnalysisConverter;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisGenerationEntity;
-import org.ohdsi.webapi.pathway.dto.PathwayAnalysisExportDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
+import org.ohdsi.webapi.pathway.dto.PathwayAnalysisExportDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayCodeDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayPopulationEventDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayPopulationResultsDTO;
@@ -168,13 +168,13 @@ public class PathwayController {
     @Path("/{id}/generation/{sourceKey}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public void generatePathways(
+    public JobExecutionResource generatePathways(
             @PathParam("id") final Integer pathwayAnalysisId,
             @PathParam("sourceKey") final String sourceKey
     ) {
 
         Source source = sourceService.findBySourceKey(sourceKey);
-        pathwayService.generatePathways(pathwayAnalysisId, source.getSourceId());
+        return pathwayService.generatePathways(pathwayAnalysisId, source.getSourceId());
     }
 
     @DELETE

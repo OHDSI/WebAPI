@@ -86,6 +86,7 @@ public class ShiroConfiguration {
   }
 
   @Bean
+  @ConditionalOnMissingBean(value = DisabledSecurity.class)
   public DataSourceAccessBeanPostProcessor dataSourceAccessBeanPostProcessor(DataSourceAccessParameterResolver parameterResolver) {
 
     return new DataSourceAccessBeanPostProcessor(parameterResolver);

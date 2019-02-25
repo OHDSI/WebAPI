@@ -168,6 +168,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         execution.setExecutionStatus(ExecutionEngineAnalysisStatus.Status.STARTED);
         execution.setUpdatePassword(password);
         execution.setJobExecutionId(jobId);
+        execution.setSource(source);
         ExecutionEngineAnalysisStatus saved = analysisExecutionRepository.saveAndFlush(execution);
         if (Objects.nonNull(analysisFiles)) {
             analysisFiles.forEach(file -> file.setAnalysisExecution(saved));

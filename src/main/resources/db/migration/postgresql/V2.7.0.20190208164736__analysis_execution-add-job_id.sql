@@ -1,10 +1,12 @@
 ALTER TABLE ${ohdsiSchema}.analysis_execution ADD IF NOT EXISTS job_execution_id BIGINT;
-ALTER TABLE ${ohdsiSchema}.analysis_execution DROP COLUMN IF EXISTS analysis_type;
-ALTER TABLE ${ohdsiSchema}.output_files ADD IF NOT EXISTS media_type VARCHAR(255);
 
-UPDATE ${ohdsiSchema}.analysis_execution SET sec_user_id = NULL
-  WHERE NOT EXISTS(SELECT * FROM ${ohdsiSchema}.sec_user WHERE id = sec_user_id);
+alter table ${ohdsiSchema}.analysis_execution drop column analysis_id;
+ALTER TABLE ${ohdsiSchema}.analysis_execution DROP COLUMN analysis_type;
+alter table ${ohdsiSchema}.analysis_execution drop column duration;
+alter table ${ohdsiSchema}.analysis_execution drop column executed;
+alter table ${ohdsiSchema}.analysis_execution drop column sec_user_id;
 
-ALTER TABLE ${ohdsiSchema}.analysis_execution DROP CONSTRAINT IF EXISTS fk_ae_sec_user;
-ALTER TABLE ${ohdsiSchema}.analysis_execution ADD CONSTRAINT fk_ae_sec_user FOREIGN KEY(sec_user_id)
-  REFERENCES ${ohdsiSchema}.sec_user(id);
+alter table ${ohdsiSchema}.analysis_execution add constraint fk_ee_analysis_source
+  foreign key(source_id) references ${ohdsiSchema}.source(source_id);
+
+alter table ${ohdsiSchema}.analysis_execution rename to ee_analysis_status;

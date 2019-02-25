@@ -1,4 +1,4 @@
-ALTER VIEW ${ohdsiSchema}.estimation_analysis_generation as
+CREATE VIEW ${ohdsiSchema}.estimation_analysis_generation as
   SELECT
     job.job_execution_id                     id,
     job.create_time                          start_time,

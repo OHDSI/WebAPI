@@ -1,12 +1,12 @@
-ALTER VIEW ${ohdsiSchema}.estimation_analysis_generation as
+CREATE OR REPLACE VIEW ${ohdsiSchema}.estimation_analysis_generation as
   SELECT
     job.job_execution_id                     id,
     job.create_time                          start_time,
     job.end_time                             end_time,
     job.status                               status,
     job.exit_message                         exit_message,
-    CAST(estimation_id_param.string_val AS INTEGER) estimation_id,
-    CAST(source_param.string_val AS INTEGER) source_id,
+    CAST(CAST(estimation_id_param.string_val AS VARCHAR2(50)) AS NUMBER(10)) estimation_id,
+    CAST(CAST(source_param.string_val AS VARCHAR2(50)) AS NUMBER(10)) source_id,
     passwd_param.string_val                  update_password,
     -- Generation info based
     gen_info.design                          design,

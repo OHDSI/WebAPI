@@ -1,3 +1,5 @@
+ALTER TABLE ${ohdsiSchema}.output_files ADD IF NOT EXISTS media_type VARCHAR(255);
+
 ALTER TABLE ${ohdsiSchema}.output_files DROP CONSTRAINT IF EXISTS fk_sif_cca_execution;
 ALTER TABLE ${ohdsiSchema}.output_files DROP COLUMN IF EXISTS cca_execution_id;
 

@@ -1,18 +1,12 @@
 IF COL_LENGTH('${ohdsiSchema}.analysis_execution', 'job_execution_id') IS NULL
   ALTER TABLE ${ohdsiSchema}.analysis_execution ADD job_execution_id BIGINT;
 GO
-IF COL_LENGTH('${ohdsiSchema}.analysis_execution', 'analysis_type') IS NOT NULL
-  ALTER TABLE ${ohdsiSchema}.analysis_execution DROP COLUMN analysis_type;
+
+alter table ${ohdsiSchema}.analysis_execution drop column analysis_id, analysis_type, duration, sec_user_id, executed;
 GO
 
-IF COL_LENGTH('${ohdsiSchema}.output_files', 'media_type') IS NULL
-  ALTER TABLE ${ohdsiSchema}.output_files ADD media_type VARCHAR(255);
-GO
+alter table ${ohdsiSchema}.analysis_execution add constraint fk_ee_analysis_source
+  foreign key(source_id) references ${ohdsiSchema}.source(source_id);
 
-UPDATE ${ohdsiSchema}.analysis_execution SET sec_user_id = NULL
-  WHERE NOT EXISTS(SELECT * FROM ${ohdsiSchema}.sec_user WHERE id = sec_user_id);
-
-IF OBJECT_ID('${ohdsiSchema}.fk_ae_sec_user', 'F') IS NULL
-  ALTER TABLE ${ohdsiSchema}.analysis_execution ADD CONSTRAINT fk_ae_sec_user FOREIGN KEY(sec_user_id)
-    REFERENCES ${ohdsiSchema}.sec_user(id);
+exec sp_rename '${ohdsiSchema}.analysis_execution', 'ee_analysis_status';
 GO

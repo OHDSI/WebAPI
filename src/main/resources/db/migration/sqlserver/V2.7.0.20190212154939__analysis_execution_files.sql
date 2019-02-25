@@ -1,3 +1,7 @@
+IF COL_LENGTH('${ohdsiSchema}.output_files', 'media_type') IS NULL
+  ALTER TABLE ${ohdsiSchema}.output_files ADD media_type VARCHAR(255);
+GO
+
 ALTER TABLE ${ohdsiSchema}.output_files DROP CONSTRAINT fk_sif_cca_execution;
 ALTER TABLE ${ohdsiSchema}.output_files DROP COLUMN cca_execution_id;
 

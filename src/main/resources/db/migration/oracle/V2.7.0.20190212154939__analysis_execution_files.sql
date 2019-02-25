@@ -1,3 +1,14 @@
+DECLARE v_col_exist NUMBER;
+BEGIN
+  SELECT count(*) INTO v_col_exist FROM all_tab_cols WHERE
+    UPPER(column_name) = 'MEDIA_TYPE'
+    AND UPPER(table_name) = 'OUTPUT_FILES' AND owner = '${ohdsiSchema}';
+  IF (v_col_exist = 0) THEN
+    EXECUTE IMMEDIATE 'ALTER TABLE ${ohdsiSchema}.output_files ADD media_type VARCHAR2(255)';
+  END IF;
+END;
+/
+
 DECLARE v_exists NUMBER;
 BEGIN
   SELECT COUNT(*) INTO v_exists FROM all_constraints WHERE

@@ -211,10 +211,11 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     }
 
     @PostConstruct
-    public List<ExecutionEngineAnalysisStatus> findOutdatedAnalyses() {
+    public void findOutdatedAnalyses() {
 
         logger.info("Invalidating execution engine based analyses");
-        return analysisExecutionRepository.findByExecutionStatusIn(INVALIDATE_STATUSES);
+        List<ExecutionEngineAnalysisStatus> outdateExecutions = analysisExecutionRepository.findByExecutionStatusIn(INVALIDATE_STATUSES);
+        outdateExecutions.forEach(ee -> ee.setExecutionStatus(ExecutionEngineAnalysisStatus.Status.FAILED));
     }
 
     @Override

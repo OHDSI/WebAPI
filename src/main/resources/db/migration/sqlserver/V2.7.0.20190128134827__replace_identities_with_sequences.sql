@@ -8,6 +8,7 @@ GO
 UPDATE ${ohdsiSchema}.analysis_execution SET id_tmp = id;
 GO
 
+IF OBJECT_ID('${ohdsiSchema}.pk_analysis_exec', 'PK') IS NOT NULL
 ALTER TABLE ${ohdsiSchema}.analysis_execution DROP CONSTRAINT pk_analysis_exec;
 GO
 
@@ -44,12 +45,15 @@ GO
 UPDATE ${ohdsiSchema}.cca_execution SET cca_execution_id_tmp = cca_execution_id;
 GO
 
+IF OBJECT_ID('${ohdsiSchema}.fk_sif_cca_execution', 'PK') IS NOT NULL
 ALTER TABLE ${ohdsiSchema}.output_files DROP CONSTRAINT fk_sif_cca_execution;
 GO
 
+IF OBJECT_ID('${ohdsiSchema}.fk_sof_cca_execution', 'PK') IS NOT NULL
 ALTER TABLE ${ohdsiSchema}.input_files DROP CONSTRAINT fk_sof_cca_execution;
 GO
 
+IF OBJECT_ID('${ohdsiSchema}.cca_execution_pk', 'PK') IS NOT NULL
 ALTER TABLE ${ohdsiSchema}.cca_execution DROP CONSTRAINT cca_execution_pk;
 GO
 

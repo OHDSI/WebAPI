@@ -20,11 +20,15 @@ public abstract class BaseDataSourceAccessor<T> implements DataSourceAccessor<T>
   }
 
   public boolean hasAccess(T s) {
+    if (disabledSecurity != null) {
+      return true;
+    }
+
     Source source = extractSource(s);
     if (source == null) {
       return false;
     }
-    return disabledSecurity != null || SecurityUtils.getSubject().isPermitted(String.format(Security.SOURCE_ACCESS_PERMISSION, source.getSourceKey()));
+    return SecurityUtils.getSubject().isPermitted(String.format(Security.SOURCE_ACCESS_PERMISSION, source.getSourceKey()));
   }
 
   protected abstract Source extractSource(T source);

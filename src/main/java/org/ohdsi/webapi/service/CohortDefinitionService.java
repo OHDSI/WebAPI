@@ -57,6 +57,7 @@ import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ExportUtil;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
+import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
@@ -116,6 +117,9 @@ public class CohortDefinitionService extends AbstractDaoService {
 
   @Autowired
   private JobOperator jobOperator;
+
+  @Autowired
+  private PermissionManager permissionManager;
 
 	@PersistenceContext
 	protected EntityManager entityManager;
@@ -570,7 +574,10 @@ public class CohortDefinitionService extends AbstractDaoService {
 
     List<CohortGenerationInfo> result = new ArrayList<>();
     for (CohortGenerationInfo info : infoList) {
-      result.add(info);
+      Source source = getSourceRepository().findBySourceId(info.getId().getSourceId());
+      if (permissionManager.hasSourceAccess(source)) {
+        result.add(info);
+      }
     }
     return result;
   }

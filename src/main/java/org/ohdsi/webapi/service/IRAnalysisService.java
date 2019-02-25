@@ -73,6 +73,7 @@ import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisRepository;
 import org.ohdsi.webapi.ircalc.PerformAnalysisTasklet;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
+import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
@@ -122,6 +123,9 @@ public class IRAnalysisService extends AbstractDaoService {
 
   @Autowired
   private Security security;
+
+  @Autowired
+  private PermissionManager permissionManager;
 
   @Context
   ServletContext context;
@@ -476,17 +480,19 @@ public class IRAnalysisService extends AbstractDaoService {
 
     List<AnalysisInfoDTO> result = new ArrayList<>();
     for (ExecutionInfo executionInfo : analysis.getExecutionInfoList()) {
-      AnalysisInfoDTO info = new AnalysisInfoDTO();
-      info.executionInfo = executionInfo;
-      try {
-        if (executionInfo.getStatus() == GenerationStatus.COMPLETE && executionInfo.getIsValid())
-          info.summaryList = getAnalysisSummaryList(id, executionInfo.getSource());
+      if (permissionManager.hasSourceAccess(executionInfo.getSource())) {
+        AnalysisInfoDTO info = new AnalysisInfoDTO();
+        info.executionInfo = executionInfo;
+        try {
+          if (executionInfo.getStatus() == GenerationStatus.COMPLETE && executionInfo.getIsValid())
+            info.summaryList = getAnalysisSummaryList(id, executionInfo.getSource());
+        }
+        catch (Exception e)
+        {
+          log.error("Error getting IR Analysis summary list.", e);
+        }
+        result.add(info);
       }
-      catch (Exception e)
-      {
-        log.error("Error getting IR Analysis summary list.", e);
-      }
-      result.add(info);
     }
     return result;
   }

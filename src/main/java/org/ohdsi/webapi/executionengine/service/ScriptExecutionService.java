@@ -18,5 +18,5 @@ public interface ScriptExecutionService {
 
     String getExecutionStatus(Long executionId);
 
-    List<AnalysisResultFile> getExecutionResultFiles(Long executionId);
+    List<AnalysisResultFile> getExecutionResultFiles(Integer executionId);
 }

@@ -263,9 +263,9 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     }
 
     @Override
-    public List<AnalysisResultFile> getExecutionResultFiles(Long executionId) {
+    public List<AnalysisResultFile> getExecutionResultFiles(Integer executionId) {
 
-        return outputFileRepository.findByExecutionId(executionId.intValue());
+        return outputFileRepository.findByExecutionId(executionId);
     }
 
     @Scheduled(fixedDelayString = "${execution.invalidation.period}")

@@ -26,7 +26,9 @@ import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.Entities.UserRoleEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRoleRepository;
+import org.ohdsi.webapi.source.Source;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +39,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 @Transactional
 public class PermissionManager {
+
+  private static final String DATASOURCE_PERMISSION = "cohortdefinition:*:generate:%s:get";
+
+  @Value("#{!'${security.provider}'.equals('DisabledSecurity')}")
+  private boolean securityEnabled;
   
   @Autowired
   private UserRepository userRepository;  
@@ -52,6 +59,11 @@ public class PermissionManager {
   
   @Autowired
   private UserRoleRepository userRoleRepository;
+
+  public boolean hasSourceAccess(Source source) {
+
+    return !securityEnabled || SecurityUtils.getSubject().isPermitted(String.format(DATASOURCE_PERMISSION, source.getSourceKey()));
+  }
 
 
   public RoleEntity addRole(String roleName) throws Exception {

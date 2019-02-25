@@ -8,14 +8,11 @@ import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.media.multipart.BodyPartEntity;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
-import org.ohdsi.webapi.Constants;
-import org.ohdsi.webapi.executionengine.entity.AnalysisExecution;
+import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFile;
 import org.ohdsi.webapi.executionengine.exception.ScriptCallbackException;
 import org.ohdsi.webapi.executionengine.repository.AnalysisExecutionRepository;
 import org.ohdsi.webapi.executionengine.repository.OutputFileRepository;
-import org.ohdsi.webapi.executionengine.service.AnalysisResultFileSensitiveInfoService;
-import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,8 +27,7 @@ import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.*;
 
-import static org.ohdsi.webapi.Constants.Variables.SOURCE;
-import static org.ohdsi.webapi.executionengine.entity.AnalysisExecution.Status.*;
+import static org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus.Status.*;
 
 @Controller
 @Path("/executionservice/callbacks")
@@ -62,7 +58,7 @@ public class ScriptExecutionCallbackController {
 
         log.info("Accepted an updateSubmission request. ID:{}, Update date:{} Log: {}",
                         status.getId(), status.getStdoutDate(), status.getStdout());
-        AnalysisExecution analysisExecution = analysisExecutionRepository.findByJobExecutionId(id)
+        ExecutionEngineAnalysisStatus analysisExecution = analysisExecutionRepository.findByJobExecutionId(id)
                 .orElseThrow(() -> new ScriptCallbackException(String.format(EXECUTION_NOT_FOUND, id)));
         if (Objects.equals(password, analysisExecution.getUpdatePassword())
                 && ( analysisExecution.getExecutionStatus().equals(STARTED)
@@ -83,8 +79,9 @@ public class ScriptExecutionCallbackController {
                                FormDataMultiPart multiPart) {
 
         log.info("Accepted an analysisResult request. ID:{}", id);
-        AnalysisExecution analysisExecution = analysisExecutionRepository.findByJobExecutionId(id)
+        ExecutionEngineAnalysisStatus analysisExecution = analysisExecutionRepository.findByJobExecutionId(id)
                 .orElseThrow(() -> new ScriptCallbackException(String.format(EXECUTION_NOT_FOUND, id)));
+
         if (Objects.equals(password, analysisExecution.getUpdatePassword())) {
 
             AnalysisResultDTO analysisResultDTO =
@@ -92,13 +89,10 @@ public class ScriptExecutionCallbackController {
             AnalysisResultStatusDTO status = analysisResultDTO.getStatus();
 
             if (status == AnalysisResultStatusDTO.EXECUTED) {
-                analysisExecution.setExecutionStatus(AnalysisExecution.Status.COMPLETED);
+                analysisExecution.setExecutionStatus(ExecutionEngineAnalysisStatus.Status.COMPLETED);
             } else if (status == AnalysisResultStatusDTO.FAILED) {
-                analysisExecution.setExecutionStatus(AnalysisExecution.Status.FAILED);
+                analysisExecution.setExecutionStatus(ExecutionEngineAnalysisStatus.Status.FAILED);
             }
-            Date timestamp = new Date();
-            int seconds = (int) ((timestamp.getTime() - analysisExecution.getExecuted().getTime()) / 1000);
-            analysisExecution.setDuration(seconds);
             analysisExecutionRepository.saveAndFlush(analysisExecution);
 
             try {
@@ -113,7 +107,7 @@ public class ScriptExecutionCallbackController {
 
     private Iterable<AnalysisResultFile> saveFiles(
             FormDataMultiPart multiPart,
-            AnalysisExecution analysisExecution,
+            ExecutionEngineAnalysisStatus analysisExecution,
             AnalysisResultDTO analysisResultDTO) {
 
         List<AnalysisResultFile> files = new ArrayList<>();

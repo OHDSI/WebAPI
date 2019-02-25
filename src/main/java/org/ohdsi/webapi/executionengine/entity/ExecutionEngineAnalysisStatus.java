@@ -1,17 +1,15 @@
 package org.ohdsi.webapi.executionengine.entity;
 
-import java.util.Date;
-import java.util.List;
-import javax.persistence.*;
-
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.source.Source;
 
+import javax.persistence.*;
+import java.util.List;
+
 @Entity
-@Table(name = "analysis_execution")
-public class AnalysisExecution {
+@Table(name = "ee_analysis_status")
+public class ExecutionEngineAnalysisStatus {
 
     public enum Status {
         PENDING, STARTED, RUNNING, COMPLETED, FAILED
@@ -29,13 +27,6 @@ public class AnalysisExecution {
     @GeneratedValue(generator = "analysis_execution_generator")
     @Column(name = "id")
     private Integer id;
-    @Column(name = "duration")
-    private Integer duration;
-    @Column(name = "executed")
-    private Date executed;
-    @ManyToOne(targetEntity = UserEntity.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "sec_user_id")
-    private UserEntity author;
     @Column(name = "executionStatus")
     @Enumerated(EnumType.STRING)
     private Status executionStatus;
@@ -57,34 +48,6 @@ public class AnalysisExecution {
     public void setId(Integer id) {
 
         this.id = id;
-    }
-
-    public Integer getDuration() {
-
-        return duration;
-    }
-
-    public void setDuration(Integer duration) {
-
-        this.duration = duration;
-    }
-
-    public Date getExecuted() {
-
-        return executed;
-    }
-
-    public void setExecuted(Date executed) {
-
-        this.executed = executed;
-    }
-
-    public UserEntity getAuthor() {
-        return author;
-    }
-
-    public void setAuthor(UserEntity author) {
-        this.author = author;
     }
 
     public Status getExecutionStatus() {

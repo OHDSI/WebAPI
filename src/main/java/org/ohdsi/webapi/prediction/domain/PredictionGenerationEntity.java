@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.prediction.domain;
 
 import org.ohdsi.webapi.common.generation.CommonGeneration;
-import org.ohdsi.webapi.executionengine.entity.AnalysisExecution;
+import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
 import org.ohdsi.webapi.prediction.PredictionAnalysis;
 
 import javax.persistence.*;
@@ -14,9 +14,9 @@ public class PredictionGenerationEntity extends CommonGeneration {
   @JoinColumn(name = "prediction_id")
   private PredictionAnalysis predictionAnalysis;
 
-  @OneToOne(targetEntity = AnalysisExecution.class, fetch = FetchType.LAZY)
+  @OneToOne(targetEntity = ExecutionEngineAnalysisStatus.class, fetch = FetchType.LAZY)
   @JoinColumn(name = "analysis_execution_id")
-  private AnalysisExecution analysisExecution;
+  private ExecutionEngineAnalysisStatus analysisExecution;
 
   @Column(name = "update_password")
   private String updatePassword;
@@ -25,7 +25,7 @@ public class PredictionGenerationEntity extends CommonGeneration {
     return predictionAnalysis;
   }
 
-  public AnalysisExecution getAnalysisExecution() {
+  public ExecutionEngineAnalysisStatus getAnalysisExecution() {
     return analysisExecution;
   }
 

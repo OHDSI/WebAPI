@@ -9,7 +9,7 @@ import org.apache.commons.lang3.text.StrSubstitutor;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
-import org.ohdsi.webapi.executionengine.entity.AnalysisExecution;
+import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFile;
 import org.ohdsi.webapi.executionengine.repository.AnalysisExecutionRepository;
@@ -17,7 +17,6 @@ import org.ohdsi.webapi.executionengine.repository.InputFileRepository;
 import org.ohdsi.webapi.executionengine.repository.OutputFileRepository;
 import org.ohdsi.webapi.service.HttpClient;
 import org.ohdsi.webapi.service.SourceService;
-import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.DataSourceDTOParser;
 import org.ohdsi.webapi.util.SourceUtils;
@@ -29,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import javax.net.ssl.HttpsURLConnection;
 import javax.transaction.Transactional;
 import javax.ws.rs.NotFoundException;
@@ -54,7 +54,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
 
     private static final Logger logger = LoggerFactory.getLogger(ScriptExecutionServiceImpl.class);
 
-    private List<AnalysisExecution.Status> INVALIDATE_STATUSES = new ArrayList<>();
+    private List<ExecutionEngineAnalysisStatus.Status> INVALIDATE_STATUSES = new ArrayList<>();
 
     @Autowired
     private HttpClient client;
@@ -70,7 +70,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     @Autowired
     private OutputFileRepository outputFileRepository;
 
-    private List<AnalysisExecution.Status> FINAL_STATUES = ImmutableList.of(AnalysisExecution.Status.COMPLETED, AnalysisExecution.Status.COMPLETED);
+    private List<ExecutionEngineAnalysisStatus.Status> FINAL_STATUES = ImmutableList.of(ExecutionEngineAnalysisStatus.Status.COMPLETED, ExecutionEngineAnalysisStatus.Status.COMPLETED);
 
     @Autowired
     private SourceService sourceService;
@@ -83,17 +83,14 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     private AnalysisExecutionRepository analysisExecutionRepository;
 
     @Autowired
-    private PermissionManager authorizer;
-
-    @Autowired
     private AnalysisResultFileSensitiveInfoService sensitiveInfoService;
 
     ScriptExecutionServiceImpl() throws KeyManagementException, NoSuchAlgorithmException {
 
         HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> true);
-        INVALIDATE_STATUSES.add(AnalysisExecution.Status.RUNNING);
-        INVALIDATE_STATUSES.add(AnalysisExecution.Status.STARTED);
-        INVALIDATE_STATUSES.add(AnalysisExecution.Status.PENDING);
+        INVALIDATE_STATUSES.add(ExecutionEngineAnalysisStatus.Status.RUNNING);
+        INVALIDATE_STATUSES.add(ExecutionEngineAnalysisStatus.Status.STARTED);
+        INVALIDATE_STATUSES.add(ExecutionEngineAnalysisStatus.Status.PENDING);
     }
 
     @Override
@@ -165,20 +162,13 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     }
 
     @Override
-    public AnalysisExecution createAnalysisExecution(Long jobId, Source source, String password, List<AnalysisFile> analysisFiles) {
+    public ExecutionEngineAnalysisStatus createAnalysisExecution(Long jobId, Source source, String password, List<AnalysisFile> analysisFiles) {
 
-        AnalysisExecution execution = new AnalysisExecution();
-        execution.setDuration(0);
-        execution.setSource(source);
-        execution.setExecuted(new Date());
-        execution.setExecutionStatus(AnalysisExecution.Status.STARTED);
-        try {
-            execution.setAuthor(authorizer.getCurrentUser());
-        } catch (Exception ignored) {
-        }
+        ExecutionEngineAnalysisStatus execution = new ExecutionEngineAnalysisStatus();
+        execution.setExecutionStatus(ExecutionEngineAnalysisStatus.Status.STARTED);
         execution.setUpdatePassword(password);
         execution.setJobExecutionId(jobId);
-        AnalysisExecution saved = analysisExecutionRepository.saveAndFlush(execution);
+        ExecutionEngineAnalysisStatus saved = analysisExecutionRepository.saveAndFlush(execution);
         if (Objects.nonNull(analysisFiles)) {
             analysisFiles.forEach(file -> file.setAnalysisExecution(saved));
             inputFileRepository.save(analysisFiles);
@@ -194,13 +184,13 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         if (execution.getExecutionContext().containsKey("engineExecutionId")) {
             Long execId = execution.getExecutionContext().getLong("engineExecutionId");
 
-            AnalysisExecution analysisExecution = analysisExecutionRepository.findOne(execId.intValue());
+            ExecutionEngineAnalysisStatus analysisExecution = analysisExecutionRepository.findOne(execId.intValue());
             if (analysisExecution == null) {
                 throw new NotFoundException(String.format("Execution with id=%d was not found", executionId));
             }
             status = analysisExecution.getExecutionStatus().name();
         } else {
-            status = AnalysisExecution.Status.PENDING.name();
+            status = ExecutionEngineAnalysisStatus.Status.PENDING.name();
         }
         return status;
     }
@@ -212,7 +202,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     }
 
     @Override
-    public void updateAnalysisStatus(AnalysisExecution analysisExecution, AnalysisExecution.Status status) {
+    public void updateAnalysisStatus(ExecutionEngineAnalysisStatus analysisExecution, ExecutionEngineAnalysisStatus.Status status) {
 
         if (FINAL_STATUES.stream().noneMatch(s -> Objects.equals(s, status))) {
             analysisExecution.setExecutionStatus(status);
@@ -220,16 +210,17 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         }
     }
 
-    @Override
-    public List<AnalysisExecution> findOutdatedAnalyses(Date invalidate) {
+    @PostConstruct
+    public List<ExecutionEngineAnalysisStatus> findOutdatedAnalyses() {
 
-        return analysisExecutionRepository.findByExecutedBeforeAndExecutionStatusIn(invalidate, INVALIDATE_STATUSES);
+        logger.info("Invalidating execution engine based analyses");
+        return analysisExecutionRepository.findByExecutionStatusIn(INVALIDATE_STATUSES);
     }
 
     @Override
     public File getExecutionResult(Long executionId) throws IOException {
 
-        AnalysisExecution analysisExecution = analysisExecutionRepository.findByJobExecutionId(executionId)
+        ExecutionEngineAnalysisStatus analysisExecution = analysisExecutionRepository.findByJobExecutionId(executionId)
                 .orElseThrow(NotFoundException::new);
 
         java.nio.file.Path tempDirectory = Files.createTempDirectory("atlas_ee_arch");

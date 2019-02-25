@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.executionengine.job;
 
 import org.ohdsi.webapi.Constants;
-import org.ohdsi.webapi.executionengine.entity.AnalysisExecution;
+import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
 import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
 import org.springframework.batch.core.ExitStatus;
@@ -38,7 +38,7 @@ public class CreateAnalysisTasklet extends BaseExecutionTasklet {
         Long jobId = context.getStepContext().getStepExecution().getJobExecution().getJobId();
         Map<String, Object> jobParams = context.getStepContext().getJobParameters();
         final String updatePassword = jobParams.get(Constants.Params.UPDATE_PASSWORD).toString();
-        final AnalysisExecution createAnalysis = service.createAnalysisExecution(
+        final ExecutionEngineAnalysisStatus createAnalysis = service.createAnalysisExecution(
                 jobId,
                 service.findSourceByKey(sourceKey),
                 updatePassword,

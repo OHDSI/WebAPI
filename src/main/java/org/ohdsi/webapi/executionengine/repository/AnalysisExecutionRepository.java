@@ -1,14 +1,13 @@
 package org.ohdsi.webapi.executionengine.repository;
 
-import org.ohdsi.webapi.executionengine.entity.AnalysisExecution;
+import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-public interface AnalysisExecutionRepository extends JpaRepository<AnalysisExecution, Integer> {
+public interface AnalysisExecutionRepository extends JpaRepository<ExecutionEngineAnalysisStatus, Integer> {
 
-    Optional<AnalysisExecution> findByJobExecutionId(Long jobExecutionId);
-    List<AnalysisExecution> findByExecutedBeforeAndExecutionStatusIn(Date invalidate, List<AnalysisExecution.Status> statuses);
+    Optional<ExecutionEngineAnalysisStatus> findByJobExecutionId(Long jobExecutionId);
+    List<ExecutionEngineAnalysisStatus> findByExecutionStatusIn(List<ExecutionEngineAnalysisStatus.Status> statuses);
 }

@@ -29,7 +29,7 @@ public class AnalysisFile {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "execution_id", nullable = false, updatable = false)
-    private AnalysisExecution analysisExecution;
+    private ExecutionEngineAnalysisStatus analysisExecution;
 
     @Column(name = "file_name")
     private String fileName;
@@ -68,12 +68,12 @@ public class AnalysisFile {
         this.contents = contents;
     }
 
-    public AnalysisExecution getAnalysisExecution() {
+    public ExecutionEngineAnalysisStatus getAnalysisExecution() {
 
         return analysisExecution;
     }
 
-    public void setAnalysisExecution(AnalysisExecution analysisExecution) {
+    public void setAnalysisExecution(ExecutionEngineAnalysisStatus analysisExecution) {
 
         this.analysisExecution = analysisExecution;
     }

@@ -29,7 +29,7 @@ public class AnalysisResultFile {
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "execution_id", nullable = false, updatable = false)
-    private AnalysisExecution execution;
+    private ExecutionEngineAnalysisStatus execution;
 
     @Column(name = "file_name")
     private String fileName;
@@ -46,7 +46,7 @@ public class AnalysisResultFile {
     }
 
     public AnalysisResultFile(
-            AnalysisExecution execution,
+            ExecutionEngineAnalysisStatus execution,
             String fileName,
             String mediaType,
             byte[] contents) {
@@ -62,12 +62,12 @@ public class AnalysisResultFile {
         return id;
     }
 
-    public AnalysisExecution getExecution() {
+    public ExecutionEngineAnalysisStatus getExecution() {
 
         return execution;
     }
 
-    public void setExecution(AnalysisExecution execution) {
+    public void setExecution(ExecutionEngineAnalysisStatus execution) {
 
         this.execution = execution;
     }

@@ -2,7 +2,7 @@ package org.ohdsi.webapi.cohortcharacterization.dto;
 
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterizationParam;
 
-public class CcParameterDTO implements CohortCharacterizationParam {
+public class CcParameterDTO implements CohortCharacterizationParam, Comparable<CcParameterDTO> {
     
     private Long id;
     private String name;
@@ -32,5 +32,10 @@ public class CcParameterDTO implements CohortCharacterizationParam {
     public void setId(final Long id) {
 
         this.id = id;
+    }
+
+    @Override
+    public int compareTo(CcParameterDTO o) {
+        return this.id.compareTo(o.id);
     }
 }

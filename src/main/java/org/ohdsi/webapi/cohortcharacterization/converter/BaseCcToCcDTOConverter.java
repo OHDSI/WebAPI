@@ -7,6 +7,8 @@ import org.ohdsi.webapi.cohortcharacterization.dto.CcParameterDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcStrataDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.TreeSet;
+
 public abstract class BaseCcToCcDTOConverter<T extends BaseCcDTO> extends BaseCcToCcShortDTOConverter<T> {
 
   @Autowired
@@ -16,8 +18,8 @@ public abstract class BaseCcToCcDTOConverter<T extends BaseCcDTO> extends BaseCc
   public T convert(CohortCharacterizationEntity source) {
 
     final T cohortCharacterizationDTO = super.convert(source);
-    cohortCharacterizationDTO.setParameters(converterUtils.convertSet(source.getParameters(), CcParameterDTO.class));
-    cohortCharacterizationDTO.setStratas(converterUtils.convertSet(source.getStratas(), CcStrataDTO.class));
+    cohortCharacterizationDTO.setParameters(new TreeSet<>(converterUtils.convertSet(source.getParameters(), CcParameterDTO.class)));
+    cohortCharacterizationDTO.setStratas(new TreeSet<>(converterUtils.convertSet(source.getStratas(), CcStrataDTO.class)));
     cohortCharacterizationDTO.setStratifiedBy(source.getStratifiedBy());
     cohortCharacterizationDTO.setStrataOnly(source.getStrataOnly());
     cohortCharacterizationDTO.setStrataConceptSets(source.getConceptSets());

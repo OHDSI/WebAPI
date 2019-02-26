@@ -16,7 +16,7 @@ import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterizationPa
 
 @Entity
 @Table(name = "cc_param")
-public class CcParamEntity implements CohortCharacterizationParam {
+public class CcParamEntity implements CohortCharacterizationParam, Comparable<CcParamEntity> {
     
     @Id
     @GenericGenerator(
@@ -82,5 +82,10 @@ public class CcParamEntity implements CohortCharacterizationParam {
     @Override
     public int hashCode() {
         return Objects.hash(getId(), super.hashCode());
+    }
+
+    @Override
+    public int compareTo(CcParamEntity o) {
+        return this.id.compareTo(o.id);
     }
 }

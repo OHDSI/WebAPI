@@ -3,7 +3,7 @@ package org.ohdsi.webapi.cohortcharacterization.dto;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterizationStrata;
 import org.ohdsi.circe.cohortdefinition.CriteriaGroup;
 
-public class CcStrataDTO implements CohortCharacterizationStrata {
+public class CcStrataDTO implements CohortCharacterizationStrata, Comparable<CcStrataDTO> {
 
   private Long id;
   private String name;
@@ -31,5 +31,10 @@ public class CcStrataDTO implements CohortCharacterizationStrata {
 
   public void setCriteria(CriteriaGroup criteria) {
     this.criteria = criteria;
+  }
+
+  @Override
+  public int compareTo(CcStrataDTO o) {
+    return this.id.compareTo(o.id);
   }
 }

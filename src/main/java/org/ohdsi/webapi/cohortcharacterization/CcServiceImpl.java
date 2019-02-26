@@ -163,8 +163,11 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
         sortInnerEntities(savedEntity);
 
+        Date modifiedDate = savedEntity.getModifiedDate();
+        savedEntity.setModifiedDate(null);
         final String serialized = this.serializeCc(savedEntity);
         savedEntity.setHashCode(serialized.hashCode());
+        savedEntity.setModifiedDate(modifiedDate);
 
         return repository.save(savedEntity);
     }
@@ -176,6 +179,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
     private void sortInnerEntities(final CohortCharacterizationEntity savedEntity) {
         savedEntity.setFeatureAnalyses(new TreeSet<>(savedEntity.getFeatureAnalyses()));
+        savedEntity.setCohortDefinitions(new TreeSet<>(savedEntity.getCohortDefinitions()));
     }
 
     @Override

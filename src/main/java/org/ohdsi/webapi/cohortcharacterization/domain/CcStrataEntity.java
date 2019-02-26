@@ -17,7 +17,7 @@ import org.ohdsi.circe.cohortdefinition.CriteriaGroup;
 
 @Entity
 @Table(name = "cc_strata")
-public class CcStrataEntity implements CohortCharacterizationStrata {
+public class CcStrataEntity implements CohortCharacterizationStrata, Comparable<CcStrataEntity> {
 
   @Id
   @GenericGenerator(
@@ -74,5 +74,10 @@ public class CcStrataEntity implements CohortCharacterizationStrata {
 
   public void setCohortCharacterization(CohortCharacterizationEntity cohortCharacterization) {
     this.cohortCharacterization = cohortCharacterization;
+  }
+
+  @Override
+  public int compareTo(CcStrataEntity o) {
+    return this.id.compareTo(o.id);
   }
 }

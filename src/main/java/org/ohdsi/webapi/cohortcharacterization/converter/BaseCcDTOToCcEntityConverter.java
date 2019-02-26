@@ -15,6 +15,7 @@ import org.ohdsi.webapi.feanalysis.dto.FeAnalysisShortDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Set;
+import java.util.TreeSet;
 
 public abstract class BaseCcDTOToCcEntityConverter<T extends BaseCcDTO<? extends CohortMetadata, ? extends FeAnalysisShortDTO>>
         extends BaseConversionServiceAwareConverter<T, CohortCharacterizationEntity> {
@@ -33,16 +34,16 @@ public abstract class BaseCcDTOToCcEntityConverter<T extends BaseCcDTO<? extends
 
     cohortCharacterization.setId(source.getId());
 
-    final Set<CohortDefinition> convertedCohorts = converterUtils.convertSet(source.getCohorts(), CohortDefinition.class);
+    final Set<CohortDefinition> convertedCohorts = new TreeSet<>(converterUtils.convertSet(source.getCohorts(), CohortDefinition.class));
     cohortCharacterization.setCohortDefinitions(convertedCohorts);
 
-    final Set<FeAnalysisEntity> convertedFeatureAnalyses = converterUtils.convertSet(source.getFeatureAnalyses(), FeAnalysisEntity.class);
+    final Set<FeAnalysisEntity> convertedFeatureAnalyses = new TreeSet<>(converterUtils.convertSet(source.getFeatureAnalyses(), FeAnalysisEntity.class));
     cohortCharacterization.setFeatureAnalyses(convertedFeatureAnalyses);
 
-    final Set<CcParamEntity> convertedParameters = converterUtils.convertSet(source.getParameters(), CcParamEntity.class);
+    final Set<CcParamEntity> convertedParameters = new TreeSet<>(converterUtils.convertSet(source.getParameters(), CcParamEntity.class));
     cohortCharacterization.setParameters(convertedParameters);
 
-    final Set<CcStrataEntity> convertedStratas = converterUtils.convertSet(source.getStratas(), CcStrataEntity.class);
+    final Set<CcStrataEntity> convertedStratas = new TreeSet<>(converterUtils.convertSet(source.getStratas(), CcStrataEntity.class));
     cohortCharacterization.setStratas(convertedStratas);
 
     CcStrataConceptSetEntity conceptSetEntity = new CcStrataConceptSetEntity();

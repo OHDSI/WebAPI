@@ -66,7 +66,7 @@ import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
 public class CcServiceImpl extends AbstractDaoService implements CcService, GeneratesNotification {
 
     private static final String GENERATION_NOT_FOUND_ERROR = "generation cannot be found by id %d";
-    private static final String[] GENERATION_PARAMETERS = {"cohort_characterization_generation_id"};
+    private static final String[] PARAMETERS_RESULTS = {"cohort_characterization_generation_id", "threshold_level"};
     private static final String[] PREVALENCE_STATS_PARAMS = {"cdm_database_schema", "cdm_results_schema", "cc_generation_id", "analysis_id", "cohort_id", "covariate_id"};
     private final String QUERY_RESULTS = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/queryResults.sql");
     private final String DELETE_RESULTS = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/deleteResults.sql");
@@ -407,11 +407,12 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
     @Override
     @DataSourceAccess
-    public List<CcResult> findResults(@CcGenerationId final Long generationId) {
+    public List<CcResult> findResults(@CcGenerationId final Long generationId, float thresholdLevel) {
         final CcGenerationEntity generationEntity = ccGenerationRepository.findById(generationId)
                 .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, generationId)));
         final Source source = generationEntity.getSource();
-        String generationResults = sourceAwareSqlRender.renderSql(source.getSourceId(), QUERY_RESULTS, GENERATION_PARAMETERS, new String[]{String.valueOf(generationId)});
+        String generationResults = sourceAwareSqlRender.renderSql(source.getSourceId(), QUERY_RESULTS, PARAMETERS_RESULTS, 
+                new String[]{String.valueOf(generationId), String.valueOf(thresholdLevel)});
         final String tempSchema = SourceUtils.getTempQualifier(source);
         String translatedSql = SqlTranslate.translateSql(generationResults, source.getSourceDialect(), SessionUtils.sessionId(), tempSchema);
         return getGenerationResults(source, translatedSql);
@@ -453,9 +454,9 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         final CcGenerationEntity generationEntity = ccGenerationRepository.findById(generationId)
                 .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, generationId)));
         final Source source = generationEntity.getSource();
-        final String sql = sourceAwareSqlRender.renderSql(source.getSourceId(), DELETE_RESULTS,GENERATION_PARAMETERS, new String[]{ String.valueOf(generationId) });
-        final String tempScheam = SourceUtils.getTempQualifier(source);
-        final String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect(), SessionUtils.sessionId(), tempScheam);
+        final String sql = sourceAwareSqlRender.renderSql(source.getSourceId(), DELETE_RESULTS, PARAMETERS_RESULTS, new String[]{ String.valueOf(generationId) });
+        final String tempSchema = SourceUtils.getTempQualifier(source);
+        final String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect(), SessionUtils.sessionId(), tempSchema);
         getSourceJdbcTemplate(source).execute(translatedSql);
 
         final String deleteJobSql = sourceAwareSqlRender.renderSql(source.getSourceId(), DELETE_EXECUTION,

@@ -5,7 +5,7 @@ import org.ohdsi.webapi.source.SourceRepository;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SourceIdAccessor extends BaseDataSourceAccessor implements DataSourceAccessor<Integer> {
+public class SourceIdAccessor extends BaseDataSourceAccessor<Integer> {
 
   private SourceRepository sourceRepository;
 
@@ -14,8 +14,8 @@ public class SourceIdAccessor extends BaseDataSourceAccessor implements DataSour
   }
 
   @Override
-  public void checkAccess(Integer sourceId) {
-    Source source = sourceRepository.findBySourceId(sourceId);
-    checkSourceAccess(source);
+  protected Source extractSource(Integer sourceId) {
+
+    return sourceRepository.findBySourceId(sourceId);
   }
 }

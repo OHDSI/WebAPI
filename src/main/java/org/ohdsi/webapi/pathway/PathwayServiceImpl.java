@@ -9,6 +9,8 @@ import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfo
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
+import org.ohdsi.webapi.job.GeneratesNotification;
+import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.pathway.converter.SerializedPathwayAnalysisToPathwayAnalysisConverter;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
@@ -37,7 +39,6 @@ import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.SourceUtils;
-import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
@@ -65,12 +66,14 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.summingInt;
 import static org.ohdsi.webapi.Constants.GENERATE_PATHWAY_ANALYSIS;
-import static org.ohdsi.webapi.Constants.Params.*;
+import static org.ohdsi.webapi.Constants.Params.JOB_AUTHOR;
+import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
+import static org.ohdsi.webapi.Constants.Params.PATHWAY_ANALYSIS_ID;
+import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
 
 @Service
 @Transactional
-public class PathwayServiceImpl extends AbstractDaoService implements PathwayService {
-
+public class PathwayServiceImpl extends AbstractDaoService implements PathwayService, GeneratesNotification {
     private final PathwayAnalysisEntityRepository pathwayAnalysisRepository;
     private final PathwayAnalysisGenerationRepository pathwayAnalysisGenerationRepository;
     private final SourceService sourceService;
@@ -314,7 +317,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
     @Override
     @DataSourceAccess
-    public void generatePathways(final Integer pathwayAnalysisId, final @SourceId Integer sourceId) {
+    public JobExecutionResource generatePathways(final Integer pathwayAnalysisId, final @SourceId Integer sourceId) {
 
         PathwayService pathwayService = this;
 
@@ -353,7 +356,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
         final JobParameters jobParameters = builder.toJobParameters();
 
-        jobService.runJob(generateAnalysisJob.build(), jobParameters);
+        return jobService.runJob(generateAnalysisJob.build(), jobParameters);
     }
 
     @Override
@@ -510,4 +513,13 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         return pathwayAnalysis;
     }
 
+    @Override
+    public String getJobName() {
+        return GENERATE_PATHWAY_ANALYSIS;
+    }
+
+    @Override
+    public String getExecutionFoldingKey() {
+        return PATHWAY_ANALYSIS_ID;
+    }
 }

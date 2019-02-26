@@ -285,6 +285,9 @@ public abstract class AtlasSecurity extends Security {
             .addRestPath("/ddl/results")
             .addRestPath("/ddl/cemresults")
 
+            //executionservice callbacks
+            .addRestPath("/executionservice/callbacks/**")
+
             .addProtectedRestPath("/**/*");
   }
 

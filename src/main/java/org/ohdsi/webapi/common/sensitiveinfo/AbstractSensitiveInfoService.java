@@ -48,7 +48,7 @@ public class AbstractSensitiveInfoService {
     String filterSource = ResourceHelper.GetResourceAsString("/resources/generation/sensitive_filters.csv");
     filters = new ArrayList<>();
     try(Reader in = new StringReader(filterSource)) {
-      try(CSVParser parser = new CSVParser(in, CSVFormat.DEFAULT)) {
+      try(CSVParser parser = new CSVParser(in, CSVFormat.RFC4180)) {
         for (final CSVRecord record : parser) {
           filters.add(new SensitiveFilter(record.get(0), record.get(1)));
         }

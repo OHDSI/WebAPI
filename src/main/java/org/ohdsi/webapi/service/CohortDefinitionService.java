@@ -40,6 +40,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.SecurityUtils;
 import org.ohdsi.circe.check.Checker;
 import org.ohdsi.circe.check.Warning;
 import javax.ws.rs.core.Response;
@@ -73,6 +74,7 @@ import org.springframework.batch.core.launch.JobExecutionNotRunningException;
 import org.springframework.batch.core.launch.JobOperator;
 import org.springframework.batch.core.launch.NoSuchJobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionStatus;
@@ -120,6 +122,9 @@ public class CohortDefinitionService extends AbstractDaoService {
 
   @Autowired
   private PermissionManager permissionManager;
+
+  @Value("#{!'${security.provider}'.equals('DisabledSecurity')}")
+  private boolean securityEnabled;
 
 	@PersistenceContext
 	protected EntityManager entityManager;
@@ -678,6 +683,9 @@ public class CohortDefinitionService extends AbstractDaoService {
   {
     
     SourceInfo sourceInfo = sourceService.getPriorityVocabularySourceInfo();
+    if (securityEnabled && !SecurityUtils.getSubject().isPermitted(String.format("cohortdefinition:%d:export:conceptset:get", id))) {
+      throw new ForbiddenException();
+    }
     CohortDefinition def = this.cohortDefinitionRepository.findOneWithDetail(id);
     
     ArrayList<ConceptSetExport> exports = getConceptSetExports(def, sourceInfo);

@@ -1054,28 +1054,28 @@ public class VocabularyService extends AbstractDaoService {
     // Find all of the concepts that should be considered for optimization
     // Create a hashtable to hold all of the contents of the ConceptSetExpression
     // for use later
-    Hashtable<String, ConceptSetExpression.ConceptSetItem> allConceptSetItems = new Hashtable<String, ConceptSetExpression.ConceptSetItem>();
-    ArrayList<String> includedConcepts = new ArrayList<String>();
-    ArrayList<String> descendantConcepts = new ArrayList<String>();
-    ArrayList<String> allOtherConcepts = new ArrayList<String>();
+    Hashtable<Integer, ConceptSetExpression.ConceptSetItem> allConceptSetItems = new Hashtable<>();
+    ArrayList<Integer> includedConcepts = new ArrayList<>();
+    ArrayList<Integer> descendantConcepts = new ArrayList<>();
+    ArrayList<Integer> allOtherConcepts = new ArrayList<>();
     for(ConceptSetExpression.ConceptSetItem item : conceptSetExpression.items) {
-        allConceptSetItems.put(item.concept.conceptId.toString(), item);
+        allConceptSetItems.put(item.concept.conceptId.intValue(), item);
         if (!item.isExcluded) {
-            includedConcepts.add(item.concept.conceptId.toString());
+            includedConcepts.add(item.concept.conceptId.intValue());
             if (item.includeDescendants) {
-                descendantConcepts.add(item.concept.conceptId.toString());
+                descendantConcepts.add(item.concept.conceptId.intValue());
             }
         } else {
-            allOtherConcepts.add(item.concept.conceptId.toString());
+            allOtherConcepts.add(item.concept.conceptId.intValue());
         }
     }
     
     // If no descendant concepts are specified, initialize this field to use concept_id = 0 so the query will work properly
     if (descendantConcepts.isEmpty())
-        descendantConcepts.add("0");
+        descendantConcepts.add(0);
     
-    String allConceptsList = this.JoinArray(includedConcepts.toArray(new String[includedConcepts.size()]));
-    String descendantConceptsList = this.JoinArray(descendantConcepts.toArray(new String[descendantConcepts.size()]));
+    String allConceptsList = includedConcepts.stream().map(Object::toString).collect(Collectors.joining(", "));
+    String descendantConceptsList = descendantConcepts.stream().map(Object::toString).collect(Collectors.joining(", "));
     
     sql_statement = SqlRender.renderSql(sql_statement, new String[]{"allConcepts", "descendantConcepts", "cdm_database_schema"}, new String[]{allConceptsList, descendantConceptsList, tableQualifier});
     sql_statement = SqlTranslate.translateSql(sql_statement, source.getSourceDialect());
@@ -1089,7 +1089,7 @@ public class VocabularyService extends AbstractDaoService {
     ArrayList<ConceptSetExpression.ConceptSetItem> removedExpressionItems = new ArrayList<>();
     List<Map<String, Object>> rows = getSourceJdbcTemplate(source).queryForList(sql_statement);
     for (Map rs : rows) {
-        String conceptId = String.valueOf(rs.get("concept_id"));
+        Integer conceptId = Integer.parseInt(rs.get("concept_id").toString());
         String removed = String.valueOf(rs.get("removed"));
         ConceptSetExpression.ConceptSetItem csi = allConceptSetItems.get(conceptId);
         if (removed.equals("0")) {
@@ -1100,7 +1100,7 @@ public class VocabularyService extends AbstractDaoService {
     }
     // Re-add back the other concepts that are not considered
     // as part of the optimizatin process
-    for(String conceptId : allOtherConcepts) {
+    for(Integer conceptId : allOtherConcepts) {
         ConceptSetExpression.ConceptSetItem csi = allConceptSetItems.get(conceptId);
         optimzedExpressionItems.add(csi);
     }

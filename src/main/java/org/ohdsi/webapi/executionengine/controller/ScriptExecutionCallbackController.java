@@ -8,6 +8,7 @@ import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.media.multipart.BodyPartEntity;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
+import org.hibernate.Hibernate;
 import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFile;
 import org.ohdsi.webapi.executionengine.entity.ExecutionEngineGenerationEntity;
@@ -67,6 +68,7 @@ public class ScriptExecutionCallbackController {
         ExecutionEngineGenerationEntity executionEngineGeneration = executionEngineGenerationRepository.findById(id)
                 .orElseThrow(() -> new ScriptCallbackException(String.format(EXECUTION_NOT_FOUND, id)));
         ExecutionEngineAnalysisStatus analysisExecution = executionEngineGeneration.getAnalysisExecution();
+        Hibernate.initialize(analysisExecution);
         if (Objects.equals(password, analysisExecution.getExecutionEngineGeneration().getUpdatePassword())
                 && ( analysisExecution.getExecutionStatus().equals(STARTED)
                 || analysisExecution.getExecutionStatus().equals(RUNNING))

@@ -23,6 +23,7 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.jasypt.encryption.pbe.PBEStringEncryptor;
 import org.jasypt.properties.PropertyValueEncryptionUtils;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +57,8 @@ public class SourceService extends AbstractDaoService {
   private Environment env;
   @Autowired
   private ApplicationEventPublisher publisher;
+  @Autowired
+  private PermissionManager permissionManager;
   @Value("${datasource.ohdsi.schema}")
   private String schema;
 
@@ -161,7 +164,7 @@ public class SourceService extends AbstractDaoService {
 
     for (Source source : sourceRepository.findAll()) {
       for (SourceDaimon daimon : source.getDaimons()) {
-        if (daimon.getDaimonType() == SourceDaimon.DaimonType.Vocabulary) {
+        if (daimon.getDaimonType() == SourceDaimon.DaimonType.Vocabulary && permissionManager.hasSourceAccess(source)) {
           int daimonPriority = daimon.getPriority();
           if (daimonPriority >= priority) {
             priority = daimonPriority;

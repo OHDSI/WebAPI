@@ -123,9 +123,6 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Autowired
   private PermissionManager permissionManager;
 
-  @Value("#{!'${security.provider}'.equals('DisabledSecurity')}")
-  private boolean securityEnabled;
-
 	@PersistenceContext
 	protected EntityManager entityManager;
 	

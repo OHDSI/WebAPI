@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 
 @Service
-public class CommonGenerationSensitiveInfoServiceImpl extends AbstractSensitiveInfoService implements CommonGenerationSensitiveInfoService {
+public class CommonGenerationSensitiveInfoServiceImpl<T extends CommonGenerationDTO> extends AbstractSensitiveInfoService implements CommonGenerationSensitiveInfoService<T> {
 
   public CommonGenerationSensitiveInfoServiceImpl(PermissionManager permissionManager) {
 
@@ -15,10 +15,11 @@ public class CommonGenerationSensitiveInfoServiceImpl extends AbstractSensitiveI
   }
 
   @Override
-  public CommonGenerationDTO filterSensitiveInfo(CommonGenerationDTO generation, Map<String, Object> variables) {
+  public T filterSensitiveInfo(T generation, Map<String, Object> variables) {
 
     String value = filterSensitiveInfo(generation.getExitMessage(), variables);
     generation.setExitMessage(value);
     return generation;
   }
+
 }

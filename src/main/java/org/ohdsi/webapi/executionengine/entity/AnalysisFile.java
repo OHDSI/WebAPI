@@ -18,7 +18,10 @@ public class AnalysisFile {
     @GenericGenerator(
         name = "analysis_input_file_generator",
         strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
-        parameters = { @Parameter(name = "increment_size", value = "1")}
+        parameters = {
+                @Parameter(name = "sequence_name", value = "input_file_seq"),
+                @Parameter(name = "increment_size", value = "1")
+        }
     )
     @GeneratedValue(generator = "analysis_input_file_generator")
     @Column
@@ -26,7 +29,7 @@ public class AnalysisFile {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "execution_id", nullable = false, updatable = false)
-    private AnalysisExecution analysisExecution;
+    private ExecutionEngineAnalysisStatus analysisExecution;
 
     @Column(name = "file_name")
     private String fileName;
@@ -65,12 +68,12 @@ public class AnalysisFile {
         this.contents = contents;
     }
 
-    public AnalysisExecution getAnalysisExecution() {
+    public ExecutionEngineAnalysisStatus getAnalysisExecution() {
 
         return analysisExecution;
     }
 
-    public void setAnalysisExecution(AnalysisExecution analysisExecution) {
+    public void setAnalysisExecution(ExecutionEngineAnalysisStatus analysisExecution) {
 
         this.analysisExecution = analysisExecution;
     }

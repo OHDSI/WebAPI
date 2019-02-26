@@ -1,7 +1,5 @@
 package org.ohdsi.webapi.executionengine.dto;
 
-import org.ohdsi.webapi.executionengine.entity.AnalysisExecutionType;
-
 public class ExecutionRequestDTO {
 
     public String sourceKey;
@@ -17,6 +15,4 @@ public class ExecutionRequestDTO {
     public String workFolder;
 
     public Integer cohortId;
-
-    public AnalysisExecutionType analysisType;
 }

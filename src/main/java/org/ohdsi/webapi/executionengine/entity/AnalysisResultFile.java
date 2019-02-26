@@ -18,18 +18,24 @@ public class AnalysisResultFile {
     @GenericGenerator(
         name = "analysis_result_file_generator",
         strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
-        parameters = { @Parameter(name = "increment_size", value = "1") }
+        parameters = {
+                @Parameter(name = "sequence_name", value = "output_file_seq"),
+                @Parameter(name = "increment_size", value = "1")
+        }
     )
     @GeneratedValue(generator = "analysis_result_file_generator")
     @Column
     private Long id;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "execution_id", nullable = false, updatable = false)
-    private AnalysisExecution execution;
+    private ExecutionEngineAnalysisStatus execution;
 
     @Column(name = "file_name")
     private String fileName;
+
+    @Column(name = "media_type")
+    private String mediaType;
 
     @Column(name = "file_contents", columnDefinition = "BYTEA")
     @Basic(fetch = FetchType.LAZY)
@@ -40,12 +46,14 @@ public class AnalysisResultFile {
     }
 
     public AnalysisResultFile(
-            AnalysisExecution execution,
+            ExecutionEngineAnalysisStatus execution,
             String fileName,
+            String mediaType,
             byte[] contents) {
 
         this.execution = execution;
         this.fileName = fileName;
+        this.mediaType = mediaType;
         this.contents = contents;
     }
 
@@ -54,12 +62,12 @@ public class AnalysisResultFile {
         return id;
     }
 
-    public AnalysisExecution getExecution() {
+    public ExecutionEngineAnalysisStatus getExecution() {
 
         return execution;
     }
 
-    public void setExecution(AnalysisExecution execution) {
+    public void setExecution(ExecutionEngineAnalysisStatus execution) {
 
         this.execution = execution;
     }
@@ -82,5 +90,13 @@ public class AnalysisResultFile {
     public void setContents(byte[] contents) {
 
         this.contents = contents;
+    }
+
+    public String getMediaType() {
+        return mediaType;
+    }
+
+    public void setMediaType(String mediaType) {
+        this.mediaType = mediaType;
     }
 }

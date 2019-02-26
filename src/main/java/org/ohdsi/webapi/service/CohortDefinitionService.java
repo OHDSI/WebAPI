@@ -40,6 +40,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.SecurityUtils;
 import org.ohdsi.circe.check.Checker;
 import org.ohdsi.circe.check.Warning;
 import javax.ws.rs.core.Response;
@@ -73,6 +74,7 @@ import org.springframework.batch.core.launch.JobExecutionNotRunningException;
 import org.springframework.batch.core.launch.JobOperator;
 import org.springframework.batch.core.launch.NoSuchJobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionStatus;
@@ -678,7 +680,13 @@ public class CohortDefinitionService extends AbstractDaoService {
   {
     
     SourceInfo sourceInfo = sourceService.getPriorityVocabularySourceInfo();
+    if (Objects.isNull(sourceInfo)) {
+        throw new ForbiddenException();
+    }
     CohortDefinition def = this.cohortDefinitionRepository.findOneWithDetail(id);
+    if (Objects.isNull(def)) {
+        throw new NotFoundException();
+    }
     
     ArrayList<ConceptSetExport> exports = getConceptSetExports(def, sourceInfo);
     ByteArrayOutputStream exportStream = ExportUtil.writeConceptSetExportToCSVAndZip(exports);

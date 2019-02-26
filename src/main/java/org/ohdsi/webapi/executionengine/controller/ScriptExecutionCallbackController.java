@@ -10,8 +10,10 @@ import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFile;
+import org.ohdsi.webapi.executionengine.entity.ExecutionEngineGenerationEntity;
 import org.ohdsi.webapi.executionengine.exception.ScriptCallbackException;
 import org.ohdsi.webapi.executionengine.repository.AnalysisExecutionRepository;
+import org.ohdsi.webapi.executionengine.repository.ExecutionEngineGenerationRepository;
 import org.ohdsi.webapi.executionengine.repository.OutputFileRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,14 +38,18 @@ public class ScriptExecutionCallbackController {
     private static final Logger log = LoggerFactory.getLogger(ScriptExecutionCallbackController.class);
     private static final String EXECUTION_NOT_FOUND = "Analysis execution with id {%d} not found";
 
+    private final ExecutionEngineGenerationRepository executionEngineGenerationRepository;
+
     private final AnalysisExecutionRepository analysisExecutionRepository;
 
     private final OutputFileRepository outputFileRepository;
 
     @Autowired
-    public ScriptExecutionCallbackController(AnalysisExecutionRepository analysisExecutionRepository,
+    public ScriptExecutionCallbackController(ExecutionEngineGenerationRepository executionEngineGenerationRepository,
+                                             AnalysisExecutionRepository analysisExecutionRepository,
                                              OutputFileRepository outputFileRepository) {
 
+        this.executionEngineGenerationRepository = executionEngineGenerationRepository;
         this.analysisExecutionRepository = analysisExecutionRepository;
         this.outputFileRepository = outputFileRepository;
     }
@@ -58,9 +64,10 @@ public class ScriptExecutionCallbackController {
 
         log.info("Accepted an updateSubmission request. ID:{}, Update date:{} Log: {}",
                         status.getId(), status.getStdoutDate(), status.getStdout());
-        ExecutionEngineAnalysisStatus analysisExecution = analysisExecutionRepository.findByJobExecutionId(id)
+        ExecutionEngineGenerationEntity executionEngineGeneration = executionEngineGenerationRepository.findById(id)
                 .orElseThrow(() -> new ScriptCallbackException(String.format(EXECUTION_NOT_FOUND, id)));
-        if (Objects.equals(password, analysisExecution.getUpdatePassword())
+        ExecutionEngineAnalysisStatus analysisExecution = executionEngineGeneration.getAnalysisExecution();
+        if (Objects.equals(password, analysisExecution.getExecutionEngineGeneration().getUpdatePassword())
                 && ( analysisExecution.getExecutionStatus().equals(STARTED)
                 || analysisExecution.getExecutionStatus().equals(RUNNING))
                 ) {
@@ -79,10 +86,11 @@ public class ScriptExecutionCallbackController {
                                FormDataMultiPart multiPart) {
 
         log.info("Accepted an analysisResult request. ID:{}", id);
-        ExecutionEngineAnalysisStatus analysisExecution = analysisExecutionRepository.findByJobExecutionId(id)
+        ExecutionEngineGenerationEntity executionEngineGeneration = executionEngineGenerationRepository.findById(id)
                 .orElseThrow(() -> new ScriptCallbackException(String.format(EXECUTION_NOT_FOUND, id)));
+        ExecutionEngineAnalysisStatus analysisExecution = executionEngineGeneration.getAnalysisExecution();
 
-        if (Objects.equals(password, analysisExecution.getUpdatePassword())) {
+        if (Objects.equals(password, analysisExecution.getExecutionEngineGeneration().getUpdatePassword())) {
 
             AnalysisResultDTO analysisResultDTO =
                     multiPart.getField("analysisResult").getValueAs(AnalysisResultDTO.class);

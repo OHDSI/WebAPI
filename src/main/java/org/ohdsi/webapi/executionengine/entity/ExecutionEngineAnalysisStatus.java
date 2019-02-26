@@ -2,7 +2,6 @@ package org.ohdsi.webapi.executionengine.entity;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
-import org.ohdsi.webapi.source.Source;
 
 import javax.persistence.*;
 import java.util.List;
@@ -27,16 +26,15 @@ public class ExecutionEngineAnalysisStatus {
     @GeneratedValue(generator = "analysis_execution_generator")
     @Column(name = "id")
     private Integer id;
+
     @Column(name = "executionStatus")
     @Enumerated(EnumType.STRING)
     private Status executionStatus;
-    @Column(name = "update_password")
-    private String updatePassword;
-    @ManyToOne(targetEntity = Source.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "source_id")
-    private Source source;
-    @Column(name = "job_execution_id")
-    private Long jobExecutionId;
+
+    @ManyToOne(targetEntity = ExecutionEngineGenerationEntity.class, fetch = FetchType.LAZY)
+    @JoinColumn(name = "job_execution_id")
+    private ExecutionEngineGenerationEntity executionEngineGeneration;
+
     @OneToMany(mappedBy = "execution", targetEntity = AnalysisResultFile.class, fetch = FetchType.LAZY)
     private List<AnalysisResultFile> resultFiles;
 
@@ -60,30 +58,14 @@ public class ExecutionEngineAnalysisStatus {
         this.executionStatus = executionStatus;
     }
 
-    public String getUpdatePassword() {
+    public ExecutionEngineGenerationEntity getExecutionEngineGeneration() {
 
-        return updatePassword;
+        return executionEngineGeneration;
     }
 
-    public void setUpdatePassword(String updatePassword) {
+    public void setExecutionEngineGeneration(ExecutionEngineGenerationEntity executionEngineGeneration) {
 
-        this.updatePassword = updatePassword;
-    }
-
-    public Source getSource() {
-      return source;
-    }
-
-    public void setSource(Source source) {
-      this.source = source;
-    }
-
-    public Long getJobExecutionId() {
-          return jobExecutionId;
-      }
-
-    public void setJobExecutionId(Long jobExecutionId) {
-        this.jobExecutionId = jobExecutionId;
+        this.executionEngineGeneration = executionEngineGeneration;
     }
 
     public List<AnalysisResultFile> getResultFiles() {

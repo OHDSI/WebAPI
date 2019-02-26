@@ -5,8 +5,7 @@ ALTER TABLE ${ohdsiSchema}.analysis_execution DROP COLUMN analysis_type;
 alter table ${ohdsiSchema}.analysis_execution drop column duration;
 alter table ${ohdsiSchema}.analysis_execution drop column executed;
 alter table ${ohdsiSchema}.analysis_execution drop column sec_user_id;
-
-alter table ${ohdsiSchema}.analysis_execution add constraint fk_ee_analysis_source
-  foreign key(source_id) references ${ohdsiSchema}.source(source_id);
+alter table ${ohdsiSchema}.analysis_execution drop column source_id;
+alter table ${ohdsiSchema}.analysis_execution drop column update_password;
 
 alter table ${ohdsiSchema}.analysis_execution rename to ee_analysis_status;

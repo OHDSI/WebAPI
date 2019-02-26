@@ -9,7 +9,7 @@ import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
 import org.ohdsi.webapi.executionengine.job.CreateAnalysisTasklet;
 import org.ohdsi.webapi.executionengine.job.ExecutionEngineCallbackTasklet;
 import org.ohdsi.webapi.executionengine.job.RunExecutionEngineTasklet;
-import org.ohdsi.webapi.executionengine.repository.AnalysisExecutionRepository;
+import org.ohdsi.webapi.executionengine.repository.ExecutionEngineGenerationRepository;
 import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.CohortGenerationService;
@@ -50,7 +50,7 @@ public class GenerationUtils extends AbstractDaoService {
     private JobService jobService;
     private final SourceAwareSqlRender sourceAwareSqlRender;
     private final ScriptExecutionService executionService;
-    private final AnalysisExecutionRepository analysisExecutionRepository;
+    private final ExecutionEngineGenerationRepository executionEngineGenerationRepository;
     private final EntityManager entityManager;
 
     public GenerationUtils(StepBuilderFactory stepBuilderFactory,
@@ -61,7 +61,7 @@ public class GenerationUtils extends AbstractDaoService {
                            SourceAwareSqlRender sourceAwareSqlRender,
                            JobService jobService,
                            ScriptExecutionService executionService,
-                           AnalysisExecutionRepository analysisExecutionRepository,
+                           ExecutionEngineGenerationRepository executionEngineGenerationRepository,
                            EntityManager entityManager) {
 
         this.stepBuilderFactory = stepBuilderFactory;
@@ -72,7 +72,7 @@ public class GenerationUtils extends AbstractDaoService {
         this.sourceAwareSqlRender = sourceAwareSqlRender;
         this.jobService = jobService;
         this.executionService = executionService;
-        this.analysisExecutionRepository = analysisExecutionRepository;
+        this.executionEngineGenerationRepository = executionEngineGenerationRepository;
         this.entityManager = entityManager;
     }
 
@@ -151,7 +151,7 @@ public class GenerationUtils extends AbstractDaoService {
 
         CreateAnalysisTasklet createAnalysisTasklet = new CreateAnalysisTasklet(executionService, source.getSourceKey(), analysisFiles);
         RunExecutionEngineTasklet runExecutionEngineTasklet = new RunExecutionEngineTasklet(executionService, source, analysisFiles);
-        ExecutionEngineCallbackTasklet callbackTasklet = new ExecutionEngineCallbackTasklet(analysisExecutionRepository, entityManager);
+        ExecutionEngineCallbackTasklet callbackTasklet = new ExecutionEngineCallbackTasklet(executionEngineGenerationRepository, entityManager);
 
         Step createAnalysisExecutionStep = stepBuilderFactory.get(analysisTypeName + ".createAnalysisExecution")
                 .tasklet(createAnalysisTasklet)

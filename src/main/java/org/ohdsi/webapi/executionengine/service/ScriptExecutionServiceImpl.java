@@ -12,7 +12,9 @@ import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
 import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFile;
+import org.ohdsi.webapi.executionengine.entity.ExecutionEngineGenerationEntity;
 import org.ohdsi.webapi.executionengine.repository.AnalysisExecutionRepository;
+import org.ohdsi.webapi.executionengine.repository.ExecutionEngineGenerationRepository;
 import org.ohdsi.webapi.executionengine.repository.InputFileRepository;
 import org.ohdsi.webapi.executionengine.repository.OutputFileRepository;
 import org.ohdsi.webapi.service.HttpClient;
@@ -84,6 +86,9 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
 
     @Autowired
     private AnalysisResultFileSensitiveInfoService sensitiveInfoService;
+
+    @Autowired
+    private ExecutionEngineGenerationRepository executionEngineGenerationRepository;
 
     ScriptExecutionServiceImpl() throws KeyManagementException, NoSuchAlgorithmException {
 
@@ -164,11 +169,10 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     @Override
     public ExecutionEngineAnalysisStatus createAnalysisExecution(Long jobId, Source source, String password, List<AnalysisFile> analysisFiles) {
 
+        ExecutionEngineGenerationEntity executionEngineGenerationEntity = executionEngineGenerationRepository.findOne(jobId);
         ExecutionEngineAnalysisStatus execution = new ExecutionEngineAnalysisStatus();
         execution.setExecutionStatus(ExecutionEngineAnalysisStatus.Status.STARTED);
-        execution.setUpdatePassword(password);
-        execution.setJobExecutionId(jobId);
-        execution.setSource(source);
+        execution.setExecutionEngineGeneration(executionEngineGenerationEntity);
         ExecutionEngineAnalysisStatus saved = analysisExecutionRepository.saveAndFlush(execution);
         if (Objects.nonNull(analysisFiles)) {
             analysisFiles.forEach(file -> file.setAnalysisExecution(saved));
@@ -222,14 +226,15 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     @Override
     public File getExecutionResult(Long executionId) throws IOException {
 
-        ExecutionEngineAnalysisStatus analysisExecution = analysisExecutionRepository.findByJobExecutionId(executionId)
+        ExecutionEngineGenerationEntity executionEngineGeneration = executionEngineGenerationRepository.findById(executionId)
                 .orElseThrow(NotFoundException::new);
+        ExecutionEngineAnalysisStatus analysisExecution = executionEngineGeneration.getAnalysisExecution();
 
         java.nio.file.Path tempDirectory = Files.createTempDirectory("atlas_ee_arch");
         String fileName = "execution_" + executionId + "_result.zip";
         File archive = tempDirectory.resolve(fileName).toFile();
         archive.deleteOnExit();
-        Map<String, Object> variables = Collections.singletonMap(SOURCE, analysisExecution.getSource());
+        Map<String, Object> variables = Collections.singletonMap(SOURCE, analysisExecution.getExecutionEngineGeneration().getSource());
 
         try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(archive))) {
             List<AnalysisResultFile> outputFiles = analysisExecution.getResultFiles(); //outputFileRepository.findByExecutionId(analysisExecution.getId());

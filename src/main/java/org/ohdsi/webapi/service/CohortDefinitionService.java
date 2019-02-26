@@ -683,9 +683,6 @@ public class CohortDefinitionService extends AbstractDaoService {
   {
     
     SourceInfo sourceInfo = sourceService.getPriorityVocabularySourceInfo();
-    if (securityEnabled && !SecurityUtils.getSubject().isPermitted(String.format("cohortdefinition:%d:export:conceptset:get", id))) {
-      throw new ForbiddenException();
-    }
     CohortDefinition def = this.cohortDefinitionRepository.findOneWithDetail(id);
     
     ArrayList<ConceptSetExport> exports = getConceptSetExports(def, sourceInfo);

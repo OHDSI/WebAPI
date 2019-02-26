@@ -634,7 +634,13 @@ public class CohortDefinitionService extends AbstractDaoService {
   {
     
     SourceInfo sourceInfo = sourceService.getPriorityVocabularySourceInfo();
+    if (Objects.isNull(sourceInfo)) {
+        throw new ForbiddenException();
+    }
     CohortDefinition def = this.cohortDefinitionRepository.findOneWithDetail(id);
+    if (Objects.isNull(def)) {
+        throw new NotFoundException();
+    }
     
     ArrayList<ConceptSetExport> exports = getConceptSetExports(def, sourceInfo);
     ByteArrayOutputStream exportStream = ExportUtil.writeConceptSetExportToCSVAndZip(exports);

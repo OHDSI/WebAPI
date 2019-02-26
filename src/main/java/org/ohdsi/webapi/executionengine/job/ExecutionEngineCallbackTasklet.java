@@ -5,9 +5,10 @@ import static org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisSta
 
 import javax.persistence.EntityManager;
 import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
-import org.ohdsi.webapi.executionengine.exception.ScriptCallbackException;
 import org.ohdsi.webapi.executionengine.repository.ExecutionEngineGenerationRepository;
+import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.StepContribution;
+import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.repeat.RepeatStatus;
 
@@ -15,6 +16,7 @@ public class ExecutionEngineCallbackTasklet extends BaseExecutionTasklet {
 
     private final ExecutionEngineGenerationRepository executionEngineGenerationRepository;
     private final EntityManager entityManager;
+    private ExecutionEngineAnalysisStatus.Status status;
 
     public ExecutionEngineCallbackTasklet(ExecutionEngineGenerationRepository executionEngineGenerationRepository, final EntityManager entityManager) {
 
@@ -24,8 +26,6 @@ public class ExecutionEngineCallbackTasklet extends BaseExecutionTasklet {
 
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
-
-        ExecutionEngineAnalysisStatus.Status status;
 
         final Long jobId = chunkContext.getStepContext().getStepExecution().getJobExecution().getJobId();
         while (true) {
@@ -37,9 +37,12 @@ public class ExecutionEngineCallbackTasklet extends BaseExecutionTasklet {
             }
             Thread.sleep(3000);
         }
-        if (status == FAILED) {
-            throw new ScriptCallbackException("Job execution failed");
-        }
         return RepeatStatus.FINISHED;
+    }
+
+    @Override
+    public ExitStatus afterStep(StepExecution stepExecution) {
+
+        return status == FAILED ? ExitStatus.FAILED : ExitStatus.COMPLETED;
     }
 }

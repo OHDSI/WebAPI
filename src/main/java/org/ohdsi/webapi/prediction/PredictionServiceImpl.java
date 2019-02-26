@@ -22,6 +22,7 @@ import org.ohdsi.webapi.prediction.specification.PredictionConceptSet;
 import org.ohdsi.webapi.service.*;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
+import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.SessionUtils;
@@ -38,6 +39,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.GENERATE_PREDICTION_ANALYSIS;
 import static org.ohdsi.webapi.Constants.Params.*;
@@ -82,6 +84,9 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     
     @Autowired
     private Environment env;
+
+    @Autowired
+    private SourceAccessor sourceAccessor;
 
     private final String EXEC_SCRIPT = ResourceHelper.GetResourceAsString("/resources/prediction/r/runAnalysis.R");
 
@@ -235,7 +240,11 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     @Override
     public List<PredictionGenerationEntity> getPredictionGenerations(Integer predictionAnalysisId) {
 
-        return generationRepository.findByPredictionAnalysisId(predictionAnalysisId, DEFAULT_ENTITY_GRAPH);
+        return generationRepository
+            .findByPredictionAnalysisId(predictionAnalysisId, DEFAULT_ENTITY_GRAPH)
+            .stream()
+            .filter(gen -> sourceAccessor.hasAccess(gen.getSource()))
+            .collect(Collectors.toList());
     }
 
     @Override

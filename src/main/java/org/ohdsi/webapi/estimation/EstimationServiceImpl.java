@@ -31,6 +31,7 @@ import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.service.VocabularyService;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.PermissionManager;
+import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.SessionUtils;
@@ -48,6 +49,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.GENERATE_ESTIMATION_ANALYSIS;
 import static org.ohdsi.webapi.Constants.Params.ESTIMATION_ANALYSIS_ID;
@@ -106,6 +108,9 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
 
     @Autowired
     private EstimationAnalysisGenerationRepository generationRepository;
+
+    @Autowired
+    private SourceAccessor sourceAccessor;
 
     @Value("${organization.name}")
     private String organizationName;
@@ -305,7 +310,11 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     @Override
     public List<EstimationGenerationEntity> getEstimationGenerations(Integer estimationAnalysisId) {
 
-        return generationRepository.findByEstimationAnalysisId(estimationAnalysisId, DEFAULT_ENTITY_GRAPH);
+        return generationRepository
+            .findByEstimationAnalysisId(estimationAnalysisId, DEFAULT_ENTITY_GRAPH)
+            .stream()
+            .filter(gen -> sourceAccessor.hasAccess(gen.getSource()))
+            .collect(Collectors.toList());
     }
 
     @Override

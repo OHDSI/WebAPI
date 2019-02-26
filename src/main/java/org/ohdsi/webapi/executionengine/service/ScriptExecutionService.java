@@ -20,8 +20,6 @@ public interface ScriptExecutionService {
 
     String getExecutionStatus(Long executionId);
 
-    List<AnalysisResultFile> getExecutionResultFiles(Long executionId);
-
     void updateAnalysisStatus(ExecutionEngineAnalysisStatus analysisExecution, ExecutionEngineAnalysisStatus.Status running);
 
     File getExecutionResult(Long executionId) throws IOException;

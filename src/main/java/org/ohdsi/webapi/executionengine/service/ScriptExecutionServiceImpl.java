@@ -19,6 +19,7 @@ import org.ohdsi.webapi.executionengine.repository.InputFileRepository;
 import org.ohdsi.webapi.executionengine.repository.OutputFileRepository;
 import org.ohdsi.webapi.service.HttpClient;
 import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.DataSourceDTOParser;
 import org.ohdsi.webapi.util.SourceUtils;
@@ -89,6 +90,9 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
 
     @Autowired
     private ExecutionEngineGenerationRepository executionEngineGenerationRepository;
+
+    @Autowired
+    private SourceAccessor sourceAccessor;
 
     ScriptExecutionServiceImpl() throws KeyManagementException, NoSuchAlgorithmException {
 
@@ -201,12 +205,6 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     }
 
     @Override
-    public List<AnalysisResultFile> getExecutionResultFiles(Long executionId) {
-
-        return outputFileRepository.findByExecutionId(executionId.intValue());
-    }
-
-    @Override
     public void updateAnalysisStatus(ExecutionEngineAnalysisStatus analysisExecution, ExecutionEngineAnalysisStatus.Status status) {
 
         if (FINAL_STATUES.stream().noneMatch(s -> Objects.equals(s, status))) {
@@ -228,6 +226,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
 
         ExecutionEngineGenerationEntity executionEngineGeneration = executionEngineGenerationRepository.findById(executionId)
                 .orElseThrow(NotFoundException::new);
+        sourceAccessor.checkAccess(executionEngineGeneration.getSource());
         ExecutionEngineAnalysisStatus analysisExecution = executionEngineGeneration.getAnalysisExecution();
 
         java.nio.file.Path tempDirectory = Files.createTempDirectory("atlas_ee_arch");

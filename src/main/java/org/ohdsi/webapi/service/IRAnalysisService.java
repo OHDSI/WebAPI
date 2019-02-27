@@ -62,6 +62,7 @@ import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
+import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.ExceptionUtils;
@@ -125,6 +126,9 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
   @Autowired
   private GenerationUtils generationUtils;
+
+  @Autowired
+  private SourceAccessor sourceAccessor;
 
   @Context
   ServletContext context;
@@ -472,17 +476,19 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     List<AnalysisInfoDTO> result = new ArrayList<>();
     Set<ExecutionInfo> executionInfoList = analysis.getExecutionInfoList();
     for (ExecutionInfo executionInfo : executionInfoList) {
-      AnalysisInfoDTO info = new AnalysisInfoDTO();
-      info.executionInfo = executionInfo;
-      try {
-        if (executionInfo.getStatus() == GenerationStatus.COMPLETE && executionInfo.getIsValid())
-          info.summaryList = getAnalysisSummaryList(id, executionInfo.getSource());
+      if (sourceAccessor.hasAccess(executionInfo.getSource())) {
+        AnalysisInfoDTO info = new AnalysisInfoDTO();
+        info.executionInfo = executionInfo;
+        try {
+          if (executionInfo.getStatus() == GenerationStatus.COMPLETE && executionInfo.getIsValid())
+            info.summaryList = getAnalysisSummaryList(id, executionInfo.getSource());
+        }
+        catch (Exception e)
+        {
+          log.error("Error getting IR Analysis summary list", e);
+        }
+        result.add(info);
       }
-      catch (Exception e)
-      {
-        log.error("Error getting IR Analysis summary list", e);
-      }
-      result.add(info);
     }
     return result;
   }

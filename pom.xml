@@ -67,6 +67,8 @@
     <security.oauth.google.apiSecret></security.oauth.google.apiSecret>
     <security.oauth.facebook.apiKey></security.oauth.facebook.apiKey>
     <security.oauth.facebook.apiSecret></security.oauth.facebook.apiSecret>
+    <security.oauth.github.apiKey></security.oauth.github.apiKey>
+    <security.oauth.github.apiSecret></security.oauth.github.apiSecret>
     <security.oid.clientId></security.oid.clientId>
     <security.oid.apiSecret></security.oid.apiSecret>
     <security.oid.url></security.oid.url>
@@ -123,7 +125,6 @@
 
     <arachne.version>1.14.0-SNAPSHOT</arachne.version>
     <jersey-media-multipart.version>2.25.1</jersey-media-multipart.version>
-    <execution.invalidation.maxage>4</execution.invalidation.maxage>
     <execution.invalidation.period>600000</execution.invalidation.period>
     <execution.status.period>10000</execution.status.period>
 		<executionengine.url>https://localhost:8888/api/v1/analyze</executionengine.url>

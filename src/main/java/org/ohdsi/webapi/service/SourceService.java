@@ -28,6 +28,7 @@ import org.jasypt.properties.PropertyValueEncryptionUtils;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.shiro.management.Security;
+import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -63,6 +64,9 @@ public class SourceService extends AbstractDaoService {
   private ApplicationEventPublisher publisher;
   @Autowired
   private VocabularyService vocabularyService;
+
+  @Autowired
+  private SourceAccessor sourceAccessor;
 
   @Value("${datasource.ohdsi.schema}")
   private String schema;
@@ -180,7 +184,7 @@ public class SourceService extends AbstractDaoService {
 
     for (Source source : sourceRepository.findAll()) {
       for (SourceDaimon daimon : source.getDaimons()) {
-        if (daimon.getDaimonType() == SourceDaimon.DaimonType.Vocabulary) {
+        if (daimon.getDaimonType() == SourceDaimon.DaimonType.Vocabulary && sourceAccessor.hasAccess(source)) {
           int daimonPriority = daimon.getPriority();
           if (daimonPriority >= priority) {
             priority = daimonPriority;

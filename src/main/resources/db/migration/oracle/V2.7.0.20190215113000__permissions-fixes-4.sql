@@ -1,7 +1,7 @@
 ALTER TABLE ${ohdsiSchema}.sec_permission ADD for_role_id INTEGER;
 
 INSERT INTO ${ohdsiSchema}.sec_permission (id, value, for_role_id)
-SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, REPLACE(CAST(new_perms.val AS VARCHAR), '%s', REPLACE(REPLACE(value, 'cohortdefinition:*:generate:', ''), ':get', '')), role_id
+SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, REPLACE(CAST(new_perms.val AS VARCHAR(255)), '%s', REPLACE(REPLACE(value, 'cohortdefinition:*:generate:', ''), ':get', '')), role_id
 FROM ${ohdsiSchema}.sec_permission sp
   JOIN ${ohdsiSchema}.sec_role_permission srp on sp.id = srp.permission_id
   CROSS JOIN (

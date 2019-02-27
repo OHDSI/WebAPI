@@ -271,6 +271,12 @@ public abstract class AtlasSecurity extends Security {
 
             // version info
             .addRestPath("/info")
+            // DDL service
+            .addRestPath("/ddl/results")
+            .addRestPath("/ddl/cemresults")
+
+            //executionservice callbacks
+            .addRestPath("/executionservice/callbacks/**")
 
             .addProtectedRestPath("/**/*");
   }

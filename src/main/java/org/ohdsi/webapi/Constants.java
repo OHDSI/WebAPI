@@ -12,6 +12,8 @@ public interface Constants {
   String GENERATE_COHORT_CHARACTERIZATION = "generateCohortCharacterization";
   String GENERATE_PATHWAY_ANALYSIS = "generatePathwayAnalysis";
   String GENERATE_IR_ANALYSIS = "irAnalysis";
+  String GENERATE_PREDICTION_ANALYSIS = "generatePredictionAnalysis";
+  String GENERATE_ESTIMATION_ANALYSIS = "generateEstimationAnalysis";
   String WARM_CACHE = "warmCache";
   String USERS_IMPORT = "usersImport";
 
@@ -26,6 +28,9 @@ public interface Constants {
     String COHORT_DEFINITION_ID = "cohort_definition_id";
     String COHORT_CHARACTERIZATION_ID = "cohort_characterization_id";
     String PATHWAY_ANALYSIS_ID = "pathway_analysis_id";
+    String PREDICTION_ANALYSIS_ID = "prediction_analysis_id";
+    String ESTIMATION_ANALYSIS_ID = "estimation_analysis_id";
+    String UPDATE_PASSWORD = "update_password";
     String SOURCE_ID = "source_id";
     String SOURCE_KEY = "source_key";
     String ANALYSIS_ID = "analysis_id";
@@ -44,6 +49,9 @@ public interface Constants {
     String ROLE_GROUP_MAPPING = "roleGroupMapping";
     String PRESERVE_ROLES = "preserveRoles";
     String SESSION_ID = "sessionId";
+    String PACKAGE_NAME = "packageName";
+    String PACKAGE_FILE_NAME = "packageFilename";
+    String EXECUTABLE_FILE_NAME = "executableFilename";
   }
 
   interface Variables {
@@ -55,8 +63,6 @@ public interface Constants {
     String REGULAR = "AtlasRegularSecurity";
     String GOOGLE = "AtlasGoogleSecurity";
   }
-
-  List<String> REQUIRE_COLLAPSE_PS_DBMS = ImmutableList.of(DBMSType.MS_SQL_SERVER.getOhdsiDB(), DBMSType.PDW.getOhdsiDB());
 
   interface Templates {
 

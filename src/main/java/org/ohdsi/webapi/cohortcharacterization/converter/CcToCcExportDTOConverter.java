@@ -6,6 +6,8 @@ import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
 import org.springframework.stereotype.Component;
 
+import java.util.TreeSet;
+
 @Component
 public class CcToCcExportDTOConverter extends BaseCcToCcDTOConverter<CcExportDTO> {
 
@@ -14,8 +16,8 @@ public class CcToCcExportDTOConverter extends BaseCcToCcDTOConverter<CcExportDTO
 
     final CcExportDTO exportDTO = super.convert(source);
 
-    exportDTO.setCohorts(converterUtils.convertSet(source.getCohortDefinitions(), CohortDTO.class));
-    exportDTO.setFeatureAnalyses(converterUtils.convertSet(source.getFeatureAnalyses(), FeAnalysisDTO.class));
+    exportDTO.setCohorts(new TreeSet<>(converterUtils.convertSet(source.getCohortDefinitions(), CohortDTO.class)));
+    exportDTO.setFeatureAnalyses(new TreeSet<>(converterUtils.convertSet(source.getFeatureAnalyses(), FeAnalysisDTO.class)));
     return exportDTO;
   }
 

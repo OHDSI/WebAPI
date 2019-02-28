@@ -26,7 +26,7 @@ public interface PredictionService {
   
   PredictionAnalysis importAnalysis(PatientLevelPredictionAnalysisImpl analysis) throws Exception;
 
-  void hydrateAnalysis(PatientLevelPredictionAnalysisImpl plpa, OutputStream out) throws JsonProcessingException;
+  void hydrateAnalysis(PatientLevelPredictionAnalysisImpl analysis, String packageName, OutputStream out) throws JsonProcessingException;
 
   void runGeneration(PredictionAnalysis predictionAnalysis, String sourceKey) throws IOException;
 

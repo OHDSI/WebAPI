@@ -258,8 +258,12 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     }
 
     @Override
-    public void hydrateAnalysis(org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysisImpl plpa, OutputStream out) throws JsonProcessingException {
-        String studySpecs = Utils.serialize(plpa, true);
+    public void hydrateAnalysis(PatientLevelPredictionAnalysisImpl analysis, String packageName, OutputStream out) throws JsonProcessingException {
+        if (packageName == null || !Utils.isAlphaNumeric(packageName)) {
+            throw new IllegalArgumentException("The package name must be alphanumeric only.");
+        }
+        analysis.setPackageName(packageName);
+        String studySpecs = Utils.serialize(analysis, true);
         Hydra h = new Hydra(studySpecs);
         h.hydrate(out);
     }
@@ -279,8 +283,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         analysisFile.setFileName(packageFilename);
         try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
           PatientLevelPredictionAnalysisImpl analysis = exportAnalysis(predictionAnalysisId);
-          analysis.setPackageName(packageName);
-          hydrateAnalysis(analysis, out);
+          hydrateAnalysis(analysis, packageName, out);
           analysisFile.setContents(out.toByteArray());
         }
         analysisFiles.add(analysisFile);

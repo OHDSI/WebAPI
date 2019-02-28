@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import org.ohdsi.analysis.Utils;
 
 @Controller
 @Path("/estimation/")
@@ -147,22 +148,26 @@ public class EstimationController {
       return service.importAnalysis(analysis);
   }  
 
+  /**
+   * Download an R package to execute the estimation study
+   * @param id The id for the estimation study
+   * @param packageName The R package name for the study
+   * @return Binary zip file containing the full R package
+   * @throws IOException
+   */
   @GET
   @Path("{id}/download")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
-  public Response download(@PathParam("id") int id, @QueryParam("target") String target) throws IOException {
-    if (target == null) {
-      target = "package";
+  public Response download(@PathParam("id") int id, @QueryParam("packageName") String packageName) throws IOException {
+    if (packageName == null) {
+        packageName = "estimation" + String.valueOf(id);
     }
 
     EstimationAnalysisImpl analysis = this.exportAnalysis(id);
-    if (StringUtils.isEmpty(analysis.getPackageName())) {
-      analysis.setPackageName(target);
-    }
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-    service.hydrateAnalysis(analysis, baos);
+    service.hydrateAnalysis(analysis, packageName, baos);
 
     return Response
             .ok(baos)

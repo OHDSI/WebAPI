@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import org.ohdsi.analysis.Utils;
 
 @Controller
 @Path("/prediction/")
@@ -146,12 +147,18 @@ public class PredictionController {
   @Path("{id}/download")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
-  public Response downloadPackage(@PathParam("id") int id) throws IOException {
+  public Response downloadPackage(@PathParam("id") int id, @QueryParam("packageName") String packageName) throws IOException {
+    if (packageName == null) {
+        packageName = "prediction" + String.valueOf(id);
+    }
+    if (!Utils.isAlphaNumeric(packageName)) {
+        throw new IllegalArgumentException("The package name must be alphanumeric only.");
+    }      
 
-    org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysisImpl plpa = service.exportAnalysis(id);
+    PatientLevelPredictionAnalysisImpl plpa = service.exportAnalysis(id);
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-    service.hydrateAnalysis(plpa, baos);
+    service.hydrateAnalysis(plpa, packageName, baos);
 
     Response response = Response
             .ok(baos)

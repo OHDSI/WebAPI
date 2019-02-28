@@ -360,7 +360,11 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     }
 
     @Override
-    public void hydrateAnalysis(EstimationAnalysisImpl analysis, OutputStream out) throws JsonProcessingException {
+    public void hydrateAnalysis(EstimationAnalysisImpl analysis, String packageName, OutputStream out) throws JsonProcessingException {
+        if (packageName == null || !Utils.isAlphaNumeric(packageName)) {
+            throw new IllegalArgumentException("The package name must be alphanumeric only.");
+        }
+        analysis.setPackageName(packageName);
         String studySpecs = Utils.serialize(analysis, true);
         Hydra h = new Hydra(studySpecs);
         h.hydrate(out);
@@ -379,8 +383,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         analysisFile.setFileName(packageFilename);
         try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             EstimationAnalysisImpl analysis = exportAnalysis(estimation);
-            analysis.setPackageName(packageName);
-            hydrateAnalysis(analysis, out);
+            hydrateAnalysis(analysis, packageName, out);
             analysisFile.setContents(out.toByteArray());
         }
         analysisFiles.add(analysisFile);

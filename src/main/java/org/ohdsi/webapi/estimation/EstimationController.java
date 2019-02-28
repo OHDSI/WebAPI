@@ -134,6 +134,18 @@ public class EstimationController {
     ExceptionUtils.throwNotFoundExceptionIfNull(estimation, String.format(NO_ESTIMATION_MESSAGE, id));
     return service.exportAnalysis(estimation);
   }
+  /**
+   * Import the full estimation specification
+   * @param analysis The full estimation specification
+   * @return The newly imported estimation
+   */
+  @POST
+  @Path("import")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Estimation importAnalysis(EstimationAnalysisImpl analysis) throws Exception {
+      return service.importAnalysis(analysis);
+  }  
 
   @GET
   @Path("{id}/download")

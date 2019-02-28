@@ -133,6 +133,14 @@ public class PredictionController {
 
     return service.exportAnalysis(id);
   }
+  
+  @POST
+  @Path("import")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public PredictionAnalysis importAnalysis(PatientLevelPredictionAnalysisImpl analysis) throws Exception {
+    return service.importAnalysis(analysis);
+  }  
 
   @GET
   @Path("{id}/download")

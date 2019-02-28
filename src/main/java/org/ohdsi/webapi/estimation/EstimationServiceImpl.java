@@ -99,9 +99,6 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     private EstimationRepository estimationRepository;
 
     @Autowired
-    private PermissionManager authorizer;
-
-    @Autowired
     private Environment env;
 
     @Autowired
@@ -139,8 +136,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
 
         Date currentTime = Calendar.getInstance().getTime();
 
-        UserEntity user = authorizer.getCurrentUser();
-        est.setCreatedBy(user);
+        est.setCreatedBy(getCurrentUser());
         est.setCreatedDate(currentTime);
 
         return this.estimationRepository.save(est);
@@ -152,8 +148,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         Estimation estFromDB = estimationRepository.findOne(id);
         Date currentTime = Calendar.getInstance().getTime();
 
-        UserEntity user = authorizer.getCurrentUser();
-        est.setModifiedBy(user);
+        est.setModifiedBy(getCurrentUser());
         est.setModifiedDate(currentTime);
         // Prevent any updates to protected fields like created/createdBy
         est.setCreatedDate(estFromDB.getCreatedDate());
@@ -267,8 +262,105 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         return expression;
     }
 
-    public void hydrateAnalysis(EstimationAnalysisImpl analysis, OutputStream out) throws JsonProcessingException {
+    @Override
+    public Estimation importAnalysis(EstimationAnalysisImpl analysis) throws Exception {
+        try {
+            if (analysis.getEstimationAnalysisSettings().getEstimationType() != EstimationTypeEnum.COMPARATIVE_COHORT_ANALYSIS) {
+                String estimationType = analysis.getEstimationAnalysisSettings().getEstimationType().name();
+                throw new UnsupportedOperationException("Cannot import " + estimationType);
+            }
+            
+            // Open up the analysis and get the relevant portions for import
+            Settings settings = analysis.getEstimationAnalysisSettings().getAnalysisSpecification();
+            ComparativeCohortAnalysisImpl ccaSpec = (ComparativeCohortAnalysisImpl) settings;
+            List<TargetComparatorOutcomesImpl> tcoList = ccaSpec.getTargetComparatorOutcomes();
+            List<CohortMethodAnalysisImpl> ccaList = ccaSpec.getCohortMethodAnalysisList();
+            
+            // Create all of the cohort definitions 
+            // and map the IDs from old -> new
+            Map<Long, Long> cohortIds = new HashMap<>();
+            AnalysisCohortDefinitionImportService cohortImportService = new AnalysisCohortDefinitionImportService(security, userRepository, cohortDefinitionRepository);
+            analysis.getCohortDefinitions().forEach((analysisCohortDefinition) -> {
+                Integer oldId = analysisCohortDefinition.getId();
+                analysisCohortDefinition.setId(null);
+                CohortDefinition cd = cohortImportService.persistCohort(analysisCohortDefinition);
+                cohortIds.put(Long.valueOf(oldId), Long.valueOf(cd.getId()));
+                analysisCohortDefinition.setId(cd.getId());
+                log.debug("cohort created: " + cd.getId());
+            });
+            
+            // Create all of the concept sets and map
+            // the IDs from old -> new
+            Map<Integer, Integer> conceptSetIdMap = new HashMap<>();
+            AnalysisConceptSetImportService conceptSetImportService = new AnalysisConceptSetImportService(conceptSetService);
+            analysis.getConceptSets().forEach((pcs) -> { 
+               int oldId = pcs.id;
+               ConceptSetDTO cs = conceptSetImportService.persistConceptSet(pcs);
+               pcs.id = cs.getId();
+               conceptSetIdMap.put(oldId, cs.getId());
+                log.debug("concept set created: " + cs.getId());
+            });
+            
+            // Replace all of the T/C/Os with the new IDs
+            tcoList.forEach((tco) -> {
+                // Get the new IDs
+                Long newT = cohortIds.get(tco.getTargetId());
+                Long newC = cohortIds.get(tco.getComparatorId());
+                List<Long> newOs = new ArrayList<>();
+                tco.getOutcomeIds().forEach((o) -> {
+                    newOs.add(cohortIds.get(o));
+                });
+                // Set the TCO to use the new IDs
+                tco.setTargetId(newT);
+                tco.setComparatorId(newC);
+                tco.setOutcomeIds(newOs);
+                // Clear any included/excluded covarite concept ids
+                tco.setExcludedCovariateConceptIds(new ArrayList<>());
+                tco.setIncludedCovariateConceptIds(new ArrayList<>());
+            });
+            
+            // Replace all of the negative controls with the new IDs
+            analysis.getNegativeControls().forEach((nc) -> {
+                Long newT = cohortIds.get(nc.getTargetId());
+                Long newC = cohortIds.get(nc.getComparatorId());
+                nc.setTargetId(newT);
+                nc.setComparatorId(newC);
+                // No need to set the outcomes since these are concept IDs
+                // and will transfer in fine
+            });
+            
+            // Replace all of the concept sets
+            analysis.getConceptSetCrossReference().forEach((ConceptSetCrossReferenceImpl xref) -> {
+                Integer newConceptSetId = conceptSetIdMap.get(xref.getConceptSetId());
+                xref.setConceptSetId(newConceptSetId);
+            });
+            
+            // Clear all of the concept IDs from the covariate settings
+            ccaList.forEach((cca) -> {
+                cca.getDbCohortMethodDataArgs().getCovariateSettings().setIncludedCovariateConceptIds(new ArrayList<>());
+                cca.getDbCohortMethodDataArgs().getCovariateSettings().setExcludedCovariateConceptIds(new ArrayList<>());
+            });
+            analysis.getPositiveControlSynthesisArgs().getCovariateSettings().setIncludedCovariateConceptIds(new ArrayList<>());
+            analysis.getPositiveControlSynthesisArgs().getCovariateSettings().setExcludedCovariateConceptIds(new ArrayList<>());
+            
+            // Remove the ID
+            analysis.setId(null);
+            
+            // Create the estimation 
+            Estimation est = new Estimation();
+            est.setDescription(analysis.getDescription());
+            est.setName(String.format(ENTITY_COPY_PREFIX, analysis.getName()));
+            est.setType(EstimationTypeEnum.COMPARATIVE_COHORT_ANALYSIS);
+            est.setSpecification(Utils.serialize(analysis));
+            return this.createEstimation(est);
+        } catch (Exception e) {
+            log.debug("Error whie importing estimation analysis: " + e.getMessage());
+            throw e;
+        }
+    }
 
+    @Override
+    public void hydrateAnalysis(EstimationAnalysisImpl analysis, OutputStream out) throws JsonProcessingException {
         String studySpecs = Utils.serialize(analysis, true);
         Hydra h = new Hydra(studySpecs);
         h.hydrate(out);

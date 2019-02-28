@@ -17,8 +17,6 @@ import org.ohdsi.webapi.prediction.domain.PredictionGenerationEntity;
 import org.ohdsi.webapi.prediction.repository.PredictionAnalysisGenerationRepository;
 import org.ohdsi.webapi.prediction.repository.PredictionAnalysisRepository;
 import org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysisImpl;
-import org.ohdsi.webapi.prediction.specification.PredictionCohortDefinition;
-import org.ohdsi.webapi.prediction.specification.PredictionConceptSet;
 import org.ohdsi.webapi.service.*;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
@@ -38,11 +36,19 @@ import javax.transaction.Transactional;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.GENERATE_PREDICTION_ANALYSIS;
 import static org.ohdsi.webapi.Constants.Params.*;
+import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
+import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
+import org.ohdsi.webapi.analysis.AnalysisConceptSet;
+import org.ohdsi.webapi.analysis.importer.AnalysisCohortDefinitionImportService;
+import org.ohdsi.webapi.analysis.importer.AnalysisConceptSetImportService;
+import org.ohdsi.webapi.featureextraction.specification.CovariateSettingsImpl;
+import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 
 @Service
 @Transactional
@@ -156,17 +162,17 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         expression.setOrganizationName(env.getRequiredProperty("organization.name"));
         
         // Retrieve the cohort definition details
-        ArrayList<PredictionCohortDefinition> detailedList = new ArrayList<>();
-        for (PredictionCohortDefinition c : expression.getCohortDefinitions()) {
+        ArrayList<AnalysisCohortDefinition> detailedList = new ArrayList<>();
+        for (AnalysisCohortDefinition c : expression.getCohortDefinitions()) {
             CohortDefinition cd = cohortDefinitionRepository.findOneWithDetail(c.getId());
-            detailedList.add(new PredictionCohortDefinition(cd));
+            detailedList.add(new AnalysisCohortDefinition(cd));
         }
         expression.setCohortDefinitions(detailedList);
         
         // Retrieve the concept set expressions
-        ArrayList<PredictionConceptSet> pcsList = new ArrayList<>();
+        ArrayList<AnalysisConceptSet> pcsList = new ArrayList<>();
         HashMap<Integer, ArrayList<Long>> conceptIdentifiers = new HashMap<Integer, ArrayList<Long>>();
-        for (PredictionConceptSet pcs : expression.getConceptSets()) {
+        for (AnalysisConceptSet pcs : expression.getConceptSets()) {
             pcs.expression = conceptSetService.getConceptSetExpression(pcs.id);
             pcsList.add(pcs);
             conceptIdentifiers.put(pcs.id, new ArrayList<>(vocabularyService.resolveConceptSetExpression(pcs.expression)));
@@ -187,9 +193,73 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         return expression;
     }
     
+    @Override
+    public PredictionAnalysis importAnalysis(PatientLevelPredictionAnalysisImpl analysis) throws Exception {
+        try {
+            // Create all of the cohort definitions 
+            // and map the IDs from old -> new
+            List<BigDecimal> newTargetIds = new ArrayList<>();
+            List<BigDecimal> newOutcomeIds = new ArrayList<>();
+            AnalysisCohortDefinitionImportService cohortImportService = new AnalysisCohortDefinitionImportService(security, userRepository, cohortDefinitionRepository);
+            analysis.getCohortDefinitions().forEach((analysisCohortDefinition) -> {
+                BigDecimal oldId = new BigDecimal(analysisCohortDefinition.getId());
+                analysisCohortDefinition.setId(null);
+                CohortDefinition cd = cohortImportService.persistCohort(analysisCohortDefinition);
+                if (analysis.getTargetIds().contains(oldId)) {
+                    newTargetIds.add(new BigDecimal(cd.getId()));
+                }
+                if (analysis.getOutcomeIds().contains(oldId)) {
+                    newOutcomeIds.add(new BigDecimal(cd.getId()));
+                }
+                analysisCohortDefinition.setId(cd.getId());
+            });
+            
+            // Create all of the concept sets and map
+            // the IDs from old -> new
+            Map<Integer, Integer> conceptSetIdMap = new HashMap<>();
+            AnalysisConceptSetImportService conceptSetImportService = new AnalysisConceptSetImportService(conceptSetService);
+            analysis.getConceptSets().forEach((pcs) -> { 
+               int oldId = pcs.id;
+               ConceptSetDTO cs = conceptSetImportService.persistConceptSet(pcs);
+               pcs.id = cs.getId();
+               conceptSetIdMap.put(oldId, cs.getId());
+            });
+            
+            // Replace all of the cohort definitions
+            analysis.setTargetIds(newTargetIds);
+            analysis.setOutcomeIds(newOutcomeIds);
+            
+            // Replace all of the concept sets
+            analysis.getConceptSetCrossReference().forEach((ConceptSetCrossReferenceImpl xref) -> {
+                Integer newConceptSetId = conceptSetIdMap.get(xref.getConceptSetId());
+                xref.setConceptSetId(newConceptSetId);
+            });
+            
+            // Clear all of the concept IDs from the covariate settings
+            analysis.getCovariateSettings().forEach((CovariateSettingsImpl cs) -> {
+                cs.setIncludedCovariateConceptIds(new ArrayList<>());
+                cs.setExcludedCovariateConceptIds(new ArrayList<>());
+            });
+            
+            // Remove the ID
+            analysis.setId(null);
+            
+            // Create the prediction analysis
+            PredictionAnalysis pa = new PredictionAnalysis();
+            pa.setDescription(analysis.getDescription());
+            pa.setName(String.format(ENTITY_COPY_PREFIX, analysis.getName()));
+            pa.setSpecification(Utils.serialize(analysis));
+            
+            return this.createAnalysis(pa);
+        } catch (Exception e) {
+            log.debug("Error whie importing prediction analysis: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    @Override
     public void hydrateAnalysis(org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysisImpl plpa, OutputStream out) throws JsonProcessingException {
         String studySpecs = Utils.serialize(plpa, true);
-
         Hydra h = new Hydra(studySpecs);
         h.hydrate(out);
     }

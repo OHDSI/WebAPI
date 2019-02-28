@@ -21,6 +21,7 @@ public class SerializedCcToCcConverter implements AttributeConverter<CohortChara
     public String convertToDatabaseColumn(CohortCharacterizationEntity data) {
 
         CcExportDTO cohortCharacterizationDTO = conversionService.convert(data, CcExportDTO.class);
+        cohortCharacterizationDTO.setUpdatedAt(null);
         return Utils.serialize(cohortCharacterizationDTO);
     }
 

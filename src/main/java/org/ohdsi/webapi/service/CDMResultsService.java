@@ -54,13 +54,10 @@ public class CDMResultsService extends AbstractDaoService {
     }
 
     public void warmCaches(){
-        sourceService.getSources().stream().forEach((s) -> {
-            for (SourceDaimon sd : s.daimons) {
-                if (sd.getDaimonType() == SourceDaimon.DaimonType.Results) {
-                    warmCache(s.sourceKey);
-                }
-            }
-        });
+			sourceService.getSources()
+				.stream()
+				.filter(s -> s.daimons.stream().anyMatch(sd -> Objects.equals(sd.getDaimonType(), SourceDaimon.DaimonType.Results)) && s.daimons.stream().anyMatch(sd -> sd.getPriority() > 0))
+				.forEach(s -> warmCache(s.sourceKey));
     }
 
     @Path("{sourceKey}/conceptRecordCount")

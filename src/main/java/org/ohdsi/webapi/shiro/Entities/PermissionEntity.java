@@ -35,7 +35,7 @@ public class PermissionEntity implements Serializable {
       name = "sec_permission_generator",
       strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
       parameters = {
-          @Parameter(name = "sequence_name", value = "sec_permission_sequence"),
+          @Parameter(name = "sequence_name", value = "sec_permission_id_seq"),
           @Parameter(name = "initial_value", value = "1000"),
           @Parameter(name = "increment_size", value = "1")
       }

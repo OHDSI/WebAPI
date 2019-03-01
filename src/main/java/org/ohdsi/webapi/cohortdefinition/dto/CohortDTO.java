@@ -1,11 +1,10 @@
 package org.ohdsi.webapi.cohortdefinition.dto;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.ohdsi.analysis.Cohort;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.cohortdefinition.ExpressionType;
 
-public class CohortDTO extends CohortMetadataDTO implements Cohort, Comparable<CohortDTO> {
+public class CohortDTO extends CohortMetadataDTO implements Cohort{
 
     private CohortExpression expression;
     private ExpressionType expressionType;
@@ -24,10 +23,5 @@ public class CohortDTO extends CohortMetadataDTO implements Cohort, Comparable<C
 
     public void setExpressionType(final ExpressionType expressionType) {
         this.expressionType = expressionType;
-    }
-
-    @Override
-    public int compareTo(CohortDTO o) {
-        return ObjectUtils.compare(this.getId(), o.getId());
     }
 }

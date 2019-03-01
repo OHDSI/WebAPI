@@ -40,7 +40,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.ohdsi.analysis.Cohort;
@@ -60,7 +59,7 @@ import org.ohdsi.webapi.model.CommonEntity;
     attributeNodes = { @NamedAttributeNode(value = "details", subgraph = "detailsGraph") },
     subgraphs = {@NamedSubgraph(name = "detailsGraph", type = CohortDefinitionDetails.class, attributeNodes = { @NamedAttributeNode(value="expression")})}
 )
-public class CohortDefinition extends CommonEntity implements Serializable, Cohort, Comparable<CohortDefinition>{
+public class CohortDefinition extends CommonEntity implements Serializable, Cohort{
 
   private static final long serialVersionUID = 1L;
     
@@ -191,10 +190,5 @@ public class CohortDefinition extends CommonEntity implements Serializable, Coho
   public void setCohortCharacterizations(final List<CohortCharacterizationEntity> cohortCharacterizations) {
 
     this.cohortCharacterizations = cohortCharacterizations;
-  }
-
-  @Override
-  public int compareTo(CohortDefinition o) {
-    return ObjectUtils.compare(this.id, o.id);
   }
 }

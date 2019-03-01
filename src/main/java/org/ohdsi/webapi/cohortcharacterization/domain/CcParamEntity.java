@@ -10,7 +10,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
@@ -18,7 +17,7 @@ import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterizationPa
 
 @Entity
 @Table(name = "cc_param")
-public class CcParamEntity implements CohortCharacterizationParam, Comparable<CcParamEntity> {
+public class CcParamEntity implements CohortCharacterizationParam {
     
     @Id
     @GenericGenerator(
@@ -84,10 +83,5 @@ public class CcParamEntity implements CohortCharacterizationParam, Comparable<Cc
     @Override
     public int hashCode() {
         return Objects.hash(getId(), super.hashCode());
-    }
-
-    @Override
-    public int compareTo(CcParamEntity o) {
-        return ObjectUtils.compare(this.name, o.name);
     }
 }

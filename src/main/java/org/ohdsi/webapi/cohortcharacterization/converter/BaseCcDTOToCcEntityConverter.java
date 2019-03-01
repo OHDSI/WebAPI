@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.cohortcharacterization.converter;
 
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.ohdsi.analysis.CohortMetadata;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcStrataConceptSetEntity;
@@ -34,16 +35,21 @@ public abstract class BaseCcDTOToCcEntityConverter<T extends BaseCcDTO<? extends
 
     cohortCharacterization.setId(source.getId());
 
-    final Set<CohortDefinition> convertedCohorts = new TreeSet<>(converterUtils.convertSet(source.getCohorts(), CohortDefinition.class));
+    Set<CohortDefinition> convertedCohorts = new TreeSet<>((o1, o2) -> ObjectUtils.compare(o1.getId(), o2.getId()));
+    convertedCohorts.addAll(converterUtils.convertSet(source.getCohorts(), CohortDefinition.class));
     cohortCharacterization.setCohortDefinitions(convertedCohorts);
 
-    final Set<FeAnalysisEntity> convertedFeatureAnalyses = new TreeSet<>(converterUtils.convertSet(source.getFeatureAnalyses(), FeAnalysisEntity.class));
+    Set<FeAnalysisEntity> convertedFeatureAnalyses = new TreeSet<>((o1, o2) -> ObjectUtils.compare(o1.getId(), o2.getId()));
+    convertedFeatureAnalyses.addAll(converterUtils.convertSet(source.getFeatureAnalyses(), FeAnalysisEntity.class));
     cohortCharacterization.setFeatureAnalyses(convertedFeatureAnalyses);
 
-    final Set<CcParamEntity> convertedParameters = new TreeSet<>(converterUtils.convertSet(source.getParameters(), CcParamEntity.class));
+    Set<CcParamEntity> convertedParameters = new TreeSet<>((o1, o2) -> ObjectUtils.compare(o1.getName(), o2.getName()));
+    convertedParameters.addAll(converterUtils.convertSet(source.getParameters(), CcParamEntity.class));
     cohortCharacterization.setParameters(convertedParameters);
 
-    final Set<CcStrataEntity> convertedStratas = new TreeSet<>(converterUtils.convertSet(source.getStratas(), CcStrataEntity.class));
+    Set<CcStrataEntity> convertedStratas = new TreeSet<>((o1, o2) -> ObjectUtils.compare(
+            o1.getName() + o1.getId() + o1.getExpressionString(), o2.getName() + o2.getId() + o2.getExpressionString()));
+    convertedStratas.addAll(converterUtils.convertSet(source.getStratas(), CcStrataEntity.class));
     cohortCharacterization.setStratas(convertedStratas);
 
     CcStrataConceptSetEntity conceptSetEntity = new CcStrataConceptSetEntity();

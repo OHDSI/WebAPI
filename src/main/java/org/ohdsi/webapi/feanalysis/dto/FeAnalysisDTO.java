@@ -6,7 +6,7 @@ import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysis;
 import org.ohdsi.webapi.feanalysis.FeAnalysisDeserializer;
 
 @JsonDeserialize(using = FeAnalysisDeserializer.class)
-public class FeAnalysisDTO extends FeAnalysisShortDTO implements FeatureAnalysis, Comparable<FeAnalysisDTO> {
+public class FeAnalysisDTO extends FeAnalysisShortDTO implements FeatureAnalysis{
 
     private String value;
     @JsonProperty("design")
@@ -37,10 +37,5 @@ public class FeAnalysisDTO extends FeAnalysisShortDTO implements FeatureAnalysis
     public String getDescr() {
 
         return getDescription();
-    }
-
-    @Override
-    public int compareTo(FeAnalysisDTO o) {
-        return this.getId().compareTo(o.getId());
     }
 }

@@ -8,6 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.ohdsi.analysis.Utils;
@@ -17,7 +18,7 @@ import org.ohdsi.circe.cohortdefinition.CriteriaGroup;
 
 @Entity
 @Table(name = "cc_strata")
-public class CcStrataEntity implements CohortCharacterizationStrata, Comparable<CcStrataEntity> {
+public class CcStrataEntity implements CohortCharacterizationStrata {
 
   @Id
   @GenericGenerator(
@@ -74,10 +75,5 @@ public class CcStrataEntity implements CohortCharacterizationStrata, Comparable<
 
   public void setCohortCharacterization(CohortCharacterizationEntity cohortCharacterization) {
     this.cohortCharacterization = cohortCharacterization;
-  }
-
-  @Override
-  public int compareTo(CcStrataEntity o) {
-    return this.id.compareTo(o.id);
   }
 }

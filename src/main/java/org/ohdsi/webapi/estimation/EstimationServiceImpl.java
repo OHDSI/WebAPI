@@ -12,7 +12,6 @@ import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression.ConceptSetItem;
 import org.ohdsi.hydra.Hydra;
-import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
 import org.ohdsi.webapi.analysis.importer.AnalysisConceptSetImportService;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
@@ -32,8 +31,6 @@ import org.ohdsi.webapi.service.ConceptSetService;
 import org.ohdsi.webapi.service.JobService;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.service.VocabularyService;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
-import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.EntityUtils;
@@ -60,7 +57,8 @@ import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
 import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
 import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
 import org.ohdsi.webapi.analysis.AnalysisConceptSet;
-import org.ohdsi.webapi.analysis.importer.AnalysisCohortDefinitionImportService;
+import org.ohdsi.webapi.analysis.converter.AnalysisCohortDefinitionToCohortDefinitionConverter;
+import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 
 @Service
@@ -82,6 +80,8 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
             "createdBy",
             "modifiedBy"
     );
+    
+    private final AnalysisCohortDefinitionToCohortDefinitionConverter cohortConversionService = new AnalysisCohortDefinitionToCohortDefinitionConverter();
 
     @PersistenceContext
     protected EntityManager entityManager;
@@ -115,7 +115,13 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
 
     @Autowired
     private SourceAccessor sourceAccessor;
+    
+    @Autowired
+    private DesignImportService designImportService;
 
+    @Autowired
+    private AnalysisConceptSetImportService conceptSetImportService;    
+    
     @Value("${organization.name}")
     private String organizationName;
 
@@ -279,11 +285,10 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
             // Create all of the cohort definitions 
             // and map the IDs from old -> new
             Map<Long, Long> cohortIds = new HashMap<>();
-            AnalysisCohortDefinitionImportService cohortImportService = new AnalysisCohortDefinitionImportService(security, userRepository, cohortDefinitionRepository);
             analysis.getCohortDefinitions().forEach((analysisCohortDefinition) -> {
                 Integer oldId = analysisCohortDefinition.getId();
                 analysisCohortDefinition.setId(null);
-                CohortDefinition cd = cohortImportService.persistCohort(analysisCohortDefinition);
+                CohortDefinition cd = designImportService.persistCohortOrGetExisting(cohortConversionService.convert(analysisCohortDefinition), true);
                 cohortIds.put(Long.valueOf(oldId), Long.valueOf(cd.getId()));
                 analysisCohortDefinition.setId(cd.getId());
                 log.debug("cohort created: " + cd.getId());
@@ -292,7 +297,6 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
             // Create all of the concept sets and map
             // the IDs from old -> new
             Map<Integer, Integer> conceptSetIdMap = new HashMap<>();
-            AnalysisConceptSetImportService conceptSetImportService = new AnalysisConceptSetImportService(conceptSetService);
             analysis.getConceptSets().forEach((pcs) -> { 
                int oldId = pcs.id;
                ConceptSetDTO cs = conceptSetImportService.persistConceptSet(pcs);

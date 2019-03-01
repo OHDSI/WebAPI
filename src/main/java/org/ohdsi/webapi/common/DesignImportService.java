@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.common;
 
+import java.util.Arrays;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetailsRepository;
@@ -31,9 +32,13 @@ public class DesignImportService {
     }
 
     public CohortDefinition persistCohortOrGetExisting(final CohortDefinition cohort) {
-
+        return this.persistCohortOrGetExisting(cohort, false);
+    }
+    
+    public CohortDefinition persistCohortOrGetExisting(final CohortDefinition cohort, final Boolean includeCohortNameInComparison) {
         final CohortDefinitionDetails details = cohort.getDetails();
-        return findCohortByExpressionHashcode(details).orElseGet(() -> {
+        Optional<CohortDefinition> findCohortResult = includeCohortNameInComparison ? this.findCohortByExpressionHashcodeAndName(details, cohort.getName()) : this.findCohortByExpressionHashcode(details);
+        return findCohortResult.orElseGet(() -> {
             final UserEntity user = userRepository.findByLogin(security.getSubject());
             cohort.setCreatedBy(user);
             cohort.setCreatedDate(new Date());
@@ -46,12 +51,21 @@ public class DesignImportService {
     }
 
     private Optional<CohortDefinition> findCohortByExpressionHashcode(final CohortDefinitionDetails details) {
-
         List<CohortDefinitionDetails> detailsFromDb = detailsRepository.findByHashCode(details.calculateHashCode());
         return detailsFromDb
                 .stream()
                 .filter(v -> Objects.equals(v.getStandardizedExpression(), details.getStandardizedExpression()))
                 .findFirst()
                 .map(CohortDefinitionDetails::getCohortDefinition);
+    }
+    
+    private Optional<CohortDefinition> findCohortByExpressionHashcodeAndName(final CohortDefinitionDetails details, final String cohortName) {
+        List<CohortDefinitionDetails> detailsFromDb = detailsRepository.findByHashCode(details.calculateHashCode());
+        return detailsFromDb
+                .stream()
+                .filter(v -> Objects.equals(v.getStandardizedExpression(), details.getStandardizedExpression()))
+                .map(CohortDefinitionDetails::getCohortDefinition)
+                .filter(c -> c.getName().equals(cohortName))
+                .findFirst();
     }
 }

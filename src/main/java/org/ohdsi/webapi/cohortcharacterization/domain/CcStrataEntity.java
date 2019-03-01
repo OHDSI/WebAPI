@@ -80,6 +80,6 @@ public class CcStrataEntity implements CohortCharacterizationStrata, Comparable<
 
   @Override
   public int compareTo(CcStrataEntity o) {
-    return ObjectUtils.compare(this.id, o.id);
+    return ObjectUtils.compare(this.name, o.name);
   }
 }

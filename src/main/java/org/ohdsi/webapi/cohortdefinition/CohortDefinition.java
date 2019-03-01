@@ -92,8 +92,8 @@ public class CohortDefinition extends CommonEntity implements Serializable, Coho
   @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "cohortDefinition")
   private Set<CohortGenerationInfo> generationInfoList;
 
-	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "cohortDefinition")
-	private Set<CohortAnalysisGenerationInfo> cohortAnalysisGenerationInfoList = new HashSet<>();
+  @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "cohortDefinition")
+  private Set<CohortAnalysisGenerationInfo> cohortAnalysisGenerationInfoList = new HashSet<>();
 
   @ManyToMany(targetEntity = CohortCharacterizationEntity.class, fetch = FetchType.LAZY)
   @JoinTable(name = "cc_cohort",

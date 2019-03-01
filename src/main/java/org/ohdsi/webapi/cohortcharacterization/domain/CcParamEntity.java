@@ -88,6 +88,6 @@ public class CcParamEntity implements CohortCharacterizationParam, Comparable<Cc
 
     @Override
     public int compareTo(CcParamEntity o) {
-        return ObjectUtils.compare(this.id, o.id);
+        return ObjectUtils.compare(this.name, o.name);
     }
 }

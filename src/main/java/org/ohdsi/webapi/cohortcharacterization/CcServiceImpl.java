@@ -2,6 +2,7 @@ package org.ohdsi.webapi.cohortcharacterization;
 
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.google.common.collect.ImmutableList;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
@@ -188,7 +189,10 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
     private void sortInnerEntities(final CohortCharacterizationEntity savedEntity) {
         savedEntity.setFeatureAnalyses(new TreeSet<>(savedEntity.getFeatureAnalyses()));
-        savedEntity.setCohortDefinitions(new TreeSet<>(savedEntity.getCohortDefinitions()));
+
+        Set<CohortDefinition> cohortDefinitions = new TreeSet<>((o1, o2) -> ObjectUtils.compare(o1.getId(), o2.getId()));
+        cohortDefinitions.addAll(savedEntity.getCohortDefinitions());
+        savedEntity.setCohortDefinitions(cohortDefinitions);
     }
 
     @Override

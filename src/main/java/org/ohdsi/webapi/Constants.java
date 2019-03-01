@@ -1,11 +1,6 @@
 package org.ohdsi.webapi;
 
-import org.ohdsi.webapi.source.Source;
-import com.google.common.collect.ImmutableList;
-import com.odysseusinc.arachne.commons.types.DBMSType;
 import org.springframework.batch.core.ExitStatus;
-
-import java.util.List;
 
 public interface Constants {
   String GENERATE_COHORT = "generateCohort";
@@ -15,6 +10,7 @@ public interface Constants {
   String GENERATE_PREDICTION_ANALYSIS = "generatePredictionAnalysis";
   String GENERATE_ESTIMATION_ANALYSIS = "generateEstimationAnalysis";
   String WARM_CACHE = "warmCache";
+  String WARM_CACHE_BY_USER = "warmCacheByUser";
   String USERS_IMPORT = "usersImport";
 
   String FAILED = ExitStatus.FAILED.getExitCode();

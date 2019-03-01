@@ -17,6 +17,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import static org.ohdsi.webapi.Constants.WARM_CACHE_BY_USER;
+
 @Service
 public class NotificationServiceImpl implements NotificationService {
     private static final int MAX_SIZE = 10;
@@ -39,6 +41,9 @@ public class NotificationServiceImpl implements NotificationService {
             WHITE_LIST.add(g.getJobName());
             FOLDING_KEYS.add(g.getExecutionFoldingKey());
         });
+
+        // Custom job not assosiated with entity
+        WHITE_LIST.add(WARM_CACHE_BY_USER);
     }
 
     @Override

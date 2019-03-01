@@ -59,7 +59,7 @@ public class CcController {
     private FeAnalysisService feAnalysisService;
     private ConversionService conversionService;
     private ConverterUtils converterUtils;
-    private final CommonGenerationSensitiveInfoService sensitiveInfoService;
+    private final CommonGenerationSensitiveInfoService<CommonGenerationDTO> sensitiveInfoService;
     private final SourceService sourceService;
 
     CcController(

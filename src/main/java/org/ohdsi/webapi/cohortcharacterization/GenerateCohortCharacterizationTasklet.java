@@ -187,24 +187,30 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
         }
 
         private List<PreparedStatementCreator> getQueriesForCustomDistributionAnalyses(final Integer cohortId) {
+            String[] sqlParamNames = new String[]{ "strataId", "strataName" };
+            Object[] sqlParamVars = new Object[]{ null, null };
+
             return cohortCharacterization.getFeatureAnalyses()
                     .stream()
                     .filter(FeAnalysisEntity::isCustom)
                     .filter(v -> v.getStatType() == CcResultType.DISTRIBUTION)
                     .flatMap(v -> prepareStatements(customDistributionQueryWrapper, sessionId,
                             CUSTOM_PARAMETERS,
-                            new String[] { String.valueOf(v.getId()), org.springframework.util.StringUtils.quote(v.getName()), String.valueOf(cohortId), String.valueOf(jobId), renderCustomAnalysisDesign((FeAnalysisWithStringEntity) v, cohortId)}).stream())
+                            new String[] { String.valueOf(v.getId()), v.getName(), String.valueOf(cohortId), String.valueOf(jobId), renderCustomAnalysisDesign((FeAnalysisWithStringEntity) v, cohortId) }, sqlParamNames, sqlParamVars).stream())
                     .collect(Collectors.toList());
         }
         
         private List<PreparedStatementCreator> getQueriesForCustomPrevalenceAnalyses(final Integer cohortId) {
+            String[] sqlParamNames = new String[]{ "strataId", "strataName" };
+            Object[] sqlParamVars = new Object[]{ null, null };
+
             return cohortCharacterization.getFeatureAnalyses()
                     .stream()
                     .filter(FeAnalysisEntity::isCustom)
                     .filter(v -> v.getStatType() == CcResultType.PREVALENCE)
                     .flatMap(v -> prepareStatements(customPrevalenceQueryWrapper, sessionId,
                             CUSTOM_PARAMETERS,
-                            new String[] { String.valueOf(v.getId()), org.springframework.util.StringUtils.quote(v.getName()), String.valueOf(cohortId), String.valueOf(jobId), renderCustomAnalysisDesign((FeAnalysisWithStringEntity) v, cohortId)}).stream())
+                            new String[] { String.valueOf(v.getId()), v.getName(), String.valueOf(cohortId), String.valueOf(jobId), renderCustomAnalysisDesign((FeAnalysisWithStringEntity) v, cohortId) }, sqlParamNames, sqlParamVars).stream())
                     .collect(Collectors.toList());
         }
 

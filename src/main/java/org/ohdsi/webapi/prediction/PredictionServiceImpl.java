@@ -46,7 +46,6 @@ import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
 import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
 import org.ohdsi.webapi.analysis.AnalysisConceptSet;
 import org.ohdsi.webapi.analysis.converter.AnalysisCohortDefinitionToCohortDefinitionConverter;
-import org.ohdsi.webapi.analysis.importer.AnalysisConceptSetImportService;
 import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.featureextraction.specification.CovariateSettingsImpl;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
@@ -100,9 +99,6 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     @Autowired
     private DesignImportService designImportService;
     
-    @Autowired
-    private AnalysisConceptSetImportService conceptSetImportService;
-
     private final String EXEC_SCRIPT = ResourceHelper.GetResourceAsString("/resources/prediction/r/runAnalysis.R");
 
     @Override
@@ -227,7 +223,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
             Map<Integer, Integer> conceptSetIdMap = new HashMap<>();
             analysis.getConceptSets().forEach((pcs) -> { 
                int oldId = pcs.id;
-               ConceptSetDTO cs = conceptSetImportService.persistConceptSet(pcs);
+               ConceptSetDTO cs = designImportService.persistConceptSet(pcs);
                pcs.id = cs.getId();
                conceptSetIdMap.put(oldId, cs.getId());
             });

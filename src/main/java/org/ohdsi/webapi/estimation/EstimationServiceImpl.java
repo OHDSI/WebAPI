@@ -12,7 +12,6 @@ import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression.ConceptSetItem;
 import org.ohdsi.hydra.Hydra;
-import org.ohdsi.webapi.analysis.importer.AnalysisConceptSetImportService;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.common.generation.AnalysisExecutionSupport;
@@ -119,9 +118,6 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     @Autowired
     private DesignImportService designImportService;
 
-    @Autowired
-    private AnalysisConceptSetImportService conceptSetImportService;    
-    
     @Value("${organization.name}")
     private String organizationName;
 
@@ -299,7 +295,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
             Map<Integer, Integer> conceptSetIdMap = new HashMap<>();
             analysis.getConceptSets().forEach((pcs) -> { 
                int oldId = pcs.id;
-               ConceptSetDTO cs = conceptSetImportService.persistConceptSet(pcs);
+               ConceptSetDTO cs = designImportService.persistConceptSet(pcs);
                pcs.id = cs.getId();
                conceptSetIdMap.put(oldId, cs.getId());
                 log.debug("concept set created: " + cs.getId());

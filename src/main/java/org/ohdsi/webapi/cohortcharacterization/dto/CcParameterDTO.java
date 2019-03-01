@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.cohortcharacterization.dto;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterizationParam;
 
 public class CcParameterDTO implements CohortCharacterizationParam, Comparable<CcParameterDTO> {
@@ -36,6 +37,6 @@ public class CcParameterDTO implements CohortCharacterizationParam, Comparable<C
 
     @Override
     public int compareTo(CcParameterDTO o) {
-        return this.id.compareTo(o.id);
+        return ObjectUtils.compare(this.id, o.id);
     }
 }

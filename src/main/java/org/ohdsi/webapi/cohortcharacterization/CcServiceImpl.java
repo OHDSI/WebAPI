@@ -154,11 +154,20 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
     private CohortCharacterizationEntity saveCc(final CohortCharacterizationEntity entity) {
         CohortCharacterizationEntity savedEntity = repository.saveAndFlush(entity);
-        for(CcStrataEntity strata : entity.getStratas()){
+
+        for(CcStrataEntity strata: entity.getStratas()){
           strata.setCohortCharacterization(savedEntity);
           strataRepository.save(strata);
         }
+
+        for(CcParamEntity param: entity.getParameters()){
+          param.setCohortCharacterization(savedEntity);
+          paramRepository.save(param);
+        }
+
+        entityManager.flush();
         entityManager.refresh(savedEntity);
+
         savedEntity = findByIdWithLinkedEntities(savedEntity.getId());
 
         sortInnerEntities(savedEntity);

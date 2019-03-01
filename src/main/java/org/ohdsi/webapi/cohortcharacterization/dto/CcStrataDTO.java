@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.cohortcharacterization.dto;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterizationStrata;
 import org.ohdsi.circe.cohortdefinition.CriteriaGroup;
 
@@ -35,6 +36,6 @@ public class CcStrataDTO implements CohortCharacterizationStrata, Comparable<CcS
 
   @Override
   public int compareTo(CcStrataDTO o) {
-    return this.id.compareTo(o.id);
+    return ObjectUtils.compare(this.id, o.id);
   }
 }

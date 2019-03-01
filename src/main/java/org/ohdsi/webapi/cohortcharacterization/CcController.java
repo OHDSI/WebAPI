@@ -96,6 +96,8 @@ public class CcController {
         int similar = service.countLikeName(copyName);
         cc.setId(null);
         cc.setName(similar > 0 ? copyName + " (" + similar + ")" : copyName);
+        cc.getStratas().forEach(s -> s.setId(null));
+        cc.getParameters().forEach(p -> p.setId(null));
         return create(cc);
     }
 

@@ -39,6 +39,8 @@ import javax.persistence.NamedSubgraph;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+
+import org.apache.commons.lang3.ObjectUtils;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.ohdsi.analysis.Cohort;
@@ -193,6 +195,6 @@ public class CohortDefinition extends CommonEntity implements Serializable, Coho
 
   @Override
   public int compareTo(CohortDefinition o) {
-    return this.id.compareTo(o.id);
+    return ObjectUtils.compare(this.id, o.id);
   }
 }

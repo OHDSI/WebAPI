@@ -9,6 +9,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import org.apache.commons.lang3.ObjectUtils;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
@@ -86,6 +88,6 @@ public class CcParamEntity implements CohortCharacterizationParam, Comparable<Cc
 
     @Override
     public int compareTo(CcParamEntity o) {
-        return this.id.compareTo(o.id);
+        return ObjectUtils.compare(this.id, o.id);
     }
 }

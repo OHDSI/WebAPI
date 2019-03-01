@@ -8,6 +8,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import org.apache.commons.lang3.ObjectUtils;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.ohdsi.analysis.Utils;
@@ -78,6 +80,6 @@ public class CcStrataEntity implements CohortCharacterizationStrata, Comparable<
 
   @Override
   public int compareTo(CcStrataEntity o) {
-    return this.id.compareTo(o.id);
+    return ObjectUtils.compare(this.id, o.id);
   }
 }

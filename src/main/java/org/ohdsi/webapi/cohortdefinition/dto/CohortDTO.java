@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.cohortdefinition.dto;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.ohdsi.analysis.Cohort;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.cohortdefinition.ExpressionType;
@@ -27,6 +28,6 @@ public class CohortDTO extends CohortMetadataDTO implements Cohort, Comparable<C
 
     @Override
     public int compareTo(CohortDTO o) {
-        return this.getId().compareTo(o.getId());
+        return ObjectUtils.compare(this.getId(), o.getId());
     }
 }

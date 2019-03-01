@@ -2,6 +2,7 @@ package org.ohdsi.webapi.feanalysis.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.apache.commons.lang3.ObjectUtils;
 import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysis;
 import org.ohdsi.webapi.feanalysis.FeAnalysisDeserializer;
 
@@ -41,6 +42,6 @@ public class FeAnalysisDTO extends FeAnalysisShortDTO implements FeatureAnalysis
 
     @Override
     public int compareTo(FeAnalysisDTO o) {
-        return this.getId().compareTo(o.getId());
+        return ObjectUtils.compare(this.getId(), o.getId());
     }
 }

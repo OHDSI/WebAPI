@@ -44,12 +44,12 @@ public class ConceptSet extends CommonEntity implements Serializable {
   )
   @GeneratedValue(generator = "concept_set_generator")
   @Column(name="concept_set_id")
-  private int id;
+  private Integer id;
   
   @Column(name="concept_set_name")
   private String name;
   
-  public int getId() {
+  public Integer getId() {
     return id;
   }
 

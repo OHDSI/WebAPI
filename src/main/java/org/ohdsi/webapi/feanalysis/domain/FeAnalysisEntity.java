@@ -167,7 +167,7 @@ public abstract class FeAnalysisEntity<T> extends CommonEntity implements Featur
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), super.hashCode());
+        return Objects.hash(getId());
     }
 
     public Boolean getLocked() {

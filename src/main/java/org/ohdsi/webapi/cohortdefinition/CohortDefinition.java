@@ -165,7 +165,7 @@ public class CohortDefinition extends CommonEntity implements Serializable, Coho
   @Override
   public int hashCode() {
 
-    return Objects.hash(getId(), super.hashCode());
+    return Objects.hash(getId());
   }
 
   public Set<CohortAnalysisGenerationInfo> getCohortAnalysisGenerationInfoList() {

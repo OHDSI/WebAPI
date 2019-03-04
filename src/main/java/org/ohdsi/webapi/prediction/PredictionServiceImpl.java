@@ -109,6 +109,11 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     }
     
     @Override
+    public PredictionAnalysis getById(Integer id) {
+        return predictionAnalysisRepository.findOne(id, COMMONS_ENTITY_GRAPH);
+    }
+    
+    @Override
     public void delete(final int id) {
         this.predictionAnalysisRepository.delete(id);
     }
@@ -119,7 +124,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         pred.setCreatedBy(getCurrentUser());
         pred.setCreatedDate(currentTime);
     
-        return this.predictionAnalysisRepository.save(pred);
+        return save(pred);
     }
 
     @Override
@@ -133,7 +138,12 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         pred.setCreatedDate(predFromDB.getCreatedDate());
         pred.setCreatedBy(predFromDB.getCreatedBy());
 
-        return this.predictionAnalysisRepository.save(pred);
+        return save(pred);
+    }
+    
+    @Override
+    public int countLikeName(String name) {
+        return predictionAnalysisRepository.countByNameStartsWith(name);
     }
     
     @Override
@@ -251,8 +261,11 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
             // Create the prediction analysis
             PredictionAnalysis pa = new PredictionAnalysis();
             pa.setDescription(analysis.getDescription());
-            pa.setName(String.format(ENTITY_COPY_PREFIX, analysis.getName()));
             pa.setSpecification(Utils.serialize(analysis));
+            
+            String newName = String.format(ENTITY_COPY_PREFIX, analysis.getName());
+            int similar = countLikeName(newName);
+            pa.setName(similar > 0 ? newName + " (" + similar + ")" : newName);
             
             PredictionAnalysis savedAnalysis = this.createAnalysis(pa);
             return predictionAnalysisRepository.findOne(savedAnalysis.getId(), COMMONS_ENTITY_GRAPH);
@@ -329,5 +342,12 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     public PredictionGenerationEntity getGeneration(Long generationId) {
 
         return generationRepository.findOne(generationId, DEFAULT_ENTITY_GRAPH);
+    }
+    
+    private PredictionAnalysis save(PredictionAnalysis analysis) {
+        analysis = predictionAnalysisRepository.saveAndFlush(analysis);
+        entityManager.refresh(analysis);
+        analysis = getById(analysis.getId());
+        return analysis;
     }
 }

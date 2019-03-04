@@ -33,4 +33,8 @@ public interface PredictionService {
   PredictionGenerationEntity getGeneration(Long generationId);
 
   List<PredictionGenerationEntity> getPredictionGenerations(Integer predictionAnalysisId);
+  
+  int countLikeName(String copyName); 
+  
+  PredictionAnalysis getById(Integer id);  
 }

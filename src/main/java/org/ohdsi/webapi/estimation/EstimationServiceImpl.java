@@ -127,6 +127,11 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
 
         return estimationRepository.findAll(COMMONS_ENTITY_GRAPH);
     }
+    
+    @Override
+    public Estimation getById(Integer id) {
+        return estimationRepository.findOne(id, COMMONS_ENTITY_GRAPH);
+    }
 
     @Override
     public void delete(final int id) {
@@ -142,7 +147,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         est.setCreatedBy(getCurrentUser());
         est.setCreatedDate(currentTime);
 
-        return this.estimationRepository.save(est);
+        return save(est);
     }
 
     @Override
@@ -157,9 +162,14 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         est.setCreatedDate(estFromDB.getCreatedDate());
         est.setCreatedBy(estFromDB.getCreatedBy());
 
-        return this.estimationRepository.save(est);
+        return save(est);
     }
-
+    
+    @Override
+    public int countLikeName(String name) {
+        return estimationRepository.countByNameStartsWith(name);
+    }
+    
     @Override
     public Estimation copy(final int id) throws Exception {
 
@@ -350,9 +360,11 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
             // Create the estimation 
             Estimation est = new Estimation();
             est.setDescription(analysis.getDescription());
-            est.setName(String.format(ENTITY_COPY_PREFIX, analysis.getName()));
             est.setType(EstimationTypeEnum.COMPARATIVE_COHORT_ANALYSIS);
             est.setSpecification(Utils.serialize(analysis));
+            String newName = String.format(ENTITY_COPY_PREFIX, analysis.getName());
+            int similar = countLikeName(newName);
+            est.setName(similar > 0 ? newName + " (" + similar + ")" : newName);
 
             Estimation savedEstimation = this.createEstimation(est);
             return estimationRepository.findOne(savedEstimation.getId(), COMMONS_ENTITY_GRAPH);
@@ -426,5 +438,12 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     public EstimationGenerationEntity getGeneration(Long generationId) {
 
         return generationRepository.findOne(generationId, DEFAULT_ENTITY_GRAPH);
+    }
+    
+    private Estimation save(Estimation analysis) {
+        analysis = estimationRepository.saveAndFlush(analysis);
+        entityManager.refresh(analysis);
+        analysis = getById(analysis.getId());
+        return analysis;
     }
 }

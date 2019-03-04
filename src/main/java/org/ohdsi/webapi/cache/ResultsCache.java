@@ -16,7 +16,6 @@
 package org.ohdsi.webapi.cache;
 
 import java.util.HashMap;
-import java.util.Objects;
 import org.ohdsi.webapi.cdmresults.CDMResultsCache;
 
 /**
@@ -31,7 +30,7 @@ public class ResultsCache {
     }
     
     public CDMResultsCache getCache(String sourceKey) {
-        CDMResultsCache returnVal = this.getCaches().putIfAbsent(sourceKey, new CDMResultsCache());
-        return Objects.isNull(returnVal) ? this.getCaches().get(sourceKey) : returnVal;
+        this.getCaches().putIfAbsent(sourceKey, new CDMResultsCache());
+        return this.getCaches().get(sourceKey);
     }
 }

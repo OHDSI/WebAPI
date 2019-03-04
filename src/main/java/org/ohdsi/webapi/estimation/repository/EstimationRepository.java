@@ -4,5 +4,5 @@ import com.cosium.spring.data.jpa.entity.graph.repository.EntityGraphJpaReposito
 import org.ohdsi.webapi.estimation.Estimation;
 
 public interface EstimationRepository extends EntityGraphJpaRepository<Estimation, Integer> {
-    
+    int countByNameStartsWith(String pattern);   
 }

@@ -22,4 +22,6 @@ public interface EstimationService {
   void runGeneration(Estimation estimation, String sourceKey) throws IOException;
   List<EstimationGenerationEntity> getEstimationGenerations(Integer estimationAnalysisId);
   EstimationGenerationEntity getGeneration(Long generationId);
+  int countLikeName(String copyName); 
+  Estimation getById(Integer id);
 }

@@ -116,10 +116,10 @@ SELECT
 		f.cohort_end_date
 		WHEN 4 THEN
 		s.cohort_end_date
-		END as cohort_end_datel
+		END as cohort_end_date
 INTO #split_overlay_events
 FROM #collapsed_dates_events f
-JOIN #collapsed_dates_events s ON first.subject_id = s.subject_id
+JOIN #collapsed_dates_events s ON f.subject_id = s.subject_id
     AND f.cohort_start_date < s.cohort_start_date
     AND f.cohort_end_date < s.cohort_end_date
     AND f.cohort_end_date > s.cohort_start_date

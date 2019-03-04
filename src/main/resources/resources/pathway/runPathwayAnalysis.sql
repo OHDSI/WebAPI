@@ -92,37 +92,37 @@ IF OBJECT_ID('tempdb..#split_overlay_events', 'U') IS NOT NULL
 DROP TABLE #split_overlay_events;
 
 SELECT
-	CASE WHEN ordinal < 3 THEN first.id ELSE second.id END as id,
-	CASE WHEN ordinal < 3 THEN first.event_cohort_index ELSE second.event_cohort_index END event_cohort_index,
-	CASE WHEN ordinal < 3 THEN first.subject_id ELSE second.subject_id END subject_id,
+	CASE WHEN ordinal < 3 THEN f.id ELSE s.id END as id,
+	CASE WHEN ordinal < 3 THEN f.event_cohort_index ELSE s.event_cohort_index END event_cohort_index,
+	CASE WHEN ordinal < 3 THEN f.subject_id ELSE s.subject_id END subject_id,
 
 	CASE ordinal
 		WHEN 1 THEN
-		first.cohort_start_date
+		f.cohort_start_date
 		WHEN 2 THEN
-		second.cohort_start_date
+		s.cohort_start_date
 		WHEN 3 THEN
-		second.cohort_start_date
+		s.cohort_start_date
 		WHEN 4 THEN
-		first.cohort_end_date
+		f.cohort_end_date
 		END as cohort_start_date,
 
 	CASE ordinal
 		WHEN 1 THEN
-		second.cohort_start_date
+		s.cohort_start_date
 		WHEN 2 THEN
-		first.cohort_end_date
+		f.cohort_end_date
 		WHEN 3 THEN
-		first.cohort_end_date
+		f.cohort_end_date
 		WHEN 4 THEN
-		second.cohort_end_date
+		s.cohort_end_date
 		END as cohort_end_date
 INTO #split_overlay_events
-FROM #collapsed_dates_events first
-JOIN #collapsed_dates_events second ON first.subject_id = second.subject_id
-    AND first.cohort_start_date < second.cohort_start_date
-    AND first.cohort_end_date < second.cohort_end_date
-    AND first.cohort_end_date > second.cohort_start_date
+FROM #collapsed_dates_events f
+JOIN #collapsed_dates_events s ON f.subject_id = s.subject_id
+    AND f.cohort_start_date < s.cohort_start_date
+    AND f.cohort_end_date < s.cohort_end_date
+    AND f.cohort_end_date > s.cohort_start_date
 CROSS JOIN (SELECT 1 ordinal UNION SELECT 2 UNION SELECT 3 UNION SELECT 4) multiplier;
 
 /*
@@ -156,8 +156,8 @@ IF OBJECT_ID('tempdb..#non_repetitive_events', 'U') IS NOT NULL
 DROP TABLE #non_repetitive_events;
 
 SELECT
-  ROW_NUMBER() OVER (PARTITION BY subject_id ORDER BY cohort_start_date) ordinal,
-  combo_id,
+  CAST(ROW_NUMBER() OVER (PARTITION BY subject_id ORDER BY cohort_start_date) AS INT) ordinal,
+  CAST(combo_id AS BIGINT) combo_id,
   subject_id,
   cohort_start_date,
   cohort_end_date
@@ -197,12 +197,12 @@ SELECT
   target_count.cnt AS target_cohort_count,
   pathway_count.cnt AS pathways_count
 FROM (
-  SELECT COUNT(*) cnt
+  SELECT CAST(COUNT(*) AS INT) cnt
   FROM @target_cohort_table
   WHERE cohort_definition_id = @pathway_target_cohort_id
 ) target_count,
 (
-  SELECT COUNT(DISTINCT subject_id) cnt
+  SELECT CAST(COUNT(DISTINCT subject_id) AS INT) cnt
   FROM @target_database_schema.pathway_analysis_events
   WHERE pathway_analysis_generation_id = @generation_id
   AND target_cohort_id = @pathway_target_cohort_id

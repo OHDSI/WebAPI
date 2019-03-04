@@ -56,9 +56,9 @@ import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
 import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
 import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
 import org.ohdsi.webapi.analysis.AnalysisConceptSet;
-import org.ohdsi.webapi.analysis.converter.AnalysisCohortDefinitionToCohortDefinitionConverter;
 import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
+import org.springframework.core.convert.ConversionService;
 
 @Service
 @Transactional
@@ -80,8 +80,6 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
             "modifiedBy"
     );
     
-    private final AnalysisCohortDefinitionToCohortDefinitionConverter cohortConversionService = new AnalysisCohortDefinitionToCohortDefinitionConverter();
-
     @PersistenceContext
     protected EntityManager entityManager;
     
@@ -117,6 +115,9 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     
     @Autowired
     private DesignImportService designImportService;
+    
+    @Autowired
+    private ConversionService conversionService;
 
     @Value("${organization.name}")
     private String organizationName;
@@ -284,7 +285,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
             analysis.getCohortDefinitions().forEach((analysisCohortDefinition) -> {
                 Integer oldId = analysisCohortDefinition.getId();
                 analysisCohortDefinition.setId(null);
-                CohortDefinition cd = designImportService.persistCohortOrGetExisting(cohortConversionService.convert(analysisCohortDefinition), true);
+                CohortDefinition cd = designImportService.persistCohortOrGetExisting(conversionService.convert(analysisCohortDefinition, CohortDefinition.class), true);
                 cohortIds.put(Long.valueOf(oldId), Long.valueOf(cd.getId()));
                 analysisCohortDefinition.setId(cd.getId());
                 log.debug("cohort created: " + cd.getId());

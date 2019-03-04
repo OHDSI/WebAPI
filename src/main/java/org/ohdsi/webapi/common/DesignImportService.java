@@ -20,7 +20,6 @@ import org.ohdsi.webapi.analysis.AnalysisConceptSet;
 import org.ohdsi.webapi.conceptset.ConceptSetItem;
 import org.ohdsi.webapi.service.ConceptSetService;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.convert.ConversionService;
 
 @Service

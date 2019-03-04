@@ -45,10 +45,10 @@ import static org.ohdsi.webapi.Constants.Params.*;
 import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
 import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
 import org.ohdsi.webapi.analysis.AnalysisConceptSet;
-import org.ohdsi.webapi.analysis.converter.AnalysisCohortDefinitionToCohortDefinitionConverter;
 import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.featureextraction.specification.CovariateSettingsImpl;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
+import org.springframework.core.convert.ConversionService;
 
 @Service
 @Transactional
@@ -61,8 +61,6 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
             "modifiedBy"
     );
     
-    private final AnalysisCohortDefinitionToCohortDefinitionConverter cohortConversionService = new AnalysisCohortDefinitionToCohortDefinitionConverter();
-
     @Autowired
     private PredictionAnalysisRepository predictionAnalysisRepository;
 
@@ -98,6 +96,9 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     
     @Autowired
     private DesignImportService designImportService;
+    
+    @Autowired
+    private ConversionService conversionService;    
     
     private final String EXEC_SCRIPT = ResourceHelper.GetResourceAsString("/resources/prediction/r/runAnalysis.R");
 
@@ -176,7 +177,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         
         // Retrieve the concept set expressions
         ArrayList<AnalysisConceptSet> pcsList = new ArrayList<>();
-        HashMap<Integer, ArrayList<Long>> conceptIdentifiers = new HashMap<Integer, ArrayList<Long>>();
+        HashMap<Integer, ArrayList<Long>> conceptIdentifiers = new HashMap<>();
         for (AnalysisConceptSet pcs : expression.getConceptSets()) {
             pcs.expression = conceptSetService.getConceptSetExpression(pcs.id);
             pcsList.add(pcs);
@@ -208,7 +209,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
             analysis.getCohortDefinitions().forEach((analysisCohortDefinition) -> {
                 BigDecimal oldId = new BigDecimal(analysisCohortDefinition.getId());
                 analysisCohortDefinition.setId(null);
-                CohortDefinition cd = designImportService.persistCohortOrGetExisting(cohortConversionService.convert(analysisCohortDefinition), true);
+                CohortDefinition cd = designImportService.persistCohortOrGetExisting(conversionService.convert(analysisCohortDefinition, CohortDefinition.class), true);
                 if (analysis.getTargetIds().contains(oldId)) {
                     newTargetIds.add(new BigDecimal(cd.getId()));
                 }

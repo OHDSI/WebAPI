@@ -20,7 +20,7 @@ ALTER TABLE ${ohdsiSchema}.cca_execution_ext ADD PRIMARY KEY (cca_execution_id);
 ALTER TABLE ${ohdsiSchema}.cohort ADD PRIMARY KEY (cohort_definition_id, subject_id);
 ALTER TABLE ${ohdsiSchema}.cohort_analysis_list_xref ADD PRIMARY KEY (source_id, cohort_id, analysis_id);
 ALTER TABLE ${ohdsiSchema}.cohort_concept_map ADD PRIMARY KEY (cohort_definition_id);
-ALTER TABLE ${ohdsiSchema}.cohort_inclusion ADD PRIMARY KEY (cohort_definition_id);
+ALTER TABLE ${ohdsiSchema}.cohort_inclusion ADD PRIMARY KEY (cohort_definition_id, rule_sequence);
 ALTER TABLE ${ohdsiSchema}.cohort_inclusion_result ADD PRIMARY KEY (cohort_definition_id);
 ALTER TABLE ${ohdsiSchema}.cohort_inclusion_stats ADD PRIMARY KEY (cohort_definition_id);
 ALTER TABLE ${ohdsiSchema}.cohort_summary_stats ADD PRIMARY KEY (cohort_definition_id);

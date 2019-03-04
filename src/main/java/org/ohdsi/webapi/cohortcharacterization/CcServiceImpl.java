@@ -23,6 +23,7 @@ import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
+import org.ohdsi.webapi.model.WithId;
 import org.ohdsi.webapi.service.*;
 import org.ohdsi.webapi.shiro.annotations.CcGenerationId;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
@@ -54,6 +55,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.GENERATE_COHORT_CHARACTERIZATION;
@@ -154,17 +156,27 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
     private CohortCharacterizationEntity saveCc(final CohortCharacterizationEntity entity) {
         CohortCharacterizationEntity savedEntity = repository.saveAndFlush(entity);
-        for(CcStrataEntity strata : entity.getStratas()){
+
+        for(CcStrataEntity strata: entity.getStratas()){
           strata.setCohortCharacterization(savedEntity);
           strataRepository.save(strata);
         }
+
+        for(CcParamEntity param: entity.getParameters()){
+          param.setCohortCharacterization(savedEntity);
+          paramRepository.save(param);
+        }
+
+        entityManager.flush();
         entityManager.refresh(savedEntity);
+
         savedEntity = findByIdWithLinkedEntities(savedEntity.getId());
 
-        sortInnerEntities(savedEntity);
-
+        Date modifiedDate = savedEntity.getModifiedDate();
+        savedEntity.setModifiedDate(null);
         final String serialized = this.serializeCc(savedEntity);
         savedEntity.setHashCode(serialized.hashCode());
+        savedEntity.setModifiedDate(modifiedDate);
 
         return repository.save(savedEntity);
     }
@@ -172,10 +184,6 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     @Override
     public void deleteCc(Long ccId) {
         repository.delete(ccId);
-    }
-
-    private void sortInnerEntities(final CohortCharacterizationEntity savedEntity) {
-        savedEntity.setFeatureAnalyses(new TreeSet<>(savedEntity.getFeatureAnalyses()));
     }
 
     @Override
@@ -192,11 +200,6 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         if (Objects.nonNull(entity.getStrataOnly())) {
           foundEntity.setStrataOnly(entity.getStrataOnly());
         }
-
-        foundEntity.setFeatureAnalyses(entity.getFeatureAnalyses());
-        foundEntity.setCohortDefinitions(entity.getCohortDefinitions());
-        foundEntity.setParameters(entity.getParameters());
-        foundEntity.setStratas(entity.getStratas());
 
         foundEntity.setModifiedDate(new Date());
         foundEntity.setModifiedBy(getCurrentUser());
@@ -222,10 +225,9 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
   }
 
   private void updateStratas(CohortCharacterizationEntity entity, CohortCharacterizationEntity foundEntity) {
-        final List<CcStrataEntity> stratasToDelete = foundEntity.getStratas()
-                .stream()
-                .filter(strata -> entity.getStratas().stream().noneMatch(s -> Objects.equals(s.getId(), strata.getId())))
-                .collect(Collectors.toList());
+        final List<CcStrataEntity> stratasToDelete = getLinksToDelete(foundEntity,
+                existingLink -> entity.getStratas().stream().noneMatch(newLink -> Objects.equals(newLink.getId(), existingLink.getId())),
+                CohortCharacterizationEntity::getStratas);
         foundEntity.getStratas().removeAll(stratasToDelete);
         strataRepository.delete(stratasToDelete);
         Map<Long, CcStrataEntity> strataEntityMap = foundEntity.getStratas().stream()
@@ -257,6 +259,15 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         foundEntity.getFeatureAnalyses().addAll(entity.getFeatureAnalyses());
     }
 
+    private <T extends WithId> List<T> getLinksToDelete(final CohortCharacterizationEntity foundEntity,
+                                                        Predicate<? super T> filterPredicate,
+                                                        Function<CohortCharacterizationEntity, Set<T>> getter) {
+        return getter.apply(foundEntity)
+                .stream()
+                .filter(filterPredicate)
+                .collect(Collectors.toList());
+    }
+
     private void updateParams(final CohortCharacterizationEntity entity, final CohortCharacterizationEntity foundEntity) {
         updateOrCreateParams(entity, foundEntity);
         deleteParams(entity, foundEntity);
@@ -264,10 +275,10 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
     private void deleteParams(final CohortCharacterizationEntity entity, final CohortCharacterizationEntity foundEntity) {
         final Map<String, CcParamEntity> nameToParamFromInputMap = buildParamNameToParamMap(entity);
-        final List<CcParamEntity> paramsForDelete = foundEntity.getParameters()
-                .stream()
-                .filter(parameter -> !nameToParamFromInputMap.containsKey(parameter.getName()))
-                .collect(Collectors.toList());
+        List<CcParamEntity> paramsForDelete  = getLinksToDelete(foundEntity,
+                parameter -> !nameToParamFromInputMap.containsKey(parameter.getName()),
+                CohortCharacterizationEntity::getParameters);
+        foundEntity.getParameters().removeAll(paramsForDelete);
         paramRepository.delete(paramsForDelete);
     }
 

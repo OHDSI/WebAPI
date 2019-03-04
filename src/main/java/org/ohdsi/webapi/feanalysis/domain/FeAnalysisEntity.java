@@ -15,6 +15,8 @@ import javax.persistence.InheritanceType;
 import javax.persistence.Lob;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
+
+import org.apache.commons.lang3.ObjectUtils;
 import org.hibernate.annotations.DiscriminatorFormula;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
@@ -165,7 +167,7 @@ public abstract class FeAnalysisEntity<T> extends CommonEntity implements Featur
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), super.hashCode());
+        return Objects.hash(getId());
     }
 
     public Boolean getLocked() {
@@ -188,7 +190,7 @@ public abstract class FeAnalysisEntity<T> extends CommonEntity implements Featur
 
     @Override
     public int compareTo(final FeAnalysisEntity o) {
-        return this.name.compareTo(o.name);
+        return ObjectUtils.compare(this.name, o.name);
     }
 
     public CcResultType getStatType() {

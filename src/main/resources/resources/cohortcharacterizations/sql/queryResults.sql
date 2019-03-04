@@ -1,3 +1,12 @@
+-- If results may be shown in comparison mode (there are several records for the same covariate ID in report),
+-- filter out only those covariates where all siblings are below threshold
+WITH threshold_passed_ids AS (
+  select covariate_id
+  from @results_database_schema.cc_results r
+  where r.cc_generation_id = @cohort_characterization_generation_id
+  GROUP BY r.type, covariate_id
+  HAVING (r.type <> 'PREVALENCE' OR MAX(avg_value) > @threshold_level)
+)
 select
        r.type,
        r.fa_type,
@@ -22,4 +31,5 @@ select
        r.strata_id,
        r.strata_name
 from @results_database_schema.cc_results r
-where r.cc_generation_id = @cohort_characterization_generation_id AND (r.type <> 'PREVALENCE' OR (r.type = 'PREVALENCE' AND r.avg_value > @threshold_level))
+  JOIN threshold_passed_ids tpi ON tpi.covariate_id = r.covariate_id
+where r.cc_generation_id = @cohort_characterization_generation_id

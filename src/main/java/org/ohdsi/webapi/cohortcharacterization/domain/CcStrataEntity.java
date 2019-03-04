@@ -8,16 +8,18 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterizationStrata;
 import org.ohdsi.circe.cohortdefinition.CriteriaGroup;
+import org.ohdsi.webapi.model.WithId;
 
 
 @Entity
 @Table(name = "cc_strata")
-public class CcStrataEntity implements CohortCharacterizationStrata {
+public class CcStrataEntity implements CohortCharacterizationStrata, WithId {
 
   @Id
   @GenericGenerator(

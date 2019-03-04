@@ -4,7 +4,7 @@ import org.ohdsi.analysis.Cohort;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.cohortdefinition.ExpressionType;
 
-public class CohortDTO extends CohortMetadataDTO implements Cohort {
+public class CohortDTO extends CohortMetadataDTO implements Cohort{
 
     private CohortExpression expression;
     private ExpressionType expressionType;

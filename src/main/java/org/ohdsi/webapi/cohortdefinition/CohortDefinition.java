@@ -39,6 +39,7 @@ import javax.persistence.NamedSubgraph;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.ohdsi.analysis.Cohort;
@@ -90,8 +91,8 @@ public class CohortDefinition extends CommonEntity implements Serializable, Coho
   @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "cohortDefinition")
   private Set<CohortGenerationInfo> generationInfoList;
 
-	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "cohortDefinition")
-	private Set<CohortAnalysisGenerationInfo> cohortAnalysisGenerationInfoList = new HashSet<>();
+  @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "cohortDefinition")
+  private Set<CohortAnalysisGenerationInfo> cohortAnalysisGenerationInfoList = new HashSet<>();
 
   @ManyToMany(targetEntity = CohortCharacterizationEntity.class, fetch = FetchType.LAZY)
   @JoinTable(name = "cc_cohort",
@@ -164,7 +165,7 @@ public class CohortDefinition extends CommonEntity implements Serializable, Coho
   @Override
   public int hashCode() {
 
-    return Objects.hash(getId(), super.hashCode());
+    return Objects.hash(getId());
   }
 
   public Set<CohortAnalysisGenerationInfo> getCohortAnalysisGenerationInfoList() {

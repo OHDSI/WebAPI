@@ -9,14 +9,16 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterizationParam;
+import org.ohdsi.webapi.model.WithId;
 
 @Entity
 @Table(name = "cc_param")
-public class CcParamEntity implements CohortCharacterizationParam {
+public class CcParamEntity implements CohortCharacterizationParam, WithId<Long> {
     
     @Id
     @GenericGenerator(

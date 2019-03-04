@@ -1,4 +1,4 @@
-INSERT INTO ${ohdsiSchema}.sec_permission(id, name, system_role) VALUES
+INSERT INTO ${ohdsiSchema}.sec_role(id, name, system_role) VALUES
   (NEXT VALUE FOR ${ohdsiSchema}.sec_role_sequence, 'Moderator', TRUE);
 
 insert into ${ohdsiSchema}.sec_permission(id, value, description)

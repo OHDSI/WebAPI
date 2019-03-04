@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import org.ohdsi.analysis.prediction.design.PatientLevelPredictionAnalysis;
 import org.ohdsi.analysis.hydra.design.SkeletonTypeEnum;
+import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
+import org.ohdsi.webapi.analysis.AnalysisConceptSet;
 import org.ohdsi.webapi.conceptset.ConceptSetCrossReferenceImpl;
 import org.ohdsi.webapi.featureextraction.specification.CovariateSettingsImpl;
 
@@ -27,8 +29,8 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
   private String createdDate = null;
   private String modifiedBy = null;
   private String modifiedDate = null;
-  private List<PredictionCohortDefinition> cohortDefinitions = null;
-  private List<PredictionConceptSet> conceptSets = null;
+  private List<AnalysisCohortDefinition> cohortDefinitions = null;
+  private List<AnalysisConceptSet> conceptSets = null;
   private List<ConceptSetCrossReferenceImpl> conceptSetCrossReference = null;
   private List<BigDecimal> targetIds = null;
   private List<BigDecimal> outcomeIds = null;
@@ -247,7 +249,7 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
      * @param cohortDefinitionsItem
      * @return
      */
-    public PatientLevelPredictionAnalysisImpl addCohortDefinitionsItem(PredictionCohortDefinition cohortDefinitionsItem) {
+    public PatientLevelPredictionAnalysisImpl addCohortDefinitionsItem(AnalysisCohortDefinition cohortDefinitionsItem) {
     if (this.cohortDefinitions == null) {
       this.cohortDefinitions = new ArrayList<>();
     }
@@ -260,7 +262,7 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
    * @return cohortDefinitions
    **/
   @Override
-  public List<PredictionCohortDefinition> getCohortDefinitions() {
+  public List<AnalysisCohortDefinition> getCohortDefinitions() {
     return cohortDefinitions;
   }
 
@@ -268,7 +270,7 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
      *
      * @param cohortDefinitions
      */
-    public void setCohortDefinitions(List<PredictionCohortDefinition> cohortDefinitions) {
+    public void setCohortDefinitions(List<AnalysisCohortDefinition> cohortDefinitions) {
     this.cohortDefinitions = cohortDefinitions;
   }
   
@@ -277,7 +279,7 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
      * @param conceptSetsItem
      * @return
      */
-    public PatientLevelPredictionAnalysisImpl addConceptSetsItem(PredictionConceptSet conceptSetsItem) {
+    public PatientLevelPredictionAnalysisImpl addConceptSetsItem(AnalysisConceptSet conceptSetsItem) {
     if (this.conceptSets == null) {
       this.conceptSets = new ArrayList<>();
     }
@@ -290,7 +292,7 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
    * @return conceptSets
    **/
   @Override
-  public List<PredictionConceptSet> getConceptSets() {
+  public List<AnalysisConceptSet> getConceptSets() {
     return conceptSets;
   }
 
@@ -298,7 +300,7 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
      *
      * @param conceptSets
      */
-    public void setConceptSets(List<PredictionConceptSet> conceptSets) {
+    public void setConceptSets(List<AnalysisConceptSet> conceptSets) {
     this.conceptSets = conceptSets;
   }
   

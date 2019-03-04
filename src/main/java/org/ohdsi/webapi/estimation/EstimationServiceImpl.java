@@ -5,6 +5,7 @@ import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ohdsi.analysis.Utils;
+import org.ohdsi.analysis.estimation.design.EstimationTypeEnum;
 import org.ohdsi.analysis.estimation.design.NegativeControlTypeEnum;
 import org.ohdsi.analysis.estimation.design.Settings;
 import org.ohdsi.circe.helper.ResourceHelper;
@@ -29,11 +30,9 @@ import org.ohdsi.webapi.service.ConceptSetService;
 import org.ohdsi.webapi.service.JobService;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.service.VocabularyService;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
-import org.ohdsi.webapi.shiro.PermissionManager;
+import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
-import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.SessionUtils;
@@ -57,6 +56,11 @@ import static org.ohdsi.webapi.Constants.GENERATE_ESTIMATION_ANALYSIS;
 import static org.ohdsi.webapi.Constants.Params.ESTIMATION_ANALYSIS_ID;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
 import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
+import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
+import org.ohdsi.webapi.analysis.AnalysisConceptSet;
+import org.ohdsi.webapi.common.DesignImportService;
+import org.ohdsi.webapi.service.dto.ConceptSetDTO;
+import org.springframework.core.convert.ConversionService;
 
 @Service
 @Transactional
@@ -94,9 +98,6 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     private EstimationRepository estimationRepository;
 
     @Autowired
-    private PermissionManager authorizer;
-
-    @Autowired
     private Environment env;
 
     @Autowired
@@ -114,6 +115,12 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     @Autowired
     private SourceAccessor sourceAccessor;
 
+    @Autowired
+    private DesignImportService designImportService;
+
+    @Autowired
+    private ConversionService conversionService;
+
     @Value("${organization.name}")
     private String organizationName;
 
@@ -121,6 +128,11 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     public Iterable<Estimation> getAnalysisList() {
 
         return estimationRepository.findAll(COMMONS_ENTITY_GRAPH);
+    }
+    
+    @Override
+    public Estimation getById(Integer id) {
+        return estimationRepository.findOne(id, COMMONS_ENTITY_GRAPH);
     }
 
     @Override
@@ -134,11 +146,10 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
 
         Date currentTime = Calendar.getInstance().getTime();
 
-        UserEntity user = authorizer.getCurrentUser();
-        est.setCreatedBy(user);
+        est.setCreatedBy(getCurrentUser());
         est.setCreatedDate(currentTime);
 
-        return this.estimationRepository.save(est);
+        return save(est);
     }
 
     @Override
@@ -147,16 +158,20 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         Estimation estFromDB = estimationRepository.findOne(id);
         Date currentTime = Calendar.getInstance().getTime();
 
-        UserEntity user = authorizer.getCurrentUser();
-        est.setModifiedBy(user);
+        est.setModifiedBy(getCurrentUser());
         est.setModifiedDate(currentTime);
         // Prevent any updates to protected fields like created/createdBy
         est.setCreatedDate(estFromDB.getCreatedDate());
         est.setCreatedBy(estFromDB.getCreatedBy());
 
-        return this.estimationRepository.save(est);
+        return save(est);
     }
-
+    
+    @Override
+    public int countLikeName(String name) {
+        return estimationRepository.countByNameStartsWith(name);
+    }
+    
     @Override
     public Estimation copy(final int id) throws Exception {
 
@@ -191,18 +206,18 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         expression.setOrganizationName(this.organizationName);
         
         // Retrieve the cohort definition details
-        List<EstimationCohortDefinition> detailedList = new ArrayList<>();
-        for (EstimationCohortDefinition c : expression.getCohortDefinitions()) {
+        List<AnalysisCohortDefinition> detailedList = new ArrayList<>();
+        for (AnalysisCohortDefinition c : expression.getCohortDefinitions()) {
             CohortDefinition cd = cohortDefinitionRepository.findOneWithDetail(c.getId());
-            detailedList.add(new EstimationCohortDefinition(cd));
+            detailedList.add(new AnalysisCohortDefinition(cd));
         }
         expression.setCohortDefinitions(detailedList);
         
         // Retrieve the concept set expressions
-        List<EstimationConceptSet> ecsList = new ArrayList<>();
+        List<AnalysisConceptSet> ecsList = new ArrayList<>();
         Map<Integer, List<Long>> conceptIdentifiers = new HashMap<>();
         Map<Integer, ConceptSetExpression> csExpressionList = new HashMap<>();
-        for (EstimationConceptSet pcs : expression.getConceptSets()) {
+        for (AnalysisConceptSet pcs : expression.getConceptSets()) {
             pcs.expression = conceptSetService.getConceptSetExpression(pcs.id);
             csExpressionList.put(pcs.id, pcs.expression);
             ecsList.add(pcs);
@@ -262,8 +277,111 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         return expression;
     }
 
-    public void hydrateAnalysis(EstimationAnalysisImpl analysis, OutputStream out) throws JsonProcessingException {
+    @Override
+    public Estimation importAnalysis(EstimationAnalysisImpl analysis) throws Exception {
+        try {
+            if (analysis.getEstimationAnalysisSettings().getEstimationType() != EstimationTypeEnum.COMPARATIVE_COHORT_ANALYSIS) {
+                String estimationType = analysis.getEstimationAnalysisSettings().getEstimationType().name();
+                throw new UnsupportedOperationException("Cannot import " + estimationType);
+            }
 
+            // Open up the analysis and get the relevant portions for import
+            Settings settings = analysis.getEstimationAnalysisSettings().getAnalysisSpecification();
+            ComparativeCohortAnalysisImpl ccaSpec = (ComparativeCohortAnalysisImpl) settings;
+            List<TargetComparatorOutcomesImpl> tcoList = ccaSpec.getTargetComparatorOutcomes();
+            List<CohortMethodAnalysisImpl> ccaList = ccaSpec.getCohortMethodAnalysisList();
+
+            // Create all of the cohort definitions
+            // and map the IDs from old -> new
+            Map<Long, Long> cohortIds = new HashMap<>();
+            analysis.getCohortDefinitions().forEach((analysisCohortDefinition) -> {
+                Integer oldId = analysisCohortDefinition.getId();
+                analysisCohortDefinition.setId(null);
+                CohortDefinition cd = designImportService.persistCohortOrGetExisting(conversionService.convert(analysisCohortDefinition, CohortDefinition.class), true);
+                cohortIds.put(Long.valueOf(oldId), Long.valueOf(cd.getId()));
+                analysisCohortDefinition.setId(cd.getId());
+                log.debug("cohort created: " + cd.getId());
+            });
+
+            // Create all of the concept sets and map
+            // the IDs from old -> new
+            Map<Integer, Integer> conceptSetIdMap = new HashMap<>();
+            analysis.getConceptSets().forEach((pcs) -> {
+               int oldId = pcs.id;
+               ConceptSetDTO cs = designImportService.persistConceptSet(pcs);
+               pcs.id = cs.getId();
+               conceptSetIdMap.put(oldId, cs.getId());
+                log.debug("concept set created: " + cs.getId());
+            });
+
+            // Replace all of the T/C/Os with the new IDs
+            tcoList.forEach((tco) -> {
+                // Get the new IDs
+                Long newT = cohortIds.get(tco.getTargetId());
+                Long newC = cohortIds.get(tco.getComparatorId());
+                List<Long> newOs = new ArrayList<>();
+                tco.getOutcomeIds().forEach((o) -> {
+                    newOs.add(cohortIds.get(o));
+                });
+                // Set the TCO to use the new IDs
+                tco.setTargetId(newT);
+                tco.setComparatorId(newC);
+                tco.setOutcomeIds(newOs);
+                // Clear any included/excluded covarite concept ids
+                tco.setExcludedCovariateConceptIds(new ArrayList<>());
+                tco.setIncludedCovariateConceptIds(new ArrayList<>());
+            });
+
+            // Replace all of the negative controls with the new IDs
+            analysis.getNegativeControls().forEach((nc) -> {
+                Long newT = cohortIds.get(nc.getTargetId());
+                Long newC = cohortIds.get(nc.getComparatorId());
+                nc.setTargetId(newT);
+                nc.setComparatorId(newC);
+                // No need to set the outcomes since these are concept IDs
+                // and will transfer in fine
+            });
+
+            // Replace all of the concept sets
+            analysis.getConceptSetCrossReference().forEach((ConceptSetCrossReferenceImpl xref) -> {
+                Integer newConceptSetId = conceptSetIdMap.get(xref.getConceptSetId());
+                xref.setConceptSetId(newConceptSetId);
+            });
+
+            // Clear all of the concept IDs from the covariate settings
+            ccaList.forEach((cca) -> {
+                cca.getDbCohortMethodDataArgs().getCovariateSettings().setIncludedCovariateConceptIds(new ArrayList<>());
+                cca.getDbCohortMethodDataArgs().getCovariateSettings().setExcludedCovariateConceptIds(new ArrayList<>());
+            });
+            analysis.getPositiveControlSynthesisArgs().getCovariateSettings().setIncludedCovariateConceptIds(new ArrayList<>());
+            analysis.getPositiveControlSynthesisArgs().getCovariateSettings().setExcludedCovariateConceptIds(new ArrayList<>());
+
+            // Remove the ID
+            analysis.setId(null);
+
+            // Create the estimation
+            Estimation est = new Estimation();
+            est.setDescription(analysis.getDescription());
+            est.setType(EstimationTypeEnum.COMPARATIVE_COHORT_ANALYSIS);
+            est.setSpecification(Utils.serialize(analysis));
+            String newName = String.format(ENTITY_COPY_PREFIX, analysis.getName());
+            int similar = countLikeName(newName);
+            est.setName(similar > 0 ? newName + " (" + similar + ")" : newName);
+
+            Estimation savedEstimation = this.createEstimation(est);
+            return estimationRepository.findOne(savedEstimation.getId(), COMMONS_ENTITY_GRAPH);
+        } catch (Exception e) {
+            log.debug("Error whie importing estimation analysis: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    @Override
+    public void hydrateAnalysis(EstimationAnalysisImpl analysis, String packageName, OutputStream out) throws JsonProcessingException {
+        if (packageName == null || !Utils.isAlphaNumeric(packageName)) {
+            throw new IllegalArgumentException("The package name must be alphanumeric only.");
+        }
+        analysis.setPackageName(packageName);
         String studySpecs = Utils.serialize(analysis, true);
         Hydra h = new Hydra(studySpecs);
         h.hydrate(out);
@@ -283,8 +401,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         analysisFile.setFileName(packageFilename);
         try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             EstimationAnalysisImpl analysis = exportAnalysis(estimation);
-            analysis.setPackageName(packageName);
-            hydrateAnalysis(analysis, out);
+            hydrateAnalysis(analysis, packageName, out);
             analysisFile.setContents(out.toByteArray());
         }
         analysisFiles.add(analysisFile);
@@ -324,5 +441,12 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     public EstimationGenerationEntity getGeneration(Long generationId) {
 
         return generationRepository.findOne(generationId, DEFAULT_ENTITY_GRAPH);
+    }
+    
+    private Estimation save(Estimation analysis) {
+        analysis = estimationRepository.saveAndFlush(analysis);
+        entityManager.refresh(analysis);
+        analysis = getById(analysis.getId());
+        return analysis;
     }
 }

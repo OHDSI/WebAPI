@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.ohdsi.analysis.hydra.design.SkeletonTypeEnum;
 import org.ohdsi.analysis.estimation.design.EstimationAnalysis;
+import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
+import org.ohdsi.webapi.analysis.AnalysisConceptSet;
 import org.ohdsi.webapi.conceptset.ConceptSetCrossReferenceImpl;
 
 /**
@@ -24,8 +26,8 @@ public class EstimationAnalysisImpl implements EstimationAnalysis {
   private String createdDate = null;
   private String modifiedBy = null;
   private String modifiedDate = null;
-  private List<EstimationCohortDefinition> cohortDefinitions = null;
-  private List<EstimationConceptSet> conceptSets = null;
+  private List<AnalysisCohortDefinition> cohortDefinitions = null;
+  private List<AnalysisConceptSet> conceptSets = null;
   private List<ConceptSetCrossReferenceImpl> conceptSetCrossReference = null;
   private List<NegativeControlImpl> negativeControls = null;
   private Boolean doPositiveControlSynthesis = false;
@@ -250,7 +252,7 @@ public class EstimationAnalysisImpl implements EstimationAnalysis {
      * @param cohortDefinitionsItem
      * @return
      */
-    public EstimationAnalysisImpl addCohortDefinitionsItem(EstimationCohortDefinition cohortDefinitionsItem) {
+    public EstimationAnalysisImpl addCohortDefinitionsItem(AnalysisCohortDefinition cohortDefinitionsItem) {
     if (this.cohortDefinitions == null) {
       this.cohortDefinitions = new ArrayList<>();
     }
@@ -263,7 +265,7 @@ public class EstimationAnalysisImpl implements EstimationAnalysis {
    * @return cohortDefinitions
    **/
   @Override
-  public List<EstimationCohortDefinition> getCohortDefinitions() {
+  public List<AnalysisCohortDefinition> getCohortDefinitions() {
     return cohortDefinitions;
   }
 
@@ -271,7 +273,7 @@ public class EstimationAnalysisImpl implements EstimationAnalysis {
      *
      * @param cohortDefinitions
      */
-    public void setCohortDefinitions(List<EstimationCohortDefinition> cohortDefinitions) {
+    public void setCohortDefinitions(List<AnalysisCohortDefinition> cohortDefinitions) {
     this.cohortDefinitions = cohortDefinitions;
   }
 
@@ -280,7 +282,7 @@ public class EstimationAnalysisImpl implements EstimationAnalysis {
      * @param conceptSetsItem
      * @return
      */
-    public EstimationAnalysisImpl addConceptSetsItem(EstimationConceptSet conceptSetsItem) {
+    public EstimationAnalysisImpl addConceptSetsItem(AnalysisConceptSet conceptSetsItem) {
     if (this.conceptSets == null) {
       this.conceptSets = new ArrayList<>();
     }
@@ -293,7 +295,7 @@ public class EstimationAnalysisImpl implements EstimationAnalysis {
    * @return conceptSets
    **/
   @Override
-  public List<EstimationConceptSet> getConceptSets() {
+  public List<AnalysisConceptSet> getConceptSets() {
     return conceptSets;
   }
 
@@ -301,7 +303,7 @@ public class EstimationAnalysisImpl implements EstimationAnalysis {
      *
      * @param conceptSets
      */
-    public void setConceptSets(List<EstimationConceptSet> conceptSets) {
+    public void setConceptSets(List<AnalysisConceptSet> conceptSets) {
     this.conceptSets = conceptSets;
   }
 

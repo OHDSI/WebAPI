@@ -180,16 +180,6 @@ public abstract class AtlasSecurity extends Security {
     this.incidenceRatePermissionTemplates.put("ir:%s:delete", "Delete Incidence Rate with ID=%s");
     this.incidenceRatePermissionTemplates.put("ir:%s:info:*:delete", "Delete Incidence Rate info with ID=%s");
 
-    // TODO: to be removed together with old PLE controller
-    this.plePermissionTemplates.put("comparativecohortanalysis:%s:put", "Edit Estimation with ID=%s");
-    this.plePermissionTemplates.put("comparativecohortanalysis:%s:delete", "Delete Estimation with ID=%s");
-
-    // TODO: to be removed together with old PLP controller
-    this.plpPermissionTemplate.put("plp:%s:put", "Edit Population Level Prediction with ID=%s");
-    this.plpPermissionTemplate.put("plp:%s:delete", "Delete Population Level Prediction with ID=%s");
-    this.plpPermissionTemplate.put("plp:%s:get", "Read Population Level Prediction with ID=%s");
-    this.plpPermissionTemplate.put("plp:%s:copy:get", "Copy Population Level Prediction with ID=%s");
-
     this.dataSourcePermissionTemplates.put("source:%s:put", "Edit Source with sourceKey=%s");
     this.dataSourcePermissionTemplates.put("source:%s:get", "Read Source with sourceKey=%s");
     this.dataSourcePermissionTemplates.put("source:%s:delete", "Delete Source with sourceKey=%s");

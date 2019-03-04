@@ -353,7 +353,9 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
             est.setName(String.format(ENTITY_COPY_PREFIX, analysis.getName()));
             est.setType(EstimationTypeEnum.COMPARATIVE_COHORT_ANALYSIS);
             est.setSpecification(Utils.serialize(analysis));
-            return this.createEstimation(est);
+
+            Estimation savedEstimation = this.createEstimation(est);
+            return estimationRepository.findOne(savedEstimation.getId(), COMMONS_ENTITY_GRAPH);
         } catch (Exception e) {
             log.debug("Error whie importing estimation analysis: " + e.getMessage());
             throw e;

@@ -254,7 +254,8 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
             pa.setName(String.format(ENTITY_COPY_PREFIX, analysis.getName()));
             pa.setSpecification(Utils.serialize(analysis));
             
-            return this.createAnalysis(pa);
+            PredictionAnalysis savedAnalysis = this.createAnalysis(pa);
+            return predictionAnalysisRepository.findOne(savedAnalysis.getId(), COMMONS_ENTITY_GRAPH);
         } catch (Exception e) {
             log.debug("Error whie importing prediction analysis: " + e.getMessage());
             throw e;

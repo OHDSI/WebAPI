@@ -144,8 +144,9 @@ public class EstimationController {
   @Path("import")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Estimation importAnalysis(EstimationAnalysisImpl analysis) throws Exception {
-      return service.importAnalysis(analysis);
+  public EstimationDTO importAnalysis(EstimationAnalysisImpl analysis) throws Exception {
+      Estimation importedEstimation = service.importAnalysis(analysis);
+      return conversionService.convert(importedEstimation, EstimationDTO.class);
   }  
 
   /**

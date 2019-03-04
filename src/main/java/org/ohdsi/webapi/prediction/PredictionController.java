@@ -139,8 +139,9 @@ public class PredictionController {
   @Path("import")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public PredictionAnalysis importAnalysis(PatientLevelPredictionAnalysisImpl analysis) throws Exception {
-    return service.importAnalysis(analysis);
+  public PredictionAnalysisDTO importAnalysis(PatientLevelPredictionAnalysisImpl analysis) throws Exception {
+    PredictionAnalysis importedAnalysis = service.importAnalysis(analysis);
+    return conversionService.convert(importedAnalysis, PredictionAnalysisDTO.class);
   }  
 
   @GET

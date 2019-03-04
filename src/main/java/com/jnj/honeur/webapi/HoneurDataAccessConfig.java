@@ -42,8 +42,8 @@ public class HoneurDataAccessConfig {
     @Autowired
     private Environment env;
 
-    @Autowired
-    private DataSource primaryDataSource;
+//    @Autowired/**/
+//    private DataSource primaryDataSource;
 
     @Value("${datasource.ohdsi.schema}")
     private String defaultDataSourceKey;
@@ -62,7 +62,7 @@ public class HoneurDataAccessConfig {
 
 
     @Bean
-    public EntityManagerFactory entityManagerFactory() {
+    public EntityManagerFactory entityManagerFactory(DataSource primaryDataSource) {
         final DataSourceLookup dataSourceLookup = dataSourceLookup();
 
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
@@ -160,7 +160,7 @@ public class HoneurDataAccessConfig {
     public PlatformTransactionManager jpaTransactionManager() {//EntityManagerFactory entityManagerFactory) {
 
         JpaTransactionManager txManager = new JpaTransactionManager();
-        txManager.setEntityManagerFactory(entityManagerFactory());
+        txManager.setEntityManagerFactory(entityManagerFactory(primaryDataSource()));
         return txManager;
     }
 

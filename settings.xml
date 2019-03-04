@@ -87,11 +87,11 @@
                 <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
                 <datasource.dialect>postgresql</datasource.dialect>
                 <datasource.db>OHDSI</datasource.db>
-                <datasource.url>jdbc:postgresql://postgres:5432/${datasource.db}</datasource.url>
+                <datasource.url>jdbc:postgresql://postgres:5432/OHDSI</datasource.url>
                 <datasource.ohdsi.schema>${WEBAPI_SCHEMA}</datasource.ohdsi.schema>
                 <datasource.username>ohdsi_app_user</datasource.username>
                 <datasource.password>${WEBAPI_USER_PW}</datasource.password>
-                <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
+                <flyway.datasource.driverClassName>org.postgresql.Driver</flyway.datasource.driverClassName>
                 <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
                 <flyway.datasource.username>ohdsi_admin_user</flyway.datasource.username>
                 <flyway.datasource.password>${WEBAPI_ADMIN_PW}</flyway.datasource.password>
@@ -104,10 +104,22 @@
                 <jasypt.encryptor.password>${SOURCE_ENCRYPTION_PASSWORD}</jasypt.encryptor.password>
                 <jersey.resources.additional.packages>com.jnj.honeur.webapi</jersey.resources.additional.packages>
                 <liferay.company.web.id>liferay.com</liferay.company.web.id>
-                <security.enabled>false</security.enabled>
+                <security.enabled>true</security.enabled>
                 <security.origin>*</security.origin>
                 <security.ssl.enabled>false</security.ssl.enabled>
-                <war.directory>target-docker</war.directory>
+                <war.directory>target</war.directory>
+                <security.provider>AtlasRegularSecurity</security.provider>
+                <security.db.datasource.url>jdbc:postgresql://postgres:5432/OHDSI</security.db.datasource.url>
+                <security.db.datasource.driverClassName>org.postgresql.Driver</security.db.datasource.driverClassName>
+                <security.db.datasource.schema>webapi</security.db.datasource.schema>
+                <security.db.datasource.username>ohdsi_admin_user</security.db.datasource.username>
+                <security.db.datasource.password>${WEBAPI_ADMIN_PW}</security.db.datasource.password>
+                <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.sec_user where login = ?</security.db.datasource.authenticationQuery>
+                <security.ldap.dn>${LDAP_DN}</security.ldap.dn>
+                <security.ldap.baseDn>${LDAP_BASE_DN}</security.ldap.baseDn>
+                <security.ldap.system.username>${LDAP_SYSTEM_USERNAME}</security.ldap.system.username>
+                <security.ldap.system.password>${LDAP_SYSTEM_PASSWORD}</security.ldap.system.password>
+                <security.ldap.url>${LDAP_URL}</security.ldap.url>
             </properties>
         </profile>
         <profile>

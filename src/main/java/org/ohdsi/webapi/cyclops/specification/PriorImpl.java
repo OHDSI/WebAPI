@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.cyclops.specification;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,9 +15,9 @@ import org.ohdsi.webapi.RLangClassImpl;
  */
 public class PriorImpl extends RLangClassImpl implements Prior {
 
-    private List<PriorTypeEnum> priorType = new ArrayList<>(Arrays.asList(PriorTypeEnum.LAPLACE));
+    private PriorTypeEnum priorType = PriorTypeEnum.LAPLACE;
     private List<BigDecimal> variance = null;
-    private List<String> exclude = null;
+    private List<Integer> exclude = null;
     private String graph = null;
     private List<String> neighborhood = null;
     private Boolean useCrossValidation = false;
@@ -35,7 +36,7 @@ public class PriorImpl extends RLangClassImpl implements Prior {
      *
      */
     @Override
-    public List<PriorTypeEnum> getPriorType() {
+    public PriorTypeEnum getPriorType() {
         return priorType;
     }
 
@@ -43,17 +44,9 @@ public class PriorImpl extends RLangClassImpl implements Prior {
      *
      * @param priorType
      */
-    public void setPriorType(ArrayList<PriorTypeEnum> priorType) {
+    @JsonIgnore
+    public void setPriorType(PriorTypeEnum priorType) {
         this.priorType = priorType;
-    }
-
-    /**
-     *
-     * @param priorType
-     */
-    public void setPriorType(String priorType) {
-        this.priorType.clear();
-        this.priorType.add(PriorTypeEnum.fromValue(priorType));
     }
 
     /**
@@ -95,7 +88,7 @@ public class PriorImpl extends RLangClassImpl implements Prior {
      *
      */
     @Override
-    public List<String> getExclude() {
+    public List<Integer> getExclude() {
         return exclude;
     }
 
@@ -106,9 +99,9 @@ public class PriorImpl extends RLangClassImpl implements Prior {
     public void setExclude(Object exclude) {
         if (exclude != null) {
             if (exclude instanceof ArrayList) {
-                this.exclude = (ArrayList<String>) exclude;
+                this.exclude = (ArrayList<Integer>) exclude;
             } else if (exclude instanceof Integer) {
-                this.exclude = new ArrayList<>(Arrays.asList(((Integer) exclude).toString()));
+                this.exclude = new ArrayList<>(Arrays.asList((Integer) exclude));
             } else {
                 throw new InputMismatchException("Expected ArrayList<String> or Integer");
             }

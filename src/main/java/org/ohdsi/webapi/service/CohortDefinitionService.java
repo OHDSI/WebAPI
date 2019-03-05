@@ -567,36 +567,49 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/{id}")
   public void delete(@PathParam("id") final int id) {
-		
-		// perform the JPA update in a separate transaction
-		this.getTransactionTemplateRequiresNew().execute(new TransactionCallbackWithoutResult() {
-			@Override
-			public void doInTransactionWithoutResult(final TransactionStatus status) {
-				cohortDefinitionRepository.delete(id);
-			}
-		});
+    // perform the JPA update in a separate transaction
+    this.getTransactionTemplateRequiresNew().execute(new TransactionCallbackWithoutResult() {
+        @Override
+        public void doInTransactionWithoutResult(final TransactionStatus status) {
+            CohortDefinition def = cohortDefinitionRepository.findOne(id);
+            if (!Objects.isNull(def)) {
+                def.getGenerationInfoList().forEach(cohortGenerationInfo -> {
+                    Integer sourceId = cohortGenerationInfo.getId().getSourceId();
 
-		JobParametersBuilder builder = new JobParametersBuilder();
-		builder.addString(JOB_NAME, String.format("Cleanup cohort %d.",id));
-		builder.addString(COHORT_DEFINITION_ID, ("" + id));
+                    jobService.cancelJobExecution(Constants.GENERATE_COHORT, e -> {
+                        JobParameters parameters = e.getJobParameters();
+                        return Objects.equals(parameters.getString(COHORT_DEFINITION_ID), Integer.toString(id))
+                                && Objects.equals(parameters.getString(SOURCE_ID), Integer.toString(sourceId));
+                    });
+                });
+                cohortDefinitionRepository.delete(def);
+            } else {
+                log.warn("Failed to delete Cohort Definition with ID = {}, {}", id, id);
+            }
+        }
+    });
 
-		final JobParameters jobParameters = builder.toJobParameters();
+    JobParametersBuilder builder = new JobParametersBuilder();
+    builder.addString(JOB_NAME, String.format("Cleanup cohort %d.",id));
+    builder.addString(COHORT_DEFINITION_ID, ("" + id));
 
-		log.info("Beginning cohort cleanup for cohort definition id: {}", "" + id);
+    final JobParameters jobParameters = builder.toJobParameters();
 
-		CleanupCohortTasklet cleanupTasklet = new CleanupCohortTasklet(this.getTransactionTemplateNoTransaction(),this.getSourceRepository());
+    log.info("Beginning cohort cleanup for cohort definition id: {}", "" + id);
 
-		Step cleanupStep = stepBuilders.get("cohortDefinition.cleanupCohort")
-			.tasklet(cleanupTasklet)
-			.build();
+    CleanupCohortTasklet cleanupTasklet = new CleanupCohortTasklet(this.getTransactionTemplateNoTransaction(),this.getSourceRepository());
 
-		SimpleJobBuilder cleanupJobBuilder = jobBuilders.get("cleanupCohort")
-			.start(cleanupStep);
+    Step cleanupStep = stepBuilders.get("cohortDefinition.cleanupCohort")
+        .tasklet(cleanupTasklet)
+        .build();
 
-		Job cleanupCohortJob = cleanupJobBuilder.build();
+    SimpleJobBuilder cleanupJobBuilder = jobBuilders.get("cleanupCohort")
+        .start(cleanupStep);
 
-		this.jobTemplate.launch(cleanupCohortJob, jobParameters);
-	}
+    Job cleanupCohortJob = cleanupJobBuilder.build();
+
+    this.jobTemplate.launch(cleanupCohortJob, jobParameters);
+  }
 	
   private ArrayList<ConceptSetExport> getConceptSetExports(CohortDefinition def, SourceInfo vocabSource) throws RuntimeException {
     ArrayList<ConceptSetExport> exports = new ArrayList<>();

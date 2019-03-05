@@ -11,7 +11,7 @@ WHERE pathway_analysis_generation_id = @generation_id AND target_cohort_id = @pa
 IF OBJECT_ID('tempdb..#raw_events', 'U') IS NOT NULL
 DROP TABLE #raw_events;
 
-select id, event_cohort_index, subject_id, cohort_start_date, cohort_end_date
+SELECT id, event_cohort_index, subject_id, cohort_start_date, cohort_end_date
 INTO #raw_events
 FROM (
 	SELECT ROW_NUMBER() OVER (ORDER BY e.cohort_start_date) AS id,
@@ -24,57 +24,6 @@ FROM (
 	  JOIN @target_cohort_table t ON t.cohort_start_date <= e.cohort_start_date AND e.cohort_end_date <= t.cohort_end_date AND t.subject_id = e.subject_id
 	WHERE t.cohort_definition_id = @pathway_target_cohort_id
 ) RE;
-
-/*
-* Find closely located dates, which need to be collapsed, based on collapse_window
-*/
-
-IF OBJECT_ID('tempdb..#date_replacements', 'U') IS NOT NULL
-DROP TABLE #date_replacements;
-
-WITH person_dates AS (
-  SELECT subject_id, cohort_start_date cohort_date FROM #raw_events
-  UNION
-  SELECT subject_id, cohort_end_date cohort_date FROM #raw_events
-),
-marked_dates AS (
-  SELECT ROW_NUMBER() OVER (ORDER BY subject_id ASC, cohort_date ASC) ordinal,
-    subject_id,
-    cohort_date,
-    CASE WHEN (datediff(d,LAG(cohort_date) OVER (ORDER BY subject_id ASC, cohort_date ASC), cohort_date) < @combo_window AND subject_id = LAG(subject_id) OVER (ORDER BY subject_id ASC, cohort_date ASC)) THEN 1 ELSE 0 END to_be_collapsed
-  FROM person_dates
-),
-grouped_dates AS (
-  SELECT *, ordinal - SUM(to_be_collapsed) OVER ( PARTITION BY subject_id ORDER BY cohort_date ASC ROWS UNBOUNDED PRECEDING) group_idx
-  FROM marked_dates
-),
-replacements AS (
-  SELECT orig.subject_id, orig.cohort_date, FIRST_VALUE(cohort_date) OVER (PARTITION BY group_idx ORDER BY ordinal ASC ROWS UNBOUNDED PRECEDING) as replacement_date
-  FROM grouped_dates orig
-)
-SELECT *
-INTO #date_replacements
-FROM replacements
-WHERE cohort_date <> replacement_date;
-
-/*
-* Collapse dates
-*/
-
-IF OBJECT_ID('tempdb..#collapsed_dates_events', 'U') IS NOT NULL
-DROP TABLE #collapsed_dates_events;
-
-SELECT
-  event.id,
-  event.event_cohort_index,
-  event.subject_id,
-  COALESCE(start_dr.replacement_date, event.cohort_start_date) cohort_start_date,
-  COALESCE(end_dr.replacement_date, event.cohort_end_date) cohort_end_date
-INTO #collapsed_dates_events
-FROM #raw_events event
-  LEFT JOIN #date_replacements start_dr ON start_dr.subject_id = event.subject_id AND start_dr.cohort_date = event.cohort_start_date
-  LEFT JOIN #date_replacements end_dr ON end_dr.subject_id = event.subject_id AND end_dr.cohort_date = event.cohort_end_date
-;
 
 /*
 Split partially overlapping events into a set of events which either do not overlap or fully overlap (for later GROUP BY start_date, end_date)
@@ -95,9 +44,9 @@ WITH
 cohort_dates AS (
 	SELECT DISTINCT subject_id, cohort_date 
 	FROM (
-		  SELECT subject_id, cohort_start_date cohort_date FROM #collapsed_dates_events 
+		  SELECT subject_id, cohort_start_date cohort_date FROM #raw_events 
 		  UNION 
-		  SELECT subject_id, DATEADD(day, 1, cohort_end_date) cohort_date FROM #collapsed_dates_events
+		  SELECT subject_id, DATEADD(day, 1, cohort_end_date) cohort_date FROM #raw_events
 		  ) all_dates
 	ORDER BY subject_id, cohort_date
 ),
@@ -109,14 +58,27 @@ time_periods AS (
 events AS (
 	SELECT tp.subject_id, event_cohort_index, cohort_date cohort_start_date, next_cohort_date cohort_end_date  
 	FROM time_periods tp
-	LEFT JOIN #collapsed_dates_events e ON e.subject_id = tp.subject_id
-	WHERE (e.cohort_start_date <= tp.next_cohort_date AND e.cohort_end_date >= tp.cohort_date)
+	LEFT JOIN #raw_events e ON e.subject_id = tp.subject_id
+	WHERE (e.cohort_start_date <= tp.cohort_date AND e.cohort_end_date >= tp.next_cohort_date)
 ) 
 
 SELECT SUM(POWER(2, e.event_cohort_index)) as combo_id,  subject_id , cohort_start_date, cohort_end_date
 INTO #combo_events
 FROM events e
 GROUP BY subject_id, cohort_start_date, cohort_end_date;
+
+/*
+* Remove short time periods
+*/
+
+IF OBJECT_ID('tempdb..#combo_events_filtered', 'U') IS NOT NULL
+DROP TABLE #combo_events_filtered;
+
+SELECT *
+INTO #combo_events_filtered
+FROM #combo_events e
+WHERE DATEDIFF (day , e.cohort_start_date, e.cohort_end_date) >= @combo_window;
+
 
 /*
 * Remove repetitive events (e.g. A-A-A into A)
@@ -140,7 +102,7 @@ FROM (
       ELSE 0
     END repetitive_event, 
 		case when ROW_NUMBER() OVER (PARTITION BY subject_id, combo_id ORDER BY cohort_start_date) > 1 then 1 else 0 end is_repeat
-  FROM #combo_events
+  FROM #combo_events_filtered
 ) AS marked_repetitive_events
 WHERE repetitive_event = 0 {@allow_repeats == 'false'}?{ AND is_repeat = 0 };
 
@@ -168,7 +130,7 @@ SELECT
   pathway_count.cnt AS pathways_count
 FROM (
   SELECT COUNT(*) cnt
-  FROM @target_cohort_table
+  FROM @target_database_schema.@target_cohort_table
   WHERE cohort_definition_id = @pathway_target_cohort_id
 ) target_count,
 (

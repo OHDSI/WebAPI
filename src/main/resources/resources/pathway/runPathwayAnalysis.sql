@@ -91,47 +91,42 @@ into
 IF OBJECT_ID('tempdb..#split_overlay_events', 'U') IS NOT NULL
 DROP TABLE #split_overlay_events;
 
-CREATE TABLE #split_overlay_events (
-  id BIGINT,
-  event_cohort_index INT,
-  subject_id BIGINT,
-  cohort_start_date DATETIME,
-  cohort_end_date DATETIME
-);
+SELECT soe.*
+INTO #split_overlay_events
+FROM (
+  SELECT
+    CASE WHEN ordinal < 3 THEN f.id ELSE s.id END as id,
+    CASE WHEN ordinal < 3 THEN f.event_cohort_index ELSE s.event_cohort_index END event_cohort_index,
+    CASE WHEN ordinal < 3 THEN f.subject_id ELSE s.subject_id END subject_id,
 
-INSERT INTO #split_overlay_events (id, event_cohort_index, subject_id, cohort_start_date, cohort_end_date)
-SELECT
-	CASE WHEN ordinal < 3 THEN f.id ELSE s.id END as id,
-	CASE WHEN ordinal < 3 THEN f.event_cohort_index ELSE s.event_cohort_index END event_cohort_index,
-	CASE WHEN ordinal < 3 THEN f.subject_id ELSE s.subject_id END subject_id,
+    CASE ordinal
+      WHEN 1 THEN
+      f.cohort_start_date
+      WHEN 2 THEN
+      s.cohort_start_date
+      WHEN 3 THEN
+      s.cohort_start_date
+      WHEN 4 THEN
+      f.cohort_end_date
+      END as cohort_start_date,
 
-	CASE ordinal
-		WHEN 1 THEN
-		f.cohort_start_date
-		WHEN 2 THEN
-		s.cohort_start_date
-		WHEN 3 THEN
-		s.cohort_start_date
-		WHEN 4 THEN
-		f.cohort_end_date
-		END as cohort_start_date,
-
-	CASE ordinal
-		WHEN 1 THEN
-		s.cohort_start_date
-		WHEN 2 THEN
-		f.cohort_end_date
-		WHEN 3 THEN
-		f.cohort_end_date
-		WHEN 4 THEN
-		s.cohort_end_date
-		END as cohort_end_date
-FROM #collapsed_dates_events f
-JOIN #collapsed_dates_events s ON f.subject_id = s.subject_id
-    AND f.cohort_start_date < s.cohort_start_date
-    AND f.cohort_end_date < s.cohort_end_date
-    AND f.cohort_end_date > s.cohort_start_date
-CROSS JOIN (SELECT 1 ordinal UNION SELECT 2 UNION SELECT 3 UNION SELECT 4) multiplier;
+    CASE ordinal
+      WHEN 1 THEN
+      s.cohort_start_date
+      WHEN 2 THEN
+      f.cohort_end_date
+      WHEN 3 THEN
+      f.cohort_end_date
+      WHEN 4 THEN
+      s.cohort_end_date
+      END as cohort_end_date
+  FROM #collapsed_dates_events f
+  JOIN #collapsed_dates_events s ON f.subject_id = s.subject_id
+      AND f.cohort_start_date < s.cohort_start_date
+      AND f.cohort_end_date < s.cohort_end_date
+      AND f.cohort_end_date > s.cohort_start_date
+  CROSS JOIN (SELECT 1 ordinal UNION SELECT 2 UNION SELECT 3 UNION SELECT 4) multiplier
+) soe;
 
 /*
 * Group fully overlapping events into combinations (e.g. two separate events A and B with same start and end dates -> single A+B event)

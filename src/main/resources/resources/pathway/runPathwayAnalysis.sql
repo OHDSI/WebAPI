@@ -91,6 +91,15 @@ into
 IF OBJECT_ID('tempdb..#split_overlay_events', 'U') IS NOT NULL
 DROP TABLE #split_overlay_events;
 
+CREATE TABLE #split_overlay_events (
+  id BIGINT,
+  event_cohort_index INT,
+  subject_id BIGINT,
+  cohort_start_date DATETIME,
+  cohort_end_date DATETIME
+);
+
+INSERT INTO #split_overlay_events (id, event_cohort_index, subject_id, cohort_start_date, cohort_end_date)
 SELECT
 	CASE WHEN ordinal < 3 THEN f.id ELSE s.id END as id,
 	CASE WHEN ordinal < 3 THEN f.event_cohort_index ELSE s.event_cohort_index END event_cohort_index,
@@ -117,7 +126,6 @@ SELECT
 		WHEN 4 THEN
 		s.cohort_end_date
 		END as cohort_end_date
-INTO #split_overlay_events
 FROM #collapsed_dates_events f
 JOIN #collapsed_dates_events s ON f.subject_id = s.subject_id
     AND f.cohort_start_date < s.cohort_start_date

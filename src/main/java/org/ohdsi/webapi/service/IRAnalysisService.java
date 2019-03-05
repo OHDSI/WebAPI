@@ -478,25 +478,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
     IncidenceRateAnalysis analysis = irAnalysisRepository.findOneWithExecutionsOnExistingSources(id);
     ExceptionUtils.throwNotFoundExceptionIfNull(analysis, String.format(NO_INCIDENCE_RATE_ANALYSIS_MESSAGE, id));
-//    List<AnalysisInfoDTO> result = new ArrayList<>();
     Set<ExecutionInfo> executionInfoList = analysis.getExecutionInfoList();
-/*
-    for (ExecutionInfo executionInfo : executionInfoList) {
-      if (sourceAccessor.hasAccess(executionInfo.getSource())) {
-        AnalysisInfoDTO info = new AnalysisInfoDTO();
-        info.executionInfo = executionInfo;
-        try {
-          if (executionInfo.getStatus() == GenerationStatus.COMPLETE && executionInfo.getIsValid())
-            info.summaryList = getAnalysisSummaryList(id, executionInfo.getSource());
-        }
-        catch (Exception e)
-        {
-          log.error("Error getting IR Analysis summary list", e);
-        }
-        result.add(info);
-      }
-    }
-*/
     return executionInfoList.stream().map(ei -> {
       AnalysisInfoDTO info = new AnalysisInfoDTO();
       info.executionInfo = ei;

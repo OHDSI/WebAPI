@@ -91,7 +91,7 @@ into
 IF OBJECT_ID('tempdb..#split_overlay_events', 'U') IS NOT NULL
 DROP TABLE #split_overlay_events;
 
-SELECT soe.*
+SELECT soe.id, soe.event_cohort_index, soe.subject_id, soe.cohort_start_date, soe.cohort_end_date
 INTO #split_overlay_events
 FROM (
   SELECT

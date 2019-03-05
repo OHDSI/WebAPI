@@ -17,8 +17,6 @@ import org.ohdsi.webapi.prediction.domain.PredictionGenerationEntity;
 import org.ohdsi.webapi.prediction.repository.PredictionAnalysisGenerationRepository;
 import org.ohdsi.webapi.prediction.repository.PredictionAnalysisRepository;
 import org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysisImpl;
-import org.ohdsi.webapi.prediction.specification.PredictionCohortDefinition;
-import org.ohdsi.webapi.prediction.specification.PredictionConceptSet;
 import org.ohdsi.webapi.service.*;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
@@ -38,11 +36,19 @@ import javax.transaction.Transactional;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.GENERATE_PREDICTION_ANALYSIS;
 import static org.ohdsi.webapi.Constants.Params.*;
+import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
+import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
+import org.ohdsi.webapi.analysis.AnalysisConceptSet;
+import org.ohdsi.webapi.common.DesignImportService;
+import org.ohdsi.webapi.featureextraction.specification.CovariateSettingsImpl;
+import org.ohdsi.webapi.service.dto.ConceptSetDTO;
+import org.springframework.core.convert.ConversionService;
 
 @Service
 @Transactional
@@ -54,7 +60,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
             "createdBy",
             "modifiedBy"
     );
-
+    
     @Autowired
     private PredictionAnalysisRepository predictionAnalysisRepository;
 
@@ -87,13 +93,24 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
 
     @Autowired
     private SourceAccessor sourceAccessor;
-
+    
+    @Autowired
+    private DesignImportService designImportService;
+    
+    @Autowired
+    private ConversionService conversionService;    
+    
     private final String EXEC_SCRIPT = ResourceHelper.GetResourceAsString("/resources/prediction/r/runAnalysis.R");
 
     @Override
     public Iterable<PredictionAnalysis> getAnalysisList() {
 
         return predictionAnalysisRepository.findAll(COMMONS_ENTITY_GRAPH);
+    }
+    
+    @Override
+    public PredictionAnalysis getById(Integer id) {
+        return predictionAnalysisRepository.findOne(id, COMMONS_ENTITY_GRAPH);
     }
     
     @Override
@@ -107,7 +124,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         pred.setCreatedBy(getCurrentUser());
         pred.setCreatedDate(currentTime);
     
-        return this.predictionAnalysisRepository.save(pred);
+        return save(pred);
     }
 
     @Override
@@ -121,7 +138,12 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         pred.setCreatedDate(predFromDB.getCreatedDate());
         pred.setCreatedBy(predFromDB.getCreatedBy());
 
-        return this.predictionAnalysisRepository.save(pred);
+        return save(pred);
+    }
+    
+    @Override
+    public int countLikeName(String name) {
+        return predictionAnalysisRepository.countByNameStartsWith(name);
     }
     
     @Override
@@ -156,17 +178,17 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         expression.setOrganizationName(env.getRequiredProperty("organization.name"));
         
         // Retrieve the cohort definition details
-        ArrayList<PredictionCohortDefinition> detailedList = new ArrayList<>();
-        for (PredictionCohortDefinition c : expression.getCohortDefinitions()) {
+        ArrayList<AnalysisCohortDefinition> detailedList = new ArrayList<>();
+        for (AnalysisCohortDefinition c : expression.getCohortDefinitions()) {
             CohortDefinition cd = cohortDefinitionRepository.findOneWithDetail(c.getId());
-            detailedList.add(new PredictionCohortDefinition(cd));
+            detailedList.add(new AnalysisCohortDefinition(cd));
         }
         expression.setCohortDefinitions(detailedList);
         
         // Retrieve the concept set expressions
-        ArrayList<PredictionConceptSet> pcsList = new ArrayList<>();
-        HashMap<Integer, ArrayList<Long>> conceptIdentifiers = new HashMap<Integer, ArrayList<Long>>();
-        for (PredictionConceptSet pcs : expression.getConceptSets()) {
+        ArrayList<AnalysisConceptSet> pcsList = new ArrayList<>();
+        HashMap<Integer, ArrayList<Long>> conceptIdentifiers = new HashMap<>();
+        for (AnalysisConceptSet pcs : expression.getConceptSets()) {
             pcs.expression = conceptSetService.getConceptSetExpression(pcs.id);
             pcsList.add(pcs);
             conceptIdentifiers.put(pcs.id, new ArrayList<>(vocabularyService.resolveConceptSetExpression(pcs.expression)));
@@ -187,9 +209,79 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         return expression;
     }
     
-    public void hydrateAnalysis(org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysisImpl plpa, OutputStream out) throws JsonProcessingException {
-        String studySpecs = Utils.serialize(plpa, true);
+    @Override
+    public PredictionAnalysis importAnalysis(PatientLevelPredictionAnalysisImpl analysis) throws Exception {
+        try {
+            // Create all of the cohort definitions 
+            // and map the IDs from old -> new
+            List<BigDecimal> newTargetIds = new ArrayList<>();
+            List<BigDecimal> newOutcomeIds = new ArrayList<>();
+            analysis.getCohortDefinitions().forEach((analysisCohortDefinition) -> {
+                BigDecimal oldId = new BigDecimal(analysisCohortDefinition.getId());
+                analysisCohortDefinition.setId(null);
+                CohortDefinition cd = designImportService.persistCohortOrGetExisting(conversionService.convert(analysisCohortDefinition, CohortDefinition.class), true);
+                if (analysis.getTargetIds().contains(oldId)) {
+                    newTargetIds.add(new BigDecimal(cd.getId()));
+                }
+                if (analysis.getOutcomeIds().contains(oldId)) {
+                    newOutcomeIds.add(new BigDecimal(cd.getId()));
+                }
+                analysisCohortDefinition.setId(cd.getId());
+            });
+            
+            // Create all of the concept sets and map
+            // the IDs from old -> new
+            Map<Integer, Integer> conceptSetIdMap = new HashMap<>();
+            analysis.getConceptSets().forEach((pcs) -> { 
+               int oldId = pcs.id;
+               ConceptSetDTO cs = designImportService.persistConceptSet(pcs);
+               pcs.id = cs.getId();
+               conceptSetIdMap.put(oldId, cs.getId());
+            });
+            
+            // Replace all of the cohort definitions
+            analysis.setTargetIds(newTargetIds);
+            analysis.setOutcomeIds(newOutcomeIds);
+            
+            // Replace all of the concept sets
+            analysis.getConceptSetCrossReference().forEach((ConceptSetCrossReferenceImpl xref) -> {
+                Integer newConceptSetId = conceptSetIdMap.get(xref.getConceptSetId());
+                xref.setConceptSetId(newConceptSetId);
+            });
+            
+            // Clear all of the concept IDs from the covariate settings
+            analysis.getCovariateSettings().forEach((CovariateSettingsImpl cs) -> {
+                cs.setIncludedCovariateConceptIds(new ArrayList<>());
+                cs.setExcludedCovariateConceptIds(new ArrayList<>());
+            });
+            
+            // Remove the ID
+            analysis.setId(null);
+            
+            // Create the prediction analysis
+            PredictionAnalysis pa = new PredictionAnalysis();
+            pa.setDescription(analysis.getDescription());
+            pa.setSpecification(Utils.serialize(analysis));
+            
+            String newName = String.format(ENTITY_COPY_PREFIX, analysis.getName());
+            int similar = countLikeName(newName);
+            pa.setName(similar > 0 ? newName + " (" + similar + ")" : newName);
+            
+            PredictionAnalysis savedAnalysis = this.createAnalysis(pa);
+            return predictionAnalysisRepository.findOne(savedAnalysis.getId(), COMMONS_ENTITY_GRAPH);
+        } catch (Exception e) {
+            log.debug("Error whie importing prediction analysis: " + e.getMessage());
+            throw e;
+        }
+    }
 
+    @Override
+    public void hydrateAnalysis(PatientLevelPredictionAnalysisImpl analysis, String packageName, OutputStream out) throws JsonProcessingException {
+        if (packageName == null || !Utils.isAlphaNumeric(packageName)) {
+            throw new IllegalArgumentException("The package name must be alphanumeric only.");
+        }
+        analysis.setPackageName(packageName);
+        String studySpecs = Utils.serialize(analysis, true);
         Hydra h = new Hydra(studySpecs);
         h.hydrate(out);
     }
@@ -209,8 +301,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         analysisFile.setFileName(packageFilename);
         try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
           PatientLevelPredictionAnalysisImpl analysis = exportAnalysis(predictionAnalysisId);
-          analysis.setPackageName(packageName);
-          hydrateAnalysis(analysis, out);
+          hydrateAnalysis(analysis, packageName, out);
           analysisFile.setContents(out.toByteArray());
         }
         analysisFiles.add(analysisFile);
@@ -251,5 +342,12 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     public PredictionGenerationEntity getGeneration(Long generationId) {
 
         return generationRepository.findOne(generationId, DEFAULT_ENTITY_GRAPH);
+    }
+    
+    private PredictionAnalysis save(PredictionAnalysis analysis) {
+        analysis = predictionAnalysisRepository.saveAndFlush(analysis);
+        entityManager.refresh(analysis);
+        analysis = getById(analysis.getId());
+        return analysis;
     }
 }

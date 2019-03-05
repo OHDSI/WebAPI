@@ -30,6 +30,7 @@ public class ResultsCache {
     }
     
     public CDMResultsCache getCache(String sourceKey) {
-        return this.getCaches().putIfAbsent(sourceKey, new CDMResultsCache());
+        this.getCaches().putIfAbsent(sourceKey, new CDMResultsCache());
+        return this.getCaches().get(sourceKey);
     }
 }

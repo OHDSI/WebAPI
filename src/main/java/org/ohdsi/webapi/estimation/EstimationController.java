@@ -134,23 +134,40 @@ public class EstimationController {
     ExceptionUtils.throwNotFoundExceptionIfNull(estimation, String.format(NO_ESTIMATION_MESSAGE, id));
     return service.exportAnalysis(estimation);
   }
+  /**
+   * Import the full estimation specification
+   * @param analysis The full estimation specification
+   * @return The newly imported estimation
+   */
+  @POST
+  @Path("import")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public EstimationDTO importAnalysis(EstimationAnalysisImpl analysis) throws Exception {
+      Estimation importedEstimation = service.importAnalysis(analysis);
+      return conversionService.convert(importedEstimation, EstimationDTO.class);
+  }  
 
+  /**
+   * Download an R package to execute the estimation study
+   * @param id The id for the estimation study
+   * @param packageName The R package name for the study
+   * @return Binary zip file containing the full R package
+   * @throws IOException
+   */
   @GET
   @Path("{id}/download")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
-  public Response download(@PathParam("id") int id, @QueryParam("target") String target) throws IOException {
-    if (target == null) {
-      target = "package";
+  public Response download(@PathParam("id") int id, @QueryParam("packageName") String packageName) throws IOException {
+    if (packageName == null) {
+        packageName = "estimation" + String.valueOf(id);
     }
 
     EstimationAnalysisImpl analysis = this.exportAnalysis(id);
-    if (StringUtils.isEmpty(analysis.getPackageName())) {
-      analysis.setPackageName(target);
-    }
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-    service.hydrateAnalysis(analysis, baos);
+    service.hydrateAnalysis(analysis, packageName, baos);
 
     return Response
             .ok(baos)

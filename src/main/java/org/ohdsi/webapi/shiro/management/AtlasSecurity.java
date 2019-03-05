@@ -131,6 +131,12 @@ public abstract class AtlasSecurity extends Security {
 
     this.sourcePermissionTemplates.put("cohortdefinition:*:report:%s:get", "Get Inclusion Rule Report for Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("cohortdefinition:*:generate:%s:get", "Generate Cohort on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("cohortdefinition:*:cancel:%s:get", "Cancel Cohort Generation on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("featureextraction:query:prevalence:*:%s:get", "Get Cohort Prevalence on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("featureextraction:query:distributions:*:%s:get", "Get Cohort Distributions on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("featureextraction:explore:prevalence:*:%s:*:get", "Explore Prevalence hierarchy on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("featureextraction:generate:%s:*:get", "Generate Feature on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("featureextraction:generatesql:%s:*:get", "Generate Feature SQL on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("vocabulary:%s:*:get", "Get vocabulary info on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("vocabulary:%s:included-concepts:count:post", "Get vocab concept counts on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("vocabulary:%s:resolveConceptSetExpression:post", "Resolve concept set expression on Source with SourceKey = %s");
@@ -151,43 +157,28 @@ public abstract class AtlasSecurity extends Security {
     this.sourcePermissionTemplates.put("ir:*:execute:%s:delete", "Cancel IR generation on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("%s:person:*:get", "Get person's profile on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("vocabulary:%s:lookup:sourcecodes:post", "Lookup source codes in Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("cohort-characterization:*:generation:%s:post", "Generate Cohort Characterization on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("cohort-characterization:*:generation:%s:delete", "Cancel Generation of Cohort Characterization on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("pathway-analysis:*:generation:%s:post", "Generate Pathway Analysis on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("pathway-analysis:*:generation:%s:delete", "Cancel Generation of Pathway Analysis on Source with SourceKey = %s");
 
     this.sourcePermissionTemplates.put(SOURCE_ACCESS_PERMISSION, "Access to Source with SourceKey = %s");
 
     this.cohortCharacterizationCreatorPermissionTemplates.put("cohort-characterization:%s:put", "Update Cohort Characterization with ID = %s");
     this.cohortCharacterizationCreatorPermissionTemplates.put("cohort-characterization:%s:delete", "Delete Cohort Characterization with ID = %s");
-    this.cohortCharacterizationCreatorPermissionTemplates.put("cohort-characterization:%s:generation:*:post", "Generate Cohort Characterization with ID = %s");
-    this.cohortCharacterizationCreatorPermissionTemplates.put("cohort-characterization:%s:generation:*:delete", "Cancel Generation of Cohort Characterization with ID = %s");
 
     this.pathwayAnalysisCreatorPermissionTemplate.put("pathway-analysis:%s:put", "Update Pathway Analysis with ID = %s");
     this.pathwayAnalysisCreatorPermissionTemplate.put("pathway-analysis:%s:sql:*:get", "Get analysis sql for Pathway Analysis with ID = %s");
-    this.pathwayAnalysisCreatorPermissionTemplate.put("pathway-analysis:%s:generation:*:post", "Generate Pathway Analysis with ID = %s");
-    this.pathwayAnalysisCreatorPermissionTemplate.put("pathway-analysis:%s:generation:*:delete", "Cancel Generation of Pathway Analysis with ID = %s");
     this.pathwayAnalysisCreatorPermissionTemplate.put("pathway-analysis:%s:delete", "Delete Pathway Analysis with ID = %s");
 
     this.featureAnalysisPermissionTemplates.put("feature-analysis:%s:put", "Update Feature Analysis with ID = %s");
     this.featureAnalysisPermissionTemplates.put("feature-analysis:%s:delete", "Delete Feature Analysis with ID = %s");
 
     this.incidenceRatePermissionTemplates.put("ir:%s:get", "Read Incidence Rate with ID=%s");
-    this.incidenceRatePermissionTemplates.put("ir:%s:execution:*:get", "Execute Incidence Rate job with ID=%s");
-    this.incidenceRatePermissionTemplates.put("ir:%s:execution:*:delete", "Cancel Execution of Incidence Rate job with ID=%s");
-    this.incidenceRatePermissionTemplates.put("ir:%s:info:get", "Read Incidence Rate info with ID=%s");
-    this.incidenceRatePermissionTemplates.put("ir:%s:report:*:get", "Report Incidence Rate with ID=%s");
-    this.incidenceRatePermissionTemplates.put("ir:%s:copy:get", "Copy Incidence Rate with ID=%s");
     this.incidenceRatePermissionTemplates.put("ir:%s:export:get", "Export Incidence Rate with ID=%s");
     this.incidenceRatePermissionTemplates.put("ir:%s:put", "Edit Incidence Rate with ID=%s");
     this.incidenceRatePermissionTemplates.put("ir:%s:delete", "Delete Incidence Rate with ID=%s");
     this.incidenceRatePermissionTemplates.put("ir:%s:info:*:delete", "Delete Incidence Rate info with ID=%s");
-
-    // TODO: to be removed together with old PLE controller
-    this.plePermissionTemplates.put("comparativecohortanalysis:%s:put", "Edit Estimation with ID=%s");
-    this.plePermissionTemplates.put("comparativecohortanalysis:%s:delete", "Delete Estimation with ID=%s");
-
-    // TODO: to be removed together with old PLP controller
-    this.plpPermissionTemplate.put("plp:%s:put", "Edit Population Level Prediction with ID=%s");
-    this.plpPermissionTemplate.put("plp:%s:delete", "Delete Population Level Prediction with ID=%s");
-    this.plpPermissionTemplate.put("plp:%s:get", "Read Population Level Prediction with ID=%s");
-    this.plpPermissionTemplate.put("plp:%s:copy:get", "Copy Population Level Prediction with ID=%s");
 
     this.dataSourcePermissionTemplates.put("source:%s:put", "Edit Source with sourceKey=%s");
     this.dataSourcePermissionTemplates.put("source:%s:get", "Read Source with sourceKey=%s");

@@ -1,0 +1,1 @@
+ALTER TABLE ${ohdsiSchema}.cohort_inclusion DROP CONSTRAINT IF EXISTS cohort_inclusion_pkey;

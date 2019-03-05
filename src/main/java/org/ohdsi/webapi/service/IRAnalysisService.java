@@ -33,6 +33,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.annotation.PostConstruct;
 import javax.servlet.ServletContext;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -61,10 +62,13 @@ import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
+import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
+import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
@@ -95,6 +99,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   private static final Logger log = LoggerFactory.getLogger(IRAnalysisService.class);
   private final static String STRATA_STATS_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/incidencerate/sql/strata_stats.sql");
   private static final String NAME = "irAnalysis";
+  private static final String NO_INCIDENCE_RATE_ANALYSIS_MESSAGE = "There is no incidence rate analysis with id = %d.";
 
 
   @Autowired
@@ -360,7 +365,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
     return getTransactionTemplate().execute(transactionStatus -> {
       IncidenceRateAnalysis a = this.irAnalysisRepository.findOne(id);
-      ExceptionUtils.throwNotFoundExceptionIfNull(a, String.format("There is no incidence rate analysis with id = %d.", id));
+      ExceptionUtils.throwNotFoundExceptionIfNull(a, String.format(NO_INCIDENCE_RATE_ANALYSIS_MESSAGE, id));
       return analysisToDTO(a);
     });
   }
@@ -472,9 +477,10 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   public List<AnalysisInfoDTO> getAnalysisInfo(final int id) {
 
     IncidenceRateAnalysis analysis = irAnalysisRepository.findOneWithExecutionsOnExistingSources(id);
-    ExceptionUtils.throwNotFoundExceptionIfNull(analysis, String.format("There is no incidence rate analysis with id = %d.", id));
-    List<AnalysisInfoDTO> result = new ArrayList<>();
+    ExceptionUtils.throwNotFoundExceptionIfNull(analysis, String.format(NO_INCIDENCE_RATE_ANALYSIS_MESSAGE, id));
+//    List<AnalysisInfoDTO> result = new ArrayList<>();
     Set<ExecutionInfo> executionInfoList = analysis.getExecutionInfoList();
+/*
     for (ExecutionInfo executionInfo : executionInfoList) {
       if (sourceAccessor.hasAccess(executionInfo.getSource())) {
         AnalysisInfoDTO info = new AnalysisInfoDTO();
@@ -490,7 +496,34 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
         result.add(info);
       }
     }
-    return result;
+*/
+    return executionInfoList.stream().map(ei -> {
+      AnalysisInfoDTO info = new AnalysisInfoDTO();
+      info.executionInfo = ei;
+      return info;
+    }).collect(Collectors.toList());
+  }
+
+  @Override
+  @DataSourceAccess
+  public AnalysisInfoDTO getAnalysisInfo(int id, @SourceKey String sourceKey) {
+
+    IncidenceRateAnalysis analysis = irAnalysisRepository.findOneWithExecutionsOnExistingSources(id);
+    ExceptionUtils.throwNotFoundExceptionIfNull(analysis, String.format(NO_INCIDENCE_RATE_ANALYSIS_MESSAGE, id));
+    Source source = sourceService.findBySourceKey(sourceKey);
+    ExceptionUtils.throwNotFoundExceptionIfNull(source, String.format("There is no source with sourceKey = %s", sourceKey));
+    AnalysisInfoDTO info = new AnalysisInfoDTO();
+    info.executionInfo = analysis.getExecutionInfoList().stream().filter(i -> Objects.equals(i.getSource(), source))
+            .findFirst().orElse(null);
+    try{
+      if (Objects.nonNull(info.executionInfo) && Objects.equals(info.executionInfo.getStatus(), GenerationStatus.COMPLETE)
+        && info.executionInfo.getIsValid()) {
+        info.summaryList = getAnalysisSummaryList(id, source);
+      }
+    }catch (Exception e) {
+      log.error("Error getting IR Analysis summary list", e);
+    }
+    return info;
   }
 
   @Override

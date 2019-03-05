@@ -33,6 +33,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.annotation.PostConstruct;
 import javax.servlet.ServletContext;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -504,6 +505,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
       }
     }catch (Exception e) {
       log.error("Error getting IR Analysis summary list", e);
+      throw new InternalServerErrorException();
     }
     return info;
   }

@@ -56,8 +56,6 @@ IF OBJECT_ID('${ohdsiSchema}.pk_cohort_concept_map', 'PK') IS NULL
 ALTER TABLE ${ohdsiSchema}.cohort_concept_map ADD CONSTRAINT pk_cohort_concept_map PRIMARY KEY (cohort_definition_id);
 GO
 
-IF OBJECT_ID('${ohdsiSchema}.pk_cohort_incl', 'PK') IS NULL
-ALTER TABLE ${ohdsiSchema}.cohort_inclusion ADD CONSTRAINT pk_cohort_incl PRIMARY KEY (cohort_definition_id, rule_sequence);
 IF OBJECT_ID('${ohdsiSchema}.pk_cohort_incl_res', 'PK') IS NULL
 ALTER TABLE ${ohdsiSchema}.cohort_inclusion_result ADD CONSTRAINT pk_cohort_incl_res PRIMARY KEY (cohort_definition_id);
 IF OBJECT_ID('${ohdsiSchema}.pk_cohort_incl_stat', 'PK') IS NULL

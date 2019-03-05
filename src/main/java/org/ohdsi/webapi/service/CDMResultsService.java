@@ -1,22 +1,21 @@
 package org.ohdsi.webapi.service;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.ohdsi.webapi.cache.ResultsCache;
 import org.ohdsi.webapi.cdmresults.CDMResultsCache;
 import org.ohdsi.webapi.cdmresults.CDMResultsCacheTasklet;
-import org.ohdsi.webapi.report.*;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
+import org.ohdsi.webapi.report.CDMAchillesHeel;
+import org.ohdsi.webapi.report.CDMDashboard;
+import org.ohdsi.webapi.report.CDMDataDensity;
+import org.ohdsi.webapi.report.CDMDeath;
+import org.ohdsi.webapi.report.CDMPersonSummary;
+import org.ohdsi.webapi.report.CDMResultsAnalysisRunner;
+import org.ohdsi.webapi.report.ConditionOccurrenceTreemapNode;
+import org.ohdsi.webapi.report.DrugEraPrevalence;
+import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.PreparedSqlRender;
@@ -29,6 +28,28 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import static org.ohdsi.webapi.Constants.WARM_CACHE;
+import static org.ohdsi.webapi.Constants.WARM_CACHE_BY_USER;
 
 /**
  * @author fdefalco

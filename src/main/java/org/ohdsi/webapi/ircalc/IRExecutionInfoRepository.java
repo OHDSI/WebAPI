@@ -10,5 +10,4 @@ import java.util.Optional;
 public interface IRExecutionInfoRepository extends CrudRepository<ExecutionInfo, ExecutionInfoId> {
     List<ExecutionInfo> findByStatus(GenerationStatus status);
     List<ExecutionInfo> findByStatusIn(List<GenerationStatus> statuses);
-    Optional<ExecutionInfo> findByAnalysisAndSource(IncidenceRateAnalysis analysis, Source source);
 }

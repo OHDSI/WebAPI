@@ -58,4 +58,4 @@ SELECT
   count_value
 FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 111
 ) t1
-ORDER BY series_Name, CAST(stratum_1 AS INT)
+ORDER BY series_Name, CAST(CASE WHEN isNumeric(stratum_1) = 1 THEN stratum_1 ELSE null END AS INT)

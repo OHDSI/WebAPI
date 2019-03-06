@@ -589,27 +589,27 @@ public class CohortDefinitionService extends AbstractDaoService {
         }
     });
 
-    JobParametersBuilder builder = new JobParametersBuilder();
-    builder.addString(JOB_NAME, String.format("Cleanup cohort %d.",id));
-    builder.addString(COHORT_DEFINITION_ID, ("" + id));
+		JobParametersBuilder builder = new JobParametersBuilder();
+		builder.addString(JOB_NAME, String.format("Cleanup cohort %d.",id));
+		builder.addString(COHORT_DEFINITION_ID, ("" + id));
 
-    final JobParameters jobParameters = builder.toJobParameters();
+		final JobParameters jobParameters = builder.toJobParameters();
 
-    log.info("Beginning cohort cleanup for cohort definition id: {}", "" + id);
+		log.info("Beginning cohort cleanup for cohort definition id: {}", "" + id);
 
-    CleanupCohortTasklet cleanupTasklet = new CleanupCohortTasklet(this.getTransactionTemplateNoTransaction(),this.getSourceRepository());
+		CleanupCohortTasklet cleanupTasklet = new CleanupCohortTasklet(this.getTransactionTemplateNoTransaction(),this.getSourceRepository());
 
-    Step cleanupStep = stepBuilders.get("cohortDefinition.cleanupCohort")
-        .tasklet(cleanupTasklet)
-        .build();
+		Step cleanupStep = stepBuilders.get("cohortDefinition.cleanupCohort")
+			.tasklet(cleanupTasklet)
+			.build();
 
-    SimpleJobBuilder cleanupJobBuilder = jobBuilders.get("cleanupCohort")
-        .start(cleanupStep);
+		SimpleJobBuilder cleanupJobBuilder = jobBuilders.get("cleanupCohort")
+			.start(cleanupStep);
 
-    Job cleanupCohortJob = cleanupJobBuilder.build();
+		Job cleanupCohortJob = cleanupJobBuilder.build();
 
-    this.jobTemplate.launch(cleanupCohortJob, jobParameters);
-  }
+		this.jobTemplate.launch(cleanupCohortJob, jobParameters);
+	}
 	
   private ArrayList<ConceptSetExport> getConceptSetExports(CohortDefinition def, SourceInfo vocabSource) throws RuntimeException {
     ArrayList<ConceptSetExport> exports = new ArrayList<>();

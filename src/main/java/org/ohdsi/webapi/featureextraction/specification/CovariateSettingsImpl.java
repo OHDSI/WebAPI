@@ -125,7 +125,7 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
   private Boolean addDescendantsToInclude = false;
   private List<Long> excludedCovariateConceptIds = null;
   private Boolean addDescendantsToExclude = false;
-  private List<Integer> includedCovariateIds = null;
+  private List<Long> includedCovariateIds = null;
   private String attrFun = "getDbDefaultCovariateData";
   private String csAttrClass = "covariateSettings";
 
@@ -2089,7 +2089,7 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
      * @param includedCovariateIdsItem
      * @return
      */
-    public CovariateSettingsImpl addIncludedCovariateIdsItem(Integer includedCovariateIdsItem) {
+    public CovariateSettingsImpl addIncludedCovariateIdsItem(Long includedCovariateIdsItem) {
     if (this.includedCovariateIds == null) {
       this.includedCovariateIds = new ArrayList<>();
     }
@@ -2102,7 +2102,7 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
    * @return includedCovariateIds
    **/
   @Override
-  public List<Integer> getIncludedCovariateIds() {
+  public List<Long> getIncludedCovariateIds() {
     return includedCovariateIds;
   }
 
@@ -2110,7 +2110,7 @@ public class CovariateSettingsImpl extends RLangClassImpl implements CovariateSe
      *
      * @param includedCovariateIds
      */
-    public void setIncludedCovariateIds(List<Integer> includedCovariateIds) {
+    public void setIncludedCovariateIds(List<Long> includedCovariateIds) {
     this.includedCovariateIds = includedCovariateIds;
   }
 

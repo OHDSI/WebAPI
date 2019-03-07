@@ -68,7 +68,7 @@ import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
 public class CcServiceImpl extends AbstractDaoService implements CcService, GeneratesNotification {
 
     private static final String GENERATION_NOT_FOUND_ERROR = "generation cannot be found by id %d";
-    private static final String[] PARAMETERS_RESULTS = {"cohort_characterization_generation_id", "threshold_level"};
+    private static final String[] PARAMETERS_RESULTS = {"cohort_characterization_generation_id", "threshold_level", "vocabulary_schema"};
     private static final String[] PREVALENCE_STATS_PARAMS = {"cdm_database_schema", "cdm_results_schema", "cc_generation_id", "analysis_id", "cohort_id", "covariate_id"};
     private final String QUERY_RESULTS = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/queryResults.sql");
     private final String DELETE_RESULTS = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/deleteResults.sql");
@@ -423,7 +423,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                 .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, generationId)));
         final Source source = generationEntity.getSource();
         String generationResults = sourceAwareSqlRender.renderSql(source.getSourceId(), QUERY_RESULTS, PARAMETERS_RESULTS, 
-                new String[]{String.valueOf(generationId), String.valueOf(thresholdLevel)});
+                new String[]{String.valueOf(generationId), String.valueOf(thresholdLevel), SourceUtils.getVocabularyQualifier(source)});
         final String tempSchema = SourceUtils.getTempQualifier(source);
         String translatedSql = SqlTranslate.translateSql(generationResults, source.getSourceDialect(), SessionUtils.sessionId(), tempSchema);
         return getGenerationResults(source, translatedSql);
@@ -538,6 +538,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         stat.setResultType(CcResultType.PREVALENCE);
         stat.setCovariateId(rs.getLong("covariate_id"));
         stat.setCovariateName(rs.getString("covariate_name"));
+        stat.setConceptName(rs.getString("concept_name"));
+        stat.setConceptCode(rs.getString("concept_code"));
         stat.setTimeWindow(featureExtractionService.getTimeWindow(rs.getString("analysis_name")));
         stat.setConceptId(rs.getLong("concept_id"));
         stat.setAvg(rs.getDouble("avg_value"));

@@ -539,7 +539,6 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         stat.setCovariateId(rs.getLong("covariate_id"));
         stat.setCovariateName(rs.getString("covariate_name"));
         stat.setConceptName(rs.getString("concept_name"));
-        stat.setConceptCode(rs.getString("concept_code"));
         stat.setTimeWindow(featureExtractionService.getTimeWindow(rs.getString("analysis_name")));
         stat.setConceptId(rs.getLong("concept_id"));
         stat.setAvg(rs.getDouble("avg_value"));

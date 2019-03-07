@@ -16,7 +16,6 @@ select
        r.covariate_id,
        r.covariate_name,
        c.concept_name,
-       c.concept_code,
        r.time_window,
        r.concept_id,
        r.count_value,

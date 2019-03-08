@@ -35,22 +35,10 @@ public abstract class BaseCcDTOToCcEntityConverter<T extends BaseCcDTO<? extends
 
     cohortCharacterization.setId(source.getId());
 
-    Set<CohortDefinition> convertedCohorts = new TreeSet<>((o1, o2) -> ObjectUtils.compare(o1.getId(), o2.getId()));
-    convertedCohorts.addAll(converterUtils.convertSet(source.getCohorts(), CohortDefinition.class));
-    cohortCharacterization.setCohortDefinitions(convertedCohorts);
-
-    Set<FeAnalysisEntity> convertedFeatureAnalyses = new TreeSet<>((o1, o2) -> ObjectUtils.compare(o1.getId(), o2.getId()));
-    convertedFeatureAnalyses.addAll(converterUtils.convertSet(source.getFeatureAnalyses(), FeAnalysisEntity.class));
-    cohortCharacterization.setFeatureAnalyses(convertedFeatureAnalyses);
-
-    Set<CcParamEntity> convertedParameters = new TreeSet<>((o1, o2) -> ObjectUtils.compare(o1.getName(), o2.getName()));
-    convertedParameters.addAll(converterUtils.convertSet(source.getParameters(), CcParamEntity.class));
-    cohortCharacterization.setParameters(convertedParameters);
-
-    Set<CcStrataEntity> convertedStratas = new TreeSet<>((o1, o2) -> ObjectUtils.compare(
-            o1.getName() + o1.getId() + o1.getExpressionString(), o2.getName() + o2.getId() + o2.getExpressionString()));
-    convertedStratas.addAll(converterUtils.convertSet(source.getStratas(), CcStrataEntity.class));
-    cohortCharacterization.setStratas(convertedStratas);
+    cohortCharacterization.setCohortDefinitions(converterUtils.convertSet(source.getCohorts(), CohortDefinition.class));
+    cohortCharacterization.setFeatureAnalyses(converterUtils.convertSet(source.getFeatureAnalyses(), FeAnalysisEntity.class));
+    cohortCharacterization.setParameters(converterUtils.convertSet(source.getParameters(), CcParamEntity.class));
+    cohortCharacterization.setStratas(converterUtils.convertSet(source.getStratas(), CcStrataEntity.class));
 
     CcStrataConceptSetEntity conceptSetEntity = new CcStrataConceptSetEntity();
     conceptSetEntity.setCohortCharacterization(cohortCharacterization);

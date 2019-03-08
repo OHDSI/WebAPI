@@ -162,7 +162,11 @@ public abstract class FeAnalysisEntity<T> extends CommonEntity implements Featur
         if (this == o) return true;
         if (!(o instanceof FeAnalysisEntity)) return false;
         final FeAnalysisEntity that = (FeAnalysisEntity) o;
-        return Objects.equals(getId(), that.getId());
+        if (getId() != null && that.getId() != null) {
+            return Objects.equals(getId(), that.getId());
+        } else {
+            return Objects.equals(getType(), that.getType()) && Objects.equals(getDesign(), that.getDesign());
+        }
     }
 
     @Override

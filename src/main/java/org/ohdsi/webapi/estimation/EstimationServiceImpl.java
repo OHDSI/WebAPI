@@ -332,16 +332,6 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
                 tco.setIncludedCovariateConceptIds(new ArrayList<>());
             });
 
-            // Replace all of the negative controls with the new IDs
-            analysis.getNegativeControls().forEach((nc) -> {
-                Long newT = cohortIds.get(nc.getTargetId());
-                Long newC = cohortIds.get(nc.getComparatorId());
-                nc.setTargetId(newT);
-                nc.setComparatorId(newC);
-                // No need to set the outcomes since these are concept IDs
-                // and will transfer in fine
-            });
-
             // Replace all of the concept sets
             analysis.getConceptSetCrossReference().forEach((ConceptSetCrossReferenceImpl xref) -> {
                 Integer newConceptSetId = conceptSetIdMap.get(xref.getConceptSetId());
@@ -355,6 +345,10 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
             });
             analysis.getPositiveControlSynthesisArgs().getCovariateSettings().setIncludedCovariateConceptIds(new ArrayList<>());
             analysis.getPositiveControlSynthesisArgs().getCovariateSettings().setExcludedCovariateConceptIds(new ArrayList<>());
+            
+            // Remove all of the negative controls as 
+            // these are populated upon export
+            analysis.setNegativeControls(new ArrayList<>());
 
             // Remove the ID
             analysis.setId(null);

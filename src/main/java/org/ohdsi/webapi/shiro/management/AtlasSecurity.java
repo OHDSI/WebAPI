@@ -148,6 +148,7 @@ public abstract class AtlasSecurity extends Security {
     this.sourcePermissionTemplates.put("vocabulary:%s:concept:*:get", "Get concept on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("vocabulary:%s:concept:*:related:get", "Get related concepts on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("vocabulary:%s:search:post", "Search vocab on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("vocabulary:%s:search:*:get", "Search vocab on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("cdmresults:%s:*:get", "Get Achilles reports on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("cdmresults:%s:conceptRecordCount:post", "Get Achilles concept counts on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("cdmresults:%s:*:*:get", "Get Achilles reports details on Source with SourceKey = %s");

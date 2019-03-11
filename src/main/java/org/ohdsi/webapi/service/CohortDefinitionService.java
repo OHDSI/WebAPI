@@ -20,6 +20,7 @@ import org.ohdsi.sql.SqlRender;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortdefinition.*;
 import org.ohdsi.webapi.common.SourceMapKey;
+import org.ohdsi.webapi.common.generation.GenerateSqlResult;
 import org.ohdsi.webapi.common.sensitiveinfo.CohortGenerationSensitiveInfoService;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ExportUtil;
@@ -69,9 +70,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.ohdsi.webapi.Constants.Params.COHORT_DEFINITION_ID;
-import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
-import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
+import static org.ohdsi.webapi.Constants.Params.*;
 import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
@@ -291,12 +290,6 @@ public class CohortDefinitionService extends AbstractDaoService {
     @JsonProperty("options")
     public CohortExpressionQueryBuilder.BuildExpressionQueryOptions options;
 
-  }
-
-  public static class GenerateSqlResult {
-
-    @JsonProperty("templateSql")
-    public String templateSql;
   }
 
   public static class CohortDefinitionListItem {

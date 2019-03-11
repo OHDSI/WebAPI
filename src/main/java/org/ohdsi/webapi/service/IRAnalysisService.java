@@ -15,49 +15,23 @@
  */
 package org.ohdsi.webapi.service;
 
-import static org.ohdsi.webapi.Constants.GENERATE_IR_ANALYSIS;
-import static org.ohdsi.webapi.Constants.Params.*;
-import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.opencsv.CSVWriter;
-import java.io.ByteArrayOutputStream;
-import java.io.StringWriter;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-import javax.annotation.PostConstruct;
-import javax.servlet.ServletContext;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.collections4.Predicate;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.helper.ResourceHelper;
+import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.common.generation.GenerateSqlResult;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
-import org.ohdsi.webapi.ircalc.AnalysisReport;
-import org.ohdsi.webapi.ircalc.ExecutionInfo;
-import org.ohdsi.webapi.ircalc.IRAnalysisInfoListener;
-import org.ohdsi.webapi.ircalc.IRExecutionInfoRepository;
-import org.ohdsi.webapi.ircalc.IncidenceRateAnalysis;
-import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisDetails;
-import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisExpression;
-import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisRepository;
-import org.ohdsi.webapi.ircalc.IRAnalysisTasklet;
+import org.ohdsi.webapi.ircalc.*;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
@@ -69,14 +43,12 @@ import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
-import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.UserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
@@ -90,6 +62,27 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import javax.annotation.PostConstruct;
+import javax.servlet.ServletContext;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.ByteArrayOutputStream;
+import java.io.StringWriter;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+import static org.ohdsi.webapi.Constants.GENERATE_IR_ANALYSIS;
+import static org.ohdsi.webapi.Constants.Params.*;
+import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
+
 /**
  *
  * @author Chris Knoll <cknoll@ohdsi.org>
@@ -102,6 +95,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   private static final String NAME = "irAnalysis";
   private static final String NO_INCIDENCE_RATE_ANALYSIS_MESSAGE = "There is no incidence rate analysis with id = %d.";
 
+  private final static IRAnalysisQueryBuilder queryBuilder = new IRAnalysisQueryBuilder();
 
   @Autowired
   private IncidenceRateAnalysisRepository irAnalysisRepository;
@@ -175,6 +169,21 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     public long totalPersons;
     public long timeAtRisk;
     public long cases;
+  }
+
+  public static class GenerateSqlRequest {
+    public GenerateSqlRequest() {
+    }
+
+    @JsonProperty("analysisId")
+    public Integer analysisId;
+
+    @JsonProperty("expression")
+    public IncidenceRateAnalysisExpression expression;
+
+    @JsonProperty("options")
+    public IRAnalysisQueryBuilder.BuildExpressionQueryOptions options;
+
   }
   
   private final RowMapper<AnalysisReport.Summary> summaryMapper = new RowMapper<AnalysisReport.Summary>() {
@@ -536,6 +545,19 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     report.treemapData = treemapData;
 
     return report;
+  }
+
+  @Override
+  public GenerateSqlResult generateSql(GenerateSqlRequest request) {
+    IRAnalysisQueryBuilder.BuildExpressionQueryOptions options = request.options;
+    GenerateSqlResult result = new GenerateSqlResult();
+    if (options == null) {
+      options = new IRAnalysisQueryBuilder.BuildExpressionQueryOptions();
+    }
+    String expressionSql = queryBuilder.buildAnalysisQuery(request.expression, request.analysisId, options);
+    result.templateSql = SqlRender.renderSql(expressionSql, null, null);
+
+    return result;
   }
 
   @Override

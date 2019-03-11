@@ -116,7 +116,7 @@ public final class JobUtils {
             map.put(rs.getString(12), value.getValue());//value);
             
         }
-        if (jobexec.getExecutionId() != null) {
+        if (jobexec != null && jobexec.getExecutionId() != null) {
             jobexec.setJobParametersResource(map);
             jobs.add(jobexec);
         }

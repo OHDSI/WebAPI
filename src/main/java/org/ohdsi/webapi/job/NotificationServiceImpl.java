@@ -87,7 +87,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     private static String getFoldingKey(JobExecution entity) {
         final Optional<String> key = entity.getJobParameters().getParameters().keySet().stream().filter(FOLDING_KEYS::contains).findAny();
-        return key.map(s -> entity.getJobParameters().getString(s) + entity.getJobParameters().getString("source_id"))
+        return key.map(s -> entity.getJobParameters().getString(s) + "_" + entity.getJobParameters().getString("source_id"))
                 .orElseGet(() -> String.valueOf(entity.getId()));
     }
 

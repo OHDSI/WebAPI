@@ -262,8 +262,8 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         String analysisSql = ResourceHelper.GetResourceAsString("/resources/pathway/runPathwayAnalysis.sql");
         String eventCohortInputSql = ResourceHelper.GetResourceAsString("/resources/pathway/eventCohortInput.sql");
 
-        String tempTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Temp);
-        String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+        String tempTableQualifier = SourceUtils.getTempQualifier(source);
+        String resultsTableQualifier = SourceUtils.getResultsQualifier(source);
 
         String eventCohortIdIndexSql = eventCohortCodes.entrySet()
                 .stream()

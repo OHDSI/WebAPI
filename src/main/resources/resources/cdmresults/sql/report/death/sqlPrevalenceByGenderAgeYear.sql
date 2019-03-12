@@ -1,7 +1,7 @@
 SELECT
   CONCAT(
-    cast(cast(num.stratum_3 AS INT) * 10 AS VARCHAR(11)), '-',
-    cast((cast(num.stratum_3 AS INT) + 1) * 10 - 1 AS VARCHAR(11))
+    cast(cast(CASE WHEN isNumeric(num.stratum_3) = 1 THEN num.stratum_3 ELSE null END AS INT) * 10 AS VARCHAR(11)), '-',
+    cast((cast(CASE WHEN isNumeric(num.stratum_3) = 1 THEN num.stratum_3 ELSE null END AS INT) + 1) * 10 - 1 AS VARCHAR(11))
   ) AS trellis_Name,
   --age decile
   c2.concept_name                                              AS series_Name,
@@ -24,6 +24,6 @@ FROM
        AND num.stratum_2 = denom.stratum_2 --gender
        AND num.stratum_3 = denom.stratum_3
   --age decile
-  INNER JOIN @vocab_database_schema.concept c2 ON CAST(num.stratum_2 AS BIGINT) = c2.concept_id
+  INNER JOIN @vocab_database_schema.concept c2 ON CAST(CASE WHEN isNumeric(num.stratum_2) = 1 THEN num.stratum_2 ELSE null END AS BIGINT) = c2.concept_id
 WHERE c2.concept_id IN (8507, 8532)
 

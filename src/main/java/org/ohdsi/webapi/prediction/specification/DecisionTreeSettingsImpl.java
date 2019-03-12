@@ -155,14 +155,6 @@ public class DecisionTreeSettingsImpl extends SeedSettingsImpl implements Decisi
     public void setClassWeight(List<ClassWeightEnum> classWeight) {
         this.classWeight = classWeight;
     }
-    
-    /**
-     *
-     * @param classWeight
-     */
-    public void setClassWeight(String classWeight) {
-        this.classWeight = new ArrayList<>(Arrays.asList(ClassWeightEnum.fromValue(classWeight)));
-    }
 
     /**
      * Boolean whether to plot the tree (requires python pydotplus module)

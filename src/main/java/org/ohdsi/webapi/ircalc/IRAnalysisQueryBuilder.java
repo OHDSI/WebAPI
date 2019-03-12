@@ -65,7 +65,6 @@ public class IRAnalysisQueryBuilder {
 
   public String buildAnalysisQuery(IncidenceRateAnalysisExpression analysisExpression, Integer analysisId, BuildExpressionQueryOptions options) {
     String resultSql = PERFORM_ANALYSIS_QUERY_TEMPLATE;
-    // everything deserialized successfully
 
     // target and outcome statements for analysis
     ArrayList<String> cohortIdStatements = new ArrayList<>();
@@ -147,7 +146,7 @@ public class IRAnalysisQueryBuilder {
 
     return resultSql;
   }
-  
+
   public String buildAnalysisQuery(IncidenceRateAnalysis analyisis, BuildExpressionQueryOptions options) {
     try {
       ObjectMapper mapper = new ObjectMapper();

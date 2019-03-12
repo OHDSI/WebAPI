@@ -584,7 +584,7 @@ public class CohortDefinitionService extends AbstractDaoService {
                 });
                 cohortDefinitionRepository.delete(def);
             } else {
-                log.warn("Failed to delete Cohort Definition with ID = {}, {}", id, id);
+                log.warn("Failed to delete Cohort Definition with ID = {}", id);
             }
         }
     });

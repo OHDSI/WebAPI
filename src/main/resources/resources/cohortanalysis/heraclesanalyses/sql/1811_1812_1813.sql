@@ -1,10 +1,10 @@
--- 1812                Distribution of duration (days) from cohort start to observation end
+-- @analysisId                @analysisName
 --insert into @results_schema.heracles_results_dist (cohort_definition_id, analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 
 select c1.cohort_definition_id,
   c1.subject_id,
-  DATEDIFF(dd, c1.cohort_start_date, op1.observation_period_end_date) as count_value
-INTO #raw_1812
+  @fieldExpression as count_value
+INTO #raw_@analysisId
 from @CDM_schema.person p1
 inner join #HERACLES_cohort c1 on p1.person_id = c1.subject_id
 inner join @CDM_schema.observation_period op1 on p1.person_id = op1.person_id
@@ -14,7 +14,7 @@ and c1.cohort_start_date <= op1.observation_period_end_date
 
 WITH cteRawData as
 (
-    select cohort_definition_id, count_value FROM #raw_1812
+    select cohort_definition_id, count_value FROM #raw_@analysisId
 ),
     overallStats as
   (
@@ -40,7 +40,7 @@ WITH cteRawData as
            ) D
   )
 select o.cohort_definition_id,
-  1812 as analysis_id,
+  @analysisId as analysis_id,
   cast( '' as varchar(1) ) as stratum_1,
   cast( '' as varchar(1) ) as stratum_2,
   cast( '' as varchar(1) ) as stratum_3,cast( '' as varchar(1) ) as stratum_4, cast( '' as varchar(1) ) as stratum_5,
@@ -54,11 +54,11 @@ select o.cohort_definition_id,
   MIN(case when s.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
   MIN(case when s.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
   MIN(case when s.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
-into #results_dist_1812
+into #results_dist_@analysisId
 from valueStats s
 join overallStats o on s.cohort_definition_id = o.cohort_definition_id
 GROUP BY o.cohort_definition_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
 
-TRUNCATE TABLE #raw_1812;
-DROP TABLE #raw_1812;
+TRUNCATE TABLE #raw_@analysisId;
+DROP TABLE #raw_@analysisId;

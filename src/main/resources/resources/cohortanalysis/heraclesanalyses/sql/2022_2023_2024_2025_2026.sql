@@ -1,8 +1,8 @@
--- 2012                Count and percentage of race data completeness for age between 10~20
+-- @analysisId                Count and percentage of ethnicity data completeness for age between 10~20
 --insert into @results_schema.heracles_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
-select @cohort_definition_id as cohort_definition_id, 2012 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1,
+select @cohort_definition_id as cohort_definition_id, @analysisId as analysis_id, round(innerT.valid_percentage, 2) as stratum_1,
        innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, cast( '' as varchar(1) ) as stratum_4, (@smallcellcount + 9) as count_value
-into #results_2012
+into #results_@analysisId
 from
 (select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count,
 CASE
@@ -15,23 +15,21 @@ FROM #HERACLES_cohort co
 JOIN @CDM_schema.person p
 ON     co.SUBJECT_ID = p.PERSON_ID
 AND p.YEAR_OF_BIRTH >
-year(DATEADD(year, -20, getdate()))
+year(DATEADD(year, -@maxAge, getdate()))
 AND p.YEAR_OF_BIRTH <=
-year(DATEADD(year, -10, getdate()))
-LEFT JOIN @CDM_schema.concept c ON p.RACE_CONCEPT_ID = c.CONCEPT_ID
+year(DATEADD(year, -@minAge, getdate()))
+LEFT JOIN @CDM_schema.concept c ON p.ETHNICITY_CONCEPT_ID = c.CONCEPT_ID
 WHERE
-p.RACE_CONCEPT_ID IS NOT NULL
-and (lower(c.CONCEPT_NAME) not like 'other%'
-and lower(c.CONCEPT_NAME) not like 'non%'
-and lower(c.CONCEPT_NAME) not like '%not %'
-and lower(c.CONCEPT_NAME) not like 'unknown'
+p.ETHNICITY_CONCEPT_ID IS NOT NULL
+and (
+lower(c.CONCEPT_NAME) not like '%unknown%'
 )) valid_data,
 (SELECT count(distinct co.subject_id) as all_data_count
 FROM #HERACLES_cohort co
 JOIN @CDM_schema.person p
 ON     co.SUBJECT_ID = p.PERSON_ID
 AND p.YEAR_OF_BIRTH >
-year(DATEADD(year, -20, getdate()))
+year(DATEADD(year, -@maxAge, getdate()))
 AND p.YEAR_OF_BIRTH <=
-year(DATEADD(year, -10, getdate()))
+year(DATEADD(year, -@minAge, getdate()))
 ) all_data) innerT;

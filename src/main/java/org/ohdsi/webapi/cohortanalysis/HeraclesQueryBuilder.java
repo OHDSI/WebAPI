@@ -8,10 +8,14 @@ import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.ArrayUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
+import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortresults.PeriodType;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.CSVRecordMapper;
+import org.ohdsi.webapi.util.SessionUtils;
+import org.ohdsi.webapi.util.SourceUtils;
 import org.springframework.beans.factory.BeanInitializationException;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -26,12 +30,18 @@ import java.util.stream.Collectors;
 public class HeraclesQueryBuilder {
 
   private final static String INIT_QUERY = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/initHeraclesAnalyses.sql");
+  private final static String FINALIZE_QUERY = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/finalizeHeraclesAnalyses.sql");
 
   private final static String HERACLES_ANALYSES_TABLE = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/heraclesanalyses/csv/heraclesAnalyses.csv");
 
   private final static String HERACLES_ANALYSES_PARAMS = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/heraclesanalyses/csv/heraclesAnalysesParams.csv");
 
   private final static String ANALYSES_QUERY_PREFIX = "/resources/cohortanalysis/heraclesanalyses/sql/";
+
+  private final static String INSERT_RESULT_STATEMENT = "insert into @results_schema.heracles_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, count_value)\n";
+  private final static String INSERT_DIST_RESULT_STATEMENT = "insert into @results_schema.heracles_results_dist (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, stratum_5, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)\n";
+  private final static String SELECT_RESULT_STATEMENT = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/selectHeraclesResults.sql");
+  private final static String SELECT_DIST_RESULT_STATEMENT = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/selectHeraclesDistResults.sql");
 
   private final static String[] PARAM_NAMES = new String[]{"CDM_schema", "results_schema", "source_name",
           "smallcellcount", "runHERACLESHeel", "CDM_version", "cohort_definition_id", "list_of_analysis_ids",
@@ -92,7 +102,9 @@ public class HeraclesQueryBuilder {
 
   public String buildHeraclesAnalysisQuery(CohortAnalysisTask task) {
 
-    return new Builder(task).buildQuery();
+    String query = new Builder(task).buildQuery();
+    return SqlTranslate.translateSql(query, task.getSource().getSourceDialect(), SessionUtils.sessionId(),
+            SourceUtils.getTempQualifier(task.getSource()));
   }
 
   private String[] buildAnalysisParams(CohortAnalysisTask task) {
@@ -140,6 +152,7 @@ public class HeraclesQueryBuilder {
     private CohortAnalysisTask analysisTask;
     private String[] values;
     private List<Integer> analysesIds;
+    private List<String> resultSql = new ArrayList<>();
 
     public Builder(CohortAnalysisTask analysisTask) {
 
@@ -150,17 +163,59 @@ public class HeraclesQueryBuilder {
 
     public String buildQuery() {
 
-      return buildInitQuery() + "\n" + buildAnalysesQueries();
+      return buildQuery(INIT_QUERY)
+              .buildAnalysesQueries()
+              .buildSelectResultQuery()
+              .buildQuery(FINALIZE_QUERY)
+              .toSql();
     }
 
-    private String buildInitQuery() {
+    private Builder buildQuery(String query) {
 
-      return SqlRender.renderSql(INIT_QUERY, PARAM_NAMES, values);
+      resultSql.add(SqlRender.renderSql(query, PARAM_NAMES, values));
+      return this;
     }
 
-    private String buildAnalysesQueries() {
+    private Builder buildAnalysesQueries() {
 
-      return analysesIds.stream().map(this::getAnalysisQuery).collect(Collectors.joining("\n"));
+      resultSql.add(analysesIds.stream().map(this::getAnalysisQuery).collect(Collectors.joining("\n")));
+      return this;
+    }
+
+    private Builder buildSelectResultQuery() {
+
+      StringBuilder result = new StringBuilder();
+      List<String> resultsQuery = new ArrayList<>();
+      List<String> distResultsQuery = new ArrayList<>();
+      analysesIds.forEach(id -> {
+        HeraclesAnalysis analysis = heraclesAnalysisMap.get(id);
+        if (Objects.nonNull(analysis)) {
+          Pair<String[], String[]> params = getAnalysisParams(id);
+          if (analysis.isHasResults()) {
+            resultsQuery.add(SqlRender.renderSql(SELECT_RESULT_STATEMENT, params.getFirst(), params.getSecond()));
+          }
+          if (analysis.isHasDistResults()) {
+            distResultsQuery.add(SqlRender.renderSql(SELECT_DIST_RESULT_STATEMENT, params.getFirst(), params.getSecond()));
+          }
+        }
+      });
+      if (!resultsQuery.isEmpty()) {
+        result.append(INSERT_RESULT_STATEMENT)
+                .append(resultsQuery.stream().collect(Collectors.joining("\nUNION ALL\n")))
+                .append(";");
+      }
+      if (!distResultsQuery.isEmpty()) {
+        result.append(INSERT_DIST_RESULT_STATEMENT)
+                .append(distResultsQuery.stream().collect(Collectors.joining("\nUNION ALL\n")))
+                .append(";");
+      }
+      resultSql.add(result.toString());
+      return this;
+    }
+
+    private String toSql() {
+
+      return resultSql.stream().collect(Collectors.joining("\n"));
     }
 
     private String getAnalysisQuery(Integer id) {
@@ -168,35 +223,26 @@ public class HeraclesQueryBuilder {
       HeraclesAnalysis analysis = heraclesAnalysisMap.get(id);
       if (Objects.nonNull(analysis)) {
         String query = ResourceHelper.GetResourceAsString(ANALYSES_QUERY_PREFIX + analysis.getFilename());
-        List<HeraclesAnalysisParameter> params = new ArrayList<>(analysesParamsMap.getOrDefault(id, new HashSet<>()));
-
-        int size = params.size();
-        String[] analysisParamNames = new String[size];
-        String[] analysisParamValues = new String[size];
-        for(int i = 0; i < size; i++) {
-          analysisParamNames[i] = params.get(i).getParamName();
-          analysisParamValues[i] = params.get(i).getValue();
-        }
-        String[] paramNames = ArrayUtils.addAll(PARAM_NAMES, analysisParamNames);
-        String[] paramValues = ArrayUtils.addAll(values, analysisParamValues);
-        return SqlRender.renderSql(query, paramNames, paramValues);
+        Pair<String[], String[]> params = getAnalysisParams(id);
+        return SqlRender.renderSql(query, params.getFirst(), params.getSecond());
       } else {
         return "";
       }
     }
 
-    private String buildSelectResultQuery() {
+    private Pair<String[], String[]> getAnalysisParams(Integer id) {
+      List<HeraclesAnalysisParameter> params = new ArrayList<>(analysesParamsMap.getOrDefault(id, new HashSet<>()));
 
-      StringBuilder resultsQuery = new StringBuilder();
-      StringBuilder distResultsQuery = new StringBuilder();
-      analysesIds.forEach(id -> {
-        HeraclesAnalysis analysis = heraclesAnalysisMap.get(id);
-        if (Objects.nonNull(analysis)) {
-          if (analysis.isHasResults()) {
-            resultsQuery.append()
-          }
-        }
-      });
+      int size = params.size();
+      String[] analysisParamNames = new String[size];
+      String[] analysisParamValues = new String[size];
+      for(int i = 0; i < size; i++) {
+        analysisParamNames[i] = params.get(i).getParamName();
+        analysisParamValues[i] = params.get(i).getValue();
+      }
+      String[] paramNames = ArrayUtils.addAll(PARAM_NAMES, analysisParamNames);
+      String[] paramValues = ArrayUtils.addAll(values, analysisParamValues);
+      return Pair.of(paramNames, paramValues);
     }
 
   }

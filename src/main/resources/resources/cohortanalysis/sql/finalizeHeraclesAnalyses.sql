@@ -1,6 +1,3 @@
-select -1, -1, cast('' as varchar(255)),cast('' as varchar(255)),cast('' as varchar(255)),cast('' as varchar(255)),cast('' as varchar(255)), -1, -1, -1, -1, -1, -1, -1, -1, -1, -1;
--- this final select handles the union all in the case of whatever conditional query runs last
-
 TRUNCATE TABLE #HERACLES_cohort_subject;
 DROP TABLE #HERACLES_cohort_subject;
 

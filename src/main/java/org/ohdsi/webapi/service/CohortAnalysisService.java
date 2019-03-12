@@ -2,7 +2,6 @@ package org.ohdsi.webapi.service;
 
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
-import java.beans.PropertyEditorSupport;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -331,7 +330,7 @@ public class CohortAnalysisService extends AbstractDaoService implements Generat
 		log.info("Beginning run for cohort analysis task: {}", taskString);
 
 		CohortAnalysisTasklet tasklet = new CohortAnalysisTasklet(task, getSourceJdbcTemplate(task.getSource()), 
-				getTransactionTemplate(), getTransactionTemplateRequiresNew(), this.getSourceDialect(), this.visualizationDataRepository, this.cohortDefinitionRepository);
+				getTransactionTemplate(), getTransactionTemplateRequiresNew(), this.getSourceDialect(), this.visualizationDataRepository, this.cohortDefinitionRepository, heraclesQueryBuilder);
 
 		return this.jobTemplate.launchTasklet(NAME, "cohortAnalysisStep", tasklet, jobParameters);
 	}

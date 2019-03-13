@@ -83,9 +83,7 @@ public class PreparedStatementRenderer implements ParameterizedSqlProvider {
     this.orderedParamsList = PreparedSqlRender.getOrderedListOfParameterValues(paramValueMap, sql);
     // NOTE:
     // Look below
-    if (source != null && Objects.equals(source.getSourceDialect(), DBMSType.BIGQUERY.getOhdsiDB())) {
-      this.orderedParamsList = this.orderedParamsList.stream().filter(Objects::nonNull).collect(Collectors.toList());
-    }
+    this.orderedParamsList = this.orderedParamsList.stream().filter(Objects::nonNull).collect(Collectors.toList());
 
     buildPreparedStatementSetter();
     sql = PreparedSqlRender.fixPreparedStatementSql(
@@ -93,8 +91,12 @@ public class PreparedStatementRenderer implements ParameterizedSqlProvider {
       paramValueMap,
       // NOTE:
       // Current version of BigQuery driver has issues when NULLs are provided as variables for prepared statements (throws NPE)
-      // That's why in case of NULLs we paste them directly into code
-      (source != null && source.getSourceDialect().equals(DBMSType.BIGQUERY.getOhdsiDB())) ? (object -> object == null ? "NULL" : "?") : (object -> "?")
+      // That's why in case of NULLs we paste them directly into code.
+      // And since:
+      // - queries processed through "PreparedStatementRenderer" are mainly one-off
+      // - sometimes SQL is translated in advance, therefore source is not passed into the constructor
+      // we apply the approach to all dialects
+      object -> object == null ? "NULL" : "?"
     );
 
 		if (source != null) {

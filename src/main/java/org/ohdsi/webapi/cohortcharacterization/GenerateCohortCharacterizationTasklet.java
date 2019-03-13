@@ -70,7 +70,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
 
     private static final String COHORT_STRATA_QUERY = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/strataWithCriteria.sql");
 
-    private static final String[] CRITERIA_REGEXES = new String[] { "groupQuery", "indexId", "targetTable", "totalsTable" };
+    private static final String[] CRITERIA_REGEXES = new String[] { "groupQuery", "indexId", "targetTable", "totalsTable", "eventsTable" };
     private static final String[] STRATA_REGEXES = new String[] { "strataQuery", "indexId", "targetTable", "strataCohortTable", "eventsTable" };
 
     private static final Collection<String> CRITERIA_PARAM_NAMES = ImmutableList.<String>builder()
@@ -299,7 +299,8 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
 
             Long conceptId = 0L;
             String queryFile;
-            String groupQuery = getCriteriaGroupQuery(analysis, feature, "#qualified_events");
+            String eventsTable = String.format("#qualified_events_%d", cohortDefinitionId);
+            String groupQuery = getCriteriaGroupQuery(analysis, feature, eventsTable);
             String[] paramNames = CRITERIA_PARAM_NAMES.toArray(new String[0]);
 
             if (CcResultType.PREVALENCE.equals(analysis.getStatType())) {
@@ -313,7 +314,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             String strataName = Objects.nonNull(strata) ? strata.getName() : null;
             Collection<Object> paramValues = Lists.mutable.with(cohortDefinitionId, jobId, analysis.getId(), analysis.getName(), feature.getName(), conceptId,
                     feature.getId(), strataId, strataName);
-            String[] criteriaValues = new String[]{ groupQuery, "0", targetTable, cohortTable };
+            String[] criteriaValues = new String[]{ groupQuery, "0", targetTable, cohortTable, eventsTable };
 
             return Arrays.stream(SqlSplit.splitSql(queryFile))
                     .map(COMPLETE_DOTCOMMA)

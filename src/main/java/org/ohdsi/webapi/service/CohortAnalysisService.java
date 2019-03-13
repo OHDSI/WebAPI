@@ -183,55 +183,7 @@ public class CohortAnalysisService extends AbstractDaoService implements Generat
 	@Consumes(MediaType.APPLICATION_JSON)
 	public String getRunCohortAnalysisSql(CohortAnalysisTask task) {
 		task.setSmallCellCount(Integer.parseInt(this.smallCellCount));
-		return getCohortAnalysisSql(task);
-	}
-
-	public static String getCohortAnalysisSql(CohortAnalysisTask task) {
-		String sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/runHeraclesAnalyses.sql");
-
-		String resultsTableQualifier = task.getSource().getTableQualifier(SourceDaimon.DaimonType.Results);
-		String cdmTableQualifier = task.getSource().getTableQualifier(SourceDaimon.DaimonType.CDM);
-
-		String cohortDefinitionIds = (task.getCohortDefinitionIds() == null ? "" : Joiner.on(",").join(
-				task.getCohortDefinitionIds()));
-		String analysisIds = (task.getAnalysisIds() == null ? "" : Joiner.on(",").join(task.getAnalysisIds()));
-		String conditionIds = (task.getConditionConceptIds() == null ? "" : Joiner.on(",").join(
-				task.getConditionConceptIds()));
-		String drugIds = (task.getDrugConceptIds() == null ? "" : Joiner.on(",").join(task.getDrugConceptIds()));
-		String procedureIds = (task.getProcedureConceptIds() == null ? "" : Joiner.on(",").join(
-				task.getProcedureConceptIds()));
-		String observationIds = (task.getObservationConceptIds() == null ? "" : Joiner.on(",").join(
-				task.getObservationConceptIds()));
-		String measurementIds = (task.getMeasurementConceptIds() == null ? "" : Joiner.on(",").join(
-				task.getMeasurementConceptIds()));
-
-		String concatenatedPeriods = "";
-		if (CollectionUtils.isEmpty(task.getPeriods())) {
-			// In this case summary stats will be calculated
-			concatenatedPeriods = "''";
-		} else {
-			List<PeriodType> periods = CollectionUtils.isEmpty(task.getPeriods()) ? Arrays.asList(PeriodType.values()) : task.getPeriods();
-			concatenatedPeriods = periods.stream()
-					.map(PeriodType::getValue)
-					.map(StringUtils::quote)
-					.collect(Collectors.joining(","));
-		}
-		String[] params = new String[]{"CDM_schema", "results_schema", "source_name",
-				"smallcellcount", "runHERACLESHeel", "CDM_version", "cohort_definition_id", "list_of_analysis_ids",
-				"condition_concept_ids", "drug_concept_ids", "procedure_concept_ids", "observation_concept_ids",
-				"measurement_concept_ids", "cohort_period_only", "source_id", "periods", "rollupUtilizationVisit", "rollupUtilizationDrug"};
-
-		String[] values = new String[]{cdmTableQualifier, resultsTableQualifier, task.getSource().getSourceName(),
-				String.valueOf(task.getSmallCellCount()), String.valueOf(task.runHeraclesHeel()).toUpperCase(), 
-				task.getCdmVersion(), cohortDefinitionIds, analysisIds, conditionIds, drugIds, procedureIds, 
-				observationIds, measurementIds,String.valueOf(task.isCohortPeriodOnly()), 
-				String.valueOf(task.getSource().getSourceId()), concatenatedPeriods,
-				String.valueOf(task.getRollupUtilizationVisit()).toUpperCase(), String.valueOf(task.getRollupUtilizationDrug()).toUpperCase()
-		};
-		sql = SqlRender.renderSql(sql, params, values);
-		sql = SqlTranslate.translateSql(sql, task.getSource().getSourceDialect(), SessionUtils.sessionId(), SourceUtils.getTempQualifier(task.getSource()));
-
-		return sql;
+		return heraclesQueryBuilder.buildHeraclesAnalysisQuery(task);
 	}
 
 	/**

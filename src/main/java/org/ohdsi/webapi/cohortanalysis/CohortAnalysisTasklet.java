@@ -84,7 +84,6 @@ public class CohortAnalysisTasklet implements Tasklet {
 					return gi;
 				});
         try {
-//						final String cohortSql = CohortAnalysisService.getCohortAnalysisSql(task);
 						final String cohortSql = heraclesQueryBuilder.buildHeraclesAnalysisQuery(task);
 						BatchStatementExecutorWithProgress executor = new BatchStatementExecutorWithProgress(
 										SqlSplit.splitSql(cohortSql),

@@ -101,9 +101,7 @@ public class HeraclesQueryBuilder {
 
   public String buildHeraclesAnalysisQuery(CohortAnalysisTask task) {
 
-    String query = new Builder(task).buildQuery();
-    return SqlTranslate.translateSql(query, task.getSource().getSourceDialect(), SessionUtils.sessionId(),
-            SourceUtils.getTempQualifier(task.getSource()));
+    return new Builder(task).buildQuery();
   }
 
   private String[] buildAnalysisParams(CohortAnalysisTask task) {
@@ -152,15 +150,17 @@ public class HeraclesQueryBuilder {
     private String[] values;
     private List<Integer> analysesIds;
     private List<String> resultSql = new ArrayList<>();
+    private String sessionId;
 
-    public Builder(CohortAnalysisTask analysisTask) {
+    Builder(CohortAnalysisTask analysisTask) {
 
       this.analysisTask = analysisTask;
       this.values = buildAnalysisParams(this.analysisTask);
       this.analysesIds = analysisTask.getAnalysisIds().stream().map(Integer::parseInt).collect(Collectors.toList());
+      this.sessionId = SessionUtils.sessionId();
     }
 
-    public String buildQuery() {
+    String buildQuery() {
 
       return buildQuery(INIT_QUERY)
               .buildAnalysesQueries()
@@ -169,9 +169,15 @@ public class HeraclesQueryBuilder {
               .toSql();
     }
 
+    private String translateSql(String query) {
+
+      return SqlTranslate.translateSql(query, analysisTask.getSource().getSourceDialect(), sessionId,
+            SourceUtils.getTempQualifier(analysisTask.getSource()));
+    }
+
     private Builder buildQuery(String query) {
 
-      resultSql.add(SqlRender.renderSql(query, PARAM_NAMES, values));
+      resultSql.add(translateSql(SqlRender.renderSql(query, PARAM_NAMES, values)));
       return this;
     }
 
@@ -210,7 +216,7 @@ public class HeraclesQueryBuilder {
                 .append(";")
                 .append("\n");
       }
-      resultSql.add(result.toString());
+      resultSql.add(translateSql(result.toString()));
       return this;
     }
 
@@ -225,7 +231,7 @@ public class HeraclesQueryBuilder {
       if (Objects.nonNull(analysis)) {
         String query = ResourceHelper.GetResourceAsString(ANALYSES_QUERY_PREFIX + analysis.getFilename());
         Pair<String[], String[]> params = getAnalysisParams(id);
-        return SqlRender.renderSql(query, params.getFirst(), params.getSecond());
+        return translateSql(SqlRender.renderSql(query, params.getFirst(), params.getSecond()));
       } else {
         return "";
       }

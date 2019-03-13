@@ -182,11 +182,11 @@ analysisId,analysisName,sqlFileName,results,distResults
 1870,"Number of persons by duration from cohort start to first occurrence of drug era, by drug_concept_id",1870_numberOfPersonsByDurationFromCohortStartToFirstOccurrenceOfDrugEra.sql,TRUE,FALSE
 1871,"Number of events by duration from cohort start to all occurrences of drug era, by drug_concept_id",1871_numberOfEventsByDurationFromCohortStartToAllOccurrencesOfDrugEra.sql,TRUE,FALSE
 2001,Count and percentage of gender data completeness for age less than 10,2001_countAndPercentageOfGenderDataCompletenessForAge.sql,TRUE,FALSE
-2002,Count and percentage of gender data completeness for age between 10~20,2002_2003_2004_2005_2006_2007.sql,TRUE,FALSE
-2003,Count and percentage of gender data completeness for age between 20~30,2002_2003_2004_2005_2006_2007.sql,TRUE,FALSE
-2004,Count and percentage of gender data completeness for age between 30~40,2002_2003_2004_2005_2006_2007.sql,TRUE,FALSE
-2005,Count and percentage of gender data completeness for age between 40~50,2002_2003_2004_2005_2006_2007.sql,TRUE,FALSE
-2006,Count and percentage of gender data completeness for age between 50~60,2002_2003_2004_2005_2006_2007.sql,TRUE,FALSE
+2002,Count and percentage of gender data completeness for age between 10~20,2002_2003_2004_2005_2006.sql,TRUE,FALSE
+2003,Count and percentage of gender data completeness for age between 20~30,2002_2003_2004_2005_2006.sql,TRUE,FALSE
+2004,Count and percentage of gender data completeness for age between 30~40,2002_2003_2004_2005_2006.sql,TRUE,FALSE
+2005,Count and percentage of gender data completeness for age between 40~50,2002_2003_2004_2005_2006.sql,TRUE,FALSE
+2006,Count and percentage of gender data completeness for age between 50~60,2002_2003_2004_2005_2006.sql,TRUE,FALSE
 2007,Count and percentage of gender data completeness for age between 60+,2007_countAndPercentageOfGenderCompletenessForAge.sql,TRUE,FALSE
 2011,Count and percentage of race data completeness for age less than 10,2011_countAndPercentageOfRaceCompletenessForAge.sql,TRUE,FALSE
 2012,Count and percentage of race data completeness for age between 10~20,2012_2013_2014_2015_2016.sql,TRUE,FALSE

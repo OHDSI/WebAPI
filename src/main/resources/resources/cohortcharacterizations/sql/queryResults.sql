@@ -5,7 +5,7 @@ WITH threshold_passed_ids AS (
   from @results_database_schema.cc_results r
   where r.cc_generation_id = @cohort_characterization_generation_id
   GROUP BY r.type, covariate_id
-  HAVING ((fa.type <> 'PRESET' and r.type <> 'PREVALENCE') OR MAX(avg_value) > @threshold_level)
+  HAVING ((r.fa_type <> 'PRESET' and r.type <> 'PREVALENCE') OR MAX(avg_value) > @threshold_level)
 )
 select
        r.type,

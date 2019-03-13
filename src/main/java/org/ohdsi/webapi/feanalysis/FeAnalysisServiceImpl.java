@@ -82,7 +82,7 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
     private <T extends FeAnalysisEntity> T saveNew(T entity) {
         entity.setCreatedBy(getCurrentUser());
         entity.setCreatedDate(new Date());
-        return analysisRepository.save(entity);
+        return analysisRepository.saveAndFlush(entity);
     }
 
     private FeAnalysisWithCriteriaEntity newAnalysis(final FeAnalysisWithCriteriaEntity analysis) {

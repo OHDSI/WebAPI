@@ -41,6 +41,7 @@ import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
@@ -101,6 +102,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     private SourceService sourceService;
     private GenerationUtils generationUtils;
     private EntityManager entityManager;
+    private ApplicationEventPublisher eventPublisher;
 
     private final JobRepository jobRepository;
     private final SourceAwareSqlRender sourceAwareSqlRender;
@@ -125,7 +127,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
             final GenerationUtils generationUtils,
             SourceAwareSqlRender sourceAwareSqlRender,
             final EntityManager entityManager,
-            final JobService jobService
+            final JobService jobService,
+            final ApplicationEventPublisher eventPublisher
     ) {
         this.repository = ccRepository;
         this.paramRepository = paramRepository;
@@ -144,6 +147,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         this.sourceAwareSqlRender = sourceAwareSqlRender;
         this.entityManager = entityManager;
         this.jobService = jobService;
+        this.eventPublisher = eventPublisher;
         SerializedCcToCcConverter.setConversionService(conversionService);
     }
 
@@ -313,6 +317,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         importAnalyses(entity, persistedCohortCharacterization);
 
         final CohortCharacterizationEntity savedEntity = saveCc(persistedCohortCharacterization);
+
+        eventPublisher.publishEvent(new CcImportEvent(savedEntity));
 
         return savedEntity;
     }

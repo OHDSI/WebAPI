@@ -299,7 +299,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
 
             Long conceptId = 0L;
             String queryFile;
-            String groupQuery = getCriteriaGroupQuery(analysis, feature, "qualified_events");
+            String groupQuery = getCriteriaGroupQuery(analysis, feature, "#qualified_events");
             String[] paramNames = CRITERIA_PARAM_NAMES.toArray(new String[0]);
 
             if (CcResultType.PREVALENCE.equals(analysis.getStatType())) {

@@ -24,11 +24,7 @@ import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.circe.helper.ResourceHelper;
-import org.ohdsi.webapi.cohortanalysis.CohortAnalysis;
-import org.ohdsi.webapi.cohortanalysis.CohortAnalysisGenerationInfo;
-import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTask;
-import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTasklet;
-import org.ohdsi.webapi.cohortanalysis.CohortSummary;
+import org.ohdsi.webapi.cohortanalysis.*;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortresults.PeriodType;
@@ -44,7 +40,6 @@ import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.SourceUtils;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -61,17 +56,16 @@ public class CohortAnalysisService extends AbstractDaoService implements Generat
 	@Value("${heracles.smallcellcount}")
 	private String smallCellCount;
 	
-	@Autowired
-	private JobTemplate jobTemplate;
+	private final JobTemplate jobTemplate;
 
-	@Autowired
-	private CohortDefinitionService definitionService;
+	private final CohortDefinitionService definitionService;
 	
-	@Autowired
-  private CohortDefinitionRepository cohortDefinitionRepository;
+  private final CohortDefinitionRepository cohortDefinitionRepository;
 	
-	@Autowired
-	private VisualizationDataRepository visualizationDataRepository;
+	private final VisualizationDataRepository visualizationDataRepository;
+
+	private final HeraclesQueryBuilder heraclesQueryBuilder;
+
 
 	private final RowMapper<Analysis> analysisMapper = new RowMapper<Analysis>() {
 
@@ -96,7 +90,20 @@ public class CohortAnalysisService extends AbstractDaoService implements Generat
 		}
 	};
 
-	private void mapAnalysis(final Analysis analysis, final ResultSet rs, final int rowNum) throws SQLException {
+  public CohortAnalysisService(JobTemplate jobTemplate,
+                               CohortDefinitionService definitionService,
+                               CohortDefinitionRepository cohortDefinitionRepository,
+                               VisualizationDataRepository visualizationDataRepository,
+                               HeraclesQueryBuilder heraclesQueryBuilder) {
+
+    this.jobTemplate = jobTemplate;
+    this.definitionService = definitionService;
+    this.cohortDefinitionRepository = cohortDefinitionRepository;
+    this.visualizationDataRepository = visualizationDataRepository;
+    this.heraclesQueryBuilder = heraclesQueryBuilder;
+  }
+
+  private void mapAnalysis(final Analysis analysis, final ResultSet rs, final int rowNum) throws SQLException {
 		analysis.setAnalysisId(rs.getInt(Analysis.ANALYSIS_ID));
 		analysis.setAnalysisName(rs.getString(Analysis.ANALYSIS_NAME));
 		analysis.setStratum1Name(rs.getString(Analysis.STRATUM_1_NAME));

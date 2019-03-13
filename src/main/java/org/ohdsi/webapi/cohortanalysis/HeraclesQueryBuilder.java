@@ -76,13 +76,12 @@ public class HeraclesQueryBuilder {
         params.add(p);
         analysesParamsMap.put(p.getAnalysisId(), params);
       });
-    analysesParamsMap.keySet().forEach(id -> {
-      HeraclesAnalysis analysis = heraclesAnalysisMap.get(id);
-      if (Objects.nonNull(analysis)) {
-        Set<HeraclesAnalysisParameter> params = analysesParamsMap.get(id);
-        params.add(new HeraclesAnalysisParameter(id, "analysisId", id.toString()));
-        params.add(new HeraclesAnalysisParameter(id, "analysisName", analysis.getName()));
-      }
+    heraclesAnalysisMap.values().forEach(analysis -> {
+      Integer id = analysis.getId();
+      Set<HeraclesAnalysisParameter> params = analysesParamsMap.getOrDefault(id, new HashSet<>());
+      params.add(new HeraclesAnalysisParameter(id, "analysisId", id.toString()));
+      params.add(new HeraclesAnalysisParameter(id, "analysisName", analysis.getName()));
+      analysesParamsMap.put(id, params);
     });
   }
 
@@ -90,7 +89,7 @@ public class HeraclesQueryBuilder {
 
     List<T> result = new ArrayList<>();
     try(Reader in = new StringReader(source)) {
-      CSVParser parser = new CSVParser(in, CSVFormat.RFC4180.withSkipHeaderRecord());
+      CSVParser parser = new CSVParser(in, CSVFormat.RFC4180.withFirstRecordAsHeader());
       for(final CSVRecord record : parser.getRecords()) {
         result.add(mapper.mapRecord(record));
       }
@@ -200,14 +199,16 @@ public class HeraclesQueryBuilder {
         }
       });
       if (!resultsQuery.isEmpty()) {
-        result.append(INSERT_RESULT_STATEMENT)
+        result.append(SqlRender.renderSql(INSERT_RESULT_STATEMENT, PARAM_NAMES, values))
                 .append(resultsQuery.stream().collect(Collectors.joining("\nUNION ALL\n")))
-                .append(";");
+                .append(";")
+                .append("\n");
       }
       if (!distResultsQuery.isEmpty()) {
-        result.append(INSERT_DIST_RESULT_STATEMENT)
+        result.append(SqlRender.renderSql(INSERT_DIST_RESULT_STATEMENT, PARAM_NAMES, values))
                 .append(distResultsQuery.stream().collect(Collectors.joining("\nUNION ALL\n")))
-                .append(";");
+                .append(";")
+                .append("\n");
       }
       resultSql.add(result.toString());
       return this;

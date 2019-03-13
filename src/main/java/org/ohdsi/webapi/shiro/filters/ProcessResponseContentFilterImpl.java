@@ -43,8 +43,7 @@ public class ProcessResponseContentFilterImpl extends ProcessResponseContentFilt
     public void doProcessResponseContent(String content) throws Exception {
         String id = this.parseJsonField(content, identityField);
         try {
-            RoleEntity currentUserPersonalRole = authorizer.getCurrentUserPersonalRole();
-            authorizer.addPermissionsFromTemplate(currentUserPersonalRole, template, id);
+            authorizer.addPermissionsFromTemplate(template, id);
         } catch (Exception ex) {
             eventPublisher.publishEvent(new DeleteEntityEvent(this, Integer.parseInt(id), entityName));
             log.error("Failed to add permissions to " + entityName.getName() + " with id = " + id, ex);

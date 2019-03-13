@@ -70,6 +70,7 @@ import static org.ohdsi.webapi.Constants.Params.JOB_AUTHOR;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
 import static org.ohdsi.webapi.Constants.Params.PATHWAY_ANALYSIS_ID;
 import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
+import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
 
 @Service
 @Transactional
@@ -482,8 +483,8 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     }
 
     private void copyProps(PathwayAnalysisEntity from, PathwayAnalysisEntity to) {
-
-        to.setName(from.getName());
+        
+        to.setName(pathwayAnalysisRepository.findByName(from.getName()) != null ? String.format(ENTITY_COPY_PREFIX, from.getName()) : from.getName());
         to.setMaxDepth(from.getMaxDepth());
         to.setMinCellCount(from.getMinCellCount());
         to.setCombinationWindow(from.getCombinationWindow());

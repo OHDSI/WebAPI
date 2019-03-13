@@ -303,7 +303,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         cleanIds(entity);
 
         final CohortCharacterizationEntity newCohortCharacterization = new CohortCharacterizationEntity();
-        newCohortCharacterization.setName(String.format(ENTITY_COPY_PREFIX, entity.getName()));
+        newCohortCharacterization.setName(repository.findByName(entity.getName()) != null ? String.format(ENTITY_COPY_PREFIX, entity.getName()) : entity.getName());
         final CohortCharacterizationEntity persistedCohortCharacterization = this.createCc(newCohortCharacterization);
 
         updateParams(entity, persistedCohortCharacterization);

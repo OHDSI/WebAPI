@@ -6,4 +6,6 @@ import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 public interface PathwayAnalysisEntityRepository extends EntityGraphJpaRepository<PathwayAnalysisEntity, Integer> {
 
   int countByNameStartsWith(String pattern);
+
+  PathwayAnalysisEntity findByName(String name);
 }

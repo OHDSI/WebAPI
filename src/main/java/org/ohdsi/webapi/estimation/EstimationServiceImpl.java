@@ -358,14 +358,14 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
             est.setDescription(analysis.getDescription());
             est.setType(EstimationTypeEnum.COMPARATIVE_COHORT_ANALYSIS);
             est.setSpecification(Utils.serialize(analysis));
-            String newName = String.format(ENTITY_COPY_PREFIX, analysis.getName());
+            String newName = estimationRepository.findByName(analysis.getName()) != null ? String.format(ENTITY_COPY_PREFIX, analysis.getName()) : analysis.getName();
             int similar = countLikeName(newName);
             est.setName(similar > 0 ? newName + " (" + similar + ")" : newName);
 
             Estimation savedEstimation = this.createEstimation(est);
             return estimationRepository.findOne(savedEstimation.getId(), COMMONS_ENTITY_GRAPH);
         } catch (Exception e) {
-            log.debug("Error whie importing estimation analysis: " + e.getMessage());
+            log.debug("Error while importing estimation analysis: " + e.getMessage());
             throw e;
         }
     }

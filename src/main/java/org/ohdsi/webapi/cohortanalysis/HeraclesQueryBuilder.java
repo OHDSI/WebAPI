@@ -47,6 +47,7 @@ public class HeraclesQueryBuilder {
           "smallcellcount", "runHERACLESHeel", "CDM_version", "cohort_definition_id", "list_of_analysis_ids",
           "condition_concept_ids", "drug_concept_ids", "procedure_concept_ids", "observation_concept_ids",
           "measurement_concept_ids", "cohort_period_only", "source_id", "periods", "rollupUtilizationVisit", "rollupUtilizationDrug"};
+  private static final String UNION_ALL = "\nUNION ALL\n";
 
   private Map<Integer, HeraclesAnalysis> heraclesAnalysisMap;
   private Map<Integer, Set<HeraclesAnalysisParameter>> analysesParamsMap = new HashMap<>();
@@ -206,13 +207,13 @@ public class HeraclesQueryBuilder {
       });
       if (!resultsQuery.isEmpty()) {
         result.append(SqlRender.renderSql(INSERT_RESULT_STATEMENT, PARAM_NAMES, values))
-                .append(resultsQuery.stream().collect(Collectors.joining("\nUNION ALL\n")))
+                .append(resultsQuery.stream().collect(Collectors.joining(UNION_ALL)))
                 .append(";")
                 .append("\n");
       }
       if (!distResultsQuery.isEmpty()) {
         result.append(SqlRender.renderSql(INSERT_DIST_RESULT_STATEMENT, PARAM_NAMES, values))
-                .append(distResultsQuery.stream().collect(Collectors.joining("\nUNION ALL\n")))
+                .append(distResultsQuery.stream().collect(Collectors.joining(UNION_ALL)))
                 .append(";")
                 .append("\n");
       }

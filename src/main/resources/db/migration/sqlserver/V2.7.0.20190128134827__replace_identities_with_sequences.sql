@@ -45,11 +45,11 @@ GO
 UPDATE ${ohdsiSchema}.cca_execution SET cca_execution_id_tmp = cca_execution_id;
 GO
 
-IF OBJECT_ID('${ohdsiSchema}.fk_sif_cca_execution', 'PK') IS NOT NULL
+IF OBJECT_ID('${ohdsiSchema}.fk_sif_cca_execution') IS NOT NULL
 ALTER TABLE ${ohdsiSchema}.output_files DROP CONSTRAINT fk_sif_cca_execution;
 GO
 
-IF OBJECT_ID('${ohdsiSchema}.fk_sof_cca_execution', 'PK') IS NOT NULL
+IF OBJECT_ID('${ohdsiSchema}.fk_sof_cca_execution') IS NOT NULL
 ALTER TABLE ${ohdsiSchema}.input_files DROP CONSTRAINT fk_sof_cca_execution;
 GO
 

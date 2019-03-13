@@ -15,6 +15,7 @@ select
        r.analysis_name,
        r.covariate_id,
        r.covariate_name,
+       c.concept_name,
        r.time_window,
        r.concept_id,
        r.count_value,
@@ -32,4 +33,5 @@ select
        r.strata_name
 from @results_database_schema.cc_results r
   JOIN threshold_passed_ids tpi ON tpi.covariate_id = r.covariate_id
+  JOIN @vocabulary_schema.concept c on c.concept_id = r.concept_id
 where r.cc_generation_id = @cohort_characterization_generation_id

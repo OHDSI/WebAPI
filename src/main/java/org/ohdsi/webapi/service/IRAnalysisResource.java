@@ -72,6 +72,12 @@ public interface IRAnalysisResource {
     @Transactional(readOnly = true)
     List<IRAnalysisService.AnalysisInfoDTO> getAnalysisInfo(@PathParam("id") final int id);
 
+    @GET
+    @Path("/{id}/info/{sourceKey}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional(readOnly = true)
+    IRAnalysisService.AnalysisInfoDTO getAnalysisInfo(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey);
+
     /**
      * Deletes the specified cohort definition
      *

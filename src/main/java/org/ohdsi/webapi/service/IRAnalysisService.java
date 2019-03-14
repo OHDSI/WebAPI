@@ -479,10 +479,6 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   @Override
   public List<AnalysisInfoDTO> getAnalysisInfo(final int id) {
 
-//    IncidenceRateAnalysis analysis = irAnalysisRepository.findOne(id);  //irAnalysisRepository.findOneWithExecutionsOnExistingSources(id, ANALYSIS_WITH_EXECUTION_INFO);
-//    ExceptionUtils.throwNotFoundExceptionIfNull(analysis, String.format(NO_INCIDENCE_RATE_ANALYSIS_MESSAGE, id));
-//    Set<ExecutionInfo> executionInfoList = analysis.getExecutionInfoList();
-
     List<ExecutionInfo> executionInfoList = irExecutionInfoRepository.findByAnalysisId(id);
     return executionInfoList.stream().map(ei -> {
       AnalysisInfoDTO info = new AnalysisInfoDTO();
@@ -495,8 +491,6 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   @DataSourceAccess
   public AnalysisInfoDTO getAnalysisInfo(int id, @SourceKey String sourceKey) {
 
-//    IncidenceRateAnalysis analysis = irAnalysisRepository.findOneWithExecutionsOnExistingSources(id, ANALYSIS_WITH_EXECUTION_INFO);
-//    ExceptionUtils.throwNotFoundExceptionIfNull(analysis, String.format(NO_INCIDENCE_RATE_ANALYSIS_MESSAGE, id));
     Source source = sourceService.findBySourceKey(sourceKey);
     ExceptionUtils.throwNotFoundExceptionIfNull(source, String.format("There is no source with sourceKey = %s", sourceKey));
     AnalysisInfoDTO info = new AnalysisInfoDTO();

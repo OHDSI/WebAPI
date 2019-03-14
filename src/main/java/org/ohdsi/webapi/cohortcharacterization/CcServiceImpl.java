@@ -31,6 +31,7 @@ import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.sqlrender.SourceAwareSqlRender;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
+import org.ohdsi.webapi.util.CopyUtils;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.SourceUtils;
@@ -60,7 +61,6 @@ import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.GENERATE_COHORT_CHARACTERIZATION;
 import static org.ohdsi.webapi.Constants.Params.*;
-import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
 
 @Service
 @Transactional
@@ -303,7 +303,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         cleanIds(entity);
 
         final CohortCharacterizationEntity newCohortCharacterization = new CohortCharacterizationEntity();
-        newCohortCharacterization.setName(repository.findByName(entity.getName()) != null ? String.format(ENTITY_COPY_PREFIX, entity.getName()) : entity.getName());
+        newCohortCharacterization.setName(entity.getName());
         final CohortCharacterizationEntity persistedCohortCharacterization = this.createCc(newCohortCharacterization);
 
         updateParams(entity, persistedCohortCharacterization);
@@ -315,6 +315,11 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         final CohortCharacterizationEntity savedEntity = saveCc(persistedCohortCharacterization);
 
         return savedEntity;
+    }
+
+    @Override
+    public String getNameForCopy(String dtoName) {
+        return CopyUtils.getNameForCopy(dtoName, this::countLikeName, repository.findByName(dtoName));
     }
 
     @Override

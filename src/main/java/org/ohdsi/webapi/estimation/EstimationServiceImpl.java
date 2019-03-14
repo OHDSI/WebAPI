@@ -34,6 +34,7 @@ import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.util.CopyUtils;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.Job;
@@ -55,7 +56,6 @@ import java.util.stream.Collectors;
 import static org.ohdsi.webapi.Constants.GENERATE_ESTIMATION_ANALYSIS;
 import static org.ohdsi.webapi.Constants.Params.ESTIMATION_ANALYSIS_ID;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
-import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
 import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
 import org.ohdsi.webapi.analysis.AnalysisConceptSet;
 import org.ohdsi.webapi.common.DesignImportService;
@@ -175,10 +175,10 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     @Override
     public Estimation copy(final int id) throws Exception {
 
-        Estimation est = this.estimationRepository.findOne(id);
+        Estimation est = estimationRepository.findOne(id);
         entityManager.detach(est); // Detach from the persistence context in order to save a copy
         est.setId(null);
-        est.setName(String.format(ENTITY_COPY_PREFIX, est.getName()));
+        est.setName(getNameForCopy(est.getName()));
         return this.createEstimation(est);
     }
 
@@ -358,9 +358,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
             est.setDescription(analysis.getDescription());
             est.setType(EstimationTypeEnum.COMPARATIVE_COHORT_ANALYSIS);
             est.setSpecification(Utils.serialize(analysis));
-            String newName = estimationRepository.findByName(analysis.getName()) != null ? String.format(ENTITY_COPY_PREFIX, analysis.getName()) : analysis.getName();
-            int similar = countLikeName(newName);
-            est.setName(similar > 0 ? newName + " (" + similar + ")" : newName);
+            est.setName(getNameForCopy(analysis.getName()));
 
             Estimation savedEstimation = this.createEstimation(est);
             return estimationRepository.findOne(savedEstimation.getId(), COMMONS_ENTITY_GRAPH);
@@ -368,6 +366,11 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
             log.debug("Error while importing estimation analysis: " + e.getMessage());
             throw e;
         }
+    }
+
+    @Override
+    public String getNameForCopy(String dtoName) {
+        return CopyUtils.getNameForCopy(dtoName, this::countLikeName, estimationRepository.findByName(dtoName));
     }
 
     @Override

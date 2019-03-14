@@ -19,6 +19,8 @@ import static org.ohdsi.webapi.Constants.GENERATE_IR_ANALYSIS;
 import static org.ohdsi.webapi.Constants.Params.*;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
+import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
+import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.opencsv.CSVWriter;
 import java.io.ByteArrayOutputStream;
@@ -101,7 +103,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   private final static String STRATA_STATS_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/incidencerate/sql/strata_stats.sql");
   private static final String NAME = "irAnalysis";
   private static final String NO_INCIDENCE_RATE_ANALYSIS_MESSAGE = "There is no incidence rate analysis with id = %d.";
-
+  private static final EntityGraph ANALYSIS_WITH_EXECUTION_INFO = EntityGraphUtils.fromName("IncidenceRateAnalysis.withExecutionInfoList");
 
   @Autowired
   private IncidenceRateAnalysisRepository irAnalysisRepository;
@@ -409,7 +411,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
     TransactionStatus initStatus = this.getTransactionTemplate().getTransactionManager().getTransaction(requresNewTx);
 
-    IncidenceRateAnalysis analysis = this.irAnalysisRepository.findOne(analysisId);
+    IncidenceRateAnalysis analysis = this.irAnalysisRepository.findOneWithExecutionsOnExistingSources(analysisId, ANALYSIS_WITH_EXECUTION_INFO);
 
     ExecutionInfo analysisInfo = findExecutionInfoBySourceId(analysis.getExecutionInfoList(), source.getSourceId());
     if (analysisInfo != null) {
@@ -477,9 +479,11 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   @Override
   public List<AnalysisInfoDTO> getAnalysisInfo(final int id) {
 
-    IncidenceRateAnalysis analysis = irAnalysisRepository.findOneWithExecutionsOnExistingSources(id);
-    ExceptionUtils.throwNotFoundExceptionIfNull(analysis, String.format(NO_INCIDENCE_RATE_ANALYSIS_MESSAGE, id));
-    Set<ExecutionInfo> executionInfoList = analysis.getExecutionInfoList();
+//    IncidenceRateAnalysis analysis = irAnalysisRepository.findOne(id);  //irAnalysisRepository.findOneWithExecutionsOnExistingSources(id, ANALYSIS_WITH_EXECUTION_INFO);
+//    ExceptionUtils.throwNotFoundExceptionIfNull(analysis, String.format(NO_INCIDENCE_RATE_ANALYSIS_MESSAGE, id));
+//    Set<ExecutionInfo> executionInfoList = analysis.getExecutionInfoList();
+
+    List<ExecutionInfo> executionInfoList = irExecutionInfoRepository.findByAnalysisId(id);
     return executionInfoList.stream().map(ei -> {
       AnalysisInfoDTO info = new AnalysisInfoDTO();
       info.executionInfo = ei;
@@ -491,12 +495,13 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   @DataSourceAccess
   public AnalysisInfoDTO getAnalysisInfo(int id, @SourceKey String sourceKey) {
 
-    IncidenceRateAnalysis analysis = irAnalysisRepository.findOneWithExecutionsOnExistingSources(id);
-    ExceptionUtils.throwNotFoundExceptionIfNull(analysis, String.format(NO_INCIDENCE_RATE_ANALYSIS_MESSAGE, id));
+//    IncidenceRateAnalysis analysis = irAnalysisRepository.findOneWithExecutionsOnExistingSources(id, ANALYSIS_WITH_EXECUTION_INFO);
+//    ExceptionUtils.throwNotFoundExceptionIfNull(analysis, String.format(NO_INCIDENCE_RATE_ANALYSIS_MESSAGE, id));
     Source source = sourceService.findBySourceKey(sourceKey);
     ExceptionUtils.throwNotFoundExceptionIfNull(source, String.format("There is no source with sourceKey = %s", sourceKey));
     AnalysisInfoDTO info = new AnalysisInfoDTO();
-    info.executionInfo = analysis.getExecutionInfoList().stream().filter(i -> Objects.equals(i.getSource(), source))
+    List<ExecutionInfo> executionInfoList = irExecutionInfoRepository.findByAnalysisId(id);
+    info.executionInfo = executionInfoList.stream().filter(i -> Objects.equals(i.getSource(), source))
             .findFirst().orElse(null);
     try{
       if (Objects.nonNull(info.executionInfo) && Objects.equals(info.executionInfo.getStatus(), GenerationStatus.COMPLETE)

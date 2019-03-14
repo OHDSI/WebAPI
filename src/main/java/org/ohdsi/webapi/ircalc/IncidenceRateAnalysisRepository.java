@@ -15,18 +15,20 @@
  */
 package org.ohdsi.webapi.ircalc;
 
+import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
+import com.cosium.spring.data.jpa.entity.graph.repository.EntityGraphCrudRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 
 /**
  *
  * @author Chris Knoll <cknoll@ohdsi.org>
  */
-public interface IncidenceRateAnalysisRepository extends CrudRepository<IncidenceRateAnalysis, Integer> {
+public interface IncidenceRateAnalysisRepository extends EntityGraphCrudRepository<IncidenceRateAnalysis, Integer> {
   
   @Query("SELECT ira FROM IncidenceRateAnalysis AS ira LEFT JOIN FETCH ira.details AS d")          
   Iterable<IncidenceRateAnalysis> findAll();
 
   @Query("SELECT ira FROM IncidenceRateAnalysis AS ira LEFT JOIN ira.executionInfoList e LEFT JOIN Source s ON s.id = e.source.id AND s.deletedDate = NULL WHERE ira.id = ?1")
-  IncidenceRateAnalysis findOneWithExecutionsOnExistingSources(int id);
+  IncidenceRateAnalysis findOneWithExecutionsOnExistingSources(int id, EntityGraph entityGraph);
+
 }

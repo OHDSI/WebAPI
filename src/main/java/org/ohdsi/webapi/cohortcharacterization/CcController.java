@@ -48,8 +48,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
-
 @Path("/cohort-characterization")
 @Controller
 @Transactional
@@ -91,14 +89,12 @@ public class CcController {
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public CohortCharacterizationDTO copy(@PathParam("id") final Long id) {
-        CohortCharacterizationDTO cc = getDesign(id);
-        String copyName = String.format(ENTITY_COPY_PREFIX, cc.getName());
-        int similar = service.countLikeName(copyName);
-        cc.setId(null);
-        cc.setName(similar > 0 ? copyName + " (" + similar + ")" : copyName);
-        cc.getStratas().forEach(s -> s.setId(null));
-        cc.getParameters().forEach(p -> p.setId(null));
-        return create(cc);
+        CohortCharacterizationDTO dto = getDesign(id);
+        dto.setName(service.getNameForCopy(dto.getName()));
+        dto.setId(null);
+        dto.getStratas().forEach(s -> s.setId(null));
+        dto.getParameters().forEach(p -> p.setId(null));
+        return create(dto);
     }
 
     @GET
@@ -167,6 +163,7 @@ public class CcController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public CohortCharacterizationDTO doImport(final CcExportDTO dto) {
+        dto.setName(service.getNameForCopy(dto.getName()));
         final CohortCharacterizationEntity entity = conversionService.convert(dto, CohortCharacterizationEntity.class);
         return conversionService.convert(service.importCc(entity), CohortCharacterizationDTO.class);
     }

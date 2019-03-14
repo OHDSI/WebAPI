@@ -93,12 +93,14 @@ drop table #generate_dates;
 truncate table #yearly_dates;
 drop table #yearly_dates;
 
+truncate table #quarterly_dates;
+drop table #quarterly_dates;
+
 truncate table #monthly_dates;
 drop table #monthly_dates;
 
 truncate table #weekly_dates;
 drop table #weekly_dates;
-
 
 TRUNCATE TABLE #temp_period;
 DROP TABLE #temp_period;

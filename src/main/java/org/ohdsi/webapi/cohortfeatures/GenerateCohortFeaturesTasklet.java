@@ -24,6 +24,7 @@ import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.ohdsi.webapi.util.SourceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.StepContribution;
@@ -123,8 +124,7 @@ public class GenerateCohortFeaturesTasklet implements Tasklet
       Integer defId = Integer.valueOf(jobParams.get("cohort_definition_id").toString());
       String sessionId = SessionUtils.sessionId();
 
-      try
-      {
+      try {
         DefaultTransactionDefinition requresNewTx = new DefaultTransactionDefinition();
         requresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 
@@ -133,9 +133,9 @@ public class GenerateCohortFeaturesTasklet implements Tasklet
         
         CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = new CohortExpressionQueryBuilder.BuildExpressionQueryOptions();
         options.cohortId = defId;
-        options.cdmSchema = jobParams.get(CDM_DATABASE_SCHEMA).toString();
-        options.resultSchema = jobParams.get(RESULTS_DATABASE_SCHEMA).toString();
-        final String tempSchema = jobParams.get(TEMP_DATABASE_SCHEMA).toString();
+        options.cdmSchema = SourceUtils.getSchema(jobParams, CDM_DATABASE_SCHEMA);
+        options.resultSchema = SourceUtils.getSchema(jobParams, RESULTS_DATABASE_SCHEMA);
+        final String tempSchema = SourceUtils.getSchema(jobParams, TEMP_DATABASE_SCHEMA);
 
         List<String> tableNames = ImmutableList.of("cohort_features", "cohort_features_dist", "cohort_features_ref", "cohort_features_analysis_ref");
 
@@ -169,12 +169,10 @@ public class GenerateCohortFeaturesTasklet implements Tasklet
 					}
 				}
 				taskExecutor.shutdown();
-      } 
-      catch (Exception e) 
-      {
+      } catch (Exception e) {
+        log.error("Failed to generate cohort: {}", defId, e);
         throw new RuntimeException(e);
       }
-
       return result;
     }
 

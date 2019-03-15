@@ -18,18 +18,8 @@ package org.ohdsi.webapi.ircalc;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
+
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.ohdsi.webapi.model.CommonEntity;
@@ -41,6 +31,12 @@ import org.ohdsi.webapi.model.CommonEntity;
 
 @Entity(name = "IncidenceRateAnalysis")
 @Table(name="ir_analysis")
+@NamedEntityGraphs({
+  @NamedEntityGraph(
+          name = "IncidenceRateAnalysis.withExecutionInfoList",
+          attributeNodes = @NamedAttributeNode("executionInfoList")
+  )
+})
 public class IncidenceRateAnalysis extends CommonEntity implements Serializable {
   private static final long serialVersionUID = 1L;
   

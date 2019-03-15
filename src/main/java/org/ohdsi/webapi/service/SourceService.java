@@ -43,8 +43,6 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static org.ohdsi.webapi.source.Source.IMPALA_DATASOURCE;
-
 @Path("/source/")
 @Component
 @Transactional
@@ -274,7 +272,7 @@ public class SourceService extends AbstractDaoService {
   }
 
    private void setImpalaKrbData(Source updated, Source source, InputStream file) throws IOException {
-     if (IMPALA_DATASOURCE.equalsIgnoreCase(updated.getSourceDialect())) {
+     if (source.supportsKeytab()) {
          if (updated.getKeytabName() != null) {
            if (!Objects.equals(updated.getKeytabName(), source.getKeytabName())) {
              byte[] fileBytes = IOUtils.toByteArray(file);

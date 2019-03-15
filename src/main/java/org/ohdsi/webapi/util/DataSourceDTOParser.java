@@ -12,6 +12,7 @@ import org.ohdsi.webapi.KerberosUtils;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 
+import static com.odysseusinc.arachne.commons.types.DBMSType.BIGQUERY;
 import static com.odysseusinc.arachne.commons.types.DBMSType.IMPALA;
 
 public final class DataSourceDTOParser {
@@ -25,6 +26,9 @@ public final class DataSourceDTOParser {
         dto.setPassword(params.getPassword());
         if (Objects.equals(IMPALA, dto.getType()) && AuthMethod.KERBEROS == params.getAuthMethod()) {
             KerberosUtils.setKerberosParams(source, params, dto);
+        }
+        if (Objects.equals(BIGQUERY, dto.getType())) {
+            dto.setKrbKeytab(source.getKrbKeytab());
         }
 
         dto.setCdmSchema(source.getTableQualifierOrNull(SourceDaimon.DaimonType.CDM));

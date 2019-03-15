@@ -22,11 +22,13 @@ tryCatch({
         resultsDatabaseSchema <- Sys.getenv("RESULT_SCHEMA")
         cohortsDatabaseSchema <- Sys.getenv("TARGET_SCHEMA")
         cohortTable <- Sys.getenv("COHORT_TARGET_TABLE")
+        driversPath <- Sys.getenv("JDBC_DRIVER_PATH")
 
         connectionDetails <- DatabaseConnector::createConnectionDetails(dbms = dbms,
                                                                         connectionString = connectionString,
                                                                         user = user,
-                                                                        password = pwd)
+                                                                        password = pwd,
+                                                                        pathToDriver = driversPath)
 
         execute(connectionDetails = connectionDetails,
                 cdmDatabaseSchema = cdmDatabaseSchema,

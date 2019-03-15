@@ -20,6 +20,7 @@ import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMe
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -31,6 +32,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+
+import jersey.repackaged.com.google.common.collect.ImmutableList;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.SQLDelete;
@@ -51,6 +54,8 @@ public class Source implements Serializable {
   public static final String MASQUERADED_USERNAME = "<username>";
   public static final String MASQUERADED_PASSWORD = "<password>";
   public static final String IMPALA_DATASOURCE = "impala";
+  public static final String BIGQUERY_DATASOURCE = "bigquery";
+  public static final List<String> DBMS_KEYTAB_SUPPORT = ImmutableList.of(IMPALA_DATASOURCE, BIGQUERY_DATASOURCE);
 
   @Id
   @GenericGenerator(
@@ -220,6 +225,11 @@ public class Source implements Serializable {
   public void setKrbAdminServer(String krbAdminServer) {
         this.krbAdminServer = krbAdminServer;
     }
+
+  public boolean supportsKeytab() {
+
+    return DBMS_KEYTAB_SUPPORT.stream().anyMatch(t -> t.equalsIgnoreCase(getSourceDialect()));
+  }
 
   @Override
   public boolean equals(Object o) {

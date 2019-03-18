@@ -136,7 +136,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
   public JobParametersBuilder getJobParametersBuilder(Source source, CohortDefinition cohortDefinition, String targetTable) {
 
     // cdmTableQualifier and resultsTableQualifier are mandatory but here we allow to proceed further with nulls because it is needed to create job instance
-    // (because it will be added to database). These nulls will be caught and handled in org.ohdsi.webapi.util.SourceUtils.getSchema
+    // to handle it correctly on the frontend. These nulls will be caught and handled in org.ohdsi.webapi.util.JobUtils.getSchema
     String cdmTableQualifier = source.getTableQualifierOrNull(CDM);
     String resultsTableQualifier = SourceUtils.getResultsQualifierOrNull(source);
     String vocabularyTableQualifier = source.getTableQualifierOrNull(Vocabulary);

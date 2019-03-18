@@ -23,11 +23,11 @@ import org.ohdsi.circe.cohortdefinition.InclusionRule;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
-import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.common.generation.CancelableTasklet;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
+import org.ohdsi.webapi.util.JobUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.SourceUtils;
@@ -86,9 +86,9 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
 
       CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = new CohortExpressionQueryBuilder.BuildExpressionQueryOptions();
       options.cohortId = defId;
-      options.cdmSchema = SourceUtils.getSchema(jobParams, CDM_DATABASE_SCHEMA);
-      options.resultSchema = SourceUtils.getSchema(jobParams, RESULTS_DATABASE_SCHEMA);
-      final String targetSchema = SourceUtils.getSchema(jobParams, TARGET_DATABASE_SCHEMA);
+      options.cdmSchema = JobUtils.getSchema(jobParams, CDM_DATABASE_SCHEMA);
+      options.resultSchema = JobUtils.getSchema(jobParams, RESULTS_DATABASE_SCHEMA);
+      final String targetSchema = JobUtils.getSchema(jobParams, TARGET_DATABASE_SCHEMA);
       options.targetTable = targetSchema + "." + jobParams.get(TARGET_TABLE).toString();
       if (jobParams.get(VOCABULARY_DATABASE_SCHEMA) != null){ 
         options.vocabularySchema = jobParams.get(VOCABULARY_DATABASE_SCHEMA).toString();

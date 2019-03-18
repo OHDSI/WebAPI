@@ -23,8 +23,8 @@ import org.ohdsi.featureExtraction.FeatureExtraction;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.util.JobUtils;
 import org.ohdsi.webapi.util.SessionUtils;
-import org.ohdsi.webapi.util.SourceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.StepContribution;
@@ -133,9 +133,9 @@ public class GenerateCohortFeaturesTasklet implements Tasklet
         
         CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = new CohortExpressionQueryBuilder.BuildExpressionQueryOptions();
         options.cohortId = defId;
-        options.cdmSchema = SourceUtils.getSchema(jobParams, CDM_DATABASE_SCHEMA);
-        options.resultSchema = SourceUtils.getSchema(jobParams, RESULTS_DATABASE_SCHEMA);
-        final String tempSchema = SourceUtils.getSchema(jobParams, TEMP_DATABASE_SCHEMA);
+        options.cdmSchema = JobUtils.getSchema(jobParams, CDM_DATABASE_SCHEMA);
+        options.resultSchema = JobUtils.getSchema(jobParams, RESULTS_DATABASE_SCHEMA);
+        final String tempSchema = JobUtils.getSchema(jobParams, TEMP_DATABASE_SCHEMA);
 
         List<String> tableNames = ImmutableList.of("cohort_features", "cohort_features_dist", "cohort_features_ref", "cohort_features_analysis_ref");
 

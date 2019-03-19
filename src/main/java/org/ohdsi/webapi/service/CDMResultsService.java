@@ -11,6 +11,7 @@ import javax.ws.rs.core.MediaType;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cache.ResultsCache;
 import org.ohdsi.webapi.cdmresults.CDMResultsCache;
 import org.ohdsi.webapi.cdmresults.CDMResultsCacheTasklet;
@@ -42,6 +43,10 @@ public class CDMResultsService extends AbstractDaoService {
 
     @Autowired
     private JobTemplate jobTemplate;
+
+    @Autowired
+    private JobService jobService;
+
     @Autowired
     private SourceService sourceService;
     @Value("${jasypt.encryptor.enabled}")
@@ -161,15 +166,15 @@ public class CDMResultsService extends AbstractDaoService {
     public JobExecutionResource warmCache(@PathParam("sourceKey") final String sourceKey) {
         ResultsCache resultsCache = new ResultsCache();
         CDMResultsCache cache = resultsCache.getCache(sourceKey);
-        if (cache != null) {
+        if (!cache.warm && jobService.findJobByName(Constants.WARM_CACHE, getWarmCacheJobName(sourceKey)) == null) {
+            Source source = getSourceRepository().findBySourceKey(sourceKey);
+            CDMResultsCacheTasklet tasklet = new CDMResultsCacheTasklet(this.getSourceJdbcTemplate(source), source);
+            JobParametersBuilder builder = new JobParametersBuilder();
+            builder.addString(Constants.Params.JOB_NAME, getWarmCacheJobName(sourceKey));
+            return this.jobTemplate.launchTasklet(Constants.WARM_CACHE, "warmCacheStep", tasklet, builder.toJobParameters());
+        } else {
             return new JobExecutionResource();
         }
-
-        Source source = getSourceRepository().findBySourceKey(sourceKey);
-        CDMResultsCacheTasklet tasklet = new CDMResultsCacheTasklet(this.getSourceJdbcTemplate(source), source);
-        JobParametersBuilder builder = new JobParametersBuilder();
-        builder.addString("jobName", "warming " + sourceKey + " cache ");
-        return this.jobTemplate.launchTasklet("warmCache", "warmCacheStep", tasklet, builder.toJobParameters());
     }
 
     /**
@@ -324,6 +329,11 @@ public class CDMResultsService extends AbstractDaoService {
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         JdbcTemplate jdbcTemplate = this.getSourceJdbcTemplate(source);
         return queryRunner.getDrilldown(jdbcTemplate, domain, conceptId, source);
+    }
+
+    private String getWarmCacheJobName(String sourceKey) {
+
+        return "warming " + sourceKey + " cache";
     }
 
 }

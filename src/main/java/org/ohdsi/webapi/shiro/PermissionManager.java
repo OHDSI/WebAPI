@@ -545,6 +545,11 @@ public class PermissionManager {
     }
   }
 
+  public void addPermissionsFromTemplate(Map<String, String> template, String value) throws Exception {
+    RoleEntity currentUserPersonalRole = getCurrentUserPersonalRole();
+    addPermissionsFromTemplate(currentUserPersonalRole, template, value);
+  }
+
   public void removePermissionsFromTemplate(Map<String, String> template, String value) {
     for (Map.Entry<String, String> entry : template.entrySet()) {
       String permission = String.format(entry.getKey(), value);

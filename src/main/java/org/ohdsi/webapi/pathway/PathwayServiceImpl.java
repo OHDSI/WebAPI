@@ -35,6 +35,7 @@ import org.ohdsi.webapi.shiro.annotations.SourceId;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.util.CopyUtils;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
@@ -188,6 +189,11 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
         return pathwayAnalysisRepository.countByNameStartsWith(name);
     }
+    
+    @Override
+    public String getNameForCopy(String dtoName) {
+        return CopyUtils.getNameForCopy(dtoName, this::countLikeName, pathwayAnalysisRepository.findByName(dtoName));
+    }
 
     @Override
     public PathwayAnalysisEntity update(PathwayAnalysisEntity forUpdate) {
@@ -262,8 +268,8 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         String analysisSql = ResourceHelper.GetResourceAsString("/resources/pathway/runPathwayAnalysis.sql");
         String eventCohortInputSql = ResourceHelper.GetResourceAsString("/resources/pathway/eventCohortInput.sql");
 
-        String tempTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Temp);
-        String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+        String tempTableQualifier = SourceUtils.getTempQualifier(source);
+        String resultsTableQualifier = SourceUtils.getResultsQualifier(source);
 
         String eventCohortIdIndexSql = eventCohortCodes.entrySet()
                 .stream()
@@ -482,7 +488,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     }
 
     private void copyProps(PathwayAnalysisEntity from, PathwayAnalysisEntity to) {
-
+        
         to.setName(from.getName());
         to.setMaxDepth(from.getMaxDepth());
         to.setMinCellCount(from.getMinCellCount());

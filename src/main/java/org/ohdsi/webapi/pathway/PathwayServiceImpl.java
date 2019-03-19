@@ -8,6 +8,7 @@ import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfoEntityRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.common.DesignImportService;
+import org.ohdsi.webapi.common.generation.AnalysisGenerationInfoEntity;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
@@ -400,7 +401,9 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
         List<PathwayGenerationStats> targetCohortStatsList = queryGenerationStats(source, generationId);
 
-        generation.getDesign().getTargetCohorts().forEach(tc -> {
+        PathwayAnalysisEntity design = new SerializedPathwayAnalysisToPathwayAnalysisConverter()
+                .convertToEntityAttribute(findDesignByGenerationId(generationId));
+        design.getTargetCohorts().forEach(tc -> {
 
             CohortPathways cohortPathways = new CohortPathways();
             cohortPathways.setCohortId(tc.getCohortDefinition().getId());
@@ -427,7 +430,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
                     .collect(Collectors.groupingBy(Function.identity(), summingInt(x -> 1)))
                     .entrySet()
                     .stream()
-                    .filter(entry -> entry.getValue() > generation.getDesign().getMinCellCount())
+                    .filter(entry -> entry.getValue() > design.getMinCellCount())
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
             cohortPathways.setPathwaysCounts(chains);
@@ -436,7 +439,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         });
 
         comboCodes.forEach(code -> {
-            List<PathwayEventCohort> eventCohorts = getEventCohortsByComboCode(generation.getDesign(), code);
+            List<PathwayEventCohort> eventCohorts = getEventCohortsByComboCode(design, code);
             String names = eventCohorts.stream()
                     .map(PathwayEventCohort::getName)
                     .collect(Collectors.joining(","));
@@ -444,6 +447,13 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         });
 
         return result;
+    }
+
+    @Override
+    @DataSourceAccess
+    public String findDesignByGenerationId(@PathwayAnalysisGenerationId final Long id) {
+        final AnalysisGenerationInfoEntity generationInfoEntity = analysisGenerationInfoEntityRepository.findOne(id);
+        return generationInfoEntity != null ? generationInfoEntity.getDesign() : null;
     }
 
     private List<PersonPathwayEvent> queryGenerationResults(Source source, Long generationId, Integer targetCohortId) {

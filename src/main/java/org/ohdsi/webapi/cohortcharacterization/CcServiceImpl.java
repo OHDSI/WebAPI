@@ -16,6 +16,7 @@ import org.ohdsi.webapi.cohortcharacterization.repository.*;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.common.DesignImportService;
+import org.ohdsi.webapi.common.generation.AnalysisGenerationInfoEntity;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
@@ -354,7 +355,9 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     @Override
     @DataSourceAccess
     public CohortCharacterization findDesignByGenerationId(@CcGenerationId final Long id) {
-        return ccGenerationRepository.findById(id).map(gen -> gen.getDesign()).orElse(null);
+        final AnalysisGenerationInfoEntity generationInfoEntity = analysisGenerationInfoEntityRepository.findOne(id);
+        return generationInfoEntity != null ?
+                new SerializedCcToCcConverter().convertToEntityAttribute(generationInfoEntity.getDesign()) : null;
     }
 
     @Override

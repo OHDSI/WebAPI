@@ -1,12 +1,5 @@
 package org.ohdsi.webapi.shiro;
 
-import java.security.Principal;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.odysseusinc.logging.event.AddUserEvent;
 import com.odysseusinc.logging.event.DeleteUserEvent;
 import org.apache.shiro.SecurityUtils;
@@ -15,23 +8,17 @@ import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.subject.Subject;
 import org.ohdsi.webapi.helper.Guard;
-import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
-import org.ohdsi.webapi.shiro.Entities.PermissionRepository;
-import org.ohdsi.webapi.shiro.Entities.PermissionRequest;
-import org.ohdsi.webapi.shiro.Entities.RequestStatus;
-import org.ohdsi.webapi.shiro.Entities.RoleEntity;
-import org.ohdsi.webapi.shiro.Entities.RolePermissionEntity;
-import org.ohdsi.webapi.shiro.Entities.RolePermissionRepository;
-import org.ohdsi.webapi.shiro.Entities.RoleRepository;
-import org.ohdsi.webapi.shiro.Entities.RoleRequest;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
-import org.ohdsi.webapi.shiro.Entities.UserRepository;
-import org.ohdsi.webapi.shiro.Entities.UserRoleEntity;
-import org.ohdsi.webapi.shiro.Entities.UserRoleRepository;
+import org.ohdsi.webapi.shiro.Entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.security.Principal;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  *
@@ -131,7 +118,7 @@ public class PermissionManager {
   }
 
   @Transactional
-  public UserEntity registerUser(final String login, final Set<String> defaultRoles) throws Exception {
+  public UserEntity registerUser(final String login, final String name, final Set<String> defaultRoles) throws Exception {
     Guard.checkNotEmpty(login);
     
     UserEntity user = userRepository.findByLogin(login);
@@ -141,6 +128,7 @@ public class PermissionManager {
     
     user = new UserEntity();
     user.setLogin(login);
+    user.setName(name);
     user = userRepository.save(user);
     eventPublisher.publishEvent(new AddUserEvent(this, user.getId(), login));
 

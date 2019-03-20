@@ -78,15 +78,25 @@
     <security.ldap.baseDn></security.ldap.baseDn>
     <security.ldap.system.username></security.ldap.system.username>
     <security.ldap.system.password></security.ldap.system.password>
+    <security.ldap.searchFilter>(&amp;(objectClass=person)(CN={0}))</security.ldap.searchFilter>
+    <security.ldap.userMapping.firstname>givenName</security.ldap.userMapping.firstname>
+    <security.ldap.userMapping.middlename>initials</security.ldap.userMapping.middlename>
+    <security.ldap.userMapping.lastname>sn</security.ldap.userMapping.lastname>
+    <security.ldap.userMapping.username>cn</security.ldap.userMapping.username>
+    <security.ldap.searchBase>CN=Users,DC=example,DC=org</security.ldap.searchBase>
     <security.ad.url>ldap://localhost:389</security.ad.url>
     <security.ad.searchBase>CN=Users,DC=example,DC=org</security.ad.searchBase>
     <security.ad.principalSuffix>@example.org</security.ad.principalSuffix>
     <security.ad.system.username></security.ad.system.username>
     <security.ad.system.password></security.ad.system.password>
-    <security.ad.searchFilter></security.ad.searchFilter>
+    <security.ad.searchFilter>(&amp;(objectClass=person)(cn={0}))</security.ad.searchFilter>
     <security.ad.ignore.partial.result.exception>true</security.ad.ignore.partial.result.exception>
     <security.ad.result.count.limit>30000</security.ad.result.count.limit> <!-- 0 means no limit -->
     <security.ad.default.import.group>public</security.ad.default.import.group>
+    <security.ad.userMapping.firstname>givenName</security.ad.userMapping.firstname>
+    <security.ad.userMapping.middlename>initials</security.ad.userMapping.middlename>
+    <security.ad.userMapping.lastname>sn</security.ad.userMapping.lastname>
+    <security.ad.userMapping.username>cn</security.ad.userMapping.username>
 
     <security.cas.loginUrl></security.cas.loginUrl>
     <security.cas.callbackUrl></security.cas.callbackUrl>
@@ -622,6 +632,16 @@
       <groupId>org.pac4j</groupId>
       <artifactId>pac4j-oidc</artifactId>
       <version>1.9.2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.api-client</groupId>
+      <artifactId>google-api-client</artifactId>
+      <version>1.28.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.apis</groupId>
+      <artifactId>google-api-services-oauth2</artifactId>
+      <version>v2-rev147-1.25.0</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>

@@ -1,21 +1,27 @@
 package org.ohdsi.webapi.shiro.realms;
 
-import java.util.List;
-import java.util.Objects;
-import javax.naming.NamingException;
-import javax.naming.directory.SearchControls;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.authc.SimpleAuthenticationInfo;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.realm.activedirectory.ActiveDirectoryRealm;
 import org.apache.shiro.realm.ldap.LdapContextFactory;
+import org.apache.shiro.realm.ldap.LdapUtils;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.ohdsi.webapi.shiro.Entities.UserPrincipal;
+import org.ohdsi.webapi.shiro.mapper.UserMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ldap.core.AttributesMapper;
 import org.springframework.ldap.core.LdapTemplate;
+
+import javax.naming.NamingException;
+import javax.naming.directory.SearchControls;
+import javax.naming.ldap.LdapContext;
+import java.util.List;
+import java.util.Objects;
 
 public class ADRealm extends ActiveDirectoryRealm {
     private static final Logger LOGGER = LoggerFactory.getLogger(ADRealm.class);
@@ -26,12 +32,15 @@ public class ADRealm extends ActiveDirectoryRealm {
 
     private AttributesMapper<String> dnAttributesMapper = (AttributesMapper<String>) attrs -> (String) attrs.get("distinguishedName").get();
 
+    private UserMapper userMapper;
+
     public ADRealm() {
     }
 
-    public ADRealm(LdapTemplate ldapTemplate, String searchFilter) {
+    public ADRealm(LdapTemplate ldapTemplate, String searchFilter, UserMapper userMapper) {
         this.ldapTemplate = ldapTemplate;
         this.searchFilter = searchFilter;
+        this.userMapper = userMapper;
     }
 
     public void setSearchFilter(String searchFilter) {
@@ -67,10 +76,17 @@ public class ADRealm extends ActiveDirectoryRealm {
 
             if (result.size() == 1) {
                 String userDn = result.iterator().next();
-                List<String> filterResult = ldapTemplate.search("", String.format(searchFilter, userDn), SearchControls.SUBTREE_SCOPE,
-                        dnAttributesMapper);
+                List<UserPrincipal> filterResult = ldapTemplate.search("", String.format(searchFilter, userDn), SearchControls.SUBTREE_SCOPE,
+                        userMapper);
                 if (!filterResult.isEmpty()) {
-                    return super.queryForAuthenticationInfo(token, ldapContextFactory);
+                    LdapContext ctx = null;
+                    try {
+                        ctx = ldapContextFactory.getLdapContext(upToken.getUsername(), String.valueOf(upToken.getPassword()));
+                    } finally {
+                        LdapUtils.closeContext(ctx);
+                    }
+
+                    return new SimpleAuthenticationInfo(filterResult.get(0), upToken.getPassword(), getName());
                 }
             } else {
                 LOGGER.warn("Multiple results found for {}", userPrincipalName);

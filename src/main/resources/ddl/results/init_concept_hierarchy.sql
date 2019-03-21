@@ -67,24 +67,24 @@ LEFT JOIN (
 		AND c2.vocabulary_id = 'MedDRA'
 	GROUP BY c1.concept_id, c1.concept_name
 ) hlgt_to_soc ON hlt_to_hlgt.hlgt_concept_id = hlgt_to_soc.hlgt_concept_id
-INTO #condition_isert_temp;
+INTO #condition_insert_temp;
 
-CREATE INDEX cnd_temp_concept_id ON #condition_isert_temp (concept_id);
+CREATE INDEX cnd_temp_concept_id ON #condition_insert_temp (concept_id);
 
 INSERT INTO @results_schema.concept_hierarchy
 	(concept_id, concept_name, treemap, level1_concept_name, level2_concept_name, level3_concept_name, level4_concept_name)
 SELECT
-	condition_isert_temp.concept_id,
-  condition_isert_temp.concept_name AS snomed_concept_name,
+	condition_insert_temp.concept_id,
+  condition_insert_temp.concept_name AS snomed_concept_name,
 	CAST('Condition' AS VARCHAR(20)) AS treemap,
-	condition_isert_temp.pt_concept_name,
-	condition_isert_temp.hlt_concept_name,
-	condition_isert_temp.hlgt_concept_name,
+	condition_insert_temp.pt_concept_name,
+	condition_insert_temp.hlt_concept_name,
+	condition_insert_temp.hlgt_concept_name,
 	soc.concept_name AS soc_concept_name
-FROM #condition_isert_temp LEFT JOIN @vocab_schema.concept soc ON condition_isert_temp.concept_id = soc.concept_id;
+FROM #condition_insert_temp LEFT JOIN @vocab_schema.concept soc ON condition_insert_temp.concept_id = soc.concept_id;
 
-truncate table #condition_isert_temp;
-drop table #condition_isert_temp;
+truncate table #condition_insert_temp;
+drop table #condition_insert_temp;
 
 /********** DRUG **********/
 SELECT

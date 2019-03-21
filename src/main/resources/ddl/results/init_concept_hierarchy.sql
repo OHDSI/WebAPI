@@ -3,16 +3,12 @@
 /***********************************************************/
 TRUNCATE TABLE @results_schema.concept_hierarchy;
 /********** CONDITION/CONDITION_ERA **********/
-INSERT INTO @results_schema.concept_hierarchy
-	(concept_id, concept_name, treemap, level1_concept_name, level2_concept_name, level3_concept_name, level4_concept_name)
-SELECT
-	snomed.concept_id,
+SELECT snomed.concept_id,
   snomed.concept_name AS snomed_concept_name,
 	CAST('Condition' AS VARCHAR(20)) AS treemap,
 	pt_to_hlt.pt_concept_name,
 	hlt_to_hlgt.hlt_concept_name,
-	hlgt_to_soc.hlgt_concept_name,
-	soc.concept_name AS soc_concept_name
+	hlgt_to_soc.hlgt_concept_name
 FROM (
 	SELECT
 		concept_id,
@@ -71,19 +67,33 @@ LEFT JOIN (
 		AND c2.vocabulary_id = 'MedDRA'
 	GROUP BY c1.concept_id, c1.concept_name
 ) hlgt_to_soc ON hlt_to_hlgt.hlgt_concept_id = hlgt_to_soc.hlgt_concept_id
-LEFT JOIN @vocab_schema.concept soc ON hlgt_to_soc.soc_concept_id = soc.concept_id;
+INTO #condition_isert_temp;
 
-/********** DRUG **********/
+CREATE INDEX cnd_temp_concept_id ON #condition_isert_temp (concept_id);
+
 INSERT INTO @results_schema.concept_hierarchy
 	(concept_id, concept_name, treemap, level1_concept_name, level2_concept_name, level3_concept_name, level4_concept_name)
+SELECT
+	condition_isert_temp.concept_id,
+  condition_isert_temp.concept_name AS snomed_concept_name,
+	CAST('Condition' AS VARCHAR(20)) AS treemap,
+	condition_isert_temp.pt_concept_name,
+	condition_isert_temp.hlt_concept_name,
+	condition_isert_temp.hlgt_concept_name,
+	soc.concept_name AS soc_concept_name
+FROM #condition_isert_temp LEFT JOIN @vocab_schema.concept soc ON condition_isert_temp.concept_id = soc.concept_id;
+
+truncate table #condition_isert_temp;
+drop table #condition_isert_temp;
+
+/********** DRUG **********/
 SELECT
 	rxnorm.concept_id,
 	rxnorm.concept_name AS rxnorm_concept_name,
 	CAST('Drug' AS VARCHAR(20)) AS treemap,
 	rxnorm.rxnorm_ingredient_concept_name,
 	atc5_to_atc3.atc5_concept_name,
-	atc3_to_atc1.atc3_concept_name,
-	atc1.concept_name AS atc1_concept_name
+	atc3_to_atc1.atc3_concept_name
 FROM (
 	SELECT
 		c1.concept_id,
@@ -138,18 +148,32 @@ LEFT JOIN (
 		AND c2.concept_class_id = 'ATC 1st'
 	GROUP BY c1.concept_id, c1.concept_name
 ) atc3_to_atc1 ON atc5_to_atc3.atc3_concept_id = atc3_to_atc1.atc3_concept_id
-LEFT JOIN @vocab_schema.concept atc1 ON atc3_to_atc1.atc1_concept_id = atc1.concept_id;
+INTO #drug_insert_temp;
+
+CREATE INDEX drug_temp_concept_id ON #drug_insert_temp (concept_id);
+
+INSERT INTO @results_schema.concept_hierarchy
+	(concept_id, concept_name, treemap, level1_concept_name, level2_concept_name, level3_concept_name, level4_concept_name)
+SELECT
+	drug_insert_temp.concept_id,
+	drug_insert_temp.concept_name AS rxnorm_concept_name,
+	CAST('Drug' AS VARCHAR(20)) AS treemap,
+	drug_insert_temp.rxnorm_ingredient_concept_name,
+	drug_insert_temp.atc5_concept_name,
+	drug_insert_temp.atc3_concept_name,
+	atc1.concept_name AS atc1_concept_name
+FROM #drug_insert_temp LEFT JOIN @vocab_schema.concept atc1 ON drug_insert_temp.concept_id = atc1.concept_id;
+
+truncate table #drug_insert_temp;
+drop table #drug_insert_temp;
 
 /********** DRUG_ERA **********/
-INSERT INTO @results_schema.concept_hierarchy
-	(concept_id, concept_name, treemap, level1_concept_name, level2_concept_name, level3_concept_name)
 SELECT
 	rxnorm.rxnorm_ingredient_concept_id,
 	rxnorm.rxnorm_ingredient_concept_name,
 	CAST('Drug Era' AS VARCHAR(20)) AS treemap,
 	atc5_to_atc3.atc5_concept_name,
-	atc3_to_atc1.atc3_concept_name,
-	atc1.concept_name AS atc1_concept_name
+	atc3_to_atc1.atc3_concept_name
 FROM (
 	SELECT
 		c2.concept_id   AS rxnorm_ingredient_concept_id,
@@ -199,8 +223,23 @@ LEFT JOIN (
 		AND c2.concept_class_id = 'ATC 1st'
 	GROUP BY c1.concept_id, c1.concept_name
 ) atc3_to_atc1 ON atc5_to_atc3.atc3_concept_id = atc3_to_atc1.atc3_concept_id
-LEFT JOIN @vocab_schema.concept atc1 ON atc3_to_atc1.atc1_concept_id = atc1.concept_id;
+INTO #drug_era_insert_temp;
 
+CREATE INDEX drugera_temp_concept_id ON #drug_era_insert_temp (rxnorm_ingredient_concept_id);
+
+INSERT INTO @results_schema.concept_hierarchy
+	(concept_id, concept_name, treemap, level1_concept_name, level2_concept_name, level3_concept_name)
+SELECT
+	drug_era_insert_temp.rxnorm_ingredient_concept_id,
+	drug_era_insert_temp.rxnorm_ingredient_concept_name,
+	CAST('Drug Era' AS VARCHAR(20)) AS treemap,
+	drug_era_insert_temp.atc5_concept_name,
+	drug_era_insert_temp.atc3_concept_name,
+	atc1.concept_name AS atc1_concept_name
+FROM #drug_era_insert_temp LEFT JOIN @vocab_schema.concept atc1 ON drug_era_insert_temp.rxnorm_ingredient_concept_id = atc1.concept_id;
+
+truncate table #drug_era_insert_temp;
+drop table #drug_era_insert_temp;
 /********** MEASUREMENT **********/
 INSERT INTO @results_schema.concept_hierarchy
 	(concept_id, concept_name, treemap, level1_concept_name, level2_concept_name, level3_concept_name)

@@ -5,8 +5,8 @@ import java.util.stream.Collectors;
 
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import org.apache.commons.lang3.StringUtils;
+import org.ohdsi.analysis.cohortcharacterization.design.CcResultType;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
-import org.ohdsi.webapi.cohortcharacterization.CcResultType;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.feanalysis.domain.*;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisCriteriaRepository;

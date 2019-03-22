@@ -84,6 +84,8 @@ SELECT
 FROM #condition_insert_temp LEFT JOIN @vocab_schema.concept soc ON condition_insert_temp.concept_id = soc.concept_id;
 
 truncate table #condition_insert_temp;
+
+IF OBJECT_ID('tempdb..#condition_insert_temp', 'U') IS NOT NULL
 drop table #condition_insert_temp;
 
 /********** DRUG **********/
@@ -165,6 +167,8 @@ SELECT
 FROM #drug_insert_temp LEFT JOIN @vocab_schema.concept atc1 ON drug_insert_temp.concept_id = atc1.concept_id;
 
 truncate table #drug_insert_temp;
+
+IF OBJECT_ID('tempdb..#drug_insert_temp', 'U') IS NOT NULL
 drop table #drug_insert_temp;
 
 /********** DRUG_ERA **********/
@@ -239,6 +243,8 @@ SELECT
 FROM #drug_era_insert_temp LEFT JOIN @vocab_schema.concept atc1 ON drug_era_insert_temp.rxnorm_ingredient_concept_id = atc1.concept_id;
 
 truncate table #drug_era_insert_temp;
+
+IF OBJECT_ID('tempdb..#drug_era_insert_temp', 'U') IS NOT NULL
 drop table #drug_era_insert_temp;
 /********** MEASUREMENT **********/
 INSERT INTO @results_schema.concept_hierarchy

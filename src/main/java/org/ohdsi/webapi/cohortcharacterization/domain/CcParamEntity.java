@@ -12,9 +12,9 @@ import javax.persistence.Table;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.ohdsi.analysis.WithId;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterizationParam;
-import org.ohdsi.webapi.model.WithId;
 
 @Entity
 @Table(name = "cc_param")

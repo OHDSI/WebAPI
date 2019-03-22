@@ -151,7 +151,8 @@ public class CohortCharacterizationEntity extends CommonEntity implements Cohort
         this.conceptSetEntity = conceptSetEntity;
     }
 
-    public List<ConceptSet> getConceptSets() {
+    @Override
+    public Collection<ConceptSet> getStrataConceptSets() {
         return Objects.nonNull(this.conceptSetEntity) ? this.conceptSetEntity.getConceptSets() : Collections.emptyList();
     }
 

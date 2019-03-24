@@ -43,8 +43,10 @@ public class JobExecutionToDTOConverter extends BaseConversionServiceAwareConver
         result.setExitStatus(entity.getExitStatus().getExitCode());
         result.setStartDate(entity.getStartTime());
         result.setEndDate(entity.getEndTime());
-        result.setJobParametersResource(entity.getJobParameters().getParameters().entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getValue())));
+        result.setJobParametersResource(
+                entity.getJobParameters().getParameters().entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getValue() != null ? e.getValue().getValue() : "null")));
         return result;
     }
 }

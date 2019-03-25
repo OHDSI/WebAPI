@@ -24,6 +24,10 @@ public class AnalysisGenerationInfoEntity {
         this.id = id;
     }
 
+    public String getDesign() {
+        return info.getDesign();
+    }
+
     public void setDesign(String serializedDesign) {
 
         this.info.design = serializedDesign;

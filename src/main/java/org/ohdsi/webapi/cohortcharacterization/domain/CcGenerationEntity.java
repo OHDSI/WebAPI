@@ -6,7 +6,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConverter;
 import org.ohdsi.webapi.common.generation.CommonGeneration;
 
 @Entity
@@ -19,9 +18,5 @@ public class CcGenerationEntity extends CommonGeneration {
 
     public CohortCharacterizationEntity getCohortCharacterization() {
         return cohortCharacterization;
-    }
-
-    public CohortCharacterizationEntity getDesign() {
-            return info != null ? new SerializedCcToCcConverter().convertToEntityAttribute(info.getDesign()) : null;
     }
 }

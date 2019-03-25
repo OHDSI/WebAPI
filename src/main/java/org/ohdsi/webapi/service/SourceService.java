@@ -272,7 +272,7 @@ public class SourceService extends AbstractDaoService {
   }
 
    private void setImpalaKrbData(Source updated, Source source, InputStream file) throws IOException {
-     if (source.supportsKeytab()) {
+     if (source.supportsKeyfile()) {
          if (updated.getKeytabName() != null) {
            if (!Objects.equals(updated.getKeytabName(), source.getKeytabName())) {
              byte[] fileBytes = IOUtils.toByteArray(file);

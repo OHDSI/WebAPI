@@ -225,7 +225,7 @@ public class Source implements Serializable {
         this.krbAdminServer = krbAdminServer;
     }
 
-  public boolean supportsKeytab() {
+  public boolean supportsKeyfile() {
 
     return DBMS_KEYTAB_SUPPORT.stream().anyMatch(t -> t.equalsIgnoreCase(getSourceDialect()));
   }

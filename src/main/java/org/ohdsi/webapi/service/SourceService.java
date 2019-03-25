@@ -276,14 +276,14 @@ public class SourceService extends AbstractDaoService {
          if (updated.getKeytabName() != null) {
            if (!Objects.equals(updated.getKeytabName(), source.getKeytabName())) {
              byte[] fileBytes = IOUtils.toByteArray(file);
-             updated.setKrbKeytab(fileBytes);
+             updated.setKeyfile(fileBytes);
            } else {
-             updated.setKrbKeytab(source.getKrbKeytab());
+             updated.setKeyfile(source.getKeyfile());
            }
            return;
          }
      }
-     updated.setKrbKeytab(null);
+     updated.setKeyfile(null);
      updated.setKeytabName(null);
    }
 

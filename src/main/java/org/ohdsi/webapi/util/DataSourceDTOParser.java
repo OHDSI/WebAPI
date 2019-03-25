@@ -28,7 +28,7 @@ public final class DataSourceDTOParser {
             KerberosUtils.setKerberosParams(source, params, dto);
         }
         if (Objects.equals(BIGQUERY, dto.getType())) {
-            dto.setKrbKeytab(source.getKrbKeytab());
+            dto.setKeyfile(source.getKeyfile());
         }
 
         dto.setCdmSchema(source.getTableQualifierOrNull(SourceDaimon.DaimonType.CDM));

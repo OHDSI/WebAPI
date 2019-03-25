@@ -1,7 +1,9 @@
 package org.ohdsi.webapi.pathway;
 
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.MoreObjects;
+import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
@@ -19,6 +21,7 @@ import org.ohdsi.webapi.pathway.domain.PathwayAnalysisGenerationEntity;
 import org.ohdsi.webapi.pathway.domain.PathwayCohort;
 import org.ohdsi.webapi.pathway.domain.PathwayEventCohort;
 import org.ohdsi.webapi.pathway.domain.PathwayTargetCohort;
+import org.ohdsi.webapi.pathway.dto.PathwayAnalysisExportDTO;
 import org.ohdsi.webapi.pathway.dto.internal.CohortPathways;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayCode;
@@ -45,7 +48,9 @@ import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -86,6 +91,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     private final UserRepository userRepository;
     private final GenerationUtils generationUtils;
     private final JobService jobService;
+    private final GenericConversionService genericConversionService;
 
     private final EntityGraph defaultEntityGraph = EntityUtils.fromAttributePaths(
             "targetCohorts.cohortDefinition",
@@ -107,7 +113,8 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
             AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository,
             UserRepository userRepository,
             GenerationUtils generationUtils,
-            JobService jobService) {
+            JobService jobService,
+            @Qualifier("conversionService") GenericConversionService genericConversionService) {
 
         this.pathwayAnalysisRepository = pathwayAnalysisRepository;
         this.pathwayAnalysisGenerationRepository = pathwayAnalysisGenerationRepository;
@@ -115,6 +122,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         this.jobTemplate = jobTemplate;
         this.entityManager = entityManager;
         this.jobService = jobService;
+        this.genericConversionService = genericConversionService;
         this.security = security;
         this.designImportService = designImportService;
         this.analysisGenerationInfoEntityRepository = analysisGenerationInfoEntityRepository;
@@ -401,8 +409,9 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
         List<PathwayGenerationStats> targetCohortStatsList = queryGenerationStats(source, generationId);
 
-        PathwayAnalysisEntity design = new SerializedPathwayAnalysisToPathwayAnalysisConverter()
-                .convertToEntityAttribute(findDesignByGenerationId(generationId));
+        final PathwayAnalysisEntity design = genericConversionService
+                .convert(Utils.deserialize(findDesignByGenerationId(generationId),
+                        new TypeReference<PathwayAnalysisExportDTO>() {}), PathwayAnalysisEntity.class);
         design.getTargetCohorts().forEach(tc -> {
 
             CohortPathways cohortPathways = new CohortPathways();
@@ -452,8 +461,9 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     @Override
     @DataSourceAccess
     public String findDesignByGenerationId(@PathwayAnalysisGenerationId final Long id) {
-        final AnalysisGenerationInfoEntity generationInfoEntity = analysisGenerationInfoEntityRepository.findOne(id);
-        return generationInfoEntity != null ? generationInfoEntity.getDesign() : null;
+        final AnalysisGenerationInfoEntity entity = analysisGenerationInfoEntityRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Analysis with id: " + id + " cannot be found"));
+        return entity.getDesign();
     }
 
     private List<PersonPathwayEvent> queryGenerationResults(Source source, Long generationId, Integer targetCohortId) {

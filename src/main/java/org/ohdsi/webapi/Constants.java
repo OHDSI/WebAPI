@@ -58,6 +58,10 @@ public interface Constants {
     String SOURCE = "source";
   }
 
+  interface Headers {
+    String AUTH_PROVIDER = "x-auth-provider";
+  }
+
   interface SecurityProviders {
     String DISABLED = "DisabledSecurity";
     String REGULAR = "AtlasRegularSecurity";

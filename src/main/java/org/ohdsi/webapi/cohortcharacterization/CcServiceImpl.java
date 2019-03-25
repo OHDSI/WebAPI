@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.WithId;
 import org.ohdsi.analysis.cohortcharacterization.design.CcResultType;
+import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.circe.helper.ResourceHelper;

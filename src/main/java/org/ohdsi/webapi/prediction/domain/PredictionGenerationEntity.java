@@ -12,9 +12,4 @@ public class PredictionGenerationEntity extends ExecutionEngineGenerationEntity 
   @ManyToOne(targetEntity = PredictionAnalysis.class, fetch = FetchType.LAZY)
   @JoinColumn(name = "prediction_id")
   private PredictionAnalysis predictionAnalysis;
-
-  @Override
-  public PredictionAnalysis getDesign() {
-    return null;
-  }
 }

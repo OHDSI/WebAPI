@@ -1,4 +1,5 @@
 library(devtools)
+options(devtools.install.args = "--no-multiarch")
 
 setwd("./")
 tryCatch({

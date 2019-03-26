@@ -1,5 +1,7 @@
 package org.ohdsi.webapi.ircalc;
 
+import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
+import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.GenerationStatus;
 import org.springframework.batch.core.BatchStatus;
@@ -20,6 +22,7 @@ import java.util.Optional;
 public class IRAnalysisInfoListener implements JobExecutionListener {
 
     private static final int MAX_MESSAGE_LENGTH = 2000;
+    private static final EntityGraph IR_WITH_EXECUTION_INFOS_ENTITY_GRAPH = EntityGraphUtils.fromName("IncidenceRateAnalysis.withExecutionInfoList");
 
     private final TransactionTemplate transactionTemplate;
     private final IncidenceRateAnalysisRepository incidenceRateAnalysisRepository;
@@ -43,7 +46,8 @@ public class IRAnalysisInfoListener implements JobExecutionListener {
         requresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 
         TransactionStatus initStatus = this.transactionTemplate.getTransactionManager().getTransaction(requresNewTx);
-        IncidenceRateAnalysis analysis = this.incidenceRateAnalysisRepository.findOne(analysisId);
+        IncidenceRateAnalysis analysis = this.incidenceRateAnalysisRepository.findOneWithExecutionsOnExistingSources(analysisId,
+                IR_WITH_EXECUTION_INFOS_ENTITY_GRAPH);
 
         findExecutionInfoBySourceId(analysis.getExecutionInfoList(), sourceId).ifPresent(analysisInfo -> {
             analysisInfo.setIsValid(false);
@@ -69,7 +73,8 @@ public class IRAnalysisInfoListener implements JobExecutionListener {
         requresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         TransactionStatus completeStatus = this.transactionTemplate.getTransactionManager().getTransaction(requresNewTx);
         Date endTime = Calendar.getInstance().getTime();
-        IncidenceRateAnalysis analysis = this.incidenceRateAnalysisRepository.findOne(analysisId);
+        IncidenceRateAnalysis analysis = this.incidenceRateAnalysisRepository.findOneWithExecutionsOnExistingSources(analysisId,
+                IR_WITH_EXECUTION_INFOS_ENTITY_GRAPH);
 
         findExecutionInfoBySourceId(analysis.getExecutionInfoList(), sourceId).ifPresent(analysisInfo -> {
             analysisInfo.setIsValid(isValid);

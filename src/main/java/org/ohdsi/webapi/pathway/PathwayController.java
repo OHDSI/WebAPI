@@ -42,8 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
-
 @Path("/pathway-analysis")
 @Controller
 public class PathwayController {
@@ -79,12 +77,10 @@ public class PathwayController {
     @Path("/{id}")
     public PathwayAnalysisDTO copy(@PathParam("id") final Integer id) {
 
-        PathwayAnalysisDTO pathwayAnalysis = get(id);
-        String copyName = String.format(ENTITY_COPY_PREFIX, pathwayAnalysis.getName());
-        int similar = pathwayService.countLikeName(copyName);
-        pathwayAnalysis.setId(null);
-        pathwayAnalysis.setName(similar > 0 ? copyName + " (" + similar + ")" : copyName);
-        return create(pathwayAnalysis);
+        PathwayAnalysisDTO dto = get(id);
+        dto.setId(null);
+        dto.setName(pathwayService.getNameForCopy(dto.getName()));
+        return create(dto);
     }
 
     @POST
@@ -93,6 +89,7 @@ public class PathwayController {
     @Consumes(MediaType.APPLICATION_JSON)
     public PathwayAnalysisDTO importAnalysis(final PathwayAnalysisExportDTO dto) {
 
+        dto.setName(pathwayService.getNameForCopy(dto.getName()));
         PathwayAnalysisEntity pathwayAnalysis = conversionService.convert(dto, PathwayAnalysisEntity.class);
         PathwayAnalysisEntity imported = pathwayService.importAnalysis(pathwayAnalysis);
         return conversionService.convert(imported, PathwayAnalysisDTO.class);
@@ -222,8 +219,7 @@ public class PathwayController {
             @PathParam("generationId") final Long generationId
     ) {
 
-        PathwayAnalysisGenerationEntity generation = pathwayService.getGeneration(generationId);
-        return new SerializedPathwayAnalysisToPathwayAnalysisConverter().convertToDatabaseColumn(generation.getDesign());
+        return pathwayService.findDesignByGenerationId(generationId);
 
     }
 

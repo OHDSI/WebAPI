@@ -23,11 +23,11 @@ import org.ohdsi.circe.cohortdefinition.InclusionRule;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
-import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.common.generation.CancelableTasklet;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
+import org.ohdsi.webapi.util.JobUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.SourceUtils;
@@ -70,7 +70,7 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
     String[] result = new String[0];
 
     Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
-    Integer defId = Integer.valueOf(jobParams.get(Constants.Params.COHORT_DEFINITION_ID).toString());
+    Integer defId = Integer.valueOf(jobParams.get(COHORT_DEFINITION_ID).toString());
     String sessionId = jobParams.getOrDefault(SESSION_ID, SessionUtils.sessionId()).toString();
 
     try {
@@ -86,15 +86,16 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
 
       CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = new CohortExpressionQueryBuilder.BuildExpressionQueryOptions();
       options.cohortId = defId;
-      final String targetSchema = jobParams.get(TARGET_DATABASE_SCHEMA).toString();
-      options.cdmSchema = jobParams.get(Constants.Params.CDM_DATABASE_SCHEMA).toString();
-      options.targetTable = targetSchema + "." + jobParams.get(Constants.Params.TARGET_TABLE).toString();
-      options.resultSchema = jobParams.get(Constants.Params.RESULTS_DATABASE_SCHEMA).toString();
-      if (jobParams.get(Constants.Params.VOCABULARY_DATABASE_SCHEMA) != null)
-        options.vocabularySchema = jobParams.get(Constants.Params.VOCABULARY_DATABASE_SCHEMA).toString();
-      options.generateStats = Boolean.valueOf(jobParams.get(Constants.Params.GENERATE_STATS).toString());
+      options.cdmSchema = JobUtils.getSchema(jobParams, CDM_DATABASE_SCHEMA);
+      options.resultSchema = JobUtils.getSchema(jobParams, RESULTS_DATABASE_SCHEMA);
+      final String targetSchema = JobUtils.getSchema(jobParams, TARGET_DATABASE_SCHEMA);
+      options.targetTable = targetSchema + "." + jobParams.get(TARGET_TABLE).toString();
+      if (jobParams.get(VOCABULARY_DATABASE_SCHEMA) != null){ 
+        options.vocabularySchema = jobParams.get(VOCABULARY_DATABASE_SCHEMA).toString();
+      }        
+      options.generateStats = Boolean.valueOf(jobParams.get(GENERATE_STATS).toString());
 
-      Integer sourceId = Integer.parseInt(jobParams.get(Constants.Params.SOURCE_ID).toString());
+      Integer sourceId = Integer.parseInt(jobParams.get(SOURCE_ID).toString());
       Source source = sourceRepository.findBySourceId(sourceId);
       final String oracleTempSchema = SourceUtils.getTempQualifier(source);
 
@@ -133,5 +134,4 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
       throw new RuntimeException(e);
     }
   }
-
 }

@@ -92,7 +92,7 @@ public class Source implements Serializable {
   @Column(name = "deleted_date")
   private Date deletedDate;
 
-    @Column(name = "krb_keytab")
+  @Column(name = "krb_keytab")
   private byte[] krbKeytab;
 
   @Column(name = "keytab_name")
@@ -112,7 +112,7 @@ public class Source implements Serializable {
 		return result;
   }
 
-	  public String getTableQualifierOrNull(DaimonType daimonType) {
+  public String getTableQualifierOrNull(DaimonType daimonType) {
     for (SourceDaimon sourceDaimon : this.getDaimons()) {
       if (sourceDaimon.getDaimonType() == daimonType) {
         return sourceDaimon.getTableQualifier();

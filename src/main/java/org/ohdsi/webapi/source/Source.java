@@ -15,7 +15,6 @@
  */
 package org.ohdsi.webapi.source;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMechanism;
 import java.io.Serializable;
 import java.util.Collection;
@@ -97,8 +96,8 @@ public class Source implements Serializable {
   @Column(name = "deleted_date")
   private Date deletedDate;
 
-  @Column(name = "krb_keytab")
-  private byte[] krbKeytab;
+    @Column(name = "krb_keytab")
+  private byte[] keyfile;
 
   @Column(name = "keytab_name")
   private String keytabName;
@@ -194,12 +193,12 @@ public class Source implements Serializable {
     this.password = password;
   }
 
-  public byte[] getKrbKeytab() {
-        return krbKeytab;
+  public byte[] getKeyfile() {
+        return keyfile;
     }
 
-  public void setKrbKeytab(byte[] krbKeytab) {
-        this.krbKeytab = krbKeytab;
+  public void setKeyfile(byte[] keyfile) {
+        this.keyfile = keyfile;
     }
 
   public String getKeytabName() {
@@ -226,7 +225,7 @@ public class Source implements Serializable {
         this.krbAdminServer = krbAdminServer;
     }
 
-  public boolean supportsKeytab() {
+  public boolean supportsKeyfile() {
 
     return DBMS_KEYTAB_SUPPORT.stream().anyMatch(t -> t.equalsIgnoreCase(getSourceDialect()));
   }

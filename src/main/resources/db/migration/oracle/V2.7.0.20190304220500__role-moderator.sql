@@ -1,5 +1,5 @@
 INSERT INTO ${ohdsiSchema}.sec_role(id, name, system_role) VALUES
-  (${ohdsiSchema}.sec_role_sequence.nextval, 'Moderator', TRUE);
+  (${ohdsiSchema}.sec_role_sequence.nextval, 'Moderator', 1);
 
 insert into ${ohdsiSchema}.sec_permission(id, value, description)
 values (${ohdsiSchema}.sec_permission_id_seq.nextval, 'cohort-characterization:*:put', 'Edit any Cohort Characterization');

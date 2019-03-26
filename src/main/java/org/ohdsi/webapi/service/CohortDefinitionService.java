@@ -20,6 +20,7 @@ import org.ohdsi.sql.SqlRender;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortdefinition.*;
 import org.ohdsi.webapi.common.SourceMapKey;
+import org.ohdsi.webapi.common.generation.GenerateSqlResult;
 import org.ohdsi.webapi.common.sensitiveinfo.CohortGenerationSensitiveInfoService;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ExportUtil;
@@ -69,9 +70,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.ohdsi.webapi.Constants.Params.COHORT_DEFINITION_ID;
-import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
-import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
+import static org.ohdsi.webapi.Constants.Params.*;
 import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
@@ -291,12 +290,6 @@ public class CohortDefinitionService extends AbstractDaoService {
     @JsonProperty("options")
     public CohortExpressionQueryBuilder.BuildExpressionQueryOptions options;
 
-  }
-
-  public static class GenerateSqlResult {
-
-    @JsonProperty("templateSql")
-    public String templateSql;
   }
 
   public static class CohortDefinitionListItem {
@@ -567,14 +560,27 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/{id}")
   public void delete(@PathParam("id") final int id) {
-		
-		// perform the JPA update in a separate transaction
-		this.getTransactionTemplateRequiresNew().execute(new TransactionCallbackWithoutResult() {
-			@Override
-			public void doInTransactionWithoutResult(final TransactionStatus status) {
-				cohortDefinitionRepository.delete(id);
-			}
-		});
+    // perform the JPA update in a separate transaction
+    this.getTransactionTemplateRequiresNew().execute(new TransactionCallbackWithoutResult() {
+        @Override
+        public void doInTransactionWithoutResult(final TransactionStatus status) {
+            CohortDefinition def = cohortDefinitionRepository.findOne(id);
+            if (!Objects.isNull(def)) {
+                def.getGenerationInfoList().forEach(cohortGenerationInfo -> {
+                    Integer sourceId = cohortGenerationInfo.getId().getSourceId();
+
+                    jobService.cancelJobExecution(Constants.GENERATE_COHORT, e -> {
+                        JobParameters parameters = e.getJobParameters();
+                        return Objects.equals(parameters.getString(COHORT_DEFINITION_ID), Integer.toString(id))
+                                && Objects.equals(parameters.getString(SOURCE_ID), Integer.toString(sourceId));
+                    });
+                });
+                cohortDefinitionRepository.delete(def);
+            } else {
+                log.warn("Failed to delete Cohort Definition with ID = {}", id);
+            }
+        }
+    });
 
 		JobParametersBuilder builder = new JobParametersBuilder();
 		builder.addString(JOB_NAME, String.format("Cleanup cohort %d.",id));

@@ -4,6 +4,7 @@ import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.ohdsi.analysis.CohortMetadata;
 import org.ohdsi.analysis.Utils;
+import org.ohdsi.webapi.cohortcharacterization.CcResultType;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcStrataConceptSetEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcParamEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcStrataEntity;
@@ -15,8 +16,11 @@ import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisShortDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
+
+import static org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType.CRITERIA_SET;
 
 public abstract class BaseCcDTOToCcEntityConverter<T extends BaseCcDTO<? extends CohortMetadata, ? extends FeAnalysisShortDTO>>
         extends BaseConversionServiceAwareConverter<T, CohortCharacterizationEntity> {
@@ -35,22 +39,18 @@ public abstract class BaseCcDTOToCcEntityConverter<T extends BaseCcDTO<? extends
 
     cohortCharacterization.setId(source.getId());
 
-    Set<CohortDefinition> convertedCohorts = new TreeSet<>((o1, o2) -> ObjectUtils.compare(o1.getId(), o2.getId()));
-    convertedCohorts.addAll(converterUtils.convertSet(source.getCohorts(), CohortDefinition.class));
-    cohortCharacterization.setCohortDefinitions(convertedCohorts);
+    cohortCharacterization.setCohortDefinitions(converterUtils.convertSet(source.getCohorts(), CohortDefinition.class));
 
-    Set<FeAnalysisEntity> convertedFeatureAnalyses = new TreeSet<>((o1, o2) -> ObjectUtils.compare(o1.getId(), o2.getId()));
-    convertedFeatureAnalyses.addAll(converterUtils.convertSet(source.getFeatureAnalyses(), FeAnalysisEntity.class));
-    cohortCharacterization.setFeatureAnalyses(convertedFeatureAnalyses);
+    source.getFeatureAnalyses().forEach(fa -> {
+      // Legacy Criteria Analyses didn't have statType, they were always PREVALENCE
+      if (Objects.equals(fa.getType(), CRITERIA_SET) && fa.getStatType() == null) {
+        fa.setStatType(CcResultType.PREVALENCE);
+      }
+    });
+    cohortCharacterization.setFeatureAnalyses(converterUtils.convertSet(source.getFeatureAnalyses(), FeAnalysisEntity.class));
 
-    Set<CcParamEntity> convertedParameters = new TreeSet<>((o1, o2) -> ObjectUtils.compare(o1.getName(), o2.getName()));
-    convertedParameters.addAll(converterUtils.convertSet(source.getParameters(), CcParamEntity.class));
-    cohortCharacterization.setParameters(convertedParameters);
-
-    Set<CcStrataEntity> convertedStratas = new TreeSet<>((o1, o2) -> ObjectUtils.compare(
-            o1.getName() + o1.getId() + o1.getExpressionString(), o2.getName() + o2.getId() + o2.getExpressionString()));
-    convertedStratas.addAll(converterUtils.convertSet(source.getStratas(), CcStrataEntity.class));
-    cohortCharacterization.setStratas(convertedStratas);
+    cohortCharacterization.setParameters(converterUtils.convertSet(source.getParameters(), CcParamEntity.class));
+    cohortCharacterization.setStratas(converterUtils.convertSet(source.getStratas(), CcStrataEntity.class));
 
     CcStrataConceptSetEntity conceptSetEntity = new CcStrataConceptSetEntity();
     conceptSetEntity.setCohortCharacterization(cohortCharacterization);

@@ -15,6 +15,7 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.web.util.WebUtils;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.tokens.JwtAuthToken;
 
@@ -77,13 +78,15 @@ public class GoogleIapJwtAuthFilter extends AtlasAuthFilter {
     @Override
     protected boolean onAccessDenied(ServletRequest request, ServletResponse response) throws Exception {
 
+        HttpServletResponse httpResponse = WebUtils.toHttp(response);
+        httpResponse.setHeader(Constants.Headers.AUTH_PROVIDER, Constants.SecurityProviders.GOOGLE);
+
         boolean loggedIn = executeLogin(request, response);
 
         if (loggedIn) {
             final PrincipalCollection principals = SecurityUtils.getSubject().getPrincipals();
             this.authorizer.registerUser((String) principals.getPrimaryPrincipal(), defaultRoles);
         } else {
-            HttpServletResponse httpResponse = WebUtils.toHttp(response);
             httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         }
 

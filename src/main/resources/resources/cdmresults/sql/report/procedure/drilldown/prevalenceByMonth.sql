@@ -16,6 +16,6 @@ INNER JOIN (
 	WHERE analysis_id = 117
 	GROUP BY stratum_1, count_value
 ) denom ON num.stratum_2 = denom.stratum_1 --calendar year
-INNER JOIN @vocab_database_schema.concept c1 ON CAST(num.stratum_1 AS BIGINT) = c1.concept_id
+INNER JOIN @vocab_database_schema.concept c1 ON CAST(CASE WHEN isNumeric(num.stratum_1) = 1 THEN num.stratum_1 ELSE null END AS BIGINT) = c1.concept_id
 WHERE c1.concept_id = @conceptId
-ORDER BY CAST(num.stratum_2 AS INT )
+ORDER BY CAST(CASE WHEN isNumeric(num.stratum_2) = 1 THEN num.stratum_2 ELSE null END AS INT )

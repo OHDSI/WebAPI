@@ -560,14 +560,27 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/{id}")
   public void delete(@PathParam("id") final int id) {
-		
-		// perform the JPA update in a separate transaction
-		this.getTransactionTemplateRequiresNew().execute(new TransactionCallbackWithoutResult() {
-			@Override
-			public void doInTransactionWithoutResult(final TransactionStatus status) {
-				cohortDefinitionRepository.delete(id);
-			}
-		});
+    // perform the JPA update in a separate transaction
+    this.getTransactionTemplateRequiresNew().execute(new TransactionCallbackWithoutResult() {
+        @Override
+        public void doInTransactionWithoutResult(final TransactionStatus status) {
+            CohortDefinition def = cohortDefinitionRepository.findOne(id);
+            if (!Objects.isNull(def)) {
+                def.getGenerationInfoList().forEach(cohortGenerationInfo -> {
+                    Integer sourceId = cohortGenerationInfo.getId().getSourceId();
+
+                    jobService.cancelJobExecution(Constants.GENERATE_COHORT, e -> {
+                        JobParameters parameters = e.getJobParameters();
+                        return Objects.equals(parameters.getString(COHORT_DEFINITION_ID), Integer.toString(id))
+                                && Objects.equals(parameters.getString(SOURCE_ID), Integer.toString(sourceId));
+                    });
+                });
+                cohortDefinitionRepository.delete(def);
+            } else {
+                log.warn("Failed to delete Cohort Definition with ID = {}", id);
+            }
+        }
+    });
 
 		JobParametersBuilder builder = new JobParametersBuilder();
 		builder.addString(JOB_NAME, String.format("Cleanup cohort %d.",id));

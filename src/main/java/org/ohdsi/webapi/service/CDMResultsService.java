@@ -188,9 +188,14 @@ public class CDMResultsService extends AbstractDaoService {
     @Produces(MediaType.APPLICATION_JSON)
     public JobExecutionResource refreshCache(@PathParam("sourceKey") final String sourceKey) {
         Source source = getSourceRepository().findBySourceKey(sourceKey);
-        if (sourceAccessor.hasAccess(source) && jobService.findJobByName(Constants.WARM_CACHE, getWarmCacheJobName(sourceKey)) == null) {
-            if (source.getDaimons().stream().anyMatch(sd -> Objects.equals(sd.getDaimonType(), SourceDaimon.DaimonType.Results))) {
-                return warmCache(source, WARM_CACHE_BY_USER);
+        if (sourceAccessor.hasAccess(source)) {
+            JobExecutionResource jobExecutionResource = jobService.findJobByName(Constants.WARM_CACHE, getWarmCacheJobName(sourceKey));
+            if(jobExecutionResource == null) {
+                if (source.getDaimons().stream().anyMatch(sd -> Objects.equals(sd.getDaimonType(), SourceDaimon.DaimonType.Results))) {
+                    return warmCache(source, WARM_CACHE_BY_USER);
+                }
+            } else {
+                return jobExecutionResource;
             }
         }
         return new JobExecutionResource();

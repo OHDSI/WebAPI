@@ -74,12 +74,12 @@ CREATE INDEX cnd_temp_concept_id ON #condition_insert_temp (concept_id);
 INSERT INTO @results_schema.concept_hierarchy
 	(concept_id, concept_name, treemap, level1_concept_name, level2_concept_name, level3_concept_name, level4_concept_name)
 SELECT
-	condition_insert_temp.concept_id,
-  condition_insert_temp.snomed_concept_name,
+	#condition_insert_temp.concept_id,
+  #condition_insert_temp.snomed_concept_name,
 	CAST('Condition' AS VARCHAR(20)) AS treemap,
-	condition_insert_temp.pt_concept_name,
-	condition_insert_temp.hlt_concept_name,
-	condition_insert_temp.hlgt_concept_name,
+	#condition_insert_temp.pt_concept_name,
+	#condition_insert_temp.hlt_concept_name,
+	#condition_insert_temp.hlgt_concept_name,
 	soc.concept_name AS soc_concept_name
 FROM #condition_insert_temp LEFT JOIN @vocab_schema.concept soc ON condition_insert_temp.concept_id = soc.concept_id;
 
@@ -157,12 +157,12 @@ CREATE INDEX drug_temp_concept_id ON #drug_insert_temp (concept_id);
 INSERT INTO @results_schema.concept_hierarchy
 	(concept_id, concept_name, treemap, level1_concept_name, level2_concept_name, level3_concept_name, level4_concept_name)
 SELECT
-	drug_insert_temp.concept_id,
-	drug_insert_temp.rxnorm_concept_name,
+	#drug_insert_temp.concept_id,
+	#drug_insert_temp.rxnorm_concept_name,
 	CAST('Drug' AS VARCHAR(20)) AS treemap,
-	drug_insert_temp.rxnorm_ingredient_concept_name,
-	drug_insert_temp.atc5_concept_name,
-	drug_insert_temp.atc3_concept_name,
+	#drug_insert_temp.rxnorm_ingredient_concept_name,
+	#drug_insert_temp.atc5_concept_name,
+	#drug_insert_temp.atc3_concept_name,
 	atc1.concept_name AS atc1_concept_name
 FROM #drug_insert_temp LEFT JOIN @vocab_schema.concept atc1 ON drug_insert_temp.concept_id = atc1.concept_id;
 
@@ -234,11 +234,11 @@ CREATE INDEX drugera_temp_concept_id ON #drug_era_insert_temp (rxnorm_ingredient
 INSERT INTO @results_schema.concept_hierarchy
 	(concept_id, concept_name, treemap, level1_concept_name, level2_concept_name, level3_concept_name)
 SELECT
-	drug_era_insert_temp.rxnorm_ingredient_concept_id,
-	drug_era_insert_temp.rxnorm_ingredient_concept_name,
+	#drug_era_insert_temp.rxnorm_ingredient_concept_id,
+	#drug_era_insert_temp.rxnorm_ingredient_concept_name,
 	CAST('Drug Era' AS VARCHAR(20)) AS treemap,
-	drug_era_insert_temp.atc5_concept_name,
-	drug_era_insert_temp.atc3_concept_name,
+	#drug_era_insert_temp.atc5_concept_name,
+	#drug_era_insert_temp.atc3_concept_name,
 	atc1.concept_name AS atc1_concept_name
 FROM #drug_era_insert_temp LEFT JOIN @vocab_schema.concept atc1 ON drug_era_insert_temp.rxnorm_ingredient_concept_id = atc1.concept_id;
 

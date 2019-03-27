@@ -45,7 +45,8 @@ public class HeraclesQueryBuilder {
   private final static String[] PARAM_NAMES = new String[]{"CDM_schema", "results_schema", "source_name",
           "smallcellcount", "runHERACLESHeel", "CDM_version", "cohort_definition_id", "list_of_analysis_ids",
           "condition_concept_ids", "drug_concept_ids", "procedure_concept_ids", "observation_concept_ids",
-          "measurement_concept_ids", "cohort_period_only", "source_id", "periods", "rollupUtilizationVisit", "rollupUtilizationDrug"};
+          "measurement_concept_ids", "cohort_period_only", "source_id", "periods", "rollupUtilizationVisit", "rollupUtilizationDrug",
+          "includeVisitTypeUtilization", "includeDrugTypeUtilization", "includeCostConcepts", "includeCurrency"};
   private static final String UNION_ALL = "\nUNION ALL\n";
 
   //Columns
@@ -56,6 +57,12 @@ public class HeraclesQueryBuilder {
   private static final String COL_DIST_RESULTS = "distResults";
   private static final String COL_PARAM_NAME = "paramName";
   private static final String COL_PARAM_VALUE = "paramValue";
+
+  //Defaults
+  private static final String includeVisitTypeUtilization = "32025, 32028, 32022";
+  private static final String includeDrugTypeUtilization = "38000175,38000176";
+  private static final String includeCostConcepts = "31978, 31973, 31980";
+  private static final String includeCurrency = "44818668";
 
   private Map<Integer, HeraclesAnalysis> heraclesAnalysisMap;
   private Map<Integer, Set<HeraclesAnalysisParameter>> analysesParamsMap = new HashMap<>();
@@ -144,7 +151,8 @@ public class HeraclesQueryBuilder {
             task.getCdmVersion(), cohortDefinitionIds, analysisIds, conditionIds, drugIds, procedureIds,
             observationIds, measurementIds,String.valueOf(task.isCohortPeriodOnly()),
             String.valueOf(task.getSource().getSourceId()), concatenatedPeriods,
-            String.valueOf(task.getRollupUtilizationVisit()).toUpperCase(), String.valueOf(task.getRollupUtilizationDrug()).toUpperCase()
+            String.valueOf(task.getRollupUtilizationVisit()).toUpperCase(), String.valueOf(task.getRollupUtilizationDrug()).toUpperCase(),
+            includeVisitTypeUtilization, includeDrugTypeUtilization, includeCostConcepts, includeCurrency
     };
   }
 

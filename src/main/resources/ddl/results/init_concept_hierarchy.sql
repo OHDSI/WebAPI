@@ -81,7 +81,7 @@ SELECT
 	#condition_insert_temp.hlt_concept_name,
 	#condition_insert_temp.hlgt_concept_name,
 	soc.concept_name AS soc_concept_name
-FROM #condition_insert_temp LEFT JOIN @vocab_schema.concept soc ON condition_insert_temp.concept_id = soc.concept_id;
+FROM #condition_insert_temp LEFT JOIN @vocab_schema.concept soc ON #condition_insert_temp.concept_id = soc.concept_id;
 
 truncate table #condition_insert_temp;
 
@@ -164,7 +164,7 @@ SELECT
 	#drug_insert_temp.atc5_concept_name,
 	#drug_insert_temp.atc3_concept_name,
 	atc1.concept_name AS atc1_concept_name
-FROM #drug_insert_temp LEFT JOIN @vocab_schema.concept atc1 ON drug_insert_temp.concept_id = atc1.concept_id;
+FROM #drug_insert_temp LEFT JOIN @vocab_schema.concept atc1 ON #drug_insert_temp.concept_id = atc1.concept_id;
 
 truncate table #drug_insert_temp;
 
@@ -240,7 +240,7 @@ SELECT
 	#drug_era_insert_temp.atc5_concept_name,
 	#drug_era_insert_temp.atc3_concept_name,
 	atc1.concept_name AS atc1_concept_name
-FROM #drug_era_insert_temp LEFT JOIN @vocab_schema.concept atc1 ON drug_era_insert_temp.rxnorm_ingredient_concept_id = atc1.concept_id;
+FROM #drug_era_insert_temp LEFT JOIN @vocab_schema.concept atc1 ON #drug_era_insert_temp.rxnorm_ingredient_concept_id = atc1.concept_id;
 
 truncate table #drug_era_insert_temp;
 

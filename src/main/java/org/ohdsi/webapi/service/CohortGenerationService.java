@@ -6,7 +6,6 @@ import org.ohdsi.webapi.cohortfeatures.GenerateCohortFeaturesTasklet;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.source.Source;
-import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.SourceUtils;
 import org.ohdsi.webapi.util.TempTableCleanupManager;
@@ -27,6 +26,8 @@ import java.util.Objects;
 
 import static org.ohdsi.webapi.Constants.GENERATE_COHORT;
 import static org.ohdsi.webapi.Constants.Params.*;
+import static org.ohdsi.webapi.source.SourceDaimon.DaimonType.CDM;
+import static org.ohdsi.webapi.source.SourceDaimon.DaimonType.Vocabulary;
 
 @Component
 public class CohortGenerationService extends AbstractDaoService implements GeneratesNotification {
@@ -64,7 +65,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
 
   public JobExecutionResource generateCohort(CohortDefinition cohortDefinition, Source source, boolean includeFeatures, String targetTable) {
 
-    CohortGenerationInfo info =  cohortDefinition.getGenerationInfoList().stream()
+    CohortGenerationInfo info = cohortDefinition.getGenerationInfoList().stream()
             .filter(val -> Objects.equals(val.getId().getSourceId(), source.getSourceId())).findFirst()
             .orElse(new CohortGenerationInfo(cohortDefinition, source.getSourceId()));
     cohortDefinition.getGenerationInfoList().add(info);
@@ -91,7 +92,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
             getTransactionTemplate(),
             source.getSourceDialect(),
             jobParameters.getString(SESSION_ID),
-            SourceUtils.getTempQualifier(source)
+            SourceUtils.getTempQualifierOrNull(source)
     ));
 
     Step generateCohortStep = stepBuilders.get("cohortDefinition.generateCohort")
@@ -134,17 +135,19 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
 
   public JobParametersBuilder getJobParametersBuilder(Source source, CohortDefinition cohortDefinition, String targetTable) {
 
-    String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
-    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-    String vocabularyTableQualifier = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
+    // cdmTableQualifier and resultsTableQualifier are mandatory but here we allow to proceed further with nulls because it is needed to create job instance
+    // to handle it correctly on the frontend. These nulls will be caught and handled in org.ohdsi.webapi.util.JobUtils.getSchema
+    String cdmTableQualifier = source.getTableQualifierOrNull(CDM);
+    String resultsTableQualifier = SourceUtils.getResultsQualifierOrNull(source);
+    String vocabularyTableQualifier = source.getTableQualifierOrNull(Vocabulary);
 
     JobParametersBuilder builder = new JobParametersBuilder();
     builder.addString(JOB_NAME, String.format("Generating cohort %d : %s (%s)", cohortDefinition.getId(), source.getSourceName(), source.getSourceKey()));
     builder.addString(CDM_DATABASE_SCHEMA, cdmTableQualifier);
     builder.addString(RESULTS_DATABASE_SCHEMA, resultsTableQualifier);
-    builder.addString(TEMP_DATABASE_SCHEMA, SourceUtils.getTempQualifier(source));
+    builder.addString(TEMP_DATABASE_SCHEMA, SourceUtils.getTempQualifierOrNull(source));
 
-    builder.addString(TARGET_DATABASE_SCHEMA, SourceUtils.getResultsQualifier(source));
+    builder.addString(TARGET_DATABASE_SCHEMA, resultsTableQualifier);
     builder.addString(TARGET_TABLE, targetTable);
     builder.addString(SESSION_ID, SessionUtils.sessionId());
 

@@ -59,7 +59,12 @@ public class NotificationServiceImpl implements NotificationService {
                     result.merge(getFoldingKey(jobExec), jobExec, (x, y) -> {
                         final Date xStartTime = x.getStartTime();
                         final Date yStartTime = y.getStartTime();
-                        return xStartTime != null ?  yStartTime != null ? xStartTime.after(yStartTime) ? x : y : x: y;
+                        return xStartTime != null ? 
+                                    yStartTime != null ? 
+                                        xStartTime.after(yStartTime) ? x 
+                                        : y
+                                    : x
+                               : y;
                     });
                 }
                 if (result.size() >= MAX_SIZE) {
@@ -87,7 +92,8 @@ public class NotificationServiceImpl implements NotificationService {
 
     private static String getFoldingKey(JobExecution entity) {
         final Optional<String> key = entity.getJobParameters().getParameters().keySet().stream().filter(FOLDING_KEYS::contains).findAny();
-        return key.isPresent() ? entity.getJobParameters().getString(key.get()) : String.valueOf(entity.getId());
+        return key.map(s -> entity.getJobParameters().getString(s) + "_" + entity.getJobParameters().getString("source_id"))
+                .orElseGet(() -> String.valueOf(entity.getId()));
     }
 
     private static boolean isInWhiteList(JobExecution entity) {

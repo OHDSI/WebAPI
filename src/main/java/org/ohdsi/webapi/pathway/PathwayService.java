@@ -4,6 +4,7 @@ import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisGenerationEntity;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
+import org.ohdsi.webapi.shiro.annotations.PathwayAnalysisGenerationId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -15,6 +16,8 @@ public interface PathwayService {
     PathwayAnalysisEntity create(PathwayAnalysisEntity pathwayAnalysisEntity);
 
     PathwayAnalysisEntity importAnalysis(PathwayAnalysisEntity toImport);
+
+    String getNameForCopy(String dtoName);
 
     Page<PathwayAnalysisEntity> getPage(final Pageable pageable);
 
@@ -41,4 +44,6 @@ public interface PathwayService {
     void cancelGeneration(Integer pathwayAnalysisId, Integer sourceId);
 
     int countLikeName(String copyName);
+
+    String findDesignByGenerationId(@PathwayAnalysisGenerationId final Long id);
 }

@@ -8,4 +8,5 @@ import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEnti
 public interface CcRepository extends EntityGraphJpaRepository<CohortCharacterizationEntity, Long> {
     Optional<CohortCharacterizationEntity> findById(final Long id);
     int countByNameStartsWith(String pattern);
+    Optional<CohortCharacterizationEntity> findByName(String name);
 }

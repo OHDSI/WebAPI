@@ -17,7 +17,8 @@ public interface EstimationService {
   Estimation copy(final int id) throws Exception;
   Estimation getAnalysis(int id);
   EstimationAnalysisImpl exportAnalysis(Estimation est);
-  Estimation importAnalysis(EstimationAnalysisImpl est) throws Exception;  
+  Estimation importAnalysis(EstimationAnalysisImpl est) throws Exception;
+  String getNameForCopy(String dtoName);
   void hydrateAnalysis(EstimationAnalysisImpl analysis, String packageName, OutputStream out) throws JsonProcessingException;
   void runGeneration(Estimation estimation, String sourceKey) throws IOException;
   List<EstimationGenerationEntity> getEstimationGenerations(Integer estimationAnalysisId);

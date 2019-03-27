@@ -22,6 +22,7 @@ import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.util.CopyUtils;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.Job;
@@ -151,7 +152,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         PredictionAnalysis analysis = this.predictionAnalysisRepository.findOne(id);
         entityManager.detach(analysis); // Detach from the persistence context in order to save a copy
         analysis.setId(null);
-        analysis.setName(String.format(Constants.Templates.ENTITY_COPY_PREFIX, analysis.getName()));
+        analysis.setName(getNameForCopy(analysis.getName()));
         return this.createAnalysis(analysis);
     }
     
@@ -262,17 +263,19 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
             PredictionAnalysis pa = new PredictionAnalysis();
             pa.setDescription(analysis.getDescription());
             pa.setSpecification(Utils.serialize(analysis));
-            
-            String newName = String.format(ENTITY_COPY_PREFIX, analysis.getName());
-            int similar = countLikeName(newName);
-            pa.setName(similar > 0 ? newName + " (" + similar + ")" : newName);
+            pa.setName(getNameForCopy(analysis.getName()));
             
             PredictionAnalysis savedAnalysis = this.createAnalysis(pa);
             return predictionAnalysisRepository.findOne(savedAnalysis.getId(), COMMONS_ENTITY_GRAPH);
         } catch (Exception e) {
-            log.debug("Error whie importing prediction analysis: " + e.getMessage());
+            log.debug("Error while importing prediction analysis: " + e.getMessage());
             throw e;
         }
+    }
+
+    @Override
+    public String getNameForCopy(String dtoName) {
+        return CopyUtils.getNameForCopy(dtoName, this::countLikeName, predictionAnalysisRepository.findByName(dtoName));
     }
 
     @Override

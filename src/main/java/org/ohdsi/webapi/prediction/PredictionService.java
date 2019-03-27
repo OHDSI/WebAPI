@@ -26,6 +26,8 @@ public interface PredictionService {
   
   PredictionAnalysis importAnalysis(PatientLevelPredictionAnalysisImpl analysis) throws Exception;
 
+  String getNameForCopy(String dtoName);
+
   void hydrateAnalysis(PatientLevelPredictionAnalysisImpl analysis, String packageName, OutputStream out) throws JsonProcessingException;
 
   void runGeneration(PredictionAnalysis predictionAnalysis, String sourceKey) throws IOException;

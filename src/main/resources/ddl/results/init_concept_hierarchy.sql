@@ -75,7 +75,7 @@ INSERT INTO @results_schema.concept_hierarchy
 	(concept_id, concept_name, treemap, level1_concept_name, level2_concept_name, level3_concept_name, level4_concept_name)
 SELECT
 	condition_insert_temp.concept_id,
-  condition_insert_temp.concept_name AS snomed_concept_name,
+  condition_insert_temp.snomed_concept_name,
 	CAST('Condition' AS VARCHAR(20)) AS treemap,
 	condition_insert_temp.pt_concept_name,
 	condition_insert_temp.hlt_concept_name,
@@ -158,7 +158,7 @@ INSERT INTO @results_schema.concept_hierarchy
 	(concept_id, concept_name, treemap, level1_concept_name, level2_concept_name, level3_concept_name, level4_concept_name)
 SELECT
 	drug_insert_temp.concept_id,
-	drug_insert_temp.concept_name AS rxnorm_concept_name,
+	drug_insert_temp.rxnorm_concept_name,
 	CAST('Drug' AS VARCHAR(20)) AS treemap,
 	drug_insert_temp.rxnorm_ingredient_concept_name,
 	drug_insert_temp.atc5_concept_name,

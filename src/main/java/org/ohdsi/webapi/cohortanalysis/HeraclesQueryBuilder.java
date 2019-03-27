@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.cohortanalysis;
 
-import jersey.repackaged.com.google.common.base.Joiner;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -10,8 +9,8 @@ import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortresults.PeriodType;
-import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.CSVRecordMapper;
+import org.ohdsi.webapi.util.JoinUtils;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.SourceUtils;
 import org.springframework.beans.factory.BeanInitializationException;
@@ -49,6 +48,15 @@ public class HeraclesQueryBuilder {
           "measurement_concept_ids", "cohort_period_only", "source_id", "periods", "rollupUtilizationVisit", "rollupUtilizationDrug"};
   private static final String UNION_ALL = "\nUNION ALL\n";
 
+  //Columns
+  private static final String COL_ANALYSIS_ID = "analysisId";
+  private static final String COL_ANALYSIS_NAME = "analysisName";
+  private static final String COL_SQL_FILE_NAME = "sqlFileName";
+  private static final String COL_RESULTS = "results";
+  private static final String COL_DIST_RESULTS = "distResults";
+  private static final String COL_PARAM_NAME = "paramName";
+  private static final String COL_PARAM_VALUE = "paramValue";
+
   private Map<Integer, HeraclesAnalysis> heraclesAnalysisMap;
   private Map<Integer, Set<HeraclesAnalysisParameter>> analysesParamsMap = new HashMap<>();
 
@@ -61,17 +69,17 @@ public class HeraclesQueryBuilder {
 
   private void initHeraclesAnalyses() {
 
-    heraclesAnalysisMap = parseCSV(HERACLES_ANALYSES_TABLE, record -> new HeraclesAnalysis(Integer.parseInt(record.get("analysisId")),
-            record.get("analysisName"), record.get("sqlFileName"),
-            Boolean.parseBoolean(record.get("results")), Boolean.parseBoolean(record.get("distResults"))))
+    heraclesAnalysisMap = parseCSV(HERACLES_ANALYSES_TABLE, record -> new HeraclesAnalysis(Integer.parseInt(record.get(COL_ANALYSIS_ID)),
+            record.get(COL_ANALYSIS_NAME), record.get(COL_SQL_FILE_NAME),
+            Boolean.parseBoolean(record.get(COL_RESULTS)), Boolean.parseBoolean(record.get(COL_DIST_RESULTS))))
             .stream()
             .collect(Collectors.toMap(HeraclesAnalysis::getId, analysis -> analysis));
   }
 
   private void initAnalysesParams() {
 
-    parseCSV(HERACLES_ANALYSES_PARAMS, record -> new HeraclesAnalysisParameter(Integer.parseInt(record.get("analysisId")),
-            record.get("paramName"), record.get("paramValue")))
+    parseCSV(HERACLES_ANALYSES_PARAMS, record -> new HeraclesAnalysisParameter(Integer.parseInt(record.get(COL_ANALYSIS_ID)),
+            record.get(COL_PARAM_NAME), record.get(COL_PARAM_VALUE)))
       .forEach(p -> {
         Set<HeraclesAnalysisParameter> params = analysesParamsMap.getOrDefault(p.getAnalysisId(), new HashSet<>());
         params.add(p);
@@ -80,8 +88,8 @@ public class HeraclesQueryBuilder {
     heraclesAnalysisMap.values().forEach(analysis -> {
       Integer id = analysis.getId();
       Set<HeraclesAnalysisParameter> params = analysesParamsMap.getOrDefault(id, new HashSet<>());
-      params.add(new HeraclesAnalysisParameter(id, "analysisId", id.toString()));
-      params.add(new HeraclesAnalysisParameter(id, "analysisName", analysis.getName()));
+      params.add(new HeraclesAnalysisParameter(id, COL_ANALYSIS_ID, id.toString()));
+      params.add(new HeraclesAnalysisParameter(id, COL_ANALYSIS_NAME, analysis.getName()));
       analysesParamsMap.put(id, params);
     });
   }
@@ -107,21 +115,16 @@ public class HeraclesQueryBuilder {
 
   private String[] buildAnalysisParams(CohortAnalysisTask task) {
 
-    String resultsTableQualifier = task.getSource().getTableQualifier(SourceDaimon.DaimonType.Results);
-    String cdmTableQualifier = task.getSource().getTableQualifier(SourceDaimon.DaimonType.CDM);
+    String resultsTableQualifier = SourceUtils.getResultsQualifier(task.getSource());
+    String cdmTableQualifier = SourceUtils.getCdmQualifier(task.getSource());
 
-    String cohortDefinitionIds = (task.getCohortDefinitionIds() == null ? "" : Joiner.on(",").join(
-            task.getCohortDefinitionIds()));
-    String analysisIds = (task.getAnalysisIds() == null ? "" : Joiner.on(",").join(task.getAnalysisIds()));
-    String conditionIds = (task.getConditionConceptIds() == null ? "" : Joiner.on(",").join(
-            task.getConditionConceptIds()));
-    String drugIds = (task.getDrugConceptIds() == null ? "" : Joiner.on(",").join(task.getDrugConceptIds()));
-    String procedureIds = (task.getProcedureConceptIds() == null ? "" : Joiner.on(",").join(
-            task.getProcedureConceptIds()));
-    String observationIds = (task.getObservationConceptIds() == null ? "" : Joiner.on(",").join(
-            task.getObservationConceptIds()));
-    String measurementIds = (task.getMeasurementConceptIds() == null ? "" : Joiner.on(",").join(
-            task.getMeasurementConceptIds()));
+    String cohortDefinitionIds = JoinUtils.join(task.getCohortDefinitionIds());
+    String analysisIds = JoinUtils.join(task.getAnalysisIds());
+    String conditionIds = JoinUtils.join(task.getConditionConceptIds());
+    String drugIds = JoinUtils.join(task.getDrugConceptIds());
+    String procedureIds = JoinUtils.join(task.getProcedureConceptIds());
+    String observationIds = JoinUtils.join(task.getObservationConceptIds());
+    String measurementIds = JoinUtils.join(task.getMeasurementConceptIds());
 
     String concatenatedPeriods = "";
     if (CollectionUtils.isEmpty(task.getPeriods())) {

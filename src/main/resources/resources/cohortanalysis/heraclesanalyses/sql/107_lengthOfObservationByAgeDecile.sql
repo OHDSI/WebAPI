@@ -4,7 +4,7 @@
 
 select c1.cohort_definition_id,
   CAST(floor((year(op1.observation_period_START_DATE) - p1.YEAR_OF_BIRTH)/10) AS INT) as age_decile,
-  DATEDIFF(dd,op1.observation_period_start_d10ate, op1.observation_period_end_date) as count_value
+  DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date) as count_value
 INTO #raw_107
 from @CDM_schema.person p1
 inner join #HERACLES_cohort_subject c1 on p1.person_id = c1.subject_id

@@ -11,7 +11,7 @@ CREATE TABLE @results_schema.cc_results
   strata_id BIGINT,
   strata_name VARCHAR(1000),
   time_window VARCHAR(255),
-  concept_id INTEGER,
+  concept_id INTEGER NOT NULL,
   count_value BIGINT,
   avg_value DOUBLE PRECISION,
   stdev_value DOUBLE PRECISION,

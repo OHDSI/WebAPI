@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.shiro.web.servlet.AdviceFilter;
 import org.apache.shiro.web.util.WebUtils;
+import org.ohdsi.webapi.Constants;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -48,7 +49,7 @@ public class CorsFilter extends AdviceFilter{
     String requestMethod = httpRequest.getHeader("Access-Control-Request-Method");
     String method = httpRequest.getMethod();
     if (requestMethod != null && "OPTIONS".equalsIgnoreCase(method)) {
-      httpResponse.setHeader("Access-Control-Allow-Headers", "origin, content-type, accept, authorization");
+      httpResponse.setHeader("Access-Control-Allow-Headers", "origin, content-type, accept, authorization, " + Constants.Headers.AUTH_PROVIDER);
       httpResponse.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
       httpResponse.setHeader("Access-Control-Max-Age", "1209600");
       httpResponse.setStatus(HttpServletResponse.SC_OK);
@@ -58,7 +59,7 @@ public class CorsFilter extends AdviceFilter{
 
     // continue processing request
     //
-    httpResponse.setHeader("Access-Control-Expose-Headers", "Bearer,x-auth-error");
+    httpResponse.setHeader("Access-Control-Expose-Headers", "Bearer,x-auth-error," + Constants.Headers.AUTH_PROVIDER);
     return true;
   }
 }

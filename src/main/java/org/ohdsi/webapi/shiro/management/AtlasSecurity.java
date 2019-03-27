@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.servlet.Filter;
@@ -20,7 +21,10 @@ import org.apache.shiro.web.filter.authz.SslFilter;
 import org.apache.shiro.web.filter.session.NoSessionCreationFilter;
 import org.apache.shiro.web.servlet.AdviceFilter;
 import org.apache.shiro.web.util.WebUtils;
+import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.webapi.OidcConfCreator;
+import org.ohdsi.webapi.cohortcharacterization.CcImportEvent;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.filters.CorsFilter;
@@ -35,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.EventListener;
 import waffle.shiro.negotiate.NegotiateAuthenticationStrategy;
 
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.AUTHZ;
@@ -66,7 +71,6 @@ import static org.ohdsi.webapi.shiro.management.FilterTemplates.DELETE_PLP;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.DELETE_PREDICTION;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.DELETE_SOURCE;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.FORCE_SESSION_CREATION;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.JWT_AUTHC;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.NO_SESSION_CREATION;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.SKIP_IF_NOT_POST;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.SKIP_IF_NOT_PUT;
@@ -148,11 +152,14 @@ public abstract class AtlasSecurity extends Security {
     this.sourcePermissionTemplates.put("vocabulary:%s:concept:*:get", "Get concept on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("vocabulary:%s:concept:*:related:get", "Get related concepts on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("vocabulary:%s:search:post", "Search vocab on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("vocabulary:%s:search:*:get", "Search vocab on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("cdmresults:%s:*:get", "Get Achilles reports on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("cdmresults:%s:conceptRecordCount:post", "Get Achilles concept counts on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("cdmresults:%s:*:*:get", "Get Achilles reports details on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("cohortresults:%s:*:*:get", "Get cohort results on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("cohortresults:%s:*:*:*:get", "Get cohort results details on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("cohortresults:%s:*:healthcareutilization:*:*:get", "Get cohort results baseline on period for Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("cohortresults:%s:*:healthcareutilization:*:*:*:get", "Get cohort results baseline on occurrence for Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("ir:*:execute:%s:get", "Generate IR on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("ir:*:execute:%s:delete", "Cancel IR generation on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("ir:*:info:%s:get", "Get IR execution info on Source with SourceKey = %s");
@@ -447,5 +454,15 @@ public abstract class AtlasSecurity extends Security {
       return authorizer.getSubjectName();
     else
       return "anonymous";
+  }
+
+  // Since we need to create permissions only for certain analyses, we cannot go with `addProcessEntityFilter`
+  @EventListener
+  public void onCcImport(CcImportEvent event) throws Exception {
+    for (FeAnalysisEntity analysis : event.getEntity().getFeatureAnalyses()) {
+      if (!Objects.equals(analysis.getType(), StandardFeatureAnalysisType.PRESET)) {
+        authorizer.addPermissionsFromTemplate(featureAnalysisPermissionTemplates, analysis.getId().toString());
+      }
+    }
   }
 }

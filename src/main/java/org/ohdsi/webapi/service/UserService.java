@@ -52,7 +52,7 @@ public class UserService {
   public UserService() {
     this.roleCreatorPermissionsTemplate.put("role:%s:permissions:*:put", "Add permissions to role with ID = %s");
     this.roleCreatorPermissionsTemplate.put("role:%s:permissions:*:delete", "Remove permissions from role with ID = %s");
-    this.roleCreatorPermissionsTemplate.put("role:%s:post", "Update role with ID = %s");
+    this.roleCreatorPermissionsTemplate.put("role:%s:put", "Update role with ID = %s");
     this.roleCreatorPermissionsTemplate.put("role:%s:delete", "Delete role with ID = %s");
   }
 

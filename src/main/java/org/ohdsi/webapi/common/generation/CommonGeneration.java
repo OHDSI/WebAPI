@@ -40,7 +40,7 @@ public abstract class CommonGeneration {
     private String exitMessage;
 
     @Embedded
-    protected AnalysisGenerationInfo info;
+    protected AnalysisGenerationBaseInfo info;
 
     public Long getId() {
 
@@ -71,8 +71,6 @@ public abstract class CommonGeneration {
 
         return exitMessage;
     }
-
-    public abstract <T> T getDesign();
 
     public Integer getHashCode() {
         return this.info != null ? this.info.getHashCode() : null;

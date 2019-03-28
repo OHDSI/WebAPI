@@ -4,10 +4,19 @@ import com.odysseusinc.arachne.commons.types.DBMSType;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AuthMethod;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.DataSourceUnsecuredDTO;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.nio.file.Paths;
 import java.util.*;
 
+import com.odysseusinc.arachne.execution_engine_common.util.BigQueryUtils;
 import com.odysseusinc.arachne.execution_engine_common.util.ConnectionParams;
 import com.odysseusinc.arachne.execution_engine_common.util.ConnectionParamsParser;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.KerberosUtils;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
@@ -28,7 +37,10 @@ public final class DataSourceDTOParser {
             KerberosUtils.setKerberosParams(source, params, dto);
         }
         if (Objects.equals(BIGQUERY, dto.getType())) {
-            dto.setKeyfile(source.getKeyfile());
+            try {
+                dto.setKeyfile(getKeyfile(source));
+            } catch (IOException ignored) {
+            }
         }
 
         dto.setCdmSchema(source.getTableQualifierOrNull(SourceDaimon.DaimonType.CDM));
@@ -36,6 +48,20 @@ public final class DataSourceDTOParser {
         dto.setResultSchema(source.getTableQualifierOrNull(SourceDaimon.DaimonType.Results));
 
         return dto;
+    }
+
+    static private byte[] getKeyfile(Source source) throws IOException {
+        if (ArrayUtils.isNotEmpty(source.getKeyfile())) {
+            return source.getKeyfile();
+        } else {
+            String keyPath = BigQueryUtils.getBigQueryKeyPath(source.getSourceConnection());
+            if (StringUtils.isNotEmpty(keyPath) && Paths.get(keyPath).toFile().exists()) {
+                try(Reader r = new FileReader(new File(keyPath))) {
+                    return IOUtils.toByteArray(r);
+                }
+            }
+        }
+        return null;
     }
 
     private static ConnectionParams parse(Source source) {

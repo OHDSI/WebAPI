@@ -32,7 +32,7 @@
         <level value="warn" />
     </logger>
     <logger name="org.hibernate.SQL">
-        <level value="debug" />
+        <level value="warn" />
     </logger>
     <logger name="com.jnj.honeur">
         <level value="info" />

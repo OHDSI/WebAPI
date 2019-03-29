@@ -120,6 +120,7 @@
                 <security.ldap.system.username>${LDAP_SYSTEM_USERNAME}</security.ldap.system.username>
                 <security.ldap.system.password>${LDAP_SYSTEM_PASSWORD}</security.ldap.system.password>
                 <security.ldap.url>${LDAP_URL}</security.ldap.url>
+                <security.honeur.request.origin>^(https|http)://webapi:.*/webapi.*</security.honeur.request.origin>
             </properties>
         </profile>
         <profile>

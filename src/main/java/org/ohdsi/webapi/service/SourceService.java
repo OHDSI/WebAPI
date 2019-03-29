@@ -1,21 +1,5 @@
 package org.ohdsi.webapi.service;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotAuthorizedException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
 import com.odysseusinc.logging.event.AddDataSourceEvent;
 import com.odysseusinc.logging.event.ChangeDataSourceEvent;
 import com.odysseusinc.logging.event.DeleteDataSourceEvent;
@@ -40,8 +24,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+
+import javax.annotation.PostConstruct;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.source.Source.IMPALA_DATASOURCE;
 
@@ -228,6 +219,15 @@ public class SourceService extends AbstractDaoService {
       throw new Exception("The source key has been already used.");
     }
     Source source = conversionService.convert(request, Source.class);
+    if(source.getDaimons() != null) {
+      // First source should get priority = 1
+      source.getDaimons()
+              .stream()
+              .findFirst()
+              .filter(sd -> sd.getPriority() <= 0)
+              .ifPresent(sd -> sd.setPriority(1));
+    }
+
     setImpalaKrbData(source, new Source(), file);
     Source saved = sourceRepository.save(source);
     String sourceKey = saved.getSourceKey();

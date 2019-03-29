@@ -163,6 +163,7 @@ public abstract class AtlasSecurity extends Security {
     this.sourcePermissionTemplates.put("ir:*:execute:%s:get", "Generate IR on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("ir:*:execute:%s:delete", "Cancel IR generation on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("ir:*:info:%s:get", "Get IR execution info on Source with SourceKey = %s");
+    this.sourcePermissionTemplates.put("ir:*:report:%s:get","Get IR generation report with SourceKey = %s");
     this.sourcePermissionTemplates.put("%s:person:*:get", "Get person's profile on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("vocabulary:%s:lookup:sourcecodes:post", "Lookup source codes in Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("cohort-characterization:*:generation:%s:post", "Generate Cohort Characterization on Source with SourceKey = %s");

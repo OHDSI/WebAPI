@@ -221,11 +221,25 @@ public class SourceService extends AbstractDaoService {
     Source source = conversionService.convert(request, Source.class);
     if(source.getDaimons() != null) {
       // First source should get priority = 1
+      Iterable<Source> sources = sourceRepository.findAll();
       source.getDaimons()
               .stream()
-              .findFirst()
               .filter(sd -> sd.getPriority() <= 0)
-              .ifPresent(sd -> sd.setPriority(1));
+              .filter(sd -> {
+                 boolean accept = true;
+                 // Check if source daimon of given type with priority > 0 already exists in other sources
+                 for(Source innerSource: sources) {
+                     accept = !innerSource.getDaimons()
+                        .stream()
+                        .anyMatch(innerDaimon -> innerDaimon.getPriority() > 0
+                                && innerDaimon.getDaimonType().equals(sd.getDaimonType()));
+                    if(!accept) {
+                        break;
+                    }
+                 }
+                 return accept;
+              })
+              .forEach(sd -> sd.setPriority(1));
     }
 
     setImpalaKrbData(source, new Source(), file);

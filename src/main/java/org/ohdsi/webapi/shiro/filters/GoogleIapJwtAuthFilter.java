@@ -1,12 +1,6 @@
 package org.ohdsi.webapi.shiro.filters;
 
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.services.oauth2.Oauth2;
 import com.google.common.base.Preconditions;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSHeader;
@@ -34,7 +28,10 @@ import java.security.interfaces.ECPublicKey;
 import java.text.ParseException;
 import java.time.Clock;
 import java.time.Instant;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 public class GoogleIapJwtAuthFilter extends AtlasAuthFilter {
 
@@ -89,7 +86,7 @@ public class GoogleIapJwtAuthFilter extends AtlasAuthFilter {
         if (loggedIn) {
             final PrincipalCollection principals = SecurityUtils.getSubject().getPrincipals();
             // TODO get correct name from google
-            String name = null;
+            String name = (String) principals.getPrimaryPrincipal();
             this.authorizer.registerUser((String) principals.getPrimaryPrincipal(), name, defaultRoles);
         } else {
             httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -157,18 +154,18 @@ public class GoogleIapJwtAuthFilter extends AtlasAuthFilter {
             JWSVerifier jwsVerifier = new ECDSAVerifier(publicKey);
 
             if (signedJwt.verify(jwsVerifier)) {
-                HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
-                JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
-
-                GoogleCredential credential = new GoogleCredential().
-                        setAccessToken(jwtToken).createScoped(Arrays.asList(
-                        "https://www.googleapis.com/auth/userinfo.email",
-                        "https://www.googleapis.com/auth/userinfo.profile"));
+//                HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+//                JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+//
+//                GoogleCredential credential = new GoogleCredential().
+//                        setAccessToken(jwtToken).createScoped(Arrays.asList(
+//                        "https://www.googleapis.com/auth/userinfo.email",
+//                        "https://www.googleapis.com/auth/userinfo.profile"));
 //                String applicationName = ?;
 //                Oauth2 oauth2 = new Oauth2.Builder(httpTransport, jsonFactory, credential).setApplicationName(
 //                        applicationName).build();
 
-                Oauth2 oauth2 = new Oauth2.Builder(httpTransport, jsonFactory, credential).build();
+//                Oauth2 oauth2 = new Oauth2.Builder(httpTransport, jsonFactory, credential).build();
 //                Userinfoplus userinfo = oauth2.userinfo().get().execute();
 
                 return email;

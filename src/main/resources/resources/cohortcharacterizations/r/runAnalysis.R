@@ -23,11 +23,13 @@ tryCatch({
         cohortsDatabaseSchema <- Sys.getenv("TARGET_SCHEMA")
         tempSchema <- if (is.null(Sys.getenv("TEMP_SCHEMA"))) cohortsDatabaseSchema else Sys.getenv("TEMP_SCHEMA")
         cohortTable <- Sys.getenv("COHORT_TARGET_TABLE")
+        driverPath <- Sys.getenv("JDBC_DRIVER_PATH")
 
         connectionDetails <- DatabaseConnector::createConnectionDetails(dbms = dbms,
                                                                         connectionString = connectionString,
                                                                         user = user,
-                                                                        password = pwd)
+                                                                        password = pwd,
+                                                                        pathToDriver = driverPath)
 
         runAnalysis(connectionDetails = connectionDetails,
                 cohortTable = cohortTable,

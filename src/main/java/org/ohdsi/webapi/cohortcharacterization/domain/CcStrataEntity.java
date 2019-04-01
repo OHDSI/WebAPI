@@ -12,14 +12,13 @@ import javax.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.ohdsi.analysis.Utils;
+import org.ohdsi.analysis.WithId;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterizationStrata;
 import org.ohdsi.circe.cohortdefinition.CriteriaGroup;
-import org.ohdsi.webapi.model.WithId;
-
 
 @Entity
 @Table(name = "cc_strata")
-public class CcStrataEntity implements CohortCharacterizationStrata, WithId {
+public class CcStrataEntity implements CohortCharacterizationStrata, WithId<Long> {
 
   @Id
   @GenericGenerator(

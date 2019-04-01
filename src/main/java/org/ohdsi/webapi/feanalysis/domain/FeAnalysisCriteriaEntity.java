@@ -16,13 +16,14 @@ import org.hibernate.annotations.DiscriminatorOptions;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
+import org.ohdsi.analysis.WithId;
 
 @Entity
 @Table(name = "fe_analysis_criteria")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "criteria_type")
 @DiscriminatorOptions(force = false)
-public abstract class FeAnalysisCriteriaEntity {
+public abstract class FeAnalysisCriteriaEntity implements WithId<Long> {
     
     @Id
     @GenericGenerator(

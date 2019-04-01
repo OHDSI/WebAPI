@@ -12,7 +12,7 @@ import static org.ohdsi.webapi.Constants.Params.*;
 public abstract class AnalysisExecutionSupport extends AbstractDaoService {
 
 
-  protected AnalysisFile prepareAnalysisExecution(String packageName, String packageFilename, Integer analysisId) {
+  protected AnalysisFile prepareAnalysisExecution(String packageName, String packageFilename, Number analysisId) {
       AnalysisFile execFile = new AnalysisFile();
       execFile.setFileName("runAnalysis.R");
       String[] paramNames = {"packageFile", "packageName", "analysisDir"};

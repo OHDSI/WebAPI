@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.cohortcharacterization.dto;
 
-import org.ohdsi.webapi.cohortcharacterization.CcResultType;
+
+import org.ohdsi.analysis.cohortcharacterization.design.CcResultType;
 
 public class CcResult {
     

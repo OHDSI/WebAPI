@@ -1,23 +1,15 @@
 package org.ohdsi.webapi.service;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cache.ResultsCache;
 import org.ohdsi.webapi.cdmresults.CDMResultsCache;
 import org.ohdsi.webapi.cdmresults.CDMResultsCacheTasklet;
-import org.ohdsi.webapi.report.*;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
+import org.ohdsi.webapi.report.*;
+import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.PreparedSqlRender;
@@ -30,6 +22,20 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import static org.ohdsi.webapi.Constants.WARM_CACHE_BY_USER;
 
 /**
  * @author fdefalco
@@ -51,6 +57,9 @@ public class CDMResultsService extends AbstractDaoService {
     private SourceService sourceService;
     @Value("${jasypt.encryptor.enabled}")
     private boolean encryptorEnabled;
+
+    @Autowired
+    private SourceAccessor sourceAccessor;
 
     @PostConstruct
     public void init() {
@@ -168,13 +177,30 @@ public class CDMResultsService extends AbstractDaoService {
         CDMResultsCache cache = resultsCache.getCache(sourceKey);
         if (!cache.warm && jobService.findJobByName(Constants.WARM_CACHE, getWarmCacheJobName(sourceKey)) == null) {
             Source source = getSourceRepository().findBySourceKey(sourceKey);
-            CDMResultsCacheTasklet tasklet = new CDMResultsCacheTasklet(this.getSourceJdbcTemplate(source), source);
-            JobParametersBuilder builder = new JobParametersBuilder();
-            builder.addString(Constants.Params.JOB_NAME, getWarmCacheJobName(sourceKey));
-            return this.jobTemplate.launchTasklet(Constants.WARM_CACHE, "warmCacheStep", tasklet, builder.toJobParameters());
+            return warmCache(source, Constants.WARM_CACHE);
         } else {
             return new JobExecutionResource();
         }
+    }
+
+    @GET
+    @Path("{sourceKey}/refreshCache")
+    @Produces(MediaType.APPLICATION_JSON)
+    public JobExecutionResource refreshCache(@PathParam("sourceKey") final String sourceKey) {
+        if(isSecured() && isAdmin()) {
+            Source source = getSourceRepository().findBySourceKey(sourceKey);
+            if (sourceAccessor.hasAccess(source)) {
+                JobExecutionResource jobExecutionResource = jobService.findJobByName(Constants.WARM_CACHE, getWarmCacheJobName(sourceKey));
+                if (jobExecutionResource == null) {
+                    if (source.getDaimons().stream().anyMatch(sd -> Objects.equals(sd.getDaimonType(), SourceDaimon.DaimonType.Results))) {
+                        return warmCache(source, WARM_CACHE_BY_USER);
+                    }
+                } else {
+                    return jobExecutionResource;
+                }
+            }
+        }
+        return new JobExecutionResource();
     }
 
     /**
@@ -336,4 +362,10 @@ public class CDMResultsService extends AbstractDaoService {
         return "warming " + sourceKey + " cache";
     }
 
+    private JobExecutionResource warmCache(final Source source, final String jobName) {
+        CDMResultsCacheTasklet tasklet = new CDMResultsCacheTasklet(this.getSourceJdbcTemplate(source), source);
+        JobParametersBuilder builder = new JobParametersBuilder();
+        builder.addString(Constants.Params.JOB_NAME, getWarmCacheJobName(source.getSourceKey()));
+        return this.jobTemplate.launchTasklet(jobName, "warmCacheStep", tasklet, builder.toJobParameters());
+    }
 }

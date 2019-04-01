@@ -16,9 +16,4 @@ public class EstimationGenerationEntity extends ExecutionEngineGenerationEntity 
   public Estimation getEstimationAnalysis() {
     return estimationAnalysis;
   }
-
-  @Override
-  public <T> T getDesign() {
-    return null;
-  }
 }

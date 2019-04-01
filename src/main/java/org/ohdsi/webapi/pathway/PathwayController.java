@@ -219,8 +219,7 @@ public class PathwayController {
             @PathParam("generationId") final Long generationId
     ) {
 
-        PathwayAnalysisGenerationEntity generation = pathwayService.getGeneration(generationId);
-        return new SerializedPathwayAnalysisToPathwayAnalysisConverter().convertToDatabaseColumn(generation.getDesign());
+        return pathwayService.findDesignByGenerationId(generationId);
 
     }
 

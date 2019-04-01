@@ -40,14 +40,12 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.Params.*;
 
 public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
 
     private final CcService ccService;
-    private final FeAnalysisService feAnalysisService;
     private final SourceService sourceService;
     private final UserRepository userRepository;
 
@@ -55,14 +53,12 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             final CancelableJdbcTemplate jdbcTemplate,
             final TransactionTemplate transactionTemplate,
             final CcService ccService,
-            final FeAnalysisService feAnalysisService,
             final AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository,
             final SourceService sourceService,
             final UserRepository userRepository
     ) {
         super(LoggerFactory.getLogger(GenerateCohortCharacterizationTasklet.class), jdbcTemplate, transactionTemplate, analysisGenerationInfoEntityRepository);
         this.ccService = ccService;
-        this.feAnalysisService = feAnalysisService;
         this.sourceService = sourceService;
         this.userRepository = userRepository;
     }
@@ -88,8 +84,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
         final String tempSchema = SourceUtils.getTempQualifier(source);
         CCQueryBuilder ccQueryBuilder = new CCQueryBuilder(cohortCharacterization, cohortTable, sessionId,
                 SourceUtils.getCdmQualifier(source), SourceUtils.getResultsQualifier(source),
-                SourceUtils.getVocabularyQualifier(source), tempSchema,
-                jobId, feAnalysisService.findAllPresetAnalyses().stream().map(FeAnalysisWithStringEntity::getDesign).collect(Collectors.toList()));
+                SourceUtils.getVocabularyQualifier(source), tempSchema, jobId);
         String sql = ccQueryBuilder.build();
 
         /*

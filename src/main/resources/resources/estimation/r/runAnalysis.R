@@ -25,6 +25,8 @@ tryCatch({
         cohortTable <- Sys.getenv("COHORT_TARGET_TABLE")
         driversPath <- Sys.getenv("JDBC_DRIVER_PATH")
 
+        if (driversPath == "") driversPath = NULL
+
         connectionDetails <- DatabaseConnector::createConnectionDetails(dbms = dbms,
                                                                         connectionString = connectionString,
                                                                         user = user,

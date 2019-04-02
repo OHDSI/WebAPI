@@ -8,9 +8,9 @@ import java.util.Map;
 @Service
 public class CohortGenerationSensitiveInfoServiceImpl extends AbstractSensitiveInfoService implements CohortGenerationSensitiveInfoService {
   @Override
-  public CohortGenerationInfo filterSensitiveInfo(CohortGenerationInfo source, Map<String, Object> variables) {
+  public CohortGenerationInfo filterSensitiveInfo(CohortGenerationInfo source, Map<String, Object> variables, boolean isAdmin) {
 
-    String value = filterSensitiveInfo(source.getFailMessage(), variables);
+    String value = filterSensitiveInfo(source.getFailMessage(), variables, isAdmin);
     source.setFailMessage(value);
     return source;
   }

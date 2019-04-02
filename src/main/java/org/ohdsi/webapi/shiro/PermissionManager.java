@@ -6,6 +6,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.odysseusinc.logging.event.AddUserEvent;
 import com.odysseusinc.logging.event.DeleteUserEvent;
@@ -59,6 +60,7 @@ public class PermissionManager {
   @Autowired
   private ApplicationEventPublisher eventPublisher;
 
+  private ThreadLocal<ConcurrentHashMap<String, AuthorizationInfo>> authorizationInfoCache = ThreadLocal.withInitial(ConcurrentHashMap::new);
 
   public RoleEntity addRole(String roleName, boolean isSystem) throws Exception {
     Guard.checkNotEmpty(roleName);
@@ -112,22 +114,25 @@ public class PermissionManager {
   }
 
   public AuthorizationInfo getAuthorizationInfo(final String login) {
-    final SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
-    
-    final UserEntity userEntity = userRepository.findByLogin(login);
-    if(userEntity == null) {
-      throw new UnknownAccountException("Account does not exist");
-    }
-    
-    final Set<String> permissionNames = new LinkedHashSet<>();
-    final Set<PermissionEntity> permissions = this.getUserPermissions(userEntity);
 
-    for (PermissionEntity permission : permissions) {
-      permissionNames.add(permission.getValue());
-    }
+    return authorizationInfoCache.get().computeIfAbsent(login, newLogin -> {
+      final SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
 
-    info.setStringPermissions(permissionNames);
-    return info;
+      final UserEntity userEntity = userRepository.findByLogin(newLogin);
+      if(userEntity == null) {
+        throw new UnknownAccountException("Account does not exist");
+      }
+
+      final Set<String> permissionNames = new LinkedHashSet<>();
+      final Set<PermissionEntity> permissions = this.getUserPermissions(userEntity);
+
+      for (PermissionEntity permission : permissions) {
+        permissionNames.add(permission.getValue());
+      }
+
+      info.setStringPermissions(permissionNames);
+      return info;
+    });
   }
 
   @Transactional

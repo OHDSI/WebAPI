@@ -135,6 +135,10 @@ public class PermissionManager {
     });
   }
 
+  public void clearAuthorizationInfoCache() {
+    this.authorizationInfoCache.set(new ConcurrentHashMap<>());
+  }
+
   @Transactional
   public UserEntity registerUser(final String login, final Set<String> defaultRoles) throws Exception {
     Guard.checkNotEmpty(login);

@@ -5,9 +5,12 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.Utils;
+import org.ohdsi.analysis.WithId;
+import org.ohdsi.analysis.cohortcharacterization.design.CcResultType;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.circe.helper.ResourceHelper;
+import org.ohdsi.hydra.Hydra;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConverter;
 import org.ohdsi.webapi.cohortcharacterization.domain.*;
@@ -16,6 +19,7 @@ import org.ohdsi.webapi.cohortcharacterization.dto.CcExportDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcPrevalenceStat;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
 import org.ohdsi.webapi.cohortcharacterization.repository.*;
+import org.ohdsi.webapi.cohortcharacterization.specification.CohortCharacterizationImpl;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.AnalysisGenerationInfoEntity;
@@ -25,7 +29,6 @@ import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
-import org.ohdsi.webapi.model.WithId;
 import org.ohdsi.webapi.service.*;
 import org.ohdsi.webapi.shiro.annotations.CcGenerationId;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
@@ -49,6 +52,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
+import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -57,6 +61,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.ws.rs.NotFoundException;
+import java.io.OutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -111,6 +116,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     private final JobService jobService;
     private final GenericConversionService genericConversionService;
 
+    private final Environment env;
+
     public CcServiceImpl(
             final CcRepository ccRepository,
             final CcParamRepository paramRepository,
@@ -129,7 +136,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
             final EntityManager entityManager,
             final JobService jobService,
             final ApplicationEventPublisher eventPublisher,
-            @Qualifier("conversionService") final GenericConversionService genericConversionService) {
+            @Qualifier("conversionService") final GenericConversionService genericConversionService,
+            Environment env) {
         this.repository = ccRepository;
         this.paramRepository = paramRepository;
         this.strataRepository = strataRepository;
@@ -147,7 +155,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         this.jobService = jobService;
         this.eventPublisher = eventPublisher;
         this.genericConversionService = genericConversionService;
-        SerializedCcToCcConverter.setConversionService(conversionService);
+      this.env = env;
+      SerializedCcToCcConverter.setConversionService(conversionService);
     }
 
     @Override
@@ -329,14 +338,21 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
     @Override
     public String serializeCc(final Long id) {
-        final CohortCharacterizationEntity cohortCharacterizationEntity = repository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Cohort characterization cannot be found by id: " + id));
-        return this.serializeCc(cohortCharacterizationEntity);
+
+        return Utils.serialize(exportCc(id), true);
     }
 
     @Override
     public String serializeCc(final CohortCharacterizationEntity cohortCharacterizationEntity) {
         return new SerializedCcToCcConverter().convertToDatabaseColumn(cohortCharacterizationEntity);
+    }
+
+    private CohortCharacterizationImpl exportCc(final Long id) {
+      final CohortCharacterizationEntity cohortCharacterizationEntity = repository.findById(id)
+              .orElseThrow(() -> new IllegalArgumentException("Cohort characterization cannot be found by id: " + id));
+      CohortCharacterizationImpl cc = genericConversionService.convert(cohortCharacterizationEntity, CohortCharacterizationImpl.class);
+      cc.setOrganizationName(env.getRequiredProperty("organization.name"));
+      return cc;
     }
 
     @Override
@@ -367,6 +383,19 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     @Override
     public Page<CohortCharacterizationEntity> getPage(final Pageable pageable) {
         return repository.findAll(pageable);
+    }
+
+    @Override
+    public void hydrateAnalysis(Long analysisId, String packageName, OutputStream out) {
+
+      if (packageName == null || !Utils.isAlphaNumeric(packageName)) {
+        throw new IllegalArgumentException("The package name must be alphanumeric only.");
+      }
+      CohortCharacterizationImpl analysis = exportCc(analysisId);
+      analysis.setPackageName(packageName);
+      String studySpecs = Utils.serialize(analysis, true);
+      Hydra hydra = new Hydra(studySpecs);
+      hydra.hydrate(out);
     }
 
     @Override
@@ -652,4 +681,5 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
             return null;
         });
     }
+
 }

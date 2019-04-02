@@ -46,6 +46,7 @@ public class HoneurRemoteSecurity extends AtlasRegularSecurity {
                 .addRestPath("/user/refresh", "jwtAuthc, updateToken, sendTokenInHeader")
                 .addRestPath("/user/logout", "logout")
                 .addRestPath("/hss/token", "honeur-request") // added for HONEUR
+                .addProtectedRestPath("/cohortdefinition/hss/select") // added for HONEUR
                 .addOAuthPath("/user/oauth/google", "googleAuthc")
                 .addOAuthPath("/user/oauth/facebook", "facebookAuthc")
                 .addPath("/user/login/cas", "ssl, cors, forceSessionCreation, casAuthc, updateToken, sendTokenInUrl")

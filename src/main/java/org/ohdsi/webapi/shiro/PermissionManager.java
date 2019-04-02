@@ -1,12 +1,5 @@
 package org.ohdsi.webapi.shiro;
 
-import java.security.Principal;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.odysseusinc.logging.event.AddUserEvent;
 import com.odysseusinc.logging.event.DeleteUserEvent;
 import org.apache.shiro.SecurityUtils;
@@ -15,24 +8,15 @@ import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.subject.Subject;
 import org.ohdsi.webapi.helper.Guard;
-import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
-import org.ohdsi.webapi.shiro.Entities.PermissionRepository;
-import org.ohdsi.webapi.shiro.Entities.PermissionRequest;
-import org.ohdsi.webapi.shiro.Entities.RequestStatus;
-import org.ohdsi.webapi.shiro.Entities.RoleEntity;
-import org.ohdsi.webapi.shiro.Entities.RolePermissionEntity;
-import org.ohdsi.webapi.shiro.Entities.RolePermissionRepository;
-import org.ohdsi.webapi.shiro.Entities.RoleRepository;
-import org.ohdsi.webapi.shiro.Entities.RoleRequest;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
-import org.ohdsi.webapi.shiro.Entities.UserRepository;
-import org.ohdsi.webapi.shiro.Entities.UserRoleEntity;
-import org.ohdsi.webapi.shiro.Entities.UserRoleRepository;
+import org.ohdsi.webapi.shiro.Entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.security.Principal;
+import java.util.*;
 
 /**
  *
@@ -564,4 +548,14 @@ public class PermissionManager {
   public boolean roleExists(String roleName) {
     return this.roleRepository.existsByName(roleName);
   }
+
+  public Set<PermissionEntity> getUserPermissions(String userName) {
+    UserEntity user = userRepository.findByLogin(userName);
+    if (user == null) {
+      throw new UnknownAccountException(String.format("Account %s does not exist in user repository", userName));
+    }
+    Set<PermissionEntity> permissions = this.getUserPermissions(user);
+    return permissions;
+  }
+
 }

@@ -5,8 +5,6 @@
  */
 package com.jnj.honeur.webapi.service;
 
-import com.jnj.honeur.security.SecurityUtils2;
-import com.jnj.honeur.webapi.shiro.LiferayPermissionManager;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
@@ -104,20 +102,24 @@ public class HoneurCohortDefinitionService extends CohortDefinitionService {
                 .collect(Collectors.toList());
 
         if (!securityProvider.equals(DisabledSecurity.class.getSimpleName())) {
-            String permissionPattern = "cohortdefinition:([0-9]+|\\*):get";
-            LiferayPermissionManager liferayPermissionManager = (LiferayPermissionManager) authorizer;
-            List<Integer> definitionIds =
-                    liferayPermissionManager.getUserPermissions(SecurityUtils2.getSubject(token.replace("Bearer ", ""), userFingerprint))
-                            .stream()
-                            .map(PermissionEntity::getValue)
-                            .filter(permissionString -> permissionString.matches(permissionPattern))
-                            .map(permissionString -> parseCohortDefinitionId(permissionString))
-                            .filter(Optional::isPresent)
-                            .map(Optional::get)
-                            .collect(Collectors.toList());
-            filteredDefs = filteredDefs.stream()
-                    .filter(cohortDefinition -> definitionIds.contains(cohortDefinition.getId()))
-                    .collect(Collectors.toList());
+            String getAllPermissionPattern = "cohortdefinition:\\*:get";
+
+            Set<PermissionEntity> userPermissions = this.authorizer.getUserPermissions(authorizer.getSubjectName());
+            boolean userHasGetAllPermission = userPermissions.stream().anyMatch(p -> p.getValue().matches(getAllPermissionPattern));
+
+            if(!userHasGetAllPermission) {
+                final String getIdPermissionPattern = "cohortdefinition:([0-9]+):get";
+                List<Integer> definitionIds = userPermissions.stream()
+                        .map(PermissionEntity::getValue)
+                        .filter(permissionString -> permissionString.matches(getIdPermissionPattern))
+                        .map(permissionString -> parseCohortDefinitionId(permissionString))
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .collect(Collectors.toList());
+                filteredDefs = filteredDefs.stream()
+                        .filter(cohortDefinition -> definitionIds.contains(cohortDefinition.getId()))
+                        .collect(Collectors.toList());
+            }
         }
 
         for (CohortDefinition d : filteredDefs) {

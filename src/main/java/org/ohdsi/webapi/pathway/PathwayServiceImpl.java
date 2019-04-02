@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.MoreObjects;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.helper.ResourceHelper;
+import org.ohdsi.circe.vocabulary.Concept;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfoEntityRepository;
@@ -12,6 +13,7 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.AnalysisGenerationInfoEntity;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
+import org.ohdsi.webapi.common.generation.TransactionalTasklet;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
@@ -25,7 +27,6 @@ import org.ohdsi.webapi.pathway.dto.PathwayAnalysisExportDTO;
 import org.ohdsi.webapi.pathway.dto.internal.CohortPathways;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayCode;
-import org.ohdsi.webapi.pathway.dto.internal.PathwayGenerationStats;
 import org.ohdsi.webapi.pathway.dto.internal.PersonPathwayEvent;
 import org.ohdsi.webapi.pathway.repository.PathwayAnalysisEntityRepository;
 import org.ohdsi.webapi.pathway.repository.PathwayAnalysisGenerationRepository;
@@ -46,6 +47,8 @@ import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.SourceUtils;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -54,10 +57,15 @@ import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -67,11 +75,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.summingInt;
 import static org.ohdsi.webapi.Constants.GENERATE_PATHWAY_ANALYSIS;
 import static org.ohdsi.webapi.Constants.Params.JOB_AUTHOR;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
@@ -92,6 +98,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     private final GenerationUtils generationUtils;
     private final JobService jobService;
     private final GenericConversionService genericConversionService;
+    private final StepBuilderFactory stepBuilderFactory;
 
     private final EntityGraph defaultEntityGraph = EntityUtils.fromAttributePaths(
             "targetCohorts.cohortDefinition",
@@ -114,7 +121,8 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
             UserRepository userRepository,
             GenerationUtils generationUtils,
             JobService jobService,
-            @Qualifier("conversionService") GenericConversionService genericConversionService) {
+            @Qualifier("conversionService") GenericConversionService genericConversionService,
+            StepBuilderFactory stepBuilderFactory) {
 
         this.pathwayAnalysisRepository = pathwayAnalysisRepository;
         this.pathwayAnalysisGenerationRepository = pathwayAnalysisGenerationRepository;
@@ -128,6 +136,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         this.analysisGenerationInfoEntityRepository = analysisGenerationInfoEntityRepository;
         this.userRepository = userRepository;
         this.generationUtils = generationUtils;
+        this.stepBuilderFactory = stepBuilderFactory;
 
         SerializedPathwayAnalysisToPathwayAnalysisConverter.setConversionService(conversionService);
     }
@@ -368,6 +377,13 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
                         sourceService
                 )
         );
+        TransactionalTasklet chainsTasklet = new ChainsTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), source, 
+                                                                pathwayAnalysisGenerationRepository, this, genericConversionService);
+        Step generateChains = stepBuilderFactory.get(GENERATE_PATHWAY_ANALYSIS + ".generateChains")
+                .tasklet(chainsTasklet)
+                .build();
+        
+        generateAnalysisJob.next(generateChains);
 
         final JobParameters jobParameters = builder.toJobParameters();
 
@@ -403,60 +419,50 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
         PathwayAnalysisGenerationEntity generation = getGeneration(generationId);
         Source source = generation.getSource();
-        Set<Integer> comboCodes = new HashSet<>();
-
-        PathwayAnalysisResult result = new PathwayAnalysisResult();
-
-        List<PathwayGenerationStats> targetCohortStatsList = queryGenerationStats(source, generationId);
-
-        final PathwayAnalysisEntity design = genericConversionService
-                .convert(Utils.deserialize(findDesignByGenerationId(generationId),
-                        new TypeReference<PathwayAnalysisExportDTO>() {}), PathwayAnalysisEntity.class);
-        design.getTargetCohorts().forEach(tc -> {
-
-            CohortPathways cohortPathways = new CohortPathways();
-            cohortPathways.setCohortId(tc.getCohortDefinition().getId());
-
-            targetCohortStatsList.stream()
-                    .filter(s -> Objects.equals(s.getTargetCohortId(), cohortPathways.getCohortId()))
-                    .findFirst()
-                    .ifPresent(targetCohortStats -> {
-                        cohortPathways.setTargetCohortCount(targetCohortStats.getTargetCohortCount());
-                        cohortPathways.setTotalPathwaysCount(targetCohortStats.getPathwaysCount());
-                    });
-
-            List<PersonPathwayEvent> events = queryGenerationResults(source, generationId, tc.getCohortDefinition().getId());
-            events.forEach(e -> comboCodes.add(e.getComboId()));
-
-            Map<String, Integer> chains = events.stream()
-                    .collect(Collectors.groupingBy(PersonPathwayEvent::getSubjectId))
-                    .entrySet()
-                    .stream()
-                    .map(entry -> {
-                        entry.getValue().sort(Comparator.comparing(PersonPathwayEvent::getStartDate));
-                        return entry.getValue().stream().map(e -> e.getComboId().toString()).collect(Collectors.joining("-"));
-                    })
-                    .collect(Collectors.groupingBy(Function.identity(), summingInt(x -> 1)))
-                    .entrySet()
-                    .stream()
-                    .filter(entry -> entry.getValue() > design.getMinCellCount())
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-            cohortPathways.setPathwaysCounts(chains);
-
-            result.getCohortPathwaysList().add(cohortPathways);
-        });
-
-        comboCodes.forEach(code -> {
-            List<PathwayEventCohort> eventCohorts = getEventCohortsByComboCode(design, code);
-            String names = eventCohorts.stream()
-                    .map(PathwayEventCohort::getName)
-                    .collect(Collectors.joining(","));
-            result.getCodes().add(new PathwayCode(code, names, eventCohorts.size() > 1));
-        });
-
-        return result;
+        return queryGenerationResults(source, generationId);
     }
+
+    private final RowMapper<PathwayAnalysisResult> rowMapper = (final ResultSet resultSet, final int arg1) -> { 
+        final PathwayAnalysisResult result =  new PathwayAnalysisResult();
+
+        Set<PathwayCode> codes = new HashSet<>();
+        Set<CohortPathways> cohortPathwaysList = new HashSet<>();
+        Map<Integer, Map<String, Integer>> pathwaysCounts = new HashMap<>();
+
+        while (resultSet.next()){
+            Integer code = resultSet.getInt("code");
+            String name = resultSet.getString("name");
+            boolean isCombo = Boolean.parseBoolean(resultSet.getString("is_combo"));
+            PathwayCode pathwayCode = new PathwayCode(code, name, isCombo);
+            codes.add(pathwayCode);
+
+            Integer cohortId = resultSet.getInt("cohort_id");
+            Integer targetCohortCount = resultSet.getInt("target_cohort_count");
+            Integer totalPathwaysCount = resultSet.getInt("target_pathways_count");
+            CohortPathways cohortPathways = new CohortPathways();
+            cohortPathways.setCohortId(cohortId);
+            cohortPathways.setTargetCohortCount(targetCohortCount);
+            cohortPathways.setTotalPathwaysCount(totalPathwaysCount);
+            cohortPathwaysList.add(cohortPathways);
+
+            String chainName = resultSet.getString("chain_name");
+            Integer chainAmount = resultSet.getInt("chain_amount");
+            
+            if (pathwaysCounts.containsKey(cohortId)){
+                pathwaysCounts.get(cohortId).put(chainName, chainAmount);
+            } else {
+                Map<String, Integer> chain = new HashMap<>();
+                chain.put(chainName, chainAmount);
+                pathwaysCounts.put(cohortId, chain);
+            }            
+        }
+
+        cohortPathwaysList.forEach(cp -> cp.setPathwaysCounts(pathwaysCounts.get(cp.getCohortId())));
+
+        result.setCodes(codes);
+        result.setCohortPathwaysList(cohortPathwaysList);
+        return result;        
+    };
 
     @Override
     @DataSourceAccess
@@ -466,45 +472,16 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         return entity.getDesign();
     }
 
-    private List<PersonPathwayEvent> queryGenerationResults(Source source, Long generationId, Integer targetCohortId) {
+    private PathwayAnalysisResult queryGenerationResults(Source source, Long generationId) {
 
         PreparedStatementRenderer pathwayEventsPsr = new PreparedStatementRenderer(
-                source,
-                "/resources/pathway/getPersonLevelPathwayResults.sql",
-                new String[]{"target_database_schema"},
-                new String[]{source.getTableQualifier(SourceDaimon.DaimonType.Results)},
-                new String[] { "pathway_analysis_generation_id", "target_cohort_id" },
-                new Object[] { generationId, targetCohortId }
+                source, "/resources/pathway/getPathwayResults.sql", "target_database_schema",
+                source.getTableQualifier(SourceDaimon.DaimonType.Results),
+                new String[] { "pathway_generation_id" },
+                new Object[] { generationId}
         );
 
-        return getSourceJdbcTemplate(source).query(pathwayEventsPsr.getSql(), pathwayEventsPsr.getSetter(), (rs, rowNum) -> {
-            PersonPathwayEvent event = new PersonPathwayEvent();
-            event.setComboId(rs.getInt("combo_id"));
-            event.setSubjectId(rs.getInt("subject_id"));
-            event.setStartDate(rs.getDate("cohort_start_date"));
-            event.setEndDate(rs.getDate("cohort_end_date"));
-            return event;
-        });
-    }
-
-    private List<PathwayGenerationStats> queryGenerationStats(Source source, Long generationId) {
-
-        PreparedStatementRenderer pathwayStatsPsr = new PreparedStatementRenderer(
-                source,
-                "/resources/pathway/getStats.sql",
-                new String[]{"target_database_schema"},
-                new String[]{source.getTableQualifier(SourceDaimon.DaimonType.Results)},
-                new String[] { "generation_id" },
-                new Object[] { generationId }
-        );
-
-        return getSourceJdbcTemplate(source).query(pathwayStatsPsr.getSql(), pathwayStatsPsr.getSetter(), (rs, rowNum) -> {
-            PathwayGenerationStats stats = new PathwayGenerationStats();
-            stats.setTargetCohortId(rs.getInt("target_cohort_id"));
-            stats.setTargetCohortCount(rs.getInt("target_cohort_count"));
-            stats.setPathwaysCount(rs.getInt("pathways_count"));
-            return stats;
-        });
+        return getSourceJdbcTemplate(source).queryForObject(pathwayEventsPsr.getSql(), pathwayEventsPsr.getOrderedParams(), rowMapper);
     }
 
     private void copyProps(PathwayAnalysisEntity from, PathwayAnalysisEntity to) {
@@ -513,15 +490,6 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         to.setMaxDepth(from.getMaxDepth());
         to.setMinCellCount(from.getMinCellCount());
         to.setCombinationWindow(from.getCombinationWindow());
-    }
-
-    private List<PathwayEventCohort> getEventCohortsByComboCode(PathwayAnalysisEntity pathwayAnalysis, Integer comboCode) {
-
-        Map<Integer, Integer> eventCodes = getEventCohortCodes(pathwayAnalysis);
-        return pathwayAnalysis.getEventCohorts()
-                .stream()
-                .filter(ec -> ((int) Math.pow(2, Double.valueOf(eventCodes.get(ec.getCohortDefinition().getId()))) & comboCode) > 0)
-                .collect(Collectors.toList());
     }
 
     private int getAnalysisHashCode(PathwayAnalysisEntity pathwayAnalysis) {

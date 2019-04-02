@@ -219,6 +219,7 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         logger.info("Invalidating execution engine based analyses");
         List<ExecutionEngineAnalysisStatus> outdateExecutions = analysisExecutionRepository.findByExecutionStatusIn(INVALIDATE_STATUSES);
         outdateExecutions.forEach(ee -> ee.setExecutionStatus(ExecutionEngineAnalysisStatus.Status.FAILED));
+        analysisExecutionRepository.save(outdateExecutions);
     }
 
     @Override

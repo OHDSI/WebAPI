@@ -210,7 +210,7 @@ public class SourceService extends AbstractDaoService {
   @POST
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
-  public SourceInfo createSource(@FormDataParam("keytab") InputStream file, @FormDataParam("keytab") FormDataContentDisposition fileDetail, @FormDataParam("source") SourceRequest request) throws Exception {
+  public SourceInfo createSource(@FormDataParam("keyfile") InputStream file, @FormDataParam("keyfile") FormDataContentDisposition fileDetail, @FormDataParam("source") SourceRequest request) throws Exception {
     if (!securityEnabled) {
       throw new NotAuthorizedException(SECURE_MODE_ERROR);
     }
@@ -258,7 +258,7 @@ public class SourceService extends AbstractDaoService {
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
   @Transactional
-  public SourceInfo updateSource(@PathParam("sourceId") Integer sourceId, @FormDataParam("keytab") InputStream file, @FormDataParam("keytab") FormDataContentDisposition fileDetail, @FormDataParam("source") SourceRequest request) throws IOException {
+  public SourceInfo updateSource(@PathParam("sourceId") Integer sourceId, @FormDataParam("keyfile") InputStream file, @FormDataParam("keyfile") FormDataContentDisposition fileDetail, @FormDataParam("source") SourceRequest request) throws IOException {
     if (!securityEnabled) {
       throw new NotAuthorizedException(SECURE_MODE_ERROR);
     }
@@ -299,8 +299,8 @@ public class SourceService extends AbstractDaoService {
 
   private void setKeyfileData(Source updated, Source source, InputStream file) throws IOException {
      if (source.supportsKeyfile()) {
-         if (updated.getKeytabName() != null) {
-           if (!Objects.equals(updated.getKeytabName(), source.getKeytabName())) {
+         if (updated.getKeyfileName() != null) {
+           if (!Objects.equals(updated.getKeyfileName(), source.getKeyfileName())) {
              byte[] fileBytes = IOUtils.toByteArray(file);
              updated.setKeyfile(fileBytes);
            } else {
@@ -310,7 +310,7 @@ public class SourceService extends AbstractDaoService {
          }
      }
      updated.setKeyfile(null);
-     updated.setKeytabName(null);
+     updated.setKeyfileName(null);
    }
 
   @Path("{sourceId}")

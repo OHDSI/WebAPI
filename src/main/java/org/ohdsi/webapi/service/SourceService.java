@@ -1,9 +1,11 @@
 package org.ohdsi.webapi.service;
 
+import com.odysseusinc.arachne.commons.types.DBMSType;
 import com.odysseusinc.logging.event.AddDataSourceEvent;
 import com.odysseusinc.logging.event.ChangeDataSourceEvent;
 import com.odysseusinc.logging.event.DeleteDataSourceEvent;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -33,8 +35,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static org.ohdsi.webapi.source.Source.IMPALA_DATASOURCE;
 
 @Path("/source/")
 @Component
@@ -241,8 +241,7 @@ public class SourceService extends AbstractDaoService {
               })
               .forEach(sd -> sd.setPriority(1));
     }
-
-    setImpalaKrbData(source, new Source(), file);
+    setKeyfileData(source, new Source(), file);
     Source saved = sourceRepository.save(source);
     String sourceKey = saved.getSourceKey();
     cachedSources = null;
@@ -274,7 +273,8 @@ public class SourceService extends AbstractDaoService {
               Objects.equals(updated.getPassword().trim(), Source.MASQUERADED_PASSWORD)) {
         updated.setPassword(source.getPassword());
       }
-      setImpalaKrbData(updated, source, file);
+      setKeyfileData(updated, source, file);
+      transformIfRequired(updated);
       List<SourceDaimon> removed = source.getDaimons().stream().filter(d -> !updated.getDaimons().contains(d))
               .collect(Collectors.toList());
       sourceDaimonRepository.delete(removed);
@@ -287,19 +287,27 @@ public class SourceService extends AbstractDaoService {
     }
   }
 
-   private void setImpalaKrbData(Source updated, Source source, InputStream file) throws IOException {
-     if (IMPALA_DATASOURCE.equalsIgnoreCase(updated.getSourceDialect())) {
+  private void transformIfRequired(Source source) {
+
+    if (DBMSType.BIGQUERY.getOhdsiDB().equals(source.getSourceDialect()) && ArrayUtils.isNotEmpty(source.getKeyfile())) {
+      String connStr = source.getSourceConnection().replaceAll("OAuthPvtKeyPath=.+?(;|\\z)", "");
+      source.setSourceConnection(connStr);
+    }
+  }
+
+  private void setKeyfileData(Source updated, Source source, InputStream file) throws IOException {
+     if (source.supportsKeyfile()) {
          if (updated.getKeytabName() != null) {
            if (!Objects.equals(updated.getKeytabName(), source.getKeytabName())) {
              byte[] fileBytes = IOUtils.toByteArray(file);
-             updated.setKrbKeytab(fileBytes);
+             updated.setKeyfile(fileBytes);
            } else {
-             updated.setKrbKeytab(source.getKrbKeytab());
+             updated.setKeyfile(source.getKeyfile());
            }
            return;
          }
      }
-     updated.setKrbKeytab(null);
+     updated.setKeyfile(null);
      updated.setKeytabName(null);
    }
 

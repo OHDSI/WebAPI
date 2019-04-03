@@ -22,6 +22,7 @@ import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceHelper;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.DataSourceDTOParser;
@@ -107,6 +108,9 @@ public abstract class AbstractDaoService {
   @Autowired
   private KerberosService kerberosService;
 
+  @Autowired
+  private SourceHelper sourceHelper;
+
   public SourceRepository getSourceRepository() {
     return sourceRepository;
   }
@@ -139,15 +143,16 @@ public abstract class AbstractDaoService {
       loginToKerberos(dataSourceData);
     }
     DriverManagerDataSource dataSource;
+    String connectionString = sourceHelper.getSourceConnectionString(source);
     if (dataSourceData.getUsername() != null && dataSourceData.getPassword() != null) {
       // NOTE: jdbc link should NOT include username and password, because they have higher priority than separate ones
       dataSource = new DriverManagerDataSource(
-              dataSourceData.getConnectionString(),
+              connectionString,
               dataSourceData.getUsername(),
               dataSourceData.getPassword()
       );
     } else {
-      dataSource = new DriverManagerDataSource(dataSourceData.getConnectionString());
+      dataSource = new DriverManagerDataSource(connectionString);
     }
     CancelableJdbcTemplate jdbcTemplate = new CancelableJdbcTemplate(dataSource);
     jdbcTemplate.setSuppressApiException(suppressApiException);

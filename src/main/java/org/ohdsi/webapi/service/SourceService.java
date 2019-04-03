@@ -241,7 +241,9 @@ public class SourceService extends AbstractDaoService {
               })
               .forEach(sd -> sd.setPriority(1));
     }
-    setKeyfileData(source, new Source(), file);
+    Source original = new Source();
+    original.setSourceDialect(source.getSourceDialect());
+    setKeyfileData(source, original, file);
     Source saved = sourceRepository.save(source);
     String sourceKey = saved.getSourceKey();
     cachedSources = null;

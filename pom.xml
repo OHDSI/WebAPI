@@ -158,8 +158,8 @@
     <!-- Sensitive Info settings -->
     <sensitiveinfo.admin.role>admin</sensitiveinfo.admin.role>
 
-    <hydra.external-package.prediction></hydra.external-package.prediction>
-    <hydra.external-package.estimation></hydra.external-package.estimation>
+    <hydra.externalPackage.prediction></hydra.externalPackage.prediction>
+    <hydra.externalPackage.estimation></hydra.externalPackage.estimation>
   </properties>
   <build>
     <finalName>WebAPI</finalName>

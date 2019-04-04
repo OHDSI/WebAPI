@@ -4,6 +4,7 @@ import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.estimation.design.EstimationTypeEnum;
 import org.ohdsi.analysis.estimation.design.NegativeControlTypeEnum;
@@ -81,6 +82,9 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
             "createdBy",
             "modifiedBy"
     );
+
+    @Value("${hydra.externalPackage.estimation}")
+    private String extenalPackagePath;
 
     @PersistenceContext
     protected EntityManager entityManager;
@@ -381,6 +385,9 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         analysis.setPackageName(packageName);
         String studySpecs = Utils.serialize(analysis, true);
         Hydra h = new Hydra(studySpecs);
+        if (StringUtils.isNotEmpty(extenalPackagePath)) {
+            h.setExternalSkeletonFileName(extenalPackagePath);
+        }
         h.hydrate(out);
     }
 

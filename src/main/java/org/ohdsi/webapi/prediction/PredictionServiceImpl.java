@@ -3,6 +3,7 @@ package org.ohdsi.webapi.prediction;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.hydra.Hydra;
@@ -28,6 +29,7 @@ import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
@@ -61,6 +63,9 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
             "createdBy",
             "modifiedBy"
     );
+
+    @Value("${hydra.external-package.prediction}")
+    private String extenalPackagePath;
     
     @Autowired
     private PredictionAnalysisRepository predictionAnalysisRepository;
@@ -286,6 +291,9 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         analysis.setPackageName(packageName);
         String studySpecs = Utils.serialize(analysis, true);
         Hydra h = new Hydra(studySpecs);
+        if (StringUtils.isNotEmpty(extenalPackagePath)) {
+            h.setExternalSkeletonFileName(extenalPackagePath);
+        }
         h.hydrate(out);
     }
     

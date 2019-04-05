@@ -1,5 +1,5 @@
 CREATE TABLE ${ohdsiSchema}.output_file_contents (
-  output_file_id INTEGER,
+  output_file_id NUMBER(19),
   file_contents BLOB,
   CONSTRAINT output_file_contents_pkey PRIMARY KEY (output_file_id)
 );

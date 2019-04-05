@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.executionengine.entity;
 
-import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -40,7 +39,7 @@ public class AnalysisResultFile {
     private String mediaType;
 
     @OneToOne(optional = false, mappedBy = "analysisResultFile", fetch = FetchType.LAZY)
-    private AnalysisResultFileContent content = new AnalysisResultFileContent();
+    private AnalysisResultFileContent content;
 
     public AnalysisResultFile() {
 
@@ -49,13 +48,11 @@ public class AnalysisResultFile {
     public AnalysisResultFile(
             ExecutionEngineAnalysisStatus execution,
             String fileName,
-            String mediaType,
-            byte[] contents) {
+            String mediaType) {
 
         this.execution = execution;
         this.fileName = fileName;
         this.mediaType = mediaType;
-        this.setContents(contents);
     }
 
     public Long getId() {

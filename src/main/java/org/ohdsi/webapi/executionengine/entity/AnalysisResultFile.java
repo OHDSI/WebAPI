@@ -8,6 +8,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
+
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 
@@ -37,9 +39,8 @@ public class AnalysisResultFile {
     @Column(name = "media_type")
     private String mediaType;
 
-    @Column(name = "file_contents", columnDefinition = "BYTEA")
-    @Basic(fetch = FetchType.LAZY)
-    private byte[] contents;
+    @OneToOne(optional = false, mappedBy = "analysisResultFile", fetch = FetchType.LAZY)
+    private AnalysisResultFileContent content = new AnalysisResultFileContent();
 
     public AnalysisResultFile() {
 
@@ -54,7 +55,7 @@ public class AnalysisResultFile {
         this.execution = execution;
         this.fileName = fileName;
         this.mediaType = mediaType;
-        this.contents = contents;
+        this.setContents(contents);
     }
 
     public Long getId() {
@@ -84,12 +85,12 @@ public class AnalysisResultFile {
 
     public byte[] getContents() {
 
-        return contents;
+        return content.getContents();
     }
 
     public void setContents(byte[] contents) {
 
-        this.contents = contents;
+        this.content.setContents(contents);
     }
 
     public String getMediaType() {

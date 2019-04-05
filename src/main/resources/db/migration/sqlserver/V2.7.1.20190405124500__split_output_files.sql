@@ -1,5 +1,5 @@
 CREATE TABLE ${ohdsiSchema}.output_file_contents (
-  output_file_id INTEGER,
+  output_file_id BIGINT,
   file_contents VARBINARY(max),
   CONSTRAINT output_file_contents_pkey PRIMARY KEY (output_file_id)
 )

@@ -29,6 +29,14 @@ public class AnalysisResultFileContent {
 
     }
 
+    public AnalysisResultFileContent(ExecutionEngineAnalysisStatus execution,
+                                     String fileName,
+                                     String mediaType, byte[] contents) {
+
+        this.analysisResultFile = new AnalysisResultFile(execution, fileName, mediaType);
+        this.contents = contents;
+    }
+
     public AnalysisResultFile getAnalysisResultFile() {
 
         return analysisResultFile;

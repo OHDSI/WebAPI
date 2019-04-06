@@ -9,13 +9,13 @@ import org.glassfish.jersey.media.multipart.BodyPartEntity;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.hibernate.Hibernate;
+import org.ohdsi.webapi.executionengine.entity.AnalysisResultFileContent;
 import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
-import org.ohdsi.webapi.executionengine.entity.AnalysisResultFile;
 import org.ohdsi.webapi.executionengine.entity.ExecutionEngineGenerationEntity;
 import org.ohdsi.webapi.executionengine.exception.ScriptCallbackException;
 import org.ohdsi.webapi.executionengine.repository.AnalysisExecutionRepository;
+import org.ohdsi.webapi.executionengine.repository.AnalysisResultFileContentRepository;
 import org.ohdsi.webapi.executionengine.repository.ExecutionEngineGenerationRepository;
-import org.ohdsi.webapi.executionengine.repository.OutputFileRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,16 +43,16 @@ public class ScriptExecutionCallbackController {
 
     private final AnalysisExecutionRepository analysisExecutionRepository;
 
-    private final OutputFileRepository outputFileRepository;
+    private final AnalysisResultFileContentRepository analysisResultFileContentRepository;
 
     @Autowired
     public ScriptExecutionCallbackController(ExecutionEngineGenerationRepository executionEngineGenerationRepository,
                                              AnalysisExecutionRepository analysisExecutionRepository,
-                                             OutputFileRepository outputFileRepository) {
+                                             AnalysisResultFileContentRepository analysisResultFileContentRepository) {
 
         this.executionEngineGenerationRepository = executionEngineGenerationRepository;
         this.analysisExecutionRepository = analysisExecutionRepository;
-        this.outputFileRepository = outputFileRepository;
+        this.analysisResultFileContentRepository = analysisResultFileContentRepository;
     }
 
     @Path(value = "submission/{id}/status/update/{password}")
@@ -115,12 +115,12 @@ public class ScriptExecutionCallbackController {
         }
     }
 
-    private Iterable<AnalysisResultFile> saveFiles(
+    private Iterable<AnalysisResultFileContent> saveFiles(
             FormDataMultiPart multiPart,
             ExecutionEngineAnalysisStatus analysisExecution,
             AnalysisResultDTO analysisResultDTO) {
 
-        List<AnalysisResultFile> files = new ArrayList<>();
+        List<AnalysisResultFileContent> files = new ArrayList<>();
         List<FormDataBodyPart> bodyParts = multiPart.getFields("file");
         if (bodyParts != null) {
             Map<String,Integer> duplicates = new HashMap<>();
@@ -136,16 +136,16 @@ public class ScriptExecutionCallbackController {
                 }
                 try {
                     byte[] contents = IOUtils.toByteArray(bodyPartEntity.getInputStream());
-                    files.add(new AnalysisResultFile(analysisExecution, fileName,
+                    files.add(new AnalysisResultFileContent(analysisExecution, fileName,
                             bodyPart.getMediaType().getType(), contents));
                 } catch (IOException e) {
                     throw new ScriptCallbackException("Unable to read result " + "files");
                 }
             }
         }
-        files.add(new AnalysisResultFile(analysisExecution, "stdout.txt", MediaType.TEXT_PLAIN,
+        files.add(new AnalysisResultFileContent(analysisExecution, "stdout.txt", MediaType.TEXT_PLAIN,
                 analysisResultDTO.getStdout().getBytes()));
-        return outputFileRepository.save(files);
+        return analysisResultFileContentRepository.save(files);
     }
 
 }

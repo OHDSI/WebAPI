@@ -1,4 +1,4 @@
-SELECT * FROM @target_database_schema.pathway_code 
-                JOIN @target_database_schema.cohort_pathway ON pathway_code.pathway_generation_id = cohort_pathway.pathway_generation_id
-                JOIN @target_database_schema.pathways_count ON cohort_pathway.cohort_id = pathways_count.cohort_id
-WHERE pathway_code.pathway_generation_id = @pathway_generation_id;
+SELECT pathway_analysis_generation_id, target_cohort_id, 
+	step_1, step_2, step_3, step_4, step_5, step_6, step_7, step_8, step_9, step_10, count_value
+FROM @target_database_schema.pathway_analysis_paths
+WHERE pathway_analysis_generation_id = @generation_id;

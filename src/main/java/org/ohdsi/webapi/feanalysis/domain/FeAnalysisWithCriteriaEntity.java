@@ -11,7 +11,7 @@ import java.util.Objects;
 @Entity
 public abstract class FeAnalysisWithCriteriaEntity<T extends FeAnalysisCriteriaEntity> extends FeAnalysisEntity<List<T>> implements FeatureAnalysisWithCriteria<T, Integer> {
     
-    @OneToMany(targetEntity = FeAnalysisCriteriaEntity.class, fetch = FetchType.EAGER, mappedBy = "featureAnalysis", cascade = CascadeType.MERGE)
+    @OneToMany(targetEntity = FeAnalysisCriteriaEntity.class, fetch = FetchType.EAGER, mappedBy = "featureAnalysis", cascade = {CascadeType.MERGE, CascadeType.REMOVE})
     private List<T> design;
 
     @OneToOne(fetch = FetchType.EAGER, mappedBy = "featureAnalysis", cascade = CascadeType.ALL)

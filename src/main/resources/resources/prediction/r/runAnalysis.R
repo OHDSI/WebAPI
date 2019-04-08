@@ -28,11 +28,14 @@ tryCatch({
                                                                         password = pwd,
                                                                         pathToDriver = driversPath)
 
+        outputFolder <- file.path(getwd(), 'results')
+        dir.create(outputFolder)
+
         execute(connectionDetails = connectionDetails,
                 cdmDatabaseSchema = cdmDatabaseSchema,
                 cohortDatabaseSchema = cohortsDatabaseSchema,
                 cohortTable = cohortTable,
-                outputFolder = file.path('.', 'results'),
+                outputFolder = outputFolder,
                 createCohorts = T,
                 runAnalyses = T,
                 createValidationPackage = F,

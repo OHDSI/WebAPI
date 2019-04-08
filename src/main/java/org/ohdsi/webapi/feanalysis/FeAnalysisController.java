@@ -17,6 +17,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Path("/feature-analysis")
 @Controller
@@ -41,6 +42,16 @@ public class FeAnalysisController {
     @Consumes(MediaType.APPLICATION_JSON)
     public Page<FeAnalysisShortDTO> list(@Pagination Pageable pageable) {
         return service.getPage(pageable).map(this::convertFeAnaysisToShortDto);
+    }
+
+    @GET
+    @Path("/exists")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public List<FeAnalysisShortDTO> getFeExists(@QueryParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
+        return service.getFeExists(id, name).stream()
+                .map(this::convertFeAnaysisToShortDto)
+                .collect(Collectors.toList());
     }
 
     @GET

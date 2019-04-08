@@ -194,6 +194,11 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     }
 
     @Override
+    public List<CohortCharacterizationEntity> getCcExists(Long id, String name) {
+        return repository.ccExists(id, name);
+    }
+
+    @Override
     public void deleteCc(Long ccId) {
         repository.delete(ccId);
     }

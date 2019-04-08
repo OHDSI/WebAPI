@@ -63,18 +63,18 @@ public class EstimationController {
   public List<EstimationListItem> getAnalysisList() {
 
     return StreamSupport.stream(service.getAnalysisList().spliterator(), false)
-            .map(est -> {
-              EstimationListItem item = new EstimationListItem();
-              item.estimationId = est.getId();
-              item.name = est.getName();
-              item.type = est.getType();
-              item.description = est.getDescription();
-              item.createdBy = UserUtils.nullSafeLogin(est.getCreatedBy());
-              item.createdDate = est.getCreatedDate();
-              item.modifiedBy = UserUtils.nullSafeLogin(est.getModifiedBy());
-              item.modifiedDate = est.getModifiedDate();
-              return item;
-            }).collect(Collectors.toList());
+            .map(this::estimationToListItem)
+            .collect(Collectors.toList());
+  }
+
+  @GET
+  @Path("/exists")
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public List<EstimationListItem> getEstimationExists(@QueryParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
+    return service.getEstimationExists(id, name).stream()
+            .map(this::estimationToListItem)
+            .collect(Collectors.toList());
   }
 
   @DELETE
@@ -221,4 +221,16 @@ public class EstimationController {
             .build();
   }
 
+  private EstimationListItem estimationToListItem(Estimation est) {
+    EstimationListItem item = new EstimationListItem();
+    item.estimationId = est.getId();
+    item.name = est.getName();
+    item.type = est.getType();
+    item.description = est.getDescription();
+    item.createdBy = UserUtils.nullSafeLogin(est.getCreatedBy());
+    item.createdDate = est.getCreatedDate();
+    item.modifiedBy = UserUtils.nullSafeLogin(est.getModifiedBy());
+    item.modifiedDate = est.getModifiedDate();
+    return item;
+  }
 }

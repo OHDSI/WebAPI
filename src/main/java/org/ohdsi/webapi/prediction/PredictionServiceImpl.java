@@ -115,6 +115,12 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     }
     
     @Override
+    public List<PredictionAnalysis> getPredictionExists(Integer id, String name) {
+
+        return predictionAnalysisRepository.predictionExists(id, name);
+    }
+    
+    @Override
     public PredictionAnalysis getById(Integer id) {
         return predictionAnalysisRepository.findOne(id, COMMONS_ENTITY_GRAPH);
     }

@@ -25,4 +25,5 @@ public interface EstimationService {
   EstimationGenerationEntity getGeneration(Long generationId);
   int countLikeName(String copyName); 
   Estimation getById(Integer id);
+  List<Estimation> getEstimationExists(Integer id, String name);
 }

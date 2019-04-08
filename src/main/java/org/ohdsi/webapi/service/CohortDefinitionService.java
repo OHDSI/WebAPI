@@ -126,8 +126,8 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Autowired
   private SourceIdAccessor sourceIdAccessor;
 
-	@PersistenceContext
-	protected EntityManager entityManager;
+  @PersistenceContext
+  protected EntityManager entityManager;
 	
   private final RowMapper<InclusionRuleReport.Summary> summaryMapper = new RowMapper<InclusionRuleReport.Summary>() {
     @Override
@@ -365,17 +365,8 @@ public class CohortDefinitionService extends AbstractDaoService {
 		
 		List<Object[]> defs = entityManager.createQuery(query).getResultList();
 		for (Object[] d : defs) {
-			CohortDefinitionListItem item = new CohortDefinitionListItem();
-			item.id = (Integer)d[0];
-			item.name = (String)d[1];
-			item.description = (String)d[2];
-			item.expressionType = (ExpressionType)d[3];
-			item.createdBy = (String)d[4];
-			item.createdDate = (Date)d[5];
-			item.modifiedBy = (String)d[6];
-			item.modifiedDate = (Date)d[7];
-			result.add(item);
-		}
+          mapObjectToCohortDefinitionListItem(result, d);
+        }
 		return result;
   }
 
@@ -433,6 +424,40 @@ public class CohortDefinitionService extends AbstractDaoService {
       ExceptionUtils.throwNotFoundExceptionIfNull(d, String.format("There is no cohort definition with id = %d.", id));
       return cohortDefinitionToDTO(d);
     });
+  }
+
+  @GET
+  @Path("/exists")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Collection<CohortDefinitionListItem> getCohortDefinitionExists(@QueryParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
+
+    ArrayList<CohortDefinitionListItem> result = new ArrayList<>();
+    // we use a direct query here because using repository.findAll leads to N+1 query performance (because the One-To-One mapping to 
+    // CohortDefinitionDetails is not lazy loaded when using JPA to fetch data.
+    String query = "SELECT cd.id, cd.name, cd.description, cd.expressionType, cu.login, cd.createdDate, mu.login, cd.modifiedDate FROM CohortDefinition cd"
+            +	" LEFT JOIN cd.createdBy cu LEFT JOIN cd.modifiedBy mu WHERE cd.name = :name and cd.id <> :id";
+
+    List<Object[]> defs = entityManager.createQuery(query)
+                                        .setParameter("name", name)
+                                        .setParameter("id", id)
+                                        .getResultList();
+    for (Object[] d : defs) {
+      mapObjectToCohortDefinitionListItem(result, d);
+    }    
+    return result;
+  }
+
+  private void mapObjectToCohortDefinitionListItem(ArrayList<CohortDefinitionListItem> result, Object[] d) {
+    CohortDefinitionListItem item = new CohortDefinitionListItem();
+    item.id = (Integer) d[0];
+    item.name = (String) d[1];
+    item.description = (String) d[2];
+    item.expressionType = (ExpressionType) d[3];
+    item.createdBy = (String) d[4];
+    item.createdDate = (Date) d[5];
+    item.modifiedBy = (String) d[6];
+    item.modifiedDate = (Date) d[7];
+    result.add(item);
   }
 
   /**

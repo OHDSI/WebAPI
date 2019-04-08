@@ -71,17 +71,30 @@ public class PredictionController {
 
     return StreamSupport
             .stream(service.getAnalysisList().spliterator(), false)
-            .map(pred -> {
-              PredictionListItem item = new PredictionListItem();
-              item.analysisId = pred.getId();
-              item.name = pred.getName();
-              item.description = pred.getDescription();
-              item.createdBy = UserUtils.nullSafeLogin(pred.getCreatedBy());
-              item.createdDate = pred.getCreatedDate();
-              item.modifiedBy = UserUtils.nullSafeLogin(pred.getModifiedBy());
-              item.modifiedDate = pred.getModifiedDate();
-              return item;
-            }).collect(Collectors.toList());
+            .map(this::predictionToListItem)
+            .collect(Collectors.toList());
+  }
+
+  private PredictionListItem predictionToListItem(PredictionAnalysis pred) {
+    PredictionListItem item = new PredictionListItem();
+    item.analysisId = pred.getId();
+    item.name = pred.getName();
+    item.description = pred.getDescription();
+    item.createdBy = UserUtils.nullSafeLogin(pred.getCreatedBy());
+    item.createdDate = pred.getCreatedDate();
+    item.modifiedBy = UserUtils.nullSafeLogin(pred.getModifiedBy());
+    item.modifiedDate = pred.getModifiedDate();
+    return item;
+  }
+
+  @GET
+  @Path("/exists")
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public List<PredictionListItem> getPredictionExists(@QueryParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
+    return service.getPredictionExists(id, name).stream()
+            .map(this::predictionToListItem)
+            .collect(Collectors.toList());
   }
 
   @DELETE

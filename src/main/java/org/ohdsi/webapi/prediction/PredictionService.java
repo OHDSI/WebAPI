@@ -38,5 +38,7 @@ public interface PredictionService {
   
   int countLikeName(String copyName); 
   
-  PredictionAnalysis getById(Integer id);  
+  PredictionAnalysis getById(Integer id);
+
+  List<PredictionAnalysis> getPredictionExists(Integer id, String name);
 }

@@ -48,6 +48,11 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
     public Page<FeAnalysisEntity> getPage(final Pageable pageable) {
         return analysisRepository.findAll(pageable, defaultEntityGraph);
     }
+    
+    @Override
+    public List<FeAnalysisEntity> getFeExists(Integer id, String name){
+        return analysisRepository.feExists(id, name);
+    }
 
     @Override
     public List<FeAnalysisWithStringEntity> findPresetAnalysesBySystemNames(Collection<String> names) {

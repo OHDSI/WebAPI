@@ -20,6 +20,22 @@ import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.opencsv.CSVWriter;
+import java.io.ByteArrayOutputStream;
+import java.io.StringWriter;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+import javax.annotation.PostConstruct;
+import javax.servlet.ServletContext;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.collections4.Predicate;
@@ -313,7 +329,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     return treemapData.toString();
   }
 
-  public IRAnalysisDTO analysisToDTO(IncidenceRateAnalysis  analysis) {
+  public IRAnalysisDTO analysisToDTO(IncidenceRateAnalysis analysis) {
     IRAnalysisDTO aDTO = new IRAnalysisDTO();
     aDTO.id = analysis.getId();
     aDTO.name = analysis.getName();
@@ -329,25 +345,25 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
 
   @Override
-  public List<IRAnalysisService.IRAnalysisListItem> getIRAnalysisList() {
+  public List<IRAnalysisListItem> getIRAnalysisList() {
 
     return getTransactionTemplate().execute(transactionStatus -> {
       Iterable<IncidenceRateAnalysis> analysisList = this.irAnalysisRepository.findAll();
-      return StreamSupport.stream(analysisList.spliterator(), false).map(p -> {
-        IRAnalysisService.IRAnalysisListItem item = new IRAnalysisService.IRAnalysisListItem();
-        item.id = p.getId();
-        item.name = p.getName();
-        item.description = p.getDescription();
-        item.createdBy = UserUtils.nullSafeLogin(p.getCreatedBy());
-        item.createdDate = p.getCreatedDate();
-        item.modifiedBy = UserUtils.nullSafeLogin(p.getModifiedBy());
-        item.modifiedDate = p.getModifiedDate();
-        return item;
-      }).collect(Collectors.toList());
+      return StreamSupport.stream(analysisList.spliterator(), false)
+              .map(this::analysisToDTO)
+              .collect(Collectors.toList());
     });
   }
-
+  
   @Override
+  public List<IRAnalysisListItem> getIrExists(final int id, String name) {
+    List<IncidenceRateAnalysis> analysisList = irAnalysisRepository.irExists(id, name);
+    return analysisList.stream()
+            .map(this::analysisToDTO)
+            .collect(Collectors.toList());
+  }
+
+    @Override
   public IRAnalysisDTO createAnalysis(IRAnalysisDTO analysis) {
     Date currentTime = Calendar.getInstance().getTime();
 

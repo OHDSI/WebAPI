@@ -15,6 +15,8 @@ public interface FeAnalysisService {
 
     Page<FeAnalysisEntity> getPage(final Pageable pageable);
 
+    List<FeAnalysisEntity> getFeExists(Integer id, String name);
+
     List<FeAnalysisWithStringEntity> findPresetAnalysesBySystemNames(Collection<String> names);
 
     FeAnalysisEntity createAnalysis(FeAnalysisEntity analysis);

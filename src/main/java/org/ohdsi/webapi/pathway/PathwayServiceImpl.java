@@ -186,6 +186,12 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
         return pathwayAnalysisRepository.findAll(pageable, defaultEntityGraph);
     }
+    
+    @Override
+    public List<PathwayAnalysisEntity> getPathwayAnalysisExists(Integer id, String name) {
+
+        return pathwayAnalysisRepository.pathwayAnalysisExists(id, name);
+    }
 
     @Override
     public PathwayAnalysisEntity getById(Integer id) {

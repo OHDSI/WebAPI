@@ -248,11 +248,13 @@ public abstract class AtlasSecurity extends Security {
             
             // new estimation
             .addProtectedRestPath("/estimation", CREATE_ESTIMATION)
+            .addProtectedRestPath("/estimation/import", CREATE_ESTIMATION)
             .addProtectedRestPath("/estimation/*/copy", COPY_ESTIMATION)
             .addProtectedRestPath("/estimation/*", DELETE_ESTIMATION)
 
             // new prediction
             .addProtectedRestPath("/prediction", CREATE_PREDICTION)
+            .addProtectedRestPath("/prediction/import", CREATE_PREDICTION)
             .addProtectedRestPath("/prediction/*/copy", COPY_PREDICTION)
             .addProtectedRestPath("/prediction/*", DELETE_PREDICTION)
 

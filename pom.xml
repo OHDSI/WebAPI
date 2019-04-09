@@ -373,32 +373,6 @@
       <id>redshift</id>
       <url>http://redshift-maven-repository.s3-website-us-east-1.amazonaws.com/release</url>
     </repository>
-    <repository>
-      <id>odysseus.community.snapshots</id>
-      <name>Odysseus community snapshots</name>
-      <releases>
-        <enabled>false</enabled>
-        <updatePolicy>always</updatePolicy>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-        <updatePolicy>always</updatePolicy>
-      </snapshots>
-      <url>http://repo.odysseusinc.com/artifactory/community-libs-snapshot-local</url>
-    </repository>
-    <repository>
-      <id>odysseus.community.releases</id>
-      <name>Odysseus community releases</name>
-      <releases>
-        <enabled>true</enabled>
-        <updatePolicy>always</updatePolicy>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-        <updatePolicy>always</updatePolicy>
-      </snapshots>
-      <url>http://repo.odysseusinc.com/artifactory/community-libs-release-local</url>
-    </repository>
   </repositories>
 
   <pluginRepositories>

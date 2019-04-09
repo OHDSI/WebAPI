@@ -1,2 +1,0 @@
-INSERT INTO @target_database_schema.cohort_pathway (pathway_generation_id, cohort_id, target_cohort_count, target_pathways_count)
-        VALUES (@pathway_generation_id, @cohort_id, @target_cohort_count, @target_pathways_count);

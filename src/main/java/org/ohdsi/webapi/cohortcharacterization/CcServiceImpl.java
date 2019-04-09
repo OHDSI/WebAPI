@@ -427,7 +427,6 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                         jdbcTemplate,
                         getTransactionTemplate(),
                         ccService,
-                        analysisService,
                         analysisGenerationInfoEntityRepository,
                         sourceService,
                         userRepository

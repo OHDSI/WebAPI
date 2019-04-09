@@ -88,8 +88,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
         final String tempSchema = SourceUtils.getTempQualifier(source);
         CCQueryBuilder ccQueryBuilder = new CCQueryBuilder(cohortCharacterization, cohortTable, sessionId,
                 SourceUtils.getCdmQualifier(source), SourceUtils.getResultsQualifier(source),
-                SourceUtils.getVocabularyQualifier(source), tempSchema,
-                jobId, feAnalysisService.findAllPresetAnalyses().stream().map(FeAnalysisWithStringEntity::getDesign).collect(Collectors.toList()));
+                SourceUtils.getVocabularyQualifier(source), tempSchema, jobId);
         String sql = ccQueryBuilder.build();
 
         /*

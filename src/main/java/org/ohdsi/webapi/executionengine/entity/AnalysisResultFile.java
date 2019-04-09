@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.executionengine.entity;
 
-import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -8,6 +7,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
+
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 
@@ -37,9 +38,8 @@ public class AnalysisResultFile {
     @Column(name = "media_type")
     private String mediaType;
 
-    @Column(name = "file_contents", columnDefinition = "BYTEA")
-    @Basic(fetch = FetchType.LAZY)
-    private byte[] contents;
+    @OneToOne(optional = false, mappedBy = "analysisResultFile", fetch = FetchType.LAZY)
+    private AnalysisResultFileContent content;
 
     public AnalysisResultFile() {
 
@@ -48,13 +48,11 @@ public class AnalysisResultFile {
     public AnalysisResultFile(
             ExecutionEngineAnalysisStatus execution,
             String fileName,
-            String mediaType,
-            byte[] contents) {
+            String mediaType) {
 
         this.execution = execution;
         this.fileName = fileName;
         this.mediaType = mediaType;
-        this.contents = contents;
     }
 
     public Long getId() {
@@ -84,12 +82,12 @@ public class AnalysisResultFile {
 
     public byte[] getContents() {
 
-        return contents;
+        return content.getContents();
     }
 
     public void setContents(byte[] contents) {
 
-        this.contents = contents;
+        this.content.setContents(contents);
     }
 
     public String getMediaType() {

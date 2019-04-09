@@ -74,6 +74,9 @@ public abstract class ProcessResponseContentFilter implements Filter {
       this.doProcessResponseContent(content);
     } catch (NullJsonNodeException ex) {
       Logger.getLogger(ProcessResponseContentFilter.class.getName()).log(Level.SEVERE, "Failed to process response content: " + ex.getMessage());
+    } catch (RuntimeException ex) {
+      Logger.getLogger(ProcessResponseContentFilter.class.getName()).log(Level.SEVERE, "Failed to process response content: " + ex.getMessage());
+      throw ex;
     } catch (Exception ex) {
       Logger.getLogger(ProcessResponseContentFilter.class.getName()).log(Level.SEVERE, "Failed to process response content", ex);
     }

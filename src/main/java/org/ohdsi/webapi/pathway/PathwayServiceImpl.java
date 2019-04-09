@@ -375,13 +375,12 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
                         sourceService
                 )
         );
-        TransactionalTasklet chainsTasklet = new PathwayStatisticsTasket(getSourceJdbcTemplate(source), getTransactionTemplate(), source, 
-                                                                pathwayAnalysisGenerationRepository, this, genericConversionService);
-        Step generateChains = stepBuilderFactory.get(GENERATE_PATHWAY_ANALYSIS + ".generateChains")
-                .tasklet(chainsTasklet)
+        TransactionalTasklet statisticsTasklet = new PathwayStatisticsTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), source, this, genericConversionService);
+        Step generateStatistics = stepBuilderFactory.get(GENERATE_PATHWAY_ANALYSIS + ".generateStatistics")
+                .tasklet(statisticsTasklet)
                 .build();
         
-        generateAnalysisJob.next(generateChains);
+        generateAnalysisJob.next(generateStatistics);
 
         final JobParameters jobParameters = builder.toJobParameters();
 
@@ -421,7 +420,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     }
 
 		private final RowMapper<PathwayCode> codeRowMapper = (final ResultSet resultSet, final int arg1) -> { 
-			return new PathwayCode(resultSet.getInt("code"), resultSet.getString("name"), resultSet.getInt("is_combo") == 0 ? false : true);
+			return new PathwayCode(resultSet.getInt("code"), resultSet.getString("name"), resultSet.getInt("is_combo") != 0);
 		};
 		
 		private final RowMapper<CohortPathways> pathwayStatsRowMapper = (final ResultSet rs, final int arg1) -> { 
@@ -433,7 +432,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 		};		
 
 		private final ResultSetExtractor<Map<Integer, Map<String, Integer>>> pathwayExtractor = (final ResultSet rs) -> { 
-			Map<Integer, Map<String, Integer>> cohortMap = new HashMap<>();  // maps a chortId to a list of pathways (which is stored as a Map<String,Integer>
+			Map<Integer, Map<String, Integer>> cohortMap = new HashMap<>();  // maps a cohortId to a list of pathways (which is stored as a Map<String,Integer>
 			
 			while(rs.next()) {
 				int cohortId = rs.getInt("target_cohort_id");
@@ -499,8 +498,8 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 			});
 			
 			PathwayAnalysisResult result = new PathwayAnalysisResult();
-			result.setCodes(new HashSet(pathwayCodes));
-			result.setCohortPathwaysList(new HashSet(cohortStats));
+			result.setCodes(new HashSet<>(pathwayCodes));
+			result.setCohortPathwaysList(new HashSet<>(cohortStats));
 			
 			return result;
     }

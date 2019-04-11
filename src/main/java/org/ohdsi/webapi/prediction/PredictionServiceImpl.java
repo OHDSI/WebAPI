@@ -64,9 +64,9 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
             "modifiedBy"
     );
 
-    @Value("${hydra.external-package.prediction}")
+    @Value("${hydra.externalPackage.prediction}")
     private String extenalPackagePath;
-    
+
     @Autowired
     private PredictionAnalysisRepository predictionAnalysisRepository;
 

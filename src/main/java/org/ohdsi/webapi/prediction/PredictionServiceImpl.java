@@ -7,7 +7,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.hydra.Hydra;
-import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.common.generation.AnalysisExecutionSupport;
@@ -45,7 +44,7 @@ import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.GENERATE_PREDICTION_ANALYSIS;
 import static org.ohdsi.webapi.Constants.Params.*;
-import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
+
 import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
 import org.ohdsi.webapi.analysis.AnalysisConceptSet;
 import org.ohdsi.webapi.common.DesignImportService;
@@ -115,9 +114,9 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     }
     
     @Override
-    public List<PredictionAnalysis> getPredictionExists(Integer id, String name) {
+    public int findPredictionsWithSameName(Integer id, String name) {
 
-        return predictionAnalysisRepository.predictionExists(id, name);
+        return predictionAnalysisRepository.findPredictionsWithSameName(id, name);
     }
     
     @Override

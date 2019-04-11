@@ -1,7 +1,6 @@
 package org.ohdsi.webapi.estimation;
 
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.ExecutionBasedGenerationDTO;
@@ -13,7 +12,6 @@ import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.util.ExceptionUtils;
-import org.ohdsi.webapi.util.UserUtils;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Controller;
 
@@ -60,10 +58,10 @@ public class EstimationController {
   @GET
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
-  public List<EstimationListItem> getAnalysisList() {
+  public List<EstimationDTO> getAnalysisList() {
 
     return StreamSupport.stream(service.getAnalysisList().spliterator(), false)
-            .map(this::estimationToListItem)
+            .map(analysis -> conversionService.convert(analysis, EstimationDTO.class))
             .collect(Collectors.toList());
   }
 
@@ -71,10 +69,8 @@ public class EstimationController {
   @Path("/exists")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public List<EstimationListItem> getEstimationExists(@QueryParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
-    return service.getEstimationExists(id, name).stream()
-            .map(this::estimationToListItem)
-            .collect(Collectors.toList());
+  public int findEstimationsWithSameName(@QueryParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
+    return service.findEstimationsWithSameName(id, name);
   }
 
   @DELETE
@@ -219,18 +215,5 @@ public class EstimationController {
             .header("Content-type", "application/zip")
             .header("Content-Disposition", "attachment; filename=\"" + archive.getName() + "\"")
             .build();
-  }
-
-  private EstimationListItem estimationToListItem(Estimation est) {
-    EstimationListItem item = new EstimationListItem();
-    item.estimationId = est.getId();
-    item.name = est.getName();
-    item.type = est.getType();
-    item.description = est.getDescription();
-    item.createdBy = UserUtils.nullSafeLogin(est.getCreatedBy());
-    item.createdDate = est.getCreatedDate();
-    item.modifiedBy = UserUtils.nullSafeLogin(est.getModifiedBy());
-    item.modifiedDate = est.getModifiedDate();
-    return item;
   }
 }

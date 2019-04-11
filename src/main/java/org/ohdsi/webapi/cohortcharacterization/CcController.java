@@ -134,10 +134,8 @@ public class CcController {
     @Path("/exists")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public List<CcShortDTO> getCcExists(@QueryParam("id") @DefaultValue("0") final long id, @QueryParam("name") String name) {
-        return service.getCcExists(id, name).stream()
-                .map(this::convertCcToShortDto)
-                .collect(Collectors.toList());
+    public int findCcsWithSameName(@QueryParam("id") @DefaultValue("0") final long id, @QueryParam("name") String name) {
+        return service.findCcsWithSameName(id, name);
     }
 
     @DELETE

@@ -110,11 +110,9 @@ public class PathwayController {
     @Path("/exists")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public List<PathwayAnalysisDTO> getPathwayAnalysisExists(@QueryParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
+    public int findPAsWithSameName(@QueryParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
         
-        return pathwayService.getPathwayAnalysisExists(id, name).stream()
-                .map(p -> conversionService.convert(p, PathwayAnalysisDTO.class))
-                .collect(Collectors.toList());
+        return pathwayService.findPAsWithSameName(id, name);
     }
 
     @PUT

@@ -135,8 +135,8 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     }
     
     @Override
-    public List<Estimation> getEstimationExists(Integer id, String name) {
-        return estimationRepository.estimationExists(id, name);
+    public int findEstimationsWithSameName(Integer id, String name) {
+        return estimationRepository.findEstimationsWithSameName(id, name);
     }
     
     @Override

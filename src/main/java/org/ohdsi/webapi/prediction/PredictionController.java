@@ -12,7 +12,6 @@ import org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysisI
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.util.ExceptionUtils;
-import org.ohdsi.webapi.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Controller;
@@ -67,34 +66,20 @@ public class PredictionController {
   @GET
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
-  public List<PredictionListItem> getAnalysisList() {
+  public List<PredictionAnalysisDTO> getAnalysisList() {
 
     return StreamSupport
             .stream(service.getAnalysisList().spliterator(), false)
-            .map(this::predictionToListItem)
+            .map(analysis -> conversionService.convert(analysis, PredictionAnalysisDTO.class))
             .collect(Collectors.toList());
-  }
-
-  private PredictionListItem predictionToListItem(PredictionAnalysis pred) {
-    PredictionListItem item = new PredictionListItem();
-    item.analysisId = pred.getId();
-    item.name = pred.getName();
-    item.description = pred.getDescription();
-    item.createdBy = UserUtils.nullSafeLogin(pred.getCreatedBy());
-    item.createdDate = pred.getCreatedDate();
-    item.modifiedBy = UserUtils.nullSafeLogin(pred.getModifiedBy());
-    item.modifiedDate = pred.getModifiedDate();
-    return item;
   }
 
   @GET
   @Path("/exists")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public List<PredictionListItem> getPredictionExists(@QueryParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
-    return service.getPredictionExists(id, name).stream()
-            .map(this::predictionToListItem)
-            .collect(Collectors.toList());
+  public int findPredictionsWithSameName(@QueryParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
+    return service.findPredictionsWithSameName(id, name);
   }
 
   @DELETE

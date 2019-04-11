@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.feanalysis;
 
-import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysis;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
 import org.ohdsi.webapi.Pagination;
@@ -17,7 +16,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Path("/feature-analysis")
 @Controller
@@ -25,15 +23,12 @@ public class FeAnalysisController {
 
     private FeAnalysisService service;
     private ConversionService conversionService;
-    private ConverterUtils converterUtils;
 
     FeAnalysisController(
             final FeAnalysisService service,
-            final ConversionService conversionService,
-            final ConverterUtils converterUtils) {
+            final ConversionService conversionService) {
         this.service = service;
         this.conversionService = conversionService;
-        this.converterUtils = converterUtils;
     }
 
     @GET
@@ -48,10 +43,8 @@ public class FeAnalysisController {
     @Path("/exists")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public List<FeAnalysisShortDTO> getFeExists(@QueryParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
-        return service.getFeExists(id, name).stream()
-                .map(this::convertFeAnaysisToShortDto)
-                .collect(Collectors.toList());
+    public int findFesWithSameName(@QueryParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
+        return service.findFesWithSameName(id, name);
     }
 
     @GET

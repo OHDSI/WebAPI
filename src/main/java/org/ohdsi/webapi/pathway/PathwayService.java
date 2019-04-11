@@ -21,7 +21,7 @@ public interface PathwayService {
 
     Page<PathwayAnalysisEntity> getPage(final Pageable pageable);
 
-    List<PathwayAnalysisEntity> getPathwayAnalysisExists(Integer id, String name);
+    int findPAsWithSameName(Integer id, String name);
 
     PathwayAnalysisEntity getById(Integer id);
 

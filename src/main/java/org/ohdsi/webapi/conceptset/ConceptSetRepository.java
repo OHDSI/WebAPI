@@ -15,10 +15,11 @@
  */
 package org.ohdsi.webapi.conceptset;
 
-import java.util.Collection;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
+
+import java.util.Collection;
 
 /**
  *
@@ -26,6 +27,10 @@ import org.springframework.data.repository.query.Param;
  */
 public interface ConceptSetRepository extends CrudRepository<ConceptSet, Integer> {
   ConceptSet findById(Integer conceptSetId);
+  
   @Query("SELECT cs FROM ConceptSet cs WHERE cs.name = :conceptSetName and cs.id <> :conceptSetId")
   Collection<ConceptSet> conceptSetExists(@Param("conceptSetId") Integer conceptSetId, @Param("conceptSetName") String conceptSetName);
+  
+  @Query("SELECT cs FROM ConceptSet cs WHERE cs.name = :conceptSetName and cs.id <> :conceptSetId")
+  int findConceptsWithSameName(@Param("conceptSetId") Integer conceptSetId, @Param("conceptSetName") String conceptSetName);
 }

@@ -12,7 +12,7 @@ public class CohortDefinitionToCohortDTOConverter extends BaseCohortDefinitionTo
 
         final CohortDTO dto = super.convert(source);
         dto.setExpressionType(source.getExpressionType());
-        dto.setExpression(source.getExpression());
+        dto.setExpression(source.getDetails().getExpression());
         return dto;
     }
 

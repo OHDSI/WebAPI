@@ -188,9 +188,9 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     }
     
     @Override
-    public List<PathwayAnalysisEntity> getPathwayAnalysisExists(Integer id, String name) {
+    public int findPAsWithSameName(Integer id, String name) {
 
-        return pathwayAnalysisRepository.pathwayAnalysisExists(id, name);
+        return pathwayAnalysisRepository.findPAsWithSameName(id, name);
     }
 
     @Override

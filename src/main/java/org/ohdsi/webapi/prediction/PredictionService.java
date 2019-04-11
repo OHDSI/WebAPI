@@ -40,5 +40,5 @@ public interface PredictionService {
   
   PredictionAnalysis getById(Integer id);
 
-  List<PredictionAnalysis> getPredictionExists(Integer id, String name);
+  int findPredictionsWithSameName(Integer id, String name);
 }

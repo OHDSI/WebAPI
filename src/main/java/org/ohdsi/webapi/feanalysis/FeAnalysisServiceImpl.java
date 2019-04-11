@@ -1,8 +1,5 @@
 package org.ohdsi.webapi.feanalysis;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.cohortcharacterization.design.CcResultType;
@@ -13,7 +10,6 @@ import org.ohdsi.webapi.feanalysis.repository.FeAnalysisCriteriaRepository;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisEntityRepository;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisWithStringEntityRepository;
 import org.ohdsi.webapi.service.AbstractDaoService;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.ws.rs.NotFoundException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -121,7 +119,6 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
     public FeAnalysisEntity updateAnalysis(Integer feAnalysisId, FeAnalysisEntity updatedEntity) {
 
         FeAnalysisEntity savedEntity = findById(feAnalysisId).orElseThrow(NotFoundException::new);
-        UserEntity user = getCurrentUser();
 
         checkEntityLocked(savedEntity);
         savedEntity.setDescr(updatedEntity.getDescr());
@@ -152,7 +149,7 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
         if (Objects.nonNull(updatedEntity.getType())) {
             savedEntity.setType(updatedEntity.getType());
         }
-        savedEntity.setModifiedBy(user);
+        savedEntity.setModifiedBy(getCurrentUser());
         savedEntity.setModifiedDate(new Date());
         return analysisRepository.save(savedEntity);
     }

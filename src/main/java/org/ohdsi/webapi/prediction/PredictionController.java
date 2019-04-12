@@ -3,6 +3,8 @@ package org.ohdsi.webapi.prediction;
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.common.SourceMapKey;
+import org.ohdsi.webapi.common.analyses.CommonAnalysisDTO;
+import org.ohdsi.webapi.common.generation.CommonGeneration;
 import org.ohdsi.webapi.common.generation.ExecutionBasedGenerationDTO;
 import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
 import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
@@ -66,11 +68,11 @@ public class PredictionController {
   @GET
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
-  public List<PredictionAnalysisDTO> getAnalysisList() {
+  public List<CommonAnalysisDTO> getAnalysisList() {
 
     return StreamSupport
             .stream(service.getAnalysisList().spliterator(), false)
-            .map(analysis -> conversionService.convert(analysis, PredictionAnalysisDTO.class))
+            .map(analysis -> conversionService.convert(analysis, CommonAnalysisDTO.class))
             .collect(Collectors.toList());
   }
 
@@ -78,8 +80,8 @@ public class PredictionController {
   @Path("/exists")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public int findPredictionsWithSameName(@QueryParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
-    return service.findPredictionsWithSameName(id, name);
+  public int getCountPredictionWithSameName(@QueryParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
+    return service.getCountPredictionWithSameName(id, name);
   }
 
   @DELETE

@@ -25,5 +25,5 @@ public interface EstimationService {
   EstimationGenerationEntity getGeneration(Long generationId);
   int countLikeName(String copyName); 
   Estimation getById(Integer id);
-  int findEstimationsWithSameName(Integer id, String name);
+  int getCountEstimationWithSameName(Integer id, String name);
 }

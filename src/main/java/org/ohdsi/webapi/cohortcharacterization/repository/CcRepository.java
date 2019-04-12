@@ -13,5 +13,5 @@ public interface CcRepository extends EntityGraphJpaRepository<CohortCharacteriz
     Optional<CohortCharacterizationEntity> findByName(String name);
     
     @Query("SELECT COUNT(cc) FROM CohortCharacterizationEntity cc WHERE cc.name = :ccName and cc.id <> :ccId")
-    int ccExists(@Param("ccId") Long ccId, @Param("ccName") String ccName);
+    int getCountCcWithSameName(@Param("ccId") Long ccId, @Param("ccName") String ccName);
 }

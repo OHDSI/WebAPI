@@ -43,8 +43,8 @@ public class FeAnalysisController {
     @Path("/exists")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public int findFesWithSameName(@QueryParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
-        return service.findFesWithSameName(id, name);
+    public int getCountFeWithSameName(@QueryParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
+        return service.getCountFeWithSameName(id, name);
     }
 
     @GET

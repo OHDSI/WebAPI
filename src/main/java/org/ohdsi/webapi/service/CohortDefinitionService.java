@@ -18,6 +18,7 @@ import org.ohdsi.sql.SqlRender;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortdefinition.*;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataDTO;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.GenerateSqlResult;
 import org.ohdsi.webapi.common.sensitiveinfo.CohortGenerationSensitiveInfoService;
@@ -319,11 +320,11 @@ public class CohortDefinitionService extends AbstractDaoService {
   @GET
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
-  public List<CohortDTO> getCohortDefinitionList() {
+  public List<CohortMetadataDTO> getCohortDefinitionList() {
 
     List<CohortDefinition> definitions = cohortDefinitionRepository.list();
     return definitions.stream()
-            .map(def -> conversionService.convert(def, CohortDTO.class))
+            .map(def -> conversionService.convert(def, CohortMetadataDTO.class))
             .collect(Collectors.toList());
   }
 
@@ -386,9 +387,9 @@ public class CohortDefinitionService extends AbstractDaoService {
   @GET
   @Path("/exists")
   @Produces(MediaType.APPLICATION_JSON)
-  public int findCDefinitionsWithSameName(@QueryParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
+  public int getCountCDefWithSameName(@QueryParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
 
-    return cohortDefinitionRepository.findCDefinitionsWithSameName(id, name);
+    return cohortDefinitionRepository.getCountCDefWithSameName(id, name);
   }
 
   /**

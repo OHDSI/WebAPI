@@ -52,6 +52,7 @@ import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.service.dto.AnalysisInfoDTO;
 import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
+import org.ohdsi.webapi.service.dto.IRAnalysisShortDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
@@ -278,19 +279,19 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   }
 
   @Override
-  public List<IRAnalysisDTO> getIRAnalysisList() {
+  public List<IRAnalysisShortDTO> getIRAnalysisList() {
 
     return getTransactionTemplate().execute(transactionStatus -> {
       Iterable<IncidenceRateAnalysis> analysisList = this.irAnalysisRepository.findAll();
       return StreamSupport.stream(analysisList.spliterator(), false)
-              .map(analysis -> conversionService.convert(analysis, IRAnalysisDTO.class))
+              .map(analysis -> conversionService.convert(analysis, IRAnalysisShortDTO.class))
               .collect(Collectors.toList());
     });
   }
   
   @Override
-  public int findIRsWithSameName(final int id, String name) {
-    return irAnalysisRepository.findIRsWithSameName(id, name);
+  public int getCountIRWithSameName(final int id, String name) {
+    return irAnalysisRepository.getCountIRWithSameName(id, name);
   }
 
   @Override

@@ -15,7 +15,7 @@ public interface FeAnalysisService {
 
     Page<FeAnalysisEntity> getPage(final Pageable pageable);
 
-    int findFesWithSameName(Integer id, String name);
+    int getCountFeWithSameName(Integer id, String name);
 
     List<FeAnalysisWithStringEntity> findPresetAnalysesBySystemNames(Collection<String> names);
 

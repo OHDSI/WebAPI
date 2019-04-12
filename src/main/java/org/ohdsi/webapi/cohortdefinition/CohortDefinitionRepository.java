@@ -39,5 +39,5 @@ public interface CohortDefinitionRepository extends CrudRepository<CohortDefinit
   List<CohortDefinition> list();
 
   @Query("select count(cd) from CohortDefinition AS cd WHERE cd.name = :name and cd.id <> :id")
-  int findCDefinitionsWithSameName(@Param("id") Integer id, @Param("name") String name);
+  int getCountCDefWithSameName(@Param("id") Integer id, @Param("name") String name);
 }

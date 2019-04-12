@@ -3,10 +3,12 @@ package org.ohdsi.webapi.estimation;
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.common.SourceMapKey;
+import org.ohdsi.webapi.common.analyses.CommonAnalysisDTO;
 import org.ohdsi.webapi.common.generation.ExecutionBasedGenerationDTO;
 import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
 import org.ohdsi.webapi.estimation.domain.EstimationGenerationEntity;
 import org.ohdsi.webapi.estimation.dto.EstimationDTO;
+import org.ohdsi.webapi.estimation.dto.EstimationShortDTO;
 import org.ohdsi.webapi.estimation.specification.EstimationAnalysisImpl;
 import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
 import org.ohdsi.webapi.service.SourceService;
@@ -58,10 +60,10 @@ public class EstimationController {
   @GET
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
-  public List<EstimationDTO> getAnalysisList() {
+  public List<EstimationShortDTO> getAnalysisList() {
 
     return StreamSupport.stream(service.getAnalysisList().spliterator(), false)
-            .map(analysis -> conversionService.convert(analysis, EstimationDTO.class))
+            .map(analysis -> conversionService.convert(analysis, EstimationShortDTO.class))
             .collect(Collectors.toList());
   }
 
@@ -69,8 +71,8 @@ public class EstimationController {
   @Path("/exists")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public int findEstimationsWithSameName(@QueryParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
-    return service.findEstimationsWithSameName(id, name);
+  public int getCountEstimationWithSameName(@QueryParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
+    return service.getCountEstimationWithSameName(id, name);
   }
 
   @DELETE

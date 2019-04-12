@@ -40,5 +40,5 @@ public interface PredictionService {
   
   PredictionAnalysis getById(Integer id);
 
-  int findPredictionsWithSameName(Integer id, String name);
+  int getCountPredictionWithSameName(Integer id, String name);
 }

@@ -5,6 +5,7 @@ import org.ohdsi.webapi.ircalc.AnalysisReport;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.service.dto.AnalysisInfoDTO;
 import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
+import org.ohdsi.webapi.service.dto.IRAnalysisShortDTO;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.ws.rs.Consumes;
@@ -32,14 +33,14 @@ public interface IRAnalysisResource {
     @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
-    List<IRAnalysisDTO> getIRAnalysisList();
+    List<IRAnalysisShortDTO> getIRAnalysisList();
 
     @GET
     @Path("/exists")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional
-    int findIRsWithSameName(@QueryParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name);
+    int getCountIRWithSameName(@QueryParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name);
 
     /**
      * Creates the incidence rate analysis

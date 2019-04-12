@@ -134,8 +134,8 @@ public class CcController {
     @Path("/exists")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public int findCcsWithSameName(@QueryParam("id") @DefaultValue("0") final long id, @QueryParam("name") String name) {
-        return service.findCcsWithSameName(id, name);
+    public int getCountCcWithSameName(@QueryParam("id") @DefaultValue("0") final long id, @QueryParam("name") String name) {
+        return service.getCountCcWithSameName(id, name);
     }
 
     @DELETE

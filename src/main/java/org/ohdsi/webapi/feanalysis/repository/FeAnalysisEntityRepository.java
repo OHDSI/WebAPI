@@ -7,5 +7,5 @@ import org.springframework.data.repository.query.Param;
 public interface FeAnalysisEntityRepository extends BaseFeAnalysisEntityRepository<FeAnalysisEntity> {
 
     @Query("SELECT COUNT(fe) FROM FeAnalysisEntity fe WHERE fe.name = :name and fe.id <> :id")
-    int findFesWithSameName(@Param("id") Integer id, @Param("name") String name);
+    int getCountFeWithSameName(@Param("id") Integer id, @Param("name") String name);
 }

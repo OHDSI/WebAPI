@@ -151,8 +151,8 @@ public class ConceptSetService extends AbstractDaoService {
     @GET
     @Path("/exists")
     @Produces(MediaType.APPLICATION_JSON)
-    public int getConceptSetExists(@QueryParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
-        return getConceptSetRepository().findConceptsWithSameName(id, name);
+    public int getCountCSetWithSameName(@QueryParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
+        return getConceptSetRepository().getCountCSetWithSameName(id, name);
     }
 
     @PUT

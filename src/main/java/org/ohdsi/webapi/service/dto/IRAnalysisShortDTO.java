@@ -1,11 +1,10 @@
 package org.ohdsi.webapi.service.dto;
 
-public class IRAnalysisDTO extends IRAnalysisShortDTO {
+public class IRAnalysisShortDTO extends CommonEntityDTO {
 
     private Integer id;
     private String name;
     private String description;
-    private String expression;
 
     public Integer getId() {
         return id;
@@ -29,13 +28,5 @@ public class IRAnalysisDTO extends IRAnalysisShortDTO {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getExpression() {
-        return expression;
-    }
-
-    public void setExpression(String expression) {
-        this.expression = expression;
     }
 }

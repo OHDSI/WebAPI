@@ -14,5 +14,5 @@ public interface PathwayAnalysisEntityRepository extends EntityGraphJpaRepositor
   Optional<PathwayAnalysisEntity> findByName(String name);
 
   @Query("SELECT COUNT(pa) FROM pathway_analysis pa WHERE pa.name = :name and pa.id <> :id")
-  int findPAsWithSameName(@Param("id") Integer id, @Param("name") String name);
+  int getCountPAWithSameName(@Param("id") Integer id, @Param("name") String name);
 }

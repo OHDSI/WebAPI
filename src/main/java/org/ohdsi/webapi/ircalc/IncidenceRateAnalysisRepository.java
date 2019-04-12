@@ -33,6 +33,5 @@ public interface IncidenceRateAnalysisRepository extends EntityGraphCrudReposito
   IncidenceRateAnalysis findOneWithExecutionsOnExistingSources(int id, EntityGraph entityGraph);
 
   @Query("SELECT COUNT(ira) FROM IncidenceRateAnalysis ira WHERE ira.name = :name and ira.id <> :id")
-  int findIRsWithSameName(@Param("id") Integer id, @Param("name") String name);
-
+  int getCountIRWithSameName(@Param("id") Integer id, @Param("name") String name);
 }

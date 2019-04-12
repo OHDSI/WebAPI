@@ -114,9 +114,9 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     }
     
     @Override
-    public int findPredictionsWithSameName(Integer id, String name) {
+    public int getCountPredictionWithSameName(Integer id, String name) {
 
-        return predictionAnalysisRepository.findPredictionsWithSameName(id, name);
+        return predictionAnalysisRepository.getCountPredictionWithSameName(id, name);
     }
     
     @Override

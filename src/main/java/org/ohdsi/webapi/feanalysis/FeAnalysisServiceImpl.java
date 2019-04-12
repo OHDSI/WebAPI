@@ -48,8 +48,8 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
     }
     
     @Override
-    public int findFesWithSameName(Integer id, String name){
-        return analysisRepository.findFesWithSameName(id, name);
+    public int getCountFeWithSameName(Integer id, String name){
+        return analysisRepository.getCountFeWithSameName(id, name);
     }
 
     @Override

@@ -7,7 +7,7 @@ WITH concepts AS (
 ), counts AS (
 SELECT stratum_1 concept_id, MAX (count_value) agg_count_value
 FROM @resultTableQualifier.achilles_results
-WHERE analysis_id IN (2, 4, 5, 201, 301, 401, 501, 505, 601, 701, 801, 901, 1001, 1201, 1801, 2101)
+WHERE analysis_id IN (2, 4, 5, 201, 301, 401, 501, 505, 601, 701, 801, 901, 1001, 1201, 1801, 2101, 2301)
 		/* analyses:
  			 Number of persons by gender
 			 Number of persons by race
@@ -25,6 +25,7 @@ WHERE analysis_id IN (2, 4, 5, 201, 301, 401, 501, 505, 601, 701, 801, 901, 1001
 			 Number of visits by place of service
 			 Number of measurement occurrence records, by observation_concept_id
 			 Number of device exposure records, by device_concept_id
+			 Number of location records, by region_concept_id
 		*/
 GROUP BY stratum_1
 UNION

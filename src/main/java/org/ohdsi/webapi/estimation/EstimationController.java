@@ -68,10 +68,10 @@ public class EstimationController {
   }
 
   @GET
-  @Path("/exists")
+  @Path("/{id}/exists")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public int getCountEstimationWithSameName(@QueryParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
+  public int getCountEstimationWithSameName(@PathParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
     return service.getCountEstimationWithSameName(id, name);
   }
 

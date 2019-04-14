@@ -107,10 +107,10 @@ public class PathwayController {
     }
 
     @GET
-    @Path("/exists")
+    @Path("/{id}/exists")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public int getCountPAWithSameName(@QueryParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
+    public int getCountPAWithSameName(@PathParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
         
         return pathwayService.getCountPAWithSameName(id, name);
     }

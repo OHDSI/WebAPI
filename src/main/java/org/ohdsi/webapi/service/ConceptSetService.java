@@ -143,15 +143,15 @@ public class ConceptSetService extends AbstractDaoService {
     @Path("{id}/{name}/exists")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getConceptSetExistsDeprecated(@PathParam("id") final int id, @PathParam("name") String name) {
-        String warningMessage = "This method will be deprecated in the next release. Instead, please use the new REST endpoint: conceptset/exists?id={id}&name={name}";
+        String warningMessage = "This method will be deprecated in the next release. Instead, please use the new REST endpoint: conceptset/{id}/exists?name={name}";
         Collection<ConceptSet> cs = getConceptSetRepository().conceptSetExists(id, name);
         return Response.ok(cs).header("Warning: 299", warningMessage).build();
     }
 		
     @GET
-    @Path("/exists")
+    @Path("/{id}/exists")
     @Produces(MediaType.APPLICATION_JSON)
-    public int getCountCSetWithSameName(@QueryParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
+    public int getCountCSetWithSameName(@PathParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
         return getConceptSetRepository().getCountCSetWithSameName(id, name);
     }
 

@@ -131,10 +131,10 @@ public class CcController {
     }
 
     @GET
-    @Path("/exists")
+    @Path("/{id}/exists")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public int getCountCcWithSameName(@QueryParam("id") @DefaultValue("0") final long id, @QueryParam("name") String name) {
+    public int getCountCcWithSameName(@PathParam("id") @DefaultValue("0") final long id, @QueryParam("name") String name) {
         return service.getCountCcWithSameName(id, name);
     }
 

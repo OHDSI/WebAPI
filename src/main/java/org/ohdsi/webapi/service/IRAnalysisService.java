@@ -60,6 +60,7 @@ import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.util.CopyUtils;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
@@ -132,11 +133,11 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     return null;
   }
   
-  private static class StratifyReportItem {
-    private long bits;
-    private long totalPersons;
-    private long timeAtRisk;
-    private long cases;
+  public static class StratifyReportItem {
+    public long bits;
+    public long totalPersons;
+    public long timeAtRisk;
+    public long cases;
   }
 
   public static class GenerateSqlRequest {
@@ -154,17 +155,14 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
   }
   
-  private final RowMapper<AnalysisReport.Summary> summaryMapper = new RowMapper<AnalysisReport.Summary>() {
-    @Override
-    public AnalysisReport.Summary mapRow(ResultSet rs, int rowNum) throws SQLException {
-      AnalysisReport.Summary summary = new AnalysisReport.Summary();
-      summary.targetId = rs.getInt("target_id");
-      summary.outcomeId = rs.getInt("outcome_id");
-      summary.totalPersons = rs.getLong("person_count");
-      summary.timeAtRisk = rs.getLong("time_at_risk");
-      summary.cases = rs.getLong("cases");
-      return summary;
-    }
+  private final RowMapper<AnalysisReport.Summary> summaryMapper = (rs, rowNum) -> {
+    AnalysisReport.Summary summary = new AnalysisReport.Summary();
+    summary.targetId = rs.getInt("target_id");
+    summary.outcomeId = rs.getInt("outcome_id");
+    summary.totalPersons = rs.getLong("person_count");
+    summary.timeAtRisk = rs.getLong("time_at_risk");
+    summary.cases = rs.getLong("cases");
+    return summary;
   };
 
   private List<AnalysisReport.Summary> getAnalysisSummaryList(int id, Source source) {
@@ -176,22 +174,18 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), summaryMapper);
   }
 
-  private final RowMapper<AnalysisReport.StrataStatistic> strataRuleStatisticMapper = new RowMapper<AnalysisReport.StrataStatistic>() {
+  private final RowMapper<AnalysisReport.StrataStatistic> strataRuleStatisticMapper = (rs, rowNum) -> {
+    AnalysisReport.StrataStatistic statistic = new AnalysisReport.StrataStatistic();
 
-    @Override
-    public AnalysisReport.StrataStatistic mapRow(ResultSet rs, int rowNum) throws SQLException {
-      AnalysisReport.StrataStatistic statistic = new AnalysisReport.StrataStatistic();
-
-      statistic.id = rs.getInt("strata_sequence");
-      statistic.name = rs.getString("name");
-      statistic.targetId = rs.getInt("target_id");
-      statistic.outcomeId = rs.getInt("outcome_id");
-      
-      statistic.totalPersons = rs.getLong("person_count");
-      statistic.timeAtRisk = rs.getLong("time_at_risk");
-      statistic.cases = rs.getLong("cases");
-      return statistic;
-    }
+    statistic.id = rs.getInt("strata_sequence");
+    statistic.name = rs.getString("name");
+    statistic.targetId = rs.getInt("target_id");
+    statistic.outcomeId = rs.getInt("outcome_id");
+    
+    statistic.totalPersons = rs.getLong("person_count");
+    statistic.timeAtRisk = rs.getLong("time_at_risk");
+    statistic.cases = rs.getLong("cases");
+    return statistic;
   };
 
   private List<AnalysisReport.StrataStatistic> getStrataStatistics(int id, Source source) {
@@ -213,17 +207,13 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     return StringUtils.reverse(StringUtils.leftPad(Long.toBinaryString(n), size, "0"));
   }
 
-  private final RowMapper<StratifyReportItem> stratifyResultsMapper = new RowMapper<StratifyReportItem>() {
-
-    @Override
-    public StratifyReportItem mapRow(ResultSet rs, int rowNum) throws SQLException {
-      StratifyReportItem resultItem = new StratifyReportItem();
-      resultItem.bits = rs.getLong("strata_mask");
-      resultItem.totalPersons = rs.getLong("person_count");
-      resultItem.timeAtRisk = rs.getLong("time_at_risk");
-      resultItem.cases = rs.getLong("cases");
-      return resultItem;
-    }
+  private final RowMapper<StratifyReportItem> stratifyResultsMapper = (rs, rowNum) -> {
+    StratifyReportItem resultItem = new StratifyReportItem();
+    resultItem.bits = rs.getLong("strata_mask");
+    resultItem.totalPersons = rs.getLong("person_count");
+    resultItem.timeAtRisk = rs.getLong("time_at_risk");
+    resultItem.cases = rs.getLong("cases");
+    return resultItem;
   };
 
   private String getStrataTreemapData(int analysisId, int targetId, int outcomeId, int inclusionRuleCount, Source source) {
@@ -313,7 +303,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
       newAnalysis.setDetails(details);
       details.setExpression(analysis.getExpression());
     }
-    else{
+    else {
       newAnalysis.setDetails(null);
     }
     IncidenceRateAnalysis createdAnalysis = this.irAnalysisRepository.save(newAnalysis);
@@ -502,10 +492,8 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   public IRAnalysisDTO copy(final int id) {
     IRAnalysisDTO analysis = getAnalysis(id);
     analysis.setId(null); // clear the ID
-    analysis.setName(String.format(Constants.Templates.ENTITY_COPY_PREFIX, analysis.getName()));
-
-    IRAnalysisDTO copyStudy = createAnalysis(analysis);
-    return copyStudy;
+    analysis.setName(getNameForCopy(analysis.getName()));
+    return createAnalysis(analysis);
   }
 
 
@@ -690,5 +678,12 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
       return null;
     });
   }
-  
+
+  private String getNameForCopy(String dtoName) {
+    return CopyUtils.getNameForCopy(dtoName, this::countLikeName, irAnalysisRepository.findByName(dtoName));
+  }
+
+  private int countLikeName(String name) {
+    return irAnalysisRepository.countByNameStartsWith(name);
+  }  
 }

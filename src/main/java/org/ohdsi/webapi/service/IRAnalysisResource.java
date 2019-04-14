@@ -36,11 +36,11 @@ public interface IRAnalysisResource {
     List<IRAnalysisShortDTO> getIRAnalysisList();
 
     @GET
-    @Path("/exists")
+    @Path("/{id}/exists")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional
-    int getCountIRWithSameName(@QueryParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name);
+    int getCountIRWithSameName(@PathParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name);
 
     /**
      * Creates the incidence rate analysis

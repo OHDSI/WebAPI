@@ -385,9 +385,9 @@ public class CohortDefinitionService extends AbstractDaoService {
   }
 
   @GET
-  @Path("/exists")
+  @Path("/{id}/exists")
   @Produces(MediaType.APPLICATION_JSON)
-  public int getCountCDefWithSameName(@QueryParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
+  public int getCountCDefWithSameName(@PathParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
 
     return cohortDefinitionRepository.getCountCDefWithSameName(id, name);
   }

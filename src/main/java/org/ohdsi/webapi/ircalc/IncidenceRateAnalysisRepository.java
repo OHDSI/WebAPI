@@ -20,6 +20,8 @@ import com.cosium.spring.data.jpa.entity.graph.repository.EntityGraphCrudReposit
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Optional;
+
 /**
  *
  * @author Chris Knoll <cknoll@ohdsi.org>
@@ -34,4 +36,8 @@ public interface IncidenceRateAnalysisRepository extends EntityGraphCrudReposito
 
   @Query("SELECT COUNT(ira) FROM IncidenceRateAnalysis ira WHERE ira.name = :name and ira.id <> :id")
   int getCountIRWithSameName(@Param("id") Integer id, @Param("name") String name);
+  
+  int countByNameStartsWith(String pattern);
+  
+  Optional<IncidenceRateAnalysis> findByName(String name);
 }

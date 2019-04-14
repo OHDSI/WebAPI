@@ -7,19 +7,19 @@ import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Component;
 
 @Component
-public class IncidenceRateAnalysisToIRAnalysisShortDTOConverter extends BaseCommonEntityToDTOConverter<IncidenceRateAnalysis, IRAnalysisShortDTO>{
+public class IncidenceRateAnalysisToIRAnalysisShortDTOConverter <T extends IRAnalysisShortDTO> extends BaseCommonEntityToDTOConverter<IncidenceRateAnalysis, T>{
     public IncidenceRateAnalysisToIRAnalysisShortDTOConverter(GenericConversionService conversionService) {
 
         conversionService.addConverter(this);
     }
 
     @Override
-    protected IRAnalysisShortDTO newTarget() {
-        return new IRAnalysisShortDTO();
+    protected T newTarget() {
+        return (T) new IRAnalysisShortDTO();
     }
 
     @Override
-    protected void doConvert(IRAnalysisShortDTO target, IncidenceRateAnalysis source) {
+    protected void doConvert(T target, IncidenceRateAnalysis source) {
         target.setId(source.getId());
         target.setName(source.getName());
         target.setDescription(source.getDescription());

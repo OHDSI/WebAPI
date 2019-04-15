@@ -28,6 +28,7 @@ import java.util.Collection;
 public interface ConceptSetRepository extends CrudRepository<ConceptSet, Integer> {
   ConceptSet findById(Integer conceptSetId);
   
+  @Deprecated
   @Query("SELECT cs FROM ConceptSet cs WHERE cs.name = :conceptSetName and cs.id <> :conceptSetId")
   Collection<ConceptSet> conceptSetExists(@Param("conceptSetId") Integer conceptSetId, @Param("conceptSetName") String conceptSetName);
   

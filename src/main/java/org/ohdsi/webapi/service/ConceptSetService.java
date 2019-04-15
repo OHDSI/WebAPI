@@ -139,6 +139,7 @@ public class ConceptSetService extends AbstractDaoService {
         return expression;
     }
 
+    @Deprecated
     @GET
     @Path("{id}/{name}/exists")
     @Produces(MediaType.APPLICATION_JSON)

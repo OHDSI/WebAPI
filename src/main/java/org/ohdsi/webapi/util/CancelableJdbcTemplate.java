@@ -98,7 +98,7 @@ public class CancelableJdbcTemplate extends JdbcTemplate {
 
   public int[] batchUpdate(StatementCancel cancelOp, List<PreparedStatementCreator> statements) {
 
-    class BatchUpdateConnectionCallback implements ConnectionCallback<int[]>, SqlProvider {
+    class BatchUpdateConnectionCallback implements ConnectionCallback<int[]> {
 
       private PreparedStatementCreator current;
 
@@ -110,11 +110,12 @@ public class CancelableJdbcTemplate extends JdbcTemplate {
           current = statements.get(i);
           PreparedStatement query = current.createPreparedStatement(con);
           cancelOp.setStatement(query);
-          if (query.execute()) {
-            rowsAffected[i] = query.getUpdateCount();
-          } else if (!suppressApiException) {
-            throw new InvalidDataAccessApiUsageException("Invalid batch SQL statement: " + getSql());
-          }
+					if (!query.execute()) {
+						rowsAffected[i] = query.getUpdateCount();
+					}
+					else if (!suppressApiException) {
+						throw new InvalidDataAccessApiUsageException("Invalid batch SQL statement: " + getSql(current));
+					}
           query.close();
           if (cancelOp.isCanceled()) {
             break;
@@ -124,10 +125,9 @@ public class CancelableJdbcTemplate extends JdbcTemplate {
         return rowsAffected;
       }
 
-      @Override
-      public String getSql() {
-        if (current instanceof SqlProvider) {
-          return ((SqlProvider)current).getSql();
+      private String getSql(PreparedStatementCreator statement) {
+        if (statement instanceof SqlProvider) {
+          return ((SqlProvider)statement).getSql();
         }
         return "";
       }

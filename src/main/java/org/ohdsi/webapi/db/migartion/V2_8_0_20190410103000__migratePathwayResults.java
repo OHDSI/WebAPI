@@ -50,7 +50,7 @@ public class V2_8_0_20190410103000__migratePathwayResults implements Application
 			params = new String[]{"results_schema"};
 			values = new String[]{resultsSchema};
 			String truncateSql = SqlRender.renderSql("TRUNCATE TABLE @results_schema.pathway_analysis_codes;", params, values);
-			String translatedSql = SqlTranslate.translateSingleStatementSql(truncateSql, source.getSourceDialect());
+			String translatedSql = SqlTranslate.translateSql(truncateSql, source.getSourceDialect()); // TRUNCATE could lead to multiple statements
 			Arrays.asList(SqlSplit.splitSql(translatedSql)).forEach(jdbcTemplate::execute);
 
 			String saveCodesSql = SqlRender.renderSql(ResourceHelper.GetResourceAsString(SQL_PATH + "saveCodes.sql"), params, values);

@@ -117,7 +117,7 @@ public class JdbcAuthRealm extends JdbcRealm {
         if(rs.getMetaData().getColumnCount() == 1) {
             userEntity.setPassword(rs.getString(1));
         } else {
-            // New style query - user name is alse queried from database
+            // New style query - user name is also queried from database
             String firstName = trim(rs.getString(2));
             String midlleName = trim(rs.getString(3));
             String lastName = trim(rs.getString(4));

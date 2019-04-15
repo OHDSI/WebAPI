@@ -82,13 +82,4 @@ public class UserEntity implements Serializable{
   public void setLastViewedNotificationsTime(Date lastViewedNotificationsTime) {
     this.lastViewedNotificationsTime = lastViewedNotificationsTime;
   }
-
-  @Transient
-  public String getPassword() {
-    return password;
-  }
-
-  public void setPassword(String password) {
-    this.password = password;
-  }
 }

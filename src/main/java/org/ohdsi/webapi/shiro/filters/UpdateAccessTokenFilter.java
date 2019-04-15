@@ -113,7 +113,7 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
     }
 
     if (jwt == null) {
-      if(name == null) {
+      if (name == null) {
         name = login;
       }
       this.authorizer.registerUser(login, name, defaultRoles);

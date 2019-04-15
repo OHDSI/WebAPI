@@ -113,21 +113,25 @@ public class JdbcAuthRealm extends JdbcRealm {
     private UserPrincipal extractUserEntity(ResultSet rs) throws SQLException {
         UserPrincipal userEntity = new UserPrincipal();
 
-        userEntity.setPassword(rs.getString(1));
+        // Old style query is used - only password is queried from database
+        if(rs.getMetaData().getColumnCount() == 1) {
+            userEntity.setPassword(rs.getString(1));
+        } else {
+            // New style query - user name is alse queried from database
+            String firstName = trim(rs.getString(2));
+            String midlleName = trim(rs.getString(3));
+            String lastName = trim(rs.getString(4));
 
-        String firstName = trim(rs.getString(2));
-        String midlleName = trim(rs.getString(3));
-        String lastName = trim(rs.getString(4));
+            StringBuilder name = new StringBuilder(firstName);
+            if (!midlleName.isEmpty()) {
+                name.append(' ').append(midlleName);
+            }
+            if (!lastName.isEmpty()) {
+                name.append(' ').append(lastName);
+            }
 
-        StringBuilder name = new StringBuilder(firstName);
-        if(!midlleName.isEmpty()) {
-            name.append(' ').append(midlleName);
+            userEntity.setName(name.toString().trim());
         }
-        if(!lastName.isEmpty()) {
-            name.append(' ').append(lastName);
-        }
-
-        userEntity.setName(name.toString().trim());
 
         return userEntity;
     }

@@ -85,7 +85,6 @@ public class GoogleIapJwtAuthFilter extends AtlasAuthFilter {
 
         if (loggedIn) {
             final PrincipalCollection principals = SecurityUtils.getSubject().getPrincipals();
-            // TODO get correct name from google
             String name = (String) principals.getPrimaryPrincipal();
             this.authorizer.registerUser((String) principals.getPrimaryPrincipal(), name, defaultRoles);
         } else {
@@ -154,20 +153,6 @@ public class GoogleIapJwtAuthFilter extends AtlasAuthFilter {
             JWSVerifier jwsVerifier = new ECDSAVerifier(publicKey);
 
             if (signedJwt.verify(jwsVerifier)) {
-//                HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
-//                JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
-//
-//                GoogleCredential credential = new GoogleCredential().
-//                        setAccessToken(jwtToken).createScoped(Arrays.asList(
-//                        "https://www.googleapis.com/auth/userinfo.email",
-//                        "https://www.googleapis.com/auth/userinfo.profile"));
-//                String applicationName = ?;
-//                Oauth2 oauth2 = new Oauth2.Builder(httpTransport, jsonFactory, credential).setApplicationName(
-//                        applicationName).build();
-
-//                Oauth2 oauth2 = new Oauth2.Builder(httpTransport, jsonFactory, credential).build();
-//                Userinfoplus userinfo = oauth2.userinfo().get().execute();
-
                 return email;
             } else {
                 throw new AuthenticationException();

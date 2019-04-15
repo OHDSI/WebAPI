@@ -170,17 +170,17 @@ public class CohortDefinition extends CommonEntity implements Serializable, Coho
 
   public Set<CohortAnalysisGenerationInfo> getCohortAnalysisGenerationInfoList() {
 		return cohortAnalysisGenerationInfoList;
-  }
+	}
 
-  public void setCohortAnalysisGenerationInfoList(Set<CohortAnalysisGenerationInfo> cohortAnalysisGenerationInfoList) {
-      this.cohortAnalysisGenerationInfoList = cohortAnalysisGenerationInfoList;
-  }
+	public void setCohortAnalysisGenerationInfoList(Set<CohortAnalysisGenerationInfo> cohortAnalysisGenerationInfoList) {
+		this.cohortAnalysisGenerationInfoList = cohortAnalysisGenerationInfoList;
+	}
 
-  @Override
-  public CohortExpression getExpression() {
+    @Override
+    public CohortExpression getExpression() {
 
-    return details != null ? details.getExpressionObject() : null;
-  }
+      return details != null ? details.getExpressionObject() : null;
+    }
 
   public List<CohortCharacterizationEntity> getCohortCharacterizations() {
 

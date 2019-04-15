@@ -30,7 +30,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -228,6 +227,15 @@ public class CcController {
         List<CcResult> ccResults = service.findResults(generationId, thresholdLevel);
         convertPresetAnalysesToLocal(ccResults);
         return ccResults;
+    }
+
+    @POST
+    @Path("/generation/{generationId}/result/export")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response exportGenerationsResults(
+            @PathParam("generationId") final Long generationId, ExportExecutionResultRequest params) {
+        return service.exportExecutionResult(generationId, params);
     }
 
     @GET

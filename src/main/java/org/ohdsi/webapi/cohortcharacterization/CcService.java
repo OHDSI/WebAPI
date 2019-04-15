@@ -1,17 +1,18 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.List;
-
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcPrevalenceStat;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
+import org.ohdsi.webapi.cohortcharacterization.dto.ExportExecutionResultRequest;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import javax.ws.rs.core.Response;
+import java.io.OutputStream;
+import java.util.List;
 
 public interface CcService {
     CohortCharacterizationEntity createCc(CohortCharacterizationEntity entity);
@@ -57,4 +58,6 @@ public interface CcService {
     void cancelGeneration(Long id, String sourceKey);
 
     int countLikeName(String copyName);
+
+    Response exportExecutionResult(Long generationId, ExportExecutionResultRequest params);
 }

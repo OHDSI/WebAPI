@@ -9,7 +9,7 @@
   <version>1.0.0-SNAPSHOT</version>
   <name>WebAPI</name>
   <properties>
-    <webapi.version>2.7.0</webapi.version>
+    <webapi.version>2.8.0</webapi.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jersey.version>2.14</jersey.version>
     <!-- Spring Boot manages spring.version as well -->
@@ -158,8 +158,8 @@
     <!-- Sensitive Info settings -->
     <sensitiveinfo.admin.role>admin</sensitiveinfo.admin.role>
 
-    <hydra.external-package.prediction></hydra.external-package.prediction>
-    <hydra.external-package.estimation></hydra.external-package.estimation>
+    <hydra.externalPackage.prediction></hydra.externalPackage.prediction>
+    <hydra.externalPackage.estimation></hydra.externalPackage.estimation>
   </properties>
   <build>
     <finalName>WebAPI</finalName>
@@ -708,6 +708,11 @@
       <groupId>org.ohdsi</groupId>
       <artifactId>standardized-analysis-api</artifactId>
       <version>1.2.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.ohdsi</groupId>
+      <artifactId>SkeletonCohortCharacterization</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>

@@ -1,5 +1,7 @@
 package org.ohdsi.webapi.pathway.dto.internal;
 
+import java.util.Objects;
+
 public class PathwayCode {
 
     private Integer code;
@@ -41,5 +43,20 @@ public class PathwayCode {
     public void setCombo(boolean combo) {
 
         isCombo = combo;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getCode(), getName(), isCombo());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof PathwayCode)) return false;
+        PathwayCode that = (PathwayCode) o;
+        return Objects.equals(getCode(), that.getCode()) &&
+                Objects.equals(getName(), that.getName()) &&
+                Objects.equals(isCombo(), that.isCombo());
     }
 }

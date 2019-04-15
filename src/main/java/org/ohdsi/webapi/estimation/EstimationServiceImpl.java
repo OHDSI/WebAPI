@@ -83,7 +83,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
             "modifiedBy"
     );
 
-    @Value("${hydra.external-package.estimation}")
+    @Value("${hydra.externalPackage.estimation}")
     private String extenalPackagePath;
 
     @PersistenceContext

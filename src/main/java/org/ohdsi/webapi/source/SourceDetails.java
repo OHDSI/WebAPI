@@ -6,13 +6,13 @@ public class SourceDetails extends SourceInfo {
     private String username;
     private String password;
     private String krbAuthMethod;
-    private String keytabName;
+    private String keyfileName;
     private String krbAdminServer;
 
     public SourceDetails(Source s) {
         super(s);
         setConnectionString(s.getSourceConnection());
-        setKeytabName(s.getKeytabName());
+        setKeyfileName(s.getKeyfileName());
         setKrbAuthMethod(s.getKrbAuthMethod().toString().toLowerCase());
         setUsername(s.getUsername());
         setPassword(s.getPassword());
@@ -29,12 +29,12 @@ public class SourceDetails extends SourceInfo {
         this.connectionString = connectionString;
     }
 
-    public String getKeytabName() {
-        return keytabName;
+    public String getKeyfileName() {
+        return keyfileName;
     }
 
-    public void setKeytabName(String keytabName) {
-        this.keytabName = keytabName;
+    public void setKeyfileName(String keyfileName) {
+        this.keyfileName = keyfileName;
     }
 
     public String getKrbAuthMethod() {

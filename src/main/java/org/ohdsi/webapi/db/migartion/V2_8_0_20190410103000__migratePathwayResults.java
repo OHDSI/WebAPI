@@ -112,7 +112,7 @@ public class V2_8_0_20190410103000__migratePathwayResults implements Application
 				params = new String[]{"webapi_schema", "source_id"};
 				values = new String[]{webAPISchema, Integer.toString(source.getSourceId())};
 				String generatedDesignSql = SqlRender.renderSql(ResourceHelper.GetResourceAsString(SQL_PATH + "getPathwayGeneratedDesigns.sql"), params, values);
-				translatedSql = SqlTranslate.translateSql(generatedDesignSql, this.migrationDAO.getDialect());
+				translatedSql = SqlTranslate.translateSingleStatementSql(generatedDesignSql, this.migrationDAO.getDialect());
 
 				Map<Long, List<EventCohort>> designEventCohorts = migrationDAO.getJdbcTemplate().query(translatedSql, rs -> {
 					Map<Long, List<EventCohort>> result = new HashMap<>();
@@ -143,7 +143,7 @@ public class V2_8_0_20190410103000__migratePathwayResults implements Application
 				params = new String[]{"results_schema"};
 				values = new String[]{resultsSchema};
 				String distinctGenerationComboIdsSql = SqlRender.renderSql(ResourceHelper.GetResourceAsString(SQL_PATH + "getPathwayGeneratedCodes.sql"), params, values);
-				translatedSql = SqlTranslate.translateSql(distinctGenerationComboIdsSql, source.getSourceDialect());
+				translatedSql = SqlTranslate.translateSingleStatementSql(distinctGenerationComboIdsSql, source.getSourceDialect());
 
 				// retrieve list of generation-comboId-Name-isCombo values
 				List<Object[]> generatedComboNames = jdbcTemplate.query(translatedSql, (rs) -> {
@@ -152,7 +152,7 @@ public class V2_8_0_20190410103000__migratePathwayResults implements Application
 
 					while (rs.next()) {
 						Long generationId = rs.getLong("pathway_analysis_generation_id");
-						Integer comboId = rs.getInt("combo_id");
+						Long comboId = rs.getLong("combo_id");
 
 						if (!designEventCohorts.containsKey(generationId)) {
 							continue; // skip this record, since we do not have a design for it
@@ -162,7 +162,7 @@ public class V2_8_0_20190410103000__migratePathwayResults implements Application
 						String names = comboCohorts.stream()
 										.map(c -> c.name)
 										.collect(Collectors.joining(","));
-						result.add(new Object[]{String.valueOf(generationId), String.valueOf(comboId), names, comboCohorts.size() > 1 ? "1" : "0"});
+						result.add(new Object[]{generationId, comboId, names, comboCohorts.size() > 1 ? 1 : 0});
 					}
 					return result;
 				});

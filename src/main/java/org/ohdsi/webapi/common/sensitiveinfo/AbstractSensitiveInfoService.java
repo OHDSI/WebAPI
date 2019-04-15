@@ -43,10 +43,10 @@ public class AbstractSensitiveInfoService extends AbstractAdminService {
     }
   }
 
-  protected String filterSensitiveInfo(String text, Map<String, Object> variables) {
+  protected String filterSensitiveInfo(String text, Map<String, Object> variables, boolean isAdmin) {
 
     String result = text;
-    if (Objects.nonNull(result) && !isAdmin()) {
+    if (Objects.nonNull(result) && !isAdmin) {
       ExpressionParser parser = new SpelExpressionParser();
       StandardEvaluationContext context = new StandardEvaluationContext();
       if (Objects.nonNull(variables)) {
@@ -63,6 +63,10 @@ public class AbstractSensitiveInfoService extends AbstractAdminService {
       }
     }
     return result;
+  }
+
+  public boolean isAdmin() {
+    return super.isAdmin();
   }
 
   static class SensitiveFilter {

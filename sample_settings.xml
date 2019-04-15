@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+		This is sample settings.xml file to use with Maven to configure WebAPI. The default location for the
+		settings file is ~/.m2/settings.xml 
+-->
+<settings>
+<profiles>
+   <profile>
+    <id>webapi-postgresql</id>
+    <properties>
+      <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
+      <datasource.url>jdbc:postgresql://localhost:5432/OHDSI</datasource.url>
+      <datasource.username>ohdsi_app_user</datasource.username>
+      <datasource.password>app1</datasource.password>
+      <datasource.dialect>postgresql</datasource.dialect>
+      <datasource.ohdsi.schema>webapi</datasource.ohdsi.schema>
+      <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
+      <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
+      <flyway.datasource.username>ohdsi_admin_user</flyway.datasource.username>
+      <flyway.datasource.password>!PASSWORD!</flyway.datasource.password>
+      <flyway.locations>classpath:db/migration/postgresql</flyway.locations>
+      <security.enabled>false</security.enabled>
+      <security.token.expiration>43200</security.token.expiration>
+      <security.origin>*</security.origin>
+      <security.ssl.enabled>false</security.ssl.enabled>
+      <security.oauth.callback.ui>http://localhost/atlas/#/welcome</security.oauth.callback.ui>
+      <security.oauth.callback.api>http://localhost:8080/WebAPI/user/oauth/callback</security.oauth.callback.api>
+      <security.oauth.google.apiKey></security.oauth.google.apiKey>
+      <security.oauth.google.apiSecret></security.oauth.google.apiSecret>
+      <security.oauth.facebook.apiKey></security.oauth.facebook.apiKey>
+      <security.oauth.facebook.apiSecret></security.oauth.facebook.apiSecret>
+    </properties> 
+  </profile>     
+  <profile>
+    <id>webapi-mssql</id>
+    <properties>
+      <datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</datasource.driverClassName>
+      <datasource.url>jdbc:sqlserver://localhost;databaseName=OHDSI</datasource.url>
+      <datasource.username>ohdsi_app_user</datasource.username>
+      <datasource.password>app1</datasource.password>
+      <datasource.dialect>sql server</datasource.dialect>
+      <datasource.ohdsi.schema>dbo</datasource.ohdsi.schema>
+      <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
+      <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
+      <flyway.datasource.username>ohdsi_app_user</flyway.datasource.username>
+      <flyway.datasource.password>app1</flyway.datasource.password>
+      <flyway.locations>classpath:db/migration/sqlserver</flyway.locations>
+      <security.enabled>false</security.enabled>
+      <security.token.expiration>43200</security.token.expiration>
+      <security.origin>*</security.origin>
+      <security.ssl.enabled>false</security.ssl.enabled>
+      <security.oauth.callback.ui>http://localhost/atlas/#/welcome</security.oauth.callback.ui>
+      <security.oauth.callback.api>http://localhost:8080/WebAPI/user/oauth/callback</security.oauth.callback.api>
+      <security.oauth.google.apiKey></security.oauth.google.apiKey>
+      <security.oauth.google.apiSecret></security.oauth.google.apiSecret>
+      <security.oauth.facebook.apiKey></security.oauth.facebook.apiKey>
+      <security.oauth.facebook.apiSecret></security.oauth.facebook.apiSecret>
+    </properties> 
+  </profile>  
+  <profile>
+    <id>webapi-oracle</id>
+    <properties>             
+      <datasource.driverClassName>oracle.jdbc.OracleDriver</datasource.driverClassName>
+     <datasource.url>jdbc:oracle:thin:@//127.0.0.1:1521/xe</datasource.url>
+      <datasource.username>ohdsi</datasource.username>
+      <datasource.password>{password}</datasource.password>
+      <datasource.dialect>oracle</datasource.dialect>
+      <datasource.ohdsi.schema>OHDSI</datasource.ohdsi.schema>
+      <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
+      <flyway.datasource.url>jdbc:oracle:thin:@//127.0.0.1:1521/xe</flyway.datasource.url>
+      <flyway.datasource.username>ohdsi</flyway.datasource.username>
+      <flyway.datasource.password>{password}</flyway.datasource.password>
+      <flyway.locations>classpath:db/migration/oracle</flyway.locations>
+      <security.enabled>false</security.enabled>
+      <security.token.expiration>43200</security.token.expiration>
+      <security.origin>*</security.origin>
+      <security.ssl.enabled>false</security.ssl.enabled>
+      <security.oauth.callback.ui>http://localhost/atlas/#/welcome</security.oauth.callback.ui>
+      <security.oauth.callback.api>http://localhost:8080/WebAPI/user/oauth/callback</security.oauth.callback.api>
+      <security.oauth.google.apiKey></security.oauth.google.apiKey>
+      <security.oauth.google.apiSecret></security.oauth.google.apiSecret>
+      <security.oauth.facebook.apiKey></security.oauth.facebook.apiKey>
+      <security.oauth.facebook.apiSecret></security.oauth.facebook.apiSecret>
+    </properties>
+  </profile>   
+  </profiles>
+</settings>

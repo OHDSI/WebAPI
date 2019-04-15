@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.shiro.mapper;
 
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.shiro.Entities.UserPrincipal;
 import org.springframework.ldap.core.AttributesMapper;
 
@@ -12,7 +13,10 @@ public abstract class UserMapper implements AttributesMapper<UserPrincipal> {
         String result = null;
         Attribute attribute = attrList.get(key);
         if (attribute != null) {
-            result = (String) attribute.get();
+            Object value = attribute.get();
+            if(value instanceof String) {
+                result = (String) value;
+            }
         }
         return result;
     }
@@ -20,12 +24,17 @@ public abstract class UserMapper implements AttributesMapper<UserPrincipal> {
     public UserPrincipal mapFromAttributes(Attributes attrs) throws NamingException {
         UserPrincipal user = new UserPrincipal();
 
-        user.setUsername(getAttrCoalesce(attrs, getUsernameKey()));
+        user.setUsername(getAttrCoalesce(attrs, getUsernameAttr()));
 
         StringBuilder name = new StringBuilder();
-        processAttribute(attrs, getFirstnameKey(), name);
-        processAttribute(attrs, getMiddlenameKey(), name);
-        processAttribute(attrs, getLastnameKey(), name);
+        // If display name attribute value is set then use only it, otherwise use attributes for full name
+        if (StringUtils.isNotEmpty(getDisplaynameAttr())) {
+            processAttribute(attrs, getDisplaynameAttr(), name);
+        } else {
+            processAttribute(attrs, getFirstnameAttr(), name);
+            processAttribute(attrs, getMiddlenameAttr(), name);
+            processAttribute(attrs, getLastnameAttr(), name);
+        }
 
         user.setName(name.toString().trim());
 
@@ -35,17 +44,19 @@ public abstract class UserMapper implements AttributesMapper<UserPrincipal> {
     private void processAttribute(Attributes attrs, String key, StringBuilder name) throws NamingException {
         if (key != null) {
             String attrValue = getAttrCoalesce(attrs, key);
-            if(attrValue != null) {
-                name.append(' ').append(getAttrCoalesce(attrs, key));
+            if (attrValue != null) {
+                name.append(' ').append(attrValue);
             }
         }
     }
 
-    public abstract String getFirstnameKey();
+    public abstract String getFirstnameAttr();
 
-    public abstract String getMiddlenameKey();
+    public abstract String getMiddlenameAttr();
 
-    public abstract String getLastnameKey();
+    public abstract String getLastnameAttr();
 
-    public abstract String getUsernameKey();
+    public abstract String getUsernameAttr();
+
+    public abstract String getDisplaynameAttr();
 }

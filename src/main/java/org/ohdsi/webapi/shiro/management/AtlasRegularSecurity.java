@@ -92,8 +92,8 @@ public class AtlasRegularSecurity extends AtlasSecurity {
     @Value("${security.ldap.url}")
     private String ldapUrl;
 
-    @Value("${security.ldap.searchFilter}")
-    private String ldapSearchFilter;
+    @Value("${security.ldap.searchString}")
+    private String ldapSearchString;
 
     @Value("${security.ldap.searchBase}")
     private String ldapSearchBase;
@@ -118,6 +118,9 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
     @Value("${security.ad.searchFilter}")
     private String adSearchFilter;
+
+    @Value("${security.ad.searchString}")
+    private String adSearchString;
 
     @Value("${security.ad.ignore.partial.result.exception}")
     private Boolean adIgnorePartialResultException;
@@ -274,6 +277,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         realms.add(new NegotiateAuthenticationRealm());
         realms.add(new Pac4jRealm());
         if (jdbcDataSource != null) {
+            checkAuthQuery();
             realms.add(new JdbcAuthRealm(jdbcDataSource, jdbcAuthenticationQuery));
         }
         realms.add(ldapRealm());
@@ -282,8 +286,19 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         return realms;
     }
 
+    private void checkAuthQuery() {
+        try {
+            int startPos = jdbcAuthenticationQuery.toLowerCase().indexOf("select") + "select ".length();
+            int endPos = jdbcAuthenticationQuery.toLowerCase().indexOf(" from ");
+            String[] fieldArray = jdbcAuthenticationQuery.substring(startPos, endPos).split(",");
+            assert fieldArray.length >= 4;
+        } catch (Exception e) {
+            throw new RuntimeException("Auth query must have the following syntax: select <password>, <firstname>, <middlename>, <lastname> from <user_table>");
+        }
+    }
+
     private JndiLdapRealm ldapRealm() {
-        JndiLdapRealm realm = new LdapRealm(ldapSearchFilter, ldapSearchBase, ldapUserMapper);
+        JndiLdapRealm realm = new LdapRealm(ldapSearchString, ldapSearchBase, ldapUserMapper);
         realm.setUserDnTemplate(dequote(userDnTemplate));
         JndiLdapContextFactory contextFactory = new JndiLdapContextFactory();
         contextFactory.setUrl(dequote(ldapUrl));
@@ -294,7 +309,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
     }
 
     private ActiveDirectoryRealm activeDirectoryRealm() {
-        ActiveDirectoryRealm realm = new ADRealm(getLdapTemplate(), adSearchFilter, adUserMapper);
+        ActiveDirectoryRealm realm = new ADRealm(getLdapTemplate(), adSearchFilter, adSearchString, adUserMapper);
         realm.setUrl(dequote(adUrl));
         realm.setSearchBase(dequote(adSearchBase));
         realm.setPrincipalSuffix(dequote(adPrincipalSuffix));

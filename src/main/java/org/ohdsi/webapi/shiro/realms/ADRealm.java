@@ -28,6 +28,8 @@ public class ADRealm extends ActiveDirectoryRealm {
 
     private String searchFilter;
 
+    private String searchString;
+
     private LdapTemplate ldapTemplate;
 
     private AttributesMapper<String> dnAttributesMapper = (AttributesMapper<String>) attrs -> (String) attrs.get("distinguishedName").get();
@@ -37,9 +39,10 @@ public class ADRealm extends ActiveDirectoryRealm {
     public ADRealm() {
     }
 
-    public ADRealm(LdapTemplate ldapTemplate, String searchFilter, UserMapper userMapper) {
+    public ADRealm(LdapTemplate ldapTemplate, String searchFilter, String searchString, UserMapper userMapper) {
         this.ldapTemplate = ldapTemplate;
         this.searchFilter = searchFilter;
+        this.searchString = searchString;
         this.userMapper = userMapper;
     }
 
@@ -66,18 +69,18 @@ public class ADRealm extends ActiveDirectoryRealm {
     @Override
     protected AuthenticationInfo queryForAuthenticationInfo(AuthenticationToken token, LdapContextFactory ldapContextFactory) throws NamingException {
 
-        if (Objects.nonNull(ldapTemplate) && StringUtils.isNotBlank(searchFilter)) {
+        if (Objects.nonNull(ldapTemplate) && StringUtils.isNotBlank(searchFilter) && StringUtils.isNotBlank(searchString)) {
             UsernamePasswordToken upToken = (UsernamePasswordToken) token;
             String userPrincipalName = getUserPrincipalName(upToken.getUsername());
 
-            String userSearch = String.format("(&(objectClass=*)(userPrincipalName=%s))", userPrincipalName);
-            List<String> result = ldapTemplate.search("", userSearch, SearchControls.SUBTREE_SCOPE,
-                    dnAttributesMapper);
+            String userSearch = String.format(searchString, userPrincipalName);
+            List<UserPrincipal> result = ldapTemplate.search("", userSearch, SearchControls.SUBTREE_SCOPE,
+                    userMapper);
 
             if (result.size() == 1) {
-                String userDn = result.iterator().next();
-                List<UserPrincipal> filterResult = ldapTemplate.search("", String.format(searchFilter, userDn), SearchControls.SUBTREE_SCOPE,
-                        userMapper);
+                UserPrincipal userPrincipal = result.iterator().next();
+                List<String> filterResult = ldapTemplate.search("", String.format(searchFilter, userPrincipal.getUsername()),
+                        SearchControls.SUBTREE_SCOPE, dnAttributesMapper);
                 if (!filterResult.isEmpty()) {
                     LdapContext ctx = null;
                     try {
@@ -86,7 +89,7 @@ public class ADRealm extends ActiveDirectoryRealm {
                         LdapUtils.closeContext(ctx);
                     }
 
-                    return new SimpleAuthenticationInfo(filterResult.get(0), upToken.getPassword(), getName());
+                    return new SimpleAuthenticationInfo(userPrincipal, upToken.getPassword(), getName());
                 }
             } else {
                 LOGGER.warn("Multiple results found for {}", userPrincipalName);

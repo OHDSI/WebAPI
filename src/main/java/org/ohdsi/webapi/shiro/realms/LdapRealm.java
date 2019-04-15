@@ -40,14 +40,14 @@ import javax.naming.ldap.LdapContext;
 public class LdapRealm extends JndiLdapRealm {
     private static final Logger LOGGER = LoggerFactory.getLogger(LdapRealm.class);
 
-    private String searchFilter;
+    private String searchString;
 
     private UserMapper userMapper;
 
     private String ldapSearchBase;
 
-    public LdapRealm(String ldapSearchFilter, String ldapSearchBase, UserMapper userMapper) {
-        this.searchFilter = ldapSearchFilter;
+    public LdapRealm(String ldapSearchString, String ldapSearchBase, UserMapper userMapper) {
+        this.searchString = ldapSearchString;
         this.userMapper = userMapper;
         this.ldapSearchBase = ldapSearchBase;
     }
@@ -89,7 +89,7 @@ public class LdapRealm extends JndiLdapRealm {
         searchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 
         Object[] searchArguments = new Object[]{token.getPrincipal()};
-        NamingEnumeration results = ctx.search(ldapSearchBase, searchFilter, searchArguments, searchCtls);
+        NamingEnumeration results = ctx.search(ldapSearchBase, searchString, searchArguments, searchCtls);
         boolean processSingleRecord = false;
         UserPrincipal userPrincipal = null;
         while (results.hasMore()) {

@@ -5,35 +5,43 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class LdapUserMapper extends UserMapper {
-    @Value("${security.ldap.userMapping.firstname}")
+    @Value("${security.ldap.userMapping.firstnameAttr}")
     private String firstnameKey;
 
-    @Value("${security.ldap.userMapping.middlename}")
+    @Value("${security.ldap.userMapping.middlenameAttr}")
     private String middlenameKey;
 
-    @Value("${security.ldap.userMapping.lastname}")
+    @Value("${security.ldap.userMapping.lastnameAttr}")
     private String lastnameKey;
 
-    @Value("${security.ldap.userMapping.username}")
+    @Value("${security.ldap.userMapping.usernameAttr}")
     private String usernameKey;
 
+    @Value("${security.ldap.userMapping.displaynameAttr}")
+    private String displaynameKey;
+
     @Override
-    public String getFirstnameKey() {
+    public String getFirstnameAttr() {
         return firstnameKey;
     }
 
     @Override
-    public String getMiddlenameKey() {
+    public String getMiddlenameAttr() {
         return middlenameKey;
     }
 
     @Override
-    public String getLastnameKey() {
+    public String getLastnameAttr() {
         return lastnameKey;
     }
 
     @Override
-    public String getUsernameKey() {
+    public String getUsernameAttr() {
         return usernameKey;
+    }
+
+    @Override
+    public String getDisplaynameAttr() {
+        return displaynameKey;
     }
 }

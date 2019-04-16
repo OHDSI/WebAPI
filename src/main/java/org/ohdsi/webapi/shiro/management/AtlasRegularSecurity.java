@@ -277,24 +277,12 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         realms.add(new NegotiateAuthenticationRealm());
         realms.add(new Pac4jRealm());
         if (jdbcDataSource != null) {
-            checkAuthQuery();
             realms.add(new JdbcAuthRealm(jdbcDataSource, jdbcAuthenticationQuery));
         }
         realms.add(ldapRealm());
         realms.add(activeDirectoryRealm());
 
         return realms;
-    }
-
-    private void checkAuthQuery() {
-        try {
-            int startPos = jdbcAuthenticationQuery.toLowerCase().indexOf("select") + "select ".length();
-            int endPos = jdbcAuthenticationQuery.toLowerCase().indexOf(" from ");
-            String[] fieldArray = jdbcAuthenticationQuery.substring(startPos, endPos).split(",");
-            assert fieldArray.length >= 4;
-        } catch (Exception e) {
-            throw new RuntimeException("Auth query must have the following syntax: select <password>, <firstname>, <middlename>, <lastname> from <user_table>");
-        }
     }
 
     private JndiLdapRealm ldapRealm() {

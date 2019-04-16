@@ -94,7 +94,8 @@ public class LdapRealm extends JndiLdapRealm {
         UserPrincipal userPrincipal = null;
         while (results.hasMore()) {
             if (processSingleRecord) {
-                LOGGER.warn("Multiple results found for {}", token.getPrincipal());
+                LOGGER.error("Multiple results found for {}", token.getPrincipal());
+                throw new RuntimeException("Multiple results found for " + token.getPrincipal());
             }
             processSingleRecord = true;
             SearchResult searchResult = (SearchResult) results.next();

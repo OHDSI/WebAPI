@@ -118,6 +118,7 @@ public class JdbcAuthRealm extends JdbcRealm {
             userEntity.setPassword(rs.getString(1));
         } else {
             // New style query - user name is also queried from database
+            userEntity.setPassword(rs.getString("password"));
             String firstName = trim(rs.getString("firstname"));
             String midlleName = trim(rs.getString("middlename"));
             String lastName = trim(rs.getString("lastname"));

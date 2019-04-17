@@ -7,8 +7,11 @@ package org.ohdsi.webapi.service;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.commons.lang3.StringUtils;
+import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.check.Checker;
 import org.ohdsi.circe.check.Warning;
 import org.ohdsi.circe.check.WarningSeverity;
@@ -16,6 +19,7 @@ import org.ohdsi.circe.check.warnings.DefaultWarning;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
+import org.ohdsi.analysis.versioning.VersionedSerializerModifier;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortdefinition.*;
@@ -319,7 +323,10 @@ public class CohortDefinitionService extends AbstractDaoService {
     result.createdDate = def.getCreatedDate();
     result.description = def.getDescription();
     result.expressionType = def.getExpressionType();
-    result.expression = def.getDetails() != null ? def.getDetails().getExpression() : null;
+    if (def.getDetails() != null) {
+      CohortExpression expression = def.getDetails().getExpressionObject();
+      result.expression = Utils.serialize(expression);
+    }
     result.modifiedBy = UserUtils.nullSafeLogin(def.getModifiedBy());
     result.modifiedDate = def.getModifiedDate();
     result.name = def.getName();

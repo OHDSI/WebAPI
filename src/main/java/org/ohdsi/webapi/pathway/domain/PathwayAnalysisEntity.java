@@ -39,6 +39,9 @@ public class PathwayAnalysisEntity extends CommonEntity {
     @Column(name = "combination_window")
     private Integer combinationWindow;
 
+    @Column(name = "min_segment_length")
+    private Integer minSegmentLength;
+		
     @Column(name = "min_cell_count")
     private Integer minCellCount;
 
@@ -100,6 +103,14 @@ public class PathwayAnalysisEntity extends CommonEntity {
 
         this.combinationWindow = combinationWindow;
     }
+
+		public Integer getMinSegmentLength() {
+			return minSegmentLength;
+		}
+
+		public void setMinSegmentLength(Integer minSegmentLength) {
+			this.minSegmentLength = minSegmentLength;
+		}
 
     public Integer getMinCellCount() {
 

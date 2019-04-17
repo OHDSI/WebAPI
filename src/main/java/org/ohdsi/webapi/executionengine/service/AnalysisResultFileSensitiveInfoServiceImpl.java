@@ -12,8 +12,8 @@ public class AnalysisResultFileSensitiveInfoServiceImpl extends AbstractSensitiv
 
   @Override
   public AnalysisResultFile filterSensitiveInfo(AnalysisResultFile source, Map<String, Object> variables, boolean isAdmin) {
-
-    if (MediaType.TEXT_PLAIN.equals(source.getMediaType())) {
+    // some txt files have media type "text" instead of MediaType.TEXT_PLAIN
+    if (MediaType.TEXT_PLAIN.equals(source.getMediaType()) || "text".equals(source.getMediaType())) {
       final String value = filterSensitiveInfo(new String(source.getContents()), variables, isAdmin);
       source.setContents(value.getBytes());
     }

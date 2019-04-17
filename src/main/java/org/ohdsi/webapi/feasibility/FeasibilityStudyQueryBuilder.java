@@ -54,7 +54,7 @@ public class FeasibilityStudyQueryBuilder {
   
   private String getInclusionRuleInserts(FeasibilityStudy study)
   {
-    String insertTemplate = "insert into #inclusionRules vaues (%d, %d, %s)\n";
+    String insertTemplate = "insert into #inclusionRules values (%d, %d, %s)\n";
     StringBuilder insertStatements = new StringBuilder();
     
     List<InclusionRule> inclusionRules = study.getInclusionRules();

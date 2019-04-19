@@ -135,6 +135,11 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     }
     
     @Override
+    public int getCountEstimationWithSameName(Integer id, String name) {
+        return estimationRepository.getCountEstimationWithSameName(id, name);
+    }
+    
+    @Override
     public Estimation getById(Integer id) {
         return estimationRepository.findOne(id, COMMONS_ENTITY_GRAPH);
     }

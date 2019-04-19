@@ -17,6 +17,8 @@ public interface CcService {
     CohortCharacterizationEntity createCc(CohortCharacterizationEntity entity);
 
     CohortCharacterizationEntity updateCc(CohortCharacterizationEntity entity);
+
+    int getCountCcWithSameName(Long id, String name);
     
     void deleteCc(Long ccId);
 

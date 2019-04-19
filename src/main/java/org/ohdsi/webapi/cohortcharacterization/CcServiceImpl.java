@@ -194,6 +194,11 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     }
 
     @Override
+    public int getCountCcWithSameName(Long id, String name) {
+        return repository.getCountCcWithSameName(id, name);
+    }
+
+    @Override
     public void deleteCc(Long ccId) {
         repository.delete(ccId);
     }

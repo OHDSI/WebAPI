@@ -6,14 +6,18 @@ import org.ohdsi.webapi.cohortdefinition.ExpressionType;
 
 public class CohortDTO extends CohortMetadataDTO implements Cohort{
 
-    private CohortExpression expression;
+    private String expression;
     private ExpressionType expressionType;
     
     public CohortExpression getExpression() {
+        return CohortExpression.fromJson(expression);
+    }
+
+    public String getExpressionStr() {
         return expression;
     }
 
-    public void setExpression(final CohortExpression expression) {
+    public void setExpression(final String expression) {
         this.expression = expression;
     }
 

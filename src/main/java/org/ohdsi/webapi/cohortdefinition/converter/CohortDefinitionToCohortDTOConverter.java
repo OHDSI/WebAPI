@@ -1,5 +1,7 @@
 package org.ohdsi.webapi.cohortdefinition.converter;
 
+import org.ohdsi.analysis.Utils;
+import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.springframework.stereotype.Component;
@@ -12,7 +14,10 @@ public class CohortDefinitionToCohortDTOConverter extends BaseCohortDefinitionTo
 
         final CohortDTO dto = super.convert(source);
         dto.setExpressionType(source.getExpressionType());
-        dto.setExpression(source.getExpression());
+        if (source.getDetails() != null) {
+            CohortExpression expression = source.getDetails().getExpressionObject();
+            dto.setExpression(Utils.serialize(expression));
+        }
         return dto;
     }
 

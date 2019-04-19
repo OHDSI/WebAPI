@@ -3,6 +3,8 @@ package org.ohdsi.webapi.prediction;
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.common.SourceMapKey;
+import org.ohdsi.webapi.common.analyses.CommonAnalysisDTO;
+import org.ohdsi.webapi.common.generation.CommonGeneration;
 import org.ohdsi.webapi.common.generation.ExecutionBasedGenerationDTO;
 import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
 import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
@@ -12,7 +14,6 @@ import org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysisI
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.util.ExceptionUtils;
-import org.ohdsi.webapi.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Controller;
@@ -67,21 +68,20 @@ public class PredictionController {
   @GET
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
-  public List<PredictionListItem> getAnalysisList() {
+  public List<CommonAnalysisDTO> getAnalysisList() {
 
     return StreamSupport
             .stream(service.getAnalysisList().spliterator(), false)
-            .map(pred -> {
-              PredictionListItem item = new PredictionListItem();
-              item.analysisId = pred.getId();
-              item.name = pred.getName();
-              item.description = pred.getDescription();
-              item.createdBy = UserUtils.nullSafeLogin(pred.getCreatedBy());
-              item.createdDate = pred.getCreatedDate();
-              item.modifiedBy = UserUtils.nullSafeLogin(pred.getModifiedBy());
-              item.modifiedDate = pred.getModifiedDate();
-              return item;
-            }).collect(Collectors.toList());
+            .map(analysis -> conversionService.convert(analysis, CommonAnalysisDTO.class))
+            .collect(Collectors.toList());
+  }
+
+  @GET
+  @Path("/{id}/exists")
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public int getCountPredictionWithSameName(@PathParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
+    return service.getCountPredictionWithSameName(id, name);
   }
 
   @DELETE

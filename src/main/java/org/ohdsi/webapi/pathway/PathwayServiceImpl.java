@@ -2,6 +2,7 @@ package org.ohdsi.webapi.pathway;
 
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.google.common.base.MoreObjects;
+import org.hibernate.Hibernate;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
@@ -203,7 +204,12 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     @Override
     public PathwayAnalysisEntity getById(Integer id) {
 
-        return pathwayAnalysisRepository.findOne(id, defaultEntityGraph);
+        PathwayAnalysisEntity entity = pathwayAnalysisRepository.findOne(id, defaultEntityGraph);
+        if (Objects.nonNull(entity)) {
+            entity.getTargetCohorts().forEach(tc -> Hibernate.initialize(tc.getCohortDefinition().getDetails()));
+            entity.getEventCohorts().forEach(ec -> Hibernate.initialize(ec.getCohortDefinition().getDetails()));
+        }
+        return entity;
     }
 
     @Override

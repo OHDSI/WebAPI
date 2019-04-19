@@ -706,18 +706,24 @@
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
-      <artifactId>standardized-analysis-api</artifactId>
+      <artifactId>standardized-analysis-specs</artifactId>
+      <version>1.2.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.ohdsi</groupId>
+      <artifactId>standardized-analysis-utils</artifactId>
       <version>1.2.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>SkeletonCohortCharacterization</artifactId>
       <version>1.0.0-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>org.ohdsi</groupId>
-      <artifactId>SkeletonCohortCharacterization</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.ohdsi</groupId>
+          <artifactId>standardized-analysis-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.cosium.spring.data</groupId>

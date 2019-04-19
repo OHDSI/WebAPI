@@ -120,6 +120,9 @@ public class FeasibilityService extends AbstractDaoService {
   @Autowired
   private UserRepository userRepository;
 
+  @Autowired
+  private ObjectMapper objectMapper;
+
   @Context
   ServletContext context;
 
@@ -590,14 +593,14 @@ public class FeasibilityService extends AbstractDaoService {
     final JobParameters jobParameters = builder.toJobParameters();
     final CancelableJdbcTemplate sourceJdbcTemplate = getSourceJdbcTemplate(source);
 
-    GenerateCohortTasklet indexRuleTasklet = new GenerateCohortTasklet(sourceJdbcTemplate, getTransactionTemplate(), cohortDefinitionRepository, getSourceRepository());
+    GenerateCohortTasklet indexRuleTasklet = new GenerateCohortTasklet(sourceJdbcTemplate, getTransactionTemplate(), cohortDefinitionRepository, getSourceRepository(), objectMapper);
 
     Step generateCohortStep = stepBuilders.get("performStudy.generateIndexCohort")
             .tasklet(indexRuleTasklet)
             .exceptionHandler(new TerminateJobStepExceptionHandler())
             .build();
 
-    PerformFeasibilityTasklet simulateTasket = new PerformFeasibilityTasklet(sourceJdbcTemplate, getTransactionTemplate(), feasibilityStudyRepository);
+    PerformFeasibilityTasklet simulateTasket = new PerformFeasibilityTasklet(sourceJdbcTemplate, getTransactionTemplate(), feasibilityStudyRepository, objectMapper);
 
     Step performStudyStep = stepBuilders.get("performStudy.performStudy")
             .tasklet(simulateTasket)

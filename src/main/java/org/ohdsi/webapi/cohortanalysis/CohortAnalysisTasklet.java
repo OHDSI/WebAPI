@@ -4,6 +4,8 @@ import java.util.Calendar;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
@@ -49,13 +51,14 @@ public class CohortAnalysisTasklet implements Tasklet {
 				, final TransactionTemplate transactionTemplateRequiresNew
 				, String sourceDialect
 				, VisualizationDataRepository visualizationDataRepository
-				, CohortDefinitionRepository cohortDefinitionRepository) {
+				, CohortDefinitionRepository cohortDefinitionRepository,
+				final ObjectMapper objectMapper) {
         this.task = task;
         this.jdbcTemplate = jdbcTemplate;
         this.transactionTemplate = transactionTemplate;
         this.transactionTemplateRequiresNew = transactionTemplateRequiresNew;
-        this.analysisRunner = new CohortResultsAnalysisRunner(sourceDialect, visualizationDataRepository);
-				this.cohortDefinitionRepository = cohortDefinitionRepository;
+        this.analysisRunner = new CohortResultsAnalysisRunner(sourceDialect, visualizationDataRepository, objectMapper);
+        this.cohortDefinitionRepository = cohortDefinitionRepository;
 	}
     
     @Override

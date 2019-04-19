@@ -134,6 +134,9 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Autowired
   ConversionService conversionService;
 
+  @Autowired
+  private ObjectMapper objectMapper;
+
   @PersistenceContext
   protected EntityManager entityManager;
 	
@@ -567,10 +570,9 @@ public class CohortDefinitionService extends AbstractDaoService {
 	
   private ArrayList<ConceptSetExport> getConceptSetExports(CohortDefinition def, SourceInfo vocabSource) throws RuntimeException {
     ArrayList<ConceptSetExport> exports = new ArrayList<>();
-    ObjectMapper mapper = new ObjectMapper();
     CohortExpression expression;
     try {
-      expression = mapper.readValue(def.getDetails().getExpression(), CohortExpression.class);
+      expression = objectMapper.readValue(def.getDetails().getExpression(), CohortExpression.class);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -647,9 +649,8 @@ public class CohortDefinitionService extends AbstractDaoService {
 
   private CheckResultDTO runChecks(int id, final String expression) {
       CheckResultDTO result;
-      ObjectMapper mapper = new ObjectMapper();
       try {
-          CohortExpression cohortExpression = mapper.readValue(expression, CohortExpression.class);
+          CohortExpression cohortExpression = objectMapper.readValue(expression, CohortExpression.class);
           result = runChecks(id, cohortExpression);
       } catch (IOException e) {
           log.error("Failed to parse cohort:{} expression", id, e);

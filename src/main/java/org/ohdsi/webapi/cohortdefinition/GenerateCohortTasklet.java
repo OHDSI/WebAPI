@@ -54,15 +54,18 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
 
   private final CohortDefinitionRepository cohortDefinitionRepository;
   private final SourceRepository sourceRepository;
+  private final ObjectMapper mapper;
 
   public GenerateCohortTasklet(
           final CancelableJdbcTemplate jdbcTemplate,
           final TransactionTemplate transactionTemplate,
           final CohortDefinitionRepository cohortDefinitionRepository,
-          SourceRepository sourceRepository) {
+          final SourceRepository sourceRepository,
+          final ObjectMapper mapper) {
     super(LoggerFactory.getLogger(GenerateCohortTasklet.class), jdbcTemplate, transactionTemplate);
     this.cohortDefinitionRepository = cohortDefinitionRepository;
     this.sourceRepository = sourceRepository;
+    this.mapper = mapper;
   }
 
   @Override
@@ -74,8 +77,6 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
     String sessionId = jobParams.getOrDefault(SESSION_ID, SessionUtils.sessionId()).toString();
 
     try {
-      ObjectMapper mapper = new ObjectMapper();
-
       DefaultTransactionDefinition requresNewTx = new DefaultTransactionDefinition();
       requresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 

@@ -19,7 +19,6 @@ import java.util.TimeZone;
  */
 @EnableScheduling
 @SpringBootApplication(exclude={HibernateJpaAutoConfiguration.class, ErrorMvcAutoConfiguration.class})
-@ComponentScan(basePackages = {"org.ohdsi.webapi"})
 public class WebApi extends SpringBootServletInitializer {
 
 

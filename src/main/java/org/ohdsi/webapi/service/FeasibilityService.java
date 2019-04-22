@@ -224,7 +224,7 @@ public class FeasibilityService extends AbstractDaoService {
 
     try {
       // all resultRule repository objects are initalized; create 'all criteria' cohort definition from index rule + inclusion rules
-      ObjectMapper mapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
+      ObjectMapper mapper = objectMapper.copy().setSerializationInclusion(JsonInclude.Include.NON_NULL);
       CohortExpression indexRuleExpression = mapper.readValue(p.getIndexRule().getDetails().getExpression(), CohortExpression.class);
 
       if (indexRuleExpression.additionalCriteria == null) {

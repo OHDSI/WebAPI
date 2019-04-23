@@ -15,12 +15,13 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysis;
+import org.ohdsi.webapi.cohortanalysis.CohortAnalysisGenerationInfo;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTask;
 import org.ohdsi.webapi.cohortanalysis.CohortSummary;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
-import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.cohortresults.*;
 import org.ohdsi.webapi.cohortresults.mapper.AnalysisResultsMapper;
+import org.ohdsi.webapi.model.CohortDefinition;
 import org.ohdsi.webapi.model.results.Analysis;
 import org.ohdsi.webapi.model.results.AnalysisResults;
 import org.ohdsi.webapi.source.Source;
@@ -41,6 +42,7 @@ import java.util.zip.ZipOutputStream;
 import javax.ws.rs.core.Response;
 
 import org.ohdsi.webapi.person.CohortPerson;
+import org.ohdsi.webapi.service.CohortDefinitionService.CohortDefinitionDTO;
 
 /**
  *
@@ -196,7 +198,7 @@ public class CohortResultsService extends AbstractDaoService {
       zos.closeEntry();
 
       // include cohort definition in export
-      CohortDTO cohortDefinition = cohortDefinitionService.getCohortDefinition(id);
+      CohortDefinitionDTO cohortDefinition = cohortDefinitionService.getCohortDefinition(id);
       ByteArrayOutputStream cohortDefinitionStream = new ByteArrayOutputStream();
       mapper.writeValue(cohortDefinitionStream, cohortDefinition);
       cohortDefinitionStream.flush();

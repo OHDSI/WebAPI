@@ -1,19 +1,19 @@
 package org.ohdsi.webapi.estimation;
 
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.common.SourceMapKey;
-import org.ohdsi.webapi.common.analyses.CommonAnalysisDTO;
 import org.ohdsi.webapi.common.generation.ExecutionBasedGenerationDTO;
 import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
 import org.ohdsi.webapi.estimation.domain.EstimationGenerationEntity;
 import org.ohdsi.webapi.estimation.dto.EstimationDTO;
-import org.ohdsi.webapi.estimation.dto.EstimationShortDTO;
 import org.ohdsi.webapi.estimation.specification.EstimationAnalysisImpl;
 import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.util.ExceptionUtils;
+import org.ohdsi.webapi.util.UserUtils;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Controller;
 
@@ -60,19 +60,21 @@ public class EstimationController {
   @GET
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
-  public List<EstimationShortDTO> getAnalysisList() {
+  public List<EstimationListItem> getAnalysisList() {
 
     return StreamSupport.stream(service.getAnalysisList().spliterator(), false)
-            .map(analysis -> conversionService.convert(analysis, EstimationShortDTO.class))
-            .collect(Collectors.toList());
-  }
-
-  @GET
-  @Path("/{id}/exists")
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public int getCountEstimationWithSameName(@PathParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
-    return service.getCountEstimationWithSameName(id, name);
+            .map(est -> {
+              EstimationListItem item = new EstimationListItem();
+              item.estimationId = est.getId();
+              item.name = est.getName();
+              item.type = est.getType();
+              item.description = est.getDescription();
+              item.createdBy = UserUtils.nullSafeLogin(est.getCreatedBy());
+              item.createdDate = est.getCreatedDate();
+              item.modifiedBy = UserUtils.nullSafeLogin(est.getModifiedBy());
+              item.modifiedDate = est.getModifiedDate();
+              return item;
+            }).collect(Collectors.toList());
   }
 
   @DELETE
@@ -217,5 +219,13 @@ public class EstimationController {
             .header("Content-type", "application/zip")
             .header("Content-Disposition", "attachment; filename=\"" + archive.getName() + "\"")
             .build();
+  }
+
+  @GET
+  @Path("/{id}/exists")
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public int getCountEstimationWithSameName(@PathParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
+    return service.getCountEstimationWithSameName(id, name);
   }
 }

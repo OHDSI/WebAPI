@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.feanalysis;
 
+import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysis;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
 import org.ohdsi.webapi.Pagination;
@@ -23,12 +24,15 @@ public class FeAnalysisController {
 
     private FeAnalysisService service;
     private ConversionService conversionService;
+    private ConverterUtils converterUtils;
 
     FeAnalysisController(
             final FeAnalysisService service,
-            final ConversionService conversionService) {
+            final ConversionService conversionService,
+            final ConverterUtils converterUtils) {
         this.service = service;
         this.conversionService = conversionService;
+        this.converterUtils = converterUtils;
     }
 
     @GET

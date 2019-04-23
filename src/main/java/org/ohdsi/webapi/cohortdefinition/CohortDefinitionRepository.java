@@ -15,6 +15,7 @@
 package org.ohdsi.webapi.cohortdefinition;
 
 import java.util.List;
+import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -35,9 +36,11 @@ public interface CohortDefinitionRepository extends CrudRepository<CohortDefinit
   @Query("select cd from CohortDefinition cd LEFT JOIN FETCH cd.createdBy LEFT JOIN FETCH cd.modifiedBy where cd.id = ?1")
   CohortDefinition findOneWithDetail(Integer id);
   
-  @Query("select cd from CohortDefinition AS cd JOIN FETCH cd.details LEFT JOIN FETCH cd.createdBy LEFT JOIN FETCH cd.modifiedBy")          
+  @Query("select cd from CohortDefinition AS cd JOIN FETCH cd.details as d")          
   List<CohortDefinition> list();
 
+  List<CohortDefinition> findAllByCohortCharacterizations(CohortCharacterizationEntity mainEntity);
+  
   @Query("select count(cd) from CohortDefinition AS cd WHERE cd.name = :name and cd.id <> :id")
   int getCountCDefWithSameName(@Param("id") Integer id, @Param("name") String name);
 }

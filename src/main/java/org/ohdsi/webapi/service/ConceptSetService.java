@@ -38,6 +38,7 @@ import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;

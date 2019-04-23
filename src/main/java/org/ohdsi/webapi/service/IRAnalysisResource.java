@@ -3,21 +3,9 @@ package org.ohdsi.webapi.service;
 import org.ohdsi.webapi.common.generation.GenerateSqlResult;
 import org.ohdsi.webapi.ircalc.AnalysisReport;
 import org.ohdsi.webapi.job.JobExecutionResource;
-import org.ohdsi.webapi.service.dto.AnalysisInfoDTO;
-import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
-import org.ohdsi.webapi.service.dto.IRAnalysisShortDTO;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -33,7 +21,7 @@ public interface IRAnalysisResource {
     @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
-    List<IRAnalysisShortDTO> getIRAnalysisList();
+    List<IRAnalysisService.IRAnalysisListItem> getIRAnalysisList();
 
     @GET
     @Path("/{id}/exists")
@@ -53,20 +41,20 @@ public interface IRAnalysisResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional
-    IRAnalysisDTO createAnalysis(IRAnalysisDTO analysis);
+    IRAnalysisService.IRAnalysisDTO createAnalysis(IRAnalysisService.IRAnalysisDTO analysis);
 
     @GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional(readOnly = true)
-    IRAnalysisDTO getAnalysis(@PathParam("id") final int id);
+    IRAnalysisService.IRAnalysisDTO getAnalysis(@PathParam("id") final int id);
 
     @PUT
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
-    IRAnalysisDTO saveAnalysis(@PathParam("id") final int id, IRAnalysisDTO analysis);
+    IRAnalysisService.IRAnalysisDTO saveAnalysis(@PathParam("id") final int id, IRAnalysisService.IRAnalysisDTO analysis);
 
     @GET
     @Path("/{analysis_id}/execute/{sourceKey}")
@@ -82,13 +70,13 @@ public interface IRAnalysisResource {
     @Path("/{id}/info")
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional(readOnly = true)
-    List<AnalysisInfoDTO> getAnalysisInfo(@PathParam("id") final int id);
+    List<IRAnalysisService.AnalysisInfoDTO> getAnalysisInfo(@PathParam("id") final int id);
 
     @GET
     @Path("/{id}/info/{sourceKey}")
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional(readOnly = true)
-    AnalysisInfoDTO getAnalysisInfo(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey);
+    IRAnalysisService.AnalysisInfoDTO getAnalysisInfo(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey);
 
     /**
      * Deletes the specified cohort definition
@@ -134,7 +122,7 @@ public interface IRAnalysisResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/copy")
     @Transactional
-    IRAnalysisDTO copy(@PathParam("id") final int id);
+    IRAnalysisService.IRAnalysisDTO copy(@PathParam("id") final int id);
 
     @GET
     @Path("/{id}/report/{sourceKey}")

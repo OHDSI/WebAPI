@@ -1,12 +1,12 @@
 package org.ohdsi.webapi.cohortanalysis;
 
-import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
-
 import java.util.List;
+
+import org.ohdsi.webapi.service.CohortDefinitionService.CohortDefinitionDTO;
 
 public class CohortSummary {
 
-	private CohortDTO cohortDefinition;
+	private CohortDefinitionDTO cohortDefinition;
 	
 	private String totalPatients;
 	
@@ -23,14 +23,14 @@ public class CohortSummary {
 	/**
 	 * @return the definition
 	 */
-	public CohortDTO getCohortDefinition() {
+	public CohortDefinitionDTO getCohortDefinition() {
 		return cohortDefinition;
 	}
 
 	/**
 	 * @param definition the definition to set
 	 */
-	public void setCohortDefinition(CohortDTO definition) {
+	public void setCohortDefinition(CohortDefinitionDTO definition) {
 		this.cohortDefinition = definition;
 	}
 

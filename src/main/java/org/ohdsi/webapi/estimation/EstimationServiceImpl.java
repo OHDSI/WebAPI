@@ -200,7 +200,6 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     @Override
     public EstimationAnalysisImpl exportAnalysis(Estimation est) {
 
-        ObjectMapper mapper = new ObjectMapper();
         EstimationAnalysisImpl expression;
         try {
             expression = Utils.deserialize(est.getSpecification(), EstimationAnalysisImpl.class);

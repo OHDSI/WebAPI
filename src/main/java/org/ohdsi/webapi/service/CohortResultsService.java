@@ -65,12 +65,14 @@ public class CohortResultsService extends AbstractDaoService {
   @Autowired
   private CohortDefinitionRepository cohortDefinitionRepository;
 
-  private ObjectMapper mapper = new ObjectMapper();
+  @Autowired
+  private ObjectMapper mapper;
+
   private CohortResultsAnalysisRunner queryRunner = null;
 
   @PostConstruct
   public void init() {
-    queryRunner = new CohortResultsAnalysisRunner(this.getSourceDialect(), this.visualizationDataRepository);
+    queryRunner = new CohortResultsAnalysisRunner(this.getSourceDialect(), this.visualizationDataRepository, mapper);
   }
 
   /**

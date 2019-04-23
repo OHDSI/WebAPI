@@ -18,6 +18,7 @@ package org.ohdsi.webapi.service;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.CSVWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
@@ -95,7 +96,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   private static final String NO_INCIDENCE_RATE_ANALYSIS_MESSAGE = "There is no incidence rate analysis with id = %d.";
   private static final EntityGraph ANALYSIS_WITH_EXECUTION_INFO = EntityGraphUtils.fromName("IncidenceRateAnalysis.withExecutionInfoList");
 
-  private final static IRAnalysisQueryBuilder queryBuilder = new IRAnalysisQueryBuilder();
+  private final IRAnalysisQueryBuilder queryBuilder;
 
   @Autowired
   private IncidenceRateAnalysisRepository irAnalysisRepository;
@@ -121,9 +122,17 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   @Autowired
   ConversionService conversionService;
 
+  @Autowired
+  private ObjectMapper objectMapper;
+
   @Context
   ServletContext context;
-  
+
+  public IRAnalysisService(final ObjectMapper objectMapper) {
+
+     this.queryBuilder = new IRAnalysisQueryBuilder(objectMapper);
+  }
+
   private ExecutionInfo findExecutionInfoBySourceId(Collection<ExecutionInfo> infoList, Integer sourceId) {
     for (ExecutionInfo info : infoList) {
       if (sourceId.equals(info.getId().getSourceId())) {
@@ -402,7 +411,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
             })
             .collect(Collectors.toList());
       },
-      new IRAnalysisTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), irAnalysisRepository, sourceService)
+      new IRAnalysisTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), irAnalysisRepository, sourceService, queryBuilder, objectMapper)
     );
 
     generateIrJob.listener(new IRAnalysisInfoListener(getTransactionTemplate(), irAnalysisRepository));

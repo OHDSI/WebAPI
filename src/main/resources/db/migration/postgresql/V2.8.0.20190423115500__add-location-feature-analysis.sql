@@ -40,7 +40,7 @@ VALUES (
   'One covariate per region_concept_id rolled up to State level in the location table in the 365d prior to cohort start date.',
   null,
   'SELECT
-  CAST(C.concept_id AS BIGINT) * 1000 + 930 AS covariate_id,
+  CAST(C.concept_id AS BIGINT) * 1000 + 931 AS covariate_id,
   C.concept_name                            AS covariate_name,
   C.concept_id                              AS concept_id,
   COUNT(*)                                  AS sum_value,

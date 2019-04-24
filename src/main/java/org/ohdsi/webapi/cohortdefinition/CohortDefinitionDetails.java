@@ -15,16 +15,7 @@
 package org.ohdsi.webapi.cohortdefinition;
 
 import java.io.Serializable;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.Lob;
-import javax.persistence.MapsId;
-import javax.persistence.OneToOne;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.hibernate.annotations.Type;
@@ -45,7 +36,7 @@ public class CohortDefinitionDetails implements Serializable {
   private Integer id;
 
   @MapsId
-  @OneToOne
+  @OneToOne(fetch = FetchType.LAZY, mappedBy = "details")
   @JoinColumn(name="id")
   private CohortDefinition definition;
 

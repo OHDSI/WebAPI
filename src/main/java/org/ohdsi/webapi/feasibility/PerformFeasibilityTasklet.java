@@ -15,6 +15,7 @@
  */
 package org.ohdsi.webapi.feasibility;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
@@ -49,21 +50,23 @@ public class PerformFeasibilityTasklet implements Tasklet {
 
   private static final Logger log = LoggerFactory.getLogger(PerformFeasibilityTasklet.class);
 
-  private final static FeasibilityStudyQueryBuilder studyQueryBuilder = new FeasibilityStudyQueryBuilder();
   private final static String CREATE_TEMP_TABLES_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/feasibility/sql/inclusionRuleTable_CREATE.sql"); 
   private final static String DROP_TEMP_TABLES_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/feasibility/sql/inclusionRuleTable_DROP.sql"); 
 
   private final JdbcTemplate jdbcTemplate;
   private final TransactionTemplate transactionTemplate;
   private final FeasibilityStudyRepository feasibilityStudyRepository;
+  private final FeasibilityStudyQueryBuilder studyQueryBuilder;
 
   public PerformFeasibilityTasklet(
           final JdbcTemplate jdbcTemplate,
           final TransactionTemplate transactionTemplate,
-          final FeasibilityStudyRepository feasibilityStudyRepository) {
+          final FeasibilityStudyRepository feasibilityStudyRepository,
+          final ObjectMapper objectMapper) {
     this.jdbcTemplate = jdbcTemplate;
     this.transactionTemplate = transactionTemplate;
     this.feasibilityStudyRepository = feasibilityStudyRepository;
+    this.studyQueryBuilder = new FeasibilityStudyQueryBuilder(objectMapper);
   }
 
   private StudyGenerationInfo findStudyGenerationInfoBySourceId(Collection<StudyGenerationInfo> infoList, Integer sourceId)

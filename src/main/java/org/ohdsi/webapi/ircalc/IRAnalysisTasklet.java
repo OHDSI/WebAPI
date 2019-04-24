@@ -38,24 +38,28 @@ import static org.ohdsi.webapi.Constants.Params.*;
  */
 public class IRAnalysisTasklet extends CancelableTasklet {
   
-  private final static IRAnalysisQueryBuilder analysisQueryBuilder = new IRAnalysisQueryBuilder();
+  private final IRAnalysisQueryBuilder analysisQueryBuilder;
 
   private final IncidenceRateAnalysisRepository incidenceRateAnalysisRepository;
   private final SourceService sourceService;
+  private final ObjectMapper objectMapper;
 
   public IRAnalysisTasklet(
           final CancelableJdbcTemplate jdbcTemplate,
           final TransactionTemplate transactionTemplate,
           final IncidenceRateAnalysisRepository incidenceRateAnalysisRepository,
-          final SourceService sourceService) {
+          final SourceService sourceService,
+          final IRAnalysisQueryBuilder analysisQueryBuilder,
+          final ObjectMapper objectMapper) {
 
     super(LoggerFactory.getLogger(IRAnalysisTasklet.class), jdbcTemplate, transactionTemplate);
     this.incidenceRateAnalysisRepository = incidenceRateAnalysisRepository;
     this.sourceService = sourceService;
+    this.analysisQueryBuilder = analysisQueryBuilder;
+    this.objectMapper = objectMapper;
   }
   
   protected String[] prepareQueries(ChunkContext chunkContext, CancelableJdbcTemplate jdbcTemplate) {
-    ObjectMapper mapper = new ObjectMapper();
     
     Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
 
@@ -67,7 +71,7 @@ public class IRAnalysisTasklet extends CancelableTasklet {
     String sessionId = jobParams.get(SESSION_ID).toString();
     try {
       IncidenceRateAnalysis analysis = this.incidenceRateAnalysisRepository.findOne(analysisId);
-      IncidenceRateAnalysisExpression expression = mapper.readValue(analysis.getDetails().getExpression(), IncidenceRateAnalysisExpression.class);
+      IncidenceRateAnalysisExpression expression = objectMapper.readValue(analysis.getDetails().getExpression(), IncidenceRateAnalysisExpression.class);
       
       IRAnalysisQueryBuilder.BuildExpressionQueryOptions options = new IRAnalysisQueryBuilder.BuildExpressionQueryOptions();
       options.cdmSchema = SourceUtils.getCdmQualifier(source);

@@ -18,6 +18,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jersey.repackaged.com.google.common.base.Joiner;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -73,6 +74,9 @@ public class CohortAnalysisService extends AbstractDaoService implements Generat
 	
 	@Autowired
 	private VisualizationDataRepository visualizationDataRepository;
+
+	@Autowired
+	private ObjectMapper objectMapper;
 
 	private final RowMapper<Analysis> analysisMapper = new RowMapper<Analysis>() {
 
@@ -331,7 +335,7 @@ public class CohortAnalysisService extends AbstractDaoService implements Generat
 		log.info("Beginning run for cohort analysis task: {}", taskString);
 
 		CohortAnalysisTasklet tasklet = new CohortAnalysisTasklet(task, getSourceJdbcTemplate(task.getSource()), 
-				getTransactionTemplate(), getTransactionTemplateRequiresNew(), this.getSourceDialect(), this.visualizationDataRepository, this.cohortDefinitionRepository);
+				getTransactionTemplate(), getTransactionTemplateRequiresNew(), this.getSourceDialect(), this.visualizationDataRepository, this.cohortDefinitionRepository, objectMapper);
 
 		return this.jobTemplate.launchTasklet(NAME, "cohortAnalysisStep", tasklet, jobParameters);
 	}

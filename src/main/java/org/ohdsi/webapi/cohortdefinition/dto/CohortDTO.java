@@ -1,23 +1,24 @@
 package org.ohdsi.webapi.cohortdefinition.dto;
 
 import org.ohdsi.analysis.Cohort;
+import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.cohortdefinition.ExpressionType;
 
 public class CohortDTO extends CohortMetadataDTO implements Cohort{
 
-    private String expression;
+    private CohortExpression expression;
     private ExpressionType expressionType;
     
     public CohortExpression getExpression() {
-        return CohortExpression.fromJson(expression);
-    }
-
-    public String getExpressionStr() {
         return expression;
     }
 
-    public void setExpression(final String expression) {
+    public String getExpressionStr() {
+        return Utils.serialize(expression);
+    }
+
+    public void setExpression(final CohortExpression expression) {
         this.expression = expression;
     }
 

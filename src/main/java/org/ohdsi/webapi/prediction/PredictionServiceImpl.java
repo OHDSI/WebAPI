@@ -3,10 +3,10 @@ package org.ohdsi.webapi.prediction;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.hydra.Hydra;
-import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.common.generation.AnalysisExecutionSupport;
@@ -28,6 +28,7 @@ import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
@@ -43,7 +44,7 @@ import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.GENERATE_PREDICTION_ANALYSIS;
 import static org.ohdsi.webapi.Constants.Params.*;
-import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
+
 import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
 import org.ohdsi.webapi.analysis.AnalysisConceptSet;
 import org.ohdsi.webapi.common.DesignImportService;
@@ -61,7 +62,10 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
             "createdBy",
             "modifiedBy"
     );
-    
+
+    @Value("${hydra.externalPackage.prediction}")
+    private String extenalPackagePath;
+
     @Autowired
     private PredictionAnalysisRepository predictionAnalysisRepository;
 
@@ -107,6 +111,12 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     public Iterable<PredictionAnalysis> getAnalysisList() {
 
         return predictionAnalysisRepository.findAll(COMMONS_ENTITY_GRAPH);
+    }
+    
+    @Override
+    public int getCountPredictionWithSameName(Integer id, String name) {
+
+        return predictionAnalysisRepository.getCountPredictionWithSameName(id, name);
     }
     
     @Override
@@ -286,6 +296,9 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         analysis.setPackageName(packageName);
         String studySpecs = Utils.serialize(analysis, true);
         Hydra h = new Hydra(studySpecs);
+        if (StringUtils.isNotEmpty(extenalPackagePath)) {
+            h.setExternalSkeletonFileName(extenalPackagePath);
+        }
         h.hydrate(out);
     }
     

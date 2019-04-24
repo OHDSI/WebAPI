@@ -24,10 +24,6 @@ public abstract class AbstractAdminService {
     @Autowired
     private PermissionManager permissionManager;
 
-    public AbstractAdminService(){
-        System.out.println("done: " + permissionManager != null);
-    }
-
     protected boolean isSecured() {
         return !Constants.SecurityProviders.DISABLED.equals(securityProvider);
     }

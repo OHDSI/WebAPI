@@ -7,7 +7,7 @@ public class CohortResultsAnalysisRunnerTest {
   @Test(expected = Exception.class)
   public void testSaveIsFalseScenarios() {
 
-    CohortResultsAnalysisRunner r = new CohortResultsAnalysisRunner(null, null);
+    CohortResultsAnalysisRunner r = new CohortResultsAnalysisRunner(null, null, null);
     r.getCohortConditionDrilldown(null, -1, -1, 0, 0, null, false);
     r.getCohortDataDensity(null, 0, null, null, null, false);
     r.getCohortDeathData(null, 0, null, null, null, false);

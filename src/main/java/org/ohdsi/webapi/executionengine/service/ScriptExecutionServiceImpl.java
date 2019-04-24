@@ -17,6 +17,7 @@ import org.ohdsi.webapi.executionengine.repository.AnalysisExecutionRepository;
 import org.ohdsi.webapi.executionengine.repository.ExecutionEngineGenerationRepository;
 import org.ohdsi.webapi.executionengine.repository.InputFileRepository;
 import org.ohdsi.webapi.executionengine.repository.OutputFileRepository;
+import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.HttpClient;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
@@ -53,7 +54,7 @@ import static org.ohdsi.webapi.Constants.Variables.SOURCE;
 
 @Service
 @Transactional
-class ScriptExecutionServiceImpl implements ScriptExecutionService {
+class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExecutionService {
 
     private static final Logger logger = LoggerFactory.getLogger(ScriptExecutionServiceImpl.class);
 
@@ -216,9 +217,13 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     @PostConstruct
     public void invalidateOutdatedAnalyses() {
 
-        logger.info("Invalidating execution engine based analyses");
-        List<ExecutionEngineAnalysisStatus> outdateExecutions = analysisExecutionRepository.findByExecutionStatusIn(INVALIDATE_STATUSES);
-        outdateExecutions.forEach(ee -> ee.setExecutionStatus(ExecutionEngineAnalysisStatus.Status.FAILED));
+        getTransactionTemplateRequiresNew().execute(status -> {
+            logger.info("Invalidating execution engine based analyses");
+            List<ExecutionEngineAnalysisStatus> outdateExecutions = analysisExecutionRepository.findByExecutionStatusIn(INVALIDATE_STATUSES);
+            outdateExecutions.forEach(ee -> ee.setExecutionStatus(ExecutionEngineAnalysisStatus.Status.FAILED));
+            analysisExecutionRepository.save(outdateExecutions);
+            return null;
+        });
     }
 
     @Override

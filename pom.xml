@@ -9,7 +9,7 @@
   <version>1.0.0-SNAPSHOT</version>
   <name>WebAPI</name>
   <properties>
-    <webapi.version>2.7.0</webapi.version>
+    <webapi.version>2.8.0</webapi.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jersey.version>2.14</jersey.version>
     <!-- Spring Boot manages spring.version as well -->
@@ -157,6 +157,9 @@
 
     <!-- Sensitive Info settings -->
     <sensitiveinfo.admin.role>admin</sensitiveinfo.admin.role>
+
+    <hydra.externalPackage.prediction></hydra.externalPackage.prediction>
+    <hydra.externalPackage.estimation></hydra.externalPackage.estimation>
   </properties>
   <build>
     <finalName>WebAPI</finalName>
@@ -369,32 +372,6 @@
     <repository>
       <id>redshift</id>
       <url>http://redshift-maven-repository.s3-website-us-east-1.amazonaws.com/release</url>
-    </repository>
-    <repository>
-      <id>odysseus.community.snapshots</id>
-      <name>Odysseus community snapshots</name>
-      <releases>
-        <enabled>false</enabled>
-        <updatePolicy>always</updatePolicy>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-        <updatePolicy>always</updatePolicy>
-      </snapshots>
-      <url>http://repo.odysseusinc.com/artifactory/community-libs-snapshot-local</url>
-    </repository>
-    <repository>
-      <id>odysseus.community.releases</id>
-      <name>Odysseus community releases</name>
-      <releases>
-        <enabled>true</enabled>
-        <updatePolicy>always</updatePolicy>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-        <updatePolicy>always</updatePolicy>
-      </snapshots>
-      <url>http://repo.odysseusinc.com/artifactory/community-libs-release-local</url>
     </repository>
   </repositories>
 
@@ -626,7 +603,7 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>circe</artifactId>
-      <version>1.7.2</version>
+      <version>1.8.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
@@ -703,13 +680,24 @@
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
-      <artifactId>standardized-analysis-api</artifactId>
+      <artifactId>standardized-analysis-specs</artifactId>
+      <version>1.2.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.ohdsi</groupId>
+      <artifactId>standardized-analysis-utils</artifactId>
       <version>1.2.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>SkeletonCohortCharacterization</artifactId>
       <version>1.0.0-SNAPSHOT</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.ohdsi</groupId>
+          <artifactId>standardized-analysis-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.cosium.spring.data</groupId>

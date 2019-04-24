@@ -1,21 +1,5 @@
 package org.ohdsi.webapi.service;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotAuthorizedException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
 import com.odysseusinc.arachne.commons.types.DBMSType;
 import com.odysseusinc.logging.event.AddDataSourceEvent;
 import com.odysseusinc.logging.event.ChangeDataSourceEvent;
@@ -42,8 +26,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+
+import javax.annotation.PostConstruct;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Path("/source/")
 @Component
@@ -219,7 +210,7 @@ public class SourceService extends AbstractDaoService {
   @POST
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
-  public SourceInfo createSource(@FormDataParam("keytab") InputStream file, @FormDataParam("keytab") FormDataContentDisposition fileDetail, @FormDataParam("source") SourceRequest request) throws Exception {
+  public SourceInfo createSource(@FormDataParam("keyfile") InputStream file, @FormDataParam("keyfile") FormDataContentDisposition fileDetail, @FormDataParam("source") SourceRequest request) throws Exception {
     if (!securityEnabled) {
       throw new NotAuthorizedException(SECURE_MODE_ERROR);
     }
@@ -228,7 +219,31 @@ public class SourceService extends AbstractDaoService {
       throw new Exception("The source key has been already used.");
     }
     Source source = conversionService.convert(request, Source.class);
-    setKeyfileData(source, new Source(), file);
+    if(source.getDaimons() != null) {
+      // First source should get priority = 1
+      Iterable<Source> sources = sourceRepository.findAll();
+      source.getDaimons()
+              .stream()
+              .filter(sd -> sd.getPriority() <= 0)
+              .filter(sd -> {
+                 boolean accept = true;
+                 // Check if source daimon of given type with priority > 0 already exists in other sources
+                 for(Source innerSource: sources) {
+                     accept = !innerSource.getDaimons()
+                        .stream()
+                        .anyMatch(innerDaimon -> innerDaimon.getPriority() > 0
+                                && innerDaimon.getDaimonType().equals(sd.getDaimonType()));
+                    if(!accept) {
+                        break;
+                    }
+                 }
+                 return accept;
+              })
+              .forEach(sd -> sd.setPriority(1));
+    }
+    Source original = new Source();
+    original.setSourceDialect(source.getSourceDialect());
+    setKeyfileData(source, original, file);
     Source saved = sourceRepository.save(source);
     String sourceKey = saved.getSourceKey();
     cachedSources = null;
@@ -243,7 +258,7 @@ public class SourceService extends AbstractDaoService {
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
   @Transactional
-  public SourceInfo updateSource(@PathParam("sourceId") Integer sourceId, @FormDataParam("keytab") InputStream file, @FormDataParam("keytab") FormDataContentDisposition fileDetail, @FormDataParam("source") SourceRequest request) throws IOException {
+  public SourceInfo updateSource(@PathParam("sourceId") Integer sourceId, @FormDataParam("keyfile") InputStream file, @FormDataParam("keyfile") FormDataContentDisposition fileDetail, @FormDataParam("source") SourceRequest request) throws IOException {
     if (!securityEnabled) {
       throw new NotAuthorizedException(SECURE_MODE_ERROR);
     }
@@ -284,8 +299,8 @@ public class SourceService extends AbstractDaoService {
 
   private void setKeyfileData(Source updated, Source source, InputStream file) throws IOException {
      if (source.supportsKeyfile()) {
-         if (updated.getKeytabName() != null) {
-           if (!Objects.equals(updated.getKeytabName(), source.getKeytabName())) {
+         if (updated.getKeyfileName() != null) {
+           if (!Objects.equals(updated.getKeyfileName(), source.getKeyfileName())) {
              byte[] fileBytes = IOUtils.toByteArray(file);
              updated.setKeyfile(fileBytes);
            } else {
@@ -295,7 +310,7 @@ public class SourceService extends AbstractDaoService {
          }
      }
      updated.setKeyfile(null);
-     updated.setKeytabName(null);
+     updated.setKeyfileName(null);
    }
 
   @Path("{sourceId}")

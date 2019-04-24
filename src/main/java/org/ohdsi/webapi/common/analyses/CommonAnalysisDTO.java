@@ -8,13 +8,11 @@ public class CommonAnalysisDTO {
 
     private Integer id;
     private String name;
-    private String description;
-    private String specification;
+    private String description;    
     private UserDTO createdBy;
     private Date createdDate;
     private UserDTO modifiedBy;
     private Date modifiedDate;
-
 
     public Integer getId() {
 
@@ -44,16 +42,6 @@ public class CommonAnalysisDTO {
     public void setDescription(String description) {
 
         this.description = description;
-    }
-
-    public String getSpecification() {
-
-        return specification;
-    }
-
-    public void setSpecification(String specification) {
-
-        this.specification = specification;
     }
 
     public UserDTO getCreatedBy() {

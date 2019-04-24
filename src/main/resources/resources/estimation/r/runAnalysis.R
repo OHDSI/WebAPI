@@ -31,12 +31,15 @@ tryCatch({
                                                                         password = pwd,
                                                                         pathToDriver = driversPath)
 
+        outputFolder <- file.path(getwd(), 'results')
+        dir.create(outputFolder)
+
         execute(connectionDetails = connectionDetails,
                 cdmDatabaseSchema = cdmDatabaseSchema,
                 cohortDatabaseSchema = cohortsDatabaseSchema,
                 cohortTable = cohortTable,
                 oracleTempSchema = resultsDatabaseSchema,
-                outputFolder = file.path('.', 'results'),
+                outputFolder = outputFolder,
                 databaseId = 'Synpuf',
                 synthesizePositiveControls = TRUE,
                 runAnalyses = TRUE,

@@ -1,7 +1,6 @@
 package org.ohdsi.webapi.cohortdefinition.dto;
 
 import org.ohdsi.analysis.Cohort;
-import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.cohortdefinition.ExpressionType;
 
@@ -12,10 +11,6 @@ public class CohortDTO extends CohortMetadataDTO implements Cohort{
     
     public CohortExpression getExpression() {
         return expression;
-    }
-
-    public String getExpressionStr() {
-        return Utils.serialize(expression);
     }
 
     public void setExpression(final CohortExpression expression) {

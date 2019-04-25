@@ -1,5 +1,7 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
@@ -15,6 +17,8 @@ public interface CcService {
     CohortCharacterizationEntity createCc(CohortCharacterizationEntity entity);
 
     CohortCharacterizationEntity updateCc(CohortCharacterizationEntity entity);
+
+    int getCountCcWithSameName(Long id, String name);
     
     void deleteCc(Long ccId);
 
@@ -47,6 +51,8 @@ public interface CcService {
     List<CcResult> findResults(Long generationId, float thresholdLevel);
 
     List<CcPrevalenceStat> getPrevalenceStatsByGenerationId(final Long id, Long analysisId, final Long cohortId, final Long covariateId);
+
+    void hydrateAnalysis(Long analysisId, String packageName, OutputStream out);
 
     void deleteCcGeneration(Long generationId);
 

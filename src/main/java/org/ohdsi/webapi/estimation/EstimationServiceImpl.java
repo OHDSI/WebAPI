@@ -4,6 +4,7 @@ import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.estimation.design.EstimationTypeEnum;
 import org.ohdsi.analysis.estimation.design.NegativeControlTypeEnum;
@@ -82,6 +83,9 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
             "modifiedBy"
     );
 
+    @Value("${hydra.externalPackage.estimation}")
+    private String extenalPackagePath;
+
     @PersistenceContext
     protected EntityManager entityManager;
     
@@ -128,6 +132,11 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     public Iterable<Estimation> getAnalysisList() {
 
         return estimationRepository.findAll(COMMONS_ENTITY_GRAPH);
+    }
+    
+    @Override
+    public int getCountEstimationWithSameName(Integer id, String name) {
+        return estimationRepository.getCountEstimationWithSameName(id, name);
     }
     
     @Override
@@ -191,7 +200,6 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     @Override
     public EstimationAnalysisImpl exportAnalysis(Estimation est) {
 
-        ObjectMapper mapper = new ObjectMapper();
         EstimationAnalysisImpl expression;
         try {
             expression = Utils.deserialize(est.getSpecification(), EstimationAnalysisImpl.class);
@@ -381,6 +389,9 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         analysis.setPackageName(packageName);
         String studySpecs = Utils.serialize(analysis, true);
         Hydra h = new Hydra(studySpecs);
+        if (StringUtils.isNotEmpty(extenalPackagePath)) {
+            h.setExternalSkeletonFileName(extenalPackagePath);
+        }
         h.hydrate(out);
     }
 

@@ -1,25 +1,11 @@
 package org.ohdsi.webapi.service;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotAuthorizedException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
+import com.odysseusinc.arachne.commons.types.DBMSType;
 import com.odysseusinc.logging.event.AddDataSourceEvent;
 import com.odysseusinc.logging.event.ChangeDataSourceEvent;
 import com.odysseusinc.logging.event.DeleteDataSourceEvent;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -40,10 +26,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+
+import javax.annotation.PostConstruct;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
-
-import static org.ohdsi.webapi.source.Source.IMPALA_DATASOURCE;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Path("/source/")
 @Component
@@ -219,7 +210,7 @@ public class SourceService extends AbstractDaoService {
   @POST
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
-  public SourceInfo createSource(@FormDataParam("keytab") InputStream file, @FormDataParam("keytab") FormDataContentDisposition fileDetail, @FormDataParam("source") SourceRequest request) throws Exception {
+  public SourceInfo createSource(@FormDataParam("keyfile") InputStream file, @FormDataParam("keyfile") FormDataContentDisposition fileDetail, @FormDataParam("source") SourceRequest request) throws Exception {
     if (!securityEnabled) {
       throw new NotAuthorizedException(SECURE_MODE_ERROR);
     }
@@ -228,7 +219,31 @@ public class SourceService extends AbstractDaoService {
       throw new Exception("The source key has been already used.");
     }
     Source source = conversionService.convert(request, Source.class);
-    setImpalaKrbData(source, new Source(), file);
+    if(source.getDaimons() != null) {
+      // First source should get priority = 1
+      Iterable<Source> sources = sourceRepository.findAll();
+      source.getDaimons()
+              .stream()
+              .filter(sd -> sd.getPriority() <= 0)
+              .filter(sd -> {
+                 boolean accept = true;
+                 // Check if source daimon of given type with priority > 0 already exists in other sources
+                 for(Source innerSource: sources) {
+                     accept = !innerSource.getDaimons()
+                        .stream()
+                        .anyMatch(innerDaimon -> innerDaimon.getPriority() > 0
+                                && innerDaimon.getDaimonType().equals(sd.getDaimonType()));
+                    if(!accept) {
+                        break;
+                    }
+                 }
+                 return accept;
+              })
+              .forEach(sd -> sd.setPriority(1));
+    }
+    Source original = new Source();
+    original.setSourceDialect(source.getSourceDialect());
+    setKeyfileData(source, original, file);
     Source saved = sourceRepository.save(source);
     String sourceKey = saved.getSourceKey();
     cachedSources = null;
@@ -243,7 +258,7 @@ public class SourceService extends AbstractDaoService {
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
   @Transactional
-  public SourceInfo updateSource(@PathParam("sourceId") Integer sourceId, @FormDataParam("keytab") InputStream file, @FormDataParam("keytab") FormDataContentDisposition fileDetail, @FormDataParam("source") SourceRequest request) throws IOException {
+  public SourceInfo updateSource(@PathParam("sourceId") Integer sourceId, @FormDataParam("keyfile") InputStream file, @FormDataParam("keyfile") FormDataContentDisposition fileDetail, @FormDataParam("source") SourceRequest request) throws IOException {
     if (!securityEnabled) {
       throw new NotAuthorizedException(SECURE_MODE_ERROR);
     }
@@ -260,7 +275,8 @@ public class SourceService extends AbstractDaoService {
               Objects.equals(updated.getPassword().trim(), Source.MASQUERADED_PASSWORD)) {
         updated.setPassword(source.getPassword());
       }
-      setImpalaKrbData(updated, source, file);
+      setKeyfileData(updated, source, file);
+      transformIfRequired(updated);
       List<SourceDaimon> removed = source.getDaimons().stream().filter(d -> !updated.getDaimons().contains(d))
               .collect(Collectors.toList());
       sourceDaimonRepository.delete(removed);
@@ -273,20 +289,28 @@ public class SourceService extends AbstractDaoService {
     }
   }
 
-   private void setImpalaKrbData(Source updated, Source source, InputStream file) throws IOException {
-     if (IMPALA_DATASOURCE.equalsIgnoreCase(updated.getSourceDialect())) {
-         if (updated.getKeytabName() != null) {
-           if (!Objects.equals(updated.getKeytabName(), source.getKeytabName())) {
+  private void transformIfRequired(Source source) {
+
+    if (DBMSType.BIGQUERY.getOhdsiDB().equals(source.getSourceDialect()) && ArrayUtils.isNotEmpty(source.getKeyfile())) {
+      String connStr = source.getSourceConnection().replaceAll("OAuthPvtKeyPath=.+?(;|\\z)", "");
+      source.setSourceConnection(connStr);
+    }
+  }
+
+  private void setKeyfileData(Source updated, Source source, InputStream file) throws IOException {
+     if (source.supportsKeyfile()) {
+         if (updated.getKeyfileName() != null) {
+           if (!Objects.equals(updated.getKeyfileName(), source.getKeyfileName())) {
              byte[] fileBytes = IOUtils.toByteArray(file);
-             updated.setKrbKeytab(fileBytes);
+             updated.setKeyfile(fileBytes);
            } else {
-             updated.setKrbKeytab(source.getKrbKeytab());
+             updated.setKeyfile(source.getKeyfile());
            }
            return;
          }
      }
-     updated.setKrbKeytab(null);
-     updated.setKeytabName(null);
+     updated.setKeyfile(null);
+     updated.setKeyfileName(null);
    }
 
   @Path("{sourceId}")

@@ -21,10 +21,10 @@ import org.hibernate.annotations.DiscriminatorFormula;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
+import org.ohdsi.analysis.cohortcharacterization.design.CcResultType;
 import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysis;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
-import org.ohdsi.webapi.cohortcharacterization.CcResultType;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.model.CommonEntity;
 
@@ -35,7 +35,7 @@ import org.ohdsi.webapi.model.CommonEntity;
         "CASE WHEN type = 'CRITERIA_SET' THEN CONCAT(type,'_',stat_type)" +
           "ELSE type END"
 )
-public abstract class FeAnalysisEntity<T> extends CommonEntity implements FeatureAnalysis, Comparable<FeAnalysisEntity> {
+public abstract class FeAnalysisEntity<T> extends CommonEntity<Integer> implements FeatureAnalysis<T, Integer>, Comparable<FeAnalysisEntity<String>> {
 
     public FeAnalysisEntity() {
     }

@@ -30,12 +30,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import java.util.Collections;
 import java.util.List;
@@ -102,6 +104,15 @@ public class PathwayController {
     public Page<PathwayAnalysisDTO> list(@Pagination Pageable pageable) {
 
         return pathwayService.getPage(pageable).map(pa -> conversionService.convert(pa, PathwayAnalysisDTO.class));
+    }
+
+    @GET
+    @Path("/{id}/exists")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public int getCountPAWithSameName(@PathParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
+        
+        return pathwayService.getCountPAWithSameName(id, name);
     }
 
     @PUT

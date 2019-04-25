@@ -17,6 +17,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jersey.repackaged.com.google.common.base.Joiner;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -66,6 +67,7 @@ public class CohortAnalysisService extends AbstractDaoService implements Generat
 
 	private final HeraclesQueryBuilder heraclesQueryBuilder;
 
+	private ObjectMapper objectMapper;
 
 	private final RowMapper<Analysis> analysisMapper = new RowMapper<Analysis>() {
 
@@ -94,12 +96,14 @@ public class CohortAnalysisService extends AbstractDaoService implements Generat
                                CohortDefinitionService definitionService,
                                CohortDefinitionRepository cohortDefinitionRepository,
                                VisualizationDataRepository visualizationDataRepository,
+                               ObjectMapper objectMapper,
                                HeraclesQueryBuilder heraclesQueryBuilder) {
 
     this.jobTemplate = jobTemplate;
     this.definitionService = definitionService;
     this.cohortDefinitionRepository = cohortDefinitionRepository;
     this.visualizationDataRepository = visualizationDataRepository;
+    this.objectMapper = objectMapper;
     this.heraclesQueryBuilder = heraclesQueryBuilder;
   }
 

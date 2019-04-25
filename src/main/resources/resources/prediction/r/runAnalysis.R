@@ -21,17 +21,22 @@ tryCatch({
         resultsDatabaseSchema <- Sys.getenv("RESULT_SCHEMA")
         cohortsDatabaseSchema <- Sys.getenv("TARGET_SCHEMA")
         cohortTable <- Sys.getenv("COHORT_TARGET_TABLE")
+        driversPath <- (function(path) if (path == "") NULL else path)( Sys.getenv("JDBC_DRIVER_PATH") )
 
         connectionDetails <- DatabaseConnector::createConnectionDetails(dbms = dbms,
                                                                         connectionString = connectionString,
                                                                         user = user,
-                                                                        password = pwd)
+                                                                        password = pwd,
+                                                                        pathToDriver = driversPath)
+
+        outputFolder <- file.path(getwd(), 'results')
+        dir.create(outputFolder)
 
         execute(connectionDetails = connectionDetails,
                 cdmDatabaseSchema = cdmDatabaseSchema,
                 cohortDatabaseSchema = cohortsDatabaseSchema,
                 cohortTable = cohortTable,
-                outputFolder = file.path('.', 'results'),
+                outputFolder = outputFolder,
                 createCohorts = T,
                 runAnalyses = T,
                 createValidationPackage = F,

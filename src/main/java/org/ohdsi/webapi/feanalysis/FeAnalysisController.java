@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.feanalysis;
 
-import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysis;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
 import org.ohdsi.webapi.Pagination;
@@ -24,15 +23,12 @@ public class FeAnalysisController {
 
     private FeAnalysisService service;
     private ConversionService conversionService;
-    private ConverterUtils converterUtils;
 
     FeAnalysisController(
             final FeAnalysisService service,
-            final ConversionService conversionService,
-            final ConverterUtils converterUtils) {
+            final ConversionService conversionService) {
         this.service = service;
         this.conversionService = conversionService;
-        this.converterUtils = converterUtils;
     }
 
     @GET
@@ -41,6 +37,14 @@ public class FeAnalysisController {
     @Consumes(MediaType.APPLICATION_JSON)
     public Page<FeAnalysisShortDTO> list(@Pagination Pageable pageable) {
         return service.getPage(pageable).map(this::convertFeAnaysisToShortDto);
+    }
+
+    @GET
+    @Path("/{id}/exists")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public int getCountFeWithSameName(@PathParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
+        return service.getCountFeWithSameName(id, name);
     }
 
     @GET

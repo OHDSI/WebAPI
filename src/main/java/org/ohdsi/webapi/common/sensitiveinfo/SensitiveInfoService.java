@@ -7,13 +7,19 @@ import java.util.Objects;
 
 public interface SensitiveInfoService<T> {
 
-  T filterSensitiveInfo(T source, Map<String, Object> variables);
+  T filterSensitiveInfo(T source, Map<String, Object> variables, boolean isAdmin);
 
-  default List<T> filterSensitiveInfo(List<T> source, Map<String, Object> variables) {
+  default T filterSensitiveInfo(T source, Map<String, Object> variables) {
+    return filterSensitiveInfo(source, variables, isAdmin());
+  }
+
+  boolean isAdmin();
+
+  default List<T> filterSensitiveInfo(List<T> source, Map<String, Object> variables, boolean isAdmin) {
 
     List<T> result = new ArrayList<>();
     for(T val : source) {
-      result.add(filterSensitiveInfo(val, variables));
+      result.add(filterSensitiveInfo(val, variables, isAdmin));
     }
     return result;
   }
@@ -24,8 +30,9 @@ public interface SensitiveInfoService<T> {
       throw new IllegalArgumentException("variable resolver is required");
     }
     List<T> result = new ArrayList<>();
+    boolean isAdmin = isAdmin();
     for(T val : source) {
-      result.add(filterSensitiveInfo(val, resolver.resolveVariables(val)));
+      result.add(filterSensitiveInfo(val, resolver.resolveVariables(val), isAdmin));
     }
     return result;
   }

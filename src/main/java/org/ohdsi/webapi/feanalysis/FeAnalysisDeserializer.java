@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,25 +11,21 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.PostConstruct;
 
 import com.fasterxml.jackson.databind.type.CollectionType;
+import org.ohdsi.analysis.cohortcharacterization.design.CcResultType;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
-import org.ohdsi.webapi.cohortcharacterization.CcResultType;
 import org.ohdsi.webapi.feanalysis.dto.BaseFeAnalysisCriteriaDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisWithConceptSetDTO;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class FeAnalysisDeserializer extends JsonDeserializer<FeAnalysisDTO> {
-    
-    private ObjectMapper objectMapper = new ObjectMapper();
-    
-    @PostConstruct
-    private void init() {
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    }
+
+    @Autowired
+    private ObjectMapper objectMapper;
     
     // need to look around and find a way to override procedure of base mapping
     // and handle only a design field

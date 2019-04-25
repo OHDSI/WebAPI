@@ -365,7 +365,7 @@ public class CohortDefinitionService extends AbstractDaoService {
       // associate details
       CohortDefinitionDetails details = new CohortDefinitionDetails();
       details.setCohortDefinition(newDef)
-              .setExpression(dto.getExpressionStr());
+              .setExpression(Utils.serialize(dto.getExpression()));
 
       newDef.setDetails(details);
 
@@ -418,7 +418,7 @@ public class CohortDefinitionService extends AbstractDaoService {
     currentDefinition.setName(def.getName())
             .setDescription(def.getDescription())
             .setExpressionType(def.getExpressionType())
-            .getDetails().setExpression(def.getExpressionStr());
+            .getDetails().setExpression(Utils.serialize(def.getExpression()));
     currentDefinition.setModifiedBy(modifier);
     currentDefinition.setModifiedDate(currentTime);
 

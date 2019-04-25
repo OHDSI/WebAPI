@@ -12,6 +12,6 @@ on p1.person_id = c1.subject_id
 inner join @CDM_schema.location l1
 on p1.location_id = l1.location_id
 where p1.location_id is not null
-and l1.zip is not null
+and @fieldName is not null
 group by c1.cohort_definition_id,
 @fieldName;

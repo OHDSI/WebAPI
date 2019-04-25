@@ -59,12 +59,13 @@ public class DesignImportService {
         Optional<CohortDefinition> findCohortResult = includeCohortNameInComparison ? this.findCohortByExpressionHashcodeAndName(details, cohort.getName()) : this.findCohortByExpressionHashcode(details);
         return findCohortResult.orElseGet(() -> {
             final UserEntity user = userRepository.findByLogin(security.getSubject());
+            cohort.setId(null);
             cohort.setCreatedBy(user);
             cohort.setCreatedDate(new Date());
-            cohort.setDetails(null);
+            cohort.setDetails(details);
+            details.setCohortDefinition(cohort);
             final CohortDefinition savedCohort = cohortRepository.save(cohort);
-            details.setCohortDefinition(savedCohort);
-            savedCohort.setDetails(detailsRepository.save(details));
+            detailsRepository.save(details);
             return savedCohort;
         });
     }

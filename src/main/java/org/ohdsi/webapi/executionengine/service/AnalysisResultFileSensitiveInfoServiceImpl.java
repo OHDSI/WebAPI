@@ -61,12 +61,9 @@ public class AnalysisResultFileSensitiveInfoServiceImpl extends AbstractSensitiv
             return true;
         }
         if (extension == null || extension.isEmpty()) {
-            if (sensitiveExtensions.contains(EXTENSION_EMPTY)) {
-                return true;
-            }
+            return sensitiveExtensions.contains(EXTENSION_EMPTY);
         } else {
             return sensitiveExtensions.contains(extension);
         }
-        return false;
     }
 }

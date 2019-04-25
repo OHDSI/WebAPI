@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.cohortanalysis;
 
+import com.odysseusinc.arachne.commons.types.DBMSType;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -42,7 +43,7 @@ public class HeraclesQueryBuilder {
   private final static String SELECT_RESULT_STATEMENT = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/selectHeraclesResults.sql");
   private final static String SELECT_DIST_RESULT_STATEMENT = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/selectHeraclesDistResults.sql");
 
-  private final static String[] PARAM_NAMES = new String[]{"CDM_schema", "results_schema", "source_name",
+  private final static String[] PARAM_NAMES = new String[]{"CDM_schema", "results_schema", "refreshStats", "source_name",
           "smallcellcount", "runHERACLESHeel", "CDM_version", "cohort_definition_id", "list_of_analysis_ids",
           "condition_concept_ids", "drug_concept_ids", "procedure_concept_ids", "observation_concept_ids",
           "measurement_concept_ids", "cohort_period_only", "source_id", "periods", "rollupUtilizationVisit", "rollupUtilizationDrug",
@@ -145,8 +146,10 @@ public class HeraclesQueryBuilder {
               .collect(Collectors.joining(","));
     }
 
+    boolean refreshStats = Arrays.asList(DBMSType.POSTGRESQL.getOhdsiDB()).contains(task.getSource().getSourceDialect());
+
     return new String[]{
-            cdmTableQualifier, resultsTableQualifier, task.getSource().getSourceName(),
+            cdmTableQualifier, resultsTableQualifier, String.valueOf(refreshStats).toUpperCase(), task.getSource().getSourceName(),
             String.valueOf(task.getSmallCellCount()), String.valueOf(task.runHeraclesHeel()).toUpperCase(),
             task.getCdmVersion(), cohortDefinitionIds, analysisIds, conditionIds, drugIds, procedureIds,
             observationIds, measurementIds,String.valueOf(task.isCohortPeriodOnly()),

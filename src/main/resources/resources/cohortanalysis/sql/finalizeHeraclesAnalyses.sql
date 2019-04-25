@@ -20,6 +20,10 @@ delete from @results_schema.heracles_results_dist where count_value <= @smallcel
 delete from @results_schema.heracles_results where cohort_definition_id = -1;
 delete from @results_schema.heracles_results_dist where cohort_definition_id = -1;
 
+--{@refreshStats}?{
+ANALYZE @results_schema.heracles_results;
+ANALYZE @results_schema.heracles_results_dist;
+--}
 
 --{@runHERACLESHeel}?{
 -- HERACLES_Heel part:

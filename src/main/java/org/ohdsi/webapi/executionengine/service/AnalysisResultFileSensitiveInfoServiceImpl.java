@@ -8,30 +8,29 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import javax.ws.rs.core.MediaType;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 public class AnalysisResultFileSensitiveInfoServiceImpl extends AbstractSensitiveInfoService implements AnalysisResultFileSensitiveInfoService {
     private final String EXTENSION_ALL = "*";
     private final String EXTENSION_EMPTY = "-";
 
-    private List<String> sensitiveExtensions;
+    private Set<String> sensitiveExtensions;
 
     @Value("${sensitiveinfo.analysis.extensions}")
-    private String sensitiveAnalysisExtensions;
+    private String[] sensitiveAnalysisExtensions;
 
     @PostConstruct
     public void init() {
         super.init();
-        sensitiveExtensions = new ArrayList<>();
-        if (sensitiveAnalysisExtensions != null && !sensitiveAnalysisExtensions.isEmpty()) {
-            String[] values = sensitiveAnalysisExtensions.split(",");
+        sensitiveExtensions = new HashSet<>();
+        if (sensitiveAnalysisExtensions != null && sensitiveAnalysisExtensions.length > 0) {
             // If there is "*" symbol - ignore other values
-            for (String value : values) {
+            for (String value : sensitiveAnalysisExtensions) {
                 if (EXTENSION_ALL.equals(value)) {
-                    sensitiveExtensions = new ArrayList<>();
+                    sensitiveExtensions.clear();
                     sensitiveExtensions.add(EXTENSION_ALL);
                     break;
                 } else {
@@ -44,32 +43,29 @@ public class AnalysisResultFileSensitiveInfoServiceImpl extends AbstractSensitiv
     @Override
     public AnalysisResultFile filterSensitiveInfo(AnalysisResultFile source, Map<String, Object> variables, boolean isAdmin) {
         // some txt files have media type "text" instead of MediaType.TEXT_PLAIN
-        if (isNeedFiltering(source)) {
+        if (isFilteringRequired(source)) {
             final String value = filterSensitiveInfo(new String(source.getContents()), variables, isAdmin);
             source.setContents(value.getBytes());
         }
         return source;
     }
 
-    private boolean isNeedFiltering(AnalysisResultFile source) {
+    private boolean isFilteringRequired(AnalysisResultFile source) {
         return MediaType.TEXT_PLAIN.equals(source.getMediaType()) || "text".equals(source.getMediaType()) || checkExtension(source);
     }
 
     private boolean checkExtension(AnalysisResultFile source) {
         String extension = FilenameUtils.getExtension(source.getFileName());
-        for (String value : sensitiveExtensions) {
-            if (EXTENSION_ALL.equals(value)) {
+
+        if(sensitiveExtensions.contains(EXTENSION_ALL)) {
+            return true;
+        }
+        if (extension == null || extension.isEmpty()) {
+            if (sensitiveExtensions.contains(EXTENSION_EMPTY)) {
                 return true;
             }
-            if (extension == null || extension.isEmpty()) {
-                if (EXTENSION_EMPTY.equals(value)) {
-                    return true;
-                }
-            } else {
-                if (extension.equals(value)) {
-                    return true;
-                }
-            }
+        } else {
+            return sensitiveExtensions.contains(extension);
         }
         return false;
     }

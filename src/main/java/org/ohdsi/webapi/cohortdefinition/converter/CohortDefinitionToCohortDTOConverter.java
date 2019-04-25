@@ -16,7 +16,7 @@ public class CohortDefinitionToCohortDTOConverter extends BaseCohortDefinitionTo
         dto.setExpressionType(source.getExpressionType());
         if (source.getDetails() != null) {
             CohortExpression expression = source.getDetails().getExpressionObject();
-            dto.setExpression(Utils.serialize(expression));
+            dto.setExpression(expression);
         }
         return dto;
     }

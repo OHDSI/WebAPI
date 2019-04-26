@@ -23,7 +23,7 @@ import java.util.Objects;
 
 public class AbstractSensitiveInfoService extends AbstractAdminService {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SensitiveFilter.class);
+  protected static final Logger LOGGER = LoggerFactory.getLogger(SensitiveFilter.class);
 
   private Collection<SensitiveFilter> filters;
 

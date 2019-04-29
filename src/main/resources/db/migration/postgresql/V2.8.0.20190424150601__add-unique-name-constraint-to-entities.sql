@@ -64,3 +64,5 @@ SELECT rename_duplicate_names('name', 'id', 'pathway_analysis');
 SELECT rename_duplicate_names('name', 'id', 'ir_analysis');
 SELECT rename_duplicate_names('name', 'estimation_id', 'estimation');
 SELECT rename_duplicate_names('name', 'prediction_id', 'prediction');
+
+DROP FUNCTION ${ohdsiSchema}.rename_duplicate_names(name_title VARCHAR(20), id_title VARCHAR(15), table_title VARCHAR(30));
